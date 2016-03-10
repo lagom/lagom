@@ -1,0 +1,30 @@
+# Structure of this test:
+# =======================
+
+# We test that the service locator is automatically started when executing the `runAll` task, and that 
+# services are automatically registered to the service locator on start, and also unregistered on stop.
+
+# Service locator tests
+# --------------
+
+# Precondition
+> isServiceLocatorDown
+> isServiceGatewayDown
+> isFooServiceUnregistered
+
+# Part 1
+> runAll
+$ sleep 1000
+> isServiceLocatorUp
+> isServiceGatewayUp
+> isFooServiceRegistered
+> isFooServiceReachable
+
+# Part 2
+> stop
+$ sleep 1000
+
+# Part 3
+> isFooServiceUnregistered
+> isServiceLocatorDown
+> isServiceGatewayDown

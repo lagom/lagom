@@ -1,0 +1,33 @@
+# Structure of this test:
+# =======================
+
+# We test that the service locator can be started and stopped on demand, and that services are automatically 
+# registered to the service locator.
+
+# Service locator tests
+# --------------
+
+# Precondition
+> isServiceLocatorDown
+> isFooServiceUnregistered
+
+# Part 1
+> lagomServiceLocatorStart
+$ sleep 1000
+> isServiceLocatorUp
+> isFooServiceUnregistered
+
+# Part 2
+> isExternalServiceRegistered
+
+# Part 3
+> run
+$ sleep 1000
+> isFooServiceRegistered
+
+# Part 4
+> lagomServiceLocatorStop
+> isServiceLocatorDown
+
+# Clean up
+> stop

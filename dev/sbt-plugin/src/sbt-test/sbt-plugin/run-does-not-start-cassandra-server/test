@@ -1,0 +1,19 @@
+# Structure of this test:
+# =======================
+
+# We test that the cassandra server is NOT started when executing the `lagomRunReload` task. Because it takes 
+# time to start the cassandra server, we are waiting 7 seconds before checking the assertion.
+
+# Cassandra server tests
+# --------------
+
+# Precondition
+> isCassandraServerDown
+
+# SUT
+> run
+$ sleep 7000
+> isCassandraServerDown
+
+# Cleanup
+> stop

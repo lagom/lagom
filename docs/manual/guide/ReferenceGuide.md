@@ -1,0 +1,3 @@
+# Lagom reference guide
+
+@toc@

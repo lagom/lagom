@@ -1,0 +1,39 @@
+<!--
+  ~ Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
+  -->
+<!-- The default logback configuration that Lagom uses in dev mode if no other configuration is provided -->
+<configuration>
+
+  <conversionRule conversionWord="coloredLevel" converterClass="com.lightbend.lagom.internal.logback.ColoredLevel" />
+
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+     <file>${application.home:-.}/logs/application.log</file>
+     <encoder>
+       <pattern>%date [%level] from %logger in %thread - %message%n%xException</pattern>
+     </encoder>
+   </appender>
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%coloredLevel %logger{15} - %message%n%xException{10}</pattern>
+    </encoder>
+  </appender>
+  
+  <!-- Set logging for all Play library classes to INFO -->
+  <logger name="play" level="WARN" />
+  <!-- Set logging for all Akka library classes to WARN -->
+  <logger name="akka" level="WARN" />
+  <!-- Set logging for all Lagom library classes to WARN -->
+  <logger name="com.lightbend.lagom" level="WARN" />
+  <!-- Cassandra and the datasta driver are used by the Lagom event sourcing modules -->
+  <logger name="org.apache.cassandra" level="ERROR" />
+  <logger name="com.datastax.driver" level="ERROR" />
+  <!-- Turning off connection error logging to avoid noise when services are forcely stopped -->
+  <logger name="com.datastax.driver.core.ControlConnection" level="OFF" />
+
+  <root level="INFO">
+    <appender-ref ref="STDOUT" />
+    <appender-ref ref="FILE" />
+  </root>
+  
+</configuration>

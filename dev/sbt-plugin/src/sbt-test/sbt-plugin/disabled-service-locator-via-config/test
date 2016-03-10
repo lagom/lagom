@@ -1,0 +1,24 @@
+# Structure of this test:
+# =======================
+
+# We test that if the project's configuration `lagom.service-locator.enabled` key is 
+# set to false, then the service is not automatically registered to the service locator on startup.
+
+# Service locator tests
+# --------------
+
+# Preconditions
+> isServiceLocatorDown
+> lagomServiceLocatorStart
+$ sleep 1000
+> isServiceLocatorUp
+> isFooServiceUnregistered
+
+# SUT
+> run
+$ sleep 7000
+> verifyReloads 1
+> isFooServiceUnregistered
+
+# Clean up
+> stop

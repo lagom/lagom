@@ -1,0 +1,19 @@
+# Structure of this test:
+# =======================
+
+# Here we test that the service locator enables services intra communication.
+
+# Services intra communication
+# --------------
+
+# Precondition
+> runAll
+$ sleep 7000
+> verifyReloadsFoo 1
+> verifyReloadsBar 1
+
+# SUT
+> callFoo
+
+# Clean up
+> stop

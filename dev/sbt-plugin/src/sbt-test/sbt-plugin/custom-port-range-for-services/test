@@ -1,0 +1,9 @@
+# Structure of this test:
+# =======================
+
+# Here we test that it's possible to customize the port range used to start the lagom services
+
+> verifyPortProjA 10001
+> verifyPortProjB 10000
+
+> stop

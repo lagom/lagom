@@ -1,0 +1,21 @@
+/**
+ * Copyright (C) 2016 Typesafe Inc. <http://www.typesafe.com>
+ */
+package com.lightbend.lagom.internal.persistence;
+
+option java_package = "com.lightbend.lagom.internal.persistence.protobuf.msg";
+option optimize_for = SPEED;
+
+message CommandEnvelope {
+  required string entityId = 1;
+  required bytes enclosedMessage = 2;
+  required int32 serializerId = 3;
+  optional bytes messageManifest = 4;
+}
+
+message Exception {
+  optional string message = 1;
+}
+
+
+

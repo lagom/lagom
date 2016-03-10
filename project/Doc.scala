@@ -1,0 +1,122 @@
+/**
+ * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
+ */
+package lagom
+
+import sbt._
+import sbtunidoc.Plugin.UnidocKeys._
+import sbtunidoc.Plugin.{ ScalaUnidoc, JavaUnidoc, Genjavadoc, javaUnidocSettings, baseGenjavadocExtraTasks }
+import sbt.Keys._
+import sbt.File
+
+object Scaladoc extends AutoPlugin {
+
+  object CliOptions {
+    val scaladocAutoAPI = CliOption("lagom.scaladoc.autoapi", true)
+  }
+
+  override def trigger = allRequirements
+  override def requires = plugins.JvmPlugin
+
+  override lazy val projectSettings = {
+    inTask(doc)(Seq(
+      scalacOptions in Compile <++= (version, baseDirectory in ThisBuild) map scaladocOptions,
+      autoAPIMappings := CliOptions.scaladocAutoAPI.get
+    ))
+  }
+
+  def scaladocOptions(ver: String, base: File): List[String] = {
+    val urlString = GitHub.url(ver) + "/€{FILE_PATH}.scala"
+    val opts = List("-implicits", "-doc-source-url", urlString, "-sourcepath", base.getAbsolutePath)
+    opts
+  }
+
+}
+
+/**
+ * Unidoc settings for root project. Adds unidoc command.
+ */
+object UnidocRoot extends AutoPlugin {
+
+  override def trigger = noTrigger
+
+  def settings(ignoreAggregates: Seq[ProjectReference], ignoreProjects: Seq[ProjectReference]) = {
+    val withoutAggregates = ignoreAggregates.foldLeft(inAnyProject) { _ -- inAggregates(_, transitive = true, includeRoot = true) }
+    val docProjectFilter = ignoreProjects.foldLeft(withoutAggregates) { _ -- inProjects(_) }
+
+    inTask(unidoc)(Seq(
+      unidocProjectFilter in ScalaUnidoc := docProjectFilter,
+      unidocProjectFilter in JavaUnidoc := docProjectFilter,
+      apiMappings in ScalaUnidoc := (apiMappings in (Compile, doc)).value
+    ))
+  }
+
+  def excludeJavadoc = Set("internal", "protobuf")
+
+  private val allGenjavadocSources = Def.taskDyn {
+    (sources in (Genjavadoc, doc)).all((unidocScopeFilter in (JavaUnidoc, unidoc)).value)
+  }
+
+  override lazy val projectSettings = javaUnidocSettings ++ Seq(
+    unidocAllSources in (JavaUnidoc, unidoc) ++= allGenjavadocSources.value,
+    unidocAllSources in (JavaUnidoc, unidoc) := {
+      (unidocAllSources in (JavaUnidoc, unidoc)).value
+        .map(_.filterNot(f => excludeJavadoc.exists(f.getCanonicalPath.contains)))
+      },
+    javacOptions in doc := Seq(
+      "-windowtitle", "Lagom Services API",
+      "-public",
+      "-group", "Services API", packageList("com.lightbend.lagom.javadsl", "com.lightbend.lagom.javadsl.api",
+          "com.lightbend.lagom.javadsl.client", "com.lightbend.lagom.javadsl.server",
+          "com.lightbend.lagom.javadsl.api.deser", "com.lightbend.lagom.javadsl.api.paging"),
+      "-group", "Persistence", packageList("com.lightbend.lagom.javadsl.persistence",
+          "com.lightbend.lagom.javadsl.persistence.cassandra",
+          "com.lightbend.lagom.javadsl.persistence.testkit"),
+      "-group", "Cluster", packageList("com.lightbend.lagom.javadsl.pubsub", "com.lightbend.lagom.javadsl.cluster"),
+
+      "-noqualifier", "java.lang",
+      "-encoding", "UTF-8", 
+      "-source", "1.8"
+    ))
+
+  def packageList(names: String*): String = 
+    names.mkString(":")
+}
+
+
+
+/**
+ * Unidoc settings for every multi-project. Adds genjavadoc specific settings.
+ */
+object Unidoc extends AutoPlugin {
+
+  lazy val GenjavadocCompilerPlugin = config("genjavadocplugin") hide
+
+  override def trigger = allRequirements
+  override def requires = plugins.JvmPlugin
+  override def projectConfigurations: Seq[Configuration] = Seq(Genjavadoc)
+
+  // Define a new compile task in the genjavadoc configuration that enables genjavadoc
+  // This is so that we don't generate the javadoc code on every Scala compile, but only when we actually want to
+  // build the javadocs.
+  // This means scalac actually will be invoked 3 times any time a publishLocal is done - this can probably be optimised
+  // down to two assuming https://github.com/typesafehub/genjavadoc/issues/66 is possible.
+  override lazy val projectSettings = inConfig(Genjavadoc)(Defaults.configSettings) ++ Seq(
+    ivyConfigurations += GenjavadocCompilerPlugin,
+    libraryDependencies += "com.typesafe.genjavadoc" %% "genjavadoc-plugin" % "0.9" % "genjavadocplugin->default(compile)" cross CrossVersion.full,
+    scalacOptions in Genjavadoc ++= Seq(
+      "-P:genjavadoc:out=" + (target.value / "java"),
+      "-P:genjavadoc:fabricateParams=false"
+    ),
+    scalacOptions in Genjavadoc ++=
+        update.value.matching(configurationFilter(GenjavadocCompilerPlugin.name)).filter(_.getName.contains("genjavadoc"))
+          .map("-Xplugin:" + _.getAbsolutePath),
+    sources in Genjavadoc := (sources in Compile).value,
+    sources in (Genjavadoc, doc) := {
+      val _ = (compile in Genjavadoc).value
+      (target.value / "java" ** "*.java").get
+    },
+    dependencyClasspath in Genjavadoc := (dependencyClasspath in Compile).value
+  )
+
+}

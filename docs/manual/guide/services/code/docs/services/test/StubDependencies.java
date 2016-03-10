@@ -1,0 +1,27 @@
+package docs.services.test;
+
+import static com.lightbend.lagom.javadsl.testkit.ServiceTest.*;
+
+import com.lightbend.lagom.javadsl.api.ServiceCall;
+import com.lightbend.lagom.javadsl.testkit.ServiceTest.Setup;
+import java.util.concurrent.CompletableFuture;
+import akka.NotUsed;
+
+@SuppressWarnings("unused")
+public class StubDependencies {
+
+  //#stub
+  static class GreetingStub implements GreetingService {
+    @Override
+    public ServiceCall<NotUsed, String, String> greeting() {
+      return (id, req) -> CompletableFuture.completedFuture("Hello");
+    }
+  }
+
+  private final Setup setup = defaultSetup()
+      .withConfigureBuilder(b -> b.overrides(
+          bind(GreetingService.class).to(GreetingStub.class)));
+
+
+  //#stub
+}

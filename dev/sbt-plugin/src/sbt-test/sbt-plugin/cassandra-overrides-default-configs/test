@@ -1,0 +1,23 @@
+# Structure of this test:
+# =======================
+
+# Here we test that it is possible to override the default injected configuration values for cassandra via the 
+# application.conf.
+# The 1 second sleep is needed to allow to compile and start the application, as the test harness expects 
+# a configuration file to be created as soon as application is started. The waiting time might be too short 
+# on some machine, potentially leading to spurious failures of this test. If that happens the sleeping time 
+# should be increased.
+
+# Test default injected cassandra config
+# --------------
+
+> run
+$ sleep 1000
+> journalKeyspace my_keyspace1
+> journalPort 4001
+> snapshotStoreKeyspace my_keyspace2
+> snapshotStorePort 4002
+> readKeyspace my_keyspace3
+> readPort 4003
+
+> stop

@@ -1,0 +1,43 @@
+# Structure of this test:
+# =======================
+
+# Here we test that the `lagomRunReloadAll` task does indeed reload on change - 
+# for example, ensuring that it only reloads when the classpath changes, and testing 
+# failure conditions.
+
+# Additionally, when making assertions about reloads, we need to wait:
+# 1) At least a second after changing the file before we make a request. The reason 
+#    for this is that the classpath change detection is based on file modification 
+#    times, which only have 1 second precision.
+# 2) Another 6 seconds to allow the application to be recompiled and reloaded. Because 
+#    we are waiting for "stuff" to happen in the background, it is possible that we 
+#    should wait for longer on slower machines (i.e., this test has the potential of 
+#    being flaky).
+
+# `lagomRun` tests
+# --------------
+> run
+$ sleep 7000
+> verifyReloads 1
+
+# Change a scala file
+$ copy-file changes/FooServiceImpl.java.1 src/main/java/impl/FooServiceImpl.java
+$ sleep 7000
+> verifyReloads 2
+
+# Introduce a compile error
+$ copy-file changes/FooServiceImpl.java.2 src/main/java/impl/FooServiceImpl.java
+$ sleep 7000
+> verifyReloads 2
+
+# Fix the compile error
+$ copy-file changes/FooServiceImpl.java.3 src/main/java/impl/FooServiceImpl.java
+$ sleep 7000
+> verifyReloads 3
+
+# Change a resource (also introduces a startup failure)
+$ copy-file changes/application.conf.1 src/main/resources/application.conf
+$ sleep 7000
+> verifyReloads 4
+
+> stop

@@ -1,0 +1,7 @@
+CoreConcepts:Lagom core concepts
+Microservices:Microservices in Lagom
+PolyglotSystems:Polyglot systems with Lagom
+Technologies:Lagom component technologies
+BuildConcepts:Lagom build philosophy
+Immutable:Immutable Objects
+ES_CQRS:Event Sourcing and CQRS
