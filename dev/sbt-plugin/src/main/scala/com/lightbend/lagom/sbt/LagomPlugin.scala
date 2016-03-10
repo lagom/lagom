@@ -22,6 +22,21 @@ import sbt.plugins.{ IvyPlugin, CorePlugin, JvmPlugin }
 object Lagom extends AutoPlugin {
   override def requires = LagomReloadableService && JavaAppPackaging
   val autoImport = LagomImport
+
+  override def projectSettings = Seq(
+    libraryDependencies ++= devServiceLocatorDependencies.value
+  )
+
+  // service locator dependencies are injected into services only iff dev service locator is enabled
+  private lazy val devServiceLocatorDependencies = Def.setting {
+    if (LagomPlugin.autoImport.lagomServiceLocatorEnabled.value)
+      Seq(
+        LagomImport.component("lagom-service-registry-client"),
+        LagomImport.component("lagom-service-registration")
+      ).map(_ % InternalConfigs.devModeConfig)
+    else
+      Seq.empty
+  }
 }
 
 /**
@@ -45,7 +60,6 @@ object LagomJava extends AutoPlugin {
       ConsoleHelper.blockUntilExit(log, InternalKeys.interactionMode.value, service._2)
     },
     libraryDependencies ++= Seq(
-      LagomImport.component("lagom-reloadable-server"),
       LagomImport.lagomJavadslServer,
       PlayImport.component("play-netty-server")
     ) ++ LagomImport.lagomJUnitDeps,
@@ -79,10 +93,15 @@ object LagomPlay extends AutoPlugin {
     // Watch the files that Play wants to watch
     lagomWatchDirectories := PlayKeys.playMonitoredFiles.value,
 
-    // Place the Lagom reloadable server and service registry
-    libraryDependencies ++= Seq(
-      LagomImport.component("lagom-reloadable-server"),
-      LagomImport.component("lagom-play-integration")
+    // adding dependencies needed to integrate Play in Lagom
+    libraryDependencies ++= (
+      // lagom-play-integration takes care of registering a stock Play app to the 
+      // Lagom development service locator. The dependency is needed only if the 
+      // development service locator is enabled.
+      if (LagomPlugin.autoImport.lagomServiceLocatorEnabled.value)
+        Seq(LagomImport.component("lagom-play-integration") % InternalConfigs.devModeConfig)
+      else
+        Seq.empty
     )
   )
 }
@@ -243,7 +262,7 @@ object LagomPlugin extends AutoPlugin {
 
   import autoImport._
 
-  private lazy val cassandraKeyspaceConfig = Def.task {
+  private lazy val cassandraKeyspaceConfig: Initialize[Map[String, String]] = Def.setting {
     val keyspace = lagomCassandraKeyspace.value
     Map(
       "cassandra-journal.defaults.keyspace" -> keyspace,
@@ -327,8 +346,21 @@ object LagomPlugin extends AutoPlugin {
         case nonBlocking: PlayNonBlockingInteractionMode => nonBlocking.stop()
         case _ => throw new RuntimeException("Play interaction mode must be non blocking to stop it")
       }
-    }
+    },
+    PlaySettings.manageClasspath(InternalConfigs.devModeConfig),
+    PlaySettings.manageClasspath(InternalConfigs.cassandraDevModeConfig),
+    ivyConfigurations ++= Seq(InternalConfigs.devModeConfig, InternalConfigs.cassandraDevModeConfig),
+    libraryDependencies ++=
+      Seq(LagomImport.component("lagom-reloadable-server") % InternalConfigs.devModeConfig) ++
+      cassandraRegistrationDependencies.value
   )
+
+  // jar containing logic for automatic registration to the service locator is injected iff dev service locator is enabled 
+  private lazy val cassandraRegistrationDependencies = Def.setting {
+    if (lagomServiceLocatorEnabled.value)
+      Seq(LagomImport.component("lagom-cassandra-registration") % InternalConfigs.cassandraDevModeConfig)
+    else Seq.empty
+  }
 
   private lazy val startServiceLocatorTask = Def.taskDyn {
     if ((lagomServiceLocatorEnabled in ThisBuild).value) {
@@ -401,15 +433,15 @@ object LagomPlugin extends AutoPlugin {
     } yield projRef
   }
 
-  private lazy val serviceLocatorConfiguration: Initialize[Task[Map[String, String]]] = Def.task {
+  private lazy val serviceLocatorConfiguration: Initialize[Map[String, String]] = Def.setting {
     if (lagomServiceLocatorEnabled.value) {
       val url = s"${lagomServiceLocatorHostname.value}:${lagomServiceLocatorPort.value}"
       Map("lagom.service-locator.url" -> url)
     } else
-      Map("lagom.service-locator.enabled" -> "false")
+      Map.empty
   }
 
-  private lazy val cassandraServerConfiguration: Initialize[Task[Map[String, String]]] = Def.task {
+  private lazy val cassandraServerConfiguration: Initialize[Map[String, String]] = Def.setting {
     val port = lagomCassandraPort.value.toString
     Map(
       "cassandra-journal.defaults.port" -> port,
@@ -418,7 +450,7 @@ object LagomPlugin extends AutoPlugin {
     )
   }
 
-  private lazy val actorSystemsConfig: Initialize[Task[Map[String, String]]] = Def.task {
+  private lazy val actorSystemsConfig: Initialize[Map[String, String]] = Def.setting {
     Map(
       "lagom.akka.dev-mode.actor-system.name" -> s"${name.value}-internal-dev-mode",
       "play.akka.actor-system" -> s"${name.value}-application",
@@ -426,7 +458,7 @@ object LagomPlugin extends AutoPlugin {
     )
   }
 
-  private[sbt] lazy val managedSettings = Def.task {
+  private[sbt] lazy val managedSettings: Initialize[Map[String, String]] = Def.setting {
     serviceLocatorConfiguration.value ++ cassandraServerConfiguration.value ++ cassandraKeyspaceConfig.value ++ actorSystemsConfig.value
   }
 }
