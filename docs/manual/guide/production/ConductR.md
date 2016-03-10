@@ -9,7 +9,7 @@ ConductR is free for development usage and there is a "sandbox" so that you can 
 We have integrated the experience of packaging your Lagom services so that you can deliver them to ConductR with ease. By adding the [sbt-lagom-bundle plugin](https://github.com/typesafehub/sbt-lagom-bundle#lagom-bundle-plugin) you are able to package Lagom services for ConductR. In your project's `plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.typesafe.sbt" % "sbt-lagom-bundle" % "1.0.0-M1")
+addSbtPlugin("com.typesafe.sbt" % "sbt-lagom-bundle" % "1.0.0")
 ```
 
 You can then package the `helloworld` service from within the activator console (we `reload` so that activator recognises the new plugin):
