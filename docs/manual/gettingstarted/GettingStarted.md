@@ -7,7 +7,7 @@ This page shows how to create and run your first Lagom project.
 A Lagom system is typically made up of a set of sbt builds, each build providing multiple services.  The easiest way to get started with a new Lagom system is to create a new project using the `lagom` Activator template:
 
 ```
-$ activator new lagom-java my-first-system
+$ activator new my-first-system lagom-java
 ```
 
 This will create a new system with two services in it: `helloworld` and `hellostream`.
