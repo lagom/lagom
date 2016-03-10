@@ -465,6 +465,9 @@ article {
       color: @lgm-purple-ltr;
     }
   }
+  li a {
+    font-weight: 400;
+  }
   h1,h2,h3 {
     color: @lgm-purple;
   }
@@ -598,11 +601,16 @@ pre > code {
 }
 
 p code {
+  border: 1px solid #DDDDDD;
   -webkit-border-radius: 3px;
   border-radius: 3px;
-  background: #FAFAFA;
+  background: #F7F7F7;
   color: #0c323b;
   padding: 0 0.2em !important;
+}
+p a code {
+  font-weight: 700 !important;
+  color: @lgm-purple;
 }
 
 article {
