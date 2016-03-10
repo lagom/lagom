@@ -125,9 +125,10 @@ def formattingPreferences = {
 val defaultMultiJvmOptions: List[String] = {
   import scala.collection.JavaConverters._
   // multinode.D= and multinode.X= makes it possible to pass arbitrary
-  // -D or -X arguments to the forked jvm, e.g. -Dmultinode.Xmx512m
+  // -D or -X arguments to the forked jvm, e.g. 
+  // -Djava.net.preferIPv4Stack=true or -Dmultinode.Xmx512m
   val MultinodeJvmArgs = "multinode\\.(D|X)(.*)".r
-  val knownPrefix = Set("multnode.", "lagom.")
+  val knownPrefix = Set("akka.", "lagom.")
   val properties = System.getProperties.propertyNames.asScala.toList.collect {
     case MultinodeJvmArgs(a, b) =>
       val value = System.getProperty("multinode." + a + b)

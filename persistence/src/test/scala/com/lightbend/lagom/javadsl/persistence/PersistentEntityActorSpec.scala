@@ -110,13 +110,19 @@ class PersistentEntityActorSpec extends PersistenceSpec {
       }
 
       // start another with same persistenceId should recover state
-      val probe2 = TestProbe()
-      val p2 = system.actorOf(PersistentEntityActor.props("test", Optional.of("4"),
-        () => new TestEntity(system, probe2.ref), Optional.of(3), 10.seconds))
-      probe2.expectMsgType[TestEntity.Snapshot]
-      p2 ! TestEntity.Get.instance
-      val state2 = expectMsgType[TestEntity.State]
-      state2.getElements.asScala.toList should ===((1 to 10).toList.map(_.toString))
+      // awaitAssert because it is not guaranteed that we will see the snapshot immediately
+      within(10.seconds) {
+        awaitAssert {
+
+          val probe2 = TestProbe()
+          val p2 = system.actorOf(PersistentEntityActor.props("test", Optional.of("4"),
+            () => new TestEntity(system, probe2.ref), Optional.of(3), 10.seconds))
+          probe2.expectMsgType[TestEntity.Snapshot]
+          p2 ! TestEntity.Get.instance
+          val state2 = expectMsgType[TestEntity.State]
+          state2.getElements.asScala.toList should ===((1 to 10).toList.map(_.toString))
+        }
+      }
     }
 
     "persist several events from one command" in {
