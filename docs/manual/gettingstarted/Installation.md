@@ -25,7 +25,7 @@ Otherwise, follow these steps:
 3. **Extract** it to a location where you have access.
 4. **Add** the Activator installation directory to your `PATH`.
 
-Some package managers can handle steps 2, 3, and 4 for you. For example, if you use Homebrew on Mac OS X, then `brew install activator` and you're done.
+Some package managers can handle steps 2, 3, and 4 for you. For example, if you use Homebrew on Mac OS X, then `brew install typesafe-activator` and you're done.
 
 More detailed information on these steps follows.
 
