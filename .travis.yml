@@ -2,8 +2,13 @@ language: scala
 sudo: false
 jdk:
   - oraclejdk8
-script:
-  - sbt test
+env:
+  matrix:
+    - SCRIPT="sbt -jvm-opts .travis-jvmopts test"
+    - SCRIPT="sbt -jvm-opts .travis-jvmopts publishLocal scripted"
+    - SCRIPT="sbt -jvm-opts .travis-jvmopts unidoc && cd docs && sbt -jvm-opts .travis-jvmopts markdownValidateDocs test markdownEvaluateSbtFiles"
+# important to use eval, otherwise "&&" is passed as an argument to sbt rather than being processed by bash
+script: eval $SCRIPT
 cache:
   directories:
     - $HOME/.ivy2/cache
@@ -16,6 +21,6 @@ before_cache:
 notifications:
   webhooks:
     urls:
-      - https://webhooks.gitter.im/e/2e6cc6cb74f1b05f6c01
+        - https://webhooks.gitter.im/e/773aba95141768c32dae
     on_success: always
     on_failure: always
