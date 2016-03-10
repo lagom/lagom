@@ -172,6 +172,12 @@ val otherProjects = Seq[ProjectReference](
 lazy val root = (project in file("."))
   .settings(name := "lagom")
   .settings(common: _*)
+  .settings(
+    PgpKeys.publishSigned := {},
+    publishLocal := {},
+    publishArtifact in Compile := false,
+    publish := {}
+  )
   .enablePlugins(lagom.UnidocRoot)
   .settings(UnidocRoot.settings(Nil, otherProjects): _*)
   .aggregate(apiProjects: _*)
