@@ -25,32 +25,27 @@ class ServiceRegistryModule(environment: Environment, configuration: Configurati
   private val logger = Logger(this.getClass)
 
   override def configure(): Unit = {
-    if (ServiceRegistryModule.isServiceRegistryServiceLocatorEnabled(configuration)) {
-      if (environment.mode == Mode.Dev) {
-        bind(classOf[ServiceRegistryServiceLocator.ServiceLocatorConfig]).toInstance(createDevServiceLocatorConfig)
-        bind(classOf[ServiceRegistry]).toProvider(new ServiceRegistryClientProvider)
-        bind(classOf[ServiceLocator]).to(classOf[ServiceRegistryServiceLocator])
-        logger.debug {
-          s"Running in ${environment.mode} mode. The ${classOf[ServiceLocator].getName} interface was " +
-            "bound to an implementation that will query the embedded Service Locator. This is fine to use " +
-            "only during development."
-        }
-      } else if (environment.mode == Mode.Test) {
-        logger.debug {
-          s"Running in ${environment.mode} mode, the ${classOf[ServiceLocator].getName} is " +
-            s"bound to the class ${classOf[NoServiceLocator].getName}. That is a dummy implementation that " +
-            "always fails to locate a service, which is usually fine to use in unit tests."
-        }
-        bind(classOf[ServiceLocator]).to(classOf[NoServiceLocator])
-      } else
-        logger.debug {
-          s"Running in ${environment.mode} mode, hence Lagom is not binding the ${classOf[ServiceLocator].getName} " +
-            "interface to a default concrete implementation as it's expected that the production " +
-            "environment you are using provides a custom implementation of this interface"
-        }
+    if (environment.mode == Mode.Dev) {
+      bind(classOf[ServiceRegistryServiceLocator.ServiceLocatorConfig]).toInstance(createDevServiceLocatorConfig)
+      bind(classOf[ServiceRegistry]).toProvider(new ServiceRegistryClientProvider)
+      bind(classOf[ServiceLocator]).to(classOf[ServiceRegistryServiceLocator])
+      logger.debug {
+        s"Running in ${environment.mode} mode. The ${classOf[ServiceLocator].getName} interface was " +
+          "bound to an implementation that will query the embedded Service Locator. This is fine to use " +
+          "only during development."
+      }
+    } else if (environment.mode == Mode.Test) {
+      logger.debug {
+        s"Running in ${environment.mode} mode, the ${classOf[ServiceLocator].getName} is " +
+          s"bound to the class ${classOf[NoServiceLocator].getName}. That is a dummy implementation that " +
+          "always fails to locate a service, which is usually fine to use in unit tests."
+      }
+      bind(classOf[ServiceLocator]).to(classOf[NoServiceLocator])
     } else
       logger.debug {
-        s"Service locator was explicitly disabled via the configuration key ${ServiceRegistryModule.ServiceLocatorEnabledKey}."
+        s"Running in ${environment.mode} mode, hence Lagom is not binding the ${classOf[ServiceLocator].getName} " +
+          "interface to a default concrete implementation as it's expected that the production " +
+          "environment you are using provides a custom implementation of this interface."
       }
   }
 
@@ -59,13 +54,6 @@ class ServiceRegistryModule(environment: Environment, configuration: Configurati
     val config = configuration.underlying
     val url = config.getString(serviceLocatorURLKey)
     ServiceRegistryServiceLocator.ServiceLocatorConfig(new URI(url))
-  }
-}
-
-object ServiceRegistryModule {
-  private final val ServiceLocatorEnabledKey: String = "lagom.service-locator.enabled"
-  def isServiceRegistryServiceLocatorEnabled(configuration: Configuration): Boolean = {
-    configuration.underlying.getBoolean(ServiceLocatorEnabledKey)
   }
 }
 

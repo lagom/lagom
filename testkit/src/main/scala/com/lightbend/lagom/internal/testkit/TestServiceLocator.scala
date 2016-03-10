@@ -13,16 +13,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import java.util.concurrent.CompletableFuture
-import akka.actor.ActorSystem
 import javax.inject.Inject
-import com.lightbend.lagom.javadsl.persistence.InitServiceLocatorHolder
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfig
 
 @Singleton
-private[lagom] class TestServiceLocator @Inject() (system: ActorSystem, port: TestServiceLocatorPort) extends ServiceLocator {
+private[lagom] class TestServiceLocator @Inject() (port: TestServiceLocatorPort, config: CassandraConfig) extends ServiceLocator {
 
   private val futureUri = port.port.map(p => URI.create("http://localhost:" + p))
 
-  private val cassandraUris = InitServiceLocatorHolder.cassandraUrisFromConfig(system).map {
+  private val cassandraUris = config.uris.map {
     case (name, uri) => name -> new URI(uri)
   }.toMap
 
