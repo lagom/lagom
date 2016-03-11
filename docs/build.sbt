@@ -2,6 +2,14 @@
 val PlayVersion = "2.5.0"
 val AkkaVersion = "2.4.2"
 
+val branch = {
+  val rev = "git rev-parse --abbrev-ref HEAD".!!.trim
+  if (rev == "HEAD") {
+    // not on a branch, get the hash
+    "git rev-parse HEAD".!!.trim
+  } else rev
+}
+
 lazy val docs = project
   .in(file("."))
   .enablePlugins(LightbendMarkdown)
@@ -38,6 +46,7 @@ lazy val docs = project
     ),
     markdownUseBuiltinTheme := false,
     markdownTheme := Some("lagom.LagomMarkdownTheme"),
+    markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/tree/$branch/docs/manual/")),
 
     markdownS3CredentialsHost := "downloads.typesafe.com.s3.amazonaws.com",
     markdownS3Bucket := Some("downloads.typesafe.com"),
@@ -85,7 +94,7 @@ lazy val theme = project
     scalaVersion := "2.11.7",
     resolvers += Resolver.typesafeIvyRepo("releases"),
     libraryDependencies ++= Seq(
-      "com.lightbend.markdown" %% "lightbend-markdown-server" % "1.2.0",
+      "com.lightbend.markdown" %% "lightbend-markdown-server" % LightbendMarkdownVersion,
       "org.webjars" % "jquery" % "1.9.0",
       "org.webjars" % "prettify" % "4-Mar-2013"
     ),

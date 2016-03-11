@@ -1,7 +1,7 @@
 @*
 * Copyright (C) 2009-2016 Lightbend Inc. <https://www.lightbend.com>
 *@
-@(projectName: Option[String], title: Option[String], home: String, content: Html, sidebar: Option[Html], apiDocs: Seq[(String, String)])
+@(projectName: Option[String], title: Option[String], home: String, content: Html, sidebar: Option[Html], apiDocs: Seq[(String, String)], sourceUrl: Option[String])
 
 <!DOCTYPE html>
 <html lang="en">
@@ -49,6 +49,11 @@
 
                         <article id="page-content">
                             @content
+
+                            @sourceUrl.map { url =>
+                                <hr />
+                                <p>Found an error in this documentation? The source code for this page can be found <a href="@url">here</a>. Please feel free to edit and contribute a pull request.</p>
+                            }
                         </article>
 
                     </div>
