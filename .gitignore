@@ -12,3 +12,5 @@ bin
 .settings
 logs
 .idea
+.DS_Store
+

@@ -1,6 +1,7 @@
 import sbt.ScriptedPlugin
 import Tests._
 import com.typesafe.sbt.SbtMultiJvm
+import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
 import lagom.Protobuf
 import com.typesafe.sbt.SbtScalariform
@@ -121,8 +122,26 @@ def formattingPreferences = {
     .setPreference(SpacesAroundMultiImports, true)
 }
 
+val defaultMultiJvmOptions: List[String] = {
+  import scala.collection.JavaConverters._
+  // multinode.D= and multinode.X= makes it possible to pass arbitrary
+  // -D or -X arguments to the forked jvm, e.g. 
+  // -Djava.net.preferIPv4Stack=true or -Dmultinode.Xmx512m
+  val MultinodeJvmArgs = "multinode\\.(D|X)(.*)".r
+  val knownPrefix = Set("akka.", "lagom.")
+  val properties = System.getProperties.propertyNames.asScala.toList.collect {
+    case MultinodeJvmArgs(a, b) =>
+      val value = System.getProperty("multinode." + a + b)
+      "-" + a + b + (if (value == "") "" else "=" + value)
+    case key: String if knownPrefix.exists(pre => key.startsWith(pre)) => "-D" + key + "=" + System.getProperty(key)
+  }
+
+  "-Xmx128m" :: properties
+}
+
 def multiJvmTestSettings: Seq[Setting[_]] = SbtMultiJvm.multiJvmSettings ++ Seq(
   parallelExecution in Test := false,
+  MultiJvmKeys.jvmOptions in MultiJvm := defaultMultiJvmOptions,
   // make sure that MultiJvm test are compiled by the default test compilation
   compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test),
   // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
@@ -141,6 +160,7 @@ def multiJvmTestSettings: Seq[Setting[_]] = SbtMultiJvm.multiJvmSettings ++ Seq(
         testResults.summaries ++ multiNodeResults.summaries)
   }
 )
+
 
 val apiProjects = Seq[ProjectReference](
   api,
