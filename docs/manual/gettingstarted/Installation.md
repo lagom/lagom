@@ -8,7 +8,7 @@ Lagom consists of:
 
 ## Activator and sbt
 
-[sbt](http://www.scala-sbt.org) is a build tool for Java and Scala. Activator adds a few features to sbt, notably the ability to start new projects from templates available online.
+[Sbt](http://www.scala-sbt.org) is a build tool for Java and Scala. Activator adds a few features to sbt, notably the ability to start new projects from templates available online.
 
 Because Activator includes sbt, you don't need to install anything except a JDK and Activator.  Activator will retrieve the Lagom plugin and libraries for use within your project.
 
