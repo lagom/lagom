@@ -22,7 +22,7 @@ It will take the id and the request, and return the response as a [`CompletionSt
 
 Of course, a simple hello world computation is not asynchronous, all it needs is to concatenate two Strings, and that returns immediately.  In this case, we need to wrap the result of that in a `CompletionStage`.  This can be done by calling `CompletableFuture.completedFuture()`, which returns a subclass of `CompletionStage` wrapping an immediately available value.  As a convenience, Lagom provides a `sync` method on [`Service`](api/java/com/lightbend/lagom/javadsl/api/Service.html) that does this for you.  It's being used in our `sayHello` implementation.
 
-Having provided an implementation of the service, we can now register that with the Lagom framework.  Lagom is built on top of Play Framework, and so uses Play's Guice based [dependency injection support](https://playframework.com/documentation/2.5.x/JavaDependencyInjection) to register components.  To register a service, you'll need to implement a Guice module.  This can be done be creating a class called `Module` in the root package:
+Having provided an implementation of the service, we can now register that with the Lagom framework.  Lagom is built on top of Play Framework, and so uses Play's Guice based [dependency injection support](https://playframework.com/documentation/2.5.x/JavaDependencyInjection) to register components.  To register a service, you'll need to implement a Guice module.  This can be done by creating a class called `Module` in the root package:
 
 @[hello-service-binding](code/docs/services/server/Module.java)
 
