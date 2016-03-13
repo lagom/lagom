@@ -31,7 +31,7 @@ More detailed information on these steps follows.
 
 ### JDK details
 
-Lagom requires JDK 8 or later. Early JDK 8 releases had bugs that could affect Lagom, so you'll want to use a recdent build.
+Lagom requires JDK 8 or later. Early JDK 8 releases had bugs that could affect Lagom, so you'll want to use a recent build.
 
 You can check whether you have JDK 8 by running `java` and `javac` from the command line:
 
