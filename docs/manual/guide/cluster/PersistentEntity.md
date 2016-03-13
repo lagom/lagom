@@ -107,7 +107,7 @@ You can use `ctx.invalidCommand` to reject an invalid command, which will fail t
 
 You can send a negative acknowledgment with `ctx.commandFailed`, which will fail the `CompletionStage` on the sender side with the given exception. 
 
-If persisting the events fails a negative acknowledgment is automatically sent, which will fail the the `CompletionStage` on the sender side with `PersistentEntity.PersistException`.
+If persisting the events fails a negative acknowledgment is automatically sent, which will fail the `CompletionStage` on the sender side with `PersistentEntity.PersistException`.
 
 If the `PersistentEntity` receives a command for which there is no registered command handler a negative acknowledgment is automatically sent, which will fail the the `CompletionStage` on the sender side with `PersistentEntity.UnhandledCommandException`.
 
