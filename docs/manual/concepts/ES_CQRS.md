@@ -36,7 +36,7 @@ This separation of the write-side and the read-side of the persistent data is of
 
 ### Write-side vs. read-side
 
-A benefit of this pattern is the separation of concerns between the write and the read-side. The the entities can focus on the updating commands and the read-side can be optimized for various queries and reporting jobs. A single conceptual model that tries to encapsulate both read and write operations may do neither well.
+A benefit of this pattern is the separation of concerns between the write and the read-side. Then the entities can focus on the updating commands and the read-side can be optimized for various queries and reporting jobs. A single conceptual model that tries to encapsulate both read and write operations may do neither well.
 
 It is important to realize that the write-side has completely different needs from the read-side, and separating those concerns makes it possible to offer the best experience for the write and read-sides independently.
 
