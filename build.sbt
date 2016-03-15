@@ -483,6 +483,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     scriptedDependencies := {
       val () = publishLocal.value
       val () = (publishLocal in `service-locator`).value
+      val () = (publishLocal in LocalProject("sbt-scripted-tools")).value
     },
     publishTo := {
       if (isSnapshot.value) {
@@ -504,6 +505,14 @@ def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++
       "-Dscala.version=" + sys.props.get("scripted.scala.version").getOrElse((scalaVersion in `reloadable-server`).value)
     )
   )
+
+// This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
+lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
+  .settings(name := "lagom-sbt-scripted-tools")
+  .settings(common: _*)
+  .settings(
+    sbtPlugin := true
+  ).dependsOn(`sbt-plugin`)
 
 lazy val `service-locator` = (project in file("dev") / "service-locator")
   .settings(name := "lagom-service-locator")
