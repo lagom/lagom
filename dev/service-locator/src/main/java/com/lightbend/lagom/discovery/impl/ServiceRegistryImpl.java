@@ -62,7 +62,7 @@ public class ServiceRegistryImpl implements ServiceRegistry {
 	}
 
 	@Override
-	public ServiceCall<String, NotUsed, Optional<String>> lookup() {
+	public ServiceCall<String, NotUsed, String> lookup() {
 		return (name, request) -> {
 			if (LOGGER.isDebugEnabled())
 				LOGGER.debug("locate invoked, name=[" + name + "], request=[" + request + "]");
@@ -70,7 +70,11 @@ public class ServiceRegistryImpl implements ServiceRegistry {
 				@SuppressWarnings("unchecked")
 				Optional<String> location = OptionConverters.toJava((Option<String>) result);
 				logServiceLookupResult(name, location);
-				return location;
+				if (location.isPresent()) {
+					return location.get();
+				} else {
+					throw new com.lightbend.lagom.javadsl.api.transport.NotFound(name);
+				}
 			});
 		};
 	}
