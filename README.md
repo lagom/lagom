@@ -1,3 +1,5 @@
+[![Gitter](https://img.shields.io/gitter/room/gitterHQ/gitter.svg)](https://gitter.im/lagom/lagom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)[<img src="https://img.shields.io/travis/lagom/lagom.svg"/>](https://travis-ci.org/lagom/lagom)
+
 ## Lagom Framework - The Reactive Microservices Framework
 
 Lagom is a Swedish word meaning just right, sufficient. Microservices are about creating services that are just the right size, that is, they have just the right level of functionality and isolation to be able to adequately implement a scalable and resilient system.
@@ -9,9 +11,10 @@ Lagom focuses on ensuring that your application realises the full potention of t
 * [Website](https://www.lightbend.com/lagom)
 * [Documentation](http://www.lagomframework.com/documentation/1.0.x/Home.html)
 * [Installation](http://www.lagomframework.com/documentation/1.0.x/Installation.html)
-* [Chat](https://gitter.im/lagom/lagom)
+* [Community Chat](https://gitter.im/lagom/lagom)
 * [Mailing list](https://groups.google.com/forum/#!forum/lagom-framework)
 * [Get help](https://stackoverflow.com/questions/ask?tags=lagom)
+* [Contributors Chat](https://gitter.im/lagom/contributors)
 
 ### License
 
