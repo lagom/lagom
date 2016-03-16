@@ -31,10 +31,12 @@ From a development perspective ConductR provides a "sandbox" environment where y
 To access ConductR's sandbox from within the activator console first added the following sbt plugin to your `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.typesafe.conductr" % "sbt-conductr-sandbox" % "1.4.1")
+addSbtPlugin("com.typesafe.conductr" % "sbt-conductr-sandbox" % "1.4.2")
 ```
 
-Additionally it is necessary to install the [conductr-cli](https://github.com/typesafehub/conductr-cli) which is used by the sandbox to communicate with the ConductR cluster. To start the sandbox from within the console you  (supposing the version of ConductR is `1.1.2` - you should [check to ensure that you are using a recent version](https://www.lightbend.com/product/conductr/developer)):
+Additionally it is necessary to install the [conductr-cli](https://github.com/typesafehub/conductr-cli). The CLI is used by the sandbox to communicate with the ConductR cluster. Follow the "Getting Started" section on the [ConductR Developer](https://www.lightbend.com/product/conductr/developer) page to install the conductr-cli.
+
+To start the sandbox from within the console you also need to specify the ConductR version. The latest version can be picked up from the [ConductR Developer](https://www.lightbend.com/product/conductr/developer) page as well:
 
 ```console
 > reload
@@ -42,10 +44,10 @@ Additionally it is necessary to install the [conductr-cli](https://github.com/ty
 > sandbox run
 ```
 
-With the sandbox running you can now load the bundle that you previously generated. Supposing that you're wanting to load the "Helloworld" sample:
+With the sandbox running you can now load the bundle that you previously generated:
 
 ```console
-> helloworldImpl/conduct load <press the tab key here>
+> my-service-impl/conduct load <press the tab key here>
 ```
 
 Note how you're loading the implementation of your service.
@@ -53,14 +55,14 @@ Note how you're loading the implementation of your service.
 Finally, to run it:
 
 ```console
-> conduct run helloworldimpl
+> conduct run my-service-impl
 ```
 
-You should now have a running Lagom service. You can also `conduct stop` and `conduct unload` Lagom services with the sandbox. The `conduct` command therefore allows you to manage the full lifecycle of a bundle. In addition you can use `conduct logs` to view the consolidated logging of bundles throughout the cluster - this is particularly useful during development.
+You should now have a running Lagom service. You can also `conduct stop` and `conduct unload` Lagom services with the sandbox. The `conduct` command therefore allows you to manage the full lifecycle of a bundle. In addition you can use `conduct logs` to view the consolidated logging of bundles throughout the cluster - this is particularly useful during development. 
 
 ## Loading and running your services outside of development
 
-The sandbox is useful to validate that the packaging of your service is correct. However at some point you will want to load and run your bundle on a real ConductR cluster. While it is beyond the scope of this document to describe how to set up such a cluster (please refer to the [ConductR installation guide](https://conductr.lightbend.com/docs/1.1.x/Install) for that), you generally interact with a real cluster through [the ConductR CLI](https://github.com/typesafehub/conductr-cli#command-line-interface-cli-for-typesafe-conductr). You will have already downloaded the CLI as part of the sandbox. The CLI commands are very similar to their activator console counterparts. Type `conduct --help` outside of the sbt console for more information on what commands are available.
+The sandbox is useful to validate that the packaging of your service is correct. However at some point you will want to load and run your bundle on a real ConductR cluster. While it is beyond the scope of this document to describe how to set up such a cluster (please refer to the [ConductR installation guide](https://conductr.lightbend.com/docs/1.1.x/Install) for that), you generally interact with a real cluster through [the ConductR CLI](https://github.com/typesafehub/conductr-cli#command-line-interface-cli-for-typesafe-conductr). You will have already downloaded the CLI as part of the sandbox. The CLI commands are very similar to their activator console counterparts. Type `conduct --help` outside of the activator console for more information on what commands are available.
 
 ## Running Cassandra
 
