@@ -12,13 +12,13 @@ We have integrated the experience of packaging your Lagom services so that you c
 addSbtPlugin("com.typesafe.sbt" % "sbt-lagom-bundle" % "1.0.1")
 ```
 
-You can then package the `helloworld` service from within the activator console (we `reload` so that activator recognises the new plugin):
+You can then package your services from within the activator console (we `reload` so that activator recognises the new plugin):
 
 ```console
 > reload
 > bundle:dist
 ...
-[info] Bundle has been created: .../helloworld/helloworld-impl/target/bundle/helloworldimpl-v1-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
+[info] Bundle has been created: .../my-service/myservice-impl/target/bundle/myservice-impl-v1-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
 [success] Total time: 4 s, completed 05/03/2016 2:43:07 PM
 ```
 
@@ -28,24 +28,26 @@ The above creates what is known as a "bundle". A bundle is the unit of deploymen
 
 From a development perspective ConductR provides a "sandbox" environment where you can start it and then test your bundle long before it goes to production. ConductR's sandbox also permits you to [debug Lagom services](https://github.com/typesafehub/sbt-conductr-sandbox#debugging-application-in-conductr-sandbox) from your IDE when running within its cluster.
 
-You can access ConductR's sandbox from within the activator console once the following plugin is added to your `project/plugins.sbt`:
+To access ConductR's sandbox from within the activator console first added the following sbt plugin to your `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.typesafe.conductr" % "sbt-conductr-sandbox" % "1.4.1")
+addSbtPlugin("com.typesafe.conductr" % "sbt-conductr-sandbox" % "1.4.2")
 ```
 
-To start the sandbox from within the console (supposing the version of ConductR is `1.1.2` - you should [check to ensure that you are using a recent version](https://www.lightbend.com/product/conductr/developer)):
+Additionally it is necessary to install the [conductr-cli](https://github.com/typesafehub/conductr-cli). The CLI is used by the sandbox to communicate with the ConductR cluster. Follow the "Getting Started" section on the [ConductR Developer](https://www.lightbend.com/product/conductr/developer) page to install the conductr-cli.
+
+To start the sandbox from within the console you also need to specify the ConductR version. The latest version can be picked up from the [ConductR Developer](https://www.lightbend.com/product/conductr/developer) page as well:
 
 ```console
 > reload
-> set SandboxKeys.imageVersion in Global := "1.1.2"
+> set SandboxKeys.imageVersion in Global := "YOUR_CONDUCTR_SANDBOX_VERSION"
 > sandbox run
 ```
 
-With the sandbox running you can now load the bundle that you previously generated. Supposing that you're wanting to load the "Helloworld" sample:
+With the sandbox running you can now load the bundle that you previously generated:
 
 ```console
-> helloworldImpl/conduct load <press the tab key here>
+> my-service-impl/conduct load <press the tab key here>
 ```
 
 Note how you're loading the implementation of your service.
@@ -53,14 +55,14 @@ Note how you're loading the implementation of your service.
 Finally, to run it:
 
 ```console
-> conduct run helloworldimpl
+> conduct run my-service-impl
 ```
 
-You should now have a running Lagom service. You can also `conduct stop` and `conduct unload` Lagom services with the sandbox. The `conduct` command therefore allows you to manage the full lifecycle of a bundle. In addition you can use `conduct logs` to view the consolidated logging of bundles throughout the cluster - this is particularly useful during development.
+You should now have a running Lagom service. You can also `conduct stop` and `conduct unload` Lagom services with the sandbox. The `conduct` command therefore allows you to manage the full lifecycle of a bundle. In addition you can use `conduct logs` to view the consolidated logging of bundles throughout the cluster - this is particularly useful during development. 
 
 ## Loading and running your services outside of development
 
-The sandbox is useful to validate that the packaging of your service is correct. However at some point you will want to load and run your bundle on a real ConductR cluster. While it is beyond the scope of this document to describe how to set up such a cluster (please refer to the [ConductR installation guide](https://conductr.lightbend.com/docs/1.1.x/Install) for that), you generally interact with a real cluster through [the ConductR CLI](https://github.com/typesafehub/conductr-cli#command-line-interface-cli-for-typesafe-conductr). You will have already downloaded the CLI as part of the sandbox. The CLI commands are very similar to their activator console counterparts. Type `conduct --help` outside of the sbt console for more information on what commands are available.
+The sandbox is useful to validate that the packaging of your service is correct. However at some point you will want to load and run your bundle on a real ConductR cluster. While it is beyond the scope of this document to describe how to set up such a cluster (please refer to the [ConductR installation guide](https://conductr.lightbend.com/docs/1.1.x/Install) for that), you generally interact with a real cluster through [the ConductR CLI](https://github.com/typesafehub/conductr-cli#command-line-interface-cli-for-typesafe-conductr). You will have already downloaded the CLI as part of the sandbox. The CLI commands are very similar to their activator console counterparts. Type `conduct --help` outside of the activator console for more information on what commands are available.
 
 ## Running Cassandra
 
