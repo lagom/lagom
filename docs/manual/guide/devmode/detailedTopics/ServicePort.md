@@ -1,4 +1,4 @@
-# How are services' ports assigned?
+# How are services ports assigned?
 
 When inspecting the list of running services, you may wonder how ports are being assigned. One thing you should notice is that ports are assigned consistently, meaning that each service will get the same port assigned. This is truly useful, as it allows to write scripts that exercise some service's functionality, and even share the created scripts with the rest of your team. Indeed, the same port is deterministically selected even on different machines!
 
