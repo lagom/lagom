@@ -9,6 +9,7 @@ import akka.actor.{ Props, ActorSystem }
 import com.lightbend.lagom.discovery.ServiceRegistryActor
 import com.lightbend.lagom.internal.registry.{ ServiceRegistryService, ServiceRegistry }
 import com.lightbend.lagom.javadsl.api.ServiceAcl
+import com.lightbend.lagom.javadsl.api.transport.NotFound
 import scala.compat.java8.FutureConverters._
 import scala.compat.java8.OptionConverters._
 import scala.concurrent.Await
@@ -31,8 +32,8 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
       registry.register().invoke(serviceName, new ServiceRegistryService(expectedUrl, Collections.emptyList[ServiceAcl]))
       val registeredUrl = registry.lookup().invoke("fooservice", NotUsed).toCompletableFuture().get(
         testTimeoutInSeconds, TimeUnit.SECONDS
-      ).asScala
-      assertResult(Some(expectedUrl))(registeredUrl)
+      )
+      assertResult(expectedUrl)(registeredUrl)
     }
 
     "allow to register a service of same service twice (idempotent)" in withServiceRegistry() { registry =>
@@ -44,8 +45,15 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
         .toCompletableFuture().get(testTimeoutInSeconds, TimeUnit.SECONDS)
       val registeredUrl = registry.lookup().invoke("fooservice", NotUsed).toCompletableFuture().get(
         testTimeoutInSeconds, TimeUnit.SECONDS
-      ).asScala
-      assertResult(Some(expectedUrl))(registeredUrl)
+      )
+      assertResult(expectedUrl)(registeredUrl)
+    }
+
+    "throw NotFound for services that aren't registered" in withServiceRegistry() { registry =>
+      val ee = the[ExecutionException] thrownBy registry.lookup.invoke("fooservice", NotUsed).toCompletableFuture.get(
+        testTimeoutInSeconds, TimeUnit.SECONDS
+      )
+      ee.getCause shouldBe a[NotFound]
     }
 
     "disallow registering the different endpoint for same name twice or more" in withServiceRegistry() { registry =>

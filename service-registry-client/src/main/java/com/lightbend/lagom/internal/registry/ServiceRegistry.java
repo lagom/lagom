@@ -23,7 +23,7 @@ public interface ServiceRegistry extends Service {
 
 	ServiceCall<String, ServiceRegistryService, NotUsed> register();
 	ServiceCall<String, NotUsed, NotUsed> unregister();
-	ServiceCall<String, NotUsed, Optional<String>> lookup(); 
+	ServiceCall<String, NotUsed, String> lookup();
 	ServiceCall<NotUsed, NotUsed, PSequence<RegisteredService>> registeredServices();
 	
 	@Override

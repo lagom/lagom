@@ -12,6 +12,7 @@ import javax.inject.{ Provider, Inject, Singleton }
 import akka.stream.Materializer
 import com.google.inject.AbstractModule
 import com.lightbend.lagom.internal.client.{ CircuitBreaker, ServiceClientLoader, ServiceClientImplementor, WebSocketClient }
+import com.lightbend.lagom.javadsl.api.transport.NotFound
 import com.lightbend.lagom.javadsl.api.{ ServiceLocator, ServiceInfo }
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
 import play.api.{ Mode, Configuration, Environment, Logger }
@@ -114,7 +115,7 @@ class ServiceRegistryServiceLocator @Inject() (registry: ServiceRegistry, config
     logger.debug(s"Locating service name=[$name] ...")
 
     import scala.concurrent.ExecutionContext.Implicits.global
-    val location = {
+    val location: Future[Optional[URI]] = {
       // FIXME: Horrible Java8/Scala code, speak up if you have a better implementation.
       val string2uri: String => Optional[URI] = uri => {
         try Optional.of(new URI(uri))
@@ -127,9 +128,10 @@ class ServiceRegistryServiceLocator @Inject() (registry: ServiceRegistry, config
             Optional.empty()
         }
       }
-      import scala.compat.java8.FunctionConverters._
       import scala.compat.java8.FutureConverters._
-      registry.lookup().invoke(name, null).toScala.map(maybeUri => maybeUri.flatMap(string2uri.asJava))
+      registry.lookup().invoke(name, null).toScala.map(string2uri).recover {
+        case notFound: NotFound => Optional.empty()
+      }
     }
     location.onComplete {
       case Success(address) =>

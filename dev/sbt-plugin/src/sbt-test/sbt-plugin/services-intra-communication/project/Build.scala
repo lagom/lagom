@@ -14,7 +14,7 @@ object DevModeBuild {
 
   def callFoo(): String = makeRequest("http://localhost:8000/services/%2Ffooservice") { conn =>
     val br = new BufferedReader(new InputStreamReader((conn.getInputStream())))
-    val fooAddress = Stream.continually(br.readLine()).takeWhile(_ != null).mkString("\n").trim().tail.init
+    val fooAddress = Stream.continually(br.readLine()).takeWhile(_ != null).mkString("\n").trim()
     makeRequest(fooAddress+"/foo") { conn =>
       val br = new BufferedReader(new InputStreamReader((conn.getInputStream())))
       Stream.continually(br.readLine()).takeWhile(_ != null).mkString("\n").trim()
