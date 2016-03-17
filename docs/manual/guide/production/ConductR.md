@@ -2,7 +2,7 @@
 
 ConductR is a container orchestration tool with the main goal of delivering operational productivity. ConductR is also designed to  host your Lagom services with resilience.
 
-ConductR is free for development usage and there is a "sandbox" so that you can run ConductR locally and test your services. Please visit [ConductR's product page](http://lightbend.com/products/conductr) in order to download the sandbox, and also for more information on ConductR in general. If you'd like to know more about our commercial license then [please contact us](https://www.lightbend.com/company/contact). The remainder of this guide will discuss the specific integration points between Lagom and ConductR.
+ConductR is free for development usage and comes with a "sandbox" so that you can run ConductR locally and test your services. Please visit [ConductR's product page](http://lightbend.com/products/conductr) in order to download the sandbox, and also for more information on ConductR in general. If you'd like to know more about our commercial license then [please contact us](https://www.lightbend.com/company/contact). The remainder of this guide will discuss the specific integration points between Lagom and ConductR.
 
 ## Packaging your services
 
@@ -58,7 +58,7 @@ Finally, to run it:
 > conduct run my-service-impl
 ```
 
-You should now have a running Lagom service. You can also `conduct stop` and `conduct unload` Lagom services with the sandbox. The `conduct` command therefore allows you to manage the full lifecycle of a bundle. In addition you can use `conduct logs` to view the consolidated logging of bundles throughout the cluster - this is particularly useful during development. 
+You should now have a running Lagom service. You can also `conduct stop` and `conduct unload` Lagom services with the sandbox. The `conduct` command therefore allows you to manage the full lifecycle of a bundle. In addition you can use `conduct logs` to view the consolidated logging of bundles throughout the cluster - this is particularly useful during development.
 
 ## Loading and running your services outside of development
 

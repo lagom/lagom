@@ -23,7 +23,7 @@ Examples:
 
 A service should be responsible for its own behavior. It shouldn't rely on other services to do its job.
 
-For example, let's say you have an order service. Its protocol allows you to create an order, add items to it, add payment details to it, and confirm it. Confirming it requires invokes the payment service to make a payment. But what if the payment service isn't running? This dependency means the order service is not autonomous.
+For example, let's say you have an order service. Its protocol allows you to create an order, add items to it, add payment details to it, and confirm it. Confirming it requires invoking the payment service to make a payment. But what if the payment service isn't running? This dependency means the order service is not autonomous.
 
 An autonomous service would accept the confirmation request regardless of the status of the payment service. It might also, probably asynchronously, ensure that the payment is eventually processed.
 

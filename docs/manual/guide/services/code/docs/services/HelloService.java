@@ -11,7 +11,7 @@ public interface HelloService extends Service {
 
     default Descriptor descriptor() {
         return named("hello").with(
-                namedCall("hello", sayHello())
+                call(sayHello())
         );
     }
 }

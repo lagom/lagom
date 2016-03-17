@@ -4,7 +4,7 @@ If you use Lagom, do you have to write all of your services in Lagom? The answer
 
 It's true that Lagom does offer an especially seamless experience when multiple Lagom services are talking to each other. In this scenario, service location, communication protocols, and other issues are handled by Lagom transparently. This maximizes developer convenience and productivity.
 
-However, in a microservice based system, not every service is expected be a Lagom service.  After all, a big advantage of using microservices in the first place is to allow the construction of polyglot systems, selecting the right language and the right technology on a service by service basis.
+However, in a microservice based system, not every service is expected to be a Lagom service.  After all, a big advantage of using microservices in the first place is to allow the construction of polyglot systems, selecting the right language and the right technology on a service by service basis.
 
 So while Lagom does provide a great experience when all the services are Lagom services, we do not want to imply that all services should be Lagom services. (In fact, if a large system was implemented using only Lagom services, then perhaps the technical merits of that system should be questioned...?)
 

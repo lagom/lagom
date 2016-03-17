@@ -86,7 +86,7 @@ You could use it like this to implement an authenticated service call:
 
 @[auth-service-call](code/docs/services/ServiceImplementation.java)
 
-This time, since the lookup of the user is asynchronous, we're using `composeAsync`, which allows us to asynchronous return the service call to handle the service.  Also, instead of simply accepting a service call, we accept a function of a user to a service call.  This means the service call can access the user:
+This time, since the lookup of the user is asynchronous, we're using `composeAsync`, which allows us to asynchronously return the service call to handle the service.  Also, instead of simply accepting a service call, we accept a function of a user to a service call.  This means the service call can access the user:
 
 @[auth-hello-service](code/docs/services/ServiceImplementation.java)
 
