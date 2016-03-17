@@ -4,7 +4,7 @@ Lagom services are described by an interface, known as a service descriptor.  Th
 
 @[hello-service](code/docs/services/HelloService.java)
 
-This descriptor defines one call, the `sayHello` call.  `sayHello()` is a method that returns something of type `ServiceCall`, this is a representation of the call that can be invoked when consuming the service, and implemented by the service itself.  This is what the interface looks like:
+This descriptor defines a service with one call, the `sayHello` call. `sayHello()` is a method that returns something of type `ServiceCall`, this is a representation of the call that can be invoked when consuming the service, and implemented by the service itself.  This is what the interface looks like:
 
 ```java
 interface ServiceCall<Id, Request, Response> {
@@ -18,14 +18,14 @@ An important thing to note here is that invoking the `sayHello()` method does no
 
 While the `sayHello()` method describes how the call will be programmatically invoked or implemented, it does not describe how this call gets mapped down onto the transport.  This is done by providing a `default` implementation of the [`descriptor()`](api/java/com/lightbend/lagom/javadsl/api/Service.html#descriptor--) call, whose interface is described by [`Service`](api/java/com/lightbend/lagom/javadsl/api/Service.html).
 
-You can see that we're returning a service named `hello`, and we're describing one call, the `sayHello` call.  Because this service is so simple, in this case we don't need to do anything more than simply pass the call to the `calls` method.  When mapped to a REST transport, Lagom will map `sayHello()` calls to a `POST` request on a static path of `/sayHello`, with `text/plain` request bodies and response bodies.  All of this is configurable, as we'll see below.
+You can see that we're returning a service named `hello`, and we're describing one call, the `sayHello` call.  Because this service is so simple, in this case we don't need to do anything more than simply pass the call to the [`call`](api/java/com/lightbend/lagom/javadsl/api/Service.html#call-com.lightbend.lagom.javadsl.api.ServiceCall-) method.  When mapped to a REST transport, Lagom will map `sayHello()` calls to a `POST` request on a static path of `/sayHello`, with `text/plain` request and response bodies.  All of this is configurable, as we'll see below.
 
 ## Call identifiers
 
 Each service call needs to have an identifier.  An identifier is used to provide routing information to the implementation of the client and the service, so that calls over the wire can be mapped to the appropriate call.  Identifiers can be a static name or path, or they can have dynamic components, where a dynamic id is extracted from a path.  The dynamic id type is represented in the `ServiceCall` interface using the `Id` type parameter, when the call identifier is static, this type parameter will be `akka.NotUsed`.
 
 
-The simplest type of identifier is a name, and by default, that name is set to be the same name as the name of the method on the interface that implements it.  A custom name can also be supplied, by passing it to the [`call`]((api/java/com/lightbend/lagom/javadsl/api/Service.html#namedCall-java.lang.String-com.lightbend.lagom.javadsl.api.ServiceCall-)) method:
+The simplest type of identifier is a name, and by default, that name is set to be the same name as the name of the method on the interface that implements it.  A custom name can also be supplied, by passing it to the [`namedCall`]((api/java/com/lightbend/lagom/javadsl/api/Service.html#namedCall-java.lang.String-com.lightbend.lagom.javadsl.api.ServiceCall-)) method:
 
 @[call-id-name](code/docs/services/FirstDescriptor.java)
 
@@ -65,7 +65,7 @@ Then if you define id serializers for those at the service level, Lagom will wir
 
 ### REST identifiers
 
-The final type of identifier is a REST identifier.  REST identifiers are designed to be used when creating semantic REST APIs.  They use both a path, as with the path based identifier, and a request method, to identify them.  They can be configured used using the [`restCall`](api/java/com/lightbend/lagom/javadsl/api/Service.html#restCall-com.lightbend.lagom.javadsl.api.transport.Method-java.lang.String-com.lightbend.lagom.javadsl.api.ServiceCall-) method:
+The final type of identifier is a REST identifier.  REST identifiers are designed to be used when creating semantic REST APIs.  They use both a path, as with the path based identifier, and a request method, to identify them.  They can be configured using the [`restCall`](api/java/com/lightbend/lagom/javadsl/api/Service.html#restCall-com.lightbend.lagom.javadsl.api.transport.Method-java.lang.String-com.lightbend.lagom.javadsl.api.ServiceCall-) method:
 
 @[call-rest](code/docs/services/FirstDescriptor.java)
 

@@ -14,7 +14,7 @@ This will create a new system with two services in it: `helloworld` and `hellost
 
 ## Anatomy of a Lagom project
 
-The created project contains the following elements: 
+The created project contains the following elements:
 
 ```
 my-first-system          → Project root
@@ -31,7 +31,7 @@ my-first-system          → Project root
 * Notice how each service is broken up into two projects: api and implementation. The api project contains a service interface through which consumers may interact with the service. While the implementation project contains the actual service implementation.
 * The `project` folder contains sbt specific files.
 * The `build.sbt` file, which contains all information necessary to build, run, and deploy your services.   
-`
+
 ## Understanding services projects
 
 * The service interface is always placed in the api project. For instance, the service interface for the `helloworld` service can be found in the `helloworld-api` project (look for the `HelloService.java` source file).

@@ -76,4 +76,4 @@ Here's the definition of the second service:
 
 This is mostly similar to the first service.  The main difference is the added dependency on the first service's API, so the second service can call it.
 
-(In the next section, we'll see an alternative build structure where each service has its own build.)
+In the next section, we'll see an alternative build structure where each service has its own build.
