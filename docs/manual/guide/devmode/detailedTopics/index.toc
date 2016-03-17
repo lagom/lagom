@@ -1,4 +1,4 @@
 RunningServices:Running Services
-ServicePort:How are services' ports assigned?
+ServicePort:How are ports assigned to services?
 ServiceLocator:Service Locator
 CassandraServer:Cassandra Server
