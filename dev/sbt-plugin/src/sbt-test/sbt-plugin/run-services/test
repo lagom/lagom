@@ -1,0 +1,77 @@
+# Structure of this test:
+# =======================
+
+# We test that the service locator can be started and stopped on demand, and that services are automatically 
+# registered to the service locator.
+
+# Service locator tests
+# --------------
+
+# Precondition
+> validateRequest http://localhost:8000 should-be-down
+
+> lagomServiceLocatorStart
+> validateRequest retry-until-success http://localhost:8000
+> validateRequest http://localhost:8000/services/fooservice status 404
+
+# Check that the external service is started
+> validateRequest http://localhost:8000/services/externalservice status 200
+
+# Run the service and check that it eventually gets registered
+> run
+> validateRequest retry-until-success http://localhost:8000/services/fooservice status 200
+
+# Stop the service locator and check that it does stop
+> lagomServiceLocatorStop
+> validateRequest retry-until-success http://localhost:8000 should-be-down
+
+# Stop the service
+> stop
+
+# Disabled service locator and cassandra tests
+# ---------------
+
+> set lagomServiceLocatorEnabled := false
+
+# Part 1
+> validateRequest http://localhost:8000 should-be-down
+> lagomServiceLocatorStart
+$ sleep 1000
+> validateRequest http://localhost:8000 should-be-down
+
+# Part 2
+> runAll
+$ sleep 1000
+> validateRequest http://localhost:8000 should-be-down
+> validateFile retry-until-success target/reload.log line-count 1
+
+# Part 3
+> lagomServiceLocatorStop
+> validateFile target/reload.log line-count 1
+
+# Cleanup
+> stop
+> set lagomServiceLocatorEnabled := true
+
+# runAll runs service locator and cassandra tests
+# ---------------
+
+# Preconditions - ensure everything is down
+> validateRequest http://localhost:8000 should-be-down
+> validateRequest http://localhost:9000 should-be-down
+
+> runAll
+
+# Ensure everything is up
+> validateRequest retry-until-success http://localhost:8000
+> validateRequest retry-until-success http://localhost:9000
+
+# Ensure the foo service is reachable
+> validateRequest retry-until-success http://localhost:8000/services/fooservice status 200
+> validateRequest http://localhost:9000/foo status 200
+
+# Ensure the foo service can access cassandra
+> validateRequest http://localhost:9000/foo/cassandra status 200
+
+# Cleanup
+> stop
