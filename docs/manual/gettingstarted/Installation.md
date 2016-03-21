@@ -12,7 +12,7 @@ Lagom consists of:
 
 Because Activator includes sbt, you don't need to install anything except a JDK and Activator.  Activator will retrieve the Lagom plugin and libraries for use within your project.
 
-Note that if you aren't using the optional project templates, you don't strictly need Activator; sbt itself is enough.  The examples in this manual always show the `activator` command, but unless the command is `activator new`, you can always substitute `sbt`.
+Note that if you aren't using the optional project templates, you don't strictly need Activator; sbt itself is enough.  The examples in this manual always show the `activator` command, but unless the command is `activator new`, you can always substitute `activator` by `sbt`.
 
 ## Quick setup
 

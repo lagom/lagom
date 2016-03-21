@@ -24,7 +24,7 @@ The [ParameterNamesModule](https://github.com/FasterXML/jackson-module-parameter
 
 The section [[Immutable Objects|Immutable]] contains more examples of classes that are `Jsonable`.
 
-You can use the [PersistentEntityTestDriver](api/java/com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html) that is described in the [[Persistent Entity Unit Testing|PersistentEntity#Unit Testing]] section to verifies that all commands, events, replies and state are serializable.
+You can use the [PersistentEntityTestDriver](api/java/com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html) that is described in the [[Persistent Entity Unit Testing|PersistentEntity#Unit Testing]] section to verify that all commands, events, replies and state are serializable.
 
 ### Compression
 
@@ -42,7 +42,7 @@ When working on long running projects using [[Persistence|PersistentEntity]], or
 
 Lagom provides a way to perform transformations of the JSON tree model during deserialization.
 
-We will look at a few scenarios of how the classes may be evolved. 
+We will look at a few scenarios of how the classes may be evolved.
 
 ### Remove Field
 
@@ -77,7 +77,7 @@ Implement the transformation of the old JSON structure to the new JSON structure
 The migration class must be defined in configuration file:
 
     lagom.serialization.json.migrations {
-      "com.myservice.event.ItemAdded" = "com.myservice.event.ItemAddedMigration" 
+      "com.myservice.event.ItemAdded" = "com.myservice.event.ItemAddedMigration"
     }
 
 ### Rename Field
@@ -89,7 +89,7 @@ Let's say that we want to rename the `productId` field to `itemId` in the previo
 The migration code would look like:
 
 @[rename](code/docs/home/serialization/v2c/ItemAddedMigration.java)
- 
+
 ### Structural Changes
 
 In a similar way we can do arbitary structural changes.
@@ -106,7 +106,7 @@ with the `Address` class:
 
 @[structural](code/docs/home/serialization/v2a/AbstractAddress.java)
 
-The migration code would look like: 
+The migration code would look like:
 
 @[structural](code/docs/home/serialization/v2a/CustomerMigration.java)
 
@@ -122,7 +122,7 @@ New class:
 
 @[rename-class](code/docs/home/serialization/v2d/AbstractOrderPlaced.java)
 
-The migration code would look like: 
+The migration code would look like:
 
 @[rename-class](code/docs/home/serialization/v2d/OrderPlacedMigration.java)
 
@@ -131,5 +131,5 @@ Note the override of the `transformClassName` method to define the new class nam
 That type of migration must be configured with the old class name as key. The actual class can be removed.
 
     lagom.serialization.json.migrations {
-      "com.myservice.event.OrderAdded" = "com.myservice.event.OrderPlacedMigration" 
+      "com.myservice.event.OrderAdded" = "com.myservice.event.OrderPlacedMigration"
     }

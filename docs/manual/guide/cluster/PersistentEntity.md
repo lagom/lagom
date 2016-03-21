@@ -4,11 +4,11 @@
 
 A `PersistentEntity` has a stable entity identifier, with which it can be accessed from the service implementation or other places. The state of an entity is persistent (durable) using [Event Sourcing](https://msdn.microsoft.com/en-us/library/jj591559.aspx). We represent all state changes as events and those immutable facts are appended to an event log. To recreate the current state of an entity when it is started we replay these events.
 
-A persistent entity corresponds to an [Aggregate Root](http://martinfowler.com/bliki/DDD_Aggregate.html) in Domain-Driven Design terms. Each instance has a stable identifier and for a given id there will only be one instance of the entity. Lagom takes care of distributing those instances across the cluster of the service. If you know the identifier you can send messages, so called commands, to the entity. 
+A persistent entity corresponds to an [Aggregate Root](http://martinfowler.com/bliki/DDD_Aggregate.html) in Domain-Driven Design terms. Each instance has a stable identifier and for a given id there will only be one instance of the entity. Lagom takes care of distributing those instances across the cluster of the service. If you know the identifier you can send messages, so called commands, to the entity.
 
 The persistent entity is also a transaction boundary. Invariants can be maintained within one entity but not across several entities.
 
-If you are familiar with [JPA](https://en.wikipedia.org/wiki/Java_Persistence_API) it is worth noting that a `PersistentEntity` can be used for similar things as a JPA `@Entity` but several aspects are rather different. For example, a JPA `@Entity` is loaded from the database from wherever it is needed, i.e. there may be many Java object instances with the same entity identifier. In contrast, there is only one instance of `PersistentEntity` with a given identifier. With JPA you typically only store current state and the history of how the state was reached is not captured. 
+If you are familiar with [JPA](https://en.wikipedia.org/wiki/Java_Persistence_API) it is worth noting that a `PersistentEntity` can be used for similar things as a JPA `@Entity` but several aspects are rather different. For example, a JPA `@Entity` is loaded from the database from wherever it is needed, i.e. there may be many Java object instances with the same entity identifier. In contrast, there is only one instance of `PersistentEntity` with a given identifier. With JPA you typically only store current state and the history of how the state was reached is not captured.
 
 You interact with a `PersistentEntity` by sending command messages to it. Commands are processed sequentially, one at a time, for a specific entity instance. A command may result in state changes that are persisted as events, representing the effect of the command. The current state is not stored for every change, since it can be derived from the events. These events are only ever appended to storage, nothing is ever mutated, which allows for very high transaction rates and efficient replication.
 
@@ -30,7 +30,7 @@ If you can't use Cassandra you can implement your Lagom services with whatever d
 
 ## PersistentEntity Stub
 
-This is how a [PersistentEntity](api/java/com/lightbend/lagom/javadsl/persistence/PersistentEntity.html) class looks like before filling in the implementation details: 
+This is how a [PersistentEntity](api/java/com/lightbend/lagom/javadsl/persistence/PersistentEntity.html) class looks like before filling in the implementation details:
 
 @[post1](code/docs/home/persistence/Post1.java)
 
@@ -53,7 +53,7 @@ You should define one command handler for each command class that the entity can
 A command handler returns a [Persist](api/java/com/lightbend/lagom/javadsl/persistence/PersistentEntity.Persist.html) directive that defines what event or events, if any, to persist. Use the `thenPersist`, `thenPersistAll` or `done` methods of the context that is passed to the command handler function to create the `Persist` directive.
 
 * `thenPersist` will persist one single event
-* `thenPersistAll` will persist several events atomically, i.e. all events 
+* `thenPersistAll` will persist several events atomically, i.e. all events
   are stored or none of them are stored if there is an error
 * `done` no events are to be persisted
 
@@ -105,7 +105,7 @@ It can also be a reply to a read-only query command.
 
 You can use `ctx.invalidCommand` to reject an invalid command, which will fail the `CompletionStage` with `PersistentEntity.InvalidCommandException` on the sender side.
 
-You can send a negative acknowledgment with `ctx.commandFailed`, which will fail the `CompletionStage` on the sender side with the given exception. 
+You can send a negative acknowledgment with `ctx.commandFailed`, which will fail the `CompletionStage` on the sender side with the given exception.
 
 If persisting the events fails a negative acknowledgment is automatically sent, which will fail the `CompletionStage` on the sender side with `PersistentEntity.PersistException`.
 
@@ -115,7 +115,7 @@ If you don't reply to a command the `CompletionStage` on the sender side will be
 
 ## Changing Behavior
 
-The event handlers are typically only updating the state, but they may also change the behavior of the entity in the sense that new functions for processing commands and events may be defined. This is useful when implementing finite state machine (FSM) like entities. Event handlers that change the behavior are registered with the `setEventHandlerChangingBehavior` of the `BehaviorBuilder`. Such an event handler returns the new `Behavior` instead of just returning the new state. 
+The event handlers are typically only updating the state, but they may also change the behavior of the entity in the sense that new functions for processing commands and events may be defined. This is useful when implementing finite state machine (FSM) like entities. Event handlers that change the behavior are registered with the `setEventHandlerChangingBehavior` of the `BehaviorBuilder`. Such an event handler returns the new `Behavior` instead of just returning the new state.
 
 @[change-behavior](code/docs/home/persistence/Post2.java)
 
@@ -141,7 +141,7 @@ The section [[Immutable Objects|Immutable]] describes how to define immutable st
 
 To access an entity from a service implementation you first need to inject the [PersistentEntityRegistry](api/java/com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html) and at startup (in the constructor) register the class that implements the `PersistentEntity`.
 
-In the service method you retrieve a `PersistentEntityRef` for a given entity identifier from the registry. Then you can send the command to the entity using the `ask` method of the `PersistentEntityRef`. `ask` returns a `CompletionStage` with the reply message. 
+In the service method you retrieve a `PersistentEntityRef` for a given entity identifier from the registry. Then you can send the command to the entity using the `ask` method of the `PersistentEntityRef`. `ask` returns a `CompletionStage` with the reply message.
 
 @[service-impl](code/docs/home/persistence/BlogServiceImpl.java)
 
@@ -149,7 +149,7 @@ In this example we are using the command `AddPost` also as the request parameter
 
 The commands are sent as messages to the entity that may be running on a different node. If that node is not available due to network issues, JVM crash or similar the messages may be lost until the problem has been detected and the entities have been migrated to another node. In such situations the `ask` will time out and the `CompletionStage` will be completed with `akka.pattern.AskTimeoutException`.
 
-Note that the `AskTimeoutException` is not an guarantee that the command was not processed. For example, the command might have been processed but the reply message was lost.
+Note that the `AskTimeoutException` is not a guarantee that the command was not processed. For example, the command might have been processed but the reply message was lost.
 
 ## Serialization
 
@@ -181,7 +181,7 @@ If you change the class name of a `PersistentEntity` you have to override `entit
 
 ## Configuration
 
-The default configuration should be good starting point, and the following settings may later be amended to customize the behavior if needed. 
+The default configuration should be good starting point, and the following settings may later be amended to customize the behavior if needed.
 
 @[persistence](../../../../persistence/src/main/resources/reference.conf)
 

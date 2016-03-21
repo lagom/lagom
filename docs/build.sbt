@@ -26,9 +26,9 @@ lazy val docs = project
       "com.typesafe.play" %% "play-netty-server" % PlayVersion % Test,
       "com.typesafe.play" %% "play-logback" % PlayVersion % Test
     ),
-    javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),  
+    javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
     testOptions in Test += Tests.Argument("-oDF"),
-    testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),  
+    testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
     // This is needed so that Java APIs that use immutables will typecheck by the Scala compiler
     compileOrder in Test := CompileOrder.JavaThenScala,
 
