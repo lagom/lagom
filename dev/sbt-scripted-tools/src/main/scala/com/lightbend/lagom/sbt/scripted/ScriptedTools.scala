@@ -3,7 +3,7 @@ package com.lightbend.lagom.sbt.scripted
 import java.io.{ InputStreamReader, BufferedReader }
 import java.net.HttpURLConnection
 
-import com.lightbend.lagom.sbt.{ LagomPlugin, NonBlockingInteractionMode, InternalKeys }
+import com.lightbend.lagom.sbt.{ LagomPlugin, NonBlockingInteractionMode, Internal }
 import sbt.Keys._
 import sbt._
 import sbt.complete.Parser
@@ -84,7 +84,7 @@ object ScriptedTools extends AutoPlugin {
       }
       file
     },
-    InternalKeys.interactionMode := NonBlockingInteractionMode
+    Internal.Keys.interactionMode := NonBlockingInteractionMode
   )
 
   override def projectSettings: Seq[Setting[_]] = Seq(

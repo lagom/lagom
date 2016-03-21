@@ -28,7 +28,7 @@
 # Stop the service
 > stop
 
-# Disabled service locator and cassandra tests
+# Disabled service locator
 # ---------------
 
 > set lagomServiceLocatorEnabled := false
@@ -53,7 +53,7 @@ $ sleep 1000
 > stop
 > set lagomServiceLocatorEnabled := true
 
-# runAll runs service locator and cassandra tests
+# runAll runs both service locator and cassandra
 # ---------------
 
 # Preconditions - ensure everything is down

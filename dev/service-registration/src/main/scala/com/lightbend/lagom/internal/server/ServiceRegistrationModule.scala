@@ -32,10 +32,11 @@ object ServiceRegistrationModule {
    */
   @Singleton
   private class RegisterWithServiceRegistry @Inject() (
-      lifecycle: ApplicationLifecycle,
-      resolvedServices: ResolvedServices,
-      config: ServiceConfig,
-      registry: ServiceRegistry)(implicit ec: ExecutionContext) {
+    lifecycle:        ApplicationLifecycle,
+    resolvedServices: ResolvedServices,
+    config:           ServiceConfig,
+    registry:         ServiceRegistry
+  )(implicit ec: ExecutionContext) {
 
     private lazy val logger: Logger = Logger(this.getClass())
 

@@ -1,4 +1,4 @@
-import com.lightbend.lagom.sbt.InternalKeys.interactionMode
+import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 
 lazy val root = (project in file(".")).enablePlugins(LagomJava)
 
