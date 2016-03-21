@@ -26,7 +26,7 @@ The ConductR sandbox is a docker image to easily create a ConductR cluster local
 We have integrated the experience of packaging your Lagom services so that you can deliver them to ConductR with ease. By adding the [sbt-lagom-bundle plugin](https://github.com/typesafehub/sbt-lagom-bundle#lagom-bundle-plugin) you are able to package Lagom services for ConductR. Add this plugin to your `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.typesafe.sbt" % "sbt-lagom-bundle" % "1.0.2")
+addSbtPlugin("com.typesafe.sbt" % "sbt-lagom-bundle" % "1.0.3")
 ```
 
 Now, start the activator console from the terminal:
@@ -93,7 +93,7 @@ Print ConductR info with: conduct info --ip 192.168.99.100
 [success] Total time: 4 s, completed 05/03/2016 2:43:07 PM
 ```
 
-Now, the Lagom service should run in your local ConductR cluster. The IP address of your local ConductR cluster is the Docker host IP address. To pick up the IP address check out the previous console output of the `conduct run` command. 
+Now, the Lagom service should run in your local ConductR cluster. The IP address of your local ConductR cluster is the Docker host IP address. To pick up the IP address check out the previous console output of the `conduct run` command. The default port of a Lagom service on ConductR is `9000`, e.g. considering the ConductR IP address is `192.168.99.100`, the running service is available at `http://192.168.99.100:9000/my/service/path`. 
 
 You can also check the state of your cluster with:
  
