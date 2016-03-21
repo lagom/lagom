@@ -62,7 +62,7 @@ Additionally specify the ConductR version you want to use in the `build.sbt`. No
 SandboxKeys.imageVersion in Global := "YOUR_CONDUCTR_VERSION"
 ```
 
-The `SandboxKeys.imageVersion` key is used by the `sandbox run` command to start a specific version of the the ConductR cluster locally. Now start the sandbox in the activator console with:
+The `SandboxKeys.imageVersion` key is used by the `sandbox run` command to start a specific version of the ConductR cluster locally. Now start the sandbox in the activator console with:
 
 ```console
 > reload
@@ -78,7 +78,7 @@ With the ConductR sandbox running you can now load the bundle that you previousl
 > conduct load <press the tab key here>
 ```
 
-When starting the activator console you are in the context of the root project. However, the bundles are created for your sub projects, i.e. your service implementations. Therefore, it is necessary to first switch with `project my-service-impl` to the sub project of the service you want to load on to ConductR. Replace `my-service-impl` with the name of your sub project.
+When starting the activator console you are in the context of the root project. However, the bundles are created for your sub projects, i.e. your service implementations. Therefore, it is necessary to first switch with `project my-service-impl` to the sub project. Replace `my-service-impl` with the name of your sub project.
 
 Finally, to run the bundle on ConductR use:
 
@@ -93,7 +93,7 @@ Print ConductR info with: conduct info --ip 192.168.99.100
 [success] Total time: 4 s, completed 05/03/2016 2:43:07 PM
 ```
 
-Now, the Lagom service should run in your local ConductR cluster. The IP address of your local ConductR cluster is the Docker host IP address. To pick up the IP address check out the previous console output of the `conduct run` command. The default port of a Lagom service on ConductR is `9000`, e.g. considering the ConductR IP address is `192.168.99.100`, the running service is available at `http://192.168.99.100:9000/my/service/path`. 
+Now, the Lagom service should run in your local ConductR cluster. The IP address of your cluster is the Docker host IP address. To pick up the IP address check out the previous console output of the `conduct run` command. The default port of a Lagom service on ConductR is `9000`, e.g. considering the ConductR IP address is `192.168.99.100` then the running service is available at `http://192.168.99.100:9000/my/service/path`. 
 
 You can also check the state of your cluster with:
  
@@ -111,7 +111,7 @@ To stop the ConductR sandbox use:
 
 ## Loading and running your services outside of development
 
-The sandbox is useful to validate that the packaging of your service is correct. However, at some point you will want to load and run your bundle on a real ConductR cluster. While it is beyond the scope of this document to describe how to set up such a cluster (please refer to the [ConductR installation guide](https://conductr.lightbend.com/docs/1.1.x/Install) for that), you generally interact with a real cluster through [the ConductR CLI](https://github.com/typesafehub/conductr-cli#command-line-interface-cli-for-typesafe-conductr). You will have already downloaded the CLI as part of the sandbox. The CLI commands are identical to their activator console counterparts. Type `conduct --help` for more information on what commands are available.
+The sandbox is useful to validate that the packaging of your service is correct. However, at some point you want to load and run your bundle on a real ConductR cluster. While it is beyond the scope of this document to describe how to set up such a cluster (please refer to the [ConductR installation guide](https://conductr.lightbend.com/docs/1.1.x/Install) for that), you generally interact with a real cluster through [the ConductR CLI](https://github.com/typesafehub/conductr-cli#command-line-interface-cli-for-typesafe-conductr). You have already downloaded the CLI as part of the sandbox. The CLI commands are identical to their activator console counterparts. Type `conduct --help` for more information on what commands are available.
 
 ## Running Cassandra
 
@@ -125,7 +125,7 @@ If your Lagom service uses Cassandra for persistence then you can generate what 
 [success] Total time: 4 s, completed 05/03/2016 2:43:07 PM
 ```
 
-You can then load the Cassandra bundle with your Cassandra bundle configuration on to ConductR. Note that in this case `cassandra` represents the bundle and the `cassandra-configuration-<hash>.zip` file is the bundle configuration. Copy the configuration zip file from the console output of the previous command.
+You can then load the Cassandra bundle with your Cassandra bundle configuration on to ConductR. Note that in this case `cassandra` represents the bundle and the `cassandra-configuration-<hash>.zip` file is the bundle configuration. The previous command prints out the bundle configuration zip file on the console. Copy this file to load Cassandra with your project specific configuration: 
 
 ```console
 > conduct load cassandra .../my-project/target/configuration-bundle/cassandra-configuration-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
