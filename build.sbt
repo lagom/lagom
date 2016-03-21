@@ -532,11 +532,14 @@ lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      // Cassandra goes into 100% CPU spin after client disconnect/restart when
-      // starting Cassandra with Netty 4.0.33 jars, which are included via
-      // cassandra-driver-core-3.0.0
-      // Works fine with Netty netty-all-4.0.23, which is included via cassandra-all-3.0.1
-      "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion excludeAll (ExclusionRule(organization = "com.datastax.cassandra")),
+      // Cassandra goes into 100% CPU spin when starting with netty jars of different versions. Hence, 
+      // we are making sure that the only netty dependency comes from cassandra-all, and manually excludes 
+      // all netty transitive dependencies of akka-persistence-cassandra. Mind that dependencies are 
+      // excluded one-by-one because exclusion rules do not work with maven dependency resolution - see
+      // https://github.com/lagom/lagom/issues/26#issuecomment-196718818
+      "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion 
+        exclude("io.netty", "netty-all") exclude("io.netty", "netty-handler") exclude("io.netty", "netty-buffer")
+        exclude("io.netty", "netty-common") exclude("io.netty", "netty-transport") exclude("io.netty", "netty-codec"),
       "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion
     )
   )
