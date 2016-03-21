@@ -49,6 +49,6 @@ object CassandraModule {
     // make it visible when all registrations are done
     Future.sequence(registered).onComplete {
       case _ => ServiceLocatorHolder(system).setServiceLocator(serviceLocator)
-    }    
+    }
   }
 }
