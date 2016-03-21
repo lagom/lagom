@@ -1,21 +1,43 @@
 # Lightbend ConductR
 
-ConductR is a container orchestration tool with the main goal of delivering operational productivity. ConductR is also designed to  host your Lagom services with resilience.
+ConductR is a container orchestration tool with the main goal of delivering operational productivity. ConductR is also designed to host your Lagom services with resilience.
 
-ConductR is free for development usage and comes with a "sandbox" so that you can run ConductR locally and test your services. Please visit [ConductR's product page](http://lightbend.com/products/conductr) in order to download the sandbox, and also for more information on ConductR in general. If you'd like to know more about our commercial license then [please contact us](https://www.lightbend.com/company/contact). The remainder of this guide will discuss the specific integration points between Lagom and ConductR.
+ConductR is free for development usage and comes with a "sandbox" so that you can run ConductR locally and test your services. For more information on ConductR go to:
+
+* [ConductR product page](http://lightbend.com/products/conductr)
+* [ConductR documentation](http://conductr.lightbend.com)
+
+This guide will explain how to:
+
+* Install ConductR sandbox
+* Package Lagom services
+* Start local ConductR cluster
+* Load and run services during and outside of development
+* Run Cassandra on ConductR
+ 
+If you'd like to know more about our commercial license then [please contact us](https://www.lightbend.com/company/contact).
+
+## Installing ConductR sandbox
+
+The ConductR sandbox is a docker image to easily create a ConductR cluster locally. To run ConductR on your development machine follow the instructions on the [ConductR developer page](https://www.lightbend.com/product/conductr/developer) up to the section **Configure Docker Machine**. We will run the sandbox later on in this guide. Note that in order to access this page you need to login with your Lightbend account. If you don't have an account yet, head out to the [Sign Up page](https://www.lightbend.com/account/register) and create a free account. 
 
 ## Packaging your services
 
-We have integrated the experience of packaging your Lagom services so that you can deliver them to ConductR with ease. By adding the [sbt-lagom-bundle plugin](https://github.com/typesafehub/sbt-lagom-bundle#lagom-bundle-plugin) you are able to package Lagom services for ConductR. In your project's `plugins.sbt`:
+We have integrated the experience of packaging your Lagom services so that you can deliver them to ConductR with ease. By adding the [sbt-lagom-bundle plugin](https://github.com/typesafehub/sbt-lagom-bundle#lagom-bundle-plugin) you are able to package Lagom services for ConductR. Add this plugin to your `project/plugins.sbt`:
 
 ```scala
 addSbtPlugin("com.typesafe.sbt" % "sbt-lagom-bundle" % "1.0.2")
 ```
 
-You can then package your services from within the activator console (we `reload` so that activator recognises the new plugin):
+Now, start the activator console from the terminal:
 
 ```console
-> reload
+$ activator
+```
+
+You can then package your services from within the activator console:
+
+```console
 > bundle:dist
 ...
 [info] Bundle has been created: .../my-service/myservice-impl/target/bundle/myservice-impl-v1-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
@@ -26,63 +48,97 @@ The above creates what is known as a "bundle". A bundle is the unit of deploymen
 
 ## Loading and running your services during development
 
-From a development perspective ConductR provides a "sandbox" environment where you can start it and then test your bundle long before it goes to production. ConductR's sandbox also permits you to [debug Lagom services](https://github.com/typesafehub/sbt-conductr-sandbox#debugging-application-in-conductr-sandbox) from your IDE when running within its cluster.
+In the previous [Installing ConductR sandbox](#Installing-ConductR-sandbox) section we have already installed the `conductr-cli`. The CLI can be used on the terminal to communicate with the ConductR cluster. 
 
-To access ConductR's sandbox from within the activator console first added the following sbt plugin to your `project/plugins.sbt`:
+To use the same commands within the activator console add the following sbt plugin to your `project/plugins.sbt`:
 
 ```scala
 addSbtPlugin("com.typesafe.conductr" % "sbt-conductr-sandbox" % "1.4.2")
 ```
 
-Additionally it is necessary to install the [conductr-cli](https://github.com/typesafehub/conductr-cli). The CLI is used by the sandbox to communicate with the ConductR cluster. Follow the "Getting Started" section on the [ConductR Developer](https://www.lightbend.com/product/conductr/developer) page to install the conductr-cli.
+Additionally specify the ConductR version you want to use in the `build.sbt`. Note that you need to set the version of ConductR itself and not the version of the `sbt-conductr-sandbox` sbt plugin. Please visit again the [ConductR Developer page](https://www.lightbend.com/product/conductr/developer) to pick up the latest ConductR version from the section **Quick Configuration**:
 
-To start the sandbox from within the console you also need to specify the ConductR version. The latest version can be picked up from the [ConductR Developer](https://www.lightbend.com/product/conductr/developer) page as well:
+```scala
+SandboxKeys.imageVersion in Global := "YOUR_CONDUCTR_VERSION"
+```
+
+The `SandboxKeys.imageVersion` key is used by the `sandbox run` command to start a specific version of the the ConductR cluster locally. Now start the sandbox in the activator console with:
 
 ```console
 > reload
-> set SandboxKeys.imageVersion in Global := "YOUR_CONDUCTR_SANDBOX_VERSION"
-> sandbox run
+> sandbox run --with-features logging
 ```
 
-With the sandbox running you can now load the bundle that you previously generated:
+The `reload` refreshes the activator console with the previously added settings. In this case we are starting the sandbox with the logging feature in order to retrieve logging information of the bundles.
+
+With the ConductR sandbox running you can now load the bundle that you previously generated:
 
 ```console
-> my-service-impl/conduct load <press the tab key here>
+> project my-service-impl
+> conduct load <press the tab key here>
 ```
 
-Note how you're loading the implementation of your service.
+When starting the activator console you are in the context of the root project. However, the bundles are created for your sub projects, i.e. your service implementations. Therefore, it is necessary to first switch with `project my-service-impl` to the sub project of the service you want to load on to ConductR. Replace `my-service-impl` with the name of your sub project.
 
-Finally, to run it:
+Finally, to run the bundle on ConductR use:
 
 ```console
 > conduct run my-service-impl
-```
-
-You should now have a running Lagom service. You can also `conduct stop` and `conduct unload` Lagom services with the sandbox. The `conduct` command therefore allows you to manage the full lifecycle of a bundle. In addition you can use `conduct logs` to view the consolidated logging of bundles throughout the cluster - this is particularly useful during development.
-
-## Loading and running your services outside of development
-
-The sandbox is useful to validate that the packaging of your service is correct. However at some point you will want to load and run your bundle on a real ConductR cluster. While it is beyond the scope of this document to describe how to set up such a cluster (please refer to the [ConductR installation guide](https://conductr.lightbend.com/docs/1.1.x/Install) for that), you generally interact with a real cluster through [the ConductR CLI](https://github.com/typesafehub/conductr-cli#command-line-interface-cli-for-typesafe-conductr). You will have already downloaded the CLI as part of the sandbox. The CLI commands are very similar to their activator console counterparts. Type `conduct --help` outside of the activator console for more information on what commands are available.
-
-## Running Cassandra
-
-If your Lagom service uses Cassandra for persistence then you can generate what is known as a "bundle configuration" for Cassandra. To do this, from a terminal window:
-
-```console
-> activator cassandra-configuration:dist
-...
-[info] Bundle has been created: .../chirper/target/configuration-bundle/cassandra-configuration-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
+Bundle run request sent.
+Bundle 9849508f27cdd39742f8e455795538b6 waiting to reach expected scale 1
+Bundle 9849508f27cdd39742f8e455795538b6 has scale 0, expected 1
+Bundle 9849508f27cdd39742f8e455795538b6 expected scale 1 is met
+Stop bundle with: conduct stop --ip 192.168.99.100 9849508
+Print ConductR info with: conduct info --ip 192.168.99.100
 [success] Total time: 4 s, completed 05/03/2016 2:43:07 PM
 ```
 
-You can then load both Cassandra and the configuration for your project into ConductR:
+Now, the Lagom service should run in your local ConductR cluster. The IP address of your local ConductR cluster is the Docker host IP address. To pick up the IP address check out the previous console output of the `conduct run` command. 
 
+You can also check the state of your cluster with:
+ 
 ```console
-> conduct load cassandra .../chirper/target/configuration-bundle/cassandra-configuration-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
+> conduct info
 ```
 
-Upon loading you then run cassandra at the scale that you require. For convenience we recommend that you start with one Cassandra cluster per root sbt project, which of course can contain many Lagom projects (and therefore services). Bounded contexts are always maintained via separate key-spaces, and so having one Cassandra cluster is viable for supporting many microservices. The actual number of Cassandra clusters required will be the _Lagom amount_ i.e. "just the right amount" for your system. For more information on configuring Cassandra for ConductR please visit [the bundle's website](https://github.com/typesafehub/conductr-cassandra#conductr-cassandra).
+The `conduct` command allows you to manage the full lifecycle of a bundle. You can also use `conduct stop my-service-impl` and `conduct unload my-service-impl` to stop and unload your Lagom services. In addition you can use `conduct logs my-service-impl` to view the consolidated logging of bundles throughout the cluster. This is particularly useful during development. 
 
-## For more information
+To stop the ConductR sandbox use:
 
-For more information on ConductR please visit its [documentation site](https://conductr.lightbend.com/).
+```console
+> sandbox stop
+```
+
+## Loading and running your services outside of development
+
+The sandbox is useful to validate that the packaging of your service is correct. However, at some point you will want to load and run your bundle on a real ConductR cluster. While it is beyond the scope of this document to describe how to set up such a cluster (please refer to the [ConductR installation guide](https://conductr.lightbend.com/docs/1.1.x/Install) for that), you generally interact with a real cluster through [the ConductR CLI](https://github.com/typesafehub/conductr-cli#command-line-interface-cli-for-typesafe-conductr). You will have already downloaded the CLI as part of the sandbox. The CLI commands are identical to their activator console counterparts. Type `conduct --help` for more information on what commands are available.
+
+## Running Cassandra
+
+If your Lagom service uses Cassandra for persistence then you can generate what is known as a "bundle configuration" for Cassandra. First switch to your root project and then generate the bundle configuration:
+
+```console
+> project /
+> cassandra-configuration:dist
+...
+[info] Bundle has been created: .../my-project/target/configuration-bundle/cassandra-configuration-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
+[success] Total time: 4 s, completed 05/03/2016 2:43:07 PM
+```
+
+You can then load the Cassandra bundle with your Cassandra bundle configuration on to ConductR. Note that in this case `cassandra` represents the bundle and the `cassandra-configuration-<hash>.zip` file is the bundle configuration. Copy the configuration zip file from the console output of the previous command.
+
+```console
+> conduct load cassandra .../my-project/target/configuration-bundle/cassandra-configuration-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
+```
+
+The tab completion of `conduct load` only works with bundles of the project. The Cassandra bundle is an external bundle hosted on bintray. Therefore tab completion doesn't work in this case.
+
+To run the cassandra bundle execute:
+
+```
+> conduct run cassandra
+```
+
+If the Cassandra bundle has been started on ConductR after the Lagom service itself then it will take a couple of seconds until the Lagom service connects to Cassandra.
+
+For convenience we recommend that you start with one Cassandra cluster per root sbt project, which of course can contain many Lagom projects (and therefore services). Bounded contexts are always maintained via separate key-spaces, and so having one Cassandra cluster is viable for supporting many microservices. The actual number of Cassandra clusters required will be the _Lagom amount_ i.e. "just the right amount" for your system. For more information on configuring Cassandra for ConductR please visit [the bundle's website](https://github.com/typesafehub/conductr-cassandra#conductr-cassandra).
