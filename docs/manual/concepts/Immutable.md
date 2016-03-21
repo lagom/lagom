@@ -91,7 +91,7 @@ There are two different and potentially confusing usages of the word "persistent
 
 You will see references, in the PCollections documentation and elsewhere, to ["persistent" data structures](https://en.wikipedia.org/wiki/Persistent_data_structure). There, the word "persistent" means that even when you construct a modified copy of a collection, the original "persists".
 
-In the rest of this documentation, "persistent" refers instead to [persistent storage](https://en.wikipedia.org/wiki/Persistence_(computer_science)), as in [[Persistent Entities|PersistentEntity]] and the examples below.
+In the rest of this documentation, "persistent" refers instead to [persistent storage](https://en.wikipedia.org/wiki/Persistence_%28computer_science%29), as in [[Persistent Entities|PersistentEntity]] and the examples below.
 
 ### Further reading
 

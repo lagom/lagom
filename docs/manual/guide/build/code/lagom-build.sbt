@@ -1,5 +1,5 @@
 //#add-sbt-plugin
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.0.0")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.0.0-M1")
 //#add-sbt-plugin
 
 //#scala-version

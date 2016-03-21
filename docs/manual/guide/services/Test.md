@@ -45,7 +45,7 @@ When your test have several test methods, and especially when using persistence,
 
 ## How to test several services
 
-Lagom will provide support for writing integration tests that involve several interacting services. This feature is [not yet implemented](https://github.com/typesafehub/lagom/issues/152).
+Lagom will provide support for writing integration tests that involve several interacting services. This feature is [not yet implemented](https://github.com/lagom/lagom/issues/38).
 
 ## How to test streamed request/response
 
@@ -53,11 +53,11 @@ Let's say we have a service that have streaming request and/or response paramete
 
 @[echo-service](code/docs/services/test/EchoService.java)
 
-When writing tests for that it the [Akka Streams TestKit](http://doc.akka.io/docs/akka/2.4.2-RC2/java/stream/stream-testkit.html#Streams_TestKit) is very useful. We use the Streams TestKit together with the Lagom `ServiceTest` utilities:
+When writing tests for that the [Akka Streams TestKit](http://doc.akka.io/docs/akka/2.4.2/java/stream/stream-testkit.html#Streams_TestKit) is very useful. We use the Streams TestKit together with the Lagom `ServiceTest` utilities:
 
 @[test](code/docs/services/test/EchoServiceTest.java)
 
-Read more about it in the documentation of the [Akka Streams TestKit](http://doc.akka.io/docs/akka/2.4.2-RC2/java/stream/stream-testkit.html#Streams_TestKit).
+Read more about it in the documentation of the [Akka Streams TestKit](http://doc.akka.io/docs/akka/2.4.2/java/stream/stream-testkit.html#Streams_TestKit).
 
 ## How to test PersistentEntity
 
@@ -74,4 +74,3 @@ To use this feature add the following in your project's build:
 When using Cassandra the tests must be forked, which is enabled by adding the following in your project's build:
 
 @[fork](code/build-service.sbt)
- 

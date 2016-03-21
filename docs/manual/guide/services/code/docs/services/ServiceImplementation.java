@@ -132,7 +132,7 @@ public class ServiceImplementation {
       //#auth-hello-service
       public ServerServiceCall<NotUsed, String, String> sayHello() {
         return authenticated( user ->
-            (id, name) -> completedFuture("Hello " + name)
+            (id, name) -> completedFuture("Hello " + user)
         );
       }
       //#auth-hello-service
@@ -149,7 +149,7 @@ public class ServiceImplementation {
       //#filter-hello-service
       public ServerServiceCall<NotUsed, String, String> sayHello() {
         return filter( user ->
-            (id, name) -> completedFuture("Hello " + name)
+            (id, name) -> completedFuture("Hello " + user)
         );
       }
       //#filter-hello-service
