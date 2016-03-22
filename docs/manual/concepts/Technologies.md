@@ -38,7 +38,7 @@ Other serialization formats are also supported.
 
 ## Cassandra
 
-By default, Lagom services needing to persist data use Cassandra as database. For conveniency, the development environment embeds a Cassandra server.  In this manual, [[Cassandra Server|CassandraServer]] describes Lagom's Cassandra support further.
+By default, Lagom services needing to persist data use Cassandra as database. For convenience, the development environment embeds a Cassandra server.  In this manual, [[Cassandra Server|CassandraServer]] describes Lagom's Cassandra support further.
 
 Lagom services are also free to use an existing Cassandra database, or another database solution entirely.
 
