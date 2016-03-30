@@ -8,6 +8,7 @@ import java.net.URI
 import scala.language.implicitConversions
 
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint
 
 import akka.actor.ActorSystem
 import javax.inject.Inject
@@ -21,19 +22,19 @@ class CassandraConfigProvider @Inject() (system: ActorSystem) extends Provider[C
 
   override lazy val get: CassandraConfig = CassandraConfigProvider.CassandraConfigImpl(cassandraUrisFromConfig)
 
-  private def cassandraUrisFromConfig: Set[(String, String)] = {
+  private def cassandraUrisFromConfig: Set[CassandraContactPoint] = {
     List("cassandra-journal", "cassandra-snapshot-store", "lagom.persistence.read-side.cassandra").flatMap { path =>
       val c = config.getConfig(path)
       if (c.getString("session-provider") == classOf[ServiceLocatorSessionProvider].getName) {
         val name = c.getString("cluster-id")
         val port = c.getInt("port")
         val uri = s"tcp://127.0.0.1:$port/$name"
-        Some(name -> uri)
+        Some(CassandraContactPoint.of(name, uri))
       } else None
     }.toSet
   }
 }
 
 private object CassandraConfigProvider {
-  case class CassandraConfigImpl(uris: Set[(String, String)]) extends CassandraConfig
+  case class CassandraConfigImpl(uris: Set[CassandraContactPoint]) extends CassandraConfig
 }

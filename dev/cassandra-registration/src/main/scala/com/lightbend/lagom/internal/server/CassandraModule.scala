@@ -12,6 +12,7 @@ import scala.concurrent.Future
 import com.google.inject.AbstractModule
 import com.google.inject.Inject
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint
 import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorHolder
 import com.lightbend.lagom.internal.registry.ServiceRegistry
 import com.lightbend.lagom.internal.registry.ServiceRegistryService
@@ -37,11 +38,11 @@ object CassandraModule {
   private class RegisterCassandraContactPoints @Inject() (config: CassandraConfig, registry: ServiceRegistry, serviceLocator: ServiceLocator, system: ActorSystem)(implicit ec: ExecutionContext) {
 
     val registered = config.uris.map {
-      case (name, uri) =>
-        val r = new ServiceRegistryService(uri, Collections.emptyList[ServiceAcl])
-        registry.register().invoke(name, r).toScala.recover {
+      case contactPoint: CassandraContactPoint =>
+        val r = new ServiceRegistryService(contactPoint.uri, Collections.emptyList[ServiceAcl])
+        registry.register().invoke(contactPoint.name, r).toScala.recover {
           case t =>
-            Logger(getClass).error(s"Cassandra server name=[$name] couldn't be registered to the service locator.", t)
+            Logger(getClass).error(s"Cassandra server name=[${contactPoint.name}] couldn't be registered to the service locator.", t)
             NotUsed
         }
     }

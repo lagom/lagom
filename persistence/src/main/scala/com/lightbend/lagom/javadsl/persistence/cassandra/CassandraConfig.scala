@@ -3,10 +3,11 @@
  */
 package com.lightbend.lagom.javadsl.persistence.cassandra
 
+import java.net.URI
+
 trait CassandraConfig {
-  /**
-   * Returns the Cassandra contact-points as a collection of pairs.
-   * Each contact-point (i.e., each pair) is composed of a cluster ID and it's full URL.
-   */
-  def uris: Set[(String, String)]
+
+  /** Returns the Cassandra contact-points. */
+  def uris: Set[CassandraContactPoint]
+
 }
