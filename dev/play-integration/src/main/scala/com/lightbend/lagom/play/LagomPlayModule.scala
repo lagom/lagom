@@ -4,17 +4,14 @@
 package com.lightbend.lagom.play
 
 import java.util.Optional
-
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
-
 import com.google.inject.Provider
 import com.lightbend.lagom.internal.registry.ServiceRegistry
 import com.lightbend.lagom.internal.registry.ServiceRegistryService
 import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.ServiceInfo
 import com.lightbend.lagom.javadsl.api.transport.Method
-
 import akka.NotUsed
 import javax.inject.Inject
 import javax.inject.Singleton

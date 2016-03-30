@@ -16,13 +16,13 @@ import scala.util.Try
 import scala.util.control.NonFatal
 
 import com.lightbend.lagom.internal.cluster.JoinClusterModule
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfig
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfig.CassandraConfigProvider
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfigProvider
 import com.lightbend.lagom.internal.testkit.TestServiceLocator
 import com.lightbend.lagom.internal.testkit.TestServiceLocatorPort
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
 import com.lightbend.lagom.javadsl.persistence.testkit.TestUtil
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 
@@ -190,7 +190,7 @@ object ServiceTest {
 
     val b1 = new GuiceApplicationBuilder()
       .bindings(sBind[TestServiceLocatorPort].to(testServiceLocatorPort))
-      .bindings(sBind[CassandraConfig].toProvider(classOf[CassandraConfig.CassandraConfigProvider]))
+      .bindings(sBind[CassandraConfig].toProvider(classOf[CassandraConfigProvider]))
       .bindings(sBind[ServiceLocator].to(classOf[TestServiceLocator]))
       .configure("play.akka.actor-system", testName)
 

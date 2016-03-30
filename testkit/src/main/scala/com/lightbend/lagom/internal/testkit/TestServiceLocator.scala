@@ -3,21 +3,27 @@
  */
 package com.lightbend.lagom.internal.testkit
 
-import javax.inject.Singleton
 import java.net.URI
 import java.util.Optional
-import java.util.concurrent.CompletionStage
-import com.lightbend.lagom.javadsl.api.ServiceLocator
-import scala.compat.java8.FutureConverters._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import akka.persistence.cassandra.testkit.CassandraLauncher
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionStage
+
+import scala.compat.java8.FutureConverters._
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+
+import com.lightbend.lagom.javadsl.api.ServiceLocator
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
+
 import javax.inject.Inject
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfig
+import javax.inject.Singleton
 
 @Singleton
-private[lagom] class TestServiceLocator @Inject() (port: TestServiceLocatorPort, config: CassandraConfig) extends ServiceLocator {
+private[lagom] class TestServiceLocator @Inject() (
+  port:            TestServiceLocatorPort,
+  config:          CassandraConfig,
+  implicit val ec: ExecutionContext
+) extends ServiceLocator {
 
   private val futureUri = port.port.map(p => URI.create("http://localhost:" + p))
 
