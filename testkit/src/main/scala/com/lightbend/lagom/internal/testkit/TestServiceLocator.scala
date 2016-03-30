@@ -14,6 +14,7 @@ import scala.concurrent.Future
 
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint
 
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,7 +29,7 @@ private[lagom] class TestServiceLocator @Inject() (
   private val futureUri = port.port.map(p => URI.create("http://localhost:" + p))
 
   private val cassandraUris = config.uris.map {
-    case (name, uri) => name -> new URI(uri)
+    case contactPoint: CassandraContactPoint => contactPoint.name -> new URI(contactPoint.uri)
   }.toMap
 
   override def doWithService[R](name: String, block: java.util.function.Function[URI, CompletionStage[R]]): CompletionStage[Optional[R]] = {
