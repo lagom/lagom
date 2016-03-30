@@ -5,6 +5,7 @@ package com.lightbend.lagom.javadsl.persistence.cassandra;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import java.net.URI;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
@@ -13,9 +14,9 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class CassandraContactPoint {
   private final String name;
-  private final String uri;
+  private final URI uri;
 
-  private CassandraContactPoint(String name, String uri) {
+  private CassandraContactPoint(String name, URI uri) {
     this.name = Preconditions.checkNotNull(name, "name");
     this.uri = Preconditions.checkNotNull(uri, "uri");
   }
@@ -30,7 +31,7 @@ public final class CassandraContactPoint {
   /**
    * @return The value of the {@code uri} attribute
    */
-  public String uri() {
+  public URI uri() {
     return uri;
   }
 
@@ -81,7 +82,7 @@ public final class CassandraContactPoint {
    * @param uri The value for the {@code uri} attribute
    * @return An immutable CassandraContactPoint instance
    */
-  public static CassandraContactPoint of(String name, String uri) {
+  public static CassandraContactPoint of(String name, URI uri) {
     return new CassandraContactPoint(name, uri);
   }
 }

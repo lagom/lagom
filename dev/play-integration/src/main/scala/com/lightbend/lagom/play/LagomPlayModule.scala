@@ -3,7 +3,9 @@
  */
 package com.lightbend.lagom.play
 
+import java.net.URI
 import java.util.Optional
+
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
 import com.google.inject.Provider
@@ -12,6 +14,7 @@ import com.lightbend.lagom.internal.registry.ServiceRegistryService
 import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.ServiceInfo
 import com.lightbend.lagom.javadsl.api.transport.Method
+
 import akka.NotUsed
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,7 +45,7 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Configuration, serviceI
 
   private val httpAddress = config.underlying.getString("play.server.http.address")
   private val httpPort = config.underlying.getString("play.server.http.port")
-  private val serviceUrl = s"http://$httpAddress:$httpPort"
+  private val serviceUrl = new URI(s"http://$httpAddress:$httpPort")
 
   private val acls = config.underlying.getConfigList("lagom.play.acls").asScala.map { aclConfig =>
     val method = if (aclConfig.hasPath("method")) {

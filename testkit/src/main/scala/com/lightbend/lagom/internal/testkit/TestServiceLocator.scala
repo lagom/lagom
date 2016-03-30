@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 
 import scala.compat.java8.FutureConverters._
+import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -28,9 +29,8 @@ private[lagom] class TestServiceLocator @Inject() (
 
   private val futureUri = port.port.map(p => URI.create("http://localhost:" + p))
 
-  private val cassandraUris = config.uris.map {
-    case contactPoint: CassandraContactPoint => contactPoint.name -> new URI(contactPoint.uri)
-  }.toMap
+  private val cassandraUris: Map[String, URI] =
+    (config.uris.asScala.map(contactPoint => contactPoint.name -> contactPoint.uri))(collection.breakOut)
 
   override def doWithService[R](name: String, block: java.util.function.Function[URI, CompletionStage[R]]): CompletionStage[Optional[R]] = {
     val result = cassandraUris.get(name) match {

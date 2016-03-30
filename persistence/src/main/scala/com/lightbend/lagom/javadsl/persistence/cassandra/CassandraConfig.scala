@@ -4,10 +4,11 @@
 package com.lightbend.lagom.javadsl.persistence.cassandra
 
 import java.net.URI
+import org.pcollections.PSet
 
 trait CassandraConfig {
 
   /** Returns the Cassandra contact-points. */
-  def uris: Set[CassandraContactPoint]
+  def uris: PSet[CassandraContactPoint]
 
 }

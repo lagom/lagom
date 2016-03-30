@@ -5,7 +5,11 @@ package com.lightbend.lagom.internal.persistence.cassandra
 
 import java.net.URI
 
+import scala.collection.JavaConverters.setAsJavaSetConverter
 import scala.language.implicitConversions
+
+import org.pcollections.HashTreePSet
+import org.pcollections.PSet
 
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint
@@ -22,19 +26,20 @@ class CassandraConfigProvider @Inject() (system: ActorSystem) extends Provider[C
 
   override lazy val get: CassandraConfig = CassandraConfigProvider.CassandraConfigImpl(cassandraUrisFromConfig)
 
-  private def cassandraUrisFromConfig: Set[CassandraContactPoint] = {
-    List("cassandra-journal", "cassandra-snapshot-store", "lagom.persistence.read-side.cassandra").flatMap { path =>
+  private def cassandraUrisFromConfig: PSet[CassandraContactPoint] = {
+    val contactPoints = List("cassandra-journal", "cassandra-snapshot-store", "lagom.persistence.read-side.cassandra").flatMap { path =>
       val c = config.getConfig(path)
       if (c.getString("session-provider") == classOf[ServiceLocatorSessionProvider].getName) {
         val name = c.getString("cluster-id")
         val port = c.getInt("port")
-        val uri = s"tcp://127.0.0.1:$port/$name"
+        val uri = new URI(s"tcp://127.0.0.1:$port/$name")
         Some(CassandraContactPoint.of(name, uri))
       } else None
     }.toSet
+    HashTreePSet.from(contactPoints.asJava)
   }
 }
 
 private object CassandraConfigProvider {
-  case class CassandraConfigImpl(uris: Set[CassandraContactPoint]) extends CassandraConfig
+  case class CassandraConfigImpl(uris: PSet[CassandraContactPoint]) extends CassandraConfig
 }
