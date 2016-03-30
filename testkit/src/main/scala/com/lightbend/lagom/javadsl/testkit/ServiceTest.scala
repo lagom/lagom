@@ -6,27 +6,35 @@ package com.lightbend.lagom.javadsl.testkit
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 import java.util.function.{ Function => JFunction }
+
 import scala.annotation.tailrec
 import scala.concurrent.Promise
 import scala.concurrent.duration._
-import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 import scala.util.control.NonFatal
-import akka.actor.ActorSystem
-import akka.japi.function.Effect
-import akka.japi.function.Procedure
-import akka.persistence.cassandra.testkit.CassandraLauncher
-import akka.stream.Materializer
+
 import com.lightbend.lagom.internal.cluster.JoinClusterModule
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfig
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfig.CassandraConfigProvider
 import com.lightbend.lagom.internal.testkit.TestServiceLocator
+import com.lightbend.lagom.internal.testkit.TestServiceLocatorPort
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
 import com.lightbend.lagom.javadsl.persistence.testkit.TestUtil
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
+
+import akka.actor.ActorSystem
+import akka.japi.function.Effect
+import akka.japi.function.Procedure
+import akka.persistence.cassandra.testkit.CassandraLauncher
+import akka.stream.Materializer
+import javax.inject.Singleton
 import play.Application
 import play.Configuration
+import play.api.Logger
 import play.api.Mode
 import play.api.Play
 import play.api.inject.BindingKey
@@ -36,9 +44,6 @@ import play.core.server.ServerConfig
 import play.core.server.ServerProvider
 import play.inject.Injector
 import play.inject.guice.GuiceApplicationBuilder
-import com.lightbend.lagom.internal.testkit.TestServiceLocatorPort
-import play.api.Logger
-import java.util.concurrent.TimeUnit
 
 /**
  * Support for writing functional tests for one service. The service is running
@@ -185,7 +190,8 @@ object ServiceTest {
 
     val b1 = new GuiceApplicationBuilder()
       .bindings(sBind[TestServiceLocatorPort].to(testServiceLocatorPort))
-      .overrides(sBind[ServiceLocator].to(classOf[TestServiceLocator]))
+      .bindings(sBind[CassandraConfig].toProvider(classOf[CassandraConfig.CassandraConfigProvider]))
+      .bindings(sBind[ServiceLocator].to(classOf[TestServiceLocator]))
       .configure("play.akka.actor-system", testName)
 
     val log = Logger(getClass)

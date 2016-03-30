@@ -3,7 +3,6 @@
  */
 package com.lightbend.lagom.javadsl.server;
 
-import com.lightbend.lagom.internal.registry.ServiceRegistryModule;
 import com.lightbend.lagom.internal.server.status.MetricsServiceImpl;
 
 import com.lightbend.lagom.javadsl.server.status.MetricsService;
@@ -42,9 +41,6 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
 
         // Bind the resolved services
         binder.bind(ResolvedServices.class).toProvider(new ResolvedServicesProvider(allServiceBindings));
-
-        // If the service registry module is enabled, bind the service registry register component
-        binder.bind(RegisterWithServiceRegistry.class).asEagerSingleton();
 
         // And bind the router
         binder.bind(ServiceRouter.class);

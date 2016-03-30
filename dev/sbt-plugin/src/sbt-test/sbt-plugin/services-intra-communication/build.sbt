@@ -1,4 +1,4 @@
-import com.lightbend.lagom.sbt.InternalKeys.interactionMode
+import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 
 interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 
