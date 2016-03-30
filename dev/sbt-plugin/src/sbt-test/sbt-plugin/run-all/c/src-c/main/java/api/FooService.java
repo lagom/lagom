@@ -15,6 +15,6 @@ public interface FooService extends Service {
 
   @Override
   default Descriptor descriptor() {
-    return named("/fooservice").with(restCall(Method.GET,  "/foo",    foo()));
+    return named("/fooservice3").with(restCall(Method.GET,  "/foo",    foo()));
   }
 }

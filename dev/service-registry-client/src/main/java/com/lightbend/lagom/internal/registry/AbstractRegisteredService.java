@@ -5,6 +5,9 @@ package com.lightbend.lagom.internal.registry;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.lightbend.lagom.javadsl.immutable.ImmutableStyle;
+
+import java.net.URI;
+
 import org.immutables.value.Value;
 
 
@@ -23,6 +26,6 @@ public interface AbstractRegisteredService {
   String name();
   
   @Value.Parameter
-  String url();
+  URI url();
 
 }

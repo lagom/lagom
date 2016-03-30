@@ -8,6 +8,7 @@ import java.util.Collections
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.collection.JavaConverters._
 
 import com.google.inject.AbstractModule
 import com.google.inject.Inject
@@ -37,7 +38,7 @@ object CassandraModule {
   // make it impossible to work with Cassandra).
   private class RegisterCassandraContactPoints @Inject() (config: CassandraConfig, registry: ServiceRegistry, serviceLocator: ServiceLocator, system: ActorSystem)(implicit ec: ExecutionContext) {
 
-    val registered = config.uris.map {
+    val registered = config.uris.asScala.map {
       case contactPoint: CassandraContactPoint =>
         val r = new ServiceRegistryService(contactPoint.uri, Collections.emptyList[ServiceAcl])
         registry.register().invoke(contactPoint.name, r).toScala.recover {

@@ -5,21 +5,22 @@ package com.lightbend.lagom.internal.registry;
 
 import com.lightbend.lagom.javadsl.api.ServiceAcl;
 
+import java.net.URI;
 import java.util.List;
 
 /**
  * A service to be registered by the service registry
  */
 public class ServiceRegistryService {
-    private final String uri;
+    private final URI uri;
     private final List<ServiceAcl> acls;
 
-    public ServiceRegistryService(String uri, List<ServiceAcl> acls) {
+    public ServiceRegistryService(URI uri, List<ServiceAcl> acls) {
         this.uri = uri;
         this.acls = acls;
     }
 
-    public String uri() {
+    public URI uri() {
         return uri;
     }
 

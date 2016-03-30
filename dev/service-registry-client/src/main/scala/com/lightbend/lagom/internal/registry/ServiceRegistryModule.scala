@@ -94,7 +94,11 @@ class ServiceRegistryClientProvider extends Provider[ServiceRegistry] {
 }
 
 @Singleton
-class ServiceRegistryServiceLocator @Inject() (registry: ServiceRegistry, config: ServiceRegistryServiceLocator.ServiceLocatorConfig) extends BaseServiceLocator {
+class ServiceRegistryServiceLocator @Inject() (
+  registry:        ServiceRegistry,
+  config:          ServiceRegistryServiceLocator.ServiceLocatorConfig,
+  implicit val ec: ExecutionContext
+) extends BaseServiceLocator {
 
   private val logger: Logger = Logger(this.getClass())
 
@@ -102,11 +106,9 @@ class ServiceRegistryServiceLocator @Inject() (registry: ServiceRegistry, config
     require(name != ServiceRegistry.SERVICE_NAME)
     logger.debug(s"Locating service name=[$name] ...")
 
-    import scala.concurrent.ExecutionContext.Implicits.global
     val location: Future[Optional[URI]] = {
-      // FIXME: Horrible Java8/Scala code, speak up if you have a better implementation.
-      val string2uri: String => Optional[URI] = uri => {
-        try Optional.of(new URI(uri))
+      val asOptionalURI: URI => Optional[URI] = uri => {
+        try Optional.of(uri)
         catch {
           case e: java.net.URISyntaxException =>
             logger.error(s"Invalid address=[$uri] returned for service name=[$name]", e)
@@ -117,7 +119,7 @@ class ServiceRegistryServiceLocator @Inject() (registry: ServiceRegistry, config
         }
       }
       import scala.compat.java8.FutureConverters._
-      registry.lookup().invoke(name, null).toScala.map(string2uri).recover {
+      registry.lookup().invoke(name, null).toScala.map(asOptionalURI).recover {
         case notFound: NotFound => Optional.empty()
       }
     }
