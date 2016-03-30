@@ -11,7 +11,7 @@ import scala.concurrent.Future
 
 import com.google.inject.AbstractModule
 import com.google.inject.Inject
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfig
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
 import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorHolder
 import com.lightbend.lagom.internal.registry.ServiceRegistry
 import com.lightbend.lagom.internal.registry.ServiceRegistryService
