@@ -5,6 +5,9 @@ package com.lightbend.lagom.sbt.run
 
 import java.util
 
+import com.lightbend.lagom.sbt.Internal
+import com.lightbend.lagom.sbt.LagomImport
+import com.lightbend.lagom.sbt.LagomPlugin
 import com.lightbend.lagom.sbt.LagomPlugin.autoImport._
 import com.lightbend.lagom.sbt.LagomReloadableService.autoImport._
 import com.lightbend.lagom.sbt.core.Build
@@ -36,8 +39,10 @@ private[sbt] object RunSupport {
       () => Project.runTask(streamsManager in scope, state).map(_._2).get.toEither.right.toOption
     )
 
+    val classpath = (devModeDependencies.value ++ (externalDependencyClasspath in Runtime).value).distinct.files
+
     Reloader.startDevMode(
-      (externalDependencyClasspath in Runtime).value.files,
+      classpath,
       reloadCompile,
       lagomClassLoaderDecorator.value,
       lagomWatchDirectories.value,
@@ -52,7 +57,8 @@ private[sbt] object RunSupport {
     extraConfigs: Map[String, String]
   ): Def.Initialize[Task[Reloader.DevServer]] = Def.task {
 
-    val classpath = (fullClasspath in Compile).value
+    val classpath = (devModeDependencies.value ++ (fullClasspath in Runtime).value).distinct
+
     val buildLinkSettings = (extraConfigs.toSeq ++ lagomDevSettings.value).toMap.asJava
 
     val buildLoader = this.getClass.getClassLoader
@@ -97,6 +103,18 @@ private[sbt] object RunSupport {
 
       def close(): Unit = server.stop()
     }
+  }
+
+  private def devModeDependencies = Def.task {
+    cassandraDependencyClasspath.value ++ (externalDependencyClasspath in Internal.Configs.DevRuntime).value
+  }
+
+  private def cassandraDependencyClasspath = Def.task {
+    val projectDependencies = (allDependencies in Runtime).value
+    if (projectDependencies.exists(_ == LagomImport.lagomJavadslPersistence))
+      (dependencyClasspath in Internal.Configs.CassandraRuntime).value
+    else
+      Seq.empty
   }
 
   def compile(reloadCompile: () => Result[sbt.inc.Analysis], classpath: () => Result[Classpath], streams: () => Option[Streams]): CompileResult = {

@@ -174,18 +174,12 @@ val apiProjects = Seq[ProjectReference](
   pubsub,
   persistence,
   testkit,
-  `service-registry-client`,
-  `play-integration`,
   logback,
   immutables
 )
 
 val otherProjects = Seq[ProjectReference](
   `dev-environment`,
-  `build-link`,
-  `reloadable-server`,
-  `cassandra-server`,
-  `sbt-plugin`,
   `service-integration-tests`
 )
 
@@ -285,23 +279,11 @@ lazy val client = (project in file("client"))
   )
   .dependsOn(core, spi)
 
-lazy val `service-registry-client` = (project in file("service-registry-client"))
-  .settings(name := "lagom-service-registry-client")
-  .settings(runtimeLibCommon: _*)
-  .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(client, immutables % "provided")
-
-lazy val `play-integration` = (project in file("play-integration"))
-  .settings(name := "lagom-play-integration")
-  .settings(runtimeLibCommon: _*)
-  .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(`service-registry-client`)
-
 lazy val server = (project in file("server"))
   .settings(name := "lagom-javadsl-server")
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
-  .dependsOn(core, client, `service-registry-client`, immutables % "provided")
+  .dependsOn(core, client, immutables % "provided")
 
 lazy val testkit = (project in file("testkit"))
   .settings(name := "lagom-javadsl-testkit")
@@ -394,7 +376,7 @@ lazy val pubsub = (project in file("pubsub"))
 
 lazy val persistence = (project in file("persistence"))
   .settings(name := "lagom-javadsl-persistence")
-  .dependsOn(cluster, `service-registry-client`)
+  .dependsOn(cluster)
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
   .settings(Protobuf.settings)
@@ -434,7 +416,7 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
-  .aggregate(`build-link`, `reloadable-server`, `sbt-plugin`, `service-locator`, `cassandra-server`)
+  .aggregate(`build-link`, `reloadable-server`, `sbt-plugin`, `service-locator`, `service-registration`, `cassandra-server`, `cassandra-registration`,  `play-integration`, `service-registry-client`)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}
@@ -524,7 +506,31 @@ lazy val `service-locator` = (project in file("dev") / "service-locator")
       scalaTest % Test
     )
   )
-  .dependsOn(server, logback)
+  .dependsOn(server, logback, `service-registry-client`)
+
+lazy val `service-registry-client` = (project in file("dev") / "service-registry-client")
+  .settings(name := "lagom-service-registry-client")
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .dependsOn(client, immutables % "provided")
+
+lazy val `service-registration` = (project in file("dev") / "service-registration")
+  .settings(name := "lagom-service-registration")
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .dependsOn(server, `service-registry-client`)
+
+lazy val `cassandra-registration` = (project in file("dev") / "cassandra-registration")
+  .settings(name := "lagom-cassandra-registration")
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .dependsOn(api, persistence, `service-registry-client`)
+
+lazy val `play-integration` = (project in file("dev") / "play-integration")
+  .settings(name := "lagom-play-integration")
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .dependsOn(`service-registry-client`)
 
 lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
   .settings(name := "lagom-cassandra-server")
