@@ -20,7 +20,7 @@ A keyspace in Cassandra is a namespace that defines data replication on nodes. E
 
 @[cassandra-users-project](code/build-cassandra-opts.sbt)
 
-Because the project's name is `users-impl`, the generated Cassandra keyspace will be `users_impl` (note that dashes are replaced with underscores). If you'd prefer the kesyapce to be named simply `users`, you could either change the project's `name` to be `users`, or alternatively add the following setting:
+Because the project's name is `users-impl`, the generated Cassandra keyspace will be `users_impl` (note that dashes are replaced with underscores). If you'd prefer the keyspace to be named simply `users`, you could either change the project's `name` to be `users`, or alternatively add the following setting:
 
 @[cassandra-users-project](code/build-cassandra-opts2.sbt)
 
