@@ -38,26 +38,26 @@ private[sbt] object Servers {
       def serviceGatewayAddress: URI
     }
 
-    protected def stop(log: Logger): Unit = synchronized {
-      if (server == null) {
-        log.info("Service locator was already stopped")
-      } else {
-        log.info("Stopping service locator")
-        try server.close()
-        finally server = null
-      }
-    }
-
     def start(log: Logger, parentClassLoader: ClassLoader, classpath: Array[URL], serviceLocatorPort: Int, serviceGatewayPort: Int, unmanagedServices: Map[String, String]): Unit = synchronized {
       if (server == null) {
         withContextClassloader(new java.net.URLClassLoader(classpath, parentClassLoader)) { loader =>
           val serverClass = loader.loadClass("com.lightbend.lagom.discovery.ServiceLocatorServer")
           server = serverClass.newInstance().asInstanceOf[Server]
-          server.start(serviceLocatorPort, serviceGatewayPort, unmanagedServices.asJava)
+          try {
+            server.start(serviceLocatorPort, serviceGatewayPort, unmanagedServices.asJava)
+          } catch {
+            case e: Exception =>
+              val msg = "Failed to start embedded Service Locator or Service Gateway. " +
+                s"Hint: Are ports ${serviceLocatorPort} and ${serviceGatewayPort} already in use?"
+              log.error(msg)
+              stop()
+          }
         }
       }
-      log.info("Service locator is running at " + server.serviceLocatorAddress)
-      log.info("Service gateway is running at " + server.serviceGatewayAddress)
+      if (server != null) {
+        log.info("Service locator is running at " + server.serviceLocatorAddress)
+        log.info("Service gateway is running at " + server.serviceGatewayAddress)
+      }
     }
 
     private def withContextClassloader[T](loader: ClassLoader)(body: ClassLoader => T): T = {
@@ -66,6 +66,21 @@ private[sbt] object Servers {
         Thread.currentThread().setContextClassLoader(loader)
         body(loader)
       } finally Thread.currentThread().setContextClassLoader(current)
+    }
+
+    protected def stop(log: Logger): Unit = synchronized {
+      if (server == null) {
+        log.info("Service locator was already stopped")
+      } else {
+        log.info("Stopping service locator")
+        stop()
+      }
+    }
+
+    private def stop(): Unit = synchronized {
+      try server.close()
+      catch { case _: Exception => () }
+      finally server = null
     }
   }
 
