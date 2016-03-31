@@ -7,7 +7,6 @@ import java.net.{ URI, InetSocketAddress }
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.inject.{ Named, Singleton, Inject }
-
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
@@ -31,7 +30,6 @@ import play.api.inject.ApplicationLifecycle
 import play.api.libs.iteratee.Execution.Implicits.trampoline
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
-
 import scala.language.implicitConversions
 import scala.collection.JavaConverters._
 import scala.collection.immutable.Queue
@@ -349,8 +347,10 @@ class ServiceGateway @Inject() (lifecycle: ApplicationLifecycle, config: Service
     }
   })
 
-  def address: InetSocketAddress = {
-    Await.result(bindFuture, 10.seconds).localAddress().asInstanceOf[InetSocketAddress]
+  val address: InetSocketAddress = {
+    val address = Await.result(bindFuture, 10.seconds).localAddress().asInstanceOf[InetSocketAddress]
+    if (address == null) throw new IllegalStateException(s"Channel could not be bound on port ${config.port}")
+    address
   }
 
   private def renderNotFound(request: HttpRequest, path: String, registry: Map[String, ServiceRegistryService]): HttpResponse = {
