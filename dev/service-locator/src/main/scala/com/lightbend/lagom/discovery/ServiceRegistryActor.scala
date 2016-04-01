@@ -55,7 +55,7 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
     case GetRegisteredServices =>
       val services: List[RegisteredService] = (for {
         (name, service) <- registry
-      } yield RegisteredService.of(name, service.uri()))(collection.breakOut)
+      } yield RegisteredService.of(name, service.uri))(collection.breakOut)
       import scala.collection.JavaConverters._
       sender() ! RegisteredServices(TreePVector.from(services.asJava))
     case route: Route =>
@@ -63,7 +63,7 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
   }
 
   private def serviceRouter(service: ServiceRegistryService) = {
-    val addressUri = URI.create(service.uri)
+    val addressUri = service.uri
     val address = new InetSocketAddress(addressUri.getHost, addressUri.getPort)
     service.acls.asScala.map {
       case acl =>

@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.discovery.impl;
 
+import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -62,13 +63,13 @@ public class ServiceRegistryImpl implements ServiceRegistry {
 	}
 
 	@Override
-	public ServiceCall<String, NotUsed, String> lookup() {
+	public ServiceCall<String, NotUsed, URI> lookup() {
 		return (name, request) -> {
 			if (LOGGER.isDebugEnabled())
 				LOGGER.debug("locate invoked, name=[" + name + "], request=[" + request + "]");
 			return PatternsCS.ask(registry, new Lookup(name), timeout).thenApply(result -> {
 				@SuppressWarnings("unchecked")
-				Optional<String> location = OptionConverters.toJava((Option<String>) result);
+				Optional<URI> location = OptionConverters.toJava((Option<URI>) result);
 				logServiceLookupResult(name, location);
 				if (location.isPresent()) {
 					return location.get();
@@ -91,7 +92,7 @@ public class ServiceRegistryImpl implements ServiceRegistry {
 		};
 	}
 
-	private void logServiceLookupResult(String name, Optional<String> location) {
+	private void logServiceLookupResult(String name, Optional<URI> location) {
 		if (LOGGER.isDebugEnabled()) {
 			if (location.isPresent())
 				LOGGER.debug("Location of service name=[" + name + "] is " + location.get());
