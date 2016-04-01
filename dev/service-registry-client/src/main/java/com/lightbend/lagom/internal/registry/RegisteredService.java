@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import java.net.URI;
 import java.util.List;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -31,14 +32,14 @@ import javax.annotation.concurrent.NotThreadSafe;
 public final class RegisteredService
     implements AbstractRegisteredService {
   private final String name;
-  private final String url;
+  private final URI url;
 
-  private RegisteredService(String name, String url) {
+  private RegisteredService(String name, URI url) {
     this.name = Preconditions.checkNotNull(name, "name");
     this.url = Preconditions.checkNotNull(url, "url");
   }
 
-  private RegisteredService(RegisteredService original, String name, String url) {
+  private RegisteredService(RegisteredService original, String name, URI url) {
     this.name = name;
     this.url = url;
   }
@@ -57,7 +58,7 @@ public final class RegisteredService
    */
   @JsonProperty
   @Override
-  public String url() {
+  public URI url() {
     return url;
   }
 
@@ -79,9 +80,9 @@ public final class RegisteredService
    * @param value A new value for url
    * @return A modified copy of the {@code this} object
    */
-  public final RegisteredService withUrl(String value) {
+  public final RegisteredService withUrl(URI value) {
     if (this.url == value) return this;
-    String newValue = Preconditions.checkNotNull(value, "url");
+    URI newValue = Preconditions.checkNotNull(value, "url");
     return new RegisteredService(this, this.name, newValue);
   }
 
@@ -134,19 +135,19 @@ public final class RegisteredService
   @JsonDeserialize
   static final class Json implements AbstractRegisteredService {
     @Nullable String name;
-    @Nullable String url;
+    @Nullable URI url;
 
     public void setName(String name) {
       this.name = name;
     }
 
-    public void setUrl(String url) {
+    public void setUrl(URI url) {
       this.url = url;
     }
     @Override
     public String name() { throw new UnsupportedOperationException(); }
     @Override
-    public String url() { throw new UnsupportedOperationException(); }
+    public URI url() { throw new UnsupportedOperationException(); }
   }
 
   /**
@@ -173,7 +174,7 @@ public final class RegisteredService
    * @param url The value for the {@code url} attribute
    * @return An immutable RegisteredService instance
    */
-  public static RegisteredService of(String name, String url) {
+  public static RegisteredService of(String name, URI url) {
     return new RegisteredService(name, url);
   }
 
@@ -215,7 +216,7 @@ public final class RegisteredService
     private long initBits = 0x3;
 
     private @Nullable String name;
-    private @Nullable String url;
+    private @Nullable URI url;
 
     private Builder() {}
 
@@ -249,7 +250,7 @@ public final class RegisteredService
      * @param url The value for url 
      * @return {@code this} builder for use in a chained invocation
      */
-    public final Builder url(String url) {
+    public final Builder url(URI url) {
       this.url = Preconditions.checkNotNull(url, "url");
       initBits &= ~INIT_BIT_URL;
       return this;

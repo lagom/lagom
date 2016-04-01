@@ -20,6 +20,7 @@ import com.lightbend.lagom.discovery.UnmanagedServices
 import akka.NotUsed
 import java.util.concurrent.TimeUnit
 import com.lightbend.lagom.internal.registry.RegisteredService
+import java.net.URI
 
 class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
 
@@ -27,7 +28,7 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
 
   "A service registry" should {
     "allow to register a service" in withServiceRegistry() { registry =>
-      val expectedUrl = "http://localhost:9000"
+      val expectedUrl = new URI("http://localhost:9000")
       val serviceName = "fooservice"
       registry.register().invoke(serviceName, new ServiceRegistryService(expectedUrl, Collections.emptyList[ServiceAcl]))
       val registeredUrl = registry.lookup().invoke("fooservice", NotUsed).toCompletableFuture().get(
@@ -37,7 +38,7 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
     }
 
     "allow to register a service of same service twice (idempotent)" in withServiceRegistry() { registry =>
-      val expectedUrl = "http://localhost:9000"
+      val expectedUrl = new URI("http://localhost:9000")
       val serviceName = "fooservice"
       registry.register().invoke(serviceName, new ServiceRegistryService(expectedUrl, Collections.emptyList[ServiceAcl]))
         .toCompletableFuture().get(testTimeoutInSeconds, TimeUnit.SECONDS)
@@ -57,8 +58,8 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
     }
 
     "disallow registering the different endpoint for same name twice or more" in withServiceRegistry() { registry =>
-      val url1 = "http://localhost:9000"
-      val url2 = "http://localhost:9001"
+      val url1 = new URI("http://localhost:9000")
+      val url2 = new URI("http://localhost:9001")
       val serviceName = "fooservice"
       registry.register().invoke("fooservice", new ServiceRegistryService(url1, Collections.emptyList[ServiceAcl]))
         .toCompletableFuture.get(testTimeoutInSeconds, TimeUnit.SECONDS)
@@ -69,7 +70,7 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
     }
 
     "allow to retrieve the full list of registered services" in {
-      val url = "http://localhost:9000"
+      val url = new URI("http://localhost:9000")
       val name = "fooservice"
       val service = new ServiceRegistryService(url, Collections.emptyList[ServiceAcl])
       val registeredService = Map(name -> service)

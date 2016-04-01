@@ -11,8 +11,8 @@ import com.google.inject.spi.InjectionListener
 import com.google.inject.spi.TypeEncounter
 import com.google.inject.spi.TypeListener
 import com.lightbend.lagom.internal.persistence.PersistentEntityRegistryImpl
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfig
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfig.CassandraConfigProvider
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfigProvider
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideImpl
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraSessionImpl
 import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorHolder
@@ -31,7 +31,7 @@ class PersistenceModule extends AbstractModule {
     binder.bind(classOf[PersistentEntityRegistry]).to(classOf[PersistentEntityRegistryImpl])
     binder.bind(classOf[CassandraSession]).to(classOf[CassandraSessionImpl])
     binder.bind(classOf[CassandraReadSide]).to(classOf[CassandraReadSideImpl])
-    binder.bind(classOf[CassandraConfig]).toProvider(classOf[CassandraConfig.CassandraConfigProvider])
+    binder.bind(classOf[CassandraConfig]).toProvider(classOf[CassandraConfigProvider])
     binder.bind(classOf[PersistenceModule.InitServiceLocatorHolder]).asEagerSingleton()
     initServiceLocatorHolder()
   }
