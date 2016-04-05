@@ -48,6 +48,14 @@ You can provide a custom `.yaml` configuration to use when starting the embedded
 
 @[cassandra-yaml](code/build-cassandra-opts2.sbt)
 
+## Logging
+
+Logging is configured such that it goes to the standard output, and the log level for `org.apache.cassandra` is set to `ERROR`. Here is the used `logback.xml` file:
+
+@[](../../../../../dev/cassandra-server/src/main/resources/logback.xml)
+
+There is no mechanism in place to edit the used `logback.xml`. If you need to tune the logging configuration, you should install Cassandra, and [[read the instructions|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]] to connect to a locally running Cassandra. 
+
 ## Cassandra start time
 
 [[As mentioned|DevEnvironment#Cassandra]], the `runAll` task also takes care of starting the embedded Cassandra server, before starting any other service. Moreover, services are usually started only after the Cassandra server is reachable. By default, the Cassandra server is given up to 20 seconds to be up and running, but you can change this default by adding the following in your build:
