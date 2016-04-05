@@ -21,56 +21,62 @@
 # --------------
 > runAll
 > verifyReloadsProjA 1
+> assertRequest 10000 /foo ack foo
 
 # Change a scala file
-$ copy-file changes/a/FooServiceImpl.java.1 a/src-a/main/java/impl/FooServiceImpl.java
+$ copy-file changes/a/FooServiceImpl.java.1 a/impl/src/main/java/impl/FooServiceImpl.java
 > verifyReloadsProjA 2
+> assertRequest 10000 /foo ack updated foo 1
 
 # Introduce a compile error
-$ copy-file changes/a/FooServiceImpl.java.2 a/src-a/main/java/impl/FooServiceImpl.java
+$ copy-file changes/a/FooServiceImpl.java.2 a/impl/src/main/java/impl/FooServiceImpl.java
 $ sleep 7000
 > verifyReloadsProjA 2
 
 # Fix the compile error
-$ copy-file changes/a/FooServiceImpl.java.3 a/src-a/main/java/impl/FooServiceImpl.java
+$ copy-file changes/a/FooServiceImpl.java.3 a/impl/src/main/java/impl/FooServiceImpl.java
 > verifyReloadsProjA 3
+> assertRequest 10000 /foo ack updated foo 3
 
 
 # Let's do the same on project B
 > verifyReloadsProjB 1
+> assertRequest 10001 /bar ack bar
 
 # Change a scala file
-$ copy-file changes/b/FooServiceImpl.java.1 b/src-b/main/java/impl/FooServiceImpl.java
+$ copy-file changes/b/BarServiceImpl.java.1 b/impl/src/main/java/impl/BarServiceImpl.java
 > verifyReloadsProjB 2
+> assertRequest 10001 /bar ack updated bar 1
 
 # Introduce a compile error
-$ copy-file changes/b/FooServiceImpl.java.2 b/src-b/main/java/impl/FooServiceImpl.java
+$ copy-file changes/b/BarServiceImpl.java.2 b/impl/src/main/java/impl/BarServiceImpl.java
 $ sleep 8000
 > verifyReloadsProjB 2
 
 # Fix the compile error
-$ copy-file changes/b/FooServiceImpl.java.3 b/src-b/main/java/impl/FooServiceImpl.java
+$ copy-file changes/b/BarServiceImpl.java.3 b/impl/src/main/java/impl/BarServiceImpl.java
 > verifyReloadsProjB 3
+> assertRequest 10001 /bar ack updated bar 3
 
 
 # Now try the Play project
-> assertPlayRequest /p Hello Play!
-> assertPlayRequest /p/assets/foo.js var foo
+> assertRequest 9001 /p Hello Play!
+> assertRequest 9001 /p/assets/foo.js var foo
 
 # Change a template
 $ copy-file changes/p/index.scala.html.1 p/app/views/index.scala.html
-> assertPlayRequest /p Hello Changed Play!
+> assertRequest 9001 /p Hello Changed Play!
 
 # Change an asset
 $ copy-file changes/p/foo.js.1 p/app/assets/foo.js
-> assertPlayRequest /p/assets/foo.js var bar
+> assertRequest 9001 /p/assets/foo.js var bar
 
 # And now let's try the same on project C (which isn't a microservice project)
 
 > verifyNoReloadsProjC
 
 # Change a scala file
-$ copy-file changes/c/FooServiceImpl.java.1 c/src-c/main/java/impl/FooServiceImpl.java
+$ copy-file changes/c/BazServiceImpl.java.1 c/src-c/main/java/impl/BazServiceImpl.java
 $ sleep 7000
 > verifyNoReloadsProjC
 
