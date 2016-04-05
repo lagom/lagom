@@ -106,13 +106,13 @@ private[sbt] object RunSupport {
   }
 
   private def devModeDependencies = Def.task {
-    cassandraDependencyClasspath.value ++ (externalDependencyClasspath in Internal.Configs.DevRuntime).value
+    cassandraDependencyClasspath.value ++ (managedClasspath in Internal.Configs.DevRuntime).value
   }
 
   private def cassandraDependencyClasspath = Def.task {
     val projectDependencies = (allDependencies in Runtime).value
     if (projectDependencies.exists(_ == LagomImport.lagomJavadslPersistence))
-      (dependencyClasspath in Internal.Configs.CassandraRuntime).value
+      (managedClasspath in Internal.Configs.CassandraRuntime).value
     else
       Seq.empty
   }
