@@ -4,17 +4,15 @@ import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
-import api.FooService;
+import api.BarService;
 
 import akka.stream.javadsl.Source;
 
-public class FooServiceImpl implements FooService {
-
+public class BarServiceImpl implements BarService {
   @Override
-  public ServiceCall<NotUsed, NotUsed, NotUsed> foo() {
+  public ServiceCall<NotUsed, NotUsed, String> bar() {
     return (id, request) -> {
-      System.out.println("foo called again");
-      return CompletableFuture.completedFuture(NotUsed.getInstance());
+      return CompletableFuture.completedFuture("ack bar");
     };
   }
 }
