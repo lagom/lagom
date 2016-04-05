@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.it
 
+import java.util.Optional
 import java.util.concurrent.TimeUnit
 import akka.stream.scaladsl.{ Sink, Flow, Source }
 import com.lightbend.lagom.it.mocks._
@@ -123,6 +124,11 @@ class MockServiceSpec extends ServiceSupport {
     "send the service name on streams" in withMockServiceClient { implicit app => client =>
       Await.result(client.streamServiceName().invoke().toCompletableFuture.get(10, TimeUnit.SECONDS)
         .asScala.runWith(Sink.head), 10.seconds) should ===("mockservice")
+    }
+
+    "work with query params" in withMockServiceClient { implicit app => client =>
+      client.queryParamId().invoke(Optional.of("foo"), NotUsed.getInstance())
+        .toCompletableFuture.get(10, TimeUnit.SECONDS) should ===("foo")
     }
 
     "be invoked with circuit breaker" in withMockServiceClient { implicit app => client =>
