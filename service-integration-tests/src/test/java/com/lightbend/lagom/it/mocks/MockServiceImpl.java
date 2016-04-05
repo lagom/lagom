@@ -17,6 +17,7 @@ import com.lightbend.lagom.javadsl.server.HeaderServiceCall;
 import com.lightbend.lagom.javadsl.server.ServerServiceCall;
 import javax.inject.Inject;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -138,7 +139,12 @@ public class MockServiceImpl implements MockService {
         );
     }
 
-    /**
+    @Override
+    public ServiceCall<Optional<String>, NotUsed, String> queryParamId() {
+        return (id, request) -> CompletableFuture.completedFuture(id.orElse("none"));
+    }
+
+  /**
      * Shows example service call composition.
      */
     private <Id, Request, Response> ServerServiceCall<Id, Request, Response> withServiceName(

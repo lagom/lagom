@@ -54,7 +54,7 @@ case class Path(parts: Seq[PathPart], queryParams: Seq[String]) {
     }
     val path = resultPathParts.mkString
     val queryParams = rawId.queryParams().asScala.collect {
-      case (name, values) if values.isEmpty =>
+      case (name, values) if !values.isEmpty =>
         name -> values.asScala.toSeq
     }.toMap
     path -> queryParams
