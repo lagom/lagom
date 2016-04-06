@@ -12,10 +12,13 @@ import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
+import com.lightbend.lagom.javadsl.api.deser.IdSerializer;
 import com.lightbend.lagom.javadsl.api.deser.IdSerializers;
+import com.lightbend.lagom.javadsl.api.deser.RawId;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 import static com.lightbend.lagom.javadsl.api.Service.*;
 import java.util.Arrays;
+import java.util.Optional;
 
 public interface MockService extends Service {
 
@@ -45,6 +48,8 @@ public interface MockService extends Service {
 
     ServiceCall<NotUsed, NotUsed, Source<String, ?>> streamServiceName();
 
+    ServiceCall<Optional<String>, NotUsed, String> queryParamId();
+
     default Descriptor descriptor() {
         return named("mockservice").with(
                 restCall(Method.POST, "/:part1/:part2", mockCall())
@@ -60,7 +65,18 @@ public interface MockService extends Service {
                 call(customHeaders()),
                 call(streamCustomHeaders()),
                 call(serviceName()),
-                call(streamServiceName())
+                call(streamServiceName()),
+                pathCall("/queryparam?qp", queryParamId()).with(new IdSerializer<Optional<String>>() {
+                    @Override
+                    public RawId serialize(Optional<String> s) {
+                        return RawId.EMPTY.withQueryParam("qp", s);
+                    }
+                    @Override
+                    public Optional<String> deserialize(RawId rawId) {
+                        return rawId.queryParam("qp");
+                    }
+                })
+
         );
     }
 }
