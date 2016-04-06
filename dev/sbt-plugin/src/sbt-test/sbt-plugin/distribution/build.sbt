@@ -65,7 +65,7 @@ def checkDevClasspathTask(config: Configuration): Def.Initialize[InputTask[Unit]
 }
 
 def checkClasspath(projName: String, name: String, config: Configuration): Def.Initialize[Task[Unit]] = Def.task {
-  val cp = classpathOf(projName, config).value.flatten
+  val cp = classpathOf(projName, config).value
   val names = cp.files.map(_.getName)
   val matches = names.filter(_ contains name)
   if (matches.isEmpty)
@@ -75,6 +75,5 @@ def checkClasspath(projName: String, name: String, config: Configuration): Def.I
 def classpathOf(projName: String, config: Configuration) = Def.taskDyn {
   val structure = buildStructure.value
   val projRef = ProjectRef(structure.root, projName)
-  val filter = ScopeFilter(inDependencies(projRef), inConfigurations(config))
-  fullClasspath.all(filter)
+  managedClasspath in projRef in config
 }
