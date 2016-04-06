@@ -9,12 +9,12 @@ import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
-public interface FooService extends Service {
+public interface BarService extends Service {
 
-  ServiceCall<NotUsed, NotUsed, NotUsed> foo();
+  ServiceCall<NotUsed, NotUsed, String> bar();
 
   @Override
   default Descriptor descriptor() {
-    return named("/fooservice").with(restCall(Method.GET,  "/foo",    foo()));
+    return named("/b").with(restCall(Method.GET,  "/bar",    bar())).withAutoAcl(true);
   }
 }

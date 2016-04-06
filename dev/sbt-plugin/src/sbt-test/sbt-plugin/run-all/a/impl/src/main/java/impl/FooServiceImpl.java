@@ -11,10 +11,9 @@ import akka.stream.javadsl.Source;
 public class FooServiceImpl implements FooService {
 
   @Override
-  public ServiceCall<NotUsed, NotUsed, NotUsed> foo() {
+  public ServiceCall<NotUsed, NotUsed, String> foo() {
     return (id, request) -> {
-      System.out.println("foo called");
-      return CompletableFuture.completedFuture(NotUsed.getInstance());
+      return CompletableFuture.completedFuture("ack foo");
     };
   }
 }
