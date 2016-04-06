@@ -23,9 +23,9 @@ object Lagom extends AutoPlugin {
   override def requires = LagomReloadableService && JavaAppPackaging
   val autoImport = LagomImport
 
-  override def projectSettings = inConfig(Internal.Configs.DevRuntime)(Defaults.baseClasspaths ++ Defaults.configSettings ++ Seq(
+  override def projectSettings = Seq(
     libraryDependencies ++= devServiceLocatorDependencies.value
-  ))
+  )
 
   // service locator dependencies are injected into services only iff dev service locator is enabled
   private lazy val devServiceLocatorDependencies = Def.setting {
@@ -33,7 +33,7 @@ object Lagom extends AutoPlugin {
       Seq(
         LagomImport.component("lagom-service-registry-client"),
         LagomImport.component("lagom-service-registration")
-      )
+      ).map(_ % Internal.Configs.DevRuntime)
     else
       Seq.empty
   }
@@ -91,19 +91,18 @@ object LagomPlay extends AutoPlugin {
     lagomClassLoaderDecorator := PlayInternalKeys.playAssetsClassLoader.value,
 
     // Watch the files that Play wants to watch
-    lagomWatchDirectories := PlayKeys.playMonitoredFiles.value
-  ) ++ inConfig(Internal.Configs.DevRuntime)(Defaults.baseClasspaths ++ Defaults.configSettings ++ Seq(
-      // adding dependencies needed to integrate Play in Lagom
-      libraryDependencies ++= (
-        // lagom-play-integration takes care of registering a stock Play app to the 
-        // Lagom development service locator. The dependency is needed only if the 
-        // development service locator is enabled.
-        if (LagomPlugin.autoImport.lagomServiceLocatorEnabled.value)
-          Seq(LagomImport.component("lagom-play-integration"))
-        else
-          Seq.empty
-      )
-    ))
+    lagomWatchDirectories := PlayKeys.playMonitoredFiles.value,
+    // adding dependencies needed to integrate Play in Lagom
+    libraryDependencies ++= (
+      // lagom-play-integration takes care of registering a stock Play app to the 
+      // Lagom development service locator. The dependency is needed only if the 
+      // development service locator is enabled.
+      if (LagomPlugin.autoImport.lagomServiceLocatorEnabled.value)
+        Seq(LagomImport.component("lagom-play-integration") % Internal.Configs.DevRuntime)
+      else
+        Seq.empty
+    )
+  )
 }
 
 /**
@@ -342,19 +341,20 @@ object LagomPlugin extends AutoPlugin {
         case nonBlocking: PlayNonBlockingInteractionMode => nonBlocking.stop()
         case _ => throw new RuntimeException("Play interaction mode must be non blocking to stop it")
       }
-    }
-  ) ++ inConfig(Internal.Configs.DevRuntime)(Defaults.baseClasspaths ++ Defaults.configSettings ++ Seq(
-      libraryDependencies += LagomImport.component("lagom-reloadable-server")
-    )) ++ inConfig(Internal.Configs.CassandraRuntime)(Defaults.baseClasspaths ++ Defaults.configSettings ++ Seq(
-      ivyConfigurations += Internal.Configs.CassandraRuntime,
-      libraryDependencies ++= cassandraRegistrationDependencies.value
-    ))
+    },
+    ivyConfigurations ++= Seq(Internal.Configs.DevRuntime, Internal.Configs.CassandraRuntime),
+    PlaySettings.manageClasspath(Internal.Configs.DevRuntime),
+    PlaySettings.manageClasspath(Internal.Configs.CassandraRuntime),
+    libraryDependencies ++=
+      LagomImport.component("lagom-reloadable-server") % Internal.Configs.DevRuntime +:
+      cassandraRegistrationDependencies.value
+  )
 
   // jar containing logic for automatic registration to the service locator is added to the classpath only if the 
   // service locator is enabled
   private lazy val cassandraRegistrationDependencies = Def.setting {
     if (lagomServiceLocatorEnabled.value)
-      Seq(LagomImport.component("lagom-cassandra-registration"))
+      Seq(LagomImport.component("lagom-cassandra-registration") % Internal.Configs.CassandraRuntime)
     else
       Seq.empty
   }
