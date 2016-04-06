@@ -231,7 +231,7 @@ object LagomPlugin extends AutoPlugin {
 
     // service locator tasks and settings
     val lagomUnmanagedServices = settingKey[Map[String, String]]("External services name and address known by the service location")
-    val lagomServiceLocatorHostname = settingKey[String]("Hostname of the service locator")
+    val lagomServiceLocatorUrl = settingKey[String]("URL of the service locator")
     val lagomServiceLocatorPort = settingKey[Int]("Port used by the service locator")
     val lagomServiceGatewayPort = settingKey[Int]("Port used by the service gateway")
     val lagomServiceLocatorEnabled = settingKey[Boolean]("Enable/Disable the service locator")
@@ -294,9 +294,8 @@ object LagomPlugin extends AutoPlugin {
     lagomUnmanagedServices := Map.empty,
     lagomServicesPortRange := PortRange(20000, 30000),
     lagomServiceLocatorEnabled := true,
-    // FIXME: This is not a hostname, change the variable's name
-    lagomServiceLocatorHostname := "http://localhost",
     lagomServiceLocatorPort := 8000,
+    lagomServiceLocatorUrl := s"http://localhost:${lagomServiceLocatorPort.value}",
     lagomCassandraEnabled := true,
     lagomCassandraPort := 4000, // If you change the default make sure to also update the play/reference-overrides.conf in the persistence project
     lagomServiceGatewayPort := 9000,
@@ -431,10 +430,9 @@ object LagomPlugin extends AutoPlugin {
   }
 
   private lazy val serviceLocatorConfiguration: Initialize[Map[String, String]] = Def.setting {
-    if (lagomServiceLocatorEnabled.value) {
-      val url = s"${lagomServiceLocatorHostname.value}:${lagomServiceLocatorPort.value}"
-      Map("lagom.service-locator.url" -> url)
-    } else
+    if (lagomServiceLocatorEnabled.value)
+      Map("lagom.service-locator.url" -> lagomServiceLocatorUrl.value)
+    else
       Map.empty
   }
 
