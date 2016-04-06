@@ -3,30 +3,48 @@
  */
 package com.lightbend.lagom.internal.server
 
+import java.net.URI
 import java.util.function.{ Function => JFunction }
 
-import scala.compat.java8.FutureConverters._
+import scala.compat.java8.FutureConverters.CompletionStageOps
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
-import com.google.inject.AbstractModule
+import com.google.inject.Provider
 import com.lightbend.lagom.internal.registry.ServiceRegistry
 import com.lightbend.lagom.internal.registry.ServiceRegistryService
-import com.lightbend.lagom.internal.server.ServiceRegistrationModule.RegisterWithServiceRegistry
 
 import akka.NotUsed
 import javax.inject.Inject
 import javax.inject.Singleton
+import play.api.Configuration
+import play.api.Environment
 import play.api.Logger
 import play.api.inject.ApplicationLifecycle
+import play.api.inject.Binding
+import play.api.inject.Module
 
-class ServiceRegistrationModule extends AbstractModule {
-  override def configure(): Unit = {
-    binder.bind(classOf[ServiceRegistrationModule.RegisterWithServiceRegistry]).asEagerSingleton()
-  }
+class ServiceRegistrationModule extends Module {
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
+    bind[ServiceRegistrationModule.RegisterWithServiceRegistry].toSelf.eagerly(),
+    bind[ServiceRegistrationModule.ServiceConfig].toProvider[ServiceRegistrationModule.ServiceConfigProvider]
+  )
 }
 
 object ServiceRegistrationModule {
+
+  class ServiceConfigProvider @Inject() (config: Configuration) extends Provider[ServiceConfig] {
+    override lazy val get = {
+      val httpAddress = config.underlying.getString("play.server.http.address")
+      val httpPort = config.getString("play.server.http.port").get
+      val url = new URI(s"http://$httpAddress:$httpPort")
+
+      ServiceConfig(url)
+    }
+  }
+
+  case class ServiceConfig(url: URI)
+
   /**
    * Automatically registers the service on start, and also unregister it on stop.
    */
