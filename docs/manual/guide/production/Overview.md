@@ -2,7 +2,7 @@
 
 Lagom leverages the [sbt-native-packager](http://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default zip archives can be produced, but you can also produce tar.gz, MSI, debian, RPM, Docker and more.
 
-Running a package requires the provision of a service locator implementation i.e. something that provides the ability for your service to be able to lookup the location of another dynamically at runtime. At a technical level, you provide an implementation of a [ServiceLocator](api/java/com/lightbend/lagom/javadsl/api/ServiceLocator.html).
+Running a package requires the provision of a service locator implementation i.e. something that provides the ability for your service to be able to lookup the location of another dynamically at runtime. At a technical level, you provide an implementation of a [ServiceLocator](api/java/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html).
 
 When considering a platform to manage your microservices we recommend that you consider the following:
 
