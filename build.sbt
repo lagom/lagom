@@ -54,7 +54,7 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
     </developers>
   },
   pomIncludeRepository := { _ => false },
- 
+
   concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 )
 
@@ -99,7 +99,7 @@ def runtimeLibCommon: Seq[Setting[_]] = common ++ SbtScalariform.scalariformSett
   // compile options
   scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.8", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint", "-deprecation"),
   javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
-  
+
   incOptions := incOptions.value.withNameHashing(true),
 
   // show full stack traces and test case durations
@@ -125,7 +125,7 @@ def formattingPreferences = {
 val defaultMultiJvmOptions: List[String] = {
   import scala.collection.JavaConverters._
   // multinode.D= and multinode.X= makes it possible to pass arbitrary
-  // -D or -X arguments to the forked jvm, e.g. 
+  // -D or -X arguments to the forked jvm, e.g.
   // -Djava.net.preferIPv4Stack=true or -Dmultinode.Xmx512m
   val MultinodeJvmArgs = "multinode\\.(D|X)(.*)".r
   val knownPrefix = Set("akka.", "lagom.")
@@ -146,7 +146,7 @@ def multiJvmTestSettings: Seq[Setting[_]] = SbtMultiJvm.multiJvmSettings ++ Seq(
   compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test),
   // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
   executeTests in MultiJvm <<= (executeTests in MultiJvm) tag(Tags.Test),
-  // make sure that MultiJvm tests are executed by the default test target, 
+  // make sure that MultiJvm tests are executed by the default test target,
   // and combine the results from ordinary test and multi-jvm tests
   executeTests in Test <<= (executeTests in Test, executeTests in MultiJvm) map {
     case (testResults, multiNodeResults)  =>
@@ -172,7 +172,8 @@ val apiProjects = Seq[ProjectReference](
   client,
   cluster,
   pubsub,
-  persistence,
+  `persistence-javadsl`,
+  `persistence-scaladsl`,
   testkit,
   logback,
   immutables,
@@ -199,8 +200,8 @@ lazy val root = (project in file("."))
   .aggregate(apiProjects: _*)
   .aggregate(otherProjects: _*)
 
-def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) 
-def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype) 
+def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin)
+def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
 
 lazy val api = (project in file("api"))
   .settings(name := "lagom-javadsl-api")
@@ -236,7 +237,7 @@ lazy val jackson = (project in file("jackson"))
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
-    libraryDependencies ++= Seq(      
+    libraryDependencies ++= Seq(
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
       "com.fasterxml.jackson.datatype" % "jackson-datatype-pcollections" % JacksonVersion,
       "com.fasterxml.jackson.datatype" % "jackson-datatype-guava" % JacksonVersion,
@@ -306,7 +307,7 @@ lazy val testkit = (project in file("testkit"))
       scalaTest % Test
     )
   )
-  .dependsOn(server, pubsub, persistence % "compile;test->test") 
+  .dependsOn(server, pubsub, `persistence-javadsl` % "compile;test->test")
 
 lazy val `service-integration-tests` = (project in file("service-integration-tests"))
   .settings(name := "lagom-service-integration-tests")
@@ -322,7 +323,7 @@ lazy val `service-integration-tests` = (project in file("service-integration-tes
     PgpKeys.publishSigned := {},
     publish := {}
   )
-  .dependsOn(server, persistence, pubsub, testkit, logback, `integration-client`)
+  .dependsOn(server, `persistence-javadsl`, pubsub, testkit, logback, `integration-client`)
 
 // for forked tests, necessary for Cassandra
 def forkedTests: Seq[Setting[_]] = Seq(
@@ -380,13 +381,12 @@ lazy val pubsub = (project in file("pubsub"))
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "com.google.inject" % "guice" % "4.0"
     )
-  ) configs (MultiJvm)  
+  ) configs (MultiJvm)
 
-lazy val persistence = (project in file("persistence"))
-  .settings(name := "lagom-javadsl-persistence")
+lazy val persistence = (project in file("persistence") / "core")
+  .settings(name := "lagom-persistence")
   .dependsOn(cluster)
   .settings(runtimeLibCommon: _*)
-  .settings(multiJvmTestSettings: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
@@ -407,7 +407,31 @@ lazy val persistence = (project in file("persistence"))
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "com.google.inject" % "guice" % "4.0"
     )
-  ) configs (MultiJvm)  
+  )
+
+lazy val `persistence-javadsl` = (project in file("persistence") / "javadsl")
+  .settings(name := "lagom-javadsl-persistence")
+  .dependsOn(persistence % "compile->compile;test->test")
+  .settings(runtimeLibCommon: _*)
+  .settings(multiJvmTestSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(forkedTests: _*)
+  .configs(MultiJvm)
+
+lazy val `persistence-scaladsl` = (project in file("persistence") / "scaladsl")
+  .settings(name := "lagom-scaladsl-persistence")
+  .dependsOn(persistence % "compile->compile;test->test")
+  .settings(runtimeLibCommon: _*)
+  .settings(multiJvmTestSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(forkedTests: _*)
+  .configs(MultiJvm)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.softwaremill.macwire" %% "macros" % "2.2.3" % "provided",
+      scalaTest % Test
+    )
+  )
 
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
@@ -486,7 +510,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   ).dependsOn(`build-link`)
 
 
-def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++ 
+def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++
   Seq(scriptedLaunchOpts <+= version apply { v => s"-Dproject.version=$v" }) ++
   Seq(
     scripted <<= ScriptedPlugin.scripted.tag(Tags.Test),
@@ -553,12 +577,12 @@ lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      // Cassandra goes into 100% CPU spin when starting with netty jars of different versions. Hence, 
-      // we are making sure that the only netty dependency comes from cassandra-all, and manually excludes 
-      // all netty transitive dependencies of akka-persistence-cassandra. Mind that dependencies are 
+      // Cassandra goes into 100% CPU spin when starting with netty jars of different versions. Hence,
+      // we are making sure that the only netty dependency comes from cassandra-all, and manually excludes
+      // all netty transitive dependencies of akka-persistence-cassandra. Mind that dependencies are
       // excluded one-by-one because exclusion rules do not work with maven dependency resolution - see
       // https://github.com/lagom/lagom/issues/26#issuecomment-196718818
-      "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion 
+      "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion
         exclude("io.netty", "netty-all") exclude("io.netty", "netty-handler") exclude("io.netty", "netty-buffer")
         exclude("io.netty", "netty-common") exclude("io.netty", "netty-transport") exclude("io.netty", "netty-codec"),
       "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion

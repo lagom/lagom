@@ -1,0 +1,121 @@
+/*
+ * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
+ */
+package com.lightbend.lagom.javadsl.persistence.cassandra
+
+import java.util.Optional
+import scala.collection.JavaConverters._
+import scala.compat.java8.FutureConverters._
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import akka.stream.ActorMaterializer
+import akka.stream.testkit.scaladsl.TestSink
+import com.datastax.driver.core.BatchStatement
+import com.datastax.driver.core.SimpleStatement
+import com.typesafe.config.ConfigFactory
+import com.lightbend.lagom.internal.persistence.cassandra.InternalCassandraSession
+import com.lightbend.lagom.persistence.PersistenceSpec
+import com.lightbend.lagom.persistence.cassandra.CoreCassandraSession
+
+object CassandraSessionSpec {
+
+  val config = ConfigFactory.parseString(s"""
+    akka.loglevel = INFO
+    lagom.persistence.read-side.cassandra.max-result-size = 2
+    """)
+
+}
+
+class CassandraSessionSpec extends PersistenceSpec(CassandraSessionSpec.config) {
+  import CassandraSessionSpec._
+  import system.dispatcher
+
+  implicit val materializer = ActorMaterializer()(system)
+
+  lazy val session: CoreCassandraSession = new InternalCassandraSession(system)
+
+  override def beforeAll {
+    super.beforeAll()
+    createTable()
+    insertTestData()
+  }
+
+  def createTable(): Unit = {
+    Await.ready(session.executeCreateTable(s"""
+      CREATE TABLE IF NOT EXISTS testcounts (
+        partition text,
+        key text,
+        count bigint,
+        PRIMARY KEY (partition, key))
+        """), 15.seconds)
+  }
+
+  def insertTestData(): Unit = {
+    val batch = new BatchStatement
+    batch.add(new SimpleStatement("INSERT INTO testcounts (partition, key, count) VALUES ('A', 'a', 1);"))
+    batch.add(new SimpleStatement("INSERT INTO testcounts (partition, key, count) VALUES ('A', 'b', 2);"))
+    batch.add(new SimpleStatement("INSERT INTO testcounts (partition, key, count) VALUES ('A', 'c', 3);"))
+    batch.add(new SimpleStatement("INSERT INTO testcounts (partition, key, count) VALUES ('A', 'd', 4);"))
+    batch.add(new SimpleStatement("INSERT INTO testcounts (partition, key, count) VALUES ('B', 'e', 5);"))
+    batch.add(new SimpleStatement("INSERT INTO testcounts (partition, key, count) VALUES ('B', 'f', 6);"))
+    Await.ready(session.executeWriteBatch(batch), 10.seconds)
+  }
+
+  "CassandraSession" must {
+
+    "select prepared statement as Source" in {
+      val stmt = Await.result(session.prepare(
+        "SELECT count FROM testcounts WHERE partition = ?"
+      ), 5.seconds)
+      val bound = stmt.bind("A")
+      val rows = session.select(bound)
+      val probe = rows.map(_.getLong("count")).runWith(TestSink.probe[Long])
+      probe.within(10.seconds) {
+        probe.request(10)
+          .expectNextUnordered(1L, 2L, 3L, 4L)
+          .expectComplete()
+      }
+    }
+
+    "select and bind as Source" in {
+      val rows = session.select("SELECT count FROM testcounts WHERE partition = ?", "B")
+      val probe = rows.map(_.getLong("count")).runWith(TestSink.probe[Long])
+      probe.within(10.seconds) {
+        probe.request(10)
+          .expectNextUnordered(5L, 6L)
+          .expectComplete()
+      }
+    }
+
+    "selectAll and bind" in {
+      val rows = Await.result(session.selectAll(
+        "SELECT count FROM testcounts WHERE partition = ?", "A"
+      ), 5.seconds)
+      rows.map(_.getLong("count")).toSet should ===(Set(1L, 2L, 3L, 4L))
+    }
+
+    "selectAll empty" in {
+      val rows = Await.result(session.selectAll(
+        "SELECT count FROM testcounts WHERE partition = ?", "X"
+      ), 5.seconds)
+      rows.isEmpty should ===(true)
+    }
+
+    "selectOne and bind" in {
+      val row = Await.result(session.selectOne(
+        "SELECT count FROM testcounts WHERE partition = ? and key = ?", "A", "b"
+      ), 5.seconds)
+      row.get.getLong("count") should ===(2L)
+    }
+
+    "selectOne empty" in {
+      val row = Await.result(session.selectOne(
+        "SELECT count FROM testcounts WHERE partition = ? and key = ?", "A", "x"
+      ), 5.seconds)
+      row should be(Optional.empty())
+    }
+
+  }
+
+}
+
