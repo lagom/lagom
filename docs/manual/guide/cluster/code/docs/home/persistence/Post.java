@@ -31,7 +31,7 @@ public class Post extends PersistentEntity<BlogCommand, BlogEvent, BlogState> {
             ctx.reply(AddPostDone.of(entityId())));
       });
 
-      // Event handlers are used both when when persisting new events and when replaying
+      // Event handlers are used both when persisting new events and when replaying
       // events.
       b.setEventHandlerChangingBehavior(PostAdded.class, evt ->
         becomePostAdded(state().withContent(Optional.of(evt.getContent()))));
