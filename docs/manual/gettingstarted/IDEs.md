@@ -9,7 +9,7 @@ Here you will learn how to import projects defined in a Lagom build into your pr
 If your Lagom build file is in directory `helloworld`, create a `project/eclipse.sbt` with the following content:
 
 ```
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "3.0.1")
+addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "3.0.0")
 ```
 
 Save the file. Now, open the terminal, and `cd` to the `helloworld` directory, and type `activator`:
