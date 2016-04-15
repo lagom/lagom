@@ -57,6 +57,24 @@ object UnidocRoot extends AutoPlugin {
     (sources in (Genjavadoc, doc)).all((unidocScopeFilter in (JavaUnidoc, unidoc)).value)
   }
 
+  /**
+    * This ensures that we can link to the frames version of a page (ie, instead of api/foo/Bar.html,
+    * link to api/index.html?foo/Bar.html), while still being able to also link to a specific method.
+    *
+    * It checks whether the current window is a class frame (rather than the package frame, or
+    * the top level window if not using frames), and if the top window has a hash, takes the
+    * current frame to that hash.
+    *
+    * I'm not sure exactly how this string is processed by what and where, but it seems escaping
+    * newlines and double quotes makes it work with javadoc.
+    */
+  private val framesHashScrollingCode =
+    """<script type="text/javascript">
+      |  if (window.name == "classFrame" && window.top.location.hash) {
+      |    window.location.href = window.top.location.hash;
+      |  }
+      |</script>""".stripMargin.replaceAll("\n", "\\\\n").replaceAll("\"", "\\\\\"")
+
   override lazy val projectSettings = javaUnidocSettings ++ Seq(
     unidocAllSources in (JavaUnidoc, unidoc) ++= allGenjavadocSources.value,
     unidocAllSources in (JavaUnidoc, unidoc) := {
@@ -76,7 +94,9 @@ object UnidocRoot extends AutoPlugin {
 
       "-noqualifier", "java.lang",
       "-encoding", "UTF-8", 
-      "-source", "1.8"
+      "-source", "1.8",
+      "-notimestamp",
+      "-footer", framesHashScrollingCode
     ))
 
   def packageList(names: String*): String = 
