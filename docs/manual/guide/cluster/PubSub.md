@@ -6,6 +6,10 @@
 
 Let's look at an example of a service that publishes temperature measurements of hardware devices. A device can submit its current temperature and interested parties can get a stream of the temperature samples.
 
+To use this feature add the following dependency reference in your project's build:
+
+@[pubsub-dependency](code/build-cluster.sbt)
+
 The service API is defined as:
 
 @[service-api](code/docs/home/pubsub/SensorService.java)
@@ -51,12 +55,6 @@ The registry of subscribers is eventually consistent, i.e. new subscribers are n
 ## Serialization
 
 The published messages must be serializable since they will be sent across the nodes in the cluster of the service. JSON is the recommended serialization format for these messages. The [[Serialization|Serialization]] section describes how to add Jackson serialization support to such message classes.
-
-## Dependency
-
-To use this feature add the following in your project's build:
-
-@[pubsub-dependency](code/build-cluster.sbt)
 
 ## Underlying Implementation
 

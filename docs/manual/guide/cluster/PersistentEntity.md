@@ -30,6 +30,10 @@ If you can't use Cassandra you can implement your Lagom services with whatever d
 
 ## PersistentEntity Stub
 
+To use this feature add the following in your project's build:
+
+@[persistence-dependency](code/build-cluster.sbt)
+
 This is how a [PersistentEntity](api/java/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntity.html) class looks like before filling in the implementation details:
 
 @[post1](code/docs/home/persistence/Post1.java)
@@ -186,12 +190,6 @@ The default configuration should be good starting point, and the following setti
 @[persistence](../../../../persistence/src/main/resources/reference.conf)
 
 You may also need to adjust the configuration of [akka-persistence-cassandra](https://github.com/akka/akka-persistence-cassandra). See its [reference.conf](https://github.com/akka/akka-persistence-cassandra/blob/v0.13/src/main/resources/reference.conf)
-
-## Dependency
-
-To use this feature add the following in your project's build:
-
-@[persistence-dependency](code/build-cluster.sbt)
 
 ## Underlying Implementation
 
