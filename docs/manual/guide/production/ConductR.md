@@ -19,28 +19,45 @@ If you'd like to know more about our commercial license then [please contact us]
 
 ## Installing ConductR sandbox
 
-The ConductR sandbox is a docker image to easily create a ConductR cluster locally. To run ConductR on your development machine follow the instructions on the [ConductR developer page](https://www.lightbend.com/product/conductr/developer) up to the section **Configure Docker Machine**. We will run the sandbox later on in this guide. Note that in order to access this page you need to login with your Lightbend account. If you don't have an account yet, head out to the [Sign Up page](https://www.lightbend.com/account/register) and create a free account. 
+The ConductR sandbox is a docker image to easily create a ConductR cluster locally. To run ConductR on your development machine follow the instructions on the [ConductR developer page](https://www.lightbend.com/product/conductr/developer) up to the section **Configure Docker Machine**. We will run the sandbox later on in this guide. Note that in order to access this page you need to login with your Lightbend account. If you don't have an account yet, head out to the [Sign Up page](https://www.lightbend.com/account/register) and create a free account.
+ 
+Verify the successful installation of the `conductr-cli` by running the `conduct` command within the terminal:
+
+```console
+$ conduct
+usage: conduct [-h]
+               {version,info,services,acls,load,run,stop,unload,events,logs}
+               ...
+```
+
+Now, add the [sbt-conductr plugin](https://github.com/typesafehub/sbt-conductr) to your `project/plugins.sbt`:
+
+```scala
+addSbtPlugin("com.lightbend.conductr" % "sbt-conductr-sandbox" % "2.0.1")
+```
+
+sbt-conductr adds several commands to the activator console:
+ 
+* `bundle:dist` to produce ConductR packages for your services
+* `configuration:dist` to produce a custom ConductR configuration for your services
+* Commands from the `conductr-cli`
+
+We will use most of these commands in the next sections. 
 
 ## Packaging your services
 
-We have integrated the experience of packaging your Lagom services so that you can deliver them to ConductR with ease. By adding the [sbt-lagom-bundle plugin](https://github.com/typesafehub/sbt-lagom-bundle#lagom-bundle-plugin) you are able to package Lagom services for ConductR. Add this plugin to your `project/plugins.sbt`:
-
-```scala
-addSbtPlugin("com.typesafe.sbt" % "sbt-lagom-bundle" % "1.0.3")
-```
-
-Now, start the activator console from the terminal:
+Packaging your Lagom services so that you can deliver them to ConductR is straightforward. Start the activator console from the terminal:
 
 ```console
 $ activator
 ```
 
-You can then package your services from within the activator console:
+You can then package your services from within the activator console with the `bundle:dist` command:
 
 ```console
 > bundle:dist
 ...
-[info] Bundle has been created: .../my-service/myservice-impl/target/bundle/myservice-impl-v1-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
+[info] Bundle has been created: /my-service/myservice-impl/target/bundle/myservice-impl-v1-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
 [success] Total time: 4 s, completed 05/03/2016 2:43:07 PM
 ```
 
@@ -48,28 +65,13 @@ The above creates what is known as a "bundle". A bundle is the unit of deploymen
 
 ## Loading and running your services during development
 
-In the previous [Installing ConductR sandbox](#Installing-ConductR-sandbox) section we have already installed the `conductr-cli`. The CLI can be used on the terminal to communicate with the ConductR cluster. 
+To start a ConductR cluster locally you should use the ConductR sandbox which is a docker image based on Ubuntu that includes ConductR. With this docker image you can easily spin up multiple ConductR nodes on your local machine. The `sandbox run` command will pick up and run this ConductR docker image. In order to use this command we need to specify the ConductR version. Note that this version is the version of ConductR itself and not the version of the `sbt-conductr` plugin. Please visit again the [ConductR Developer page](https://www.lightbend.com/product/conductr/developer) to pick up the latest ConductR version from the section **Quick Configuration**.
 
-To use the same commands within the activator console add the following sbt plugin to your `project/plugins.sbt`:
-
-```scala
-addSbtPlugin("com.typesafe.conductr" % "sbt-conductr-sandbox" % "1.4.2")
-```
-
-Additionally specify the ConductR version you want to use in the `build.sbt`. Note that you need to set the version of ConductR itself and not the version of the `sbt-conductr-sandbox` sbt plugin. Please visit again the [ConductR Developer page](https://www.lightbend.com/product/conductr/developer) to pick up the latest ConductR version from the section **Quick Configuration**:
-
-```scala
-SandboxKeys.imageVersion in Global := "YOUR_CONDUCTR_VERSION"
-```
-
-The `SandboxKeys.imageVersion` key is used by the `sandbox run` command to start a specific version of the ConductR cluster locally. Now start the sandbox in the activator console with:
+Now, go to the activator console to start the local ConductR cluster with the `sandbox run` command: 
 
 ```console
-> reload
-> sandbox run --with-features logging
+> sandbox run <CONDUCTR_VERSION>
 ```
-
-The `reload` refreshes the activator console with the previously added settings. In this case we are starting the sandbox with the logging feature in order to retrieve logging information of the bundles.
 
 With the ConductR sandbox running you can now load the bundle that you previously generated:
 
@@ -121,17 +123,17 @@ If your Lagom service uses Cassandra for persistence then you can generate what 
 > project /
 > cassandra-configuration:dist
 ...
-[info] Bundle has been created: .../my-project/target/configuration-bundle/cassandra-configuration-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
+[info] Bundle has been created: /my-project/target/configuration-bundle/cassandra-configuration-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
 [success] Total time: 4 s, completed 05/03/2016 2:43:07 PM
 ```
 
 You can then load the Cassandra bundle with your Cassandra bundle configuration on to ConductR. Note that in this case `cassandra` represents the bundle and the `cassandra-configuration-<hash>.zip` file is the bundle configuration. The previous command prints out the bundle configuration zip file on the console. Copy this file to load Cassandra with your project specific configuration: 
 
 ```console
-> conduct load cassandra .../my-project/target/configuration-bundle/cassandra-configuration-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
+> conduct load cassandra /my-project/target/configuration-bundle/cassandra-configuration-06f3e5872f48d69ee339b0a4b7ae382871b69de1cfc1ab831b0a18064d096733.zip
 ```
 
-The tab completion of `conduct load` only works with bundles of the project. The Cassandra bundle is an external bundle hosted on bintray. Therefore tab completion doesn't work in this case.
+The tab completion of `conduct load` only works for bundles of the project. The Cassandra bundle is an external bundle hosted on bintray. Therefore tab completion doesn't work in this case.
 
 To run the cassandra bundle execute:
 
