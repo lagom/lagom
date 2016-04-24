@@ -111,6 +111,6 @@ To use this feature add the following in your project's build:
 
 The `CassandraSession` is using the [Datastax Java Driver for Apache Cassandra](https://github.com/datastax/java-driver).
 
-Each `CassandraReadSideProcessor` instance is executed by an [Actor](http://doc.akka.io/docs/akka/2.4.2/java/untyped-actors.html) that is managed by [Akka Cluster Singleton](http://doc.akka.io/docs/akka/2.4.2/java/cluster-singleton.html). The processor consumes a stream of persistent events delivered by the `eventsByTag` [Persistence Query](http://doc.akka.io/docs/akka/2.4.2/java/persistence-query.html) implemented by [akka-persistence-cassandra](https://github.com/akka/akka-persistence-cassandra). The tag corresponds to the `tag` defined by the `AggregateEventTag`.
+Each `CassandraReadSideProcessor` instance is executed by an [Actor](http://doc.akka.io/docs/akka/2.4.4/java/untyped-actors.html) that is managed by [Akka Cluster Singleton](http://doc.akka.io/docs/akka/2.4.4/java/cluster-singleton.html). The processor consumes a stream of persistent events delivered by the `eventsByTag` [Persistence Query](http://doc.akka.io/docs/akka/2.4.4/java/persistence-query.html) implemented by [akka-persistence-cassandra](https://github.com/akka/akka-persistence-cassandra). The tag corresponds to the `tag` defined by the `AggregateEventTag`.
 
 The `eventStream` of the `PersistentEntityRegistry` is also implemented by the `eventsByTag` query.

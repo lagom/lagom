@@ -60,4 +60,4 @@ To use this feature add the following in your project's build:
 
 ## Underlying Implementation
 
-It is implemented with [Akka Distributed Publish Subscribe](http://doc.akka.io/docs/akka/2.4.2/java/distributed-pub-sub.html).
+It is implemented with [Akka Distributed Publish Subscribe](http://doc.akka.io/docs/akka/2.4.4/java/distributed-pub-sub.html).
