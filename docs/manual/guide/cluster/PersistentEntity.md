@@ -18,6 +18,12 @@ An entity is kept alive, holding its current state in memory, as long as it is u
 
 When an entity is started it replays the stored events to restore the current state. This can be either the full history of changes or starting from a snapshot which will reduce recovery times.
 
+## Dependency
+
+To use this feature add the following in your project's build:
+
+@[persistence-dependency](code/build-cluster.sbt)
+
 ## Cassandra
 
 Lagom has support for [Cassandra](http://cassandra.apache.org/) as data store, both for the write-side and read-side. Cassandra is a very scalable distributed database, and it is also flexible enough to support typical use cases of reactive services.
@@ -186,12 +192,6 @@ The default configuration should be good starting point, and the following setti
 @[persistence](../../../../persistence/src/main/resources/reference.conf)
 
 You may also need to adjust the configuration of [akka-persistence-cassandra](https://github.com/akka/akka-persistence-cassandra). See its [reference.conf](https://github.com/akka/akka-persistence-cassandra/blob/v0.13/src/main/resources/reference.conf)
-
-## Dependency
-
-To use this feature add the following in your project's build:
-
-@[persistence-dependency](code/build-cluster.sbt)
 
 ## Underlying Implementation
 
