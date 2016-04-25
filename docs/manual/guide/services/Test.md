@@ -15,6 +15,16 @@ The recommended test framework for Lagom is [JUnit](http://junit.org/)
 
 @[test](code/docs/services/test/SimpleTest.java)
 
+## Dependency
+
+To use this feature add the following in your project's build:
+
+@[testkit-dependency](code/build-service.sbt)
+
+When using Cassandra the tests must be forked, which is enabled by adding the following in your project's build:
+
+@[fork](code/build-service.sbt)
+
 ## How to test one service
 
 Lagom provides support for writing functional tests for one service in isolation. The service is running in a server and in the test you can interact with it using its service client, i.e. calls to the service API. These utilities are defined in [ServiceTest](api/java/index.html?com/lightbend/lagom/javadsl/testkit/ServiceTest.html).
@@ -64,13 +74,3 @@ Read more about it in the documentation of the [Akka Streams TestKit](http://doc
 [[Persistent Entities|PersistentEntity]] can be used in the service tests described above. In addition to that you should write unit tests using the [PersistentEntityTestDriver](api/java/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html), which will run the `PersistentEntity` without using a database.
 
 This is described in the documentation of [[Persistent Entity|PersistentEntity#Unit-Testing]]
-
-## Dependency
-
-To use this feature add the following in your project's build:
-
-@[testkit-dependency](code/build-service.sbt)
-
-When using Cassandra the tests must be forked, which is enabled by adding the following in your project's build:
-
-@[fork](code/build-service.sbt)

@@ -6,6 +6,12 @@
 
 This separation of the write-side and the read-side of the persistent data is often referred to as the [CQRS](https://msdn.microsoft.com/en-us/library/jj591573.aspx) (Command Query Responibility Segregation) pattern. The [CQRS Journey](https://msdn.microsoft.com/en-us/library/jj554200.aspx) is a great resource for learning more about CQRS.
 
+## Dependency
+
+To use this feature add the following in your project's build:
+
+@[persistence-dependency](code/build-cluster.sbt)
+
 ## Query the Read-Side Database
 
 Lagom has support for [Cassandra](http://cassandra.apache.org/) as data store, both for the write-side entities and the read-side queries. It is a very scalable distributed database, and also flexible enough to support most of the use cases that reactive services may have.
@@ -100,12 +106,6 @@ If you use a class name of a event type as the aggregate tag in [AggregateEventT
 The default configuration should be good starting point, and the following settings may later be amended to customize the behavior if needed.
 
 @[persistence-read-side](../../../../persistence/src/main/resources/reference.conf)
-
-## Dependency
-
-To use this feature add the following in your project's build:
-
-@[persistence-dependency](code/build-cluster.sbt)
 
 ## Underlying Implementation
 

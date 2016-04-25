@@ -2,6 +2,12 @@
 
 [Publish–subscribe](http://www.enterpriseintegrationpatterns.com/patterns/messaging/PublishSubscribeChannel.html) is a well known messaging pattern. Senders of messages, called publishers, do not target the messages directly to specific receivers, but instead publish messages to topics without knowledge of which receivers, called subscribers, if any, there may be. Similarly, a subscriber express interest in a topic and receive messages published to that topic, without knowledge of which publishers, if any, there are.
 
+## Dependency
+
+To use this feature add the following in your project's build:
+
+@[pubsub-dependency](code/build-cluster.sbt)
+
 ## Usage from Service Implementation
 
 Let's look at an example of a service that publishes temperature measurements of hardware devices. A device can submit its current temperature and interested parties can get a stream of the temperature samples.
@@ -51,12 +57,6 @@ The registry of subscribers is eventually consistent, i.e. new subscribers are n
 ## Serialization
 
 The published messages must be serializable since they will be sent across the nodes in the cluster of the service. JSON is the recommended serialization format for these messages. The [[Serialization|Serialization]] section describes how to add Jackson serialization support to such message classes.
-
-## Dependency
-
-To use this feature add the following in your project's build:
-
-@[pubsub-dependency](code/build-cluster.sbt)
 
 ## Underlying Implementation
 
