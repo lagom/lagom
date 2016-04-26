@@ -6,6 +6,14 @@ The underlying clustering technology is [Akka Cluster](http://doc.akka.io/docs/a
 
 If instances of a service need to know about each other, they must join the same cluster. Within a cluster, services may use the [[Persistence|PersistentEntity]] and [[Publish-Subscribe|PubSub]] modules of Lagom.
 
+## Dependency
+
+The clustering feature is already included if you are using the [[persistence|PersistentEntity#Dependency]] or [[pubsub|PubSub#Dependency]] modules.
+
+If you want to enable it without those modules, add the following to your project's build:
+
+@[cluster-dependency](code/build-cluster.sbt)
+
 ## Cluster composition
 
 A cluster should only span nodes that are running the same service.
@@ -62,11 +70,3 @@ If you don't use RP, you should anyway carefully read the documentation of the [
 ## Leaving
 
 When using [[Persistent Entities|PersistentEntity]] you can use [PersistentEntityRegistry.gracefulShutdown](api/java/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html#gracefulShutdown) to stop the persistent entities and leave the cluster in a graceful way. This is not mandatory but it can be good when you are doing a controlled shutdown of a service node. It will reduce the number of lost in-flight messages during the failover to another node.
-
-## Dependency
-
-The clustering feature is already included if you are using the [[persistence|PersistentEntity#Dependency]] or [[pubsub|PubSub#Dependency]] modules.
-
-If you want to enable it without those modules, add the following to your project's build:
-
-@[cluster-dependency](code/build-cluster.sbt)
