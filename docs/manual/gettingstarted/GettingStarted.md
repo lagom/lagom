@@ -74,3 +74,9 @@ $ curl http://localhost:9000/api/hello/World
 ```
 
 And you should get back the message `Hello, World!`.
+
+If you are wondering why we have created two services in the seed template, instead of having just one, the reason is simply that ([quoting](https://twitter.com/jboner/status/699536472442011648) Jonas Bonér):
+
+> One microservice is no microservice - they come in systems.
+
+Said otherwise, we believe you will be creating several services, and we felt it was important to showcase intra-service communication.
