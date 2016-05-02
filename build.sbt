@@ -466,6 +466,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
       val () = publishLocal.value
       val () = (publishLocal in `service-locator`).value
       val () = (publishLocal in LocalProject("sbt-scripted-tools")).value
+      val () = (publishLocal in `sbt-scripted-library`).value
     },
     publishTo := {
       if (isSnapshot.value) {
@@ -495,6 +496,12 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
   .settings(
     sbtPlugin := true
   ).dependsOn(`sbt-plugin`)
+
+// This project also get aggregated, it is only executed by the sbt-plugin scripted dependencies
+lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-library")
+  .settings(name := "lagom-sbt-scripted-library")
+  .settings(runtimeLibCommon: _*)
+  .dependsOn(server)
 
 lazy val `service-locator` = (project in file("dev") / "service-locator")
   .settings(name := "lagom-service-locator")

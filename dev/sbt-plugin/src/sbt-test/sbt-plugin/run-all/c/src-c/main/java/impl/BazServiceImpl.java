@@ -11,9 +11,7 @@ import akka.stream.javadsl.Source;
 public class BazServiceImpl implements BazService {
 
   @Override
-  public ServiceCall<NotUsed, NotUsed, String> baz() {
-    return (id, request) -> {
-      return CompletableFuture.completedFuture("ack baz");
-    };
+  public ServiceCall<NotUsed, String> baz() {
+    return request -> CompletableFuture.completedFuture("ack baz");
   }
 }

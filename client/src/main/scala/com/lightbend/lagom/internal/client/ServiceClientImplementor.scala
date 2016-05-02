@@ -3,36 +3,36 @@
  */
 package com.lightbend.lagom.internal.client
 
-import java.lang.reflect.{ InvocationHandler, Method, Type }
+import java.lang.reflect.{ InvocationHandler, Method }
 import java.net.{ URI, URLEncoder }
 import java.util.function.BiFunction
-import java.util.{ function, Optional }
+import java.util.{ Optional, function }
 import java.util.concurrent.CompletionStage
 import javax.inject.{ Inject, Singleton }
+
 import akka.stream.Materializer
 import akka.stream.javadsl.{ Source => JSource }
 import akka.stream.scaladsl.{ Sink, Source }
 import akka.util.ByteString
-import com.lightbend.lagom.internal.api.{ Path, SelfDescribingServiceCallStub }
+import com.lightbend.lagom.internal.api.{ MethodServiceCallHolder, Path }
 import akka.NotUsed
-import com.lightbend.lagom.javadsl.api.Descriptor.{ RestCallId, Call }
-import com.lightbend.lagom.javadsl.api._
-import Service.SelfDescribingServiceCall
+import com.lightbend.lagom.javadsl.api.Descriptor.{ Call, RestCallId }
 import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.NegotiatedSerializer
 import com.lightbend.lagom.javadsl.api.deser._
 import com.lightbend.lagom.javadsl.api.security.ServicePrincipal
 import com.lightbend.lagom.javadsl.api.transport._
-import com.lightbend.lagom.javadsl.api.{ ServiceCall, ServiceInfo, Descriptor, ServiceLocator }
+import com.lightbend.lagom.javadsl.api.{ Descriptor, ServiceCall, ServiceInfo, ServiceLocator }
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
-import org.pcollections.{ TreePVector, PSequence, HashTreePMap }
+import org.pcollections.{ HashTreePMap, PSequence, TreePVector }
 import play.api.Environment
 import play.api.http.HeaderNames
 import play.api.libs.streams.AkkaStreams
 import play.api.libs.ws.{ InMemoryBody, WSClient }
+
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
 import scala.compat.java8.OptionConverters._
-import scala.concurrent.{ Future, ExecutionContext }
+import scala.concurrent.{ ExecutionContext, Future }
 import com.lightbend.lagom.javadsl.api.Descriptor.CircuitBreakerId
 
 /**
@@ -48,23 +48,34 @@ class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSock
   }
 
   class ServiceClientInvocationHandler(descriptor: Descriptor) extends InvocationHandler {
-    private val methods = descriptor.calls().asScala.map { endpoint =>
-      endpoint.serviceCall match {
-        case call @ SelfDescribingServiceCallStub(method, idType, requestType, responseType) =>
-          method -> new ClientServiceCall[Any, Any, Any, Any](
-            new ClientServiceCallInvoker[Any, Any, Any](ws, webSocketClient, serviceInfo, serviceLocator,
-              circuitBreaker, descriptor, endpoint.asInstanceOf[Call[Any, Any, Any]], idType, requestType,
-              responseType, call.methodName), identity, (_, msg) => msg
-          )
+    private val methods: Map[Method, ServiceCallInvocationHandler[Any, Any]] = descriptor.calls().asScala.map { call =>
+      call.serviceCallHolder() match {
+        case holder: MethodServiceCallHolder =>
+          holder.method -> new ServiceCallInvocationHandler[Any, Any](ws, webSocketClient, serviceInfo, serviceLocator,
+            circuitBreaker, descriptor, call.asInstanceOf[Call[Any, Any]], holder)
       }
     }.toMap
 
     override def invoke(proxy: scala.Any, method: Method, args: Array[AnyRef]): AnyRef = {
       methods.get(method) match {
-        case Some(serviceCall) => serviceCall
-        case None              => throw new IllegalStateException("Method " + method + " is not described by the service client descriptor")
+        case Some(serviceCallInvocationHandler) => serviceCallInvocationHandler.invoke(args)
+        case None                               => throw new IllegalStateException("Method " + method + " is not described by the service client descriptor")
       }
     }
+  }
+}
+
+private class ServiceCallInvocationHandler[Request, Response](ws: WSClient, webSocketClient: WebSocketClient,
+                                                              serviceInfo: ServiceInfo, serviceLocator: ServiceLocator,
+                                                              circuitBreaker: CircuitBreaker, descriptor: Descriptor,
+                                                              endpoint: Call[Request, Response], holder: MethodServiceCallHolder)(implicit ec: ExecutionContext, mat: Materializer) {
+  private val pathSpec = Path.fromCallId(endpoint.callId)
+
+  def invoke(args: Seq[AnyRef]): ServiceCall[Request, Response] = {
+    val (path, queryParams) = pathSpec.format(holder.invoke(args))
+
+    new ClientServiceCall[Request, Response, Response](new ClientServiceCallInvoker[Request, Response](ws, webSocketClient,
+      serviceInfo, serviceLocator, circuitBreaker, descriptor, endpoint, path, queryParams), identity, (_, msg) => msg)
   }
 }
 
@@ -72,38 +83,22 @@ class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSock
  * The service call implementation. Delegates actual work to the invoker, while maintaining the handler function for
  * the request header and a transformer function for the response.
  */
-private class ClientServiceCall[Id, Request, ResponseMessage, ServiceCallResponse](
-  invoker: ClientServiceCallInvoker[Id, Request, ResponseMessage], requestHeaderHandler: RequestHeader => RequestHeader,
+private class ClientServiceCall[Request, ResponseMessage, ServiceCallResponse](
+  invoker: ClientServiceCallInvoker[Request, ResponseMessage], requestHeaderHandler: RequestHeader => RequestHeader,
   responseHandler: (ResponseHeader, ResponseMessage) => ServiceCallResponse
-)(implicit ec: ExecutionContext) extends SelfDescribingServiceCall[Id, Request, ServiceCallResponse] {
+)(implicit ec: ExecutionContext) extends ServiceCall[Request, ServiceCallResponse] {
 
-  override def idType = invoker.idType
-  override def requestType = invoker.requestType
-  override def responseType = invoker.responseType
-  override def methodName = invoker.methodName
-
-  override def invoke(id: Id, request: Request): CompletionStage[ServiceCallResponse] = {
-    invoker.doInvoke(id, request, requestHeaderHandler).map(responseHandler.tupled).toJava
+  override def invoke(request: Request): CompletionStage[ServiceCallResponse] = {
+    invoker.doInvoke(request, requestHeaderHandler).map(responseHandler.tupled).toJava
   }
 
-  override def handleRequestHeader(handler: function.Function[RequestHeader, RequestHeader]): ServiceCall[Id, Request, ServiceCallResponse] = {
+  override def handleRequestHeader(handler: function.Function[RequestHeader, RequestHeader]): ServiceCall[Request, ServiceCallResponse] = {
     new ClientServiceCall(invoker, requestHeaderHandler.andThen(handler.apply), responseHandler)
   }
 
-  override def handleResponseHeader[T](handler: BiFunction[ResponseHeader, ServiceCallResponse, T]): ServiceCall[Id, Request, T] = {
-    new ClientServiceCall[Id, Request, ResponseMessage, T](invoker, requestHeaderHandler,
+  override def handleResponseHeader[T](handler: BiFunction[ResponseHeader, ServiceCallResponse, T]): ServiceCall[Request, T] = {
+    new ClientServiceCall[Request, ResponseMessage, T](invoker, requestHeaderHandler,
       (header, message) => handler.apply(header, responseHandler(header, message)))
-  }
-
-  /**
-   * This is overridden in an attempt to try and provide better error reporting for when the id is not a unit type.
-   */
-  override def invoke(request: Request): CompletionStage[ServiceCallResponse] = {
-    if (invoker.endpoint.idSerializer() != IdSerializers.NOT_USED) {
-      throw new UnsupportedOperationException("Invocation without an ID may only be done when the ID is NotUsed. Use invoke(Id, Request) instead.")
-    } else {
-      invoke(NotUsed.asInstanceOf[Id], request)
-    }
   }
 
   /**
@@ -118,16 +113,13 @@ private class ClientServiceCall[Id, Request, ResponseMessage, ServiceCallRespons
   }
 }
 
-private class ClientServiceCallInvoker[Id, Request, Response](
+private class ClientServiceCallInvoker[Request, Response](
   ws: WSClient, webSocketClient: WebSocketClient, serviceInfo: ServiceInfo, serviceLocator: ServiceLocator,
   circuitBreaker: CircuitBreaker, descriptor: Descriptor,
-  val endpoint: Call[Id, Request, Response], val idType: Type,
-  val requestType: Type, val responseType: Type,
-  val methodName: String
+  val endpoint: Call[Request, Response], path: String, queryParams: Map[String, Seq[String]]
 )(implicit ec: ExecutionContext, mat: Materializer) {
 
   private val defaultCircuitBreakerId = new CircuitBreakerId(descriptor.name)
-  private val pathSpec = Path.fromCallId(endpoint.callId)
   private val headerTransformers = Seq(descriptor.serviceIdentificationStrategy, descriptor.protocolNegotiationStrategy)
   private def transformRequestHeader(requestHeader: RequestHeader): RequestHeader = {
     headerTransformers.foldRight(requestHeader)(_.transformClientRequest(_))
@@ -138,8 +130,7 @@ private class ClientServiceCallInvoker[Id, Request, Response](
     }
   }
 
-  def doInvoke(id: Id, request: Request, requestHeaderHandler: RequestHeader => RequestHeader): Future[(ResponseHeader, Response)] = {
-    val (path, queryParams) = pathSpec.format(endpoint.idSerializer.serialize(id))
+  def doInvoke(request: Request, requestHeaderHandler: RequestHeader => RequestHeader): Future[(ResponseHeader, Response)] = {
     val breakerId = endpoint.circuitBreaker().orElse(defaultCircuitBreakerId)
     circuitBreaker.withCircuitBreaker(breakerId) {
       serviceLocator.doWithService(descriptor.name, new java.util.function.Function[URI, CompletionStage[(ResponseHeader, Response)]] {

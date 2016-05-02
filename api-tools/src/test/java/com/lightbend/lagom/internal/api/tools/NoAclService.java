@@ -14,11 +14,11 @@ import static com.lightbend.lagom.javadsl.api.Service.restCall;
 
 public interface NoAclService extends Service {
 
-    ServiceCall<String, NotUsed, NotUsed> getMock();
+    ServiceCall<NotUsed, NotUsed> getMock(String id);
 
     default Descriptor descriptor() {
         return named("/noaclservice").with(
-            restCall(Method.GET,  "/mocks/:id", getMock())
+            restCall(Method.GET,  "/mocks/:id", this::getMock)
         );
     }
 }

@@ -9,7 +9,7 @@ lazy val lagomProj = (project in file("lagomProj")).enablePlugins(LagomJava)
   .settings(
     name := "lagom-dist-proj",
     version := "1.0-SNAPSHOT",
-    libraryDependencies += lagomJavadslPersistence
+    libraryDependencies ++= Seq(lagomJavadslPersistence, lagomSbtScriptedLibrary)
   )
 
 lazy val playProj = (project in file("playProj")).enablePlugins(PlayScala, LagomPlay)

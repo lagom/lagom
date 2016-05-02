@@ -7,15 +7,15 @@ import java.net.URI
 import java.util.Optional
 import java.util.concurrent.CompletionStage
 import java.util.function.{ Function => JFunction }
-import javax.inject.{ Provider, Inject, Singleton }
+import javax.inject.{ Inject, Provider, Singleton }
 
 import akka.stream.Materializer
 import com.google.inject.AbstractModule
-import com.lightbend.lagom.internal.client.{ CircuitBreaker, ServiceClientLoader, ServiceClientImplementor, WebSocketClient }
+import com.lightbend.lagom.internal.client.{ CircuitBreaker, ServiceClientImplementor, ServiceClientLoader, WebSocketClient }
 import com.lightbend.lagom.javadsl.api.transport.NotFound
-import com.lightbend.lagom.javadsl.api.{ ServiceLocator, ServiceInfo }
+import com.lightbend.lagom.javadsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
-import play.api.{ Mode, Configuration, Environment, Logger }
+import play.api.{ Configuration, Environment, Logger, Mode }
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -119,7 +119,7 @@ class ServiceRegistryServiceLocator @Inject() (
         }
       }
       import scala.compat.java8.FutureConverters._
-      registry.lookup().invoke(name, null).toScala.map(asOptionalURI).recover {
+      registry.lookup(name).invoke().toScala.map(asOptionalURI).recover {
         case notFound: NotFound => Optional.empty()
       }
     }

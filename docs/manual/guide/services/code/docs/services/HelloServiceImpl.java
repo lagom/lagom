@@ -7,8 +7,8 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public class HelloServiceImpl implements HelloService {
 
-    public ServiceCall<NotUsed, String, String> sayHello() {
-        return (id, name) -> completedFuture("Hello " + name);
+    public ServiceCall<String, String> sayHello() {
+        return name -> completedFuture("Hello " + name);
     }
 }
 //#hello-service-impl

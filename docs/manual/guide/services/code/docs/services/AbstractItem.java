@@ -11,7 +11,7 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = Item.class)
 public interface AbstractItem {
     @Value.Parameter
-    long id();
+    String id();
     @Value.Parameter
     long orderId();
 }

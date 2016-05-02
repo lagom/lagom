@@ -11,8 +11,8 @@ import akka.stream.javadsl.Source;
 public class BarServiceImpl implements BarService {
 
   @Override
-  public ServiceCall<NotUsed, NotUsed, String> bar() {
-    return (id, request) -> {
+  public ServiceCall<NotUsed, String> bar() {
+    return request -> {
       breakCompilation // <-- this produces a compilation error
       return CompletableFuture.completedFuture("ack updated bar 2");
     };

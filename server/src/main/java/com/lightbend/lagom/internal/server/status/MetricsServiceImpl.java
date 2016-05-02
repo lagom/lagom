@@ -8,7 +8,6 @@ import com.lightbend.lagom.internal.client.CircuitBreakerMetricsImpl;
 import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl;
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider;
 import akka.NotUsed;
-import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.transport.NotFound;
 import com.lightbend.lagom.javadsl.server.status.CircuitBreakerStatus;
@@ -41,8 +40,8 @@ public class MetricsServiceImpl implements MetricsService {
   }
 
   @Override
-  public ServiceCall<NotUsed, NotUsed, List<CircuitBreakerStatus>> currentCircuitBreakers() {
-    return (id, request) -> {
+  public ServiceCall<NotUsed, List<CircuitBreakerStatus>> currentCircuitBreakers() {
+    return request -> {
       if (!provider.isPresent())
         throw new NotFound("No metrics");
       return CompletableFuture.completedFuture(allCircuitBreakerStatus());
@@ -50,8 +49,8 @@ public class MetricsServiceImpl implements MetricsService {
   }
   
   @Override
-  public ServiceCall<NotUsed, NotUsed, Source<List<CircuitBreakerStatus>, ?>> circuitBreakers() {
-    return (id, request) -> {
+  public ServiceCall<NotUsed, Source<List<CircuitBreakerStatus>, ?>> circuitBreakers() {
+    return request -> {
       if (!provider.isPresent())
         throw new NotFound("No metrics");
       Source<List<CircuitBreakerStatus>, ?> source = 

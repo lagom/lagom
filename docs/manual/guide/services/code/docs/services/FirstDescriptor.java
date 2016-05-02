@@ -5,10 +5,9 @@ import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
-import com.lightbend.lagom.javadsl.api.deser.IdSerializers;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 
-import java.util.Arrays;
+import org.pcollections.PSequence;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
@@ -16,12 +15,12 @@ public class FirstDescriptor {
 
     public interface CallIdName extends Service {
 
-        ServiceCall<NotUsed, String, String> sayHello();
+        ServiceCall<String, String> sayHello();
 
         //#call-id-name
         default Descriptor descriptor() {
             return named("hello").with(
-                    namedCall("hello", sayHello())
+                    namedCall("hello", this::sayHello)
             );
         }
         //#call-id-name
@@ -29,11 +28,11 @@ public class FirstDescriptor {
 
     public interface CallLongId extends Service {
         //#call-long-id
-        ServiceCall<Long, NotUsed, Order> getOrder();
+        ServiceCall<NotUsed, Order> getOrder(long id);
 
         default Descriptor descriptor() {
             return named("orders").with(
-                    pathCall("/order/:id", getOrder())
+                    pathCall("/order/:id", this::getOrder)
             );
         }
         //#call-long-id
@@ -41,53 +40,51 @@ public class FirstDescriptor {
 
     public interface CallComplexItemId extends Service {
         //#call-complex-item-id
-        ServiceCall<OrderId, NotUsed, Order> getOrder();
-        ServiceCall<ItemId, NotUsed, Item> getItem();
-        ServiceCall<ItemId, NotUsed, ItemHistory> getItemHistory();
+        ServiceCall<NotUsed, Item> getItem(long orderId, String itemId);
 
         default Descriptor descriptor() {
             return named("orders").with(
-
-                    pathCall("/order/:orderId", getOrder()),
-                    pathCall("/order/:orderId/item/:itemId", getItem()),
-                    pathCall("/order/:orderId/item/:itemId/history", getItemHistory())
-
-            ).with(ItemId.class, IdSerializers.create("ItemId", ItemId::of,
-                    id -> Arrays.asList(id.orderId(), id.itemId()))
-            ).with(OrderId.class, IdSerializers.create("OrderId", OrderId::of,
-                    OrderId::id));
+                    pathCall("/order/:orderId/item/:itemId", this::getItem)
+            );
         }
         //#call-complex-item-id
     }
 
-    public interface CallRest extends Service {
-        //#call-rest
-        ServiceCall<OrderId, Item, NotUsed> addItem();
-        ServiceCall<ItemId, NotUsed, Item> getItem();
-        ServiceCall<ItemId, NotUsed, NotUsed> deleteItem();
+    public interface CallQueryStringParameters extends Service {
+        //#call-query-string-parameters
+        ServiceCall<NotUsed, PSequence<Item>> getItems(long orderId, int pageNo, int pageSize);
 
         default Descriptor descriptor() {
             return named("orders").with(
+                    pathCall("/order/:orderId/items?pageNo&pageSize", this::getItems)
+            );
+        }
+        //#call-query-string-parameters
+    }
 
-                    restCall(Method.POST,   "/order/:orderId/item",         addItem()),
-                    restCall(Method.GET,    "/order/:orderId/item/:itemId", getItem()),
-                    restCall(Method.DELETE, "/order/:orderId/item/:itemId", deleteItem())
+    public interface CallRest extends Service {
+        //#call-rest
+        ServiceCall<Item, NotUsed> addItem(long orderId);
+        ServiceCall<NotUsed, Item> getItem(long orderId, String itemId);
+        ServiceCall<NotUsed, NotUsed> deleteItem(long orderId, String itemId);
 
-            ).with(ItemId.class, IdSerializers.create("ItemId", ItemId::of,
-                    id -> Arrays.asList(id.orderId(), id.itemId()))
-            ).with(OrderId.class, IdSerializers.create("OrderId", OrderId::of,
-                    OrderId::id));
+        default Descriptor descriptor() {
+            return named("orders").with(
+                    restCall(Method.POST,   "/order/:orderId/item",         this::addItem),
+                    restCall(Method.GET,    "/order/:orderId/item/:itemId", this::getItem),
+                    restCall(Method.DELETE, "/order/:orderId/item/:itemId", this::deleteItem)
+            );
         }
         //#call-rest
     }
 
     public interface CallStream extends Service {
         //#call-stream
-        ServiceCall<Integer, String, Source<String, ?>> tick();
+        ServiceCall<String, Source<String, ?>> tick(int interval);
 
         default Descriptor descriptor() {
             return named("clock").with(
-                pathCall("/tick/:interval", tick())
+                pathCall("/tick/:interval", this::tick)
             );
         }
         //#call-stream
@@ -95,11 +92,11 @@ public class FirstDescriptor {
 
     public interface HelloStream extends Service {
         //#hello-stream
-        ServiceCall<NotUsed, Source<String, ?>, Source<String, ?>> sayHello();
+        ServiceCall<Source<String, ?>, Source<String, ?>> sayHello();
 
         default Descriptor descriptor() {
             return named("hello").with(
-                call(sayHello())
+                call(this::sayHello)
             );
         }
         //#hello-stream

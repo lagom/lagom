@@ -19,8 +19,8 @@ public class BlogServiceImpl implements BlogService {
   }
 
   @Override
-  public ServiceCall<String, AddPost, String> addPost() {
-    return (id, request) -> {
+  public ServiceCall<AddPost, String> addPost(String id) {
+    return request -> {
       PersistentEntityRef<BlogCommand> ref =
         persistentEntities.refFor(Post.class, id);
       return ref.ask(request).thenApply(ack -> "OK");

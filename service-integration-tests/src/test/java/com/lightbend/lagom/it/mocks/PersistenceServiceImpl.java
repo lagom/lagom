@@ -29,8 +29,8 @@ public class PersistenceServiceImpl implements PersistenceService {
   }
 
   @Override
-  public ServiceCall<NotUsed, NotUsed, String> checkInjected() {
-    return (id, request) -> {
+  public ServiceCall<NotUsed, String> checkInjected() {
+    return request -> {
       if (persistentEntityRegistry == null)
           throw new NullPointerException();
       if (pubSubRegistry == null)
@@ -44,8 +44,8 @@ public class PersistenceServiceImpl implements PersistenceService {
   }
   
   @Override
-  public ServiceCall<NotUsed, NotUsed, String> checkCassandraSession() {
-    return (id, request) -> {
+  public ServiceCall<NotUsed, String> checkCassandraSession() {
+    return request -> {
       return db.executeCreateTable(
           "CREATE TABLE IF NOT EXISTS testcounts ( " +
           "  partition text, " +

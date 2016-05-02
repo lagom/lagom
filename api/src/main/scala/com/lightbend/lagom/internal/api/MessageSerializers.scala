@@ -30,16 +30,30 @@ trait UnresolvedMessageSerializer[MessageEntity] extends MessageSerializer[Messa
   override def serializerForResponse(acceptedMessageHeaders: util.List[MessageProtocol]): NegotiatedSerializer[MessageEntity, Any] =
     throw new NotImplementedError("Cannot use unresolved message serializer")
 
-  def resolve(factory: SerializerFactory, typeInfo: Option[Type]): MessageSerializer[MessageEntity, _]
+  def resolve(factory: SerializerFactory, typeInfo: Type): MessageSerializer[MessageEntity, _]
+}
+
+/**
+ * Placeholder serializer to instruct Lagom to find the serializer from the method ref.
+ */
+class MethodRefMessageSerializer[MessageEntity] extends MessageSerializer[MessageEntity, Any] {
+  override def serializerForRequest(): NegotiatedSerializer[MessageEntity, Any] =
+    throw new NotImplementedError("MethodRefMessageSerializer is just a placeholder")
+
+  override def deserializer(protocol: MessageProtocol): NegotiatedDeserializer[MessageEntity, Any] =
+    throw new NotImplementedError("MethodRefMessageSerializer is just a placeholder")
+
+  override def serializerForResponse(acceptedMessageProtocols: util.List[MessageProtocol]): NegotiatedSerializer[MessageEntity, Any] =
+    throw new NotImplementedError("MethodRefMessageSerializer is just a placeholder")
 }
 
 class UnresolvedMessageTypeSerializer[MessageEntity](val entityType: Type) extends UnresolvedMessageSerializer[MessageEntity] {
-  override def resolve(factory: SerializerFactory, typeInfo: Option[Type]): MessageSerializer[MessageEntity, _] =
+  override def resolve(factory: SerializerFactory, typeInfo: Type): MessageSerializer[MessageEntity, _] =
     factory.messageSerializerFor(entityType)
 }
 
 class UnresolvedStreamedMessageSerializer[MessageEntity](val messageType: Type) extends UnresolvedMessageSerializer[Source[MessageEntity, _]] {
-  override def resolve(factory: SerializerFactory, typeInfo: Option[Type]): MessageSerializer[Source[MessageEntity, _], _] =
+  override def resolve(factory: SerializerFactory, typeInfo: Type): MessageSerializer[Source[MessageEntity, _], _] =
     factory.messageSerializerFor[MessageEntity](messageType) match {
       case strict: StrictMessageSerializer[MessageEntity] => new DelegatingStreamedMessageSerializer[MessageEntity](strict)
       case other => throw new IllegalArgumentException("Can't create streamed message serializer that delegates to " + other)

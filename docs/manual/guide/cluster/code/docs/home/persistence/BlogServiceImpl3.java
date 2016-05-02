@@ -34,8 +34,8 @@ public class BlogServiceImpl3 implements BlogService2 {
   //#register-event-processor
 
   @Override
-  public ServiceCall<NotUsed, NotUsed, Source<PostSummary, ?>> getPostSummaries() {
-    return (id, request) -> {
+  public ServiceCall<NotUsed, Source<PostSummary, ?>> getPostSummaries() {
+    return request -> {
       Source<PostSummary, ?> summaries = cassandraSession.select(
           "SELECT id, title FROM postsummary;").map(row ->
             PostSummary.of(row.getString("id"), row.getString("title")));
@@ -44,14 +44,14 @@ public class BlogServiceImpl3 implements BlogService2 {
   }
 
   //#event-stream
-  public ServiceCall<NotUsed, NotUsed, Source<PostSummary, ?>> newPosts() {
+  public ServiceCall<NotUsed, Source<PostSummary, ?>> newPosts() {
     final PartialFunction<BlogEvent, PostSummary> collectFunction =
         new PFBuilder<BlogEvent, PostSummary>()
         .match(PostAdded.class, evt ->
            PostSummary.of(evt.getPostId(), evt.getContent().getTitle()))
         .build();
 
-    return (id, request) -> {
+    return request -> {
       Source<PostSummary, ?> stream = persistentEntityRegistry
         .eventStream(BlogEventTag.INSTANCE, Optional.empty())
           .map(pair -> pair.first()).collect(collectFunction);
