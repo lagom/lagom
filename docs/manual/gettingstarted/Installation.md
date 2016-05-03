@@ -14,6 +14,19 @@ Because Activator includes sbt, you don't need to install anything except a JDK 
 
 Note that if you aren't using the optional project templates, you don't strictly need Activator; sbt itself is enough.  The examples in this manual always show the `activator` command, but unless the command is `activator new`, you can always substitute `activator` by `sbt`.
 
+## Activator version (Read me!)
+
+Older installations of Activator may cause OutOfMemoryException when using the Lagom development environment. To avoid this issue, make sure you are using the Activator package version 1.3.10+. Here is how you can check what version of the Activator package you are using on Linux systems (for Windows users, just check what's in your `%PATH%` environment variable):
+
+```console
+$ which activator
+/opt/activator-1.3.10-minimal/bin/activator
+```
+
+The important bit is that the <version> appended after `activator-<version>` must be at least 1.13.10 for Lagom to properly work. 
+
+Follow [this link](https://www.lightbend.com/activator/download) to download the latest activator bundle.
+
 ## Quick setup
 
 If you already have Activator and JDK 8, you can skip ahead to [[Getting Started|GettingStarted]].
