@@ -504,39 +504,107 @@ public final class Descriptor {
         return locatableService;
     }
 
+    /**
+     * Provide a custom IdSerializer for the given ID type.
+     *
+     * @param idType The type of the ID.
+     * @param idSerializer The ID serializer for that type.
+     * @return A copy of this descriptor.
+     */
     public <T> Descriptor with(Class<T> idType, IdSerializer<T> idSerializer) {
         return with((Type) idType, idSerializer);
     }
 
+    /**
+     * Provide a custom IdSerializer for the given ID type.
+     *
+     * @param idType The type of the ID.
+     * @param idSerializer The ID serializer for that type.
+     * @return A copy of this descriptor.
+     */
     public Descriptor with(Type idType, IdSerializer<?> idSerializer) {
         return replaceAllIdSerializers(idSerializers.plus(idType, idSerializer));
     }
 
+    /**
+     * Provide a custom MessageSerializer for the given message type.
+     *
+     * @param messageType The type of the message.
+     * @param messageSerializer The message serializer for that type.
+     * @return A copy of this descriptor.
+     */
     public <T> Descriptor with(Class<T> messageType, MessageSerializer<T, ?> messageSerializer) {
         return with((Type) messageType, messageSerializer);
     }
 
+    /**
+     * Provide a custom MessageSerializer for the given message type.
+     *
+     * @param messageType The type of the message.
+     * @param messageSerializer The message serializer for that type.
+     * @return A copy of this descriptor.
+     */
     public Descriptor with(Type messageType, MessageSerializer<?, ?> messageSerializer) {
         return replaceAllMessageSerializers(messageSerializers.plus(messageType, messageSerializer));
     }
 
+    /**
+     * Add the given service calls to this service.
+     *
+     * @param calls The calls to add.
+     * @return A copy of this descriptor with the new calls added.
+     */
     public Descriptor with(Call<?, ?, ?>... calls) {
         return replaceAllCalls(this.calls.plusAll(Arrays.asList(calls)));
     }
 
+    /**
+     * Replace all the service calls provided by this descriptor with the the given service calls.
+     *
+     * @param calls The calls to replace the existing ones with.
+     * @return A copy of this descriptor with the new calls.
+     */
     public Descriptor replaceAllCalls(PSequence<Call<?, ?, ?>> calls) {
         return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
+    /**
+     * Replace all the id serializers registered with this descriptor with the the given id serializers.
+     *
+     * @param idSerializers The id serializers to replace the existing ones with.
+     * @return A copy of this descriptor with the new id serializers.
+     */
     public Descriptor replaceAllIdSerializers(PMap<Type, IdSerializer<?>> idSerializers) {
         return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
+    /**
+     * Replace all the message serializers registered with this descriptor with the the given message serializers.
+     *
+     * @param messageSerializers The message serializers to replace the existing ones with.
+     * @return A copy of this descriptor with the new message serializers.
+     */
     public Descriptor replaceAllMessageSerializers(PMap<Type, MessageSerializer<?, ?>> messageSerializers) {
         return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
+    /**
+     * Use the given exception serializer to serialize and deserialized exceptions handled by this service.
+     *
+     * @param exceptionSerializer The exception handler to use.
+     * @return A copy of this descriptor.
+     */
     public Descriptor with(ExceptionSerializer exceptionSerializer) {
+        return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
+    }
+
+    /**
+     * Use the given serializer factory with this service.
+     *
+     * @param serializerFactory The serializer factory to use.
+     * @return A copy of this descriptor.
+     */
+    public Descriptor with(SerializerFactory serializerFactory) {
         return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
