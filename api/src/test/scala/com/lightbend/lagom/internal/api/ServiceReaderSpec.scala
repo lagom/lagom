@@ -22,11 +22,13 @@ import org.pcollections.{ HashTreePMap, TreePVector }
 import org.scalatest._
 import scala.collection.JavaConverters._
 import akka.NotUsed
+import com.lightbend.lagom.api.mock.ScalaMockService
+import com.lightbend.lagom.api.mock.ScalaMockServiceWrong
 
 class ServiceReaderSpec extends WordSpec with Matchers with Inside {
 
   "The service reader" should {
-    "read a simple service descriptor" in {
+    "read a simple Java service descriptor" in {
       val descriptor = ServiceReader.readServiceDescriptor(getClass.getClassLoader, classOf[MockService])
 
       descriptor.calls().size() should ===(1)
@@ -42,6 +44,31 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
       }
       inside(endpoint.responseSerializer) {
         case typeSerializer: UnresolvedMessageTypeSerializer[_] => typeSerializer.entityType should ===(classOf[String])
+      }
+    }
+
+    "read a simple Scala service descriptor" in {
+      val descriptor = ServiceReader.readServiceDescriptor(getClass.getClassLoader, classOf[ScalaMockService])
+
+      descriptor.calls().size() should ===(1)
+      val endpoint = descriptor.calls().get(0)
+
+      endpoint.callId() should ===(new RestCallId(Method.GET, "/hello/:name"))
+      inside(endpoint.idSerializer) {
+        case typeSerializer: UnresolvedTypeIdSerializer[_] =>
+          typeSerializer.idType should ===(classOf[String])
+      }
+      inside(endpoint.requestSerializer) {
+        case typeSerializer: UnresolvedMessageTypeSerializer[_] => typeSerializer.entityType should ===(classOf[NotUsed])
+      }
+      inside(endpoint.responseSerializer) {
+        case typeSerializer: UnresolvedMessageTypeSerializer[_] => typeSerializer.entityType should ===(classOf[String])
+      }
+    }
+
+    "fail to read a Scala service descriptor from a class" in {
+      intercept[IllegalArgumentException] {
+        ServiceReader.readServiceDescriptor(getClass.getClassLoader, classOf[ScalaMockServiceWrong])
       }
     }
 
