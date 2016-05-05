@@ -9,7 +9,7 @@ import java.util.concurrent.CompletionStage;
 public class ServiceClients {
 
   public interface MyService {
-    ServiceCall<NotUsed, NotUsed, String> sayHelloLagom();
+    ServiceCall<NotUsed, String> sayHelloLagom();
   }
 
   //#hello-consumer
@@ -22,8 +22,8 @@ public class ServiceClients {
     }
 
     @Override
-    public ServiceCall<NotUsed, NotUsed, String> sayHelloLagom() {
-      return (id, msg) -> {
+    public ServiceCall<NotUsed, String> sayHelloLagom() {
+      return msg -> {
         CompletionStage<String> response = helloService.sayHello().invoke("Lagom");
         return response.thenApply(answer ->
             "Hello service said: " + answer

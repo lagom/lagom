@@ -5,7 +5,7 @@ lazy val `my-project` = (project in file(".")).enablePlugins(LagomJava)
     lagomCassandraEnabled := false,
     lagomCassandraPort := 9042
   )
-  .settings(libraryDependencies +=  lagomJavadslPersistence)
+  .settings(libraryDependencies ++= Seq(lagomJavadslPersistence, lagomSbtScriptedLibrary))
 
 scalaVersion := Option(System.getProperty("scala.version")).getOrElse("2.11.7")
 

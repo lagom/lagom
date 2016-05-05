@@ -6,27 +6,41 @@ package com.lightbend.lagom.internal.api
 import java.lang.reflect._
 
 import akka.stream.javadsl.Source
-import com.lightbend.lagom.javadsl.api.deser.{ IdSerializer, MessageSerializer, SerializerFactory }
+import com.lightbend.lagom.javadsl.api.deser.{ PathParamSerializer, MessageSerializer, SerializerFactory }
+
+private object ServiceCallResolver {
+  private val primitiveClassMap = Map[Class[_], Class[_]](
+    classOf[Boolean] -> classOf[java.lang.Boolean],
+    classOf[Byte] -> classOf[java.lang.Byte],
+    classOf[Short] -> classOf[java.lang.Short],
+    classOf[Char] -> classOf[java.lang.Character],
+    classOf[Int] -> classOf[java.lang.Integer],
+    classOf[Long] -> classOf[java.lang.Long],
+    classOf[Float] -> classOf[java.lang.Float],
+    classOf[Double] -> classOf[java.lang.Double]
+  )
+}
 
 class ServiceCallResolver(
-  idSerializers:      Map[Type, IdSerializer[_]],
+  idSerializers:      Map[Type, PathParamSerializer[_]],
   messageSerializers: Map[Type, MessageSerializer[_, _]],
   serializerFactory:  SerializerFactory
 ) extends SerializerFactory {
 
-  def resolveIdSerializer[T](idSerializer: IdSerializer[T], typeInfo: Option[Type] = None) = idSerializer match {
-    case unresolved: UnresolvedIdSerializer[T] => unresolved.resolve(this, typeInfo)
-    case resolved                              => resolved
+  def resolvePathParamSerializer[Param](pathParamSerializer: PathParamSerializer[Param], typeInfo: Type) = pathParamSerializer match {
+    case unresolved: UnresolvedPathParamSerializer[Param] => unresolved.resolve(this, typeInfo)
+    case resolved                                         => resolved
   }
 
-  def idSerializerFor[T](idType: Type): IdSerializer[T] = {
+  def pathParamSerializerFor[Param](lookupType: Type, typeInfo: Type): PathParamSerializer[Param] = {
     // First try a direct type lookup, then fall back to a raw class lookup
-    val serializer = idSerializers.get(idType).asInstanceOf[Option[IdSerializer[T]]] getOrElse {
-      idType match {
+    val serializer = idSerializers.get(lookupType).asInstanceOf[Option[PathParamSerializer[Param]]] getOrElse {
+      lookupType match {
+        case clazz: Class[_] if clazz.isPrimitive => pathParamSerializerFor(ServiceCallResolver.primitiveClassMap(clazz), typeInfo)
         case clazz: Class[_] =>
-          // in future, fallback to reflection based
+          // we've already looked up by class, so we're not going to get any further - fail
           throw new IllegalArgumentException(s"Don't know how to serialize ID $clazz")
-        case param: ParameterizedType  => idSerializerFor(param.getRawType)
+        case param: ParameterizedType  => pathParamSerializerFor(param.getRawType, typeInfo)
         case wild: WildcardType        => throw new IllegalArgumentException(s"Cannot serialize wildcard types: $wild")
         case variable: TypeVariable[_] => throw new IllegalArgumentException(s"Cannot serialize type variables: $variable")
         case array: GenericArrayType   => ??? // todo
@@ -34,10 +48,11 @@ class ServiceCallResolver(
       }
     }
 
-    resolveIdSerializer(serializer.asInstanceOf[IdSerializer[T]], Some(idType))
+    resolvePathParamSerializer(serializer.asInstanceOf[PathParamSerializer[Param]], typeInfo)
   }
 
-  def resolveMessageSerializer[T, W](messageSerializer: MessageSerializer[T, W], typeInfo: Option[Type] = None) = messageSerializer match {
+  def resolveMessageSerializer[T, W](messageSerializer: MessageSerializer[T, W], typeInfo: Type) = messageSerializer match {
+    case methodRef: MethodRefMessageSerializer[T]   => messageSerializerFor[T](typeInfo)
     case unresolved: UnresolvedMessageSerializer[T] => unresolved.resolve(this, typeInfo)
     case resolved                                   => resolved
   }
@@ -50,7 +65,7 @@ class ServiceCallResolver(
       .orElse(streamSerializerFor(messageType))
       .getOrElse(serializerFactory.messageSerializerFor(messageType))
 
-    resolveMessageSerializer(serializer.asInstanceOf[MessageSerializer[T, _]], Some(messageType))
+    resolveMessageSerializer(serializer.asInstanceOf[MessageSerializer[T, _]], messageType)
   }
 
   private def streamSerializerFor[T](streamType: Type): Option[MessageSerializer[T, _]] = {

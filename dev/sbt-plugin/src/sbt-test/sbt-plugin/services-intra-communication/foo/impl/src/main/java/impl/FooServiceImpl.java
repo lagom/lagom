@@ -19,9 +19,7 @@ public class FooServiceImpl implements FooService {
   }
 
   @Override
-  public ServiceCall<NotUsed, NotUsed, String> foo() {
-    return (id, request) -> {
-      return bar.bar().invoke();
-    };
+  public ServiceCall<NotUsed, String> foo() {
+    return request -> bar.bar().invoke();
   }
 }

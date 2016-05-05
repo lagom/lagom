@@ -64,16 +64,16 @@ trait ServiceSupport extends WordSpecLike with Matchers {
     }
   }
 
-  def serviceCall[Id, Request, Response](function: (Id, Request) => Future[Response]): ServiceCall[Id, Request, Response] = {
-    new ServiceCall[Id, Request, Response] {
-      override def invoke(id: Id, request: Request): CompletionStage[Response] = function(id, request).toJava
+  def serviceCall[Request, Response](function: Request => Future[Response]): ServiceCall[Request, Response] = {
+    new ServiceCall[Request, Response] {
+      override def invoke(request: Request): CompletionStage[Response] = function(request).toJava
     }
   }
 
-  def serviceCall[Id, Request, Response](function: (RequestHeader, Id, Request) => Future[(ResponseHeader, Response)]): ServiceCall[Id, Request, Response] = {
-    new HeaderServiceCall[Id, Request, Response] {
-      override def invokeWithHeaders(header: RequestHeader, id: Id, request: Request): CompletionStage[akka.japi.Pair[ResponseHeader, Response]] =
-        function(header, id, request).map(r => akka.japi.Pair(r._1, r._2)).toJava
+  def serviceCall[Request, Response](function: (RequestHeader, Request) => Future[(ResponseHeader, Response)]): ServiceCall[Request, Response] = {
+    new HeaderServiceCall[Request, Response] {
+      override def invokeWithHeaders(header: RequestHeader, request: Request): CompletionStage[akka.japi.Pair[ResponseHeader, Response]] =
+        function(header, request).map(r => akka.japi.Pair(r._1, r._2)).toJava
     }
   }
 

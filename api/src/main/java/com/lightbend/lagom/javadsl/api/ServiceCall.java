@@ -13,10 +13,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * A service call for an entity with a particular id.
- *
- * The entity id corresponds to dynamic parts of a path. If {@link NotUsed}, that implies
- * it will be for a static path.
+ * A service call for an entity.
  *
  * A service call has a request and a response entity. Either entity may be NotUsed, if there is no entity associated
  * with the call. They may also be an Akka streams Source, in situations where the endpoint serves a stream. In all
@@ -24,38 +21,25 @@ import java.util.function.Function;
  * using json.
  */
 @FunctionalInterface
-public interface ServiceCall<Id, Request, Response> {
+public interface ServiceCall<Request, Response> {
 
     /**
      * Invoke the service call.
      *
-     * @param id The id of the entity.
      * @param request The request entity.
      * @return A future of the response entity.
      */
-    CompletionStage<Response> invoke(Id id, Request request);
-
-    /**
-     * Invoke the service call with a unit id argument.
-     *
-     * This should only be used when the id is unit.
-     *
-     * @param request The request entity.
-     * @return A future of the response entity.
-     */
-    default CompletionStage<Response> invoke(Request request) {
-        return this.invoke((Id) NotUsed.getInstance(), request);
-    }
+    CompletionStage<Response> invoke(Request request);
 
     /**
      * Invoke the service call with unit id argument and a unit request message.
      *
-     * This should only be used when the id and the request message are both unit.
+     * This should only be used when the request message is NotUsed.
      *
      * @return A future of the response entity.
      */
     default CompletionStage<Response> invoke() {
-        return this.invoke((Id) NotUsed.getInstance(), (Request) NotUsed.getInstance());
+        return this.invoke((Request) NotUsed.getInstance());
     }
 
     /**
@@ -74,7 +58,7 @@ public interface ServiceCall<Id, Request, Response> {
      * @param handler A function that takes in the request header representing the request, and transforms it.
      * @return A service call that will use the given handler.
      */
-    default ServiceCall<Id, Request, Response> handleRequestHeader(Function<RequestHeader, RequestHeader> handler) {
+    default ServiceCall<Request, Response> handleRequestHeader(Function<RequestHeader, RequestHeader> handler) {
         // Default implementation. For client service calls, this is overridden by the implementation to do something
         // with the handler.
         return this;
@@ -96,10 +80,10 @@ public interface ServiceCall<Id, Request, Response> {
      * @param handler The handler.
      * @return A service call that uses the given handler.
      */
-    default <T> ServiceCall<Id, Request, T> handleResponseHeader(BiFunction<ResponseHeader, Response, T> handler) {
+    default <T> ServiceCall<Request, T> handleResponseHeader(BiFunction<ResponseHeader, Response, T> handler) {
         // Default implementation. For client service calls, this is overridden by the implementation to do something
         // with the handler.
-        return (id, request) -> invoke(id, request).thenApply(response -> handler.apply(ResponseHeader.OK, response));
+        return request -> invoke(request).thenApply(response -> handler.apply(ResponseHeader.OK, response));
     }
 
     /**
@@ -111,7 +95,7 @@ public interface ServiceCall<Id, Request, Response> {
      *
      * @return The a service call that returns the response header and the response message.
      */
-    default ServiceCall<Id, Request, Pair<ResponseHeader, Response>> withResponseHeader() {
+    default ServiceCall<Request, Pair<ResponseHeader, Response>> withResponseHeader() {
         return handleResponseHeader(Pair::create);
     }
 }

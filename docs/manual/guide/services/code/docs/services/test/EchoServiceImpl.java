@@ -8,7 +8,7 @@ import akka.stream.javadsl.Source;
 public class EchoServiceImpl implements EchoService {
 
   @Override
-  public ServiceCall<NotUsed, Source<String, NotUsed>, Source<String, NotUsed>> echo() {
-    return (id, req) -> completedFuture(Source.from(java.util.Arrays.asList("msg1", "msg2", "msg3")));
+  public ServiceCall<Source<String, NotUsed>, Source<String, NotUsed>> echo() {
+    return req -> completedFuture(Source.from(java.util.Arrays.asList("msg1", "msg2", "msg3")));
   }
 }

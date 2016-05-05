@@ -30,8 +30,8 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
     "allow to register a service" in withServiceRegistry() { registry =>
       val expectedUrl = new URI("http://localhost:9000")
       val serviceName = "fooservice"
-      registry.register().invoke(serviceName, new ServiceRegistryService(expectedUrl, Collections.emptyList[ServiceAcl]))
-      val registeredUrl = registry.lookup().invoke("fooservice", NotUsed).toCompletableFuture().get(
+      registry.register(serviceName).invoke(new ServiceRegistryService(expectedUrl, Collections.emptyList[ServiceAcl]))
+      val registeredUrl = registry.lookup(serviceName).invoke(NotUsed).toCompletableFuture().get(
         testTimeoutInSeconds, TimeUnit.SECONDS
       )
       assertResult(expectedUrl)(registeredUrl)
@@ -40,18 +40,18 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
     "allow to register a service of same service twice (idempotent)" in withServiceRegistry() { registry =>
       val expectedUrl = new URI("http://localhost:9000")
       val serviceName = "fooservice"
-      registry.register().invoke(serviceName, new ServiceRegistryService(expectedUrl, Collections.emptyList[ServiceAcl]))
+      registry.register(serviceName).invoke(new ServiceRegistryService(expectedUrl, Collections.emptyList[ServiceAcl]))
         .toCompletableFuture().get(testTimeoutInSeconds, TimeUnit.SECONDS)
-      registry.register().invoke(serviceName, new ServiceRegistryService(expectedUrl, Collections.emptyList[ServiceAcl]))
+      registry.register(serviceName).invoke(new ServiceRegistryService(expectedUrl, Collections.emptyList[ServiceAcl]))
         .toCompletableFuture().get(testTimeoutInSeconds, TimeUnit.SECONDS)
-      val registeredUrl = registry.lookup().invoke("fooservice", NotUsed).toCompletableFuture().get(
+      val registeredUrl = registry.lookup(serviceName).invoke(NotUsed).toCompletableFuture().get(
         testTimeoutInSeconds, TimeUnit.SECONDS
       )
       assertResult(expectedUrl)(registeredUrl)
     }
 
     "throw NotFound for services that aren't registered" in withServiceRegistry() { registry =>
-      val ee = the[ExecutionException] thrownBy registry.lookup.invoke("fooservice", NotUsed).toCompletableFuture.get(
+      val ee = the[ExecutionException] thrownBy registry.lookup("fooservice").invoke(NotUsed).toCompletableFuture.get(
         testTimeoutInSeconds, TimeUnit.SECONDS
       )
       ee.getCause shouldBe a[NotFound]
@@ -61,10 +61,10 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
       val url1 = new URI("http://localhost:9000")
       val url2 = new URI("http://localhost:9001")
       val serviceName = "fooservice"
-      registry.register().invoke("fooservice", new ServiceRegistryService(url1, Collections.emptyList[ServiceAcl]))
+      registry.register(serviceName).invoke(new ServiceRegistryService(url1, Collections.emptyList[ServiceAcl]))
         .toCompletableFuture.get(testTimeoutInSeconds, TimeUnit.SECONDS)
       intercept[ExecutionException] {
-        registry.register().invoke("fooservice", new ServiceRegistryService(url2, Collections.emptyList[ServiceAcl]))
+        registry.register(serviceName).invoke(new ServiceRegistryService(url2, Collections.emptyList[ServiceAcl]))
           .toCompletableFuture.get(testTimeoutInSeconds, TimeUnit.SECONDS)
       }
     }

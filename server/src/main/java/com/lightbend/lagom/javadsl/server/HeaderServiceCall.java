@@ -21,24 +21,23 @@ import java.util.function.Function;
  * Generally, you shouldn't need to implement this interface with anything but a lambda.
  */
 @FunctionalInterface
-public interface HeaderServiceCall<Id, Request, Response> extends ServerServiceCall<Id, Request, Response> {
+public interface HeaderServiceCall<Request, Response> extends ServerServiceCall<Request, Response> {
 
     /**
      * Invoke the given action with the request and response headers.
      *
-     * This is overridden from {@link ServerServiceCall#invokeWithHeaders(RequestHeader, Object, Object)} to allow
+     * This is overridden from {@link ServerServiceCall#invokeWithHeaders(RequestHeader, Object)} to allow
      * it to be made an abstract method.
      *
      * @param requestHeader The request header.
-     * @param id The id of the request.
      * @param request The request message.
      * @return A future of the response header and response message.
      */
     @Override
-    CompletionStage<Pair<ResponseHeader, Response>> invokeWithHeaders(RequestHeader requestHeader, Id id, Request request);
+    CompletionStage<Pair<ResponseHeader, Response>> invokeWithHeaders(RequestHeader requestHeader, Request request);
 
     @Override
-    default CompletionStage<Response> invoke(Id id, Request request) {
+    default CompletionStage<Response> invoke(Request request) {
         throw new UnsupportedOperationException("ServerServiceCalls should be invoked by using the invokeWithHeaders method.");
     }
 
@@ -47,22 +46,22 @@ public interface HeaderServiceCall<Id, Request, Response> extends ServerServiceC
      * {@link ServerServiceCall}.  For example, the following method:
      *
      * <pre>
-     * &lt;Id, Request, Response&gt; ServerServiceCall&lt;Id, Request, Response&gt; authenticated(
-     *   Function&lt;User, ServerServiceCall&lt;Id, Request, Response&gt;&gt; serviceCall
+     * &lt;Request, Response&gt; ServerServiceCall&lt;Request, Response&gt; authenticated(
+     *   Function&lt;User, ServerServiceCall&lt;Request, Response&gt;&gt; serviceCall
      * );
      * </pre>
      *
      * Could be invoked like this:
      *
      * <pre>
-     * authenticated(user -&gt; HeaderServiceCall.of( (requestHeader, id, request) -&gt; {
+     * authenticated(user -&gt; HeaderServiceCall.of( (requestHeader, request) -&gt; {
      *     ...
      * }));
      * </pre>
      *
      * @param serviceCall The service call.
      */
-    static <Id, Request, Response> HeaderServiceCall<Id, Request, Response> of(HeaderServiceCall<Id, Request, Response> serviceCall) {
+    static <Request, Response> HeaderServiceCall<Request, Response> of(HeaderServiceCall<Request, Response> serviceCall) {
         return serviceCall;
     }
 
@@ -72,8 +71,8 @@ public interface HeaderServiceCall<Id, Request, Response> extends ServerServiceC
      * This is useful for implementing service call composition.  For example:
      *
      * <pre>
-     * &lt;Id, Request, Response&gt; ServerServiceCall&lt;Id, Request, Response&gt; authenticated(
-     *     Function&lt;String, ServerServiceCall&lt;Id, Request, Response&gt;&gt; block) {
+     * &lt;Request, Response&gt; ServerServiceCall&lt;Request, Response&gt; authenticated(
+     *     Function&lt;String, ServerServiceCall&lt;Request, Response&gt;&gt; block) {
      *
      *     return HeaderServiceCall.compose(requestHeader -&gt; {
      *
@@ -91,9 +90,9 @@ public interface HeaderServiceCall<Id, Request, Response> extends ServerServiceC
      * @param block The block that will do the composition.
      * @return A header service call.
      */
-    static<Id, Request, Response> HeaderServiceCall<Id, Request, Response> compose(Function<RequestHeader, ? extends ServerServiceCall<Id, Request, Response>> block) {
-        return (requestHeader, id, request) ->
-                block.apply(requestHeader).invokeWithHeaders(requestHeader, id, request);
+    static<Request, Response> HeaderServiceCall<Request, Response> compose(Function<RequestHeader, ? extends ServerServiceCall<Request, Response>> block) {
+        return (requestHeader, request) ->
+                block.apply(requestHeader).invokeWithHeaders(requestHeader, request);
     }
 
     /**
@@ -102,8 +101,8 @@ public interface HeaderServiceCall<Id, Request, Response> extends ServerServiceC
      * This is useful for implementing service call composition.  For example:
      *
      * <pre>
-     * &lt;Id, Request, Response&gt; ServerServiceCall&lt;Id, Request, Response&gt; authenticated(
-     *     Function&lt;String, ServerServiceCall&lt;Id, Request, Response&gt;&gt; block) {
+     * &lt;Request, Response&gt; ServerServiceCall&lt;Request, Response&gt; authenticated(
+     *     Function&lt;String, ServerServiceCall&lt;Request, Response&gt;&gt; block) {
      *
      *     return HeaderServiceCall.compose(requestHeader -&gt; {
      *
@@ -124,10 +123,10 @@ public interface HeaderServiceCall<Id, Request, Response> extends ServerServiceC
      * @param block The block that will do the composition.
      * @return A header service call.
      */
-    static<Id, Request, Response> HeaderServiceCall<Id, Request, Response> composeAsync(Function<RequestHeader, CompletionStage<? extends ServerServiceCall<Id, Request, Response>>> block) {
-        return (requestHeader, id, request) ->
+    static<Request, Response> HeaderServiceCall<Request, Response> composeAsync(Function<RequestHeader, CompletionStage<? extends ServerServiceCall<Request, Response>>> block) {
+        return (requestHeader, request) ->
                 block.apply(requestHeader).thenCompose(call ->
-                        call.invokeWithHeaders(requestHeader, id, request)
+                        call.invokeWithHeaders(requestHeader, request)
                 );
     }
 

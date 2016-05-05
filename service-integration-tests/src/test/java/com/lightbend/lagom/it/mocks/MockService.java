@@ -12,71 +12,57 @@ import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
-import com.lightbend.lagom.javadsl.api.deser.IdSerializer;
-import com.lightbend.lagom.javadsl.api.deser.IdSerializers;
-import com.lightbend.lagom.javadsl.api.deser.RawId;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 import static com.lightbend.lagom.javadsl.api.Service.*;
-import java.util.Arrays;
+
 import java.util.Optional;
 
 public interface MockService extends Service {
 
-    ServiceCall<MockId, MockRequestEntity, MockResponseEntity> mockCall();
+    ServiceCall<MockRequestEntity, MockResponseEntity> mockCall(long id);
 
-    ServiceCall<NotUsed, NotUsed, NotUsed> doNothing();
+    ServiceCall<NotUsed, NotUsed> doNothing();
     
-    ServiceCall<NotUsed, NotUsed, NotUsed> alwaysFail();
+    ServiceCall<NotUsed, NotUsed> alwaysFail();
     
-    ServiceCall<NotUsed, Done, Done> doneCall();
+    ServiceCall<Done, Done> doneCall();
 
-    ServiceCall<NotUsed, MockRequestEntity, Source<MockResponseEntity, ?>> streamResponse();
+    ServiceCall<MockRequestEntity, Source<MockResponseEntity, ?>> streamResponse();
 
-    ServiceCall<NotUsed, NotUsed, Source<MockResponseEntity, ?>> unitStreamResponse();
+    ServiceCall<NotUsed, Source<MockResponseEntity, ?>> unitStreamResponse();
 
-    ServiceCall<NotUsed, Source<MockRequestEntity, ?>, MockResponseEntity> streamRequest();
+    ServiceCall<Source<MockRequestEntity, ?>, MockResponseEntity> streamRequest();
 
-    ServiceCall<NotUsed, Source<MockRequestEntity, ?>, NotUsed> streamRequestUnit();
+    ServiceCall<Source<MockRequestEntity, ?>, NotUsed> streamRequestUnit();
 
-    ServiceCall<NotUsed, Source<MockRequestEntity, ?>, Source<MockResponseEntity, ?>> bidiStream();
+    ServiceCall<Source<MockRequestEntity, ?>, Source<MockResponseEntity, ?>> bidiStream();
 
-    ServiceCall<NotUsed, String, String> customHeaders();
+    ServiceCall<String, String> customHeaders();
 
-    ServiceCall<NotUsed, Source<String, ?>, Source<String, ?>> streamCustomHeaders();
+    ServiceCall<Source<String, ?>, Source<String, ?>> streamCustomHeaders();
 
-    ServiceCall<NotUsed, NotUsed, String> serviceName();
+    ServiceCall<NotUsed, String> serviceName();
 
-    ServiceCall<NotUsed, NotUsed, Source<String, ?>> streamServiceName();
+    ServiceCall<NotUsed, Source<String, ?>> streamServiceName();
 
-    ServiceCall<Optional<String>, NotUsed, String> queryParamId();
+    ServiceCall<NotUsed, String> queryParamId(Optional<String> query);
 
     default Descriptor descriptor() {
         return named("mockservice").with(
-                restCall(Method.POST, "/:part1/:part2", mockCall())
-                        .with(IdSerializers.create("mockId", MockId::new, id -> Arrays.asList(id.part1(), id.part2()))),
-                call(doNothing()),
-                call(alwaysFail()).withCircuitBreaker(new CircuitBreakerId("foo")),
-                call(doneCall()),
-                call(streamResponse()),
-                call(unitStreamResponse()),
-                call(streamRequest()),
-                call(streamRequestUnit()),
-                call(bidiStream()),
-                call(customHeaders()),
-                call(streamCustomHeaders()),
-                call(serviceName()),
-                call(streamServiceName()),
-                pathCall("/queryparam?qp", queryParamId()).with(new IdSerializer<Optional<String>>() {
-                    @Override
-                    public RawId serialize(Optional<String> s) {
-                        return RawId.EMPTY.withQueryParam("qp", s);
-                    }
-                    @Override
-                    public Optional<String> deserialize(RawId rawId) {
-                        return rawId.queryParam("qp");
-                    }
-                })
-
+                restCall(Method.POST, "/mock/:id", this::mockCall),
+                call(this::doNothing),
+                call(this::alwaysFail).withCircuitBreaker(new CircuitBreakerId("foo")),
+                call(this::doneCall),
+                call(this::streamResponse),
+                call(this::unitStreamResponse),
+                call(this::streamRequest),
+                call(this::streamRequestUnit),
+                call(this::bidiStream),
+                call(this::customHeaders),
+                call(this::streamCustomHeaders),
+                call(this::serviceName),
+                call(this::streamServiceName),
+                pathCall("/queryparam?qp", this::queryParamId)
         );
     }
 }

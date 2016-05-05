@@ -9,15 +9,15 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface PersistenceService extends Service {
 
-    ServiceCall<NotUsed, NotUsed, String> checkInjected();
+    ServiceCall<NotUsed, String> checkInjected();
     
-    ServiceCall<NotUsed, NotUsed, String> checkCassandraSession();
+    ServiceCall<NotUsed, String> checkCassandraSession();
 
     @Override
     default Descriptor descriptor() {
         return named("persistence").with(
-            call(checkInjected()),
-            call(checkCassandraSession())
+            call(this::checkInjected),
+            call(this::checkCassandraSession)
         );
     }
 }

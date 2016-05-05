@@ -22,32 +22,28 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.deser.DeserializationException;
 import com.lightbend.lagom.javadsl.api.deser.SerializationException;
 import com.lightbend.lagom.javadsl.api.deser.StrictMessageSerializer;
-import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.NegotiatedDeserializer;
-import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.NegotiatedSerializer;
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 import com.lightbend.lagom.javadsl.api.transport.NotAcceptable;
-import com.lightbend.lagom.javadsl.api.transport.TransportErrorCode;
-import com.lightbend.lagom.javadsl.api.transport.TransportException;
 import com.lightbend.lagom.javadsl.api.transport.UnsupportedMediaType;
 
 public interface ServiceRegistry extends Service {
 
 	String SERVICE_NAME = "lagom-service-registry";
 
-	ServiceCall<String, ServiceRegistryService, NotUsed> register();
-	ServiceCall<String, NotUsed, NotUsed> unregister();
-	ServiceCall<String, NotUsed, URI> lookup();
-	ServiceCall<NotUsed, NotUsed, PSequence<RegisteredService>> registeredServices();
+	ServiceCall<ServiceRegistryService, NotUsed> register(String name);
+	ServiceCall<NotUsed, NotUsed> unregister(String name);
+	ServiceCall<NotUsed, URI> lookup(String name);
+	ServiceCall<NotUsed, PSequence<RegisteredService>> registeredServices();
 	
 	@Override
 	default Descriptor descriptor() {
 		// @formatter:off
 		return named(SERVICE_NAME)
-	      .with(restCall(Method.PUT, "/services/:id", register()))
-		  .with(restCall(Method.DELETE, "/services/:id", unregister()))
-		  .with(restCall(Method.GET, "/services/:id", lookup()).withResponseSerializer(CustomSerializers.URI))
-		  .with(pathCall("/services", registeredServices())
+	      .with(restCall(Method.PUT, "/services/:id", this::register))
+		  .with(restCall(Method.DELETE, "/services/:id", this::unregister))
+		  .with(restCall(Method.GET, "/services/:id", this::lookup).withResponseSerializer(CustomSerializers.URI))
+		  .with(pathCall("/services", this::registeredServices)
         ).withLocatableService(false);
 		// @formatter:on
 	}

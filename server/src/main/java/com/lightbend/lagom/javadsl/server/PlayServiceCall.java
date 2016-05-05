@@ -13,10 +13,10 @@ import java.util.function.Function;
  * An ID service call implementation that allows plugging directly into Play's request handling.
  */
 @FunctionalInterface
-public interface PlayServiceCall<Id, Request, Response> extends ServiceCall<Id, Request, Response> {
+public interface PlayServiceCall<Request, Response> extends ServiceCall<Request, Response> {
 
     @Override
-    default CompletionStage<Response> invoke(Id id, Request request) {
+    default CompletionStage<Response> invoke(Request request) {
         throw new UnsupportedOperationException("Play ID service call must be invoked using Play specific methods");
     }
 
@@ -25,7 +25,6 @@ public interface PlayServiceCall<Id, Request, Response> extends ServiceCall<Id, 
      *
      * This can only be used to hook into plain HTTP calls, it can't be used to hook into WebSocket calls.
      *
-     * @param id The ID extracted from the URI.
      * @param wrapCall A function that takes a service call, and converts it to an EssentialAction.  This action can
      *                 then be composed to modify any part of the request and or response, including request and
      *                 response headers and the request and response body.  This does not have to be invoked at all if
@@ -33,5 +32,5 @@ public interface PlayServiceCall<Id, Request, Response> extends ServiceCall<Id, 
      *                 serialization and deserialization.
      * @return An EssentialAction to handle the call with.
      */
-    EssentialAction invoke(Id id, Function<ServiceCall<Id, Request, Response>, EssentialAction> wrapCall);
+    EssentialAction invoke(Function<ServiceCall<Request, Response>, EssentialAction> wrapCall);
 }

@@ -18,8 +18,8 @@ public class BlogServiceImpl2 implements BlogService2 {
   }
 
   @Override
-  public ServiceCall<NotUsed, NotUsed, Source<PostSummary, ?>> getPostSummaries() {
-    return (id, request) -> {
+  public ServiceCall<NotUsed, Source<PostSummary, ?>> getPostSummaries() {
+    return request -> {
       Source<PostSummary, ?> summaries = cassandraSession.select(
           "SELECT id, title FROM postsummary;").map(row ->
             PostSummary.of(row.getString("id"), row.getString("title")));

@@ -40,10 +40,9 @@ public class MockServiceTest {
   
   @Test
   public void testInvoke() throws Exception {
-    MockId id = new MockId("foo", 10);
     MockRequestEntity req = new MockRequestEntity("bar", 20);
-    MockResponseEntity response = client.mockCall().invoke(id, req).toCompletableFuture().get(10, SECONDS);
-    assertEquals(id, response.incomingMockId());
+    MockResponseEntity response = client.mockCall(10).invoke(req).toCompletableFuture().get(10, SECONDS);
+    assertEquals(10, response.incomingId());
     assertEquals(req, response.incomingRequest());
   }
   
@@ -58,7 +57,7 @@ public class MockServiceTest {
   @Test
   public void testInvokeForDoneParameters() throws Exception {
     MockServiceImpl.invoked.set(false);
-    Done reply = client.doneCall().invoke(NotUsed.getInstance(), Done.getInstance())
+    Done reply = client.doneCall().invoke(Done.getInstance())
         .toCompletableFuture().get(10, SECONDS);
     assertEquals(Done.getInstance(), reply);
   }

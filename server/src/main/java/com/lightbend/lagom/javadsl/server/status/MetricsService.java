@@ -17,19 +17,19 @@ public interface MetricsService extends Service {
   /**
    * Snapshot of current circuit breaker status
    */
-  ServiceCall<NotUsed, NotUsed, List<CircuitBreakerStatus>> currentCircuitBreakers();
+  ServiceCall<NotUsed, List<CircuitBreakerStatus>> currentCircuitBreakers();
   
   /**
    * Stream of circuit breaker status
    */
-  ServiceCall<NotUsed, NotUsed, Source<List<CircuitBreakerStatus>, ?>> circuitBreakers();
+  ServiceCall<NotUsed, Source<List<CircuitBreakerStatus>, ?>> circuitBreakers();
 
   @Override
   default Descriptor descriptor() {
     // @formatter:off
     return named("/metrics").with(
-        pathCall("/_status/circuit-breaker/current", currentCircuitBreakers()),
-        pathCall("/_status/circuit-breaker/stream", circuitBreakers())
+        pathCall("/_status/circuit-breaker/current", this::currentCircuitBreakers),
+        pathCall("/_status/circuit-breaker/stream", this::circuitBreakers)
     ).withLocatableService(false);
     // @formatter:on
   }

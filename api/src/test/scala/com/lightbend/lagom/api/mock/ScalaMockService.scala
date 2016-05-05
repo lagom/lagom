@@ -3,19 +3,20 @@
  */
 package com.lightbend.lagom.api.mock
 
+import java.util.UUID
+
 import com.lightbend.lagom.javadsl.api.Descriptor
 import com.lightbend.lagom.javadsl.api.Service
-import com.lightbend.lagom.javadsl.api.Service._
+import com.lightbend.lagom.javadsl.api.ScalaService._
 import com.lightbend.lagom.javadsl.api.ServiceCall
 import com.lightbend.lagom.javadsl.api.transport.Method
-import akka.NotUsed
 
 trait ScalaMockService extends Service {
 
-  def hello(): ServiceCall[String, NotUsed, String]
+  def hello(): ServiceCall[UUID, String]
 
   override def descriptor(): Descriptor =
-    named("/mock").`with`(restCall(Method.GET, "/hello/:name", hello()))
+    named("/mock").`with`(restCall(Method.GET, "/hello/:name", hello _))
 }
 
 abstract class ScalaMockServiceWrong extends ScalaMockService

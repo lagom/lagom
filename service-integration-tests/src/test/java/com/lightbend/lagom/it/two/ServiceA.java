@@ -10,15 +10,13 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 
-import akka.NotUsed;
-
 public interface ServiceA extends Service {
 
-    ServiceCall<NotUsed, String, String> helloA();
+    ServiceCall<String, String> helloA();
 
     default Descriptor descriptor() {
         return named("/serviceA").with(
-            call(helloA())
+            call(this::helloA)
         );
     }
 }

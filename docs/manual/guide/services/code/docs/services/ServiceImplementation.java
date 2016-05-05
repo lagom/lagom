@@ -21,8 +21,8 @@ public class ServiceImplementation {
 
   public static class HeaderServiceCallLambda implements HelloService {
     //#header-service-call-lambda
-    public HeaderServiceCall<NotUsed, String, String> sayHello() {
-      return (requestHeader, id, name) -> {
+    public HeaderServiceCall<String, String> sayHello() {
+      return (requestHeader, name) -> {
 
         String user = requestHeader.principal()
             .map(Principal::getName).orElse("No one");
@@ -39,8 +39,8 @@ public class ServiceImplementation {
 
   public static class HeaderServiceCallOfLambda implements HelloService {
     //#header-service-call-of-lambda
-    public ServerServiceCall<NotUsed, String, String> sayHello() {
-      return HeaderServiceCall.of((requestHeader, id, name) -> {
+    public ServerServiceCall<String, String> sayHello() {
+      return HeaderServiceCall.of((requestHeader, name) -> {
 
         String user = requestHeader.principal()
             .map(Principal::getName).orElse("No one");
@@ -57,8 +57,8 @@ public class ServiceImplementation {
 
   public static class TickServiceCall implements FirstDescriptor.CallStream {
     //#tick-service-call
-    public ServerServiceCall<Integer, String, Source<String, ?>> tick() {
-      return (intervalMs, tickMessage) -> {
+    public ServerServiceCall<String, Source<String, ?>> tick(int intervalMs) {
+      return tickMessage -> {
         FiniteDuration interval = FiniteDuration.create(intervalMs, TimeUnit.MILLISECONDS);
         return completedFuture(Source.tick(interval, interval, tickMessage));
       };
@@ -68,8 +68,8 @@ public class ServiceImplementation {
 
   public static class HelloServiceCall implements FirstDescriptor.HelloStream {
     //#hello-service-call
-    public ServerServiceCall<NotUsed, Source<String, ?>, Source<String, ?>> sayHello() {
-      return (id, names) -> completedFuture(names.map(name -> "Hello " + name));
+    public ServerServiceCall<Source<String, ?>, Source<String, ?>> sayHello() {
+      return names -> completedFuture(names.map(name -> "Hello " + name));
     }
     //#hello-service-call
   }
@@ -77,8 +77,8 @@ public class ServiceImplementation {
   public static class ServiceCallComposition {
 
     //#logging-service-call
-    public <Id, Request, Response> ServerServiceCall<Id, Request, Response> logged(
-        ServerServiceCall<Id, Request, Response> serviceCall) {
+    public <Request, Response> ServerServiceCall<Request, Response> logged(
+        ServerServiceCall<Request, Response> serviceCall) {
       return HeaderServiceCall.compose(requestHeader -> {
         System.out.println("Received " + requestHeader.method() + " " + requestHeader.uri());
         return serviceCall;
@@ -88,9 +88,9 @@ public class ServiceImplementation {
 
     public class LoggedHelloService implements HelloService {
       //#logged-hello-service
-      public ServerServiceCall<NotUsed, String, String> sayHello() {
+      public ServerServiceCall<String, String> sayHello() {
         return logged(
-            (id, name) -> completedFuture("Hello " + name)
+            name -> completedFuture("Hello " + name)
         );
       }
       //#logged-hello-service
@@ -107,8 +107,8 @@ public class ServiceImplementation {
     private UserStorage userStorage;
 
     //#auth-service-call
-    public <Id, Request, Response> ServerServiceCall<Id, Request, Response> authenticated(
-        Function<User, ServerServiceCall<Id, Request, Response>> serviceCall) {
+    public <Request, Response> ServerServiceCall<Request, Response> authenticated(
+        Function<User, ServerServiceCall<Request, Response>> serviceCall) {
       return HeaderServiceCall.composeAsync(requestHeader -> {
 
         // First lookup user
@@ -130,26 +130,26 @@ public class ServiceImplementation {
 
     public class AuthHelloService implements HelloService {
       //#auth-hello-service
-      public ServerServiceCall<NotUsed, String, String> sayHello() {
+      public ServerServiceCall<String, String> sayHello() {
         return authenticated( user ->
-            (id, name) -> completedFuture("Hello " + user)
+            name -> completedFuture("Hello " + user)
         );
       }
       //#auth-hello-service
     }
 
     //#compose-service-call
-    public <Id, Request, Response> ServerServiceCall<Id, Request, Response> filter(
-        Function<User, ServerServiceCall<Id, Request, Response>> serviceCall) {
+    public <Request, Response> ServerServiceCall<Request, Response> filter(
+        Function<User, ServerServiceCall<Request, Response>> serviceCall) {
       return logged(authenticated(serviceCall));
     }
     //#compose-service-call
 
     public class FilterHelloService implements HelloService {
       //#filter-hello-service
-      public ServerServiceCall<NotUsed, String, String> sayHello() {
+      public ServerServiceCall<String, String> sayHello() {
         return filter( user ->
-            (id, name) -> completedFuture("Hello " + user)
+            name -> completedFuture("Hello " + user)
         );
       }
       //#filter-hello-service

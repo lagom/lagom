@@ -32,7 +32,6 @@ $ exists playProj/target/universal/stage/lib/play-dist-proj.play-dist-proj-1.0-S
 
 > checkStartScriptLagomProj
 $ exists lagomProj/target/universal/stage/lib
-$ exists lagomProj/target/universal/stage/share/doc/api
 
 > checkStartScriptPlayProj
 $ exists playProj/target/universal/stage/conf/application.conf

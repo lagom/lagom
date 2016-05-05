@@ -7,12 +7,12 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface BlogService extends Service {
 
-  ServiceCall<String, AddPost, String> addPost();
+  ServiceCall<AddPost, String> addPost(String id);
 
   @Override
   default Descriptor descriptor() {
     return named("/blogservice").with(
-      restCall(Method.POST, "/blogs/:id", addPost())
+      restCall(Method.POST, "/blogs/:id", this::addPost)
     );
   }
 }
