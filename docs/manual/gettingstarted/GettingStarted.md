@@ -38,15 +38,15 @@ my-first-system          → Project root
 
 @[helloservice-interface](code/sample/helloworld/api/HelloService.java)
 
-* The service interface needs to inherit from [`Service`](api/java/index.html?com/lightbend/lagom/javadsl/api/Service.html) and provide an implementation of [`Service#descriptor`](api/java/index.html?com/lightbend/lagom/javadsl/api/Service.html#descriptor--) method.
+* The service interface needs to inherit from [`Service`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html) and provide an implementation of [`Service#descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#descriptor--) method.
 
-* The implementation of `Service#descriptor` returns a [`Descriptor`](api/java/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html). A `Descriptor` defines the service name and the REST endpoints offered by a service. For each declared endpoint, an abstract method is declared in the service interface, e.g., see the `HelloService#hello` method.
+* The implementation of `Service#descriptor` returns a [`Descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html). A `Descriptor` defines the service name and the REST endpoints offered by a service. For each declared endpoint, an abstract method is declared in the service interface, e.g., see the `HelloService#hello` method.
 
 * The implementation of the service abstract methods is provided by the related implementation project. For instance, the service implementation of the `HelloService#hello` method, for the `helloworld` service, can be found in the `helloworld-impl` project (look for the `HelloServiceImpl.java` source file).
 
 @[helloservice-impl](code/sample/helloworld/impl/HelloServiceImpl.java)
 
-* The [`PersistentEntityRegistry`](api/java/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html) allows to persist data in the database using [[Event Sourcing and CQRS|ES_CQRS]].
+* The [`PersistentEntityRegistry`](api/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html) allows to persist data in the database using [[Event Sourcing and CQRS|ES_CQRS]].
 
 ## Running Lagom services
 
