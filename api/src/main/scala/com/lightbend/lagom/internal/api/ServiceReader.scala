@@ -4,20 +4,18 @@
 package com.lightbend.lagom.internal.api
 
 import java.lang.invoke.MethodHandles
-import java.lang.reflect.{ InvocationHandler, Method, ParameterizedType, Proxy => JProxy, Type }
-import java.util.Optional
+import java.lang.reflect.{ InvocationHandler, Method, ParameterizedType, Type, Proxy => JProxy }
 
 import com.google.common.reflect.TypeToken
 import com.lightbend.lagom.javadsl.api._
-import com.lightbend.lagom.javadsl.api.Descriptor.{ RestCallId, PathCallId, NamedCallId, Call }
-import com.lightbend.lagom.javadsl.api.Service.SelfDescribingServiceCall
+import com.lightbend.lagom.javadsl.api.Descriptor._
 import com.lightbend.lagom.javadsl.api.deser._
-import com.lightbend.lagom.javadsl.api.paging.Page
 import akka.NotUsed
 import org.pcollections.TreePVector
 
 import scala.collection.JavaConverters._
 import scala.compat.java8.OptionConverters._
+import scala.util.control.NonFatal
 
 /**
  * Reads a service interface
@@ -45,12 +43,12 @@ object ServiceReader {
                                builtInSerializerFactories:  Map[PlaceholderSerializerFactory, SerializerFactory],
                                builtInExceptionSerializers: Map[PlaceholderExceptionSerializer, ExceptionSerializer]): Descriptor = {
 
-    val builtInIdSerializers: Map[Type, IdSerializer[_]] = Map(
-      classOf[String] -> IdSerializers.STRING,
-      classOf[java.lang.Long] -> IdSerializers.LONG,
-      classOf[java.lang.Integer] -> IdSerializers.INTEGER,
-      classOf[NotUsed] -> IdSerializers.NOT_USED,
-      classOf[Page] -> IdSerializers.PAGE
+    val builtInIdSerializers: Map[Type, PathParamSerializer[_]] = Map(
+      classOf[String] -> PathParamSerializers.STRING,
+      classOf[java.lang.Long] -> PathParamSerializers.LONG,
+      classOf[java.lang.Integer] -> PathParamSerializers.INTEGER,
+      classOf[java.lang.Boolean] -> PathParamSerializers.BOOLEAN,
+      classOf[java.util.Optional[_]] -> PathParamSerializers.OPTIONAL
     )
 
     val builtInMessageSerializers: Map[Type, MessageSerializer[_, _]] = Map(
@@ -75,16 +73,63 @@ object ServiceReader {
     }
 
     val serviceResolver = new ServiceCallResolver(
-      builtInIdSerializers ++ descriptor.idSerializers().asScala,
+      builtInIdSerializers ++ descriptor.pathParamSerializers().asScala,
       builtInMessageSerializers ++ descriptor.messageSerializers().asScala, serializerFactory
     )
 
     val endpoints = descriptor.calls().asScala.map { ep =>
-      val endpoint = ep.asInstanceOf[Call[Any, Any, Any]]
+      val endpoint = ep.asInstanceOf[Call[Any, Any]]
+
+      val methodRefServiceCallHolder = ep.serviceCallHolder() match {
+        case methodRef: MethodRefServiceCallHolder => methodRef
+        case other                                 => throw new IllegalArgumentException("Unknown ServiceCallHolder type: " + other)
+      }
+
+      val method = methodRefServiceCallHolder.methodReference match {
+        case preResolved: Method => preResolved
+        case lambda =>
+          try {
+            MethodRefResolver.resolveMethodRef(lambda)
+          } catch {
+            case NonFatal(e) =>
+              throw new IllegalStateException("Unable to resolve method for service call with ID " + ep.callId() +
+                ". Ensure that the you have passed a method reference (ie, this::someMethod). Passing anything else, " +
+                "for example lambdas, anonymous classes or actual implementation classes, is forbidden in declaring a " +
+                "service descriptor.", e)
+          }
+      }
+
+      val serviceCallType = TypeToken.of(method.getGenericReturnType)
+        .asInstanceOf[TypeToken[ServiceCall[_, _]]]
+        .getSupertype(classOf[ServiceCall[_, _]])
+        .getType match {
+          case param: ParameterizedType => param
+          case _                        => throw new IllegalStateException("ServiceCall is not a parameterized type?")
+        }
+
+      // Now get the type arguments
+      val (request, response) = serviceCallType.getActualTypeArguments match {
+        case Array(request, response) =>
+          if (method.getReturnType == classOf[ServiceCall[_, _]]) {
+            (request, response)
+          } else {
+            throw new IllegalArgumentException("Service calls must return ServiceCall, subtypes are not allowed")
+          }
+        case _ => throw new IllegalStateException("ServiceCall does not have 2 type arguments?")
+      }
+
+      val serviceCallHolder = constructServiceCallHolder(serviceResolver, method)
+
+      val resolvedCallId = endpoint.callId() match {
+        case named: NamedCallId if named.name() == "__unresolved__" => new NamedCallId(method.getName)
+        case other => other // todo validate paths against method arguments
+      }
+
       endpoint
-        .`with`(serviceResolver.resolveIdSerializer(endpoint.idSerializer()))
-        .withRequestSerializer(serviceResolver.resolveMessageSerializer(endpoint.requestSerializer()))
-        .withResponseSerializer(serviceResolver.resolveMessageSerializer(endpoint.responseSerializer()))
+        .`with`(resolvedCallId)
+        .`with`(serviceCallHolder)
+        .withRequestSerializer(serviceResolver.resolveMessageSerializer(endpoint.requestSerializer(), request))
+        .withResponseSerializer(serviceResolver.resolveMessageSerializer(endpoint.responseSerializer(), response))
     }
 
     val acls = descriptor.acls.asScala ++ endpoints.collect {
@@ -98,9 +143,40 @@ object ServiceReader {
         ServiceAcl.methodAndPath(method, pathSpec)
     }
 
-    descriptor.replaceAllCalls(TreePVector.from(endpoints.asJava.asInstanceOf[java.util.List[Call[_, _, _]]]))
+    descriptor.replaceAllCalls(TreePVector.from(endpoints.asJava.asInstanceOf[java.util.List[Call[_, _]]]))
       .`with`(exceptionSerializer)
       .replaceAllAcls(TreePVector.from(acls.asJava))
+  }
+
+  private def constructServiceCallHolder[Request, Response](serviceCallResolver: ServiceCallResolver, method: Method): ServiceCallHolder = {
+    val serializers = method.getGenericParameterTypes.toSeq.map { arg =>
+      serviceCallResolver.resolvePathParamSerializer(new UnresolvedTypePathParamSerializer[AnyRef], arg)
+    }
+
+    import scala.collection.JavaConverters._
+
+    val theMethod = method
+
+    new MethodServiceCallHolder {
+      override def invoke(arguments: Seq[AnyRef]): Seq[Seq[String]] = {
+        if (arguments == null) {
+          Nil
+        } else {
+          arguments.zip(serializers).map {
+            case (arg, serializer) => serializer.serialize(arg).asScala
+          }
+        }
+      }
+      override def create(service: Any, parameters: Seq[Seq[String]]): ServiceCall[_, _] = {
+        val args = parameters.zip(serializers).map {
+          case (params, serializer) => serializer.deserialize(TreePVector.from(params.asJavaCollection))
+        }
+
+        theMethod.invoke(service, args: _*).asInstanceOf[ServiceCall[_, _]]
+      }
+      override val method: Method = theMethod
+    }
+
   }
 
   class ServiceInvocationHandler(classLoader: ClassLoader, serviceInterface: Class[_ <: Service]) extends InvocationHandler {
@@ -118,45 +194,30 @@ object ServiceReader {
           // And now we actually invoke it
           .invokeWithArguments(args: _*)
 
-        // If this is the descriptor method, and it doesn't have a default implementation, throw an exception
-      } else if (method.equals(classOf[Service].getDeclaredMethod(DescriptorMethodName))) {
-        throw new IllegalArgumentException("Service.descriptor must be implemented as a default method")
-      } else if (method.getParameterCount == 0 && classOf[ServiceCall[_, _, _]].isAssignableFrom(method.getReturnType)) {
-
-        // Using Guava TypeToken, we find the parameterized IdServiceCall type of the return type of the method
-        val idServiceCallType = TypeToken.of(method.getGenericReturnType)
-          .asInstanceOf[TypeToken[ServiceCall[_, _, _]]]
-          .getSupertype(classOf[ServiceCall[_, _, _]])
-          .getType match {
-            case param: ParameterizedType => param
-            case _                        => throw new IllegalStateException("ServiceCall is not a parameterized type?")
+      } else if (method.getName == DescriptorMethodName && method.getParameterCount == 0) {
+        if (ScalaSig.isScala(serviceInterface)) {
+          if (serviceInterface.isInterface()) {
+            val implClass = Class.forName(serviceInterface.getName + "$class", false, classLoader)
+            val method = implClass.getMethod(DescriptorMethodName, serviceInterface)
+            method.invoke(null, proxy.asInstanceOf[AnyRef])
+          } else {
+            throw new IllegalArgumentException("Service.descriptor must be implemented in a trait")
           }
-
-        // Now get the type arguments and construct a SelfDescribingServiceCall from it
-        idServiceCallType.getActualTypeArguments match {
-          case Array(id, request, response) =>
-            if (method.getReturnType == classOf[ServiceCall[_, _, _]]) {
-              SelfDescribingServiceCallStub[AnyRef, AnyRef, AnyRef](method, id, request, response)
-            } else {
-              throw new IllegalArgumentException("Service calls must return ServiceCall, subtypes are not allowed")
-            }
-          case _ => throw new IllegalStateException("ServiceCall does not have 3 type arguments?")
+        } else {
+          // If this is the descriptor method, and it doesn't have a default implementation, throw an exception
+          throw new IllegalArgumentException("Service.descriptor must be implemented as a default method")
         }
-      } else if (ScalaSig.isScala(serviceInterface)) {
-        if (serviceInterface.isInterface()) {
-          val implClass = Class.forName(serviceInterface.getName + "$class", false, classLoader)
-          val method = implClass.getMethod(DescriptorMethodName, serviceInterface)
-          method.invoke(null, proxy.asInstanceOf[AnyRef])
-        } else
-          throw new IllegalArgumentException("Service.descriptor must be implemented in a trait")
+      } else if (classOf[ServiceCall[_, _]].isAssignableFrom(method.getReturnType)) {
+        throw new IllegalStateException("Service call method " + method + " was invoked on self describing service " +
+          serviceInterface + " while loading descriptor, which is not allowed.")
       } else {
         throw new IllegalStateException("Abstract method " + method + " invoked on self describing service " +
-          serviceInterface + " while loading descriptor, but it was not a service call.")
+          serviceInterface + " while loading descriptor, which is not allowed.")
       }
     }
   }
 
-  def methodFromSerializer(requestSerializer: MessageSerializer[_, _], responseSerializer: MessageSerializer[_, _]) = {
+  private def methodFromSerializer(requestSerializer: MessageSerializer[_, _], responseSerializer: MessageSerializer[_, _]) = {
     if (requestSerializer.isStreamed || responseSerializer.isStreamed) {
       com.lightbend.lagom.javadsl.api.transport.Method.GET
     } else if (requestSerializer.isUsed) {
@@ -167,7 +228,24 @@ object ServiceReader {
   }
 }
 
-case class SelfDescribingServiceCallStub[Id, Request, Response](method: Method, idType: Type, requestType: Type, responseType: Type) extends SelfDescribingServiceCall[Id, Request, Response] {
-  def invoke(id: Id, request: Request) = throw new NotImplementedError("This service call is a stub that should not be invoked")
-  def methodName = method.getName
+/**
+ * Internal API.
+ *
+ * Service call holder that holds the original method reference that was passed to the descriptor when the service
+ * descriptor was defined.
+ *
+ * @param methodReference The method reference (a lambda object).
+ */
+private[lagom] case class MethodRefServiceCallHolder(methodReference: Any) extends ServiceCallHolder
+
+/**
+ * Internal API.
+ *
+ * Service call holder that's used by the service router and client implementor to essentially the raw id to and from
+ * invocations of the service call method.
+ */
+private[lagom] trait MethodServiceCallHolder extends ServiceCallHolder {
+  val method: Method
+  def create(service: Any, parameters: Seq[Seq[String]]): ServiceCall[_, _]
+  def invoke(arguments: Seq[AnyRef]): Seq[Seq[String]]
 }

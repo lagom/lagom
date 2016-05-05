@@ -20,8 +20,8 @@ public class SensorServiceImpl implements SensorService {
   }
 
   @Override
-  public ServiceCall<String, Temperature, NotUsed> registerTemperature() {
-    return (id, temperature) -> {
+  public ServiceCall<Temperature, NotUsed> registerTemperature(String id) {
+    return temperature -> {
       final PubSubRef<Temperature> topic =
           pubSub.refFor(TopicId.of(Temperature.class, id));
       topic.publish(temperature);
@@ -30,8 +30,8 @@ public class SensorServiceImpl implements SensorService {
   }
 
   @Override
-  public ServiceCall<String, NotUsed, Source<Temperature, ?>> temperatureStream() {
-    return (id, request) -> {
+  public ServiceCall<NotUsed, Source<Temperature, ?>> temperatureStream(String id) {
+    return request -> {
       final PubSubRef<Temperature> topic =
           pubSub.refFor(TopicId.of(Temperature.class, id));
       return CompletableFuture.completedFuture(topic.subscriber());

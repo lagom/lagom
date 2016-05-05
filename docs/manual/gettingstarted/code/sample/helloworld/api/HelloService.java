@@ -15,13 +15,14 @@ import com.lightbend.lagom.javadsl.api.transport.Method;
 
  //#helloservice-interface
 public interface HelloService extends Service {
+
+  ServiceCall<NotUsed, String> hello(String id);
+
   @Override
   default Descriptor descriptor() {
     return named("helloservice").with(
-        restCall(Method.GET,  "/api/hello/:id", hello())
+        restCall(Method.GET,  "/api/hello/:id", this::hello)
       ).withAutoAcl(true);
   }
-
-  ServiceCall<String, NotUsed, String> hello();
 }
 //#helloservice-interface

@@ -41,7 +41,7 @@ object CassandraModule {
     val registered = config.uris.asScala.map {
       case contactPoint: CassandraContactPoint =>
         val r = new ServiceRegistryService(contactPoint.uri, Collections.emptyList[ServiceAcl])
-        registry.register().invoke(contactPoint.name, r).toScala.recover {
+        registry.register(contactPoint.name).invoke(r).toScala.recover {
           case t =>
             Logger(getClass).error(s"Cassandra server name=[${contactPoint.name}] couldn't be registered to the service locator.", t)
             NotUsed

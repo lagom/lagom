@@ -4,6 +4,7 @@ import java.io.{ InputStreamReader, BufferedReader }
 import java.net.HttpURLConnection
 
 import com.lightbend.lagom.sbt.{ LagomPlugin, NonBlockingInteractionMode, Internal }
+import com.lightbend.lagom.core.LagomVersion
 import sbt.Keys._
 import sbt._
 import sbt.complete.Parser
@@ -20,6 +21,8 @@ object ScriptedTools extends AutoPlugin {
   object autoImport {
     val validateRequest = inputKey[Response]("Validate the given request")
     val validateFile = inputKey[File]("Validate a file")
+
+    val lagomSbtScriptedLibrary = "com.lightbend.lagom" %% "lagom-sbt-scripted-library" % LagomVersion.current
   }
 
   import autoImport._

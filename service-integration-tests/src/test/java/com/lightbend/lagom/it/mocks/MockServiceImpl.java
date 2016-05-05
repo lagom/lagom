@@ -33,62 +33,62 @@ public class MockServiceImpl implements MockService {
     }
 
     @Override
-    public ServiceCall<MockId, MockRequestEntity, MockResponseEntity> mockCall() {
-        return (id, request) -> CompletableFuture.completedFuture(new MockResponseEntity(id, request));
+    public ServiceCall<MockRequestEntity, MockResponseEntity> mockCall(long id) {
+        return request -> CompletableFuture.completedFuture(new MockResponseEntity(id, request));
     }
 
     @Override
-    public ServiceCall<NotUsed, NotUsed, NotUsed> doNothing() {
-        return (id, request) -> {
+    public ServiceCall<NotUsed, NotUsed> doNothing() {
+        return request -> {
             invoked.set(true);
             return CompletableFuture.completedFuture(NotUsed.getInstance());
         };
     }
     
     @Override
-    public ServiceCall<NotUsed, NotUsed, NotUsed> alwaysFail() {
-        return (id, request) -> {
+    public ServiceCall<NotUsed, NotUsed> alwaysFail() {
+        return request -> {
             invoked.set(true);
             throw new RuntimeException("Simulated error");
         };
     }
     
     @Override
-    public ServiceCall<NotUsed, Done, Done> doneCall(){
-      return (id, done) -> CompletableFuture.completedFuture(done);
+    public ServiceCall<Done, Done> doneCall(){
+      return done -> CompletableFuture.completedFuture(done);
   }
 
     public static final AtomicBoolean invoked = new AtomicBoolean();
 
     @Override
-    public ServiceCall<NotUsed, MockRequestEntity, Source<MockResponseEntity, ?>> streamResponse() {
-        return (id, request) ->
+    public ServiceCall<MockRequestEntity, Source<MockResponseEntity, ?>> streamResponse() {
+        return request ->
             CompletableFuture.completedFuture(Source.from(Arrays.asList(1, 2, 3)).map(i ->
-                new MockResponseEntity(new MockId("id", i), request)
+                new MockResponseEntity(i, request)
             ));
     }
 
     @Override
-    public ServiceCall<NotUsed, NotUsed, Source<MockResponseEntity, ?>> unitStreamResponse() {
-        return (id, request) -> {
+    public ServiceCall<NotUsed, Source<MockResponseEntity, ?>> unitStreamResponse() {
+        return request -> {
                 System.out.println("unit stream response invoked");
                 return CompletableFuture.completedFuture(Source.from(Arrays.asList(1, 2, 3)).map(i ->
-                        new MockResponseEntity(new MockId("id", i), new MockRequestEntity("entity", i))
+                        new MockResponseEntity(i, new MockRequestEntity("entity", i))
                 ));};
     }
 
     @Override
-    public ServiceCall<NotUsed, Source<MockRequestEntity, ?>, MockResponseEntity> streamRequest() {
-        return (id, request) ->
+    public ServiceCall<Source<MockRequestEntity, ?>, MockResponseEntity> streamRequest() {
+        return request ->
                 request.runWith(Sink.head(), materializer)
-                        .thenApply(head -> new MockResponseEntity(new MockId("id", 1), head));
+                        .thenApply(head -> new MockResponseEntity(1, head));
     }
 
     public static AtomicReference<MockRequestEntity> firstReceived = new AtomicReference<>();
 
     @Override
-    public ServiceCall<NotUsed, Source<MockRequestEntity, ?>, NotUsed> streamRequestUnit() {
-        return (id, request) ->
+    public ServiceCall<Source<MockRequestEntity, ?>, NotUsed> streamRequestUnit() {
+        return request ->
             request.runWith(Sink.head(), materializer)
                     .thenApply(head -> {
                         firstReceived.set(head);
@@ -97,15 +97,15 @@ public class MockServiceImpl implements MockService {
     }
 
     @Override
-    public ServiceCall<NotUsed, Source<MockRequestEntity, ?>, Source<MockResponseEntity, ?>> bidiStream() {
-        return (id, request) -> CompletableFuture.completedFuture(
-                request.map(req -> new MockResponseEntity(new MockId("id", 1), req))
+    public ServiceCall<Source<MockRequestEntity, ?>, Source<MockResponseEntity, ?>> bidiStream() {
+        return request -> CompletableFuture.completedFuture(
+                request.map(req -> new MockResponseEntity(1, req))
         );
     }
 
     @Override
-    public HeaderServiceCall<NotUsed, String, String> customHeaders() {
-        return (requestHeader, id, headerName) -> {
+    public HeaderServiceCall<String, String> customHeaders() {
+        return (requestHeader, headerName) -> {
             String headerValue = requestHeader.getHeader(headerName).orElseGet(() -> {
                 throw new NotFound("Header " + headerName);
             });
@@ -116,8 +116,8 @@ public class MockServiceImpl implements MockService {
     }
 
     @Override
-    public HeaderServiceCall<NotUsed, Source<String, ?>, Source<String, ?>> streamCustomHeaders() {
-        return (requestHeader, id, headerNames) ->
+    public HeaderServiceCall<Source<String, ?>, Source<String, ?>> streamCustomHeaders() {
+        return (requestHeader, headerNames) ->
             CompletableFuture.completedFuture(Pair.create(ResponseHeader.OK, headerNames.map(headerName ->
                 requestHeader.getHeader(headerName).orElseGet(() -> {
                     throw new NotFound("Header " + headerName);
@@ -126,29 +126,29 @@ public class MockServiceImpl implements MockService {
     }
 
     @Override
-    public ServiceCall<NotUsed, NotUsed, String> serviceName() {
-        return withServiceName(serviceName -> (id, request) ->
+    public ServiceCall<NotUsed, String> serviceName() {
+        return withServiceName(serviceName -> request ->
                 CompletableFuture.completedFuture(serviceName)
         );
     }
 
     @Override
-    public ServiceCall<NotUsed, NotUsed, Source<String, ?>> streamServiceName() {
-        return withServiceName(serviceName -> (id, request) ->
+    public ServiceCall<NotUsed, Source<String, ?>> streamServiceName() {
+        return withServiceName(serviceName -> request ->
                 CompletableFuture.completedFuture(Source.single(serviceName))
         );
     }
 
     @Override
-    public ServiceCall<Optional<String>, NotUsed, String> queryParamId() {
-        return (id, request) -> CompletableFuture.completedFuture(id.orElse("none"));
+    public ServiceCall<NotUsed, String> queryParamId(Optional<String> query) {
+        return request -> CompletableFuture.completedFuture(query.orElse("none"));
     }
 
   /**
      * Shows example service call composition.
      */
-    private <Id, Request, Response> ServerServiceCall<Id, Request, Response> withServiceName(
-            Function<String, ServerServiceCall<Id, Request, Response>> block) {
+    private <Request, Response> ServerServiceCall<Request, Response> withServiceName(
+            Function<String, ServerServiceCall<Request, Response>> block) {
 
         return HeaderServiceCall.compose(requestHeader -> {
 

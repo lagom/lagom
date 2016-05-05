@@ -51,8 +51,8 @@ public class WorkerServiceImpl implements WorkerService {
   }
 
   @Override
-  public ServiceCall<NotUsed, Job, JobAccepted> doWork() {
-    return (id, job) -> {
+  public ServiceCall<Job, JobAccepted> doWork() {
+    return job -> {
       // send the job to a worker, via the consistent hashing router
       CompletionStage<JobAccepted> reply = ask(workerRouter, job, Timeout.apply(
           5, TimeUnit.SECONDS))

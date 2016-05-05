@@ -13,14 +13,14 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface AclService extends Service {
 
-    ServiceCall<String, NotUsed, NotUsed> getMock();
+    ServiceCall<NotUsed, NotUsed> getMock(String id);
 
-    ServiceCall<NotUsed, NotUsed, NotUsed> addMock();
+    ServiceCall<NotUsed, NotUsed> addMock();
 
     default Descriptor descriptor() {
         return named("/aclservice").with(
-            restCall(Method.GET,  "/mocks/:id", getMock()),
-            restCall(Method.POST, "/mocks", addMock())
+            restCall(Method.GET,  "/mocks/:id", this::getMock),
+            restCall(Method.POST, "/mocks", this::addMock)
         ).withAutoAcl(true);
     }
 }

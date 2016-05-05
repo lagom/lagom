@@ -53,15 +53,15 @@ public class WorkerService2Impl implements WorkerService2 {
   }
 
   @Override
-  public ServiceCall<NotUsed, NotUsed, Source<JobStatus, ?>> status() {
-    return (id, req) -> {
+  public ServiceCall<NotUsed, Source<JobStatus, ?>> status() {
+    return req -> {
       return CompletableFuture.completedFuture(topic.subscriber());
     };
   }
 
   @Override
-  public ServiceCall<NotUsed, Job, JobAccepted> doWork() {
-    return (id, job) -> {
+  public ServiceCall<Job, JobAccepted> doWork() {
+    return job -> {
       // send the job to a worker, via the consistent hashing router
       CompletionStage<JobAccepted> reply = ask(workerRouter, job, Timeout.apply(
           5, TimeUnit.SECONDS))

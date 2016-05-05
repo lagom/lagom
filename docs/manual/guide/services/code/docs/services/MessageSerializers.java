@@ -53,13 +53,13 @@ public class MessageSerializers {
   }
 
   public interface OrderService1 extends Service {
-    ServiceCall<String, NotUsed, Order> getOrder();
+    ServiceCall<NotUsed, Order> getOrder(String id);
 
     @Override
     //#call-serializer
     default Descriptor descriptor() {
       return named("orderservice").with(
-          pathCall("/orders/:id", getOrder())
+          pathCall("/orders/:id", this::getOrder)
               .withResponseSerializer(new MyOrderSerializer())
       );
     }
@@ -67,13 +67,13 @@ public class MessageSerializers {
   }
 
   public interface OrderService2 extends Service {
-    ServiceCall<String, NotUsed, Order> getOrder();
+    ServiceCall<NotUsed, Order> getOrder(String id);
 
     @Override
     //#type-serializer
     default Descriptor descriptor() {
       return named("orderservice").with(
-          pathCall("/orders/:id", getOrder())
+          pathCall("/orders/:id", this::getOrder)
       ).with(Order.class, new MyOrderSerializer());
     }
     //#type-serializer
@@ -87,13 +87,13 @@ public class MessageSerializers {
   }
 
   public interface OrderService3 extends Service {
-    ServiceCall<String, NotUsed, Order> getOrder();
+    ServiceCall<NotUsed, Order> getOrder(String id);
 
     @Override
     //#with-serializer-factory
     default Descriptor descriptor() {
       return named("orderservice").with(
-              pathCall("/orders/:id", getOrder())
+              pathCall("/orders/:id", this::getOrder)
       ).with(new MySerializerFactory());
     }
     //#with-serializer-factory

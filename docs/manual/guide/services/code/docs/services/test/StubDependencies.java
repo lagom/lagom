@@ -13,8 +13,8 @@ public class StubDependencies {
   //#stub
   static class GreetingStub implements GreetingService {
     @Override
-    public ServiceCall<NotUsed, String, String> greeting() {
-      return (id, req) -> CompletableFuture.completedFuture("Hello");
+    public ServiceCall<String, String> greeting() {
+      return req -> CompletableFuture.completedFuture("Hello");
     }
   }
 

@@ -24,26 +24,33 @@ import java.util.Arrays;
 public final class Descriptor {
 
     /**
+     * Holds the service call itself.
+     *
+     * The implementations of this are intentionally opaque, as the mechanics of how the service call implementation
+     * gets passed around is internal to Lagom.
+     */
+    public interface ServiceCallHolder {
+    }
+
+    /**
      * Describes a service call.
      */
-    public static final class Call<Id, Request, Response> {
+    public static final class Call<Request, Response> {
         private final CallId callId;
-        private final ServiceCall<Id, Request, Response> serviceCall;
-        private final IdSerializer<Id> idSerializer;
+        private final ServiceCallHolder serviceCallHolder;
         private final MessageSerializer<Request, ?> requestSerializer;
         private final MessageSerializer<Response, ?> responseSerializer;
         private final Optional<CircuitBreakerId> circuitBreaker;
         private final Optional<Boolean> autoAcl;
 
 
-        Call(CallId callId, ServiceCall<Id, Request, Response> serviceCall,
-             IdSerializer<Id> idSerializer, MessageSerializer<Request, ?> requestSerializer,
+        Call(CallId callId, ServiceCallHolder serviceCallHolder,
+             MessageSerializer<Request, ?> requestSerializer,
              MessageSerializer<Response, ?> responseSerializer, Optional<CircuitBreakerId> circuitBreaker,
              Optional<Boolean> autoAcl) {
 
             this.callId = callId;
-            this.serviceCall = serviceCall;
-            this.idSerializer = idSerializer;
+            this.serviceCallHolder = serviceCallHolder;
             this.requestSerializer = requestSerializer;
             this.responseSerializer = responseSerializer;
             this.circuitBreaker = circuitBreaker;
@@ -60,21 +67,14 @@ public final class Descriptor {
         }
 
         /**
-         * Get the service call itself.
+         * A holder for the service call.
          *
-         * @return The service call.
-         */
-        public ServiceCall<Id, Request, Response> serviceCall() {
-            return serviceCall;
-        }
-
-        /**
-         * Get the ID serializer.
+         * This holds a reference to the service call, in an implementation specific way.
          *
-         * @return The ID serializer.
+         * @return The service call holder.
          */
-        public IdSerializer<Id> idSerializer() {
-            return idSerializer;
+        public ServiceCallHolder serviceCallHolder() {
+            return serviceCallHolder;
         }
 
         /**
@@ -115,14 +115,26 @@ public final class Descriptor {
         }
 
         /**
-         * Return a copy of this call descriptor with the given ID serializer configured.
+         * Return a copy of this call descriptor with the given service call ID configured.
          *
-         * @param idSerializer
-         *          The ID serializer.
+         * @param callId
+         *          The call id.
          * @return A copy of this call descriptor.
          */
-        public Call<Id, Request, Response> with(IdSerializer<Id> idSerializer) {
-            return new Call<>(callId, serviceCall, idSerializer, requestSerializer, responseSerializer, circuitBreaker,
+        public Call<Request, Response> with(CallId callId) {
+            return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer, circuitBreaker,
+                    autoAcl);
+        }
+
+        /**
+         * Return a copy of this call descriptor with the given service call holder configured.
+         *
+         * @param serviceCallHolder
+         *          The service call holder.
+         * @return A copy of this call descriptor.
+         */
+        public Call<Request, Response> with(ServiceCallHolder serviceCallHolder) {
+            return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer, circuitBreaker,
                     autoAcl);
         }
     
@@ -134,8 +146,8 @@ public final class Descriptor {
          *          The request serializer.
          * @return A copy of this call descriptor.
          */
-        public Call<Id, Request, Response> withRequestSerializer(MessageSerializer<Request, ?> requestSerializer) {
-            return new Call<>(callId, serviceCall, idSerializer, requestSerializer, responseSerializer, circuitBreaker,
+        public Call<Request, Response> withRequestSerializer(MessageSerializer<Request, ?> requestSerializer) {
+            return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer, circuitBreaker,
                     autoAcl);
         }
     
@@ -147,8 +159,8 @@ public final class Descriptor {
          *          The response serializer.
          * @return A copy of this call descriptor.
          */
-        public Call<Id, Request, Response> withResponseSerializer(MessageSerializer<Response, ?> responseSerializer) {
-            return new Call<>(callId, serviceCall, idSerializer, requestSerializer, responseSerializer, circuitBreaker,
+        public Call<Request, Response> withResponseSerializer(MessageSerializer<Response, ?> responseSerializer) {
+            return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer, circuitBreaker,
                     autoAcl);
         }
     
@@ -160,8 +172,8 @@ public final class Descriptor {
          *          The service call.
          * @return A copy of this call descriptor.
          */
-        public Call<Id, Request, Response> with(ServiceCall<Id, Request, Response> serviceCall) {
-            return new Call<>(callId, serviceCall, idSerializer, requestSerializer, responseSerializer, circuitBreaker,
+        public Call<Request, Response> with(ServiceCall<Request, Response> serviceCall) {
+            return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer, circuitBreaker,
                     autoAcl);
         }
     
@@ -173,8 +185,8 @@ public final class Descriptor {
          *          The configuration id of the circuit breaker
          * @return A copy of this call descriptor.
          */
-        public Call<Id, Request, Response> withCircuitBreaker(CircuitBreakerId breakerId) {
-            return new Call<>(callId, serviceCall, idSerializer, requestSerializer, responseSerializer,
+        public Call<Request, Response> withCircuitBreaker(CircuitBreakerId breakerId) {
+            return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer,
                     Optional.ofNullable(breakerId), autoAcl);
         }
 
@@ -184,8 +196,8 @@ public final class Descriptor {
          * @param autoAcl Whether an ACL will automatically be generated for the gateway to route calls to this service.
          * @return A copy of this call descriptor.
          */
-        public Call<Id, Request, Response> withAutoAcl(boolean autoAcl) {
-            return new Call<>(callId, serviceCall, idSerializer, requestSerializer, responseSerializer, circuitBreaker,
+        public Call<Request, Response> withAutoAcl(boolean autoAcl) {
+            return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer, circuitBreaker,
                     Optional.of(autoAcl));
         }
 
@@ -194,7 +206,7 @@ public final class Descriptor {
             if (this == o) return true;
             if (!(o instanceof Call)) return false;
 
-            Call<?, ?, ?> call = (Call<?, ?, ?>) o;
+            Call<?, ?> call = (Call<?, ?>) o;
 
             return callId.equals(call.callId);
 
@@ -209,8 +221,7 @@ public final class Descriptor {
         public String toString() {
             return "Call{" +
                     "callId=" + callId +
-                    ", serviceCall=" + serviceCall +
-                    ", idSerializer=" + idSerializer +
+                    ", serviceCallHolder=" + serviceCallHolder +
                     ", requestSerializer=" + requestSerializer +
                     ", responseSerializer=" + responseSerializer +
                     ", circuitBreaker=" + circuitBreaker +
@@ -413,8 +424,8 @@ public final class Descriptor {
     }
 
     private final String name;
-    private final PSequence<Call<?, ?, ?>> calls;
-    private final PMap<Type, IdSerializer<?>> idSerializers;
+    private final PSequence<Call<?, ?>> calls;
+    private final PMap<Type, PathParamSerializer<?>> pathParamSerializers;
     private final PMap<Type, MessageSerializer<?, ?>> messageSerializers;
     private final SerializerFactory serializerFactory;
     private final ExceptionSerializer exceptionSerializer;
@@ -430,13 +441,13 @@ public final class Descriptor {
                 new UserAgentServiceIdentificationStrategy(), true);
     }
 
-    Descriptor(String name, PSequence<Call<?, ?, ?>> calls, PMap<Type, IdSerializer<?>> idSerializers,
+    Descriptor(String name, PSequence<Call<?, ?>> calls, PMap<Type, PathParamSerializer<?>> pathParamSerializers,
             PMap<Type, MessageSerializer<?, ?>> messageSerializers, SerializerFactory serializerFactory,
             ExceptionSerializer exceptionSerializer, boolean autoAcl, PSequence<ServiceAcl> acls, HeaderTransformer protocolNegotiationStrategy,
             HeaderTransformer serviceIdentificationStrategy, boolean locatableService) {
         this.name = name;
         this.calls = calls;
-        this.idSerializers = idSerializers;
+        this.pathParamSerializers = pathParamSerializers;
         this.messageSerializers = messageSerializers;
         this.serializerFactory = serializerFactory;
         this.exceptionSerializer = exceptionSerializer;
@@ -451,12 +462,12 @@ public final class Descriptor {
         return name;
     }
 
-    public PSequence<Call<?, ?, ?>> calls() {
+    public PSequence<Call<?, ?>> calls() {
         return calls;
     }
 
-    public PMap<Type, IdSerializer<?>> idSerializers() {
-        return idSerializers;
+    public PMap<Type, PathParamSerializer<?>> pathParamSerializers() {
+        return pathParamSerializers;
     }
 
     public PMap<Type, MessageSerializer<?, ?>> messageSerializers() {
@@ -505,25 +516,25 @@ public final class Descriptor {
     }
 
     /**
-     * Provide a custom IdSerializer for the given ID type.
+     * Provide a custom path param serializer for the given path param type.
      *
-     * @param idType The type of the ID.
-     * @param idSerializer The ID serializer for that type.
+     * @param pathParamType The path param type.
+     * @param pathParamSerializer The path param serializer.
      * @return A copy of this descriptor.
      */
-    public <T> Descriptor with(Class<T> idType, IdSerializer<T> idSerializer) {
-        return with((Type) idType, idSerializer);
+    public <T> Descriptor with(Class<T> pathParamType, PathParamSerializer<T> pathParamSerializer) {
+        return with((Type) pathParamType, pathParamSerializer);
     }
 
     /**
-     * Provide a custom IdSerializer for the given ID type.
+     * Provide a custom path param serializer for the given path param type.
      *
-     * @param idType The type of the ID.
-     * @param idSerializer The ID serializer for that type.
+     * @param pathParamType The path param type.
+     * @param pathParamSerializer The path param serializer.
      * @return A copy of this descriptor.
      */
-    public Descriptor with(Type idType, IdSerializer<?> idSerializer) {
-        return replaceAllIdSerializers(idSerializers.plus(idType, idSerializer));
+    public Descriptor with(Type pathParamType, PathParamSerializer<?> pathParamSerializer) {
+        return replaceAllPathParamSerializers(pathParamSerializers.plus(pathParamType, pathParamSerializer));
     }
 
     /**
@@ -554,7 +565,7 @@ public final class Descriptor {
      * @param calls The calls to add.
      * @return A copy of this descriptor with the new calls added.
      */
-    public Descriptor with(Call<?, ?, ?>... calls) {
+    public Descriptor with(Call<?, ?>... calls) {
         return replaceAllCalls(this.calls.plusAll(Arrays.asList(calls)));
     }
 
@@ -564,18 +575,18 @@ public final class Descriptor {
      * @param calls The calls to replace the existing ones with.
      * @return A copy of this descriptor with the new calls.
      */
-    public Descriptor replaceAllCalls(PSequence<Call<?, ?, ?>> calls) {
-        return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
+    public Descriptor replaceAllCalls(PSequence<Call<?, ?>> calls) {
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
     /**
-     * Replace all the id serializers registered with this descriptor with the the given id serializers.
+     * Replace all the path param serializers registered with this descriptor with the the given path param serializers.
      *
-     * @param idSerializers The id serializers to replace the existing ones with.
-     * @return A copy of this descriptor with the new id serializers.
+     * @param pathParamSerializers The path param serializers to replace the existing ones with.
+     * @return A copy of this descriptor with the new path param serializers.
      */
-    public Descriptor replaceAllIdSerializers(PMap<Type, IdSerializer<?>> idSerializers) {
-        return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
+    public Descriptor replaceAllPathParamSerializers(PMap<Type, PathParamSerializer<?>> pathParamSerializers) {
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
     /**
@@ -585,7 +596,7 @@ public final class Descriptor {
      * @return A copy of this descriptor with the new message serializers.
      */
     public Descriptor replaceAllMessageSerializers(PMap<Type, MessageSerializer<?, ?>> messageSerializers) {
-        return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
     /**
@@ -595,7 +606,7 @@ public final class Descriptor {
      * @return A copy of this descriptor.
      */
     public Descriptor with(ExceptionSerializer exceptionSerializer) {
-        return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
     /**
@@ -605,7 +616,7 @@ public final class Descriptor {
      * @return A copy of this descriptor.
      */
     public Descriptor with(SerializerFactory serializerFactory) {
-        return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
     /**
@@ -620,7 +631,7 @@ public final class Descriptor {
      * @return A copy of this descriptor.
      */
     public Descriptor withAutoAcl(boolean autoAcl) {
-        return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
 
@@ -645,16 +656,15 @@ public final class Descriptor {
      * @return A copy of this descriptor.
      */
     public Descriptor replaceAllAcls(PSequence<ServiceAcl> acls) {
-        return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
-
     public Descriptor withProtocolNegotiationStrategy(HeaderTransformer protocolNegotiationStrategy) {
-        return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
     public Descriptor withServiceIdentificationStrategy(HeaderTransformer serviceIdentificationStrategy) {
-        return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
     /**
@@ -668,7 +678,7 @@ public final class Descriptor {
      * @return A copy of this descriptor.
      */
     public Descriptor withLocatableService(boolean locatableService) {
-        return new Descriptor(name, calls, idSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, protocolNegotiationStrategy, serviceIdentificationStrategy, locatableService);
     }
 
 

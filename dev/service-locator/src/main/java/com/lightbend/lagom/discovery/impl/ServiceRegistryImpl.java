@@ -43,8 +43,8 @@ public class ServiceRegistryImpl implements ServiceRegistry {
 	}
 
 	@Override
-	public ServiceCall<String, ServiceRegistryService, NotUsed> register() {
-		return (name, service) -> {
+	public ServiceCall<ServiceRegistryService, NotUsed> register(String name) {
+		return service -> {
 			if (LOGGER.isDebugEnabled())
 				LOGGER.debug("register invoked, name=[" + name + "], request=[" + service + "]");
       return PatternsCS.ask(registry, new Register(name, service), timeout)
@@ -53,8 +53,8 @@ public class ServiceRegistryImpl implements ServiceRegistry {
 	}
 
 	@Override
-	public ServiceCall<String, NotUsed, NotUsed> unregister() {
-		return (name, request) -> {
+	public ServiceCall<NotUsed, NotUsed> unregister(String name) {
+		return request -> {
 			if (LOGGER.isDebugEnabled())
 				LOGGER.debug("unregister invoked, name=[" + name + "], request=[" + request + "]");
 			registry.tell(new Remove(name), null);
@@ -63,8 +63,8 @@ public class ServiceRegistryImpl implements ServiceRegistry {
 	}
 
 	@Override
-	public ServiceCall<String, NotUsed, URI> lookup() {
-		return (name, request) -> {
+	public ServiceCall<NotUsed, URI> lookup(String name) {
+		return request -> {
 			if (LOGGER.isDebugEnabled())
 				LOGGER.debug("locate invoked, name=[" + name + "], request=[" + request + "]");
 			return PatternsCS.ask(registry, new Lookup(name), timeout).thenApply(result -> {
@@ -82,8 +82,8 @@ public class ServiceRegistryImpl implements ServiceRegistry {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public ServiceCall<NotUsed, NotUsed, PSequence<RegisteredService>> registeredServices() {
-		return (unusedId, unusedRequest) -> {
+	public ServiceCall<NotUsed, PSequence<RegisteredService>> registeredServices() {
+		return unusedRequest -> {
 			return PatternsCS.ask(registry, GetRegisteredServices$.MODULE$, timeout)
 					.thenApply( result -> {
 						RegisteredServices registeredServices = (RegisteredServices) result;

@@ -7,6 +7,7 @@ import java.util
 import java.util.concurrent.{ CompletableFuture, CompletionStage, ExecutionException, TimeUnit }
 import javax.inject.Singleton
 import javax.inject.{ Inject, Provider }
+
 import akka.stream.scaladsl.{ Sink, Source }
 import akka.stream.javadsl.{ Source => JSource }
 import akka.util.ByteString
@@ -14,9 +15,9 @@ import com.lightbend.lagom.internal.api._
 import com.lightbend.lagom.internal.client.ServiceClientImplementor
 import com.lightbend.lagom.internal.server._
 import com.lightbend.lagom.it.mocks._
-import com.lightbend.lagom.javadsl.api.Descriptor.{ NamedCallId, RestCallId, CallId, Call }
+import com.lightbend.lagom.javadsl.api.Descriptor.{ Call, CallId, NamedCallId, RestCallId }
 import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.{ NegotiatedDeserializer, NegotiatedSerializer }
-import com.lightbend.lagom.javadsl.api.deser.{ StreamedMessageSerializer, DeserializationException, SerializationException, StrictMessageSerializer }
+import com.lightbend.lagom.javadsl.api.deser.{ DeserializationException, SerializationException, StreamedMessageSerializer, StrictMessageSerializer }
 import com.lightbend.lagom.javadsl.api.transport._
 import com.lightbend.lagom.javadsl.api._
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
@@ -24,8 +25,9 @@ import org.pcollections.TreePVector
 import play.api.libs.streams.AkkaStreams
 import play.api.{ Application, Environment }
 import play.api.inject._
+
 import scala.compat.java8.FutureConverters._
-import scala.concurrent.{ Future, Await }
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 import scala.collection.JavaConverters._
 import scala.util.control.NonFatal
@@ -49,8 +51,8 @@ class ErrorHandlingSpec extends ServiceSupport {
 
   "Service error handling" when {
     "handling errors with plain HTTP calls" should {
-      tests(new RestCallId(Method.POST, "/:part1/:part2")) { implicit app => client =>
-        val result = client.mockCall().invoke(new MockId("a", 1), new MockRequestEntity("b", 2))
+      tests(new RestCallId(Method.POST, "/mock/:id")) { implicit app => client =>
+        val result = client.mockCall(1).invoke(new MockRequestEntity("b", 2))
         try {
           result.toCompletableFuture.get(10, TimeUnit.SECONDS)
           throw sys.error("Did not fail")
@@ -222,36 +224,35 @@ class ErrorHandlingSpec extends ServiceSupport {
     @Inject var mockService: MockServiceImpl = _
 
     lazy val get = {
-      val resolved = serverBuilder.resolveDescriptorToImpl(descriptor, mockService)
-      val changed = changeServer(resolved)
-      new ResolvedServices(Seq(ResolvedService(classOf[MockService], changed)))
+      val changed = changeServer(descriptor)
+      new ResolvedServices(Seq(ResolvedService(classOf[MockService], mockService, changed)))
     }
   }
 
-  def change(callId: CallId)(changer: Call[_, _, _] => Call[_, _, _]): Descriptor => Descriptor = { descriptor =>
-    val newEndpoints = descriptor.calls.asScala.map { endpoint =>
-      if (endpoint.callId == callId) {
-        changer(endpoint)
-      } else endpoint
+  def change(callId: CallId)(changer: Call[_, _] => Call[_, _]): Descriptor => Descriptor = { descriptor =>
+    val newEndpoints = descriptor.calls.asScala.map { call =>
+      if (call.callId == callId) {
+        changer(call)
+      } else call
     }
     descriptor.replaceAllCalls(TreePVector.from(newEndpoints.asJava))
   }
 
-  def failingRequestSerializer: Call[_, _, _] => Call[_, _, _] = { endpoint =>
-    if (endpoint.requestSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      endpoint.asInstanceOf[Call[Any, JSource[Any, _], Any]]
+  def failingRequestSerializer: Call[_, _] => Call[_, _] = { call =>
+    if (call.requestSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
+      call.asInstanceOf[Call[JSource[Any, _], Any]]
         .withRequestSerializer(new DelegatingStreamedMessageSerializer(failingSerializer))
     } else {
-      endpoint.asInstanceOf[Call[Any, Any, Any]].withRequestSerializer(failingSerializer)
+      call.asInstanceOf[Call[Any, Any]].withRequestSerializer(failingSerializer)
     }
   }
 
-  def failingResponseSerializer: Call[_, _, _] => Call[_, _, _] = { endpoint =>
-    if (endpoint.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      endpoint.asInstanceOf[Call[Any, Any, JSource[Any, _]]]
+  def failingResponseSerializer: Call[_, _] => Call[_, _] = { call =>
+    if (call.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
+      call.asInstanceOf[Call[Any, JSource[Any, _]]]
         .withResponseSerializer(new DelegatingStreamedMessageSerializer(failingSerializer))
     } else {
-      endpoint.asInstanceOf[Call[Any, Any, Any]].withResponseSerializer(failingSerializer)
+      call.asInstanceOf[Call[Any, Any]].withResponseSerializer(failingSerializer)
     }
   }
 
@@ -268,21 +269,21 @@ class ErrorHandlingSpec extends ServiceSupport {
       failedSerializer
   }
 
-  def failingRequestNegotiation: Call[_, _, _] => Call[_, _, _] = { endpoint =>
-    if (endpoint.requestSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      endpoint.asInstanceOf[Call[Any, JSource[Any, _], Any]]
+  def failingRequestNegotiation: Call[_, _] => Call[_, _] = { call =>
+    if (call.requestSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
+      call.asInstanceOf[Call[JSource[Any, _], Any]]
         .withRequestSerializer(new DelegatingStreamedMessageSerializer(failingNegotiation))
     } else {
-      endpoint.asInstanceOf[Call[Any, Any, Any]].withRequestSerializer(failingNegotiation)
+      call.asInstanceOf[Call[Any, Any]].withRequestSerializer(failingNegotiation)
     }
   }
 
-  def failingResponseNegotation: Call[_, _, _] => Call[_, _, _] = { endpoint =>
-    if (endpoint.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      endpoint.asInstanceOf[Call[Any, Any, JSource[Any, _]]]
+  def failingResponseNegotation: Call[_, _] => Call[_, _] = { call =>
+    if (call.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
+      call.asInstanceOf[Call[Any, JSource[Any, _]]]
         .withResponseSerializer(new DelegatingStreamedMessageSerializer(failingNegotiation))
     } else {
-      endpoint.asInstanceOf[Call[Any, Any, Any]].withResponseSerializer(failingNegotiation)
+      call.asInstanceOf[Call[Any, Any]].withResponseSerializer(failingNegotiation)
     }
   }
 
@@ -298,37 +299,40 @@ class ErrorHandlingSpec extends ServiceSupport {
     }
   }
 
-  def failingServiceCall: Call[_, _, _] => Call[_, _, _] = { endpoint =>
-    endpoint.asInstanceOf[Call[Any, Any, Any]].`with`(new ServiceCall[Any, Any, Any] {
-      override def invoke(id: Any, request: Any): CompletionStage[Any] = throw new RuntimeException("service call failed")
+  def overrideServiceCall(serviceCall: ServiceCall[_, _]): Call[_, _] => Call[_, _] = { call =>
+    call.asInstanceOf[Call[Any, Any]].`with`(new MethodServiceCallHolder {
+      override def invoke(arguments: Seq[AnyRef]): Seq[Seq[String]] = ???
+      override def create(service: Any, parameters: Seq[Seq[String]]): ServiceCall[_, _] = serviceCall
+      override val method = null
     })
   }
 
-  def asyncFailingServiceCall: Call[_, _, _] => Call[_, _, _] = { endpoint =>
-    endpoint.asInstanceOf[Call[Any, Any, Any]].`with`(new ServiceCall[Any, Any, Any] {
-      override def invoke(id: Any, request: Any): CompletionStage[Any] =
-        Future.failed[Any](new RuntimeException("service call failed")).toJava
-    })
-  }
+  def failingServiceCall: Call[_, _] => Call[_, _] = overrideServiceCall(new ServiceCall[Any, Any] {
+    override def invoke(request: Any): CompletionStage[Any] = throw new RuntimeException("service call failed")
+  })
 
-  def failingStreamedServiceCall: Call[_, _, _] => Call[_, _, _] = { endpoint =>
+  def asyncFailingServiceCall: Call[_, _] => Call[_, _] = overrideServiceCall(new ServiceCall[Any, Any] {
+    override def invoke(request: Any): CompletionStage[Any] =
+      Future.failed[Any](new RuntimeException("service call failed")).toJava
+  })
+
+  def failingStreamedServiceCall: Call[_, _] => Call[_, _] = { call =>
     // If the response is not streamed, then just return a failing service call
-    if (endpoint.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      endpoint.asInstanceOf[Call[Any, Any, JSource[Any, _]]]
-        .`with`(new ServiceCall[Any, Any, JSource[Any, _]] {
-          override def invoke(id: Any, request: Any): CompletionStage[JSource[Any, _]] = {
-            CompletableFuture.completedFuture(request match {
-              case stream: JSource[Any, _] =>
-                (stream.asScala via AkkaStreams.ignoreAfterCancellation map { _ =>
-                  throw new RuntimeException("service call failed")
-                }).asJava
-              case _ =>
-                JSource.failed(throw new RuntimeException("service call failed"))
-            })
-          }
-        })
+    if (call.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
+      overrideServiceCall(new ServiceCall[Any, JSource[Any, _]] {
+        override def invoke(request: Any): CompletionStage[JSource[Any, _]] = {
+          CompletableFuture.completedFuture(request match {
+            case stream: JSource[Any, _] =>
+              (stream.asScala via AkkaStreams.ignoreAfterCancellation map { _ =>
+                throw new RuntimeException("service call failed")
+              }).asJava
+            case _ =>
+              JSource.failed(throw new RuntimeException("service call failed"))
+          })
+        }
+      })(call)
     } else {
-      failingServiceCall(endpoint)
+      failingServiceCall(call)
     }
   }
 

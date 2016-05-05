@@ -21,8 +21,8 @@ public class BlogServiceImpl4 implements BlogService4 {
   }
 
   @Override
-  public ServiceCall<NotUsed, NotUsed, Source<PostPublished, ?>> getNewPosts() {
-    return (id, request) ->
+  public ServiceCall<NotUsed, Source<PostPublished, ?>> getNewPosts() {
+    return request ->
       CompletableFuture.completedFuture(publishedTopic.subscriber());
   }
 }

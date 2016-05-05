@@ -15,7 +15,6 @@ import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.ServiceInfo
 import com.lightbend.lagom.javadsl.api.transport.Method
 
-import akka.NotUsed
 import javax.inject.Inject
 import javax.inject.Singleton
 import play.api.Configuration
@@ -58,7 +57,7 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Configuration, serviceI
     new ServiceAcl(method, pathRegex)
   }
   private val service = new ServiceRegistryService(serviceUrl, acls.asJava)
-  serviceRegistry.register().invoke(serviceInfo.serviceName, service)
+  serviceRegistry.register(serviceInfo.serviceName()).invoke(service)
 
-  applicationLifecycle.addStopHook(() => serviceRegistry.unregister().invoke(serviceInfo.serviceName, NotUsed.getInstance()).toScala)
+  applicationLifecycle.addStopHook(() => serviceRegistry.unregister(serviceInfo.serviceName()).invoke().toScala)
 }

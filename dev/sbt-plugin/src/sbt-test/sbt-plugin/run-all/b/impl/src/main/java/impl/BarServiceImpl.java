@@ -10,9 +10,7 @@ import akka.stream.javadsl.Source;
 
 public class BarServiceImpl implements BarService {
   @Override
-  public ServiceCall<NotUsed, NotUsed, String> bar() {
-    return (id, request) -> {
-      return CompletableFuture.completedFuture("ack bar");
-    };
+  public ServiceCall<NotUsed, String> bar() {
+    return request -> CompletableFuture.completedFuture("ack bar");
   }
 }

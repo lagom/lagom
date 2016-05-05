@@ -62,12 +62,12 @@ object ServiceRegistrationModule {
 
     lifecycle.addStopHook { () =>
       Future.sequence(locatableServices.map { service =>
-        registry.unregister().invoke(service.descriptor.name, NotUsed.getInstance).toScala
+        registry.unregister(service.descriptor.name).invoke().toScala
       }).map(_ => ())
     }
 
     locatableServices.foreach { service =>
-      registry.register().invoke(service.descriptor.name, new ServiceRegistryService(config.url, service.descriptor.acls)).exceptionally(new JFunction[Throwable, NotUsed] {
+      registry.register(service.descriptor.name).invoke(new ServiceRegistryService(config.url, service.descriptor.acls)).exceptionally(new JFunction[Throwable, NotUsed] {
         def apply(t: Throwable) = {
           logger.error(s"Service name=[${service.descriptor.name}] couldn't register itself to the service locator.", t)
           NotUsed.getInstance()

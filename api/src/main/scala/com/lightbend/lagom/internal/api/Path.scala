@@ -7,57 +7,55 @@ import java.util.regex.Pattern
 
 import akka.util.ByteString
 import com.lightbend.lagom.javadsl.api.Descriptor.{ CallId, NamedCallId, PathCallId, RestCallId }
-import com.lightbend.lagom.javadsl.api.deser.RawId.PathParam
-import com.lightbend.lagom.javadsl.api.deser.{ RawId, RawIdDescriptor }
-import org.pcollections.{ PSequence, PMap, HashTreePMap, TreePVector }
 import play.utils.UriEncoding
 
-import scala.collection.JavaConverters._
 import scala.util.parsing.combinator.JavaTokenParsers
 
-case class Path(parts: Seq[PathPart], queryParams: Seq[String]) {
+case class Path(pathSpec: String, parts: Seq[PathPart], queryParams: Seq[String]) {
   val regex = parts.map(_.expression).mkString.r
   private val dynamicParts = parts.collect {
     case dyn: DynamicPathPart => dyn
   }
 
-  def extract(path: String, query: Map[String, Seq[String]]): Option[RawId] = {
+  def extract(path: String, query: Map[String, Seq[String]]): Option[Seq[Seq[String]]] = {
     regex.unapplySeq(path).map { partValues =>
-      val pathParams = TreePVector.from(dynamicParts.zip(partValues).map {
+      val pathParams = dynamicParts.zip(partValues).map {
         case (part, value) =>
-          val decoded = if (part.encoded) {
+          Seq(if (part.encoded) {
             UriEncoding.decodePathSegment(value, ByteString.UTF_8)
-          } else value
-          PathParam.of(part.name, decoded)
-      }.asJava)
-      val qps: PMap[String, PSequence[String]] = HashTreePMap.from(queryParams.map { paramName =>
-        paramName -> TreePVector.from(query.getOrElse(paramName, Nil).asJava)
-      }.toMap.asJava)
-      RawId.of(pathParams, qps)
+          } else value)
+      }
+      val qps = queryParams.map { paramName =>
+        query.getOrElse(paramName, Nil)
+      }
+      pathParams ++ qps
     }
   }
 
-  def format(rawId: RawId): (String, Map[String, Seq[String]]) = {
-    val (resultPathParts, _) = parts.foldLeft((Seq.empty[String], rawId.pathParams().asScala.toSeq)) {
+  def format(allParams: Seq[Seq[String]]): (String, Map[String, Seq[String]]) = {
+
+    if (dynamicParts.size + queryParams.size != allParams.size) {
+      throw new IllegalArgumentException(s"Param number mismatch, attempt to encode ${allParams.size} params into path spec $pathSpec")
+    }
+
+    val (resultPathParts, leftOverParams) = parts.foldLeft((Seq.empty[String], allParams)) {
       case ((pathParts, params), StaticPathPart(path)) => (pathParts :+ path, params)
       case ((pathParts, params), DynamicPathPart(name, _, encoded)) =>
-        val encodedValue = params.headOption match {
-          case Some(value) =>
+        val encodedValue = params.head match {
+          case Seq(value) =>
             if (encoded) {
-              UriEncoding.encodePathSegment(value.value, ByteString.UTF_8)
+              UriEncoding.encodePathSegment(value, ByteString.UTF_8)
             } else {
-              value.value
+              value
             }
-          case None => throw new IllegalArgumentException("RawId does not contain required path param name: " + name)
+          case other => throw new IllegalArgumentException("Illegal attempt to encode zero or multiple parts into a path segment: " + other)
         }
         (pathParts :+ encodedValue, params.tail)
     }
     val path = resultPathParts.mkString
-    val queryParams = rawId.queryParams().asScala.collect {
-      case (name, values) if !values.isEmpty =>
-        name -> values.asScala.toSeq
-    }.toMap
-    path -> queryParams
+
+    val queryValues = queryParams.zip(leftOverParams).toMap
+    path -> queryValues
   }
 
 }
@@ -113,8 +111,8 @@ object Path {
       }
     }
 
-    def parser: Parser[Path] = pathSpec ~ queryParams.? ^^ {
-      case parts ~ queryParams => Path(parts, queryParams.getOrElse(Nil))
+    def parser(spec: String): Parser[Path] = pathSpec ~ queryParams.? ^^ {
+      case parts ~ queryParams => Path(spec, parts, queryParams.getOrElse(Nil))
     }
 
   }
@@ -128,12 +126,12 @@ object Path {
       case named: NamedCallId =>
         val name = named.name
         val path = if (name.startsWith("/")) name else "/" + name
-        Path(Seq(StaticPathPart(path)), Nil)
+        Path(path, Seq(StaticPathPart(path)), Nil)
     }
   }
 
   def parse(spec: String): Path = {
-    PathSpecParser.parseAll(PathSpecParser.parser, spec) match {
+    PathSpecParser.parseAll(PathSpecParser.parser(spec), spec) match {
       case PathSpecParser.Success(path, _)  => path
       case PathSpecParser.NoSuccess(msg, _) => throw new IllegalArgumentException(s"Error parsing $spec: $msg")
     }

@@ -13,7 +13,6 @@ import java.util.ArrayList;
 public class Module extends AbstractModule implements ServiceGuiceSupport {
 	@Override
 	protected void configure() {
-		bindServices(serviceBinding(FooService.class, FooServiceImpl.class));
 		bind(OnStart.class).asEagerSingleton();
 	}
 }

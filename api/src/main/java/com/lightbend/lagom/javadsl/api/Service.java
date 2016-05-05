@@ -5,11 +5,10 @@ package com.lightbend.lagom.javadsl.api;
 
 import java.util.Optional;
 
-import com.lightbend.lagom.internal.api.UnresolvedMessageTypeSerializer;
-import com.lightbend.lagom.internal.api.UnresolvedTypeIdSerializer;
-import akka.NotUsed;
+import com.lightbend.lagom.internal.api.MethodRefMessageSerializer;
+import com.lightbend.lagom.internal.api.MethodRefServiceCallHolder;
+import akka.japi.function.*;
 import com.lightbend.lagom.javadsl.api.transport.Method;
-import java.lang.reflect.Type;
 
 /**
  * A self describing service.
@@ -43,116 +42,389 @@ public interface Service {
      *
      * @param method The HTTP method.
      * @param pathPattern The path pattern.
-     * @param serviceCall The service call.
+     * @param methodRef A method reference to the service call.
      * @return A REST service call descriptor.
      */
-    static <Id, Request, Response> Descriptor.Call<Id, Request, Response> restCall(Method method,
-            String pathPattern, ServiceCall<Id, Request, Response> serviceCall) {
-        return call(new Descriptor.RestCallId(method, pathPattern), serviceCall);
+    static <Request, Response> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, Creator<ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
+    }
+
+    /**
+     * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+     *
+     * @param method The HTTP method.
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A REST service call descriptor.
+     */
+    static <Request, Response, A> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, Function<A, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
+    }
+
+    /**
+     * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+     *
+     * @param method The HTTP method.
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A REST service call descriptor.
+     */
+    static <Request, Response, A, B> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, Function2<A, B, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
+    }
+
+    /**
+     * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+     *
+     * @param method The HTTP method.
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A REST service call descriptor.
+     */
+    static <Request, Response, A, B, C> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, Function3<A, B, C, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
+    }
+
+    /**
+     * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+     *
+     * @param method The HTTP method.
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A REST service call descriptor.
+     */
+    static <Request, Response, A, B, C, D> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, Function4<A, B, C, D, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
+    }
+
+    /**
+     * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+     *
+     * @param method The HTTP method.
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A REST service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, Function5<A, B, C, D, E, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
+    }
+
+    /**
+     * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+     *
+     * @param method The HTTP method.
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A REST service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E, F> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, Function6<A, B, C, D, E, F, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
+    }
+
+    /**
+     * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+     *
+     * @param method The HTTP method.
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A REST service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E, F, G> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, Function7<A, B, C, D, E, F, G, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
+    }
+
+    /**
+     * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+     *
+     * @param method The HTTP method.
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A REST service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E, F, G, H> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, Function8<A, B, C, D, E, F, G, H, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
+    }
+
+    /**
+     * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+     *
+     * @param method The HTTP method.
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A REST service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E, F, G, H, I> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, Function9<A, B, C, D, E, F, G, H, I, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
+    }
+
+    /**
+     * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+     *
+     * @param method The HTTP method.
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A REST service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E, F, G, H, I, J> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, Function10<A, B, C, D, E, F, G, H, I, J, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
+    }
+
+    /**
+     * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+     *
+     * @param method The HTTP method.
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A REST service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E, F, G, H, I, J, K> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, Function11<A, B, C, D, E, F, G, H, I, J, K, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
+    }
+
+    /**
+     * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+     *
+     * @param method The HTTP method.
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A REST service call descriptor.
+     */
+    static <Request, Response> Descriptor.Call<Request, Response> restCall(Method method,
+            String pathPattern, java.lang.reflect.Method methodRef) {
+        return call(new Descriptor.RestCallId(method, pathPattern), methodRef);
     }
 
     /**
      * Create a service call descriptor, identified by the given path pattern.
      *
      * @param pathPattern The path pattern.
-     * @param serviceCall The service call.
+     * @param methodRef A method reference to the service call.
      * @return A path identified service call descriptor.
      */
-    static <Id, Request, Response> Descriptor.Call<Id, Request, Response> pathCall(String pathPattern,
-            ServiceCall<Id, Request, Response> serviceCall) {
-        return call(new Descriptor.PathCallId(pathPattern), serviceCall);
+    static <Request, Response> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            Creator<ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+    /**
+     * Create a service call descriptor, identified by the given path pattern.
+     *
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A path identified service call descriptor.
+     */
+    static <Request, Response, A> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            Function<A, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+    /**
+     * Create a service call descriptor, identified by the given path pattern.
+     *
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A path identified service call descriptor.
+     */
+    static <Request, Response, A, B> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            Function2<A, B, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+    /**
+     * Create a service call descriptor, identified by the given path pattern.
+     *
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A path identified service call descriptor.
+     */
+    static <Request, Response, A, B, C> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            Function3<A, B, C, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+    /**
+     * Create a service call descriptor, identified by the given path pattern.
+     *
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A path identified service call descriptor.
+     */
+    static <Request, Response, A, B, C, D> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            Function4<A, B, C, D, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+    /**
+     * Create a service call descriptor, identified by the given path pattern.
+     *
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A path identified service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            Function5<A, B, C, D, E, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+    /**
+     * Create a service call descriptor, identified by the given path pattern.
+     *
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A path identified service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E, F> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            Function6<A, B, C, D, E, F, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+    /**
+     * Create a service call descriptor, identified by the given path pattern.
+     *
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A path identified service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E, F, G> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            Function7<A, B, C, D, E, F, G, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+    /**
+     * Create a service call descriptor, identified by the given path pattern.
+     *
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A path identified service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E, F, G, H> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            Function8<A, B, C, D, E, F, G, H, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+    /**
+     * Create a service call descriptor, identified by the given path pattern.
+     *
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A path identified service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E, F, G, H, I> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            Function9<A, B, C, D, E, F, G, H, I, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+    /**
+     * Create a service call descriptor, identified by the given path pattern.
+     *
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A path identified service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E, F, G, H, I, J> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            Function10<A, B, C, D, E, F, G, H, I, J, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+    /**
+     * Create a service call descriptor, identified by the given path pattern.
+     *
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A path identified service call descriptor.
+     */
+    static <Request, Response, A, B, C, D, E, F, G, H, I, J, K> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            Function11<A, B, C, D, E, F, G, H, I, J, K, ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+    /**
+     * Create a service call descriptor, identified by the given path pattern.
+     *
+     * @param pathPattern The path pattern.
+     * @param methodRef A method reference to the service call.
+     * @return A path identified service call descriptor.
+     */
+    static <Request, Response> Descriptor.Call<Request, Response> pathCall(String pathPattern,
+            java.lang.reflect.Method methodRef) {
+        return call(new Descriptor.PathCallId(pathPattern), methodRef);
+    }
+
+
+    /**
+     * Create a service call descriptor, identified by the given name.
+     *
+     * @param name The name of the service call.
+     * @param methodRef The service call.
+     * @return A name identified service call descriptor.
+     */
+    static <Request, Response> Descriptor.Call<Request, Response> namedCall(String name,
+            Creator<ServiceCall<Request, Response>> methodRef) {
+        return call(new Descriptor.NamedCallId(name), methodRef);
     }
 
     /**
      * Create a service call descriptor, identified by the given name.
      *
      * @param name The name of the service call.
-     * @param serviceCall The service call.
+     * @param methodRef The service call.
      * @return A name identified service call descriptor.
      */
-    static <Request, Response> Descriptor.Call<NotUsed, Request, Response> namedCall(String name,
-            ServiceCall<NotUsed, Request, Response> serviceCall) {
-        return call(new Descriptor.NamedCallId(name), serviceCall);
+    static <Request, Response> Descriptor.Call<Request, Response> namedCall(String name,
+            java.lang.reflect.Method methodRef) {
+        return call(new Descriptor.NamedCallId(name), methodRef);
     }
-
 
     /**
      * Create a service call descriptor.
      *
      * The identifier for this descriptor will be automatically selected by Lagom.
      *
-     * @param serviceCall The service call.
+     * @param methodRef The service call.
      * @return A name identified service call descriptor.
      */
-    static <Request, Response> Descriptor.Call<NotUsed, Request, Response> call(
-            ServiceCall<NotUsed, Request, Response> serviceCall) {
-        if (serviceCall instanceof SelfDescribingServiceCall) {
-            SelfDescribingServiceCall<NotUsed, Request, Response> describing = (SelfDescribingServiceCall<NotUsed, Request, Response>) serviceCall;
-            return call(new Descriptor.NamedCallId(describing.methodName()), serviceCall);
-        } else {
-            throw new IllegalArgumentException("Passed in service call is not self describing. This typically means " +
-                    "either the Service.endpoint() method has been invoked outside of the " +
-                    "Service.descriptor() method, or the Service.descriptor() method has " +
-                    "been invoked manually.");
-        }
+    static <Request, Response> Descriptor.Call<Request, Response> call(
+            Creator<ServiceCall<Request, Response>> methodRef) {
+        return namedCall("__unresolved__", methodRef);
+    }
+
+    /**
+     * Create a service call descriptor.
+     *
+     * The identifier for this descriptor will be automatically selected by Lagom.
+     *
+     * @param methodRef The service call.
+     * @return A name identified service call descriptor.
+     */
+    static <Request, Response> Descriptor.Call<Request, Response> call(
+            java.lang.reflect.Method methodRef) {
+        return namedCall(methodRef.getName(), methodRef);
     }
 
     /**
      * Create a service call descriptor.
      *
      * @param callId The service call identifier.
-     * @param serviceCall The service call.
+     * @param methodRef The service call.
      * @return A service call descriptor.
      */
-    static <Id, Request, Response> Descriptor.Call<Id, Request, Response> call(Descriptor.CallId callId,
-            ServiceCall<Id, Request, Response> serviceCall) {
-        if (serviceCall instanceof SelfDescribingServiceCall) {
-            SelfDescribingServiceCall<Id, Request, Response> describing = (SelfDescribingServiceCall<Id, Request, Response>) serviceCall;
-            return new Descriptor.Call<>(callId, serviceCall, new UnresolvedTypeIdSerializer<>(describing.idType()),
-                    new UnresolvedMessageTypeSerializer<>(describing.requestType()),
-                    new UnresolvedMessageTypeSerializer<>(describing.responseType()), Optional.empty(), Optional.empty());
-        } else {
-            throw new IllegalArgumentException("Passed in service call is not self describing. This typically means " +
-                    "either the Service.endpoint() method has been invoked outside of the " +
-                    "Service.descriptor() method, or the Service.descriptor() method has " +
-                    "been invoked manually.");
-        }
-    }
-
-    /**
-     * A self describing service call.
-     *
-     * Self describing service calls return generic type information that is otherwise lost due to type erasure. They
-     * are typically implemented by the Lagom framework, which inspects the return types of service calls.
-     */
-    interface SelfDescribingServiceCall<Id, Request, Response> extends ServiceCall<Id, Request, Response> {
-        /**
-         * Get the type of the ID.
-         *
-         * @return The type of the ID.
-         */
-        Type idType();
-
-        /**
-         * Get the type of the request.
-         *
-         * @return The type of the request.
-         */
-        Type requestType();
-
-        /**
-         * Get the type of the response.
-         *
-         * @return The type of the response.
-         */
-        Type responseType();
-
-        /**
-         * Get the name of the method that defines the call.
-         *
-         * @return The name of the method.
-         */
-        String methodName();
+    static <Request, Response> Descriptor.Call<Request, Response> call(Descriptor.CallId callId,
+            Object methodRef) {
+        return new Descriptor.Call<>(callId, new MethodRefServiceCallHolder(methodRef),
+                new MethodRefMessageSerializer<>(), new MethodRefMessageSerializer<>(),
+                Optional.empty(), Optional.empty());
     }
 
 }

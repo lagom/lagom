@@ -5,16 +5,16 @@ package com.lightbend.lagom.it.mocks;
 
 public class MockResponseEntity {
 
-    private final MockId incomingMockId;
+    private final long incomingId;
     private final MockRequestEntity incomingRequest;
 
-    public MockResponseEntity(MockId incomingMockId, MockRequestEntity incomingRequest) {
-        this.incomingMockId = incomingMockId;
+    public MockResponseEntity(long incomingId, MockRequestEntity incomingRequest) {
+        this.incomingId = incomingId;
         this.incomingRequest = incomingRequest;
     }
 
-    public MockId incomingMockId() {
-        return incomingMockId;
+    public long incomingId() {
+        return incomingId;
     }
 
     public MockRequestEntity incomingRequest() {
@@ -24,18 +24,18 @@ public class MockResponseEntity {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof MockResponseEntity)) return false;
 
         MockResponseEntity that = (MockResponseEntity) o;
 
-        if (!incomingMockId.equals(that.incomingMockId)) return false;
+        if (incomingId != that.incomingId) return false;
         return incomingRequest.equals(that.incomingRequest);
 
     }
 
     @Override
     public int hashCode() {
-        int result = incomingMockId.hashCode();
+        int result = (int) (incomingId ^ (incomingId >>> 32));
         result = 31 * result + incomingRequest.hashCode();
         return result;
     }
@@ -43,7 +43,7 @@ public class MockResponseEntity {
     @Override
     public String toString() {
         return "MockResponseEntity{" +
-                "incomingMockId=" + incomingMockId +
+                "incomingId=" + incomingId +
                 ", incomingRequest=" + incomingRequest +
                 '}';
     }

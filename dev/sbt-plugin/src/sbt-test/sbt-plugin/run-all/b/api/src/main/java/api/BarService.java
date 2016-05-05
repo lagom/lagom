@@ -11,10 +11,10 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface BarService extends Service {
 
-  ServiceCall<NotUsed, NotUsed, String> bar();
+  ServiceCall<NotUsed, String> bar();
 
   @Override
   default Descriptor descriptor() {
-    return named("/b").with(restCall(Method.GET,  "/bar",    bar())).withAutoAcl(true);
+    return named("/b").with(restCall(Method.GET,  "/bar",    this::bar)).withAutoAcl(true);
   }
 }
