@@ -36,7 +36,7 @@ object ServiceReader {
   }
 
   def readServiceDescriptor(classLoader: ClassLoader, serviceInterface: Class[_ <: Service]): Descriptor = {
-    val invocationHandler = new ServiceInvocationHandler(serviceInterface)
+    val invocationHandler = new ServiceInvocationHandler(classLoader, serviceInterface)
     val serviceStub = JProxy.newProxyInstance(classLoader, Array(serviceInterface), invocationHandler).asInstanceOf[Service]
     serviceStub.descriptor()
   }
@@ -103,7 +103,7 @@ object ServiceReader {
       .replaceAllAcls(TreePVector.from(acls.asJava))
   }
 
-  class ServiceInvocationHandler(serviceInterface: Class[_ <: Service]) extends InvocationHandler {
+  class ServiceInvocationHandler(classLoader: ClassLoader, serviceInterface: Class[_ <: Service]) extends InvocationHandler {
     override def invoke(proxy: scala.Any, method: Method, args: Array[AnyRef]): AnyRef = {
       // If it's a default method, invoke it
       if (method.isDefault) {
@@ -142,6 +142,13 @@ object ServiceReader {
             }
           case _ => throw new IllegalStateException("ServiceCall does not have 3 type arguments?")
         }
+      } else if (ScalaSig.isScala(serviceInterface)) {
+        if (serviceInterface.isInterface()) {
+          val implClass = Class.forName(serviceInterface.getName + "$class", false, classLoader)
+          val method = implClass.getMethod(DescriptorMethodName, serviceInterface)
+          method.invoke(null, proxy.asInstanceOf[AnyRef])
+        } else
+          throw new IllegalArgumentException("Service.descriptor must be implemented in a trait")
       } else {
         throw new IllegalStateException("Abstract method " + method + " invoked on self describing service " +
           serviceInterface + " while loading descriptor, but it was not a service call.")

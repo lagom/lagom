@@ -10,9 +10,6 @@ import com.lightbend.lagom.internal.api.UnresolvedTypeIdSerializer;
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 import java.lang.reflect.Type;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 /**
  * A self describing service.
