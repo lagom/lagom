@@ -3,55 +3,46 @@
  */
 package com.lightbend.lagom.internal.client
 
-import java.util.function.{ Function => JFunction }
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit.MILLISECONDS
-import java.util.concurrent.TimeoutException
-import scala.concurrent.Future
-import scala.concurrent.duration._
-import scala.util.Failure
-import scala.util.Success
-import akka.actor.ActorSystem
-import akka.actor.ExtendedActorSystem
-import akka.pattern.{ CircuitBreaker => AkkaCircuitBreaker }
-import akka.pattern.CircuitBreakerOpenException
-import com.google.inject.AbstractModule
-import com.google.inject.Injector
-import com.google.inject.Provides
-import com.lightbend.lagom.internal.spi.CircuitBreakerMetrics
-import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
-import com.lightbend.lagom.javadsl.api.Descriptor.CircuitBreakerId
-import com.typesafe.config.Config
-import javax.inject.Inject
-import javax.inject.Singleton
+import java.util.concurrent.{ Callable, CompletionStage, ConcurrentHashMap, TimeoutException }
+import java.util.function.{ Function => JFunction }
+import javax.inject.{ Inject, Singleton }
 
-object CircuitBreaker {
+import akka.actor.ActorSystem
+import akka.pattern.{ CircuitBreakerOpenException, CircuitBreaker => AkkaCircuitBreaker }
+import com.lightbend.lagom.internal.spi.{ CircuitBreakerMetrics, CircuitBreakerMetricsProvider }
+import com.typesafe.config.Config
+
+import scala.compat.java8.FutureConverters._
+import scala.concurrent.duration._
+import scala.util.{ Failure, Success }
+
+object CircuitBreakers {
   private final case class CircuitBreakerHolder(breaker: AkkaCircuitBreaker, metrics: CircuitBreakerMetrics)
 }
 
 @Singleton
-class CircuitBreaker @Inject() (system: ActorSystem, circuitBreakerConfig: CircuitBreakerConfig,
-                                metricsProvider: CircuitBreakerMetricsProvider) {
-  import CircuitBreaker._
+class CircuitBreakers @Inject() (system: ActorSystem, circuitBreakerConfig: CircuitBreakerConfig,
+                                 metricsProvider: CircuitBreakerMetricsProvider) {
+  import CircuitBreakers._
   val config = circuitBreakerConfig.config
   private val defaultBreakerConfig = circuitBreakerConfig.default
   private val breakers = new ConcurrentHashMap[String, Option[CircuitBreakerHolder]]
 
-  def withCircuitBreaker[T](breakerId: CircuitBreakerId)(body: ⇒ Future[T]): Future[T] = {
-    val id = breakerId.id
+  def withCircuitBreaker[T](id: String)(body: Callable[CompletionStage[T]]): CompletionStage[T] = {
     breaker(id) match {
       case Some(CircuitBreakerHolder(b, metrics)) =>
         val startTime = System.nanoTime()
         def elapsed: Long = System.nanoTime() - startTime
-        val result = b.withCircuitBreaker(body)
+        val result = b.withCircuitBreaker(body.call().toScala)
         result.onComplete {
           case Success(_)                              => metrics.onCallSuccess(elapsed)
           case Failure(_: CircuitBreakerOpenException) => metrics.onCallBreakerOpenFailure()
           case Failure(_: TimeoutException)            => metrics.onCallTimeoutFailure(elapsed)
           case Failure(_)                              => metrics.onCallFailure(elapsed)
         }(system.dispatcher)
-        result
-      case None => body
+        result.toJava
+      case None => body.call()
     }
   }
 
@@ -77,26 +68,6 @@ class CircuitBreaker @Inject() (system: ActorSystem, circuitBreakerConfig: Circu
   private def breaker(id: String): Option[CircuitBreakerHolder] =
     breakers.computeIfAbsent(id, createCircuitBreaker)
 
-}
-
-class CircuitBreakerModule extends AbstractModule {
-
-  @Override
-  def configure(): Unit = {
-    bind(classOf[CircuitBreaker])
-  }
-
-  @Provides
-  @Inject
-  def provideCircuitBreakerMetrics(system: ActorSystem, injector: Injector): CircuitBreakerMetricsProvider = {
-    val implClass = system.settings.config.getString("lagom.spi.circuit-breaker-metrics-class") match {
-      case "" =>
-        classOf[CircuitBreakerMetricsProviderImpl]
-      case className =>
-        system.asInstanceOf[ExtendedActorSystem].dynamicAccess.getClassFor[CircuitBreakerMetricsProvider](className).get
-    }
-    injector.getInstance(implClass)
-  }
 }
 
 @Singleton

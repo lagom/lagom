@@ -10,8 +10,10 @@ import akka.stream.Materializer;
 import com.lightbend.lagom.internal.client.*;
 import com.lightbend.lagom.internal.registry.ServiceRegistry;
 import com.lightbend.lagom.internal.registry.ServiceRegistryServiceLocator;
+import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
+import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator;
 import com.lightbend.lagom.javadsl.jackson.JacksonExceptionSerializer;
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory;
 import io.netty.channel.EventLoopGroup;
@@ -64,14 +66,16 @@ public class LagomClientFactory implements Closeable {
     private final WSClient wsClient;
     private final WebSocketClient webSocketClient;
     private final ActorSystem actorSystem;
+    private final CircuitBreakers circuitBreakers;
     private final Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator;
 
     private LagomClientFactory(EventLoopGroup eventLoop, WSClient wsClient, WebSocketClient webSocketClient, ActorSystem actorSystem,
-            Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator) {
+            CircuitBreakers circuitBreakers, Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator) {
         this.eventLoop = eventLoop;
         this.wsClient = wsClient;
         this.webSocketClient = webSocketClient;
         this.actorSystem = actorSystem;
+        this.circuitBreakers = circuitBreakers;
         this.serviceClientLoaderCreator = serviceClientLoaderCreator;
     }
 
@@ -94,7 +98,8 @@ public class LagomClientFactory implements Closeable {
      * @return An implementation of the client interface.
      */
     public <T> T createClient(Class<T> clientInterface, URI serviceUri) {
-        return serviceClientLoaderCreator.apply(new StaticServiceLocator(serviceUri)).loadServiceClient(clientInterface);
+        return serviceClientLoaderCreator.apply(new StaticServiceLocator(circuitBreakers, serviceUri))
+                .loadServiceClient(clientInterface);
     }
 
     /**
@@ -109,8 +114,8 @@ public class LagomClientFactory implements Closeable {
      * @return An implementation of the client interface.
      */
     public <T> T createClient(Class<T> clientInterface, Collection<URI> serviceUris) {
-        return serviceClientLoaderCreator.apply(new RoundRobinServiceLocator(TreePVector.from(serviceUris)))
-                .loadServiceClient(clientInterface);
+        return serviceClientLoaderCreator.apply(new RoundRobinServiceLocator(circuitBreakers,
+                TreePVector.from(serviceUris))).loadServiceClient(clientInterface);
     }
 
     /**
@@ -133,10 +138,10 @@ public class LagomClientFactory implements Closeable {
      * @return An implementation of the client interface.
      */
     public <T> T createDevClient(Class<T> clientInterface, URI serviceLocatorUri) {
-        ServiceRegistry serviceRegistry = serviceClientLoaderCreator.apply(new StaticServiceLocator(serviceLocatorUri))
-                .loadServiceClient(ServiceRegistry.class);
+        ServiceRegistry serviceRegistry = serviceClientLoaderCreator.apply(new StaticServiceLocator(circuitBreakers,
+                serviceLocatorUri)).loadServiceClient(ServiceRegistry.class);
 
-        ServiceLocator serviceLocator = new ServiceRegistryServiceLocator(serviceRegistry,
+        ServiceLocator serviceLocator = new ServiceRegistryServiceLocator(circuitBreakers, serviceRegistry,
                 new ServiceRegistryServiceLocator.ServiceLocatorConfig(serviceLocatorUri), actorSystem.dispatcher());
 
         return serviceClientLoaderCreator.apply(serviceLocator).loadServiceClient(clientInterface);
@@ -194,7 +199,7 @@ public class LagomClientFactory implements Closeable {
         }, actorSystem.dispatcher());
 
         // ServiceClientLoader
-        CircuitBreaker circuitBreaker = new CircuitBreaker(actorSystem, new CircuitBreakerConfig(actorSystem),
+        CircuitBreakers circuitBreakers = new CircuitBreakers(actorSystem, new CircuitBreakerConfig(actorSystem),
                 new CircuitBreakerMetricsProviderImpl(actorSystem));
         ServiceInfo serviceInfo = new ServiceInfo(serviceName);
 
@@ -203,11 +208,11 @@ public class LagomClientFactory implements Closeable {
 
         Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator = serviceLocator -> {
             ServiceClientImplementor implementor = new ServiceClientImplementor(wsClient, webSocketClient, serviceInfo,
-                    serviceLocator, circuitBreaker, environment, actorSystem.dispatcher(), materializer);
+                    serviceLocator, environment, actorSystem.dispatcher(), materializer);
             return new ServiceClientLoader(serializerFactory, exceptionSerializer, environment, implementor);
 
         };
-        return new LagomClientFactory(eventLoop, wsClient, webSocketClient, actorSystem, serviceClientLoaderCreator);
+        return new LagomClientFactory(eventLoop, wsClient, webSocketClient, actorSystem, circuitBreakers, serviceClientLoaderCreator);
     }
 
     private void closeGracefully(Effect close) {
@@ -218,29 +223,26 @@ public class LagomClientFactory implements Closeable {
         }
     }
 
-    private static class StaticServiceLocator implements ServiceLocator {
+    private static class StaticServiceLocator extends CircuitBreakingServiceLocator {
         private final URI uri;
 
-        StaticServiceLocator(URI uri) {
+        StaticServiceLocator(CircuitBreakers circuitBreakers, URI uri) {
+            super(circuitBreakers);
             this.uri = uri;
         }
 
         @Override
-        public CompletionStage<Optional<URI>> locate(String name) {
+        public CompletionStage<Optional<URI>> locate(String name, Descriptor.Call<?, ?> serviceCall) {
             return CompletableFuture.completedFuture(Optional.of(uri));
-        }
-
-        @Override
-        public <T> CompletionStage<Optional<T>> doWithService(String name, Function<URI, CompletionStage<T>> block) {
-            return block.apply(uri).thenApply(Optional::ofNullable);
         }
     }
 
-    private static class RoundRobinServiceLocator implements ServiceLocator {
+    private static class RoundRobinServiceLocator extends CircuitBreakingServiceLocator {
         private final PVector<URI> uris;
         private final AtomicInteger counter = new AtomicInteger(0);
 
-        RoundRobinServiceLocator(PVector<URI> uris) {
+        RoundRobinServiceLocator(CircuitBreakers circuitBreakers, PVector<URI> uris) {
+            super(circuitBreakers);
             this.uris = uris;
         }
 
@@ -250,13 +252,8 @@ public class LagomClientFactory implements Closeable {
         }
 
         @Override
-        public CompletionStage<Optional<URI>> locate(String name) {
+        public CompletionStage<Optional<URI>> locate(String name, Descriptor.Call<?, ?> serviceCall) {
             return CompletableFuture.completedFuture(Optional.of(nextUri()));
-        }
-
-        @Override
-        public <T> CompletionStage<Optional<T>> doWithService(String name, Function<URI, CompletionStage<T>> block) {
-            return block.apply(nextUri()).thenApply(Optional::ofNullable);
         }
     }
 }
