@@ -34,13 +34,6 @@ class ServiceRegistryModule(environment: Environment, configuration: Configurati
           "bound to an implementation that will query the embedded Service Locator. This is fine to use " +
           "only during development."
       }
-    } else if (environment.mode == Mode.Test) {
-      logger.debug {
-        s"Running in ${environment.mode} mode, the ${classOf[ServiceLocator].getName} is " +
-          s"bound to the class ${classOf[NoServiceLocator].getName}. That is a dummy implementation that " +
-          "always fails to locate a service, which is usually fine to use in unit tests."
-      }
-      bind(classOf[ServiceLocator]).to(classOf[NoServiceLocator])
     } else
       logger.debug {
         s"Running in ${environment.mode} mode, hence Lagom is not binding the ${classOf[ServiceLocator].getName} " +

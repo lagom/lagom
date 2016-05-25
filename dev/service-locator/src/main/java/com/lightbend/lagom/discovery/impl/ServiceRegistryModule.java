@@ -4,6 +4,8 @@
 package com.lightbend.lagom.discovery.impl;
 
 import com.google.inject.AbstractModule;
+import com.lightbend.lagom.internal.registry.NoServiceLocator;
+import com.lightbend.lagom.javadsl.api.ServiceLocator;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 import com.lightbend.lagom.internal.registry.ServiceRegistry;
 import com.lightbend.lagom.discovery.ServiceRegistryActor;
@@ -34,5 +36,6 @@ public class ServiceRegistryModule extends AbstractModule implements ServiceGuic
 		bind(ServiceGatewayConfig.class).toInstance(serviceGatewayConfig);
 		bind(ServiceGateway.class).asEagerSingleton();
 		bind(UnmanagedServices.class).toInstance(UnmanagedServices.apply(unmanagedServices));
+		bind(ServiceLocator.class).to(NoServiceLocator.class);
 	}
 }

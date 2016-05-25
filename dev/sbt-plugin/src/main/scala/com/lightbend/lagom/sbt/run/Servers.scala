@@ -49,8 +49,8 @@ private[sbt] object Servers {
             case e: Exception =>
               val msg = "Failed to start embedded Service Locator or Service Gateway. " +
                 s"Hint: Are ports ${serviceLocatorPort} and ${serviceGatewayPort} already in use?"
-              log.error(msg)
               stop()
+              throw new RuntimeException(msg, e)
           }
         }
       }
