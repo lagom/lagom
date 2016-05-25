@@ -175,7 +175,8 @@ val apiProjects = Seq[ProjectReference](
   persistence,
   testkit,
   logback,
-  immutables
+  immutables,
+  `integration-client`
 )
 
 val otherProjects = Seq[ProjectReference](
@@ -279,6 +280,12 @@ lazy val client = (project in file("client"))
   )
   .dependsOn(core, spi)
 
+lazy val `integration-client` = (project in file("integration-client"))
+  .settings(name := "lagom-javadsl-integration-client")
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .dependsOn(client, `service-registry-client`)
+
 lazy val server = (project in file("server"))
   .settings(name := "lagom-javadsl-server")
   .enablePlugins(RuntimeLibPlugins)
@@ -314,7 +321,7 @@ lazy val `service-integration-tests` = (project in file("service-integration-tes
     PgpKeys.publishSigned := {},
     publish := {}
   )
-  .dependsOn(server, persistence, pubsub, testkit, logback)
+  .dependsOn(server, persistence, pubsub, testkit, logback, `integration-client`)
 
 // for forked tests, necessary for Cassandra
 def forkedTests: Seq[Setting[_]] = Seq(

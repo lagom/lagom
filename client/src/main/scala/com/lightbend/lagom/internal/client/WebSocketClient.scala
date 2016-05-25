@@ -24,6 +24,7 @@ import io.netty.channel._
 import io.netty.handler.codec.http.websocketx._
 import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
+import org.asynchttpclient.netty.channel.CleanupChannelGroup
 import org.pcollections.{ TreePVector, PSequence, HashTreePMap }
 import play.api.Environment
 import play.api.http.HeaderNames
@@ -40,17 +41,27 @@ import java.util.concurrent.atomic.AtomicReference
  * A WebSocket client
  */
 @Singleton
-class WebSocketClient @Inject() (environment: Environment, lifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) {
+class WebSocketClient(environment: Environment, eventLoop: EventLoopGroup,
+                      lifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) {
+
+  // Constructor that manages its own event loop
+  @Inject
+  def this(environment: Environment, applicationLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) = {
+    this(environment, WebSocketClient.createEventLoopGroup(applicationLifecycle), applicationLifecycle)
+  }
 
   lifecycle.addStopHook(() => shutdown())
 
-  val eventLoop = new NioEventLoopGroup()
+  // Netty channel groups are used to track open channels (connections), they automatically clean themselves up when
+  // the channels close, and can be used to force all channels to close.
+  val channelGroup = new CleanupChannelGroup
   val client = new Bootstrap()
     .group(eventLoop)
     .channel(classOf[NioSocketChannel])
     .option(ChannelOption.AUTO_READ, java.lang.Boolean.FALSE)
     .handler(new ChannelInitializer[SocketChannel] {
       def initChannel(ch: SocketChannel) = {
+        channelGroup.add(ch)
         ch.pipeline().addLast(new HttpClientCodec, new HttpObjectAggregator(8192))
       }
     })
@@ -97,10 +108,20 @@ class WebSocketClient @Inject() (environment: Environment, lifecycle: Applicatio
     } yield incoming
   }
 
-  def shutdown() = {
-    // The first argument here is a quiet period, between which events will be rejected, and shutdown actually starts.
-    // We want no quiet period, if we want to shutdown, we want to shutdown.
-    eventLoop.shutdownGracefully(0, 10, TimeUnit.SECONDS).toScala.map(_ => ())
+  def shutdown(): Future[_] = {
+    Future.sequence(channelGroup.close().asScala.map(_.toScala).toSeq)
+  }
+}
+
+object WebSocketClient {
+  private[client] def createEventLoopGroup(lifecycle: ApplicationLifecycle): EventLoopGroup = {
+    val eventLoop = new NioEventLoopGroup()
+    lifecycle.addStopHook { () =>
+      // The first argument here is a quiet period, between which events will be rejected, and shutdown actually starts.
+      // We want no quiet period, if we want to shutdown, we want to shutdown.
+      eventLoop.shutdownGracefully(0, 10, TimeUnit.SECONDS).toScala
+    }
+    eventLoop
   }
 }
 
