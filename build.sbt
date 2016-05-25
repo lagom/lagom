@@ -215,7 +215,7 @@ lazy val api = (project in file("api"))
       scalaTest % Test,
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion % Test
     )
-  )
+  ).dependsOn(spi)
 
 lazy val immutables = (project in file("immutables"))
   .settings(name := "lagom-javadsl-immutables")
@@ -278,7 +278,7 @@ lazy val client = (project in file("client"))
       "io.dropwizard.metrics" % "metrics-core" % "3.1.2"
     )
   )
-  .dependsOn(core, spi)
+  .dependsOn(core)
 
 lazy val `integration-client` = (project in file("integration-client"))
   .settings(name := "lagom-javadsl-integration-client")

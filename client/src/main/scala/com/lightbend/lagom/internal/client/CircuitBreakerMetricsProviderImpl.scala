@@ -3,21 +3,45 @@
  */
 package com.lightbend.lagom.internal.client
 
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
-import akka.actor.ActorSystem
+
+import akka.actor.{ ActorSystem, ExtendedActorSystem }
 import com.codahale.metrics.Gauge
 import com.codahale.metrics.MetricRegistry
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetrics
-import javax.inject.Inject
-import javax.inject.Singleton
+import javax.inject.{ Inject, Provider, Singleton }
+
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import java.util.concurrent.atomic.AtomicReference
+
 import com.codahale.metrics.Counter
 import com.codahale.metrics.Histogram
 import com.codahale.metrics.Meter
 import java.util.concurrent.CopyOnWriteArrayList
-import play.api.Logger
+
+import play.api.{ Configuration, Environment, Logger }
+import play.api.inject.{ Binding, Injector, Module }
+
+class CircuitBreakerModule extends Module {
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+    Seq(
+      bind[CircuitBreakers].toSelf,
+      bind[CircuitBreakerMetricsProvider].toProvider[CircuitBreakerMetricsProviderProvider]
+    )
+  }
+}
+
+@Singleton
+class CircuitBreakerMetricsProviderProvider @Inject() (system: ActorSystem, injector: Injector) extends Provider[CircuitBreakerMetricsProvider] {
+  lazy val get = {
+    val implClass = system.settings.config.getString("lagom.spi.circuit-breaker-metrics-class") match {
+      case ""        => classOf[CircuitBreakerMetricsProviderImpl]
+      case className => system.asInstanceOf[ExtendedActorSystem].dynamicAccess.getClassFor[CircuitBreakerMetricsProvider](className).get
+    }
+
+    injector.instanceOf(implClass)
+  }
+}
 
 @Singleton
 class CircuitBreakerMetricsProviderImpl @Inject() (val system: ActorSystem) extends CircuitBreakerMetricsProvider {

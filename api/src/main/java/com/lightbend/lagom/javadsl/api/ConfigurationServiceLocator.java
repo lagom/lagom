@@ -50,12 +50,12 @@ public class ConfigurationServiceLocator implements ServiceLocator {
     }
 
     @Override
-    public CompletionStage<Optional<URI>> locate(String name) {
+    public CompletionStage<Optional<URI>> locate(String name, Descriptor.Call<?, ?> serviceCall) {
         return CompletableFuture.completedFuture(Optional.ofNullable(services.get(name)));
     }
 
     @Override
-    public <T> CompletionStage<Optional<T>> doWithService(String name, Function<URI, CompletionStage<T>> block) {
+    public <T> CompletionStage<Optional<T>> doWithService(String name, Descriptor.Call<?, ?> serviceCall, Function<URI, CompletionStage<T>> block) {
         return Optional.ofNullable(services.get(name))
                 .map(block.andThen(cs -> cs.thenApply(Optional::ofNullable)))
                 .orElse(CompletableFuture.completedFuture(Optional.empty()));
