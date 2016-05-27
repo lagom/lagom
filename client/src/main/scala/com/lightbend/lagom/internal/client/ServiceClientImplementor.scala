@@ -33,15 +33,13 @@ import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
 import scala.compat.java8.OptionConverters._
 import scala.concurrent.{ ExecutionContext, Future }
-import com.lightbend.lagom.javadsl.api.Descriptor.CircuitBreakerId
 
 /**
  * Implements a service client.
  */
 @Singleton
 class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSocketClient, serviceInfo: ServiceInfo,
-                                          serviceLocator: ServiceLocator, circuitBreaker: CircuitBreaker,
-                                          environment: Environment)(implicit ec: ExecutionContext, mat: Materializer) {
+                                          serviceLocator: ServiceLocator, environment: Environment)(implicit ec: ExecutionContext, mat: Materializer) {
 
   def implement[T](interface: Class[T], descriptor: Descriptor): T = {
     java.lang.reflect.Proxy.newProxyInstance(environment.classLoader, Array(interface), new ServiceClientInvocationHandler(descriptor)).asInstanceOf[T]
@@ -52,7 +50,7 @@ class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSock
       call.serviceCallHolder() match {
         case holder: MethodServiceCallHolder =>
           holder.method -> new ServiceCallInvocationHandler[Any, Any](ws, webSocketClient, serviceInfo, serviceLocator,
-            circuitBreaker, descriptor, call.asInstanceOf[Call[Any, Any]], holder)
+            descriptor, call.asInstanceOf[Call[Any, Any]], holder)
       }
     }.toMap
 
@@ -67,15 +65,14 @@ class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSock
 
 private class ServiceCallInvocationHandler[Request, Response](ws: WSClient, webSocketClient: WebSocketClient,
                                                               serviceInfo: ServiceInfo, serviceLocator: ServiceLocator,
-                                                              circuitBreaker: CircuitBreaker, descriptor: Descriptor,
-                                                              endpoint: Call[Request, Response], holder: MethodServiceCallHolder)(implicit ec: ExecutionContext, mat: Materializer) {
+                                                              descriptor: Descriptor, endpoint: Call[Request, Response], holder: MethodServiceCallHolder)(implicit ec: ExecutionContext, mat: Materializer) {
   private val pathSpec = Path.fromCallId(endpoint.callId)
 
   def invoke(args: Seq[AnyRef]): ServiceCall[Request, Response] = {
     val (path, queryParams) = pathSpec.format(holder.invoke(args))
 
     new ClientServiceCall[Request, Response, Response](new ClientServiceCallInvoker[Request, Response](ws, webSocketClient,
-      serviceInfo, serviceLocator, circuitBreaker, descriptor, endpoint, path, queryParams), identity, (_, msg) => msg)
+      serviceInfo, serviceLocator, descriptor, endpoint, path, queryParams), identity, (_, msg) => msg)
   }
 }
 
@@ -115,11 +112,9 @@ private class ClientServiceCall[Request, ResponseMessage, ServiceCallResponse](
 
 private class ClientServiceCallInvoker[Request, Response](
   ws: WSClient, webSocketClient: WebSocketClient, serviceInfo: ServiceInfo, serviceLocator: ServiceLocator,
-  circuitBreaker: CircuitBreaker, descriptor: Descriptor,
-  val endpoint: Call[Request, Response], path: String, queryParams: Map[String, Seq[String]]
+  descriptor: Descriptor, val endpoint: Call[Request, Response], path: String, queryParams: Map[String, Seq[String]]
 )(implicit ec: ExecutionContext, mat: Materializer) {
 
-  private val defaultCircuitBreakerId = new CircuitBreakerId(descriptor.name)
   private val headerTransformers = Seq(descriptor.serviceIdentificationStrategy, descriptor.protocolNegotiationStrategy)
   private def transformRequestHeader(requestHeader: RequestHeader): RequestHeader = {
     headerTransformers.foldRight(requestHeader)(_.transformClientRequest(_))
@@ -131,50 +126,47 @@ private class ClientServiceCallInvoker[Request, Response](
   }
 
   def doInvoke(request: Request, requestHeaderHandler: RequestHeader => RequestHeader): Future[(ResponseHeader, Response)] = {
-    val breakerId = endpoint.circuitBreaker().orElse(defaultCircuitBreakerId)
-    circuitBreaker.withCircuitBreaker(breakerId) {
-      serviceLocator.doWithService(descriptor.name, new java.util.function.Function[URI, CompletionStage[(ResponseHeader, Response)]] {
-        override def apply(uri: URI) = {
+    serviceLocator.doWithService(descriptor.name, endpoint, new java.util.function.Function[URI, CompletionStage[(ResponseHeader, Response)]] {
+      override def apply(uri: URI) = {
 
-          val queryString = if (queryParams.nonEmpty) {
-            queryParams.flatMap {
-              case (name, values) => values.map(value => URLEncoder.encode(name, "utf-8") + "=" + URLEncoder.encode(value, "utf-8"))
-            }.mkString("?", "&", "")
-          } else ""
-          val url = s"$uri$path$queryString"
+        val queryString = if (queryParams.nonEmpty) {
+          queryParams.flatMap {
+            case (name, values) => values.map(value => URLEncoder.encode(name, "utf-8") + "=" + URLEncoder.encode(value, "utf-8"))
+          }.mkString("?", "&", "")
+        } else ""
+        val url = s"$uri$path$queryString"
 
-          val method = endpoint.callId match {
-            case rest: RestCallId => rest.method
-            case _ => if (endpoint.requestSerializer.isUsed) {
-              com.lightbend.lagom.javadsl.api.transport.Method.POST
-            } else {
-              com.lightbend.lagom.javadsl.api.transport.Method.GET
-            }
+        val method = endpoint.callId match {
+          case rest: RestCallId => rest.method
+          case _ => if (endpoint.requestSerializer.isUsed) {
+            com.lightbend.lagom.javadsl.api.transport.Method.POST
+          } else {
+            com.lightbend.lagom.javadsl.api.transport.Method.GET
           }
-
-          val requestHeader = requestHeaderHandler(new RequestHeader(method, URI.create(url), endpoint.requestSerializer.serializerForRequest.protocol,
-            endpoint.responseSerializer.acceptResponseProtocols(),
-            Optional.of(ServicePrincipal.forServiceNamed(serviceInfo.serviceName)), HashTreePMap.empty()))
-
-          val result: Future[(ResponseHeader, Response)] = (endpoint.requestSerializer(), endpoint.responseSerializer()) match {
-            case (requestSerializer: StrictMessageSerializer[Request], responseSerializer: StrictMessageSerializer[Response]) =>
-              makeStrictCall(requestHeader, requestSerializer, responseSerializer, request)
-            case (requestSerializer: StrictMessageSerializer[Request], responseSerializer: StreamedMessageSerializer[_]) =>
-              makeStreamedResponseCall(requestHeader, requestSerializer, responseSerializer, request)
-            case (requestSerializer: StreamedMessageSerializer[_], responseSerializer: StrictMessageSerializer[Response]) =>
-              makeStreamedRequestCall(requestHeader, requestSerializer, responseSerializer, request)
-            case (requestSerializer: StreamedMessageSerializer[_], responseSerializer: StreamedMessageSerializer[_]) =>
-              makeStreamedCall(requestHeader, requestSerializer, responseSerializer, request)
-          }
-
-          result.toJava
         }
-      }).toScala.map { responseOption =>
-        if (responseOption.isPresent) {
-          responseOption.get
-        } else {
-          throw new IllegalStateException(s"Service ${descriptor.name} was not found by service locator")
+
+        val requestHeader = requestHeaderHandler(new RequestHeader(method, URI.create(url), endpoint.requestSerializer.serializerForRequest.protocol,
+          endpoint.responseSerializer.acceptResponseProtocols(),
+          Optional.of(ServicePrincipal.forServiceNamed(serviceInfo.serviceName)), HashTreePMap.empty()))
+
+        val result: Future[(ResponseHeader, Response)] = (endpoint.requestSerializer(), endpoint.responseSerializer()) match {
+          case (requestSerializer: StrictMessageSerializer[Request], responseSerializer: StrictMessageSerializer[Response]) =>
+            makeStrictCall(requestHeader, requestSerializer, responseSerializer, request)
+          case (requestSerializer: StrictMessageSerializer[Request], responseSerializer: StreamedMessageSerializer[_]) =>
+            makeStreamedResponseCall(requestHeader, requestSerializer, responseSerializer, request)
+          case (requestSerializer: StreamedMessageSerializer[_], responseSerializer: StrictMessageSerializer[Response]) =>
+            makeStreamedRequestCall(requestHeader, requestSerializer, responseSerializer, request)
+          case (requestSerializer: StreamedMessageSerializer[_], responseSerializer: StreamedMessageSerializer[_]) =>
+            makeStreamedCall(requestHeader, requestSerializer, responseSerializer, request)
         }
+
+        result.toJava
+      }
+    }).toScala.map { responseOption =>
+      if (responseOption.isPresent) {
+        responseOption.get
+      } else {
+        throw new IllegalStateException(s"Service ${descriptor.name} was not found by service locator")
       }
     }
   }
