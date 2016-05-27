@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.it.mocks;
 
-import com.lightbend.lagom.javadsl.api.Descriptor.CircuitBreakerId;
+import com.lightbend.lagom.javadsl.api.CircuitBreaker;
 
 import akka.Done;
 import akka.stream.javadsl.Source;
@@ -51,7 +51,7 @@ public interface MockService extends Service {
         return named("mockservice").with(
                 restCall(Method.POST, "/mock/:id", this::mockCall),
                 call(this::doNothing),
-                call(this::alwaysFail).withCircuitBreaker(new CircuitBreakerId("foo")),
+                call(this::alwaysFail).withCircuitBreaker(CircuitBreaker.identifiedBy("foo")),
                 call(this::doneCall),
                 call(this::streamResponse),
                 call(this::unitStreamResponse),
