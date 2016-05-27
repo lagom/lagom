@@ -148,7 +148,14 @@ case class ServiceRoute(call: Descriptor.Call[_, _], service: Any) {
   }
 }
 
+object SingleServiceRouter {
+  /** RFC 6455 Section 5.5 - maximum control frame size is 125 bytes */
+  val WebSocketControlFrameMaxLength = 125
+}
+
 class SingleServiceRouter(descriptor: Descriptor, serviceRoutes: Seq[ServiceRoute], httpConfiguration: HttpConfiguration)(implicit ec: ExecutionContext, mat: Materializer) extends SimpleRouter {
+
+  import SingleServiceRouter._
 
   private val headerTransfomers = Seq(descriptor.serviceIdentificationStrategy(), descriptor.protocolNegotiationStrategy())
 
@@ -477,14 +484,42 @@ class SingleServiceRouter(descriptor: Descriptor, serviceRoutes: Seq[ServiceRout
       }.recover {
         case NonFatal(e) =>
           logException(e, descriptor, call)
-          val rawExceptionMessage = descriptor.exceptionSerializer.serialize(e, acceptHeaders)
-          CloseMessage(Some(rawExceptionMessage.errorCode().webSocket()), rawExceptionMessage.messageAsText())
+          exceptionToCloseMessage(e, acceptHeaders)
       })
     }.recover {
       case NonFatal(e) =>
         logException(e, descriptor, call)
         Left(exceptionToResult(descriptor.exceptionSerializer, requestHeader, e))
     }
+  }
+
+  /** Convert an exception to a close message */
+  private def exceptionToCloseMessage(exception: Throwable, acceptHeaders: PSequence[MessageProtocol]) = {
+    // First attempt to serialize the exception using the exception serializer
+    val rawExceptionMessage = descriptor.exceptionSerializer.serialize(exception, acceptHeaders)
+
+    val safeExceptionMessage = if (rawExceptionMessage.message().size > WebSocketControlFrameMaxLength) {
+      // If the serializer produced an error message that was too big for WebSockets, fall back to a simpler error
+      // message.
+      val truncatedExceptionMessage = descriptor.exceptionSerializer.serialize(
+        new TransportException(
+          rawExceptionMessage.errorCode(),
+          new ExceptionMessage("Error message truncated", "")
+        ), acceptHeaders
+      )
+
+      // It may be that the serialized exception message with no detail is still too big for a WebSocket, fall back to
+      // plain text message.
+      if (truncatedExceptionMessage.message().size > WebSocketControlFrameMaxLength) {
+        new RawExceptionMessage(
+          rawExceptionMessage.errorCode(),
+          new MessageProtocol().withContentType("text/plain").withCharset("utf-8"),
+          ByteString.fromString("Error message truncated")
+        )
+      } else truncatedExceptionMessage
+    } else rawExceptionMessage
+
+    CloseMessage(Some(safeExceptionMessage.errorCode().webSocket()), safeExceptionMessage.messageAsText())
   }
 
   /**

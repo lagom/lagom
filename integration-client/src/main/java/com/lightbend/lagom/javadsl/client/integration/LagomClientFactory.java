@@ -204,7 +204,7 @@ public class LagomClientFactory implements Closeable {
         ServiceInfo serviceInfo = new ServiceInfo(serviceName);
 
         JacksonSerializerFactory serializerFactory = new JacksonSerializerFactory(actorSystem);
-        JacksonExceptionSerializer exceptionSerializer = new JacksonExceptionSerializer();
+        JacksonExceptionSerializer exceptionSerializer = new JacksonExceptionSerializer(new play.Environment(environment));
 
         Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator = serviceLocator -> {
             ServiceClientImplementor implementor = new ServiceClientImplementor(wsClient, webSocketClient, serviceInfo,
