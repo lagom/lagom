@@ -23,7 +23,7 @@ import com.lightbend.lagom.javadsl.api._
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
 import org.pcollections.TreePVector
 import play.api.libs.streams.AkkaStreams
-import play.api.{ Application, Environment }
+import play.api.{ Application, Environment, Mode }
 import play.api.inject._
 
 import scala.compat.java8.FutureConverters._
@@ -146,12 +146,29 @@ class ErrorHandlingSpec extends ServiceSupport {
           e.errorCode should ===(TransportErrorCode.InternalServerError)
       }
     }
-    "handle stream errors in service call invocation" in withClient(changeServer = change(callId)(failingStreamedServiceCall)) { implicit app => client =>
-      makeCall(app)(client) match {
-        case e: TransportException =>
-          e.exceptionMessage.name should ===("Exception")
-          e.exceptionMessage.detail should ===("")
-          e.errorCode should ===(TransportErrorCode.InternalServerError)
+    "handle stream errors in service call invocation" when {
+      "in prod mode will not give out error information" in withClient(changeServer = change(callId)(failingStreamedServiceCall)) { implicit app => client =>
+        makeCall(app)(client) match {
+          case e: TransportException =>
+            e.exceptionMessage.name should ===("Exception")
+            e.exceptionMessage.detail should ===("")
+            e.errorCode should ===(TransportErrorCode.InternalServerError)
+        }
+      }
+      "in dev mode will give out detailed exception information" in withClient(changeServer = change(callId)(failingStreamedServiceCall), mode = Mode.Dev) { implicit app => client =>
+        makeCall(app)(client) match {
+          case e: TransportException =>
+            e.errorCode should ===(TransportErrorCode.InternalServerError)
+            e.exceptionMessage.name match {
+              case "java.lang.RuntimeException: service call failed" =>
+                // It should contain a stack trace in the information
+                e.exceptionMessage.detail should include("at com.lightbend.lagom.it.")
+              case "Error message truncated" =>
+                e.exceptionMessage.detail should ===("")
+              case other =>
+                fail("Unknown exception massage name: " + other)
+            }
+        }
       }
     }
     "handle errors in response serialization negotiation" in withClient(changeServer = change(callId)(failingResponseNegotation)) { implicit app => client =>
@@ -193,13 +210,14 @@ class ErrorHandlingSpec extends ServiceSupport {
   /**
    * This sets up the server and the client, but allows them to be modified before actually creating them.
    */
-  def withClient(changeClient: Descriptor => Descriptor = identity, changeServer: Descriptor => Descriptor = identity)(block: Application => MockService => Unit): Unit = {
+  def withClient(changeClient: Descriptor => Descriptor = identity, changeServer: Descriptor => Descriptor = identity,
+                 mode: Mode.Mode = Mode.Prod)(block: Application => MockService => Unit): Unit = {
 
-    val environment = Environment.simple()
+    val environment = Environment.simple(mode = mode)
     val jacksonSerializerFactory = new JacksonSerializerFactory(new JacksonObjectMapperProvider(
       ConfigFactory.load(), new ReflectiveDynamicAccess(environment.classLoader), None
     ))
-    val jacksonExceptionSerializer = new JacksonExceptionSerializer
+    val jacksonExceptionSerializer = new JacksonExceptionSerializer(new play.Environment(environment))
     val descriptor = ServiceReader.readServiceDescriptor(environment.classLoader, classOf[MockService])
     val resolved = ServiceReader.resolveServiceDescriptor(descriptor, environment.classLoader,
       Map(JacksonPlaceholderSerializerFactory -> jacksonSerializerFactory),

@@ -17,7 +17,12 @@ import com.lightbend.lagom.javadsl.api.deser.RawExceptionMessage;
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol;
 import com.lightbend.lagom.javadsl.api.transport.TransportErrorCode;
 import com.lightbend.lagom.javadsl.api.transport.TransportException;
+import play.Environment;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.CharArrayWriter;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Optional;
@@ -27,11 +32,19 @@ import java.util.concurrent.ExecutionException;
 /**
  * Serializes errors to JSON.
  */
+@Singleton
 public class JacksonExceptionSerializer implements ExceptionSerializer {
     private final ObjectMapper objectMapper = new ObjectMapper()
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
             .registerModule(new Jdk8Module())
             .registerModule(new ParameterNamesModule(JsonCreator.Mode.PROPERTIES));
+
+    private final Environment environment;
+
+    @Inject
+    public JacksonExceptionSerializer(Environment environment) {
+        this.environment = environment;
+    }
 
     @Override
     public RawExceptionMessage serialize(Throwable exception, Collection<MessageProtocol> accept) {
@@ -42,10 +55,19 @@ public class JacksonExceptionSerializer implements ExceptionSerializer {
             TransportException transportException = (TransportException) unwrapped;
             errorCode = transportException.errorCode();
             message = transportException.exceptionMessage();
-        } else {
+        } else if (environment.isProd()) {
             errorCode = TransportErrorCode.InternalServerError;
             // By default, don't give out information about generic exceptions.
             message = new ExceptionMessage("Exception", "");
+        } else {
+            // Ok to give out exception information in dev and test
+            errorCode = TransportErrorCode.InternalServerError;
+
+            CharArrayWriter writer = new CharArrayWriter();
+            unwrapped.printStackTrace(new PrintWriter(writer));
+            String detail = writer.toString();
+
+            message = new ExceptionMessage(unwrapped.getClass().getName() + ": " + unwrapped.getMessage(), detail);
         }
 
         ByteStringBuilder builder = ByteString$.MODULE$.newBuilder();
