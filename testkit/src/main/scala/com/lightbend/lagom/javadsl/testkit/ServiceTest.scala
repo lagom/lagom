@@ -31,7 +31,6 @@ import akka.japi.function.Effect
 import akka.japi.function.Procedure
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.Materializer
-import javax.inject.Singleton
 import play.Application
 import play.Configuration
 import play.api.Logger
@@ -188,32 +187,28 @@ object ServiceTest {
     val now = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
     val testName = s"ServiceTest_$now"
 
-    val b1 = new GuiceApplicationBuilder()
+    val appBuilder = new GuiceApplicationBuilder()
       .bindings(sBind[TestServiceLocatorPort].to(testServiceLocatorPort))
       .bindings(sBind[CassandraConfig].toProvider(classOf[CassandraConfigProvider]))
       .bindings(sBind[ServiceLocator].to(classOf[TestServiceLocator]))
       .configure("play.akka.actor-system", testName)
 
-    val log = Logger(getClass)
+    if (setup.persistence) {
+      val cassandraPort: Int = startCassandraFor(testName)
+      appBuilder
+        .configure(persistenceConfigWith(cassandraPort))
+        .configure("lagom.cluster.join-self", "on")
+    } else if (setup.cluster)
+      appBuilder
+        .configure(clusterConfig)
+        .configure("lagom.cluster.join-self", "on")
+        .disable(classOf[PersistenceModule])
+    else
+      appBuilder
+        .configure("akka.actor.provider", "akka.actor.LocalActorRefProvider")
+        .disable(classOf[PersistenceModule], classOf[PubSubModule], classOf[JoinClusterModule])
 
-    val b2 =
-      if (setup.persistence) {
-        val cassandraPort = CassandraLauncher.randomPort
-        val cassandraDirectory = new File("target/" + testName)
-        val t0 = System.nanoTime()
-        CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = true, port = 0)
-        log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
-        b1.configure(new Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = true)))
-          .configure("lagom.cluster.join-self", "on")
-      } else if (setup.cluster)
-        b1.configure(new Configuration(TestUtil.clusterConfig))
-          .configure("lagom.cluster.join-self", "on")
-          .disable(classOf[PersistenceModule])
-      else
-        b1.configure("akka.actor.provider", "akka.actor.LocalActorRefProvider")
-          .disable(classOf[PersistenceModule], classOf[PubSubModule], classOf[JoinClusterModule])
-
-    val application = setup.configureBuilder(b2).build()
+    val application = setup.configureBuilder(appBuilder).build()
 
     Play.start(application.getWrappedApplication)
     val serverConfig = ServerConfig(port = Some(0), mode = Mode.Test)
@@ -227,6 +222,22 @@ object ServiceTest {
     }
 
     new TestServer(assignedPort, application, srv)
+
+    def clusterConfig: Configuration = new Configuration(TestUtil.clusterConfig)
+
+    def persistenceConfigWith(cassandraPort: Int): Configuration = {
+      new Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = true))
+    }
+  }
+
+  def startCassandraFor(testName: String): Int = {
+    val cassandraPort = CassandraLauncher.randomPort
+    val cassandraDirectory = new File("target/" + testName)
+    val log = Logger(getClass)
+    val t0 = System.nanoTime()
+    CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = false, port = cassandraPort)
+    log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
+    cassandraPort
   }
 
   /**
@@ -270,5 +281,4 @@ object ServiceTest {
    */
   def bind[T](clazz: Class[T]): BindingKey[T] =
     play.inject.Bindings.bind(clazz)
-
 }
