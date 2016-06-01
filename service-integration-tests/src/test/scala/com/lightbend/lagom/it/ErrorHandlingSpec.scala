@@ -318,7 +318,7 @@ class ErrorHandlingSpec extends ServiceSupport {
   }
 
   def overrideServiceCall(serviceCall: ServiceCall[_, _]): Call[_, _] => Call[_, _] = { call =>
-    call.asInstanceOf[Call[Any, Any]].`with`(new MethodServiceCallHolder {
+    call.asInstanceOf[Call[Any, Any]].withServiceCallHolder(new MethodServiceCallHolder {
       override def invoke(arguments: Seq[AnyRef]): Seq[Seq[String]] = ???
       override def create(service: Any, parameters: Seq[Seq[String]]): ServiceCall[_, _] = serviceCall
       override val method = null

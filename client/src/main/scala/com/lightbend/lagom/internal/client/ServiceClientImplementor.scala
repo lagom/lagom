@@ -115,16 +115,6 @@ private class ClientServiceCallInvoker[Request, Response](
   descriptor: Descriptor, val endpoint: Call[Request, Response], path: String, queryParams: Map[String, Seq[String]]
 )(implicit ec: ExecutionContext, mat: Materializer) {
 
-  private val headerTransformers = Seq(descriptor.serviceIdentificationStrategy, descriptor.protocolNegotiationStrategy)
-  private def transformRequestHeader(requestHeader: RequestHeader): RequestHeader = {
-    headerTransformers.foldRight(requestHeader)(_.transformClientRequest(_))
-  }
-  private def transformResponseHeader(responseHeader: ResponseHeader, requestHeader: RequestHeader): ResponseHeader = {
-    headerTransformers.foldLeft(responseHeader) { (header, transformer) =>
-      transformer.transformClientResponse(header, requestHeader)
-    }
-  }
-
   def doInvoke(request: Request, requestHeaderHandler: RequestHeader => RequestHeader): Future[(ResponseHeader, Response)] = {
     serviceLocator.doWithService(descriptor.name, endpoint, new java.util.function.Function[URI, CompletionStage[(ResponseHeader, Response)]] {
       override def apply(uri: URI) = {
@@ -184,7 +174,7 @@ private class ClientServiceCallInvoker[Request, Response](
 
     val serializer = requestSerializer.serializerForRequest()
 
-    val transportRequestHeader = transformRequestHeader(requestHeader)
+    val transportRequestHeader = descriptor.headerFilter.transformClientRequest(requestHeader)
 
     // We have a single source, followed by a maybe source (that is, a source that never produces any message, and
     // never terminates). The maybe source is necessary because we want the response stream to stay open.
@@ -213,7 +203,7 @@ private class ClientServiceCallInvoker[Request, Response](
     val serializer = requestSerializer.asInstanceOf[StreamedMessageSerializer[Any]].serializerForRequest()
     val requestStream = serializer.serialize(request.asInstanceOf[JSource[Any, _]])
 
-    val transportRequestHeader = transformRequestHeader(requestHeader)
+    val transportRequestHeader = descriptor.headerFilter.transformClientRequest(requestHeader)
 
     for {
       (transportResponseHeader, responseStream) <- doMakeStreamedCall(requestStream.asScala, serializer, transportRequestHeader)
@@ -223,7 +213,7 @@ private class ClientServiceCallInvoker[Request, Response](
       maybeResponse <- responseStream via AkkaStreams.ignoreAfterCancellation runWith Sink.headOption
     } yield {
       val bytes = maybeResponse.getOrElse(ByteString.empty)
-      val responseHeader = transformResponseHeader(transportResponseHeader, requestHeader)
+      val responseHeader = descriptor.headerFilter.transformClientResponse(transportResponseHeader, requestHeader)
       val deserializer = responseSerializer.deserializer(responseHeader.protocol)
       responseHeader -> deserializer.deserialize(bytes)
     }
@@ -240,7 +230,7 @@ private class ClientServiceCallInvoker[Request, Response](
     val serializer = requestSerializer.asInstanceOf[StreamedMessageSerializer[Any]].serializerForRequest()
     val requestStream = serializer.serialize(request.asInstanceOf[JSource[Any, _]])
 
-    val transportRequestHeader = transformRequestHeader(requestHeader)
+    val transportRequestHeader = descriptor.headerFilter.transformClientRequest(requestHeader)
 
     doMakeStreamedCall(requestStream.asScala, serializer, transportRequestHeader).map(
       (deserializeResponseStream(responseSerializer, requestHeader) _).tupled
@@ -251,7 +241,7 @@ private class ClientServiceCallInvoker[Request, Response](
     responseSerializer: StreamedMessageSerializer[_],
     requestHeader:      RequestHeader
   )(transportResponseHeader: ResponseHeader, response: Source[ByteString, _]): (ResponseHeader, Response) = {
-    val responseHeader = transformResponseHeader(transportResponseHeader, requestHeader)
+    val responseHeader = descriptor.headerFilter.transformClientResponse(transportResponseHeader, requestHeader)
 
     val deserializer = responseSerializer.asInstanceOf[StreamedMessageSerializer[Any]]
       .deserializer(responseHeader.protocol)
@@ -272,7 +262,7 @@ private class ClientServiceCallInvoker[Request, Response](
     val serializer = requestSerializer.serializerForRequest()
     val body = serializer.serialize(request)
 
-    val transportRequestHeader = transformRequestHeader(requestHeader)
+    val transportRequestHeader = descriptor.headerFilter.transformClientRequest(requestHeader)
 
     val requestHolder = ws.url(requestHeader.uri.toString)
       .withMethod(requestHeader.method.name)
@@ -303,7 +293,7 @@ private class ClientServiceCallInvoker[Request, Response](
         case (map, (key, values)) => map.plus(key, TreePVector.from(values.asJava))
       }
       val transportResponseHeader = new ResponseHeader(response.status, protocol, headers)
-      val responseHeader = transformResponseHeader(transportResponseHeader, requestHeader)
+      val responseHeader = descriptor.headerFilter.transformClientResponse(transportResponseHeader, requestHeader)
 
       if (response.status >= 400 && response.status <= 599) {
         val errorCode = TransportErrorCode.fromHttp(response.status)

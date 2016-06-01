@@ -16,7 +16,7 @@ trait ScalaMockService extends Service {
   def hello(): ServiceCall[UUID, String]
 
   override def descriptor(): Descriptor =
-    named("/mock").`with`(restCall(Method.GET, "/hello/:name", hello _))
+    named("/mock").withCalls(restCall(Method.GET, "/hello/:name", hello _))
 }
 
 abstract class ScalaMockServiceWrong extends ScalaMockService

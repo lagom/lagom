@@ -18,6 +18,6 @@ public interface MockService extends Service {
 
     @Override
     default Descriptor descriptor() {
-        return named("/mock").with(restCall(Method.GET, "/hello/:name", this::hello));
+        return named("/mock").withCalls(restCall(Method.GET, "/hello/:name", this::hello));
     }
 }

@@ -13,7 +13,7 @@ public interface HelloServiceWithCircuitBreaker extends Service {
   //#descriptor
   @Override
   default Descriptor descriptor() {
-      return named("hello").with(
+      return named("hello").withCalls(
         namedCall("hi", this::sayHi),
         namedCall("hiAgain", this::hiAgain)
          .withCircuitBreaker(CircuitBreaker.identifiedBy("hello2"))

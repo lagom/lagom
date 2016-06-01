@@ -1,7 +1,5 @@
 package api;
 
-import akka.stream.javadsl.Source;
-
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.Descriptor;
@@ -15,6 +13,6 @@ public interface FooService extends Service {
 
     @Override
     default Descriptor descriptor() {
-        return named("/fooservice").with(restCall(Method.GET,  "/foo",    this::foo));
+        return named("/fooservice").withCalls(restCall(Method.GET,  "/foo",    this::foo));
     }
 }

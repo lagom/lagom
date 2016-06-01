@@ -58,7 +58,7 @@ public class MessageSerializers {
     @Override
     //#call-serializer
     default Descriptor descriptor() {
-      return named("orderservice").with(
+      return named("orderservice").withCalls(
           pathCall("/orders/:id", this::getOrder)
               .withResponseSerializer(new MyOrderSerializer())
       );
@@ -72,9 +72,9 @@ public class MessageSerializers {
     @Override
     //#type-serializer
     default Descriptor descriptor() {
-      return named("orderservice").with(
+      return named("orderservice").withCalls(
           pathCall("/orders/:id", this::getOrder)
-      ).with(Order.class, new MyOrderSerializer());
+      ).withMessageSerializer(Order.class, new MyOrderSerializer());
     }
     //#type-serializer
   }
@@ -92,9 +92,9 @@ public class MessageSerializers {
     @Override
     //#with-serializer-factory
     default Descriptor descriptor() {
-      return named("orderservice").with(
+      return named("orderservice").withCalls(
               pathCall("/orders/:id", this::getOrder)
-      ).with(new MySerializerFactory());
+      ).withSerializerFactory(new MySerializerFactory());
     }
     //#with-serializer-factory
   }
