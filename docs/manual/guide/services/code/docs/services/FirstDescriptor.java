@@ -19,7 +19,7 @@ public class FirstDescriptor {
 
         //#call-id-name
         default Descriptor descriptor() {
-            return named("hello").with(
+            return named("hello").withCalls(
                     namedCall("hello", this::sayHello)
             );
         }
@@ -31,7 +31,7 @@ public class FirstDescriptor {
         ServiceCall<NotUsed, Order> getOrder(long id);
 
         default Descriptor descriptor() {
-            return named("orders").with(
+            return named("orders").withCalls(
                     pathCall("/order/:id", this::getOrder)
             );
         }
@@ -43,7 +43,7 @@ public class FirstDescriptor {
         ServiceCall<NotUsed, Item> getItem(long orderId, String itemId);
 
         default Descriptor descriptor() {
-            return named("orders").with(
+            return named("orders").withCalls(
                     pathCall("/order/:orderId/item/:itemId", this::getItem)
             );
         }
@@ -55,7 +55,7 @@ public class FirstDescriptor {
         ServiceCall<NotUsed, PSequence<Item>> getItems(long orderId, int pageNo, int pageSize);
 
         default Descriptor descriptor() {
-            return named("orders").with(
+            return named("orders").withCalls(
                     pathCall("/order/:orderId/items?pageNo&pageSize", this::getItems)
             );
         }
@@ -69,7 +69,7 @@ public class FirstDescriptor {
         ServiceCall<NotUsed, NotUsed> deleteItem(long orderId, String itemId);
 
         default Descriptor descriptor() {
-            return named("orders").with(
+            return named("orders").withCalls(
                     restCall(Method.POST,   "/order/:orderId/item",         this::addItem),
                     restCall(Method.GET,    "/order/:orderId/item/:itemId", this::getItem),
                     restCall(Method.DELETE, "/order/:orderId/item/:itemId", this::deleteItem)
@@ -83,7 +83,7 @@ public class FirstDescriptor {
         ServiceCall<String, Source<String, ?>> tick(int interval);
 
         default Descriptor descriptor() {
-            return named("clock").with(
+            return named("clock").withCalls(
                 pathCall("/tick/:interval", this::tick)
             );
         }
@@ -95,7 +95,7 @@ public class FirstDescriptor {
         ServiceCall<Source<String, ?>, Source<String, ?>> sayHello();
 
         default Descriptor descriptor() {
-            return named("hello").with(
+            return named("hello").withCalls(
                 call(this::sayHello)
             );
         }

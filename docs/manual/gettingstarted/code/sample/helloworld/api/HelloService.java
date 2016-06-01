@@ -20,7 +20,7 @@ public interface HelloService extends Service {
 
   @Override
   default Descriptor descriptor() {
-    return named("helloservice").with(
+    return named("helloservice").withCalls(
         restCall(Method.GET,  "/api/hello/:id", this::hello)
       ).withAutoAcl(true);
   }

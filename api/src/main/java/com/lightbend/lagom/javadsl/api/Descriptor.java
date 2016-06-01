@@ -124,7 +124,7 @@ public final class Descriptor {
          *          The call id.
          * @return A copy of this call descriptor.
          */
-        public Call<Request, Response> with(CallId callId) {
+        public Call<Request, Response> withCallId(CallId callId) {
             return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer, circuitBreaker,
                     autoAcl);
         }
@@ -136,7 +136,7 @@ public final class Descriptor {
          *          The service call holder.
          * @return A copy of this call descriptor.
          */
-        public Call<Request, Response> with(ServiceCallHolder serviceCallHolder) {
+        public Call<Request, Response> withServiceCallHolder(ServiceCallHolder serviceCallHolder) {
             return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer, circuitBreaker,
                     autoAcl);
         }
@@ -166,20 +166,7 @@ public final class Descriptor {
             return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer, circuitBreaker,
                     autoAcl);
         }
-    
-        /**
-         * Return a copy of this call descriptor with the given service call
-         * configured.
-         *
-         * @param serviceCall
-         *          The service call.
-         * @return A copy of this call descriptor.
-         */
-        public Call<Request, Response> with(ServiceCall<Request, Response> serviceCall) {
-            return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer, circuitBreaker,
-                    autoAcl);
-        }
-    
+
         /**
          * Return a copy of this call descriptor with the given circuit breaker mode configured.
          *
@@ -497,8 +484,8 @@ public final class Descriptor {
      * @param pathParamSerializer The path param serializer.
      * @return A copy of this descriptor.
      */
-    public <T> Descriptor with(Class<T> pathParamType, PathParamSerializer<T> pathParamSerializer) {
-        return with((Type) pathParamType, pathParamSerializer);
+    public <T> Descriptor withPathParamSerializer(Class<T> pathParamType, PathParamSerializer<T> pathParamSerializer) {
+        return withPathParamSerializer((Type) pathParamType, pathParamSerializer);
     }
 
     /**
@@ -508,7 +495,7 @@ public final class Descriptor {
      * @param pathParamSerializer The path param serializer.
      * @return A copy of this descriptor.
      */
-    public Descriptor with(Type pathParamType, PathParamSerializer<?> pathParamSerializer) {
+    public Descriptor withPathParamSerializer(Type pathParamType, PathParamSerializer<?> pathParamSerializer) {
         return replaceAllPathParamSerializers(pathParamSerializers.plus(pathParamType, pathParamSerializer));
     }
 
@@ -519,8 +506,8 @@ public final class Descriptor {
      * @param messageSerializer The message serializer for that type.
      * @return A copy of this descriptor.
      */
-    public <T> Descriptor with(Class<T> messageType, MessageSerializer<T, ?> messageSerializer) {
-        return with((Type) messageType, messageSerializer);
+    public <T> Descriptor withMessageSerializer(Class<T> messageType, MessageSerializer<T, ?> messageSerializer) {
+        return withMessageSerializer((Type) messageType, messageSerializer);
     }
 
     /**
@@ -530,7 +517,7 @@ public final class Descriptor {
      * @param messageSerializer The message serializer for that type.
      * @return A copy of this descriptor.
      */
-    public Descriptor with(Type messageType, MessageSerializer<?, ?> messageSerializer) {
+    public Descriptor withMessageSerializer(Type messageType, MessageSerializer<?, ?> messageSerializer) {
         return replaceAllMessageSerializers(messageSerializers.plus(messageType, messageSerializer));
     }
 
@@ -540,7 +527,7 @@ public final class Descriptor {
      * @param calls The calls to add.
      * @return A copy of this descriptor with the new calls added.
      */
-    public Descriptor with(Call<?, ?>... calls) {
+    public Descriptor withCalls(Call<?, ?>... calls) {
         return replaceAllCalls(this.calls.plusAll(Arrays.asList(calls)));
     }
 
@@ -580,7 +567,7 @@ public final class Descriptor {
      * @param exceptionSerializer The exception handler to use.
      * @return A copy of this descriptor.
      */
-    public Descriptor with(ExceptionSerializer exceptionSerializer) {
+    public Descriptor withExceptionSerializer(ExceptionSerializer exceptionSerializer) {
         return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker);
     }
 
@@ -590,7 +577,7 @@ public final class Descriptor {
      * @param serializerFactory The serializer factory to use.
      * @return A copy of this descriptor.
      */
-    public Descriptor with(SerializerFactory serializerFactory) {
+    public Descriptor withSerializerFactory(SerializerFactory serializerFactory) {
         return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker);
     }
 
@@ -618,7 +605,7 @@ public final class Descriptor {
      * @param acls The ACLs to add.
      * @return A copy of this descriptor.
      */
-    public Descriptor with(ServiceAcl... acls) {
+    public Descriptor withServiceAcls(ServiceAcl... acls) {
         return replaceAllAcls(this.acls.plusAll(Arrays.asList(acls)));
     }
 

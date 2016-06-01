@@ -15,6 +15,6 @@ public interface BazService extends Service {
 
   @Override
   default Descriptor descriptor() {
-    return named("/c").with(restCall(Method.GET,  "/baz",    this::baz)).withAutoAcl(true);
+    return named("/c").withCalls(restCall(Method.GET,  "/baz",    this::baz)).withAutoAcl(true);
   }
 }

@@ -15,6 +15,6 @@ public interface FooService extends Service {
 
   @Override
   default Descriptor descriptor() {
-    return named("/a").with(restCall(Method.GET,  "/foo",    this::foo)).withAutoAcl(true);
+    return named("/a").withCalls(restCall(Method.GET,  "/foo",    this::foo)).withAutoAcl(true);
 }
   }

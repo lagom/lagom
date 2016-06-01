@@ -50,7 +50,7 @@ public interface BlogService extends Service {
 
     @Override
     default Descriptor descriptor() {
-        return named("/blogs").with(
+        return named("/blogs").withCalls(
                 restCall(Method.GET, "/blogs/:blogId", this::getBlog),
                 restCall(Method.GET, "/blogs/:blogId/posts?pageNo&pageSize", this::getPosts),
                 restCall(Method.GET, "/blogs/:blogId/posts/:postId", this::getPost),

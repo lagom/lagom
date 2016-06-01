@@ -16,7 +16,7 @@ public interface FooService extends Service {
 
   @Override
   default Descriptor descriptor() {
-    return named("fooservice").with(
+    return named("fooservice").withCalls(
             restCall(Method.GET,  "/foo",    this::foo),
             restCall(Method.GET,  "/foo/cassandra",    this::cassandra)
     ).withAutoAcl(true);
