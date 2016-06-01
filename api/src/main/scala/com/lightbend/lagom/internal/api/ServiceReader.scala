@@ -121,7 +121,7 @@ object ServiceReader {
       val serviceCallHolder = constructServiceCallHolder(serviceResolver, method)
 
       val endpointWithCallId = endpoint.callId() match {
-        case named: NamedCallId if named.name() == "__unresolved__" => endpoint.`with`(new NamedCallId(method.getName))
+        case named: NamedCallId if named.name() == "__unresolved__" => endpoint.withCallId(new NamedCallId(method.getName))
         case other => endpoint // todo validate paths against method arguments
       }
 
@@ -132,7 +132,7 @@ object ServiceReader {
       }
 
       endpointWithCircuitBreaker
-        .`with`(serviceCallHolder)
+        .withServiceCallHolder(serviceCallHolder)
         .withRequestSerializer(serviceResolver.resolveMessageSerializer(endpoint.requestSerializer(), request))
         .withResponseSerializer(serviceResolver.resolveMessageSerializer(endpoint.responseSerializer(), response))
     }
@@ -149,7 +149,7 @@ object ServiceReader {
     }
 
     descriptor.replaceAllCalls(TreePVector.from(endpoints.asJava.asInstanceOf[java.util.List[Call[_, _]]]))
-      .`with`(exceptionSerializer)
+      .withExceptionSerializer(exceptionSerializer)
       .replaceAllAcls(TreePVector.from(acls.asJava))
   }
 

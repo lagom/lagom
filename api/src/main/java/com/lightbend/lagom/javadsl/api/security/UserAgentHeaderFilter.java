@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.javadsl.api.security;
 
-import com.lightbend.lagom.javadsl.api.transport.HeaderTransformer;
+import com.lightbend.lagom.javadsl.api.transport.HeaderFilter;
 import com.lightbend.lagom.javadsl.api.transport.RequestHeader;
 import com.lightbend.lagom.javadsl.api.transport.ResponseHeader;
 import play.mvc.Http;
@@ -17,7 +17,7 @@ import java.util.Optional;
  * If using this on a service that serves requests from the outside world, it would be a good idea to block the
  * <tt>User-Agent</tt> header in the web facing load balancer/proxy.
  */
-public class UserAgentServiceIdentificationStrategy implements HeaderTransformer {
+public class UserAgentHeaderFilter implements HeaderFilter {
 
     @Override
     public RequestHeader transformClientRequest(RequestHeader request) {

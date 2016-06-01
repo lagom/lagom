@@ -4,7 +4,6 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import static com.lightbend.lagom.javadsl.api.Service.*;
-import akka.NotUsed;
 
 public interface WorkerService extends Service {
 
@@ -12,7 +11,7 @@ public interface WorkerService extends Service {
 
   @Override
   default Descriptor descriptor() {
-    return named("/worker").with(
+    return named("/worker").withCalls(
       call(this::doWork)
     );
   }

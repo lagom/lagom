@@ -48,7 +48,7 @@ public interface MockService extends Service {
     ServiceCall<NotUsed, String> queryParamId(Optional<String> query);
 
     default Descriptor descriptor() {
-        return named("mockservice").with(
+        return named("mockservice").withCalls(
                 restCall(Method.POST, "/mock/:id", this::mockCall),
                 call(this::doNothing),
                 call(this::alwaysFail).withCircuitBreaker(CircuitBreaker.identifiedBy("foo")),

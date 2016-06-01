@@ -39,11 +39,11 @@ public interface ServiceRegistry extends Service {
 	@Override
 	default Descriptor descriptor() {
 		// @formatter:off
-		return named(SERVICE_NAME)
-	      .with(restCall(Method.PUT, "/services/:id", this::register))
-		  .with(restCall(Method.DELETE, "/services/:id", this::unregister))
-		  .with(restCall(Method.GET, "/services/:id", this::lookup).withResponseSerializer(CustomSerializers.URI))
-		  .with(pathCall("/services", this::registeredServices)
+		return named(SERVICE_NAME).withCalls(
+            restCall(Method.PUT, "/services/:id", this::register),
+		    restCall(Method.DELETE, "/services/:id", this::unregister),
+		    restCall(Method.GET, "/services/:id", this::lookup).withResponseSerializer(CustomSerializers.URI),
+		    pathCall("/services", this::registeredServices)
         ).withLocatableService(false);
 		// @formatter:on
 	}

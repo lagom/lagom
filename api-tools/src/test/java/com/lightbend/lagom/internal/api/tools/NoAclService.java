@@ -17,7 +17,7 @@ public interface NoAclService extends Service {
     ServiceCall<NotUsed, NotUsed> getMock(String id);
 
     default Descriptor descriptor() {
-        return named("/noaclservice").with(
+        return named("/noaclservice").withCalls(
             restCall(Method.GET,  "/mocks/:id", this::getMock)
         );
     }

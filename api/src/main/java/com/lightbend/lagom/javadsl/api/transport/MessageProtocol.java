@@ -16,7 +16,7 @@ import java.util.Optional;
  * specific content type, such as <tt>application/vnd.myservice+json</tt>.  It could also contain protocol versioning
  * information, such as <tt>application/vnd.github.v3+json</tt>.  During the protocol negotiation process, the
  * content type may be transformed, for example, if the content type contains a version, the configured
- * {@link HeaderTransformer} will be expected to extract that version
+ * {@link HeaderFilter} will be expected to extract that version
  * out into the <tt>version</tt>, leaving a <tt>contentType</tt> that will be understood by the message serializer.
  *
  * The <tt>charset</tt> applies to text messages, if the message is not in a text format, then no <tt>charset</tt>

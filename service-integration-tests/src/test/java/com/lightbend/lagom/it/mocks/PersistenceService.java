@@ -15,7 +15,7 @@ public interface PersistenceService extends Service {
 
     @Override
     default Descriptor descriptor() {
-        return named("persistence").with(
+        return named("persistence").withCalls(
             call(this::checkInjected),
             call(this::checkCassandraSession)
         );

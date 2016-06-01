@@ -27,7 +27,7 @@ public interface MetricsService extends Service {
   @Override
   default Descriptor descriptor() {
     // @formatter:off
-    return named("/metrics").with(
+    return named("/metrics").withCalls(
         pathCall("/_status/circuit-breaker/current", this::currentCircuitBreakers),
         pathCall("/_status/circuit-breaker/stream", this::circuitBreakers)
     ).withLocatableService(false);

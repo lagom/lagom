@@ -17,7 +17,7 @@ public interface SensorService2 extends Service {
 
   @Override
   default Descriptor descriptor() {
-    return named("/sensorservice").with(
+    return named("/sensorservice").withCalls(
         pathCall("/device/:id/temperature/stream", this::registerTemperatures),
         pathCall("/device/:id/temperature/stream", this::temperatureStream)
     );

@@ -15,7 +15,7 @@ public interface ServiceB extends Service {
     ServiceCall<String, String> helloB();
 
     default Descriptor descriptor() {
-        return named("serviceB").with(
+        return named("serviceB").withCalls(
             call(this::helloB)
         );
     }

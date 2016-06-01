@@ -15,7 +15,7 @@ public interface BlogService4 extends Service {
 
   @Override
   default Descriptor descriptor() {
-    return named("/blogservice").with(
+    return named("/blogservice").withCalls(
       restCall(Method.GET, "/blogs", this::getNewPosts)
     );
   }

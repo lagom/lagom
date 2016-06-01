@@ -18,7 +18,7 @@ public interface AclService extends Service {
     ServiceCall<NotUsed, NotUsed> addMock();
 
     default Descriptor descriptor() {
-        return named("/aclservice").with(
+        return named("/aclservice").withCalls(
             restCall(Method.GET,  "/mocks/:id", this::getMock),
             restCall(Method.POST, "/mocks", this::addMock)
         ).withAutoAcl(true);

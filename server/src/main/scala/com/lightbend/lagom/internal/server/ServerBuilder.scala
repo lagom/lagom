@@ -157,8 +157,6 @@ class SingleServiceRouter(descriptor: Descriptor, serviceRoutes: Seq[ServiceRout
 
   import SingleServiceRouter._
 
-  private val headerTransfomers = Seq(descriptor.serviceIdentificationStrategy(), descriptor.protocolNegotiationStrategy())
-
   /**
    * The routes partial function.
    */
@@ -274,8 +272,10 @@ class SingleServiceRouter(descriptor: Descriptor, serviceRoutes: Seq[ServiceRout
             } else responseHeader
 
             // Transform the response header
-            val transformedResponseHeader =
-              headerTransfomers.foldRight(responseHeaderWithProtocol)(_.transformServerResponse(_, requestHeader))
+            val transformedResponseHeader = descriptor.headerFilter.transformServerResponse(
+              responseHeaderWithProtocol,
+              requestHeader
+            )
 
             // And create the result
             Results.Status(transformedResponseHeader.status).sendEntity(Strict(
@@ -306,11 +306,11 @@ class SingleServiceRouter(descriptor: Descriptor, serviceRoutes: Seq[ServiceRout
    */
   private def exceptionToResult(exceptionSerializer: ExceptionSerializer, requestHeader: RequestHeader, e: Throwable): Result = {
     val rawExceptionMessage = exceptionSerializer.serialize(e, requestHeader.acceptedResponseProtocols)
-    val responseHeader = headerTransfomers.foldRight(new ResponseHeader(
+    val responseHeader = descriptor.headerFilter.transformServerResponse(new ResponseHeader(
       rawExceptionMessage.errorCode.http,
       rawExceptionMessage.protocol,
       HashTreePMap.empty()
-    ))(_.transformServerResponse(_, requestHeader))
+    ), requestHeader)
 
     Results.Status(responseHeader.status).sendEntity(Strict(
       rawExceptionMessage.message,
@@ -337,7 +337,7 @@ class SingleServiceRouter(descriptor: Descriptor, serviceRoutes: Seq[ServiceRout
         case (map, (name, values)) => map.plus(name, TreePVector.from(values.asJava))
       }
     )
-    headerTransfomers.foldLeft(requestHeader) { (header, transformer) => transformer.transformServerRequest(header) }
+    descriptor.headerFilter.transformServerRequest(requestHeader)
   }
 
   /**
