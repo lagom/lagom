@@ -4,17 +4,21 @@
 package com.lightbend.lagom.sbt
 
 import com.lightbend.lagom.sbt.run.Reloader.DevServer
-import com.lightbend.lagom.sbt.run.{ Servers, RunSupport }
+import com.lightbend.lagom.sbt.run.{ RunSupport, Servers }
 import com.lightbend.lagom.core.LagomVersion
 import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 import java.io.Closeable
+import java.util.concurrent.{ Executors, TimeUnit }
+
 import play.runsupport.FileWatchService
 import play.sbt._
 import play.sbt.PlayImport.PlayKeys
 import sbt._
 import sbt.Def.Initialize
 import sbt.Keys._
-import sbt.plugins.{ IvyPlugin, CorePlugin, JvmPlugin }
+import sbt.plugins.{ CorePlugin, IvyPlugin, JvmPlugin }
+
+import scala.concurrent.{ Await, Future }
 
 /**
  * Base plugin for Lagom projects. Declares common settings for both Java and Scala based Lagom projects.
@@ -94,8 +98,8 @@ object LagomPlay extends AutoPlugin {
     lagomWatchDirectories := PlayKeys.playMonitoredFiles.value,
     // adding dependencies needed to integrate Play in Lagom
     libraryDependencies ++= (
-      // lagom-play-integration takes care of registering a stock Play app to the 
-      // Lagom development service locator. The dependency is needed only if the 
+      // lagom-play-integration takes care of registering a stock Play app to the
+      // Lagom development service locator. The dependency is needed only if the
       // development service locator is enabled.
       if (LagomPlugin.autoImport.lagomServiceLocatorEnabled.value)
         Seq(LagomImport.component("lagom-play-integration") % Internal.Configs.DevRuntime)
@@ -349,7 +353,7 @@ object LagomPlugin extends AutoPlugin {
       cassandraRegistrationDependencies.value
   )
 
-  // jar containing logic for automatic registration to the service locator is added to the classpath only if the 
+  // jar containing logic for automatic registration to the service locator is added to the classpath only if the
   // service locator is enabled
   private lazy val cassandraRegistrationDependencies = Def.setting {
     if (lagomServiceLocatorEnabled.value)
@@ -486,17 +490,35 @@ private[sbt] object ConsoleHelper {
           override def close(): Unit = services.foreach(_.close())
         })
       case _ =>
+        import scala.concurrent.ExecutionContext
+        import scala.concurrent.duration._
         // blocks until user press CTRL+D
         interaction.waitForCancel()
         // then shut down all running services
         log.info("Stopping services")
-        services.foreach { service =>
-          print(".")
-          service.close()
-        }
+
+        val n = java.lang.Runtime.getRuntime.availableProcessors
+        log.debug("nb proc : " + n)
+        //creating a dedicated execution context
+        // with a fixed number of thread (indexed on number of cpu)
+        implicit val ecn = ExecutionContext.fromExecutorService(
+          Executors.newFixedThreadPool(n)
+        )
+
+        //Stop services in asynchrone manner
+        val closing = Future.traverse(services)(serv => Future {
+          serv.close()
+        })
+        closing.onComplete(_ => println("All services are stopped"))
+        Await.result(closing, 60 seconds)
+
         println()
         // and finally shut down any other possibly running embedded server
-        Servers.tryStop(log)
+        Await.result(Servers.asyncTryStop(log), 60 seconds)
+        // and the last part concern the closing of execution context that has been created above
+        ecn.shutdown()
+        ecn.awaitTermination(60, TimeUnit.SECONDS)
+
     }
   }
 }
