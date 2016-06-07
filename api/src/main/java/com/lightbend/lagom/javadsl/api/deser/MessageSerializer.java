@@ -4,6 +4,7 @@
 package com.lightbend.lagom.javadsl.api.deser;
 
 import akka.util.ByteString;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol;
 import com.lightbend.lagom.javadsl.api.transport.NotAcceptable;
 import com.lightbend.lagom.javadsl.api.transport.UnsupportedMediaType;

@@ -6,17 +6,20 @@ package com.lightbend.lagom.internal.api.tools
 import java.io.File
 import java.lang.reflect.Type
 import java.util
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.spi._
 import com.google.inject._
 import com.lightbend.lagom.internal.api._
-import com.lightbend.lagom.javadsl.api.{ Descriptor, Service }
+import com.lightbend.lagom.internal.jackson.JacksonObjectMapperProvider
+import com.lightbend.lagom.javadsl.api.{Descriptor, Service}
 import com.lightbend.lagom.javadsl.api.deser._
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol
 import org.apache.commons.lang3.ClassUtils
 import play.api._
-import play.api.inject.guice.{ BinderOption, GuiceableModule }
+import play.api.inject.guice.{BinderOption, GuiceableModule}
 import play.api.libs.json.Json
+
 import scala.collection.mutable
 import scala.collection.JavaConverters._
 
@@ -139,14 +142,13 @@ object ServiceDetector {
   }
 
   /**
-   * This serializer factory stub is necessary in order to resolve a service descriptor.
-   * The implementation of this stub is not relevant here because the api tools library is not interested
-   * in the request or response body.
+   * Jackson serializer factory that produces Jackson schemas.
    */
-  private class SerializerFactoryStub extends SerializerFactory {
+  private class JacksonSchemaSerializerFactory(jacksonObjectMapperProvider: JacksonObjectMapperProvider) extends SerializerFactory {
     private def stub = throw new NotImplementedError("SerializerFactory is not provided in the api tools library.")
     override def messageSerializerFor[MessageEntity](`type`: Type): MessageSerializer[MessageEntity, _] =
       new StrictMessageSerializer[MessageEntity] {
+        val
         override def deserializer(messageHeader: MessageProtocol) = stub
         override def serializerForResponse(acceptedMessageHeaders: util.List[MessageProtocol]) = stub
         override def serializerForRequest() = stub

@@ -165,6 +165,7 @@ def multiJvmTestSettings: Seq[Setting[_]] = SbtMultiJvm.multiJvmSettings ++ Seq(
 val apiProjects = Seq[ProjectReference](
   api,
   `api-tools`,
+  openapi,
   spi,
   jackson,
   core,
@@ -255,10 +256,22 @@ lazy val `api-tools` = (project in file("api-tools"))
       "com.typesafe.play" %% "play-json" % PlayVersion,
       scalaTest % Test
     )
-  )
-  .dependsOn(
+  ).dependsOn(
     api,
-    `server` % "compile->test"
+    jackson,
+    `server` % "test->compile"
+  )
+
+lazy val `openapi` = (project in file("openapi"))
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    name := "lagom-javadsl-openapi",
+    libraryDependencies ++= Seq(
+      "io.swagger" % "swagger-parser" % "1.0.20"
+    )
+  ).dependsOn(
+    `api-tools`
   )
 
 lazy val core = (project in file("core"))
