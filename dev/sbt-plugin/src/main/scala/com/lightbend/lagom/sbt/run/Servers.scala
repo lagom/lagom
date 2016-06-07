@@ -4,19 +4,28 @@
 package com.lightbend.lagom.sbt.run
 
 import java.io.Closeable
-import java.net.{ URL, URI }
+import java.net.{ URI, URL }
 import java.util.{ Map => JMap }
+
 import collection.JavaConverters._
 import java.io.File
 
 import sbt._
 import play.sbt.Colors
 
+import scala.concurrent.{ ExecutionContext, Future }
+
 private[sbt] object Servers {
 
   def tryStop(log: Logger): Unit = {
     ServiceLocator.tryStop(log)
     CassandraServer.tryStop(log)
+  }
+
+  def asyncTryStop(log: Logger)(implicit ecn: ExecutionContext) = {
+    val f = Future.traverse(Seq(ServiceLocator, CassandraServer))(ser => Future { ser.tryStop(log) })
+    f.onComplete(_ => println("Servers stopped"))
+    f
   }
 
   abstract class ServerContainer {
