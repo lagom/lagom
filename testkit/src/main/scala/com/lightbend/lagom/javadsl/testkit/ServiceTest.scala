@@ -181,9 +181,15 @@ object ServiceTest {
    * You can get the service client from the returned `TestServer`.
    */
   def startServer(setup: Setup): TestServer = {
+
+    def clusterConfig: Configuration = new Configuration(TestUtil.clusterConfig)
+
+    def persistenceConfigWith(testName: String, cassandraPort: Int): Configuration = {
+      new Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = true))
+    }
+
     val port = Promise[Int]()
     val testServiceLocatorPort = TestServiceLocatorPort(port.future)
-
     val now = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
     val testName = s"ServiceTest_$now"
 
@@ -196,7 +202,7 @@ object ServiceTest {
     if (setup.persistence) {
       val cassandraPort: Int = startCassandraFor(testName)
       appBuilder
-        .configure(persistenceConfigWith(cassandraPort))
+        .configure(persistenceConfigWith(testName, cassandraPort))
         .configure("lagom.cluster.join-self", "on")
     } else if (setup.cluster)
       appBuilder
@@ -222,12 +228,6 @@ object ServiceTest {
     }
 
     new TestServer(assignedPort, application, srv)
-
-    def clusterConfig: Configuration = new Configuration(TestUtil.clusterConfig)
-
-    def persistenceConfigWith(cassandraPort: Int): Configuration = {
-      new Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = true))
-    }
   }
 
   def startCassandraFor(testName: String): Int = {
