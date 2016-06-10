@@ -235,7 +235,7 @@ object ServiceTest {
     val cassandraDirectory = new File("target/" + testName)
     val log = Logger(getClass)
     val t0 = System.nanoTime()
-    CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = false, port = cassandraPort)
+    CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = true, port = cassandraPort)
     log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
     cassandraPort
   }
