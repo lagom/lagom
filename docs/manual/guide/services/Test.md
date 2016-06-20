@@ -27,7 +27,7 @@ When using Cassandra the tests must be forked, which is enabled by adding the fo
 
 ## How to test one service
 
-Lagom provides support for writing functional tests for one service in isolation. The service is running in a server and in the test you can interact with it using its service client, i.e. calls to the service API. These utilities are defined in [ServiceTest](api/java/index.html?com/lightbend/lagom/javadsl/testkit/ServiceTest.html).
+Lagom provides support for writing functional tests for one service in isolation. The service is running in a server and in the test you can interact with it using its service client, i.e. calls to the service API. These utilities are defined in [ServiceTest](api/index.html?com/lightbend/lagom/javadsl/testkit/ServiceTest.html).
 
 @[test](code/docs/services/test/HelloServiceTest.java)
 
@@ -71,6 +71,6 @@ Read more about it in the documentation of the [Akka Streams TestKit](http://doc
 
 ## How to test PersistentEntity
 
-[[Persistent Entities|PersistentEntity]] can be used in the service tests described above. In addition to that you should write unit tests using the [PersistentEntityTestDriver](api/java/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html), which will run the `PersistentEntity` without using a database.
+[[Persistent Entities|PersistentEntity]] can be used in the service tests described above. In addition to that you should write unit tests using the [PersistentEntityTestDriver](api/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html), which will run the `PersistentEntity` without using a database.
 
 This is described in the documentation of [[Persistent Entity|PersistentEntity#Unit-Testing]]

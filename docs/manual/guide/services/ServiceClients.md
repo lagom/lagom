@@ -4,7 +4,7 @@ We've seen how to define service descriptors and how to implement them, now we n
 
 ## Binding a service client
 
-The first thing necessary to consume a service is to bind it, so that Lagom can provide an implementation for your application to use.  This can be done using the `bindClient` method on [ServiceClientGuiceSupport](api/java/index.html?com/lightbend/lagom/javadsl/client/ServiceClientGuiceSupport.html).  If you're already binding a service implementation using [ServiceGuiceSupport](api/java/index.html?com/lightbend/lagom/javadsl/server/ServiceGuiceSupport.html), this interface extends `ServiceClientGuiceSupport`, so your existing module can be used as is:
+The first thing necessary to consume a service is to bind it, so that Lagom can provide an implementation for your application to use.  This can be done using the `bindClient` method on [ServiceClientGuiceSupport](api/index.html?com/lightbend/lagom/javadsl/client/ServiceClientGuiceSupport.html).  If you're already binding a service implementation using [ServiceGuiceSupport](api/index.html?com/lightbend/lagom/javadsl/server/ServiceGuiceSupport.html), this interface extends `ServiceClientGuiceSupport`, so your existing module can be used as is:
 
 @[bind-hello-client](code/docs/services/client/Module.java)
 

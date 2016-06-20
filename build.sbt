@@ -194,7 +194,8 @@ lazy val root = (project in file("."))
     publish := {}
   )
   .enablePlugins(lagom.UnidocRoot)
-  .settings(UnidocRoot.settings(Nil, otherProjects): _*)
+  .settings(UnidocRoot.settings(Nil, otherProjects ++
+    Seq[ProjectReference](`sbt-scripted-library`, `sbt-scripted-tools`)): _*)
   .aggregate(apiProjects: _*)
   .aggregate(otherProjects: _*)
 

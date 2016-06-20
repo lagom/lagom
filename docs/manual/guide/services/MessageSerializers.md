@@ -8,7 +8,7 @@ Lagom uses a three step process to select a message serializer for a service cal
 
 ### Per service call message serializers
 
-Lagom first checks whether a specific message serializer has been defined on the service call.  By default, each service call defers the decision for request and response message serializers to the next level up, but a custom serializer can be specified for a specific service call request or response, using the [`withRequestSerializer`](api/java/index.html?com/lightbend/lagom/javadsl/api/Descriptor.Call.html#withRequestSerializer-com.lightbend.lagom.javadsl.api.deser.MessageSerializer-) or [`withResponseSerializer`](api/java/index.html?com/lightbend/lagom/javadsl/api/Descriptor.Call.html#withResponseSerializer-com.lightbend.lagom.javadsl.api.deser.MessageSerializer-) calls.
+Lagom first checks whether a specific message serializer has been defined on the service call.  By default, each service call defers the decision for request and response message serializers to the next level up, but a custom serializer can be specified for a specific service call request or response, using the [`withRequestSerializer`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.Call.html#withRequestSerializer-com.lightbend.lagom.javadsl.api.deser.MessageSerializer-) or [`withResponseSerializer`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.Call.html#withResponseSerializer-com.lightbend.lagom.javadsl.api.deser.MessageSerializer-) calls.
 
 This can be overridden when defining the service call in the descriptor:
 
@@ -18,7 +18,7 @@ This can be overridden when defining the service call in the descriptor:
 
 If no message serializer has been provided at the service call level, Lagom then checks whether a serializer has been registered at the service level for that type.  Each service maintains a map of types to serializers for that type, and these are used as appropriate for service calls that match the types in the map.
 
-Lagom provides a number of serializers out of the box at this level, including serializers for `String` and `NotUsed`.  Custom type level serializers can also be supplied in the descriptor using the [`Descriptor.with`](api/java/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html#with-java.lang.reflect.Type-com.lightbend.lagom.javadsl.api.deser.MessageSerializer-) method:
+Lagom provides a number of serializers out of the box at this level, including serializers for `String` and `NotUsed`.  Custom type level serializers can also be supplied in the descriptor using the [`Descriptor.with`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html#with-java.lang.reflect.Type-com.lightbend.lagom.javadsl.api.deser.MessageSerializer-) method:
 
 @[type-serializer](code/docs/services/MessageSerializers.java)
 
@@ -26,21 +26,21 @@ Lagom provides a number of serializers out of the box at this level, including s
 
 If neither a per service call nor per type message serializer has been found, Lagom will finally request its serializer factory for a serializer for a type.  When using the defaults, this is the way Lagom will usually locate serializers for your types.
 
-Lagom provides a [`SerializerFactory`](api/java/index.html?com/lightbend/lagom/javadsl/api/deser/SerializerFactory.html) interface for dynamically looking up and creating serializers for types.  The default implementation provided by Lagom is a Jackson serializer factory, which serializes to/from JSON.  You can customize which `SerializerFactory` is used by supplying it to the [`Descriptor.with`](api/java/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html#with-com.lightbend.lagom.javadsl.api.deser.SerializerFactory-) method when declaring the signature:
+Lagom provides a [`SerializerFactory`](api/index.html?com/lightbend/lagom/javadsl/api/deser/SerializerFactory.html) interface for dynamically looking up and creating serializers for types.  The default implementation provided by Lagom is a Jackson serializer factory, which serializes to/from JSON.  You can customize which `SerializerFactory` is used by supplying it to the [`Descriptor.with`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html#with-com.lightbend.lagom.javadsl.api.deser.SerializerFactory-) method when declaring the signature:
 
 @[with-serializer-factory](code/docs/services/MessageSerializers.java)
 
 ## Custom serializers
 
-Of course, being able to configure custom serializers is meaningless if you can't implement custom serializers.  Lagom provides a [`MessageSerializer`](api/java/index.html?com/lightbend/lagom/javadsl/api/deser/MessageSerializer.html) interface that can be used to implement custom serializers.
+Of course, being able to configure custom serializers is meaningless if you can't implement custom serializers.  Lagom provides a [`MessageSerializer`](api/index.html?com/lightbend/lagom/javadsl/api/deser/MessageSerializer.html) interface that can be used to implement custom serializers.
 
-As we've [[already seen|ServiceDescriptors#Messages]], there are two types of messages in Lagom, strict messages and streamed messages.  For these two types of messages, Lagom provides two sub interfaces of `MessageSerializer`, [`StrictMessageSerializer`](api/java/index.html?com/lightbend/lagom/javadsl/api/deser/StrictMessageSerializer.html) and [`StreamedMessageSerializer`](api/java/index.html?com/lightbend/lagom/javadsl/api/deser/StreamedMessageSerializer.html), which differ primarily in the wire format that they serialize and deserialize to and from.  Strict message serializers serialize and deserialize to and from `ByteString`, that is, they work strictly in memory, while streamed message serializers work with streams, that is, `Source<ByteString, ?>`.
+As we've [[already seen|ServiceDescriptors#Messages]], there are two types of messages in Lagom, strict messages and streamed messages.  For these two types of messages, Lagom provides two sub interfaces of `MessageSerializer`, [`StrictMessageSerializer`](api/index.html?com/lightbend/lagom/javadsl/api/deser/StrictMessageSerializer.html) and [`StreamedMessageSerializer`](api/index.html?com/lightbend/lagom/javadsl/api/deser/StreamedMessageSerializer.html), which differ primarily in the wire format that they serialize and deserialize to and from.  Strict message serializers serialize and deserialize to and from `ByteString`, that is, they work strictly in memory, while streamed message serializers work with streams, that is, `Source<ByteString, ?>`.
 
 Before we look into how to implement a serializer, there are a few basic concepts that need to be covered.
 
 ### Message protocols
 
-Lagom has a concept of message protocols.  Message protocols are expressed using the [`MessageProtocol`](api/java/index.html?com/lightbend/lagom/javadsl/api/transport/MessageProtocol.html) type, and they have three properties, a content type, a character set, and a version.  All of these properties are optional, and may or may not be used by a message serializer.
+Lagom has a concept of message protocols.  Message protocols are expressed using the [`MessageProtocol`](api/index.html?com/lightbend/lagom/javadsl/api/transport/MessageProtocol.html) type, and they have three properties, a content type, a character set, and a version.  All of these properties are optional, and may or may not be used by a message serializer.
 
 Message protocols translate roughly to HTTP `Content-Type` and `Accept` headers, with the version possibly being extracted from these if a mime type scheme that encodes the version is used, or possibly also been extracted from the URL, depending on how the service is configured.
 
@@ -54,7 +54,7 @@ For the response, the client sends a list of message protocols that it will acce
 
 ### Negotiated serializers
 
-As a consequence of content negotiation, Lagom's `MessageSerializer` doesn't directly serialize and deserialize messages, rather it provides methods for negotiating message protocols, which return a [`NegotiatedSerializer`](api/java/index.html?com/lightbend/lagom/javadsl/api/deser/MessageSerializer.NegotiatedSerializer.html) or [`NegotiatedDeserializer`](api/java/index.html?com/lightbend/lagom/javadsl/api/deser/MessageSerializer.NegotiatedDeserializer.html).  It is these negotiated classes that are actually responsible for doing the serializing and deserializing.
+As a consequence of content negotiation, Lagom's `MessageSerializer` doesn't directly serialize and deserialize messages, rather it provides methods for negotiating message protocols, which return a [`NegotiatedSerializer`](api/index.html?com/lightbend/lagom/javadsl/api/deser/MessageSerializer.NegotiatedSerializer.html) or [`NegotiatedDeserializer`](api/index.html?com/lightbend/lagom/javadsl/api/deser/MessageSerializer.NegotiatedDeserializer.html).  It is these negotiated classes that are actually responsible for doing the serializing and deserializing.
 
 Let's take a look at an example of content negotiation.  Let's say we wanted to implement a custom String `MessageSerializer`, that can serialize either to plain text, or to JSON, depending on what the client requests.  This might be useful if you have some clients that send the text body as JSON, while others send it as plain text, perhaps one of the clients was a legacy client that did things one way, but now you want to do it the other with new clients.
 
