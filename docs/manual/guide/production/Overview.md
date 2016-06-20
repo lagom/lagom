@@ -22,13 +22,13 @@ To deploy your Lagom services using ConductR, see [[ConductR]].
 
 Lagom leverages the [sbt-native-packager](http://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default zip archives can be produced, but you can also produce tar.gz, MSI, debian, RPM, Docker and more.
 
-Running a package requires the provision of a service locator implementation i.e. something that provides the ability for your service to be able to lookup the location of another dynamically at runtime. At a technical level, you provide an implementation of a [ServiceLocator](api/java/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html).
+Running a package requires the provision of a service locator implementation i.e. something that provides the ability for your service to be able to lookup the location of another dynamically at runtime. At a technical level, you provide an implementation of a [ServiceLocator](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html).
 
 ### Deploying using static service locations
 
 While we would never advise using static service locations in any production situation, as a means to demonstrating a working Lagom system in the absence of a managed runtime, you may decide to deploy Lagom systems to static locations with a static configuration saying where the systems live.
 
-To aid in achieving this, a [`ConfigurationServiceLocator`](api/java/index.html?com/lightbend/lagom/javadsl/api/ConfigurationServiceLocator.html) is provided that reads the service locator configuration out of Lagom's `application.conf` file.  Here is an example of the configuration for it:
+To aid in achieving this, a [`ConfigurationServiceLocator`](api/index.html?com/lightbend/lagom/javadsl/api/ConfigurationServiceLocator.html) is provided that reads the service locator configuration out of Lagom's `application.conf` file.  Here is an example of the configuration for it:
 
 ```
 lagom.services {
@@ -37,7 +37,7 @@ lagom.services {
 }
 ```
 
-To instruct Lagom to use the `ConfigurationServiceLocator`, you need to bind it to the [`ServiceLocator`](api/java/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html) class in your Guice module.  Since Lagom already provides a service locator in dev mode, you will likely only want to bind this when Lagom is in production mode.  Play supports passing its `Environment` and `Configuration` objects to module constructors, so you'll need to add those to your module:
+To instruct Lagom to use the `ConfigurationServiceLocator`, you need to bind it to the [`ServiceLocator`](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html) class in your Guice module.  Since Lagom already provides a service locator in dev mode, you will likely only want to bind this when Lagom is in production mode.  Play supports passing its `Environment` and `Configuration` objects to module constructors, so you'll need to add those to your module:
 
 @[content](code/docs/production/ConfigurationServiceLocatorModule.java)
 

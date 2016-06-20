@@ -39,13 +39,15 @@ lazy val docs = project
       // it being run manually.
       val javaUnidocTarget = parentDir / "target" / "javaunidoc"
       streams.value.log.info(s"Serving javadocs from $javaUnidocTarget. Rerun unidoc in root project to refresh")
-      javaUnidocTarget -> "api/java"
+      javaUnidocTarget -> "api"
     },
     markdownApiDocs := Seq(
-        "api/java/index.html" -> "Java"
+        "api/index.html" -> "Java"
     ),
     markdownUseBuiltinTheme := false,
     markdownTheme := Some("lagom.LagomMarkdownTheme"),
+    markdownGenerateTheme := Some("bare"),
+    markdownGenerateIndex := true,
     markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/tree/$branch/docs/manual/")),
 
     markdownS3CredentialsHost := "downloads.typesafe.com.s3.amazonaws.com",

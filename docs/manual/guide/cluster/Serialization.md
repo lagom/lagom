@@ -6,7 +6,7 @@ Do not depend on Java serialization for production deployments. It is inefficien
 
 ## Enabling JSON Serialization
 
-To enable JSON serialization for a class you need to implement the [Jsonable](api/java/index.html?com/lightbend/lagom/serialization/Jsonable.html) marker interface.
+To enable JSON serialization for a class you need to implement the [Jsonable](api/index.html?com/lightbend/lagom/serialization/Jsonable.html) marker interface.
 
 @[jsonable](code/docs/home/serialization/AbstractUser.java)
 
@@ -24,13 +24,13 @@ The [ParameterNamesModule](https://github.com/FasterXML/jackson-module-parameter
 
 The section [[Immutable Objects|Immutable]] contains more examples of classes that are `Jsonable`.
 
-You can use the [PersistentEntityTestDriver](api/java/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html) that is described in the [[Persistent Entity Unit Testing|PersistentEntity#Unit Testing]] section to verify that all commands, events, replies and state are serializable.
+You can use the [PersistentEntityTestDriver](api/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html) that is described in the [[Persistent Entity Unit Testing|PersistentEntity#Unit Testing]] section to verify that all commands, events, replies and state are serializable.
 
 ### Compression
 
 Compression, as described here, is only used for persistent events, persistent snapshots and remote messages with the service cluster. It is not used for messages that are serialized in the external API of the service.
 
-JSON can be rather verbose and for large messages it can be beneficial to enable compression. That is done by using the [CompressedJsonable](api/java/index.html?com/lightbend/lagom/serialization/CompressedJsonable.html) instead of the `Jsonable` marker interface.
+JSON can be rather verbose and for large messages it can be beneficial to enable compression. That is done by using the [CompressedJsonable](api/index.html?com/lightbend/lagom/serialization/CompressedJsonable.html) instead of the `Jsonable` marker interface.
 
 @[compressed-jsonable](code/docs/home/serialization/AbstractAuthor.java)
 
