@@ -9,8 +9,8 @@ Lagom focuses on ensuring that your application realises the full potention of t
 ### Learn More
 
 * [Website](https://www.lightbend.com/lagom)
-* [Documentation](http://www.lagomframework.com/documentation/1.0.x/Home.html)
-* [Installation](http://www.lagomframework.com/documentation/1.0.x/Installation.html)
+* [Documentation](http://www.lagomframework.com/documentation/1.0.x/java/Home.html)
+* [Installation](http://www.lagomframework.com/documentation/1.0.x/java/Installation.html)
 * [Community Chat](https://gitter.im/lagom/lagom)
 * [Mailing list](https://groups.google.com/forum/#!forum/lagom-framework)
 * [Get help](https://stackoverflow.com/questions/ask?tags=lagom)
