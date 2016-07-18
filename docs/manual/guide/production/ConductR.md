@@ -10,8 +10,9 @@ ConductR is free for development usage and comes with a "sandbox" so that you ca
 This guide will explain how to:
 
 * Install ConductR sandbox
-* Package Lagom services
 * Start local ConductR cluster
+* Conveniently package, load and run your entire Lagom system
+* Package Lagom services individually
 * Load and run services during and outside of development
 * Run Cassandra on ConductR
  
@@ -33,26 +34,52 @@ usage: conduct [-h]
 Now, add the [sbt-conductr plugin](https://github.com/typesafehub/sbt-conductr) to your `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.1.4")
+addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.1.7")
 ```
 
 sbt-conductr adds several commands to the activator console:
- 
-* `bundle:dist` to produce ConductR packages for your services
-* `configuration:dist` to produce a custom ConductR configuration for your services
+
+* `install` to introspect your projects and then load and run them within the sandbox
+* `generateInstallationScript` to produce an installation script to deploy your Lagom system that you can then tailor
+* `bundle:dist` to produce individual ConductR packages for your services
+* `configuration:dist` to produce individual custom ConductR configuration for your services
 * Commands from the `conductr-cli`
 
 We will use most of these commands in the next sections. 
 
-## Packaging your services
+## Run it all
 
-Packaging your Lagom services so that you can deliver them to ConductR is straightforward. Start the activator console from the terminal:
+The simplest thing that you can do in order to deploy your entire Lagom system is to run a local ConductR cluster and then run the `install` command.
+
+To start a ConductR cluster locally you should use the ConductR sandbox which is a docker image based on Ubuntu that includes ConductR. With this docker image you can easily spin up multiple ConductR nodes on your local machine. The `sandbox run` command will pick up and run this ConductR docker image. In order to use this command we need to specify the ConductR version. Note that this version is the version of ConductR itself and not the version of the `sbt-conductr` plugin. Please visit again the [ConductR Developer page](https://www.lightbend.com/product/conductr/developer) to pick up the latest ConductR version from the section **Quick Configuration**.
+
+First, start the activator console from the terminal:
 
 ```console
 $ activator
 ```
 
-You can then package your services from within the activator console with the `bundle:dist` command:
+Now start the local ConductR cluster with the `sandbox run` command: 
+
+```console
+> sandbox run <CONDUCTR_VERSION>
+```
+
+You can then install your entire Lagom system in one go:
+
+```console
+> install
+```
+
+The install command will introspect your project and its sub-projects and then package, load and run everything in ConductR at once - including Cassandra. The local sandbox is expected to be running and it will first be restarted to ensure that it is in a clean state.
+
+We expect that you will use the `install` command early on, but graduate to ConductR's lower-level commands as you evolve your services through their development lifecyle.
+
+The remainder of this document describes the lower level ConductR commands.
+
+## Packaging your services
+
+Packaging your Lagom services so that you can deliver them to ConductR is straightforward. To do this then use the `bundle:dist` command from within the activator console:
 
 ```console
 > bundle:dist
@@ -65,15 +92,7 @@ The above creates what is known as a "bundle". A bundle is the unit of deploymen
 
 ## Loading and running your services during development
 
-To start a ConductR cluster locally you should use the ConductR sandbox which is a docker image based on Ubuntu that includes ConductR. With this docker image you can easily spin up multiple ConductR nodes on your local machine. The `sandbox run` command will pick up and run this ConductR docker image. In order to use this command we need to specify the ConductR version. Note that this version is the version of ConductR itself and not the version of the `sbt-conductr` plugin. Please visit again the [ConductR Developer page](https://www.lightbend.com/product/conductr/developer) to pick up the latest ConductR version from the section **Quick Configuration**.
-
-Now, go to the activator console to start the local ConductR cluster with the `sandbox run` command: 
-
-```console
-> sandbox run <CONDUCTR_VERSION>
-```
-
-With the ConductR sandbox running you can now load the bundle that you previously generated:
+With the ConductR sandbox running you can load the bundle that you previously generated:
 
 ```console
 > project my-service-impl
