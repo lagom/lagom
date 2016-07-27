@@ -1,24 +1,20 @@
 /*
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
  */
-package com.lightbend.lagom.sbt
+package com.lightbend.lagom.dev
 
-import scala.collection.concurrent
 import scala.collection.immutable
-
-import sbt.Project
-import sbt.State
 
 object PortAssigner {
 
-  private[sbt] case class ProjectName(val name: String) extends AnyVal
-  private[sbt] object ProjectName {
+  private[lagom] case class ProjectName(name: String) extends AnyVal
+  private[lagom] object ProjectName {
     implicit object OrderingProjectName extends Ordering[ProjectName] {
       def compare(x: ProjectName, y: ProjectName): Int = x.name.compare(y.name)
     }
   }
 
-  private[sbt] case class PortRange(min: Int, max: Int) {
+  private[lagom] case class PortRange(min: Int, max: Int) {
     require(min > 0, "Bottom port range must be greater than 0")
     require(max < Integer.MAX_VALUE, "Upper port range must be smaller than " + Integer.MAX_VALUE)
     require(min <= max, "Bottom port range must be smaller than the upper port range")
@@ -27,44 +23,28 @@ object PortAssigner {
     def includes(value: Int): Boolean = value >= min && value <= max
   }
 
-  private[sbt] object Port {
+  private[lagom] object Port {
     final val Unassigned = Port(-1)
   }
 
-  private[sbt] case class Port(val value: Int) extends AnyVal {
+  private[lagom] case class Port(value: Int) extends AnyVal {
     def next: Port = Port(value + 1)
   }
 
-  private val projectName2Port = concurrent.TrieMap.empty[ProjectName, Port]
-
-  def assignedPortFor(name: String): Int = {
-    // The `orElse` is here to avoid throwing an exception to the user if the port assigning logic doesn't work as expected
-    projectName2Port.getOrElse(ProjectName(name), Port.Unassigned).value
+  def computeProjectsPort(range: PortRange, projectNames: Seq[ProjectName]): Map[ProjectName, Port] = {
+    val lagomProjects = projectNames.to[immutable.SortedSet]
+    val mapBuilder = new Project2PortMapBuilder(range)
+    mapBuilder.build(lagomProjects)
   }
 
-  def computeProjectsPort(range: PortRange)(state: State): State = synchronized {
-    if (projectName2Port.isEmpty) {
-      // build the map at most once
-      val extracted = Project.extract(state)
-      val projects = extracted.currentUnit.defined
-      val lagomProjects: immutable.SortedSet[ProjectName] = (for {
-        (name, proj) <- projects
-        if proj.autoPlugins.toSet.contains(LagomPlugin)
-      } yield ProjectName(name))(collection.breakOut)
-      val mapBuilder = new Project2PortMapBuilder(range)
-      projectName2Port ++= mapBuilder.build(lagomProjects)
-    }
-    state
-  }
-
-  private[sbt] class Project2PortMapBuilder(val range: PortRange) extends AnyVal {
+  private class Project2PortMapBuilder(val range: PortRange) extends AnyVal {
 
     def build(projects: immutable.SortedSet[ProjectName]): Map[ProjectName, Port] = {
       require(
         projects.size <= range.delta,
         s"""A larger port range is needed, as you have ${projects.size} Lagom projects and only ${range.delta} 
              |ports available. You should increase the range passed for the 
-             |${LagomPlugin.autoImport.lagomServicesPortRange.key.label} build setting
+             |lagomPortRange build setting
          """.stripMargin
       )
 

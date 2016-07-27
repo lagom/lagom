@@ -1,11 +1,10 @@
 /*
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
  */
-package com.lightbend.lagom.sbt
+package com.lightbend.lagom.dev
 
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
-import scala.collection.immutable.SortedSet
+import com.lightbend.lagom.dev.PortAssigner.{ Port, PortRange }
+import org.scalatest.{ Matchers, WordSpecLike }
 
 object PortAssignerSpec {
   implicit class AsProjectName(val name: String) extends AnyVal {
@@ -16,9 +15,8 @@ object PortAssignerSpec {
 
 class PortAssignerSpec extends WordSpecLike with Matchers {
   import PortAssignerSpec._
-  import PortAssigner._
 
-  private val mapBuilder = new Project2PortMapBuilder(PortRange(20000, 30000))
+  private val portRange = PortRange(20000, 30000)
 
   "A projects' port assigner" should {
     "assign different ports for projects with different hashes" in {
@@ -26,8 +24,8 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       val projB = "b".asProjectName
       val projC = "c".asProjectName
 
-      val projects = SortedSet(projA, projB, projC)
-      val projectName2port = mapBuilder.build(projects)
+      val projects = Seq(projA, projB, projC)
+      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects)
 
       projectName2port.values.toSet should have size 3 // no duplicates
     }
@@ -42,8 +40,8 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       projA.name.hashCode() should be(projB.name.hashCode())
       projB.name.hashCode() should be(projC.name.hashCode())
 
-      val projects = SortedSet(projA, projC, projB)
-      val projectName2port = mapBuilder.build(projects)
+      val projects = Seq(projA, projC, projB)
+      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects)
 
       projectName2port(projA) should not be projectName2port(projB)
       projectName2port(projA) should not be projectName2port(projC)
@@ -53,13 +51,13 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
     "assign the same ports to existing project when adding a new project" in {
       val projA = "a".asProjectName
       val projC = "c".asProjectName
-      val existingProjects = SortedSet(projA, projC)
-      val existingProjectName2port = mapBuilder.build(existingProjects)
+      val existingProjects = Seq(projA, projC)
+      val existingProjectName2port = PortAssigner.computeProjectsPort(portRange, existingProjects)
 
       // SUT
       val projB = "b".asProjectName
-      val projects = SortedSet(projA, projB, projC)
-      val projectName2port = mapBuilder.build(projects)
+      val projects = Seq(projA, projB, projC)
+      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects)
 
       projectName2port(projA) shouldBe existingProjectName2port(projA)
       projectName2port(projC) shouldBe existingProjectName2port(projC)
@@ -72,10 +70,10 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       val projC = "AaBB".asProjectName
 
       // small port range to force the wrap around logic to be run
-      val mapBuilder = new Project2PortMapBuilder(PortRange(7, 11))
+      val portRange = PortRange(7, 11)
 
-      val projects = SortedSet(projA, projC, projB)
-      val projectName2port = mapBuilder.build(projects)
+      val projects = Seq(projA, projC, projB)
+      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects)
 
       projectName2port(projA) shouldBe Port(11)
       projectName2port(projC) shouldBe Port(7) // wrap around behavior executed!
@@ -88,14 +86,13 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       // Said otherwise, projects with non colliding hash should get their port assigned **before** projects 
       // that result in a port collision.
       val portRange = PortRange(7, 9)
-      val mapBuilder = new Project2PortMapBuilder(portRange)
 
       // Here we have two projects that will hash to different ports, i.e., no collisions.
       val projA = "AaAa".asProjectName
       val projC = "d".asProjectName
 
-      val projectsWithNoCollisions = SortedSet(projA, projC)
-      val projectName2portNoCollisions = mapBuilder.build(projectsWithNoCollisions)
+      val projectsWithNoCollisions = Seq(projA, projC)
+      val projectName2portNoCollisions = PortAssigner.computeProjectsPort(portRange, projectsWithNoCollisions)
 
       // Here we check the port we expect to be assigned when only projects A and B exist
       projectName2portNoCollisions(projA) shouldBe Port(7)
@@ -103,8 +100,8 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
 
       // Now let's add a project that happens to have the same hash of project A (and, hence, we will have a port collision)
       val projB = "BBBB".asProjectName
-      val projectsWithCollisions = SortedSet(projA, projB, projC)
-      val projectName2portWithCollisions = mapBuilder.build(projectsWithCollisions)
+      val projectsWithCollisions = Seq(projA, projB, projC)
+      val projectName2portWithCollisions = PortAssigner.computeProjectsPort(portRange, projectsWithCollisions)
 
       // Note how project A and C have still got assigned the same port, while project B will get the next available port, counting 
       // from 7 (which is project's A port). That turns out to be port 9.
@@ -118,11 +115,10 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       val projB = "b".asProjectName
 
       val portRange = PortRange(1, 1)
-      val mapBuilder = new Project2PortMapBuilder(portRange)
-      val projects = SortedSet(projA, projB)
+      val projects = Seq(projA, projB)
 
       intercept[IllegalArgumentException] {
-        mapBuilder.build(projects)
+        PortAssigner.computeProjectsPort(portRange, projects)
       }
     }
   }

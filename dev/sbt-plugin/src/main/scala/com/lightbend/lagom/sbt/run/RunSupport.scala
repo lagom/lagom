@@ -5,22 +5,19 @@ package com.lightbend.lagom.sbt.run
 
 import java.util
 
+import com.lightbend.lagom.dev.{ DelegatingClassLoader, NamedURLClassLoader, Reloader }
+import com.lightbend.lagom.dev.Reloader.{ CompileFailure, CompileResult, CompileSuccess, Source }
 import com.lightbend.lagom.sbt.Internal
 import com.lightbend.lagom.sbt.LagomImport
-import com.lightbend.lagom.sbt.LagomPlugin
 import com.lightbend.lagom.sbt.LagomPlugin.autoImport._
 import com.lightbend.lagom.sbt.LagomReloadableService.autoImport._
 import com.lightbend.lagom.sbt.core.Build
 import com.lightbend.lagom.sbt.server.ReloadableServer
 import play.core.BuildLink
-import play.runsupport.NamedURLClassLoader
-import play.runsupport.classloader.{ ApplicationClassLoaderProvider, DelegatingClassLoader }
 import sbt._
 import sbt.Keys._
-
 import play.api.PlayException
 import play.sbt.PlayExceptions._
-import com.lightbend.lagom.sbt.run.Reloader.{ CompileResult, CompileSuccess, CompileFailure, Source, SourceMap }
 
 import scala.collection.JavaConverters._
 
@@ -42,6 +39,7 @@ private[sbt] object RunSupport {
     val classpath = (devModeDependencies.value ++ (externalDependencyClasspath in Runtime).value).distinct.files
 
     Reloader.startDevMode(
+      scalaInstance.value.loader,
       classpath,
       reloadCompile,
       lagomClassLoaderDecorator.value,
@@ -62,9 +60,8 @@ private[sbt] object RunSupport {
     val buildLinkSettings = (extraConfigs.toSeq ++ lagomDevSettings.value).toMap.asJava
 
     val buildLoader = this.getClass.getClassLoader
-    lazy val delegatingLoader: ClassLoader = new DelegatingClassLoader(null, Build.sharedClasses, buildLoader, new ApplicationClassLoaderProvider {
-      def get: ClassLoader = { applicationLoader }
-    })
+    lazy val delegatingLoader: ClassLoader = new DelegatingClassLoader(null, Build.sharedClasses.asScala.toSet,
+      buildLoader, () => Some(applicationLoader))
     lazy val applicationLoader = new NamedURLClassLoader(
       "LagomApplicationLoader",
       classpath.map(_.data.toURI.toURL).toArray, delegatingLoader
@@ -93,7 +90,7 @@ private[sbt] object RunSupport {
       val buildLink: BuildLink = _buildLink
 
       /** Allows to register a listener that will be triggered a monitored file is changed. */
-      def addChangeListener(f: Unit => Unit): Unit = ()
+      def addChangeListener(f: () => Unit): Unit = ()
 
       /** Reloads the application.*/
       def reload(): Unit = ()
@@ -129,7 +126,7 @@ private[sbt] object RunSupport {
       }.fold(identity, identity)
   }
 
-  def sourceMap(analysis: sbt.inc.Analysis): SourceMap = {
+  def sourceMap(analysis: sbt.inc.Analysis): Map[String, Source] = {
     analysis.apis.internal.foldLeft(Map.empty[String, Source]) {
       case (sourceMap, (file, source)) => sourceMap ++ {
         source.api.definitions map { d => d.name -> Source(file, originalSource(file)) }

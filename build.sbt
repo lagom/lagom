@@ -14,8 +14,10 @@ val AkkaPersistenceCassandraVersion = "0.17"
 val ScalaTestVersion = "2.2.4"
 val JacksonVersion = "2.7.2"
 val CassandraAllVersion = "3.0.2"
+val GuavaVersion = "19.0"
 
 val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
+val guava = "com.google.guava" % "guava" % GuavaVersion
 
 def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   organization := "com.lightbend.lagom",
@@ -211,6 +213,10 @@ lazy val api = (project in file("api"))
       "com.typesafe.play" %% "play-java" % PlayVersion,
       "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
+      // An explicit depnedency is added on Guava because mavens resolution rule is stupid - it doesn't use the most
+      // recent version in the tree, it uses the version that's closest to the root of the tree. So this puts the
+      // version we need closer to the root of the tree.
+      guava,
       "org.pcollections" % "pcollections" % "2.1.2",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
       scalaTest % Test,
@@ -288,7 +294,10 @@ lazy val `integration-client` = (project in file("integration-client"))
   .dependsOn(client, `service-registry-client`)
 
 lazy val server = (project in file("server"))
-  .settings(name := "lagom-javadsl-server")
+  .settings(
+    name := "lagom-javadsl-server",
+    libraryDependencies += guava
+  )
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
   .dependsOn(core, client, immutables % "provided")
@@ -424,7 +433,8 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
-  .aggregate(`build-link`, `reloadable-server`, `sbt-plugin`, `service-locator`, `service-registration`, `cassandra-server`, `cassandra-registration`,  `play-integration`, `service-registry-client`)
+  .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
+    `service-registration`, `cassandra-server`, `cassandra-registration`,  `play-integration`, `service-registry-client`)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}
@@ -454,6 +464,21 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   )
   .dependsOn(`build-link`)
 
+lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
+  .settings(common: _*)
+  .settings(
+    name := "lagom-build-tool-support",
+    publishMavenStyle := true,
+    crossPaths := false,
+    sourceGenerators in Compile <+= (version, sourceManaged in Compile) map Generators.version,
+    libraryDependencies ++= Seq(
+      "com.lightbend.play" %% "play-file-watch" % "1.0.0",
+      // This is used in the code to check if the embedded cassandra server is started
+      "com.datastax.cassandra" % "cassandra-driver-core" % "3.0.0",
+      scalaTest % Test
+    )
+  ).dependsOn(`build-link`)
+
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(name := "lagom-sbt-plugin")
   .settings(common: _*)
@@ -462,14 +487,11 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(
     sbtPlugin := true,
     libraryDependencies ++= Seq(
-      // This is used in the code to check if the embedded cassandra server is started
-      "com.datastax.cassandra"  % "cassandra-driver-core" % "3.0.0",
       // And this is needed to silence the datastax driver logging
       "org.slf4j" % "slf4j-nop" % "1.7.14",
       scalaTest % Test
     ),
     addSbtPlugin(("com.typesafe.play" % "sbt-plugin" % PlayVersion).exclude("org.slf4j","slf4j-simple")),
-    sourceGenerators in Compile <+= (version, sourceManaged in Compile) map Generators.version,
     scriptedDependencies := {
       val () = publishLocal.value
       val () = (publishLocal in `service-locator`).value
@@ -483,8 +505,19 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
       } else publishTo.value
     },
     publishMavenStyle := isSnapshot.value
-  ).dependsOn(`build-link`)
+  ).dependsOn(`build-tool-support`)
 
+lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
+  .settings(common: _*)
+  .settings(
+    name := "lagom-maven-plugin",
+    libraryDependencies ++= Seq(
+      "org.apache.maven" % "maven-plugin-api" % "3.3.9",
+      "org.apache.maven" % "maven-core" % "3.3.9"
+    ),
+    publishMavenStyle := true,
+    crossPaths := false
+  ).dependsOn(`build-tool-support`)
 
 def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++ 
   Seq(scriptedLaunchOpts <+= version apply { v => s"-Dproject.version=$v" }) ++
