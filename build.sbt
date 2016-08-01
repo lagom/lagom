@@ -8,9 +8,9 @@ import com.typesafe.sbt.SbtScalariform
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import de.heikoseeberger.sbtheader.HeaderPattern
 
-val PlayVersion = "2.5.0"
-val AkkaVersion = "2.4.4"
-val AkkaPersistenceCassandraVersion = "0.13"
+val PlayVersion = "2.5.4"
+val AkkaVersion = "2.4.8"
+val AkkaPersistenceCassandraVersion = "0.17"
 val ScalaTestVersion = "2.2.4"
 val JacksonVersion = "2.7.2"
 val CassandraAllVersion = "3.0.2"
@@ -88,7 +88,7 @@ def releaseSettings: Seq[Setting[_]] = Seq(
 )
 
 def runtimeLibCommon: Seq[Setting[_]] = common ++ SbtScalariform.scalariformSettings ++ Seq(
-  crossScalaVersions := Seq("2.11.7"),
+  crossScalaVersions := Seq("2.11.8"),
   scalaVersion := crossScalaVersions.value.head,
   crossVersion := CrossVersion.binary,
   crossPaths := false,
