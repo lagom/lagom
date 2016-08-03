@@ -338,7 +338,7 @@ object LagomPlugin extends AutoPlugin {
         normalizedName
       }
     },
-    lagomServicePort := PortAssigner.assignedPortFor(name.value),
+    lagomServicePort := PortAssigner.assignedPortFor(thisProjectRef.value.project),
     Internal.Keys.stop := {
       Internal.Keys.interactionMode.value match {
         case nonBlocking: PlayNonBlockingInteractionMode => nonBlocking.stop()
