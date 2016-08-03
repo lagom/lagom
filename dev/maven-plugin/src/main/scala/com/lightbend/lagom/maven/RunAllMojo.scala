@@ -16,7 +16,7 @@ class RunAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, sessi
 
   override def execute(): Unit = {
 
-    val services = facade.locateLagomServices
+    val services = facade.locateServices
 
     executeGoal("startCassandra")
     executeGoal("startServiceLocator")

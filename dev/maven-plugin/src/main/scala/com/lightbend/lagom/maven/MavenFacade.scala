@@ -126,19 +126,19 @@ class MavenFacade @Inject() (repoSystem: RepositorySystem, session: MavenSession
     depResult.getArtifactResults.asScala.map(_.getRequest.getDependencyNode.getDependency)
   }
 
-  def locateLagomServices: Seq[MavenProject] = {
-    session.getAllProjects.asScala.filter(isLagomService)
+  def locateServices: Seq[MavenProject] = {
+    session.getAllProjects.asScala.filter(isService)
   }
 
-  private def isLagomService(project: MavenProject): Boolean = {
+  private def isService(project: MavenProject): Boolean = {
     // If the value is set, return it
-    LagomKeys.LagomService.get(project).getOrElse {
+    isLagomOrPlayService(project).getOrElse {
 
       // Otherwise try and run lagom:configure
       if (executeMavenPluginGoal(project, "configure")) {
 
         // Now try and get the value
-        LagomKeys.LagomService.get(project).getOrElse {
+        isLagomOrPlayService(project).getOrElse {
 
           // The value should have been set by lagom:configure, fail
           sys.error(s"${LagomKeys.LagomService} not set on project ${project.getArtifactId} after running configure!")
@@ -146,8 +146,16 @@ class MavenFacade @Inject() (repoSystem: RepositorySystem, session: MavenSession
       } else {
         // Lagom plugin not configured, return false
         LagomKeys.LagomService.put(project, false)
+        LagomKeys.PlayService.put(project, false)
         false
       }
+    }
+  }
+
+  private def isLagomOrPlayService(project: MavenProject): Option[Boolean] = {
+    LagomKeys.LagomService.get(project).flatMap {
+      case true => Some(true)
+      case false => LagomKeys.PlayService.get(project)
     }
   }
 

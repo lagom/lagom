@@ -15,6 +15,7 @@ val ScalaTestVersion = "2.2.4"
 val JacksonVersion = "2.7.2"
 val CassandraAllVersion = "3.0.2"
 val GuavaVersion = "19.0"
+val MavenVersion = "3.3.9"
 
 val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
 val guava = "com.google.guava" % "guava" % GuavaVersion
@@ -508,12 +509,15 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   ).dependsOn(`build-tool-support`)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
+  .enablePlugins(lagom.SbtMavenPlugin)
   .settings(common: _*)
   .settings(
-    name := "lagom-maven-plugin",
+    name := "Lagom Maven Plugin",
+    description := "Provides Lagom development environment support to maven.",
     libraryDependencies ++= Seq(
-      "org.apache.maven" % "maven-plugin-api" % "3.3.9",
-      "org.apache.maven" % "maven-core" % "3.3.9"
+      "org.apache.maven" % "maven-plugin-api" % MavenVersion,
+      "org.apache.maven" % "maven-core" % MavenVersion,
+      "org.apache.maven.plugin-testing" % "maven-plugin-testing-harness" % "3.3.0" % Test
     ),
     publishMavenStyle := true,
     crossPaths := false

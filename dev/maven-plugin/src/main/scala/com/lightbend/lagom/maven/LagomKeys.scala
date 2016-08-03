@@ -21,6 +21,9 @@ object LagomKeys {
   /** Whether this project is a lagom service */
   val LagomService = new LagomKey[Boolean]("lagomService")
 
+  /** Whether this project is a Play service */
+  val PlayService = new LagomKey[Boolean]("playService")
+
   /** The URL of the service */
   val LagomServiceUrl = new LagomKey[String]("lagomServiceUrl")
 }

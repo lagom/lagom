@@ -14,6 +14,9 @@ class RunMojo @Inject() (serviceManager: ServiceManager, session: MavenSession) 
   var lagomService: Boolean = _
 
   @BeanProperty
+  var playService: Boolean = _
+
+  @BeanProperty
   var servicePort: Int = _
 
   @BeanProperty
@@ -38,7 +41,7 @@ class RunMojo @Inject() (serviceManager: ServiceManager, session: MavenSession) 
 
     val project = session.getCurrentProject
 
-    if (!lagomService) {
+    if (!lagomService && !playService) {
       sys.error(s"${project.getArtifactId} is not a Lagom service!")
     }
 
@@ -64,7 +67,7 @@ class RunMojo @Inject() (serviceManager: ServiceManager, session: MavenSession) 
 
     val cassandraKeyspace = LagomConfig.normalizeCassandraKeyspaceName(project.getArtifactId)
 
-    serviceManager.startServiceDevMode(project, selectedPort, serviceLocatorUrl, cassandraPort, cassandraKeyspace)
+    serviceManager.startServiceDevMode(project, selectedPort, serviceLocatorUrl, cassandraPort, cassandraKeyspace, playService = playService)
   }
 }
 
@@ -73,10 +76,13 @@ class StopMojo @Inject() (serviceManager: ServiceManager, session: MavenSession)
   @BeanProperty
   var lagomService: Boolean = _
 
+  @BeanProperty
+  var playService: Boolean = _
+
   override def execute(): Unit = {
     val project = session.getCurrentProject
 
-    if (!lagomService) {
+    if (!lagomService && !playService) {
       sys.error(s"${project.getArtifactId} is not a Lagom service!")
     }
 

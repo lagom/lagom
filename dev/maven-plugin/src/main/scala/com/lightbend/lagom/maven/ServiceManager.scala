@@ -37,7 +37,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
     portMap match {
       case Some(map) => map
       case None =>
-        val lagomServices = facade.locateLagomServices
+        val lagomServices = facade.locateServices
         val map = PortAssigner.computeProjectsPort(
           PortRange(portRange.min, portRange.max),
           lagomServices.map(project => new ProjectName(project.getArtifactId))
@@ -48,17 +48,23 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
   }
 
   def startServiceDevMode(project: MavenProject, port: Int, serviceLocatorUrl: Option[String],
-    cassandraPort: Option[Int], cassandraKeyspace: String): Unit = synchronized {
+    cassandraPort: Option[Int], cassandraKeyspace: String, playService: Boolean): Unit = synchronized {
     runningServices.get(project) match {
       case Some(service) =>
         logger.info("Service " + project.getArtifactId + " already running!")
       case None =>
 
         try {
-          val devDeps = devModeDependencies(Seq("lagom-reloadable-server") ++
-            serviceLocatorUrl.fold(Seq.empty[String])(_ =>
-              Seq("lagom-service-registry-client", "lagom-service-registration") ++
-                cassandraPort.fold(Seq.empty[String])(_ => Seq("lagom-cassandra-registration"))))
+          val devDeps = if (playService) {
+            devModeDependencies(Seq("lagom-play-integration", "lagom-reloadable-server"))
+          } else {
+            devModeDependencies(
+              Seq("lagom-reloadable-server") ++
+                serviceLocatorUrl.fold(Seq.empty[String])(_ =>
+                  Seq("lagom-service-registry-client", "lagom-service-registration") ++
+                    cassandraPort.fold(Seq.empty[String])(_ => Seq("lagom-cassandra-registration")))
+            )
+          }
 
           val projectDependencies = resolveDependencies(project, devDeps)
 

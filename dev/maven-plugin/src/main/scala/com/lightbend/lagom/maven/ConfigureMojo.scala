@@ -16,8 +16,12 @@ class ConfigureMojo @Inject() (session: MavenSession) extends AbstractMojo {
   @BeanProperty
   var lagomService: Boolean = _
 
+  @BeanProperty
+  var playService: Boolean = _
+
   override def execute(): Unit = {
     LagomKeys.LagomService.put(session.getCurrentProject, lagomService)
+    LagomKeys.PlayService.put(session.getCurrentProject, playService)
   }
 }
 
