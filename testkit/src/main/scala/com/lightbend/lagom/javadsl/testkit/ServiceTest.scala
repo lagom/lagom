@@ -4,6 +4,7 @@
 package com.lightbend.lagom.javadsl.testkit
 
 import java.io.File
+import java.nio.file.Files
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
@@ -14,7 +15,6 @@ import scala.concurrent.Promise
 import scala.concurrent.duration._
 import scala.util.Try
 import scala.util.control.NonFatal
-
 import com.lightbend.lagom.internal.cluster.JoinClusterModule
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfigProvider
 import com.lightbend.lagom.internal.testkit.TestServiceLocator
@@ -25,13 +25,14 @@ import com.lightbend.lagom.javadsl.persistence.PersistenceModule
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
 import com.lightbend.lagom.javadsl.persistence.testkit.TestUtil
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
-
 import akka.actor.ActorSystem
 import akka.japi.function.Effect
 import akka.japi.function.Procedure
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.Materializer
 import javax.inject.Singleton
+
+import org.apache.cassandra.io.util.FileUtils
 import play.Application
 import play.Configuration
 import play.api.Logger
@@ -199,9 +200,10 @@ object ServiceTest {
     val b2 =
       if (setup.persistence) {
         val cassandraPort = CassandraLauncher.randomPort
-        val cassandraDirectory = new File("target/" + testName)
+        val cassandraDirectory = Files.createTempDirectory(testName).toFile
+        FileUtils.deleteRecursiveOnExit(cassandraDirectory)
         val t0 = System.nanoTime()
-        CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = true, port = 0)
+        CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = false, port = 0)
         log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
         b1.configure(new Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = true)))
           .configure("lagom.cluster.join-self", "on")

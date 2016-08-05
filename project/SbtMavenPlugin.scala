@@ -1,10 +1,13 @@
 package lagom
 
+import java.io.File
+import java.nio.file.Files
+
 import sbt._
 import sbt.Keys._
 import sbt.plugins.{IvyPlugin, JvmPlugin}
 
-import scala.util.Try
+import scala.util.{Failure, Try}
 import scala.xml.{Elem, NodeSeq, PrettyPrinter, XML}
 
 /**
@@ -24,11 +27,14 @@ object SbtMavenPlugin extends AutoPlugin {
 
   object autoImport {
     val mavenGeneratePluginXml = taskKey[Seq[File]]("Generate the maven plugin xml")
+    val mavenTest = taskKey[Unit]("Run the maven tests")
+    val mavenTestArgs = settingKey[Seq[String]]("Maven test arguments")
+    val mavenClasspath = taskKey[Seq[File]]("The maven classpath")
   }
 
   import autoImport._
 
-  override def projectSettings = inConfig(Compile)(unscopedSettings)
+  override def projectSettings = inConfig(Compile)(unscopedSettings) ++ mavenTestSettings
 
   def unscopedSettings: Seq[Setting[_]] = Seq(
     sourceDirectory in mavenGeneratePluginXml := sourceDirectory.value / "maven",
@@ -76,6 +82,44 @@ object SbtMavenPlugin extends AutoPlugin {
 
     resourceGenerators <+= mavenGeneratePluginXml.toTask
   )
+
+  def mavenTestSettings: Seq[Setting[_]] = Seq(
+    sourceDirectory in mavenTest := sourceDirectory.value / "maven-test",
+    mavenTest := runMavenTests((sourceDirectory in mavenTest).value, mavenClasspath.value, mavenTestArgs.value,
+      streams.value.log)
+  )
+
+  def runMavenTests(testDirectory: File, mavenClasspath: Seq[File], mavenTestArgs: Seq[String], log: Logger) = {
+    val results = testDirectory.listFiles().toSeq.filter(_.isDirectory).map { test =>
+      val mavenCommand = IO.readLines(test / "test").map(_.trim).filter(_.nonEmpty)
+
+      val testDir = Files.createTempDirectory("maven-test").toFile
+      try {
+        IO.copyDirectory(test, testDir)
+
+        val args = Seq("-cp", mavenClasspath.map(_.getAbsolutePath).mkString(File.pathSeparator),
+          s"-Dmaven.multiModuleProjectDirectory=${testDir.getAbsolutePath}"
+        ) ++
+          mavenTestArgs ++
+          Seq(
+            "org.apache.maven.cli.MavenCli"
+          ) ++
+          mavenCommand
+
+        log.info(s"Running maven test ${test.getName}")
+
+        test.getName -> Fork.java(ForkOptions(workingDirectory = Some(testDir)), args)
+      } finally {
+        IO.delete(testDir)
+      }
+    }
+    results.collect {
+      case (name, code) if code != 0 => name
+    } match {
+      case Nil => // success
+      case failedTests => sys.error(failedTests.mkString("Maven tests failed: ", ",", ""))
+    }
+  }
 
   def processTemplate(xml: Elem, moduleID: ModuleID, moduleInfo: ModuleInfo, dependencies: Seq[ModuleID],
                       crossVersion: ModuleID => ModuleID, log: Logger) = {

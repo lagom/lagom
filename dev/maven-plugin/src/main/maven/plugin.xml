@@ -39,6 +39,9 @@
             <required>false</required>
             <editable>true</editable>
             <description>The port this service should run on</description>
+            <configuration>
+                <servicePort implementation="int" default-value="-1"/>
+            </configuration>
         </parameter>
 
         <parameter>
@@ -164,18 +167,30 @@
         </mojo>
 
         <mojo>
+            <goal>startAll</goal>
+            <description>Starts all the Lagom services</description>
+            <implementation>com.lightbend.lagom.maven.StartAllMojo</implementation>
+            <aggregator>true</aggregator>
+            <instantiationStrategy>singleton</instantiationStrategy>
+            <phase>pre-integration-test</phase>
+        </mojo>
+        <mojo>
+            <goal>stopAll</goal>
+            <description>Stops all the Lagom services</description>
+            <implementation>com.lightbend.lagom.maven.StopAllMojo</implementation>
+            <aggregator>true</aggregator>
+            <instantiationStrategy>singleton</instantiationStrategy>
+            <phase>post-integration-test</phase>
+        </mojo>
+        <mojo>
             <goal>runAll</goal>
-            <description>Runs all the Lagom services</description>
+            <description>Runs all the Lagom services, blocking for user input, before stopping them all.</description>
             <implementation>com.lightbend.lagom.maven.RunAllMojo</implementation>
             <requiresDirectInvocation>true</requiresDirectInvocation>
             <aggregator>true</aggregator>
             <instantiationStrategy>singleton</instantiationStrategy>
-            <parameters>
-                <parameter>
-                    <name>servicePortRange</name>
-                </parameter>
-            </parameters>
         </mojo>
+
 
         <mojo>
             <goal>startCassandra</goal>
@@ -183,6 +198,7 @@
             <implementation>com.lightbend.lagom.maven.StartCassandraMojo</implementation>
             <aggregator>true</aggregator>
             <instantiationStrategy>singleton</instantiationStrategy>
+            <phase>pre-integration-test</phase>
             <parameters>
                 <parameter>
                     <name>cassandraMaxBootWaitingSeconds</name>
@@ -207,6 +223,7 @@
             <implementation>com.lightbend.lagom.maven.StopCassandraMojo</implementation>
             <aggregator>true</aggregator>
             <instantiationStrategy>singleton</instantiationStrategy>
+            <phase>post-integration-test</phase>
             <parameters>
                 <parameter>
                     <name>cassandraEnabled</name>
@@ -220,6 +237,7 @@
             <implementation>com.lightbend.lagom.maven.StartServiceLocatorMojo</implementation>
             <aggregator>true</aggregator>
             <instantiationStrategy>singleton</instantiationStrategy>
+            <phase>pre-integration-test</phase>
             <parameters>
                 <parameter>
                     <name>serviceLocatorPort</name>
@@ -241,6 +259,7 @@
             <implementation>com.lightbend.lagom.maven.StopServiceLocatorMojo</implementation>
             <aggregator>true</aggregator>
             <instantiationStrategy>singleton</instantiationStrategy>
+            <phase>post-integration-test</phase>
             <parameters>
                 <parameter>
                     <name>serviceLocatorEnabled</name>
@@ -249,11 +268,12 @@
         </mojo>
 
         <mojo>
-            <goal>run</goal>
-            <description>Runs a service in dev mode</description>
-            <implementation>com.lightbend.lagom.maven.RunMojo</implementation>
+            <goal>start</goal>
+            <description>Starts a service in dev mode</description>
+            <implementation>com.lightbend.lagom.maven.StartMojo</implementation>
             <aggregator>true</aggregator>
-            <instantiationStrategy>singleton</instantiationStrategy>
+            <instantiationStrategy>per-lookup</instantiationStrategy>
+            <phase>pre-integration-test</phase>
             <parameters>
                 <parameter>
                     <name>lagomService</name>
@@ -293,7 +313,8 @@
             <description>Stops a service dev mode</description>
             <implementation>com.lightbend.lagom.maven.StopMojo</implementation>
             <aggregator>true</aggregator>
-            <instantiationStrategy>singleton</instantiationStrategy>
+            <instantiationStrategy>per-lookup</instantiationStrategy>
+            <phase>post-integration-test</phase>
             <parameters>
                 <parameter>
                     <name>lagomService</name>
@@ -303,6 +324,15 @@
                 </parameter>
             </parameters>
         </mojo>
+
+        <mojo>
+            <goal>run</goal>
+            <description>Runs a service dev mode, stopping for user input, and then shutting down.</description>
+            <implementation>com.lightbend.lagom.maven.RunMojo</implementation>
+            <aggregator>true</aggregator>
+            <instantiationStrategy>per-lookup</instantiationStrategy>
+        </mojo>
+
     </mojos>
 
     <!-- Dependencies are added by the SbtMavenPlugin -->

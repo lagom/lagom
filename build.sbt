@@ -16,6 +16,21 @@ val JacksonVersion = "2.7.2"
 val CassandraAllVersion = "3.0.2"
 val GuavaVersion = "19.0"
 val MavenVersion = "3.3.9"
+val NettyVersion = "4.0.36"
+
+// NOTE ON DEPENDENCIES
+
+// Since we support maven, we need to support mavens somewhat unintuitive dependency resolution mechanism. If two
+// versions of the same library are requested in maven, maven doesn't resolve the most recent version, it resolves
+// the version that is nearest to the root in the dependency graph.  So, when we depend on play, which 4 descendents
+// down the tree brings in netty-http-codec 4.0.36 which brings in netty-handler 4.0.36, and we also depend on
+// netty-reactive-streams, which brings in netty-handler 4.0.33, since, that's much higher in the tree than the other
+// path to it, we 4.0.33, and netty-http-codec 4.0.36 is incompatible with netty-handler 4.0.33, and so, well,
+// thankyou maven.
+
+// So you'll find here a lot of explicit adding of dependencies that are unnecessary in other dependency management
+// mechanisms where transitive conflict resolution is done by following semantic versioning rules, but's it's necessary
+// for maven to work.
 
 val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
 val guava = "com.google.guava" % "guava" % GuavaVersion
@@ -212,6 +227,7 @@ lazy val api = (project in file("api"))
   .settings(
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-java" % PlayVersion,
+      "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
       "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       // An explicit depnedency is added on Guava because mavens resolution rule is stupid - it doesn't use the most
@@ -282,7 +298,6 @@ lazy val client = (project in file("client"))
   .settings(
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-ws" % PlayVersion,
-      "com.typesafe.netty" % "netty-reactive-streams" % "1.0.1",
       "io.dropwizard.metrics" % "metrics-core" % "3.1.2"
     )
   )
@@ -297,7 +312,10 @@ lazy val `integration-client` = (project in file("integration-client"))
 lazy val server = (project in file("server"))
   .settings(
     name := "lagom-javadsl-server",
-    libraryDependencies += guava
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
+      guava
+    )
   )
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
@@ -517,11 +535,30 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
     libraryDependencies ++= Seq(
       "org.apache.maven" % "maven-plugin-api" % MavenVersion,
       "org.apache.maven" % "maven-core" % MavenVersion,
-      "org.apache.maven.plugin-testing" % "maven-plugin-testing-harness" % "3.3.0" % Test
+      "org.apache.maven.plugin-testing" % "maven-plugin-testing-harness" % "3.3.0" % Test,
+      scalaTest % Test
     ),
     publishMavenStyle := true,
-    crossPaths := false
+    crossPaths := false,
+    mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
+    mavenTestArgs := Seq(
+      s"-Dlagom.version=${version.value}",
+      s"-Dplay.version=$PlayVersion",
+      s"-Dscala.binary.version=${(scalaBinaryVersion in api).value}",
+      "-Dorg.slf4j.simpleLogger.showLogName=false",
+      "-Dorg.slf4j.simpleLogger.showThreadName=false"
+    )
   ).dependsOn(`build-tool-support`)
+
+lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
+    .settings(
+      name := "lagom-maven-launcher",
+      description := "Dummy project, exists only to resolve the maven launcher classpath",
+      libraryDependencies := Seq(
+        "org.apache.maven" % "maven-embedder" % MavenVersion,
+        "org.slf4j" % "slf4j-simple" % "1.7.21"
+      )
+    )
 
 def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++ 
   Seq(scriptedLaunchOpts <+= version apply { v => s"-Dproject.version=$v" }) ++
@@ -554,6 +591,8 @@ lazy val `service-locator` = (project in file("dev") / "service-locator")
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     libraryDependencies ++= Seq(
+      // Explicit akka dependency because maven chooses the wrong version
+      "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
       "com.typesafe.play" %% "play-netty-server" % PlayVersion,
       scalaTest % Test
     )
