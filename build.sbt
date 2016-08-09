@@ -453,7 +453,7 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
   .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
-    `service-registration`, `cassandra-server`, `cassandra-registration`,  `play-integration`, `service-registry-client`)
+    `service-registration`, `cassandra-server`, `cassandra-registration`,  `play-integration`, `service-registry-client`, `maven-java-archetype`)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}
@@ -543,6 +543,7 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
     mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
     mavenTestArgs := Seq(
       s"-Dlagom.version=${version.value}",
+      s"-DarchetypeVersion=${version.value}",
       s"-Dplay.version=$PlayVersion",
       s"-Dscala.binary.version=${(scalaBinaryVersion in api).value}",
       "-Dorg.slf4j.simpleLogger.showLogName=false",
@@ -569,6 +570,23 @@ def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++
       "-XX:MaxMetaspaceSize=384m",
       "-Dscala.version=" + sys.props.get("scripted.scala.version").getOrElse((scalaVersion in `reloadable-server`).value)
     )
+  )
+
+lazy val `maven-java-archetype` = (project in file("dev") / "archetypes" / "maven-java")
+  .settings(common: _*)
+  .settings(
+    name := "maven-archetype-lagom-java",
+    autoScalaLibrary := false,
+    publishMavenStyle := true,
+    crossPaths := false,
+    copyResources in Compile := {
+      val pomFile = (classDirectory in Compile).value / "archetype-resources" / "pom.xml"
+      val pomXml = IO.read(pomFile)
+      if (pomXml.contains("%LAGOM-VERSION%")) {
+        IO.write(pomFile, pomXml.replaceAll("%LAGOM-VERSION%", version.value))
+      }
+      (copyResources in Compile).value
+    }
   )
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies

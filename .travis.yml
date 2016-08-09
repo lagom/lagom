@@ -6,6 +6,7 @@ env:
   matrix:
     - SCRIPT="sbt -jvm-opts .travis-jvmopts test"
     - SCRIPT="sbt -jvm-opts .travis-jvmopts publishLocal scripted"
+    - SCRIPT="sbt -jvm-opts .travis-jvmopts publishM2 mavenTest"
     - SCRIPT="sbt -jvm-opts .travis-jvmopts unidoc && cd docs && sbt -jvm-opts .travis-jvmopts markdownValidateDocs test markdownEvaluateSbtFiles"
 # important to use eval, otherwise "&&" is passed as an argument to sbt rather than being processed by bash
 script: eval $SCRIPT
