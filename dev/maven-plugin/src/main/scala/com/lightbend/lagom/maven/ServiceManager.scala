@@ -1,11 +1,11 @@
 package com.lightbend.lagom.maven
 
-import java.io.{ Closeable, File }
+import java.io.File
 import javax.inject.{ Inject, Singleton }
 
 import com.lightbend.lagom.core.LagomVersion
 import com.lightbend.lagom.dev.PortAssigner.{ Port, PortRange, ProjectName }
-import com.lightbend.lagom.dev.Reloader.{ CompileFailure, CompileResult, CompileSuccess }
+import com.lightbend.lagom.dev.Reloader.{ CompileFailure, CompileResult, CompileSuccess, DevServer }
 import com.lightbend.lagom.dev.{ LagomConfig, PortAssigner, Reloader }
 import org.apache.maven.artifact.ArtifactUtils
 import org.apache.maven.execution.MavenSession
@@ -25,7 +25,8 @@ import scala.util.control.NonFatal
 class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession, facade: MavenFacade,
     scalaClassLoaderManager: ScalaClassLoaderManager) {
 
-  private var runningServices = Map.empty[MavenProject, Closeable]
+  private var runningServices = Map.empty[MavenProject, DevServer]
+  private var runningExternalProjects = Map.empty[Dependency, DevServer]
   private var portMap: Option[Map[ProjectName, Port]] = None
 
   // todo detect and inject scala binary version
@@ -33,7 +34,20 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
     new Dependency(new DefaultArtifact(s"com.lightbend.lagom:${dep}_2.11:${LagomVersion.current}"), "runtime")
   }
 
-  def getPortMap(portRange: PortRangeBean): Map[ProjectName, Port] = synchronized {
+  private def calculateDevModeDependencies(playService: Boolean, serviceLocatorUrl: Option[String], cassandraPort: Option[Int]): Seq[Dependency] = {
+    if (playService) {
+      devModeDependencies(Seq("lagom-play-integration", "lagom-reloadable-server"))
+    } else {
+      devModeDependencies(
+        Seq("lagom-reloadable-server") ++
+          serviceLocatorUrl.fold(Seq.empty[String])(_ =>
+            Seq("lagom-service-registry-client", "lagom-service-registration") ++
+              cassandraPort.fold(Seq.empty[String])(_ => Seq("lagom-cassandra-registration")))
+      )
+    }
+  }
+
+  def getPortMap(portRange: PortRangeBean, externalProjects: Seq[String]): Map[ProjectName, Port] = synchronized {
     portMap match {
       case Some(map) => map
       case None =>
@@ -41,6 +55,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
         val map = PortAssigner.computeProjectsPort(
           PortRange(portRange.min, portRange.max),
           lagomServices.map(project => new ProjectName(project.getArtifactId))
+            ++ externalProjects.map(ProjectName.apply)
         )
         portMap = Some(map)
         map
@@ -55,16 +70,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
       case None =>
 
         try {
-          val devDeps = if (playService) {
-            devModeDependencies(Seq("lagom-play-integration", "lagom-reloadable-server"))
-          } else {
-            devModeDependencies(
-              Seq("lagom-reloadable-server") ++
-                serviceLocatorUrl.fold(Seq.empty[String])(_ =>
-                  Seq("lagom-service-registry-client", "lagom-service-registration") ++
-                    cassandraPort.fold(Seq.empty[String])(_ => Seq("lagom-cassandra-registration")))
-            )
-          }
+          val devDeps = calculateDevModeDependencies(playService, serviceLocatorUrl, cassandraPort)
 
           val projectDependencies = resolveDependencies(project, devDeps)
 
@@ -146,10 +152,43 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
 
   }
 
-  def stopService(project: MavenProject) = {
+  def stopService(project: MavenProject) = synchronized {
     runningServices.get(project) match {
       case Some(service) => service.close()
       case None => logger.info("Service " + project.getArtifactId + " was not running!")
+    }
+  }
+
+  def startExternalProject(dependency: Dependency, port: Int, serviceLocatorUrl: Option[String],
+    cassandraPort: Option[Int], cassandraKeyspace: String, playService: Boolean) = synchronized {
+    runningExternalProjects.get(dependency) match {
+      case Some(service) =>
+        logger.info("External project " + dependency.getArtifact.getArtifactId + " already running!")
+      case None =>
+        val devDeps = calculateDevModeDependencies(playService, serviceLocatorUrl, cassandraPort)
+
+        // Resolve the project
+        val dependencies = facade.resolveDependency(dependency, devDeps)
+
+        val devSettings = LagomConfig.actorSystemConfig(dependency.getArtifact.getArtifactId) ++
+          serviceLocatorUrl.map(LagomConfig.ServiceLocatorUrl -> _).toMap ++
+          cassandraPort.fold(Map.empty[String, String]) { port =>
+            LagomConfig.cassandraPort(port) ++ LagomConfig.cassandraKeySpace(cassandraKeyspace)
+          }
+
+        val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(dependencies)
+
+        val service = Reloader.startNoReload(scalaClassLoader, dependencies.map(_.getFile),
+          new File(session.getCurrentProject.getBuild.getDirectory), devSettings.toSeq, port)
+
+        runningExternalProjects += (dependency -> service)
+    }
+  }
+
+  def stopExternalProject(dependency: Dependency) = synchronized {
+    runningExternalProjects.get(dependency) match {
+      case Some(service) => service.close()
+      case None => logger.info("Service " + dependency.getArtifact.getArtifactId + " was not running!")
     }
   }
 

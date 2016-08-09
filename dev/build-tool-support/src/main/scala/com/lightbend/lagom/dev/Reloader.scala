@@ -7,8 +7,9 @@ import java.io.{ Closeable, File }
 import java.net.URL
 import java.security.{ AccessController, PrivilegedAction }
 import java.time.Instant
+import java.util
 import java.util.{ Timer, TimerTask }
-import java.util.concurrent.atomic.{ AtomicLong, AtomicReference }
+import java.util.concurrent.atomic.AtomicReference
 
 import com.lightbend.lagom.sbt.core.Build
 import com.lightbend.lagom.sbt.server.ReloadableServer
@@ -135,6 +136,55 @@ object Reloader {
         reloader.close()
       }
       def url(): String = server.mainAddress().getHostName + ":" + server.mainAddress().getPort
+    }
+  }
+
+  /**
+   * Start the Lagom server without hot reloading
+   */
+  def startNoReload(parentClassLoader: ClassLoader, dependencyClasspath: Seq[File], buildProjectPath: File,
+    devSettings: Seq[(String, String)], httpPort: Int): DevServer = {
+    val buildLoader = this.getClass.getClassLoader
+
+    lazy val delegatingLoader: ClassLoader = new DelegatingClassLoader(
+      parentClassLoader,
+      Build.sharedClasses.asScala.toSet, buildLoader, () => Some(applicationLoader)
+    )
+    lazy val applicationLoader = new NamedURLClassLoader("LagomDependencyClassLoader", urls(dependencyClasspath),
+      delegatingLoader)
+
+    val _buildLink = new BuildLink {
+      private val initialized = new java.util.concurrent.atomic.AtomicBoolean(false)
+      override def runTask(task: String): AnyRef = throw new UnsupportedOperationException("Run task not support in Lagom")
+      override def reload(): AnyRef = {
+        if (initialized.compareAndSet(false, true)) applicationLoader
+        else null // this means nothing to reload
+      }
+      override def projectPath(): File = buildProjectPath
+      override def settings(): util.Map[String, String] = devSettings.toMap.asJava
+      override def forceReload(): Unit = ()
+      override def findSource(className: String, line: Integer): Array[AnyRef] = null
+    }
+
+    val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
+    val mainDev = mainClass.getMethod("mainDevHttpMode", classOf[BuildLink], classOf[Int])
+    val server = mainDev.invoke(null, _buildLink, httpPort: java.lang.Integer).asInstanceOf[ReloadableServer]
+
+    server.reload() // it's important to initialize the server
+
+    new Reloader.DevServer {
+      val buildLink: BuildLink = _buildLink
+
+      /** Allows to register a listener that will be triggered a monitored file is changed. */
+      def addChangeListener(f: () => Unit): Unit = ()
+
+      /** Reloads the application.*/
+      def reload(): Unit = ()
+
+      /** URL at which the application is running (if started) */
+      def url(): String = server.mainAddress().getHostName + ":" + server.mainAddress().getPort
+
+      def close(): Unit = server.stop()
     }
   }
 

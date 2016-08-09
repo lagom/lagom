@@ -3,23 +3,16 @@
  */
 package com.lightbend.lagom.sbt.run
 
-import java.util
-
-import com.lightbend.lagom.dev.{ DelegatingClassLoader, NamedURLClassLoader, Reloader }
+import com.lightbend.lagom.dev.Reloader
 import com.lightbend.lagom.dev.Reloader.{ CompileFailure, CompileResult, CompileSuccess, Source }
 import com.lightbend.lagom.sbt.Internal
 import com.lightbend.lagom.sbt.LagomImport
 import com.lightbend.lagom.sbt.LagomPlugin.autoImport._
 import com.lightbend.lagom.sbt.LagomReloadableService.autoImport._
-import com.lightbend.lagom.sbt.core.Build
-import com.lightbend.lagom.sbt.server.ReloadableServer
-import play.core.BuildLink
 import sbt._
 import sbt.Keys._
 import play.api.PlayException
 import play.sbt.PlayExceptions._
-
-import scala.collection.JavaConverters._
 
 private[sbt] object RunSupport {
 
@@ -57,49 +50,10 @@ private[sbt] object RunSupport {
 
     val classpath = (devModeDependencies.value ++ (fullClasspath in Runtime).value).distinct
 
-    val buildLinkSettings = (extraConfigs.toSeq ++ lagomDevSettings.value).toMap.asJava
+    val buildLinkSettings = extraConfigs.toSeq ++ lagomDevSettings.value
 
-    val buildLoader = this.getClass.getClassLoader
-    lazy val delegatingLoader: ClassLoader = new DelegatingClassLoader(null, Build.sharedClasses.asScala.toSet,
-      buildLoader, () => Some(applicationLoader))
-    lazy val applicationLoader = new NamedURLClassLoader(
-      "LagomApplicationLoader",
-      classpath.map(_.data.toURI.toURL).toArray, delegatingLoader
-    )
-
-    val _buildLink = new BuildLink {
-      private val initialized = new java.util.concurrent.atomic.AtomicBoolean(false)
-      override def runTask(task: String): AnyRef = throw new UnsupportedOperationException("Run task not support in Lagom")
-      override def reload(): AnyRef = {
-        if (initialized.compareAndSet(false, true)) applicationLoader
-        else null // this means nothing to reload
-      }
-      override def projectPath(): File = baseDirectory.value
-      override def settings(): util.Map[String, String] = buildLinkSettings
-      override def forceReload(): Unit = ()
-      override def findSource(className: String, line: Integer): Array[AnyRef] = null
-    }
-
-    val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
-    val mainDev = mainClass.getMethod("mainDevHttpMode", classOf[BuildLink], classOf[Int])
-    val server = mainDev.invoke(null, _buildLink, lagomServicePort.value: java.lang.Integer).asInstanceOf[ReloadableServer]
-
-    server.reload() // it's important to initialize the server
-
-    new Reloader.DevServer {
-      val buildLink: BuildLink = _buildLink
-
-      /** Allows to register a listener that will be triggered a monitored file is changed. */
-      def addChangeListener(f: () => Unit): Unit = ()
-
-      /** Reloads the application.*/
-      def reload(): Unit = ()
-
-      /** URL at which the application is running (if started) */
-      def url(): String = server.mainAddress().getHostName + ":" + server.mainAddress().getPort
-
-      def close(): Unit = server.stop()
-    }
+    Reloader.startNoReload(scalaInstance.value.loader, classpath.map(_.data), baseDirectory.value, buildLinkSettings,
+      lagomServicePort.value)
   }
 
   private def devModeDependencies = Def.task {

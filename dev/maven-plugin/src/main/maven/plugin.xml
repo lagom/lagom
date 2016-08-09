@@ -146,6 +146,13 @@
                 <serviceLocatorUrl implementation="java.lang.String">${service.locator.url}</serviceLocatorUrl>
             </configuration>
         </parameter>
+        <parameter>
+            <name>externalProjects</name>
+            <type>java.util.List</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>A list of external projects to run in dev mode.</description>
+        </parameter>
     </parameterManagement>
 
     <!-- All the mojos -->
@@ -305,6 +312,9 @@
                 <parameter>
                     <name>cassandraKeyspace</name>
                 </parameter>
+                <parameter>
+                    <name>externalProjects</name>
+                </parameter>
             </parameters>
         </mojo>
 
@@ -331,6 +341,52 @@
             <implementation>com.lightbend.lagom.maven.RunMojo</implementation>
             <aggregator>true</aggregator>
             <instantiationStrategy>per-lookup</instantiationStrategy>
+        </mojo>
+
+        <mojo>
+            <goal>startExternalProjects</goal>
+            <description>Starts the external projects for the system.</description>
+            <implementation>com.lightbend.lagom.maven.StartExternalProjects</implementation>
+            <aggregator>true</aggregator>
+            <instantiationStrategy>per-lookup</instantiationStrategy>
+            <phase>pre-integration-test</phase>
+            <parameters>
+                <parameter>
+                    <name>externalProjects</name>
+                </parameter>
+                <parameter>
+                    <name>servicePortRange</name>
+                </parameter>
+                <parameter>
+                    <name>serviceLocatorPort</name>
+                </parameter>
+                <parameter>
+                    <name>serviceLocatorEnabled</name>
+                </parameter>
+                <parameter>
+                    <name>serviceLocatorUrl</name>
+                </parameter>
+                <parameter>
+                    <name>cassandraEnabled</name>
+                </parameter>
+                <parameter>
+                    <name>cassandraPort</name>
+                </parameter>
+            </parameters>
+        </mojo>
+
+        <mojo>
+            <goal>stopExternalProjects</goal>
+            <description>Stops the external projects for the system.</description>
+            <implementation>com.lightbend.lagom.maven.StopExternalProjects</implementation>
+            <aggregator>true</aggregator>
+            <instantiationStrategy>per-lookup</instantiationStrategy>
+            <phase>pre-integration-test</phase>
+            <parameters>
+                <parameter>
+                    <name>externalProjects</name>
+                </parameter>
+            </parameters>
         </mojo>
 
     </mojos>

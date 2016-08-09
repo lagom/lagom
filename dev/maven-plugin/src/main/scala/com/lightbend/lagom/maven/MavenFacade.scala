@@ -41,9 +41,17 @@ class MavenFacade @Inject() (repoSystem: RepositorySystem, session: MavenSession
    * @return The classpath.
    */
   def resolveArtifact(artifact: Artifact): Seq[Artifact] = {
+    resolveDependency(new Dependency(artifact, "runtime"))
+  }
+
+  /**
+   * Resolve the classpath for the given dependency.
+   */
+  def resolveDependency(dependency: Dependency, additionalDependencies: Seq[Dependency] = Nil): Seq[Artifact] = {
     val collect = new CollectRequest()
-    collect.setRoot(new Dependency(artifact, "runtime"))
+    collect.setRoot(dependency)
     collect.setRepositories(session.getCurrentProject.getRemoteProjectRepositories)
+    additionalDependencies.foreach(collect.addDependency)
 
     toDependencies(resolveDependencies(collect)).map(_.getArtifact)
   }

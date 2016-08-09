@@ -5,9 +5,9 @@ import java.nio.file.Files
 
 import sbt._
 import sbt.Keys._
-import sbt.plugins.{IvyPlugin, JvmPlugin}
+import sbt.plugins.JvmPlugin
 
-import scala.util.{Failure, Try}
+import scala.util.Try
 import scala.xml.{Elem, NodeSeq, PrettyPrinter, XML}
 
 /**
@@ -27,7 +27,7 @@ object SbtMavenPlugin extends AutoPlugin {
 
   object autoImport {
     val mavenGeneratePluginXml = taskKey[Seq[File]]("Generate the maven plugin xml")
-    val mavenTest = taskKey[Unit]("Run the maven tests")
+    val mavenTest = inputKey[Unit]("Run the maven tests")
     val mavenTestArgs = settingKey[Seq[String]]("Maven test arguments")
     val mavenClasspath = taskKey[Seq[File]]("The maven classpath")
   }
@@ -85,13 +85,23 @@ object SbtMavenPlugin extends AutoPlugin {
 
   def mavenTestSettings: Seq[Setting[_]] = Seq(
     sourceDirectory in mavenTest := sourceDirectory.value / "maven-test",
-    mavenTest := runMavenTests((sourceDirectory in mavenTest).value, mavenClasspath.value, mavenTestArgs.value,
-      streams.value.log)
+    mavenTest := {
+      import sbt.complete.Parsers._
+
+      val toRun = some(OptSpace ~> StringBasic).parsed
+
+      runMavenTests((sourceDirectory in mavenTest).value, mavenClasspath.value, mavenTestArgs.value, toRun,
+        streams.value.log)
+    }
   )
 
-  def runMavenTests(testDirectory: File, mavenClasspath: Seq[File], mavenTestArgs: Seq[String], log: Logger) = {
-    val results = testDirectory.listFiles().toSeq.filter(_.isDirectory).map { test =>
-      val mavenCommand = IO.readLines(test / "test").map(_.trim).filter(_.nonEmpty)
+  def runMavenTests(testDirectory: File, mavenClasspath: Seq[File], mavenTestArgs: Seq[String], toRun: Option[String], log: Logger) = {
+    val testsToRun = toRun.fold(testDirectory.listFiles().toSeq.filter(_.isDirectory)) { dir =>
+      Seq(testDirectory / dir)
+    }
+
+    val results = testsToRun.map { test =>
+      val mavenExecutions = IO.readLines(test / "test").map(_.trim).filter(_.nonEmpty)
 
       val testDir = Files.createTempDirectory("maven-test").toFile
       try {
@@ -103,18 +113,24 @@ object SbtMavenPlugin extends AutoPlugin {
           mavenTestArgs ++
           Seq(
             "org.apache.maven.cli.MavenCli"
-          ) ++
-          mavenCommand
-
+          )
         log.info(s"Running maven test ${test.getName}")
 
-        test.getName -> Fork.java(ForkOptions(workingDirectory = Some(testDir)), args)
+        test.getName -> mavenExecutions.foldLeft(true) { (success, execution) =>
+          if (success) {
+            log.info(s"Executing mvn $execution")
+            val rc = Fork.java(ForkOptions(workingDirectory = Some(testDir)), args ++ execution.split(" +"))
+            rc == 0
+          } else {
+            false
+          }
+        }
       } finally {
         IO.delete(testDir)
       }
     }
     results.collect {
-      case (name, code) if code != 0 => name
+      case (name, false) => name
     } match {
       case Nil => // success
       case failedTests => sys.error(failedTests.mkString("Maven tests failed: ", ",", ""))
