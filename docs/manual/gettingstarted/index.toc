@@ -1,3 +1,5 @@
 Installation:Installing Lagom
 GettingStarted:Getting started with Lagom
+GettingStartedMaven:Getting started with Lagom in Maven
+GettingStartedSbt:Getting started with Lagom in Sbt
 IDEs:Import a Lagom build in your IDE
