@@ -20,7 +20,9 @@ To deploy your Lagom services using ConductR, see [[ConductR]].
 
 ## Deploying to other platforms
 
-Lagom leverages the [sbt-native-packager](http://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default zip archives can be produced, but you can also produce tar.gz, MSI, debian, RPM, Docker and more.
+Lagom sbt support leverages the [sbt-native-packager](http://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default zip archives can be produced, but you can also produce tar.gz, MSI, debian, RPM, Docker and more.
+
+If using Maven, there are many plugins for Maven to produce artifacts for various platforms.
 
 Running a package requires the provision of a service locator implementation i.e. something that provides the ability for your service to be able to lookup the location of another dynamically at runtime. At a technical level, you provide an implementation of a [ServiceLocator](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html).
 

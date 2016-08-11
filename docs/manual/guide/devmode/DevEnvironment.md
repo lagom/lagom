@@ -1,6 +1,6 @@
 # Development Environment
 
-Lagom's sbt and maven based development environments allow running any number of services together with a single command.
+Lagom's sbt and Maven based development environments allow running any number of services together with a single command.
 
 The same command also reloads your services when the code changes, so that you don't have to manually restart them. You can stay focused on your work and let Lagom do the compiling and reloading.
 

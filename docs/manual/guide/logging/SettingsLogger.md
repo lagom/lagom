@@ -89,7 +89,9 @@ Play system logging can be done by changing the `play` logger to DEBUG.
 
 ## Using a Custom Logging Framework
 
-Lagom uses Logback by default, but it is possible to configure Lagom to use another logging framework, as long as there is an SLF4J adapter for it.  To do this, the `LagomLogback` sbt plugin must be disabled using `disablePlugins`:
+Lagom uses Logback by default, but it is possible to configure Lagom to use another logging framework, as long as there is an SLF4J adapter for it.
+
+If you're using Maven, you simply need to remove the logback dependency from your projects dependencies.  If using sbt, you need to disable the `LagomLogback` plugin in your sbt project:
 
 @[lagom-logback-plugin-disabled](code/build-log.sbt)
 
