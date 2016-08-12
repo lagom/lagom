@@ -23,7 +23,7 @@ $ which activator
 /opt/activator-1.3.10-minimal/bin/activator
 ```
 
-The important bit is that the <version> appended after `activator-<version>` must be at least 1.13.10 for Lagom to properly work. 
+The important bit is that the <version> appended after `activator-<version>` must be at least 1.3.10 for Lagom to properly work. 
 
 Follow [this link](https://www.lightbend.com/activator/download) to download the latest activator bundle.
 
