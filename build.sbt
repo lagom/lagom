@@ -88,7 +88,7 @@ def releaseSettings: Seq[Setting[_]] = Seq(
 )
 
 def runtimeLibCommon: Seq[Setting[_]] = common ++ SbtScalariform.scalariformSettings ++ Seq(
-  crossScalaVersions := Seq("2.11.7"),
+  crossScalaVersions := Seq("2.11.8"),
   scalaVersion := crossScalaVersions.value.head,
   crossVersion := CrossVersion.binary,
   crossPaths := false,

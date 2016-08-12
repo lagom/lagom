@@ -3,29 +3,17 @@
  */
 package com.lightbend.lagom.javadsl.testkit
 
+import java.util.function.{ BiFunction => JBiFunction, Function => JFunction }
 import java.util.{ List => JList }
-import java.util.Optional
-import java.util.function.{ BiFunction => JBiFunction }
-import java.util.function.{ Function => JFunction }
+
+import akka.actor.ActorSystem
+import akka.serialization.{ JavaSerializer, SerializationExtension, SerializerWithStringManifest }
+import com.lightbend.lagom.javadsl.persistence.PersistentEntity
+
 import scala.annotation.varargs
 import scala.collection.JavaConverters._
-import akka.actor.ActorSystem
-import akka.event.Logging
-import akka.event.LoggingAdapter
-import com.lightbend.lagom.javadsl.persistence.PersistentEntity
-import java.util.{ List => JList }
-import java.util.function.{ BiFunction => JBiFunction }
-import java.util.function.{ Function => JFunction }
+import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal
-import akka.serialization.SerializationExtension
-import scala.util.Try
-import scala.util.Failure
-import scala.util.Success
-import akka.serialization.SerializerWithStringManifest
-import akka.serialization.JavaSerializer
-import java.util.{ List => JList }
-import java.util.function.{ BiFunction => JBiFunction }
-import java.util.function.{ Function => JFunction }
 
 object PersistentEntityTestDriver {
   final case class Outcome[E, S](
@@ -123,7 +111,7 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
 
     if (!initialized) {
       initialized = true
-      val inital = entity.initialBehavior(Optional.empty())
+      val inital = entity.initialBehavior(None)
       entity.internalSetCurrentBehavior(inital)
 
       val newBehavior = entity.recoveryCompleted()
@@ -144,7 +132,7 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
                 applyEvent(event)
                 issues ++= checkSerialization(entity.behavior.state)
                 if (afterPersist != null)
-                  afterPersist.accept(event)
+                  afterPersist(event)
               } catch {
                 case NonFatal(e) =>
                   ctx.commandFailed(e) // reply with failure
