@@ -16,15 +16,18 @@ import play.sbt.PlayImport.PlayKeys
 import sbt._
 import sbt.Def.Initialize
 import sbt.Keys._
+import sbt.ScopeFilter.ScopeFilter
 import sbt.plugins.{ CorePlugin, IvyPlugin, JvmPlugin }
 
 import scala.concurrent.{ Await, Future }
+import java.io.File
 
 /**
  * Base plugin for Lagom projects. Declares common settings for both Java and Scala based Lagom projects.
  */
 object Lagom extends AutoPlugin {
   override def requires = LagomReloadableService && JavaAppPackaging
+
   val autoImport = LagomImport
 
   override def projectSettings = Seq(
@@ -52,6 +55,7 @@ object Lagom extends AutoPlugin {
  */
 object LagomJava extends AutoPlugin {
   override def requires = Lagom
+
   override def trigger = noTrigger
 
   import LagomPlugin.autoImport._
@@ -83,6 +87,7 @@ object LagomJava extends AutoPlugin {
  */
 object LagomPlay extends AutoPlugin {
   override def requires = LagomReloadableService && Play
+
   override def trigger = noTrigger
 
   import LagomReloadableService.autoImport._
@@ -114,6 +119,7 @@ object LagomPlay extends AutoPlugin {
  */
 object LagomExternalProject extends AutoPlugin {
   override def requires = LagomPlugin
+
   override def trigger = noTrigger
 
   import LagomPlugin.autoImport._
@@ -136,6 +142,7 @@ object LagomExternalProject extends AutoPlugin {
  */
 object LagomReloadableService extends AutoPlugin {
   override def requires = LagomPlugin
+
   override def trigger = noTrigger
 
   object autoImport {
@@ -211,6 +218,7 @@ object LagomReloadableService extends AutoPlugin {
  * Any service that can be run in Lagom should enable this plugin.
  */
 object LagomPlugin extends AutoPlugin {
+
   import scala.concurrent.duration._
 
   override def requires = JvmPlugin
@@ -252,7 +260,7 @@ object LagomPlugin extends AutoPlugin {
     val lagomCassandraJvmOptions = settingKey[Seq[String]]("JVM options used by the forked Cassandra process")
     val lagomCassandraMaxBootWaitingTime = settingKey[FiniteDuration]("Max waiting time to start Cassandra")
 
-    /** Allows to integrate an external Lagom project in the current build, so that when runAll is run, this service is also started.*/
+    /** Allows to integrate an external Lagom project in the current build, so that when runAll is run, this service is also started. */
     def lagomExternalProject(name: String, module: ModuleID): Project =
       Project(name, file("target") / "lagom-external-projects" / name).
         enablePlugins(LagomExternalProject).
@@ -405,13 +413,37 @@ object LagomPlugin extends AutoPlugin {
   }
 
   private def runAllMicroservicesTask: Initialize[Task[Unit]] = Def.taskDyn {
+
     val projects = microservicesProjects.value
-    val filter = ScopeFilter(inProjects(projects: _*))
+    val filter: ScopeFilter = ScopeFilter(inProjects(projects: _*))
+    // check if application.conf is present in service
+    val serviceResourceDirectories = ((unmanagedResourceDirectories in Runtime) ?? Nil).all(filter)
+    //Verifying the presence of the required application.conf file
+    val verifyApplicationConfTask = Def.task {
+
+      val servicesPaths: Seq[File] = serviceResourceDirectories.value.flatten
+
+      val (validProject, notValidProject) = servicesPaths.partition(f => {
+        val r: PathFinder = {
+          f.get * "application.conf"
+        }
+        r.get.nonEmpty
+      })
+      //displays all projects that not contain a application.conf file
+      if (notValidProject.nonEmpty) {
+        notValidProject foreach (f => {
+          val log = state.value.log
+          log.error("File application.conf has been missed in the following service >>> " + f.project)
+        })
+        sys.error("Microservices' system could not be started")
+      }
+    }
+
     // Services are going to be started without a specific order. Whether we will need to take into consideration
     // services' dependencies is not something clear yet.
     val runningServiceTasks = lagomRun.all(filter)
 
-    Def.task {
+    val runAllTasks = Def.task {
       val log = state.value.log
       val runningServices = runningServiceTasks.value
       if (runningServices.isEmpty) log.info("There are no Lagom projects to run")
@@ -420,6 +452,7 @@ object LagomPlugin extends AutoPlugin {
         ConsoleHelper.blockUntilExit(log, Internal.Keys.interactionMode.value, runningServices.map(_._2): _*)
       }
     }
+    Def.sequential(verifyApplicationConfTask, runAllTasks)
   }
 
   /** Projects that have the Microservice plugin enabled. */
@@ -430,6 +463,7 @@ object LagomPlugin extends AutoPlugin {
       projRef <- projects
       proj <- Project.getProject(projRef, structure).toList
       autoPlugin <- proj.autoPlugins if autoPlugin == LagomPlugin
+
     } yield projRef
   }
 
@@ -524,17 +558,21 @@ private[sbt] object ConsoleHelper {
 }
 
 /**
- *  This is useful for testing, as it allows to start and stop the servers programmatically
- *  (and not on user's input, as it's usually done in development mode).
+ * This is useful for testing, as it allows to start and stop the servers programmatically
+ * (and not on user's input, as it's usually done in development mode).
  */
 object NonBlockingInteractionMode extends PlayNonBlockingInteractionMode {
+
   object NullLogger extends Logger {
     def trace(t: => Throwable): Unit = ()
+
     def success(message: => String): Unit = ()
+
     def log(level: Level.Value, message: => String): Unit = ()
   }
 
   import scala.collection.immutable.HashSet
+
   // Note: all accesses to this variable are guarded by this' class instance lock.
   private var runningServers: Set[Closeable] = HashSet.empty
 
