@@ -21,8 +21,11 @@
         <fileSet filtered="true" encoding="UTF-8">
             <directory></directory>
             <includes>
-                <include>**/*.*</include>
+                <include>**/*</include>
             </includes>
+            <excludes>
+                <exclude>pom.xml</exclude>
+            </excludes>
         </fileSet>
     </fileSets>
 

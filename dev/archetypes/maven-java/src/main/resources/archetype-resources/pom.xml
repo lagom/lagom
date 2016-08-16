@@ -17,6 +17,10 @@
     <build>
         <plugins>
             <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.6</version>
+            </plugin>
+            <plugin>
                 <groupId>com.lightbend.lagom</groupId>
                 <artifactId>lagom-maven-plugin</artifactId>
                 <version>${lagom.version}</version>
@@ -74,6 +78,11 @@
                 <artifactId>lagom-javadsl-integration-client_2.11</artifactId>
                 <version>${lagom.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.typesafe.conductr</groupId>
+                <artifactId>${conductr.lib.name}</artifactId>
+                <version>1.4.7</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -82,5 +91,6 @@
 
         <lagom.version>%LAGOM-VERSION%</lagom.version>
         <play.version>2.5.4</play.version>
+        <conductr.lib.name>lagom10-conductr-bundle-lib_2.11</conductr.lib.name>
     </properties>
 </project>

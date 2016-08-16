@@ -153,6 +153,37 @@
             <editable>true</editable>
             <description>A list of external projects to run in dev mode.</description>
         </parameter>
+
+        <parameter>
+            <name>sourceConductRBundle</name>
+            <type>java.util.File</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The source ConductR bundle to rename.</description>
+            <configuration>
+                <sourceConductRBundle implementation="java.util.File"
+                                      default-value="${project.build.directory}/${project.build.finalName}-conductr-bundle.zip"/>
+            </configuration>
+        </parameter>
+        <parameter>
+            <name>outputDirectory</name>
+            <type>java.util.File</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The directory to write the bundle to.</description>
+            <configuration>
+                <outputDirectory implementation="java.util.File"
+                                      default-value="${project.build.directory}"/>
+            </configuration>
+        </parameter>
+        <parameter>
+            <name>bundleName</name>
+            <type>java.lang.String</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The name of the bundle, detected from the bundle itself if not provided.</description>
+        </parameter>
+
     </parameterManagement>
 
     <!-- All the mojos -->
@@ -385,6 +416,25 @@
             <parameters>
                 <parameter>
                     <name>externalProjects</name>
+                </parameter>
+            </parameters>
+        </mojo>
+
+        <mojo>
+            <goal>renameConductRBundle</goal>
+            <description>Renames a ConductR bundle to match ConductR requirements.</description>
+            <implementation>com.lightbend.lagom.maven.RenameConductRBundleMojo</implementation>
+            <instantiationStrategy>per-lookup</instantiationStrategy>
+            <phase>package</phase>
+            <parameters>
+                <parameter>
+                    <name>sourceConductRBundle</name>
+                </parameter>
+                <parameter>
+                    <name>bundleName</name>
+                </parameter>
+                <parameter>
+                    <name>outputDirectory</name>
                 </parameter>
             </parameters>
         </mojo>
