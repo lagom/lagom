@@ -109,8 +109,11 @@ class MavenFacade @Inject() (repoSystem: RepositorySystem, session: MavenSession
         }
       }
     }
-    project.setResolvedArtifacts(artifacts)
-    project.setArtifacts(artifacts)
+
+    if (additionalDependencies.isEmpty) {
+      project.setResolvedArtifacts(artifacts)
+      project.setArtifacts(artifacts)
+    }
 
     toDependencies(depResult)
   }

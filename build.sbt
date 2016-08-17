@@ -454,7 +454,7 @@ lazy val `dev-environment` = (project in file("dev"))
   .enablePlugins(AutomateHeaderPlugin)
   .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
     `service-registration`, `cassandra-server`, `cassandra-registration`,  `play-integration`, `service-registry-client`,
-    `maven-java-archetype`, `maven-cassandra-archetype`)
+    `maven-java-archetype`)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}

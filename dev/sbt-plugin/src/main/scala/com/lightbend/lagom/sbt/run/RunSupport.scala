@@ -40,7 +40,8 @@ private[sbt] object RunSupport {
       lagomFileWatchService.value,
       baseDirectory.value,
       extraConfigs.toSeq ++ lagomDevSettings.value,
-      lagomServicePort.value
+      lagomServicePort.value,
+      RunSupport
     )
   }
 

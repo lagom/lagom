@@ -43,6 +43,13 @@
                 <servicePort implementation="int" default-value="-1"/>
             </configuration>
         </parameter>
+        <parameter>
+            <name>watchDirs</name>
+            <type>java.util.List</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>Additional source directories to watch in dev mode</description>
+        </parameter>
 
         <parameter>
             <name>cassandraMaxBootWaitingSeconds</name>
@@ -345,6 +352,9 @@
                 </parameter>
                 <parameter>
                     <name>externalProjects</name>
+                </parameter>
+                <parameter>
+                    <name>watchDirs</name>
                 </parameter>
             </parameters>
         </mojo>

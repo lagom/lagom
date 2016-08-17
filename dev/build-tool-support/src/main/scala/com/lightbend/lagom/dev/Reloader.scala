@@ -74,7 +74,7 @@ object Reloader {
     parentClassLoader: ClassLoader, dependencyClasspath: Seq[File],
     reloadCompile: () => CompileResult, classLoaderDecorator: ClassLoader => ClassLoader,
     monitoredFiles: Seq[File], fileWatchService: FileWatchService, projectPath: File,
-    devSettings: Seq[(String, String)], httpPort: Int
+    devSettings: Seq[(String, String)], httpPort: Int, reloadLock: AnyRef
   ): DevServer = {
     /*
      * We need to do a bit of classloader magic to run the Play application.
@@ -119,7 +119,7 @@ object Reloader {
     lazy val applicationLoader = new NamedURLClassLoader("LagomDependencyClassLoader", urls(dependencyClasspath), delegatingLoader)
     lazy val decoratedLoader = classLoaderDecorator(applicationLoader)
 
-    lazy val reloader = new Reloader(reloadCompile, decoratedLoader, projectPath, devSettings, monitoredFiles, fileWatchService)
+    lazy val reloader = new Reloader(reloadCompile, decoratedLoader, projectPath, devSettings, monitoredFiles, fileWatchService, reloadLock)
 
     val server = {
       val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
@@ -198,7 +198,8 @@ class Reloader(
     val projectPath: File,
     devSettings: Seq[(String, String)],
     monitoredFiles: Seq[File],
-    fileWatchService: FileWatchService
+    fileWatchService: FileWatchService,
+    reloadLock: AnyRef
 ) extends BuildLink {
 
   // The current classloader for the application
@@ -264,8 +265,7 @@ class Reloader(
    * - null - If nothing changed.
    */
   def reload: AnyRef = {
-    // fixme: synchronize on something that is guaranteed to be global in mavens multi classloader environment
-    Reloader.synchronized {
+    reloadLock.synchronized {
       if (changed || forceReloadNextTime || currentSourceMap.isEmpty || currentApplicationClassLoader.isEmpty) {
         val shouldReload = forceReloadNextTime
 

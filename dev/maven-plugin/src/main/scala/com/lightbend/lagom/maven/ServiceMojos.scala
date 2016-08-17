@@ -1,8 +1,9 @@
 package com.lightbend.lagom.maven
 
+import java.io.File
 import javax.inject.Inject
 
-import com.lightbend.lagom.dev.{ Colors, ConsoleHelper, LagomConfig }
+import com.lightbend.lagom.dev.{Colors, ConsoleHelper, LagomConfig}
 import com.lightbend.lagom.dev.PortAssigner.ProjectName
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.model.Dependency
@@ -10,7 +11,7 @@ import org.apache.maven.plugin.AbstractMojo
 import play.dev.filewatch.LoggerProxy
 
 import scala.beans.BeanProperty
-import java.util.{ Collections, List => JList }
+import java.util.{Collections, List => JList}
 
 import org.apache.maven.RepositoryUtils
 
@@ -74,9 +75,19 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
   @BeanProperty
   var externalProjects: JList[ExternalProject] = Collections.emptyList()
 
+  @BeanProperty
+  var watchDirs: JList[String] = Collections.emptyList()
+
   override def execute(): Unit = {
 
     val project = session.getCurrentProject
+
+    val resolvedWatchDirs = watchDirs.asScala.map { dir =>
+      val file = new File(dir)
+      if (!file.isAbsolute) {
+        new File(project.getBasedir, dir)
+      } else file
+    }
 
     if (!lagomService && !playService) {
       sys.error(s"${project.getArtifactId} is not a Lagom service!")
@@ -107,7 +118,8 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
 
     val cassandraKeyspace = LagomConfig.normalizeCassandraKeyspaceName(project.getArtifactId)
 
-    serviceManager.startServiceDevMode(project, selectedPort, serviceLocatorUrl, cassandraPort, cassandraKeyspace, playService = playService)
+    serviceManager.startServiceDevMode(project, selectedPort, serviceLocatorUrl, cassandraPort, cassandraKeyspace,
+      playService = playService, resolvedWatchDirs)
   }
 }
 

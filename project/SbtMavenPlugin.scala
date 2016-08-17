@@ -88,7 +88,7 @@ object SbtMavenPlugin extends AutoPlugin {
     mavenTest := {
       import sbt.complete.Parsers._
 
-      val toRun = some(OptSpace ~> StringBasic).parsed
+      val toRun = (OptSpace ~> StringBasic).?.parsed
 
       runMavenTests((sourceDirectory in mavenTest).value, mavenClasspath.value, mavenTestArgs.value, toRun,
         streams.value.log)
