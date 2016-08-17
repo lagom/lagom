@@ -453,7 +453,8 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
   .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
-    `service-registration`, `cassandra-server`, `cassandra-registration`,  `play-integration`, `service-registry-client`, `maven-java-archetype`)
+    `service-registration`, `cassandra-server`, `cassandra-registration`,  `play-integration`, `service-registry-client`,
+    `maven-java-archetype`, `maven-cassandra-archetype`)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}
@@ -572,22 +573,27 @@ def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++
     )
   )
 
-lazy val `maven-java-archetype` = (project in file("dev") / "archetypes" / "maven-java")
-  .settings(common: _*)
-  .settings(
-    name := "maven-archetype-lagom-java",
-    autoScalaLibrary := false,
-    publishMavenStyle := true,
-    crossPaths := false,
-    copyResources in Compile := {
-      val pomFile = (classDirectory in Compile).value / "archetype-resources" / "pom.xml"
-      val pomXml = IO.read(pomFile)
-      if (pomXml.contains("%LAGOM-VERSION%")) {
-        IO.write(pomFile, pomXml.replaceAll("%LAGOM-VERSION%", version.value))
+def archetypeProject(archetypeName: String) =
+  Project(s"maven-$archetypeName-archetype", file("dev") / "archetypes" / s"maven-$archetypeName")
+    .settings(common: _*)
+    .settings(
+      name := s"maven-archetype-lagom-$archetypeName",
+      autoScalaLibrary := false,
+      publishMavenStyle := true,
+      crossPaths := false,
+      copyResources in Compile := {
+        val pomFile = (classDirectory in Compile).value / "archetype-resources" / "pom.xml"
+        if (pomFile.exists()) {
+          val pomXml = IO.read(pomFile)
+          if (pomXml.contains("%LAGOM-VERSION%")) {
+            IO.write(pomFile, pomXml.replaceAll("%LAGOM-VERSION%", version.value))
+          }
+        }
+        (copyResources in Compile).value
       }
-      (copyResources in Compile).value
-    }
-  )
+    )
+
+lazy val `maven-java-archetype` = archetypeProject("java")
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")

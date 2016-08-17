@@ -17,6 +17,16 @@
         </requiredProperty>
     </requiredProperties>
 
+    <!-- If you read up on the documentation and various blog posts and question/answers out on the internet, you'll
+      see that the archetype descriptor actually has a nifty feature where it can be aware of different modules, and
+      name packages for you, and all sorts of wonderful things. The problem is, we want the names of the modules to be
+      dynamically selected using the above properties (eg, service1Name), but the Maven archetype plugin treats module
+      directories different to all other directories, where other directories can substitute any property they want
+      using __myPropertyName__ syntax, the module directory is hard coded to only substitute __rootArtifactId__.  This
+      issue has been raised here: https://issues.apache.org/jira/browse/ARCHETYPE-455, a patch has existed for 3 years,
+      but no response or review from the maintainers.  So, consequently, we can't use modules in the archetype
+      descriptor. -->
+
     <fileSets>
         <fileSet filtered="true" encoding="UTF-8">
             <directory></directory>
