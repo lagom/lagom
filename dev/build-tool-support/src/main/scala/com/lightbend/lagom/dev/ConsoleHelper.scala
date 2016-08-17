@@ -45,7 +45,7 @@ class ConsoleHelper(colors: Colors) {
       val closing = Future.traverse(services)(serv => Future {
         serv.close()
       })
-      closing.onComplete(_ => println("All services are stopped"))
+      closing.onComplete(_ => log.info("All services are stopped"))
       Await.result(closing, 60.seconds)
 
       println()
@@ -62,7 +62,7 @@ class ConsoleHelper(colors: Colors) {
 class Colors(logNoFormat: String) {
   import scala.Console._
 
-  lazy val isANSISupported = {
+  val isANSISupported = {
     Option(System.getProperty(logNoFormat)).map(_ != "true").orElse {
       Option(System.getProperty("os.name"))
         .map(_.toLowerCase(java.util.Locale.ENGLISH))

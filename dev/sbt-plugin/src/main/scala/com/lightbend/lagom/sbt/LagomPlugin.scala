@@ -283,7 +283,7 @@ object LagomPlugin extends AutoPlugin {
   ))
 
   private val projectPortMap = AttributeKey[Map[ProjectName, Port]]("lagomProjectPortMap")
-  private val defaultPortRange = PortRange(20000, 30000)
+  private val defaultPortRange = PortRange(0xc000, 0xffff)
 
   override def globalSettings = Seq(
     onLoad := onLoad.value andThen assignProjectsPort andThen DynamicProjectAdder.addProjects(serviceLocatorProject, cassandraProject)

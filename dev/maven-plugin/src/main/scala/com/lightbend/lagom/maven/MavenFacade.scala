@@ -31,9 +31,8 @@ import scala.collection.JavaConverters._
  */
 @Singleton
 class MavenFacade @Inject() (repoSystem: RepositorySystem, session: MavenSession,
-    buildPluginManager: BuildPluginManager, lifecycleExecutionPlanCalculator: LifecycleExecutionPlanCalculator) {
-
-  val cachedProjectIndex = new ProjectIndex(session.getProjects)
+    buildPluginManager: BuildPluginManager, lifecycleExecutionPlanCalculator: LifecycleExecutionPlanCalculator,
+                             logger: MavenLoggerProxy) {
 
   /**
    * Resolve the classpath for the given artifact.
@@ -156,6 +155,7 @@ class MavenFacade @Inject() (repoSystem: RepositorySystem, session: MavenSession
         }
       } else {
         // Lagom plugin not configured, return false
+        logger.debug(s"Project ${project.getArtifactId} is not a Lagom service because it doesn't have the Lagom plugin")
         LagomKeys.LagomService.put(project, false)
         LagomKeys.PlayService.put(project, false)
         false
