@@ -3,39 +3,43 @@
  */
 package com.lightbend.lagom.gateway
 
-import java.net.{ URI, InetSocketAddress }
+import java.net.{ InetSocketAddress, URI }
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import javax.inject.{ Named, Singleton, Inject }
+import javax.inject.{ Inject, Named, Singleton }
+
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
 import com.lightbend.lagom.discovery.ServiceRegistryActor
 import com.lightbend.lagom.internal.NettyFutureConverters
 import NettyFutureConverters._
-import com.lightbend.lagom.discovery.ServiceRegistryActor.{ NotFound, Found, RouteResult, Route }
+import com.lightbend.lagom.discovery.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
 import com.lightbend.lagom.internal.registry.ServiceRegistryService
 import io.netty.bootstrap.{ Bootstrap, ServerBootstrap }
-import io.netty.buffer.{ Unpooled, ByteBuf }
+import io.netty.buffer.{ ByteBuf, Unpooled }
 import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.pool.{ ChannelPool, AbstractChannelPoolHandler, SimpleChannelPool, AbstractChannelPoolMap }
+import io.netty.channel.pool.{ AbstractChannelPoolHandler, AbstractChannelPoolMap, ChannelPool, SimpleChannelPool }
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel._
-import io.netty.channel.socket.nio.{ NioSocketChannel, NioServerSocketChannel }
+import io.netty.channel.socket.nio.{ NioServerSocketChannel, NioSocketChannel }
 import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.EventExecutor
 import org.slf4j.LoggerFactory
+import play.api.{ PlayException, UsefulException }
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.iteratee.Execution.Implicits.trampoline
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
+
 import scala.language.implicitConversions
 import scala.collection.JavaConverters._
 import scala.collection.immutable.Queue
 import scala.concurrent.{ Await, ExecutionContext }
 import scala.concurrent.duration._
 import scala.compat.java8.OptionConverters._
+import scala.util.{ Failure, Success }
 
 case class ServiceGatewayConfig(
   port: Int
@@ -108,22 +112,31 @@ class ServiceGateway @Inject() (lifecycle: ApplicationLifecycle, config: Service
                 log.debug("Request is to be routed to {}, getting connection from pool", serviceAddress)
                 val pool = poolMap.get(serviceAddress)
                 currentPool = pool
-                currentPool.acquire().toScala.map { channel =>
+                currentPool.acquire().toScala.onComplete {
+                  case Success(channel) =>
+                    log.debug("Received connection from pool for {}", serviceAddress)
+                    // Connection was closed before we got a channel to talk to, release it immediately
+                    if (currentPool == null) {
+                      log.debug("Connection closed before channel received from pool, releasing channel")
+                      pool.release(channel)
+                    } else {
+                      channel.pipeline().addLast(ctx.executor, clientHandler)
+                      currentChannel = channel
 
-                  log.debug("Received connection from pool for {}", serviceAddress)
-                  // Connection was closed before we got a channel to talk to, release it immediately
-                  if (currentPool == null) {
-                    log.debug("Connection closed before channel receieved from pool, releasing channel")
-                    pool.release(channel)
-                  } else {
-                    channel.pipeline().addLast(ctx.executor, clientHandler)
-                    currentChannel = channel
+                      val proxyRequest = prepareProxyRequest(request)
 
-                    val proxyRequest = prepareProxyRequest(request)
-
-                    channel.writeAndFlush(proxyRequest)
+                      channel.writeAndFlush(proxyRequest)
+                      flushPipeline()
+                    }
+                  case Failure(e) =>
+                    log.debug("Unable to get connection to service")
+                    ReferenceCountUtil.release(currentRequest)
+                    currentRequest = null
+                    ctx.writeAndFlush(renderError(request, new PlayException(
+                      "Bad gateway",
+                      "The gateway could not establish a connection to the service"
+                    ), HttpResponseStatus.BAD_GATEWAY))
                     flushPipeline()
-                  }
                 }
               case NotFound(registryMap) =>
                 log.debug("Sending not found response")
@@ -371,6 +384,16 @@ class ServiceGateway @Inject() (lifecycle: ApplicationLifecycle, config: Service
 
     val html = views.html.defaultpages.devNotFound(request.getMethod.name, path, Some(router)).body.getBytes("utf-8")
     val response = new DefaultFullHttpResponse(request.getProtocolVersion, HttpResponseStatus.NOT_FOUND,
+      Unpooled.wrappedBuffer(html))
+    response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=utf8")
+    HttpHeaders.setContentLength(response, html.length)
+    HttpHeaders.setDate(response, new Date())
+    response
+  }
+
+  private def renderError(request: HttpRequest, exception: UsefulException, status: HttpResponseStatus): HttpResponse = {
+    val html = views.html.defaultpages.devError(None, exception).body.getBytes("utf-8")
+    val response = new DefaultFullHttpResponse(request.getProtocolVersion, status,
       Unpooled.wrappedBuffer(html))
     response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=utf8")
     HttpHeaders.setContentLength(response, html.length)

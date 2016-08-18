@@ -20,7 +20,168 @@ Consider the sample system below:
 
 This system has two services, one called `helloworld`, and one called `hellostream`.  Each service has two sbt projects defined, an API project, `helloworld-api` and `hellostream-api`, and an implementation project, `helloworld-impl` and `hellostream-impl`.  Additionally, `hellostream-impl` depends on `helloworld-api`, and uses that to invoke calls on `helloworld-stream`.
 
-## Defining a build
+* [Defining a build in Maven](#Defining-a-build-in-Maven)
+* [Defining a build in sbt](#Defining-a-build-in-sbt)
+
+## Defining a build in Maven
+
+### Configuring the root project
+
+In Lagom, it is typcial to use a multi module build. The Lagom maven plugin will generally be configured in the root project, which can be done by adding it to the `\<plugins\>` section of your `pom.xml`:
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <version>${lagom.version}</version>
+</plugin>
+```
+
+Doing this will allow you to use tasks like `lagom:runAll` to run every service in the system, and to define system wide configuration. Maven plugins inherit their configuration from parent poms, so whatever you define in the parent pom will be used for all services.
+
+Since Lagom requires JDK 8, you will need to set the source and target versions for Java compilation to be 1.8. Additionally, Lagom comes with the Jackson parameter names extension out of the box, allowing Jackson to deserialize json into immutable classes with no additional annotation metadata. To take advantage of this feature, the Java compiler must have parameter names enabled. The source, target and parameter names configuration is best configured in the root project, since the configuration will be inherited by all child modules:
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.5.1</version>
+    <configuration>
+        <source>1.8</source>
+        <target>1.8</target>
+        <compilerArgs>
+            <arg>-parameters</arg>
+        </compilerArgs>
+    </configuration>
+</plugin>
+```
+
+We also recommend using Maven dependency management in your root project pom to control the versions of your dependencies across the whole system. For example:
+
+```xml
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.lightbend.lagom</groupId>
+            <artifactId>lagom-javadsl-server_2.11</artifactId>
+            <version>${lagom.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.play</groupId>
+            <artifactId>play-netty-server_2.11</artifactId>
+            <version>${play.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lightbend.lagom</groupId>
+            <artifactId>lagom-javadsl-api_2.11</artifactId>
+            <version>${lagom.version}</version>
+        </dependency>
+        ...
+    </dependencies>
+</dependencyManagement>
+```
+
+#### A note on Scala versions
+
+When adding dependencies to Lagom libraries, you need to ensure that you include the Scala major version in the artifact ID, for example, `lagom-javadsl-api_2.11`.
+
+Lagom itself is implemented mostly in Scala. Unlike Java, where the Java maintainers control the virtual machine and so can build backwards compatibility into the virtual machine when new features are added, when new features are added in Scala, backwards compatibility is very difficult if not impossible to maintain. Therefore, libraries have to be compiled against a particular major version of Scala.
+
+Often libraries will want to support multiple versions of Scala, doing this requires building one artifact for each version of Scala that they support, which introduces the problem of how to differentiate between those artifacts, seeing as maven doesn't support the idea of adding aditional metadata to dependencies to specify what version of Scala they require. To solve this, the convention of appending the Scala version to the artifact is used.
+
+### Defining a service
+
+The API module for a service is a simple maven project.  It doesn't need to configure the Lagom plugin, often it will need no more than a dependency on the Lagom API library.  For example:
+
+```xml
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.example</groupId>
+        <artifactId>my-first-system</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>hello-api</artifactId>
+
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.lightbend.lagom</groupId>
+            <artifactId>lagom-javadsl-api_2.11</artifactId>
+        </dependency>
+    </dependencies>
+</project>
+```
+
+The implementation module for a service is also a simple maven project, but will have a few more dependencies, and will need to configure the `lagom-maven-plugin` to mark itself as a service project, so that the plugin knows to include it when `lagom:runAll` is used:
+
+```xml
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.example</groupId>
+        <artifactId>my-first-system</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>hello-impl</artifactId>
+
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hello-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lightbend.lagom</groupId>
+            <artifactId>lagom-javadsl-server_2.11</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.lightbend.lagom</groupId>
+            <artifactId>lagom-javadsl-persistence_2.11</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.lightbend.lagom</groupId>
+            <artifactId>lagom-logback_2.11</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.play</groupId>
+            <artifactId>play-netty-server_2.11</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.lightbend.lagom</groupId>
+            <artifactId>lagom-javadsl-testkit_2.11</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.lightbend.lagom</groupId>
+                <artifactId>lagom-maven-plugin</artifactId>
+                <configuration>
+                    <lagomService>true</lagomService>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+A few things to notice here are:
+
+* The implementation depends on its API project, so that it can implement that API.
+* It also has a dependency on `lagom-javadsl-server`, this provides all server side code for the project.
+* This particular service uses the Lagom persistence API to persist data, and so has a dependency on `lagom-javadsl-persistence`.
+* A logging implementation needs to be configured, this uses the default `lagom-logback` logging implementation.
+* An implementation of the Play HTTP server needs to be configured - Play provides two server implementations, one in Netty, and one in Akka HTTP.  In this case, Netty has been selected.
+* The `lagam-maven-plugin` has been configured to say that `lagomService` is `true`, this tells Lagom that this is a lagom service that should be run when you run `lagom:runAll`.
+
+## Defining a build in sbt
 
 ### Adding the Lagom sbt plugin
 

@@ -6,6 +6,18 @@
 
 To use this feature add the following in your project's build:
 
+In Maven:
+
+```xml
+<dependency>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-javadsl-pubsub_2.11</artifactId>
+    <version>${lagom.version}</version>
+</dependency>
+```
+
+In sbt:
+
 @[pubsub-dependency](code/build-cluster.sbt)
 
 ## Usage from Service Implementation

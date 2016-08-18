@@ -17,7 +17,18 @@ The recommended test framework for Lagom is [JUnit](http://junit.org/)
 
 ## Dependency
 
-To use this feature add the following in your project's build:
+To use this feature add the following in your project's build.
+
+```xml
+<dependency>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-javadsl-testkit_2.11</artifactId>
+    <version>${lagom.version}</version>
+    <scope>test</scope>
+</dependency>
+```
+
+In sbt:
 
 @[testkit-dependency](code/build-service.sbt)
 

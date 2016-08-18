@@ -4,19 +4,64 @@ By default, Lagom services needing to persist data use Cassandra as database. Th
 
 ## Default port
 
-By default, the Cassandra server is started on port `4000`. We are aware that Cassandra is usually run on port `9042`, and that is precisely the reason why we picked a different port: we do not want to interfere with your locally running Cassandra, if you happen to have one. If the current default port doesn't suit you, and for instance you would prefer to have the embedded Cassandra server running on port `9042`, you can do so by adding the following in your build:
+By default, the Cassandra server is started on port `4000`. We are aware that Cassandra is usually run on port `9042`, and that is precisely the reason why we picked a different port: we do not want to interfere with your locally running Cassandra, if you happen to have one. If the current default port doesn't suit you, and for instance you would prefer to have the embedded Cassandra server running on port `9042`, you can do so by adding the following in your build.
+
+In the Maven root project pom:
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <version>${lagom.version}</version>
+    <configuration>
+        <cassandraPort>9042</cassandraPort>
+    </configuration>
+</plugin>
+```
+
+In sbt:
 
 @[cassandra-port](code/build-cassandra-opts.sbt)
 
 ## Clean up on start
 
-By default, all database files created by your running services are going to be deleted the next time the Cassandra server is started. You can turn off this feature by adding the following in your build:
+By default, all database files created by your running services are going to be deleted the next time the Cassandra server is started. You can turn off this feature by adding the following in your build.
+
+In the Maven root project pom:
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <version>${lagom.version}</version>
+    <configuration>
+        <cassandraCleanOnStart>false</cassandraCleanOnStart>
+    </configuration>
+</plugin>
+```
+
+In sbt:
 
 @[cassandra-clean-on-start](code/build-cassandra-opts.sbt)
 
 # Keyspace
 
-A keyspace in Cassandra is a namespace that defines data replication on nodes. Each service should use a unique keyspace name so that the tables of different services are not conflicting with each other. But don't worry, we have already taken care of that and, by default, the keyspace is automatically set to be the project's name (after possibly having replaced a few characters that aren't allowed). If the generated keyspace doesn't suit you, you are free to provide a custom one. Let's assume you have the following Lagom project in your build:
+A keyspace in Cassandra is a namespace that defines data replication on nodes. Each service should use a unique keyspace name so that the tables of different services are not conflicting with each other. But don't worry, we have already taken care of that and, by default, the keyspace is automatically set to be the project's name (after possibly having replaced a few characters that aren't allowed). If the generated keyspace doesn't suit you, you are free to provide a custom one.
+
+In Maven, you can do this by modifying the service implementations pom configuration:
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <configuration>
+        <lagomService>true</lagomService>
+        <cassandraKeyspace>users</cassandraKeyspace>
+    </configuration>
+</plugin>
+```
+
+In sbt, let's assume you have the following Lagom project in your build:
 
 @[cassandra-users-project](code/build-cassandra-opts.sbt)
 
@@ -38,15 +83,33 @@ Note that the keyspace values provided via the `application.conf` will always wi
 
 ## JVM options
 
-The Cassandra server is run on a separate process, and a JVM is started with sensible memory defaults. However, if the default JVM options don't suit you, you can override them by adding the following in your build:
+The Cassandra server is run on a separate process, and a JVM is started with sensible memory defaults. However, if the default JVM options don't suit you, you can override them by adding the following in your build.
+
+In the Maven root project pom:
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <version>${lagom.version}</version>
+    <configuration>
+        <cassandraJvmOptions>
+             <opt>-Xms256m</opt>
+             <opt>-Xmx1024m</opt>
+             <opt>-Dcassandra.jmx.local.port=4099</opt>
+             <opt>-DCassandraLauncher.configResource=dev-embedded-cassandra.yaml</opt>
+         </cassandraJvmOptions>
+    </configuration>
+</plugin>
+```
+
+In sbt:
 
 @[cassandra-jvm-options](code/build-cassandra-opts.sbt)
 
 ## Yaml configuration
 
-You can provide a custom `.yaml` configuration to use when starting the embedded Cassandra server via the `-DCassandraLauncher.configResource` system property. Just add the following in your build:
-
-@[cassandra-yaml](code/build-cassandra-opts2.sbt)
+As shown above, the the YAML configuration file can be configured by modifying the Cassandra JVM options to include a `-DCassandraLauncher.configResource` system property that points to a resource in your `src/main/resources` directory.
 
 ## Logging
 
@@ -58,19 +121,49 @@ There is no mechanism in place to edit the used `logback.xml`. If you need to tu
 
 ## Cassandra start time
 
-[[As mentioned|DevEnvironment#Cassandra]], the `runAll` task also takes care of starting the embedded Cassandra server, before starting any other service. Moreover, services are usually started only after the Cassandra server is reachable. By default, the Cassandra server is given up to 20 seconds to be up and running, but you can change this default by adding the following in your build:
+[[As mentioned|DevEnvironment#Cassandra]], the `runAll` task also takes care of starting the embedded Cassandra server, before starting any other service. Moreover, services are usually started only after the Cassandra server is reachable. By default, the Cassandra server is given up to 20 seconds to be up and running, but you can change this default by adding the following in your build.
+
+In the Maven root project pom:
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <version>${lagom.version}</version>
+    <configuration>
+        <cassandraMaxBootWaitingSeconds>0</cassandraMaxBootWaitingSeconds>
+    </configuration>
+</plugin>
+```
+
+In sbt:
 
 @[cassandra-boot-waiting-time](code/build-cassandra-opts.sbt)
 
-Changing the Cassandra server maximum boot waiting time to be `0.seconds` can be useful to emulate a real-world deployment scenario, since a running Cassandra instance may not be available the moment a service is started.
+Changing the Cassandra server maximum boot waiting time to be 0 can be useful to emulate a real-world deployment scenario, since a running Cassandra instance may not be available the moment a service is started.
 
 ## Start and stop
 
-The Cassandra server is automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Cassandra server via the `lagomCassandraStart` task, and stopping it with the `lagomCassandraStop` task.
+The Cassandra server is automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Cassandra server via the `lagom:startCassandra` maven task or `lagomCassandraStart` sbt task, and stopping it with the `lagom:stopCassandra` Maven task or `lagomCassandraStop` sbt task.
 
 ## Disable it
 
-You can disable the embedded Cassandra server by adding the following in your build:
+You can disable the embedded Cassandra server by adding the following in your build.
+
+In the Maven root project pom:
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <version>${lagom.version}</version>
+    <configuration>
+        <cassandraEnabled>false</cassandraEnabled>
+    </configuration>
+</plugin>
+```
+
+In sbt:
 
 @[cassandra-enabled](code/build-cassandra-opts.sbt)
 
@@ -78,7 +171,23 @@ One good reason to disable the embedded Cassandra server is if you need your ser
 
 ## Connecting to a locally running Cassandra instance
 
-It's possible to connect to a locally running Cassandra instance in place of the embedded one. All you need to do is adding the following in your build:
+It's possible to connect to a locally running Cassandra instance in place of the embedded one. All you need to do is adding the following in your build.
+
+In the Maven root project pom:
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <version>${lagom.version}</version>
+    <configuration>
+        <cassandraPort>9042</cassandraPort>
+        <cassandraEnabled>false</cassandraEnabled>
+    </configuration>
+</plugin>
+```
+
+In sbt:
 
 @[local-instance](code/build-cassandra-opts3.sbt)
 

@@ -26,10 +26,6 @@ Lagom's Java APIs target Java 8. They assume familiarity with Java 8 features su
 
 Most of Lagom is implemented in Scala.  (This is an implementation detail that doesn't normally concern Java programmers using Lagom APIs.)
 
-## sbt build tool
-
-One place where some light Scala coding is required, even for Java users, is in Lagom build definitions, which must be written using sbt's Scala DSL.  In this manual, [[Build Concepts|BuildConcepts]] explains why we use and require sbt.
-
 ## Serialization
 
 Lagom's recommended serialization format is JSON.  The default engine used for JSON serialization and deserialization is [Jackson](https://github.com/FasterXML/jackson).
@@ -42,13 +38,13 @@ By default, Lagom services needing to persist data use Cassandra as database. Fo
 
 Lagom services are also free to use an existing Cassandra database, or another database solution entirely.
 
-## Play framework
+## Play Framework
 
 Lagom is implemented on top of Play Framework, Lightbend's web framework.  This is an implementation detail that will not directly concern simple microservices.  More advanced users may wish to use some Play APIs directly.
 
 Play is in turn built on the popular, standard [netty](http://netty.io) network transport library.
 
-If you have an existing Play Framework application that you want to add microservices to, we provide a sbt plugin (PlayLagom) to help you.
+If you have an existing Play Framework application that you want to add microservices to, we provide support both in sbt and Maven to help you.
 
 ## Guice
 

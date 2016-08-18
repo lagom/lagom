@@ -41,7 +41,19 @@ For free you get things like:
 * correct `equals`, `hashCode`, `toString` implementations
 * copy methods to make new instances based on old ones, e.g. `withEmail`
 
-Immutables supports different "styles" of object. Compared to the [default style](https://immutables.github.io/style.html), `@ImmutableStyle` follows a convention that the abstract class or interface name starts with `Abstract` and that is trimmed from the generated class, e.g. `AbstractUser` vs `User`. To use the `@ImmutableStyle` annotation you need to add `lagomJavadslImmutables` to your project's library dependencies. Here is an example:
+Immutables supports different "styles" of object. Compared to the [default style](https://immutables.github.io/style.html), `@ImmutableStyle` follows a convention that the abstract class or interface name starts with `Abstract` and that is trimmed from the generated class, e.g. `AbstractUser` vs `User`. To use the `@ImmutableStyle` annotation you need to add `lagomJavadslImmutables` to your project's library dependencies.
+
+In maven:
+
+```xml
+<dependency>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-javadsl-immutables_2.11</artifactId>
+    <version>${lagom.version}</version>
+</dependency>
+```
+
+In sbt:
 
 @[lagom-immutables](code/lagom-immutables.sbt)
 

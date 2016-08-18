@@ -10,7 +10,19 @@ If instances of a service need to know about each other, they must join the same
 
 The clustering feature is already included if you are using the [[persistence|PersistentEntity#Dependency]] or [[pubsub|PubSub#Dependency]] modules.
 
-If you want to enable it without those modules, add the following to your project's build:
+If you want to enable it without those modules, add the following dependency your project's build.
+
+In Maven:
+
+```xml
+<dependency>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-javadsl-cluster_2.11</artifactId>
+    <version>${lagom.version}</version>
+</dependency>
+```
+
+In sbt:
 
 @[cluster-dependency](code/build-cluster.sbt)
 

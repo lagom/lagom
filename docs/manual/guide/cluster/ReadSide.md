@@ -8,7 +8,17 @@ This separation of the write-side and the read-side of the persistent data is of
 
 ## Dependency
 
-To use this feature add the following in your project's build:
+In Maven:
+
+```xml
+<dependency>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-javadsl-cluster_2.11</artifactId>
+    <version>${lagom.version}</version>
+</dependency>
+```
+
+In sbt:
 
 @[persistence-dependency](code/build-cluster.sbt)
 
