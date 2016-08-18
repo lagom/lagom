@@ -20,7 +20,19 @@ When an entity is started it replays the stored events to restore the current st
 
 ## Dependency
 
-To use this feature add the following in your project's build:
+To use this feature add the following in your project's build.
+
+In Maven:
+
+```xml
+<dependency>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-javadsl-persistence_2.11</artifactId>
+    <version>${lagom.version}</version>
+</dependency>
+```
+
+In sbt:
 
 @[persistence-dependency](code/build-cluster.sbt)
 
@@ -171,7 +183,19 @@ For unit testing of the entity you can use the [PersistentEntityTestDriver](api/
 
 Note that it also verifies that all commands, events, replies and state are [[serializable|Serialization]], and reports any such problems in the `issues` of the `Outcome`.
 
-To use this feature add the following in your project's build:
+To use this feature add the following in your project's build.
+
+In Maven:
+
+```xml
+<dependency>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-javadsl-cluster_2.11</artifactId>
+    <version>${lagom.version}</version>
+</dependency>
+```
+
+In sbt:
 
 @[testkit-dependency](code/build-cluster.sbt)
 

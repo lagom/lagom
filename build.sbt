@@ -14,8 +14,26 @@ val AkkaPersistenceCassandraVersion = "0.17"
 val ScalaTestVersion = "2.2.4"
 val JacksonVersion = "2.7.2"
 val CassandraAllVersion = "3.0.2"
+val GuavaVersion = "19.0"
+val MavenVersion = "3.3.9"
+val NettyVersion = "4.0.36"
+
+// NOTE ON DEPENDENCIES
+
+// Since we support maven, we need to support mavens somewhat unintuitive dependency resolution mechanism. If two
+// versions of the same library are requested in maven, maven doesn't resolve the most recent version, it resolves
+// the version that is nearest to the root in the dependency graph.  So, when we depend on play, which 4 descendents
+// down the tree brings in netty-http-codec 4.0.36 which brings in netty-handler 4.0.36, and we also depend on
+// netty-reactive-streams, which brings in netty-handler 4.0.33, since, that's much higher in the tree than the other
+// path to it, we 4.0.33, and netty-http-codec 4.0.36 is incompatible with netty-handler 4.0.33, and so, well,
+// thankyou maven.
+
+// So you'll find here a lot of explicit adding of dependencies that are unnecessary in other dependency management
+// mechanisms where transitive conflict resolution is done by following semantic versioning rules, but's it's necessary
+// for maven to work.
 
 val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
+val guava = "com.google.guava" % "guava" % GuavaVersion
 
 def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   organization := "com.lightbend.lagom",
@@ -209,8 +227,13 @@ lazy val api = (project in file("api"))
   .settings(
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-java" % PlayVersion,
+      "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
       "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
+      // An explicit depnedency is added on Guava because mavens resolution rule is stupid - it doesn't use the most
+      // recent version in the tree, it uses the version that's closest to the root of the tree. So this puts the
+      // version we need closer to the root of the tree.
+      guava,
       "org.pcollections" % "pcollections" % "2.1.2",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
       scalaTest % Test,
@@ -275,7 +298,6 @@ lazy val client = (project in file("client"))
   .settings(
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-ws" % PlayVersion,
-      "com.typesafe.netty" % "netty-reactive-streams" % "1.0.1",
       "io.dropwizard.metrics" % "metrics-core" % "3.1.2"
     )
   )
@@ -288,7 +310,13 @@ lazy val `integration-client` = (project in file("integration-client"))
   .dependsOn(client, `service-registry-client`)
 
 lazy val server = (project in file("server"))
-  .settings(name := "lagom-javadsl-server")
+  .settings(
+    name := "lagom-javadsl-server",
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
+      guava
+    )
+  )
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
   .dependsOn(core, client, immutables % "provided")
@@ -424,7 +452,9 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
-  .aggregate(`build-link`, `reloadable-server`, `sbt-plugin`, `service-locator`, `service-registration`, `cassandra-server`, `cassandra-registration`,  `play-integration`, `service-registry-client`)
+  .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
+    `service-registration`, `cassandra-server`, `cassandra-registration`,  `play-integration`, `service-registry-client`,
+    `maven-java-archetype`)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}
@@ -454,6 +484,21 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   )
   .dependsOn(`build-link`)
 
+lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
+  .settings(common: _*)
+  .settings(
+    name := "lagom-build-tool-support",
+    publishMavenStyle := true,
+    crossPaths := false,
+    sourceGenerators in Compile <+= (version, sourceManaged in Compile) map Generators.version,
+    libraryDependencies ++= Seq(
+      "com.lightbend.play" %% "play-file-watch" % "1.0.0",
+      // This is used in the code to check if the embedded cassandra server is started
+      "com.datastax.cassandra" % "cassandra-driver-core" % "3.0.0",
+      scalaTest % Test
+    )
+  ).dependsOn(`build-link`)
+
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(name := "lagom-sbt-plugin")
   .settings(common: _*)
@@ -462,14 +507,11 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(
     sbtPlugin := true,
     libraryDependencies ++= Seq(
-      // This is used in the code to check if the embedded cassandra server is started
-      "com.datastax.cassandra"  % "cassandra-driver-core" % "3.0.0",
       // And this is needed to silence the datastax driver logging
       "org.slf4j" % "slf4j-nop" % "1.7.14",
       scalaTest % Test
     ),
     addSbtPlugin(("com.typesafe.play" % "sbt-plugin" % PlayVersion).exclude("org.slf4j","slf4j-simple")),
-    sourceGenerators in Compile <+= (version, sourceManaged in Compile) map Generators.version,
     scriptedDependencies := {
       val () = publishLocal.value
       val () = (publishLocal in `service-locator`).value
@@ -483,8 +525,54 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
       } else publishTo.value
     },
     publishMavenStyle := isSnapshot.value
-  ).dependsOn(`build-link`)
+  ).dependsOn(`build-tool-support`)
 
+lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
+  .enablePlugins(lagom.SbtMavenPlugin)
+  .settings(common: _*)
+  .settings(
+    name := "Lagom Maven Plugin",
+    description := "Provides Lagom development environment support to maven.",
+    libraryDependencies ++= Seq(
+      "org.apache.maven" % "maven-plugin-api" % MavenVersion,
+      "org.apache.maven" % "maven-core" % MavenVersion,
+      "org.apache.maven.plugin-testing" % "maven-plugin-testing-harness" % "3.3.0" % Test,
+      scalaTest % Test
+    ),
+    publishMavenStyle := true,
+    crossPaths := false,
+    mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
+    mavenTestArgs := Seq(
+      "-Xmx768m",
+      "-XX:MaxMetaspaceSize=384m",
+      s"-Dlagom.version=${version.value}",
+      s"-DarchetypeVersion=${version.value}",
+      s"-Dplay.version=$PlayVersion",
+      s"-Dscala.binary.version=${(scalaBinaryVersion in api).value}",
+      "-Dorg.slf4j.simpleLogger.showLogName=false",
+      "-Dorg.slf4j.simpleLogger.showThreadName=false"
+    )
+  ).dependsOn(`build-tool-support`)
+
+lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
+    .settings(
+      name := "lagom-maven-launcher",
+      description := "Dummy project, exists only to resolve the maven launcher classpath",
+      libraryDependencies := Seq(
+        // These dependencies come from https://github.com/apache/maven/blob/master/apache-maven/pom.xml, they are
+        // what maven bundles into its own distribution.
+        "org.apache.maven" % "maven-embedder" % MavenVersion,
+        ("org.apache.maven.wagon" % "wagon-http" % "2.10")
+          .classifier("shaded")
+          .exclude("org.apache.maven.wagon", "wagon-http-shared4")
+          .exclude("org.apache.httpcomponents", "httpclient")
+          .exclude("org.apache.httpcomponents", "httpcore"),
+        "org.apache.maven.wagon" % "wagon-file" % "2.10",
+        "org.eclipse.aether" % "aether-connector-basic" % "1.0.2.v20150114",
+        "org.eclipse.aether" % "aether-transport-wagon" % "1.0.2.v20150114",
+        "org.slf4j" % "slf4j-simple" % "1.7.21"
+      )
+    )
 
 def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++ 
   Seq(scriptedLaunchOpts <+= version apply { v => s"-Dproject.version=$v" }) ++
@@ -496,6 +584,28 @@ def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++
       "-Dscala.version=" + sys.props.get("scripted.scala.version").getOrElse((scalaVersion in `reloadable-server`).value)
     )
   )
+
+def archetypeProject(archetypeName: String) =
+  Project(s"maven-$archetypeName-archetype", file("dev") / "archetypes" / s"maven-$archetypeName")
+    .settings(common: _*)
+    .settings(
+      name := s"maven-archetype-lagom-$archetypeName",
+      autoScalaLibrary := false,
+      publishMavenStyle := true,
+      crossPaths := false,
+      copyResources in Compile := {
+        val pomFile = (classDirectory in Compile).value / "archetype-resources" / "pom.xml"
+        if (pomFile.exists()) {
+          val pomXml = IO.read(pomFile)
+          if (pomXml.contains("%LAGOM-VERSION%")) {
+            IO.write(pomFile, pomXml.replaceAll("%LAGOM-VERSION%", version.value))
+          }
+        }
+        (copyResources in Compile).value
+      }
+    )
+
+lazy val `maven-java-archetype` = archetypeProject("java")
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
@@ -517,6 +627,8 @@ lazy val `service-locator` = (project in file("dev") / "service-locator")
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     libraryDependencies ++= Seq(
+      // Explicit akka dependency because maven chooses the wrong version
+      "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
       "com.typesafe.play" %% "play-netty-server" % PlayVersion,
       scalaTest % Test
     )

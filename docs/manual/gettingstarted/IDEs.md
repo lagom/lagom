@@ -2,7 +2,13 @@
 
 Here you will learn how to import projects defined in a Lagom build into your preferred IDE.
 
-## Eclipse
+## Using Maven
+
+If using Maven, use the m2clipse plugin in Eclipse, or the built in IntelliJ Maven support in IntelliJ, to import your project.
+
+## Using sbt
+
+### Eclipse
 
 [sbt-eclipse](https://github.com/typesafehub/sbteclipse) is needed to generate the Eclipse project files, which are required to import all projects defined in your Lagom build into Eclipse.
 
@@ -78,7 +84,7 @@ Now update all projects declarations in your Lagom build to use the newly create
 
 Finally, you will need to regenerate the Eclipse project files to account for the changes made in the build file. Go back to the activator console, type `reload` to reload the build file, and type `eclipse`. Once the `eclipse` task completes, go back to Eclipse, hit F5 to refresh all previously imported projects, and you are done.
 
-## IntelliJ
+### IntelliJ
 
 Because the Lagom build file is written in sbt, we recommend to install the IntelliJ IDEA sbt plugin to facilitate importing projects. Unfortunately, for sbt plugin to properly work, you will need to install the Scala plugin as well. To do so, open the `Plugins` modal for installing plugins, search for the "SBT" plugin. If no match is found, you'll have to hit "Browse".
 

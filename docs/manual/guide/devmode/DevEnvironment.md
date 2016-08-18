@@ -1,10 +1,25 @@
 # Development Environment
 
-Lagom's sbt-based development console allows running any number of services together with a single command.
+Lagom's sbt and Maven based development environments allow running any number of services together with a single command.
 
 The same command also reloads your services when the code changes, so that you don't have to manually restart them. You can stay focused on your work and let Lagom do the compiling and reloading.
 
-## Starting the development console
+## Running all services in Maven
+
+To run all services in Maven, simply run the `lagom:runAll` command:
+
+```console
+$ cd <path to your Lagom project>
+$ mvn lagom:runAll
+INFO ...
+INFO Service helloworld-impl listening for HTTP on 0:0:0:0:0:0:0:0:23966
+INFO Service hellostream-impl listening for HTTP on 0:0:0:0:0:0:0:0:27462
+(Services started, press enter to stop and go back to the console...)
+```
+
+This may take a while if you have a lot of services or if dependencies are being retrieved for the first time.
+
+## Starting the sbt development console
 
 Assuming you have followed the [[Installation|Installation]] instructions, it's now time to fire up the console on your Lagom project directory:
 
@@ -15,8 +30,6 @@ $ activator
 >
 ```
 
-## Running all services
-
 To run all Lagom services together, with automatic reloading, just enter `runAll` in the activator console:
 
 ```console
@@ -24,10 +37,12 @@ To run all Lagom services together, with automatic reloading, just enter `runAll
 [info] ...
 [info] Service helloworld-impl listening for HTTP on 0:0:0:0:0:0:0:0:23966
 [info] Service hellostream-impl listening for HTTP on 0:0:0:0:0:0:0:0:27462
-(Services started, use Ctrl+D to stop and go back to the console...)
+(Services started, press enter to stop and go back to the console...)
 ```
 
 This may take a while if you have a lot of services or if dependencies are being retrieved for the first time.
+
+## Hot reloading
 
 Once the "Services started" message has appeared, if you make a change to your source code, you'll see output like this in the console:
 

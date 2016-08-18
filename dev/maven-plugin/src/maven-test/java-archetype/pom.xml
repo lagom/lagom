@@ -1,0 +1,20 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>my-lagom-system-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <packaging>pom</packaging>
+
+    <profiles>
+        <!-- The my-lagom-system module doesn't exist until after running the archetype:generate, so we need to activate
+         it in a profile -->
+        <profile>
+            <id>archetype</id>
+            <modules>
+                <module>my-lagom-system</module>
+            </modules>
+        </profile>
+    </profiles>
+
+</project>
