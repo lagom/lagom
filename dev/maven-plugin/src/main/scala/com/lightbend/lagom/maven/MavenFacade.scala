@@ -32,7 +32,7 @@ import scala.collection.JavaConverters._
 @Singleton
 class MavenFacade @Inject() (repoSystem: RepositorySystem, session: MavenSession,
     buildPluginManager: BuildPluginManager, lifecycleExecutionPlanCalculator: LifecycleExecutionPlanCalculator,
-                             logger: MavenLoggerProxy) {
+    logger: MavenLoggerProxy) {
 
   /**
    * Resolve the classpath for the given artifact.

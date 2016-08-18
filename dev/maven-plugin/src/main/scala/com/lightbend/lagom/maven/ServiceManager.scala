@@ -1,17 +1,17 @@
 package com.lightbend.lagom.maven
 
 import java.io.File
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import com.lightbend.lagom.core.LagomVersion
-import com.lightbend.lagom.dev.PortAssigner.{Port, PortRange, ProjectName}
-import com.lightbend.lagom.dev.Reloader.{CompileFailure, CompileResult, CompileSuccess, DevServer}
-import com.lightbend.lagom.dev.{LagomConfig, PortAssigner, Reloader}
+import com.lightbend.lagom.dev.PortAssigner.{ Port, PortRange, ProjectName }
+import com.lightbend.lagom.dev.Reloader.{ CompileFailure, CompileResult, CompileSuccess, DevServer }
+import com.lightbend.lagom.dev.{ LagomConfig, PortAssigner, Reloader }
 import org.apache.maven.Maven
 import org.apache.maven.artifact.ArtifactUtils
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.project.MavenProject
-import org.eclipse.aether.artifact.{Artifact, DefaultArtifact}
+import org.eclipse.aether.artifact.{ Artifact, DefaultArtifact }
 import org.eclipse.aether.graph.Dependency
 import play.api.PlayException
 import play.dev.filewatch.FileWatchService

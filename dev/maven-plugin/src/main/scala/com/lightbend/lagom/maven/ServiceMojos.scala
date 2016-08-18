@@ -3,7 +3,7 @@ package com.lightbend.lagom.maven
 import java.io.File
 import javax.inject.Inject
 
-import com.lightbend.lagom.dev.{Colors, ConsoleHelper, LagomConfig}
+import com.lightbend.lagom.dev.{ Colors, ConsoleHelper, LagomConfig }
 import com.lightbend.lagom.dev.PortAssigner.ProjectName
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.model.Dependency
@@ -11,7 +11,7 @@ import org.apache.maven.plugin.AbstractMojo
 import play.dev.filewatch.LoggerProxy
 
 import scala.beans.BeanProperty
-import java.util.{Collections, List => JList}
+import java.util.{ Collections, List => JList }
 
 import org.apache.maven.RepositoryUtils
 

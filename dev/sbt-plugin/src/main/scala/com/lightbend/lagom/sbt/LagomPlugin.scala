@@ -290,11 +290,14 @@ object LagomPlugin extends AutoPlugin {
   )
 
   private def assignProjectsPort(state: State): State = {
-    val portRange = state.get(lagomServicesPortRange.key).getOrElse(defaultPortRange)
+    val extracted = Project.extract(state)
+
+    val scope = Scope(Select(ThisBuild), Global, Global, Global)
+    val portRange = extracted.structure.data.get(scope, lagomServicesPortRange.key)
+      .getOrElse(defaultPortRange)
     val oldPortMap = state.get(projectPortMap).getOrElse(Map.empty)
 
     // build the map at most once
-    val extracted = Project.extract(state)
     val projects = extracted.currentUnit.defined
     val lagomProjects = (for {
       (name, proj) <- projects

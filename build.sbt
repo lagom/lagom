@@ -543,6 +543,8 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
     crossPaths := false,
     mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
     mavenTestArgs := Seq(
+      "-Xmx768m",
+      "-XX:MaxMetaspaceSize=384m",
       s"-Dlagom.version=${version.value}",
       s"-DarchetypeVersion=${version.value}",
       s"-Dplay.version=$PlayVersion",
@@ -557,7 +559,17 @@ lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
       name := "lagom-maven-launcher",
       description := "Dummy project, exists only to resolve the maven launcher classpath",
       libraryDependencies := Seq(
+        // These dependencies come from https://github.com/apache/maven/blob/master/apache-maven/pom.xml, they are
+        // what maven bundles into its own distribution.
         "org.apache.maven" % "maven-embedder" % MavenVersion,
+        ("org.apache.maven.wagon" % "wagon-http" % "2.10")
+          .classifier("shaded")
+          .exclude("org.apache.maven.wagon", "wagon-http-shared4")
+          .exclude("org.apache.httpcomponents", "httpclient")
+          .exclude("org.apache.httpcomponents", "httpcore"),
+        "org.apache.maven.wagon" % "wagon-file" % "2.10",
+        "org.eclipse.aether" % "aether-connector-basic" % "1.0.2.v20150114",
+        "org.eclipse.aether" % "aether-transport-wagon" % "1.0.2.v20150114",
         "org.slf4j" % "slf4j-simple" % "1.7.21"
       )
     )
