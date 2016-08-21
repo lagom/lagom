@@ -45,7 +45,7 @@ class PersistenceModule extends AbstractModule {
 
     binder.bind(classOf[CoreCassandraReadSide]).to(classOf[InternalCassandraReadSide])
 
-    //    binder.bind(classOf[ExecutionContext]).toInstance(ExecutionContext.Implicits.global)
+    binder.bind(classOf[ExecutionContext]).toInstance(ExecutionContext.Implicits.global)
 
     binder.bind(classOf[CassandraConfig]).toProvider(classOf[CassandraConfigProvider])
     binder.bind(classOf[PersistenceModule.InitServiceLocatorHolder]).asEagerSingleton()

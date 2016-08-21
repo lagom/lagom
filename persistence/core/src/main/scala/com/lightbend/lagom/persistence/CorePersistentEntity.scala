@@ -7,8 +7,11 @@ import akka.actor.ActorRef
 
 import scala.collection.immutable
 import scala.util.control.NoStackTrace
+import java.util.function.{ Function => JFunction }
+import java.util.function.{ BiFunction => JBiFunction }
 
 object CorePersistentEntity {
+
   /**
    * Commands to a `PersistentEntity` must implement this interface
    * to define the reply type.
@@ -33,6 +36,7 @@ object CorePersistentEntity {
    * Exception that is used when persist fails.
    */
   final case class PersistException(message: String) extends IllegalArgumentException(message) with NoStackTrace
+
 }
 
 /**
@@ -78,7 +82,8 @@ trait CorePersistentEntity[Command, Event, State] {
   /**
    * Create a new empty `Behavior` with a given state.
    */
-  final def newBehavior(state: State): Behavior = new Behavior(state, Map.empty, Map.empty)
+  //todo: implement partial functions
+  final def newBehavior(state: State): Behavior = new Behavior(state, Map.empty, { case (e, b) => ??? })
 
   /**
    * This method is called to notify the entity that the recovery process
@@ -106,9 +111,15 @@ trait CorePersistentEntity[Command, Event, State] {
    * for defining command and event handlers.
    */
   case class Behavior(
-    state:           State,
-    eventHandlers:   PartialFunction[_ <: Event, Behavior],
-    commandHandlers: PartialFunction[_ <: Command, Function[CoreCommandContext[Any], Persist[_ <: Event]]]
+    state: State,
+
+    //                       eventHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
+    eventHandler:   (Event) => Option[Behavior],
+    commandHandler: (Command, CoreCommandContext[Any]) => Persist[_ <: Event]
+
+  //                       commandHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CoreCommandContext[Any], Persist[_ <: Event]]]
+  //State    eventHandlers:   PartialFunction[_ <: Event, Behavior],
+  //    BehaviorcommandHandlers: PartialFunction[_ <: Command, Function[CoreCommandContext[Any], Persist[_ <: Event]]]
   ) {
 
     /**

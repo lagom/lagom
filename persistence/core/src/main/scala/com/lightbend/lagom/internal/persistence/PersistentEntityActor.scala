@@ -7,6 +7,7 @@ import java.net.URLDecoder
 import java.util.Optional
 import java.util.function.{ BiFunction => JBiFunction }
 import java.util.function.{ Function => JFunction }
+
 import scala.util.control.NonFatal
 import akka.actor.ActorLogging
 import akka.actor.ActorRef
@@ -16,6 +17,7 @@ import akka.persistence.PersistentActor
 import akka.persistence.RecoveryCompleted
 import akka.persistence.SnapshotOffer
 import akka.util.ByteString
+
 import scala.concurrent.duration.FiniteDuration
 import akka.actor.ReceiveTimeout
 import akka.cluster.sharding.ShardRegion
@@ -23,6 +25,8 @@ import akka.actor.actorRef2Scala
 import com.lightbend.lagom.persistence.CorePersistentEntity
 import java.util.function.{ BiFunction => JBiFunction }
 import java.util.function.{ Function => JFunction }
+
+import akka.remote.transport.TestTransport.Behavior
 import play.api.Logger;
 
 private[lagom] object PersistentEntityActor {
@@ -41,6 +45,7 @@ private[lagom] object PersistentEntityActor {
    * with persistent actors.
    */
   case object Stop
+
 }
 
 /**
@@ -67,11 +72,11 @@ private[lagom] class PersistentEntityActor[C, E, S](
 
   context.setReceiveTimeout(passivateAfterIdleTimeout)
 
-  private def eventHandlers: PartialFunction[E, entity.Behavior] =
-    entity.behavior.eventHandlers.asInstanceOf[PartialFunction[E, entity.Behavior]]
-
-  private def commandHandlers: PartialFunction[C, Function[entity.CoreCommandContext[Any], entity.Persist[_ <: E]]] =
-    entity.behavior.commandHandlers.asInstanceOf[PartialFunction[C, Function[entity.CoreCommandContext[Any], entity.Persist[_ <: E]]]]
+  //  private def eventHandlers: PartialFunction[E, entity.Behavior] =
+  //    entity.behavior.eventHandlers.asInstanceOf[PartialFunction[E, entity.Behavior]]
+  //
+  //  private def commandHandlers: PartialFunction[C, Function[entity.CoreCommandContext[Any], entity.Persist[_ <: E]]] =
+  //    entity.behavior.commandHandlers.asInstanceOf[PartialFunction[C, Function[entity.CoreCommandContext[Any], entity.Persist[_ <: E]]]]
 
   override def receiveRecover: Receive = {
     var initialized = false
@@ -105,7 +110,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
   }
 
   private def applyEvent(event: Any): Unit = {
-    eventHandlers.lift(event.asInstanceOf[E]) match {
+    entity.behavior.eventHandler(event.asInstanceOf[E]) match {
       case Some(newBehavior) =>
         entity.internalSetCurrentBehavior(newBehavior)
       case None =>
@@ -115,59 +120,63 @@ private[lagom] class PersistentEntityActor[C, E, S](
 
   def receiveCommand: Receive = {
     case cmd: CorePersistentEntity.ReplyType[_] =>
-      commandHandlers.lift(cmd.asInstanceOf[C]) match {
-        case Some(handler) =>
-          // create a new instance every time and capture sender()
-          val ctx = entity.newCtx(sender())
-          try handler.apply(ctx) match {
-            case _: entity.PersistNone[_] => // done
-            case entity.PersistOne(event, afterPersist) =>
-              // apply the event before persist so that validation exception is handled before persisting
-              // the invalid event, in case such validation is implemented in the event handler.
-              applyEvent(event)
-              persist(event) { evt =>
-                try {
-                  eventCount += 1
-                  if (afterPersist != null)
-                    afterPersist(evt)
-                  if (snapshotAfter > 0 && eventCount % snapshotAfter == 0)
-                    saveSnapshot(entity.behavior.state)
-                } catch {
-                  case NonFatal(e) =>
-                    ctx.commandFailed(e) // reply with failure
-                    throw e
-                }
-              }
-            case entity.PersistAll(events, afterPersist) =>
-              // if we trigger snapshot it makes sense to do it after handling all events
-              var count = events.size
-              var snap = false
-              // apply the event before persist so that validation exception is handled before persisting
-              // the invalid event, in case such validation is implemented in the event handler.
-              events.foreach(applyEvent)
-              persistAll(events) { evt =>
-                try {
-                  eventCount += 1
-                  count -= 1
-                  if (afterPersist != null && count == 0)
-                    afterPersist.apply()
-                  if (snapshotAfter > 0 && eventCount % snapshotAfter == 0)
-                    snap = true
-                  if (count == 0 && snap)
-                    saveSnapshot(entity.behavior.state)
-                } catch {
-                  case NonFatal(e) =>
-                    ctx.commandFailed(e) // reply with failure
-                    throw e
-                }
-              }
-          } catch { // exception thrown from handler.apply
-            case NonFatal(e) =>
-              ctx.commandFailed(e) // reply with failure
-              throw e
+      val ctx = entity.newCtx(sender())
+
+      entity.behavior.commandHandler(cmd.asInstanceOf[C], ctx) match {
+        //        case Some(handler) =>
+        // create a new instance every time and capture sender()
+        //          try handler.apply(cmd.asInstanceOf[C], ctx) match {
+        case _: entity.PersistNone[_] => // done
+        case entity.PersistOne(event, afterPersist) =>
+          // apply the event before persist so that validation exception is handled before persisting
+          // the invalid event, in case such validation is implemented in the event handler.
+          applyEvent(event)
+          persist(event) { evt =>
+            try {
+              eventCount += 1
+              if (afterPersist != null)
+                afterPersist(evt)
+              if (snapshotAfter > 0 && eventCount % snapshotAfter == 0)
+                saveSnapshot(entity.behavior.state)
+            } catch {
+              case NonFatal(e) =>
+                ctx.commandFailed(e) // reply with failure
+                throw e
+            }
+          }
+        case entity.PersistAll(events, afterPersist) =>
+          // if we trigger snapshot it makes sense to do it after handling all events
+          var count = events.size
+          var snap = false
+          // apply the event before persist so that validation exception is handled before persisting
+          // the invalid event, in case such validation is implemented in the event handler.
+          events.foreach(applyEvent)
+          persistAll(events) { evt =>
+            try {
+              eventCount += 1
+              count -= 1
+              if (afterPersist != null && count == 0)
+                afterPersist.apply()
+              if (snapshotAfter > 0 && eventCount % snapshotAfter == 0)
+                snap = true
+              if (count == 0 && snap)
+                saveSnapshot(entity.behavior.state)
+            } catch {
+              case NonFatal(e) =>
+                ctx.commandFailed(e) // reply with failure
+                throw e
+            }
           }
 
-        case None =>
+        //          } catch {
+        //            // exception thrown from handler.apply
+        //            case NonFatal(e) =>
+        //              ctx.commandFailed(e) // reply with failure
+        //              throw e
+        //          }
+
+        //        case None =>
+        case _ =>
           // not using akka.actor.Status.Failure because it is using Java serialization
           sender() ! CorePersistentEntity.UnhandledCommandException(
             s"Unhandled command [${cmd.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"

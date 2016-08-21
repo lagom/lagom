@@ -16,6 +16,7 @@ import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal
 
 object PersistentEntityTestDriver {
+
   final case class Outcome[E, S](
     events: JList[E], state: S,
     sideEffects: JList[SideEffect],
@@ -38,21 +39,27 @@ object PersistentEntityTestDriver {
   final case class NoSerializer(obj: Any, cause: Throwable) extends Issue {
     override def toString: String = s"No serializer defined for ${obj.getClass}"
   }
+
   final case class UsingJavaSerializer(obj: Any) extends Issue {
     override def toString: String = s"Java serialization is used for ${obj.getClass}"
   }
+
   final case class NotSerializable(obj: Any, cause: Throwable) extends Issue {
     override def toString: String = s"${obj.getClass} is not serializable, ${cause.getMessage}"
   }
+
   final case class NotDeserializable(obj: Any, cause: Throwable) extends Issue {
     override def toString: String = s"${obj.getClass} is not deserializable, ${cause.getMessage}"
   }
+
   final case class NotEqualAfterSerialization(message: String, objBefore: AnyRef, objAfter: AnyRef) extends Issue {
     override def toString: String = message
   }
+
   final case class UnhandledCommand(command: Any) extends Issue {
     override def toString: String = s"No command handler registered for ${command.getClass}"
   }
+
   final case class UnhandledEvent(event: Any) extends Issue {
     override def toString: String = s"No event handler registered for ${event.getClass}"
   }
@@ -67,6 +74,7 @@ object PersistentEntityTestDriver {
  * serializable, and reports any such problems in the `issues` of the `Outcome`.
  */
 class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: PersistentEntity[C, E, S], entityId: String) {
+
   import PersistentEntityTestDriver._
 
   entity.internalSetEntityId(entityId)
@@ -88,12 +96,6 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
       // not using akka.actor.Status.Failure because it is using Java serialization
       reply(cause)
   }
-
-  private def eventHandlers: Map[Class[E], JFunction[E, entity.Behavior]] =
-    entity.behavior.eventHandlers.asInstanceOf[Map[Class[E], JFunction[E, entity.Behavior]]]
-
-  private def commandHandlers: Map[Class[C], JBiFunction[C, entity.CommandContext[Any], entity.Persist[E]]] =
-    entity.behavior.commandHandlers.asInstanceOf[Map[Class[C], JBiFunction[C, entity.CommandContext[Any], entity.Persist[E]]]]
 
   /**
    * The entity will process the commands and the emitted events and side effects
@@ -121,43 +123,40 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
     var producedEvents: Vector[E] = Vector.empty
     commands.foreach { cmd =>
       issues ++= checkSerialization(cmd)
-      commandHandlers.get(cmd.getClass.asInstanceOf[Class[C]]) match {
-        case Some(handler) =>
-          handler.apply(cmd.asInstanceOf[C], ctx) match {
-            case _: entity.PersistNone[_] => // done
-            case entity.PersistOne(event, afterPersist) =>
-              issues ++= checkSerialization(event)
-              try {
-                producedEvents :+= event
-                applyEvent(event)
-                issues ++= checkSerialization(entity.behavior.state)
-                if (afterPersist != null)
-                  afterPersist(event)
-              } catch {
-                case NonFatal(e) =>
-                  ctx.commandFailed(e) // reply with failure
-                  throw e
-              }
-            case entity.PersistAll(events, afterPersist) =>
-              var count = events.size
-              events.foreach { evt =>
-                issues ++= checkSerialization(evt)
-                try {
-                  producedEvents :+= evt
-                  applyEvent(evt)
-                  issues ++= checkSerialization(entity.behavior.state)
-                  count -= 1
-                  if (afterPersist != null && count == 0)
-                    afterPersist.apply()
-                } catch {
-                  case NonFatal(e) =>
-                    ctx.commandFailed(e) // reply with failure
-                    throw e
-                }
-              }
+      entity.behavior.commandHandler(cmd.asInstanceOf[C], ctx) match {
+        case _: entity.PersistNone[_] => // done
+        case entity.PersistOne(event, afterPersist) =>
+          issues ++= checkSerialization(event)
+          try {
+            producedEvents :+= event
+            applyEvent(event)
+            issues ++= checkSerialization(entity.behavior.state)
+            if (afterPersist != null)
+              afterPersist(event)
+          } catch {
+            case NonFatal(e) =>
+              ctx.commandFailed(e) // reply with failure
+              throw e
+          }
+        case entity.PersistAll(events, afterPersist) =>
+          var count = events.size
+          events.foreach { evt =>
+            issues ++= checkSerialization(evt)
+            try {
+              producedEvents :+= evt
+              applyEvent(evt)
+              issues ++= checkSerialization(entity.behavior.state)
+              count -= 1
+              if (afterPersist != null && count == 0)
+                afterPersist.apply()
+            } catch {
+              case NonFatal(e) =>
+                ctx.commandFailed(e) // reply with failure
+                throw e
+            }
           }
 
-        case None =>
+        case _ =>
           issues :+= UnhandledCommand(cmd)
       }
     }
@@ -172,13 +171,14 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
   def getAllIssues: JList[Issue] = allIssues.asJava
 
   private def applyEvent(event: Any): Unit = {
-    eventHandlers.get(event.getClass.asInstanceOf[Class[E]]) match {
-      case Some(handler) =>
-        val newBehavior = handler.apply(event.asInstanceOf[E])
-        entity.internalSetCurrentBehavior(newBehavior)
+    val maybeBehavior: Option[entity.Behavior] = entity.behavior.eventHandler(event.asInstanceOf[E])
+    maybeBehavior match {
+      case Some(behavior) =>
+        entity.internalSetCurrentBehavior(behavior)
       case None =>
         issues :+= UnhandledEvent(event)
     }
+
   }
 
   private def checkSerialization(obj: Any): Option[Issue] = {

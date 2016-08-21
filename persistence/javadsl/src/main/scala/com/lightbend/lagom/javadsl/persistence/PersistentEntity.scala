@@ -80,14 +80,15 @@ import com.lightbend.lagom.persistence.CorePersistentEntity
  * method.
  *
  * Type parameter `Command`:
- *   the super type of all commands, must implement [[PersistentEntity.ReplyType]]
- *   to define the reply type of each command type
+ * the super type of all commands, must implement [[PersistentEntity.ReplyType]]
+ * to define the reply type of each command type
  * Type parameter `Event`:
- *   the super type of all events
+ * the super type of all events
  * Type parameter `State`:
- *   the type of the state
+ * the type of the state
  */
 abstract class PersistentEntity[Command, Event, State] extends CorePersistentEntity[Command, Event, State] {
+
   import CorePersistentEntity._
 
   /**
@@ -143,7 +144,9 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
   ) {
 
     def this(state: State) = this(state, Map.empty, Map.empty, None)
+
     def this(state: State, previousBehavior: Behavior) = this(state, Map.empty, Map.empty, Option(previousBehavior))
+
     def this(previousBehavior: Behavior) = this(previousBehavior.state, Map.empty, Map.empty, Option(previousBehavior))
 
     private var _state = state
@@ -179,8 +182,10 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
     /**
      * Remove an event handler for a given event class.
      */
-    def removeEventHandler(eventClass: Class[_ <: Event]): Unit =
-      eventHandlers -= eventClass
+    def removeEventHandler(eventClass: Class[_ <: Event]): Unit = ()
+
+    //todo: implement remove
+    //      eventHandlers -= eventClass
 
     /**
      * Register a command handler for a given command class.
@@ -188,7 +193,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
      * The `handler` function is supposed to return a `Persist` directive that defines
      * what event or events, if any, to persist. Use the `thenPersist`, `thenPersistAll`
      * or `done`  methods of the context that is passed to the handler function to create the
-     *  `Persist` directive.
+     * `Persist` directive.
      *
      * After persisting an event external side effects can be performed in the `afterPersist`
      * function that can be defined when creating the `Persist` directive.
@@ -216,10 +221,10 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
       commandHandlers -= commandClass
 
     /**
-     *  Register a read-only command handler for a given command class. A read-only command
-     *  handler does not persist events (i.e. it does not change state) but it may perform side
-     *  effects, such as replying to the request. Replies are sent with the `reply` method of the
-     *  context that is passed to the command handler function.
+     * Register a read-only command handler for a given command class. A read-only command
+     * handler does not persist events (i.e. it does not change state) but it may perform side
+     * effects, such as replying to the request. Replies are sent with the `reply` method of the
+     * context that is passed to the command handler function.
      */
     def setReadOnlyCommandHandler[R, A <: Command with ReplyType[R]](
       commandClass: Class[A],
@@ -237,14 +242,17 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
      * Construct the corresponding immutable `Behavior`.
      */
     def build(): Behavior = {
-      val evtHandlersPf = evtHandlers.values
-        .map(_.asScala.asInstanceOf[PartialFunction[Event, Behavior]])
-        .foldLeft(previousBehavior.map(_.eventHandlers).getOrElse(PartialFunction.empty[Event, Behavior]))(_ orElse _)
-      val cmdHandlersPf = cmdHandlers.values
-        .map(_.asScala.curried.asInstanceOf[PartialFunction[Command, Function[CoreCommandContext[Any], Persist[Event]]]])
-        .foldLeft(previousBehavior.map(_.commandHandlers).getOrElse(PartialFunction.empty[Command, Function[CoreCommandContext[Any], Persist[Event]]]))(_ orElse _)
-
-      Behavior(_state, evtHandlersPf, cmdHandlersPf)
+      //todo: implement build
+      //      val evtHandlersPf = evtHandlers.values
+      //        .map(_.asScala.asInstanceOf[PartialFunction[Event, Behavior]])
+      //        .foldLeft(previousBehavior.map(_.eventHandlers).getOrElse(PartialFunction.empty[Event, Behavior]))(_ orElse _)
+      //      val cmdHandlersPf = cmdHandlers.values
+      //        .map(_.asScala.curried.asInstanceOf[PartialFunction[Command, Function[CoreCommandContext[Any], Persist[Event]]]])
+      //        .foldLeft(previousBehavior.map(_.commandHandlers).getOrElse(PartialFunction.empty[Command, Function[CoreCommandContext[Any], Persist[Event]]]))(_ orElse _)
+      val persistNone = new Persist[Event] {
+        override def toString: String = "PersistNone"
+      }
+      Behavior(_state, e => None, (c: Command, ctx: CoreCommandContext[Any]) => (persistNone))
     }
 
   }

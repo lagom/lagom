@@ -84,14 +84,15 @@ object PersistentEntity {
  * method.
  *
  * Type parameter `Command`:
- *   the super type of all commands, must implement [[PersistentEntity.ReplyType]]
- *   to define the reply type of each command type
+ * the super type of all commands, must implement [[PersistentEntity.ReplyType]]
+ * to define the reply type of each command type
  * Type parameter `Event`:
- *   the super type of all events
+ * the super type of all events
  * Type parameter `State`:
- *   the type of the state
+ * the type of the state
  */
 abstract class PersistentEntity[Command, Event, State] extends CorePersistentEntity[Command, Event, State] {
+
   import CorePersistentEntity._
 
   /**
@@ -177,8 +178,10 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
     /**
      * Construct the corresponding immutable `Behavior`.
      */
-    def build(): Behavior =
-      Behavior(state, evtHandlers, cmdHandlers.asInstanceOf[PartialFunction[_ <: Command, Function[CoreCommandContext[Any], Persist[_ <: Event]]]])
+    //todo: implement build
+    def build(): Behavior = Behavior(state, e => None, (c: Command, ctx: CoreCommandContext[Any]) => ???)
+
+    //      Behavior(state, evtHandlers, cmdHandlers.asInstanceOf[PartialFunction[_ <: Command, Function[CoreCommandContext[Any], Persist[_ <: Event]]]])
 
   }
 
