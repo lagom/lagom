@@ -83,7 +83,7 @@ trait CorePersistentEntity[Command, Event, State] {
    * Create a new empty `Behavior` with a given state.
    */
   //todo: implement partial functions
-  final def newBehavior(state: State): Behavior = new Behavior(state, Map.empty, { case (e, b) => ??? })
+  final def newBehavior(state: State): Behavior = new Behavior(state, Map.empty, (c: Command, ctx: CoreCommandContext[Any]) => ???)
 
   /**
    * This method is called to notify the entity that the recovery process

@@ -252,7 +252,13 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
       val persistNone = new Persist[Event] {
         override def toString: String = "PersistNone"
       }
-      Behavior(_state, e => None, (c: Command, ctx: CoreCommandContext[Any]) => (persistNone))
+
+      def handler(cmd: Command, ctx: CoreCommandContext[Any]): Persist[Event] = {
+        commandHandlers.get(cmd.getClass).map(a => a.apply(cmd, ctx)).getOrElse(persistNone)
+
+      }
+
+      Behavior(_state, e => None, handler)
     }
 
   }
