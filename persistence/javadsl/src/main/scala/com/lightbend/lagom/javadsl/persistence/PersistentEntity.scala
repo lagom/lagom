@@ -138,8 +138,8 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
    */
   protected final class BehaviorBuilder(
     state:            State,
-    evtHandlers:      Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
-    cmdHandlers:      Map[Class[_ <: Command], JBiFunction[Command, CommandContext[Any], Persist[_ <: Event]]],
+    evtHandlers:      Map[Class[_ <: Event], JFunction[Event, Behavior]],
+    cmdHandlers:      Map[Class[_ <: Command], JBiFunction[Command, CoreCommandContext[Any], Persist[_ <: Event]]],
     previousBehavior: Option[Behavior]
   ) {
 
@@ -148,10 +148,9 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
     def this(state: State, previousBehavior: Behavior) = this(state, Map.empty, Map.empty, Option(previousBehavior))
 
     def this(previousBehavior: Behavior) = this(previousBehavior.state, Map.empty, Map.empty, Option(previousBehavior))
-
     private var _state = state
     private var eventHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]] = evtHandlers
-    private var commandHandlers: Map[Class[_ <: Command], JBiFunction[Command, CommandContext[Any], Persist[_ <: Event]]] =
+    private var commandHandlers: Map[Class[_ <: Command], JBiFunction[Command, CoreCommandContext[Any], Persist[_ <: Event]]] =
       cmdHandlers
 
     def getState(): State = _state
@@ -166,7 +165,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
      * Current state can be accessed with the `state` method of the `PersistentEntity`.
      */
     def setEventHandler[A <: Event](eventClass: Class[A], handler: JFunction[A, State]): Unit =
-      setEventHandlerChangingBehavior[A](eventClass, new JFunction[A, Behavior] {
+      setEventHandlerChangingBehavior(eventClass, new JFunction[A, Behavior] {
         override def apply(evt: A): Behavior = behavior.withState(handler.apply(evt))
       })
 
@@ -204,13 +203,13 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
      * The `handler` function may validate the incoming command and reject it by
      * sending a `reply` and returning `ctx.done()`.
      */
-    def setCommandHandler[R, A <: Command with ReplyType[R]](
+    def setCommandHandler[R, A <: Command with ReplyType[R], CTX <: CoreCommandContext[R]](
       commandClass: Class[A],
-      handler:      JBiFunction[A, CommandContext[R], Persist[_ <: Event]]
+      handler:      JBiFunction[A, CTX, Persist[_ <: Event]]
     ): Unit = {
       commandHandlers = commandHandlers.updated(
         commandClass,
-        handler.asInstanceOf[JBiFunction[Command, CommandContext[Any], Persist[_ <: Event]]]
+        handler.asInstanceOf[JBiFunction[Command, CoreCommandContext[Any], Persist[_ <: Event]]]
       )
     }
 
@@ -230,10 +229,12 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
       commandClass: Class[A],
       handler:      JBiConsumer[A, ReadOnlyCommandContext[R]]
     ): Unit = {
-      setCommandHandler[R, A](commandClass, new JBiFunction[A, CommandContext[R], Persist[_ <: Event]] {
+      setCommandHandler[R, A, CommandContext[R]](commandClass, new JBiFunction[A, CommandContext[R], Persist[_ <: Event]] {
         override def apply(cmd: A, ctx: CommandContext[R]): Persist[Event] = {
           handler.accept(cmd, ctx)
+          //          todo: how to handle it
           ctx.done()
+
         }
       });
     }
@@ -255,11 +256,15 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
 
       def handler(cmd: Command, ctx: CoreCommandContext[Any]): Persist[_ <: Event] = {
 
-        commandHandlers.get(cmd.getClass).map(a => a.apply(cmd, null)).getOrElse(persistNone)
+        commandHandlers.get(cmd.getClass).map(a => a.apply(cmd, ctx)).getOrElse(persistNone)
 
       }
 
-      Behavior(_state, e => None, handler)
+      def eventHandler[A <: Event](event: A): Option[Behavior] = {
+        eventHandlers.get(event.getClass).map(_(event))
+      }
+
+      Behavior(_state, eventHandler, handler)
     }
 
   }
