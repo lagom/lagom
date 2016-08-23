@@ -3,24 +3,19 @@
  */
 package com.lightbend.lagom.javadsl.persistence
 
-import com.google.inject.AbstractModule
-import com.google.inject.Inject
-import com.google.inject.TypeLiteral
+import com.google.inject.{ AbstractModule, Inject, Key, TypeLiteral }
 import com.google.inject.matcher.AbstractMatcher
 import com.google.inject.spi.InjectionListener
 import com.google.inject.spi.TypeEncounter
 import com.google.inject.spi.TypeListener
-import com.lightbend.lagom.internal.persistence.PersistentEntityRegistryImpl
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraPersistentEntityRegistry
+import com.lightbend.lagom.javadsl.persistence.cassandra.{ CassandraConfig, CassandraReadSide, CassandraSession }
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfigProvider
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideImpl
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraSessionImpl
 import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorHolder
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule.InitServiceLocatorHolder
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession
-
 import akka.actor.ActorSystem
 
 /**
@@ -28,7 +23,7 @@ import akka.actor.ActorSystem
  */
 class PersistenceModule extends AbstractModule {
   override def configure(): Unit = {
-    binder.bind(classOf[PersistentEntityRegistry]).to(classOf[PersistentEntityRegistryImpl])
+    binder.bind(classOf[PersistentEntityRegistry]).to(classOf[CassandraPersistentEntityRegistry])
     binder.bind(classOf[CassandraSession]).to(classOf[CassandraSessionImpl])
     binder.bind(classOf[CassandraReadSide]).to(classOf[CassandraReadSideImpl])
     binder.bind(classOf[CassandraConfig]).toProvider(classOf[CassandraConfigProvider])
