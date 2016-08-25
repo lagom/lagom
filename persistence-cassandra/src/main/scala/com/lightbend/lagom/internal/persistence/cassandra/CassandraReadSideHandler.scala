@@ -75,21 +75,29 @@ private[cassandra] class CassandraAutoReadSideHandler[Event <: AggregateEvent[Ev
 ) {
 
   override protected def invoke(handler: Handler[Event], event: Event, offset: Offset): CompletionStage[JList[BoundStatement]] = {
-    handler.asInstanceOf[(Event, Offset) => CompletionStage[JList[BoundStatement]]].apply(event, offset).toScala.map { statements =>
-      TreePVector.from(statements).plus(offsetStore.writeOffset(event.aggregateTag.tag, offset)).asInstanceOf[JList[BoundStatement]]
-    }.toJava
+    val boundStatements = {
+      for {
+        statements <- (handler.asInstanceOf[(Event, Offset) => CompletionStage[JList[BoundStatement]]].apply(event, offset).toScala)
+      } yield TreePVector.from(statements).plus(offsetStore.writeOffset(event.aggregateTag.tag, offset)).asInstanceOf[JList[BoundStatement]]
+    }
+
+    boundStatements.toJava
   }
 
   override def globalPrepare(): CompletionStage[Done] = {
-    Future.successful(globalPrepareCallback).flatMap(_.apply().toScala).flatMap { _ =>
-      offsetStore.globalPrepare
-    }.toJava
+    internalPrepare(globalPrepareCallback.apply(), store => store.globalPrepare())
   }
 
   override def prepare(tag: AggregateEventTag[Event]): CompletionStage[Offset] = {
-    Future.successful(prepareCallback).flatMap(_.apply(tag).toScala).flatMap { _ =>
-      offsetStore.prepare(tag.tag)
-    }.toJava
+    internalPrepare(prepareCallback.apply(tag), store => store.prepare(tag.tag))
+  }
+
+  private def internalPrepare[R](prepare: CompletionStage[Done], prepareStore: OffsetStore => Future[R]): CompletionStage[R] = {
+    val prepared = for {
+      _ <- prepare.toScala
+    } yield prepareStore(offsetStore)
+
+    prepared.flatMap(identity).toJava
   }
 }
 
@@ -119,10 +127,10 @@ private[cassandra] class LegacyCassandraReadSideHandler[Event <: AggregateEvent[
   }
 }
 
-private[cassandra] class OffsetStore(session: CassandraSession, offsetTable: String)(implicit ec: ExecutionContext) {
-  private var writeOffsetStatement: PreparedStatement = _
+private[internal] class OffsetStore private (session: CassandraSession, offsetTable: String)(implicit ec: ExecutionContext) {
+  @volatile private var writeOffsetStatement: PreparedStatement = _
 
-  def globalPrepare = {
+  def globalPrepare(): Future[Done] = {
     session.executeCreateTable(s"""
                                   |CREATE TABLE IF NOT EXISTS $offsetTable (
                                   |  partition text, timeUuidOffset timeuuid, sequenceOffset bigint,
@@ -130,10 +138,8 @@ private[cassandra] class OffsetStore(session: CassandraSession, offsetTable: Str
                                   |)""".stripMargin).toScala
   }
 
-  def prepare(partition: String) = {
-    prepareWriteOffset
-      .flatMap(_ => readOffset(partition))
-  }
+  def prepare(partition: String): Future[Offset] =
+    prepareWriteOffset.flatMap(_ => readOffset(partition))
 
   private def prepareWriteOffset: Future[Done] = {
     session.prepare(s"INSERT INTO $offsetTable (partition, timeUuidOffset, sequenceOffset) VALUES (?, ?, ?)").toScala.map { ps =>
@@ -169,4 +175,9 @@ private[cassandra] class OffsetStore(session: CassandraSession, offsetTable: Str
       case uuid: Offset.TimeBasedUUID => writeOffsetStatement.bind(partition, uuid.value(), null)
     }
   }
+}
+
+object OffsetStore {
+  def apply(session: CassandraSession, offsetTable: String)(implicit ec: ExecutionContext): OffsetStore =
+    new OffsetStore(session, offsetTable)
 }

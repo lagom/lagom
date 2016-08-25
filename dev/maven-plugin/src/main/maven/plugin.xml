@@ -107,6 +107,71 @@
         </parameter>
 
         <parameter>
+            <name>kafkaPort</name>
+            <type>int</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The port to run Kafka on.</description>
+            <configuration>
+                <kafkaPort implementation="int" default-value="9092">${kafka.port}</kafkaPort>
+            </configuration>
+        </parameter>
+        <parameter>
+            <name>zookeeperPort</name>
+            <type>int</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The port to run ZooKeeper on.</description>
+            <configuration>
+                <zookeeperPort implementation="int" default-value="2181">${zookeeper.port}</zookeeperPort>
+            </configuration>
+        </parameter>
+        <parameter>
+            <name>kafkaEnabled</name>
+            <type>boolean</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>Whether Kafka is enabled or not.</description>
+            <configuration>
+                <kafkaEnabled implementation="boolean" default-value="true">${kafka.enabled}</kafkaEnabled>
+            </configuration>
+        </parameter>
+        <parameter>
+            <name>kafkaCleanOnStart</name>
+            <type>boolean</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>Whether the Kafka log should be cleaned when it starts.</description>
+            <configuration>
+                <kafkaCleanOnStart implementation="boolean" default-value="true">${kafka.cleanOnStart}</kafkaCleanOnStart>
+            </configuration>
+        </parameter>
+        <parameter>
+            <name>kafkaJvmOptions</name>
+            <type>java.util.List</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The JVM options to pass to Kafka.</description>
+        </parameter>
+        <parameter>
+            <name>kafkaPropertiesFile</name>
+            <type>java.lang.String</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The relative path to the sever.properties to use to start Kafka.</description>
+        </parameter>
+         <parameter>
+            <name>kafkaAddress</name>
+            <type>boolean</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The Kafka address.</description>
+            <configuration>
+                <kafkaAddress implementation="java.lang.String">${kafka.address}</kafkaAddress>
+            </configuration>
+        </parameter>
+
+        <parameter>
             <name>serviceLocatorPort</name>
             <type>int</type>
             <required>false</required>
@@ -277,6 +342,48 @@
         </mojo>
 
         <mojo>
+            <goal>startKafka</goal>
+            <description>Starts Kafka</description>
+            <implementation>com.lightbend.lagom.maven.StartKafkaMojo</implementation>
+            <aggregator>true</aggregator>
+            <instantiationStrategy>singleton</instantiationStrategy>
+            <phase>pre-integration-test</phase>
+            <parameters>
+                <parameter>
+                    <name>kafkaPort</name>
+                </parameter>
+                <parameter>
+                    <name>zookeeperPort</name>
+                </parameter>
+                <parameter>
+                    <name>kafkaEnabled</name>
+                </parameter>
+                <parameter>
+                    <name>kafkaCleanOnStart</name>
+                </parameter>
+                <parameter>
+                    <name>kafkaJvmOptions</name>
+                </parameter>
+                <parameter>
+                    <name>kafkaPropertiesFile</name>
+                </parameter>
+            </parameters>
+        </mojo>
+        <mojo>
+            <goal>stopKafka</goal>
+            <description>Stops Kafka</description>
+            <implementation>com.lightbend.lagom.maven.StopKafkaMojo</implementation>
+            <aggregator>true</aggregator>
+            <instantiationStrategy>singleton</instantiationStrategy>
+            <phase>post-integration-test</phase>
+            <parameters>
+                <parameter>
+                    <name>kafkaEnabled</name>
+                </parameter>
+            </parameters>
+        </mojo>
+
+        <mojo>
             <goal>startServiceLocator</goal>
             <description>Starts the service locator</description>
             <implementation>com.lightbend.lagom.maven.StartServiceLocatorMojo</implementation>
@@ -351,6 +458,12 @@
                     <name>cassandraKeyspace</name>
                 </parameter>
                 <parameter>
+                    <name>kafkaPort</name>
+                </parameter>
+                <parameter>
+                    <name>kafkaAddress</name>
+                </parameter>
+                <parameter>
                     <name>externalProjects</name>
                 </parameter>
                 <parameter>
@@ -412,6 +525,12 @@
                 </parameter>
                 <parameter>
                     <name>cassandraPort</name>
+                </parameter>
+                <parameter>
+                    <name>kafkaPort</name>
+                </parameter>
+                <parameter>
+                    <name>kafkaAddress</name>
                 </parameter>
             </parameters>
         </mojo>

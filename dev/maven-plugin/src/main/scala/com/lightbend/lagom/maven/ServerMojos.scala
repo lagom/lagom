@@ -13,6 +13,8 @@ import org.codehaus.plexus.logging.{ Logger, LoggerManager }
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.beans.BeanProperty
+import org.apache.maven.execution.MavenSession
+import org.eclipse.aether.graph.Dependency
 
 class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, mavenLoggerManager: LoggerManager) extends AbstractMojo {
 
@@ -48,6 +50,75 @@ class StopCassandraMojo @Inject() (logger: MavenLoggerProxy) extends AbstractMoj
 
   override def execute(): Unit = {
     if (cassandraEnabled) {
+      Servers.tryStop(logger)
+    }
+  }
+}
+
+class StartKafkaMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, mavenLoggerManager: LoggerManager, session: MavenSession) extends AbstractMojo {
+
+  @BeanProperty
+  var kafkaPort: Int = _
+  @BeanProperty
+  var zookeeperPort: Int = _
+  @BeanProperty
+  var kafkaEnabled: Boolean = _
+  @BeanProperty
+  var kafkaCleanOnStart: Boolean = _
+  @BeanProperty
+  var kafkaPropertiesFile: String = _
+  @BeanProperty // I'm not sure if it's possible to specify a default value for a literal list in plugin.xml, so specify it here.
+  var kafkaJvmOptions: JList[String] = Seq("-Xms256m", "-Xmx1024m").asJava
+
+  override def execute(): Unit = {
+
+    if (kafkaEnabled) {
+
+      val dependency = {
+        val artifact = new DefaultArtifact("com.lightbend.lagom", "lagom-kafka-server_2.11",
+          "jar", LagomVersion.current)
+        new Dependency(artifact, "runtime")
+      }
+      val additionalDependencies = {
+        val zooKeeper = {
+          val artifact = new DefaultArtifact("org.apache.zookeeper", "zookeeper", "jar", "3.3.4")
+          new Dependency(artifact, "runtime")
+        }
+        Seq(zooKeeper)
+      }
+      val cp = facade.resolveArtifact(dependency.getArtifact)
+
+      logger.debug {
+        val text = {
+          cp.map { artifact =>
+            val groupId = artifact.getGroupId
+            val artifactId = artifact.getArtifactId
+            val version = artifact.getVersion
+            s"$groupId $artifactId $version"
+          }.mkString("\t", "\n\t", "")
+        }
+        "Classpath used to start Kafka:\n" + text
+      }
+
+      val / = java.io.File.separator
+      val project = session.getTopLevelProject
+      val projectTargetDir = project.getBuild.getDirectory // path is absolute
+      // target directory matches the one used in the Lagom sbt plugin
+      val targetDir = new java.io.File(projectTargetDir + / + "lagom-dynamic-projects" + / + "lagom-internal-meta-project-kafka" + / + "target")
+      // properties file doesn't need to be provided by users, in which case the default one included with Lagom will be used
+      val kafkaPropertiesFile = Option(this.kafkaPropertiesFile).map(new java.io.File(_))
+
+      Servers.KafkaServer.start(logger, cp.map(_.getFile), kafkaPort, zookeeperPort, kafkaPropertiesFile, kafkaJvmOptions.asScala, targetDir, kafkaCleanOnStart)
+    }
+  }
+}
+
+class StopKafkaMojo @Inject() (logger: MavenLoggerProxy) extends AbstractMojo {
+  @BeanProperty
+  var kafkaEnabled: Boolean = _
+
+  override def execute(): Unit = {
+    if (kafkaEnabled) {
       Servers.tryStop(logger)
     }
   }

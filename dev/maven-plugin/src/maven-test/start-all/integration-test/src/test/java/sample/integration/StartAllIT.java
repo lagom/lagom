@@ -1,11 +1,13 @@
 package sample.integration;
 
+import akka.Done;
 import akka.actor.ActorSystem;
 import akka.japi.Effect;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
+import akka.stream.javadsl.Flow;
 import com.lightbend.lagom.javadsl.client.integration.LagomClientFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -13,15 +15,27 @@ import org.junit.Test;
 import sample.hellostream.api.HelloStream;
 import sample.helloworld.api.GreetingMessage;
 import sample.helloworld.api.HelloService;
-
+import akka.kafka.ConsumerSettings;
+import akka.kafka.ProducerSettings;
+import akka.kafka.Subscriptions;
+import akka.kafka.javadsl.Consumer;
+import akka.kafka.javadsl.Producer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+
 
 import static org.junit.Assert.assertEquals;
 
@@ -76,7 +90,6 @@ public class StartAllIT {
 
         // Change the person it responds to
         File source = new File("../helloworld-impl/src/main/java/sample/helloworld/impl/HelloServiceImpl.java");
-        System.out.println(source.getAbsolutePath());
         List<String> lines = Files.readAllLines(source.toPath());
         List<String> modifiedLines = lines.stream()
                 .map(line -> line.replaceAll("\"lagom\"", "\"dude\""))
@@ -87,6 +100,49 @@ public class StartAllIT {
         doUntilSuccessful(20, 500, () ->
           assertEquals("Hello to you too!", await(helloService.hello("dude").invoke()))
         );
+    }
+
+    @Test
+    public void kafkaIsStarted() throws Exception {
+        String topicName = "greetings";
+        String messageToPublish = "hello";
+
+        // Store the message returned by Kafka into a future.
+        CompletableFuture<String> messageConsumed = new CompletableFuture<>(); 
+        Flow<String, Done, ?> flow = Flow.fromFunction(msg -> {
+            messageConsumed.complete(msg);
+            return Done.getInstance();
+        });
+
+        // Now we set up a consumer. We can't use the Lagom message broker api for this because
+        // it's not possible to plug it into the LagomClientFactory. Hence, we use akka-stream-kafka 
+        // to create a consumer that will be notified when messages are published to the "greetings" topic.
+        Consumer.atMostOnceSource(consumerSettings(), Subscriptions.topics(topicName))
+            .map(record -> record.value())
+            .via(flow)
+            .runWith(Sink.ignore(), mat);
+
+        // Let's publish a message to Kafka
+        Source.single(messageToPublish)
+            .map(elem -> new ProducerRecord<byte[], String>(topicName, elem))
+            .runWith(Producer.plainSink(producerSettings()), mat);
+
+      // Now we wait until the message is published to Kafka and retrieved by the consumer.
+      String message = await(messageConsumed);
+
+      assertEquals("Expected to have processed one greeting message", messageToPublish, message);
+    }
+
+    private ConsumerSettings<byte[], String> consumerSettings() {
+      return ConsumerSettings.create(system, new ByteArrayDeserializer(), new StringDeserializer())
+        .withBootstrapServers("localhost:9092")
+        .withGroupId("group1")
+        .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+    }
+
+    private ProducerSettings<byte[], String> producerSettings() {
+      return ProducerSettings.create(system, new ByteArraySerializer(), new StringSerializer())
+        .withBootstrapServers("localhost:9092");
     }
 
     private void doUntilSuccessful(int maxTimes, long sleepMillis, Effect effect) throws Exception {

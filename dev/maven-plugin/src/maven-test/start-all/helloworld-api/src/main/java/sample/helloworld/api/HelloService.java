@@ -38,7 +38,8 @@ public interface HelloService extends Service {
     return named("helloservice").withCalls(
         pathCall("/api/hello/:id",  this::hello),
         pathCall("/api/hello/:id", this::useGreeting)
-      ).withAutoAcl(true);
+      )
+      .withAutoAcl(true);
     // @formatter:on
   }
 }

@@ -12,7 +12,7 @@ import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import de.heikoseeberger.sbtheader.HeaderPattern
 
 val PlayVersion = "2.5.4"
-val AkkaVersion = "2.4.8"
+val AkkaVersion = "2.4.10"
 val AkkaPersistenceCassandraVersion = "0.17"
 val ScalaTestVersion = "2.2.4"
 val JacksonVersion = "2.7.2"
@@ -20,6 +20,10 @@ val CassandraAllVersion = "3.0.2"
 val GuavaVersion = "19.0"
 val MavenVersion = "3.3.9"
 val NettyVersion = "4.0.36"
+val KafkaVersion = "0.10.0.1"
+val AkkaStreamKafka = "0.11"
+val Log4j = "1.2.17"
+val ScalaJava8CompatVersion = "0.8.0-RC7"
 
 // NOTE ON DEPENDENCIES
 
@@ -37,6 +41,8 @@ val NettyVersion = "4.0.36"
 
 val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
 val guava = "com.google.guava" % "guava" % GuavaVersion
+val log4J = "log4j" % "log4j" % Log4j
+val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
 
 def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   organization := "com.lightbend.lagom",
@@ -201,6 +207,8 @@ val apiProjects = Seq[ProjectReference](
   client,
   cluster,
   pubsub,
+  `kafka-broker`,
+  `kafka-broker-cassandra-store`,
   persistence,
   `persistence-cassandra`,
   `persistence-jdbc`,
@@ -397,7 +405,7 @@ lazy val cluster = (project in file("cluster"))
       "com.typesafe.akka" %% "akka-cluster" % AkkaVersion,
       "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion % "test",
-      "org.scala-lang.modules" %% "scala-java8-compat" % "0.7.0",
+      scalaJava8Compat,
       scalaTest % Test,
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "com.google.inject" % "guice" % "4.0"
@@ -412,14 +420,14 @@ lazy val pubsub = (project in file("pubsub"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     libraryDependencies ++= Seq(
+      "com.google.inject" % "guice" % "4.0",
       "com.typesafe.akka" %% "akka-cluster-tools" % AkkaVersion,
+      scalaJava8Compat,
       "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
-      "org.scala-lang.modules" %% "scala-java8-compat" % "0.7.0",
       scalaTest % Test,
-      "com.novocode" % "junit-interface" % "0.11" % "test",
-      "com.google.inject" % "guice" % "4.0"
+      "com.novocode" % "junit-interface" % "0.11" % "test"
     )
   ) configs (MultiJvm)  
 
@@ -431,16 +439,16 @@ lazy val persistence = (project in file("persistence"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     libraryDependencies ++= Seq(
+      "com.google.inject" % "guice" % "4.0",
+      scalaJava8Compat,
       "com.typesafe.akka" %% "akka-persistence" % AkkaVersion,
       "com.typesafe.akka" %% "akka-persistence-query-experimental" % AkkaVersion,
       "com.typesafe.akka" %% "akka-cluster-sharding" % AkkaVersion,
       "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
-      "org.scala-lang.modules" %% "scala-java8-compat" % "0.7.0",
       scalaTest % Test,
-      "com.novocode" % "junit-interface" % "0.11" % "test",
-      "com.google.inject" % "guice" % "4.0"
+      "com.novocode" % "junit-interface" % "0.11" % "test"
     )
   )
 
@@ -474,6 +482,26 @@ lazy val `persistence-jdbc` = (project in file("persistence-jdbc"))
     )
   ) configs (MultiJvm)
 
+lazy val `kafka-broker` = (project in (file("kafka-broker") / "core"))
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(name := "lagom-javadsl-kafka-broker")
+  .settings(runtimeLibCommon: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
+      "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafka exclude("org.slf4j","slf4j-log4j12"),
+      "org.apache.kafka" %% "kafka" % KafkaVersion exclude("org.slf4j","slf4j-log4j12") exclude("javax.jms", "jms") exclude("com.sun.jdmk", "jmxtools") exclude("com.sun.jmx", "jmxri"),
+      scalaTest % Test
+    )
+  )
+  .dependsOn(client % "optional", `kafka-server` % Test, logback % Test, persistence, server)
+
+lazy val `kafka-broker-cassandra-store` = (project in (file("kafka-broker") / "cassandra-store"))
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(name := "lagom-javadsl-kafka-cassandra-store")
+  .settings(runtimeLibCommon: _*)
+  .dependsOn(`kafka-broker`, `persistence-cassandra`)
+
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
@@ -491,7 +519,7 @@ lazy val `dev-environment` = (project in file("dev"))
   .enablePlugins(AutomateHeaderPlugin)
   .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
     `service-registration`, `cassandra-server`, `cassandra-registration`,  `play-integration`, `service-registry-client`,
-    `maven-java-archetype`)
+    `maven-java-archetype`, `kafka-server`)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}
@@ -711,5 +739,30 @@ lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
         exclude("io.netty", "netty-all") exclude("io.netty", "netty-handler") exclude("io.netty", "netty-buffer")
         exclude("io.netty", "netty-common") exclude("io.netty", "netty-transport") exclude("io.netty", "netty-codec"),
       "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion
+    )
+  )
+
+lazy val `kafka-server` = (project in file("dev") / "kafka-server")
+  .settings(name := "lagom-kafka-server")
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.apache.kafka" %% "kafka" % KafkaVersion,
+      // log4j version prior to 1.2.17 required javax.jms, and that artifact could not properly resolved when using maven
+      // without adding a resolver. The problem doesn't appear with sbt because the log4j version brought by both zookeeper 
+      // and curator dependencies are evicted to version 1.2.17. Unfortunately, because of how maven resolution works, we 
+      // have to explicitly add the desired log4j version we want to use here.
+      // By the way, log4j 1.2.17 and later resolve the javax.jms dependency issue by using geronimo-jms. See 
+      // http://stackoverflow.com/questions/4908651/the-following-artifacts-could-not-be-resolved-javax-jmsjmsjar1-1 
+      // for more context. 
+      log4J,
+      // Note that curator 3.x is only compatible with zookeper 3.5.x. Kafka currently uses zookeeper 3.4, hence we have 
+      // to use curator 2.x, which is compatible with zookeeper 3.4 (see the notice in
+      // http://curator.apache.org/index.html - make sure to scroll to the bottom)
+      "org.apache.curator" % "curator-framework" % "2.10.0",
+      "org.apache.curator" % "curator-test" % "2.10.0",
+      scalaJava8Compat,
+      scalaTest % Test
     )
   )
