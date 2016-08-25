@@ -17,6 +17,7 @@ import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorHolder
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule.InitServiceLocatorHolder
 import akka.actor.ActorSystem
+import com.lightbend.lagom.internal.persistence.ReadSideImpl
 
 /**
  * Guice module for the Persistence API.
@@ -28,6 +29,7 @@ class PersistenceModule extends AbstractModule {
     binder.bind(classOf[CassandraReadSide]).to(classOf[CassandraReadSideImpl])
     binder.bind(classOf[CassandraConfig]).toProvider(classOf[CassandraConfigProvider])
     binder.bind(classOf[PersistenceModule.InitServiceLocatorHolder]).asEagerSingleton()
+    binder.bind(classOf[ReadSide]).to(classOf[ReadSideImpl])
     initServiceLocatorHolder()
   }
 
