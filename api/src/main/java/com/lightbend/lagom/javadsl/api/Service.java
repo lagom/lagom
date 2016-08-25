@@ -7,7 +7,15 @@ import java.util.Optional;
 
 import com.lightbend.lagom.internal.api.MethodRefMessageSerializer;
 import com.lightbend.lagom.internal.api.MethodRefServiceCallHolder;
+import com.lightbend.lagom.internal.api.MethodRefTopicHolder;
+import com.lightbend.lagom.internal.api.TopicFeed;
+import com.lightbend.lagom.internal.api.InternalTopicCall;
+
 import akka.japi.function.*;
+import akka.stream.javadsl.Source;
+
+import com.lightbend.lagom.javadsl.api.broker.Topic;
+import com.lightbend.lagom.javadsl.api.broker.Topic.TopicId;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 
 /**
@@ -427,4 +435,47 @@ public interface Service {
                 Optional.empty(), Optional.empty());
     }
 
+    /**
+     * Create a topic call descriptor, identified by the given topic id.
+     *
+     * @param topicId The topic identifier.
+     * @param methodRef The topic  call.
+     * @return A topic call descriptor.
+     */
+    static <Message> Descriptor.TopicCall<Message> topic(String topicId, java.lang.reflect.Method methodRef) {
+      return topic(topicId, (Object) methodRef);
+    }
+
+    /**
+     * Create a topic call descriptor, identified by the given topic id.
+     *
+     * @param topicId The topic identifier.
+     * @param methodRef The topic  call.
+     * @return A topic call descriptor.
+     */
+    static <Message> Descriptor.TopicCall<Message> topic(String topicId, Creator<Topic<Message>> methodRef) {
+      return topic(topicId, (Object) methodRef);
+    }
+
+    /**
+     * Create a topic call descriptor, identified by the given topic id.
+     *
+     * @param topicId The topic identifier.
+     * @param methodRef The topic  call.
+     * @return A topic call descriptor.
+     */
+    static <Message> Descriptor.TopicCall<Message> topic(String topicId, Object methodRef) {
+      return new InternalTopicCall<>(TopicId.of(topicId), new MethodRefTopicHolder(methodRef),
+               new MethodRefMessageSerializer<>());
+    }
+
+    /**
+     * Publishes the passes messages to the associated topic.
+     *
+     * @param messages The stream of messages to publish.
+     * @return A topic.
+     */   
+    static <Message> Topic<Message> publish(Source<Message, ?> messages) {
+      return new TopicFeed<>(messages);
+    }
 }
