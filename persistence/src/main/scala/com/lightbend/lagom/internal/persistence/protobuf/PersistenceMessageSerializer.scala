@@ -9,6 +9,7 @@ import akka.serialization.BaseSerializer
 import akka.serialization.Serialization
 import akka.serialization.SerializationExtension
 import akka.serialization.SerializerWithStringManifest
+import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.javadsl.persistence.CommandEnvelope
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity._
@@ -32,6 +33,7 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
   val InvalidCommandExceptionManifest = "B"
   val UnhandledCommandExceptionManifest = "C"
   val PersistExceptionManifest = "D"
+  val EnsureActiveManifest = "E"
 
   private val emptyByteArray = Array.empty[Byte]
 
@@ -39,7 +41,8 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
     CommandEnvelopeManifest -> commandEnvelopeFromBinary,
     InvalidCommandExceptionManifest -> invalidCommandExceptionFromBinary,
     UnhandledCommandExceptionManifest -> unhandledCommandExceptionFromBinary,
-    PersistExceptionManifest -> persistExceptionFromBinary
+    PersistExceptionManifest -> persistExceptionFromBinary,
+    EnsureActiveManifest -> ensureActiveFromBinary
   )
 
   override def manifest(obj: AnyRef): String = obj match {
@@ -47,6 +50,7 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
     case _: InvalidCommandException   => InvalidCommandExceptionManifest
     case _: UnhandledCommandException => UnhandledCommandExceptionManifest
     case _: PersistException          => PersistExceptionManifest
+    case _: EnsureActive              => EnsureActiveManifest
     case _ ⇒
       throw new IllegalArgumentException(s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]")
   }
@@ -56,6 +60,7 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
     case InvalidCommandException(msg)   => exceptionToProto(msg).toByteArray
     case UnhandledCommandException(msg) => exceptionToProto(msg).toByteArray
     case PersistException(msg)          => exceptionToProto(msg).toByteArray
+    case ea: EnsureActive               => ensureActiveToProto(ea).toByteArray
     case _ ⇒
       throw new IllegalArgumentException(s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]")
   }
@@ -102,6 +107,18 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
     CommandEnvelope(commandEnvelope.getEntityId, payload)
   }
 
+  private def ensureActiveToProto(ensureActive: EnsureActive): pm.EnsureActive = {
+    pm.EnsureActive.newBuilder().setEntityId(ensureActive.entityId).build()
+  }
+
+  private def ensureActiveFromBinary(bytes: Array[Byte]): EnsureActive = {
+    ensureActiveFromProto(pm.EnsureActive.parseFrom(bytes))
+  }
+
+  private def ensureActiveFromProto(ensureActive: pm.EnsureActive): EnsureActive = {
+    EnsureActive(ensureActive.getEntityId)
+  }
+
   private def exceptionToProto(msg: String): pm.Exception = {
     val builder = pm.Exception.newBuilder()
     if (msg != null)
@@ -127,3 +144,4 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
   private def persistExceptionFromProto(exc: pm.Exception): PersistException =
     PersistException(if (exc.hasMessage) exc.getMessage else null)
 }
+
