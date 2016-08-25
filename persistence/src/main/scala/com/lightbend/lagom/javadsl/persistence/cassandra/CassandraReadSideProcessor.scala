@@ -20,6 +20,7 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
  * The events belong to a [[com.lightbend.lagom.javadsl.persistence.AggregateEventTag]], e.g. all
  * persistent events of all `Order` entities.
  */
+@deprecated("Use ReadSideProcessor instead with CassandraReadSide builder", "1.2.0")
 abstract class CassandraReadSideProcessor[Event <: AggregateEvent[Event]] {
 
   case class EventHandlers(handlers: Map[Class[_ <: Event], BiFunction[_ <: Event, UUID, CompletionStage[JList[BoundStatement]]]])
@@ -38,7 +39,7 @@ abstract class CassandraReadSideProcessor[Event <: AggregateEvent[Event]] {
 
     /**
      * When all event handlers have been defined the immutable
-     * `EventHandlers` is created with this method.
+     * `ReadSideHandler` is created with this method.
      */
     def build(): EventHandlers = new EventHandlers(handlers)
   }

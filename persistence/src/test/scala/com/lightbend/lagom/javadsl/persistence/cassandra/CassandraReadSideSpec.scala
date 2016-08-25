@@ -6,26 +6,30 @@ package com.lightbend.lagom.javadsl.persistence.cassandra
 import java.util.{ List => JList }
 import java.util.Optional
 import java.util.UUID
-import java.util.concurrent.CompletionStage
-import java.util.function.BiFunction
-import scala.collection.JavaConverters._
+import java.util.concurrent.{ CompletableFuture, CompletionStage }
+import java.util.function.{ Supplier, Function => JFunction }
+
+import akka.{ Done, NotUsed }
+import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
+import akka.persistence.query.PersistenceQuery
+import akka.stream.ActorMaterializer
+import akka.stream.javadsl.Source
+
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import akka.japi.function.Creator
 import com.datastax.driver.core.BoundStatement
 import com.datastax.driver.core.PreparedStatement
 import com.typesafe.config.ConfigFactory
-import com.lightbend.lagom.javadsl.persistence.PersistenceSpec
-import com.lightbend.lagom.internal.persistence.PersistentEntityActor
-import com.lightbend.lagom.javadsl.persistence.TestEntity
-import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
-import com.lightbend.lagom.internal.persistence.PersistentEntityActor
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideActor
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraSessionImpl
-import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
+import com.lightbend.lagom.javadsl.persistence._
+import com.lightbend.lagom.internal.persistence.{ PersistentEntityActor, ReadSideActor }
+import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraReadSideImpl, CassandraSessionImpl }
+import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
+import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
+import org.pcollections.{ PSequence, TreePVector }
 
 object CassandraReadSideSpec {
 
@@ -33,51 +37,54 @@ object CassandraReadSideSpec {
     akka.loglevel = INFO
     """)
 
-  class TestEntityProcessor(implicit ec: ExecutionContext) extends CassandraReadSideProcessor[TestEntity.Evt] {
+  class TestEntityProcessor(session: CassandraSession, readSide: CassandraReadSide)(implicit ec: ExecutionContext) extends ReadSideProcessor[TestEntity.Evt] {
+
+    import CassandraReadSide._
 
     var count = 0L
     var writeStmt: PreparedStatement = _
 
-    override def aggregateTag: AggregateEventTag[TestEntity.Evt] =
-      TestEntity.Evt.aggregateTag
+    override def aggregateTags: PSequence[AggregateEventTag[TestEntity.Evt]] =
+      TreePVector.singleton(TestEntity.Evt.aggregateTag)
 
-    override def prepare(session: CassandraSession): CompletionStage[Optional[UUID]] = {
-      def prepareWriteStmt(): Future[Unit] =
-        session.prepare("INSERT INTO testcounts (id, count, offset) VALUES (?, ?, ?)").toScala
-          .map(writeStmt = _)
+    override def buildHandler(): ReadSideHandler[TestEntity.Evt] = {
+      readSide.builder[TestEntity.Evt]("testoffsets")
+        .setPrepare(prepare)
+        .setEventHandler(classOf[TestEntity.Appended], handleAppended)
+        .build()
+    }
 
-      def selectCountAndOffset(): Future[Optional[UUID]] = {
-        for {
-          selectStmt <- session.prepare("SELECT count, offset FROM testcounts WHERE id = ?").toScala
-          bs = selectStmt.bind("test")
-          row <- session.selectOne(bs).toScala
-        } yield {
-          if (row.isPresent()) {
-            count = row.get.getLong("count")
-            Optional.ofNullable(row.get.getUUID("offset"))
-          } else
-            Optional.empty()
+    val prepare = new Supplier[CompletionStage[Done]] {
+      override def get() = {
+        def prepareWriteStmt(): Future[Unit] =
+          session.prepare("INSERT INTO testcounts (id, count) VALUES (?, ?)").toScala
+            .map(writeStmt = _)
+
+        def selectCount(): Future[Unit] = {
+          for {
+            selectStmt <- session.prepare("SELECT count, offset FROM testcounts WHERE id = ?").toScala
+            bs = selectStmt.bind("test")
+            row <- session.selectOne(bs).toScala
+          } yield {
+            if (row.isPresent()) {
+              count = row.get.getLong("count")
+            }
+          }
         }
+
+        (for {
+          _ <- prepareWriteStmt()
+          _ <- selectCount()
+        } yield Done.getInstance()).toJava
       }
-
-      (for {
-        _ <- prepareWriteStmt()
-        offset <- selectCountAndOffset()
-      } yield offset).toJava
     }
 
-    override def defineEventHandlers(builder: EventHandlersBuilder): EventHandlers = {
-      builder.setEventHandler(classOf[TestEntity.Appended], handleAppended)
-      builder.build()
-    }
-
-    val handleAppended = new BiFunction[TestEntity.Appended, UUID, CompletionStage[JList[BoundStatement]]] {
-      override def apply(event: TestEntity.Appended, offset: UUID): CompletionStage[JList[BoundStatement]] = {
+    val handleAppended = new JFunction[TestEntity.Appended, CompletionStage[JList[BoundStatement]]] {
+      override def apply(event: TestEntity.Appended): CompletionStage[JList[BoundStatement]] = {
         count += 1
         val bs = writeStmt.bind()
         bs.setString("id", "test")
         bs.setLong("count", count)
-        bs.setUUID("offset", offset)
         completedStatement(bs)
       }
     }
@@ -89,7 +96,24 @@ class CassandraReadSideSpec extends PersistenceSpec(CassandraReadSideSpec.config
   import CassandraReadSideSpec._
   import system.dispatcher
 
+  implicit val mat = ActorMaterializer()
   lazy val testSession: CassandraSession = new CassandraSessionImpl(system)
+  lazy val queries = PersistenceQuery(system).readJournalFor[CassandraReadJournal](CassandraReadJournal.Identifier)
+
+  def eventStream[Event <: AggregateEvent[Event]](
+    aggregateTag: AggregateEventTag[Event],
+    fromOffset:   Offset
+  ): Source[akka.japi.Pair[Event, Offset], NotUsed] = {
+    val tag = aggregateTag.tag
+    val offset = fromOffset match {
+      case Offset.NONE         => queries.firstOffset
+      case uuid: TimeBasedUUID => uuid.value()
+      case other               => throw new IllegalArgumentException("Cassandra does not support " + other.getClass.getName + " offsets")
+    }
+    queries.eventsByTag(tag, offset)
+      .map { env => akka.japi.Pair.create(env.event.asInstanceOf[Event], Offset.timeBasedUUID(env.offset)) }
+      .asJava
+  }
 
   override def beforeAll {
     super.beforeAll()
@@ -118,6 +142,19 @@ class CassandraReadSideSpec extends PersistenceSpec(CassandraReadSideSpec.config
     }
   }
 
+  def createReadSide() = {
+    /* read side and injector only needed for deprecated register method */
+    val cassandraReadSide = new CassandraReadSideImpl(system, testSession, null, null)
+    val readSide = system.actorOf(ReadSideActor.props[TestEntity.Evt](
+      () => new TestEntityProcessor(testSession, cassandraReadSide),
+      eventStream, classOf[TestEntity.Evt]
+    ))
+
+    readSide ! EnsureActive(TestEntity.Evt.aggregateTag.tag)
+
+    readSide
+  }
+
   "ReadSide" must {
 
     "use correct tag" in {
@@ -135,9 +172,7 @@ class CassandraReadSideSpec extends PersistenceSpec(CassandraReadSideSpec.config
       p ! TestEntity.Add.of("c")
       expectMsg(new TestEntity.Appended("C"))
 
-      val readSide = system.actorOf(CassandraReadSideActor.props[TestEntity.Evt](
-        classOf[TestEntity.Evt].getName, testSession, () => new TestEntityProcessor
-      ))
+      val readSide = createReadSide()
 
       assertSelectCount(3L)
 
@@ -155,9 +190,7 @@ class CassandraReadSideSpec extends PersistenceSpec(CassandraReadSideSpec.config
       // count = 4 from previous test step
       assertSelectCount(4L)
 
-      val readSide = system.actorOf(CassandraReadSideActor.props[TestEntity.Evt](
-        classOf[TestEntity.Evt].getName, testSession, () => new TestEntityProcessor
-      ))
+      val readSide = createReadSide()
 
       val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("1"),
         () => new TestEntity(system), Optional.empty(), 10.seconds))
