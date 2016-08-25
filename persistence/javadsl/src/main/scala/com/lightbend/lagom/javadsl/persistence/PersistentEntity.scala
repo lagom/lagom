@@ -94,6 +94,19 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
   /**
    * INTERNAL API
    */
+  override protected[lagom] def newCtx(replyTo: ActorRef): CoreCommandContext[Any] = new CommandContext[Any] {
+
+    override def reply(msg: Any): Unit =
+      replyTo ! msg
+
+    override def commandFailed(cause: Throwable): Unit =
+      // not using akka.actor.Status.Failure because it is using Java serialization
+      reply(cause)
+  }
+
+  /**
+   * INTERNAL API
+   */
   private[lagom] def internalInitialBehaviour(snapshotState: Option[State]) =
     initialBehavior(snapshotState.asJava)
 
@@ -149,7 +162,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
 
     def this(previousBehavior: Behavior) = this(previousBehavior.state, Map.empty, Map.empty, Option(previousBehavior))
     private var _state = state
-    private var eventHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]] = evtHandlers
+    private var eventHandlers: Map[Class[_ <: Event], (Event) => Behavior] = evtHandlers.map(a => a._1 -> a._2.asScala).toMap
     private var commandHandlers: Map[Class[_ <: Command], JBiFunction[Command, CoreCommandContext[Any], Persist[_ <: Event]]] =
       cmdHandlers
 
@@ -176,7 +189,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
      * method of the `PersistentEntity`.
      */
     def setEventHandlerChangingBehavior[A <: Event](eventClass: Class[A], handler: JFunction[A, Behavior]): Unit =
-      eventHandlers = eventHandlers.updated(eventClass, handler)
+      eventHandlers = eventHandlers.updated(eventClass, handler.asScala.asInstanceOf[Function[Event, Behavior]])
 
     /**
      * Remove an event handler for a given event class.
@@ -249,19 +262,17 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
       //        .foldLeft(previousBehavior.map(_.eventHandlers).getOrElse(PartialFunction.empty[Event, Behavior]))(_ orElse _)
       //      val cmdHandlersPf = cmdHandlers.values
       //        .map(_.asScala.curried.asInstanceOf[PartialFunction[Command, Function[CoreCommandContext[Any], Persist[Event]]]])
-      //        .foldLeft(previousBehavior.map(_.commandHandlers).getOrElse(PartialFunction.empty[Command, Function[CoreCommandContext[Any], Persist[Event]]]))(_ orElse _)
+      //        .foldLeft(previousBehavior.map(_.commdHandlers).getOrElse(PartialFunction.empty[Command, Function[CoreCommandContext[Any], Persist[Event]]]))(_ orElse _)
       val persistNone = new Persist[Event] {
         override def toString: String = "PersistNone"
       }
 
       def handler(cmd: Command, ctx: CoreCommandContext[Any]): Persist[_ <: Event] = {
-
         commandHandlers.get(cmd.getClass).map(a => a.apply(cmd, ctx)).getOrElse(persistNone)
-
       }
 
-      def eventHandler[A <: Event](event: A): Option[Behavior] = {
-        eventHandlers.get(event.getClass).map(_(event))
+      def eventHandler(event: Event): Option[Behavior] = {
+        eventHandlers.get(event.getClass).map(_.apply(event))
       }
 
       Behavior(_state, eventHandler, handler)
@@ -272,6 +283,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
   /**
    * The context that is passed to command handler function.
    */
+  //here here here
   abstract class CommandContext[R] extends ReadOnlyCommandContext[R] {
 
     /**

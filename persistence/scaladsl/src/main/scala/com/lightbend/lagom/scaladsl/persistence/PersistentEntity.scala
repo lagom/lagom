@@ -135,7 +135,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
       behavior.commandHandlers
     )*/
 
-  override private[lagom] def newCtx(replyTo: ActorRef): CoreCommandContext[Any] = new CommandContext[Any] {
+  override protected[lagom] def newCtx(replyTo: ActorRef): CoreCommandContext[Any] = new CommandContext[Any] {
 
     def reply(msg: Any): Unit =
       replyTo ! msg
@@ -152,8 +152,8 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
    */
   protected final class BehaviorBuilder(
     val state:       State,
-    val cmdHandlers: PartialFunction[_ <: Command, Function[CommandContext[Any], Persist[_ <: Event]]] = Map.empty,
-    val evtHandlers: PartialFunction[_ <: Event, Behavior]                                             = PartialFunction.empty
+    val cmdHandlers: PartialFunction[Command, Function[CoreCommandContext[Any], Persist[_ <: Event]]] = Map.empty,
+    val evtHandlers: PartialFunction[Event, Behavior]                                                 = PartialFunction.empty
   ) {
 
     // TODO apidocs
@@ -165,13 +165,13 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
       copy(evtHandlers = evtHandlers)
 
     // TODO apidocs
-    def withCommandHandlers(cmdHandlers: PartialFunction[Any, Function[CommandContext[Any], Persist[_ <: Event]]]): BehaviorBuilder =
+    def withCommandHandlers(cmdHandlers: PartialFunction[Any, Function[CoreCommandContext[Any], Persist[_ <: Event]]]): BehaviorBuilder =
       copy(cmdHandlers = cmdHandlers)
 
     private def copy(
-      state:       State                                                                             = state,
-      evtHandlers: PartialFunction[_ <: Event, Behavior]                                             = evtHandlers,
-      cmdHandlers: PartialFunction[_ <: Command, Function[CommandContext[Any], Persist[_ <: Event]]] = cmdHandlers
+      state:       State                                                                            = state,
+      evtHandlers: PartialFunction[Event, Behavior]                                                 = evtHandlers,
+      cmdHandlers: PartialFunction[Command, Function[CoreCommandContext[Any], Persist[_ <: Event]]] = cmdHandlers
     ) =
       new BehaviorBuilder(state, cmdHandlers, evtHandlers)
 
@@ -179,7 +179,18 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
      * Construct the corresponding immutable `Behavior`.
      */
     //todo: implement build
-    def build(): Behavior = Behavior(state, e => None, (c: Command, ctx: CoreCommandContext[Any]) => ???)
+    def build(): Behavior = {
+
+      def handler(cmd: Command, ctx: CoreCommandContext[Any]): Persist[_ <: Event] = {
+        cmdHandlers(cmd)(ctx)
+      }
+
+      def eventHandler(event: Event): Option[Behavior] = {
+        Option(evtHandlers.applyOrElse(event, null))
+      }
+
+      Behavior(state, eventHandler, handler)
+    }
 
     //      Behavior(state, evtHandlers, cmdHandlers.asInstanceOf[PartialFunction[_ <: Command, Function[CoreCommandContext[Any], Persist[_ <: Event]]]])
 

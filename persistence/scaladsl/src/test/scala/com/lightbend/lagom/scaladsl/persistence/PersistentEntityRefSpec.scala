@@ -210,8 +210,9 @@ object PersistentEntityRefSpec {
     }
 
     private def buildBehavior(addEvent: String => Evt, state: State): Behavior = {
+      val function: PartialFunction[Any, Function[CoreCommandContext[Any], Persist[_ <: Evt]]] = (defaultCommandHandlers orElse addCommandHandler(addEvent)).asInstanceOf[PartialFunction[Any, Function[CoreCommandContext[Any], Persist[_ <: Evt]]]]
       newBehaviorBuilder(state)
-        .withCommandHandlers(defaultCommandHandlers orElse addCommandHandler(addEvent))
+        .withCommandHandlers(function)
         .withEventHandlers(defaultEventHandlers)
         .build()
     }

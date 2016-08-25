@@ -91,19 +91,19 @@ trait CorePersistentEntity[Command, Event, State] {
    */
   def recoveryCompleted(): Behavior = _behavior
 
-  /**
-   * INTERNAL API
-   */
-  private[lagom] def newCtx(replyTo: ActorRef): CoreCommandContext[Any] = new CoreCommandContext[Any] {
-
+  private class SimpleCoreCommandContext(replyTo: ActorRef) extends CoreCommandContext[Any] {
     def reply(msg: Any): Unit =
       replyTo ! msg
 
     override def commandFailed(cause: Throwable): Unit =
       // not using akka.actor.Status.Failure because it is using Java serialization
       reply(cause)
-
   }
+
+  /**
+   * INTERNAL API
+   */
+  protected[lagom] def newCtx(replyTo: ActorRef): CoreCommandContext[Any]
 
   /**
    * Behavior consists of current state and functions to process incoming commands
@@ -114,7 +114,7 @@ trait CorePersistentEntity[Command, Event, State] {
     state: State,
 
     //                       eventHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
-    eventHandler:   (Event) => Option[Behavior],
+    eventHandler:   Function[Event, Option[Behavior]],
     commandHandler: (Command, CoreCommandContext[Any]) => Persist[_ <: Event]
 
   //                       commandHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CoreCommandContext[Any], Persist[_ <: Event]]]
@@ -132,6 +132,7 @@ trait CorePersistentEntity[Command, Event, State] {
       copy(state = f(state))
   }
 
+  //here here here
   trait CoreCommandContext[T] {
     /**
      * Reply with a negative acknowledgment.
