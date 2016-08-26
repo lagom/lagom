@@ -21,7 +21,7 @@ import akka.stream.Materializer
 import akka.stream.javadsl.{ Source => JSource }
 
 /**
- * A Producer for publishing messages in Kafka using the akka-stream-kafka API. 
+ * A Producer for publishing messages in Kafka using the akka-stream-kafka API.
  */
 class Producer[Message] private (config: KafkaConfig, topicCall: TopicCall[Message], system: ActorSystem)(implicit mat: Materializer) extends Publisher[Message] {
 

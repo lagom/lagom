@@ -14,7 +14,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 
 /**
- * Represents a Kafka topic and allows publishing/consuming messages to/from the topic.  
+ * Represents a Kafka topic and allows publishing/consuming messages to/from the topic.
  */
 class Topic[Message](config: KafkaConfig, topicCall: TopicCall[Message], info: ServiceInfo, system: ActorSystem, mat: Materializer) extends broker.Topic[Message] {
 
