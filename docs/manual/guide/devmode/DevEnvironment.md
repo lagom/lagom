@@ -58,6 +58,7 @@ What's happening behind the scenes when you `runAll`?
 
 * an embedded Service Locator is started
 * a Cassandra server is started
+* a Kafka server is started
 * your services start
     * ...and register with the Service Locator
 
@@ -73,4 +74,4 @@ You can verify that your services are running by viewing `http://localhost:8000/
 
 `cas_native` is the [Cassandra](http://cassandra.apache.org/) server. As you will learn in the [[documentation for writing persistent and clustered services|PersistentEntity]], Cassandra is the default database in Lagom, and it's an integral part of the development environment.
 
-Both the Service Locator and Cassandra are covered in more detail in the sections that follow.
+The Service Locator, Cassandra, and Kafka are covered in more detail in the sections that follow.
