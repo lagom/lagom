@@ -11,6 +11,8 @@ import scala.language.experimental.macros
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import scala.reflect.macros.blackbox.Context
+import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
+import com.lightbend.lagom.javadsl.api.broker.Topic
 
 /**
  * Support for implementing javadsl service calls with Scala.
@@ -27,6 +29,8 @@ object ScalaService {
     Service.pathCall[Request, Response](path, method.method)
   def restCall[Request, Response](restMethod: transport.Method, path: String, method: ScalaMethodCall[ServiceCall[Request, Response]]): Call[Request, Response] =
     Service.restCall[Request, Response](restMethod, path, method.method)
+  def topic[Message](topicId: String, method: ScalaMethodCall[Topic[Message]]): TopicCall[Message] =
+    Service.topic[Message](topicId, method.method)
 
   def named(name: String): Descriptor = Service.named(name)
 }
