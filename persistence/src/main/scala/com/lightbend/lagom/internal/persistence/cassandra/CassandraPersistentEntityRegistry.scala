@@ -1,43 +1,33 @@
 /*
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
  */
-package com.lightbend.lagom.internal.persistence
+package com.lightbend.lagom.internal.persistence.cassandra
 
-import java.util.Optional
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
-import scala.concurrent.duration._
-import scala.concurrent.duration.FiniteDuration
-import scala.util.control.NonFatal
+import java.util.{ Optional, UUID }
+import java.util.concurrent.{ CompletionStage, ConcurrentHashMap, TimeUnit }
+import javax.inject.{ Inject, Singleton }
+
+import akka.{ Done, NotUsed }
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import akka.cluster.sharding.ClusterSharding
-import akka.cluster.sharding.ClusterShardingSettings
-import akka.cluster.sharding.ShardRegion
+import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
 import akka.event.Logging
 import akka.japi.Pair
+import akka.pattern.ask
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import akka.persistence.query.PersistenceQuery
 import akka.stream.javadsl
-import com.google.inject.Injector
-import akka.NotUsed
-import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
-import com.lightbend.lagom.javadsl.persistence.CommandEnvelope
-import com.lightbend.lagom.javadsl.persistence.PersistentEntity
-import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef
-import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
-import javax.inject.Inject
-import javax.inject.Singleton
-import com.lightbend.lagom.javadsl.persistence.AggregateEvent
-import java.util.concurrent.CompletionStage
-import akka.Done
-import akka.pattern.ask
 import akka.util.Timeout
+import com.google.inject.Injector
+import com.lightbend.lagom.internal.persistence.{ GracefulLeave, PersistentEntityActor }
+import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
+import com.lightbend.lagom.javadsl.persistence._
+
+import scala.concurrent.duration.{ FiniteDuration, _ }
+import scala.util.control.NonFatal
 
 @Singleton
-private[lagom] class PersistentEntityRegistryImpl @Inject() (system: ActorSystem, injector: Injector)
-  extends PersistentEntityRegistry {
+private[lagom] class CassandraPersistentEntityRegistry @Inject() (system: ActorSystem, injector: Injector) extends PersistentEntityRegistry {
 
   private val sharding = ClusterSharding(system)
   private val conf = system.settings.config.getConfig("lagom.persistence")
@@ -115,12 +105,16 @@ private[lagom] class PersistentEntityRegistryImpl @Inject() (system: ActorSystem
 
   override def eventStream[Event <: AggregateEvent[Event]](
     aggregateTag: AggregateEventTag[Event],
-    fromOffset:   Optional[UUID]
-  ): javadsl.Source[Pair[Event, UUID], NotUsed] = {
+    fromOffset:   Offset
+  ): javadsl.Source[Pair[Event, Offset], NotUsed] = {
     val tag = aggregateTag.tag
-    val offset = fromOffset.orElse(eventQueries.firstOffset)
+    val offset = fromOffset match {
+      case Offset.NONE         => eventQueries.firstOffset
+      case uuid: TimeBasedUUID => uuid.value()
+      case other               => throw new IllegalArgumentException("Cassandra does not support " + other.getClass.getName + " offsets")
+    }
     eventQueries.eventsByTag(tag, offset)
-      .map { env => Pair.create(env.event.asInstanceOf[Event], env.offset) }
+      .map { env => Pair.create(env.event.asInstanceOf[Event], Offset.timeBasedUUID(env.offset)) }
       .asJava
   }
 
