@@ -470,7 +470,7 @@ public interface Service {
     }
 
     /**
-     * Publishes the passes messages to the associated topic.
+     * Publishes the passed messages to the associated topic.
      *
      * @param messages The stream of messages to publish.
      * @return A topic.
