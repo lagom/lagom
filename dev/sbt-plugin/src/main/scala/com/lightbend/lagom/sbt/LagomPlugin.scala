@@ -259,7 +259,6 @@ object LagomPlugin extends AutoPlugin {
     val lagomKafkaZookeperPort = settingKey[Int]("Port used by the local zookeper server (kafka requires zookeeper)")
     val lagomKafkaPort = settingKey[Int]("Port used by the local kafka broker")
     val lagomKafkaAddress = settingKey[String]("Address of the kafka broker")
-    val lagomKafkaMaxBootWaitingTime = settingKey[FiniteDuration]("Max waiting time to start the kafka broker")
 
     /** Allows to integrate an external Lagom project in the current build, so that when runAll is run, this service is also started.*/
     def lagomExternalProject(name: String, module: ModuleID): Project =
@@ -354,7 +353,6 @@ object LagomPlugin extends AutoPlugin {
     lagomKafkaPort := 9092,
     lagomKafkaAddress := s"localhost:${lagomKafkaPort.value}",
     lagomKafkaJvmOptions := Seq("-Xms256m", "-Xmx1024m"),
-    lagomKafkaMaxBootWaitingTime := 20.seconds,
     runAll <<= runServiceLocatorAndMicroservicesTask,
     Internal.Keys.interactionMode := PlayConsoleInteractionMode,
     lagomDevSettings := Nil
@@ -475,10 +473,9 @@ object LagomPlugin extends AutoPlugin {
         }
         val classpath = (managedClasspath in Compile).value.map(_.data)
         val jvmOptions = lagomKafkaJvmOptions.value
-        val maxWaiting = lagomKafkaMaxBootWaitingTime.value
         val targetDir = target.value
 
-        Servers.KafkaServer.start(log, classpath, kafkaPort, zooKeeperPort, kafkaPropertiesFile, jvmOptions, maxWaiting, targetDir)
+        Servers.KafkaServer.start(log, classpath, kafkaPort, zooKeeperPort, kafkaPropertiesFile, jvmOptions, targetDir)
       }
     } else {
       Def.task {

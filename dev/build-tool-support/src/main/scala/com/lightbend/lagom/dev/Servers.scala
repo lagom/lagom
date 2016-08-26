@@ -197,7 +197,7 @@ private[lagom] object Servers {
 
     protected type Server = KafkaProcess
 
-    def start(log: LoggerProxy, cp: Seq[File], kafkaPort: Int, zooKeperPort: Int, kafkaPropertiesFile: Option[File], jvmOptions: Seq[String], maxWaiting: FiniteDuration, targetDir: File): Unit = {
+    def start(log: LoggerProxy, cp: Seq[File], kafkaPort: Int, zooKeperPort: Int, kafkaPropertiesFile: Option[File], jvmOptions: Seq[String], targetDir: File): Unit = {
       val args = kafkaPort.toString :: zooKeperPort.toString :: targetDir.getAbsolutePath :: kafkaPropertiesFile.toList.map(_.getAbsolutePath)
 
       val log4jOutput = targetDir.getAbsolutePath + java.io.File.separator + "log4j_output"
