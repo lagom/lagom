@@ -25,7 +25,7 @@ import akka.stream.javadsl.{ Flow => JFlow, Source => JSource }
 import akka.stream.scaladsl.{ Flow, GraphDSL, Sink, Unzip, Zip }
 
 /**
- * A Consumer for consuming messages from Kafka using the akka-stream-kafka API. 
+ * A Consumer for consuming messages from Kafka using the akka-stream-kafka API.
  */
 class Consumer[Message] private (config: KafkaConfig, topicCall: TopicCall[Message], groupId: Subscriber.GroupId, info: ServiceInfo, system: ActorSystem)(implicit mat: Materializer) extends Subscriber[Message] {
 
@@ -56,7 +56,7 @@ class Consumer[Message] private (config: KafkaConfig, topicCall: TopicCall[Messa
       .asJava
   }
 
-  override def atLeastOnce(flow: JFlow[Message, _, _]): CompletionStage[Done] = {
+  override def atLeastOnce(flow: JFlow[Message, Done, _]): CompletionStage[Done] = {
     // Creating a Source of pair where the first element is a reactive-kafka committable message, 
     // and the second it's the actual underlying message. Then, the source of pair is splitted into 
     // two streams, so that the `flow` passed in argument can be applied to the underlying message.
@@ -68,9 +68,9 @@ class Consumer[Message] private (config: KafkaConfig, topicCall: TopicCall[Messa
     val committOffsetFlow = Flow.fromGraph(GraphDSL.create() { implicit builder =>
       import GraphDSL.Implicits._
       val unzip = builder.add(Unzip[ConsumerMessage.CommittableMessage[_, _], Message])
-      val zip = builder.add(Zip[ConsumerMessage.CommittableMessage[_, _], Any])
+      val zip = builder.add(Zip[ConsumerMessage.CommittableMessage[_, _], Done])
       // parallelism set to 1 because offset should be committed in order
-      val committer = Flow[(ConsumerMessage.CommittableMessage[_, _], Any)].mapAsync(parallelism = 1) {
+      val committer = Flow[(ConsumerMessage.CommittableMessage[_, _], Done)].mapAsync(parallelism = 1) {
         case (cm, _) =>
           implicit val ec = system.dispatcher
           cm.committableOffset.commitScaladsl() andThen {
