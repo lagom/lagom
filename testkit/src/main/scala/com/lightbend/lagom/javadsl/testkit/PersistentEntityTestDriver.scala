@@ -123,41 +123,49 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
     var producedEvents: Vector[E] = Vector.empty
     commands.foreach { cmd =>
       issues ++= checkSerialization(cmd)
-      entity.behavior.commandHandler(cmd.asInstanceOf[C], ctx) match {
-        case _: entity.PersistNone[_] => // done
-        case entity.PersistOne(event, afterPersist) =>
-          issues ++= checkSerialization(event)
-          try {
-            producedEvents :+= event
-            applyEvent(event)
-            issues ++= checkSerialization(entity.behavior.state)
-            if (afterPersist != null)
-              afterPersist(event)
-          } catch {
-            case NonFatal(e) =>
-              ctx.commandFailed(e) // reply with failure
-              throw e
-          }
-        case entity.PersistAll(events, afterPersist) =>
-          var count = events.size
-          events.foreach { evt =>
-            issues ++= checkSerialization(evt)
-            try {
-              producedEvents :+= evt
-              applyEvent(evt)
-              issues ++= checkSerialization(entity.behavior.state)
-              count -= 1
-              if (afterPersist != null && count == 0)
-                afterPersist.apply()
-            } catch {
-              case NonFatal(e) =>
-                ctx.commandFailed(e) // reply with failure
-                throw e
-            }
-          }
 
-        case _ =>
-          issues :+= UnhandledCommand(cmd)
+      val maybePersist: Option[entity.Persist[_ <: E]] = entity.behavior.commandHandler(cmd.asInstanceOf[C], ctx)
+      maybePersist match {
+        case None => issues :+= UnhandledCommand(cmd)
+
+        case Some(p) => {
+          p match {
+            case _: entity.PersistNone[_] => // done
+            case entity.PersistOne(event, afterPersist) =>
+              issues ++= checkSerialization(event)
+              try {
+                producedEvents :+= event
+                applyEvent(event)
+                issues ++= checkSerialization(entity.behavior.state)
+                if (afterPersist != null)
+                  afterPersist(event)
+              } catch {
+                case NonFatal(e) =>
+                  ctx.commandFailed(e) // reply with failure
+                  throw e
+              }
+            case entity.PersistAll(events, afterPersist) =>
+              var count = events.size
+              events.foreach { evt =>
+                issues ++= checkSerialization(evt)
+                try {
+                  producedEvents :+= evt
+                  applyEvent(evt)
+                  issues ++= checkSerialization(entity.behavior.state)
+                  count -= 1
+                  if (afterPersist != null && count == 0)
+                    afterPersist.apply()
+                } catch {
+                  case NonFatal(e) =>
+                    ctx.commandFailed(e) // reply with failure
+                    throw e
+                }
+              }
+
+            case _ =>
+              issues :+= UnhandledCommand(cmd)
+          }
+        }
       }
     }
 

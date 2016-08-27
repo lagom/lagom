@@ -115,7 +115,7 @@ trait CorePersistentEntity[Command, Event, State] {
 
     //                       eventHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
     eventHandler:   Function[Event, Option[Behavior]],
-    commandHandler: (Command, CoreCommandContext[Any]) => Persist[_ <: Event]
+    commandHandler: (Command, CoreCommandContext[Any]) => Option[Persist[_ <: Event]]
 
   //                       commandHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CoreCommandContext[Any], Persist[_ <: Event]]]
   //State    eventHandlers:   PartialFunction[_ <: Event, Behavior],
