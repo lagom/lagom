@@ -84,14 +84,15 @@ object PersistentEntity {
  * method.
  *
  * Type parameter `Command`:
- *   the super type of all commands, must implement [[PersistentEntity.ReplyType]]
- *   to define the reply type of each command type
+ * the super type of all commands, must implement [[PersistentEntity.ReplyType]]
+ * to define the reply type of each command type
  * Type parameter `Event`:
- *   the super type of all events
+ * the super type of all events
  * Type parameter `State`:
- *   the type of the state
+ * the type of the state
  */
 abstract class PersistentEntity[Command, Event, State] extends CorePersistentEntity[Command, Event, State] {
+
   import CorePersistentEntity._
 
   /**
@@ -134,7 +135,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
       behavior.commandHandlers
     )*/
 
-  override private[lagom] def newCtx(replyTo: ActorRef): CoreCommandContext[Any] = new CommandContext[Any] {
+  override protected[lagom] def newCtx(replyTo: ActorRef): CoreCommandContext[Any] = new CommandContext[Any] {
 
     def reply(msg: Any): Unit =
       replyTo ! msg
@@ -151,8 +152,8 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
    */
   protected final class BehaviorBuilder(
     val state:       State,
-    val cmdHandlers: PartialFunction[_ <: Command, Function[CommandContext[Any], Persist[_ <: Event]]] = Map.empty,
-    val evtHandlers: PartialFunction[_ <: Event, Behavior]                                             = PartialFunction.empty
+    val cmdHandlers: PartialFunction[Command, Function[CoreCommandContext[Any], Option[Persist[_ <: Event]]]] = Map.empty,
+    val evtHandlers: PartialFunction[Event, Behavior]                                                         = PartialFunction.empty
   ) {
 
     // TODO apidocs
@@ -164,21 +165,34 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
       copy(evtHandlers = evtHandlers)
 
     // TODO apidocs
-    def withCommandHandlers(cmdHandlers: PartialFunction[Any, Function[CommandContext[Any], Persist[_ <: Event]]]): BehaviorBuilder =
+    def withCommandHandlers(cmdHandlers: PartialFunction[Any, Function[CoreCommandContext[Any], Option[Persist[_ <: Event]]]]): BehaviorBuilder =
       copy(cmdHandlers = cmdHandlers)
 
     private def copy(
-      state:       State                                                                             = state,
-      evtHandlers: PartialFunction[_ <: Event, Behavior]                                             = evtHandlers,
-      cmdHandlers: PartialFunction[_ <: Command, Function[CommandContext[Any], Persist[_ <: Event]]] = cmdHandlers
+      state:       State                                                                                    = state,
+      evtHandlers: PartialFunction[Event, Behavior]                                                         = evtHandlers,
+      cmdHandlers: PartialFunction[Command, Function[CoreCommandContext[Any], Option[Persist[_ <: Event]]]] = cmdHandlers
     ) =
       new BehaviorBuilder(state, cmdHandlers, evtHandlers)
 
     /**
      * Construct the corresponding immutable `Behavior`.
      */
-    def build(): Behavior =
-      Behavior(state, evtHandlers, cmdHandlers.asInstanceOf[PartialFunction[_ <: Command, Function[CoreCommandContext[Any], Persist[_ <: Event]]]])
+    //todo: implement build
+    def build(): Behavior = {
+
+      def handler(cmd: Command, ctx: CoreCommandContext[Any]): Option[Persist[_ <: Event]] = {
+        (cmdHandlers.orElse[Command, Function[CoreCommandContext[Any], Option[Persist[_ <: Event]]]]({ case _: Command => (ctx: CoreCommandContext[Any]) => None }))(cmd)(ctx)
+      }
+
+      def eventHandler(event: Event): Option[Behavior] = {
+        Option(evtHandlers.applyOrElse(event, null))
+      }
+
+      Behavior(state, eventHandler, handler)
+    }
+
+    //      Behavior(state, evtHandlers, cmdHandlers.asInstanceOf[PartialFunction[_ <: Command, Function[CoreCommandContext[Any], Persist[_ <: Event]]]])
 
   }
 

@@ -12,7 +12,7 @@ bintrayOmitLicense in ThisBuild := false
 //#helloworld-build
 organization in ThisBuild := "sample.helloworld"
 
-scalaVersion in ThisBuild := "2.11.7"
+scalaVersion in ThisBuild := "2.11.8"
 
 lazy val helloworldApi = (project in file("helloworld-api"))
   .settings(version := "1.0")

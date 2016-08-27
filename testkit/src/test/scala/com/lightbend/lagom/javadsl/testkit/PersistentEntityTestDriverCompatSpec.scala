@@ -5,7 +5,7 @@ package com.lightbend.lagom.javadsl.testkit
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
-import com.lightbend.lagom.javadsl.persistence.PersistenceSpec
+import com.lightbend.lagom.persistence.PersistenceSpec
 import com.lightbend.lagom.javadsl.persistence.TestEntity
 import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.persistence.PersistentEntityActor
