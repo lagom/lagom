@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.lightbend.lagom.persistence.AggregateEvent;
 import com.lightbend.lagom.persistence.AggregateEventTag;
 import com.lightbend.lagom.persistence.CorePersistentEntity;
-import com.lightbend.lagom.serialization.Command;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.google.common.collect.ImmutableList;
 
@@ -445,7 +444,7 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
         b.setCommandHandler(ChangeMode.class,
                 (ChangeMode cmd, CommandContext ctx) -> {
                     if (state().getMode() == cmd.getMode()) {
-                        return ctx.done();
+                        return  ctx.done();
                     } else if (cmd.getMode() == Mode.APPEND) {
                         return ctx.thenPersist(InAppendMode.instance, evt -> ctx.reply(evt));
                     } else if (cmd.getMode() == Mode.PREPEND) {

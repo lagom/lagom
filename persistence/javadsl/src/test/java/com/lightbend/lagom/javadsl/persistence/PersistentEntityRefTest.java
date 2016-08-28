@@ -56,6 +56,8 @@ public class PersistentEntityRefTest {
     Cluster.get(system).join(Cluster.get(system).selfAddress());
 
     File cassandraDirectory = new File("target/" + system.name());
+    //todo: remove it
+    cassandraDirectory.mkdirs();
     CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource(), true, 0);
     PersistenceSpec.awaitPersistenceInit(system);
   }
@@ -86,20 +88,20 @@ public class PersistentEntityRefTest {
   @Test
   public void testSendCommandsToTargetEntity() throws Exception {
     PersistentEntityRef<Cmd> ref1 = registry().refFor(TestEntity.class, "1");
-    Evt reply1 = ref1.ask(TestEntity.Add.of("a")).toCompletableFuture().get(15, SECONDS);
+    Evt reply1 = ref1.ask(TestEntity.Add.of("a")).toCompletableFuture().get(150, SECONDS);
     assertEquals(new TestEntity.Appended("A"), reply1);
 
     PersistentEntityRef<Cmd> ref2 = registry().refFor(TestEntity.class, "2");
-    Evt reply2 = ref2.ask(TestEntity.Add.of("b")).toCompletableFuture().get(5, SECONDS);
+    Evt reply2 = ref2.ask(TestEntity.Add.of("b")).toCompletableFuture().get(500, SECONDS);
     assertEquals(new TestEntity.Appended("B"), reply2);
 
-    Evt reply3 = ref2.ask(TestEntity.Add.of("c")).toCompletableFuture().get(5, SECONDS);
+    Evt reply3 = ref2.ask(TestEntity.Add.of("c")).toCompletableFuture().get(500, SECONDS);
     assertEquals(new TestEntity.Appended("C"), reply3);
 
-    State state1 = ref1.ask(TestEntity.Get.instance()).toCompletableFuture().get(5, SECONDS);
+    State state1 = ref1.ask(TestEntity.Get.instance()).toCompletableFuture().get(500, SECONDS);
     assertEquals(Arrays.asList("A"), state1.getElements());
 
-    State state2 = ref2.ask(TestEntity.Get.instance()).toCompletableFuture().get(5, SECONDS);
+    State state2 = ref2.ask(TestEntity.Get.instance()).toCompletableFuture().get(500, SECONDS);
     assertEquals(Arrays.asList("B", "C"), state2.getElements());
   }
 

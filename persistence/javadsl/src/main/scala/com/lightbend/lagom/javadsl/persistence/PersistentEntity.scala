@@ -152,7 +152,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
   protected final class BehaviorBuilder(
     state:            State,
     evtHandlers:      Map[Class[_ <: Event], JFunction[Event, Behavior]],
-    cmdHandlers:      Map[Class[_ <: Command], JBiFunction[Command, CoreCommandContext[Any], Option[Persist[_ <: Event]]]],
+    cmdHandlers:      Map[Class[_ <: Command], JBiFunction[Command, CoreCommandContext[Any], Persist[_ <: Event]]],
     previousBehavior: Option[Behavior]
   ) {
 
@@ -164,7 +164,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
 
     private var _state = state
     private var eventHandlers: Map[Class[_ <: Event], (Event) => Behavior] = evtHandlers.map(a => a._1 -> a._2.asScala).toMap
-    private var commandHandlers: Map[Class[_ <: Command], JBiFunction[Command, CoreCommandContext[Any], Option[Persist[_ <: Event]]]] =
+    private var commandHandlers: Map[Class[_ <: Command], JBiFunction[Command, CoreCommandContext[Any], Persist[_ <: Event]]] =
       cmdHandlers
 
     def getState(): State = _state
@@ -223,7 +223,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
     ): Unit = {
       commandHandlers = commandHandlers.updated(
         commandClass,
-        handler.asInstanceOf[JBiFunction[Command, CoreCommandContext[Any], Option[Persist[_ <: Event]]]]
+        handler.asInstanceOf[JBiFunction[Command, CoreCommandContext[Any], Persist[_ <: Event]]]
       )
     }
 
@@ -264,12 +264,10 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
       //      val cmdHandlersPf = cmdHandlers.values
       //        .map(_.asScala.curried.asInstanceOf[PartialFunction[Command, Function[CoreCommandContext[Any], Persist[Event]]]])
       //        .foldLeft(previousBehavior.map(_.commdHandlers).getOrElse(PartialFunction.empty[Command, Function[CoreCommandContext[Any], Persist[Event]]]))(_ orElse _)
-      val persistNone = new Persist[Event] {
-        override def toString: String = "PersistNone"
-      }
+
 
       def handler(cmd: Command, ctx: CoreCommandContext[Any]): Option[Persist[_ <: Event]] = {
-        commandHandlers.get(cmd.getClass).map(a => a.apply(cmd, ctx)).getOrElse(Some(persistNone))
+        Some(commandHandlers.get(cmd.getClass).map(a => a.apply(cmd, ctx)).getOrElse(persistNone))
       }
 
       def eventHandler(event: Event): Option[Behavior] = {

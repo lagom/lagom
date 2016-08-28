@@ -143,7 +143,6 @@ private[lagom] class PersistentEntityActor[C, E, S](
             //        case Some(handler) =>
             // create a new instance every time and capture sender()
             //          try handler.apply(cmd.asInstanceOf[C], ctx) match {
-            case _: entity.PersistNone[_] => // done
             case entity.PersistOne(event, afterPersist) =>
               // apply the event before persist so that validation exception is handled before persisting
               // the invalid event, in case such validation is implemented in the event handler.
@@ -184,6 +183,8 @@ private[lagom] class PersistentEntityActor[C, E, S](
                     throw e
                 }
               }
+            case _: entity.PersistNone[_] => println("no persistence") // done
+
           }
         }
       }
