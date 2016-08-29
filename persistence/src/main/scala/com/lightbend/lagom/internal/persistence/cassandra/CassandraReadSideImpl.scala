@@ -69,12 +69,19 @@ private[lagom] class CassandraReadSideImpl @Inject() (
   override def builder[Event <: AggregateEvent[Event]](offsetTableName: String): ReadSideHandlerBuilder[Event] = {
     new ReadSideHandlerBuilder[Event] {
       import CassandraAutoReadSideHandler.Handler
-      private var prepareCallback: () => CompletionStage[Done] =
+      private var prepareCallback: AggregateEventTag[Event] => CompletionStage[Done] =
+        tag => CompletableFuture.completedFuture(Done.getInstance())
+      private var globalPrepareCallback: () => CompletionStage[Done] =
         () => CompletableFuture.completedFuture(Done.getInstance())
       private var handlers = Map.empty[Class[_ <: Event], Handler[Event]]
 
-      override def setPrepare(callback: Supplier[CompletionStage[Done]]): ReadSideHandlerBuilder[Event] = {
-        prepareCallback = () => callback.get()
+      override def setGlobalPrepare(callback: Supplier[CompletionStage[Done]]): ReadSideHandlerBuilder[Event] = {
+        globalPrepareCallback = callback.get
+        this
+      }
+
+      override def setPrepare(callback: Function[AggregateEventTag[Event], CompletionStage[Done]]): ReadSideHandlerBuilder[Event] = {
+        prepareCallback = callback.apply
         this
       }
 
@@ -98,7 +105,7 @@ private[lagom] class CassandraReadSideImpl @Inject() (
 
       override def build(): ReadSideHandler[Event] = {
         val offsetStore = new OffsetStore(session, offsetTableName)
-        new CassandraAutoReadSideHandler[Event](session, handlers, prepareCallback, offsetStore, dispatcher)
+        new CassandraAutoReadSideHandler[Event](session, handlers, globalPrepareCallback, prepareCallback, offsetStore, dispatcher)
       }
     }
   }

@@ -18,6 +18,7 @@ import akka.actor.Address;
 import akka.cluster.Cluster;
 
 import com.lightbend.lagom.javadsl.persistence.testkit.SimulatedNullpointerException;
+import org.pcollections.PSequence;
 
 public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt, TestEntity.State> {
 
@@ -160,21 +161,32 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
 
   public static abstract class Evt implements AggregateEvent<Evt>, Jsonable {
 
-    public static final AggregateEventTag<Evt> aggregateTag = AggregateEventTag.of(Evt.class,
-        Evt.class.getName()); // second param is optional, defaults to the class name
+    public static final int NUM_SHARDS = 4;
+
+    public static final PSequence<AggregateEventTag<Evt>> aggregateTags = AggregateEventTag.shards(Evt.class,
+        NUM_SHARDS); // second param is optional, defaults to the class name
+
+    public abstract String getEntityId();
 
     @Override
     public AggregateEventTag<Evt> aggregateTag() {
-      return Evt.aggregateTag;
+      return AggregateEventTag.shard(Evt.class, NUM_SHARDS, getEntityId());
     }
   }
 
   public static class Appended extends Evt {
+    private final String entityId;
     private final String element;
 
     @JsonCreator
-    public Appended(String element) {
+    public Appended(String entityId, String element) {
+      this.entityId = entityId;
       this.element = element;
+    }
+
+    @Override
+    public String getEntityId() {
+      return entityId;
     }
 
     public String getElement() {
@@ -182,43 +194,46 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
     }
 
     @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      Appended appended = (Appended) o;
+
+      if (!entityId.equals(appended.entityId)) return false;
+      return element.equals(appended.element);
+
+    }
+
+    @Override
     public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((element == null) ? 0 : element.hashCode());
+      int result = entityId.hashCode();
+      result = 31 * result + element.hashCode();
       return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
-      Appended other = (Appended) obj;
-      if (element == null) {
-        if (other.element != null)
-          return false;
-      } else if (!element.equals(other.element))
-        return false;
-      return true;
-    }
-
-    @Override
     public String toString() {
-      return "Appended [element=" + element + "]";
+      return "Appended{" +
+              "entityId='" + entityId + '\'' +
+              ", element='" + element + '\'' +
+              '}';
     }
-
   }
 
   public static class Prepended extends Evt {
+    private final String entityId;
     private final String element;
 
     @JsonCreator
-    public Prepended(String element) {
+    public Prepended(String entityId, String element) {
+      this.entityId = entityId;
       this.element = element;
+    }
+
+    @Override
+    public String getEntityId() {
+      return entityId;
     }
 
     public String getElement() {
@@ -226,68 +241,105 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
     }
 
     @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      Prepended prepended = (Prepended) o;
+
+      if (!entityId.equals(prepended.entityId)) return false;
+      return element.equals(prepended.element);
+
+    }
+
+    @Override
     public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((element == null) ? 0 : element.hashCode());
+      int result = entityId.hashCode();
+      result = 31 * result + element.hashCode();
       return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
-      Prepended other = (Prepended) obj;
-      if (element == null) {
-        if (other.element != null)
-          return false;
-      } else if (!element.equals(other.element))
-        return false;
-      return true;
-    }
-
-    @Override
     public String toString() {
-      return "Prepended [element=" + element + "]";
+      return "Prepended{" +
+              "entityId='" + entityId + '\'' +
+              ", element='" + element + '\'' +
+              '}';
     }
-
   }
 
   public static class InPrependMode extends Evt {
-    private static final InPrependMode instance = new InPrependMode();
+
+    private final String entityId;
 
     @JsonCreator
-    public static InPrependMode instance() {
-      return InPrependMode.instance;
+    public InPrependMode(String entityId) {
+      this.entityId = entityId;
     }
 
-    private InPrependMode() {
+    @Override
+    public String getEntityId() {
+      return entityId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      InPrependMode that = (InPrependMode) o;
+
+      return entityId.equals(that.entityId);
+
+    }
+
+    @Override
+    public int hashCode() {
+      return entityId.hashCode();
     }
 
     @Override
     public String toString() {
-      return "InPrependMode";
+      return "InPrependMode{" +
+              "entityId='" + entityId + '\'' +
+              '}';
     }
   }
 
   public static class InAppendMode extends Evt {
-    private static final InAppendMode instance = new InAppendMode();
+    private final String entityId;
 
     @JsonCreator
-    public static InAppendMode instance() {
-      return InAppendMode.instance;
+    public InAppendMode(String entityId) {
+      this.entityId = entityId;
     }
 
-    private InAppendMode() {
+    @Override
+    public String getEntityId() {
+      return entityId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      InAppendMode that = (InAppendMode) o;
+
+      return entityId.equals(that.entityId);
+
+    }
+
+    @Override
+    public int hashCode() {
+      return entityId.hashCode();
     }
 
     @Override
     public String toString() {
-      return "InAppendMode";
+      return "InAppendMode{" +
+              "entityId='" + entityId + '\'' +
+              '}';
     }
   }
 
@@ -434,9 +486,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
         if (state().getMode() == cmd.getMode()) {
           return ctx.done();
         } else if (cmd.getMode() == Mode.APPEND) {
-          return ctx.thenPersist(InAppendMode.instance, evt -> ctx.reply(evt));
+          return ctx.thenPersist(new InAppendMode(entityId()), evt -> ctx.reply(evt));
         } else if (cmd.getMode() == Mode.PREPEND) {
-          return ctx.thenPersist(InPrependMode.instance, evt -> ctx.reply(evt));
+          return ctx.thenPersist(new InPrependMode(entityId()), evt -> ctx.reply(evt));
         } else {
           throw new IllegalStateException();
         }
@@ -461,7 +513,7 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
         ctx.invalidCommand("element must not be empty");
         return ctx.done();
       }
-      Appended a = new Appended(cmd.element.toUpperCase());
+      Appended a = new Appended(entityId(), cmd.element.toUpperCase());
       if (cmd.getTimes() == 1)
         return ctx.thenPersist(a, evt -> ctx.reply(evt));
       else
@@ -478,7 +530,7 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
         ctx.invalidCommand("element must not be empty");
         return ctx.done();
       }
-      Prepended a = new Prepended(cmd.element.toLowerCase());
+      Prepended a = new Prepended(entityId(), cmd.element.toLowerCase());
       if (cmd.getTimes() == 1)
         return ctx.thenPersist(a, evt -> ctx.reply(evt));
       else
@@ -486,7 +538,7 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
     });
 
     b.setCommandHandler(Add.class,
-        (cmd, ctx) -> ctx.thenPersist(new Prepended(cmd.element.toLowerCase()), evt -> ctx.reply(evt)));
+        (cmd, ctx) -> ctx.thenPersist(new Prepended(entityId(), cmd.element.toLowerCase()), evt -> ctx.reply(evt)));
     return b.build();
   }
 

@@ -37,11 +37,11 @@ class PersistentEntityActorSpec extends PersistenceSpec {
       val state = expectMsgType[TestEntity.State]
       state.getElements.size should ===(0)
       p ! TestEntity.Add.of("a")
-      expectMsg(new TestEntity.Appended("A"))
+      expectMsg(new TestEntity.Appended("1", "A"))
       p ! TestEntity.Add.of("b")
-      expectMsg(new TestEntity.Appended("B"))
+      expectMsg(new TestEntity.Appended("1", "B"))
       p ! TestEntity.Add.of("c")
-      expectMsg(new TestEntity.Appended("C"))
+      expectMsg(new TestEntity.Appended("1", "C"))
       p ! TestEntity.Get.instance
       val state2 = expectMsgType[TestEntity.State]
       state2.getElements.asScala.toList should ===(List("A", "B", "C"))
@@ -61,13 +61,13 @@ class PersistentEntityActorSpec extends PersistenceSpec {
       val state = expectMsgType[TestEntity.State]
       state.getMode() should ===(TestEntity.Mode.APPEND)
       p ! TestEntity.Add.of("a")
-      expectMsg(new TestEntity.Appended("A"))
+      expectMsg(new TestEntity.Appended("2", "A"))
       p ! TestEntity.Add.of("b")
-      expectMsg(new TestEntity.Appended("B"))
+      expectMsg(new TestEntity.Appended("2", "B"))
       p ! new TestEntity.ChangeMode(TestEntity.Mode.PREPEND)
-      expectMsgType[TestEntity.InPrependMode]
+      expectMsg(new TestEntity.InPrependMode("2"))
       p ! TestEntity.Add.of("C")
-      expectMsg(new TestEntity.Prepended("c"))
+      expectMsg(new TestEntity.Prepended("2", "c"))
       p ! TestEntity.Get.instance
       val state2 = expectMsgType[TestEntity.State]
       state2.getElements.asScala.toList should ===(List("c", "A", "B"))
@@ -80,15 +80,15 @@ class PersistentEntityActorSpec extends PersistenceSpec {
       state3.getMode() should ===(TestEntity.Mode.PREPEND)
       state3.getElements.asScala.toList should ===(List("c", "A", "B"))
       p2 ! TestEntity.Add.of("D")
-      expectMsg(new TestEntity.Prepended("d"))
+      expectMsg(new TestEntity.Prepended("2", "d"))
       p2 ! TestEntity.Get.instance
       val state4 = expectMsgType[TestEntity.State]
       state4.getElements.asScala.toList should ===(List("d", "c", "A", "B"))
 
       p2 ! new TestEntity.ChangeMode(TestEntity.Mode.APPEND)
-      expectMsgType[TestEntity.InAppendMode]
+      expectMsg(new TestEntity.InAppendMode("2"))
       p2 ! TestEntity.Add.of("e")
-      expectMsg(new TestEntity.Appended("E"))
+      expectMsg(new TestEntity.Appended("2", "E"))
       p2 ! TestEntity.Get.instance
       val state5 = expectMsgType[TestEntity.State]
       state5.getElements.asScala.toList should ===(List("d", "c", "A", "B", "E"))
@@ -106,7 +106,7 @@ class PersistentEntityActorSpec extends PersistenceSpec {
         () => new TestEntity(system), Optional.of(3), 10.seconds))
       for (n <- 1 to 10) {
         p ! TestEntity.Add.of(n.toString)
-        expectMsg(new TestEntity.Appended(n.toString))
+        expectMsg(new TestEntity.Appended("4", n.toString))
       }
 
       // start another with same persistenceId should recover state
@@ -129,7 +129,7 @@ class PersistentEntityActorSpec extends PersistenceSpec {
       val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("5"),
         () => new TestEntity(system), Optional.empty(), 10.seconds))
       p ! new TestEntity.Add("a", 3)
-      expectMsg(new TestEntity.Appended("A"))
+      expectMsg(new TestEntity.Appended("5", "A"))
       p ! TestEntity.Get.instance
       val state2 = expectMsgType[TestEntity.State]
       state2.getElements.asScala.toList should ===(List("A", "A", "A"))
@@ -138,7 +138,7 @@ class PersistentEntityActorSpec extends PersistenceSpec {
     "passivate after idle" in {
       val p = system.actorOf(Props[PersistentEntityActorSpec.TestPassivationParent])
       p ! TestEntity.Add.of("a")
-      expectMsg(new TestEntity.Appended("A"))
+      expectMsg(new TestEntity.Appended("1", "A"))
       val entity = lastSender
       watch(entity)
       expectTerminated(entity)

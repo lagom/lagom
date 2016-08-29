@@ -86,14 +86,14 @@ public class PersistentEntityRefTest {
   public void testSendCommandsToTargetEntity() throws Exception {
     PersistentEntityRef<Cmd> ref1 = registry().refFor(TestEntity.class, "1");
     Evt reply1 = ref1.ask(TestEntity.Add.of("a")).toCompletableFuture().get(15, SECONDS);
-    assertEquals(new TestEntity.Appended("A"), reply1);
+    assertEquals(new TestEntity.Appended("1", "A"), reply1);
 
     PersistentEntityRef<Cmd> ref2 = registry().refFor(TestEntity.class, "2");
     Evt reply2 = ref2.ask(TestEntity.Add.of("b")).toCompletableFuture().get(5, SECONDS);
-    assertEquals(new TestEntity.Appended("B"), reply2);
+    assertEquals(new TestEntity.Appended("2", "B"), reply2);
 
     Evt reply3 = ref2.ask(TestEntity.Add.of("c")).toCompletableFuture().get(5, SECONDS);
-    assertEquals(new TestEntity.Appended("C"), reply3);
+    assertEquals(new TestEntity.Appended("2", "C"), reply3);
 
     State state1 = ref1.ask(TestEntity.Get.instance()).toCompletableFuture().get(5, SECONDS);
     assertEquals(Arrays.asList("A"), state1.getElements());
