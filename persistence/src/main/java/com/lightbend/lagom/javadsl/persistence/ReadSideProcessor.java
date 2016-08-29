@@ -48,6 +48,24 @@ public abstract class ReadSideProcessor<Event extends AggregateEvent<Event>> {
     public static abstract class ReadSideHandler<Event extends AggregateEvent<Event>> {
 
         /**
+         * Prepare the database for all processors.
+         *
+         * This will be invoked at system startup. It is guaranteed to only be invoked once at a time across the entire
+         * cluster, and so is safe to be used to perform actions like creating tables, that could cause problems if
+         * done from multiple nodes.
+         *
+         * It will be invoked again if it fails, and it may be invoked multiple times as nodes of the cluster go up or
+         * down. Unless the entire system is restarted, there is no way to guarantee that it will be invoked at a
+         * particular time - in particular, it should not be used for doing upgrades unless the entire system is
+         * restarted and a new cluster built from scratch.
+         *
+         * @return A completion stage that is redeemed when preparation is finished.
+         */
+        public CompletionStage<Done> globalPrepare() {
+            return CompletableFuture.completedFuture(Done.getInstance());
+        }
+
+        /**
          * Prepare this processor.
          *
          * The primary purpose of this method is to load the last offset that was processed, so that read side
@@ -56,7 +74,8 @@ public abstract class ReadSideProcessor<Event extends AggregateEvent<Event>> {
          * This also provides an opportunity for processors to do any initialisation activities, such as creating or
          * updating database tables, or migrating data.
          *
-         * This may be invoked multiple times, for example in the event of failure.
+         * This will be invoked at least once for each tag, and may be invoked multiple times, such as in the event of
+         * failure.
          *
          * @param tag The tag to get the offset for.
          * @return A completion stage that is redeemed when preparation is finished.

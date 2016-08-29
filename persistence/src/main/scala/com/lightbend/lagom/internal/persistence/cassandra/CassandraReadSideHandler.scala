@@ -8,7 +8,7 @@ import java.util.function.BiFunction
 
 import com.datastax.driver.core.{ BatchStatement, BoundStatement, PreparedStatement, Row }
 import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, Offset }
-import java.util.{ Collections, Optional, UUID, List => JList }
+import java.util.{ Optional, UUID, List => JList }
 
 import akka.Done
 import akka.japi.Pair
@@ -25,7 +25,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEvent[Event], Handler](
   session: CassandraSession, handlers: Map[Class[_ <: Event], Handler], dispatcher: String
-) extends ReadSideHandler[Event] {
+)(implicit ec: ExecutionContext) extends ReadSideHandler[Event] {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
@@ -34,24 +34,26 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
   override def handle(): Flow[Pair[Event, Offset], Done, _] = {
     akka.stream.scaladsl.Flow[Pair[Event, Offset]].mapAsync(parallelism = 1) { pair =>
       handlers.get(pair.first.getClass.asInstanceOf[Class[Event]]) match {
-        case Some(handler) => invoke(handler, pair.first, pair.second).toScala
+        case Some(handler) =>
+          for {
+            statements <- invoke(handler, pair.first, pair.second).toScala
+            done <- statements.size match {
+              case 0 => Future.successful(Done.getInstance())
+              case 1 => session.executeWrite(statements.get(0)).toScala
+              case _ =>
+                val batch = new BatchStatement
+                val iter = statements.iterator()
+                while (iter.hasNext)
+                  batch.add(iter.next)
+                session.executeWriteBatch(batch).toScala
+            }
+          } yield done
         case None =>
           if (log.isDebugEnabled)
             log.debug("Unhandled event [{}]", pair.first.getClass.getName)
-          Future.successful(Collections.emptyList[BoundStatement]())
+          Future.successful(Done.getInstance())
       }
-    }.withAttributes(ActorAttributes.dispatcher(dispatcher)).mapAsync(parallelism = 1) { statements =>
-      statements.size match {
-        case 0 => Future.successful(Done.getInstance())
-        case 1 => session.executeWrite(statements.get(0)).toScala
-        case _ =>
-          val batch = new BatchStatement
-          val iter = statements.iterator()
-          while (iter.hasNext)
-            batch.add(iter.next)
-          session.executeWriteBatch(batch).toScala
-      }
-    }.asJava
+    }.withAttributes(ActorAttributes.dispatcher(dispatcher)).asJava
   }
 }
 
@@ -62,11 +64,12 @@ private[cassandra] object CassandraAutoReadSideHandler {
 import CassandraAutoReadSideHandler.Handler
 
 private[cassandra] class CassandraAutoReadSideHandler[Event <: AggregateEvent[Event]](
-  session:         CassandraSession,
-  handlers:        Map[Class[_ <: Event], Handler[Event]],
-  prepareCallback: () => CompletionStage[Done],
-  offsetStore:     OffsetStore,
-  dispatcher:      String
+  session:               CassandraSession,
+  handlers:              Map[Class[_ <: Event], Handler[Event]],
+  globalPrepareCallback: () => CompletionStage[Done],
+  prepareCallback:       AggregateEventTag[Event] => CompletionStage[Done],
+  offsetStore:           OffsetStore,
+  dispatcher:            String
 )(implicit ec: ExecutionContext) extends CassandraReadSideHandler[Event, Handler[Event]](
   session, handlers, dispatcher
 ) {
@@ -77,8 +80,14 @@ private[cassandra] class CassandraAutoReadSideHandler[Event <: AggregateEvent[Ev
     }.toJava
   }
 
+  override def globalPrepare(): CompletionStage[Done] = {
+    Future.successful(globalPrepareCallback).flatMap(_.apply().toScala).flatMap { _ =>
+      offsetStore.globalPrepare
+    }.toJava
+  }
+
   override def prepare(tag: AggregateEventTag[Event]): CompletionStage[Offset] = {
-    Future.successful(prepareCallback).flatMap(_.apply().toScala).flatMap { _ =>
+    Future.successful(prepareCallback).flatMap(_.apply(tag).toScala).flatMap { _ =>
       offsetStore.prepare(tag.tag)
     }.toJava
   }
@@ -113,15 +122,17 @@ private[cassandra] class LegacyCassandraReadSideHandler[Event <: AggregateEvent[
 private[cassandra] class OffsetStore(session: CassandraSession, offsetTable: String)(implicit ec: ExecutionContext) {
   private var writeOffsetStatement: PreparedStatement = _
 
-  def prepare(partition: String) = {
+  def globalPrepare = {
     session.executeCreateTable(s"""
-      |CREATE TABLE IF NOT EXISTS $offsetTable (
-      |  partition text, timeUuidOffset timeuuid, sequenceOffset bigint,
-      |  PRIMARY KEY (partition)
-      |)""".stripMargin).toScala
-      .flatMap(_ => prepareWriteOffset)
-      .flatMap(_ => readOffset(partition))
+                                  |CREATE TABLE IF NOT EXISTS $offsetTable (
+                                  |  partition text, timeUuidOffset timeuuid, sequenceOffset bigint,
+                                  |  PRIMARY KEY (partition)
+                                  |)""".stripMargin).toScala
+  }
 
+  def prepare(partition: String) = {
+    prepareWriteOffset
+      .flatMap(_ => readOffset(partition))
   }
 
   private def prepareWriteOffset: Future[Done] = {
