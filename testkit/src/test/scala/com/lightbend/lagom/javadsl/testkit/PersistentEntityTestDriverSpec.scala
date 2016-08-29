@@ -17,12 +17,12 @@ class PersistentEntityTestDriverSpec extends ActorSystemSpec {
     "produce events and state from commands" in {
       val driver = newDriver()
       val outcome1 = driver.run(TestEntity.Add.of("a"))
-      outcome1.events.asScala.toList should ===(List(new TestEntity.Appended("A")))
+      outcome1.events.asScala.toList should ===(List(new TestEntity.Appended("1", "A")))
       outcome1.state.getElements.asScala.toList should ===(List("A"))
       outcome1.issues.asScala.toList should be(Nil)
 
       val outcome2 = driver.run(TestEntity.Add.of("b"), TestEntity.Add.of("c"))
-      outcome2.events.asScala.toList should ===(List(new TestEntity.Appended("B"), new TestEntity.Appended("C")))
+      outcome2.events.asScala.toList should ===(List(new TestEntity.Appended("1", "B"), new TestEntity.Appended("1", "C")))
       outcome2.state.getElements.asScala.toList should ===(List("A", "B", "C"))
       outcome2.issues.asScala.toList should be(Nil)
     }
@@ -36,10 +36,10 @@ class PersistentEntityTestDriverSpec extends ActorSystemSpec {
         TestEntity.Add.of("c")
       )
       outcome1.events.asScala.toList should ===(List(
-        new TestEntity.Appended("A"),
-        new TestEntity.Appended("B"),
-        TestEntity.InPrependMode.instance(),
-        new TestEntity.Prepended("c")
+        new TestEntity.Appended("1", "A"),
+        new TestEntity.Appended("1", "B"),
+        new TestEntity.InPrependMode("1"),
+        new TestEntity.Prepended("1", "c")
       ))
       outcome1.state.getElements.asScala.toList should ===(List("c", "A", "B"))
       outcome1.issues.asScala.toList should be(Nil)
@@ -49,9 +49,9 @@ class PersistentEntityTestDriverSpec extends ActorSystemSpec {
       val driver = newDriver()
       val outcome1 = driver.run(new TestEntity.Add("a", 3))
       outcome1.events.asScala.toList should ===(List(
-        new TestEntity.Appended("A"),
-        new TestEntity.Appended("A"),
-        new TestEntity.Appended("A")
+        new TestEntity.Appended("1", "A"),
+        new TestEntity.Appended("1", "A"),
+        new TestEntity.Appended("1", "A")
       ))
       outcome1.state.getElements.asScala.toList should ===(List("A", "A", "A"))
       outcome1.issues.asScala.toList should be(Nil)
@@ -61,7 +61,7 @@ class PersistentEntityTestDriverSpec extends ActorSystemSpec {
       val driver = newDriver()
       val outcome1 = driver.run(TestEntity.Add.of("a"), TestEntity.Get.instance)
       val sideEffects = outcome1.sideEffects.asScala.toVector
-      sideEffects(0) should be(new PersistentEntityTestDriver.Reply(new TestEntity.Appended("A")))
+      sideEffects(0) should be(new PersistentEntityTestDriver.Reply(new TestEntity.Appended("1", "A")))
       sideEffects(1) match {
         case PersistentEntityTestDriver.Reply(state: TestEntity.State) =>
         case other => fail("unexpected: " + other)

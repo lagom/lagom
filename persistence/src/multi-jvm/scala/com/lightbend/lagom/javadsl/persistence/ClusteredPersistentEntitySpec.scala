@@ -8,13 +8,12 @@ import scala.collection.JavaConverters._
 import akka.remote.testkit.MultiNodeConfig
 import akka.remote.testkit.MultiNodeSpec
 import akka.testkit.ImplicitSender
-import akka.actor.{ Props, Actor }
+import akka.actor.{Actor, Props}
 import com.typesafe.config.ConfigFactory
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.persistence.journal.PersistencePluginProxy
 import java.io.File
-import akka.actor.Identify
-import akka.actor.ActorIdentity
+
 import akka.remote.testconductor.RoleName
 import akka.cluster.Cluster
 import akka.actor.Address
@@ -22,10 +21,14 @@ import akka.actor.ActorRef
 import com.lightbend.lagom.javadsl.persistence.testkit.pipe
 import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule
 import java.util.concurrent.CompletionStage
-import java.util.function.BiConsumer
-import akka.actor.ExtendedActorSystem
+
 import com.google.inject.Guice
 import akka.cluster.MemberStatus
+import akka.cluster.sharding.ClusterSharding
+import akka.event.Logging
+
+import scala.concurrent.Await
+import scala.compat.java8.FutureConverters._
 
 object ClusteredPersistentEntityConfig extends MultiNodeConfig {
   val node1 = role("node1")
@@ -37,6 +40,7 @@ object ClusteredPersistentEntityConfig extends MultiNodeConfig {
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
 
     lagom.persistence.run-entities-on-role = backend
+    lagom.persistence.read-side.run-on-role = "read-side"
 
     akka.persistence.journal.plugin = "akka.persistence.journal.proxy"
     akka.persistence.snapshot-store.plugin = "akka.persistence.snapshot-store.proxy"
@@ -52,6 +56,7 @@ object ClusteredPersistentEntityConfig extends MultiNodeConfig {
 
     cassandra-journal.session-provider = akka.persistence.cassandra.ConfigSessionProvider
     cassandra-snapshot-store.session-provider = akka.persistence.cassandra.ConfigSessionProvider
+    lagom.persistence.read-side.cassandra.session-provider = akka.persistence.cassandra.ConfigSessionProvider
 
     # don't terminate in this test
     terminate-system-after-member-removed = 60s
@@ -59,7 +64,7 @@ object ClusteredPersistentEntityConfig extends MultiNodeConfig {
 
   nodeConfig(node1) {
     ConfigFactory.parseString(s"""
-      akka.cluster.roles = ["backend"]
+      akka.cluster.roles = ["backend", "read-side"]
 
       akka.persistence.journal.proxy.start-target-journal = on
       akka.persistence.snapshot-store.proxy.start-target-snapshot-store = on
@@ -71,6 +76,13 @@ object ClusteredPersistentEntityConfig extends MultiNodeConfig {
     ConfigFactory.parseString(s"""
       akka.cluster.roles = ["backend"]
       """)
+  }
+
+  nodeConfig(node3) {
+    ConfigFactory.parseString(
+      s"""
+       akka.cluster.roles = ["read-side"]
+      """).withFallback(PersistenceSpec.config("ClusteredPersistentEntitySpec"))
   }
 
 }
@@ -108,6 +120,9 @@ class ClusteredPersistentEntitySpec extends MultiNodeSpec(ClusteredPersistentEnt
     PersistencePluginProxy.setTargetLocation(system, node(node1).address)
     enterBarrier("journal-initialized")
 
+    // Initialize read side
+    readSide
+
     roles.foreach(n => join(n, node1))
     within(15.seconds) {
       awaitAssert(Cluster(system).state.members.size should be(3))
@@ -129,6 +144,26 @@ class ClusteredPersistentEntitySpec extends MultiNodeSpec(ClusteredPersistentEnt
     reg
   }
 
+  // lazy because we don't want to create it until after Cassandra is started
+  lazy val readSide: ReadSide = {
+    val rs = injector.getInstance(classOf[ReadSide])
+    rs.register(classOf[TestEntityReadSide.TestEntityReadSideProcessor])
+    rs
+  }
+
+  def testEntityReadSide = injector.getInstance(classOf[TestEntityReadSide])
+
+  def expectAppendCount(id: String, expected: Long) = {
+    runOn(node1) {
+      within(20.seconds) {
+        awaitAssert {
+          val count = Await.result(testEntityReadSide.getAppendCount(id).toScala, 5.seconds)
+          count should ===(expected)
+        }
+      }
+    }
+  }
+
   "A PersistentEntity in a Cluster" must {
 
     "send commands to target entity" in within(20.seconds) {
@@ -138,18 +173,18 @@ class ClusteredPersistentEntitySpec extends MultiNodeSpec(ClusteredPersistentEnt
       // note that this is done on both node1 and node2
       val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
       r1.pipeTo(testActor)
-      expectMsg(new TestEntity.Appended("A"))
+      expectMsg(new TestEntity.Appended("1", "A"))
       enterBarrier("appended-A")
 
       val ref2 = registry.refFor(classOf[TestEntity], "2")
       val r2: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("b"))
       r2.pipeTo(testActor)
-      expectMsg(new TestEntity.Appended("B"))
+      expectMsg(new TestEntity.Appended("2", "B"))
       enterBarrier("appended-B")
 
       val r3: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("c"))
       r3.pipeTo(testActor)
-      expectMsg(new TestEntity.Appended("C"))
+      expectMsg(new TestEntity.Appended("2", "C"))
       enterBarrier("appended-C")
 
       val r4: CompletionStage[TestEntity.State] = ref1.ask(TestEntity.Get.instance)
@@ -160,7 +195,11 @@ class ClusteredPersistentEntitySpec extends MultiNodeSpec(ClusteredPersistentEnt
       r5.pipeTo(testActor)
       expectMsgType[TestEntity.State].getElements.asScala.toList should ===(List("B", "B", "B", "C", "C", "C"))
 
+      expectAppendCount("1", 3)
+      expectAppendCount("2", 6)
+
       enterBarrier("after-1")
+
     }
 
     "run entities on specific node roles" in {
@@ -190,16 +229,16 @@ class ClusteredPersistentEntitySpec extends MultiNodeSpec(ClusteredPersistentEnt
           val ref1 = registry.refFor(classOf[TestEntity], "1").withAskTimeout(remaining)
           val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
           r1.pipeTo(testActor)
-          expectMsg(new TestEntity.Appended("A"))
+          expectMsg(new TestEntity.Appended("1", "A"))
 
           val ref2 = registry.refFor(classOf[TestEntity], "2")
           val r2: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("b"))
           r2.pipeTo(testActor)
-          expectMsg(new TestEntity.Appended("B"))
+          expectMsg(new TestEntity.Appended("2", "B"))
 
           val r3: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("c"))
           r3.pipeTo(testActor)
-          expectMsg(new TestEntity.Appended("C"))
+          expectMsg(new TestEntity.Appended("2", "C"))
         }
       }
 

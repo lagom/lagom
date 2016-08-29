@@ -6,6 +6,7 @@ package com.lightbend.lagom.javadsl.persistence.cassandra;
 import akka.Done;
 import com.datastax.driver.core.BoundStatement;
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
+import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler;
 
@@ -45,12 +46,22 @@ public interface CassandraReadSide {
     interface ReadSideHandlerBuilder<Event extends AggregateEvent<Event>> {
 
         /**
+         * Set a global prepare callback.
+         *
+         * @param callback The callback.
+         * @return This builder for fluent invocation.
+         * @see ReadSideHandler#globalPrepare()
+         */
+        ReadSideHandlerBuilder<Event> setGlobalPrepare(Supplier<CompletionStage<Done>> callback);
+
+        /**
          * Set a prepare callback.
          *
          * @param callback The callback.
          * @return This builder for fluent invocation.
+         * @see ReadSideHandler#prepare(AggregateEventTag)
          */
-        ReadSideHandlerBuilder<Event> setPrepare(Supplier<CompletionStage<Done>> callback);
+        ReadSideHandlerBuilder<Event> setPrepare(Function<AggregateEventTag<Event>, CompletionStage<Done>> callback);
 
         /**
          * Define the event handler that will be used for events of a given class.
