@@ -5,6 +5,7 @@ package com.lightbend.lagom.javadsl.persistence
 
 import java.util.concurrent.CompletionStage
 import java.util.function.BiConsumer
+
 import akka.actor.ActorRef
 
 package object testkit {

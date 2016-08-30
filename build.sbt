@@ -191,6 +191,7 @@ val apiProjects = Seq[ProjectReference](
   cluster,
   pubsub,
   persistence,
+  `persistence-cassandra`,
   testkit,
   logback,
   immutables,
@@ -334,7 +335,7 @@ lazy val testkit = (project in file("testkit"))
       scalaTest % Test
     )
   )
-  .dependsOn(server, pubsub, persistence % "compile;test->test") 
+  .dependsOn(server, pubsub, `persistence-cassandra` % "compile;test->test")
 
 lazy val `service-integration-tests` = (project in file("service-integration-tests"))
   .settings(name := "lagom-service-integration-tests")
@@ -350,7 +351,7 @@ lazy val `service-integration-tests` = (project in file("service-integration-tes
     PgpKeys.publishSigned := {},
     publish := {}
   )
-  .dependsOn(server, persistence, pubsub, testkit, logback, `integration-client`)
+  .dependsOn(server, `persistence-cassandra`, pubsub, testkit, logback, `integration-client`)
 
 // for forked tests, necessary for Cassandra
 def forkedTests: Seq[Setting[_]] = Seq(
@@ -414,15 +415,32 @@ lazy val persistence = (project in file("persistence"))
   .settings(name := "lagom-javadsl-persistence")
   .dependsOn(cluster)
   .settings(runtimeLibCommon: _*)
-  .settings(multiJvmTestSettings: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*)
   .settings(
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-persistence" % AkkaVersion,
       "com.typesafe.akka" %% "akka-persistence-query-experimental" % AkkaVersion,
       "com.typesafe.akka" %% "akka-cluster-sharding" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
+      "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
+      "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion,
+      "org.scala-lang.modules" %% "scala-java8-compat" % "0.7.0",
+      scalaTest % Test,
+      "com.novocode" % "junit-interface" % "0.11" % "test",
+      "com.google.inject" % "guice" % "4.0"
+    )
+  ) configs (MultiJvm)
+
+lazy val `persistence-cassandra` = (project in file("persistence-cassandra"))
+  .settings(name := "lagom-javadsl-persistence-cassandra")
+  .dependsOn(persistence % "compile;test->test")
+  .settings(runtimeLibCommon: _*)
+  .settings(multiJvmTestSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(forkedTests: _*)
+  .settings(
+    libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
@@ -430,12 +448,10 @@ lazy val persistence = (project in file("persistence"))
       "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion % "test" exclude("io.netty", "netty-all"),
       "io.netty" % "netty-codec-http" % "4.0.33.Final" % "test",
       "io.netty" % "netty-transport-native-epoll" % "4.0.33.Final" % "test" classifier "linux-x86_64",
-      "org.scala-lang.modules" %% "scala-java8-compat" % "0.7.0",
       scalaTest % Test,
-      "com.novocode" % "junit-interface" % "0.11" % "test",
-      "com.google.inject" % "guice" % "4.0"
+      "com.novocode" % "junit-interface" % "0.11" % "test"
     )
-  ) configs (MultiJvm)  
+  ) configs (MultiJvm)
 
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
@@ -651,7 +667,7 @@ lazy val `cassandra-registration` = (project in file("dev") / "cassandra-registr
   .settings(name := "lagom-cassandra-registration")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(api, persistence, `service-registry-client`)
+  .dependsOn(api, `persistence-cassandra`, `service-registry-client`)
 
 lazy val `play-integration` = (project in file("dev") / "play-integration")
   .settings(name := "lagom-play-integration")

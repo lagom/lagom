@@ -13,12 +13,12 @@ import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import com.lightbend.lagom.javadsl.api.{ Descriptor, ServiceLocator }
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
 import javax.inject.Inject
 import javax.inject.Singleton
 
 import com.lightbend.lagom.internal.client.CircuitBreakers
 import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
 
 @Singleton
 private[lagom] class TestServiceLocator @Inject() (
