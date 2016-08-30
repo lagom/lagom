@@ -3,9 +3,13 @@
  */
 package sample.helloworld.impl;
 
+import static com.lightbend.lagom.javadsl.api.Service.publish;
+
 import akka.Done;
 import akka.NotUsed;
+import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
+import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 
@@ -56,4 +60,8 @@ public class HelloServiceImpl implements HelloService {
 
   }
 
+  @Override
+  public Topic<GreetingMessage> greetingsTopic() {
+    return publish(Source.empty());
+  }
 }

@@ -16,15 +16,15 @@ import scala.util.control.NonFatal
 
 private[lagom] object Servers {
 
+  private val servers = Seq(ServiceLocator, CassandraServer, KafkaServer)
+
   def tryStop(log: LoggerProxy): Unit = {
-    ServiceLocator.tryStop(log)
-    CassandraServer.tryStop(log)
+    servers.foreach(_.tryStop(log))
   }
 
-  def asyncTryStop(log: LoggerProxy)(implicit ecn: ExecutionContext) = {
-    val f = Future.traverse(Seq(ServiceLocator, CassandraServer))(ser => Future { ser.tryStop(log) })
-    f.onComplete(_ => println("Servers stopped"))
-    f
+  def asyncTryStop(log: LoggerProxy)(implicit ecn: ExecutionContext): Future[Unit] = {
+    val f = Future.traverse(servers)(server => Future { server.tryStop(log) })
+    f.andThen { case _ => log.info("All servers stopped") }.map(_ => ())
   }
 
   abstract class ServerContainer {
@@ -172,7 +172,7 @@ private[lagom] object Servers {
             }
         }
       }
-      log.info("Starting embedded Cassandra server")
+      log.info("Starting Cassandra")
       tryConnect(maxWaiting.fromNow)
     }
 
@@ -180,7 +180,7 @@ private[lagom] object Servers {
       if (server == null) {
         log.info("Cassandra was already stopped")
       } else {
-        log.info("Stopping cassandra")
+        log.info("Stopping Cassandra")
         try server.kill()
         finally {
           try server.disableKillOnExit()
@@ -205,7 +205,8 @@ private[lagom] object Servers {
       val process = LagomProcess.runJava(jvmOptions.toList ::: sysProperties, cp, "com.lightbend.lagom.kafka.KafkaLauncher", args)
       server = new KafkaProcess(process)
       server.enableKillOnExit()
-      log.info("Starting embedded Kafka server")
+      log.info("Starting Kafka")
+      log.debug(s"Kafka log output can be found under ${log4jOutput}")
     }
 
     protected def stop(log: LoggerProxy): Unit = {

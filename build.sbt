@@ -19,6 +19,7 @@ val MavenVersion = "3.3.9"
 val NettyVersion = "4.0.36"
 val KafkaVersion = "0.10.0.1"
 val AkkaStreamKafka = "0.11-RC1"
+val Log4j = "1.2.17" 
 
 // NOTE ON DEPENDENCIES
 
@@ -36,6 +37,7 @@ val AkkaStreamKafka = "0.11-RC1"
 
 val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
 val guava = "com.google.guava" % "guava" % GuavaVersion
+val log4J = "log4j" % "log4j" % Log4j
 
 def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   organization := "com.lightbend.lagom",
@@ -310,7 +312,7 @@ lazy val `integration-client` = (project in file("integration-client"))
   .settings(name := "lagom-javadsl-integration-client")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(client, `service-registry-client`)
+  .dependsOn(client, `service-registry-client`, `kafka-broker`)
 
 lazy val server = (project in file("server"))
   .settings(
@@ -448,10 +450,11 @@ lazy val `kafka-broker` = (project in file("kafka-broker"))
     libraryDependencies ++= Seq(
       "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
       "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafka exclude("org.slf4j","slf4j-log4j12"),
-      "org.apache.kafka" %% "kafka" % KafkaVersion exclude("org.slf4j","slf4j-log4j12") exclude("javax.jms", "jms") exclude("com.sun.jdmk", "jmxtools") exclude("com.sun.jmx", "jmxri")
+      "org.apache.kafka" %% "kafka" % KafkaVersion exclude("org.slf4j","slf4j-log4j12") exclude("javax.jms", "jms") exclude("com.sun.jdmk", "jmxtools") exclude("com.sun.jmx", "jmxri"),
+      scalaTest % Test
     )
   )
-  .dependsOn(server, client % "optional")
+  .dependsOn(server, client % "optional", `kafka-server` % Test, logback % Test)
 
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
@@ -700,13 +703,19 @@ lazy val `kafka-server` = (project in file("dev") / "kafka-server")
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.kafka" %% "kafka" % KafkaVersion,
-      "org.apache.zookeeper" % "zookeeper" % "3.3.4",
-      // Note that curator 3.x is only compatible with zookeper 3.5.x, and that's why 
-      // we are using curator 2.x here (see the notice in http://curator.apache.org/index.html
-      // - make sure to scroll to the bottom)
+      // log4j version prior to 1.2.17 required javax.jms, and that artifact could not properly resolved when using maven
+      // without adding a resolver. The problem doesn't appear with sbt because the log4j version brought by both zookeeper 
+      // and curator dependencies are evicted to version 1.2.17. Unfortunately, because of how maven resolution works, we 
+      // have to explicitly add the desired log4j version we want to use here.
+      // By the way, log4j 1.2.17 and later resolve the javax.jms dependency issue by using geronimo-jms. See 
+      // http://stackoverflow.com/questions/4908651/the-following-artifacts-could-not-be-resolved-javax-jmsjmsjar1-1 
+      // for more context. 
+      log4J,
+      // Note that curator 3.x is only compatible with zookeper 3.5.x. Kafka currently uses zookeeper 3.4, hence we have 
+      // to use curator 2.x, which is compatible with zookeeper 3.4 (see the notice in
+      // http://curator.apache.org/index.html - make sure to scroll to the bottom)
       "org.apache.curator" % "curator-framework" % "2.10.0",
       "org.apache.curator" % "curator-test" % "2.10.0",
-      scalaTest % Test,
-      "org.apache.kafka" % "kafka-clients" % KafkaVersion % Test
+      scalaTest % Test
     )
   )

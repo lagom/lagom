@@ -1,11 +1,13 @@
 package sample.integration;
 
+import akka.Done;
 import akka.actor.ActorSystem;
 import akka.japi.Effect;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
+import akka.stream.javadsl.Flow;
 import com.lightbend.lagom.javadsl.client.integration.LagomClientFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -20,6 +22,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -66,6 +69,23 @@ public class StartAllIT {
                         .concat(Source.maybe())));
         List<String> messages = await(response.take(3).runWith(Sink.seq(), mat));
         assertEquals(Arrays.asList("Hello, a!", "Hello, b!", "Hello, c!"), messages);
+    }
+
+    @Test
+    public void kafkaBroker() throws Exception {
+        GreetingMessage expectedMessage = new GreetingMessage("hello");
+        CompletableFuture<GreetingMessage> nextProcessedMessage = new CompletableFuture<>(); 
+        Flow<GreetingMessage, Done, ?> flow = Flow.fromFunction(msg -> {
+            nextProcessedMessage.complete(msg);
+            return Done.getInstance();
+        });
+
+        // SUT
+        helloService.greetingsTopic().subscribe().atLeastOnce(flow);
+        helloService.greetingsTopic().publisher().publish(Source.single(expectedMessage));
+
+        GreetingMessage processedMessage = await(nextProcessedMessage);
+        assertEquals("Expected to have processed one greeting message", expectedMessage, processedMessage);
     }
 
     @Test
