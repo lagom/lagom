@@ -76,7 +76,7 @@ class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSock
       }.toMap
     } getOrElse {
       if (descriptor.topicCalls().asScala.nonEmpty) {
-        val error = s"Missing binding for interface ${classOf[Topics].getName}. " +
+        val error = s"Service ${serviceInfo.serviceName} is missing guice binding for interface ${classOf[Topics].getName}. " +
           "Hint: Have you forgot to add a message broker dependency for this service? " +
           "Try adding the `lagom-javadsl-kafka-broker` JAR to your build."
         throw new IllegalStateException(error)

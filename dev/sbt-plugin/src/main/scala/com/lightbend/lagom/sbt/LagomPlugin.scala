@@ -258,7 +258,7 @@ object LagomPlugin extends AutoPlugin {
     val lagomKafkaJvmOptions = settingKey[Seq[String]]("JVM options used by the forked kafka process")
     val lagomKafkaZookeperPort = settingKey[Int]("Port used by the local zookeper server (kafka requires zookeeper)")
     val lagomKafkaPort = settingKey[Int]("Port used by the local kafka broker")
-    val lagomKafkaAddress = settingKey[String]("Address of the kafka broker")
+    val lagomKafkaAddress = settingKey[String]("Address of the kafka brokers (comma-separated list)")
 
     /** Allows to integrate an external Lagom project in the current build, so that when runAll is run, this service is also started.*/
     def lagomExternalProject(name: String, module: ModuleID): Project =
