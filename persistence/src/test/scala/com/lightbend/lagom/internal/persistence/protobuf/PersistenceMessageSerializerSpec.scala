@@ -6,9 +6,9 @@ package com.lightbend.lagom.internal.persistence.protobuf
 import java.io.NotSerializableException
 
 import scala.concurrent.duration._
-
 import akka.actor.ExtendedActorSystem
 import akka.serialization.SerializationExtension
+import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.javadsl.persistence.ActorSystemSpec
 import com.lightbend.lagom.javadsl.persistence.CommandEnvelope
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity
@@ -36,6 +36,10 @@ class PersistenceMessageSerializerSpec extends ActorSystemSpec {
 
     "serialize CommandEnvelope" in {
       checkSerialization(CommandEnvelope("entityId", TestEntity.Add.of("a")))
+    }
+
+    "serialize EnsureActive" in {
+      checkSerialization(EnsureActive("foo"))
     }
 
     "serialize InvalidCommandException" in {

@@ -17,5 +17,9 @@ message Exception {
   optional string message = 1;
 }
 
+message EnsureActive {
+  required string entityId = 1;
+}
+
 
 
