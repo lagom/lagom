@@ -18,7 +18,7 @@ val GuavaVersion = "19.0"
 val MavenVersion = "3.3.9"
 val NettyVersion = "4.0.36"
 
-// NOTE ON DEPENDENCIES
+// NOTE ON DEPENDENCIES 
 
 // Since we support maven, we need to support mavens somewhat unintuitive dependency resolution mechanism. If two
 // versions of the same library are requested in maven, maven doesn't resolve the most recent version, it resolves
