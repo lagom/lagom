@@ -8,7 +8,7 @@ import akka.event.{ Logging, LoggingAdapter }
 import akka.testkit.{ ImplicitSender, TestKit }
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalactic.{ Constraint, ConversionCheckedTripleEquals }
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
+import org.scalatest.{ BeforeAndAfterAll, Matchers, Suite, WordSpecLike }
 
 object ActorSystemSpec {
   def getCallerName(clazz: Class[_]): String = {
@@ -33,9 +33,6 @@ abstract class ActorSystemSpec(system: ActorSystem) extends TestKit(system)
   def this(config: Config) = this(ActorSystemSpec.getCallerName(getClass), config)
 
   def this() = this(ConfigFactory.empty())
-
-  override def beforeAll {
-  }
 
   override def afterAll {
     shutdown()

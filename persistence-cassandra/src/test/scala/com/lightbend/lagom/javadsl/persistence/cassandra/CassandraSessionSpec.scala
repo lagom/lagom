@@ -26,7 +26,7 @@ object CassandraSessionSpec {
 
 }
 
-class CassandraSessionSpec extends PersistenceSpec(CassandraSessionSpec.config) {
+class CassandraSessionSpec extends CassandraPersistenceSpec(CassandraSessionSpec.config) {
   import CassandraSessionSpec._
   import system.dispatcher
 

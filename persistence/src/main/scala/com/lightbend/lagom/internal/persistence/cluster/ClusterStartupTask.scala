@@ -89,7 +89,7 @@ private[lagom] object ClusterStartupTaskActor {
   case object Execute
 }
 
-private[cluster] class ClusterStartupTaskActor(task: () => Future[Done], timeout: FiniteDuration) extends Actor {
+private[lagom] class ClusterStartupTaskActor(task: () => Future[Done], timeout: FiniteDuration) extends Actor {
 
   import ClusterStartupTaskActor._
 

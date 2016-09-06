@@ -3,14 +3,15 @@
  */
 package com.lightbend.lagom.javadsl.persistence.testkit
 
-import scala.concurrent.duration._
-import akka.actor.Props
+import akka.actor.{ ActorRef, ActorSystem, Props, actorRef2Scala }
 import akka.persistence.PersistentActor
-import akka.actor.actorRef2Scala
-import com.lightbend.lagom.javadsl.persistence.PersistenceSpec
-import scala.Vector
+import akka.testkit.{ ImplicitSender, TestKitBase }
+import com.lightbend.lagom.javadsl.persistence.{ ActorSystemSpec, PersistenceSpec }
+import org.scalatest.{ Matchers, WordSpecLike }
 
-object EmbeddedCassandraPersistentActorSpec {
+import scala.concurrent.duration._
+
+object AbstractEmbeddedPersistentActorSpec {
 
   final case class Cmd(data: String)
   final case class Evt(data: String)
@@ -42,12 +43,14 @@ object EmbeddedCassandraPersistentActorSpec {
 
 }
 
-class EmbeddedCassandraPersistentActorSpec extends PersistenceSpec {
-  import EmbeddedCassandraPersistentActorSpec._
+trait AbstractEmbeddedPersistentActorSpec { spec: ActorSystemSpec =>
+  import AbstractEmbeddedPersistentActorSpec._
 
   "A persistent actor" must {
     "store events in the embedded Cassandra journal" in within(15.seconds) {
       val p = system.actorOf(props("p1"))
+      println(implicitly[ActorRef])
+
       p ! Get
       expectMsg(State())
       p ! Cmd("a")

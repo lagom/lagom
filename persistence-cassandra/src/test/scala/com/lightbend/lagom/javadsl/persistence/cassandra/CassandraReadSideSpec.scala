@@ -3,27 +3,20 @@
  */
 package com.lightbend.lagom.javadsl.persistence.cassandra
 
-import java.util.Optional
-
-import akka.{ Done, NotUsed }
+import akka.NotUsed
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import akka.persistence.query.PersistenceQuery
-import akka.stream.ActorMaterializer
 import akka.stream.javadsl.Source
 
 import scala.compat.java8.FutureConverters._
-import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import com.typesafe.config.ConfigFactory
 import com.lightbend.lagom.javadsl.persistence._
-import com.lightbend.lagom.internal.persistence.{ PersistentEntityActor, ReadSideActor }
 import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraReadSideImpl, CassandraSessionImpl }
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
 import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
-import com.lightbend.lagom.javadsl.persistence.TestEntity.InPrependMode
 
 object CassandraReadSideSpec {
 
@@ -33,15 +26,11 @@ object CassandraReadSideSpec {
 
 }
 
-class CassandraReadSideSpec extends PersistenceSpec(CassandraReadSideSpec.config) {
-  import CassandraReadSideSpec._
-  import system.dispatcher
-
-  implicit val mat = ActorMaterializer()
+class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.config) with AbstractReadSideSpec {
   lazy val testSession: CassandraSession = new CassandraSessionImpl(system)
   lazy val queries = PersistenceQuery(system).readJournalFor[CassandraReadJournal](CassandraReadJournal.Identifier)
 
-  def eventStream[Event <: AggregateEvent[Event]](
+  override def eventStream[Event <: AggregateEvent[Event]](
     aggregateTag: AggregateEventTag[Event],
     fromOffset:   Offset
   ): Source[akka.japi.Pair[Event, Offset], NotUsed] = {
@@ -56,13 +45,10 @@ class CassandraReadSideSpec extends PersistenceSpec(CassandraReadSideSpec.config
       .asJava
   }
 
-  override def beforeAll {
-    super.beforeAll()
-  }
-
   val readSide = new TestEntityReadSide(testSession)
+  val cassandraReadSide = new CassandraReadSideImpl(system, testSession, null, null)
 
-  def assertSelectCount(id: String, expected: Long): Unit = {
+  override def assertSelectCount(id: String, expected: Long): Unit = {
     within(20.seconds) {
       awaitAssert {
         val count = Await.result(readSide.getAppendCount(id).toScala, 5.seconds)
@@ -71,76 +57,8 @@ class CassandraReadSideSpec extends PersistenceSpec(CassandraReadSideSpec.config
     }
   }
 
-  def createReadSideProcessor(tag: AggregateEventTag[TestEntity.Evt]) = {
-    /* read side and injector only needed for deprecated register method */
-    val cassandraReadSide = new CassandraReadSideImpl(system, testSession, null, null)
-    val processorFactory = () => new TestEntityReadSide.TestEntityReadSideProcessor(cassandraReadSide, testSession)
-    val readSide = system.actorOf(ReadSideActor.props[TestEntity.Evt](
-      processorFactory,
-      eventStream, classOf[TestEntity.Evt], new ClusterStartupTask(testActor), 20.seconds
-    ))
-
-    readSide ! EnsureActive(tag.tag)
-
-    expectMsg(Execute)
-
-    processorFactory().buildHandler().globalPrepare().toScala.foreach { _ =>
-      readSide ! Done
-    }
-
-    readSide
-  }
-
-  "ReadSide" must {
-
-    "use correct tag" in {
-      val shardNo = AggregateEventTag.selectShard(TestEntity.Evt.NUM_SHARDS, "1")
-      new TestEntity.Appended("1", "A").aggregateTag.tag should ===(classOf[TestEntity.Evt].getName + shardNo)
-      new InPrependMode("1").aggregateTag.tag should ===(classOf[TestEntity.Evt].getName + shardNo)
-    }
-
-    "process events and save query projection" in {
-      val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("1"),
-        () => new TestEntity(system), Optional.empty(), 10.seconds))
-      p ! TestEntity.Add.of("a")
-      expectMsg(new TestEntity.Appended("1", "A"))
-      p ! TestEntity.Add.of("b")
-      expectMsg(new TestEntity.Appended("1", "B"))
-      p ! TestEntity.Add.of("c")
-      expectMsg(new TestEntity.Appended("1", "C"))
-
-      val readSide = createReadSideProcessor(new TestEntity.Appended("1", "").aggregateTag())
-
-      assertSelectCount("1", 3L)
-
-      p ! TestEntity.Add.of("d")
-      expectMsg(new TestEntity.Appended("1", "D"))
-
-      assertSelectCount("1", 4L)
-
-      watch(readSide)
-      system.stop(readSide)
-      expectTerminated(readSide)
-    }
-
-    "resume from stored offset" in {
-      // count = 4 from previous test step
-      assertSelectCount("1", 4L)
-
-      val readSide = createReadSideProcessor(new TestEntity.Appended("1", "").aggregateTag())
-
-      val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("1"),
-        () => new TestEntity(system), Optional.empty(), 10.seconds))
-      p ! TestEntity.Add.of("e")
-      expectMsg(new TestEntity.Appended("1", "E"))
-
-      assertSelectCount("1", 5L)
-
-      watch(readSide)
-      system.stop(readSide)
-      expectTerminated(readSide)
-    }
-
+  override def processorFactory(): ReadSideProcessor[TestEntity.Evt] = {
+    new TestEntityReadSide.TestEntityReadSideProcessor(cassandraReadSide, testSession)
   }
 
 }

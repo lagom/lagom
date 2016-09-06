@@ -5,13 +5,14 @@ package com.lightbend.lagom.javadsl.testkit
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
-import com.lightbend.lagom.javadsl.persistence.PersistenceSpec
 import com.lightbend.lagom.javadsl.persistence.TestEntity
 import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.persistence.PersistentEntityActor
 import java.util.Optional
 
-class PersistentEntityTestDriverCompatSpec extends PersistenceSpec {
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceSpec
+
+class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec {
 
   "PersistentEntityActor and PersistentEntityTestDriver" must {
     "produce same events and state" in {

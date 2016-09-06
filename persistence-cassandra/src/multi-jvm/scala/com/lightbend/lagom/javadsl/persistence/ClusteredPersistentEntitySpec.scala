@@ -27,6 +27,7 @@ import akka.cluster.MemberStatus
 import akka.cluster.sharding.ClusterSharding
 import akka.event.Logging
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule
+import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil
 
 import scala.concurrent.Await
 import scala.compat.java8.FutureConverters._
@@ -70,7 +71,7 @@ object ClusteredPersistentEntityConfig extends MultiNodeConfig {
       akka.persistence.journal.proxy.start-target-journal = on
       akka.persistence.snapshot-store.proxy.start-target-snapshot-store = on
 
-      """).withFallback(PersistenceSpec.config("ClusteredPersistentEntitySpec"))
+      """).withFallback(TestUtil.persistenceConfig("ClusteredPersistentEntitySpec", CassandraLauncher.randomPort, useServiceLocator = false))
   }
 
   nodeConfig(node2) {
@@ -83,7 +84,7 @@ object ClusteredPersistentEntityConfig extends MultiNodeConfig {
     ConfigFactory.parseString(
       s"""
        akka.cluster.roles = ["read-side"]
-      """).withFallback(PersistenceSpec.config("ClusteredPersistentEntitySpec"))
+      """).withFallback(TestUtil.persistenceConfig("ClusteredPersistentEntitySpec", CassandraLauncher.randomPort, useServiceLocator = false))
   }
 
 }
@@ -115,7 +116,7 @@ class ClusteredPersistentEntitySpec extends MultiNodeSpec(ClusteredPersistentEnt
       val cassandraDirectory = new File("target/" + system.name)
       CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = true, port = 0)
       PersistencePluginProxy.start(system)
-      PersistenceSpec.awaitPersistenceInit(system)
+      TestUtil.awaitPersistenceInit(system)
     }
     enterBarrier("cassandra-started")
 

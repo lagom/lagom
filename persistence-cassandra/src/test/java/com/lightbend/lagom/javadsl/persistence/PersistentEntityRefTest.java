@@ -12,6 +12,7 @@ import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule;
+import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity.InvalidCommandException;
@@ -48,7 +49,7 @@ public class PersistentEntityRefTest {
         "akka.remote.netty.tcp.port = 0 \n" +
         "akka.remote.netty.tcp.hostname = 127.0.0.1 \n" +
         "akka.loglevel = INFO \n")
-        .withFallback(PersistenceSpec.config("PersistentEntityRefTest"));
+        .withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort(), false));
 
     system = ActorSystem.create("PersistentEntityRefTest", config);
 
@@ -56,7 +57,7 @@ public class PersistentEntityRefTest {
 
     File cassandraDirectory = new File("target/" + system.name());
     CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource(), true, 0);
-    PersistenceSpec.awaitPersistenceInit(system);
+    TestUtil.awaitPersistenceInit(system);
   }
 
 

@@ -6,13 +6,15 @@ package com.lightbend.lagom.javadsl.persistence
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import java.util.Optional
-import akka.testkit.TestProbe
+
+import akka.testkit.{ ImplicitSender, TestProbe }
 import akka.actor.Actor
 import akka.cluster.sharding.ShardRegion
 import akka.actor.Props
 import com.lightbend.lagom.internal.persistence.PersistentEntityActor
+import org.scalatest.WordSpecLike
 
-object PersistentEntityActorSpec {
+object AbstractPersistentEntityActorSpec {
   class TestPassivationParent extends Actor {
 
     val child = context.actorOf(PersistentEntityActor.props("test", Optional.of("1"),
@@ -27,7 +29,7 @@ object PersistentEntityActorSpec {
   }
 }
 
-class PersistentEntityActorSpec extends PersistenceSpec {
+trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
 
   "PersistentEntityActor" must {
     "persist events" in {
@@ -136,7 +138,7 @@ class PersistentEntityActorSpec extends PersistenceSpec {
     }
 
     "passivate after idle" in {
-      val p = system.actorOf(Props[PersistentEntityActorSpec.TestPassivationParent])
+      val p = system.actorOf(Props[AbstractPersistentEntityActorSpec.TestPassivationParent])
       p ! TestEntity.Add.of("a")
       expectMsg(new TestEntity.Appended("1", "A"))
       val entity = lastSender
