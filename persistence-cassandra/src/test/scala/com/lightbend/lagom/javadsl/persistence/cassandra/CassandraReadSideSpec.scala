@@ -10,7 +10,6 @@ import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import akka.persistence.query.PersistenceQuery
 import akka.stream.ActorMaterializer
 import akka.stream.javadsl.Source
-import com.lightbend.lagom.internal.persistence.GlobalPrepareReadSideActor.Prepare
 
 import scala.compat.java8.FutureConverters._
 import scala.collection.JavaConverters._
@@ -21,6 +20,8 @@ import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.internal.persistence.{ PersistentEntityActor, ReadSideActor }
 import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraReadSideImpl, CassandraSessionImpl }
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
 import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
 import com.lightbend.lagom.javadsl.persistence.TestEntity.InPrependMode
 
@@ -76,12 +77,12 @@ class CassandraReadSideSpec extends PersistenceSpec(CassandraReadSideSpec.config
     val processorFactory = () => new TestEntityReadSide.TestEntityReadSideProcessor(cassandraReadSide, testSession)
     val readSide = system.actorOf(ReadSideActor.props[TestEntity.Evt](
       processorFactory,
-      eventStream, classOf[TestEntity.Evt], testActor, 20.seconds
+      eventStream, classOf[TestEntity.Evt], new ClusterStartupTask(testActor), 20.seconds
     ))
 
     readSide ! EnsureActive(tag.tag)
 
-    expectMsg(Prepare)
+    expectMsg(Execute)
 
     processorFactory().buildHandler().globalPrepare().toScala.foreach { _ =>
       readSide ! Done

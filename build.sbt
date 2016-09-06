@@ -424,7 +424,6 @@ lazy val persistence = (project in file("persistence"))
       "com.typesafe.akka" %% "akka-cluster-sharding" % AkkaVersion,
       "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
-      "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion,
       "org.scala-lang.modules" %% "scala-java8-compat" % "0.7.0",
       scalaTest % Test,
       "com.novocode" % "junit-interface" % "0.11" % "test",
@@ -448,6 +447,25 @@ lazy val `persistence-cassandra` = (project in file("persistence-cassandra"))
       "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion % "test" exclude("io.netty", "netty-all"),
       "io.netty" % "netty-codec-http" % "4.0.33.Final" % "test",
       "io.netty" % "netty-transport-native-epoll" % "4.0.33.Final" % "test" classifier "linux-x86_64",
+      scalaTest % Test,
+      "com.novocode" % "junit-interface" % "0.11" % "test"
+    )
+  ) configs (MultiJvm)
+
+lazy val `persistence-jdbc` = (project in file("persistence-jdbc"))
+  .settings(name := "lagom-javadsl-persistence-jdbc")
+  .dependsOn(persistence % "compile;test->test")
+  .settings(runtimeLibCommon: _*)
+  .settings(multiJvmTestSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(forkedTests: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.6" exclude("com.typesafe.slick", "slick-extensions_2.11"),
+      "com.typesafe.play" %% "play-jdbc" % PlayVersion,
+      "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
+      "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion % "test",
+      "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
       scalaTest % Test,
       "com.novocode" % "junit-interface" % "0.11" % "test"
     )
