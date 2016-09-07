@@ -5,7 +5,7 @@ package com.lightbend.lagom.internal.persistence.cluster
 
 import akka.Done
 import akka.actor.Status.Failure
-import akka.actor.{ Actor, ActorRef, ActorSystem, PoisonPill, Props, SupervisorStrategy }
+import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props, SupervisorStrategy }
 import akka.cluster.singleton.{ ClusterSingletonManager, ClusterSingletonManagerSettings, ClusterSingletonProxy, ClusterSingletonProxySettings }
 import akka.pattern.BackoffSupervisor
 import akka.util.Timeout
@@ -40,7 +40,7 @@ object ClusterStartupTask {
     val startupTaskProps = Props(classOf[ClusterStartupTaskActor], task, taskTimeout)
 
     val backoffProps = BackoffSupervisor.propsWithSupervisorStrategy(
-      startupTaskProps, "cluster-startup-task", minBackoff, maxBackoff, randomBackoffFactor, SupervisorStrategy.stoppingStrategy
+      startupTaskProps, taskName, minBackoff, maxBackoff, randomBackoffFactor, SupervisorStrategy.stoppingStrategy
     )
 
     val singletonProps = ClusterSingletonManager.props(backoffProps, PoisonPill,
@@ -89,7 +89,7 @@ private[lagom] object ClusterStartupTaskActor {
   case object Execute
 }
 
-private[lagom] class ClusterStartupTaskActor(task: () => Future[Done], timeout: FiniteDuration) extends Actor {
+private[lagom] class ClusterStartupTaskActor(task: () => Future[Done], timeout: FiniteDuration) extends Actor with ActorLogging {
 
   import ClusterStartupTaskActor._
 
@@ -107,6 +107,7 @@ private[lagom] class ClusterStartupTaskActor(task: () => Future[Done], timeout: 
 
   def receive = {
     case Execute =>
+      log.info(s"Executing cluster start task ${self.path.name}.")
       task() pipeTo self
       context become executing(List(sender()))
   }
@@ -116,6 +117,7 @@ private[lagom] class ClusterStartupTaskActor(task: () => Future[Done], timeout: 
       context become executing(sender() :: outstandingRequests)
 
     case Done =>
+      log.info(s"Cluster start task ${self.path.name} done.")
       outstandingRequests foreach { requester =>
         requester ! Done
       }

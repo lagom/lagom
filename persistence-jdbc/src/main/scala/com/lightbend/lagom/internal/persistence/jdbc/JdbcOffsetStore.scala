@@ -1,7 +1,10 @@
+/*
+ * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
+ */
 package com.lightbend.lagom.internal.persistence.jdbc
 
 import java.util.UUID
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import com.lightbend.lagom.javadsl.persistence.Offset
 import play.api.Configuration
@@ -22,27 +25,26 @@ class OffsetTableConfiguration @Inject() (config: Configuration) {
   override def toString: String = s"OffsetTableConfiguration($tableName,$schemaName)"
 }
 
-
 private[jdbc] case class OffsetRow(id: String, tag: String, sequenceOffset: Option[Long], timeUuidOffset: Option[String]) {
   val offset = sequenceOffset.map(Offset.sequence).orElse(
     timeUuidOffset.flatMap(uuid => Try(UUID.fromString(uuid)).toOption)
-        .filter(_.version == 1)
-        .map(Offset.timeBasedUUID)
-  ).getOrElse(Offset.NoOffset)
+      .filter(_.version == 1)
+      .map(Offset.timeBasedUUID)
+  ).getOrElse(Offset.NONE)
 }
 
 @Singleton
-class JdbcOffsetStore @Inject() (slick: SlickProvider, tableConfig: OffsetTableConfiguration)(implicit ec: ExecutionContext) {
+class JdbcOffsetStore @Inject() (val slick: SlickProvider, tableConfig: OffsetTableConfiguration)(implicit ec: ExecutionContext) {
 
   import slick.profile.api._
 
   private class OffsetStore(_tag: Tag) extends Table[OffsetRow](_tag, _schemaName = tableConfig.schemaName, _tableName = tableConfig.tableName) {
-    def * = (id, tag, sequenceOffset, timeUuidOffset) <>(OffsetRow.tupled, OffsetRow.unapply)
+    def * = (id, tag, sequenceOffset, timeUuidOffset) <> (OffsetRow.tupled, OffsetRow.unapply)
 
-    val id: Rep[String] = column[String](tableConfig.idColumnName, O.Length(255, varying = true))
-    val tag: Rep[String] = column[String](tableConfig.tagColumnName, O.Length(255, varying = true))
-    val sequenceOffset: Rep[Option[Long]] = column[Long](tableConfig.sequenceOffsetColumnName).?
-    val timeUuidOffset: Rep[Option[String]] = column[String](tableConfig.timeUuidOffsetColumnName, O.Length(36, varying = false)).?
+    val id = column[String](tableConfig.idColumnName, O.Length(255, varying = true))
+    val tag = column[String](tableConfig.tagColumnName, O.Length(255, varying = true))
+    val sequenceOffset = column[Option[Long]](tableConfig.sequenceOffsetColumnName)
+    val timeUuidOffset = column[Option[String]](tableConfig.timeUuidOffsetColumnName, O.Length(36, varying = false))
     val pk = primaryKey(s"${tableConfig.tableName}_pk", (id, tag))
   }
 
@@ -58,15 +60,15 @@ class JdbcOffsetStore @Inject() (slick: SlickProvider, tableConfig: OffsetTableC
 
   def updateOffsetQuery(id: String, tag: String, offset: Offset) = {
     val offsetRow = offset match {
-      case sequence: Offset.Sequence => OffsetRow(id, tag, Some(sequence.value), None)
+      case sequence: Offset.Sequence      => OffsetRow(id, tag, Some(sequence.value), None)
       case timeUuid: Offset.TimeBasedUUID => OffsetRow(id, tag, None, Some(timeUuid.value.toString))
-      case Offset.NoOffset => OffsetRow(id, tag, None, None)
+      case Offset.NONE                    => OffsetRow(id, tag, None, None)
     }
     offsets.insertOrUpdate(offsetRow)
   }
 
   def createTables() = {
-    slick.createTable(offsets.schema.create, slick.tableExists(tableConfig.schemaName, tableConfig.tableName))
+    slick.createTable(offsets.schema.createStatements.toSeq, slick.tableExists(tableConfig.schemaName, tableConfig.tableName))
   }
 
 }

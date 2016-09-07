@@ -106,11 +106,11 @@ private[lagom] abstract class AbstractPersistentEntityRegistry(system: ActorSyst
     val tag = aggregateTag.tag
     val offset = fromOffset match {
       case Offset.NONE          => 0l
-      case seq: Offset.Sequence => seq.value()
+      case seq: Offset.Sequence => seq.value() + 1
       case other                => throw new IllegalArgumentException(s"$journalId does not support ${other.getClass.getSimpleName} offsets")
     }
     eventQueries.eventsByTag(tag, offset)
-      .map { env => Pair.create(env.event.asInstanceOf[Event], Offset.sequence(offset)) }
+      .map { env => Pair.create(env.event.asInstanceOf[Event], Offset.sequence(env.offset)) }
       .asJava
   }
 

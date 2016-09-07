@@ -4,6 +4,7 @@
 package com.lightbend.lagom.javadsl.persistence
 
 import java.util.Optional
+import java.util.concurrent.CompletionStage
 
 import akka.{ Done, NotUsed }
 import akka.stream.ActorMaterializer
@@ -19,6 +20,8 @@ import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
 import com.lightbend.lagom.javadsl.persistence.TestEntity.InPrependMode
 
+import scala.concurrent.Await
+
 trait AbstractReadSideSpec extends ImplicitSender { spec: ActorSystemSpec =>
   import system.dispatcher
 
@@ -31,9 +34,18 @@ trait AbstractReadSideSpec extends ImplicitSender { spec: ActorSystemSpec =>
 
   def processorFactory(): ReadSideProcessor[TestEntity.Evt]
 
-  def assertSelectCount(id: String, expected: Long): Unit
+  def getAppendCount(id: String): CompletionStage[java.lang.Long]
 
-  final def createReadSideProcessor(tag: AggregateEventTag[TestEntity.Evt]) = {
+  private def assertSelectCount(id: String, expected: Long): Unit = {
+    within(20.seconds) {
+      awaitAssert {
+        val count = Await.result(getAppendCount(id).toScala, 5.seconds)
+        count should ===(expected)
+      }
+    }
+  }
+
+  private def createReadSideProcessor(tag: AggregateEventTag[TestEntity.Evt]) = {
     /* read side and injector only needed for deprecated register method */
     val readSide = system.actorOf(ReadSideActor.props[TestEntity.Evt](
       processorFactory,

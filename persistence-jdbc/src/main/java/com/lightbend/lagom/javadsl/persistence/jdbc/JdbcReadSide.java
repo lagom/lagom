@@ -9,6 +9,7 @@ import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.function.*;
 
 /**
@@ -43,7 +44,7 @@ public interface JdbcReadSide {
          * @return This builder for fluent invocation.
          * @see ReadSideHandler#globalPrepare()
          */
-        ReadSideHandlerBuilder<Event> setGlobalPrepare(Consumer<Connection> callback);
+        ReadSideHandlerBuilder<Event> setGlobalPrepare(ConnectionConsumer callback);
 
         /**
          * Set a prepare callback.
@@ -52,7 +53,7 @@ public interface JdbcReadSide {
          * @return This builder for fluent invocation.
          * @see ReadSideHandler#prepare(AggregateEventTag)
          */
-        ReadSideHandlerBuilder<Event> setPrepare(BiConsumer<Connection, AggregateEventTag<Event>> callback);
+        ReadSideHandlerBuilder<Event> setPrepare(ConnectionBiConsumer<AggregateEventTag<Event>> callback);
 
         /**
          * Define the event handler that will be used for events of a given class.
@@ -61,7 +62,7 @@ public interface JdbcReadSide {
          * @param handler The function to handle the events.
          * @return This builder for fluent invocation
          */
-        <E extends Event> ReadSideHandlerBuilder<Event> setEventHandler(Class<E> eventClass, BiConsumer<Connection, E> handler);
+        <E extends Event> ReadSideHandlerBuilder<Event> setEventHandler(Class<E> eventClass, ConnectionBiConsumer<E> handler);
 
         /**
          * Define the event handler that will be used for events of a given class.
@@ -72,7 +73,7 @@ public interface JdbcReadSide {
          * @param handler The function to handle the events.
          * @return This builder for fluent invocation
          */
-        <E extends Event> ReadSideHandlerBuilder<Event> setEventHandler(Class<E> eventClass, OffsetConsumer<E> handler);
+        <E extends Event> ReadSideHandlerBuilder<Event> setEventHandler(Class<E> eventClass, ConnectionTriConsumer<E, Offset> handler);
 
         /**
          * Build the read side handler.
@@ -83,18 +84,47 @@ public interface JdbcReadSide {
     }
 
     /**
-     * SAM for handling offsets.
+     * SAM for consuming a connection.
      */
     @FunctionalInterface
-    interface OffsetConsumer<E> {
+    interface ConnectionConsumer {
 
         /**
-         * Accept the connection, event and offset, and handle it.
+         * Accept the connection.
          *
          * @param connection The connection
-         * @param event The event
-         * @param offset The offset
          */
-        void accept(Connection connection, E event, Offset offset);
+        void accept(Connection connection) throws SQLException;
+    }
+
+    /**
+     * SAM for consuming a connection and a parameter
+     */
+    @FunctionalInterface
+    interface ConnectionBiConsumer<T> {
+
+        /**
+         * Accept the connection and a parameter.
+         *
+         * @param connection The connection
+         * @param t The first parameter.
+         */
+        void accept(Connection connection, T t) throws SQLException;
+    }
+
+    /**
+     * SAM for consuming a connection and two other parameters
+     */
+    @FunctionalInterface
+    interface ConnectionTriConsumer<T, U> {
+
+        /**
+         * Accept the connection and two parameters.
+         *
+         * @param connection The connection
+         * @param t The first parameter.
+         * @param u The second parameter.
+         */
+        void accept(Connection connection, T t, U u) throws SQLException;
     }
 }

@@ -192,6 +192,7 @@ val apiProjects = Seq[ProjectReference](
   pubsub,
   persistence,
   `persistence-cassandra`,
+  `persistence-jdbc`,
   testkit,
   logback,
   immutables,
