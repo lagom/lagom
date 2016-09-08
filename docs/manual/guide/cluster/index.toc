@@ -1,4 +1,6 @@
 PersistentEntity:Persistent Entity
+UsingCassandra:Using Cassandra
+UsingRDBMS:Using a Relational Database
 ReadSide:Persistent Read-Side
 PubSub:Publish-Subscribe
 Serialization:Serialization

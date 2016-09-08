@@ -18,33 +18,21 @@ An entity is kept alive, holding its current state in memory, as long as it is u
 
 When an entity is started it replays the stored events to restore the current state. This can be either the full history of changes or starting from a snapshot which will reduce recovery times.
 
-## Dependency
+## Choosing a database
 
-To use this feature add the following in your project's build.
+Lagom supports the following databases:
 
-In Maven:
+* [Cassandra](https://cassandra.apache.org/)
+* [PostgreSQL](https://www.postgresql.org/)
+* [MySQL](https://www.mysql.com/)
+* [Oracle](https://www.oracle.com/database/index.html)
+* [H2](http://www.h2database.com/)
 
-```xml
-<dependency>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-persistence_2.11</artifactId>
-    <version>${lagom.version}</version>
-</dependency>
-```
+We recommend using Cassandra. Cassandra is a very scalable distributed database, and it is also flexible enough to support typical use cases of reactive services. In contrast to most relational databases, it natively supports sharding and replication, and is emerging as an industry standard open source NoSQL database.
 
-In sbt:
+Lagom also provides out of the box support for running Cassandra in a development environment - developers do not need to install, configure or manage Cassandra at all themselves when using Lagom, which makes for great developer velocity, and it means gone are the days where developers spend days setting up their development environment before they can start to be productive on a project.
 
-@[persistence-dependency](code/build-cluster.sbt)
-
-## Cassandra
-
-Lagom has support for [Cassandra](http://cassandra.apache.org/) as data store, both for the write-side and read-side. Cassandra is a very scalable distributed database, and it is also flexible enough to support typical use cases of reactive services.
-
-### What if I don't want to use Cassandra?
-
-The Persistence module in Lagom only supports Cassandra as backend data store. It is especially the read-side that is tightly integrated with Cassandra instead of providing an abstraction on top of it. We will not provide support for a wide range of other data stores, but if there is enough demand we might support some other, such as a SQL database.
-
-If you can't use Cassandra you can implement your Lagom services with whatever data store solution you like, but then you would not use the Persistence module in Lagom.
+For instructions on configuring your project to use Cassandra, see [[Using Cassandra|UsingCassandra]]. If instead you want to use one of the relational databases listed above, see [[Using a Relational Database|UsingRDBMS]] on how to configure your project.
 
 ## PersistentEntity Stub
 
@@ -211,14 +199,10 @@ If you change the class name of a `PersistentEntity` you have to override `entit
 
 ## Configuration
 
-The default configuration should be good starting point, and the following settings may later be amended to customize the behavior if needed.
+The default configuration should be good starting point, and the following settings may later be amended to customize the behavior if needed.  The following is a listing of the non database specific settings for Lagom persistence:
 
 @[persistence](../../../../persistence/src/main/resources/reference.conf)
 
-You may also need to adjust the configuration of [akka-persistence-cassandra](https://github.com/akka/akka-persistence-cassandra). See its [reference.conf](https://github.com/akka/akka-persistence-cassandra/blob/v0.13/src/main/resources/reference.conf)
-
 ## Underlying Implementation
 
-Each `PersistentEntity` instance is executed by a [PersistentActor](http://doc.akka.io/docs/akka/2.4.4/java/persistence.html) that is managed by [Akka Cluster Sharding](http://doc.akka.io/docs/akka/2.4.4/java/cluster-sharding.html)
-
-The Akka Persistence journal plugin is [akka-persistence-cassandra](https://github.com/akka/akka-persistence-cassandra).
+Each `PersistentEntity` instance is executed by a [PersistentActor](http://doc.akka.io/docs/akka/2.4.4/java/persistence.html) that is managed by [Akka Cluster Sharding](http://doc.akka.io/docs/akka/2.4.4/java/cluster-sharding.html).
