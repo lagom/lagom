@@ -1,77 +1,50 @@
 /*
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
  */
-package com.lightbend.lagom.javadsl.persistence
+package com.lightbend.lagom.javadsl.persistence.multinode
 
-import scala.concurrent.duration._
-import scala.collection.JavaConverters._
-import akka.remote.testkit.MultiNodeConfig
-import akka.remote.testkit.MultiNodeSpec
-import akka.testkit.ImplicitSender
-import akka.actor.{Actor, Props}
-import com.typesafe.config.ConfigFactory
-import akka.persistence.cassandra.testkit.CassandraLauncher
-import akka.persistence.journal.PersistencePluginProxy
-import java.io.File
-
-import akka.remote.testconductor.RoleName
-import akka.cluster.Cluster
-import akka.actor.Address
-import akka.actor.ActorRef
-import com.lightbend.lagom.javadsl.persistence.testkit.pipe
-import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule
 import java.util.concurrent.CompletionStage
 
-import com.google.inject.Guice
-import akka.cluster.MemberStatus
-import akka.cluster.sharding.ClusterSharding
-import akka.event.Logging
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule
-import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil
+import akka.actor.{ ActorRef, ActorSystem, Address }
+import akka.cluster.{ Cluster, MemberStatus }
+import akka.remote.testconductor.RoleName
+import akka.remote.testkit.{ MultiNodeConfig, MultiNodeSpec }
+import akka.testkit.ImplicitSender
+import com.lightbend.lagom.javadsl.persistence._
+import com.lightbend.lagom.javadsl.persistence.testkit.pipe
+import com.typesafe.config.{ Config, ConfigFactory }
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.{ Application, Configuration, Environment }
 
 import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.compat.java8.FutureConverters._
+import scala.collection.JavaConverters._
+import play.api.inject.bind
 
-object ClusteredPersistentEntityConfig extends MultiNodeConfig {
+abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
   val node1 = role("node1")
   val node2 = role("node2")
   val node3 = role("node3")
 
-  commonConfig(ConfigFactory.parseString(s"""
-    akka.loglevel = INFO
-    akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
+  val databasePort = System.getProperty("database.port").toInt
+  val environment = Environment.simple()
 
-    lagom.persistence.run-entities-on-role = backend
-    lagom.persistence.read-side.run-on-role = "read-side"
+  commonConfig(additionalCommonConfig(databasePort).withFallback(ConfigFactory.parseString(
+    """
+      akka.loglevel = INFO
+      lagom.persistence.run-entities-on-role = "backend"
+      lagom.persistence.read-side.run-on-role = "read-side"
+      terminate-system-after-member-removed = 60s
+    """
+  ).withFallback(ConfigFactory.parseResources("play/reference-overrides.conf"))))
 
-    akka.persistence.journal.plugin = "akka.persistence.journal.proxy"
-    akka.persistence.snapshot-store.plugin = "akka.persistence.snapshot-store.proxy"
-
-    akka.persistence.journal.proxy {
-      target-journal-plugin = "cassandra-journal"
-      init-timeout = 20s
-    }
-    akka.persistence.snapshot-store.proxy {
-      target-snapshot-store-plugin = "cassandra-snapshot-store"
-      init-timeout = 20s
-    }
-
-    cassandra-journal.session-provider = akka.persistence.cassandra.ConfigSessionProvider
-    cassandra-snapshot-store.session-provider = akka.persistence.cassandra.ConfigSessionProvider
-    lagom.persistence.read-side.cassandra.session-provider = akka.persistence.cassandra.ConfigSessionProvider
-
-    # don't terminate in this test
-    terminate-system-after-member-removed = 60s
-    """))
+  def additionalCommonConfig(databasePort: Int): Config
 
   nodeConfig(node1) {
     ConfigFactory.parseString(s"""
       akka.cluster.roles = ["backend", "read-side"]
-
-      akka.persistence.journal.proxy.start-target-journal = on
-      akka.persistence.snapshot-store.proxy.start-target-snapshot-store = on
-
-      """).withFallback(TestUtil.persistenceConfig("ClusteredPersistentEntitySpec", CassandraLauncher.randomPort, useServiceLocator = false))
+      """)
   }
 
   nodeConfig(node2) {
@@ -84,19 +57,16 @@ object ClusteredPersistentEntityConfig extends MultiNodeConfig {
     ConfigFactory.parseString(
       s"""
        akka.cluster.roles = ["read-side"]
-      """).withFallback(TestUtil.persistenceConfig("ClusteredPersistentEntitySpec", CassandraLauncher.randomPort, useServiceLocator = false))
+      """
+    )
   }
 
 }
 
-class ClusteredPersistentEntitySpecMultiJvmNode1 extends ClusteredPersistentEntitySpec
-class ClusteredPersistentEntitySpecMultiJvmNode2 extends ClusteredPersistentEntitySpec
-class ClusteredPersistentEntitySpecMultiJvmNode3 extends ClusteredPersistentEntitySpec
-
-class ClusteredPersistentEntitySpec extends MultiNodeSpec(ClusteredPersistentEntityConfig)
+abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPersistentEntityConfig) extends MultiNodeSpec(config)
   with STMultiNodeSpec with ImplicitSender {
 
-  import ClusteredPersistentEntityConfig._
+  import config._
 
   override def initialParticipants = roles.size
 
@@ -112,17 +82,6 @@ class ClusteredPersistentEntitySpec extends MultiNodeSpec(ClusteredPersistentEnt
     else ref.path.address
 
   override protected def atStartup() {
-    runOn(node1) {
-      val cassandraDirectory = new File("target/" + system.name)
-      CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = true, port = 0)
-      PersistencePluginProxy.start(system)
-      TestUtil.awaitPersistenceInit(system)
-    }
-    enterBarrier("cassandra-started")
-
-    PersistencePluginProxy.setTargetLocation(system, node(node1).address)
-    enterBarrier("journal-initialized")
-
     // Initialize read side
     readSide
 
@@ -135,32 +94,40 @@ class ClusteredPersistentEntitySpec extends MultiNodeSpec(ClusteredPersistentEnt
     enterBarrier("startup")
   }
 
-  override protected def afterTermination() {
-    CassandraLauncher.stop()
+  override protected def afterTermination(): Unit = {
+    injector.instanceOf[Application].stop()
   }
 
-  val injector = Guice.createInjector(new ActorSystemModule(system), new PersistenceModule, new CassandraPersistenceModule)
+  lazy val injector = {
+    val configuration = Configuration(system.settings.config)
+    new GuiceApplicationBuilder()
+      .loadConfig(configuration)
+      .overrides(bind[ActorSystem].toInstance(system))
+      .build().injector
+  }
 
-  val registry: PersistentEntityRegistry = {
-    val reg = injector.getInstance(classOf[PersistentEntityRegistry])
+  lazy val registry: PersistentEntityRegistry = {
+    val reg = injector.instanceOf[PersistentEntityRegistry]
     reg.register(classOf[TestEntity])
     reg
   }
 
-  // lazy because we don't want to create it until after Cassandra is started
+  protected def readSideProcessor: Class[_ <: ReadSideProcessor[TestEntity.Evt]]
+
+  // lazy because we don't want to create it until after database is started
   lazy val readSide: ReadSide = {
-    val rs = injector.getInstance(classOf[ReadSide])
-    rs.register(classOf[TestEntityReadSide.TestEntityReadSideProcessor])
+    val rs = injector.instanceOf[ReadSide]
+    rs.register(readSideProcessor)
     rs
   }
 
-  def testEntityReadSide = injector.getInstance(classOf[TestEntityReadSide])
+  protected def getAppendCount(id: String): CompletionStage[java.lang.Long]
 
   def expectAppendCount(id: String, expected: Long) = {
     runOn(node1) {
       within(20.seconds) {
         awaitAssert {
-          val count = Await.result(testEntityReadSide.getAppendCount(id).toScala, 5.seconds)
+          val count = Await.result(getAppendCount(id).toScala, 5.seconds)
           count should ===(expected)
         }
       }

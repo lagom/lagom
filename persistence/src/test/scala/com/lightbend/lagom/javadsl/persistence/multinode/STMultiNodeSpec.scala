@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
  */
-package com.lightbend.lagom.javadsl.persistence
+package com.lightbend.lagom.javadsl.persistence.multinode
 
 import akka.remote.testkit.MultiNodeSpecCallbacks
 import org.scalatest.BeforeAndAfterAll

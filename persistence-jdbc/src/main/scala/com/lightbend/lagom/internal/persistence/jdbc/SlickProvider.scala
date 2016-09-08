@@ -15,6 +15,7 @@ import akka.persistence.jdbc.util.{ SlickDatabase, SlickDriver }
 import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import org.slf4j.LoggerFactory
+import play.api.db.DBApi
 import slick.ast._
 import slick.driver.{ H2Driver, JdbcProfile, MySQLDriver, PostgresDriver }
 import slick.jdbc.meta.MTable
@@ -24,7 +25,10 @@ import scala.concurrent.duration._
 import scala.util.{ Failure, Success }
 
 @Singleton
-class SlickProvider @Inject() (system: ActorSystem)(implicit ec: ExecutionContext) {
+class SlickProvider @Inject() (
+  system: ActorSystem,
+  dbApi:  DBApi /* Ensures database is initialised before we start anything that needs it */
+)(implicit ec: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 

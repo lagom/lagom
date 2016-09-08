@@ -41,8 +41,10 @@ class JdbcOffsetStore @Inject() (val slick: SlickProvider, tableConfig: OffsetTa
   private class OffsetStore(_tag: Tag) extends Table[OffsetRow](_tag, _schemaName = tableConfig.schemaName, _tableName = tableConfig.tableName) {
     def * = (id, tag, sequenceOffset, timeUuidOffset) <> (OffsetRow.tupled, OffsetRow.unapply)
 
-    val id = column[String](tableConfig.idColumnName, O.Length(255, varying = true))
-    val tag = column[String](tableConfig.tagColumnName, O.Length(255, varying = true))
+    // Technically these two columns shouldn't have the primary key options, but they need it to work around
+    // https://github.com/slick/slick/issues/966
+    val id = column[String](tableConfig.idColumnName, O.Length(255, varying = true), O.PrimaryKey)
+    val tag = column[String](tableConfig.tagColumnName, O.Length(255, varying = true), O.PrimaryKey)
     val sequenceOffset = column[Option[Long]](tableConfig.sequenceOffsetColumnName)
     val timeUuidOffset = column[Option[String]](tableConfig.timeUuidOffsetColumnName, O.Length(36, varying = false))
     val pk = primaryKey(s"${tableConfig.tableName}_pk", (id, tag))
@@ -68,7 +70,10 @@ class JdbcOffsetStore @Inject() (val slick: SlickProvider, tableConfig: OffsetTa
   }
 
   def createTables() = {
-    slick.createTable(offsets.schema.createStatements.toSeq, slick.tableExists(tableConfig.schemaName, tableConfig.tableName))
+    // The schema will be wrong due to our work around for https://github.com/slick/slick/issues/966 above, so need to
+    // remove the primary key declarations from those columns
+    val statements = offsets.schema.createStatements.map(_.replace(" PRIMARY KEY,", ",")).toSeq
+    slick.createTable(statements, slick.tableExists(tableConfig.schemaName, tableConfig.tableName))
   }
 
 }

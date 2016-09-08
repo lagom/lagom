@@ -1,3 +1,6 @@
+import java.net.InetSocketAddress
+import java.nio.channels.ServerSocketChannel
+
 import sbt.ScriptedPlugin
 import Tests._
 import com.typesafe.sbt.SbtMultiJvm
@@ -157,9 +160,17 @@ val defaultMultiJvmOptions: List[String] = {
   "-Xmx128m" :: properties
 }
 
+def databasePortSetting: String = {
+  val serverSocket = ServerSocketChannel.open().socket()
+  serverSocket.bind(new InetSocketAddress("127.0.0.1", 0))
+  val port = serverSocket.getLocalPort
+  serverSocket.close()
+  s"-Ddatabase.port=$port"
+}
+
 def multiJvmTestSettings: Seq[Setting[_]] = SbtMultiJvm.multiJvmSettings ++ Seq(
   parallelExecution in Test := false,
-  MultiJvmKeys.jvmOptions in MultiJvm := defaultMultiJvmOptions,
+  MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting :: defaultMultiJvmOptions,
   // make sure that MultiJvm test are compiled by the default test compilation
   compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test),
   // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
@@ -424,13 +435,14 @@ lazy val persistence = (project in file("persistence"))
       "com.typesafe.akka" %% "akka-persistence-query-experimental" % AkkaVersion,
       "com.typesafe.akka" %% "akka-cluster-sharding" % AkkaVersion,
       "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
+      "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
       "org.scala-lang.modules" %% "scala-java8-compat" % "0.7.0",
       scalaTest % Test,
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "com.google.inject" % "guice" % "4.0"
     )
-  ) configs (MultiJvm)
+  )
 
 lazy val `persistence-cassandra` = (project in file("persistence-cassandra"))
   .settings(name := "lagom-javadsl-persistence-cassandra")
@@ -441,15 +453,10 @@ lazy val `persistence-cassandra` = (project in file("persistence-cassandra"))
   .settings(forkedTests: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
-      "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion % "test",
-      "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion,
       "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion % "test" exclude("io.netty", "netty-all"),
       "io.netty" % "netty-codec-http" % "4.0.33.Final" % "test",
-      "io.netty" % "netty-transport-native-epoll" % "4.0.33.Final" % "test" classifier "linux-x86_64",
-      scalaTest % Test,
-      "com.novocode" % "junit-interface" % "0.11" % "test"
+      "io.netty" % "netty-transport-native-epoll" % "4.0.33.Final" % "test" classifier "linux-x86_64"
     )
   ) configs (MultiJvm)
 
@@ -463,12 +470,7 @@ lazy val `persistence-jdbc` = (project in file("persistence-jdbc"))
   .settings(
     libraryDependencies ++= Seq(
       "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.6" exclude("com.typesafe.slick", "slick-extensions_2.11"),
-      "com.typesafe.play" %% "play-jdbc" % PlayVersion,
-      "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
-      "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion % "test",
-      "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
-      scalaTest % Test,
-      "com.novocode" % "junit-interface" % "0.11" % "test"
+      "com.typesafe.play" %% "play-jdbc" % PlayVersion
     )
   ) configs (MultiJvm)
 
