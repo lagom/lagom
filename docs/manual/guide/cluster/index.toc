@@ -1,6 +1,6 @@
 PersistentEntity:Persistent Entity
-UsingCassandra:Using Cassandra
-UsingRDBMS:Using a Relational Database
+PersistentEntityCassandra:Cassandra Persistent Entities
+PersistentEntityRDBMS:Relational Database Persistent Entities
 ReadSide:Persistent Read-Side
 PubSub:Publish-Subscribe
 Serialization:Serialization

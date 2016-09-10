@@ -6,21 +6,20 @@
 
 This separation of the write-side and the read-side of the persistent data is often referred to as the [CQRS](https://msdn.microsoft.com/en-us/library/jj591573.aspx) (Command Query Responibility Segregation) pattern. The [CQRS Journey](https://msdn.microsoft.com/en-us/library/jj554200.aspx) is a great resource for learning more about CQRS.
 
-## Dependency
+## Read-side design
 
-In Maven:
+In Lagom, the read-side can be implemented using any datastore, using any library that runs on the JVM to populate and query it. Lagom does provide some helpers for using Cassandra and JDBC, but this are optional, they don't need to be used.
 
-```xml
-<dependency>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-cluster_2.11</artifactId>
-    <version>${lagom.version}</version>
-</dependency>
-```
+If you're familiar with a more traditional approach to persistence that uses tables with rows and columns, then implementing the read-side may be a little more familiar than implementing the persistent entities. There is one primary rule though, the read-side should only be updated in response to receiving events from persistent entities.
 
-In sbt:
+To handle these events, you need to provide a [ReadSideProcessor](api/index.html?com/lightbend/lagom/javadsl/persistence/jdbc/ReadSideProcessor.html). A read side processor is responsible not just for handling the events produced by the persistent entity, it's also responsible for tracking which events it has handled. This is done using offsets.
 
-@[persistence-dependency](code/build-cluster.sbt)
+Each event produced by a persistent entity has an offset. When a read side processor first starts,
+
+The read side is populated by handling the events that are produced by the persistent entities, each time an event is produced, a table or multiple tables on the read side will
+
+
+
 
 ## Query the Read-Side Database
 
@@ -106,6 +105,8 @@ The `eventStream` method takes the event class that implements the `AggregateEve
 This stream will never complete, unless there is failure from retrieving the events from the database. It will continue to deliver new events as they are persisted.
 
 Each such stream of events will continuously generate queries to Cassandra to fetch new events and therefore this tool should be used carefully. Do not run too many such streams. It should typically not be used for service calls invoked by unknown number of clients, but it can be useful for a limited number of background processing jobs.
+
+## Sharding
 
 ## Refactoring Consideration
 

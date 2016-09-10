@@ -32,7 +32,7 @@ We recommend using Cassandra. Cassandra is a very scalable distributed database,
 
 Lagom also provides out of the box support for running Cassandra in a development environment - developers do not need to install, configure or manage Cassandra at all themselves when using Lagom, which makes for great developer velocity, and it means gone are the days where developers spend days setting up their development environment before they can start to be productive on a project.
 
-For instructions on configuring your project to use Cassandra, see [[Using Cassandra|UsingCassandra]]. If instead you want to use one of the relational databases listed above, see [[Using a Relational Database|UsingRDBMS]] on how to configure your project.
+For instructions on configuring your project to use Cassandra, see [[Using Cassandra for Persistent Entities|PersistentEntityCassandra]]. If instead you want to use one of the relational databases listed above, see [[Using a Relational Database for Persistent Entities|PersistentEntityRDBMS]] on how to configure your project.
 
 ## PersistentEntity Stub
 

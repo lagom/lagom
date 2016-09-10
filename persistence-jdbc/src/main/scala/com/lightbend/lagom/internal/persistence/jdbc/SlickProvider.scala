@@ -34,17 +34,17 @@ class SlickProvider @Inject() (
 
   private val readSideConfig = system.settings.config.getConfig("lagom.persistence.read-side.jdbc")
   private val jdbcConfig = system.settings.config.getConfig("lagom.persistence.jdbc")
+  private val createTables = jdbcConfig.getConfig("create-tables")
 
   private val slickConfig = new SlickConfiguration(readSideConfig)
-
-  val autoCreateTables = jdbcConfig.getBoolean("autocreate-tables")
+  private val autoCreateTables = createTables.getBoolean("auto")
 
   val db = SlickDatabase.forConfig(readSideConfig, slickConfig)
   val profile = SlickDriver.forDriverName(readSideConfig)
 
   import profile.api._
 
-  private val createTablesTimeout = jdbcConfig.getDuration("create-tables.timeout", TimeUnit.MILLISECONDS).millis
+  private val createTablesTimeout = createTables.getDuration("timeout", TimeUnit.MILLISECONDS).millis
 
   // This feature is somewhat limited, it assumes that the read side database is the same database as the journals and
   // snapshots

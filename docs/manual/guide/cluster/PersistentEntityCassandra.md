@@ -1,4 +1,4 @@
-# Using Cassandra
+# Storing Persistent Entities in Cassandra
 
 This page describes how to configure Cassandra for use with Lagom's [[Persistent Entity|PersistentEntity]] API.
 
@@ -22,4 +22,5 @@ In sbt:
 
 ## Configuration
 
-Lagom's Cassandra support
+
+Lagom's Cassandra support is provided by the [`akka-persistence-cassandra`](https://github.com/akka/akka-persistence-cassandra) plugin. A full configuration reference can be in the plugins [`reference.conf`](https://github.com/akka/akka-persistence-cassandra/blob/v0.17/src/main/resources/reference.conf).
