@@ -5,34 +5,40 @@ package com.lightbend.lagom.internal.client
 
 import java.lang.reflect.{ InvocationHandler, Method }
 import java.net.{ URI, URLEncoder }
-import java.util.function.BiFunction
 import java.util.{ Optional, function }
 import java.util.concurrent.CompletionStage
-import javax.inject.{ Inject, Singleton }
-
-import akka.stream.Materializer
-import akka.stream.javadsl.{ Source => JSource }
-import akka.stream.scaladsl.{ Sink, Source }
-import akka.util.ByteString
-import com.lightbend.lagom.internal.api.{ MethodServiceCallHolder, Path }
-import akka.NotUsed
-import com.lightbend.lagom.javadsl.api.Descriptor.{ Call, RestCallId }
-import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.NegotiatedSerializer
-import com.lightbend.lagom.javadsl.api.deser._
-import com.lightbend.lagom.javadsl.api.security.ServicePrincipal
-import com.lightbend.lagom.javadsl.api.transport._
-import com.lightbend.lagom.javadsl.api.{ Descriptor, ServiceCall, ServiceInfo, ServiceLocator }
-import io.netty.handler.codec.http.websocketx.WebSocketVersion
-import org.pcollections.{ HashTreePMap, PSequence, TreePVector }
-import play.api.Environment
-import play.api.http.HeaderNames
-import play.api.libs.streams.AkkaStreams
-import play.api.libs.ws.{ InMemoryBody, WSClient }
+import java.util.function.BiFunction
 
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
 import scala.compat.java8.OptionConverters._
 import scala.concurrent.{ ExecutionContext, Future }
+
+import org.pcollections.{ HashTreePMap, PSequence, TreePVector }
+
+import com.lightbend.lagom.internal.api.{ InternalTopicCall, MethodServiceCallHolder, MethodTopicHolder, Path }
+import com.lightbend.lagom.javadsl.api.{ Descriptor, ServiceCall, ServiceInfo, ServiceLocator }
+import com.lightbend.lagom.javadsl.api.Descriptor.{ Call, RestCallId }
+import com.lightbend.lagom.javadsl.api.broker.Topic
+import com.lightbend.lagom.javadsl.api.broker.modules.Topics
+import com.lightbend.lagom.javadsl.api.deser._
+import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.NegotiatedSerializer
+import com.lightbend.lagom.javadsl.api.security.ServicePrincipal
+import com.lightbend.lagom.javadsl.api.transport._
+
+import akka.NotUsed
+import akka.stream.Materializer
+import akka.stream.javadsl.{ Source => JSource }
+import akka.stream.scaladsl.{ Sink, Source }
+import akka.util.ByteString
+import io.netty.handler.codec.http.websocketx.WebSocketVersion
+import com.google.inject.Inject
+import javax.inject.Singleton
+import play.api.Environment
+import play.api.http.HeaderNames
+import play.api.libs.streams.AkkaStreams
+import play.api.libs.ws.{ InMemoryBody, WSClient }
+import org.slf4j.LoggerFactory
 
 /**
  * Implements a service client.
@@ -40,13 +46,18 @@ import scala.concurrent.{ ExecutionContext, Future }
 @Singleton
 class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSocketClient, serviceInfo: ServiceInfo,
                                           serviceLocator: ServiceLocator, environment: Environment)(implicit ec: ExecutionContext, mat: Materializer) {
+  private val log = LoggerFactory.getLogger(classOf[ServiceClientImplementor])
+
+  @volatile private var topicFactory: Option[Topics] = None
+
+  @Inject(optional = true) def setTopicFactory(_topicFactory: Topics): Unit = topicFactory = Some(_topicFactory)
 
   def implement[T](interface: Class[T], descriptor: Descriptor): T = {
-    java.lang.reflect.Proxy.newProxyInstance(environment.classLoader, Array(interface), new ServiceClientInvocationHandler(descriptor)).asInstanceOf[T]
+    java.lang.reflect.Proxy.newProxyInstance(environment.classLoader, Array(interface), new ServiceClientInvocationHandler(descriptor, topicFactory)).asInstanceOf[T]
   }
 
-  class ServiceClientInvocationHandler(descriptor: Descriptor) extends InvocationHandler {
-    private val methods: Map[Method, ServiceCallInvocationHandler[Any, Any]] = descriptor.calls().asScala.map { call =>
+  class ServiceClientInvocationHandler(descriptor: Descriptor, topicFactory: Option[Topics]) extends InvocationHandler {
+    private def serviceCallMethods: Map[Method, ServiceCallInvocationHandler[Any, Any]] = descriptor.calls().asScala.map { call =>
       call.serviceCallHolder() match {
         case holder: MethodServiceCallHolder =>
           holder.method -> new ServiceCallInvocationHandler[Any, Any](ws, webSocketClient, serviceInfo, serviceLocator,
@@ -54,10 +65,31 @@ class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSock
       }
     }.toMap
 
+    private def topicMethods: Map[Method, Topic[_]] = topicFactory.map { topicFactory =>
+      descriptor.topicCalls().asScala.map {
+        case topicCall: InternalTopicCall[Any] =>
+          topicCall.topicHolder match {
+            case holder: MethodTopicHolder =>
+              holder.method -> topicFactory.of(topicCall)
+          }
+        case topicCall => throw new IllegalStateException(s"Expected ${classOf[InternalTopicCall[_]].getName} instance, but it was ${topicCall.getClass.getName}.")
+      }.toMap
+    } getOrElse {
+      if (descriptor.topicCalls().asScala.nonEmpty) {
+        val error = s"Service ${serviceInfo.serviceName} is missing guice binding for interface ${classOf[Topics].getName}. " +
+          "Hint: Have you forgot to add a message broker dependency for this service? " +
+          "Try adding the `lagom-javadsl-kafka-broker` JAR to your build."
+        throw new IllegalStateException(error)
+      } else Map.empty
+    }
+
+    private val methods: Map[Method, _] = serviceCallMethods ++ topicMethods
+
     override def invoke(proxy: scala.Any, method: Method, args: Array[AnyRef]): AnyRef = {
       methods.get(method) match {
-        case Some(serviceCallInvocationHandler) => serviceCallInvocationHandler.invoke(args)
-        case None                               => throw new IllegalStateException("Method " + method + " is not described by the service client descriptor")
+        case Some(serviceCallInvocationHandler: ServiceCallInvocationHandler[_, _]) => serviceCallInvocationHandler.invoke(args)
+        case Some(topic: Topic[_]) => topic
+        case _ => throw new IllegalStateException("Method " + method + " is not described by the service client descriptor")
       }
     }
   }

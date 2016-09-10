@@ -72,7 +72,8 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
   }
 
   def startServiceDevMode(project: MavenProject, port: Int, serviceLocatorUrl: Option[String],
-    cassandraPort: Option[Int], cassandraKeyspace: String, playService: Boolean, additionalWatchDirs: Seq[File]): Unit = synchronized {
+    cassandraPort: Option[Int], cassandraKeyspace: String, kafkaAddress: String,
+    playService: Boolean, additionalWatchDirs: Seq[File]): Unit = synchronized {
     runningServices.get(project) match {
       case Some(service) =>
         logger.info("Service " + project.getArtifactId + " already running!")
@@ -118,8 +119,13 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
           val devSettings = LagomConfig.actorSystemConfig(project.getArtifactId) ++
             serviceLocatorUrl.map(LagomConfig.ServiceLocatorUrl -> _).toMap ++
             cassandraPort.fold(Map.empty[String, String]) { port =>
+              // FIXME: The cassandra configuration should be always injected
+              // (even when the cassandraEnabled flag is false, as otherwise the 
+              // Lagom services won't properly work with a locally running Cassandra
+              // instance - see
+              // http://www.lagomframework.com/documentation/1.0.x/java/CassandraServer.html#Connecting-to-a-locally-running-Cassandra-instance).
               LagomConfig.cassandraPort(port) ++ LagomConfig.cassandraKeySpace(cassandraKeyspace)
-            }
+            } ++ Map(LagomConfig.KafkaAddress -> kafkaAddress)
 
           val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(projectDependencies.external)
 
@@ -180,7 +186,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
   }
 
   def startExternalProject(dependency: Dependency, port: Int, serviceLocatorUrl: Option[String],
-    cassandraPort: Option[Int], cassandraKeyspace: String, playService: Boolean) = synchronized {
+    cassandraPort: Option[Int], cassandraKeyspace: String, kafkaAddress: String, playService: Boolean) = synchronized {
     runningExternalProjects.get(dependency) match {
       case Some(service) =>
         logger.info("External project " + dependency.getArtifact.getArtifactId + " already running!")
@@ -198,9 +204,14 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
 
         val devSettings = LagomConfig.actorSystemConfig(dependency.getArtifact.getArtifactId) ++
           serviceLocatorUrl.map(LagomConfig.ServiceLocatorUrl -> _).toMap ++
+          // FIXME: The cassandra configuration should be always injected
+          // (even when the cassandraEnabled flag is false, as otherwise the 
+          // Lagom services won't properly work with a locally running Cassandra
+          // instance - see
+          // http://www.lagomframework.com/documentation/1.0.x/java/CassandraServer.html#Connecting-to-a-locally-running-Cassandra-instance).
           cassandraPort.fold(Map.empty[String, String]) { port =>
             LagomConfig.cassandraPort(port) ++ LagomConfig.cassandraKeySpace(cassandraKeyspace)
-          }
+          } ++ Map(LagomConfig.KafkaAddress -> kafkaAddress)
 
         val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(dependencies)
 

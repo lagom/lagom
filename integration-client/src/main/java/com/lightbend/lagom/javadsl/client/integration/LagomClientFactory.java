@@ -49,6 +49,8 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import com.lightbend.lagom.internal.broker.kafka.Topics;
+import com.lightbend.lagom.internal.broker.kafka.KafkaConfig;
 
 /**
  * Factory for creating Lagom service clients.
@@ -209,6 +211,11 @@ public class LagomClientFactory implements Closeable {
         Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator = serviceLocator -> {
             ServiceClientImplementor implementor = new ServiceClientImplementor(wsClient, webSocketClient, serviceInfo,
                     serviceLocator, environment, actorSystem.dispatcher(), materializer);
+            // FIXME: Hardcoded dependency on Kafka as message broker. This will need to be changed if we want 
+            //        to allow plugging a different message broker.
+            KafkaConfig config = new KafkaConfig.ConfigImpl(configuration);
+            Topics topicsFactory = new Topics(config, serviceInfo, actorSystem, materializer);
+            implementor.setTopicFactory(topicsFactory);
             return new ServiceClientLoader(serializerFactory, exceptionSerializer, environment, implementor);
 
         };

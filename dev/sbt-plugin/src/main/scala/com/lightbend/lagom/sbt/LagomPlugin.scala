@@ -241,14 +241,24 @@ object LagomPlugin extends AutoPlugin {
     val lagomServiceLocatorStop = taskKey[Unit]("Stop the service locator")
 
     // cassandra tasks and settings
-    val lagomCassandraStart = taskKey[Unit]("Start the Cassandra service")
-    val lagomCassandraStop = taskKey[Unit]("Stop the Cassandra service")
-    val lagomCassandraPort = settingKey[Int]("Port used by the cassandra server")
+    val lagomCassandraStart = taskKey[Unit]("Start the local cassandra server")
+    val lagomCassandraStop = taskKey[Unit]("Stop the local cassandra server")
+    val lagomCassandraPort = settingKey[Int]("Port used by the local cassandra server")
     val lagomCassandraEnabled = settingKey[Boolean]("Enable/Disable the cassandra server")
-    val lagomCassandraCleanOnStart = settingKey[Boolean]("Wipe the database files before starting")
-    val lagomCassandraKeyspace = settingKey[String]("Cassandra keyspace used by this Lagom service")
-    val lagomCassandraJvmOptions = settingKey[Seq[String]]("JVM options used by the forked Cassandra process")
-    val lagomCassandraMaxBootWaitingTime = settingKey[FiniteDuration]("Max waiting time to start Cassandra")
+    val lagomCassandraCleanOnStart = settingKey[Boolean]("Wipe the cassandra database before starting")
+    val lagomCassandraKeyspace = settingKey[String]("Cassandra keyspace used by a Lagom service")
+    val lagomCassandraJvmOptions = settingKey[Seq[String]]("JVM options used by the forked cassandra process")
+    val lagomCassandraMaxBootWaitingTime = settingKey[FiniteDuration]("Max waiting time to start cassandra")
+
+    // kafka tasks and settings
+    val lagomKafkaStart = taskKey[Unit]("Start the local kafka server")
+    val lagomKafkaStop = taskKey[Unit]("Stop the local kafka server")
+    val lagomKafkaPropertiesFile = settingKey[Option[File]]("Properties file used by the local kafka broker (file's location is relative to the project's root)")
+    val lagomKafkaEnabled = settingKey[Boolean]("Enable/Disable the kafka server")
+    val lagomKafkaJvmOptions = settingKey[Seq[String]]("JVM options used by the forked kafka process")
+    val lagomKafkaZookeperPort = settingKey[Int]("Port used by the local zookeper server (kafka requires zookeeper)")
+    val lagomKafkaPort = settingKey[Int]("Port used by the local kafka broker")
+    val lagomKafkaAddress = settingKey[String]("Address of the kafka brokers (comma-separated list)")
 
     /** Allows to integrate an external Lagom project in the current build, so that when runAll is run, this service is also started.*/
     def lagomExternalProject(name: String, module: ModuleID): Project =
@@ -282,11 +292,20 @@ object LagomPlugin extends AutoPlugin {
     lagomCassandraStop in ThisBuild := Servers.CassandraServer.tryStop(new SbtLoggerProxy(state.value.log))
   ))
 
+  private val kafkaServerProject = Project("lagom-internal-meta-project-kafka", file("."),
+    configurations = Configurations.default,
+    settings = CorePlugin.projectSettings ++ IvyPlugin.projectSettings ++ JvmPlugin.projectSettings ++ Seq(
+    scalaVersion := "2.11.7",
+    libraryDependencies += LagomImport.component("lagom-kafka-server"),
+    lagomKafkaStart in ThisBuild := startKafkaServerTask.value,
+    lagomKafkaStop in ThisBuild := Servers.KafkaServer.tryStop(new SbtLoggerProxy(state.value.log))
+  ))
+
   private val projectPortMap = AttributeKey[Map[ProjectName, Port]]("lagomProjectPortMap")
   private val defaultPortRange = PortRange(0xc000, 0xffff)
 
   override def globalSettings = Seq(
-    onLoad := onLoad.value andThen assignProjectsPort andThen DynamicProjectAdder.addProjects(serviceLocatorProject, cassandraProject)
+    onLoad := onLoad.value andThen assignProjectsPort andThen DynamicProjectAdder.addProjects(serviceLocatorProject, cassandraProject, kafkaServerProject)
   )
 
   private def assignProjectsPort(state: State): State = {
@@ -321,13 +340,19 @@ object LagomPlugin extends AutoPlugin {
     lagomServicesPortRange := defaultPortRange,
     lagomServiceLocatorEnabled := true,
     lagomServiceLocatorPort := 8000,
+    lagomServiceGatewayPort := 9000,
     lagomServiceLocatorUrl := s"http://localhost:${lagomServiceLocatorPort.value}",
     lagomCassandraEnabled := true,
     lagomCassandraPort := 4000, // If you change the default make sure to also update the play/reference-overrides.conf in the persistence project
-    lagomServiceGatewayPort := 9000,
     lagomCassandraCleanOnStart := true,
     lagomCassandraJvmOptions := Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099", "-DCassandraLauncher.configResource=dev-embedded-cassandra.yaml"),
     lagomCassandraMaxBootWaitingTime := 20.seconds,
+    lagomKafkaEnabled := true,
+    lagomKafkaPropertiesFile := None,
+    lagomKafkaZookeperPort := 2181,
+    lagomKafkaPort := 9092,
+    lagomKafkaAddress := s"localhost:${lagomKafkaPort.value}",
+    lagomKafkaJvmOptions := Seq("-Xms256m", "-Xmx1024m"),
     runAll <<= runServiceLocatorAndMicroservicesTask,
     Internal.Keys.interactionMode := PlayConsoleInteractionMode,
     lagomDevSettings := Nil
@@ -339,7 +364,9 @@ object LagomPlugin extends AutoPlugin {
       lagomServiceLocatorStart,
       lagomServiceLocatorStop,
       lagomCassandraStart,
-      lagomCassandraStop
+      lagomCassandraStop,
+      lagomKafkaStart,
+      lagomKafkaStop
     )
 
   override def projectSettings = Seq(
@@ -409,8 +436,61 @@ object LagomPlugin extends AutoPlugin {
     }
   }
 
+  private lazy val startKafkaServerTask = Def.taskDyn {
+    if ((lagomKafkaEnabled in ThisBuild).value) {
+      Def.task {
+        val log = new SbtLoggerProxy(state.value.log)
+        val zooKeeperPort = lagomKafkaZookeperPort.value
+        val kafkaPort = lagomKafkaPort.value
+        val kafkaPropertiesFile: Option[File] = {
+          lagomKafkaPropertiesFile.value match {
+            case None =>
+              log.debug("Kafka will start using the default server.properties included in Lagom.")
+              None
+            case file @ Some(propertiesFile) =>
+              if (propertiesFile.exists()) {
+                log.debug {
+                  """You have provided an absolute path to a Kafka properties file. I will use the provided path,
+                   | but consider using a relative path instead of an absolute one. If you decide to use a relative path,
+                   | make sure the provided path is relative to this project's build root directory.""".stripMargin
+                }
+                file
+              } else {
+                val rootDir = (Keys.baseDirectory in ThisBuild).value
+                val file = rootDir / propertiesFile.getPath
+                if (file.exists()) Some(file)
+                else {
+                  log.warn {
+                    s"""No properties file can be found at the provided path ${propertiesFile.getPath}. Hence, the local Kafka
+                      | server will be started with the default server.properties included in Lagom. To remove this warning, you
+                      | shall update the path provided in the sbt key ${lagomKafkaPropertiesFile.key.label} to point an existing
+                      | properties file.""".stripMargin
+                  }
+                  None
+                }
+              }
+          }
+        }
+        val classpath = (managedClasspath in Compile).value.map(_.data)
+        val jvmOptions = lagomKafkaJvmOptions.value
+        val targetDir = target.value
+
+        Servers.KafkaServer.start(log, classpath, kafkaPort, zooKeeperPort, kafkaPropertiesFile, jvmOptions, targetDir)
+      }
+    } else {
+      Def.task {
+        val log = state.value.log
+        log.info(s"Kafka won't be started because the build setting `${lagomKafkaEnabled.key.label}` is set to `false`")
+      }
+    }
+  }
+
   private lazy val runServiceLocatorAndMicroservicesTask: Initialize[Task[Unit]] = Def.taskDyn {
-    Def.sequential(lagomCassandraStart, lagomServiceLocatorStart, runAllMicroservicesTask)
+    val startInfrastructure = Def.taskDyn {
+      lagomKafkaStart.value
+      Def.sequential(lagomCassandraStart, lagomServiceLocatorStart)
+    }
+    Def.sequential(startInfrastructure, runAllMicroservicesTask)
   }
 
   private def runAllMicroservicesTask: Initialize[Task[Unit]] = Def.taskDyn {
@@ -454,12 +534,17 @@ object LagomPlugin extends AutoPlugin {
     LagomConfig.cassandraPort(port)
   }
 
+  private lazy val kafkaServerConfiguration: Initialize[Map[String, String]] = Def.setting {
+    Map(LagomConfig.KafkaAddress -> lagomKafkaAddress.value)
+  }
+
   private lazy val actorSystemsConfig: Initialize[Map[String, String]] = Def.setting {
     LagomConfig.actorSystemConfig(name.value)
   }
 
   private[sbt] lazy val managedSettings: Initialize[Map[String, String]] = Def.setting {
-    serviceLocatorConfiguration.value ++ cassandraServerConfiguration.value ++ cassandraKeyspaceConfig.value ++ actorSystemsConfig.value
+    serviceLocatorConfiguration.value ++ cassandraServerConfiguration.value ++
+      cassandraKeyspaceConfig.value ++ kafkaServerConfiguration.value ++ actorSystemsConfig.value
   }
 }
 

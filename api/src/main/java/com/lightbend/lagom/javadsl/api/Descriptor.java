@@ -6,6 +6,11 @@ package com.lightbend.lagom.javadsl.api;
 import java.util.Optional;
 
 import akka.NotUsed;
+import akka.util.ByteString;
+
+import com.lightbend.lagom.javadsl.api.broker.Topic.TopicId;
+import com.lightbend.lagom.javadsl.api.broker.modules.Properties;
+import com.lightbend.lagom.javadsl.api.broker.modules.Properties.Property;
 import com.lightbend.lagom.javadsl.api.deser.*;
 import com.lightbend.lagom.javadsl.api.security.UserAgentHeaderFilter;
 import com.lightbend.lagom.javadsl.api.transport.HeaderFilter;
@@ -30,6 +35,9 @@ public final class Descriptor {
      * gets passed around is internal to Lagom.
      */
     public interface ServiceCallHolder {
+    }
+
+    public interface TopicHolder {
     }
 
     /**
@@ -375,6 +383,39 @@ public final class Descriptor {
         }
     }
 
+    /**
+     * Describes a topic call.
+     */
+    public static interface TopicCall<Message> {
+      /**
+       * Get the topic id.
+       * @return The topic id
+       */
+      TopicId topicId();
+      /**
+       * Get the topic's message serializer.
+       * @return The message serializer.
+       */
+      MessageSerializer<Message, ByteString> messageSerializer();
+      /**
+       * Get the properties associated with this topic.
+       * @return The properties.
+       */
+      Properties properties();
+      /**
+       * Create a new topic call with the passed message serializer.
+       * @return A new topic call.
+       */
+      TopicCall<Message> withMessageSerializer(MessageSerializer<Message, ByteString> serializer);
+      /**
+       * Create a new topic call that holds the additional passed property and value.
+       * @param property The property.
+       * @param value The value associated with the passed property.
+       * @return A new topic call.
+       */
+      <T> TopicCall<Message> withProperty(Property<T> property, T value);
+    }
+
     private final String name;
     private final PSequence<Call<?, ?>> calls;
     private final PMap<Type, PathParamSerializer<?>> pathParamSerializers;
@@ -386,17 +427,18 @@ public final class Descriptor {
     private final HeaderFilter headerFilter;
     private final boolean locatableService;
     private final CircuitBreaker circuitBreaker;
+    private final PSequence<TopicCall<?>> topicCalls;
 
     Descriptor(String name) {
         this(name, TreePVector.empty(), HashTreePMap.empty(), HashTreePMap.empty(), SerializerFactory.DEFAULT,
                 ExceptionSerializer.DEFAULT, false, TreePVector.empty(),
-                new UserAgentHeaderFilter(), true, CircuitBreaker.perNode());
+                new UserAgentHeaderFilter(), true, CircuitBreaker.perNode(), TreePVector.empty());
     }
 
     Descriptor(String name, PSequence<Call<?, ?>> calls, PMap<Type, PathParamSerializer<?>> pathParamSerializers,
             PMap<Type, MessageSerializer<?, ?>> messageSerializers, SerializerFactory serializerFactory,
             ExceptionSerializer exceptionSerializer, boolean autoAcl, PSequence<ServiceAcl> acls, 
-            HeaderFilter headerFilter, boolean locatableService, CircuitBreaker circuitBreaker) {
+            HeaderFilter headerFilter, boolean locatableService, CircuitBreaker circuitBreaker, PSequence<TopicCall<?>> topicCalls) {
         this.name = name;
         this.calls = calls;
         this.pathParamSerializers = pathParamSerializers;
@@ -408,6 +450,7 @@ public final class Descriptor {
         this.headerFilter = headerFilter;
         this.locatableService = locatableService;
         this.circuitBreaker = circuitBreaker;
+        this.topicCalls = topicCalls;
     }
 
     public String name() {
@@ -477,6 +520,10 @@ public final class Descriptor {
         return circuitBreaker;
     }
 
+    public PSequence<TopicCall<?>> topicCalls() {
+      return topicCalls;
+    }
+
     /**
      * Provide a custom path param serializer for the given path param type.
      *
@@ -538,7 +585,7 @@ public final class Descriptor {
      * @return A copy of this descriptor with the new calls.
      */
     public Descriptor replaceAllCalls(PSequence<Call<?, ?>> calls) {
-        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker, topicCalls);
     }
 
     /**
@@ -548,7 +595,7 @@ public final class Descriptor {
      * @return A copy of this descriptor with the new path param serializers.
      */
     public Descriptor replaceAllPathParamSerializers(PMap<Type, PathParamSerializer<?>> pathParamSerializers) {
-        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker, topicCalls);
     }
 
     /**
@@ -558,7 +605,17 @@ public final class Descriptor {
      * @return A copy of this descriptor with the new message serializers.
      */
     public Descriptor replaceAllMessageSerializers(PMap<Type, MessageSerializer<?, ?>> messageSerializers) {
-        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker, topicCalls);
+    }
+
+    /**
+     * Replace all the topic calls provided by this descriptor with the the given topic calls.
+     *
+     * @param topicCalls The topic calls to replace the existing ones with.
+     * @return A copy of this descriptor with the new topic calls.
+     */
+    public Descriptor replaceAllTopicCalls(PSequence<TopicCall<?>> topicCalls) {
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker, topicCalls);
     }
 
     /**
@@ -568,7 +625,7 @@ public final class Descriptor {
      * @return A copy of this descriptor.
      */
     public Descriptor withExceptionSerializer(ExceptionSerializer exceptionSerializer) {
-        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker, topicCalls);
     }
 
     /**
@@ -578,7 +635,7 @@ public final class Descriptor {
      * @return A copy of this descriptor.
      */
     public Descriptor withSerializerFactory(SerializerFactory serializerFactory) {
-        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker, topicCalls);
     }
 
     /**
@@ -593,7 +650,7 @@ public final class Descriptor {
      * @return A copy of this descriptor.
      */
     public Descriptor withAutoAcl(boolean autoAcl) {
-        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker, topicCalls);
     }
 
 
@@ -618,7 +675,7 @@ public final class Descriptor {
      * @return A copy of this descriptor.
      */
     public Descriptor replaceAllAcls(PSequence<ServiceAcl> acls) {
-        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker, topicCalls);
     }
 
     /**
@@ -628,7 +685,7 @@ public final class Descriptor {
      * @return A copy of this descriptor.
      */
     public Descriptor withHeaderFilter(HeaderFilter headerFilter) {
-        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker, topicCalls);
     }
 
     /**
@@ -642,7 +699,7 @@ public final class Descriptor {
      * @return A copy of this descriptor.
      */
     public Descriptor withLocatableService(boolean locatableService) {
-        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker, topicCalls);
     }
 
     /**
@@ -655,6 +712,17 @@ public final class Descriptor {
      * @return A copy of this descriptor.
      */
     public Descriptor withCircuitBreaker(CircuitBreaker circuitBreaker) {
-        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker);
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker, topicCalls);
+    }
+
+    /**
+     * Add the given topic calls to this service.
+     *
+     * @param topicCall The topic calls to add.
+     * @return A copy of this descriptor with the new calls added.
+     */
+    public Descriptor publishing(TopicCall<?>... topicCalls) {
+      return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker,
+          this.topicCalls.plusAll(Arrays.asList(topicCalls)));
     }
 }

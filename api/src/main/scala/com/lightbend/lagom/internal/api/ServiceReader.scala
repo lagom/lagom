@@ -16,6 +16,9 @@ import org.pcollections.TreePVector
 import scala.collection.JavaConverters._
 import scala.compat.java8.OptionConverters._
 import scala.util.control.NonFatal
+import com.lightbend.lagom.javadsl.api.broker.Topic
+import com.lightbend.lagom.javadsl.api.broker.Topic.TopicId
+import akka.util.ByteString
 
 /**
  * Reads a service interface
@@ -137,6 +140,60 @@ object ServiceReader {
         .withResponseSerializer(serviceResolver.resolveMessageSerializer(endpoint.responseSerializer(), response))
     }
 
+    val topicResolver = new TopicCallResolver(
+      builtInMessageSerializers ++ descriptor.messageSerializers().asScala,
+      serializerFactory
+    )
+
+    val topics = descriptor.topicCalls().asScala.map { tc =>
+      val topicCall = tc.asInstanceOf[InternalTopicCall[Any]]
+      val methodRefTopicSourceHolder = topicCall.topicHolder match {
+        case methodRef: MethodRefTopicHolder => methodRef
+        case other                           => throw new IllegalArgumentException(s"Unknown ${classOf[TopicHolder].getSimpleName} type: " + other)
+      }
+
+      val method = methodRefTopicSourceHolder.methodReference match {
+        case preResolved: Method => preResolved
+        case lambda =>
+          try {
+            MethodRefResolver.resolveMethodRef(lambda)
+          } catch {
+            case NonFatal(e) =>
+              throw new IllegalStateException("Unable to resolve method for topic call with ID " + topicCall.topicId +
+                ". Ensure that the you have passed a method reference (ie, this::someMethod). Passing anything else, " +
+                "for example lambdas, anonymous classes or actual implementation classes, is forbidden in declaring a " +
+                "topic descriptor.", e)
+          }
+      }
+
+      val topicParametrizedType = TypeToken.of(method.getGenericReturnType)
+        .asInstanceOf[TypeToken[Topic[_]]]
+        .getSupertype(classOf[Topic[_]])
+        .getType match {
+          case param: ParameterizedType => param
+          case _                        => throw new IllegalStateException("Topic is not a parameterized type?")
+        }
+
+      // Now get the type arguments
+      val topicMessageType = topicParametrizedType.getActualTypeArguments match {
+        case Array(messageType) =>
+          if (method.getReturnType == classOf[Topic[_]]) {
+            messageType
+          } else {
+            throw new IllegalArgumentException("Topic calls must return Topic, subtypes are not allowed")
+          }
+        case _ => throw new IllegalStateException("Topic does not have 1 type argument?")
+      }
+
+      val topicHolder = constructTopicHolder(serviceResolver, method, topicCall.topicId)
+
+      val resolvedMessageSerializer = topicResolver.resolveMessageSerializer(topicCall.messageSerializer, topicMessageType).asInstanceOf[MessageSerializer[Any, ByteString]]
+
+      topicCall
+        .withTopicHolder(topicHolder)
+        .withMessageSerializer(resolvedMessageSerializer)
+    }
+
     val acls = descriptor.acls.asScala ++ endpoints.collect {
       case autoAclCall if autoAclCall.autoAcl.asScala.map(_.booleanValue).getOrElse(descriptor.autoAcl) =>
         val pathSpec = Path.fromCallId(autoAclCall.callId).regex.regex
@@ -151,6 +208,7 @@ object ServiceReader {
     descriptor.replaceAllCalls(TreePVector.from(endpoints.asJava.asInstanceOf[java.util.List[Call[_, _]]]))
       .withExceptionSerializer(exceptionSerializer)
       .replaceAllAcls(TreePVector.from(acls.asJava))
+      .replaceAllTopicCalls(TreePVector.from(topics.asJava.asInstanceOf[java.util.List[TopicCall[_]]]))
   }
 
   private def constructServiceCallHolder[Request, Response](serviceCallResolver: ServiceCallResolver, method: Method): ServiceCallHolder = {
@@ -182,6 +240,15 @@ object ServiceReader {
       override val method: Method = theMethod
     }
 
+  }
+
+  private def constructTopicHolder(serviceCallResolver: ServiceCallResolver, _method: Method, topicId: TopicId): TopicHolder = {
+    new MethodTopicHolder {
+      override val method: Method = _method
+      override def create(service: Any): Topic[_] = {
+        method.invoke(service).asInstanceOf[TopicFeed[_]].withTopicId(topicId)
+      }
+    }
   }
 
   class ServiceInvocationHandler(classLoader: ClassLoader, serviceInterface: Class[_ <: Service]) extends InvocationHandler {
@@ -253,4 +320,11 @@ private[lagom] trait MethodServiceCallHolder extends ServiceCallHolder {
   val method: Method
   def create(service: Any, parameters: Seq[Seq[String]]): ServiceCall[_, _]
   def invoke(arguments: Seq[AnyRef]): Seq[Seq[String]]
+}
+
+private[lagom] case class MethodRefTopicHolder(methodReference: Any) extends TopicHolder
+
+private[lagom] trait MethodTopicHolder extends TopicHolder {
+  val method: Method
+  def create(service: Any): Topic[_]
 }

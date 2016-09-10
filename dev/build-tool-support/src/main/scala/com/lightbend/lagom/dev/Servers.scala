@@ -5,29 +5,53 @@ package com.lightbend.lagom.dev
 
 import java.io.{ Closeable, File }
 import java.net.{ URI, URL }
-import java.util.{ Map => JMap }
+import java.util.{ Map => JMap, Properties }
 
 import com.datastax.driver.core.Cluster
 import play.dev.filewatch.LoggerProxy
-
 import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.duration._
+import scala.util.control.NonFatal
 
 private[lagom] object Servers {
 
+  private val servers = Seq(ServiceLocator, CassandraServer, KafkaServer)
+
   def tryStop(log: LoggerProxy): Unit = {
-    ServiceLocator.tryStop(log)
-    CassandraServer.tryStop(log)
+    servers.foreach(_.tryStop(log))
   }
 
-  def asyncTryStop(log: LoggerProxy)(implicit ecn: ExecutionContext) = {
-    val f = Future.traverse(Seq(ServiceLocator, CassandraServer))(ser => Future { ser.tryStop(log) })
-    f.onComplete(_ => println("Servers stopped"))
-    f
+  def asyncTryStop(log: LoggerProxy)(implicit ecn: ExecutionContext): Future[Unit] = {
+    val f = Future.traverse(servers)(server => Future { server.tryStop(log) })
+    f.andThen { case _ => log.info("All servers stopped") }.map(_ => ())
   }
 
   abstract class ServerContainer {
     protected type Server
+
+    protected class ServerProcess(process: Process) {
+      import java.lang.Runtime
+      import scala.util.Try
+
+      private val killOnExitCallback = new Thread(new Runnable() {
+        override def run(): Unit = kill()
+      })
+
+      // Needed to make sure the spawned process is killed when the current process (i.e., the sbt console) is shut down
+      private[Servers] def enableKillOnExit(): Unit = Runtime.getRuntime.addShutdownHook(killOnExitCallback)
+      private[Servers] def disableKillOnExit(): Unit = Runtime.getRuntime.removeShutdownHook(killOnExitCallback)
+      private[Servers] def kill(): Unit = {
+        // Note, don't use scala.util.Try, since it may have not been loaded yet, and the classloader that has it may
+        // have already been shutdown when the shutdown hook is executed (this really does happen in maven).
+        try {
+          process.destroy()
+        } catch {
+          case NonFatal(_) =>
+          // ignore, it's executed from a shutdown hook, not much we can or should do
+        }
+      }
+    }
 
     protected var server: Server = _
 
@@ -96,27 +120,9 @@ private[lagom] object Servers {
     import scala.util.Try
     import scala.util.control.NonFatal
 
-    protected case class CassandraProcess(process: Process, port: Int) {
-      private val killOnExitCallback = new Thread(new Runnable() {
-        override def run(): Unit = kill()
-      })
-
+    protected case class CassandraProcess(process: Process, port: Int) extends ServerProcess(process) {
       def hostname: String = "127.0.0.1"
       def address: String = s"$hostname:$port"
-
-      // Needed to make sure the spawned process is killed when the current process (i.e., the sbt console) is shut down
-      private[CassandraServer] def enableKillOnExit(): Unit = Runtime.getRuntime.addShutdownHook(killOnExitCallback)
-      private[CassandraServer] def disableKillOnExit(): Unit = Runtime.getRuntime.removeShutdownHook(killOnExitCallback)
-      private[CassandraServer] def kill(): Unit = {
-        // Note, don't use scala.util.Try, since it may have not been loaded yet, and the classloader that has it may
-        // have already been shutdown when the shutdown hook is executed (this really does happen in maven).
-        try {
-          process.destroy()
-        } catch {
-          case NonFatal(_) =>
-          // ignore, it's executed from a shutdown hook, not much we can or should do
-        }
-      }
     }
 
     protected type Server = CassandraProcess
@@ -158,7 +164,7 @@ private[lagom] object Servers {
             } else {
               val msg = s"""Cassandra server is not yet started.\n
                            |The value assigned to
-                           |`lagomCassandraMaxBootWaitingTime.key.label`
+                           |`lagomCassandraMaxBootWaitingTime`
                            |is either too short, or this may indicate another 
                            |process is already running on port ${server.port}""".stripMargin
               println() // we don't want to print the message on the same line of the dots...
@@ -166,7 +172,7 @@ private[lagom] object Servers {
             }
         }
       }
-      log.info("Starting embedded Cassandra server")
+      log.info("Starting Cassandra")
       tryConnect(maxWaiting.fromNow)
     }
 
@@ -174,7 +180,40 @@ private[lagom] object Servers {
       if (server == null) {
         log.info("Cassandra was already stopped")
       } else {
-        log.info("Stopping cassandra")
+        log.info("Stopping Cassandra")
+        try server.kill()
+        finally {
+          try server.disableKillOnExit()
+          catch {
+            case NonFatal(_) => ()
+          } finally server = null
+        }
+      }
+    }
+  }
+
+  private[lagom] object KafkaServer extends ServerContainer {
+    protected class KafkaProcess(process: Process) extends ServerProcess(process)
+
+    protected type Server = KafkaProcess
+
+    def start(log: LoggerProxy, cp: Seq[File], kafkaPort: Int, zooKeperPort: Int, kafkaPropertiesFile: Option[File], jvmOptions: Seq[String], targetDir: File): Unit = {
+      val args = kafkaPort.toString :: zooKeperPort.toString :: targetDir.getAbsolutePath :: kafkaPropertiesFile.toList.map(_.getAbsolutePath)
+
+      val log4jOutput = targetDir.getAbsolutePath + java.io.File.separator + "log4j_output"
+      val sysProperties = List(s"-Dkafka.logs.dir=$log4jOutput")
+      val process = LagomProcess.runJava(jvmOptions.toList ::: sysProperties, cp, "com.lightbend.lagom.kafka.KafkaLauncher", args)
+      server = new KafkaProcess(process)
+      server.enableKillOnExit()
+      log.info("Starting Kafka")
+      log.debug(s"Kafka log output can be found under ${log4jOutput}")
+    }
+
+    protected def stop(log: LoggerProxy): Unit = {
+      if (server == null) {
+        log.info("Kafka was already stopped")
+      } else {
+        log.info("Stopping Kafka")
         try server.kill()
         finally {
           try server.disableKillOnExit()
