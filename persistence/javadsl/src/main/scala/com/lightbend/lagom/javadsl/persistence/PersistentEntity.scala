@@ -228,30 +228,31 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
     }
 
     /**
+      * Register a read-only command handler for a given command class. A read-only command
+      * handler does not persist events (i.e. it does not change state) but it may perform side
+      * effects, such as replying to the request. Replies are sent with the `reply` method of the
+      * context that is passed to the command handler function.
+      */
+    def setReadOnlyCommandHandler[R, A <: Command with ReplyType[R], CTX <: CommandContext[R]](
+                                                                      commandClass: Class[A],
+                                                                      handler:      JBiConsumer[A, CTX]
+                                                                    ): Unit = {
+      setCommandHandler[R, A, CTX](commandClass, new JBiFunction[A, CTX, Persist[_ <: Event]] {
+        override def apply(cmd: A, ctx: CTX): Persist[Event] = {
+          handler.accept(cmd, ctx)
+          ctx.done()
+        }
+      });
+      print(commandHandlers)
+    }
+
+
+    /**
      * Remove a command handler for a given command class.
      */
     def removeCommandHandler(commandClass: Class[_ <: Command]): Unit =
       commandHandlers -= commandClass
 
-    /**
-     * Register a read-only command handler for a given command class. A read-only command
-     * handler does not persist events (i.e. it does not change state) but it may perform side
-     * effects, such as replying to the request. Replies are sent with the `reply` method of the
-     * context that is passed to the command handler function.
-     */
-    def setReadOnlyCommandHandler[R, A <: Command with ReplyType[R]](
-      commandClass: Class[A],
-      handler:      JBiConsumer[A, ReadOnlyCommandContext[R]]
-    ): Unit = {
-      setCommandHandler[R, A, CommandContext[R]](commandClass, new JBiFunction[A, CommandContext[R], Persist[_ <: Event]] {
-        override def apply(cmd: A, ctx: CommandContext[R]): Persist[Event] = {
-          handler.accept(cmd, ctx)
-          //          todo: how to handle it
-          ctx.done()
-
-        }
-      });
-    }
 
     /**
      * Construct the corresponding immutable `Behavior`.

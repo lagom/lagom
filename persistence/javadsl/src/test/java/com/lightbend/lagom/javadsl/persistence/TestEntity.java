@@ -431,10 +431,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
         b.setEventHandlerChangingBehavior(InAppendMode.class, evt -> becomeAppending(behavior()));
         b.setEventHandlerChangingBehavior(InPrependMode.class, evt -> becomePrepending(behavior()));
 
-        // TODO
-        //b.setReadOnlyCommandHandler(Get.class, (cmd, ctx) -> {
-        //  ctx.reply(state());
-        //});
+        b.setReadOnlyCommandHandler(Get.class, (cmd, ctx) -> {
+          ctx.reply(state());
+        });
 
         // TODO
         //b.setReadOnlyCommandHandler(GetAddress.class, (cmd, ctx) -> {
@@ -455,11 +454,12 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
                 });
 
 
-        if (b.getState().getMode() == Mode.APPEND) {
-            return becomeAppending(b.build());
-        } else {
-            return becomePrepending(b.build());
-        }
+//        if (b.getState().getMode() == Mode.APPEND) {
+//            return becomeAppending(b.build());
+//        } else {
+//            return becomePrepending(b.build());
+//        }
+        return b.build();
     }
 
     private Behavior becomeAppending(Behavior current) {

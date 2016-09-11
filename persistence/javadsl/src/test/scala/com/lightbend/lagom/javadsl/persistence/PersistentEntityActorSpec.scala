@@ -35,7 +35,7 @@ class PersistentEntityActorSpec extends PersistenceSpec {
       val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("1"),
         () => new TestEntity(system), Optional.empty(), 10.seconds))
       p ! TestEntity.Get.instance
-      val state = expectMsgType[TestEntity.State]
+      val state = expectMsgType[TestEntity.State](10.minutes)
       state.getElements.size should ===(0)
       p ! TestEntity.Add.of("a")
       expectMsg(new TestEntity.Appended("A"))
