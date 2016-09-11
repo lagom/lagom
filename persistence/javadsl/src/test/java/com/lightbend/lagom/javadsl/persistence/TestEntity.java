@@ -454,12 +454,11 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
                 });
 
 
-//        if (b.getState().getMode() == Mode.APPEND) {
-//            return becomeAppending(b.build());
-//        } else {
-//            return becomePrepending(b.build());
-//        }
-        return b.build();
+        if (b.getState().getMode() == Mode.APPEND) {
+            return becomeAppending(b.build());
+        } else {
+            return becomePrepending(b.build());
+        }
     }
 
     private Behavior becomeAppending(Behavior current) {
