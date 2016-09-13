@@ -74,7 +74,7 @@ class PersistenceModule extends AbstractModule {
 
 private object PersistenceModule {
 
-  private class InitServiceLocatorHolder @Inject() (system: ActorSystem) {
+  private class InitServiceLocatorHolder @Inject()(system: ActorSystem) {
 
     @volatile private var serviceLocator: Option[ServiceLocator] = None
     @volatile private var env: Option[play.Environment] = None
@@ -99,7 +99,7 @@ private object PersistenceModule {
       // Prod), we expect that the Cassandra contact-points are known by the service locator prior to start the service.
       env match {
         case Some(e) if e.isDev() => // nothing to do as `ServiceLocatorHolder#setServiceLocator` will be called by the bound RegisterCassandraContactPoints instance
-        case _                    => serviceLocator.foreach(ServiceLocatorHolder(system).setServiceLocator)
+        case _ => serviceLocator.foreach(ServiceLocatorHolder(system).setServiceLocator)
       }
     }
   }

@@ -9,7 +9,6 @@ import static org.junit.Assert.assertEquals;
 
 import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule;
 
-import com.lightbend.lagom.javadsl.persistence.PersistenceModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.typesafe.config.Config;

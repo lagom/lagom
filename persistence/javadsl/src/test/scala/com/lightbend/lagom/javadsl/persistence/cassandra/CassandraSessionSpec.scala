@@ -112,7 +112,7 @@ class CassandraSessionSpec extends PersistenceSpec(CassandraSessionSpec.config) 
       val row = Await.result(session.selectOne(
         "SELECT count FROM testcounts WHERE partition = ? and key = ?", "A", "x"
       ), 5.seconds)
-      row should be(Optional.empty())
+      row should be(None)
     }
 
   }

@@ -226,6 +226,10 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
     public static class Prepended extends Evt {
         private final String element;
 
+        private Prepended(){
+            element = null;
+        }
+
         @JsonCreator
         public Prepended(String element) {
             this.element = element;
@@ -436,9 +440,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
         });
 
         // TODO
-        //b.setReadOnlyCommandHandler(GetAddress.class, (cmd, ctx) -> {
-        //  ctx.reply(Cluster.get(system).selfAddress());
-        //});
+        b.setReadOnlyCommandHandler(GetAddress.class, (cmd, ctx) -> {
+          ctx.reply(Cluster.get(system).selfAddress());
+        });
 
         b.setCommandHandler(ChangeMode.class,
                 (ChangeMode cmd, CommandContext ctx) -> {
