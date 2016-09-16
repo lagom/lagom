@@ -7,6 +7,7 @@ import java.net.URLDecoder
 import java.util.Optional
 import java.util.function.{ BiFunction => JBiFunction }
 import java.util.function.{ Function => JFunction }
+
 import scala.util.control.NonFatal
 import akka.actor.ActorLogging
 import akka.actor.ActorRef
@@ -16,6 +17,7 @@ import akka.persistence.PersistentActor
 import akka.persistence.RecoveryCompleted
 import akka.persistence.SnapshotOffer
 import akka.util.ByteString
+
 import scala.concurrent.duration.FiniteDuration
 import akka.actor.ReceiveTimeout
 import akka.cluster.sharding.ShardRegion
@@ -23,6 +25,8 @@ import akka.actor.actorRef2Scala
 import com.lightbend.lagom.persistence.CorePersistentEntity
 import java.util.function.{ BiFunction => JBiFunction }
 import java.util.function.{ Function => JFunction }
+
+import akka.remote.transport.TestTransport.Behavior
 import play.api.Logger;
 
 private[lagom] object PersistentEntityActor {
@@ -41,6 +45,7 @@ private[lagom] object PersistentEntityActor {
    * with persistent actors.
    */
   case object Stop
+
 }
 
 /**
@@ -67,11 +72,11 @@ private[lagom] class PersistentEntityActor[C, E, S](
 
   context.setReceiveTimeout(passivateAfterIdleTimeout)
 
-  private def eventHandlers: PartialFunction[E, entity.Behavior] =
-    entity.behavior.eventHandlers.asInstanceOf[PartialFunction[E, entity.Behavior]]
-
-  private def commandHandlers: PartialFunction[C, Function[entity.CoreCommandContext[Any], entity.Persist[_ <: E]]] =
-    entity.behavior.commandHandlers.asInstanceOf[PartialFunction[C, Function[entity.CoreCommandContext[Any], entity.Persist[_ <: E]]]]
+  //  private def eventHandlers: PartialFunction[E, entity.Behavior] =
+  //    entity.behavior.eventHandlers.asInstanceOf[PartialFunction[E, entity.Behavior]]
+  //
+  //  private def commandHandlers: PartialFunction[C, Function[entity.CoreCommandContext[Any], entity.Persist[_ <: E]]] =
+  //    entity.behavior.commandHandlers.asInstanceOf[PartialFunction[C, Function[entity.CoreCommandContext[Any], entity.Persist[_ <: E]]]]
 
   override def receiveRecover: Receive = {
     var initialized = false
@@ -105,7 +110,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
   }
 
   private def applyEvent(event: Any): Unit = {
-    eventHandlers.lift(event.asInstanceOf[E]) match {
+    entity.behavior.eventHandler(event.asInstanceOf[E]) match {
       case Some(newBehavior) =>
         entity.internalSetCurrentBehavior(newBehavior)
       case None =>
@@ -115,12 +120,29 @@ private[lagom] class PersistentEntityActor[C, E, S](
 
   def receiveCommand: Receive = {
     case cmd: CorePersistentEntity.ReplyType[_] =>
-      commandHandlers.lift(cmd.asInstanceOf[C]) match {
-        case Some(handler) =>
-          // create a new instance every time and capture sender()
-          val ctx = entity.newCtx(sender())
-          try handler.apply(ctx) match {
-            case _: entity.PersistNone[_] => // done
+      val ctx = entity.newCtx(sender())
+
+      val maybePersist: Option[entity.Persist[_ <: E]] = try entity.behavior.commandHandler(cmd.asInstanceOf[C], ctx)
+      catch {
+        case NonFatal(e) =>
+          ctx.commandFailed(e) // reply with failure
+          throw e
+      }
+
+      maybePersist match {
+        case None => {
+          // not using akka.actor.Status.Failure because it is using Java serialization
+          sender() ! CorePersistentEntity.UnhandledCommandException(
+            s"Unhandled command [${cmd.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"
+          )
+          unhandled(cmd)
+        }
+
+        case Some(p) => {
+          p match {
+            //        case Some(handler) =>
+            // create a new instance every time and capture sender()
+            //          try handler.apply(cmd.asInstanceOf[C], ctx) match {
             case entity.PersistOne(event, afterPersist) =>
               // apply the event before persist so that validation exception is handled before persisting
               // the invalid event, in case such validation is implemented in the event handler.
@@ -161,18 +183,10 @@ private[lagom] class PersistentEntityActor[C, E, S](
                     throw e
                 }
               }
-          } catch { // exception thrown from handler.apply
-            case NonFatal(e) =>
-              ctx.commandFailed(e) // reply with failure
-              throw e
-          }
+            case _: entity.PersistNone[_] => println("no persistence") // done
 
-        case None =>
-          // not using akka.actor.Status.Failure because it is using Java serialization
-          sender() ! CorePersistentEntity.UnhandledCommandException(
-            s"Unhandled command [${cmd.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"
-          )
-          unhandled(cmd)
+          }
+        }
       }
 
     case ReceiveTimeout =>

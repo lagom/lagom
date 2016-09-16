@@ -170,34 +170,34 @@ object PersistentEntityRefSpec {
 
   class TestEntity extends PersistentEntity[Cmd, Evt, State] {
 
-    private val defaultCommandHandlers: PartialFunction[Any, Function[CommandContext[Any], Persist[_ <: Evt]]] = {
+    private val defaultCommandHandlers: PartialFunction[Any, Function[CommandContext[Any], Option[Persist[_ <: Evt]]]] = {
       case ChangeMode(mode) => ctx => mode match {
-        case mode if state.mode == mode => ctx.done()
-        case Mode.Append                => ctx.thenPersist(InAppendMode, ctx.reply)
-        case Mode.Prepend               => ctx.thenPersist(InPrependMode, ctx.reply)
+        case mode if state.mode == mode => Some(ctx.done())
+        case Mode.Append                => Some(ctx.thenPersist(InAppendMode, ctx.reply))
+        case Mode.Prepend               => Some(ctx.thenPersist(InPrependMode, ctx.reply))
       }
       case Get => ctx =>
         ctx.reply(state)
-        ctx.done()
+        Some(ctx.done())
       case GetAddress => ctx =>
         //ctx.reply(Cluster.get(system).selfAddress())
-        ctx.done()
+        Some(ctx.done())
     }
 
-    private def addCommandHandler(eventFactory: String => Evt): PartialFunction[Any, Function[CommandContext[Any], Persist[_ <: Evt]]] = {
+    private def addCommandHandler(eventFactory: String => Evt): PartialFunction[Any, Function[CommandContext[Any], Option[Persist[_ <: Evt]]]] = {
       case Add(element, times) => ctx =>
         if (element == null) {
           throw new NullPointerException() //SimulatedNullpointerException()
         }
         if (element.length == 0) {
           ctx.invalidCommand("element must not be empty")
-          ctx.done()
+          Some(ctx.done())
         } else {
           val a = eventFactory(element.toUpperCase())
           if (times == 1) {
-            ctx.thenPersist(a, ctx.reply)
+            Some(ctx.thenPersist(a, ctx.reply))
           } else {
-            ctx.thenPersistAll(immutable.Seq.fill(times)(a), () => ctx.reply(a))
+            Some(ctx.thenPersistAll(immutable.Seq.fill(times)(a), () => ctx.reply(a)))
           }
         }
     }
@@ -210,8 +210,9 @@ object PersistentEntityRefSpec {
     }
 
     private def buildBehavior(addEvent: String => Evt, state: State): Behavior = {
+      val function: PartialFunction[Any, Function[CoreCommandContext[Any], Option[Persist[_ <: Evt]]]] = (defaultCommandHandlers orElse addCommandHandler(addEvent)).asInstanceOf[PartialFunction[Any, Function[CoreCommandContext[Any], Option[Persist[_ <: Evt]]]]]
       newBehaviorBuilder(state)
-        .withCommandHandlers(defaultCommandHandlers orElse addCommandHandler(addEvent))
+        .withCommandHandlers(function)
         .withEventHandlers(defaultEventHandlers)
         .build()
     }

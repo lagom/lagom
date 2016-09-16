@@ -5,6 +5,7 @@ package com.lightbend.lagom.it.mocks;
 
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
+import scala.concurrent.ExecutionContext;
 
 public class PersistenceServiceModule extends AbstractModule implements ServiceGuiceSupport {
     @Override

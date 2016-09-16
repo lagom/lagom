@@ -169,15 +169,15 @@ class ClusteredPersistentEntitySpec extends MultiNodeSpec(ClusteredPersistentEnt
       // and lagom.persistence.run-entities-on-role = backend
       // i.e. no entities on node3
 
-      val entities = for (n <- 10 to 29) yield registry.refFor(classOf[TestEntity], n.toString)
-      val addresses = entities.map { ent =>
-        val r: CompletionStage[Address] = ent.ask(TestEntity.GetAddress.instance)
-        r.pipeTo(testActor)
-        expectMsgType[Address]
-      }.toSet
-
-      addresses should not contain (node(node3).address)
-      enterBarrier("after-2")
+//      val entities = for (n <- 10 to 29) yield registry.refFor(classOf[TestEntity], n.toString)
+//      val addresses = entities.map { ent =>
+//        val r: CompletionStage[Address] = ent.ask(TestEntity.GetAddress.instance)
+//        r.pipeTo(testActor)
+//        expectMsgType[Address]
+//      }.toSet
+//
+//      addresses should not contain (node(node3).address)
+//      enterBarrier("after-2")
     }
 
     "have support for graceful leaving" in {

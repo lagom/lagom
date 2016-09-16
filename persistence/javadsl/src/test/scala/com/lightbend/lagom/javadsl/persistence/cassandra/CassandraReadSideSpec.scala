@@ -129,9 +129,9 @@ class CassandraReadSideSpec extends PersistenceSpec(CassandraReadSideSpec.config
 
     "process events and save query projection" in {
       val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("1"),
-        () => new TestEntity(system), Optional.empty(), 10.seconds))
+        () => new TestEntity(system), Optional.empty(), 1000.seconds))
       p ! TestEntity.Add.of("a")
-      expectMsg(new TestEntity.Appended("A"))
+      expectMsg(10000.seconds, new TestEntity.Appended("A"))
       p ! TestEntity.Add.of("b")
       expectMsg(new TestEntity.Appended("B"))
       p ! TestEntity.Add.of("c")

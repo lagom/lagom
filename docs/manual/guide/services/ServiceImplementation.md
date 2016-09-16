@@ -34,7 +34,7 @@ By convention, Play will automatically load a module called `Module` in the root
 
 ## Working with streams
 
-When the request and response bodies are strict, working with them as quite straight forward.  If however they are streamed, you'll need to use Akka streams to work with them.  Let's take a look at how some of the streamed service calls in the [[service descriptors|ServiceDescriptors#Streamed-messages]] examples might be implemented.
+When the request and response bodies are strict, working with them is straightforward.  If they are streamed, however, you'll need to use Akka streams to work with them.  Let's take a look at how some of the streamed service calls in the [[service descriptors|ServiceDescriptors#Streamed-messages]] examples might be implemented.
 
 The `tick` service call is going to return a `Source` that sends messages at the specified interval.  Akka streams has a helpful constructor for such a stream:
 

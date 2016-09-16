@@ -5,8 +5,9 @@ package com.lightbend.lagom.javadsl.testkit
 
 import scala.collection.JavaConverters._
 import akka.testkit.TestProbe
-import com.lightbend.lagom.javadsl.persistence.ActorSystemSpec
 import com.lightbend.lagom.javadsl.persistence.TestEntity
+import com.lightbend.lagom.persistence.ActorSystemSpec
+
 import scala.annotation.varargs
 
 class PersistentEntityTestDriverSpec extends ActorSystemSpec {

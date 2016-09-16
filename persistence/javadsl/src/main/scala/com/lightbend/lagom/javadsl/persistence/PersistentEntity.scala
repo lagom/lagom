@@ -80,15 +80,29 @@ import com.lightbend.lagom.persistence.CorePersistentEntity
  * method.
  *
  * Type parameter `Command`:
- *   the super type of all commands, must implement [[PersistentEntity.ReplyType]]
- *   to define the reply type of each command type
+ * the super type of all commands, must implement [[PersistentEntity.ReplyType]]
+ * to define the reply type of each command type
  * Type parameter `Event`:
- *   the super type of all events
+ * the super type of all events
  * Type parameter `State`:
- *   the type of the state
+ * the type of the state
  */
 abstract class PersistentEntity[Command, Event, State] extends CorePersistentEntity[Command, Event, State] {
+
   import CorePersistentEntity._
+
+  /**
+   * INTERNAL API
+   */
+  override protected[lagom] def newCtx(replyTo: ActorRef): CoreCommandContext[Any] = new CommandContext[Any] {
+
+    override def reply(msg: Any): Unit =
+      replyTo ! msg
+
+    override def commandFailed(cause: Throwable): Unit =
+      // not using akka.actor.Status.Failure because it is using Java serialization
+      reply(cause)
+  }
 
   /**
    * INTERNAL API
@@ -137,18 +151,20 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
    */
   protected final class BehaviorBuilder(
     state:            State,
-    evtHandlers:      Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
-    cmdHandlers:      Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]],
+    evtHandlers:      Map[Class[_ <: Event], JFunction[Event, Behavior]],
+    cmdHandlers:      Map[Class[_ <: Command], JBiFunction[Command, CoreCommandContext[Any], Persist[_ <: Event]]],
     previousBehavior: Option[Behavior]
   ) {
 
     def this(state: State) = this(state, Map.empty, Map.empty, None)
+
     def this(state: State, previousBehavior: Behavior) = this(state, Map.empty, Map.empty, Option(previousBehavior))
+
     def this(previousBehavior: Behavior) = this(previousBehavior.state, Map.empty, Map.empty, Option(previousBehavior))
 
     private var _state = state
-    private var eventHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]] = evtHandlers
-    private var commandHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]] =
+    private var eventHandlers: Map[Class[_ <: Event], (Event) => Behavior] = evtHandlers.map(a => a._1 -> a._2.asScala).toMap
+    private var commandHandlers: Map[Class[_ <: Command], JBiFunction[Command, CoreCommandContext[Any], Persist[_ <: Event]]] =
       cmdHandlers
 
     def getState(): State = _state
@@ -163,7 +179,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
      * Current state can be accessed with the `state` method of the `PersistentEntity`.
      */
     def setEventHandler[A <: Event](eventClass: Class[A], handler: JFunction[A, State]): Unit =
-      setEventHandlerChangingBehavior[A](eventClass, new JFunction[A, Behavior] {
+      setEventHandlerChangingBehavior(eventClass, new JFunction[A, Behavior] {
         override def apply(evt: A): Behavior = behavior.withState(handler.apply(evt))
       })
 
@@ -174,13 +190,15 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
      * method of the `PersistentEntity`.
      */
     def setEventHandlerChangingBehavior[A <: Event](eventClass: Class[A], handler: JFunction[A, Behavior]): Unit =
-      eventHandlers = eventHandlers.updated(eventClass, handler)
+      eventHandlers = eventHandlers.updated(eventClass, handler.asScala.asInstanceOf[Function[Event, Behavior]])
 
     /**
      * Remove an event handler for a given event class.
      */
-    def removeEventHandler(eventClass: Class[_ <: Event]): Unit =
-      eventHandlers -= eventClass
+    def removeEventHandler(eventClass: Class[_ <: Event]): Unit = ()
+
+    //todo: implement remove
+    //      eventHandlers -= eventClass
 
     /**
      * Register a command handler for a given command class.
@@ -188,7 +206,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
      * The `handler` function is supposed to return a `Persist` directive that defines
      * what event or events, if any, to persist. Use the `thenPersist`, `thenPersistAll`
      * or `done`  methods of the context that is passed to the handler function to create the
-     *  `Persist` directive.
+     * `Persist` directive.
      *
      * After persisting an event external side effects can be performed in the `afterPersist`
      * function that can be defined when creating the `Persist` directive.
@@ -199,14 +217,33 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
      * The `handler` function may validate the incoming command and reject it by
      * sending a `reply` and returning `ctx.done()`.
      */
-    def setCommandHandler[R, A <: Command with ReplyType[R]](
+    def setCommandHandler[R, A <: Command with ReplyType[R], CTX <: CoreCommandContext[R]](
       commandClass: Class[A],
-      handler:      JBiFunction[A, CommandContext[R], Persist[_ <: Event]]
+      handler:      JBiFunction[A, CTX, Persist[_ <: Event]]
     ): Unit = {
       commandHandlers = commandHandlers.updated(
         commandClass,
-        handler.asInstanceOf[JBiFunction[A, CommandContext[Any], Persist[_ <: Event]]]
+        handler.asInstanceOf[JBiFunction[Command, CoreCommandContext[Any], Persist[_ <: Event]]]
       )
+    }
+
+    /**
+     * Register a read-only command handler for a given command class. A read-only command
+     * handler does not persist events (i.e. it does not change state) but it may perform side
+     * effects, such as replying to the request. Replies are sent with the `reply` method of the
+     * context that is passed to the command handler function.
+     */
+    def setReadOnlyCommandHandler[R, A <: Command with ReplyType[R], CTX <: CommandContext[R]](
+      commandClass: Class[A],
+      handler:      JBiConsumer[A, CTX]
+    ): Unit = {
+      setCommandHandler[R, A, CTX](commandClass, new JBiFunction[A, CTX, Persist[_ <: Event]] {
+        override def apply(cmd: A, ctx: CTX): Persist[Event] = {
+          handler.accept(cmd, ctx)
+          ctx.done()
+        }
+      });
+      print(commandHandlers)
     }
 
     /**
@@ -216,35 +253,31 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
       commandHandlers -= commandClass
 
     /**
-     *  Register a read-only command handler for a given command class. A read-only command
-     *  handler does not persist events (i.e. it does not change state) but it may perform side
-     *  effects, such as replying to the request. Replies are sent with the `reply` method of the
-     *  context that is passed to the command handler function.
-     */
-    def setReadOnlyCommandHandler[R, A <: Command with ReplyType[R]](
-      commandClass: Class[A],
-      handler:      JBiConsumer[A, ReadOnlyCommandContext[R]]
-    ): Unit = {
-      setCommandHandler[R, A](commandClass, new JBiFunction[A, CommandContext[R], Persist[_ <: Event]] {
-        override def apply(cmd: A, ctx: CommandContext[R]): Persist[Event] = {
-          handler.accept(cmd, ctx)
-          ctx.done()
-        }
-      });
-    }
-
-    /**
      * Construct the corresponding immutable `Behavior`.
      */
     def build(): Behavior = {
-      val evtHandlersPf = evtHandlers.values
-        .map(_.asScala.asInstanceOf[PartialFunction[Event, Behavior]])
-        .foldLeft(previousBehavior.map(_.eventHandlers).getOrElse(PartialFunction.empty[Event, Behavior]))(_ orElse _)
-      val cmdHandlersPf = cmdHandlers.values
-        .map(_.asScala.curried.asInstanceOf[PartialFunction[Command, Function[CoreCommandContext[Any], Persist[Event]]]])
-        .foldLeft(previousBehavior.map(_.commandHandlers).getOrElse(PartialFunction.empty[Command, Function[CoreCommandContext[Any], Persist[Event]]]))(_ orElse _)
+      //todo: implement build
+      //      val evtHandlersPf = evtHandlers.values
+      //        .map(_.asScala.asInstanceOf[PartialFunction[Event, Behavior]])
+      //        .foldLeft(previousBehavior.map(_.eventHandlers).getOrElse(PartialFunction.empty[Event, Behavior]))(_ orElse _)
+      //      val cmdHandlersPf = cmdHandlers.values
+      //        .map(_.asScala.curried.asInstanceOf[PartialFunction[Command, Function[CoreCommandContext[Any], Persist[Event]]]])
+      //        .foldLeft(previousBehavior.map(_.commdHandlers).getOrElse(PartialFunction.empty[Command, Function[CoreCommandContext[Any], Persist[Event]]]))(_ orElse _)
 
-      Behavior(_state, evtHandlersPf, cmdHandlersPf)
+      def handler(cmd: Command, ctx: CoreCommandContext[Any]): Option[Persist[Event]] = {
+        //        (previousBehavior.flatMap(_.commandHandler(cmd, ctx)).fold((commandHandlers.get(cmd.getClass).map(a => Some(a.apply(cmd, ctx).asInstanceOf[Persist[Event]])).getOrElse(None)))(p => Some(p.asInstanceOf[Persist[Event]])))
+        //        (.fold(())(p => Some(p.asInstanceOf[Persist[Event]])))
+        commandHandlers.get(cmd.getClass).map(a => Some(a.apply(cmd, ctx).asInstanceOf[Persist[Event]])).getOrElse(None).fold(
+          previousBehavior.flatMap(_.commandHandler(cmd, ctx)).asInstanceOf[Option[Persist[Event]]]
+        )(p => Some(p))
+      }
+
+      def eventHandler(event: Event): Option[Behavior] = {
+        val map: Option[Behavior] = previousBehavior.flatMap(_.eventHandler(event))
+        map.fold(eventHandlers.get(event.getClass).map(_.apply(event)))(Some(_))
+      }
+
+      Behavior(_state, eventHandler, handler)
     }
 
   }
@@ -252,6 +285,7 @@ abstract class PersistentEntity[Command, Event, State] extends CorePersistentEnt
   /**
    * The context that is passed to command handler function.
    */
+  //here here here
   abstract class CommandContext[R] extends ReadOnlyCommandContext[R] {
 
     /**

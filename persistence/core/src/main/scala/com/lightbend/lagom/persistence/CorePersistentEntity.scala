@@ -7,8 +7,11 @@ import akka.actor.ActorRef
 
 import scala.collection.immutable
 import scala.util.control.NoStackTrace
+import java.util.function.{ Function => JFunction }
+import java.util.function.{ BiFunction => JBiFunction }
 
 object CorePersistentEntity {
+
   /**
    * Commands to a `PersistentEntity` must implement this interface
    * to define the reply type.
@@ -33,6 +36,7 @@ object CorePersistentEntity {
    * Exception that is used when persist fails.
    */
   final case class PersistException(message: String) extends IllegalArgumentException(message) with NoStackTrace
+
 }
 
 /**
@@ -78,7 +82,8 @@ trait CorePersistentEntity[Command, Event, State] {
   /**
    * Create a new empty `Behavior` with a given state.
    */
-  final def newBehavior(state: State): Behavior = new Behavior(state, Map.empty, Map.empty)
+  //todo: implement partial functions
+  final def newBehavior(state: State): Behavior = new Behavior(state, Map.empty, (c: Command, ctx: CoreCommandContext[Any]) => None)
 
   /**
    * This method is called to notify the entity that the recovery process
@@ -86,19 +91,19 @@ trait CorePersistentEntity[Command, Event, State] {
    */
   def recoveryCompleted(): Behavior = _behavior
 
-  /**
-   * INTERNAL API
-   */
-  private[lagom] def newCtx(replyTo: ActorRef): CoreCommandContext[Any] = new CoreCommandContext[Any] {
-
+  private class SimpleCoreCommandContext(replyTo: ActorRef) extends CoreCommandContext[Any] {
     def reply(msg: Any): Unit =
       replyTo ! msg
 
     override def commandFailed(cause: Throwable): Unit =
       // not using akka.actor.Status.Failure because it is using Java serialization
       reply(cause)
-
   }
+
+  /**
+   * INTERNAL API
+   */
+  protected[lagom] def newCtx(replyTo: ActorRef): CoreCommandContext[Any]
 
   /**
    * Behavior consists of current state and functions to process incoming commands
@@ -106,9 +111,9 @@ trait CorePersistentEntity[Command, Event, State] {
    * for defining command and event handlers.
    */
   case class Behavior(
-    state:           State,
-    eventHandlers:   PartialFunction[_ <: Event, Behavior],
-    commandHandlers: PartialFunction[_ <: Command, Function[CoreCommandContext[Any], Persist[_ <: Event]]]
+    state:          State,
+    eventHandler:   Function[Event, Option[Behavior]],
+    commandHandler: (Command, CoreCommandContext[Any]) => Option[Persist[_ <: Event]]
   ) {
 
     /**
@@ -121,6 +126,7 @@ trait CorePersistentEntity[Command, Event, State] {
       copy(state = f(state))
   }
 
+  //here here here
   trait CoreCommandContext[T] {
     /**
      * Reply with a negative acknowledgment.
