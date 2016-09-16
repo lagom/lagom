@@ -3,27 +3,13 @@
  */
 package com.lightbend.lagom.javadsl.persistence
 
-import scala.concurrent.duration._
-import scala.concurrent.Future
-import akka.actor.ActorRef
-import java.io.NotSerializableException
-import akka.actor.NoSerializationVerificationNeeded
-import java.util.concurrent.CompletionStage
-import akka.actor.ActorSystem
-import akka.util.Timeout
-import akka.pattern.{ ask => akkaAsk }
-import com.lightbend.lagom.persistence.CorePersistentEntity
-import com.lightbend.lagom.persistence.CommandEnvelope
+import com.lightbend.lagom.persistence.CorePersistentEntityRef
 
 /**
  * Commands are sent to a [[PersistentEntity]] using a
  * `PersistentEntityRef`. It is retrieved with [[PersistentEntityRegistry#refFor]].
  */
-trait PersistentEntityRef[Command] {
-
-  def ask[Reply, Cmd <: Command with CorePersistentEntity.ReplyType[Reply]](command: Cmd): CompletionStage[Reply]
-
-  def withAskTimeout(timeout: FiniteDuration): PersistentEntityRef[Command]
+trait PersistentEntityRef[Command] extends CorePersistentEntityRef[Command] {
 }
 
 /*final class PersistentEntityRef[Command](

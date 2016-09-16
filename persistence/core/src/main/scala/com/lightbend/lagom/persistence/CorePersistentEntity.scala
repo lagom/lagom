@@ -83,7 +83,7 @@ trait CorePersistentEntity[Command, Event, State] {
    * Create a new empty `Behavior` with a given state.
    */
   //todo: implement partial functions
-  final def newBehavior(state: State): Behavior = new Behavior(state, Map.empty, (c: Command, ctx: CoreCommandContext[Any]) => ???)
+  final def newBehavior(state: State): Behavior = new Behavior(state, Map.empty, (c: Command, ctx: CoreCommandContext[Any]) => None)
 
   /**
    * This method is called to notify the entity that the recovery process
@@ -111,15 +111,9 @@ trait CorePersistentEntity[Command, Event, State] {
    * for defining command and event handlers.
    */
   case class Behavior(
-    state: State,
-
-    //                       eventHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
+    state:          State,
     eventHandler:   Function[Event, Option[Behavior]],
     commandHandler: (Command, CoreCommandContext[Any]) => Option[Persist[_ <: Event]]
-
-  //                       commandHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CoreCommandContext[Any], Persist[_ <: Event]]]
-  //State    eventHandlers:   PartialFunction[_ <: Event, Behavior],
-  //    BehaviorcommandHandlers: PartialFunction[_ <: Command, Function[CoreCommandContext[Any], Persist[_ <: Event]]]
   ) {
 
     /**
