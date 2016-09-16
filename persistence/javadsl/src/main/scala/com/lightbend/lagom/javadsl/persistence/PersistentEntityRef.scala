@@ -3,15 +3,22 @@
  */
 package com.lightbend.lagom.javadsl.persistence
 
-import com.lightbend.lagom.persistence.CorePersistentEntityRef
+import java.util.concurrent.CompletionStage
+
+import com.lightbend.lagom.persistence.{CorePersistentEntity, CorePersistentEntityRef}
+
+import scala.concurrent.duration.FiniteDuration
 
 /**
  * Commands are sent to a [[PersistentEntity]] using a
  * `PersistentEntityRef`. It is retrieved with [[PersistentEntityRegistry#refFor]].
  */
-trait PersistentEntityRef[Command] extends CorePersistentEntityRef[Command] {
-}
+  trait PersistentEntityRef[Command] {
 
+    def ask[Reply, Cmd <: Command with CorePersistentEntity.ReplyType[Reply]](command: Cmd): CompletionStage[Reply]
+
+    def withAskTimeout(timeout: FiniteDuration): PersistentEntityRef[Command]
+  }
 /*final class PersistentEntityRef[Command](
   val entityId: String,
   region:       ActorRef,

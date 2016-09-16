@@ -6,14 +6,15 @@ package com.lightbend.lagom.javadsl.persistence
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import java.util.Optional
+
 import akka.testkit.TestProbe
-import akka.actor.Actor
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.cluster.sharding.ShardRegion
-import akka.actor.Props
 import com.lightbend.lagom.internal.persistence.PersistentEntityActor
 import com.lightbend.lagom.persistence.PersistenceSpec
 
 object PersistentEntityActorSpec {
+
   class TestPassivationParent extends Actor {
 
     val child = context.actorOf(PersistentEntityActor.props("test", Optional.of("1"),
@@ -26,16 +27,26 @@ object PersistentEntityActorSpec {
         child.forward(msg)
     }
   }
+
 }
 
 class PersistentEntityActorSpec extends PersistenceSpec {
 
+  protected def newActor(actorSystem: ActorSystem, entityId: Optional[String], snapshotAfter: Optional[Int] = Optional.empty(), probe: Optional[ActorRef] = Optional.empty()): ActorRef =
+    if (probe.isPresent) {
+      system.actorOf(PersistentEntityActor.props("test", entityId,
+        () => new TestEntity(system, probe.get()), snapshotAfter, 10.seconds))
+    }
+    else {
+      system.actorOf(PersistentEntityActor.props("test", entityId,
+        () => new TestEntity(system), snapshotAfter, 10.seconds))
+    }
+
   "PersistentEntityActor" must {
     "persist events" in {
-      val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("1"),
-        () => new TestEntity(system), Optional.empty(), 10.seconds))
+      val p = newActor(system, Optional.of("1"))
       p ! TestEntity.Get.instance
-      val state = expectMsgType[TestEntity.State](10.minutes)
+      val state = expectMsgType[TestEntity.State]
       state.getElements.size should ===(0)
       p ! TestEntity.Add.of("a")
       expectMsg(new TestEntity.Appended("A"))
@@ -48,16 +59,14 @@ class PersistentEntityActorSpec extends PersistenceSpec {
       state2.getElements.asScala.toList should ===(List("A", "B", "C"))
 
       // start another with same persistenceId should recover state
-      val p2 = system.actorOf(PersistentEntityActor.props("test", Optional.of("1"),
-        () => new TestEntity(system), Optional.empty(), 10.seconds))
+      val p2 = newActor(system, Optional.of("1"))
       p2 ! TestEntity.Get.instance
       val state3 = expectMsgType[TestEntity.State]
       state3.getElements.asScala.toList should ===(List("A", "B", "C"))
     }
 
-    "be able to change behaviotestr" in {
-      val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("2"),
-        () => new TestEntity(system), Optional.empty(), 10.seconds))
+    "be able to change behavior" in {
+      val p = newActor(system, Optional.of("2"))
       p ! TestEntity.Get.instance
       val state = expectMsgType[TestEntity.State]
       state.getMode() should ===(TestEntity.Mode.APPEND)
@@ -74,8 +83,7 @@ class PersistentEntityActorSpec extends PersistenceSpec {
       state2.getElements.asScala.toList should ===(List("c", "A", "B"))
 
       // start another with same persistenceId should recover state
-      val p2 = system.actorOf(PersistentEntityActor.props("test", Optional.of("2"),
-        () => new TestEntity(system), Optional.empty(), 10.seconds))
+      val p2 = newActor(system, Optional.of("2"))
       p2 ! TestEntity.Get.instance
       val state3 = expectMsgType[TestEntity.State]
       state3.getMode() should ===(TestEntity.Mode.PREPEND)
@@ -97,14 +105,12 @@ class PersistentEntityActorSpec extends PersistenceSpec {
 
     "notify when recovery is completed" in {
       val probe = TestProbe()
-      val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("3"),
-        () => new TestEntity(system, probe.ref), Optional.empty(), 10.seconds))
-      probe.expectMsgType[TestEntity.AfterRecovery]
+      val p = newActor(system, Optional.of("3"), Optional.empty(), Optional.of(probe.ref))
+      probe.expectMsgType[TestEntity.AfterzxRecovery]
     }
 
     "save snapshots" in {
-      val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("4"),
-        () => new TestEntity(system), Optional.of(3), 10.seconds))
+      val p = newActor(system, Optional.of("4"), Optional.of(30))
       for (n <- 1 to 10) {
         p ! TestEntity.Add.of(n.toString)
         expectMsg(new TestEntity.Appended(n.toString))
@@ -114,10 +120,8 @@ class PersistentEntityActorSpec extends PersistenceSpec {
       // awaitAssert because it is not guaranteed that we will see the snapshot immediately
       within(10.seconds) {
         awaitAssert {
-
           val probe2 = TestProbe()
-          val p2 = system.actorOf(PersistentEntityActor.props("test", Optional.of("4"),
-            () => new TestEntity(system, probe2.ref), Optional.of(3), 10.seconds))
+          val p2 = newActor(system, Optional.of("4"), Optional.of(3), Optional.of(probe2.ref))
           probe2.expectMsgType[TestEntity.Snapshot]
           p2 ! TestEntity.Get.instance
           val state2 = expectMsgType[TestEntity.State]
@@ -127,8 +131,7 @@ class PersistentEntityActorSpec extends PersistenceSpec {
     }
 
     "persist several events from one command" in {
-      val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("5"),
-        () => new TestEntity(system), Optional.empty(), 10.seconds))
+      val p = newActor(system, Optional.of("5"))
       p ! new TestEntity.Add("a", 3)
       expectMsg(new TestEntity.Appended("A"))
       p ! TestEntity.Get.instance
@@ -136,18 +139,14 @@ class PersistentEntityActorSpec extends PersistenceSpec {
       state2.getElements.asScala.toList should ===(List("A", "A", "A"))
     }
 
-    //TODO: Dead letter is the last sender already :|
     //    "passivate after idle" in {
     //      val p = system.actorOf(Props[PersistentEntityActorSpec.TestPassivationParent])
     //      p ! TestEntity.Add.of("a")
-    //      expectMsg(2000 seconds ,new TestEntity.Appended("A"))
+    //      expectMsg(new TestEntity.Appended("A"))
     //      val entity = lastSender
-    //      Thread.sleep(10000l)
     //      watch(entity)
-    //      Thread.sleep(10000l)
     //      expectTerminated(entity)
     //    }
-
   }
 
 }
