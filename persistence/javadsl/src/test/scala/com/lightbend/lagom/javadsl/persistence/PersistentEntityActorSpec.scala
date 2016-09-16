@@ -106,7 +106,7 @@ class PersistentEntityActorSpec extends PersistenceSpec {
     "notify when recovery is completed" in {
       val probe = TestProbe()
       val p = newActor(system, Optional.of("3"), Optional.empty(), Optional.of(probe.ref))
-      probe.expectMsgType[TestEntity.AfterzxRecovery]
+      probe.expectMsgType[TestEntity.AfterRecovery]
     }
 
     "save snapshots" in {
