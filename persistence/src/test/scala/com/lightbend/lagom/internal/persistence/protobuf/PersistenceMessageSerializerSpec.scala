@@ -11,7 +11,6 @@ import akka.serialization.SerializationExtension
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.javadsl.persistence.ActorSystemSpec
 import com.lightbend.lagom.javadsl.persistence.CommandEnvelope
-import com.lightbend.lagom.javadsl.persistence.PersistentEntity
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity.InvalidCommandException
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity.PersistException
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity.UnhandledCommandException

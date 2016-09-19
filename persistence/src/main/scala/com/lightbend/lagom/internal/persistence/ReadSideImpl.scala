@@ -13,7 +13,6 @@ import akka.cluster.sharding.ClusterShardingSettings
 import akka.cluster.singleton.{ ClusterSingletonManager, ClusterSingletonManagerSettings, ClusterSingletonProxy, ClusterSingletonProxySettings }
 import akka.pattern.BackoffSupervisor
 import akka.stream.Materializer
-import akka.stream.scaladsl.Source
 import com.google.inject.Injector
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings }
 import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, PersistentEntityRegistry, ReadSide, ReadSideProcessor }

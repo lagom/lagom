@@ -16,13 +16,11 @@ import scala.concurrent.duration._
 import scala.util.Try
 import scala.util.control.NonFatal
 import com.lightbend.lagom.internal.cluster.JoinClusterModule
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfigProvider
 import com.lightbend.lagom.internal.testkit.TestServiceLocator
 import com.lightbend.lagom.internal.testkit.TestServiceLocatorPort
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
 import com.lightbend.lagom.javadsl.persistence.testkit.TestUtil
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 import akka.actor.ActorSystem
@@ -32,6 +30,8 @@ import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.Materializer
 import javax.inject.Singleton
 
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfigProvider
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
 import org.apache.cassandra.io.util.FileUtils
 import play.Application
 import play.Configuration
