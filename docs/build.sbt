@@ -26,7 +26,7 @@ lazy val docs = project
       "com.typesafe.play" %% "play-netty-server" % PlayVersion % Test,
       "com.typesafe.play" %% "play-logback" % PlayVersion % Test
     ),
-    javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
+    javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
     testOptions in Test += Tests.Argument("-oDF"),
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
     // This is needed so that Java APIs that use immutables will typecheck by the Scala compiler
@@ -58,12 +58,14 @@ lazy val docs = project
       _ || "*.scala" || "*.java" || "*.sbt" || "*.conf" || "*.md" || "*.toc"
     }
 
-  ).dependsOn(serviceIntegrationTests, immutables % "test->compile", theme % "run-markdown")
+  ).dependsOn(serviceIntegrationTests, persistenceJdbc, immutables % "test->compile", theme % "run-markdown")
 
 lazy val parentDir = Path.fileProperty("user.dir").getParentFile
 
 // Depend on the integration tests, they should bring everything else in
 lazy val serviceIntegrationTests = ProjectRef(parentDir, "service-integration-tests")
+lazy val persistenceJdbc = ProjectRef(parentDir, "persistence-jdbc")
+
 // Needed to compile test classes using immutables annotation
 lazy val immutables = ProjectRef(parentDir, "immutables")
 

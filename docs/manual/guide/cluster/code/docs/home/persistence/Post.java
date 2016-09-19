@@ -1,5 +1,8 @@
 package docs.home.persistence;
 
+import docs.home.persistence.BlogCommand.*;
+import docs.home.persistence.BlogEvent.*;
+
 //#full-example
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import java.util.Optional;
@@ -25,16 +28,16 @@ public class Post extends PersistentEntity<BlogCommand, BlogEvent, BlogState> {
         }
 
         final PostAdded postAdded =
-            PostAdded.builder().content(cmd.getContent()).postId(entityId()).build();
+            new PostAdded(entityId(), cmd.getContent());
         return ctx.thenPersist(postAdded, (PostAdded evt) ->
         // After persist is done additional side effects can be performed
-            ctx.reply(AddPostDone.of(entityId())));
+            ctx.reply(new AddPostDone(entityId())));
       });
 
       // Event handlers are used both when persisting new events and when replaying
       // events.
       b.setEventHandlerChangingBehavior(PostAdded.class, evt ->
-        becomePostAdded(state().withContent(Optional.of(evt.getContent()))));
+        becomePostAdded(new BlogState(Optional.of(evt.getContent()), false)));
 
       return b.build();
     }
@@ -45,7 +48,7 @@ public class Post extends PersistentEntity<BlogCommand, BlogEvent, BlogState> {
     BehaviorBuilder b = newBehaviorBuilder(newState);
 
     b.setCommandHandler(ChangeBody.class,
-        (cmd, ctx) -> ctx.thenPersist(BodyChanged.of(cmd.getBody()), evt ->
+        (cmd, ctx) -> ctx.thenPersist(new BodyChanged(entityId(), cmd.getBody()), evt ->
           ctx.reply(Done.getInstance())));
 
     b.setEventHandler(BodyChanged.class, evt -> state().withBody(evt.getBody()));

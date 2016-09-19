@@ -1,45 +1,141 @@
 package docs.home.persistence;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.lightbend.lagom.javadsl.immutable.ImmutableStyle;
 import com.lightbend.lagom.serialization.Jsonable;
-import org.immutables.value.Value;
+import org.pcollections.PSequence;
 
-//#full-example
+//#sharded-tags
 interface BlogEvent extends Jsonable, AggregateEvent<BlogEvent> {
 
-  @Override
-  default public AggregateEventTag<BlogEvent> aggregateTag() {
-    return BlogEventTag.INSTANCE;
+  int NUM_SHARDS = 20;
+
+  PSequence<AggregateEventTag<BlogEvent>> TAGS =
+          AggregateEventTag.shards(BlogEvent.class, NUM_SHARDS);
+  //#sharded-tags
+
+  final class PostAdded implements BlogEvent {
+    private final String postId;
+    private final PostContent content;
+
+    @JsonCreator
+    public PostAdded(String postId, PostContent content) {
+      this.postId = postId;
+      this.content = content;
+    }
+
+    public String getPostId() {
+      return postId;
+    }
+
+    public PostContent getContent() {
+      return content;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      PostAdded postAdded = (PostAdded) o;
+
+      if (!postId.equals(postAdded.postId)) return false;
+      return content.equals(postAdded.content);
+
+    }
+
+    @Override
+    public int hashCode() {
+      int result = postId.hashCode();
+      result = 31 * result + content.hashCode();
+      return result;
+    }
+
+    //#aggregate-tag
+    @Override
+    public AggregateEventTag<BlogEvent> aggregateTag() {
+      return AggregateEventTag.shard(BlogEvent.class, NUM_SHARDS, postId);
+    }
+    //#aggregate-tag
   }
 
-  @Value.Immutable
-  @ImmutableStyle
-  @JsonDeserialize(as = PostAdded.class)
-  interface AbstractPostAdded extends BlogEvent {
-    String getPostId();
 
-    PostContent getContent();
+  final class BodyChanged implements BlogEvent {
+    private final String postId;
+    private final String body;
+
+    @JsonCreator
+    public BodyChanged(String postId, String body) {
+      this.postId = postId;
+      this.body = body;
+    }
+
+    public String getPostId() {
+      return postId;
+    }
+
+    public String getBody() {
+      return body;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      BodyChanged that = (BodyChanged) o;
+
+      if (!postId.equals(that.postId)) return false;
+      return body.equals(that.body);
+
+    }
+
+    @Override
+    public int hashCode() {
+      int result = postId.hashCode();
+      result = 31 * result + body.hashCode();
+      return result;
+    }
+
+    @Override
+    public AggregateEventTag<BlogEvent> aggregateTag() {
+      return AggregateEventTag.shard(BlogEvent.class, NUM_SHARDS, postId);
+    }
   }
 
-  @Value.Immutable
-  @ImmutableStyle
-  @JsonDeserialize(as = BodyChanged.class)
-  interface AbstractBodyChanged extends BlogEvent {
-    @Value.Parameter
-    String getBody();
-  }
+  final class PostPublished implements BlogEvent {
+    private final String postId;
 
-  @Value.Immutable
-  @ImmutableStyle
-  @JsonDeserialize(as = PostPublished.class)
-  interface AbstractPostPublished extends BlogEvent {
-    @Value.Parameter
-    String getPostId();
+    public PostPublished(String postId) {
+      this.postId = postId;
+    }
+
+    public String getPostId() {
+      return postId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      PostPublished that = (PostPublished) o;
+
+      return postId.equals(that.postId);
+
+    }
+
+    @Override
+    public int hashCode() {
+      return postId.hashCode();
+    }
+
+    @Override
+    public AggregateEventTag<BlogEvent> aggregateTag() {
+      return AggregateEventTag.shard(BlogEvent.class, NUM_SHARDS, postId);
+    }
   }
 
 }
-//#full-example

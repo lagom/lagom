@@ -1,5 +1,8 @@
 package docs.home.persistence;
 
+import docs.home.persistence.BlogCommand.*;
+import docs.home.persistence.BlogEvent.*;
+
 //#unit-test
 import static org.junit.Assert.assertEquals;
 
@@ -36,15 +39,15 @@ public class PostTest {
     PersistentEntityTestDriver<BlogCommand, BlogEvent, BlogState> driver =
         new PersistentEntityTestDriver<>(system, new Post(), "post-1");
 
-    PostContent content = PostContent.of("Title", "Body");
+    PostContent content = new PostContent("Title", "Body");
     Outcome<BlogEvent, BlogState> outcome = driver.run(
-        AddPost.of(content));
-    assertEquals(PostAdded.builder().content(content).postId("post-1").build(),
+        new AddPost(content));
+    assertEquals(new PostAdded("post-1", content),
         outcome.events().get(0));
     assertEquals(1, outcome.events().size());
     assertEquals(false, outcome.state().isPublished());
     assertEquals(Optional.of(content), outcome.state().getContent());
-    assertEquals(AddPostDone.of("post-1"), outcome.getReplies().get(0));
+    assertEquals(new AddPostDone("post-1"), outcome.getReplies().get(0));
     assertEquals(Collections.emptyList(), outcome.issues());
   }
 
@@ -54,7 +57,7 @@ public class PostTest {
         new PersistentEntityTestDriver<>(system, new Post(), "post-1");
 
     Outcome<BlogEvent, BlogState> outcome = driver.run(
-        AddPost.of(PostContent.of("", "Body")));
+        new AddPost(new PostContent("", "Body")));
     assertEquals(InvalidCommandException.class,
         outcome.getReplies().get(0).getClass());
     assertEquals(0, outcome.events().size());
@@ -66,14 +69,14 @@ public class PostTest {
     PersistentEntityTestDriver<BlogCommand, BlogEvent, BlogState> driver =
         new PersistentEntityTestDriver<>(system, new Post(), "post-1");
 
-    driver.run(AddPost.of(PostContent.of("Title", "Body")));
+    driver.run(new AddPost(new PostContent("Title", "Body")));
 
     Outcome<BlogEvent, BlogState> outcome = driver.run(
-      ChangeBody.of("New body 1"),
-      ChangeBody.of("New body 2"));
+      new ChangeBody("New body 1"),
+      new ChangeBody("New body 2"));
 
-    assertEquals(BodyChanged.of("New body 1"), outcome.events().get(0));
-    assertEquals(BodyChanged.of("New body 2"), outcome.events().get(1));
+    assertEquals(new BodyChanged("post-1", "New body 1"), outcome.events().get(0));
+    assertEquals(new BodyChanged("post-1", "New body 2"), outcome.events().get(1));
     assertEquals(2, outcome.events().size());
     assertEquals(false, outcome.state().isPublished());
     assertEquals("New body 2", outcome.state().getContent().get().getBody());

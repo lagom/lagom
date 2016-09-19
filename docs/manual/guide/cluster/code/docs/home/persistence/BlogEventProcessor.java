@@ -1,90 +1,78 @@
 package docs.home.persistence;
 
+import akka.Done;
+import akka.japi.Pair;
+import akka.stream.javadsl.Flow;
+
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
+import com.lightbend.lagom.javadsl.persistence.Offset;
+import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor;
 
-import akka.NotUsed;
-import java.util.Arrays;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.BoundStatement;
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletionStage;
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor;
+import org.pcollections.PSequence;
 
-public class BlogEventProcessor extends CassandraReadSideProcessor<BlogEvent> {
+
+public class BlogEventProcessor extends ReadSideProcessor<BlogEvent> {
+
+  //#my-database
+  public interface MyDatabase {
+    /**
+     * Create the tables needed for this read side if not already created.
+     */
+    CompletionStage<Done> createTables();
+
+    /**
+     * Load the offset of the last event processed.
+     */
+    CompletionStage<Offset> loadOffset(AggregateEventTag<BlogEvent> tag);
+
+    /**
+     * Handle the post added event.
+     */
+    CompletionStage<Done> handleEvent(BlogEvent event, Offset offset);
+  }
+  //#my-database
+
+  private final MyDatabase myDatabase;
+
+  public BlogEventProcessor(MyDatabase myDatabase) {
+    this.myDatabase = myDatabase;
+  }
 
   //#tag
   @Override
-  public AggregateEventTag<BlogEvent> aggregateTag() {
-    return BlogEventTag.INSTANCE;
+  public PSequence<AggregateEventTag<BlogEvent>> aggregateTags() {
+    return BlogEvent.TAGS;
   }
   //#tag
 
-  //#prepare-statements
-  private PreparedStatement writeTitle = null; // initialized in prepare
-  private PreparedStatement writeOffset = null; // initialized in prepare
 
-  private void setWriteTitle(PreparedStatement writeTitle) {
-    this.writeTitle = writeTitle;
-  }
-
-  private void setWriteOffset(PreparedStatement writeOffset) {
-    this.writeOffset = writeOffset;
-  }
-
-  private CompletionStage<NotUsed> prepareWriteTitle(CassandraSession session) {
-    return session.prepare("INSERT INTO blogsummary (partition, id, title) VALUES (1, ?, ?)")
-        .thenApply(ps -> {
-          setWriteTitle(ps);
-          return NotUsed.getInstance();
-        });
-  }
-
-  private CompletionStage<NotUsed> prepareWriteOffset(CassandraSession session) {
-    return session.prepare("INSERT INTO blogevent_offset (partition, offset) VALUES (1, ?)")
-        .thenApply(ps -> {
-          setWriteOffset(ps);
-          return NotUsed.getInstance();
-        });
-  }
-  //#prepare-statements
-
-  //#select-offset
-  private CompletionStage<Optional<UUID>> selectOffset(CassandraSession session) {
-    return session.selectOne("SELECT offset FROM blogevent_offset").thenApply(
-        optionalRow -> optionalRow.map(r -> r.getUUID("offset")));
-  }
-  //#select-offset
-
-
-  //#prepare
+  //#build-handler
   @Override
-  public CompletionStage<Optional<UUID>> prepare(CassandraSession session) {
-    return
-      prepareWriteTitle(session).thenCompose(a ->
-      prepareWriteOffset(session).thenCompose(b ->
-      selectOffset(session)));
+  public ReadSideHandler<BlogEvent> buildHandler() {
+
+    return new ReadSideHandler<BlogEvent>() {
+
+      @Override
+      public CompletionStage<Done> globalPrepare() {
+        return myDatabase.createTables();
+      }
+
+      @Override
+      public CompletionStage<Offset> prepare(AggregateEventTag<BlogEvent> tag) {
+        return myDatabase.loadOffset(tag);
+      }
+
+      @Override
+      public Flow<Pair<BlogEvent, Offset>, Done, ?> handle() {
+        return Flow.<Pair<BlogEvent, Offset>>create()
+                .mapAsync(1, eventAndOffset ->
+                        myDatabase.handleEvent(eventAndOffset.first(),
+                                eventAndOffset.second())
+                );
+      }
+    };
   }
-  //#prepare
-
-  //#event-handlers
-  @Override
-  public EventHandlers defineEventHandlers(EventHandlersBuilder builder) {
-    builder.setEventHandler(PostAdded.class, this::processPostAdded);
-    return builder.build();
-  }
-
-  private CompletionStage<List<BoundStatement>> processPostAdded(PostAdded event, UUID offset) {
-    BoundStatement bindWriteTitle = writeTitle.bind();
-    bindWriteTitle.setString("id", event.getPostId());
-    bindWriteTitle.setString("title", event.getContent().getTitle());
-    BoundStatement bindWriteTitleOffset = writeOffset.bind(offset);
-    return completedStatements(Arrays.asList(bindWriteTitle, bindWriteTitleOffset));
-  }
-  //#event-handlers
-
-
+  //#build-handler
 
 }
