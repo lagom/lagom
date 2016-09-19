@@ -3,10 +3,14 @@
  */
 package com.lightbend.lagom.javadsl.testkit
 
+import java.util.Optional
+
 import scala.collection.JavaConverters._
 import akka.testkit.TestProbe
+import com.google.common.collect.ImmutableList
 import com.lightbend.lagom.javadsl.persistence.ActorSystemSpec
 import com.lightbend.lagom.javadsl.persistence.TestEntity
+
 import scala.annotation.varargs
 
 class PersistentEntityTestDriverSpec extends ActorSystemSpec {
@@ -74,6 +78,22 @@ class PersistentEntityTestDriverSpec extends ActorSystemSpec {
       val undefined = new TestEntity.UndefinedCmd
       val outcome1 = driver.run(undefined)
       outcome1.issues.asScala.toList should be(List(PersistentEntityTestDriver.UnhandledCommand(undefined)))
+    }
+
+    "be able to handle snapshot state" in {
+      val driver = newDriver()
+      val outcome1 = driver.initialize(Optional.of(
+        new TestEntity.State(TestEntity.Mode.PREPEND, ImmutableList.of("a", "b", "c"))
+      ), new TestEntity.Prepended("1", "z"))
+      outcome1.state.getMode should be(TestEntity.Mode.PREPEND)
+      outcome1.state.getElements.asScala.toList should ===(List("z", "a", "b", "c"))
+      outcome1.events.asScala.toList should ===(List(new TestEntity.Prepended("1", "z")))
+      outcome1.issues.asScala.toList should be(Nil)
+
+      val outcome2 = driver.run(TestEntity.Add.of("y"))
+      outcome2.events.asScala.toList should ===(List(new TestEntity.Prepended("1", "y")))
+      outcome2.state.getElements.asScala.toList should ===(List("y", "z", "a", "b", "c"))
+      outcome2.issues.asScala.toList should be(Nil)
     }
 
   }
