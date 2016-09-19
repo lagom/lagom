@@ -114,7 +114,7 @@ object SbtMavenPlugin extends AutoPlugin {
           Seq(
             "org.apache.maven.cli.MavenCli"
           )
-        log.info(s"Running maven test ${test.getName}")
+        log.info(s"Running maven test ${test.getName} with arguments ${args.mkString(" ")}")
 
         test.getName -> mavenExecutions.foldLeft(true) { (success, execution) =>
           if (success) {
