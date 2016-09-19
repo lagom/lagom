@@ -34,7 +34,6 @@ public class ServiceRegistryModule extends AbstractModule implements ServiceGuic
 		bindServices(serviceBinding(ServiceRegistry.class, ServiceRegistryImpl.class));
 		bindActor(ServiceRegistryActor.class, SERVICE_REGISTRY_ACTOR);
 		bind(ServiceGatewayConfig.class).toInstance(serviceGatewayConfig);
-		bind(ServiceGateway.class).asEagerSingleton();
 		bind(UnmanagedServices.class).toInstance(UnmanagedServices.apply(unmanagedServices));
 		bind(ServiceLocator.class).to(NoServiceLocator.class);
 	}

@@ -11,7 +11,6 @@ import javax.inject.{ Inject, Named, Singleton }
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
-import com.lightbend.lagom.discovery.ServiceRegistryActor
 import com.lightbend.lagom.internal.NettyFutureConverters
 import NettyFutureConverters._
 import com.lightbend.lagom.discovery.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
@@ -46,8 +45,14 @@ case class ServiceGatewayConfig(
 )
 
 @Singleton
-class ServiceGateway @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
-                                @Named("serviceRegistryActor") registry: ActorRef) {
+class ServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
+  @Named("serviceRegistryActor") registry: ActorRef) {
+  def start(): ServiceGateway = {
+    new ServiceGateway(lifecycle, config, registry)
+  }
+}
+
+class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef) {
 
   private implicit val timeout = Timeout(5.seconds)
   private val log = LoggerFactory.getLogger(classOf[ServiceGateway])
