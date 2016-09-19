@@ -11,6 +11,9 @@ env:
     - SCRIPT="sbt --warn -jvm-opts .travis-jvmopts unidoc && cd docs && sbt --warn -jvm-opts .travis-jvmopts markdownValidateDocs test markdownEvaluateSbtFiles"
 # important to use eval, otherwise "&&" is passed as an argument to sbt rather than being processed by bash
 script: eval $SCRIPT
+before_install:
+    # See https://github.com/travis-ci/travis-ci/issues/4629#issuecomment-239493916
+    - rm ~/.m2/settings.xml
 cache:
   directories:
     - $HOME/.ivy2/cache
