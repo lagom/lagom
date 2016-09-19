@@ -5,13 +5,10 @@ package com.lightbend.lagom.discovery
 
 import java.io.Closeable
 import java.net.URI
-import java.util.{ Map => JMap }
+import java.util.{Map => JMap}
 
 import com.lightbend.lagom.discovery.impl.ServiceRegistryModule
-import com.lightbend.lagom.gateway.ServiceGateway
-import com.lightbend.lagom.gateway.ServiceGatewayConfig
-
-import javax.inject.Singleton
+import com.lightbend.lagom.gateway.{ServiceGateway, ServiceGatewayConfig, ServiceGatewayFactory}
 import play.api.Application
 import play.api.Logger
 import play.api.Mode
@@ -21,6 +18,8 @@ import play.api.inject.guice.GuiceableModule.fromGuiceModule
 import play.core.server.ServerConfig
 import play.core.server.ServerProvider
 import play.core.server.ServerWithStop
+
+import scala.util.control.NonFatal
 
 class ServiceLocatorServer extends Closeable {
   private val logger: Logger = Logger(this.getClass())
@@ -33,8 +32,18 @@ class ServiceLocatorServer extends Closeable {
 
     val application = createApplication(ServiceGatewayConfig(serviceGatewayPort), unmanagedServices)
     Play.start(application)
-    server = createServer(application, serviceLocatorPort)
-    gateway = application.injector.instanceOf[ServiceGateway]
+    try {
+      server = createServer(application, serviceLocatorPort)
+    } catch {
+      case NonFatal(e) =>
+        throw new RuntimeException(s"Unable to start service locator on port $serviceLocatorPort", e)
+    }
+    try {
+      gateway = application.injector.instanceOf[ServiceGatewayFactory].start()
+    } catch {
+      case NonFatal(e) =>
+        throw new RuntimeException(s"Unable to start service gateway on port $serviceGatewayPort", e)
+    }
     logger.info("Service locator can be reached at " + serviceLocatorAddress)
     logger.info("Service gateway can be reached at " + serviceGatewayAddress)
   }
