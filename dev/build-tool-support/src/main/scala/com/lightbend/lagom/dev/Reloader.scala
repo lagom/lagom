@@ -288,7 +288,8 @@ class Reloader(
               // We only want to reload if the classpath has changed.  Assets don't live on the classpath, so
               // they won't trigger a reload.
               // Use the SBT watch service, passing true as the termination to force it to break after one check
-              val (_, newState) = SourceModificationWatch.watch(() => classpath.iterator.flatMap(_.toScala.listRecursively), 0, watchState)(true)
+              val (_, newState) = SourceModificationWatch.watch(() => classpath.iterator
+                .filter(_.exists()).flatMap(_.toScala.listRecursively), 0, watchState)(true)
               // SBT has a quiet wait period, if that's set to true, sources were modified
               val triggered = newState.awaitingQuietPeriod
               watchState = newState
