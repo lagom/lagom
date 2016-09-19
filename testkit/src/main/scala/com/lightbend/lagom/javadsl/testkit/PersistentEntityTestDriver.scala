@@ -108,6 +108,50 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
     entity.behavior.commandHandlers.asInstanceOf[Map[Class[C], JBiFunction[C, entity.CommandContext[Any], entity.Persist[E]]]]
 
   /**
+   * Initialize the entity.
+   *
+   * This can be used to simulate the startup of an entity, be passing some snapshot state, and then some additional
+   * events that weren't included in that entity.
+   *
+   * The returned outcome contains the state with events applied to it and any issues with the state and events.
+   *
+   * This method may not be invoked twice, and it also must not be invoked after passing commands to the `run` method,
+   * since that will automatically initialize the entity with an empty snapshot if not yet initialized.
+   *
+   * @param snapshotState The state to initialize the entity with.
+   * @param events The additional events to run before invoking `recoveryCompleted`
+   * @return The outcome.
+   */
+  @varargs
+  def initialize(snapshotState: Optional[S], events: E*): Outcome[E, S] = {
+    if (initialized) {
+      throw new IllegalStateException("The entity has already been initialized")
+    }
+    initialized = true
+
+    issues = Vector.empty
+
+    val initial = entity.initialBehavior(snapshotState)
+    entity.internalSetCurrentBehavior(initial)
+
+    issues ++= checkSerialization(entity.behavior.state)
+
+    events.foreach { event =>
+      issues ++= checkSerialization(event)
+      applyEvent(event)
+      issues ++= checkSerialization(entity.behavior.state)
+    }
+
+    val newBehavior = entity.recoveryCompleted()
+    entity.internalSetCurrentBehavior(newBehavior)
+
+    issues ++= checkSerialization(entity.behavior.state)
+
+    allIssues ++= issues
+    Outcome(events.asJava, entity.behavior.state, Nil.asJava, issues.asJava)
+  }
+
+  /**
    * The entity will process the commands and the emitted events and side effects
    * are recorded and provided in the returned `Outcome`. Current state is also
    * included in the `Outcome`.
@@ -122,12 +166,7 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
     issues = Vector.empty
 
     if (!initialized) {
-      initialized = true
-      val inital = entity.initialBehavior(Optional.empty())
-      entity.internalSetCurrentBehavior(inital)
-
-      val newBehavior = entity.recoveryCompleted()
-      entity.internalSetCurrentBehavior(newBehavior)
+      initialize(Optional.empty())
     }
 
     var producedEvents: Vector[E] = Vector.empty
@@ -135,7 +174,7 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
       issues ++= checkSerialization(cmd)
       commandHandlers.get(cmd.getClass.asInstanceOf[Class[C]]) match {
         case Some(handler) =>
-          handler.apply(cmd.asInstanceOf[C], ctx) match {
+          handler.apply(cmd, ctx) match {
             case _: entity.PersistNone[_] => // done
             case entity.PersistOne(event, afterPersist) =>
               issues ++= checkSerialization(event)
