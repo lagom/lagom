@@ -6,98 +6,95 @@
 
 This separation of the write-side and the read-side of the persistent data is often referred to as the [CQRS](https://msdn.microsoft.com/en-us/library/jj591573.aspx) (Command Query Responibility Segregation) pattern. The [CQRS Journey](https://msdn.microsoft.com/en-us/library/jj554200.aspx) is a great resource for learning more about CQRS.
 
-## Dependency
+## Read-side design
 
-In Maven:
+In Lagom, the read-side can be implemented using any datastore, using any library that runs on the JVM to populate and query it. Lagom does provide some helpers for using Cassandra and relational databases, but this are optional, they don't need to be used.
 
-```xml
-<dependency>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-cluster_2.11</artifactId>
-    <version>${lagom.version}</version>
-</dependency>
-```
+If you're familiar with a more traditional approach to persistence that uses tables with rows and columns, then implementing the read-side may be a little more familiar than implementing the persistent entities. There is one primary rule though, the read-side should only be updated in response to receiving events from persistent entities.
 
-In sbt:
+To handle these events, you need to provide a [`ReadSideProcessor`](api/index.html?com/lightbend/lagom/javadsl/persistence/ReadSideProcessor.html). A read-side processor is responsible not just for handling the events produced by the persistent entity, it's also responsible for tracking which events it has handled. This is done using offsets.
 
-@[persistence-dependency](code/build-cluster.sbt)
+Each event produced by a persistent entity has an offset. When a read-side processor first starts, it needs to load the offset of the last event that it processed. After processing an event, it should store the offset of the event it just processed.  If the storing of offsets is done atomically with any updates produced by the events, then event processing will happen exactly once for each event, otherwise it will happen at least once.
+
+That said, if you use Lagom's built in Cassandra or relational database read-side support, then offset tracking is done automatically for you, and you only need to worry about handling the events themselves.  The rest of this page will be about implementing a read-side using Lagom's generic read-side processor support.  If you're using Cassandra or relational database for your read-side, you should read the remainder of this page to understand how read-sides work, but then also read the following documentation on Lagom's specific support in order to take advantage of Lagom's built in offset handling and other features for those databases:
+
+* [[Cassandra read-side support|ReadSideCassandra]]
+* [[Relational database read-side support|ReadSideRDBMS]]
 
 ## Query the Read-Side Database
 
-Lagom has support for [Cassandra](http://cassandra.apache.org/) as data store, both for the write-side entities and the read-side queries. It is a very scalable distributed database, and also flexible enough to support most of the use cases that reactive services may have.
+How you query the read-side database depends on your database, but there are two things to be aware of:
 
-Let us first look at how a service implementation can retrieve data from Cassandra.
-
-@[service-impl](code/docs/home/persistence/BlogServiceImpl2.java)
-
-Note that the [CassandraSession](api/index.html?com/lightbend/lagom/javadsl/persistence/cassandra/CassandraSession.html) is injected in the constructor. `CassandraSession` provides several methods in different flavors for executing queries. The one used in the above example returns a `Source`, i.e. a streamed response. There are also methods for retrieving a list of rows, which can be useful when you know that the result set is small, e.g. when you have included a `LIMIT` clause.
-
-All methods in `CassandraSession` are non-blocking and they return a `CompletionStage` or a `Source`. The statements are expressed in [Cassandra Query Language](http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html) (CQL) syntax. See [Querying tables](http://docs.datastax.com/en/cql/3.3/cql/cql_using/useQueryDataTOC.html) for information about CQL queries.
+* Ensure that any connection pools are started once, and then shut down when Lagom shuts down. Lagom is built on Play, and uses Play's lifecycle support to register callbacks to execute on shutdown. For information on how to hook into this, see the [Play documentation](https://playframework.com/documentation/2.5.x/JavaDependencyInjection#Stopping/cleaning-up).
+* Ensure that any blocking actions are done in an appropriate execution context. Lagom assumes that all actions are asynchronous, and has thread pools tuned for asynchronous tasks. The use of unmanaged blocking can cause your application to stop responding at very low loads. For details on how to correctly manage thread pools for blocking database calls, see Play's documentation on [thread pools](https://www.playframework.com/documentation/2.5.x/ThreadPools).
 
 ## Update the Read-Side
 
-We need to transform the events generated by the [[Persistent Entities|PersistentEntity]] into database tables that can be queried as illustrated in the previous section. For that we will use the [CassandraReadSideProcessor](api/index.html?com/lightbend/lagom/javadsl/persistence/cassandra/CassandraReadSideProcessor.html). It will Consume events produced by persistent entities and update one or more tables in Cassandra that are optimized for queries.
+We need to transform the events generated by the [[Persistent Entities|PersistentEntity]] into database tables that can be queried as illustrated in the previous section. For that we will implement a [`ReadSideProcessor`](api/index.html?com/lightbend/lagom/javadsl/persistence/ReadSideProcessor.html). It will consume events produced by persistent entities and update the database table.
 
-This is how a [CassandraReadSideProcessor](api/index.html?com/lightbend/lagom/javadsl/persistence/cassandra/CassandraReadSideProcessor.html) class looks like before filling in the implementation details:
+### Event tags
 
-@[processor1](code/docs/home/persistence/BlogEventProcessor1.java)
+In order to consume events from a read-side, the events need to be tagged. All events with a particular tag can be consumed as a sequential, ordered stream of events.  Events can be tagged by making them implement the [`AggregateEvent`](api/index.html?com/lightbend/lagom/javadsl/persistence/AggregateEvent.html) interface. The tag is defined using the `aggregateTag` method.
 
-To make the events available for read-side processing the events must implement the `aggregateTag` method of the [AggregateEvent](api/index.html?com/lightbend/lagom/javadsl/persistence/AggregateEvent.html) interface to define which events belong together. Typically you define this `aggregateTag` on the top level event type of a `PersistentEntity` class.
+The simplest way to tag events is to give all events for a particular entity the same tag. To do this, define a static tag, and return it from the `aggregateTag` method of your events:
 
-The [AggregateEventTag](api/index.html?com/lightbend/lagom/javadsl/persistence/AggregateEventTag.html) for the `BlogEvent` is defined as a constant like this:
+@[aggregate-tag](code/docs/home/persistence/BlogEventTag.java)
 
-@[tag](code/docs/home/persistence/BlogEventTag.java)
+While this is quite straight forward, it does mean that you can only consume the events one at a time, which may be a bottleneck to scale. If you expect events to only occur in the order of a few times per second, then this might be fine, but if you expect hundreds or thousands of events per second, then you may want to shard your read-side event processing load.
 
-The `BlogEvent` classes:
+Sharding can be done by using multiple tags, which are generated using a hash of the events entity ID. It's important to ensure all the events for the same entity end up with the same tag (and hence in the same shard), otherwise, event processing for that entity may be out of order, since the read side nodes will consume the event streams for their tags at different paces.
 
-@[full-example](code/docs/home/persistence/BlogEvent.java)
+When you shard events, you need to decide up front how many shards you want to use. The more shards, the more you can scale your service horizontally across many nodes, however, shards come at a cost, each additional shard increases the number of read side processors that query your database for new events. It is very difficult to change the number of shards without compromising the ordering of events within an entity, so it's best to work out up front what the peak rate of events you expect to need to handle over the lifetime of the system will be, then work out how many nodes you'll need to handle that load, and then use that as the number of shards.
 
-In the service implementation you need to inject the [CassandraReadSide](api/index.html?com/lightbend/lagom/javadsl/persistence/cassandra/CassandraReadSide.html) and at startup (in the constructor) register the class that implements the `CassandraReadSideProcessor`. This will make sure that one instance of the processor is always running on one of the nodes in the cluster of the service.
+Lagom provides some utilities for helping create sharded tags. To create the sharded tags, define the number of shards in a static variable, as well as the list of tags:
 
-@[register-event-processor](code/docs/home/persistence/BlogServiceImpl3.java)
+@[sharded-tags](code/docs/home/persistence/BlogEvent.java)
 
+Now on each concrete event, define the `aggregateTag` method using `AggregateEventTag.shard` method, passing in the entity ID for the event:
 
-### aggregateTag
+@[aggregate-tag](code/docs/home/persistence/BlogEvent.java)
 
-Define the [AggregateEventTag](api/index.html?com/lightbend/lagom/javadsl/persistence/AggregateEventTag.html) in the method `aggregateTag` of the processor. The tag defines which events to process. You should return the same constant value as in the events.
+Lagom here will generate a tag name that appends the hash code of the entity ID modulo the number of shards to the class name.
+
+### Defining a read side processor
+
+This is how a [`ReadSideProcessor`](api/index.html?com/lightbend/lagom/javadsl/persistence/ReadSideProcessor.html) class looks like before filling in the implementation details:
+
+@[processor](code/docs/home/persistence/BlogEventProcessorInitial.java)
+
+The first method we'll implement is the `aggregateTags` method.  This method has to return a list of all the tags that our processor will handle - if you return more than one tag, Lagom will shard these tags across your services cluster.  To implement this method, simply return the list of all the events for your class:
 
 @[tag](code/docs/home/persistence/BlogEventProcessor.java)
 
-### prepare
+Now we need to implement the `buildHandler` method.  Let's assume that you have created a component to interact with your preferred database, it provides the following methods:
 
-You must tell where in the event stream the processing should start. This is the primary purpose of the `prepare` method. Each event is associated with a unique offset, a time based UUID. The offset is a parameter to the event handler for each event and it should typically be stored so that it can be retrieved with a `select` statement in the `prepare` method. Use the `CassandraSession` to get the stored offset.
+@[my-database](code/docs/home/persistence/BlogEventProcessor.java)
 
-@[select-offset](code/docs/home/persistence/BlogEventProcessor.java)
+The `createTables` method will create the tables used by the read side processor if they don't already exist - this is completely optional, but may be useful in development and test environments as it alleviates the need for developers to manually set up their environments.
 
-Return `noOffset()` if you want to processes all events, e.g. when starting the first time or if the number of events are known to be small enough to processes all events.
+The `loadOffset` method reads the last [`Offset`](api/index.html?com/lightbend/lagom/javadsl/persistence/Offset.html) that was processed by this read side processor for the particular tag.  Typically this will be stored in a table that has the tag name as a primary key. Offsets come in two varieties, a [`Sequence`](api/index.html?com/lightbend/lagom/javadsl/persistence/Offset.Sequence.html) offset represented using a `long`, and a [`TimeBasedUUID`](api/index.html?com/lightbend/lagom/javadsl/persistence/Offset.TimeBasedUUID.html) offset represented using a `UUID`. Your database will need to be able to persist both of these types. If there is no offset stored for a particular tag, such as when the processor runs for the very first time, then you can return [`Offset.NONE`](api/index.html?com/lightbend/lagom/javadsl/persistence/Offset.html#NONE).
 
-Typically `prepare` is also used to create prepared statements that are later used when processing the events. Use `CassandraSession.prepare` to create the prepared statements.
+Finally, the `handleEvent` method is responsible for handling the actual events. It gets passed both the event and the offset, and should persist the offset once the event handling is successful.
 
-@[prepare-statements](code/docs/home/persistence/BlogEventProcessor.java)
+Given this interface, we can now implement the `buildHandler` method:
 
-Composing those asynchronous `CompletionStage` tasks may look like this:
+@[build-handler](code/docs/home/persistence/BlogEventProcessor.java)
 
-@[prepare](code/docs/home/persistence/BlogEventProcessor.java)
+The `globalPrepare` method is used for tasks that should only be run once globally.  Remember that Lagom will create many read side processors, one for each shard, if each of these are writing to the one table, you only want one of them to attempt to create that table, otherwise it could create race conditions in your database.  Lagom will ensure that the `globalPrepare` method executes at least once before any read side processing begins.  It may be executed multiple times, particularly when your cluster restarts, but those executions will only ever happen one at a time.  If the `globalPrepare` fails, Lagom will retry, backing off exponentially on subsequent failures, until it succeeds.
 
-### defineEventHandlers
+The `prepare` method is used to load the last offset, and is useful for any other things that need to be prepared, such as optimizing update statements, before processing begins.  It will be executed once per read side processor.
 
-The events are processed by event handlers that are defined in the method `defineEventHandlers`. One handler for each event class.
+The `handle` method must return an Akka streams `Flow` to handle the event stream.  Typically it will use `mapAsync`, with a parallelism of 1, to handle the events.
 
-A handler is a `BiFunction` that takes the event and the offset as parameters and returns zero or more bound statements that will be executed before processing next event.
+### Registering your read-side processor
 
-@[event-handlers](code/docs/home/persistence/BlogEventProcessor.java)
+Once you've created your read-side processor, you need to register it with Lagom. This is done using the [`ReadSide`](api/index.html?com/lightbend/lagom/javadsl/persistence/ReadSide.html) component:
 
-In this example we add one row to the `blogsummary` table and update the current offset in the `blogevent_offset` table for each `PostAdded` event. Other event types are ignored.
-
-Note how the prepared statements that were initialized in the `prepare` method are used here.
-
-You can keep state in variables of the enclosing class and update that state safely from the event handlers. The events are processed sequentially, one at a time. An example of such state could be values for calculating a moving average.
-
-If there is a failure when executing the statements the processor will be restarted after a backoff delay. This delay is increased exponentially in case of repeated failures.
+@[register-event-processor](code/docs/home/persistence/BlogServiceImpl3.java)
 
 ## Raw Stream of Events
 
-There is another tool that can be used if you want to do something else with the events than updating tables in Cassandra. You can get a stream of the persistent events with the `eventStream` method of the [PersistentEntityRegistry](api/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html).
+There is another tool that can be used if you want more flexible event processing. You can get a stream of the persistent events directly from Lagom with the `eventStream` method of the [PersistentEntityRegistry](api/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html).
 
 @[event-stream](code/docs/home/persistence/BlogServiceImpl3.java)
 
@@ -105,7 +102,7 @@ The `eventStream` method takes the event class that implements the `AggregateEve
 
 This stream will never complete, unless there is failure from retrieving the events from the database. It will continue to deliver new events as they are persisted.
 
-Each such stream of events will continuously generate queries to Cassandra to fetch new events and therefore this tool should be used carefully. Do not run too many such streams. It should typically not be used for service calls invoked by unknown number of clients, but it can be useful for a limited number of background processing jobs.
+Each such stream of events will continuously generate queries to the persistent entity implementation (eg, Cassandra) to fetch new events and therefore this tool should be used carefully. Do not run too many such streams. It should typically not be used for service calls invoked by unknown number of clients, but it can be useful for a limited number of background processing jobs.
 
 ## Refactoring Consideration
 
@@ -118,9 +115,5 @@ The default configuration should be good starting point, and the following setti
 @[persistence-read-side](../../../../persistence/src/main/resources/reference.conf)
 
 ## Underlying Implementation
-
-The `CassandraSession` is using the [Datastax Java Driver for Apache Cassandra](https://github.com/datastax/java-driver).
-
-Each `CassandraReadSideProcessor` instance is executed by an [Actor](http://doc.akka.io/docs/akka/2.4.4/java/untyped-actors.html) that is managed by [Akka Cluster Singleton](http://doc.akka.io/docs/akka/2.4.4/java/cluster-singleton.html). The processor consumes a stream of persistent events delivered by the `eventsByTag` [Persistence Query](http://doc.akka.io/docs/akka/2.4.4/java/persistence-query.html) implemented by [akka-persistence-cassandra](https://github.com/akka/akka-persistence-cassandra). The tag corresponds to the `tag` defined by the `AggregateEventTag`.
 
 The `eventStream` of the `PersistentEntityRegistry` is also implemented by the `eventsByTag` query.

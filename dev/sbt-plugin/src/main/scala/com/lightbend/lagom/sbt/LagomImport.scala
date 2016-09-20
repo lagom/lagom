@@ -21,6 +21,8 @@ object LagomImport {
   val lagomJavadslImmutables = component("lagom-javadsl-immutables") % Provided
   val lagomJavadslJackson = component("lagom-javadsl-jackson")
   val lagomJavadslPersistence = component("lagom-javadsl-persistence")
+  val lagomJavadslPersistenceCassandra = component("lagom-javadsl-persistence-cassandra")
+  val lagomJavadslPersistenceJdbc = component("lagom-javadsl-persistence-jdbc")
   val lagomJavadslPubSub = component("lagom-javadsl-pubsub")
   val lagomJavadslServer = component("lagom-javadsl-server")
   val lagomJavadslTestKit = component("lagom-javadsl-testkit") % Test

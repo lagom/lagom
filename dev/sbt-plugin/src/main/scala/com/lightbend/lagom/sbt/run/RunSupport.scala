@@ -62,8 +62,18 @@ private[sbt] object RunSupport {
   }
 
   private def cassandraDependencyClasspath = Def.task {
-    val projectDependencies = (allDependencies in Runtime).value
-    if (projectDependencies.exists(_ == LagomImport.lagomJavadslPersistence))
+    val projectDependencies = (externalDependencyClasspath in Runtime).value
+
+    val crossVersion = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
+    val cassandraPersistence = crossVersion(LagomImport.lagomJavadslPersistenceCassandra)
+    def isCassandraPersistence(module: ModuleID) = {
+      cassandraPersistence.organization == module.organization &&
+        cassandraPersistence.name == crossVersion(module).name
+    }
+
+    if (projectDependencies.exists { dep =>
+      dep.metadata.get(moduleID.key).exists(isCassandraPersistence)
+    })
       (managedClasspath in Internal.Configs.CassandraRuntime).value
     else
       Seq.empty

@@ -1,5 +1,8 @@
 package docs.home.persistence;
 
+import docs.home.persistence.BlogCommand.*;
+import docs.home.persistence.BlogEvent.*;
+
 import akka.Done;
 
 import javax.inject.Inject;
@@ -37,17 +40,16 @@ public class Post4 extends PersistentEntity<BlogCommand, BlogEvent, BlogState> {
           return ctx.done();
         }
 
-        final PostAdded postAdded =
-            PostAdded.builder().content(cmd.getContent()).postId(entityId()).build();
+        final PostAdded postAdded = new PostAdded(entityId(), cmd.getContent());
         return ctx.thenPersist(postAdded, (PostAdded evt) ->
         // After persist is done additional side effects can be performed
-            ctx.reply(AddPostDone.of(entityId())));
+            ctx.reply(new AddPostDone(entityId())));
       });
 
       // Event handlers are used both when when persisting new events and when replaying
       // events.
       b.setEventHandlerChangingBehavior(PostAdded.class, evt ->
-        becomePostAdded(state().withContent(Optional.of(evt.getContent()))));
+        becomePostAdded(new BlogState(Optional.of(evt.getContent()), false)));
 
       return b.build();
     }
@@ -58,21 +60,21 @@ public class Post4 extends PersistentEntity<BlogCommand, BlogEvent, BlogState> {
     BehaviorBuilder b = newBehaviorBuilder(newState);
 
     b.setCommandHandler(ChangeBody.class,
-        (cmd, ctx) -> ctx.thenPersist(BodyChanged.of(cmd.getBody()), evt ->
+        (cmd, ctx) -> ctx.thenPersist(new BodyChanged(entityId(), cmd.getBody()), evt ->
           ctx.reply(Done.getInstance())));
 
     b.setEventHandler(BodyChanged.class, evt -> state().withBody(evt.getBody()));
 
     //#publish
     b.setCommandHandler(Publish.class,
-        (cmd, ctx) -> ctx.thenPersist(PostPublished.of(entityId()), evt -> {
+        (cmd, ctx) -> ctx.thenPersist(new PostPublished(entityId()), evt -> {
             ctx.reply(Done.getInstance());
             publishedTopic.publish(evt);
           }));
     //#publish
 
     b.setEventHandler(PostPublished.class, evt ->
-      BlogState.builder().from(state()).isPublished(true).build());
+      new BlogState(state().getContent(), true));
 
     return b.build();
   }

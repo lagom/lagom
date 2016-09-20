@@ -1,12 +1,21 @@
 package docs.home.persistence;
 
+import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
+import com.lightbend.lagom.serialization.Jsonable;
 
-//#tag
 public class BlogEventTag {
 
-  public static final AggregateEventTag<BlogEvent> INSTANCE =
-    AggregateEventTag.of(BlogEvent.class);
+  //#aggregate-tag
+  public interface BlogEvent extends AggregateEvent<BlogEvent>, Jsonable {
+
+    AggregateEventTag<BlogEvent> BLOG_EVENT_TAG = AggregateEventTag.of(BlogEvent.class);
+
+    @Override
+    default AggregateEventTag<BlogEvent> aggregateTag() {
+      return BLOG_EVENT_TAG;
+    }
+  }
+  //#aggregate-tag
 
 }
-//#tag

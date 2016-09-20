@@ -11,7 +11,7 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface BlogService4 extends Service {
 
-  ServiceCall<NotUsed, Source<PostPublished, ?>> getNewPosts();
+  ServiceCall<NotUsed, Source<BlogEvent.PostPublished, ?>> getNewPosts();
 
   @Override
   default Descriptor descriptor() {

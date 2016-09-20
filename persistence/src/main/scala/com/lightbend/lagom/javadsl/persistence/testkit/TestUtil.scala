@@ -13,13 +13,8 @@ import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
-object TestUtil {
-
-  def clusterConfig(): Config = ConfigFactory.parseString(s"""
-    akka.actor.provider = akka.cluster.ClusterActorRefProvider
-    akka.remote.netty.tcp.port = 0
-    akka.remote.netty.tcp.hostname = 127.0.0.1
-    """)
+@deprecated("Use com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil instead")
+object TestUtil extends AbstractTestUtil {
 
   def persistenceConfig(testName: String, cassandraPort: Int, useServiceLocator: Boolean): Config = {
     (if (useServiceLocator) ConfigFactory.empty
@@ -50,21 +45,6 @@ object TestUtil {
     """)).withFallback(clusterConfig())
   }
 
-  def awaitPersistenceInit(system: ActorSystem): Unit = {
-    val probe = TestProbe()(system)
-    val log = LoggerFactory.getLogger(getClass)
-    val t0 = System.nanoTime()
-    var n = 0
-    probe.within(45.seconds) {
-      probe.awaitAssert {
-        n += 1
-        system.actorOf(Props[AwaitPersistenceInit], "persistenceInit" + n).tell("hello", probe.ref)
-        probe.expectMsg(5.seconds, "hello")
-        log.debug("awaitPersistenceInit took {} ms {}", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0), system.name)
-      }
-    }
-  }
-
   class AwaitPersistenceInit extends PersistentActor {
     def persistenceId: String = self.path.name
 
@@ -78,6 +58,29 @@ object TestUtil {
           sender() ! msg
           context.stop(self)
         }
+    }
+  }
+}
+
+trait AbstractTestUtil {
+  def clusterConfig(): Config = ConfigFactory.parseString(s"""
+    akka.actor.provider = akka.cluster.ClusterActorRefProvider
+    akka.remote.netty.tcp.port = 0
+    akka.remote.netty.tcp.hostname = 127.0.0.1
+    """)
+
+  def awaitPersistenceInit(system: ActorSystem): Unit = {
+    val probe = TestProbe()(system)
+    val log = LoggerFactory.getLogger(getClass)
+    val t0 = System.nanoTime()
+    var n = 0
+    probe.within(45.seconds) {
+      probe.awaitAssert {
+        n += 1
+        system.actorOf(Props[TestUtil.AwaitPersistenceInit], "persistenceInit" + n).tell("hello", probe.ref)
+        probe.expectMsg(5.seconds, "hello")
+        log.debug("awaitPersistenceInit took {} ms {}", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0), system.name)
+      }
     }
   }
 

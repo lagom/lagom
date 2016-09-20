@@ -9,19 +9,17 @@ import scala.compat.java8.FutureConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.collection.JavaConverters._
-
 import com.google.inject.AbstractModule
 import com.google.inject.Inject
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint
-import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorHolder
 import com.lightbend.lagom.internal.registry.ServiceRegistry
 import com.lightbend.lagom.internal.registry.ServiceRegistryService
 import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.ServiceLocator
-
 import akka.NotUsed
 import akka.actor.ActorSystem
+import com.lightbend.lagom.internal.persistence.ServiceLocatorHolder
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint
 import play.api.Logger
 
 class CassandraModule extends AbstractModule {

@@ -1,5 +1,7 @@
 package docs.home.persistence;
 
+import docs.home.persistence.BlogCommand.*;
+import docs.home.persistence.BlogEvent.*;
 import java.util.Optional;
 import akka.Done;
 
@@ -17,11 +19,10 @@ public class Post2 extends PersistentEntity<BlogCommand, BlogEvent, BlogState> {
     // Command handlers are invoked for incoming messages (commands).
     // A command handler must "return" the events to be persisted (if any).
     b.setCommandHandler(AddPost.class, (AddPost cmd, CommandContext<AddPostDone> ctx) -> {
-      final PostAdded postAdded =
-          PostAdded.builder().content(cmd.getContent()).postId(entityId()).build();
+      final PostAdded postAdded = new PostAdded(entityId(), cmd.getContent());
       return ctx.thenPersist(postAdded, (PostAdded evt) ->
         // After persist is done additional side effects can be performed
-        ctx.reply(AddPostDone.of(entityId())));
+        ctx.reply(new AddPostDone(entityId())));
     });
     //#command-handler
 
@@ -33,23 +34,22 @@ public class Post2 extends PersistentEntity<BlogCommand, BlogEvent, BlogState> {
       }
       //#validate-command
 
-      final PostAdded postAdded =
-          PostAdded.builder().content(cmd.getContent()).postId(entityId()).build();
+      final PostAdded postAdded = new PostAdded(entityId(), cmd.getContent());
       return ctx.thenPersist(postAdded, (PostAdded evt) ->
       // After persist is done additional side effects can be performed
-          ctx.reply(AddPostDone.of(entityId())));
+          ctx.reply(new AddPostDone(entityId())));
     });
 
     //#event-handler
     // Event handlers are used both when persisting new events
     // and when replaying events.
     b.setEventHandler(PostAdded.class, evt ->
-      state().withContent(Optional.of(evt.getContent())));
+      new BlogState(Optional.of(evt.getContent()), false));
     //#event-handler
 
     //#change-behavior
     b.setEventHandlerChangingBehavior(PostAdded.class, evt ->
-      becomePostAdded(state().withContent(Optional.of(evt.getContent()))));
+      becomePostAdded(new BlogState(Optional.of(evt.getContent()), false)));
     //#change-behavior
 
     return b.build();
@@ -63,7 +63,7 @@ public class Post2 extends PersistentEntity<BlogCommand, BlogEvent, BlogState> {
       ctx.reply(state().getContent().get()));
 
     b.setCommandHandler(ChangeBody.class,
-        (cmd, ctx) -> ctx.thenPersist(BodyChanged.of(cmd.getBody()), evt ->
+        (cmd, ctx) -> ctx.thenPersist(new BodyChanged(entityId(), cmd.getBody()), evt ->
           ctx.reply(Done.getInstance())));
 
     b.setEventHandler(BodyChanged.class, evt -> state().withBody(evt.getBody()));

@@ -3,29 +3,29 @@
  */
 package com.lightbend.lagom.javadsl.persistence;
 
-import javax.inject.Inject;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.lightbend.lagom.serialization.Jsonable;
-import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import akka.Done;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Address;
 import akka.cluster.Cluster;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableList;
 import com.lightbend.lagom.javadsl.persistence.testkit.SimulatedNullpointerException;
+import com.lightbend.lagom.serialization.Jsonable;
 import org.pcollections.PSequence;
+import com.lightbend.lagom.javadsl.persistence.PersistentEntity.ReplyType;
+
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt, TestEntity.State> {
 
   public static interface Cmd extends Jsonable {
   }
 
-  public static class Get implements Cmd, PersistentEntity.ReplyType<State> {
+  public static class Get implements Cmd, ReplyType<State> {
     private static Get instance = new Get();
 
     @JsonCreator
@@ -37,7 +37,7 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
     }
   }
 
-  public static class Add implements Cmd, PersistentEntity.ReplyType<Evt> {
+  public static class Add implements Cmd, ReplyType<Evt> {
     private final String element;
     private final int times;
 
@@ -98,7 +98,7 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
     PREPEND, APPEND
   }
 
-  public static class ChangeMode implements Cmd, PersistentEntity.ReplyType<Evt> {
+  public static class ChangeMode implements Cmd, ReplyType<Evt> {
     private final Mode mode;
 
     @JsonCreator
@@ -139,7 +139,7 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
 
   }
 
-  public static class UndefinedCmd implements Cmd, PersistentEntity.ReplyType<Done> {
+  public static class UndefinedCmd implements Cmd, ReplyType<Done> {
     @Override
     public int hashCode() {
       return 0;
@@ -416,7 +416,7 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
 
   }
 
-  public static class GetAddress implements Cmd, PersistentEntity.ReplyType<Address> {
+  public static class GetAddress implements Cmd, ReplyType<Address> {
     public static GetAddress instance = new GetAddress();
 
     private GetAddress() {

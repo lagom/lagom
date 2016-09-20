@@ -1,5 +1,7 @@
 package docs.home.persistence;
 
+import docs.home.persistence.BlogCommand.*;
+import docs.home.persistence.BlogEvent.*;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import java.util.Optional;
 import akka.Done;
@@ -35,7 +37,7 @@ public class Post3 extends PersistentEntity<BlogCommand, BlogEvent, BlogState> {
 
     //#reply
     b.setCommandHandler(ChangeBody.class,
-        (cmd, ctx) -> ctx.thenPersist(BodyChanged.of(cmd.getBody()), evt ->
+        (cmd, ctx) -> ctx.thenPersist(new BodyChanged(entityId(), cmd.getBody()), evt ->
           ctx.reply(Done.getInstance())));
     //#reply
 

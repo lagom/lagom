@@ -1,27 +1,19 @@
-lazy val clusterProj = (project in file("")).enablePlugins(LagomJava)
-  .settings(
 //#cluster-dependency
-  libraryDependencies += lagomJavadslCluster
+libraryDependencies += lagomJavadslCluster
 //#cluster-dependency
-  )
 
-lazy val persistenceProj = (project in file("")).enablePlugins(LagomJava)
-  .settings(
-//#persistence-dependency
-  libraryDependencies += lagomJavadslPersistence
-//#persistence-dependency
-  )
+//#cassandra-dependency
+libraryDependencies += lagomJavadslPersistenceCassandra
+//#cassandra-dependency
 
-lazy val pubSubProj = (project in file("")).enablePlugins(LagomJava)
-  .settings(
+//#jdbc-dependency
+libraryDependencies += lagomJavadslPersistenceJdbc
+//#jdbc-dependency
+
 //#pubsub-dependency
-  libraryDependencies += lagomJavadslPubSub
+libraryDependencies += lagomJavadslPubSub
 //#pubsub-dependency
-  )
-  
-lazy val testkitProj = (project in file("")).enablePlugins(LagomJava)
-  .settings(
+
 //#testkit-dependency
-  libraryDependencies += lagomJavadslTestKit
+libraryDependencies += lagomJavadslTestKit
 //#testkit-dependency
-  )
