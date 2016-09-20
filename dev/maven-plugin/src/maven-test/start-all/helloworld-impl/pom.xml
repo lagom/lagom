@@ -22,7 +22,7 @@
         </dependency>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
-            <artifactId>lagom-javadsl-persistence_${scala.binary.version}</artifactId>
+            <artifactId>lagom-javadsl-persistence-cassandra_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>

@@ -1,22 +1,26 @@
 package com.lightbend.lagom.docs
 
 import java.util.concurrent.CompletionStage
+
 import com.google.inject.AbstractModule
-import com.lightbend.lagom.javadsl.api.transport.{ ResponseHeader, RequestHeader }
-import com.lightbend.lagom.javadsl.api.{ ServiceCall, ServiceLocator }
-import com.lightbend.lagom.javadsl.server.{ HeaderServiceCall, ServiceGuiceSupport }
-import org.scalatest.{ WordSpecLike, Matchers }
+import com.lightbend.lagom.javadsl.api.transport.{RequestHeader, ResponseHeader}
+import com.lightbend.lagom.javadsl.api.{ServiceCall, ServiceLocator}
+import com.lightbend.lagom.javadsl.server.{HeaderServiceCall, ServiceGuiceSupport}
+import org.scalatest.{Matchers, WordSpecLike}
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.bind
 import play.core.server.Server
-import scala.concurrent.{ Future, Promise }
+
+import scala.concurrent.{Future, Promise}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.reflect.ClassTag
 import scala.compat.java8.FutureConverters._
 import com.lightbend.lagom.internal.testkit.TestServiceLocator
 import docs.services.test.ServiceTestModule
 import com.lightbend.lagom.internal.testkit.TestServiceLocatorPort
+import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcPersistenceModule
+import play.api.db.{DBModule, HikariCPModule}
 
 trait ServiceSupport extends WordSpecLike with Matchers {
 
@@ -40,25 +44,29 @@ trait ServiceSupport extends WordSpecLike with Matchers {
     def apply[T](block: Application => S => T): T
   }
 
-  def withService[S: ClassTag, I <: S: ClassTag](applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()): WithService[S] = new WithService[S] {
-    def apply[T](block: Application => S => T) = {
-      withServer(applicationBuilder.bindings(new AbstractModule with ServiceGuiceSupport {
+  def withService[S: ClassTag, I <: S: ClassTag](applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()): WithService[S] =
+    withServiceImpl(applicationBuilder.bindings(new AbstractModule with ServiceGuiceSupport {
         override def configure(): Unit = {
           bindServices(serviceBinding(implicitly[ClassTag[S]].runtimeClass.asInstanceOf[Class[Any]], implicitly[ClassTag[I]].runtimeClass))
         }
-      })) { app =>
-        block(app)(app.injector.instanceOf[S])
-      }
-    }
-  }
+      })
+    )
 
-  def withServiceInstance[S: ClassTag](impl: S, applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()): WithService[S] = new WithService[S] {
-    def apply[T](block: Application => S => T) = {
-      withServer(applicationBuilder.bindings(new AbstractModule with ServiceGuiceSupport {
+  def withServiceInstance[S: ClassTag](impl: S, applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()): WithService[S] =
+    withServiceImpl(applicationBuilder
+      .bindings(new AbstractModule with ServiceGuiceSupport {
         override def configure(): Unit = {
           bindServices(serviceBinding(implicitly[ClassTag[S]].runtimeClass.asInstanceOf[Class[Any]], impl))
         }
-      })) { app =>
+      })
+    )
+
+  private def withServiceImpl[S: ClassTag](applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()): WithService[S] = new WithService[S] {
+    def apply[T](block: Application => S => T) = {
+      withServer(
+        applicationBuilder
+          .disable(classOf[JdbcPersistenceModule], classOf[HikariCPModule], classOf[DBModule])
+      ) { app =>
         block(app)(app.injector.instanceOf[S])
       }
     }

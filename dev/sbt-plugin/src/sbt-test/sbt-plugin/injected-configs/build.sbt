@@ -1,7 +1,7 @@
 import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 
 lazy val `my-project` = (project in file(".")).enablePlugins(LagomJava)
-  .settings(libraryDependencies ++= Seq(lagomJavadslPersistence, lagomSbtScriptedLibrary))
+  .settings(libraryDependencies ++= Seq(lagomJavadslPersistenceCassandra, lagomSbtScriptedLibrary))
 
 scalaVersion := Option(System.getProperty("scala.version")).getOrElse("2.11.7")
 

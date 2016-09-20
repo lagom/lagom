@@ -7,7 +7,7 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface BlogService extends Service {
 
-  ServiceCall<AddPost, String> addPost(String id);
+  ServiceCall<BlogCommand.AddPost, String> addPost(String id);
 
   @Override
   default Descriptor descriptor() {

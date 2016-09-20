@@ -3,22 +3,12 @@
  */
 package com.lightbend.lagom.javadsl.persistence
 
-import java.io.File
-import scala.concurrent.duration._
 import akka.actor.ActorSystem
-import akka.actor.Props
-import akka.event.Logging
-import akka.persistence.PersistentActor
-import akka.testkit.ImplicitSender
-import akka.testkit.TestKit
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
-import org.scalactic.ConversionCheckedTripleEquals
-import org.scalactic.Constraint
-import akka.event.LoggingAdapter
+import akka.event.{ Logging, LoggingAdapter }
+import akka.testkit.{ ImplicitSender, TestKit }
+import com.typesafe.config.{ Config, ConfigFactory }
+import org.scalactic.{ Constraint, ConversionCheckedTripleEquals }
+import org.scalatest.{ BeforeAndAfterAll, Matchers, Suite, WordSpecLike }
 
 object ActorSystemSpec {
   def getCallerName(clazz: Class[_]): String = {
@@ -43,9 +33,6 @@ abstract class ActorSystemSpec(system: ActorSystem) extends TestKit(system)
   def this(config: Config) = this(ActorSystemSpec.getCallerName(getClass), config)
 
   def this() = this(ConfigFactory.empty())
-
-  override def beforeAll {
-  }
 
   override def afterAll {
     shutdown()

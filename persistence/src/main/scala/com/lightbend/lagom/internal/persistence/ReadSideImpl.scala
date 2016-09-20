@@ -7,21 +7,21 @@ import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 import javax.inject.{ Inject, Singleton }
 
-import akka.actor.{ ActorSystem, PoisonPill, SupervisorStrategy }
+import akka.actor.{ ActorSystem, SupervisorStrategy }
 import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterShardingSettings
-import akka.cluster.singleton.{ ClusterSingletonManager, ClusterSingletonManagerSettings, ClusterSingletonProxy, ClusterSingletonProxySettings }
 import akka.pattern.BackoffSupervisor
 import akka.stream.Materializer
-import akka.stream.scaladsl.Source
 import com.google.inject.Injector
-import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings }
+import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings, ClusterStartupTask }
 import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, PersistentEntityRegistry, ReadSide, ReadSideProcessor }
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 import scala.collection.JavaConverters._
+
+import scala.compat.java8.FutureConverters._
 
 @Singleton
 private[lagom] class ReadSideImpl @Inject() (
@@ -71,25 +71,13 @@ private[lagom] class ReadSideImpl @Inject() (
         case None      => throw new IllegalArgumentException(s"ReadSideProcessor ${clazz.getName} returned 0 tags")
       }
 
-      val globalPrepareProps = GlobalPrepareReadSideActor.props(processorFactory, globalPrepareTimeout)
-
-      val backoffGlobalPrepareProps = BackoffSupervisor.propsWithSupervisorStrategy(
-        globalPrepareProps, "global-prepare", minBackoff, maxBackoff, randomBackoffFactor, SupervisorStrategy.stoppingStrategy
+      val globalPrepareTask = ClusterStartupTask(
+        system, s"readSideGlobalPrepare-$encodedReadSideName",
+        () => processorFactory().buildHandler().globalPrepare().toScala,
+        globalPrepareTimeout, role, minBackoff, maxBackoff, randomBackoffFactor
       )
 
-      val globalPrepareSingletonProps = ClusterSingletonManager.props(backoffGlobalPrepareProps, PoisonPill,
-        ClusterSingletonManagerSettings(system))
-
-      val globalPrepareSingleton = system.actorOf(globalPrepareSingletonProps, s"readSideGlobalPrepare-$encodedReadSideName")
-
-      val globalPrepareProxy = system.actorOf(
-        ClusterSingletonProxy.props(
-          singletonManagerPath = globalPrepareSingleton.path.toStringWithoutAddress,
-          settings = ClusterSingletonProxySettings(system).withRole(role)
-        ), s"readSideGlobalPrepareProxy-$encodedReadSideName"
-      )
-
-      val processorProps = ReadSideActor.props(processorFactory, registry.eventStream[Event], eventClass, globalPrepareProxy, globalPrepareTimeout)
+      val processorProps = ReadSideActor.props(processorFactory, registry.eventStream[Event], eventClass, globalPrepareTask, globalPrepareTimeout)
 
       val backoffProps = BackoffSupervisor.propsWithSupervisorStrategy(
         processorProps, "processor", minBackoff, maxBackoff, randomBackoffFactor, SupervisorStrategy.stoppingStrategy

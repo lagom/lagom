@@ -108,28 +108,3 @@ In the rest of this documentation, "persistent" refers instead to [persistent st
 ### Further reading
 
 The Immutables documentation has more details on immutable collections [here](https://immutables.github.io/immutable.html#array-collection-and-map-attributes).
-
-## Example of PersistentEntity Commands
-
-@[full-example](../guide/cluster/code/docs/home/persistence/BlogCommand.java)
-
-A few things worth noting here:
-
-* `@Value.Parameter` can be added to one or more properties to generate [constructor method](https://immutables.github.io/immutable.html#constructor-method), which is more convenient than the full builder for classes with only a few properties
-* `singleton = true` can be used for objects that don't have any properties, i.e. [singleton instances](https://immutables.github.io/immutable.html#singleton-instances), also note that the visibility of the constructor should be reduced for such classes
-
-### Example of PersistentEntity Events
-
-@[full-example](../guide/cluster/code/docs/home/persistence/BlogEvent.java)
-
-### Example of PersistentEntity State
-
-@[full-example](../guide/cluster/code/docs/home/persistence/AbstractBlogState.java)
-
-@[full-example](../guide/cluster/code/docs/home/persistence/AbstractPostContent.java)
-
-A few things worth noting here:
-
-* Java 8's `Optional` type can be used for [optional properties](https://immutables.github.io/immutable.html#optional-attributes)
-* You can [add more methods](https://immutables.github.io/immutable.html#smart-data) to the classes, such as `withBody` and `isEmpty` above
-* You can define [default values](https://immutables.github.io/immutable.html#default-attributes) for optional properties, e.g. `isPublished` above

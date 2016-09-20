@@ -1,25 +1,36 @@
 package docs.home.persistence;
 
+import akka.japi.Option;
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule;
+import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil;
+import docs.home.persistence.BlogCommand.*;
+import docs.home.persistence.BlogEvent.*;
+
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.Assert.assertThat;
+
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.lightbend.lagom.javadsl.persistence.ReadSide;
 import com.typesafe.config.Config;
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide;
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession;
 import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule;
-import com.lightbend.lagom.javadsl.persistence.testkit.TestUtil;
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import scala.collection.JavaConversions;
+import scala.collection.JavaConverters;
 import scala.concurrent.duration.Duration;
 
 import akka.actor.ActorSystem;
@@ -45,7 +56,7 @@ public class CqrsIntegrationTest {
   public static void setup() throws Exception {
     Config config = TestUtil.persistenceConfig("CqrsIntegrationTest", CassandraLauncher.randomPort(), false);
     system = ActorSystem.create("CqrsIntegrationTest", config);
-    injector = Guice.createInjector(new ActorSystemModule(system), new PersistenceModule());
+    injector = Guice.createInjector(new ActorSystemModule(system), new PersistenceModule(), new CassandraPersistenceModule());
     cassandraSession = injector.getInstance(CassandraSession.class);
 
     Cluster.get(system).join(Cluster.get(system).selfAddress());
@@ -53,8 +64,6 @@ public class CqrsIntegrationTest {
     File cassandraDirectory = new File("target/" + system.name());
     CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource(), true, 0);
     TestUtil.awaitPersistenceInit(system);
-
-    createTable();
   }
 
   @AfterClass
@@ -66,26 +75,14 @@ public class CqrsIntegrationTest {
     CassandraLauncher.stop();
   }
 
-  private static void createTable() throws Exception {
-    cassandraSession
-        .executeCreateTable(
-            "CREATE TABLE IF NOT EXISTS blogsummary (" + "partition int, id text, title text, "
-                + "PRIMARY KEY (partition, id))").toCompletableFuture().get(15, SECONDS);
-
-    cassandraSession
-        .executeCreateTable(
-            "CREATE TABLE IF NOT EXISTS blogevent_offset (" + "partition int, offset timeuuid, "
-                + "PRIMARY KEY (partition))").toCompletableFuture().get(15, SECONDS);
-  }
-
   private PersistentEntityRegistry registry() {
     PersistentEntityRegistry reg = injector.getInstance(PersistentEntityRegistry.class);
     reg.register(Post.class);
     return reg;
   }
 
-  private CassandraReadSide readSide() {
-    return injector.getInstance(CassandraReadSide.class);
+  private ReadSide readSide() {
+    return injector.getInstance(ReadSide.class);
   }
 
   //yeah, the Akka testkit is in need of some Java 8 love
@@ -114,15 +111,15 @@ public class CqrsIntegrationTest {
     // At system starup event processor is started.
     // It consumes the stream of persistent events, here BlogEvent subclasses.
     // It will update the blogsummary table.
-    readSide().register(BlogEventProcessor.class);
+    readSide().register(CassandraBlogEventProcessor.BlogEventProcessor.class);
 
     // persist some events via the Post PersistentEntity
     final PersistentEntityRef<BlogCommand> ref1 = registry().refFor(Post.class, "1");
-    final AddPost cmd1 = AddPost.of(PostContent.of("Title 1", "Body"));
+    final AddPost cmd1 = new AddPost(new PostContent("Title 1", "Body"));
     ref1.ask(cmd1).toCompletableFuture().get(15, SECONDS); // await only for deterministic order
 
     final PersistentEntityRef<BlogCommand> ref2 = registry().refFor(Post.class, "2");
-    final AddPost cmd2 = AddPost.of(PostContent.of("Title 2", "Body"));
+    final AddPost cmd2 = new AddPost(new PostContent("Title 2", "Body"));
     ref2.ask(cmd2).toCompletableFuture().get(5, SECONDS); // await only for deterministic order
 
     // We can query the blogsummary table via the CassandraSession,
@@ -144,7 +141,7 @@ public class CqrsIntegrationTest {
     // persist something more, the processor will consume the event
     // and update the blogsummary table
     final PersistentEntityRef<BlogCommand> ref3 = registry().refFor(Post.class, "3");
-    final AddPost cmd3 = AddPost.of(PostContent.of("Title 3", "Body"));
+    final AddPost cmd3 = new AddPost(new PostContent("Title 3", "Body"));
     ref3.ask(cmd3);
 
     eventually(() -> {
@@ -157,19 +154,23 @@ public class CqrsIntegrationTest {
 
     // For other use cases than updating a read-side table in Cassandra it is possible
     // to consume the events directly.
-    final Source<Pair<BlogEvent, UUID>, ?> eventStream = registry()
-        .eventStream(BlogEventTag.INSTANCE, Optional.empty());
+    final Source<Pair<BlogEvent, UUID>, ?> eventStream = Source.from(BlogEvent.TAGS)
+            .flatMapMerge(BlogEvent.TAGS.size(), tag -> registry().eventStream(tag, Optional.empty()));
+
     final TestSubscriber.Probe<BlogEvent> eventProbe = eventStream.map(pair -> pair.first())
-        .runWith(TestSink.probe(system), mat).request(10);
-    eventProbe.expectNext(PostAdded.builder().postId("1").content(PostContent.of("Title 1", "Body")).build());
-    eventProbe.expectNext(PostAdded.builder().postId("2").content(PostContent.of("Title 2", "Body")).build());
-    eventProbe.expectNext(PostAdded.builder().postId("3").content(PostContent.of("Title 3", "Body")).build());
+        .runWith(TestSink.probe(system), mat);
+    eventProbe.request(4);
+    List<BlogEvent> events = JavaConversions.seqAsJavaList(eventProbe.expectNextN(3));
+
+    assertThat(events, hasItem(new PostAdded("1", new PostContent("Title 1", "Body"))));
+    assertThat(events, hasItem(new PostAdded("2", new PostContent("Title 2", "Body"))));
+    assertThat(events, hasItem(new PostAdded("3", new PostContent("Title 3", "Body"))));
 
     final PersistentEntityRef<BlogCommand> ref4 = registry().refFor(Post.class, "4");
-    final AddPost cmd4 = AddPost.of(PostContent.of("Title 4", "Body"));
+    final AddPost cmd4 = new AddPost(new PostContent("Title 4", "Body"));
     ref4.ask(cmd4);
 
-    eventProbe.expectNext(PostAdded.builder().postId("4").content(PostContent.of("Title 4", "Body")).build());
+    eventProbe.expectNext(new PostAdded("4", new PostContent("Title 4", "Body")));
 
   }
 

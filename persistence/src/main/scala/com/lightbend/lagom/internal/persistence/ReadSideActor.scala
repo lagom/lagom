@@ -3,15 +3,14 @@
  */
 package com.lightbend.lagom.internal.persistence
 
-import akka.actor.Status.Failure
 import akka.{ Done, NotUsed }
-import akka.actor.{ Actor, ActorLogging, ActorRef, Props, Status }
+import akka.actor.{ Actor, ActorLogging, Props, Status }
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.{ Keep, Sink }
 import akka.stream.{ KillSwitch, KillSwitches, Materializer }
 import akka.util.Timeout
-import com.lightbend.lagom.internal.persistence.GlobalPrepareReadSideActor.Prepare
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.javadsl.persistence._
 
 import scala.compat.java8.FutureConverters._
@@ -23,10 +22,10 @@ private[lagom] object ReadSideActor {
     processor:            () => ReadSideProcessor[Event],
     eventStreamFactory:   (AggregateEventTag[Event], Offset) => Source[akka.japi.Pair[Event, Offset], NotUsed],
     clazz:                Class[Event],
-    globalPrepare:        ActorRef,
+    globalPrepareTask:    ClusterStartupTask,
     globalPrepareTimeout: FiniteDuration
   )(implicit mat: Materializer) = {
-    Props(classOf[ReadSideActor[Event]], processor, eventStreamFactory, clazz, globalPrepare, globalPrepareTimeout, mat)
+    Props(classOf[ReadSideActor[Event]], processor, eventStreamFactory, clazz, globalPrepareTask, globalPrepareTimeout, mat)
   }
 
   /**
@@ -42,7 +41,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   processorFactory:     () => ReadSideProcessor[Event],
   eventStreamFactory:   (AggregateEventTag[Event], Offset) => Source[akka.japi.Pair[Event, Offset], NotUsed],
   clazz:                Class[Event],
-  globalPrepare:        ActorRef,
+  globalPrepareTask:    ClusterStartupTask,
   globalPrepareTimeout: FiniteDuration
 )(implicit mat: Materializer) extends Actor with ActorLogging {
   import ReadSideActor._
@@ -63,7 +62,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
       implicit val timeout = Timeout(globalPrepareTimeout)
 
-      globalPrepare ? Prepare pipeTo self
+      globalPrepareTask.askExecute() pipeTo self
       context become preparing(tag)
   }
 
@@ -101,70 +100,6 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
     case Done =>
       throw new IllegalStateException("Stream terminated when it shouldn't")
 
-  }
-
-}
-
-private[lagom] object GlobalPrepareReadSideActor {
-
-  /**
-   * Ask the actor if we are prepared yet.
-   *
-   * The actor will send [[akka.Done]] in response.
-   */
-  case object Prepare
-
-  def props(processorFactory: () => ReadSideProcessor[_], prepareTimeout: FiniteDuration) = {
-    Props(classOf[GlobalPrepareReadSideActor], processorFactory, prepareTimeout)
-  }
-}
-
-private[lagom] class GlobalPrepareReadSideActor(processorFactory: () => ReadSideProcessor[_], prepareTimeout: FiniteDuration) extends Actor {
-
-  import GlobalPrepareReadSideActor._
-
-  import akka.pattern.ask
-  import akka.pattern.pipe
-
-  import context.dispatcher
-
-  override def preStart(): Unit = {
-    // We let the ask pattern handle the timeout, by asking ourselves to do the prepare and piping the result back to
-    // ourselves
-    implicit val timeout = Timeout(prepareTimeout)
-    self ? Prepare pipeTo self
-  }
-
-  def receive = {
-    case Prepare =>
-      processorFactory().buildHandler().globalPrepare().toScala pipeTo self
-      context become preparing(List(sender()))
-  }
-
-  def preparing(outstandingQueries: List[ActorRef]): Receive = {
-    case Prepare =>
-      context become preparing(sender() :: outstandingQueries)
-
-    case Done =>
-      outstandingQueries foreach { requester =>
-        requester ! Done
-      }
-      context become prepared
-
-    case failure @ Failure(e) =>
-      outstandingQueries foreach { requester =>
-        requester ! failure
-      }
-      // If we failed to prepare, crash
-      throw e
-  }
-
-  def prepared: Receive = {
-    case Prepare =>
-      sender() ! Done
-
-    case Done =>
-    // We do expect to receive Done once prepared since we initially asked ourselves to prepare
   }
 
 }

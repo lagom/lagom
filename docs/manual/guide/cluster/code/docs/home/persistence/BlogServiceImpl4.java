@@ -13,15 +13,15 @@ import akka.stream.javadsl.Source;
 
 public class BlogServiceImpl4 implements BlogService4 {
 
-  private final PubSubRef<PostPublished> publishedTopic;
+  private final PubSubRef<BlogEvent.PostPublished> publishedTopic;
 
   @Inject
   public BlogServiceImpl4(PubSubRegistry pubSub) {
-    publishedTopic = pubSub.refFor(TopicId.of(PostPublished.class, ""));
+    publishedTopic = pubSub.refFor(TopicId.of(BlogEvent.PostPublished.class, ""));
   }
 
   @Override
-  public ServiceCall<NotUsed, Source<PostPublished, ?>> getNewPosts() {
+  public ServiceCall<NotUsed, Source<BlogEvent.PostPublished, ?>> getNewPosts() {
     return request ->
       CompletableFuture.completedFuture(publishedTopic.subscriber());
   }

@@ -1,0 +1,43 @@
+/*
+ * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
+ */
+package com.lightbend.lagom.internal.persistence.cassandra
+
+import javax.inject.{ Inject, Singleton }
+
+import akka.NotUsed
+import akka.actor.ActorSystem
+import akka.japi.Pair
+import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
+import akka.persistence.query.PersistenceQuery
+import akka.stream.javadsl
+import com.google.inject.Injector
+import com.lightbend.lagom.internal.persistence.AbstractPersistentEntityRegistry
+import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
+import com.lightbend.lagom.javadsl.persistence._
+
+@Singleton
+private[lagom] class CassandraPersistentEntityRegistry @Inject() (system: ActorSystem, injector: Injector)
+  extends AbstractPersistentEntityRegistry(system, injector) {
+
+  override protected val journalId = CassandraReadJournal.Identifier
+
+  override protected val eventQueries: CassandraReadJournal =
+    PersistenceQuery(system).readJournalFor[CassandraReadJournal](journalId)
+
+  override def eventStream[Event <: AggregateEvent[Event]](
+    aggregateTag: AggregateEventTag[Event],
+    fromOffset:   Offset
+  ): javadsl.Source[Pair[Event, Offset], NotUsed] = {
+    val tag = aggregateTag.tag
+    val offset = fromOffset match {
+      case Offset.NONE         => eventQueries.firstOffset
+      case uuid: TimeBasedUUID => uuid.value()
+      case other               => throw new IllegalArgumentException("Cassandra does not support " + other.getClass.getName + " offsets")
+    }
+    eventQueries.eventsByTag(tag, offset)
+      .map { env => Pair.create(env.event.asInstanceOf[Event], Offset.timeBasedUUID(env.offset)) }
+      .asJava
+  }
+
+}
