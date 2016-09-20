@@ -4,25 +4,40 @@
 package com.lightbend.lagom.internal.persistence
 
 import java.util.Optional
-import java.util.concurrent.{ CompletionStage, ConcurrentHashMap, TimeUnit }
+import java.util.concurrent.{CompletionStage, ConcurrentHashMap, TimeUnit}
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
+import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings, ShardRegion}
 import akka.event.Logging
 import akka.japi.Pair
 import akka.pattern.ask
 import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.stream.javadsl
 import akka.util.Timeout
-import akka.{ Done, NotUsed }
+import akka.{Done, NotUsed}
 import com.google.inject.Injector
 import com.lightbend.lagom.javadsl.persistence._
 
-import scala.concurrent.duration.{ FiniteDuration, _ }
+import scala.concurrent.duration.{FiniteDuration, _}
 import scala.util.control.NonFatal
 
-private[lagom] abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) extends PersistentEntityRegistry {
+/**
+  * Provides shared functionality for implementing a persistent entity registry.
+  *
+  * Akka persistence plugins can extend this to implement a custom registry.
+  */
+abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) extends PersistentEntityRegistry {
+
+  /**
+    * The ID of the journal.
+    */
+  protected val journalId: String
+
+  /**
+    * The events by tag query. Necessary for implementing read sides and the eventStream query.
+    */
+  protected val eventsByTagQuery: Option[EventsByTagQuery] = None
 
   private val sharding = ClusterSharding(system)
   private val conf = system.settings.config.getConfig("lagom.persistence")
@@ -50,10 +65,6 @@ private[lagom] abstract class AbstractPersistentEntityRegistry(system: ActorSyst
   }
 
   private val registeredTypeNames = new ConcurrentHashMap[String, Class[_]]()
-
-  protected val journalId: String
-
-  protected val eventQueries: EventsByTagQuery
 
   override def register[C, E, S](entityClass: Class[_ <: PersistentEntity[C, E, S]]): Unit = {
 
@@ -103,15 +114,20 @@ private[lagom] abstract class AbstractPersistentEntityRegistry(system: ActorSyst
     aggregateTag: AggregateEventTag[Event],
     fromOffset:   Offset
   ): javadsl.Source[Pair[Event, Offset], NotUsed] = {
-    val tag = aggregateTag.tag
-    val offset = fromOffset match {
-      case Offset.NONE          => 0l
-      case seq: Offset.Sequence => seq.value() + 1
-      case other                => throw new IllegalArgumentException(s"$journalId does not support ${other.getClass.getSimpleName} offsets")
+    eventsByTagQuery match {
+      case Some(queries) =>
+        val tag = aggregateTag.tag
+        val offset = fromOffset match {
+          case Offset.NONE          => 0l
+          case seq: Offset.Sequence => seq.value() + 1
+          case other                => throw new IllegalArgumentException(s"$journalId does not support ${other.getClass.getSimpleName} offsets")
+        }
+        queries.eventsByTag(tag, offset)
+          .map { env => Pair.create(env.event.asInstanceOf[Event], Offset.sequence(env.offset)) }
+          .asJava
+      case None =>
+        throw new UnsupportedOperationException(s"The $journalId Lagom persistence plugin does not support streaming events by tag")
     }
-    eventQueries.eventsByTag(tag, offset)
-      .map { env => Pair.create(env.event.asInstanceOf[Event], Offset.sequence(env.offset)) }
-      .asJava
   }
 
   override def gracefulShutdown(timeout: FiniteDuration): CompletionStage[Done] = {
