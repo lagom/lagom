@@ -3,13 +3,14 @@
  */
 package com.lightbend.lagom.internal.persistence.cassandra
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Singleton}
 
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.japi.Pair
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import akka.persistence.query.PersistenceQuery
+import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.stream.javadsl
 import com.google.inject.Injector
 import com.lightbend.lagom.internal.persistence.AbstractPersistentEntityRegistry
@@ -22,8 +23,9 @@ private[lagom] class CassandraPersistentEntityRegistry @Inject() (system: ActorS
 
   override protected val journalId = CassandraReadJournal.Identifier
 
-  override protected val eventQueries: CassandraReadJournal =
-    PersistenceQuery(system).readJournalFor[CassandraReadJournal](journalId)
+  private val cassandraReadJournal = PersistenceQuery(system).readJournalFor[CassandraReadJournal](journalId)
+
+  override protected val eventsByTagQuery: Option[EventsByTagQuery] = Some(cassandraReadJournal)
 
   override def eventStream[Event <: AggregateEvent[Event]](
     aggregateTag: AggregateEventTag[Event],
@@ -31,11 +33,11 @@ private[lagom] class CassandraPersistentEntityRegistry @Inject() (system: ActorS
   ): javadsl.Source[Pair[Event, Offset], NotUsed] = {
     val tag = aggregateTag.tag
     val offset = fromOffset match {
-      case Offset.NONE         => eventQueries.firstOffset
+      case Offset.NONE         => cassandraReadJournal.firstOffset
       case uuid: TimeBasedUUID => uuid.value()
       case other               => throw new IllegalArgumentException("Cassandra does not support " + other.getClass.getName + " offsets")
     }
-    eventQueries.eventsByTag(tag, offset)
+    cassandraReadJournal.eventsByTag(tag, offset)
       .map { env => Pair.create(env.event.asInstanceOf[Event], Offset.timeBasedUUID(env.offset)) }
       .asJava
   }
