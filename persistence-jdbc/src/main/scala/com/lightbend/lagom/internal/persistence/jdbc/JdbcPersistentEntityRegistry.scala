@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.internal.persistence.jdbc
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import akka.actor.ActorSystem
 import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal

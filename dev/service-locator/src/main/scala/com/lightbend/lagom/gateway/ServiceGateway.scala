@@ -46,7 +46,7 @@ case class ServiceGatewayConfig(
 
 @Singleton
 class ServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
-  @Named("serviceRegistryActor") registry: ActorRef) {
+                                       @Named("serviceRegistryActor") registry: ActorRef) {
   def start(): ServiceGateway = {
     new ServiceGateway(lifecycle, config, registry)
   }

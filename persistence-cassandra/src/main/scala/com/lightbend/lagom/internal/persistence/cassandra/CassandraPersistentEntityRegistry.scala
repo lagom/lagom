@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.internal.persistence.cassandra
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import akka.NotUsed
 import akka.actor.ActorSystem
