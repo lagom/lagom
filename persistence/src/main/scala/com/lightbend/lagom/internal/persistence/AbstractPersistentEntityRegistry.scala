@@ -4,39 +4,39 @@
 package com.lightbend.lagom.internal.persistence
 
 import java.util.Optional
-import java.util.concurrent.{CompletionStage, ConcurrentHashMap, TimeUnit}
+import java.util.concurrent.{ CompletionStage, ConcurrentHashMap, TimeUnit }
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings, ShardRegion}
+import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
 import akka.event.Logging
 import akka.japi.Pair
 import akka.pattern.ask
 import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.stream.javadsl
 import akka.util.Timeout
-import akka.{Done, NotUsed}
+import akka.{ Done, NotUsed }
 import com.google.inject.Injector
 import com.lightbend.lagom.javadsl.persistence._
 
-import scala.concurrent.duration.{FiniteDuration, _}
+import scala.concurrent.duration.{ FiniteDuration, _ }
 import scala.util.control.NonFatal
 
 /**
-  * Provides shared functionality for implementing a persistent entity registry.
-  *
-  * Akka persistence plugins can extend this to implement a custom registry.
-  */
+ * Provides shared functionality for implementing a persistent entity registry.
+ *
+ * Akka persistence plugins can extend this to implement a custom registry.
+ */
 abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) extends PersistentEntityRegistry {
 
   /**
-    * The ID of the journal.
-    */
+   * The ID of the journal.
+   */
   protected val journalId: String
 
   /**
-    * The events by tag query. Necessary for implementing read sides and the eventStream query.
-    */
+   * The events by tag query. Necessary for implementing read sides and the eventStream query.
+   */
   protected val eventsByTagQuery: Option[EventsByTagQuery] = None
 
   private val sharding = ClusterSharding(system)

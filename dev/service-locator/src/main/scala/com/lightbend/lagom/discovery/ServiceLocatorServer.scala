@@ -5,10 +5,10 @@ package com.lightbend.lagom.discovery
 
 import java.io.Closeable
 import java.net.URI
-import java.util.{Map => JMap}
+import java.util.{ Map => JMap }
 
 import com.lightbend.lagom.discovery.impl.ServiceRegistryModule
-import com.lightbend.lagom.gateway.{ServiceGateway, ServiceGatewayConfig, ServiceGatewayFactory}
+import com.lightbend.lagom.gateway.{ ServiceGateway, ServiceGatewayConfig, ServiceGatewayFactory }
 import play.api.Application
 import play.api.Logger
 import play.api.Mode
