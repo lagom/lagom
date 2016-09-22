@@ -1,0 +1,31 @@
+package docs.mb;
+
+import akka.NotUsed;
+import akka.Done;
+
+//#hello-service
+import com.lightbend.lagom.javadsl.api.*;
+import com.lightbend.lagom.javadsl.api.broker.Topic;
+
+import static com.lightbend.lagom.javadsl.api.Service.*;
+
+public interface HelloService extends Service {
+  @Override
+  default Descriptor descriptor() {
+    return named("helloservice").withCalls(
+        pathCall("/api/hello/:id",  this::hello),
+        pathCall("/api/hello/:id", this::useGreeting)
+      )
+      // here we declare the topic(s) this service will publish to
+      .publishing(
+        topic("greetings", this::greetingsTopic)
+      )
+      .withAutoAcl(true);
+  }
+  // The topic handle
+  Topic<GreetingMessage> greetingsTopic();
+
+  ServiceCall<NotUsed, String> hello(String id);
+  ServiceCall<GreetingMessage, Done> useGreeting(String id);
+}
+//#hello-service

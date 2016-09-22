@@ -135,14 +135,14 @@ public class StartAllIT {
 
     private ConsumerSettings<byte[], String> consumerSettings() {
       return ConsumerSettings.create(system, new ByteArrayDeserializer(), new StringDeserializer())
-        .withBootstrapServers("localhost:9092")
+        .withBootstrapServers("localhost:16104")
         .withGroupId("group1")
         .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
     }
 
     private ProducerSettings<byte[], String> producerSettings() {
       return ProducerSettings.create(system, new ByteArraySerializer(), new StringSerializer())
-        .withBootstrapServers("localhost:9092");
+        .withBootstrapServers("localhost:16104");
     }
 
     private void doUntilSuccessful(int maxTimes, long sleepMillis, Effect effect) throws Exception {
