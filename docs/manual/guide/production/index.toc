@@ -2,5 +2,5 @@ Overview:Overview
 ConductR:Lightbend ConductR
 ConductRMaven:Using ConductR with maven
 ConductRSbt:Using ConductR with sbt
+StandAloneService: Run service standalone
 ReactivePlatform:ReactivePlatform
-

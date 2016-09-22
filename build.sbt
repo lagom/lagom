@@ -25,7 +25,7 @@ val AkkaStreamKafka = "0.11"
 val Log4j = "1.2.17"
 val ScalaJava8CompatVersion = "0.8.0-RC7"
 
-// NOTE ON DEPENDENCIES
+// NOTE ON DEPENDENCIES 
 
 // Since we support maven, we need to support mavens somewhat unintuitive dependency resolution mechanism. If two
 // versions of the same library are requested in maven, maven doesn't resolve the most recent version, it resolves
