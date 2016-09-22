@@ -8,7 +8,7 @@ env:
     # Run scripted in a separate process without --warn so we can see its progress
     - SCRIPT="sbt --warn -jvm-opts .travis-jvmopts publishLocal && sbt -jvm-opts .travis-jvmopts scripted"
     - SCRIPT="sbt --warn -jvm-opts .travis-jvmopts publishM2 && sbt -jvm-opts .travis-jvmopts mavenTest"
-    - SCRIPT="sbt --warn -jvm-opts .travis-jvmopts unidoc && cd docs && sbt --warn -jvm-opts .travis-jvmopts markdownValidateDocs test markdownEvaluateSbtFiles"
+    - SCRIPT="sbt -jvm-opts .travis-jvmopts unidoc && cd docs && sbt --warn -jvm-opts .travis-jvmopts markdownValidateDocs test markdownEvaluateSbtFiles"
 # important to use eval, otherwise "&&" is passed as an argument to sbt rather than being processed by bash
 script: eval $SCRIPT
 before_install:
