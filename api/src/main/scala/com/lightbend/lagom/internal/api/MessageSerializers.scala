@@ -36,14 +36,14 @@ trait UnresolvedMessageSerializer[MessageEntity] extends MessageSerializer[Messa
 /**
  * Placeholder serializer to instruct Lagom to find the serializer from the method ref.
  */
-class MethodRefMessageSerializer[MessageEntity] extends MessageSerializer[MessageEntity, Any] {
-  override def serializerForRequest(): NegotiatedSerializer[MessageEntity, Any] =
+class MethodRefMessageSerializer[MessageEntity, WireFormat] extends MessageSerializer[MessageEntity, WireFormat] {
+  override def serializerForRequest(): NegotiatedSerializer[MessageEntity, WireFormat] =
     throw new NotImplementedError("MethodRefMessageSerializer is just a placeholder")
 
-  override def deserializer(protocol: MessageProtocol): NegotiatedDeserializer[MessageEntity, Any] =
+  override def deserializer(protocol: MessageProtocol): NegotiatedDeserializer[MessageEntity, WireFormat] =
     throw new NotImplementedError("MethodRefMessageSerializer is just a placeholder")
 
-  override def serializerForResponse(acceptedMessageProtocols: util.List[MessageProtocol]): NegotiatedSerializer[MessageEntity, Any] =
+  override def serializerForResponse(acceptedMessageProtocols: util.List[MessageProtocol]): NegotiatedSerializer[MessageEntity, WireFormat] =
     throw new NotImplementedError("MethodRefMessageSerializer is just a placeholder")
 }
 

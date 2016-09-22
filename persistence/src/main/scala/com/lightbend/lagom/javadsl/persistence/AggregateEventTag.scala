@@ -134,12 +134,12 @@ final class AggregateEventTag[Event <: AggregateEvent[Event]](
   val tag:       String
 ) {
 
-  override def toString = s"AggregateEventTag($eventType, $tag)"
+  override def toString: String = s"AggregateEventTag($eventType, $tag)"
 
-  override def equals(other: Any) = other match {
+  override def equals(other: Any): Boolean = other match {
     case that: AggregateEventTag[_] => tag == that.tag
     case _                          => false
   }
 
-  override def hashCode() = tag.hashCode
+  override def hashCode(): Int = tag.hashCode
 }
