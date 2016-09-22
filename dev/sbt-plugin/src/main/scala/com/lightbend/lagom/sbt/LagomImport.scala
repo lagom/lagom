@@ -20,6 +20,8 @@ object LagomImport {
   // Scoped to `Provided` because it's needed only at compile-time. 
   val lagomJavadslImmutables = component("lagom-javadsl-immutables") % Provided
   val lagomJavadslJackson = component("lagom-javadsl-jackson")
+  val lagomJavadslKafkaBroker = component("lagom-javadsl-kafka-broker")
+  val lagomJavadslKafkaCassandraStore = component("lagom-javadsl-kafka-cassandra-store")
   val lagomJavadslPersistence = component("lagom-javadsl-persistence")
   val lagomJavadslPersistenceCassandra = component("lagom-javadsl-persistence-cassandra")
   val lagomJavadslPersistenceJdbc = component("lagom-javadsl-persistence-jdbc")

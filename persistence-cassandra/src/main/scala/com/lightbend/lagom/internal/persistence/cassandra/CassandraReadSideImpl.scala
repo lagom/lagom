@@ -93,7 +93,7 @@ private[lagom] class CassandraReadSideImpl @Inject() (
       }
 
       override def build(): ReadSideHandler[Event] = {
-        val offsetStore = new OffsetStore(session, offsetTableName)
+        val offsetStore = OffsetStore(session, offsetTableName)
         new CassandraAutoReadSideHandler[Event](session, handlers, globalPrepareCallback, prepareCallback, offsetStore, dispatcher)
       }
     }

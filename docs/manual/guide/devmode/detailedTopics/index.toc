@@ -2,3 +2,4 @@ RunningServices:Running Services
 ServicePort:How are ports assigned to services?
 ServiceLocator:Service Locator
 CassandraServer:Cassandra Server
+KafkaServer:Kafka Server

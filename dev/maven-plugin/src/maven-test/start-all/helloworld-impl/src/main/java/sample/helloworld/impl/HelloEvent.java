@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.lightbend.lagom.serialization.Jsonable;
+import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
+import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 
 /**
  * This interface defines all the events that the HelloWorld entity supports.
@@ -18,7 +20,14 @@ import com.lightbend.lagom.serialization.Jsonable;
  * By convention, the events should be inner classes of the interface, which
  * makes it simple to get a complete picture of what events an entity has.
  */
-public interface HelloEvent extends Jsonable {
+public interface HelloEvent extends Jsonable, AggregateEvent<HelloEvent> {
+
+  @Override
+  default public AggregateEventTag<HelloEvent> aggregateTag() {
+    return HelloEventTag.INSTANCE;
+  }
+
+  String message();
 
   /**
    * An event that represents a change in greeting message.
@@ -32,6 +41,11 @@ public interface HelloEvent extends Jsonable {
     @JsonCreator
     public GreetingMessageChanged(String message) {
       this.message = Preconditions.checkNotNull(message, "message");
+    }
+
+    @Override
+    public String message() {
+      return this.message;
     }
 
     @Override
