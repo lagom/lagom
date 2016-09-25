@@ -6,9 +6,9 @@ package com.lightbend.lagom.internal.persistence.cassandra
 import java.util.concurrent.CompletionStage
 import java.util.function.BiFunction
 
-import com.datastax.driver.core.{ BatchStatement, BoundStatement, PreparedStatement, Row }
+import com.datastax.driver.core.{ BatchStatement, BoundStatement }
 import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, Offset }
-import java.util.{ Optional, UUID, List => JList }
+import java.util.{ UUID, List => JList }
 
 import akka.Done
 import akka.japi.Pair
@@ -65,39 +65,41 @@ import CassandraAutoReadSideHandler.Handler
 
 private[cassandra] class CassandraAutoReadSideHandler[Event <: AggregateEvent[Event]](
   session:               CassandraSession,
+  offsetStore:           CassandraOffsetStore,
   handlers:              Map[Class[_ <: Event], Handler[Event]],
   globalPrepareCallback: () => CompletionStage[Done],
   prepareCallback:       AggregateEventTag[Event] => CompletionStage[Done],
-  offsetStore:           OffsetStore,
+  readProcessorId:       String,
   dispatcher:            String
 )(implicit ec: ExecutionContext) extends CassandraReadSideHandler[Event, Handler[Event]](
   session, handlers, dispatcher
 ) {
 
+  @volatile
+  private var offsetDao: CassandraOffsetDao = _
+
   override protected def invoke(handler: Handler[Event], event: Event, offset: Offset): CompletionStage[JList[BoundStatement]] = {
     val boundStatements = {
       for {
         statements <- (handler.asInstanceOf[(Event, Offset) => CompletionStage[JList[BoundStatement]]].apply(event, offset).toScala)
-      } yield TreePVector.from(statements).plus(offsetStore.writeOffset(event.aggregateTag.tag, offset)).asInstanceOf[JList[BoundStatement]]
+      } yield TreePVector.from(statements).plus(offsetDao.bindSaveOffset(offset)).asInstanceOf[JList[BoundStatement]]
     }
 
     boundStatements.toJava
   }
 
   override def globalPrepare(): CompletionStage[Done] = {
-    internalPrepare(globalPrepareCallback.apply(), store => store.globalPrepare())
+    globalPrepareCallback.apply()
   }
 
   override def prepare(tag: AggregateEventTag[Event]): CompletionStage[Offset] = {
-    internalPrepare(prepareCallback.apply(tag), store => store.prepare(tag.tag))
-  }
-
-  private def internalPrepare[R](prepare: CompletionStage[Done], prepareStore: OffsetStore => Future[R]): CompletionStage[R] = {
-    val prepared = for {
-      _ <- prepare.toScala
-    } yield prepareStore(offsetStore)
-
-    prepared.flatMap(identity).toJava
+    (for {
+      _ <- prepareCallback.apply(tag).toScala
+      dao <- offsetStore.prepare(readProcessorId, tag.tag)
+    } yield {
+      offsetDao = dao
+      dao.loadedOffset
+    }).toJava
   }
 }
 
@@ -125,59 +127,4 @@ private[cassandra] class LegacyCassandraReadSideHandler[Event <: AggregateEvent[
       } else Offset.NONE
     }.toJava
   }
-}
-
-private[internal] class OffsetStore private (session: CassandraSession, offsetTable: String)(implicit ec: ExecutionContext) {
-  @volatile private var writeOffsetStatement: PreparedStatement = _
-
-  def globalPrepare(): Future[Done] = {
-    session.executeCreateTable(s"""
-                                  |CREATE TABLE IF NOT EXISTS $offsetTable (
-                                  |  partition text, timeUuidOffset timeuuid, sequenceOffset bigint,
-                                  |  PRIMARY KEY (partition)
-                                  |)""".stripMargin).toScala
-  }
-
-  def prepare(partition: String): Future[Offset] =
-    prepareWriteOffset.flatMap(_ => readOffset(partition))
-
-  private def prepareWriteOffset: Future[Done] = {
-    session.prepare(s"INSERT INTO $offsetTable (partition, timeUuidOffset, sequenceOffset) VALUES (?, ?, ?)").toScala.map { ps =>
-      writeOffsetStatement = ps
-      Done.getInstance()
-    }
-  }
-
-  private def readOffset(partition: String): Future[Offset] = {
-    session.selectOne(s"SELECT timeUuidOffset, sequenceOffset FROM $offsetTable WHERE partition = ?", partition).toScala.map(extractOffset)
-  }
-
-  private def extractOffset(maybeRow: Optional[Row]): Offset = {
-    if (maybeRow.isPresent) {
-      val row = maybeRow.get()
-      val uuid = row.getUUID("timeUuidOffset")
-      if (uuid != null) {
-        Offset.timeBasedUUID(uuid)
-      } else {
-        if (row.isNull("sequenceOffset")) {
-          Offset.NONE
-        } else {
-          Offset.sequence(row.getLong("sequenceOffset"))
-        }
-      }
-    } else Offset.NONE
-  }
-
-  def writeOffset(partition: String, offset: Offset): BoundStatement = {
-    offset match {
-      case Offset.NONE                => writeOffsetStatement.bind(partition, null, null)
-      case seq: Offset.Sequence       => writeOffsetStatement.bind(partition, null, java.lang.Long.valueOf(seq.value()))
-      case uuid: Offset.TimeBasedUUID => writeOffsetStatement.bind(partition, uuid.value(), null)
-    }
-  }
-}
-
-object OffsetStore {
-  def apply(session: CassandraSession, offsetTable: String)(implicit ec: ExecutionContext): OffsetStore =
-    new OffsetStore(session, offsetTable)
 }

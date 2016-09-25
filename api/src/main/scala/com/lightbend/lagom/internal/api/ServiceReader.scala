@@ -246,7 +246,7 @@ object ServiceReader {
     new MethodTopicHolder {
       override val method: Method = _method
       override def create(service: Any): Topic[_] = {
-        method.invoke(service).asInstanceOf[InternalTopic[_]].withTopicId(topicId)
+        method.invoke(service).asInstanceOf[InternalTopic[_]]
       }
     }
   }

@@ -207,8 +207,8 @@ val apiProjects = Seq[ProjectReference](
   client,
   cluster,
   pubsub,
+  broker,
   `kafka-broker`,
-  `kafka-broker-cassandra-store`,
   persistence,
   `persistence-cassandra`,
   `persistence-jdbc`,
@@ -482,7 +482,13 @@ lazy val `persistence-jdbc` = (project in file("persistence-jdbc"))
     )
   ) configs (MultiJvm)
 
-lazy val `kafka-broker` = (project in (file("kafka-broker") / "core"))
+lazy val broker = (project in file("broker"))
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(name := "lagom-javadsl-broker")
+  .settings(runtimeLibCommon: _*)
+  .dependsOn(api, persistence)
+
+lazy val `kafka-broker` = (project in file("kafka-broker"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(name := "lagom-javadsl-kafka-broker")
   .settings(runtimeLibCommon: _*)
@@ -494,13 +500,7 @@ lazy val `kafka-broker` = (project in (file("kafka-broker") / "core"))
       scalaTest % Test
     )
   )
-  .dependsOn(client % "optional", `kafka-server` % Test, logback % Test, persistence, server)
-
-lazy val `kafka-broker-cassandra-store` = (project in (file("kafka-broker") / "cassandra-store"))
-  .enablePlugins(RuntimeLibPlugins)
-  .settings(name := "lagom-javadsl-kafka-cassandra-store")
-  .settings(runtimeLibCommon: _*)
-  .dependsOn(`kafka-broker`, `persistence-cassandra`)
+  .dependsOn(broker, client % "optional", `kafka-server` % Test, logback % Test, server)
 
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)

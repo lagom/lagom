@@ -1,7 +1,7 @@
 package docs.home.persistence;
 
-import akka.japi.Option;
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule;
+import com.lightbend.lagom.internal.registry.NoServiceLocator;
+import com.lightbend.lagom.javadsl.api.ServiceLocator;
 import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil;
 import docs.home.persistence.BlogCommand.*;
 import docs.home.persistence.BlogEvent.*;
@@ -9,18 +9,15 @@ import docs.home.persistence.BlogEvent.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertThat;
+import static play.inject.Bindings.bind;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.lightbend.lagom.javadsl.persistence.ReadSide;
 import com.typesafe.config.Config;
-import com.lightbend.lagom.javadsl.persistence.PersistenceModule;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession;
-import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
@@ -29,8 +26,11 @@ import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import play.Application;
+import play.Configuration;
+import play.inject.Injector;
+import play.inject.guice.GuiceApplicationBuilder;
 import scala.collection.JavaConversions;
-import scala.collection.JavaConverters;
 import scala.concurrent.duration.Duration;
 
 import akka.actor.ActorSystem;
@@ -50,25 +50,36 @@ public class CqrsIntegrationTest {
 
   static ActorSystem system;
   static Injector injector;
+  static Application application;
   static CassandraSession cassandraSession;
 
   @BeforeClass
   public static void setup() throws Exception {
+
     Config config = TestUtil.persistenceConfig("CqrsIntegrationTest", CassandraLauncher.randomPort(), false);
-    system = ActorSystem.create("CqrsIntegrationTest", config);
-    injector = Guice.createInjector(new ActorSystemModule(system), new PersistenceModule(), new CassandraPersistenceModule());
-    cassandraSession = injector.getInstance(CassandraSession.class);
+
+    File cassandraDirectory = new File("target/CqrsIntegrationTest");
+    CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource(), true, 0);
+
+    application = new GuiceApplicationBuilder()
+            .configure(new Configuration(config))
+            .bindings(bind(ServiceLocator.class).to(NoServiceLocator.class))
+            .build();
+
+    injector = application.injector();
+    system = injector.instanceOf(ActorSystem.class);
+    cassandraSession = injector.instanceOf(CassandraSession.class);
+
+    TestUtil.awaitPersistenceInit(system);
 
     Cluster.get(system).join(Cluster.get(system).selfAddress());
 
-    File cassandraDirectory = new File("target/" + system.name());
-    CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource(), true, 0);
-    TestUtil.awaitPersistenceInit(system);
   }
 
   @AfterClass
   public static void teardown() {
-    JavaTestKit.shutdownActorSystem(system);
+    application.getWrappedApplication().stop();
+    application = null;
     system = null;
     injector = null;
     cassandraSession = null;
@@ -76,13 +87,13 @@ public class CqrsIntegrationTest {
   }
 
   private PersistentEntityRegistry registry() {
-    PersistentEntityRegistry reg = injector.getInstance(PersistentEntityRegistry.class);
+    PersistentEntityRegistry reg = injector.instanceOf(PersistentEntityRegistry.class);
     reg.register(Post.class);
     return reg;
   }
 
   private ReadSide readSide() {
-    return injector.getInstance(ReadSide.class);
+    return injector.instanceOf(ReadSide.class);
   }
 
   //yeah, the Akka testkit is in need of some Java 8 love

@@ -3,8 +3,9 @@
  */
 package com.lightbend.lagom.javadsl.persistence.cassandra
 
-import com.google.inject.AbstractModule
-import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraConfigProvider, CassandraPersistentEntityRegistry, CassandraReadSideImpl, CassandraSessionImpl }
+import com.google.inject.{ AbstractModule, Key }
+import com.lightbend.lagom.internal.persistence.OffsetStore
+import com.lightbend.lagom.internal.persistence.cassandra._
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
 
 /**
@@ -16,5 +17,7 @@ class CassandraPersistenceModule extends AbstractModule {
     binder.bind(classOf[CassandraSession]).to(classOf[CassandraSessionImpl])
     binder.bind(classOf[CassandraReadSide]).to(classOf[CassandraReadSideImpl])
     binder.bind(classOf[CassandraConfig]).toProvider(classOf[CassandraConfigProvider])
+    binder.bind(classOf[CassandraOffsetStore])
+    binder.bind(classOf[OffsetStore]).to(Key.get(classOf[CassandraOffsetStore]))
   }
 }
