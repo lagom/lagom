@@ -69,7 +69,7 @@ class Producer[Message] private (config: KafkaConfig, topicCall: TopicCall[Messa
     )
     val clusterShardingSettings = ClusterShardingSettings(system).withRole(producerConfig.role)
     ClusterDistribution(system).start(
-      s"kafkaProducer-${topicCall.topicId}",
+      s"kafkaProducer-${topicCall.topicId.value}",
       backoffPublisherProps,
       producer.tags.asScala.map(_.tag).toSet,
       ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
@@ -89,7 +89,7 @@ object Producer {
   private class TaggedOffsetProducerActor[Message, Event <: AggregateEvent[Event]](
     kafkaConfig:        KafkaConfig,
     topicCall:          TopicCall[Message],
-    eventStreamFactory: (AggregateEventTag[Event], Offset) => JSource[akka.japi.Pair[Message, Offset], NotUsed],
+    eventStreamFactory: (AggregateEventTag[Event], Offset) => JSource[akka.japi.Pair[Message, Offset], _],
     clazz:              Class[Event],
     offsetStore:        OffsetStore
   )(implicit mat: Materializer, ec: ExecutionContext) extends Actor with ActorLogging {
@@ -105,7 +105,7 @@ object Producer {
       case EnsureActive(tagName) =>
         val tag = AggregateEventTag.of(clazz, tagName)
 
-        offsetStore.prepare(s"topicProducer-${topicCall.topicId().value()}", tagName) pipeTo self
+        offsetStore.prepare(s"topicProducer-${topicCall.topicId.value}", tagName) pipeTo self
         context.become(preparing(tag))
     }
 
@@ -175,6 +175,7 @@ object Producer {
 
       ProducerSettings(context.system, keySerializer, valueSerializer)
         .withBootstrapServers(kafkaConfig.brokers)
+        .withProperty("client.id", self.path.toStringWithoutAddress)
     }
   }
 
@@ -182,7 +183,7 @@ object Producer {
     def props[Message, Event <: AggregateEvent[Event]](
       kafkaConfig:        KafkaConfig,
       topicCall:          TopicCall[Message],
-      eventStreamFactory: (AggregateEventTag[Event], Offset) => JSource[akka.japi.Pair[Message, Offset], NotUsed],
+      eventStreamFactory: (AggregateEventTag[Event], Offset) => JSource[akka.japi.Pair[Message, Offset], _],
       clazz:              Class[Event],
       offsetStore:        OffsetStore
     )(implicit mat: Materializer, ec: ExecutionContext) =

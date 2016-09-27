@@ -253,7 +253,7 @@ object KafkaApiSpec {
 
   trait TestEvent extends AggregateEvent[TestEvent]
 
-  class TestServiceImpl @Inject() (topicProducer: TopicProducer) extends TestService {
+  class TestServiceImpl extends TestService {
     override def test1Topic(): ApiTopic[String] = createTopicProducer(test1Publisher)
     override def test2Topic(): ApiTopic[String] = createTopicProducer(test2Publisher)
     override def test3Topic(): ApiTopic[String] = createTopicProducer(test3Publisher)
@@ -267,7 +267,7 @@ object KafkaApiSpec {
           sources.foldLeft(Source.empty[JPair[String, Offset]])(_.concat(_)).asJava
         }
 
-      topicProducer.singleStreamWithOffset(eventStream.asJava)
+      TopicProducer.singleStreamWithOffset(eventStream.asJava)
     }
   }
 

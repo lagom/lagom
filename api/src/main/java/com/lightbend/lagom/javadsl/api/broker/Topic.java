@@ -27,7 +27,7 @@ public interface Topic<Message> {
   /**
    * A topic identifier.
    */
-  public static final class TopicId {
+  final class TopicId {
 
     private final String value;
 

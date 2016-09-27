@@ -695,6 +695,11 @@ lazy val `service-locator` = (project in file("dev") / "service-locator")
       // Explicit akka dependency because maven chooses the wrong version
       "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
       "com.typesafe.play" %% "play-netty-server" % PlayVersion,
+      // Need to upgrade Netty due to encountering this deadlock in the service gateway
+      // https://github.com/netty/netty/pull/5110
+      "io.netty" % "netty-codec-http" % "4.0.40.Final",
+      "io.netty" % "netty-handler" % "4.0.40.Final",
+      "io.netty" % "netty-transport" % "4.0.40.Final",
       scalaTest % Test
     )
   )

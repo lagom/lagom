@@ -34,8 +34,8 @@ public final class TopicProducer {
      * @param eventStream A function to create the event stream given the last offset that was published.
      * @return The topic producer.
      */
-    public <Message> Topic<Message> singleStreamWithOffset(
-            Function<Offset, Source<Pair<Message, Offset>, NotUsed>> eventStream) {
+    public static <Message> Topic<Message> singleStreamWithOffset(
+            Function<Offset, Source<Pair<Message, Offset>, ?>> eventStream) {
         return taggedStreamWithOffset(SINGLETON_TAG, (tag, offset) -> eventStream.apply(offset));
     }
 
@@ -57,9 +57,9 @@ public final class TopicProducer {
      * @param eventStream A function event stream for a given shard given the last offset that was published.
      * @return The topic producer.
      */
-    public <Message, Event extends AggregateEvent<Event>> Topic<Message> taggedStreamWithOffset(
+    public static <Message, Event extends AggregateEvent<Event>> Topic<Message> taggedStreamWithOffset(
             PSequence<AggregateEventTag<Event>> tags,
-            BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Message, Offset>, NotUsed>> eventStream) {
+            BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Message, Offset>, ?>> eventStream) {
         return new TaggedOffsetTopicProducer<>(tags, eventStream);
     }
 

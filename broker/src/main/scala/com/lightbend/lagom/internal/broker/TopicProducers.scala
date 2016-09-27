@@ -14,5 +14,5 @@ import org.pcollections.PSequence
 
 final class TaggedOffsetTopicProducer[Message, Event <: AggregateEvent[Event]](
   val tags:           PSequence[AggregateEventTag[Event]],
-  val readSideStream: BiFunction[AggregateEventTag[Event], Offset, JSource[Pair[Message, Offset], NotUsed]]
+  val readSideStream: BiFunction[AggregateEventTag[Event], Offset, JSource[Pair[Message, Offset], _]]
 ) extends InternalTopic[Message]

@@ -1,6 +1,8 @@
 package com.lightbend.lagom.dev
 
 import java.io.File
+import java.lang.ProcessBuilder.Redirect
+
 import scala.collection.JavaConverters._
 
 /**
@@ -24,7 +26,7 @@ object LagomProcess {
 
     val command = javaBin :: jvmArgs ::: "-classpath" :: classpathString :: main :: args
 
-    new ProcessBuilder().command(command.asJava).start()
+    new ProcessBuilder().redirectOutput(Redirect.INHERIT).redirectError(Redirect.INHERIT).command(command.asJava).start()
   }
 
 }
