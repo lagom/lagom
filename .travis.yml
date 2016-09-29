@@ -20,6 +20,7 @@ before_install:
 cache:
   directories:
     - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot/scala*
 before_cache:
   # Ensure changes to the cache aren't persisted
   - rm -rf $HOME/.ivy2/cache/com.lightbend.lagom/*
