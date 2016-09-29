@@ -35,11 +35,9 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.japi.{ Pair => JPair }
-import akka.stream.Materializer
+import akka.stream.{ Materializer, OverflowStrategy }
 import akka.stream.javadsl.{ Source => JSource }
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{ Flow, Sink, Source, SourceQueueWithComplete }
 import akka.testkit.EventFilter
 import javax.inject.Inject
 
@@ -70,7 +68,6 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
 
   override def beforeAll() = {
     kafkaServer.start()
-    Thread.sleep(10000)
     val system = application.injector.instanceOf(classOf[ActorSystem])
     Cluster(system).join(Cluster(system).selfAddress)
   }
@@ -87,7 +84,7 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
     val testService = application.injector.instanceOf(classOf[KafkaApiSpec.TestService])
 
     "eagerly publish event stream registered in the service topic implementation" in {
-      val publisher = KafkaApiSpec.test1Publisher
+      val queue = KafkaApiSpec.test1Queue.futureValue
       val testTopic = testService.test1Topic()
 
       val messageReceived = Promise[String]()
@@ -97,14 +94,14 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
       }.asJava)
 
       val messageToPublish = "msg"
-      publisher(0).success(new JPair(messageToPublish, Offset.NONE))
+      queue.offer(new JPair(messageToPublish, Offset.NONE))
 
       messageToPublish shouldBe messageReceived.future.futureValue
     }
 
     "self-heal if failure occurs while running the publishing stream" in {
       implicit val system = application.injector.instanceOf(classOf[ActorSystem])
-      val publisher = KafkaApiSpec.test2Publisher
+      val queue = KafkaApiSpec.test2Queue.futureValue
       val testTopic = testService.test2Topic()
 
       val firstTimeReceived = Promise[String]()
@@ -122,7 +119,7 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
       }.asJava)
 
       val firstMessageToPublish = "firstMessage"
-      publisher(0).success(new JPair(firstMessageToPublish, Offset.NONE))
+      queue.offer(new JPair(firstMessageToPublish, Offset.NONE))
 
       // wait until first message is received
       firstMessageToPublish shouldBe firstTimeReceived.future.futureValue
@@ -140,7 +137,7 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
 
       // publish a second message.
       val secondMessageToPublish = "secondMessage"
-      publisher(1).success(new JPair(secondMessageToPublish, Offset.NONE))
+      queue.offer(new JPair(secondMessageToPublish, Offset.NONE))
 
       // The subscriber flow should have self-healed and hence it will process the second message (this time, succeeding)
       secondMessageToPublish shouldBe secondTimeReceived.future.futureValue
@@ -149,7 +146,7 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
     "keep track of the read-side offset when publishing events" in {
       implicit val ec = application.injector.instanceOf(classOf[ExecutionContext])
       val info = application.injector.instanceOf(classOf[ServiceInfo])
-      val publisher = KafkaApiSpec.test3Publisher
+      val queue = KafkaApiSpec.test3Queue.futureValue
       val testTopic = testService.test3Topic()
 
       def trackedOffset = KafkaApiSpec.InMemoryOffsetStore.prepare("topicProducer-" + testTopic.topicId().value(), "singleton")
@@ -166,7 +163,7 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
 
       val messageToPublish = "msg"
       val messageOffset = Offset.sequence(1)
-      publisher(0).success(new JPair(messageToPublish, messageOffset))
+      queue.offer(new JPair(messageToPublish, messageOffset))
       messageReceived.future.futureValue shouldBe messageToPublish
 
       // After consuming a message we expect the offset store to have been updated with the offset of 
@@ -175,7 +172,7 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
     }
 
     "self-heal at-least-once consumer stream if a failure occurs" in {
-      val publisher = KafkaApiSpec.test4Publisher
+      val queue = KafkaApiSpec.test4Queue.futureValue
       val testTopic = testService.test4Topic()
 
       @volatile var failOnMessageReceived = true
@@ -190,7 +187,12 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
       }.asJava)
 
       val messageSent = "msg"
-      publisher(0).success(new JPair(messageSent, Offset.NONE))
+      queue.offer(new JPair(messageSent, Offset.NONE))
+      // Send a few more messages to ensure Kafka does end up pushing the original
+      queue.offer(new JPair("not this message", Offset.NONE))
+      queue.offer(new JPair("not this message", Offset.NONE))
+      queue.offer(new JPair("not this message", Offset.NONE))
+      queue.offer(new JPair("not this message", Offset.NONE))
 
       messageSent shouldBe messageReceived.future.futureValue
     }
@@ -200,12 +202,12 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
       implicit val ec = application.injector.instanceOf(classOf[ExecutionContext])
       case object SimulateFailure extends RuntimeException
 
-      val publisher = KafkaApiSpec.test5Publisher
+      val queue = KafkaApiSpec.test5Queue.futureValue
       val testTopic = testService.test5Topic()
 
       // Let's publish a messages to the topic
       val message = "message"
-      publisher(0).success(new JPair(message, Offset.NONE))
+      queue.offer(new JPair(message, Offset.NONE))
 
       // Now we register a consumer that will fail while processing a message. Because we are using at-most-once
       // delivery, the message that caused the failure won't be re-processed.
@@ -226,13 +228,19 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
 
 object KafkaApiSpec {
 
-  private val test1Publisher = publisherFor(1)
-  private val test2Publisher = publisherFor(2)
-  private val test3Publisher = publisherFor(1)
-  private val test4Publisher = publisherFor(1)
-  private val test5Publisher = publisherFor(1)
+  private val (test1Source, test1Queue) = publisher
+  private val (test2Source, test2Queue) = publisher
+  private val (test3Source, test3Queue) = publisher
+  private val (test4Source, test4Queue) = publisher
+  private val (test5Source, test5Queue) = publisher
 
-  private def publisherFor(numberOfMessages: Int) = (0 until numberOfMessages).map(_ => Promise[JPair[String, Offset]]).toList
+  private def publisher = {
+    val promise = Promise[SourceQueueWithComplete[JPair[String, Offset]]]()
+    val source = Source.queue[JPair[String, Offset]](8, OverflowStrategy.fail)
+      .mapMaterializedValue(queue => promise.trySuccess(queue))
+
+    (source, promise.future)
+  }
 
   trait TestService extends Service {
     def test1Topic(): ApiTopic[String]
@@ -255,18 +263,15 @@ object KafkaApiSpec {
   trait TestEvent extends AggregateEvent[TestEvent]
 
   class TestServiceImpl extends TestService {
-    override def test1Topic(): ApiTopic[String] = createTopicProducer(test1Publisher)
-    override def test2Topic(): ApiTopic[String] = createTopicProducer(test2Publisher)
-    override def test3Topic(): ApiTopic[String] = createTopicProducer(test3Publisher)
-    override def test4Topic(): ApiTopic[String] = createTopicProducer(test4Publisher)
-    override def test5Topic(): ApiTopic[String] = createTopicProducer(test5Publisher)
+    override def test1Topic(): ApiTopic[String] = createTopicProducer(test1Source)
+    override def test2Topic(): ApiTopic[String] = createTopicProducer(test2Source)
+    override def test3Topic(): ApiTopic[String] = createTopicProducer(test3Source)
+    override def test4Topic(): ApiTopic[String] = createTopicProducer(test4Source)
+    override def test5Topic(): ApiTopic[String] = createTopicProducer(test5Source)
 
-    private def createTopicProducer(publisher: List[Promise[JPair[String, Offset]]]): ApiTopic[String] = {
+    private def createTopicProducer(publisher: Source[JPair[String, Offset], _]): ApiTopic[String] = {
       TopicProducer.singleStreamWithOffset(new JFunction[Offset, JSource[JPair[String, Offset], Any]] {
-        def apply(offset: Offset) = {
-          val sources = publisher.map(promise => Source.fromFuture(promise.future))
-          sources.foldLeft(Source.empty[JPair[String, Offset]])(_.concat(_)).asJava
-        }
+        def apply(offset: Offset) = publisher.asJava
       })
     }
   }

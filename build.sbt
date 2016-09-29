@@ -19,25 +19,11 @@ val JacksonVersion = "2.7.2"
 val CassandraAllVersion = "3.0.2"
 val GuavaVersion = "19.0"
 val MavenVersion = "3.3.9"
-val NettyVersion = "4.0.36"
+val NettyVersion = "4.0.40.Final"
 val KafkaVersion = "0.10.0.1"
 val AkkaStreamKafka = "0.12"
 val Log4j = "1.2.17"
 val ScalaJava8CompatVersion = "0.8.0-RC7"
-
-// NOTE ON DEPENDENCIES
-
-// Since we support maven, we need to support mavens somewhat unintuitive dependency resolution mechanism. If two
-// versions of the same library are requested in maven, maven doesn't resolve the most recent version, it resolves
-// the version that is nearest to the root in the dependency graph.  So, when we depend on play, which 4 descendents
-// down the tree brings in netty-http-codec 4.0.36 which brings in netty-handler 4.0.36, and we also depend on
-// netty-reactive-streams, which brings in netty-handler 4.0.33, since, that's much higher in the tree than the other
-// path to it, we 4.0.33, and netty-http-codec 4.0.36 is incompatible with netty-handler 4.0.33, and so, well,
-// thankyou maven.
-
-// So you'll find here a lot of explicit adding of dependencies that are unnecessary in other dependency management
-// mechanisms where transitive conflict resolution is done by following semantic versioning rules, but's it's necessary
-// for maven to work.
 
 val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
 val guava = "com.google.guava" % "guava" % GuavaVersion
@@ -79,6 +65,18 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
         <url>https://github.com/lagom</url>
       </developer>
     </developers>
+    <dependencyManagement>
+      {
+      // todo - put this in a parent pom rather than in each project
+      Seq("buffer", "codec", "codec-http", "common", "handler", "transport", "transport-native-epoll").map { nettyDep =>
+        <dependency>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-{nettyDep}</artifactId>
+          <version>{NettyVersion}</version>
+        </dependency>
+      }
+      }
+    </dependencyManagement>
   },
   pomIncludeRepository := { _ => false },
  
@@ -463,8 +461,8 @@ lazy val `persistence-cassandra` = (project in file("persistence-cassandra"))
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion,
       "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion % "test" exclude("io.netty", "netty-all"),
-      "io.netty" % "netty-codec-http" % "4.0.33.Final" % "test",
-      "io.netty" % "netty-transport-native-epoll" % "4.0.33.Final" % "test" classifier "linux-x86_64"
+      "io.netty" % "netty-codec-http" % NettyVersion % "test",
+      "io.netty" % "netty-transport-native-epoll" % NettyVersion % "test" classifier "linux-x86_64"
     )
   ) configs (MultiJvm)
 
@@ -697,9 +695,7 @@ lazy val `service-locator` = (project in file("dev") / "service-locator")
       "com.typesafe.play" %% "play-netty-server" % PlayVersion,
       // Need to upgrade Netty due to encountering this deadlock in the service gateway
       // https://github.com/netty/netty/pull/5110
-      "io.netty" % "netty-codec-http" % "4.0.40.Final",
-      "io.netty" % "netty-handler" % "4.0.40.Final",
-      "io.netty" % "netty-transport" % "4.0.40.Final",
+      "io.netty" % "netty-codec-http" % NettyVersion,
       scalaTest % Test
     )
   )

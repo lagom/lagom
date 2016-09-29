@@ -137,7 +137,14 @@ object Consumer {
     private var shutdown: Option[KillSwitch] = None
 
     override def preStart(): Unit = {
-      self ! ConsumerActor.Messages.Start
+      val (killSwitch, streamDone) =
+        atLeastOnce(flow)
+          .viaMat(KillSwitches.single)(Keep.right)
+          .toMat(Sink.ignore)(Keep.both)
+          .run()
+
+      shutdown = Some(killSwitch)
+      streamDone pipeTo self
     }
 
     override def postStop(): Unit = {
@@ -145,25 +152,13 @@ object Consumer {
     }
 
     override def receive: Actor.Receive = {
-      case ConsumerActor.Messages.Start =>
-        val (killSwitch, streamDone) =
-          atLeastOnce(flow)
-            .viaMat(KillSwitches.single)(Keep.right)
-            .toMat(Sink.ignore)(Keep.both)
-            .run()
-
-        shutdown = Some(killSwitch)
-        streamDone pipeTo self
-
       case Status.Failure(e) =>
-        // The stream processing is resumed because the parent of this actor is a `BackoffSupervisor`. Refer to how this actor is created for details. 
-        log.error(e, "Kafka consumer stream for topic {} completed with an error. The stream processing will automatically resume.", topicId)
         throw e
 
       case Done =>
         log.info("Kafka consumer stream for topic {} was completed.", topicId)
         streamCompleted.success(Done)
-        context.stop(self) // FIXME: Do we need to stop the parents? (backoff and singleton cluster actors)
+        context.stop(self)
     }
 
     private def atLeastOnce(flow: JFlow[Message, Done, _]): Source[Done, _] = {
@@ -200,9 +195,6 @@ object Consumer {
   }
 
   object ConsumerActor {
-    private object Messages {
-      case object Start
-    }
     def props[Message](
       consumerConfig: ConsumerConfig, topicId: TopicId, flow: JFlow[Message, Done, _],
       consumerSettings: ConsumerSettings[String, Message], subscription: AutoSubscription,
