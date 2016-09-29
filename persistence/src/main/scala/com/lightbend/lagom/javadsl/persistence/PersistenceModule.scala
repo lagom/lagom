@@ -11,7 +11,7 @@ import com.google.inject.spi.TypeListener
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule.InitServiceLocatorHolder
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.persistence.{ ReadSideImpl, ServiceLocatorHolder }
+import com.lightbend.lagom.internal.persistence.{ ReadSideConfig, ReadSideConfigProvider, ReadSideImpl, ServiceLocatorHolder }
 
 /**
  * Guice module for the Persistence API.
@@ -20,6 +20,7 @@ class PersistenceModule extends AbstractModule {
   override def configure(): Unit = {
     binder.bind(classOf[PersistenceModule.InitServiceLocatorHolder]).asEagerSingleton()
     binder.bind(classOf[ReadSide]).to(classOf[ReadSideImpl])
+    binder.bind(classOf[ReadSideConfig]).toProvider(classOf[ReadSideConfigProvider])
     initServiceLocatorHolder()
   }
 

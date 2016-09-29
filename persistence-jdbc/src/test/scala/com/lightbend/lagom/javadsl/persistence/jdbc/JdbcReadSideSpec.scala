@@ -13,9 +13,6 @@ import akka.stream.javadsl.Source
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
 class JdbcReadSideSpec extends JdbcPersistenceSpec with AbstractReadSideSpec {
 
   lazy val readSide = new JdbcTestEntityReadSide(session)

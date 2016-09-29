@@ -6,10 +6,15 @@ package com.lightbend.lagom.internal.persistence.jdbc
 import java.util.UUID
 import javax.inject.{ Inject, Singleton }
 
+import akka.Done
+import akka.actor.ActorSystem
+import akka.util.Timeout
+import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.lightbend.lagom.internal.persistence.{ OffsetDao, OffsetStore, ReadSideConfig }
 import com.lightbend.lagom.javadsl.persistence.Offset
 import play.api.Configuration
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
 
 @Singleton
@@ -34,7 +39,8 @@ private[jdbc] case class OffsetRow(id: String, tag: String, sequenceOffset: Opti
 }
 
 @Singleton
-class JdbcOffsetStore @Inject() (val slick: SlickProvider, tableConfig: OffsetTableConfiguration)(implicit ec: ExecutionContext) {
+private[lagom] class JdbcOffsetStore @Inject() (val slick: SlickProvider, system: ActorSystem, tableConfig: OffsetTableConfiguration,
+                                                readSideConfig: ReadSideConfig)(implicit ec: ExecutionContext) extends OffsetStore {
 
   import slick.profile.api._
 
@@ -52,7 +58,28 @@ class JdbcOffsetStore @Inject() (val slick: SlickProvider, tableConfig: OffsetTa
 
   private val offsets = TableQuery[OffsetStore]
 
-  def getOffsetQuery(id: String, tag: String): DBIOAction[Offset, NoStream, Effect.Read] = {
+  private val startupTask = ClusterStartupTask(
+    system,
+    "cassandraOffsetStorePrepare",
+    createTables,
+    readSideConfig.globalPrepareTimeout,
+    readSideConfig.role,
+    readSideConfig.minBackoff,
+    readSideConfig.maxBackoff,
+    readSideConfig.randomBackoffFactor
+  )
+
+  override def prepare(eventProcessorId: String, tag: String): Future[JdbcOffsetDao] = {
+    implicit val timeout = Timeout(readSideConfig.globalPrepareTimeout)
+    for {
+      _ <- startupTask.askExecute()
+      offset <- slick.db.run(getOffsetQuery(eventProcessorId, tag))
+    } yield {
+      new JdbcOffsetDao(this, eventProcessorId, tag, offset)
+    }
+  }
+
+  private def getOffsetQuery(id: String, tag: String): DBIOAction[Offset, NoStream, Effect.Read] = {
     (for {
       offset <- offsets if offset.id === id && offset.tag === tag
     } yield {
@@ -69,11 +96,25 @@ class JdbcOffsetStore @Inject() (val slick: SlickProvider, tableConfig: OffsetTa
     offsets.insertOrUpdate(offsetRow)
   }
 
-  def createTables() = {
+  private def createTables() = {
     // The schema will be wrong due to our work around for https://github.com/slick/slick/issues/966 above, so need to
     // remove the primary key declarations from those columns
     val statements = offsets.schema.createStatements.map(_.replace(" PRIMARY KEY,", ",")).toSeq
-    slick.createTable(statements, slick.tableExists(tableConfig.schemaName, tableConfig.tableName))
+    slick.db.run(slick.createTable(statements, slick.tableExists(tableConfig.schemaName, tableConfig.tableName))
+      .map(_ => Done.getInstance()))
   }
 
+}
+
+class JdbcOffsetDao(jdbcOffsetStore: JdbcOffsetStore, readSideId: String, tag: String,
+                    override val loadedOffset: Offset)(implicit ec: ExecutionContext) extends OffsetDao {
+
+  override def saveOffset(offset: Offset): Future[Done] = {
+    jdbcOffsetStore.slick.db.run(jdbcOffsetStore.updateOffsetQuery(readSideId, tag, offset)
+      .map(_ => Done.getInstance()))
+  }
+
+  def updateOffsetQuery(offset: Offset) = {
+    jdbcOffsetStore.updateOffsetQuery(readSideId, tag, offset)
+  }
 }

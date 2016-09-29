@@ -25,7 +25,7 @@ import org.pcollections.{ PSequence, TreePVector }
 
 @Singleton
 private[lagom] class CassandraReadSideImpl @Inject() (
-  system: ActorSystem, session: CassandraSession, readSide: ReadSideImpl, injector: Injector
+  system: ActorSystem, session: CassandraSession, offsetStore: CassandraOffsetStore, readSide: ReadSideImpl, injector: Injector
 ) extends CassandraReadSide {
 
   private val dispatcher = system.settings.config.getString("lagom.persistence.read-side.use-dispatcher")
@@ -55,7 +55,7 @@ private[lagom] class CassandraReadSideImpl @Inject() (
     )
   }
 
-  override def builder[Event <: AggregateEvent[Event]](offsetTableName: String): ReadSideHandlerBuilder[Event] = {
+  override def builder[Event <: AggregateEvent[Event]](eventProcessorId: String): ReadSideHandlerBuilder[Event] = {
     new ReadSideHandlerBuilder[Event] {
       import CassandraAutoReadSideHandler.Handler
       private var prepareCallback: AggregateEventTag[Event] => CompletionStage[Done] =
@@ -93,8 +93,7 @@ private[lagom] class CassandraReadSideImpl @Inject() (
       }
 
       override def build(): ReadSideHandler[Event] = {
-        val offsetStore = OffsetStore(session, offsetTableName)
-        new CassandraAutoReadSideHandler[Event](session, handlers, globalPrepareCallback, prepareCallback, offsetStore, dispatcher)
+        new CassandraAutoReadSideHandler[Event](session, offsetStore, handlers, globalPrepareCallback, prepareCallback, eventProcessorId, dispatcher)
       }
     }
   }

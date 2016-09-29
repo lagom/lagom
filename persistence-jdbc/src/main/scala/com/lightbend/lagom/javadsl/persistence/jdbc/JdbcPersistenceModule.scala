@@ -3,8 +3,9 @@
  */
 package com.lightbend.lagom.javadsl.persistence.jdbc
 
-import com.google.inject.AbstractModule
-import com.lightbend.lagom.internal.persistence.jdbc.{ JdbcPersistentEntityRegistry, JdbcReadSideImpl, JdbcSessionImpl }
+import com.google.inject.{ AbstractModule, Key }
+import com.lightbend.lagom.internal.persistence.OffsetStore
+import com.lightbend.lagom.internal.persistence.jdbc.{ JdbcOffsetStore, JdbcPersistentEntityRegistry, JdbcReadSideImpl, JdbcSessionImpl }
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
 
 class JdbcPersistenceModule extends AbstractModule {
@@ -12,5 +13,7 @@ class JdbcPersistenceModule extends AbstractModule {
     bind(classOf[JdbcReadSide]).to(classOf[JdbcReadSideImpl])
     bind(classOf[PersistentEntityRegistry]).to(classOf[JdbcPersistentEntityRegistry])
     bind(classOf[JdbcSession]).to(classOf[JdbcSessionImpl])
+    bind(classOf[JdbcOffsetStore])
+    bind(classOf[OffsetStore]).to(Key.get(classOf[JdbcOffsetStore]))
   }
 }

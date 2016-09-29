@@ -7,10 +7,8 @@ import akka.Done;
 import akka.event.Logging;
 import akka.japi.Pair;
 import akka.stream.javadsl.Flow;
-import akka.stream.javadsl.Sink;
 import org.pcollections.PSequence;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
