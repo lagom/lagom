@@ -3,12 +3,15 @@ sudo: false
 jdk:
   - oraclejdk8
 env:
+  global:
+    - SBT="sbt --warn -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)'"
+    - SBT_NOISY="sbt -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)'"
   matrix:
-    - SCRIPT="sbt --warn -jvm-opts .travis-jvmopts test"
+    - SCRIPT="$SBT test"
     # Run scripted in a separate process without --warn so we can see its progress
-    - SCRIPT="sbt --warn -jvm-opts .travis-jvmopts publishLocal && sbt -jvm-opts .travis-jvmopts scripted"
-    - SCRIPT="sbt --warn -jvm-opts .travis-jvmopts publishM2 && sbt -jvm-opts .travis-jvmopts mavenTest"
-    - SCRIPT="sbt -jvm-opts .travis-jvmopts unidoc && cd docs && sbt --warn -jvm-opts .travis-jvmopts markdownValidateDocs test markdownEvaluateSbtFiles"
+    - SCRIPT="$SBT publishLocal && $SBT_NOISY scripted"
+    - SCRIPT="$SBT publishM2 && $SBT_NOISY mavenTest"
+    - SCRIPT="$SBT_NOISY unidoc && cd docs && $SBT markdownValidateDocs test markdownEvaluateSbtFiles"
 # important to use eval, otherwise "&&" is passed as an argument to sbt rather than being processed by bash
 script: eval $SCRIPT
 before_install:
