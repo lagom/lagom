@@ -66,16 +66,18 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
       </developer>
     </developers>
     <dependencyManagement>
-      {
-      // todo - put this in a parent pom rather than in each project
-      Seq("buffer", "codec", "codec-http", "common", "handler", "transport", "transport-native-epoll").map { nettyDep =>
-        <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-{nettyDep}</artifactId>
-          <version>{NettyVersion}</version>
-        </dependency>
-      }
-      }
+      <dependencies>
+        {
+        // todo - put this in a parent pom rather than in each project
+        Seq("buffer", "codec", "codec-http", "common", "handler", "transport", "transport-native-epoll").map { nettyDep =>
+          <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-{nettyDep}</artifactId>
+            <version>{NettyVersion}</version>
+          </dependency>
+        }
+        }
+      </dependencies>
     </dependencyManagement>
   },
   pomIncludeRepository := { _ => false },
