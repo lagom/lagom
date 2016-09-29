@@ -261,13 +261,12 @@ object KafkaApiSpec {
     override def test5Topic(): ApiTopic[String] = createTopicProducer(test5Publisher)
 
     private def createTopicProducer(publisher: List[Promise[JPair[String, Offset]]]): ApiTopic[String] = {
-      val eventStream =
-        (_: Offset) => {
+      TopicProducer.singleStreamWithOffset(new JFunction[Offset, JSource[JPair[String, Offset], Any]] {
+        def apply(offset: Offset) = {
           val sources = publisher.map(promise => Source.fromFuture(promise.future))
           sources.foldLeft(Source.empty[JPair[String, Offset]])(_.concat(_)).asJava
         }
-
-      TopicProducer.singleStreamWithOffset(eventStream.asJava)
+      })
     }
   }
 
