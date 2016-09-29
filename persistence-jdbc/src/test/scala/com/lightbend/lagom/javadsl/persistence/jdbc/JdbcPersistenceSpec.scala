@@ -4,6 +4,7 @@
 package com.lightbend.lagom.javadsl.persistence.jdbc
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
+import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.jdbc._
 import com.lightbend.lagom.javadsl.persistence.jdbc.testkit.TestUtil
 import com.lightbend.lagom.javadsl.persistence.{ ActorSystemSpec, PersistenceSpec }
@@ -36,7 +37,7 @@ abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec
   protected lazy val session: JdbcSession = new JdbcSessionImpl(slick)
   protected lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(
     slick,
-    new JdbcOffsetStore(slick, new OffsetTableConfiguration(Configuration(system.settings.config)))
+    new JdbcOffsetStore(slick, system, new OffsetTableConfiguration(Configuration(system.settings.config)), ReadSideConfig())
   )
 
   override def beforeAll {

@@ -61,28 +61,32 @@ private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetSto
 
     import slick.profile.api._
 
+    @volatile
+    private var offsetDao: JdbcOffsetDao = _
+
     override def globalPrepare(): CompletionStage[Done] = {
       slick.ensureTablesCreated().flatMap { _ =>
         slick.db.run {
-          offsetStore.createTables().flatMap { _ =>
-            SimpleDBIO { ctx =>
-              globalPrepareCallback(ctx.connection)
-              Done.getInstance()
-            }
-          }.transactionally
+          SimpleDBIO { ctx =>
+            globalPrepareCallback(ctx.connection)
+            Done.getInstance()
+          }
         }
       }.toJava
     }
 
     override def prepare(tag: AggregateEventTag[Event]): CompletionStage[Offset] = {
-      slick.db.run {
-        (for {
-          _ <- SimpleDBIO { ctx =>
+      (for {
+        _ <- slick.db.run {
+          SimpleDBIO { ctx =>
             prepareCallback(ctx.connection, tag)
           }
-          offset <- offsetStore.getOffsetQuery(readSideId, tag.tag)
-        } yield offset).transactionally
-      }.toJava
+        }
+        dao <- offsetStore.prepare(readSideId, tag.tag)
+      } yield {
+        offsetDao = dao
+        dao.loadedOffset
+      }).toJava
     }
 
     override def handle(): Flow[Pair[Event, Offset], Done, Any] = {
@@ -94,7 +98,7 @@ private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetSto
                 _ <- SimpleDBIO { ctx =>
                   handler.asInstanceOf[(Connection, Event, Offset) => Unit](ctx.connection, pair.first, pair.second)
                 }
-                _ <- offsetStore.updateOffsetQuery(readSideId, pair.first.aggregateTag.tag, pair.second)
+                _ <- offsetDao.updateOffsetQuery(pair.second)
               } yield {
                 Done.getInstance()
               }).transactionally

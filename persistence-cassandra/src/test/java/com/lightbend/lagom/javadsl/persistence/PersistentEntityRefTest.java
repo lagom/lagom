@@ -7,11 +7,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 
-import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule;
-
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule;
 import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -30,17 +25,21 @@ import java.util.concurrent.ExecutionException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import play.Application;
+import play.Configuration;
+import play.inject.Injector;
+import play.inject.guice.GuiceApplicationBuilder;
 import scala.concurrent.duration.FiniteDuration;
 
 import akka.actor.ActorSystem;
 import akka.cluster.Cluster;
 import akka.pattern.AskTimeoutException;
 import akka.persistence.cassandra.testkit.CassandraLauncher;
-import akka.testkit.JavaTestKit;
 
 public class PersistentEntityRefTest {
 
-  static ActorSystem system;
+  static Injector injector;
+  static Application application;
 
   @BeforeClass
   public static void setup() {
@@ -51,20 +50,25 @@ public class PersistentEntityRefTest {
         "akka.loglevel = INFO \n")
         .withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort(), false));
 
-    system = ActorSystem.create("PersistentEntityRefTest", config);
+    application = new GuiceApplicationBuilder()
+            .configure(new Configuration(config))
+            .build();
+    injector = application.injector();
+
+    ActorSystem system = injector.instanceOf(ActorSystem.class);
 
     Cluster.get(system).join(Cluster.get(system).selfAddress());
 
-    File cassandraDirectory = new File("target/" + system.name());
+    File cassandraDirectory = new File("target/PersistentEntityRefTest");
     CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource(), true, 0);
     TestUtil.awaitPersistenceInit(system);
+
   }
 
 
   @AfterClass
   public static void teardown() {
-    JavaTestKit.shutdownActorSystem(system);
-    system = null;
+    application.getWrappedApplication().stop();
     CassandraLauncher.stop();
   }
 
@@ -75,11 +79,8 @@ public class PersistentEntityRefTest {
     }
   }
 
-  private final Injector injector = Guice.createInjector(new ActorSystemModule(system), new PersistenceModule(),
-          new CassandraPersistenceModule());
-
   private PersistentEntityRegistry registry() {
-    PersistentEntityRegistry reg = injector.getInstance(PersistentEntityRegistry.class);
+    PersistentEntityRegistry reg = injector.instanceOf(PersistentEntityRegistry.class);
     reg.register(TestEntity.class);
     return reg;
   }

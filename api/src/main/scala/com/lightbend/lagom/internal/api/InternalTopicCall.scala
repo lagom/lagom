@@ -47,7 +47,7 @@ class InternalTopicCall[Message] private (
 }
 
 trait InternalTopic[Message] extends Topic[Message] {
-  def withTopicId(topicId: Topic.TopicId): Topic[Message]
+  final override def topicId(): Topic.TopicId = throw new UnsupportedOperationException("Topic#topicId is not permitted in the service's topic implementation")
 
   final override def subscribe(): Subscriber[Message] =
     throw new UnsupportedOperationException("Topic#subscribe is not permitted in the service's topic implementation.")

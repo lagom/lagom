@@ -13,14 +13,11 @@ import java.util.function.{ Function => JFunction }
 
 import scala.annotation.tailrec
 import scala.annotation.varargs
-import scala.collection.JavaConverters._
 import scala.collection.immutable
 import scala.compat.java8.FutureConverters._
-import scala.compat.java8.OptionConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
-import scala.concurrent.duration._
 import scala.util.Failure
 import scala.util.Try
 import akka.Done

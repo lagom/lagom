@@ -35,6 +35,13 @@ object KafkaLauncher {
       else System.getProperty("Kafka.propertiesFile", KafkaLocalServer.DefaultPropertiesFile)
 
     val kafkaServer = KafkaLocalServer(kafkaServerPort, zookeperServerPort, kafkaPropertiesFile, targetDir, kafkaCleanOnStart)
+
+    Runtime.getRuntime.addShutdownHook(new Thread() {
+      override def run(): Unit = {
+        kafkaServer.stop()
+      }
+    })
+
     kafkaServer.start()
   }
 }

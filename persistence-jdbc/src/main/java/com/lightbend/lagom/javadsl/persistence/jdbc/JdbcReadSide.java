@@ -10,7 +10,6 @@ import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.function.*;
 
 /**
  * JDBC read side support.

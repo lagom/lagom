@@ -5,10 +5,12 @@ package com.lightbend.lagom.dev
 
 import java.io.{ Closeable, File }
 import java.net.{ URI, URL }
-import java.util.{ Map => JMap, Properties }
+import java.util.concurrent.TimeUnit
+import java.util.{ Properties, Map => JMap }
 
 import com.datastax.driver.core.Cluster
 import play.dev.filewatch.LoggerProxy
+
 import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
@@ -46,6 +48,7 @@ private[lagom] object Servers {
         // have already been shutdown when the shutdown hook is executed (this really does happen in maven).
         try {
           process.destroy()
+          process.waitFor(10, TimeUnit.SECONDS)
         } catch {
           case NonFatal(_) =>
           // ignore, it's executed from a shutdown hook, not much we can or should do
@@ -135,7 +138,7 @@ private[lagom] object Servers {
           port.toString,
           cleanOnStart.toString
         )
-        val process = LagomProcess.runJava(jvmOptions.toList, cp, "akka.persistence.cassandra.testkit.CassandraLauncher", args)
+        val process = LagomProcess.runJava(jvmOptions.toList, cp, "com.lightbend.lagom.internal.cassandra.CassandraLauncher", args)
         server = CassandraProcess(process, port)
         server.enableKillOnExit()
         waitForRunningCassandra(log, server, maxWaiting)
@@ -180,9 +183,11 @@ private[lagom] object Servers {
       if (server == null) {
         log.info("Cassandra was already stopped")
       } else {
-        log.info("Stopping Cassandra")
-        try server.kill()
-        finally {
+        log.info("Stopping Cassandra...")
+        try {
+          server.kill()
+          log.info("Cassandra is stopped.")
+        } finally {
           try server.disableKillOnExit()
           catch {
             case NonFatal(_) => ()
@@ -213,9 +218,11 @@ private[lagom] object Servers {
       if (server == null) {
         log.info("Kafka was already stopped")
       } else {
-        log.info("Stopping Kafka")
-        try server.kill()
-        finally {
+        log.info("Stopping Kafka...")
+        try {
+          server.kill()
+          log.info("Kafka is stopped.")
+        } finally {
           try server.disableKillOnExit()
           catch {
             case NonFatal(_) => ()
