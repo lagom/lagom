@@ -30,6 +30,7 @@ import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.Materializer
 import javax.inject.Singleton
 
+import com.lightbend.lagom.internal.persistence.{ InMemoryOffsetStore, OffsetStore }
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfigProvider
 import com.lightbend.lagom.javadsl.persistence.cassandra.{ CassandraConfig, CassandraPersistenceModule }
 import org.apache.cassandra.io.util.FileUtils
@@ -211,9 +212,11 @@ object ServiceTest {
         b1.configure(new Configuration(TestUtil.clusterConfig))
           .configure("lagom.cluster.join-self", "on")
           .disable(classOf[PersistenceModule], classOf[CassandraPersistenceModule])
+          .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
       else
         b1.configure("akka.actor.provider", "akka.actor.LocalActorRefProvider")
           .disable(classOf[PersistenceModule], classOf[CassandraPersistenceModule], classOf[PubSubModule], classOf[JoinClusterModule])
+          .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
 
     val application = setup.configureBuilder(b2).build()
 

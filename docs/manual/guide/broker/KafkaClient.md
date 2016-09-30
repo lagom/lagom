@@ -2,7 +2,6 @@
 
 Lagom provides an implementation of the Message Broker API that uses Kafka. In the remainder you will learn how to add the dependency in your build, and how to configure and tune topic's publishers and subscribers.
 
-
 ## Dependency
 
 To use this feature add the following in your project's build.
@@ -21,37 +20,13 @@ In sbt:
 
 @[kafka-broker-dependency](code/build-kafka.sbt)
 
-### Read-side offset storing
-
-As you have read, the [[Message Broker API|MessageBroker]] supports publishing of the read-side events. In the event of a service's crash, the read-side stream is restarted from the last event that was succesfully published to Kafka. You don't need to do anything to enable this feature. However, for it to work, Lagom needs a datastore to persist the offset. Hence, you will need an additional dependency in your build depending on the datastore in use.
-
-### Cassandra
-
-If you are using Cassandra, add the following dependency in your build file:
-
-```xml
-<dependency>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-kafka-cassandra-store_2.11</artifactId>
-    <version>${lagom.version}</version>
-</dependency>
-```
-
-In sbt:
-
-@[kafka-cassandra-store-dependency](code/build-kafka.sbt)
-
-### JDBC
-
-TODO
-
 ## Configuration
 
 The Lagom Kafka Client implementation is built using [akka-stream-kafka](https://github.com/akka/reactive-kafka). The akka-stream-kafka library wraps the official [Apache Java Kafka client](http://kafka.apache.org/documentation.html) and exposes a (Akka) stream based API to publish/consume messages to/from Kafka. Therefore, we have effectively three libraries at play, with each of them exposing its own configuration. Let's explore  the configuration keys exposed by each layer, starting with the one sitting at the top, i.e., the Lagom Kafka Client.
 
 ### Lagom Kafka Client
 
-@[kafka-broker](../../../../kafka-broker/core/src/main/resources/reference.conf)
+@[kafka-broker](../../../../kafka-broker/src/main/resources/reference.conf)
 
 First, notice you can pass the location of your Kafka brokers via the key `lagom.broker.kafka.brokers`. In production, you will usually want to have at least two brokers for resiliency. Make sure to separate each broker URL with a comma.
 
@@ -72,8 +47,4 @@ akka.kafka.producer.kafka-clients {
   request.timeout.ms = 30000
 }
 ```
-
-## Datastore Configuration 
-
-@[kafka-cassandra-store](../../../../kafka-broker/cassandra-store/src/main/resources/reference.conf)
 

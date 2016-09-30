@@ -9,7 +9,7 @@ import javax.inject.Inject;
 
 import com.lightbend.lagom.javadsl.api.*;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
-import com.lightbend.lagom.javadsl.broker.kafka.TopicProducer;
+import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 
@@ -17,19 +17,15 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public class HelloServiceImpl implements HelloService {
 
-    //#inject-topic-producer
-    private final TopicProducer topicProducer;
     private final PersistentEntityRegistry persistentEntityRegistry;
 
-    public HelloServiceImpl(TopicProducer topicProducer, PersistentEntityRegistry persistentEntityRegistry) {
-        this.topicProducer = topicProducer;
+    public HelloServiceImpl(PersistentEntityRegistry persistentEntityRegistry) {
         this.persistentEntityRegistry = persistentEntityRegistry;
     }
-    //#inject-topic-producer
 
     //#implement-topic
     public Topic<GreetingMessage> greetingsTopic() {
-        return topicProducer.singletonAtLeastOnce(offset -> {
+        return TopicProducer.singleStreamWithOffset(offset -> {
             return persistentEntityRegistry
                 .eventStream(HelloEventTag.INSTANCE, offset)
                 .map(this::convertEvent);
