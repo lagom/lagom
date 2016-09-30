@@ -36,12 +36,15 @@ The other method on the `ReadSideProcessor` is `buildHandler`.  This is responsi
 
 @[create-builder](code/docs/home/persistence/CassandraBlogEventProcessor.java)
 
-The argument passed to this method is the name of the table that Lagom should use to persist offsets to.  If it doesn't already exist, it will be created for you.  You can manually create this table yourself if you wish, the DDL for its creation is as follows:
+The argument passed to this method is the ID of the event processor that Lagom will use when it persists offsets to its offset store. The offset store is a Cassandra table, which will be created for you if it doesn't exist. You can manually create this table yourself if you wish, the DDL for its creation is as follows:
 
 ```sql
-CREATE TABLE IF NOT EXISTS $offsetTable (
-  partition text, timeUuidOffset timeuuid, sequenceOffset bigint,
-  PRIMARY KEY (partition)
+CREATE TABLE IF NOT EXISTS offsetStore (
+    eventProcessorId text,
+    tag text,
+    timeUuidOffset timeuuid,
+    sequenceOffset bigint,
+    PRIMARY KEY (eventProcessorId, tag)
 )
 ```
 
