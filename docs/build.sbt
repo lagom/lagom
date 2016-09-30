@@ -58,13 +58,14 @@ lazy val docs = project
       _ || "*.scala" || "*.java" || "*.sbt" || "*.conf" || "*.md" || "*.toc"
     }
 
-  ).dependsOn(serviceIntegrationTests, persistenceJdbc, immutables % "test->compile", theme % "run-markdown")
+  ).dependsOn(serviceIntegrationTests, persistenceJdbc, kafkaBroker, immutables % "test->compile", theme % "run-markdown")
 
 lazy val parentDir = Path.fileProperty("user.dir").getParentFile
 
 // Depend on the integration tests, they should bring everything else in
 lazy val serviceIntegrationTests = ProjectRef(parentDir, "service-integration-tests")
 lazy val persistenceJdbc = ProjectRef(parentDir, "persistence-jdbc")
+lazy val kafkaBroker = ProjectRef(parentDir, "kafka-broker")
 
 // Needed to compile test classes using immutables annotation
 lazy val immutables = ProjectRef(parentDir, "immutables")
