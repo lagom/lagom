@@ -1,76 +1,13 @@
-# Message Broker API
+# Message Broker Support
 
-The Lagom Message Broker API provides a distributed publish-subscribe model that services can use to share data via topics. A topic is simply a channel that allows services to push and pull data. In Lagom, topics are strongly typed, hence both the subscriber and producer can know in advance what the expected data flowing through will be.
+When a service needs data owned by another service, there are two main strategies to obtain the sought data:
 
-## Declaring a topic
+1) A service can ask for the data from the service that owns it, and wait until the data is sent back to it. This is a synchronous communication pattern.
 
-To publish data to a topic a service needs to declare the topic in its [[service descriptor|ServiceDescriptors#service-descriptors]].
+2) The system can be architected so that data owned by a service, but needed by other services, is published to an infrastructure component that stores the data for some pre-defined amount of time. This additional component allows publishing and consuming to happen at different times, effectively decoupling services, and hence enabling services to communicate asynchronously.
 
-@[hello-service](code/docs/mb/HelloService.java)
+A sole reliance on synchronous communication between microservices is an architectural smell. A microservices architecture has many moving parts, and this means there is more opportunity for failure. The word synchronous literally means "happening at the same time", synchronous communication implies that both the sender and receiver have to be running at the same time. This means in the face of failure, synchronous communication fails too. This can lead to consistency problems if messages get missed, and can result in a system that is brittle, where a failure in one component leads to the whole system failing.
 
-The syntax for declaring a topic is similar to the one used already to define services' endpoints. The [`Descriptor.publishing`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html#publishing-com.lightbend.lagom.javadsl.api.Descriptor.TopicCall...-) method accepts a sequence of topic calls, each topic call can be defined via the [`Service.topic`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#topic-java.lang.String-java.lang.reflect.Method-) static method. The latter takes a topic name (i.e., the topic identifier), and a reference to a method that returns a [`Topic`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Topic.html) instance.
+The solution is to avoid synchronous communication and instead architect your system to communicate asynchronously. As hinted before, one can use an infrastructure component to enable services to communicate asynchronously. This component is commonly referred to as a [message broker](https://en.wikipedia.org/wiki/Message_broker). Various technologies that can be used as a message broker exist, such as [Google Cloud Pub/Sub](https://cloud.google.com/pubsub/docs/overview), [Kafka](http://kafka.apache.org/), and [RabbitMQ](https://www.rabbitmq.com/).
 
-Data flowing through a topic is serialized to JSON by default. Of course, it is possible to use a different serialization format, and you can do so by passing a different message serializer for each topic defined in a service descriptor. For instance, using the above service definition, here is how you could have passed a custom serializer: `topic("greetings", this::greetingsTopic).withMessageSerializer(<your-custom-serializer>)`.
-
-## Implementing a topic
-
-The primary source of messages that Lagom is designed to produce is persistent entity events. Rather than publishing events in an ad-hoc fashion in response to particular things happen, it is better to take the stream of events from your persistent entities, and adapt that to a stream of messages sent to the message broker. In this way, you can ensure at least once processing of events by both publishers and consumers, which allows you to guarantee a very strong level of consistency throughout your system.
-
-Lagom's [`TopicProducer`](api/index.html?com/lightbend/lagom/javadsl/broker/TopicProducer.html) helper provides two methods for publishing a persistent entities event stream, [`singleStreamWithOffset`](api/index.html?com/lightbend/lagom/javadsl/broker/TopicProducer.html#singleStreamWithOffset-java.util.function.Function-) for use with non sharded read side event streams, and [`taggedStreamWithOffset`](api/index.html?com/lightbend/lagom/javadsl/broker/TopicProducer.html#taggedStreamWithOffset-org.pcollections.PSequence-java.util.function.BiFunction-) for use with sharded read side event streams.  Both of these methods take a callback which takes the last offset that the topic producer published, and allows resumption of the event stream from that offset via the [`PersistentEntityRegistry.eventStream`](api/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html#eventStream-com.lightbend.lagom.javadsl.persistence.AggregateEventTag-com.lightbend.lagom.javadsl.persistence.Offset-) method for obtaining a read-side stream. For more details on read-side streams, see [[Peristent Read-Side's|ReadSide#raw-stream-of-events]].
-
-Lagom will, in the case of the `singleStreamWithOffset` method, ensure that your topic producer only runs on one node of your cluster, or with the `taggedStreamWithOffset` method will distribute the tags evenly across the cluster to distribute the publishing load.
-
-Here's an example of publishing a single, non sharded event stream:
-
-@[implement-topic](code/docs/mb/HelloServiceImpl.java)
-
-Note that the read-side event stream you passed to the topic producer is "activated" as soon as the service is started. That means all events persisted by your services will eventually be published to the connected topic. Also, you will generally want to map your domain events into some other type, so that other service won't be tightly coupled to another service's domain model events. In other words, domain model events are an implementation detail of the service, and should not be leaked.
-
-### Offset storage
-
-Lagom will use your configured persistence API provider to store the offsets for your event streams. To read more about offset storage, see the [[Cassandra offset documentation|ReadSideCassandra#Building-the-read-side-handler]] and [[Relational database offset documentation|ReadSideRDBMS#Building-the-read-side-handler]].
-
-## Subscribe to a topic
-
-To subscribe to a topic, a service just needs to call [`Topic.subscribe()`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Topic.html#subscribe--) on the topic of interest. For instance, imagine that a service wants to collect all greetings messages published by the `HelloService` (refer to the code snippet above). The first thing you should do is inject a `HelloService`.
-
-@[inject-service](code/docs/mb/AnotherServiceImpl.java)
-
-Then, subscribe to the greetings topic, and hook your logic to apply to each messages that published to the topic.
-
-@[subscribe-to-topic](code/docs/mb/AnotherServiceImpl.java)
-
-When calling [`Topic.subscribe()`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Topic.html#subscribe--) you will get back a [`Subscriber`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Subscriber.html) instance. In the above code snippet we have subscribed to the `greetings` topic using at-least-once delivery semantics. That means each message published to the `greetings` topic is received at least once, but possibly more. The subscriber also offers a [`atMostOnceSource`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Subscriber.html#atMostOnceSource--) that gives you at-most-once delivery semantics. If in doubt, prefer using at-least-once delivery semantics.
-
-Finally, subscribers are grouped together via [`Subscriber.withGroupId`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Subscriber.html#withGroupId-java.lang.String-). A subscriber group allows many nodes in your cluster to consume a message stream while ensuring that each message is only handled once by each node in your cluster.  Without subscriber groups, all of your nodes for a particular service would get every message in the stream, leading to their processing being duplicated.  By default, Lagom will use a group id that has the same name as the service consuming the topic.
-
-## Polymorphic event streams
-
-Typically you will want to publish more than one type of event to a particular topic. This can be done by creating an interface that each event implements, and then making the events implement that. In order to successfully serialize these events to and from JSON, a few extra annotations are needed to instruct Jackson to describe and consume the type of the event in the produced JSON.
-
-For example, consider a situation where you have a blog post created event and a blog post published event. Here's what your event structure might look like:
-
-@[content](code/docs/mb/BlogPostEvent.java)
-
-The `@JsonTypeInfo` annotation describes how the type of the event will be serialised. In this case, it's saying each event type will be identified by it's name, and that name will go into a property called `type`. The `@JsonTypeName` on each event subclass says what the name of that event should be. And the `@JsonSubTypes` annotation is used to tell Jackson what the possible sub types of the event are, so that it knows where to look when deserializing.
-
-The resulting JSON for the `BlogPostCreated` event will look like this:
-
-```json
-{
-  "type": "created",
-  "postId": "1234",
-  "title": "Some title"
-}
-```
-
-While the JSON for the `BlogPostPublished` event will look like this:
-
-```json
-{
-  "type": "published",
-  "postId": "1234",
-}
-```
-
-Finally, note the `defaultImpl = Void.class` in the `@JsonSubTypes` annotation. This tells Jackson that if it comes across an event type that it doesn't recognise the name for, to deserialize it as `null`. This is optional, but can be important for ensuring forwards compatibility in your services, if a service adds a new event subclass that it publishes, often you want your existing services that consume that event stream to just ignore it. Setting this will allow them to do that, otherwise, you'll have to upgrade all the services that consume that event stream to explicitly ignore it before you upgrade the producer that produces the events.
+Lagom allows services to easily communicate both synchronously and asynchronously. Both communication strategies have their use, but you should make an effort to architect your system of microservices using asynchronous communication whenever possible. To help you with this, Lagom provides a [[Message Broker API|MessageBrokerApi]] that abstracts over specific message broker technologies, and makes it dead simple for services to share data asynchronously. Currently, Lagom only supports an implementation of the Message Broker API that uses Kafka, but other implementations may become available in the future.
