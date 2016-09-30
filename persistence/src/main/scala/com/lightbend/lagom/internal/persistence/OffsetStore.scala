@@ -3,9 +3,12 @@
  */
 package com.lightbend.lagom.internal.persistence
 
+import javax.inject.Singleton
+
 import akka.Done
 import com.lightbend.lagom.javadsl.persistence.Offset
 
+import scala.collection.concurrent
 import scala.concurrent.Future
 
 /**
@@ -40,4 +43,23 @@ trait OffsetDao {
    * @return A future that is redeemed when the offset has been saved.
    */
   def saveOffset(offset: Offset): Future[Done]
+}
+
+/**
+ * Not for production use.
+ */
+@Singleton
+class InMemoryOffsetStore extends OffsetStore {
+  private final val store: concurrent.Map[String, Offset] = concurrent.TrieMap.empty
+
+  override def prepare(eventProcessorId: String, tag: String): Future[OffsetDao] = {
+    val key = s"$eventProcessorId-$tag"
+    Future.successful(new OffsetDao {
+      override def saveOffset(offset: Offset): Future[Done] = {
+        store.put(key, offset)
+        Future.successful(Done)
+      }
+      override val loadedOffset: Offset = store.getOrElse(key, Offset.NONE)
+    })
+  }
 }
