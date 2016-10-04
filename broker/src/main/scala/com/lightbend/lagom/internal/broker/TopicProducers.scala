@@ -5,7 +5,6 @@ package com.lightbend.lagom.internal.broker
 
 import java.util.function.BiFunction
 
-import akka.NotUsed
 import akka.japi.Pair
 import akka.stream.javadsl.{ Source => JSource }
 import com.lightbend.lagom.internal.api.InternalTopic

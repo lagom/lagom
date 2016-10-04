@@ -44,7 +44,7 @@ import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings }
 import com.lightbend.lagom.internal.persistence.{ OffsetDao, OffsetStore }
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
-import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, Offset }
+import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventShards, AggregateEventTag, Offset }
 
 import scala.collection.JavaConverters._
 
@@ -68,6 +68,7 @@ class Producer[Message] private (config: KafkaConfig, topicCall: TopicCall[Messa
       producerConfig.randomBackoffFactor, SupervisorStrategy.stoppingStrategy
     )
     val clusterShardingSettings = ClusterShardingSettings(system).withRole(producerConfig.role)
+
     ClusterDistribution(system).start(
       s"kafkaProducer-${topicCall.topicId.value}",
       backoffPublisherProps,
