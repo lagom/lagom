@@ -7,7 +7,6 @@ import akka.Done;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide;
-import static com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide.*;
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession;
 import org.pcollections.PSequence;
 
@@ -84,7 +83,7 @@ public class TestEntityReadSide {
 
     @Override
     public PSequence<AggregateEventTag<TestEntity.Evt>> aggregateTags() {
-      return TestEntity.Evt.aggregateTags;
+      return TestEntity.Evt.AGGREGATE_EVENT_SHARDS.allTags();
     }
   }
 

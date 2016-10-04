@@ -39,7 +39,7 @@ public interface BlogServiceImpl3 {
 
       return request -> {
         Source<PostSummary, ?> stream = persistentEntityRegistry
-                .eventStream(BlogEvent.TAGS.get(0), Offset.NONE)
+                .eventStream(BlogEvent.TAG.forEntityId(""), Offset.NONE)
                 .map(pair -> pair.first()).collect(collectFunction);
         return CompletableFuture.completedFuture(stream);
       };

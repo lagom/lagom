@@ -14,7 +14,7 @@ import akka.pattern.BackoffSupervisor
 import akka.stream.Materializer
 import com.google.inject.Injector
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings, ClusterStartupTask }
-import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, PersistentEntityRegistry, ReadSide, ReadSideProcessor }
+import com.lightbend.lagom.javadsl.persistence._
 import play.api.Configuration
 
 import scala.concurrent.ExecutionContext

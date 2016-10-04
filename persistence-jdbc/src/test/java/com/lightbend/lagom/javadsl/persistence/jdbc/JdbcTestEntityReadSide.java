@@ -77,7 +77,7 @@ public class JdbcTestEntityReadSide {
 
         @Override
         public PSequence<AggregateEventTag<TestEntity.Evt>> aggregateTags() {
-            return TestEntity.Evt.aggregateTags;
+            return TestEntity.Evt.AGGREGATE_EVENT_SHARDS.allTags();
         }
     }
 }
