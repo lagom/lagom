@@ -52,7 +52,7 @@ public interface RDBMSBlogEventProcessor {
         //#tag
         @Override
         public PSequence<AggregateEventTag<BlogEvent>> aggregateTags() {
-            return BlogEvent.TAGS;
+            return BlogEvent.TAG.allTags();
         }
         //#tag
 

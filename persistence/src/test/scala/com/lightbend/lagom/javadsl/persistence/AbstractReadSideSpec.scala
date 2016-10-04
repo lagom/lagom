@@ -65,12 +65,6 @@ trait AbstractReadSideSpec extends ImplicitSender { spec: ActorSystemSpec =>
 
   "ReadSide" must {
 
-    "use correct tag" in {
-      val shardNo = AggregateEventTag.selectShard(TestEntity.Evt.NUM_SHARDS, "1")
-      new TestEntity.Appended("1", "A").aggregateTag.tag should ===(classOf[TestEntity.Evt].getName + shardNo)
-      new InPrependMode("1").aggregateTag.tag should ===(classOf[TestEntity.Evt].getName + shardNo)
-    }
-
     "process events and save query projection" in {
       val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("1"),
         () => new TestEntity(system), Optional.empty(), 10.seconds))
@@ -81,7 +75,7 @@ trait AbstractReadSideSpec extends ImplicitSender { spec: ActorSystemSpec =>
       p ! TestEntity.Add.of("c")
       expectMsg(new TestEntity.Appended("1", "C"))
 
-      val readSide = createReadSideProcessor(new TestEntity.Appended("1", "").aggregateTag())
+      val readSide = createReadSideProcessor(TestEntity.Evt.AGGREGATE_EVENT_SHARDS.forEntityId("1"))
 
       assertSelectCount("1", 3L)
 
@@ -99,7 +93,7 @@ trait AbstractReadSideSpec extends ImplicitSender { spec: ActorSystemSpec =>
       // count = 4 from previous test step
       assertSelectCount("1", 4L)
 
-      val readSide = createReadSideProcessor(new TestEntity.Appended("1", "").aggregateTag())
+      val readSide = createReadSideProcessor(TestEntity.Evt.AGGREGATE_EVENT_SHARDS.forEntityId("1"))
 
       val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("1"),
         () => new TestEntity(system), Optional.empty(), 10.seconds))

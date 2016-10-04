@@ -5,25 +5,25 @@ package com.lightbend.lagom.internal.persistence
 
 import java.net.URLDecoder
 import java.util.Optional
-import java.util.function.{ BiFunction => JBiFunction }
-import java.util.function.{ Function => JFunction }
+
 import scala.util.control.NonFatal
-import akka.actor.ActorLogging
 import akka.actor.ActorRef
 import akka.actor.Props
-import akka.event.LoggingAdapter
 import akka.persistence.PersistentActor
 import akka.persistence.RecoveryCompleted
 import akka.persistence.SnapshotOffer
 import akka.util.ByteString
+
 import scala.concurrent.duration.FiniteDuration
 import akka.actor.ReceiveTimeout
 import akka.cluster.sharding.ShardRegion
 import akka.actor.actorRef2Scala
-import com.lightbend.lagom.javadsl.persistence.PersistentEntity
+import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventShards, AggregateEventTag, PersistentEntity }
 import java.util.function.{ BiFunction => JBiFunction }
 import java.util.function.{ Function => JFunction }
-import play.api.Logger;
+
+import akka.persistence.journal.Tagged
+import play.api.Logger
 
 private[lagom] object PersistentEntityActor {
   def props[C, E, S](
@@ -139,11 +139,11 @@ private[lagom] class PersistentEntityActor[C, E, S](
               // apply the event before persist so that validation exception is handled before persisting
               // the invalid event, in case such validation is implemented in the event handler.
               applyEvent(event)
-              persist(event) { evt =>
+              persist(tag(event)) { evt =>
                 try {
                   eventCount += 1
                   if (afterPersist != null)
-                    afterPersist.accept(evt)
+                    afterPersist.accept(event)
                   if (snapshotAfter > 0 && eventCount % snapshotAfter == 0)
                     saveSnapshot(entity.behavior.state)
                 } catch {
@@ -159,7 +159,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
               // apply the event before persist so that validation exception is handled before persisting
               // the invalid event, in case such validation is implemented in the event handler.
               events.foreach(applyEvent)
-              persistAll(events) { evt =>
+              persistAll(events.map(tag)) { evt =>
                 try {
                   eventCount += 1
                   count -= 1
@@ -194,6 +194,18 @@ private[lagom] class PersistentEntityActor[C, E, S](
 
     case PersistentEntityActor.Stop =>
       context.stop(self)
+  }
+
+  private def tag(event: Any): Any = {
+    event match {
+      case a: AggregateEvent[_] ⇒
+        val tag = a.aggregateTag match {
+          case tag: AggregateEventTag[_]       => tag
+          case shards: AggregateEventShards[_] => shards.forEntityId(entityId)
+        }
+        Tagged(event, Set(tag.tag))
+      case _ ⇒ event
+    }
   }
 
   override protected def onPersistFailure(cause: Throwable, event: Any, seqNr: Long): Unit = {

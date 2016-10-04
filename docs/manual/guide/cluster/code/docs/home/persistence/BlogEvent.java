@@ -2,6 +2,7 @@ package docs.home.persistence;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
+import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 
 import com.lightbend.lagom.serialization.Jsonable;
@@ -12,8 +13,13 @@ interface BlogEvent extends Jsonable, AggregateEvent<BlogEvent> {
 
   int NUM_SHARDS = 20;
 
-  PSequence<AggregateEventTag<BlogEvent>> TAGS =
-          AggregateEventTag.shards(BlogEvent.class, NUM_SHARDS);
+  AggregateEventShards<BlogEvent> TAG =
+          AggregateEventTag.sharded(BlogEvent.class, NUM_SHARDS);
+
+  @Override
+  default AggregateEventShards<BlogEvent> aggregateTag() {
+    return TAG;
+  }
   //#sharded-tags
 
   final class PostAdded implements BlogEvent {
@@ -52,13 +58,6 @@ interface BlogEvent extends Jsonable, AggregateEvent<BlogEvent> {
       result = 31 * result + content.hashCode();
       return result;
     }
-
-    //#aggregate-tag
-    @Override
-    public AggregateEventTag<BlogEvent> aggregateTag() {
-      return AggregateEventTag.shard(BlogEvent.class, NUM_SHARDS, postId);
-    }
-    //#aggregate-tag
   }
 
 
@@ -98,11 +97,6 @@ interface BlogEvent extends Jsonable, AggregateEvent<BlogEvent> {
       result = 31 * result + body.hashCode();
       return result;
     }
-
-    @Override
-    public AggregateEventTag<BlogEvent> aggregateTag() {
-      return AggregateEventTag.shard(BlogEvent.class, NUM_SHARDS, postId);
-    }
   }
 
   final class PostPublished implements BlogEvent {
@@ -132,10 +126,6 @@ interface BlogEvent extends Jsonable, AggregateEvent<BlogEvent> {
       return postId.hashCode();
     }
 
-    @Override
-    public AggregateEventTag<BlogEvent> aggregateTag() {
-      return AggregateEventTag.shard(BlogEvent.class, NUM_SHARDS, postId);
-    }
   }
 
 }

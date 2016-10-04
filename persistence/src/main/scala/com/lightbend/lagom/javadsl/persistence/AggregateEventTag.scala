@@ -24,12 +24,13 @@ object AggregateEventTag {
     new AggregateEventTag(eventType, tag)
 
   /**
-   * Create a sharded aggregate event tag.
+   * Create an aggregate event shards tagger.
    *
    * This is a convenience function that uses the name of the class as the tag name. Note that if the class name
    * changes, the tag name must be retained, and so this method will no longer be suitable for use.
    *
-   * A tag will be selected based on a hash function that combines the `entityId` and `numShards`.
+   * Events that return this will be tagged with a tag that is based on a hash of the events persistence ID, modulo
+   * the number of shards.
    *
    * The <code>numShards</code> should be selected up front, and shouldn't change. If it does change, events for the
    * same entity will be produced by different event streams and handled by different shards in the read side
@@ -37,16 +38,16 @@ object AggregateEventTag {
    *
    * @param eventType The type of the event.
    * @param numShards The number of shards.
-   * @param entityId The ID of the entity.
-   * @return The aggregate event tag.
+   * @return The aggregate event shards tagger.
    */
-  def shard[Event <: AggregateEvent[Event]](eventType: Class[Event], numShards: Int, entityId: String): AggregateEventTag[Event] =
-    shard(eventType, eventType.getName, numShards, entityId)
+  def sharded[Event <: AggregateEvent[Event]](eventType: Class[Event], numShards: Int): AggregateEventShards[Event] =
+    sharded(eventType, eventType.getName, numShards)
 
   /**
    * Create a sharded aggregate event tag.
    *
-   * A tag will be selected based on a hash function that combines the `entityId` and `numShards`.
+   * Events that return this will be tagged with a tag that is based on a hash of the events persistence ID, modulo
+   * the number of shards.
    *
    * The <code>numShards</code> should be selected up front, and shouldn't change. If it does change, events for the
    * same entity will be produced by different event streams and handled by different shards in the read side
@@ -55,45 +56,10 @@ object AggregateEventTag {
    * @param eventType The type of the event.
    * @param baseTagName The base name for the tag, this will be combined with the shard number to form the tag name.
    * @param numShards The number of shards.
-   * @param entityId The ID of the entity.
-   * @return The aggregate event tag.
+   * @return The aggregate event shards tagger.
    */
-  def shard[Event <: AggregateEvent[Event]](eventType: Class[Event], baseTagName: String, numShards: Int, entityId: String): AggregateEventTag[Event] = {
-    of(eventType, shardTag(baseTagName, selectShard(numShards, entityId)))
-  }
-
-  /**
-   * Create a sequence of sharded tags according to the number of shards.
-   *
-   * This is a convenience function that uses the name of the class as the tag name. Note that if the class name
-   * changes, the tag name must be retained, and so this method will no longer be suitable for use.
-   *
-   * The <code>numShards</code> should be selected up front, and shouldn't change. If it does change, events for the
-   * same entity will be produced by different event streams and handled by different shards in the read side
-   * processor, leading to out of order event handling.
-   *
-   * @param eventType The type of the event.
-   * @param numShards The number of shards.
-   * @return The aggregate event tag.
-   */
-  def shards[Event <: AggregateEvent[Event]](eventType: Class[Event], numShards: Int): PSequence[AggregateEventTag[Event]] =
-    shards(eventType, eventType.getName, numShards)
-
-  /**
-   * Create a sequence of sharded tags according to the number of shards.
-   *
-   * The <code>numShards</code> should be selected up front, and shouldn't change. If it does change, events for the
-   * same entity will be produced by different event streams and handled by different shards in the read side
-   * processor, leading to out of order event handling.
-   *
-   * @param eventType The type of the event.
-   * @param baseTagName The base tag name.
-   * @param numShards The number of shards.
-   * @return The aggregate event tag.
-   */
-  def shards[Event <: AggregateEvent[Event]](eventType: Class[Event], baseTagName: String, numShards: Int): PSequence[AggregateEventTag[Event]] = {
-    val shardTags = for (shardNo <- 0 until numShards) yield of(eventType, shardTag(baseTagName, shardNo))
-    TreePVector.from(shardTags.asJava)
+  def sharded[Event <: AggregateEvent[Event]](eventType: Class[Event], baseTagName: String, numShards: Int): AggregateEventShards[Event] = {
+    new AggregateEventShards[Event](eventType, baseTagName, numShards)
   }
 
   /**
@@ -120,8 +86,17 @@ object AggregateEventTag {
 }
 
 /**
- * The base type of [[PersistentEntity]] events may implement this
- * interface to make the events available for read-side processing.
+ * Selects a tag for an event.
+ *
+ * Can either be a static tag, or a sharded tag generator.
+ */
+sealed trait AggregateEventTagger[Event <: AggregateEvent[Event]] {
+  val eventType: Class[Event]
+}
+
+/**
+ * The base type of [[PersistentEntity]] events may return one of these
+ * to make the events available for read-side processing.
  *
  * The `tag` should be unique among the event types of the service.
  *
@@ -132,7 +107,7 @@ object AggregateEventTag {
 final class AggregateEventTag[Event <: AggregateEvent[Event]](
   val eventType: Class[Event],
   val tag:       String
-) {
+) extends AggregateEventTagger[Event] {
 
   override def toString: String = s"AggregateEventTag($eventType, $tag)"
 
@@ -142,4 +117,57 @@ final class AggregateEventTag[Event <: AggregateEvent[Event]](
   }
 
   override def hashCode(): Int = tag.hashCode
+}
+
+/**
+ * The base type of [[PersistentEntity]] events may return one of these
+ * to make the events available for sharded read-side processing.
+ *
+ * The `tag` should be unique among the event types of the service.
+ *
+ * The `numShards` should be stable and never change.
+ *
+ * The class name can be used as `tag`, but note that it is needed
+ * to retain the original tag when the class name is changed because
+ * the tag is part of the store event data.
+ */
+final class AggregateEventShards[Event <: AggregateEvent[Event]](
+  val eventType: Class[Event],
+  val tag:       String,
+  val numShards: Int
+) extends AggregateEventTagger[Event] {
+
+  /**
+   * Get the tag for the given entity ID.
+   *
+   * @param entityId The entity ID to get the tag for.
+   * @return The tag.
+   */
+  def forEntityId(entityId: String): AggregateEventTag[Event] = AggregateEventTag.of(
+    eventType,
+    AggregateEventTag.shardTag(tag, AggregateEventTag.selectShard(numShards, entityId))
+  )
+
+  /**
+   * Get all the tags for this shard.
+   *
+   * @return All the tags.
+   */
+  val allTags: PSequence[AggregateEventTag[Event]] = {
+    val shardTags = for (shardNo <- 0 until numShards) yield AggregateEventTag.of(
+      eventType,
+      AggregateEventTag.shardTag(tag, shardNo)
+    )
+    TreePVector.from(shardTags.asJava)
+  }
+
+  override def toString: String = s"AggregateEventShards($eventType, $tag)"
+
+  override def equals(other: Any): Boolean = other match {
+    case that: AggregateEventShards[_] => tag == that.tag
+    case _                             => false
+  }
+
+  override def hashCode(): Int = tag.hashCode
+
 }

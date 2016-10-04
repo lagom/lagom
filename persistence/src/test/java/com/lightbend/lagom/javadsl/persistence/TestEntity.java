@@ -163,14 +163,12 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
 
     public static final int NUM_SHARDS = 4;
 
-    public static final PSequence<AggregateEventTag<Evt>> aggregateTags = AggregateEventTag.shards(Evt.class,
+    public static final AggregateEventShards<Evt> AGGREGATE_EVENT_SHARDS = AggregateEventTag.sharded(Evt.class,
         NUM_SHARDS); // second param is optional, defaults to the class name
 
-    public abstract String getEntityId();
-
     @Override
-    public AggregateEventTag<Evt> aggregateTag() {
-      return AggregateEventTag.shard(Evt.class, NUM_SHARDS, getEntityId());
+    public AggregateEventShards<Evt> aggregateTag() {
+      return AGGREGATE_EVENT_SHARDS;
     }
   }
 
@@ -184,7 +182,6 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
       this.element = element;
     }
 
-    @Override
     public String getEntityId() {
       return entityId;
     }
@@ -231,7 +228,6 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
       this.element = element;
     }
 
-    @Override
     public String getEntityId() {
       return entityId;
     }
@@ -277,7 +273,6 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
       this.entityId = entityId;
     }
 
-    @Override
     public String getEntityId() {
       return entityId;
     }
@@ -314,7 +309,6 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
       this.entityId = entityId;
     }
 
-    @Override
     public String getEntityId() {
       return entityId;
     }

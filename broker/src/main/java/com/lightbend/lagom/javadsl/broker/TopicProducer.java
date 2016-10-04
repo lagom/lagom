@@ -3,7 +3,6 @@
  */
 package com.lightbend.lagom.javadsl.broker;
 
-import akka.NotUsed;
 import akka.japi.Pair;
 import akka.stream.javadsl.Source;
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer;
