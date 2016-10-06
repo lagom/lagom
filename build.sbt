@@ -1,5 +1,7 @@
 import java.net.InetSocketAddress
 import java.nio.channels.ServerSocketChannel
+import java.util.{Timer, TimerTask}
+import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 
 import sbt.ScriptedPlugin
 import Tests._
@@ -578,6 +580,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     ),
     addSbtPlugin(("com.typesafe.play" % "sbt-plugin" % PlayVersion).exclude("org.slf4j","slf4j-simple")),
     scriptedDependencies := {
+      val () = scriptedDependencies.value
       val () = publishLocal.value
       val () = (publishLocal in `service-locator`).value
       val () = (publishLocal in LocalProject("sbt-scripted-tools")).value
@@ -642,13 +645,53 @@ lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
 def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++ 
   Seq(scriptedLaunchOpts <+= version apply { v => s"-Dproject.version=$v" }) ++
   Seq(
-    scripted <<= ScriptedPlugin.scripted.tag(Tags.Test),
+    scriptedDependencies := {
+      startTick()
+      scriptedDependencies.value
+    },
+    scripted := {
+      // this actually get executed *after* scripted is evaluated, since the macro rewrites the below
+      // to be a dependency.
+      stopTick()
+      scripted.evaluated
+    },
+    scripted <<= scripted.tag(Tags.Test),
     scriptedLaunchOpts ++= Seq(
       "-Xmx768m",
       "-XX:MaxMetaspaceSize=384m",
       "-Dscala.version=" + sys.props.get("scripted.scala.version").getOrElse((scalaVersion in `reloadable-server`).value)
     )
   )
+
+// This outputs a tick tock every minute to ensure travis doesn't decide that the build is frozen
+// during scripted tests
+val timer = new Timer("scripted-tick-timer", true)
+val task = new AtomicReference[TimerTask]()
+val ticks = new AtomicInteger()
+
+def startTick(): Unit = synchronized {
+  if (ticks.getAndIncrement() == 0) {
+    val t = new TimerTask {
+      var tick = true
+      override def run(): Unit = {
+        if (tick) {
+          println("tick")
+        } else {
+          println("tock")
+        }
+        tick = !tick
+      }
+    }
+    task.set(t)
+    timer.schedule(t, 60000, 60000)
+  }
+}
+
+def stopTick(): Unit = synchronized {
+  if (ticks.decrementAndGet() == 0) {
+    task.get().cancel()
+  }
+}
 
 def archetypeProject(archetypeName: String) =
   Project(s"maven-$archetypeName-archetype", file("dev") / "archetypes" / s"maven-$archetypeName")
