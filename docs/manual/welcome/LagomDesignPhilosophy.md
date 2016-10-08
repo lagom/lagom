@@ -7,7 +7,7 @@ Lagom's design rests on these main principles:
 
 Lagom is asynchronous by default.
 
-All Lagom APIs use the asynchronous IO capabilities of [Akka Stream](http://akka.io/) for asynchronous streaming and the [JDK8 `CompletionStage`](https://docs.oracle.com/javase/8/docs/api/util/concurrent/CompletionStage.html) API for asynchronous computation.
+All Lagom APIs use the asynchronous IO capabilities of [Akka Stream](http://akka.io/) for asynchronous streaming and the [JDK8 `CompletionStage`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletionStage.html) API for asynchronous computation.
 
 Furthermore, Lagom also makes asynchronous communication the default: when communicating between services, streaming is provided as a first-class concept. Developers are encouraged and enabled to use asynchronous messaging via streaming, rather than synchronous request-response communication. Asynchronous messaging is fundamental to system resilience and scalability.
 

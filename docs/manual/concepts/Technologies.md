@@ -10,7 +10,7 @@ Some of these libraries and tools were developed at Lightbend, others are third-
 
 Lagom makes heavy use of immutable values, for example to represent commands, events, and states.  We recommend using the third-party [Immutables](https://immutables.github.io) library to define immutable objects in Java.
 
-For immutable collections, we recommend PCollections, but you may also use another library such as Guava collections.
+For immutable collections, we recommend [PCollections](http://pcollections.org), but you may also use another library such as [Guava collections](https://github.com/google/guava/wiki/ImmutableCollectionsExplained).
 
 In this manual, see [[Immutable Objects|Immutable]] for more details.
 
@@ -22,7 +22,7 @@ Lagom services that persist data are encouraged, but not required, to use an eve
 
 The first version of Lagom provides a Java API for writing microservices.  Before long, a subsequent version will add a Scala API.
 
-Lagom's Java APIs target Java 8. They assume familiarity with Java 8 features such as lambdas, default methods, and `Optional`.
+Lagom's Java APIs target Java 8. They assume familiarity with Java 8 features such as [lambdas](http://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html), [default methods](http://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html), and [`Optional`](http://docs.oracle.com/javase/8/docs/api/java/util/Optional.html).
 
 Most of Lagom is implemented in Scala.  (This is an implementation detail that doesn't normally concern Java programmers using Lagom APIs.)
 
@@ -34,13 +34,13 @@ Other serialization formats are also supported.
 
 ## Cassandra
 
-By default, Lagom services needing to persist data use Cassandra as database. For convenience, the development environment embeds a Cassandra server.  In this manual, [[Cassandra Server|CassandraServer]] describes Lagom's Cassandra support further.
+By default, Lagom services needing to persist data use [Cassandra](http://cassandra.apache.org) as database. For convenience, the development environment embeds a Cassandra server.  In this manual, [[Cassandra Server|CassandraServer]] describes Lagom's Cassandra support further.
 
 Lagom services are also free to use an existing Cassandra database, or another database solution entirely.
 
 ## Play Framework
 
-Lagom is implemented on top of Play Framework, Lightbend's web framework.  This is an implementation detail that will not directly concern simple microservices.  More advanced users may wish to use some Play APIs directly.
+Lagom is implemented on top of [Play Framework](https://www.playframework.com), Lightbend's web framework.  This is an implementation detail that will not directly concern simple microservices.  More advanced users may wish to use some Play APIs directly.
 
 Play is in turn built on the popular, standard [netty](http://netty.io) network transport library.
 
@@ -48,17 +48,17 @@ If you have an existing Play Framework application that you want to add microser
 
 ## Guice
 
-Like Play, Lagom uses Guice for dependency injection.
+Like Play, Lagom uses [Guice](https://github.com/google/guice) for dependency injection.
 
 ## Akka
 
-Lagom [[Persistence|PersistentEntity]], [[Publish-Subscribe|PubSub]], and [[Cluster|Cluster]] are implemented on top of Akka, Lightbend's toolkit for building concurrent, distributed, and resilient message-driven applications. This is an implementation detail that will not directly concern simple microservices. More advanced users may wish to use some Akka APIs [[directly|Akka]].
+Lagom [[Persistence|PersistentEntity]], [[Publish-Subscribe|PubSub]], and [[Cluster|Cluster]] are implemented on top of [Akka](http://akka.io/), Lightbend's toolkit for building concurrent, distributed, and resilient message-driven applications. This is an implementation detail that will not directly concern simple microservices. More advanced users may wish to use some Akka APIs [[directly|Akka]].
 
 ## Akka Streams
 
 A Lagom service may be "simple" or "streamed"; this is described further under [[Implementing services|ServiceImplementation]].  Streaming, asynchronous Lagom services are built on top of [Akka Streams](http://doc.akka.io/docs/akka/2.4.4/java/stream/index.html).
 
-Communication with browser-based clients is via WebSockets.
+Communication with browser-based clients is via [WebSockets](https://tools.ietf.org/html/rfc6455).
 
 ## Clustering
 
@@ -74,5 +74,5 @@ Lagom and many of its component technologies are configured using the [Typesafe 
 
 ## Logging
 
-Lagom uses SLF4J for logging, backed by [Logback](http://logback.qos.ch/) as its default logging engine.
+Lagom uses [SLF4J](http://www.slf4j.org/) for logging, backed by [Logback](http://logback.qos.ch/) as its default logging engine.
 See the [[Logging]] section of this manual for more information.
