@@ -146,7 +146,7 @@ object ServiceReader {
     )
 
     val topics = descriptor.topicCalls().asScala.map { tc =>
-      val topicCall = tc.asInstanceOf[InternalTopicCall[Any]]
+      val topicCall = tc.asInstanceOf[TopicCall[Any]]
       val methodRefTopicSourceHolder = topicCall.topicHolder match {
         case methodRef: MethodRefTopicHolder => methodRef
         case other                           => throw new IllegalArgumentException(s"Unknown ${classOf[TopicHolder].getSimpleName} type: " + other)

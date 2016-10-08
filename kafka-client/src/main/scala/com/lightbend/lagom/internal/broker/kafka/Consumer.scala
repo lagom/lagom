@@ -6,40 +6,25 @@ package com.lightbend.lagom.internal.broker.kafka
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.atomic.AtomicInteger
 
-import scala.compat.java8.FutureConverters._
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Promise
-
-import org.apache.kafka.common.serialization.StringDeserializer
-import org.slf4j.LoggerFactory
-
+import akka.Done
+import akka.actor.{ Actor, ActorLogging, ActorSystem, Props, Status, SupervisorStrategy }
+import akka.kafka.ConsumerMessage.{ CommittableOffset, CommittableOffsetBatch }
+import akka.kafka.scaladsl.{ Consumer => ReactiveConsumer }
+import akka.kafka.{ AutoSubscription, ConsumerSettings, Subscriptions }
+import akka.pattern.{ BackoffSupervisor, pipe }
+import akka.stream.javadsl.{ Flow => JFlow, Source => JSource }
+import akka.stream.scaladsl.{ Flow, GraphDSL, Keep, Sink, Source, Unzip, Zip }
+import akka.stream.{ FlowShape, KillSwitch, KillSwitches, Materializer }
 import com.lightbend.lagom.internal.broker.kafka.serializer.KafkaDeserializer
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.ServiceInfo
 import com.lightbend.lagom.javadsl.api.broker.Subscriber
 import com.lightbend.lagom.javadsl.api.broker.Topic.TopicId
+import org.apache.kafka.common.serialization.StringDeserializer
+import org.slf4j.LoggerFactory
 
-import akka.Done
-import akka.actor.Actor
-import akka.actor.ActorLogging
-import akka.actor.ActorSystem
-import akka.actor.Props
-import akka.actor.Status
-import akka.actor.SupervisorStrategy
-import akka.kafka.{ ConsumerSettings, Subscriptions }
-import akka.kafka.AutoSubscription
-import akka.kafka.ConsumerMessage.CommittableOffset
-import akka.kafka.ConsumerMessage.CommittableOffsetBatch
-import akka.kafka.scaladsl.{ Consumer => ReactiveConsumer }
-import akka.pattern.BackoffSupervisor
-import akka.pattern.pipe
-import akka.stream.{ FlowShape, Materializer }
-import akka.stream.KillSwitch
-import akka.stream.KillSwitches
-import akka.stream.javadsl.{ Flow => JFlow, Source => JSource }
-import akka.stream.scaladsl.{ Flow, GraphDSL, Sink, Unzip, Zip }
-import akka.stream.scaladsl.Keep
-import akka.stream.scaladsl.Source
+import scala.compat.java8.FutureConverters._
+import scala.concurrent.{ ExecutionContext, Promise }
 
 /**
  * A Consumer for consuming messages from Kafka using the akka-stream-kafka API.

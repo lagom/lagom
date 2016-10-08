@@ -3,18 +3,12 @@
  */
 package com.lightbend.lagom.internal.broker.kafka
 
-import java.util.concurrent.atomic.AtomicInteger
-
 import scala.concurrent.ExecutionContext
 import scala.util.Failure
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
-import org.slf4j.LoggerFactory
 import com.lightbend.lagom.internal.broker.kafka.serializer.KafkaSerializer
-import com.lightbend.lagom.javadsl.api.Descriptor.Properties
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
-import com.lightbend.lagom.javadsl.broker.kafka.Properties.PARTITION_KEY_STRATEGY
-import com.lightbend.lagom.javadsl.broker.kafka.property.PartitionKeyStrategy
 import akka.Done
 import akka.NotUsed
 import akka.actor.Actor
@@ -44,22 +38,22 @@ import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings }
 import com.lightbend.lagom.internal.persistence.{ OffsetDao, OffsetStore }
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
-import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventShards, AggregateEventTag, Offset }
+import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties
+import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, Offset }
 
 import scala.collection.JavaConverters._
 
 /**
  * A Producer for publishing messages in Kafka using the akka-stream-kafka API.
  */
-class Producer[Message] private (config: KafkaConfig, topicCall: TopicCall[Message], offsetStore: OffsetStore, system: ActorSystem)(implicit mat: Materializer, ec: ExecutionContext) {
-
-  private val log = LoggerFactory.getLogger(classOf[Producer[_]])
+class Producer[Message] private (config: KafkaConfig, topicCall: TopicCall[Message], system: ActorSystem)(implicit mat: Materializer, ec: ExecutionContext) {
 
   private val producerConfig = ProducerConfig(system.settings.config)
 
-  private lazy val producerId = Producer.KafkaClientIdSequenceNumber.getAndIncrement()
-
-  def publishTaggedOffsetProducer[E <: AggregateEvent[E]](producer: TaggedOffsetTopicProducer[Message, E]): Unit = {
+  def publishTaggedOffsetProducer[E <: AggregateEvent[E]](
+    producer:    TaggedOffsetTopicProducer[Message, E],
+    offsetStore: OffsetStore
+  ): Unit = {
     val clazz: Class[E] = producer.tags.get(0).eventType
     val readSideStream = (tag: AggregateEventTag[E], offset: Offset) => producer.readSideStream(tag, offset)
     val publisherProps = Producer.ProducerActor.props(config, topicCall, readSideStream, clazz, offsetStore)
@@ -79,13 +73,11 @@ class Producer[Message] private (config: KafkaConfig, topicCall: TopicCall[Messa
 }
 
 object Producer {
-  private val KafkaClientIdSequenceNumber = new AtomicInteger(1)
-
   def apply[Message](
     config:    KafkaConfig,
-    topicCall: TopicCall[Message], system: ActorSystem, offsetStore: OffsetStore
+    topicCall: TopicCall[Message], system: ActorSystem
   )(implicit mat: Materializer, ec: ExecutionContext): Producer[Message] =
-    new Producer(config, topicCall, offsetStore, system)
+    new Producer(config, topicCall, system)
 
   private class TaggedOffsetProducerActor[Message, Event <: AggregateEvent[Event]](
     kafkaConfig:        KafkaConfig,
@@ -156,8 +148,7 @@ object Producer {
     })
 
     private def kafkaFlowPublisher: JFlow[Message, _, _] = {
-      val property = PARTITION_KEY_STRATEGY.asInstanceOf[Properties.Property[PartitionKeyStrategy[Message]]]
-      val strategy = topicCall.properties().getValueOf(property)
+      val strategy = topicCall.properties().getValueOf(KafkaProperties.partitionKeyStrategy())
       def keyOf(message: Message): String = {
         if (strategy == null) null
         else strategy.computePartitionKey(message)
