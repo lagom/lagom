@@ -48,7 +48,7 @@ lazy val docs = project
     markdownTheme := Some("lagom.LagomMarkdownTheme"),
     markdownGenerateTheme := Some("bare"),
     markdownGenerateIndex := true,
-    markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/tree/$branch/docs/manual/")),
+    markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/")),
 
     markdownS3CredentialsHost := "downloads.typesafe.com.s3.amazonaws.com",
     markdownS3Bucket := Some("downloads.typesafe.com"),
