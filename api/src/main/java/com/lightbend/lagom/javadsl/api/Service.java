@@ -8,14 +8,13 @@ import java.util.Optional;
 import com.lightbend.lagom.internal.api.MethodRefMessageSerializer;
 import com.lightbend.lagom.internal.api.MethodRefServiceCallHolder;
 import com.lightbend.lagom.internal.api.MethodRefTopicHolder;
-import com.lightbend.lagom.internal.api.InternalTopicCall;
 
 import akka.japi.function.*;
-import akka.stream.javadsl.Source;
 
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.api.broker.Topic.TopicId;
 import com.lightbend.lagom.javadsl.api.transport.Method;
+import org.pcollections.HashTreePMap;
 
 /**
  * A self describing service.
@@ -464,8 +463,8 @@ public interface Service {
      * @return A topic call descriptor.
      */
     static <Message> Descriptor.TopicCall<Message> topic(String topicId, Object methodRef) {
-      return new InternalTopicCall<>(TopicId.of(topicId), new MethodRefTopicHolder(methodRef),
-               new MethodRefMessageSerializer<>());
+      return new Descriptor.TopicCall<>(TopicId.of(topicId), new MethodRefTopicHolder(methodRef),
+               new MethodRefMessageSerializer<>(), new Descriptor.Properties<>(HashTreePMap.empty()));
     }
 
 }

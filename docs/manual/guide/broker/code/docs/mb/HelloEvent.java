@@ -1,19 +1,9 @@
 package docs.mb;
 
-import org.immutables.value.Value;
-
-import com.lightbend.lagom.javadsl.immutable.ImmutableStyle;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-/**
- * This interface defines all the events that the HelloWorld entity supports.
- * <p>
- * By convention, the events should be inner classes of the interface, which
- * makes it simple to get a complete picture of what events an entity has.
- */
 public interface HelloEvent extends Jsonable, AggregateEvent<HelloEvent> {
 
   @Override
@@ -21,13 +11,26 @@ public interface HelloEvent extends Jsonable, AggregateEvent<HelloEvent> {
     return HelloEventTag.INSTANCE;
   }
 
+  String getId();
+
   String getMessage();
 
-  @Value.Immutable
-  @ImmutableStyle
-  @JsonDeserialize(as = GreetingMessageChanged.class)
-  interface AbstractGreetingMessageChanged extends HelloEvent {
-    @Value.Parameter
-    String getMessage();
+  final class AbstractGreetingMessageChanged implements HelloEvent {
+    private final String id;
+    private final String message;
+
+    public AbstractGreetingMessageChanged(String id, String message) {
+      this.id = id;
+      this.message = message;
+    }
+
+    @Override
+    public String getId() {
+      return id;
+    }
+
+    public String getMessage() {
+      return message;
+    }
   }
 }

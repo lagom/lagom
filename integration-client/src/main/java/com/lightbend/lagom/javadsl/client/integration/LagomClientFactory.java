@@ -7,12 +7,15 @@ import akka.actor.ActorSystem;
 import akka.japi.Effect;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
+import com.lightbend.lagom.internal.api.broker.TopicFactory;
+import com.lightbend.lagom.internal.api.broker.TopicFactoryProvider;
 import com.lightbend.lagom.internal.client.*;
 import com.lightbend.lagom.internal.registry.ServiceRegistry;
 import com.lightbend.lagom.internal.registry.ServiceRegistryServiceLocator;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
+import com.lightbend.lagom.javadsl.broker.kafka.KafkaTopicFactory;
 import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator;
 import com.lightbend.lagom.javadsl.jackson.JacksonExceptionSerializer;
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory;
@@ -36,6 +39,8 @@ import play.api.libs.ws.ahc.AhcWSClientConfig;
 import play.api.libs.ws.ahc.AhcWSClientConfigParser;
 import play.api.libs.ws.ssl.SystemConfiguration;
 import scala.Function0;
+import scala.Option;
+import scala.Some;
 import scala.concurrent.Future;
 
 import java.io.Closeable;
@@ -198,21 +203,28 @@ public class LagomClientFactory implements Closeable {
             }
         }, actorSystem.dispatcher());
 
+        ServiceInfo serviceInfo = new ServiceInfo(serviceName);
+
+        // Kafka client
+        TopicFactory kafkaTopicFactory = new KafkaTopicFactory(serviceInfo, actorSystem, materializer,
+                actorSystem.dispatcher());
+        TopicFactoryProvider topicFactoryProvider = () -> Some.apply(kafkaTopicFactory);
+
         // ServiceClientLoader
         CircuitBreakers circuitBreakers = new CircuitBreakers(actorSystem, new CircuitBreakerConfig(actorSystem),
                 new CircuitBreakerMetricsProviderImpl(actorSystem));
-        ServiceInfo serviceInfo = new ServiceInfo(serviceName);
 
         JacksonSerializerFactory serializerFactory = new JacksonSerializerFactory(actorSystem);
         JacksonExceptionSerializer exceptionSerializer = new JacksonExceptionSerializer(new play.Environment(environment));
 
         Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator = serviceLocator -> {
             ServiceClientImplementor implementor = new ServiceClientImplementor(wsClient, webSocketClient, serviceInfo,
-                    serviceLocator, environment, actorSystem.dispatcher(), materializer);
+                    serviceLocator, environment, topicFactoryProvider, actorSystem.dispatcher(), materializer);
             return new ServiceClientLoader(serializerFactory, exceptionSerializer, environment, implementor);
 
         };
-        return new LagomClientFactory(eventLoop, wsClient, webSocketClient, actorSystem, circuitBreakers, serviceClientLoaderCreator);
+        return new LagomClientFactory(eventLoop, wsClient, webSocketClient, actorSystem, circuitBreakers,
+                serviceClientLoaderCreator);
     }
 
     private void closeGracefully(Effect close) {

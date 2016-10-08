@@ -21,6 +21,7 @@ object LagomImport {
   val lagomJavadslImmutables = component("lagom-javadsl-immutables") % Provided
   val lagomJavadslJackson = component("lagom-javadsl-jackson")
   val lagomJavadslBroker = component("lagom-javadsl-broker")
+  val lagomJavadslKafkaClient = component("lagom-javadsl-kafka-client")
   val lagomJavadslKafkaBroker = component("lagom-javadsl-kafka-broker")
   val lagomJavadslKafkaCassandraStore = component("lagom-javadsl-kafka-cassandra-store")
   val lagomJavadslPersistence = component("lagom-javadsl-persistence")

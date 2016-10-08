@@ -5,12 +5,9 @@ package com.lightbend.lagom.internal.broker.kafka
 
 import java.util.concurrent.TimeUnit
 
-import scala.concurrent.duration._
-import scala.concurrent.duration.FiniteDuration
-
 import com.typesafe.config.Config
 
-import play.api.Configuration
+import scala.concurrent.duration.{ FiniteDuration, _ }
 
 sealed trait KafkaConfig {
   def brokers: String
