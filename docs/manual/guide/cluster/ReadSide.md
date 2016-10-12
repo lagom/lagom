@@ -108,7 +108,7 @@ If you use a class name of a event type as the aggregate tag in [AggregateEventT
 
 The default configuration should be good starting point, and the following settings may later be amended to customize the behavior if needed.
 
-@[persistence-read-side](../../../../persistence/src/main/resources/reference.conf)
+@[persistence-read-side](../../../../persistence/core/src/main/resources/reference.conf)
 
 ## Underlying Implementation
 

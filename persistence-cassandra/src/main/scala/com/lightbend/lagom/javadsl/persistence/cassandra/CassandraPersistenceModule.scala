@@ -4,7 +4,7 @@
 package com.lightbend.lagom.javadsl.persistence.cassandra
 
 import com.google.inject.{ AbstractModule, Key }
-import com.lightbend.lagom.internal.persistence.OffsetStore
+import com.lightbend.lagom.internal.javadsl.persistence.OffsetStore
 import com.lightbend.lagom.internal.persistence.cassandra._
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
 

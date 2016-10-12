@@ -51,7 +51,7 @@ object UnidocRoot extends AutoPlugin {
     ))
   }
 
-  def excludeJavadoc = Set("internal", "protobuf")
+  def excludeJavadoc = Set("internal", "protobuf", "scaladsl")
 
   private val allGenjavadocSources = Def.taskDyn {
     (sources in (Genjavadoc, doc)).all((unidocScopeFilter in (JavaUnidoc, unidoc)).value)

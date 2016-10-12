@@ -16,7 +16,7 @@ import javax.inject.Singleton
 import akka.Done
 import akka.event.Logging
 import com.datastax.driver.core.BoundStatement
-import com.lightbend.lagom.internal.persistence.ReadSideImpl
+import com.lightbend.lagom.internal.javadsl.persistence.ReadSideImpl
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.javadsl.persistence.cassandra.{ CassandraReadSideProcessor, CassandraSession }
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide

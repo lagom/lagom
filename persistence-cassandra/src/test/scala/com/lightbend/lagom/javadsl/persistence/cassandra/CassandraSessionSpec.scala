@@ -15,7 +15,7 @@ import com.datastax.driver.core.BatchStatement
 import com.datastax.driver.core.SimpleStatement
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraSessionImpl
 import com.typesafe.config.ConfigFactory
-import com.lightbend.lagom.javadsl.persistence.PersistenceSpec
+import com.lightbend.lagom.persistence.PersistenceSpec
 
 object CassandraSessionSpec {
 

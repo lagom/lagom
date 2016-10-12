@@ -213,6 +213,8 @@ val apiProjects = Seq[ProjectReference](
   `kafka-client`,
   `kafka-broker`,
   persistence,
+  `persistence-javadsl`,
+  `persistence-scaladsl`,
   `persistence-cassandra`,
   `persistence-jdbc`,
   testkit,
@@ -434,8 +436,8 @@ lazy val pubsub = (project in file("pubsub"))
     )
   ) configs (MultiJvm)  
 
-lazy val persistence = (project in file("persistence"))
-  .settings(name := "lagom-javadsl-persistence")
+lazy val persistence = (project in file("persistence/core"))
+  .settings(name := "lagom-persistence")
   .dependsOn(cluster)
   .settings(runtimeLibCommon: _*)
   .settings(Protobuf.settings)
@@ -455,9 +457,23 @@ lazy val persistence = (project in file("persistence"))
     )
   )
 
+lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
+  .settings(name := "lagom-javadsl-persistence")
+  .dependsOn(persistence % "compile;test->test")
+  .settings(runtimeLibCommon: _*)
+  .settings(Protobuf.settings)
+  .enablePlugins(RuntimeLibPlugins)
+
+lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
+  .settings(name := "lagom-scaladsl-persistence")
+  .dependsOn(persistence % "compile;test->test")
+  .settings(runtimeLibCommon: _*)
+  .settings(Protobuf.settings)
+  .enablePlugins(RuntimeLibPlugins)
+
 lazy val `persistence-cassandra` = (project in file("persistence-cassandra"))
   .settings(name := "lagom-javadsl-persistence-cassandra")
-  .dependsOn(persistence % "compile;test->test")
+  .dependsOn(persistence % "compile;test->test", `persistence-javadsl` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -473,7 +489,7 @@ lazy val `persistence-cassandra` = (project in file("persistence-cassandra"))
 
 lazy val `persistence-jdbc` = (project in file("persistence-jdbc"))
   .settings(name := "lagom-javadsl-persistence-jdbc")
-  .dependsOn(persistence % "compile;test->test")
+  .dependsOn(persistence % "compile;test->test", `persistence-javadsl` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -503,7 +519,7 @@ lazy val broker = (project in file("broker"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(name := "lagom-javadsl-broker")
   .settings(runtimeLibCommon: _*)
-  .dependsOn(api, persistence)
+  .dependsOn(api, `persistence-javadsl`)
 
 lazy val `kafka-broker` = (project in file("kafka-broker"))
   .enablePlugins(RuntimeLibPlugins)
