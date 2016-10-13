@@ -320,9 +320,12 @@ object LagomPlugin extends AutoPlugin {
     // build the map at most once
     val projects = extracted.currentUnit.defined
     val lagomProjects = (for {
-      (name, proj) <- projects
+      (id, proj) <- projects
       if proj.autoPlugins.toSet.contains(LagomPlugin)
-    } yield ProjectName(name))(collection.breakOut)
+      projName <- (name in ProjectRef(extracted.currentUnit.unit.uri, id)).get(extracted.structure.data).toSeq
+    } yield {
+      ProjectName(projName)
+    })(collection.breakOut)
     val portMap = oldPortMap ++ PortAssigner.computeProjectsPort(portRange, lagomProjects)
     state.put(projectPortMap, portMap)
   }
