@@ -25,7 +25,7 @@ val NettyVersion = "4.0.40.Final"
 val KafkaVersion = "0.10.0.1"
 val AkkaStreamKafka = "0.12"
 val Log4j = "1.2.17"
-val ScalaJava8CompatVersion = "0.8.0-RC7"
+val ScalaJava8CompatVersion = "0.7.0"
 
 val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
 val guava = "com.google.guava" % "guava" % GuavaVersion
