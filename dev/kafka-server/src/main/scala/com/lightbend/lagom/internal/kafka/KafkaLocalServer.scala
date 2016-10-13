@@ -19,7 +19,7 @@ import com.lightbend.lagom.internal.util.PropertiesLoader
 import javax.management.InstanceNotFoundException
 import kafka.server.KafkaServerStartable
 
-import scala.compat.java8.StreamConverters._
+import scala.collection.JavaConverters._
 import java.util.Comparator
 
 class KafkaLocalServer private (kafkaProperties: Properties, zooKeeperServer: KafkaLocalServer.ZooKeperLocalServer) {
@@ -105,7 +105,8 @@ object KafkaLocalServer {
   private def deleteDirectory(directory: File): Unit = {
     if (directory.exists()) try {
       val rootPath = Paths.get(directory.getAbsolutePath)
-      val files = Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).toScala
+
+      val files = Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).iterator().asScala
       files.foreach(Files.delete)
       Log.debug(s"Deleted ${directory.getAbsolutePath}.")
     } catch {
