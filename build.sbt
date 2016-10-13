@@ -218,6 +218,7 @@ val coreProjects = Seq[ProjectReference](
   `api-tools`,
   spi,
   jackson,
+  `play-json`,
   core,
   cluster,
   pubsub,
@@ -309,6 +310,19 @@ lazy val jackson = (project in file("jackson"))
       "com.novocode" % "junit-interface" % "0.11" % "test")
   )
   .dependsOn(`api-javadsl`, immutables % "test->compile")
+
+lazy val `play-json` = (project in file("play-json"))
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    name := "lagom-scaladsl-play-json",
+    libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-json" % PlayVersion,
+      "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-testkit" % AkkaVersion,
+      scalaTest % Test
+    )
+  )
 
 lazy val `api-tools` = (project in file("api-tools"))
   .settings(runtimeLibCommon: _*)
