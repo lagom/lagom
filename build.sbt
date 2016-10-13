@@ -210,6 +210,7 @@ val apiProjects = Seq[ProjectReference](
   cluster,
   pubsub,
   broker,
+  `kafka-client`,
   `kafka-broker`,
   persistence,
   `persistence-cassandra`,
@@ -330,7 +331,7 @@ lazy val `integration-client` = (project in file("integration-client"))
   .settings(name := "lagom-javadsl-integration-client")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(client, `service-registry-client`)
+  .dependsOn(client, `service-registry-client`, `kafka-client`)
 
 lazy val server = (project in file("server"))
   .settings(
@@ -484,6 +485,20 @@ lazy val `persistence-jdbc` = (project in file("persistence-jdbc"))
     )
   ) configs (MultiJvm)
 
+lazy val `kafka-client` = (project in file("kafka-client"))
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(name := "lagom-javadsl-kafka-client")
+  .settings(runtimeLibCommon: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
+      "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafka exclude("org.slf4j","slf4j-log4j12"),
+      "org.apache.kafka" %% "kafka" % KafkaVersion exclude("org.slf4j","slf4j-log4j12") exclude("javax.jms", "jms") exclude("com.sun.jdmk", "jmxtools") exclude("com.sun.jmx", "jmxri"),
+      scalaTest % Test
+    )
+  )
+  .dependsOn(api)
+
 lazy val broker = (project in file("broker"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(name := "lagom-javadsl-broker")
@@ -496,13 +511,10 @@ lazy val `kafka-broker` = (project in file("kafka-broker"))
   .settings(runtimeLibCommon: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
-      "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafka exclude("org.slf4j","slf4j-log4j12"),
-      "org.apache.kafka" %% "kafka" % KafkaVersion exclude("org.slf4j","slf4j-log4j12") exclude("javax.jms", "jms") exclude("com.sun.jdmk", "jmxtools") exclude("com.sun.jmx", "jmxri"),
       scalaTest % Test
     )
   )
-  .dependsOn(broker, client % "optional", `kafka-server` % Test, logback % Test, server)
+  .dependsOn(`kafka-client`, broker, client % "optional", `kafka-server` % Test, logback % Test, server)
 
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)

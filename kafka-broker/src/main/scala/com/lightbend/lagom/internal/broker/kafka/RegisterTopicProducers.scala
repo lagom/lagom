@@ -6,7 +6,6 @@ package com.lightbend.lagom.internal.broker.kafka
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import org.slf4j.LoggerFactory
-import com.lightbend.lagom.internal.api.InternalTopicCall
 import com.lightbend.lagom.internal.api.MethodTopicHolder
 import com.lightbend.lagom.internal.server.ResolvedServices
 import com.lightbend.lagom.javadsl.api.ServiceInfo
@@ -14,19 +13,23 @@ import com.lightbend.lagom.internal.api.broker.TopicFactory
 import akka.stream.Materializer
 import javax.inject.Inject
 
+import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
-import com.lightbend.lagom.javadsl.persistence.AggregateEvent
+import com.lightbend.lagom.internal.persistence.OffsetStore
+import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 
-class RegisterTopicProducers @Inject() (resolvedServices: ResolvedServices, topicFactory: TopicFactory, info: ServiceInfo)(implicit ec: ExecutionContext, mat: Materializer) {
+class RegisterTopicProducers @Inject() (resolvedServices: ResolvedServices, topicFactory: TopicFactory,
+                                        info: ServiceInfo, actorSystem: ActorSystem, offsetStore: OffsetStore)(implicit ec: ExecutionContext, mat: Materializer) {
 
   private val log = LoggerFactory.getLogger(classOf[RegisterTopicProducers])
+  private val kafkaConfig = KafkaConfig(actorSystem.settings.config)
 
   // Goes through the services' descriptors and publishes the streams registered in 
   // each of the service's topic method implementation. 
   for {
     service <- resolvedServices.services
     tc <- service.descriptor.topicCalls().asScala
-    topicCall = tc.asInstanceOf[InternalTopicCall[AnyRef]]
+    topicCall = tc.asInstanceOf[TopicCall[AnyRef]]
   } {
     topicCall.topicHolder match {
       case holder: MethodTopicHolder =>
@@ -38,7 +41,7 @@ class RegisterTopicProducers @Inject() (resolvedServices: ResolvedServices, topi
 
             topicProducer match {
               case tagged: TaggedOffsetTopicProducer[AnyRef, _] =>
-                topicImpl.publisher().publishTaggedOffsetProducer(tagged)
+                Producer[AnyRef](kafkaConfig, topicCall, actorSystem).publishTaggedOffsetProducer(tagged, offsetStore)
               case other => log.warn {
                 s"Unknown topic producer ${other.getClass.getName}. " +
                   s"This will likely result in no events published to topic ${topicId.value} by service ${info.serviceName}."
