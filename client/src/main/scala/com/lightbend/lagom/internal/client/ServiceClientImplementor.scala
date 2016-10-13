@@ -13,20 +13,17 @@ import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
 import scala.compat.java8.OptionConverters._
 import scala.concurrent.{ ExecutionContext, Future }
-
 import org.pcollections.{ HashTreePMap, PSequence, TreePVector }
 import org.slf4j.LoggerFactory
-
 import com.google.inject.Inject
-import com.lightbend.lagom.internal.api.{ InternalTopicCall, MethodServiceCallHolder, MethodTopicHolder, Path }
-import com.lightbend.lagom.internal.api.broker.TopicFactory
+import com.lightbend.lagom.internal.api.{ MethodServiceCallHolder, MethodTopicHolder, Path }
+import com.lightbend.lagom.internal.api.broker.TopicFactoryProvider
 import com.lightbend.lagom.javadsl.api.{ Descriptor, ServiceCall, ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.javadsl.api.Descriptor.{ Call, RestCallId }
 import com.lightbend.lagom.javadsl.api.broker.Topic
 import com.lightbend.lagom.javadsl.api.deser._
 import com.lightbend.lagom.javadsl.api.security.ServicePrincipal
 import com.lightbend.lagom.javadsl.api.transport._
-
 import akka.NotUsed
 import akka.stream.Materializer
 import akka.stream.javadsl.{ Source => JSource }
@@ -34,6 +31,7 @@ import akka.stream.scaladsl.{ Sink, Source }
 import akka.util.ByteString
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import javax.inject.Singleton
+
 import play.api.Environment
 import play.api.http.HeaderNames
 import play.api.libs.streams.AkkaStreams
@@ -44,18 +42,16 @@ import play.api.libs.ws.{ InMemoryBody, WSClient }
  */
 @Singleton
 class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSocketClient, serviceInfo: ServiceInfo,
-                                          serviceLocator: ServiceLocator, environment: Environment)(implicit ec: ExecutionContext, mat: Materializer) {
+                                          serviceLocator: ServiceLocator, environment: Environment,
+                                          topicFactoryProvider: TopicFactoryProvider)(implicit ec: ExecutionContext, mat: Materializer) {
+
   private val log = LoggerFactory.getLogger(classOf[ServiceClientImplementor])
 
-  @volatile private var topicFactory: Option[TopicFactory] = None
-
-  @Inject(optional = true) def setTopicFactory(_topicFactory: TopicFactory): Unit = topicFactory = Some(_topicFactory)
-
   def implement[T](interface: Class[T], descriptor: Descriptor): T = {
-    java.lang.reflect.Proxy.newProxyInstance(environment.classLoader, Array(interface), new ServiceClientInvocationHandler(descriptor, topicFactory)).asInstanceOf[T]
+    java.lang.reflect.Proxy.newProxyInstance(environment.classLoader, Array(interface), new ServiceClientInvocationHandler(descriptor)).asInstanceOf[T]
   }
 
-  class ServiceClientInvocationHandler(descriptor: Descriptor, topicFactory: Option[TopicFactory]) extends InvocationHandler {
+  class ServiceClientInvocationHandler(descriptor: Descriptor) extends InvocationHandler {
     private def serviceCallMethods: Map[Method, ServiceCallInvocationHandler[Any, Any]] = descriptor.calls().asScala.map { call =>
       call.serviceCallHolder() match {
         case holder: MethodServiceCallHolder =>
@@ -64,16 +60,18 @@ class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSock
       }
     }.toMap
 
-    private def topicMethods: Map[Method, Topic[_]] = topicFactory.map { topicFactory =>
-      descriptor.topicCalls().asScala.map {
-        case topicCall: InternalTopicCall[Any] =>
-          topicCall.topicHolder match {
-            case holder: MethodTopicHolder =>
-              holder.method -> topicFactory.create(topicCall)
-          }
-        case topicCall => throw new IllegalStateException(s"Expected ${classOf[InternalTopicCall[_]].getName} instance, but it was ${topicCall.getClass.getName}.")
+    private def topicMethods: Map[Method, _] = {
+      descriptor.topicCalls.asScala.map { topicCall =>
+        topicCall.topicHolder match {
+          case holder: MethodTopicHolder =>
+            topicFactoryProvider.get match {
+              case Some(topicFactory) =>
+                holder.method -> topicFactory.create(topicCall)
+              case None => holder.method -> NoTopicFactory
+            }
+        }
       }.toMap
-    } getOrElse Map.empty
+    }
 
     private val methods: Map[Method, _] = serviceCallMethods ++ topicMethods
 
@@ -81,6 +79,7 @@ class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSock
       methods.get(method) match {
         case Some(serviceCallInvocationHandler: ServiceCallInvocationHandler[_, _]) => serviceCallInvocationHandler.invoke(args)
         case Some(topic: Topic[_]) => topic
+        case Some(NoTopicFactory) => throw new IllegalStateException("Attempt to get a topic, but there is no TopicFactory provided to implement it. You may need to add a dependency on lagom-javadsl-kafka-broker to your projects dependencies.")
         case _ => throw new IllegalStateException("Method " + method + " is not described by the service client descriptor")
       }
     }
@@ -331,3 +330,5 @@ private class ClientServiceCallInvoker[Request, Response](
   }
 
 }
+
+case object NoTopicFactory

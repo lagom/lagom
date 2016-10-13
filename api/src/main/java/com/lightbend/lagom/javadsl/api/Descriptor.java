@@ -390,61 +390,162 @@ public final class Descriptor {
     /**
      * Describes a topic call.
      */
-    public static interface TopicCall<Message> {
-      /**
-       * Get the topic id.
-       * @return The topic id
-       */
-      TopicId topicId();
-      /**
-       * Get the topic's message serializer.
-       * @return The message serializer.
-       */
-      MessageSerializer<Message, ByteString> messageSerializer();
-      /**
-       * Get the properties associated with this topic.
-       * @return The properties.
-       */
-      Properties properties();
-      /**
-       * Create a new topic call with the passed message serializer.
-       * @return A new topic call.
-       */
-      TopicCall<Message> withMessageSerializer(MessageSerializer<Message, ByteString> serializer);
-      /**
-       * Create a new topic call that holds the additional passed property and value.
-       * @param property The property.
-       * @param value The value associated with the passed property.
-       * @return A new topic call.
-       */
-      <T> TopicCall<Message> withProperty(Properties.Property<T> property, T value);
+    public static final class TopicCall<Message> {
+
+        private final TopicId topicId;
+        private final TopicHolder topicHolder;
+        private final MessageSerializer<Message, ByteString> messageSerializer;
+        private final Properties<Message> properties;
+
+        TopicCall(TopicId topicId, TopicHolder topicHolder, MessageSerializer<Message, ByteString> messageSerializer, Properties<Message> properties) {
+            this.topicId = topicId;
+            this.topicHolder = topicHolder;
+            this.messageSerializer = messageSerializer;
+            this.properties = properties;
+        }
+
+        /**
+         * Get the topic id.
+         *
+         * @return The topic id
+         */
+        public TopicId topicId() {
+            return topicId;
+        }
+
+        /**
+         * Get the topic holder.
+         *
+         * @return The topic holder.
+         */
+        public TopicHolder topicHolder() {
+            return topicHolder;
+        }
+
+        /**
+         * Get the topic's message serializer.
+         *
+         * @return The message serializer.
+         */
+        public MessageSerializer<Message, ByteString> messageSerializer() {
+            return messageSerializer;
+        }
+
+        /**
+         * Get the properties associated with this topic.
+         *
+         * @return The properties.
+         */
+        public Properties<Message> properties() {
+            return properties;
+        }
+
+        /**
+         * Return a copy of this topic call with the given topic holder configured.
+         *
+         * @param topicHolder The topic holder.
+         * @return A copy of this topic call.
+         */
+        public TopicCall<Message> withTopicHolder(TopicHolder topicHolder) {
+            return new TopicCall<>(topicId, topicHolder, messageSerializer, properties);
+        }
+
+        /**
+         * Return a copy of this topic call with the given message serializer configured.
+         *
+         * @param messageSerializer A
+         * @return A copy of this topic call.
+         */
+        public TopicCall<Message> withMessageSerializer(MessageSerializer<Message, ByteString> messageSerializer) {
+            return new TopicCall<>(topicId, topicHolder, messageSerializer, properties);
+        }
+
+        /**
+         * Return a copy of this copy call with the given property configured.
+         *
+         * @param property The property key.
+         * @param value The value for the property.
+         * @return A copy of this topic call.
+         */
+        public <T> TopicCall<Message> withProperty(Properties.Property<Message, T> property, T value) {
+            return new TopicCall<>(topicId, topicHolder, messageSerializer, properties.withProperty(property, value));
+        }
     }
 
     /**
      * Holds a map of properties.
      */
-    static final public class Properties {
-      public static final class Property<T> {}
+    public static final class Properties<Message> {
+        /**
+        * A property.
+        */
+        public static final class Property<Message, T> {
+            private final Class<T> valueClass;
+            private final String name;
 
-      private final PMap<Property<Object>, Object> properties;
+            public Property(Class<T> valueClass, String name) {
+                this.valueClass = valueClass;
+                this.name = name;
+            }
 
-      public Properties(PMap<Property<Object>, Object> properties) {
-        this.properties = properties;
-      }
+            public Class<T> valueClass() {
+                return valueClass;
+            }
 
-      /**
-       * Returns the value associated with the passed property, or null if 
-       * the no matching property is found.
-       *
-       * @param property The property to look up.
-       * @throws ClassCastException if the value stored in the properties map cannot be 
-       *         cast to the property's expected type.  
-       * @return The value associated with the passed property, or null if no match exist.
-       */
-      @SuppressWarnings("unchecked")
-      public <T> T getValueOf(Property<T> property) {
-        return (T) properties.get(property);
-      }
+            public String name() {
+                return name;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+
+                Property<?, ?> property = (Property<?, ?>) o;
+
+                if (!valueClass.equals(property.valueClass)) return false;
+                return name.equals(property.name);
+            }
+
+            @Override
+            public int hashCode() {
+                int result = valueClass.hashCode();
+                result = 31 * result + name.hashCode();
+                return result;
+            }
+
+            @Override
+            public String toString() {
+                return "Property{" +
+                        "valueClass=" + valueClass +
+                        ", name='" + name + '\'' +
+                        '}';
+            }
+        }
+
+        private final PMap<Property<?, ?>, Object> properties;
+
+        Properties(PMap<Property<?, ?>, Object> properties) {
+            this.properties = properties;
+        }
+
+        /**
+        * Returns the value associated with the passed property, or null if
+        * the no matching property is found.
+        *
+        * @param property The property to look up.
+        * @throws ClassCastException if the value stored in the properties map cannot be
+        *         cast to the property's expected type.
+        * @return The value associated with the passed property, or null if no match exist.
+        */
+        @SuppressWarnings("unchecked")
+        public <T> T getValueOf(Property<Message, T> property) {
+            return (T) properties.get(property);
+        }
+
+        public <T> Properties<Message> withProperty(Property<Message, T> property, T value) {
+            return new Properties<Message>(properties.plus(property, value));
+        }
     }
 
     private final String name;

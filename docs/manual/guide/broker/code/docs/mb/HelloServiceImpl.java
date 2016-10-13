@@ -34,7 +34,7 @@ public class HelloServiceImpl implements HelloService {
     //#implement-topic
 
     private Pair<GreetingMessage, Offset> convertEvent(Pair<HelloEvent, Offset> pair) {
-      return new Pair<>(GreetingMessage.of(pair.first().getMessage()), pair.second());  
+      return new Pair<>(new GreetingMessage(pair.first().getId(), pair.first().getMessage()), pair.second());
     }
 
     public ServiceCall<NotUsed, String> hello(String id) {

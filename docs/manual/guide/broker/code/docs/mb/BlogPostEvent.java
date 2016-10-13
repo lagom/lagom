@@ -14,8 +14,10 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 })
 public interface BlogPostEvent {
 
+    String getPostId();
+
     @JsonTypeName("created")
-    final class BlogPostCreated {
+    final class BlogPostCreated implements BlogPostEvent {
         private final String postId;
         private final String title;
 
@@ -25,11 +27,17 @@ public interface BlogPostEvent {
             this.title = title;
         }
 
-        // getters etc...
+        public String getPostId() {
+            return postId;
+        }
+
+        public String getTitle() {
+            return title;
+        }
     }
 
     @JsonTypeName("published")
-    final class BlogPostPublished {
+    final class BlogPostPublished implements BlogPostEvent {
         private final String postId;
 
         @JsonCreator
@@ -37,7 +45,9 @@ public interface BlogPostEvent {
             this.postId = postId;
         }
 
-        // getters etc...
+        public String getPostId() {
+            return postId;
+        }
     }
 }
 //#content
