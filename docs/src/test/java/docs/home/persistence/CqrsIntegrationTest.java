@@ -57,7 +57,7 @@ public class CqrsIntegrationTest {
   @BeforeClass
   public static void setup() throws Exception {
 
-    Config config = TestUtil.persistenceConfig("CqrsIntegrationTest", CassandraLauncher.randomPort(), false);
+    Config config = TestUtil.persistenceConfig("CqrsIntegrationTest", CassandraLauncher.randomPort());
 
     File cassandraDirectory = new File("target/CqrsIntegrationTest");
     CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource(), true, 0);
