@@ -76,7 +76,7 @@ object TestEntity {
   object Evt {
     val NumShards = 4
     // second param is optional, defaults to the class name
-    val aggregateEventShards = AggregateEventTag.sharded(classOf[Evt], NumShards)
+    val aggregateEventShards = AggregateEventTag.sharded[Evt](NumShards)
 
     import play.api.libs.json._
     import Serializers.emptySingletonFormat
