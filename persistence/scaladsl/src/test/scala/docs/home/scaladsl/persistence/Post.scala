@@ -27,7 +27,7 @@ object Post {
   object BlogEvent {
     val NumShards = 20
     // second param is optional, defaults to the class name
-    val aggregateEventShards = AggregateEventTag.sharded(classOf[BlogEvent], NumShards)
+    val aggregateEventShards = AggregateEventTag.sharded[BlogEvent](NumShards)
   }
 
   sealed trait BlogEvent extends AggregateEvent[BlogEvent] {

@@ -57,7 +57,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   def receive = {
     case EnsureActive(tagName) =>
 
-      val tag = AggregateEventTag(clazz, tagName)
+      val tag = new AggregateEventTag(clazz, tagName)
 
       implicit val timeout = Timeout(globalPrepareTimeout)
 
