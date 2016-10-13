@@ -479,7 +479,7 @@ lazy val `persistence-jdbc` = (project in file("persistence-jdbc"))
   .settings(forkedTests: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.6" exclude("com.typesafe.slick", "slick-extensions_2.11"),
+      "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.7",
       "com.typesafe.play" %% "play-jdbc" % PlayVersion
     )
   ) configs (MultiJvm)
