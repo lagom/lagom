@@ -3,11 +3,12 @@
  */
 package com.lightbend.lagom.scaladsl.persistence
 
-import com.lightbend.lagom.serialization.Jsonable
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
-import akka.actor.Address
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
+import akka.actor.Address
+import akka.cluster.Cluster
+import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
+import com.lightbend.lagom.scaladsl.persistence.testkit.SimulatedNullpointerException
 import javax.inject.Inject
 
 object TestEntity {
@@ -71,70 +72,85 @@ class TestEntity @Inject() (system: ActorSystem, probe: Option[ActorRef] = None)
   extends PersistentEntity[TestEntity.Cmd, TestEntity.Evt, TestEntity.State] {
   import TestEntity._
 
-  private val defaultCommandHandlers: PartialFunction[Any, Function[CommandContext[Any], Option[Persist[_ <: Evt]]]] = {
-    case ChangeMode(mode) => ctx => mode match {
-      case mode if state.mode == mode => Some(ctx.done())
-      case Mode.Append                => Some(ctx.thenPersist(InAppendMode, ctx.reply))
-      case Mode.Prepend               => Some(ctx.thenPersist(InPrependMode, ctx.reply))
+  private val changeMode: CommandHandler = {
+    case (c @ ChangeMode(mode), ctx, state) => {
+      mode match {
+        case mode if state.mode == mode => ctx.done
+        case Mode.Append                => ctx.thenPersist(InAppendMode, ctx.reply(c, _))
+        case Mode.Prepend               => ctx.thenPersist(InPrependMode, ctx.reply(c, _))
+      }
     }
-    case Get => ctx =>
-      ctx.reply(state)
-      Some(ctx.done())
-    case GetAddress => ctx =>
-      //ctx.reply(Cluster.get(system).selfAddress())
-      Some(ctx.done())
   }
 
-  private def addCommandHandler(eventFactory: String => Evt): PartialFunction[Any, Function[CommandContext[Any], Option[Persist[_ <: Evt]]]] = {
-    case Add(element, times) => ctx =>
-      if (element == null) {
-        throw new NullPointerException() //SimulatedNullpointerException()
+  val baseBehavior: Behavior = {
+    Behavior(State.empty)
+      .addEventHandler {
+        case (Appended(elem), b)  => b.mapState(_.add(elem))
+        case (Prepended(elem), b) => b.mapState(_.add(elem))
+        case (InAppendMode, b)    => becomeAppending(b.state)
+        case (InPrependMode, b)   => becomePrepending(b.state)
       }
-      if (element.length == 0) {
-        ctx.invalidCommand("element must not be empty")
-        Some(ctx.done())
-      } else {
-        val a = eventFactory(element.toUpperCase())
-        if (times == 1) {
-          Some(ctx.thenPersist(a, ctx.reply))
-        } else {
-          Some(ctx.thenPersistAll(List.fill(times)(a), () => ctx.reply(a)))
-        }
+      .addReadOnlyCommandHandler {
+        case (Get, ctx, state)        => ctx.reply(Get, state)
+        case (GetAddress, ctx, state) => ctx.reply(GetAddress, Cluster.get(system).selfAddress)
       }
+      .addCommandHandler(changeMode)
   }
 
-  private val defaultEventHandlers: PartialFunction[Any, Behavior] = {
-    case Appended(el)  => behavior.transformState(_.add(el))
-    case Prepended(el) => behavior.transformState(_.add(el))
-    case InAppendMode  => buildBehavior(new Appended(_), state)
-    case InPrependMode => buildBehavior(new Prepended(_), state)
-  }
-
-  private def buildBehavior(addEvent: String => Evt, state: State): Behavior = {
-    val function: PartialFunction[Any, Function[CommandContext[Any], Option[Persist[_ <: Evt]]]] = (defaultCommandHandlers orElse addCommandHandler(addEvent)).asInstanceOf[PartialFunction[Any, Function[CommandContext[Any], Option[Persist[_ <: Evt]]]]]
-    newBehaviorBuilder(state)
-      .withCommandHandlers(function)
-      .withEventHandlers(defaultEventHandlers)
-      .build()
-  }
-
-  def initialBehavior(snapshotState: Option[State]): Behavior = {
+  override def initialBehavior(snapshotState: Option[State]): Behavior = {
     val state = snapshotState match {
       case Some(snap) =>
         probe.foreach(_ ! Snapshot(snap))
         snap
       case None => State.empty
     }
-    val addEvent = state.mode match {
-      case Mode.Append  => new Appended(_)
-      case Mode.Prepend => new Prepended(_)
+
+    state.mode match {
+      case Mode.Append  => becomeAppending(state)
+      case Mode.Prepend => becomeAppending(state)
     }
-    buildBehavior(addEvent, state)
   }
 
-  override def recoveryCompleted(): Behavior = {
-    probe.foreach(_ ! AfterRecovery(state))
-    behavior
+  private def becomeAppending(s: State): Behavior = {
+    baseBehavior
+      .withState(s.copy(mode = Mode.Append))
+      .addCommandHandler {
+        case (a @ Add(elem, times), ctx, state) =>
+          // note that null should trigger NPE, for testing exception
+          if (elem == null)
+            throw new SimulatedNullpointerException
+          if (elem.length == 0) {
+            ctx.invalidCommand("element must not be empty");
+            ctx.done
+          }
+          val appended = Appended(elem.toUpperCase)
+          if (times == 1)
+            ctx.thenPersist(appended, ctx.reply(a, _))
+          else
+            ctx.thenPersistAll(List.fill(times)(appended), () => ctx.reply(a, appended))
+      }
+  }
+
+  private def becomePrepending(s: State): Behavior = {
+    baseBehavior
+      .withState(s.copy(mode = Mode.Prepend))
+      .addCommandHandler {
+        case (a @ Add(elem, times), ctx, state) =>
+          if (elem == null || elem.length == 0) {
+            ctx.invalidCommand("element must not be empty");
+            ctx.done
+          }
+          val prepended = Prepended(elem.toUpperCase)
+          if (times == 1)
+            ctx.thenPersist(prepended, ctx.reply(a, _))
+          else
+            ctx.thenPersistAll(List.fill(times)(prepended), () => ctx.reply(a, prepended))
+      }
+  }
+
+  override def recoveryCompleted(currentBehavior: Behavior): Behavior = {
+    probe.foreach(_ ! AfterRecovery(currentBehavior.state))
+    currentBehavior
   }
 
 }

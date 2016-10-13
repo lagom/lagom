@@ -530,9 +530,6 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
       else
         return ctx.thenPersistAll(fill(a, cmd.getTimes()), () -> ctx.reply(a));
     });
-
-    b.setCommandHandler(Add.class,
-        (cmd, ctx) -> ctx.thenPersist(new Prepended(entityId(), cmd.element.toLowerCase()), evt -> ctx.reply(evt)));
     return b.build();
   }
 

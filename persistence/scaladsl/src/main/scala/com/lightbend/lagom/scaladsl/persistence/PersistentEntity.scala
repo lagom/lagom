@@ -111,15 +111,6 @@ abstract class PersistentEntity[Command, Event, State] {
    */
   private[lagom] def internalSetEntityId(id: String) = _entityId = id
 
-  private var _behavior: Behavior = _
-
-  final def behavior: Behavior = _behavior
-
-  /**
-   * INTERNAL API
-   */
-  private[lagom] def internalSetCurrentBehavior(b: Behavior) = _behavior = b
-
   /**
    * The name of this entity type. It should be unique among the entity
    * types of the service. By default it is using the short class name
@@ -142,114 +133,78 @@ abstract class PersistentEntity[Command, Event, State] {
    * This method is called to notify the entity that the recovery process
    * is finished.
    */
-  def recoveryCompleted(): Behavior = _behavior
+  def recoveryCompleted(currentBehavior: Behavior): Behavior = currentBehavior
 
-  /**
-   * Current state of the entity. Typically accessed from event and command handlers.
-   */
-  protected final def state: State = _behavior.state
+  type EventHandler = PartialFunction[(Event, Behavior), Behavior]
+  type CommandHandler = PartialFunction[(Command, CommandContext, State), Persist[Event]]
+  type ReadOnlyCommandHandler = PartialFunction[(Command, ReadOnlyCommandContext, State), Unit]
 
-  /**
-   * Create a new empty `Behavior` with a given state.
-   */
-  final def newBehavior(state: State): Behavior = new Behavior(state, Map.empty, (c: Command, ctx: CommandContext[Any]) => None)
-
-  /**
-   * Create a new empty `BehaviorBuilder` with a given state.
-   */
-  final def newBehaviorBuilder(state: State): BehaviorBuilder = new BehaviorBuilder(state)
-
-  /**
-   * INTERNAL API
-   */
-  private[lagom] def newCtx(replyTo: ActorRef): CommandContext[Any] = new CommandContext[Any] {
-
-    def reply(msg: Any): Unit =
-      replyTo ! msg
-
-    override def commandFailed(cause: Throwable): Unit =
-      // not using akka.actor.Status.Failure because it is using Java serialization
-      reply(cause)
-
+  object Behavior {
+    def apply(state: State): Behavior =
+      new Behavior(state, PartialFunction.empty, PartialFunction.empty)
   }
 
   /**
    * Behavior consists of current state and functions to process incoming commands
-   * and persisted events. `Behavior` is an immutable class. Use the [[BehaviorBuilder]]
-   * for defining command and event handlers.
+   * and persisted events. `Behavior` is an immutable class.
    */
-  final case class Behavior(
-    state:          State,
-    eventHandler:   Function[Event, Option[Behavior]],
-    commandHandler: (Command, CommandContext[Any]) => Option[Persist[_ <: Event]]
+  class Behavior(
+    val state:          State,
+    val eventHandler:   EventHandler,
+    val commandHandler: CommandHandler
   ) {
+
+    def addCommandHandler(handler: CommandHandler) = {
+      new Behavior(state, eventHandler,
+        commandHandler.orElse(handler))
+    }
+
+    def addReadOnlyCommandHandler(handler: ReadOnlyCommandHandler) = {
+      val delegate: CommandHandler = {
+        case params @ (_, ctx, _) if handler.isDefinedAt(params) =>
+          handler(params)
+          ctx.done
+      }
+
+      new Behavior(state, eventHandler, commandHandler.orElse(delegate))
+    }
+
+    def addEventHandler(handler: EventHandler) = {
+      new Behavior(state, eventHandler.orElse(handler), commandHandler)
+    }
 
     /**
      * @return new instance with the given state
      */
     def withState(newState: State): Behavior =
-      copy(state = newState)
-
-    def transformState(f: State => State): Behavior =
-      copy(state = f(state))
-  }
-
-  /**
-   * Builder that is used for defining the event and command handlers.
-   * Use [#build] to create the immutable [[Behavior]].
-   */
-  protected final class BehaviorBuilder(
-    val state:       State,
-    val cmdHandlers: PartialFunction[Command, Function[CommandContext[Any], Option[Persist[_ <: Event]]]] = Map.empty,
-    val evtHandlers: PartialFunction[Event, Behavior]                                                     = PartialFunction.empty
-  ) {
-
-    // TODO apidocs
-    def withState(state: State): BehaviorBuilder =
-      copy(state = state)
-
-    // TODO apidocs
-    def withEventHandlers(evtHandlers: PartialFunction[Any, Behavior]): BehaviorBuilder =
-      copy(evtHandlers = evtHandlers)
-
-    // TODO apidocs
-    def withCommandHandlers(cmdHandlers: PartialFunction[Any, Function[CommandContext[Any], Option[Persist[_ <: Event]]]]): BehaviorBuilder =
-      copy(cmdHandlers = cmdHandlers)
-
-    private def copy(
-      state:       State                                                                                = state,
-      evtHandlers: PartialFunction[Event, Behavior]                                                     = evtHandlers,
-      cmdHandlers: PartialFunction[Command, Function[CommandContext[Any], Option[Persist[_ <: Event]]]] = cmdHandlers
-    ) =
-      new BehaviorBuilder(state, cmdHandlers, evtHandlers)
+      new Behavior(state = newState, eventHandler, commandHandler)
 
     /**
-     * Construct the corresponding immutable `Behavior`.
+     * Transform the state
      */
-    def build(): Behavior = {
+    def mapState(f: State => State): Behavior =
+      new Behavior(state = f(state), eventHandler, commandHandler)
 
-      def handler(cmd: Command, ctx: CommandContext[Any]): Option[Persist[_ <: Event]] = {
-        (cmdHandlers.orElse[Command, Function[CommandContext[Any], Option[Persist[_ <: Event]]]]({ case _: Command => (ctx: CommandContext[Any]) => None }))(cmd)(ctx)
-      }
+    /**
+     * Append `eventHandler` and `commandHandler` from `b` to the handlers
+     * of this `Behavior`.
+     */
+    def orElse(b: Behavior): Behavior =
+      new Behavior(state, eventHandler.orElse(b.eventHandler), commandHandler.orElse(b.commandHandler))
 
-      def eventHandler(event: Event): Option[Behavior] = {
-        Option(evtHandlers.applyOrElse(event, null))
-      }
-
-      Behavior(state, eventHandler, handler)
-    }
   }
 
   /**
-   * The context that is passed to read-only command handlers.
+   * The context that is used by read-only command handlers.
+   * Replies are sent with the context.
    */
-  abstract class ReadOnlyCommandContext[R] {
+  abstract class ReadOnlyCommandContext {
 
     /**
      * Send reply to a command. The type `R` must be the type defined by
      * the command.
      */
-    def reply(msg: R): Unit
+    def reply[R](currentCommand: Command with ReplyType[R], msg: R): Unit
 
     /**
      * Reply with a negative acknowledgment.
@@ -265,9 +220,10 @@ abstract class PersistentEntity[Command, Event, State] {
   }
 
   /**
-   * The context that is passed to command handler function.
+   * The context that is used by command handler function.
+   * Events are persisted with the context and replies are sent with the context.
    */
-  abstract class CommandContext[R] extends ReadOnlyCommandContext[R] {
+  abstract class CommandContext extends ReadOnlyCommandContext {
 
     /**
      * A command handler may return this `Persist` directive to define
@@ -315,7 +271,7 @@ abstract class PersistentEntity[Command, Event, State] {
      * A command handler may return this `Persist` directive to define
      * that no events are to be persisted.
      */
-    def done[B <: Event](): Persist[B] = persistNone.asInstanceOf[Persist[B]]
+    def done[B <: Event]: Persist[B] = persistNone.asInstanceOf[Persist[B]]
 
   }
 
@@ -343,7 +299,7 @@ abstract class PersistentEntity[Command, Event, State] {
     override def toString: String = "PersistNone"
   }
 
-  private val persistNone = new PersistNone[Nothing] {}
+  private[lagom] val persistNone = new PersistNone[Nothing] {}
 
 }
 

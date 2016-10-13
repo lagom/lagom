@@ -42,7 +42,8 @@ class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec {
       }
       val replies = receiveN(replySideEffects.size)
       replySideEffects should be(replies)
-      outcome.events.asScala should be(replies.collect { case evt: TestEntity.Evt => evt })
+      // Add 2 generates 2 events, but only one reply so drop last event when comparing
+      outcome.events.asScala.dropRight(1) should be(replies.collect { case evt: TestEntity.Evt => evt })
 
       outcome.state should be(replies.last)
 
