@@ -27,7 +27,8 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
   private val isDebugEnabled = log.isDebugEnabled
 
   private val registry = {
-    val registryClassName: String = system.settings.config.getString("lagom.serialization.play-json.serialization-registry")
+    val registryClassName: String =
+      system.settings.config.getString("lagom.serialization.play-json.serialization-registry")
     system.dynamicAccess.createInstanceFor[SerializerRegistry](registryClassName, immutable.Seq.empty).get
   }
 
@@ -52,7 +53,7 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
     val key = manifest(o)
     val (_, writes) = serializers.getOrElse(
       key,
-      throw new NotSerializableException(s"Missing play-json serializer for [$key]")
+      throw new RuntimeException(s"Missing play-json serializer for [$key]")
     )
 
     val json = writes.writes(o)
@@ -86,12 +87,15 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
 
     val (reads, _) = serializers.getOrElse(
       migratedManifest,
-      throw new RuntimeException(s"Missing play-json serializer for [$migratedManifest], defined are [${serializers.keys.mkString(", ")}]")
+      throw new RuntimeException(s"Missing play-json serializer for [$migratedManifest], " +
+        s"defined are [${serializers.keys.mkString(", ")}]")
     )
 
     val json = Json.parse(bytes) match {
       case jsObject: JsObject => jsObject
-      case other              => throw new RuntimeException(s"Unexpected serialized json data, expected a JSON object, but was [${other.getClass.getName}]")
+      case other =>
+        throw new RuntimeException("Unexpected serialized json data. " +
+          s"Expected a JSON object, but was [${other.getClass.getName}]")
     }
 
     val migratedJson = migration match {
@@ -103,8 +107,11 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
     val result = reads.reads(migratedJson) match {
       case JsSuccess(obj, _) => obj
       case JsError(errors) =>
-        throw new RuntimeException(s"Failed to de-serialize bytes with manifest [$migratedManifest]" +
-          s", json errors: ${errors.mkString(", ")}, json:\n ${Json.prettyPrint(migratedJson)}")
+        throw new JsonSerializationFailed(
+          s"Failed to de-serialize bytes with manifest [$migratedManifest]",
+          errors,
+          migratedJson
+        )
     }
 
     if (isDebugEnabled) {

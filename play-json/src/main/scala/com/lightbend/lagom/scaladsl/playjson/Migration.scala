@@ -40,10 +40,10 @@ object Migrations {
             case JsSuccess(transformed, _) =>
               transformed
             case JsError(errors) =>
-              throw new RuntimeException(
-                s"Failed to transform json from [$className] in old version $fromVersion, at migration step $key, " +
-                  s"Errors: ${errors.mkString(", ")}\n" +
-                  s"json:\n ${Json.prettyPrint(json)}"
+              throw new JsonSerializationFailed(
+                s"Failed to transform json from [$className] in old version $fromVersion, at migration step $key",
+                errors,
+                json
               )
           }
         }
