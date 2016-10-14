@@ -24,16 +24,13 @@ object Migrations {
     }
 
   /**
-   * @param currentVersion The current version of the entity
-   * @param transformations A set of changes applied incrementally if an old version of the serialized object is found
+   * @param transformations A set of changes applied incrementally if an older version of the serialized object is found
+   *                        each entry is the version when the change was introduced and the json transformation (created
+   *                        through the play-json transformation DSL)
    */
-  def transform[T: ClassTag](currentVersion: Int, transformations: immutable.SortedMap[Int, Reads[JsObject]]): (String, Migration) = {
-    require(
-      currentVersion > transformations.keys.last,
-      s"currentVersion $currentVersion is not higher than the last transformation version ${transformations.keys.last}"
-    )
+  def transform[T: ClassTag](transformations: immutable.SortedMap[Int, Reads[JsObject]]): (String, Migration) = {
     val className = implicitly[ClassTag[T]].runtimeClass.getName
-    className -> new Migration(currentVersion) {
+    className -> new Migration(transformations.keys.last + 1) {
       override def transform(fromVersion: Int, json: JsObject): JsObject = {
         val keyIterator = transformations.keysIteratorFrom(fromVersion)
         // apply each transformation from the stored version up to current

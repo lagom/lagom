@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets
 
 import akka.actor.ExtendedActorSystem
 import akka.event.Logging
-import akka.serialization.{BaseSerializer, SerializerWithStringManifest}
+import akka.serialization.{ BaseSerializer, SerializerWithStringManifest }
 import play.api.libs.json._
 
 import scala.collection.immutable
@@ -50,8 +50,10 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
 
     val key = manifest(o)
-    val (_, writes) = serializers.getOrElse(key,
-      throw new NotSerializableException(s"Missing play-json serializer for [$key]"))
+    val (_, writes) = serializers.getOrElse(
+      key,
+      throw new NotSerializableException(s"Missing play-json serializer for [$key]")
+    )
 
     val json = writes.writes(o)
     val result = Json.stringify(json).getBytes(charset)

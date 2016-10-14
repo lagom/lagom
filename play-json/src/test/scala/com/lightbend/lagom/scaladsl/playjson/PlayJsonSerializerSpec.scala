@@ -42,7 +42,6 @@ class TestRegistry2 extends SerializerRegistry {
   import play.api.libs.json._
   override def migrations = Map(
     Migrations.transform[MigratedEvent](
-      5,
       // something like a history of changes, if version is oldest each one needs to be applied
       SortedMap(
         // remove field (not really needed, here for completeness)
