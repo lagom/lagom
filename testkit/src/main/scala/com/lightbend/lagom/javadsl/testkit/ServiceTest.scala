@@ -21,7 +21,7 @@ import com.lightbend.lagom.internal.testkit.TestServiceLocatorPort
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
-import com.lightbend.lagom.javadsl.persistence.testkit.TestUtil
+import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 import akka.actor.ActorSystem
 import akka.japi.function.Effect
@@ -30,7 +30,7 @@ import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.Materializer
 import javax.inject.Singleton
 
-import com.lightbend.lagom.internal.persistence.{ InMemoryOffsetStore, OffsetStore }
+import com.lightbend.lagom.internal.javadsl.persistence.{ InMemoryOffsetStore, OffsetStore }
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfigProvider
 import com.lightbend.lagom.javadsl.persistence.cassandra.{ CassandraConfig, CassandraPersistenceModule }
 import org.apache.cassandra.io.util.FileUtils

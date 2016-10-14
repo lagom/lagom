@@ -4,10 +4,10 @@
 package com.lightbend.lagom.javadsl.persistence.jdbc
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import com.lightbend.lagom.internal.persistence.ReadSideConfig
+import com.lightbend.lagom.internal.javadsl.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.jdbc._
 import com.lightbend.lagom.javadsl.persistence.jdbc.testkit.TestUtil
-import com.lightbend.lagom.javadsl.persistence.{ ActorSystemSpec, PersistenceSpec }
+import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
 import com.typesafe.config.{ Config, ConfigFactory }
 import play.api.{ Configuration, Environment }
 import play.api.db.Databases

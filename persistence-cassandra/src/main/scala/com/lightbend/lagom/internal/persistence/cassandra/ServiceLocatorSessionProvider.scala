@@ -14,7 +14,7 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 import java.net.InetSocketAddress
 
-import com.lightbend.lagom.internal.persistence.ServiceLocatorHolder
+import com.lightbend.lagom.internal.javadsl.persistence.ServiceLocatorHolder
 
 import scala.util.control.NoStackTrace
 import play.api.Logger

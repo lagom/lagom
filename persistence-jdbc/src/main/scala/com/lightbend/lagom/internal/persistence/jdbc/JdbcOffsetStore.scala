@@ -10,7 +10,7 @@ import akka.Done
 import akka.actor.ActorSystem
 import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
-import com.lightbend.lagom.internal.persistence.{ OffsetDao, OffsetStore, ReadSideConfig }
+import com.lightbend.lagom.internal.javadsl.persistence.{ OffsetDao, OffsetStore, ReadSideConfig }
 import com.lightbend.lagom.javadsl.persistence.Offset
 import play.api.Configuration
 

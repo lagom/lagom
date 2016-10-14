@@ -17,7 +17,7 @@ import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import akka.NotUsed
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.persistence.ServiceLocatorHolder
+import com.lightbend.lagom.internal.javadsl.persistence.ServiceLocatorHolder
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint
 import play.api.Logger
@@ -29,10 +29,10 @@ class CassandraModule extends AbstractModule {
 }
 
 object CassandraModule {
-  // CassandraConfig is bound by the persistence module. Because the cassandra-registration module is injected only if the 
+  // CassandraConfig is bound by the persistence module. Because the cassandra-registration module is injected only if the
   // persistence module is in the classpath, we can assume the `CassandraConfig` interface is binded to a concrete instance.
-  // If that isn't the case, then there is a bug, and we should fail fast, as the lack of configuration will lead to further 
-  // issues if we don't (in particular, the service locator instance won't be set on the `ServiceLocatorHolder`, and that will 
+  // If that isn't the case, then there is a bug, and we should fail fast, as the lack of configuration will lead to further
+  // issues if we don't (in particular, the service locator instance won't be set on the `ServiceLocatorHolder`, and that will
   // make it impossible to work with Cassandra).
   private class RegisterCassandraContactPoints @Inject() (config: CassandraConfig, registry: ServiceRegistry, serviceLocator: ServiceLocator, system: ActorSystem)(implicit ec: ExecutionContext) {
 

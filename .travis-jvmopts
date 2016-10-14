@@ -3,6 +3,6 @@
 -Xms768M
 -Xmx768M
 -Xss2M
--XX:MaxMetaspaceSize=256M
+-XX:MaxMetaspaceSize=384M
 # Temporary to work around a current bintray configuration issue 2016-09-29
 -Dsbt.repository.secure=false

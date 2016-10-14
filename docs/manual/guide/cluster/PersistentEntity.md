@@ -201,7 +201,7 @@ If you change the class name of a `PersistentEntity` you have to override `entit
 
 The default configuration should be good starting point, and the following settings may later be amended to customize the behavior if needed.  The following is a listing of the non database specific settings for Lagom persistence:
 
-@[persistence](../../../../persistence/src/main/resources/reference.conf)
+@[persistence](../../../../persistence/core/src/main/resources/reference.conf)
 
 ## Underlying Implementation
 
