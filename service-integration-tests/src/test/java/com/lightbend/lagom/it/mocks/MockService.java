@@ -13,8 +13,10 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.transport.Method;
+
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MockService extends Service {
@@ -47,6 +49,8 @@ public interface MockService extends Service {
 
     ServiceCall<NotUsed, String> queryParamId(Optional<String> query);
 
+    ServiceCall<MockRequestEntity, List<MockResponseEntity>> listResults();
+
     default Descriptor descriptor() {
         return named("mockservice").withCalls(
                 restCall(Method.POST, "/mock/:id", this::mockCall),
@@ -62,7 +66,8 @@ public interface MockService extends Service {
                 call(this::streamCustomHeaders),
                 call(this::serviceName),
                 call(this::streamServiceName),
-                pathCall("/queryparam?qp", this::queryParamId)
+                pathCall("/queryparam?qp", this::queryParamId),
+                call(this::listResults)
         );
     }
 }

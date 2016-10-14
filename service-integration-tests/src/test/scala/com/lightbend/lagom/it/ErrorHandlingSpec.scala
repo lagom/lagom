@@ -216,7 +216,7 @@ class ErrorHandlingSpec extends ServiceSupport {
     val environment = Environment.simple(mode = mode)
     val jacksonSerializerFactory = new JacksonSerializerFactory(new JacksonObjectMapperProvider(
       ConfigFactory.load(), new ReflectiveDynamicAccess(environment.classLoader), None
-    ))
+    ).objectMapper)
     val jacksonExceptionSerializer = new JacksonExceptionSerializer(new play.Environment(environment))
     val descriptor = ServiceReader.readServiceDescriptor(environment.classLoader, classOf[MockService])
     val resolved = ServiceReader.resolveServiceDescriptor(descriptor, environment.classLoader,

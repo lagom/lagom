@@ -131,6 +131,13 @@ class MockServiceSpec extends ServiceSupport {
         .toCompletableFuture.get(10, TimeUnit.SECONDS) should ===("foo")
     }
 
+    "work with collections of entities" in withMockServiceClient { implicit app => client =>
+      val request = new MockRequestEntity("results", 10)
+      val response = client.listResults().invoke(request).toCompletableFuture.get(10, TimeUnit.SECONDS)
+
+      response.size() should ===(request.field2)
+    }
+
     "be invoked with circuit breaker" in withMockServiceClient { implicit app => client =>
       MockServiceImpl.invoked.set(false)
       (1 to 20).foreach { _ =>
