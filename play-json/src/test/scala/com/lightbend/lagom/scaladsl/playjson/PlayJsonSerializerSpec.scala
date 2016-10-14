@@ -26,8 +26,8 @@ class TestRegistry1 extends SerializerRegistry {
 
   override def serializers: Seq[Serializers[_]] =
     Seq(
-      Serializers(classOf[Event1], Json.reads[Event1], Json.writes[Event1]),
-      Serializers(classOf[Event2], Json.format[Event2])
+      Serializers(Json.reads[Event1], Json.writes[Event1]),
+      Serializers(Json.format[Event2])
     )
 
 }
@@ -35,8 +35,8 @@ class TestRegistry1 extends SerializerRegistry {
 class TestRegistry2 extends SerializerRegistry {
   override def serializers =
     Seq(
-      Serializers(classOf[MigratedEvent], Json.format[MigratedEvent]),
-      Serializers(classOf[Event1], Json.format[Event1])
+      Serializers(Json.format[MigratedEvent]),
+      Serializers(Json.format[Event1])
     )
 
   import play.api.libs.json._
@@ -51,7 +51,7 @@ class TestRegistry2 extends SerializerRegistry {
         2 -> __.json.update((__ \ "addedField").json.put(JsString("2"))),
         // a field was renamed, this one is tricky -
         // copy value first, using "update", then remove the old key using "prune"
-        3 -> (__.json.update((__ \ "newName").json.copyFrom((__ \ "oldName").json.pick)))
+        3 -> __.json.update((__ \ "newName").json.copyFrom((__ \ "oldName").json.pick))
           .andThen((__ \ "oldName").json.prune),
         4 ->
           // a field changed type
@@ -64,7 +64,7 @@ class TestRegistry2 extends SerializerRegistry {
 
 class TestRegistry3 extends SerializerRegistry {
   override def serializers = Seq(
-    Serializers(classOf[MigratedEvent], Json.format[MigratedEvent])
+    Serializers(Json.format[MigratedEvent])
   )
 
   // manual way to do the same transformations (compared to json transformations above)

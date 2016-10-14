@@ -3,21 +3,24 @@
  */
 package com.lightbend.lagom.scaladsl.playjson
 
+import java.io.NotSerializableException
 import java.nio.charset.StandardCharsets
 
 import akka.actor.ExtendedActorSystem
 import akka.event.Logging
-import akka.serialization.SerializerWithStringManifest
+import akka.serialization.{BaseSerializer, SerializerWithStringManifest}
 import play.api.libs.json._
 
-import scala.collection.immutable.Seq
+import scala.collection.immutable
 
 /**
  * Internal API
  *
- * Akka serializer using the registered play-json serializers and provides
+ * Akka serializer using the registered play-json serializers and migrations
  */
-final class PlayJsonSerializer(system: ExtendedActorSystem) extends SerializerWithStringManifest {
+private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
+  extends SerializerWithStringManifest
+  with BaseSerializer {
 
   private val charset = StandardCharsets.UTF_8
   private val log = Logging.getLogger(system, getClass)
@@ -25,17 +28,15 @@ final class PlayJsonSerializer(system: ExtendedActorSystem) extends SerializerWi
 
   private val registry = {
     val registryClassName: String = system.settings.config.getString("lagom.serialization.play-json.serialization-registry")
-    system.dynamicAccess.createInstanceFor[SerializerRegistry](registryClassName, Seq.empty).get
+    system.dynamicAccess.createInstanceFor[SerializerRegistry](registryClassName, immutable.Seq.empty).get
   }
 
   private val serializers: Map[String, (Reads[AnyRef], Writes[AnyRef])] = {
     registry.serializers.map(entry =>
-      (entry.clazz.getName, (entry.reads.asInstanceOf[Reads[AnyRef]], entry.writes.asInstanceOf[Writes[AnyRef]]))).toMap
+      (entry.entityClass.getName, (entry.reads.asInstanceOf[Reads[AnyRef]], entry.writes.asInstanceOf[Writes[AnyRef]]))).toMap
   }
 
   private def migrations: Map[String, Migration] = registry.migrations
-
-  override val identifier: Int = 715827892
 
   override def manifest(o: AnyRef): String = {
     val className = o.getClass.getName
@@ -49,7 +50,8 @@ final class PlayJsonSerializer(system: ExtendedActorSystem) extends SerializerWi
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
 
     val key = manifest(o)
-    val (_, writes) = serializers.getOrElse(key, throw new RuntimeException(s"Missing play-json serializer for [$key]"))
+    val (_, writes) = serializers.getOrElse(key,
+      throw new NotSerializableException(s"Missing play-json serializer for [$key]"))
 
     val json = writes.writes(o)
     val result = Json.stringify(json).getBytes(charset)

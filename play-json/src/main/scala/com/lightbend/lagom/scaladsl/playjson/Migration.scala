@@ -5,9 +5,12 @@ package com.lightbend.lagom.scaladsl.playjson
 
 import play.api.libs.json._
 
-import scala.collection.immutable.SortedMap
+import scala.collection.immutable
 import scala.reflect.ClassTag
 
+/**
+ * Conveneince factories to create [[Migration]]s.
+ */
 object Migrations {
 
   def apply(
@@ -24,7 +27,7 @@ object Migrations {
    * @param currentVersion The current version of the entity
    * @param transformations A set of changes applied incrementally if an old version of the serialized object is found
    */
-  def transform[T: ClassTag](currentVersion: Int, transformations: SortedMap[Int, Reads[JsObject]]): (String, Migration) = {
+  def transform[T: ClassTag](currentVersion: Int, transformations: immutable.SortedMap[Int, Reads[JsObject]]): (String, Migration) = {
     require(
       currentVersion > transformations.keys.last,
       s"currentVersion $currentVersion is not higher than the last transformation version ${transformations.keys.last}"
@@ -62,8 +65,9 @@ object Migrations {
 
 /**
  * Data migration of old formats to current format can
- * be implemented in a concrete subclass and configured to
- * be used by the `JacksonJsonSerializer` for a changed class.
+ * be implemented in a concrete subclass or provided through the
+ * factories in [[Migrations]] and configured to be used by the
+ * `PlayJsonSerializer` for a changed class.
  *
  * It is used when deserializing data of older version than the
  * [[currentVersion]]. You implement the transformation of the

@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.scaladsl.playjson
 
-import scala.collection.immutable.Seq
+import scala.collection.immutable
 
 /**
  * Create a concrete subclass of this and register using the `lagom.serialization.play-json.serialization-registry`
@@ -11,7 +11,7 @@ import scala.collection.immutable.Seq
  */
 abstract class SerializerRegistry {
 
-  def serializers: Seq[Serializers[_]]
+  def serializers: immutable.Seq[Serializers[_]]
 
   /**
    * A set of migrations keyed by the fully classified class name that the migration should be triggered for
