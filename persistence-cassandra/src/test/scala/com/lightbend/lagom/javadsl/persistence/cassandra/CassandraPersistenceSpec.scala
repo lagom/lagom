@@ -8,7 +8,7 @@ import java.io.File
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.persistence.cassandra.testkit.CassandraLauncher
-import com.lightbend.lagom.javadsl.persistence.{ ActorSystemSpec, PersistenceSpec }
+import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
 import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil
 import com.typesafe.config.{ Config, ConfigFactory }
 

@@ -8,7 +8,7 @@ import java.util.Optional
 import scala.collection.JavaConverters._
 import akka.testkit.TestProbe
 import com.google.common.collect.ImmutableList
-import com.lightbend.lagom.javadsl.persistence.ActorSystemSpec
+import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.javadsl.persistence.TestEntity
 
 import scala.annotation.varargs

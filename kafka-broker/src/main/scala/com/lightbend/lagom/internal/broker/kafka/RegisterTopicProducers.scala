@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
-import com.lightbend.lagom.internal.persistence.OffsetStore
+import com.lightbend.lagom.internal.javadsl.persistence.OffsetStore
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 
 class RegisterTopicProducers @Inject() (resolvedServices: ResolvedServices, topicFactory: TopicFactory,
@@ -24,8 +24,8 @@ class RegisterTopicProducers @Inject() (resolvedServices: ResolvedServices, topi
   private val log = LoggerFactory.getLogger(classOf[RegisterTopicProducers])
   private val kafkaConfig = KafkaConfig(actorSystem.settings.config)
 
-  // Goes through the services' descriptors and publishes the streams registered in 
-  // each of the service's topic method implementation. 
+  // Goes through the services' descriptors and publishes the streams registered in
+  // each of the service's topic method implementation.
   for {
     service <- resolvedServices.services
     tc <- service.descriptor.topicCalls().asScala

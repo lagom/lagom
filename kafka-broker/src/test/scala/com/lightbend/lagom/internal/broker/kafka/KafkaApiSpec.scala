@@ -42,7 +42,7 @@ import akka.testkit.EventFilter
 import javax.inject.Inject
 
 import com.lightbend.lagom.internal.broker.kafka.KafkaApiSpec.{ InMemoryOffsetStore, NoServiceLocator, NullPersistentEntityRegistry }
-import com.lightbend.lagom.internal.persistence.{ OffsetDao, OffsetStore }
+import com.lightbend.lagom.internal.javadsl.persistence.{ OffsetDao, OffsetStore }
 import com.lightbend.lagom.javadsl.broker.TopicProducer
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject._
@@ -152,7 +152,7 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
       def trackedOffset = KafkaApiSpec.InMemoryOffsetStore.prepare("topicProducer-" + testTopic.topicId().value(), "singleton")
         .map(_.loadedOffset).futureValue
 
-      // No message was consumed from this topic, hence we expect the last stored offset to be NONE 
+      // No message was consumed from this topic, hence we expect the last stored offset to be NONE
       trackedOffset shouldBe Offset.NONE
 
       val messageReceived = Promise[String]()
@@ -166,7 +166,7 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
       queue.offer(new JPair(messageToPublish, messageOffset))
       messageReceived.future.futureValue shouldBe messageToPublish
 
-      // After consuming a message we expect the offset store to have been updated with the offset of 
+      // After consuming a message we expect the offset store to have been updated with the offset of
       // the consumed message
       trackedOffset shouldBe messageOffset
     }

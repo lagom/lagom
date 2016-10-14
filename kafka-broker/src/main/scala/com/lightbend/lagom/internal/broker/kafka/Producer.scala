@@ -36,7 +36,7 @@ import akka.stream.scaladsl.Unzip
 import akka.stream.scaladsl.Zip
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings }
-import com.lightbend.lagom.internal.persistence.{ OffsetDao, OffsetStore }
+import com.lightbend.lagom.internal.javadsl.persistence.{ OffsetDao, OffsetStore }
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, Offset }

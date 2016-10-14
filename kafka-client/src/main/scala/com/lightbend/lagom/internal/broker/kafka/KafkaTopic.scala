@@ -9,7 +9,6 @@ import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.ServiceInfo
 import com.lightbend.lagom.javadsl.api.broker.{ Subscriber, Topic }
 import com.lightbend.lagom.javadsl.api.broker.Topic.TopicId
-
 import scala.concurrent.ExecutionContext
 
 /**
