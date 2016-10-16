@@ -85,7 +85,7 @@ The Kafka server is automatically started when executing the `runAll` task. Howe
 
 ## Disable it
 
-You can disable the embedded Cassandra server by adding the following in your build.
+You can disable the embedded Kafka server by adding the following in your build.
 
 In the Maven root project pom:
 
