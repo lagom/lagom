@@ -17,7 +17,7 @@ val PlayVersion = "2.5.4"
 val AkkaVersion = "2.4.10"
 val AkkaPersistenceCassandraVersion = "0.17"
 val ScalaTestVersion = "2.2.4"
-val JacksonVersion = "2.7.2"
+val JacksonVersion = "2.7.8"
 val CassandraAllVersion = "3.0.2"
 val GuavaVersion = "19.0"
 val MavenVersion = "3.3.9"
@@ -270,7 +270,7 @@ lazy val immutables = (project in file("immutables"))
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
-    libraryDependencies += "org.immutables" % "value" % "2.1.3"
+    libraryDependencies += "org.immutables" % "value" % "2.3.2"
   )
 
 lazy val spi = (project in file("spi"))

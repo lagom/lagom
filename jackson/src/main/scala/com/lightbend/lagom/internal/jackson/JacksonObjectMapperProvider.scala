@@ -3,7 +3,6 @@
  */
 package com.lightbend.lagom.internal.jackson
 
-import java.util.concurrent.atomic.AtomicReference
 import scala.util.Failure
 import scala.util.Success
 import akka.actor.ActorSystem
@@ -22,7 +21,6 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import akka.actor.DynamicAccess
 import akka.event.LoggingAdapter
 import com.typesafe.config.Config
-import java.lang.reflect.Type
 
 object JacksonObjectMapperProvider extends ExtensionId[JacksonObjectMapperProvider] with ExtensionIdProvider {
   override def get(system: ActorSystem): JacksonObjectMapperProvider = super.get(system)
@@ -47,17 +45,13 @@ class JacksonObjectMapperProvider(
   log:           Option[LoggingAdapter]
 ) extends Extension {
 
-  // ParameterNamesModule can't be used (and is not needed) for the Immutables classes
-  private val (objectMapper: ObjectMapper, objectMapperWithParameterNames: ObjectMapper) = {
-    val mapper1 = new ObjectMapper
-    val mapper2 = new ObjectMapper
+  val objectMapper: ObjectMapper = {
     import scala.collection.JavaConverters._
 
-    mapper1.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    mapper2.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    val mapper = new ObjectMapper
 
-    mapper1.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-    mapper2.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
 
     val configuredModules = config.getStringList(
       "lagom.serialization.json.jackson-modules"
@@ -81,50 +75,17 @@ class JacksonObjectMapperProvider(
 
     modules.foreach { module =>
       if (module.isInstanceOf[ParameterNamesModule])
-        mapper2.registerModule(new ParameterNamesModule(JsonCreator.Mode.PROPERTIES))
+        // ParameterNamesModule needs a special case for the constructor to ensure that single-parameter
+        // constructors are handled the same way as constructors with multiple parameters.
+        // See https://github.com/FasterXML/jackson-module-parameter-names#delegating-creator
+        mapper.registerModule(new ParameterNamesModule(JsonCreator.Mode.PROPERTIES))
       else {
-        mapper1.registerModule(module)
-        mapper2.registerModule(module)
+        mapper.registerModule(module)
       }
       log.foreach(_.debug("Registered Jackson module [{}]", module.getClass.getName))
     }
-    (mapper1, mapper2)
+
+    mapper
   }
-
-  private val hasJsonCreatorCache = new AtomicReference[Map[Class[_], Boolean]](Map.empty)
-
-  private def hasJsonCreator(clazz: Class[_]): Boolean = {
-    def updateCache(cache: Map[Class[_], Boolean], key: Class[_], value: Boolean): Boolean = {
-      hasJsonCreatorCache.compareAndSet(cache, cache.updated(key, value)) ||
-        updateCache(hasJsonCreatorCache.get, key, value) // recursive, try again
-    }
-
-    val cache = hasJsonCreatorCache.get
-    cache.get(clazz) match {
-      case Some(value) => value
-      case None =>
-        val value = clazz.getDeclaredMethods.exists(_.isAnnotationPresent(classOf[JsonCreator]))
-        updateCache(cache, clazz, value)
-        value
-    }
-  }
-
-  /**
-   * Retrieve the `ObjectMapper` for a given class. There are two shared instances
-   * and one or the other is selected depending on if the class has a `JsonCreator`
-   * annotation or not. The instance that is returned for classes with `JsonCreator`
-   * is not configured with the `ParameterNamesModule`, because it can't be used
-   * (and is not needed) for Immutables classes which has `JsonCreator`
-   * annotations.
-   */
-  def objectMapper(forType: Type): ObjectMapper = {
-    forType match {
-      case clazz: Class[_] =>
-        if (hasJsonCreator(clazz)) objectMapper else objectMapperWithParameterNames
-      case _ =>
-        objectMapper
-    }
-  }
-
 }
 

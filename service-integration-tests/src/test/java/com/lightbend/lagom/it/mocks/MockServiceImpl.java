@@ -15,13 +15,17 @@ import com.lightbend.lagom.javadsl.api.transport.NotFound;
 import com.lightbend.lagom.javadsl.api.transport.ResponseHeader;
 import com.lightbend.lagom.javadsl.server.HeaderServiceCall;
 import com.lightbend.lagom.javadsl.server.ServerServiceCall;
+
 import javax.inject.Inject;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class MockServiceImpl implements MockService {
 
@@ -144,7 +148,16 @@ public class MockServiceImpl implements MockService {
         return request -> CompletableFuture.completedFuture(query.orElse("none"));
     }
 
-  /**
+    @Override
+    public ServiceCall<MockRequestEntity, List<MockResponseEntity>> listResults() {
+        return request -> CompletableFuture.completedFuture(
+                IntStream.range(0, request.field2())
+                        .mapToObj(i -> new MockResponseEntity(i, request))
+                        .collect(Collectors.toList())
+        );
+    }
+
+    /**
      * Shows example service call composition.
      */
     private <Request, Response> ServerServiceCall<Request, Response> withServiceName(
