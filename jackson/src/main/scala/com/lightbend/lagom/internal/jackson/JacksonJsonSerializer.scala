@@ -9,7 +9,6 @@ import java.io.NotSerializableException
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import scala.annotation.tailrec
-import scala.collection.JavaConverters
 import scala.util.Failure
 import scala.util.Success
 import akka.actor.ExtendedActorSystem
@@ -21,13 +20,13 @@ import com.lightbend.lagom.serialization.JacksonJsonMigration
 
 /**
  * Akka serializer for JSON using Jackson for classes that implements the
- * [[com.lightbend.lagom.javadsl.serialization.Jsonable]] marker interface.
+ * [[com.lightbend.lagom.serialization.Jsonable]] marker interface.
  *
  * Configuration in `lagom.serialization.json` section.
  * It will load Jackson modules defined in configuration `jackson-modules`.
  *
  * It will compress the payload if the message class implements the
- * [[com.lightbend.lagom.javadsl.serialization.CompressedJsonable]] marker
+ * [[com.lightbend.lagom.serialization.CompressedJsonable]] marker
  * interface and the payload is larger than the configured `compress-larger-than`
  * value.
  */
@@ -37,7 +36,7 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
   private val log = Logging.getLogger(system, getClass)
   private val conf = system.settings.config.getConfig("lagom.serialization.json")
   private val isDebugEnabled = log.isDebugEnabled
-  private val objectMapperProvider = JacksonObjectMapperProvider(system)
+  private val objectMapper = JacksonObjectMapperProvider(system).objectMapper
   private final val BufferSize = 1024 * 4
   private val migrations: Map[String, JacksonJsonMigration] = {
     import scala.collection.JavaConverters._
@@ -61,7 +60,7 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
 
   override def toBinary(obj: AnyRef): Array[Byte] = {
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
-    val bytes = objectMapperProvider.objectMapper(obj.getClass).writeValueAsBytes(obj)
+    val bytes = objectMapper.writeValueAsBytes(obj)
     val result = obj match {
       case _: CompressedJsonable if bytes.length > compressLargerThan => compress(bytes)
       case _ => bytes
@@ -107,8 +106,6 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
         )
     }
 
-    val mapper = objectMapperProvider.objectMapper(clazz)
-
     val decompressBytes = if (compressed) decompress(bytes) else bytes
 
     if (isDebugEnabled) {
@@ -127,11 +124,11 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
 
     migration match {
       case Some(transformer) if fromVersion < transformer.currentVersion =>
-        val jsonTree = mapper.readTree(decompressBytes)
+        val jsonTree = objectMapper.readTree(decompressBytes)
         val newJsonTree = transformer.transform(fromVersion, jsonTree)
-        mapper.treeToValue(newJsonTree, clazz)
+        objectMapper.treeToValue(newJsonTree, clazz)
       case _ =>
-        mapper.readValue(decompressBytes, clazz)
+        objectMapper.readValue(decompressBytes, clazz)
     }
   }
 
