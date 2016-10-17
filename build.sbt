@@ -198,18 +198,20 @@ def multiJvmTestSettings: Seq[Setting[_]] = SbtMultiJvm.multiJvmSettings ++ Seq(
   }
 )
 
+val javadslProjects = Seq[ProjectReference](
+  `api-javadsl`,
+  `server-javadsl`,
+  `client-javadsl`,
+  `broker-javadsl`
+)
 
-val apiProjects = Seq[ProjectReference](
-  api,
+val coreProjects = Seq[ProjectReference](
   `api-tools`,
   spi,
   jackson,
   core,
-  server,
-  client,
   cluster,
   pubsub,
-  broker,
   `kafka-client`,
   `kafka-broker`,
   persistence,
@@ -220,12 +222,12 @@ val apiProjects = Seq[ProjectReference](
   testkit,
   logback,
   immutables,
-  `integration-client`
+  `integration-client-javadsl`
 )
 
 val otherProjects = Seq[ProjectReference](
   `dev-environment`,
-  `service-integration-tests`
+  `integration-tests-javadsl`
 )
 
 lazy val root = (project in file("."))
@@ -240,13 +242,14 @@ lazy val root = (project in file("."))
   .enablePlugins(lagom.UnidocRoot)
   .settings(UnidocRoot.settings(Nil, otherProjects ++
     Seq[ProjectReference](`sbt-scripted-library`, `sbt-scripted-tools`)): _*)
-  .aggregate(apiProjects: _*)
+  .aggregate(javadslProjects: _*)
+  .aggregate(coreProjects: _*)
   .aggregate(otherProjects: _*)
 
 def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) 
 def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype) 
 
-lazy val api = (project in file("api"))
+lazy val `api-javadsl` = (project in file("service/javadsl/api"))
   .settings(name := "lagom-javadsl-api")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -295,7 +298,7 @@ lazy val jackson = (project in file("jackson"))
       scalaTest % Test,
       "com.novocode" % "junit-interface" % "0.11" % "test")
   )
-  .dependsOn(api, immutables % "test->compile")
+  .dependsOn(`api-javadsl`, immutables % "test->compile")
 
 lazy val `api-tools` = (project in file("api-tools"))
   .settings(runtimeLibCommon: _*)
@@ -307,17 +310,17 @@ lazy val `api-tools` = (project in file("api-tools"))
     )
   )
   .dependsOn(
-    api,
-    `server` % "compile->test"
+    `api-javadsl`,
+    `server-javadsl` % "compile->test"
   )
 
 lazy val core = (project in file("core"))
   .settings(name := "lagom-core")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(api, jackson)
+  .dependsOn(`api-javadsl`, jackson)
 
-lazy val client = (project in file("client"))
+lazy val `client-javadsl` = (project in file("service/javadsl/client"))
   .settings(name := "lagom-javadsl-client")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -329,13 +332,13 @@ lazy val client = (project in file("client"))
   )
   .dependsOn(core)
 
-lazy val `integration-client` = (project in file("integration-client"))
+lazy val `integration-client-javadsl` = (project in file("service/javadsl/integration-client"))
   .settings(name := "lagom-javadsl-integration-client")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(client, `service-registry-client`, `kafka-client`)
+  .dependsOn(`client-javadsl`, `service-registry-client`, `kafka-client`)
 
-lazy val server = (project in file("server"))
+lazy val `server-javadsl` = (project in file("service/javadsl/server"))
   .settings(
     name := "lagom-javadsl-server",
     libraryDependencies ++= Seq(
@@ -345,7 +348,7 @@ lazy val server = (project in file("server"))
   )
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
-  .dependsOn(core, client, immutables % "provided")
+  .dependsOn(core, `client-javadsl`, immutables % "provided")
 
 lazy val testkit = (project in file("testkit"))
   .settings(name := "lagom-javadsl-testkit")
@@ -361,9 +364,9 @@ lazy val testkit = (project in file("testkit"))
       scalaTest % Test
     )
   )
-  .dependsOn(server, pubsub, broker, persistence % "compile;test->test", `persistence-cassandra` % "test->test")
+  .dependsOn(`server-javadsl`, pubsub, `broker-javadsl`, persistence % "compile;test->test", `persistence-cassandra` % "test->test")
 
-lazy val `service-integration-tests` = (project in file("service-integration-tests"))
+lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
   .settings(name := "lagom-service-integration-tests")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(AutomateHeaderPlugin)
@@ -377,7 +380,7 @@ lazy val `service-integration-tests` = (project in file("service-integration-tes
     PgpKeys.publishSigned := {},
     publish := {}
   )
-  .dependsOn(server, `persistence-cassandra`, pubsub, testkit, logback, `integration-client`)
+  .dependsOn(`server-javadsl`, `persistence-cassandra`, pubsub, testkit, logback,`integration-client-javadsl`)
 
 // for forked tests, necessary for Cassandra
 def forkedTests: Seq[Setting[_]] = Seq(
@@ -402,7 +405,7 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
 
 lazy val cluster = (project in file("cluster"))
   .settings(name := "lagom-javadsl-cluster")
-  .dependsOn(api, jackson)
+  .dependsOn(`api-javadsl`, jackson)
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -514,13 +517,13 @@ lazy val `kafka-client` = (project in file("kafka-client"))
       scalaTest % Test
     )
   )
-  .dependsOn(api)
+  .dependsOn(`api-javadsl`)
 
-lazy val broker = (project in file("broker"))
+lazy val `broker-javadsl` = (project in file("service/javadsl/broker"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(name := "lagom-javadsl-broker")
   .settings(runtimeLibCommon: _*)
-  .dependsOn(api, `persistence-javadsl`)
+  .dependsOn(`api-javadsl`, `persistence-javadsl`)
 
 lazy val `kafka-broker` = (project in file("kafka-broker"))
   .enablePlugins(RuntimeLibPlugins)
@@ -531,7 +534,7 @@ lazy val `kafka-broker` = (project in file("kafka-broker"))
       scalaTest % Test
     )
   )
-  .dependsOn(`kafka-client`, broker, client % "optional", `kafka-server` % Test, logback % Test, server)
+  .dependsOn(`kafka-client`, `broker-javadsl`, `client-javadsl` % "optional", `kafka-server` % Test, logback % Test, `server-javadsl`)
 
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
@@ -645,7 +648,7 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
       s"-Dlagom.version=${version.value}",
       s"-DarchetypeVersion=${version.value}",
       s"-Dplay.version=$PlayVersion",
-      s"-Dscala.binary.version=${(scalaBinaryVersion in api).value}",
+      s"-Dscala.binary.version=${(scalaBinaryVersion in `api-javadsl`).value}",
       "-Dorg.slf4j.simpleLogger.showLogName=false",
       "-Dorg.slf4j.simpleLogger.showThreadName=false"
     )
@@ -756,7 +759,7 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
 lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-library")
   .settings(name := "lagom-sbt-scripted-library")
   .settings(runtimeLibCommon: _*)
-  .dependsOn(server)
+  .dependsOn(`server-javadsl`)
 
 lazy val `service-locator` = (project in file("dev") / "service-locator")
   .settings(name := "lagom-service-locator")
@@ -773,25 +776,25 @@ lazy val `service-locator` = (project in file("dev") / "service-locator")
       scalaTest % Test
     )
   )
-  .dependsOn(server, logback, `service-registry-client`)
+  .dependsOn(`server-javadsl`, logback, `service-registry-client`)
 
 lazy val `service-registry-client` = (project in file("dev") / "service-registry-client")
   .settings(name := "lagom-service-registry-client")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(client, immutables % "provided")
+  .dependsOn(`client-javadsl`, immutables % "provided")
 
 lazy val `service-registration` = (project in file("dev") / "service-registration")
   .settings(name := "lagom-service-registration")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(server, `service-registry-client`)
+  .dependsOn(`server-javadsl`, `service-registry-client`)
 
 lazy val `cassandra-registration` = (project in file("dev") / "cassandra-registration")
   .settings(name := "lagom-cassandra-registration")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(api, `persistence-cassandra`, `service-registry-client`)
+  .dependsOn(`api-javadsl`, `persistence-cassandra`, `service-registry-client`)
 
 lazy val `play-integration` = (project in file("dev") / "play-integration")
   .settings(name := "lagom-play-integration")
