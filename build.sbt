@@ -355,10 +355,11 @@ lazy val testkit = (project in file("testkit"))
       "com.typesafe.play" %% "play-netty-server" % PlayVersion,
       "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion exclude("io.netty", "netty-all"),
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion,
       scalaTest % Test
     )
   )
-  .dependsOn(server, pubsub, `persistence-cassandra` % "compile;test->test")
+  .dependsOn(server, pubsub, broker, persistence % "compile;test->test", `persistence-cassandra` % "test->test")
 
 lazy val `service-integration-tests` = (project in file("service-integration-tests"))
   .settings(name := "lagom-service-integration-tests")

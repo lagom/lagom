@@ -3,7 +3,6 @@
  */
 package com.lightbend.lagom.javadsl.testkit
 
-import java.io.File
 import java.nio.file.Files
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -16,8 +15,7 @@ import scala.concurrent.duration._
 import scala.util.Try
 import scala.util.control.NonFatal
 import com.lightbend.lagom.internal.cluster.JoinClusterModule
-import com.lightbend.lagom.internal.testkit.TestServiceLocator
-import com.lightbend.lagom.internal.testkit.TestServiceLocatorPort
+import com.lightbend.lagom.internal.testkit.{ TestServiceLocator, TestServiceLocatorPort, TestTopicFactory }
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
@@ -28,11 +26,9 @@ import akka.japi.function.Effect
 import akka.japi.function.Procedure
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.Materializer
-import javax.inject.Singleton
 
 import com.lightbend.lagom.internal.persistence.{ InMemoryOffsetStore, OffsetStore }
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraConfigProvider
-import com.lightbend.lagom.javadsl.persistence.cassandra.{ CassandraConfig, CassandraPersistenceModule }
+import com.lightbend.lagom.internal.api.broker.TopicFactory
 import org.apache.cassandra.io.util.FileUtils
 import play.Application
 import play.Configuration
@@ -68,45 +64,105 @@ import play.inject.guice.GuiceApplicationBuilder
  */
 object ServiceTest {
 
-  case class Setup(persistence: Boolean, cluster: Boolean,
-                   configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]) {
+  // These are all specified as strings so that we can say they are disabled without having a dependency on them.
+  private val JdbcPersistenceModule = "com.lightbend.lagom.javadsl.persistence.jdbc.JdbcPersistenceModule"
+  private val CassandraPersistenceModule = "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule"
+  private val KafkaBrokerModule = "com.lightbend.lagom.internal.broker.kafka.KafkaBrokerModule"
+  private val KafkaClientModule = "com.lightbend.lagom.javadsl.broker.kafka.KafkaClientModule"
+
+  sealed trait Setup {
+    @deprecated(message = "Use withCassandra instead", since = "1.2.0")
+    def withPersistence(enabled: Boolean): Setup = withCassandra(enabled)
+
+    /**
+     * Enable or disable Cassandra.
+     *
+     * If enabled, this will start an embedded Cassandra server before the tests start, and shut it down afterwards.
+     * It will also configure Lagom to use the embedded Cassandra server.
+     *
+     * @param enabled True if Cassandra should be enabled, or false if disabled.
+     * @return A copy of this setup.
+     */
+    def withCassandra(enabled: Boolean): Setup
+
+    @deprecated(message = "Use configureBuilder instead", since = "1.2.0")
+    def withConfigureBuilder(configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]) =
+      this.configureBuilder(configureBuilder)
+
+    /**
+     * Configure the builder.
+     *
+     * Allows a function to be supplied to configure the Play Guice application builder. This allows components to be
+     * mocked, modules to be enabled/disabled, and custom configuration to be supplied.
+     *
+     * @param configureBuilder The builder configuration function.
+     * @return A copy of this setup.
+     */
+    def configureBuilder(configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]): Setup
+
+    /**
+     * Enable clustering.
+     *
+     * Disabling this will automatically disable any persistence plugins, since persistence requires clustering.
+     *
+     * @param enabled True if clustering should be enabled, or false if disabled.
+     * @return A copy of this setup.
+     */
+    def withCluster(enabled: Boolean): Setup
+
+    /**
+     * Whether Cassandra is enabled.
+     */
+    def cassandra: Boolean
+
+    /**
+     * Whether clustering is enabled.
+     */
+    def cluster: Boolean
+
+    /**
+     * The builder configuration function
+     */
+    def configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]
+
+  }
+
+  private case class SetupImpl(cassandra: Boolean, cluster: Boolean,
+                               configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]) extends Setup {
 
     def this() = this(
-      persistence = true,
-      cluster = true,
+      cassandra = false,
+      cluster = false,
       configureBuilder = new JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder] {
       override def apply(b: GuiceApplicationBuilder): GuiceApplicationBuilder = b
     }
     )
 
-    /**
-     * Disable or enable persistence, including Cassandra startup.
-     */
-    def withPersistence(enabled: Boolean): Setup =
-      copy(persistence = enabled)
-
-    /**
-     * Disable or enable cluster and pubsub.
-     * If cluster is disabled the persistence is also disabled,
-     * since cluster is a prerequisite for persistence.
-     */
-    def withCluster(enabled: Boolean): Setup = {
-      if (enabled) copy(cluster = true)
-      else copy(cluster = false, persistence = false)
+    override def withCassandra(enabled: Boolean): Setup = {
+      if (enabled) {
+        copy(cassandra = true, cluster = true)
+      } else {
+        copy(cassandra = false)
+      }
     }
 
-    /**
-     * Transformation of the Guice builder. Can for example be used to override bindings
-     * to stub out dependencies to other services.
-     */
-    def withConfigureBuilder(transformation: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]): Setup =
-      copy(configureBuilder = transformation)
+    override def configureBuilder(configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]): Setup = {
+      copy(configureBuilder = configureBuilder)
+    }
+
+    override def withCluster(enabled: Boolean): Setup = {
+      if (enabled) {
+        copy(cluster = true)
+      } else {
+        copy(cluster = false, cassandra = false)
+      }
+    }
   }
 
   /**
    * The default `Setup` configuration, which has persistence enabled.
    */
-  val defaultSetup: Setup = new Setup()
+  val defaultSetup: Setup = new SetupImpl()
 
   /**
    * When the server is started you can get the service client and other
@@ -192,33 +248,37 @@ object ServiceTest {
 
     val b1 = new GuiceApplicationBuilder()
       .bindings(sBind[TestServiceLocatorPort].to(testServiceLocatorPort))
-      .bindings(sBind[CassandraConfig].toProvider(classOf[CassandraConfigProvider]))
       .bindings(sBind[ServiceLocator].to(classOf[TestServiceLocator]))
+      .bindings(sBind[TopicFactory].to(classOf[TestTopicFactory]))
       .configure("play.akka.actor-system", testName)
 
     val log = Logger(getClass)
 
-    val b2 =
-      if (setup.persistence) {
+    val b3 =
+      if (setup.cassandra) {
         val cassandraPort = CassandraLauncher.randomPort
         val cassandraDirectory = Files.createTempDirectory(testName).toFile
         FileUtils.deleteRecursiveOnExit(cassandraDirectory)
         val t0 = System.nanoTime()
         CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = false, port = 0)
         log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
-        b1.configure(new Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = true)))
+        val b2 = b1.configure(new Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = false)))
           .configure("lagom.cluster.join-self", "on")
-      } else if (setup.cluster)
-        b1.configure(new Configuration(TestUtil.clusterConfig))
+        disableModules(b2, KafkaClientModule, KafkaBrokerModule)
+      } else if (setup.cluster) {
+        val b2 = b1.configure(new Configuration(TestUtil.clusterConfig))
           .configure("lagom.cluster.join-self", "on")
-          .disable(classOf[PersistenceModule], classOf[CassandraPersistenceModule])
+          .disable(classOf[PersistenceModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
-      else
-        b1.configure("akka.actor.provider", "akka.actor.LocalActorRefProvider")
-          .disable(classOf[PersistenceModule], classOf[CassandraPersistenceModule], classOf[PubSubModule], classOf[JoinClusterModule])
+        disableModules(b2, CassandraPersistenceModule, KafkaClientModule, KafkaBrokerModule)
+      } else {
+        val b2 = b1.configure("akka.actor.provider", "akka.actor.LocalActorRefProvider")
+          .disable(classOf[PersistenceModule], classOf[PubSubModule], classOf[JoinClusterModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
+        disableModules(b2, CassandraPersistenceModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
+      }
 
-    val application = setup.configureBuilder(b2).build()
+    val application = setup.configureBuilder(b3).build()
 
     Play.start(application.getWrappedApplication)
     val serverConfig = ServerConfig(port = Some(0), mode = Mode.Test)
@@ -226,12 +286,28 @@ object ServiceTest {
     val assignedPort = srv.httpPort.orElse(srv.httpsPort).get
     port.success(assignedPort)
 
-    if (setup.persistence) {
+    if (setup.cassandra) {
       val system = application.injector().instanceOf(classOf[ActorSystem])
       TestUtil.awaitPersistenceInit(system)
     }
 
     new TestServer(assignedPort, application, srv)
+  }
+
+  private def disableModules(builder: GuiceApplicationBuilder, classes: String*): GuiceApplicationBuilder = {
+    val loadedClasses = classes.flatMap { className =>
+      try {
+        Seq(getClass.getClassLoader.loadClass(className))
+      } catch {
+        case cfne: ClassNotFoundException =>
+          Seq.empty[Class[_]]
+      }
+    }
+    if (loadedClasses.nonEmpty) {
+      builder.disable(loadedClasses: _*)
+    } else {
+      builder
+    }
   }
 
   /**

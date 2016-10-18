@@ -16,13 +16,11 @@ import java.util.concurrent.TimeUnit
 @deprecated("Use com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil instead")
 object TestUtil extends AbstractTestUtil {
 
-  def persistenceConfig(testName: String, cassandraPort: Int, useServiceLocator: Boolean): Config = {
-    (if (useServiceLocator) ConfigFactory.empty
-    else ConfigFactory.parseString(s"""
-      cassandra-journal.session-provider = akka.persistence.cassandra.ConfigSessionProvider
-      cassandra-snapshot-store.session-provider = akka.persistence.cassandra.ConfigSessionProvider
-      lagom.persistence.read-side.cassandra.session-provider = akka.persistence.cassandra.ConfigSessionProvider
-    """)).withFallback(ConfigFactory.parseString(s"""
+  def persistenceConfig(testName: String, cassandraPort: Int, useServiceLocator: Boolean) = ConfigFactory.parseString(s"""
+    cassandra-journal.session-provider = akka.persistence.cassandra.ConfigSessionProvider
+    cassandra-snapshot-store.session-provider = akka.persistence.cassandra.ConfigSessionProvider
+    lagom.persistence.read-side.cassandra.session-provider = akka.persistence.cassandra.ConfigSessionProvider
+
     akka.persistence.journal.plugin = "cassandra-journal"
     akka.persistence.snapshot-store.plugin = "cassandra-snapshot-store"
 
@@ -42,8 +40,7 @@ object TestUtil extends AbstractTestUtil {
     }
 
     akka.test.single-expect-default = 5s
-    """)).withFallback(clusterConfig())
-  }
+    """).withFallback(clusterConfig())
 
   class AwaitPersistenceInit extends PersistentActor {
     def persistenceId: String = self.path.name

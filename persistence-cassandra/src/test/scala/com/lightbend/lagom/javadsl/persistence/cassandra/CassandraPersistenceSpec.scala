@@ -17,7 +17,7 @@ class CassandraPersistenceSpec(system: ActorSystem) extends ActorSystemSpec(syst
   def this(testName: String, config: Config) =
     this(ActorSystem(testName, config.withFallback(TestUtil.persistenceConfig(
       testName,
-      CassandraLauncher.randomPort, useServiceLocator = false
+      CassandraLauncher.randomPort
     ))))
 
   def this(config: Config) = this(PersistenceSpec.getCallerName(getClass), config)

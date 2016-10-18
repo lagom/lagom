@@ -11,13 +11,8 @@ import com.lightbend.lagom.javadsl.persistence.multinode.{AbstractClusteredPersi
 import com.typesafe.config.{Config, ConfigFactory}
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
-  override def additionalCommonConfig(databasePort: Int): Config = ConfigFactory.parseString(
-    """
-      cassandra-journal.session-provider = akka.persistence.cassandra.ConfigSessionProvider
-      cassandra-snapshot-store.session-provider = akka.persistence.cassandra.ConfigSessionProvider
-      lagom.persistence.read-side.cassandra.session-provider = akka.persistence.cassandra.ConfigSessionProvider
-    """
-  ).withFallback(TestUtil.persistenceConfig("ClusteredPersistentEntitySpec", databasePort, useServiceLocator = false))
+  override def additionalCommonConfig(databasePort: Int): Config =
+    TestUtil.persistenceConfig("ClusteredPersistentEntitySpec", databasePort)
 }
 
 class CassandraClusteredPersistentEntitySpecMultiJvmNode1 extends CassandraClusteredPersistentEntitySpec
