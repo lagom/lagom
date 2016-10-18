@@ -48,7 +48,7 @@ public class PersistentEntityRefTest {
         "akka.remote.netty.tcp.port = 0 \n" +
         "akka.remote.netty.tcp.hostname = 127.0.0.1 \n" +
         "akka.loglevel = INFO \n")
-        .withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort(), false));
+        .withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort()));
 
     application = new GuiceApplicationBuilder()
             .configure(new Configuration(config))
