@@ -282,33 +282,35 @@ private class ClientServiceCallInvoker[Request, Response](
    */
   private def makeStrictCall(requestHeader: RequestHeader, requestSerializer: StrictMessageSerializer[Request], responseSerializer: StrictMessageSerializer[Response],
                              request: Request): Future[(ResponseHeader, Response)] = {
-    val serializer = requestSerializer.serializerForRequest()
-    val body = serializer.serialize(request)
+    val requestHolder = ws.url(requestHeader.uri.toString)
+      .withMethod(requestHeader.method.name)
+
+    val requestWithBody =
+      if (requestSerializer.isUsed) {
+        val serializer = requestSerializer.serializerForRequest()
+        val body = serializer.serialize(request)
+
+        requestHolder.withBody(InMemoryBody(body))
+      } else requestHolder
 
     val transportRequestHeader = descriptor.headerFilter.transformClientRequest(requestHeader)
 
-    val requestHolder = ws.url(requestHeader.uri.toString)
-      .withMethod(requestHeader.method.name)
-      .withHeaders(transportRequestHeader.headers.asScala.toSeq.map {
-        case (name, values) => name -> values.asScala.mkString(", ")
-      }: _*)
-
-    val requestWithBody = if (requestSerializer.isUsed) {
-      val contentType = transportRequestHeader.protocol.toContentTypeHeader.get
-      requestHolder.withBody(InMemoryBody(body))
-        .withHeaders(HeaderNames.CONTENT_TYPE -> contentType)
-    } else requestHolder
-
-    val accept = transportRequestHeader.acceptedResponseProtocols.asScala.flatMap { accept =>
-      accept.toContentTypeHeader.asScala
-    }.mkString(", ")
-    val acceptHeader = if (accept.nonEmpty) {
-      Seq(HeaderNames.ACCEPT -> accept)
-    } else {
-      Nil
+    val requestHeaders = transportRequestHeader.headers.asScala.toSeq.map {
+      case (name, values) => name -> values.asScala.mkString(", ")
     }
 
-    requestWithBody.withHeaders(acceptHeader: _*).execute().map { response =>
+    val contentTypeHeader =
+      transportRequestHeader.protocol.toContentTypeHeader.asScala.toSeq.map(HeaderNames.CONTENT_TYPE -> _)
+
+    val acceptHeader = {
+      val accept = transportRequestHeader.acceptedResponseProtocols.asScala.flatMap { accept =>
+        accept.toContentTypeHeader.asScala
+      }.mkString(", ")
+      if (accept.nonEmpty) Seq(HeaderNames.ACCEPT -> accept)
+      else Nil
+    }
+
+    requestWithBody.withHeaders(requestHeaders ++ contentTypeHeader ++ acceptHeader: _*).execute().map { response =>
 
       // Create the message header
       val protocol = MessageProtocol.fromContentTypeHeader(response.header(HeaderNames.CONTENT_TYPE).asJava)

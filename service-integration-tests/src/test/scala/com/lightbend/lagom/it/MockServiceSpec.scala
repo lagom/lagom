@@ -138,6 +138,24 @@ class MockServiceSpec extends ServiceSupport {
       response.size() should ===(request.field2)
     }
 
+    "work with custom serializers" when {
+      "the serializer protocol uses a custom contentType" in withMockServiceClient { implicit app => client =>
+        val id = 20
+        val request = new MockRequestEntity("bar", id)
+        val response = client.customContentType().invoke(request).toCompletableFuture.get(10, TimeUnit.SECONDS)
+        response.incomingId should ===(id)
+        response.incomingRequest should ===(request)
+      }
+
+      "the serializer protocol does not specify a contentType" in withMockServiceClient { implicit app => client =>
+        val id = 20
+        val request = new MockRequestEntity("bar", id)
+        val response = client.noContentType().invoke(request).toCompletableFuture.get(10, TimeUnit.SECONDS)
+        response.incomingId should ===(id)
+        response.incomingRequest should ===(request)
+      }
+    }
+
     "be invoked with circuit breaker" in withMockServiceClient { implicit app => client =>
       MockServiceImpl.invoked.set(false)
       (1 to 20).foreach { _ =>
