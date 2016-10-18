@@ -5,9 +5,7 @@ package com.lightbend.lagom.internal.broker.kafka
 
 import java.net.URI
 import java.util.Optional
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionStage
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.{ CompletableFuture, CompletionStage, CountDownLatch, TimeUnit }
 import java.util.function.{ Function => JFunction }
 
 import scala.collection.concurrent.TrieMap
@@ -38,14 +36,11 @@ import akka.stream.{ Materializer, OverflowStrategy }
 import akka.stream.javadsl.{ Source => JSource }
 import akka.stream.scaladsl.{ Flow, Sink, Source, SourceQueueWithComplete }
 import akka.testkit.EventFilter
-
 import com.lightbend.lagom.internal.broker.kafka.KafkaApiSpec.{ InMemoryOffsetStore, NoServiceLocator, NullPersistentEntityRegistry }
 import com.lightbend.lagom.internal.javadsl.persistence.{ OffsetDao, OffsetStore }
 import com.lightbend.lagom.javadsl.broker.TopicProducer
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject._
-
-import scala.util.control.NonFatal
 
 class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures {
 
@@ -174,31 +169,21 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
     "self-heal at-least-once consumer stream if a failure occurs" in {
       val queue = KafkaApiSpec.test4Queue.futureValue
       val testTopic = testService.test4Topic()
+      val materialized = new CountDownLatch(2)
 
       @volatile var failOnMessageReceived = true
-      val messageReceived = Promise[String]()
       testTopic.subscribe().atLeastOnce(Flow.fromFunction { (message: String) =>
         if (failOnMessageReceived) {
           failOnMessageReceived = false
           throw new IllegalStateException("Simulate consumer failure")
-        } else
-          messageReceived.trySuccess(message)
-        Done
-      }.asJava)
+        } else Done
+      }.mapMaterializedValue(_ => materialized.countDown()).asJava)
 
       val messageSent = "msg"
       queue.offer(new JPair(messageSent, Offset.NONE))
 
-      awaitAssert(30.seconds) {
-        // Since the first time the message was offered, it didn't commit, it may take Kafka some time to wake up
-        // and realise that message wasn't committed, and the consumer for that partition has disconnected, and so
-        // reassign the partition to a new consumer. We try sending another message each time we check, to trigger
-        // Kafka to "wake up".
-        queue.offer(new JPair("not this message", Offset.NONE))
-        messageReceived.isCompleted shouldBe true
-      }
-
-      messageReceived.future.futureValue shouldBe messageSent
+      // After throwing the error, the flow should be rematerialized, so consumption resumes
+      materialized.await(10, TimeUnit.SECONDS)
     }
 
     "self-heal at-most-once consumer stream if a failure occurs" in {
@@ -226,22 +211,6 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
       expectFailure.failed.futureValue shouldBe an[SimulateFailure.type]
       countProcessedMessages shouldBe 1
     }
-  }
-
-  private def awaitAssert(duration: FiniteDuration, interval: FiniteDuration = 100.milliseconds)(f: => Any): Unit = {
-    val start = System.currentTimeMillis()
-    @annotation.tailrec
-    def poll(): Unit = {
-      if (try {
-        f
-        false
-      } catch {
-        case NonFatal(t) if duration.toMillis > System.currentTimeMillis() - start =>
-          Thread.sleep(interval.toMillis)
-          true
-      }) poll()
-    }
-    poll()
   }
 
 }
