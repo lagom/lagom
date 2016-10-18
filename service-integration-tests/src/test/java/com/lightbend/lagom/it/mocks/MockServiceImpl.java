@@ -157,6 +157,16 @@ public class MockServiceImpl implements MockService {
         );
     }
 
+    @Override
+    public ServiceCall<MockRequestEntity, MockResponseEntity> customContentType() {
+        return request -> CompletableFuture.completedFuture(new MockResponseEntity(request.field2(), request));
+    }
+
+    @Override
+    public ServiceCall<MockRequestEntity, MockResponseEntity> noContentType() {
+        return request -> CompletableFuture.completedFuture(new MockResponseEntity(request.field2(), request));
+    }
+
     /**
      * Shows example service call composition.
      */
