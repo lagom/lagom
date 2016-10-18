@@ -21,7 +21,10 @@ public class PersistenceServiceTest {
   
   @BeforeClass
   public static void setUp() {
-    server = startServer(defaultSetup().withConfigureBuilder(b -> b.bindings(new PersistenceServiceModule())));
+    server = startServer(defaultSetup()
+                    .withCassandra(true)
+                    .withConfigureBuilder(b -> b.bindings(new PersistenceServiceModule()))
+    );
     client = server.client(PersistenceService.class);
   }
   

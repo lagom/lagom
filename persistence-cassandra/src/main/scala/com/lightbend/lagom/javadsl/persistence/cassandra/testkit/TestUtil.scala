@@ -8,8 +8,9 @@ import com.typesafe.config.Config
 
 object TestUtil extends AbstractTestUtil {
 
-  def persistenceConfig(testName: String, cassandraPort: Int, useServiceLocator: Boolean): Config = {
-    com.lightbend.lagom.javadsl.persistence.testkit.TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator)
+  def persistenceConfig(testName: String, cassandraPort: Int): Config = {
+    com.lightbend.lagom.javadsl.persistence.testkit.TestUtil.persistenceConfig(testName, cassandraPort,
+      useServiceLocator = false)
   }
 
 }

@@ -18,7 +18,7 @@ public class HelloServiceTest {
 
   @Test
   public void shouldStorePersonalizedGreeting() throws Exception {
-    withServer(defaultSetup(), server -> {
+    withServer(defaultSetup().withCassandra(true), server -> {
       HelloService service = server.client(HelloService.class);
 
       String msg1 = service.hello("Alice").invoke().toCompletableFuture().get(5, SECONDS);
