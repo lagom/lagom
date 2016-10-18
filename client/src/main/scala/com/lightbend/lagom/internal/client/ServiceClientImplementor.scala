@@ -293,11 +293,15 @@ private class ClientServiceCallInvoker[Request, Response](
         case (name, values) => name -> values.asScala.mkString(", ")
       }: _*)
 
-    val requestWithBody = if (requestSerializer.isUsed) {
-      val contentType = transportRequestHeader.protocol.toContentTypeHeader.get
-      requestHolder.withBody(InMemoryBody(body))
-        .withHeaders(HeaderNames.CONTENT_TYPE -> contentType)
-    } else requestHolder
+    val requestWithBody =
+      if (requestSerializer.isUsed) requestHolder.withBody(InMemoryBody(body))
+      else requestHolder
+
+    val requestWithContentType = {
+      val contentType = transportRequestHeader.protocol.toContentTypeHeader
+      if (contentType.isPresent) requestWithBody.withHeaders(HeaderNames.CONTENT_TYPE -> contentType.get)
+      else requestWithBody
+    }
 
     val accept = transportRequestHeader.acceptedResponseProtocols.asScala.flatMap { accept =>
       accept.toContentTypeHeader.asScala
@@ -308,7 +312,7 @@ private class ClientServiceCallInvoker[Request, Response](
       Nil
     }
 
-    requestWithBody.withHeaders(acceptHeader: _*).execute().map { response =>
+    requestWithContentType.withHeaders(acceptHeader: _*).execute().map { response =>
 
       // Create the message header
       val protocol = MessageProtocol.fromContentTypeHeader(response.header(HeaderNames.CONTENT_TYPE).asJava)
