@@ -529,6 +529,7 @@ lazy val `kafka-broker` = (project in file("kafka-broker"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(name := "lagom-javadsl-kafka-broker")
   .settings(runtimeLibCommon: _*)
+  .settings(forkedTests: _*)
   .settings(
     libraryDependencies ++= Seq(
       scalaTest % Test
