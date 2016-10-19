@@ -116,13 +116,10 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
       // awaitAssert because it is not guaranteed that we will see the snapshot immediately
       within(10.seconds) {
         awaitAssert {
-
           val probe2 = TestProbe()
           val p2 = system.actorOf(PersistentEntityActor.props("test", Some("4"),
             () => new TestEntity(system, Some(probe2.ref)), Some(3), 10.seconds))
-          probe2.expectMsgType[TestEntity.Snapshot]
-          p2 ! TestEntity.Get
-          val state2 = expectMsgType[TestEntity.State]
+          val state2 = probe2.expectMsgType[TestEntity.AfterRecovery].state
           state2.elements should ===((1 to 10).toList.map(_.toString))
         }
       }

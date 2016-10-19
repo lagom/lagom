@@ -42,18 +42,18 @@ object PersistentEntity {
  * it can be accessed from anywhere in the cluster. It is run by an actor
  * and the state is persistent using event sourcing.
  *
- * `initialBehavior` is an abstract method that your concrete subclass must implement.
- * It returns the `Behavior` of the entity. The behavior consists of current state
- * and functions to process incoming commands and persisted events.
+ * `initialState` and `behavior` are abstract methods that your concrete subclass must implement.
+ * The behavior is defined as a set of actions given a state. The actions are functions to process
+ * incoming commands and persisted events.
  *
  * The `PersistentEntity` receives commands of type `Command` that can be validated before
  * persisting state changes as events of type `Event`. The functions that process incoming
- * commands are registered in the `Behavior` using `setCommandHandler` of the
- * `BehaviorBuilder`.
+ * commands are registered in the `Actions` using `onCommand` of the
+ * `Actions`.
  *
  * A command may also be read-only and only perform some side-effect, such as replying
- * to the request. Such command handlers are registered using `setReadOnlyCommandHandler`
- * of the `BehaviorBuilder`. Replies are sent with the `reply` method of the context that
+ * to the request. Such command handlers are registered using `onReadOnlyCommand`
+ * of the `Actions`. Replies are sent with the `reply` method of the context that
  * is passed to the command handler function.
  *
  * A command handler returns a `Persist` directive that defines what event or events,
@@ -62,11 +62,11 @@ object PersistentEntity {
  *
  * When an event has been persisted successfully the state of type `State` is updated by
  * applying the event to the current state. The functions for updating the state are
- * registered with the `setEventHandler` method of the `BehaviorBuilder`.
+ * registered with the `onEvent` method of the `Actions`.
  * The event handler returns the new state. The state must be immutable, so you return
- * a new instance of the state. Current state can be accessed from the event handler with
- * the `state` method of the `PersistentEntity`. The same event handlers are also used when
- * the entity is started up to recover its state from the stored events.
+ * a new instance of the state. Current state is passed as parameter to the event handler.
+ * The same event handlers are also used when the entity is started up to recover its
+ * state from the stored events.
  *
  * After persisting an event, external side effects can be performed in the `afterPersist`
  * function that can be defined when creating the `Persist` directive.
@@ -76,23 +76,13 @@ object PersistentEntity {
  *
  * The event handlers are typically only updating the state, but they may also change
  * the behavior of the entity in the sense that new functions for processing commands
- * and events may be defined. This is useful when implementing finite state machine (FSM)
- * like entities. Event handlers that change the behavior are registered with the
- * `setEventHandlerChangingBehavior` of the `BehaviorBuilder`. Such an event handler
- * returns the new `Behavior` instead of just returning the new state. You can
- * access current behavior with the `behavior` method of the `PersistentEntity`
- * and using the `builder` method of the `Behavior`.
+ * and events may be defined for a given state. This is useful when implementing
+ * finite state machine (FSM) like entities.
  *
  * When the entity is started the state is recovered by replaying stored events.
  * To reduce this recovery time the entity may start the recovery from a snapshot
  * of the state and then only replaying the events that were stored after the snapshot.
  * Such snapshots are automatically saved after a configured number of persisted events.
- * The snapshot if any is passed as a parameter to the `initialBehavior` method and
- * you should use that state as the state of the returned `Behavior`.
- * One thing to keep in mind is that if you are using event handlers that change the
- * behavior (`setEventHandlerChangingBehavior`) you must also restore corresponding
- * `Behavior` from the snapshot state that is passed as a parameter to the `initialBehavior`
- * method.
  *
  * @tparam Command the super type of all commands, must implement [[PersistentEntity.ReplyType]]
  *   to define the reply type of each command type
@@ -101,6 +91,11 @@ object PersistentEntity {
  */
 abstract class PersistentEntity[Command, Event, State] {
   import PersistentEntity.ReplyType
+
+  type Behavior = State => Actions
+  type EventHandler = PartialFunction[(Event, State), State]
+  type CommandHandler = PartialFunction[(Command, CommandContext, State), Persist[Event]]
+  type ReadOnlyCommandHandler = PartialFunction[(Command, ReadOnlyCommandContext, State), Unit]
 
   private var _entityId: String = _
 
@@ -122,75 +117,80 @@ abstract class PersistentEntity[Command, Event, State] {
    */
   def entityTypeName: String = Logging.simpleName(getClass)
 
+  def initialState: State
+
   /**
    * Abstract method that must be implemented by concrete subclass to define
-   * the behavior of the entity. Use [[#newBehaviorBuilder]] to create a mutable builder
-   * for defining the behavior.
+   * the behavior of the entity.
    */
-  def initialBehavior(snapshotState: Option[State]): Behavior
+  def behavior: Behavior
 
   /**
    * This method is called to notify the entity that the recovery process
    * is finished.
    */
-  def recoveryCompleted(currentBehavior: Behavior): Behavior = currentBehavior
+  def recoveryCompleted(state: State): State = state
 
-  type EventHandler = PartialFunction[(Event, Behavior), Behavior]
-  type CommandHandler = PartialFunction[(Command, CommandContext, State), Persist[Event]]
-  type ReadOnlyCommandHandler = PartialFunction[(Command, ReadOnlyCommandContext, State), Unit]
-
-  object Behavior {
-    def apply(state: State): Behavior =
-      new Behavior(state, PartialFunction.empty, PartialFunction.empty)
+  object Actions {
+    private val empty = new Actions(PartialFunction.empty, PartialFunction.empty)
+    def apply(): Actions = empty
   }
 
   /**
-   * Behavior consists of current state and functions to process incoming commands
-   * and persisted events. `Behavior` is an immutable class.
+   * Actions consists of functions to process incoming commands
+   * and persisted events. `Actions` is an immutable class.
    */
-  class Behavior(
-    val state:          State,
+  class Actions(
     val eventHandler:   EventHandler,
     val commandHandler: CommandHandler
-  ) {
+  ) extends Function1[State, Actions] {
 
-    def addCommandHandler(handler: CommandHandler) = {
-      new Behavior(state, eventHandler,
-        commandHandler.orElse(handler))
-    }
+    /**
+     * Extends `State => Actions` so that it can be used directly in
+     * [[PersistentEntity#behavior]] when there is only one set of actions
+     * independent of state.
+     */
+    def apply(state: State): Actions = this
 
-    def addReadOnlyCommandHandler(handler: ReadOnlyCommandHandler) = {
+    /**
+     * Add a command handler. Each handler is a `PartialFunction` and they
+     * will be tried in the order they were added, i.e. they are combined
+     * with `orElse`.
+     */
+    def onCommand(handler: CommandHandler) =
+      new Actions(eventHandler, commandHandler.orElse(handler))
+
+    /**
+     * Add a command handler that will not persist any events. This is a convenience
+     * method to [[#onCommand]]. Each handler is a `PartialFunction` and they
+     * will be tried in the order they were added, including the ones added with
+     * `onCommand`, i.e. they are combined with `orElse`.
+     */
+    def onReadOnlyCommand(handler: ReadOnlyCommandHandler) = {
       val delegate: CommandHandler = {
         case params @ (_, ctx, _) if handler.isDefinedAt(params) =>
           handler(params)
           ctx.done
       }
 
-      new Behavior(state, eventHandler, commandHandler.orElse(delegate))
-    }
-
-    def addEventHandler(handler: EventHandler) = {
-      new Behavior(state, eventHandler.orElse(handler), commandHandler)
+      new Actions(eventHandler, commandHandler.orElse(delegate))
     }
 
     /**
-     * @return new instance with the given state
+     * Add an event handler. Each handler is a `PartialFunction` and they
+     * will be tried in the order they were added, i.e. they are combined
+     * with `orElse`.
      */
-    def withState(newState: State): Behavior =
-      new Behavior(state = newState, eventHandler, commandHandler)
-
-    /**
-     * Transform the state
-     */
-    def mapState(f: State => State): Behavior =
-      new Behavior(state = f(state), eventHandler, commandHandler)
+    def onEvent(handler: EventHandler) = {
+      new Actions(eventHandler.orElse(handler), commandHandler)
+    }
 
     /**
      * Append `eventHandler` and `commandHandler` from `b` to the handlers
      * of this `Behavior`.
      */
-    def orElse(b: Behavior): Behavior =
-      new Behavior(state, eventHandler.orElse(b.eventHandler), commandHandler.orElse(b.commandHandler))
+    def orElse(b: Actions): Actions =
+      new Actions(eventHandler.orElse(b.eventHandler), commandHandler.orElse(b.commandHandler))
 
   }
 
