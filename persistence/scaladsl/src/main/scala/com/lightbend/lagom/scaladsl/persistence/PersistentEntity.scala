@@ -48,11 +48,11 @@ object PersistentEntity {
  *
  * The `PersistentEntity` receives commands of type `Command` that can be validated before
  * persisting state changes as events of type `Event`. The functions that process incoming
- * commands are registered in the `Actions` using `addCommandHandler` of the
+ * commands are registered in the `Actions` using `onCommand` of the
  * `Actions`.
  *
  * A command may also be read-only and only perform some side-effect, such as replying
- * to the request. Such command handlers are registered using `addReadOnlyCommandHandler`
+ * to the request. Such command handlers are registered using `onReadOnlyCommand`
  * of the `Actions`. Replies are sent with the `reply` method of the context that
  * is passed to the command handler function.
  *
@@ -62,7 +62,7 @@ object PersistentEntity {
  *
  * When an event has been persisted successfully the state of type `State` is updated by
  * applying the event to the current state. The functions for updating the state are
- * registered with the `addEventHandler` method of the `Actions`.
+ * registered with the `onEvent` method of the `Actions`.
  * The event handler returns the new state. The state must be immutable, so you return
  * a new instance of the state. Current state is passed as parameter to the event handler.
  * The same event handlers are also used when the entity is started up to recover its
@@ -152,10 +152,21 @@ abstract class PersistentEntity[Command, Event, State] {
      */
     def apply(state: State): Actions = this
 
-    def addCommandHandler(handler: CommandHandler) =
+    /**
+     * Add a command handler. Each handler is a `PartialFunction` and they
+     * will be tried in the order they were added, i.e. they are combined
+     * with `orElse`.
+     */
+    def onCommand(handler: CommandHandler) =
       new Actions(eventHandler, commandHandler.orElse(handler))
 
-    def addReadOnlyCommandHandler(handler: ReadOnlyCommandHandler) = {
+    /**
+     * Add a command handler that will not persist any events. This is a convenience
+     * method to [[#onCommand]]. Each handler is a `PartialFunction` and they
+     * will be tried in the order they were added, including the ones added with
+     * `onCommand`, i.e. they are combined with `orElse`.
+     */
+    def onReadOnlyCommand(handler: ReadOnlyCommandHandler) = {
       val delegate: CommandHandler = {
         case params @ (_, ctx, _) if handler.isDefinedAt(params) =>
           handler(params)
@@ -165,7 +176,12 @@ abstract class PersistentEntity[Command, Event, State] {
       new Actions(eventHandler, commandHandler.orElse(delegate))
     }
 
-    def addEventHandler(handler: EventHandler) = {
+    /**
+     * Add an event handler. Each handler is a `PartialFunction` and they
+     * will be tried in the order they were added, i.e. they are combined
+     * with `orElse`.
+     */
+    def onEvent(handler: EventHandler) = {
       new Actions(eventHandler.orElse(handler), commandHandler)
     }
 

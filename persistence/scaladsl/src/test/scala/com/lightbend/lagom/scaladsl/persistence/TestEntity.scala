@@ -90,20 +90,20 @@ class TestEntity @Inject() (system: ActorSystem, probe: Option[ActorRef] = None)
 
   val baseActions: Actions = {
     Actions()
-      .addReadOnlyCommandHandler {
+      .onReadOnlyCommand {
         case (Get, ctx, state)        => ctx.reply(Get, state)
         case (GetAddress, ctx, state) => ctx.reply(GetAddress, Cluster.get(system).selfAddress)
       }
-      .addCommandHandler(changeMode)
+      .onCommand(changeMode)
   }
 
   private val appending: Actions =
     baseActions
-      .addEventHandler {
+      .onEvent {
         case (Appended(elem), state) => state.add(elem)
         case (InPrependMode, state)  => state.copy(mode = Mode.Prepend)
       }
-      .addCommandHandler {
+      .onCommand {
         case (a @ Add(elem, times), ctx, state) =>
           // note that null should trigger NPE, for testing exception
           if (elem == null)
@@ -121,11 +121,11 @@ class TestEntity @Inject() (system: ActorSystem, probe: Option[ActorRef] = None)
 
   private val prepending: Actions =
     baseActions
-      .addEventHandler {
+      .onEvent {
         case (Prepended(elem), state) => state.add(elem)
         case (InAppendMode, state)    => state.copy(mode = Mode.Append)
       }
-      .addCommandHandler {
+      .onCommand {
         case (a @ Add(elem, times), ctx, state) =>
           if (elem == null || elem.length == 0) {
             ctx.invalidCommand("element must not be empty");
