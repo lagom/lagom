@@ -92,7 +92,7 @@ object PersistentEntity {
 abstract class PersistentEntity[Command, Event, State] {
   import PersistentEntity.ReplyType
 
-  type Behavior = PartialFunction[State, Actions]
+  type Behavior = State => Actions
   type EventHandler = PartialFunction[(Event, State), State]
   type CommandHandler = PartialFunction[(Command, CommandContext, State), Persist[Event]]
   type ReadOnlyCommandHandler = PartialFunction[(Command, ReadOnlyCommandContext, State), Unit]
@@ -121,8 +121,7 @@ abstract class PersistentEntity[Command, Event, State] {
 
   /**
    * Abstract method that must be implemented by concrete subclass to define
-   * the behavior of the entity. Use [[#newBehaviorBuilder]] to create a mutable builder
-   * for defining the behavior.
+   * the behavior of the entity.
    */
   def behavior: Behavior
 
@@ -144,7 +143,14 @@ abstract class PersistentEntity[Command, Event, State] {
   class Actions(
     val eventHandler:   EventHandler,
     val commandHandler: CommandHandler
-  ) {
+  ) extends Function1[State, Actions] {
+
+    /**
+     * Extends `State => Actions` so that it can be used directly in
+     * [[PersistentEntity#behavior]] when there is only one set of actions
+     * independent of state.
+     */
+    def apply(state: State): Actions = this
 
     def addCommandHandler(handler: CommandHandler) =
       new Actions(eventHandler, commandHandler.orElse(handler))

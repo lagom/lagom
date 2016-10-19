@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence
 
+import scala.util.control.Exception.Catcher
 import java.net.URLDecoder
 
 import scala.util.control.NonFatal
@@ -84,14 +85,14 @@ private[lagom] class PersistentEntityActor[C, E, S](
       state
   }
 
-  private val unhandledState: PartialFunction[S, entity.Actions] = {
-    case s =>
-      log.warn(s"Undefined state [${state.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]")
-      entity.Actions()
+  private val unhandledState: Catcher[Nothing] = {
+    case e: MatchError ⇒ throw new IllegalStateException(
+      s"Undefined state [${state.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"
+    )
   }
 
   private def applyEvent(event: E): Unit = {
-    val actions = behavior.applyOrElse(state, unhandledState)
+    val actions = try behavior(state) catch unhandledState
     actions.eventHandler.applyOrElse((event, state), unhandledEvent)
   }
 
@@ -123,7 +124,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
       }
 
       try {
-        val actions = behavior.applyOrElse(state, unhandledState)
+        val actions = try behavior(state) catch unhandledState
         val result = actions.commandHandler.applyOrElse((cmd.asInstanceOf[C], ctx, state), unhandledCommand)
 
         result match {
