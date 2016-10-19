@@ -3,25 +3,20 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence
 
-import scala.util.control.Exception.Catcher
 import java.net.URLDecoder
 
-import scala.util.control.NonFatal
-import akka.actor.ActorRef
-import akka.actor.Props
-import akka.persistence.PersistentActor
-import akka.persistence.RecoveryCompleted
-import akka.persistence.SnapshotOffer
+import akka.actor.{ Props, ReceiveTimeout }
+import akka.cluster.sharding.ShardRegion
+import akka.persistence.{ PersistentActor, RecoveryCompleted, SnapshotOffer }
+import akka.persistence.journal.Tagged
 import akka.util.ByteString
+import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
+import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, AggregateEventShards, AggregateEventTag, PersistentEntity }
+import play.api.Logger
 
 import scala.concurrent.duration.FiniteDuration
-import akka.actor.ReceiveTimeout
-import akka.cluster.sharding.ShardRegion
-import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, AggregateEventShards, AggregateEventTag, PersistentEntity }
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
-
-import akka.persistence.journal.Tagged
-import play.api.Logger
+import scala.util.control.Exception.Catcher
+import scala.util.control.NonFatal
 
 private[lagom] object PersistentEntityActor {
   def props[C, E, S](
@@ -39,6 +34,22 @@ private[lagom] object PersistentEntityActor {
    * with persistent actors.
    */
   case object Stop
+
+  val EntityIdSeparator = '|'
+
+  /**
+   * @return the entity id part encoded in the persistence id
+   */
+  def extractEntityId(persistenceId: String): String = {
+    val idx = persistenceId.indexOf(EntityIdSeparator)
+    if (idx > 0) {
+      persistenceId.substring(idx + 1)
+    } else throw new IllegalArgumentException(
+      s"Cannot split '$persistenceId' into persistenceIdPrefix and entityId " +
+        s"because there is no separator character ('$EntityIdSeparator')"
+    )
+  }
+
 }
 
 /**
@@ -51,13 +62,19 @@ private[lagom] class PersistentEntityActor[C, E, S](
   snapshotAfter:             Int,
   passivateAfterIdleTimeout: FiniteDuration
 ) extends PersistentActor {
+
+  import PersistentEntityActor.EntityIdSeparator
   private val log = Logger(this.getClass)
 
   private val entityId: String = id.getOrElse(
     URLDecoder.decode(self.path.name, ByteString.UTF_8)
   )
+  require(
+    !persistenceIdPrefix.contains(EntityIdSeparator),
+    s"persistenceIdPrefix '$persistenceIdPrefix' contains '$EntityIdSeparator' which is a reserved character"
+  )
 
-  override val persistenceId: String = persistenceIdPrefix + entityId
+  override val persistenceId: String = persistenceIdPrefix + EntityIdSeparator + entityId
 
   entity.internalSetEntityId(entityId)
   private var state: S = entity.initialState
@@ -115,12 +132,12 @@ private[lagom] class PersistentEntityActor[C, E, S](
             "Reply must be sent in response to the command that is currently processed, " +
               s"Received command is [$cmd], but reply was to [$currentCommand]"
           )
-          replyTo.tell(msg, ActorRef.noSender)
+          replyTo ! msg
         }
 
         override def commandFailed(cause: Throwable): Unit =
           // not using akka.actor.Status.Failure because it is using Java serialization
-          replyTo.tell(cause, ActorRef.noSender)
+          replyTo ! cause
       }
 
       try {
@@ -184,6 +201,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
   }
 
   private def tag(event: Any): Any = {
+    import scala.language.existentials
     event match {
       case a: AggregateEvent[_] ⇒
         val tag = a.aggregateTag match {

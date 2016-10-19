@@ -6,10 +6,14 @@ package com.lightbend.lagom.scaladsl.testkit
 import akka.testkit.TestProbe
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.scaladsl.persistence.TestEntity
+import com.lightbend.lagom.scaladsl.playjson.{ SerializerRegistry, Serializers }
+import com.typesafe.config.ConfigFactory
 
-import scala.annotation.varargs
-
-class PersistentEntityTestDriverSpec extends ActorSystemSpec {
+class PersistentEntityTestDriverSpec extends ActorSystemSpec(ConfigFactory.parseString(
+  """
+    lagom.serialization.play-json.serialization-registry=com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
+  """
+).withFallback(ConfigFactory.load())) {
 
   def newDriver() = new PersistentEntityTestDriver(system, new TestEntity(system, Some(TestProbe().ref)), "1")
 
