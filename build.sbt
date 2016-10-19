@@ -230,7 +230,9 @@ val coreProjects = Seq[ProjectReference](
   `persistence-cassandra-core`,
   `persistence-cassandra-javadsl`,
   `persistence-cassandra-scaladsl`,
-  `persistence-jdbc`,
+  `persistence-jdbc-core`,
+  `persistence-jdbc-javadsl`,
+  `persistence-jdbc-scaladsl`,
   `testkit-javadsl`,
   `testkit-scaladsl`,
   logback,
@@ -406,7 +408,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
       scalaTest % Test
     )
   )
-  .dependsOn(`persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test")  
+  .dependsOn(`persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test")
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
   .settings(name := "lagom-service-integration-tests")
@@ -512,7 +514,7 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
 
 lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
   .settings(name := "lagom-scaladsl-persistence")
-  .dependsOn(`persistence-core` % "compile;test->test")
+  .dependsOn(`persistence-core` % "compile;test->test", `play-json` % "test")
   .settings(runtimeLibCommon: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
@@ -534,7 +536,7 @@ lazy val `persistence-cassandra-core` = (project in file("persistence-cassandra/
 
 lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassandra/javadsl"))
   .settings(name := "lagom-javadsl-persistence-cassandra")
-  .dependsOn(`persistence-core` % "compile;test->test", `persistence-javadsl` % "compile;test->test", 
+  .dependsOn(`persistence-core` % "compile;test->test", `persistence-javadsl` % "compile;test->test",
     `persistence-cassandra-core` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
@@ -544,7 +546,7 @@ lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassand
 
 lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassandra/scaladsl"))
   .settings(name := "lagom-scaladsl-persistence-cassandra")
-  .dependsOn(`persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test", 
+  .dependsOn(`persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test",
     `persistence-cassandra-core` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
@@ -552,11 +554,11 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
   .settings(forkedTests: _*)
   .settings() configs (MultiJvm)
 
-lazy val `persistence-jdbc` = (project in file("persistence-jdbc"))
-  .settings(name := "lagom-javadsl-persistence-jdbc")
-  .dependsOn(`persistence-core` % "compile;test->test", `persistence-javadsl` % "compile;test->test")
+
+lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
+  .settings(name := "lagom-persistence-jdbc-core")
+  .dependsOn(`persistence-core` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
-  .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
@@ -564,7 +566,25 @@ lazy val `persistence-jdbc` = (project in file("persistence-jdbc"))
       "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.7",
       "com.typesafe.play" %% "play-jdbc" % PlayVersion
     )
-  ) configs (MultiJvm)
+  )
+
+lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl"))
+  .settings(name := "lagom-javadsl-persistence-jdbc")
+  .dependsOn(`persistence-jdbc-core`, `persistence-core` % "compile;test->test", `persistence-javadsl` % "compile;test->test")
+  .settings(runtimeLibCommon: _*)
+  .settings(multiJvmTestSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(forkedTests: _*) configs (MultiJvm)
+
+lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scaladsl"))
+  .settings(name := "lagom-scaladsl-persistence-jdbc")
+  .dependsOn(`persistence-jdbc-core`, `persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test")
+  .settings(runtimeLibCommon: _*)
+  .settings(multiJvmTestSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(forkedTests: _*) configs (MultiJvm)
+
+
 
 lazy val `kafka-client` = (project in file("kafka-client"))
   .enablePlugins(RuntimeLibPlugins)

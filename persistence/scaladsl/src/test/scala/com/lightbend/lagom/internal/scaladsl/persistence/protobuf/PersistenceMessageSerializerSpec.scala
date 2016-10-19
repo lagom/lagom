@@ -16,8 +16,13 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.PersistExceptio
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.UnhandledCommandException
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRef
 import com.lightbend.lagom.scaladsl.persistence.TestEntity
+import com.typesafe.config.ConfigFactory
 
-class PersistenceMessageSerializerSpec extends ActorSystemSpec {
+class PersistenceMessageSerializerSpec extends ActorSystemSpec(ConfigFactory.parseString(
+  """
+    lagom.serialization.play-json.serialization-registry=com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
+  """
+)) {
 
   val serializer = new PersistenceMessageSerializer(system.asInstanceOf[ExtendedActorSystem])
 

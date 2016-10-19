@@ -3,13 +3,11 @@
  */
 package com.lightbend.lagom.scaladsl.persistence
 
-import java.util.UUID
-
-import scala.concurrent.duration._
+import akka.{ Done, NotUsed }
 import akka.stream.scaladsl
-import akka.NotUsed
-import akka.Done
+
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 /**
  * At system startup all [[PersistentEntity]] classes must be registered here
@@ -50,7 +48,7 @@ trait PersistentEntityRegistry {
   def eventStream[Event <: AggregateEvent[Event]](
     aggregateTag: AggregateEventTag[Event],
     fromOffset:   Offset
-  ): scaladsl.Source[(Event, Offset), NotUsed]
+  ): scaladsl.Source[EventStreamElement[Event], NotUsed]
 
   /**
    * Gracefully stop the persistent entities and leave the cluster.
