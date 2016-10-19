@@ -63,7 +63,7 @@ lazy val docs = project
 lazy val parentDir = Path.fileProperty("user.dir").getParentFile
 
 // Depend on the integration tests, they should bring everything else in
-lazy val serviceIntegrationTests = ProjectRef(parentDir, "service-integration-tests")
+lazy val serviceIntegrationTests = ProjectRef(parentDir, "integration-tests-javadsl")
 lazy val persistenceJdbc = ProjectRef(parentDir, "persistence-jdbc")
 lazy val kafkaBroker = ProjectRef(parentDir, "kafka-broker")
 
