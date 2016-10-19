@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence
 
+import scala.util.control.Exception.Catcher
 import java.net.URLDecoder
 
 import scala.util.control.NonFatal
@@ -59,49 +60,40 @@ private[lagom] class PersistentEntityActor[C, E, S](
   override val persistenceId: String = persistenceIdPrefix + entityId
 
   entity.internalSetEntityId(entityId)
+  private var state: S = entity.initialState
+  private val behavior: entity.Behavior = entity.behavior
 
   private var eventCount = 0L
-  private var behavior: entity.Behavior = null
 
   context.setReceiveTimeout(passivateAfterIdleTimeout)
 
   override def receiveRecover: Receive = {
+    case SnapshotOffer(_, snapshot) =>
+      state = snapshot.asInstanceOf[S]
 
-    var initialized = false
+    case RecoveryCompleted =>
+      state = entity.recoveryCompleted(state)
 
-    def initEmpty(): Unit =
-      if (!initialized) {
-        behavior = entity.initialBehavior(None)
-        initialized = true
-      }
-
-    {
-      case SnapshotOffer(_, snapshot) =>
-        if (!initialized) {
-          behavior = entity.initialBehavior(Some(snapshot.asInstanceOf[S]))
-          initialized = true
-        }
-
-      case RecoveryCompleted =>
-        initEmpty()
-        behavior = entity.recoveryCompleted(behavior)
-
-      case evt =>
-        initEmpty()
-        applyEvent(evt)
-        eventCount += 1
-
-    }
+    case evt =>
+      applyEvent(evt.asInstanceOf[E])
+      eventCount += 1
   }
 
-  private val unhandledEvent: PartialFunction[(E, entity.Behavior), entity.Behavior] = {
+  private val unhandledEvent: PartialFunction[(E, S), S] = {
     case event =>
       log.warn(s"Unhandled event [${event.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]")
-      behavior
+      state
   }
 
-  private def applyEvent(event: Any): Unit = {
-    behavior = behavior.eventHandler.applyOrElse((event.asInstanceOf[E], behavior), unhandledEvent)
+  private val unhandledState: Catcher[Nothing] = {
+    case e: MatchError ⇒ throw new IllegalStateException(
+      s"Undefined state [${state.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"
+    )
+  }
+
+  private def applyEvent(event: E): Unit = {
+    val actions = try behavior(state) catch unhandledState
+    actions.eventHandler.applyOrElse((event, state), unhandledEvent)
   }
 
   private def unhandledCommand: PartialFunction[(C, entity.CommandContext, S), entity.Persist[_]] = {
@@ -132,21 +124,22 @@ private[lagom] class PersistentEntityActor[C, E, S](
       }
 
       try {
-        val result = behavior.commandHandler.applyOrElse((cmd.asInstanceOf[C], ctx, behavior.state), unhandledCommand)
+        val actions = try behavior(state) catch unhandledState
+        val result = actions.commandHandler.applyOrElse((cmd.asInstanceOf[C], ctx, state), unhandledCommand)
 
         result match {
           case _: entity.PersistNone[_] => // done
           case entity.PersistOne(event, afterPersist) =>
             // apply the event before persist so that validation exception is handled before persisting
             // the invalid event, in case such validation is implemented in the event handler.
-            applyEvent(event)
+            applyEvent(event.asInstanceOf[E])
             persist(tag(event)) { evt =>
               try {
                 eventCount += 1
                 if (afterPersist != null)
                   afterPersist(event)
                 if (snapshotAfter > 0 && eventCount % snapshotAfter == 0)
-                  saveSnapshot(behavior.state)
+                  saveSnapshot(state)
               } catch {
                 case NonFatal(e) =>
                   ctx.commandFailed(e) // reply with failure
@@ -159,7 +152,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
             var snap = false
             // apply the event before persist so that validation exception is handled before persisting
             // the invalid event, in case such validation is implemented in the event handler.
-            events.foreach(applyEvent)
+            events.foreach(e => applyEvent(e.asInstanceOf[E]))
             persistAll(events.map(tag)) { evt =>
               try {
                 eventCount += 1
@@ -169,7 +162,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
                 if (snapshotAfter > 0 && eventCount % snapshotAfter == 0)
                   snap = true
                 if (count == 0 && snap)
-                  saveSnapshot(behavior.state)
+                  saveSnapshot(state)
               } catch {
                 case NonFatal(e) =>
                   ctx.commandFailed(e) // reply with failure

@@ -63,40 +63,39 @@ object Post {
 final class Post extends PersistentEntity[Post.BlogCommand, Post.BlogEvent, Post.BlogState] {
   import Post._
 
-  override def initialBehavior(snapshot: Option[BlogState]): Behavior = {
-    snapshot match {
-      case Some(snap) if !snap.isEmpty =>
-        // behavior after snapshot must be restored by initialBehavior
-        becomePostAdded(snap)
-      case _ =>
-        // Behavior consist of a State and defined event handlers and command handlers.
-        Behavior(BlogState.empty)
-          // Command handlers are invoked for incoming messages (commands).
-          // A command handler must "return" the events to be persisted (if any).
-          .addCommandHandler {
-            case (cmd @ AddPost(content), ctx, state) =>
-              if (content.title == null || content.title.equals("")) {
-                ctx.invalidCommand("Title must be defined")
-                ctx.done
-              } else {
-                ctx.thenPersist(PostAdded(entityId, content), evt =>
-                  // After persist is done additional side effects can be performed
-                  ctx.reply(cmd, AddPostDone(entityId)))
-              }
-          }
-          // Event handlers are used both when persisting new events and when replaying
-          // events.
-          .addEventHandler {
-            case (PostAdded(postId, content), behavior) =>
-              becomePostAdded(BlogState(Some(content), published = false))
-          }
-    }
+  override def initialState: BlogState = BlogState.empty
 
+  override def behavior: Behavior = {
+    case state if state.isEmpty  => initial
+    case state if !state.isEmpty => postAdded
   }
 
-  private def becomePostAdded(state: BlogState): Behavior = {
-    Behavior(state)
-      .addCommandHandler {
+  private val initial: Actions = {
+    Actions()
+      // Command handlers are invoked for incoming messages (commands).
+      // A command handler must "return" the events to be persisted (if any).
+      .onCommand {
+        case (cmd @ AddPost(content), ctx, state) =>
+          if (content.title == null || content.title.equals("")) {
+            ctx.invalidCommand("Title must be defined")
+            ctx.done
+          } else {
+            ctx.thenPersist(PostAdded(entityId, content), evt =>
+              // After persist is done additional side effects can be performed
+              ctx.reply(cmd, AddPostDone(entityId)))
+          }
+      }
+      // Event handlers are used both when persisting new events and when replaying
+      // events.
+      .onEvent {
+        case (PostAdded(postId, content), state) =>
+          BlogState(Some(content), published = false)
+      }
+  }
+
+  private val postAdded: Actions = {
+    Actions()
+      .onCommand {
         case (cmd @ ChangeBody(body), ctx, state) =>
           ctx.thenPersist(BodyChanged(entityId, body), _ => ctx.reply(cmd, Done))
       }

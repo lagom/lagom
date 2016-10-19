@@ -64,13 +64,19 @@ object TestEntity {
   }
 
   // TestProbe message
-  final case class Snapshot(state: State)
   final case class AfterRecovery(state: State)
 }
 
 class TestEntity @Inject() (system: ActorSystem, probe: Option[ActorRef] = None)
   extends PersistentEntity[TestEntity.Cmd, TestEntity.Evt, TestEntity.State] {
   import TestEntity._
+
+  override def initialState: State = State.empty
+
+  override def behavior: Behavior = {
+    case State(Mode.Append, _)  => appending
+    case State(Mode.Prepend, _) => prepending
+  }
 
   private val changeMode: CommandHandler = {
     case (c @ ChangeMode(mode), ctx, state) => {
@@ -82,39 +88,22 @@ class TestEntity @Inject() (system: ActorSystem, probe: Option[ActorRef] = None)
     }
   }
 
-  val baseBehavior: Behavior = {
-    Behavior(State.empty)
-      .addEventHandler {
-        case (Appended(elem), b)  => b.mapState(_.add(elem))
-        case (Prepended(elem), b) => b.mapState(_.add(elem))
-        case (InAppendMode, b)    => becomeAppending(b.state)
-        case (InPrependMode, b)   => becomePrepending(b.state)
-      }
-      .addReadOnlyCommandHandler {
+  val baseActions: Actions = {
+    Actions()
+      .onReadOnlyCommand {
         case (Get, ctx, state)        => ctx.reply(Get, state)
         case (GetAddress, ctx, state) => ctx.reply(GetAddress, Cluster.get(system).selfAddress)
       }
-      .addCommandHandler(changeMode)
+      .onCommand(changeMode)
   }
 
-  override def initialBehavior(snapshotState: Option[State]): Behavior = {
-    val state = snapshotState match {
-      case Some(snap) =>
-        probe.foreach(_ ! Snapshot(snap))
-        snap
-      case None => State.empty
-    }
-
-    state.mode match {
-      case Mode.Append  => becomeAppending(state)
-      case Mode.Prepend => becomeAppending(state)
-    }
-  }
-
-  private def becomeAppending(s: State): Behavior = {
-    baseBehavior
-      .withState(s.copy(mode = Mode.Append))
-      .addCommandHandler {
+  private val appending: Actions =
+    baseActions
+      .onEvent {
+        case (Appended(elem), state) => state.add(elem)
+        case (InPrependMode, state)  => state.copy(mode = Mode.Prepend)
+      }
+      .onCommand {
         case (a @ Add(elem, times), ctx, state) =>
           // note that null should trigger NPE, for testing exception
           if (elem == null)
@@ -129,12 +118,14 @@ class TestEntity @Inject() (system: ActorSystem, probe: Option[ActorRef] = None)
           else
             ctx.thenPersistAll(List.fill(times)(appended), () => ctx.reply(a, appended))
       }
-  }
 
-  private def becomePrepending(s: State): Behavior = {
-    baseBehavior
-      .withState(s.copy(mode = Mode.Prepend))
-      .addCommandHandler {
+  private val prepending: Actions =
+    baseActions
+      .onEvent {
+        case (Prepended(elem), state) => state.add(elem)
+        case (InAppendMode, state)    => state.copy(mode = Mode.Append)
+      }
+      .onCommand {
         case (a @ Add(elem, times), ctx, state) =>
           if (elem == null || elem.length == 0) {
             ctx.invalidCommand("element must not be empty");
@@ -146,11 +137,10 @@ class TestEntity @Inject() (system: ActorSystem, probe: Option[ActorRef] = None)
           else
             ctx.thenPersistAll(List.fill(times)(prepended), () => ctx.reply(a, prepended))
       }
-  }
 
-  override def recoveryCompleted(currentBehavior: Behavior): Behavior = {
-    probe.foreach(_ ! AfterRecovery(currentBehavior.state))
-    currentBehavior
+  override def recoveryCompleted(state: State): State = {
+    probe.foreach(_ ! AfterRecovery(state))
+    state
   }
 
 }
