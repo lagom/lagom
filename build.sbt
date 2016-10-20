@@ -228,7 +228,8 @@ val coreProjects = Seq[ProjectReference](
   `persistence-scaladsl`,
   `persistence-cassandra`,
   `persistence-jdbc`,
-  testkit,
+  `testkit-javadsl`,
+  `testkit-scaladsl`,
   logback,
   immutables,
   `integration-client-javadsl`
@@ -359,7 +360,7 @@ lazy val `server-javadsl` = (project in file("service/javadsl/server"))
   .settings(runtimeLibCommon: _*)
   .dependsOn(core, `client-javadsl`, immutables % "provided")
 
-lazy val testkit = (project in file("testkit"))
+lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
   .settings(name := "lagom-javadsl-testkit")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -375,6 +376,22 @@ lazy val testkit = (project in file("testkit"))
   )
   .dependsOn(`server-javadsl`, pubsub, `broker-javadsl`, persistence % "compile;test->test", `persistence-cassandra` % "test->test")
 
+lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
+  .settings(name := "lagom-scaladsl-testkit")
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(forkedTests: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-netty-server" % PlayVersion,
+      "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion exclude("io.netty", "netty-all"),
+      "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion,
+      scalaTest % Test
+    )
+  )
+  .dependsOn(persistence % "compile;test->test", `persistence-scaladsl` % "compile;test->test")  
+
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
   .settings(name := "lagom-service-integration-tests")
   .settings(runtimeLibCommon: _*)
@@ -389,7 +406,7 @@ lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integra
     PgpKeys.publishSigned := {},
     publish := {}
   )
-  .dependsOn(`server-javadsl`, `persistence-cassandra`, pubsub, testkit, logback,`integration-client-javadsl`)
+  .dependsOn(`server-javadsl`, `persistence-cassandra`, pubsub, `testkit-javadsl`, logback,`integration-client-javadsl`)
 
 // for forked tests, necessary for Cassandra
 def forkedTests: Seq[Setting[_]] = Seq(

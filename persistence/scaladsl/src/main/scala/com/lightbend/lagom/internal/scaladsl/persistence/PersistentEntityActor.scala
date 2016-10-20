@@ -80,7 +80,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
   }
 
   private val unhandledEvent: PartialFunction[(E, S), S] = {
-    case event =>
+    case (event, _) =>
       log.warn(s"Unhandled event [${event.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]")
       state
   }
@@ -93,11 +93,11 @@ private[lagom] class PersistentEntityActor[C, E, S](
 
   private def applyEvent(event: E): Unit = {
     val actions = try behavior(state) catch unhandledState
-    actions.eventHandler.applyOrElse((event, state), unhandledEvent)
+    state = actions.eventHandler.applyOrElse((event, state), unhandledEvent)
   }
 
   private def unhandledCommand: PartialFunction[(C, entity.CommandContext, S), entity.Persist[_]] = {
-    case cmd =>
+    case (cmd, _, _) =>
       // not using akka.actor.Status.Failure because it is using Java serialization
       sender() ! PersistentEntity.UnhandledCommandException(
         s"Unhandled command [${cmd.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"

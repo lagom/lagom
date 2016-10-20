@@ -22,8 +22,8 @@ object TestEntity {
   // TODO how to do serialization of "scala enum", i.e. sealed trait
   sealed trait Mode
   object Mode {
-    object Prepend extends Mode
-    object Append extends Mode
+    case object Prepend extends Mode
+    case object Append extends Mode
   }
 
   final case class ChangeMode(mode: Mode) extends Cmd with ReplyType[Evt]
@@ -131,7 +131,7 @@ class TestEntity @Inject() (system: ActorSystem, probe: Option[ActorRef] = None)
             ctx.invalidCommand("element must not be empty");
             ctx.done
           }
-          val prepended = Prepended(elem.toUpperCase)
+          val prepended = Prepended(elem.toLowerCase)
           if (times == 1)
             ctx.thenPersist(prepended, ctx.reply(a, _))
           else
