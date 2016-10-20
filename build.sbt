@@ -15,7 +15,7 @@ import de.heikoseeberger.sbtheader.HeaderPattern
 
 val PlayVersion = "2.5.4"
 val AkkaVersion = "2.4.11"
-val AkkaPersistenceCassandraVersion = "0.17"
+val AkkaPersistenceCassandraVersion = "0.19"
 val ScalaTestVersion = "2.2.4"
 val JacksonVersion = "2.7.8"
 val CassandraAllVersion = "3.0.9"
@@ -224,10 +224,12 @@ val coreProjects = Seq[ProjectReference](
   pubsub,
   `kafka-client`,
   `kafka-broker`,
-  persistence,
+  `persistence-core`,
   `persistence-javadsl`,
   `persistence-scaladsl`,
-  `persistence-cassandra`,
+  `persistence-cassandra-core`,
+  `persistence-cassandra-javadsl`,
+  `persistence-cassandra-scaladsl`,
   `persistence-jdbc`,
   `testkit-javadsl`,
   `testkit-scaladsl`,
@@ -388,7 +390,7 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
       scalaTest % Test
     )
   )
-  .dependsOn(`server-javadsl`, pubsub, `broker-javadsl`, persistence % "compile;test->test", `persistence-cassandra` % "test->test")
+  .dependsOn(`server-javadsl`, pubsub, `broker-javadsl`, `persistence-core` % "compile;test->test", `persistence-cassandra-javadsl` % "test->test")
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
   .settings(name := "lagom-scaladsl-testkit")
@@ -404,7 +406,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
       scalaTest % Test
     )
   )
-  .dependsOn(persistence % "compile;test->test", `persistence-scaladsl` % "compile;test->test")  
+  .dependsOn(`persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test")  
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
   .settings(name := "lagom-service-integration-tests")
@@ -420,7 +422,7 @@ lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integra
     PgpKeys.publishSigned := {},
     publish := {}
   )
-  .dependsOn(`server-javadsl`, `persistence-cassandra`, pubsub, `testkit-javadsl`, logback,`integration-client-javadsl`)
+  .dependsOn(`server-javadsl`, `persistence-cassandra-javadsl`, pubsub, `testkit-javadsl`, logback,`integration-client-javadsl`)
 
 // for forked tests, necessary for Cassandra
 def forkedTests: Seq[Setting[_]] = Seq(
@@ -480,8 +482,8 @@ lazy val pubsub = (project in file("pubsub"))
     )
   ) configs (MultiJvm)  
 
-lazy val persistence = (project in file("persistence/core"))
-  .settings(name := "lagom-persistence")
+lazy val `persistence-core` = (project in file("persistence/core"))
+  .settings(name := "lagom-persistence-core")
   .dependsOn(cluster)
   .settings(runtimeLibCommon: _*)
   .settings(Protobuf.settings)
@@ -503,23 +505,22 @@ lazy val persistence = (project in file("persistence/core"))
 
 lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
   .settings(name := "lagom-javadsl-persistence")
-  .dependsOn(persistence % "compile;test->test")
+  .dependsOn(`persistence-core` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
 
 lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
   .settings(name := "lagom-scaladsl-persistence")
-  .dependsOn(persistence % "compile;test->test")
+  .dependsOn(`persistence-core` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
 
-lazy val `persistence-cassandra` = (project in file("persistence-cassandra"))
-  .settings(name := "lagom-javadsl-persistence-cassandra")
-  .dependsOn(persistence % "compile;test->test", `persistence-javadsl` % "compile;test->test")
+lazy val `persistence-cassandra-core` = (project in file("persistence-cassandra/core"))
+  .settings(name := "lagom-persistence-cassandra-core")
+  .dependsOn(`persistence-core` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
-  .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
@@ -529,11 +530,31 @@ lazy val `persistence-cassandra` = (project in file("persistence-cassandra"))
       "io.netty" % "netty-codec-http" % NettyVersion % "test",
       "io.netty" % "netty-transport-native-epoll" % NettyVersion % "test" classifier "linux-x86_64"
     )
-  ) configs (MultiJvm)
+  )
+
+lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassandra/javadsl"))
+  .settings(name := "lagom-javadsl-persistence-cassandra")
+  .dependsOn(`persistence-core` % "compile;test->test", `persistence-javadsl` % "compile;test->test", 
+    `persistence-cassandra-core` % "compile;test->test")
+  .settings(runtimeLibCommon: _*)
+  .settings(multiJvmTestSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(forkedTests: _*)
+  .settings() configs (MultiJvm)
+
+lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassandra/scaladsl"))
+  .settings(name := "lagom-scaladsl-persistence-cassandra")
+  .dependsOn(`persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test", 
+    `persistence-cassandra-core` % "compile;test->test")
+  .settings(runtimeLibCommon: _*)
+  .settings(multiJvmTestSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(forkedTests: _*)
+  .settings() configs (MultiJvm)
 
 lazy val `persistence-jdbc` = (project in file("persistence-jdbc"))
   .settings(name := "lagom-javadsl-persistence-jdbc")
-  .dependsOn(persistence % "compile;test->test", `persistence-javadsl` % "compile;test->test")
+  .dependsOn(`persistence-core` % "compile;test->test", `persistence-javadsl` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -835,7 +856,7 @@ lazy val `cassandra-registration` = (project in file("dev") / "cassandra-registr
   .settings(name := "lagom-cassandra-registration")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(`api-javadsl`, `persistence-cassandra`, `service-registry-client`)
+  .dependsOn(`api-javadsl`, `persistence-cassandra-javadsl`, `service-registry-client`)
 
 lazy val `play-integration` = (project in file("dev") / "play-integration")
   .settings(name := "lagom-play-integration")
