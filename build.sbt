@@ -84,7 +84,17 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   },
   pomIncludeRepository := { _ => false },
  
-  concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
+  concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
+
+  // Setting javac options in common allows IntelliJ IDEA to import them automatically
+  javacOptions in compile ++= Seq(
+    "-encoding", "UTF-8",
+    "-source", "1.8",
+    "-target", "1.8",
+    "-parameters",
+    "-Xlint:unchecked",
+    "-Xlint:deprecation"
+  )
 )
 
 def bintraySettings: Seq[Setting[_]] = Seq(
@@ -127,8 +137,7 @@ def runtimeLibCommon: Seq[Setting[_]] = common ++ SbtScalariform.scalariformSett
 
   // compile options
   scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.8", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint", "-deprecation"),
-  javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
-  
+
   incOptions := incOptions.value.withNameHashing(true),
 
   // show full stack traces and test case durations
