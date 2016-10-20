@@ -33,9 +33,6 @@ private[lagom] object Servers {
     protected type Server
 
     protected class ServerProcess(process: Process) {
-      import java.lang.Runtime
-      import scala.util.Try
-
       private val killOnExitCallback = new Thread(new Runnable() {
         override def run(): Unit = kill()
       })
@@ -48,7 +45,10 @@ private[lagom] object Servers {
         // have already been shutdown when the shutdown hook is executed (this really does happen in maven).
         try {
           process.destroy()
-          process.waitFor(10, TimeUnit.SECONDS)
+          if (!process.waitFor(10, TimeUnit.SECONDS)) {
+            process.destroyForcibly()
+            process.waitFor(10, TimeUnit.SECONDS)
+          }
         } catch {
           case NonFatal(_) =>
           // ignore, it's executed from a shutdown hook, not much we can or should do
