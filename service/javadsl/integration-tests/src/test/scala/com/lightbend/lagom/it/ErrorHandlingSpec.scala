@@ -12,7 +12,7 @@ import akka.stream.scaladsl.{ Sink, Source }
 import akka.stream.javadsl.{ Source => JSource }
 import akka.util.ByteString
 import com.lightbend.lagom.internal.api._
-import com.lightbend.lagom.internal.client.ServiceClientImplementor
+import com.lightbend.lagom.internal.client.JavadslServiceClientImplementor
 import com.lightbend.lagom.internal.server._
 import com.lightbend.lagom.it.mocks._
 import com.lightbend.lagom.javadsl.api.Descriptor.{ Call, CallId, NamedCallId, RestCallId }
@@ -229,7 +229,7 @@ class ErrorHandlingSpec extends ServiceSupport {
       )
         .overrides(bind[ResolvedServices].to(new MockResolvedServicesProvider(resolved, changeServer)))
     ) { app =>
-        val clientImplementor = app.injector.instanceOf[ServiceClientImplementor]
+        val clientImplementor = app.injector.instanceOf[JavadslServiceClientImplementor]
         val clientDescriptor = changeClient(resolved)
         val client = clientImplementor.implement(classOf[MockService], clientDescriptor)
         block(app)(client)

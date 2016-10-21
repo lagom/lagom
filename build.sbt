@@ -211,35 +211,42 @@ val javadslProjects = Seq[ProjectReference](
   `api-javadsl`,
   `server-javadsl`,
   `client-javadsl`,
-  `broker-javadsl`
+  `broker-javadsl`,
+  `cluster-javadsl`,
+  `persistence-javadsl`,
+  `persistence-cassandra-javadsl`,
+  `persistence-jdbc-javadsl`,
+  `testkit-javadsl`,
+  immutables,
+  `integration-client-javadsl`
+)
+
+val scaladslProjects = Seq[ProjectReference](
+  `api-scaladsl`,
+  `client-scaladsl`,
+  `cluster-scaladsl`,
+  `persistence-scaladsl`,
+  `persistence-cassandra-scaladsl`,
+  `persistence-jdbc-scaladsl`,
+  `testkit-scaladsl`
 )
 
 val coreProjects = Seq[ProjectReference](
   `api-tools`,
+  client,
   spi,
   jackson,
   `play-json`,
   core,
   `cluster-core`,
-  `cluster-javadsl`,
-  `cluster-scaladsl`,
   pubsub,
   `kafka-client`,
   `kafka-broker`,
   `persistence-core`,
-  `persistence-javadsl`,
-  `persistence-scaladsl`,
   `persistence-cassandra-core`,
-  `persistence-cassandra-javadsl`,
-  `persistence-cassandra-scaladsl`,
   `persistence-jdbc-core`,
-  `persistence-jdbc-javadsl`,
-  `persistence-jdbc-scaladsl`,
-  `testkit-javadsl`,
-  `testkit-scaladsl`,
   logback,
-  immutables,
-  `integration-client-javadsl`
+  immutables
 )
 
 val otherProjects = Seq[ProjectReference](
@@ -260,11 +267,25 @@ lazy val root = (project in file("."))
   .settings(UnidocRoot.settings(Nil, otherProjects ++
     Seq[ProjectReference](`sbt-scripted-library`, `sbt-scripted-tools`)): _*)
   .aggregate(javadslProjects: _*)
+  .aggregate(scaladslProjects: _*)
   .aggregate(coreProjects: _*)
   .aggregate(otherProjects: _*)
 
 def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) 
 def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype) 
+
+lazy val api = (project in file("service/core/api"))
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    name := "lagom-api",
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-stream" % AkkaVersion
+    )
+  )
+
 
 lazy val `api-javadsl` = (project in file("service/javadsl/api"))
   .settings(name := "lagom-javadsl-api")
@@ -273,9 +294,6 @@ lazy val `api-javadsl` = (project in file("service/javadsl/api"))
   .settings(
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-java" % PlayVersion,
-      "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
-      "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
-      "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       // An explicit depnedency is added on Guava because mavens resolution rule is stupid - it doesn't use the most
       // recent version in the tree, it uses the version that's closest to the root of the tree. So this puts the
       // version we need closer to the root of the tree.
@@ -285,7 +303,19 @@ lazy val `api-javadsl` = (project in file("service/javadsl/api"))
       scalaTest % Test,
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion % Test
     )
-  ).dependsOn(spi)
+  ).dependsOn(api, spi)
+
+lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
+  .settings(name := "lagom-scaladsl-api")
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play" % PlayVersion,
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+      scalaTest % Test
+    )
+  ).dependsOn(api, spi)
 
 lazy val immutables = (project in file("immutables"))
   .settings(name := "lagom-javadsl-immutables")
@@ -350,17 +380,28 @@ lazy val core = (project in file("core"))
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`api-javadsl`, jackson)
 
-lazy val `client-javadsl` = (project in file("service/javadsl/client"))
-  .settings(name := "lagom-javadsl-client")
+lazy val client = (project in file("service/core/client"))
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
+    name := "lagom-client",
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-ws" % PlayVersion,
       "io.dropwizard.metrics" % "metrics-core" % "3.1.2"
     )
-  )
-  .dependsOn(core)
+  ).dependsOn(api)
+
+lazy val `client-javadsl` = (project in file("service/javadsl/client"))
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(name := "lagom-javadsl-client")
+  .dependsOn(client, core)
+
+lazy val `client-scaladsl` = (project in file("service/scaladsl/client"))
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(name := "lagom-scaladsl-client")
+  .dependsOn(client, `api-scaladsl`)
 
 lazy val `integration-client-javadsl` = (project in file("service/javadsl/integration-client"))
   .settings(name := "lagom-javadsl-integration-client")

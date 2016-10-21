@@ -72,7 +72,7 @@ class ServiceRegistryClientProvider extends Provider[ServiceRegistry] {
 
   lazy val get = {
     val serviceLocator = new ClientServiceLocator(config)
-    val implementor = new ServiceClientImplementor(ws, webSocketClient, serviceInfo, serviceLocator, environment,
+    val implementor = new JavadslServiceClientImplementor(ws, webSocketClient, serviceInfo, serviceLocator, environment,
       NoTopicFactoryProvider)(ec, mat)
     val loader = new ServiceClientLoader(jacksonSerializerFactory, jacksonExceptionSerializer, environment, implementor)
     loader.loadServiceClient(classOf[ServiceRegistry])

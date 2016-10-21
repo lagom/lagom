@@ -15,7 +15,7 @@ import play.api.Environment
 class ServiceClientLoader @Inject() (
   jacksonSerializerFactory:   JacksonSerializerFactory,
   jacksonExceptionSerializer: JacksonExceptionSerializer, environment: Environment,
-  implementor: ServiceClientImplementor
+  implementor: JavadslServiceClientImplementor
 ) {
   def loadServiceClient[T](interface: Class[T]): T = {
     if (classOf[Service].isAssignableFrom(interface)) {

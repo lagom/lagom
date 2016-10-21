@@ -39,7 +39,6 @@ import play.api.libs.ws.ahc.AhcWSClientConfig;
 import play.api.libs.ws.ahc.AhcWSClientConfigParser;
 import play.api.libs.ws.ssl.SystemConfiguration;
 import scala.Function0;
-import scala.Option;
 import scala.Some;
 import scala.concurrent.Future;
 
@@ -218,7 +217,7 @@ public class LagomClientFactory implements Closeable {
         JacksonExceptionSerializer exceptionSerializer = new JacksonExceptionSerializer(new play.Environment(environment));
 
         Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator = serviceLocator -> {
-            ServiceClientImplementor implementor = new ServiceClientImplementor(wsClient, webSocketClient, serviceInfo,
+            JavadslServiceClientImplementor implementor = new JavadslServiceClientImplementor(wsClient, webSocketClient, serviceInfo,
                     serviceLocator, environment, topicFactoryProvider, actorSystem.dispatcher(), materializer);
             return new ServiceClientLoader(serializerFactory, exceptionSerializer, environment, implementor);
 

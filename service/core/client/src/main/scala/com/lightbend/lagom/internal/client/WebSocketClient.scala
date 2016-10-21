@@ -5,15 +5,13 @@ package com.lightbend.lagom.internal.client
 
 import java.net.URI
 import java.util.concurrent.TimeUnit
-import java.util.{ Collections, Optional }
+import java.util.Locale
 import javax.inject.{ Inject, Singleton }
 
 import akka.stream.scaladsl._
-import akka.stream.stage.{ TerminationDirective, SyncDirective, Context, PushStage }
+import akka.stream.stage.{ Context, PushStage, SyncDirective, TerminationDirective }
 import akka.util.ByteString
-import com.typesafe.netty.{ HandlerSubscriber, HandlerPublisher }
-import com.lightbend.lagom.javadsl.api.deser.{ ExceptionMessage, RawExceptionMessage, ExceptionSerializer }
-import com.lightbend.lagom.javadsl.api.transport._
+import com.typesafe.netty.{ HandlerPublisher, HandlerSubscriber }
 import com.lightbend.lagom.internal.NettyFutureConverters._
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.{ ByteBufHolder, Unpooled }
@@ -25,17 +23,18 @@ import io.netty.handler.codec.http.websocketx._
 import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
 import org.asynchttpclient.netty.channel.CleanupChannelGroup
-import org.pcollections.{ TreePVector, PSequence, HashTreePMap }
 import play.api.Environment
 import play.api.http.HeaderNames
 import play.api.inject.ApplicationLifecycle
 
-import scala.compat.java8.OptionConverters._
-import scala.concurrent.{ ExecutionContext, Promise, Future }
+import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.util.control.NonFatal
 import scala.collection.JavaConverters._
-
 import java.util.concurrent.atomic.AtomicReference
+
+import com.lightbend.lagom.internal.api.transport.{ LagomExceptionSerializer, LagomMessageProtocol, LagomRequestHeader, LagomResponseHeader }
+
+import scala.collection.immutable
 
 /**
  * A WebSocket client
@@ -69,8 +68,8 @@ class WebSocketClient(environment: Environment, eventLoop: EventLoopGroup,
   /**
    * Connect to the given URI
    */
-  def connect(exceptionSerializer: ExceptionSerializer, version: WebSocketVersion, requestHeader: RequestHeader,
-              outgoing: Source[ByteString, _]): Future[(ResponseHeader, Source[ByteString, _])] = {
+  def connect(exceptionSerializer: LagomExceptionSerializer, version: WebSocketVersion, requestHeader: LagomRequestHeader,
+              outgoing: Source[ByteString, _]): Future[(LagomResponseHeader, Source[ByteString, _])] = {
 
     val normalized = requestHeader.uri.normalize()
     val tgt = if (normalized.getPath == null || normalized.getPath.trim().isEmpty) {
@@ -78,18 +77,18 @@ class WebSocketClient(environment: Environment, eventLoop: EventLoopGroup,
     } else normalized
 
     val headers = new DefaultHttpHeaders()
-    requestHeader.protocol.toContentTypeHeader.asScala.foreach { ct =>
+    requestHeader.protocol.toContentTypeHeader.foreach { ct =>
       headers.add(HeaderNames.CONTENT_TYPE, ct)
     }
-    val accept = requestHeader.acceptedResponseProtocols.asScala.flatMap { accept =>
-      accept.toContentTypeHeader.asScala
+    val accept = requestHeader.acceptedResponseProtocols.flatMap { accept =>
+      accept.toContentTypeHeader
     }.mkString(", ")
     if (accept.nonEmpty) {
       headers.add(HeaderNames.ACCEPT, accept)
     }
-    requestHeader.headers.asScala.foreach {
+    requestHeader.headers.foreach {
       case (name, values) =>
-        values.asScala.foreach { value =>
+        values.foreach { value =>
           headers.add(name, value)
         }
     }
@@ -100,7 +99,7 @@ class WebSocketClient(environment: Environment, eventLoop: EventLoopGroup,
       channel = channelFuture.channel()
       handshaker = WebSocketClientHandshakerFactory.newHandshaker(tgt, version, null, false, headers)
       _ <- handshaker.handshake(channel).toScala
-      incomingPromise = Promise[(ResponseHeader, Source[ByteString, _])]()
+      incomingPromise = Promise[(LagomResponseHeader, Source[ByteString, _])]()
       _ = channel.pipeline().addLast("supervisor", new WebSocketSupervisor(exceptionSerializer, handshaker, outgoing,
         incomingPromise, requestHeader.protocol))
       _ = channel.read()
@@ -125,9 +124,9 @@ object WebSocketClient {
   }
 }
 
-private class WebSocketSupervisor(exceptionSerializer: ExceptionSerializer, handshaker: WebSocketClientHandshaker,
-                                  outgoing: Source[ByteString, _], incomingPromise: Promise[(ResponseHeader, Source[ByteString, _])],
-                                  requestProtocol: MessageProtocol) extends ChannelDuplexHandler {
+private class WebSocketSupervisor(exceptionSerializer: LagomExceptionSerializer, handshaker: WebSocketClientHandshaker,
+                                  outgoing: Source[ByteString, _], incomingPromise: Promise[(LagomResponseHeader, Source[ByteString, _])],
+                                  requestProtocol: LagomMessageProtocol) extends ChannelDuplexHandler {
 
   private val NormalClosure = 1000
 
@@ -140,26 +139,23 @@ private class WebSocketSupervisor(exceptionSerializer: ExceptionSerializer, hand
   private val outgoingStreamError = new AtomicReference[Throwable]()
 
   private var state: State = Handshake
-  private var responseProtocol: MessageProtocol = null
+  private var responseProtocol: LagomMessageProtocol = null
 
   override def channelRead(ctx: ChannelHandlerContext, msg: Object) = {
     msg match {
       case resp: FullHttpResponse if state == Handshake =>
         try {
-          responseProtocol = MessageProtocol.fromContentTypeHeader(Optional.ofNullable(resp.headers().get(HeaderNames.CONTENT_TYPE)))
-          val headers = resp.headers().asScala.foldLeft(HashTreePMap.empty[String, PSequence[String]]) { (map, header) =>
-            if (map.containsKey(header.getKey)) {
-              map.plus(header.getKey, map.get(header.getKey).plus(header.getValue))
-            } else {
-              map.plus(header.getKey, TreePVector.singleton(header.getValue))
-            }
+          responseProtocol = LagomMessageProtocol.fromContentTypeHeader(Option(resp.headers().get(HeaderNames.CONTENT_TYPE)))
+          val headers = resp.headers().asScala.map { header =>
+            header.getKey -> header.getValue
+          }.groupBy(_._1.toLowerCase(Locale.ENGLISH)).map {
+            case (key, values) => key -> values.to[immutable.Seq]
           }
 
           // See if the response is an error response
           if (resp.getStatus.code >= 400 && resp.getStatus.code < 599) {
-            val errorCode = TransportErrorCode.fromHttp(resp.getStatus.code)
-            val rawExceptionMessage = new RawExceptionMessage(errorCode, responseProtocol, toByteString(resp))
-            incomingPromise.failure(exceptionSerializer.deserialize(rawExceptionMessage))
+            incomingPromise.failure(exceptionSerializer.deserializeHttpException(resp.getStatus.code, responseProtocol,
+              toByteString(resp)))
             ctx.close()
 
           } else {
@@ -173,10 +169,10 @@ private class WebSocketSupervisor(exceptionSerializer: ExceptionSerializer, hand
                 // Attempt to both send this error to the server, and return it back to the client
                 outgoingStreamError.set(error)
 
-                val rawExceptionMessage = exceptionSerializer.serialize(error, Collections.emptyList())
+                val rawExceptionMessage = exceptionSerializer.serialize(error, Nil)
                 clientInitiatedClose(ctx, new CloseWebSocketFrame(
-                  rawExceptionMessage.errorCode().webSocket(),
-                  rawExceptionMessage.messageAsText
+                  rawExceptionMessage.webSocketCode,
+                  rawExceptionMessage.messageText
                 ))
               }
               override def complete() = clientInitiatedClose(ctx)
@@ -222,7 +218,7 @@ private class WebSocketSupervisor(exceptionSerializer: ExceptionSerializer, hand
                   ctx.fail(cause)
                 }
               })
-              val responseHeader = new ResponseHeader(resp.getStatus.code, responseProtocol, headers)
+              val responseHeader = LagomResponseHeader(resp.getStatus.code, responseProtocol, headers)
               incomingPromise.success((responseHeader, incoming via injectOutgoingStreamError))
             } catch {
               case NonFatal(e) =>
@@ -248,7 +244,7 @@ private class WebSocketSupervisor(exceptionSerializer: ExceptionSerializer, hand
 
       case message: WebSocketFrame if !message.isFinalFragment =>
         ReferenceCountUtil.release(message)
-        protocolError(ctx, new PayloadTooLarge("This client does not support fragmented frames"))
+        protocolError(ctx, exceptionSerializer.payloadTooLarge("This client does not support fragmented frames"))
 
       case frame: CloseWebSocketFrame if state == Open =>
         // server initiated close, echo back the frame, remove the handlers from the pipeline
@@ -258,11 +254,8 @@ private class WebSocketSupervisor(exceptionSerializer: ExceptionSerializer, hand
           ctx.pipeline().remove("websocket-publisher")
         } else {
           // The WebSocket closed in error, publish an exception caught message so the publisher publishes the error
-          val errorCode = TransportErrorCode.fromWebSocket(frame.statusCode())
-          val rawExceptionMessage = new RawExceptionMessage(errorCode, requestProtocol,
-            ByteString(frame.reasonText()))
-          val exception = exceptionSerializer.deserialize(rawExceptionMessage)
-          ctx.fireExceptionCaught(exception)
+          ctx.fireExceptionCaught(exceptionSerializer.deserializeWebSocketException(frame.statusCode(), requestProtocol,
+            ByteString(frame.reasonText())))
         }
         ctx.writeAndFlush(frame)
         ctx.pipeline().remove("websocket-subscriber")
@@ -297,10 +290,7 @@ private class WebSocketSupervisor(exceptionSerializer: ExceptionSerializer, hand
 
       case _ =>
         ReferenceCountUtil.release(msg)
-        protocolError(ctx, new TransportException(
-          TransportErrorCode.PolicyViolation,
-          new ExceptionMessage("UnexpectedMessage", "Unexpected message received from server")
-        ))
+        protocolError(ctx, exceptionSerializer.policyViolation("UnexpectedMessage", "Unexpected message received from server"))
     }
   }
 
@@ -312,7 +302,7 @@ private class WebSocketSupervisor(exceptionSerializer: ExceptionSerializer, hand
           new TextWebSocketFrame(Unpooled.copiedBuffer(bytes.asByteBuffers.toArray: _*))
         } else if (requestProtocol.isText) {
           // Otherwise, if it's text, we need to decode as a String
-          new TextWebSocketFrame(bytes.decodeString(requestProtocol.charset().get))
+          new TextWebSocketFrame(bytes.decodeString(requestProtocol.charset.get))
         } else {
           new BinaryWebSocketFrame(Unpooled.copiedBuffer(bytes.asByteBuffers.toArray: _*))
         }
@@ -342,10 +332,10 @@ private class WebSocketSupervisor(exceptionSerializer: ExceptionSerializer, hand
 
   private def protocolError(ctx: ChannelHandlerContext, error: Throwable) = {
     // todo accept headers
-    val rawExceptionMessage = exceptionSerializer.serialize(error, Collections.emptyList())
+    val rawExceptionMessage = exceptionSerializer.serialize(error, Nil)
     doClientInitiatedClose(ctx, new CloseWebSocketFrame(
-      rawExceptionMessage.errorCode().webSocket(),
-      rawExceptionMessage.messageAsText
+      rawExceptionMessage.webSocketCode,
+      rawExceptionMessage.messageText
     ))
     // Send the error to the publisher to be published
     ctx.fireExceptionCaught(error)

@@ -41,21 +41,21 @@ import play.api.libs.ws.{ InMemoryBody, WSClient }
  * Implements a service client.
  */
 @Singleton
-class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSocketClient, serviceInfo: ServiceInfo,
-                                          serviceLocator: ServiceLocator, environment: Environment,
-                                          topicFactoryProvider: TopicFactoryProvider)(implicit ec: ExecutionContext, mat: Materializer) {
+class JavadslServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSocketClient, serviceInfo: ServiceInfo,
+                                                 serviceLocator: ServiceLocator, environment: Environment,
+                                                 topicFactoryProvider: TopicFactoryProvider)(implicit ec: ExecutionContext, mat: Materializer) {
 
-  private val log = LoggerFactory.getLogger(classOf[ServiceClientImplementor])
+  private val log = LoggerFactory.getLogger(classOf[JavadslServiceClientImplementor])
 
   def implement[T](interface: Class[T], descriptor: Descriptor): T = {
     java.lang.reflect.Proxy.newProxyInstance(environment.classLoader, Array(interface), new ServiceClientInvocationHandler(descriptor)).asInstanceOf[T]
   }
 
   class ServiceClientInvocationHandler(descriptor: Descriptor) extends InvocationHandler {
-    private def serviceCallMethods: Map[Method, ServiceCallInvocationHandler[Any, Any]] = descriptor.calls().asScala.map { call =>
+    private def serviceCallMethods: Map[Method, JavadslServiceCallInvocationHandler[Any, Any]] = descriptor.calls().asScala.map { call =>
       call.serviceCallHolder() match {
         case holder: MethodServiceCallHolder =>
-          holder.method -> new ServiceCallInvocationHandler[Any, Any](ws, webSocketClient, serviceInfo, serviceLocator,
+          holder.method -> new JavadslServiceCallInvocationHandler[Any, Any](ws, webSocketClient, serviceInfo, serviceLocator,
             descriptor, call.asInstanceOf[Call[Any, Any]], holder)
       }
     }.toMap
@@ -77,7 +77,7 @@ class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSock
 
     override def invoke(proxy: scala.Any, method: Method, args: Array[AnyRef]): AnyRef = {
       methods.get(method) match {
-        case Some(serviceCallInvocationHandler: ServiceCallInvocationHandler[_, _]) => serviceCallInvocationHandler.invoke(args)
+        case Some(serviceCallInvocationHandler: JavadslServiceCallInvocationHandler[_, _]) => serviceCallInvocationHandler.invoke(args)
         case Some(topic: Topic[_]) => topic
         case Some(NoTopicFactory) => throw new IllegalStateException("Attempt to get a topic, but there is no TopicFactory provided to implement it. You may need to add a dependency on lagom-javadsl-kafka-broker to your projects dependencies.")
         case _ => throw new IllegalStateException("Method " + method + " is not described by the service client descriptor")
@@ -86,15 +86,15 @@ class ServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: WebSock
   }
 }
 
-private class ServiceCallInvocationHandler[Request, Response](ws: WSClient, webSocketClient: WebSocketClient,
-                                                              serviceInfo: ServiceInfo, serviceLocator: ServiceLocator,
-                                                              descriptor: Descriptor, endpoint: Call[Request, Response], holder: MethodServiceCallHolder)(implicit ec: ExecutionContext, mat: Materializer) {
+private class JavadslServiceCallInvocationHandler[Request, Response](ws: WSClient, webSocketClient: WebSocketClient,
+                                                                     serviceInfo: ServiceInfo, serviceLocator: ServiceLocator,
+                                                                     descriptor: Descriptor, endpoint: Call[Request, Response], holder: MethodServiceCallHolder)(implicit ec: ExecutionContext, mat: Materializer) {
   private val pathSpec = Path.fromCallId(endpoint.callId)
 
   def invoke(args: Seq[AnyRef]): ServiceCall[Request, Response] = {
     val (path, queryParams) = pathSpec.format(holder.invoke(args))
 
-    new ClientServiceCall[Request, Response, Response](new ClientServiceCallInvoker[Request, Response](ws, webSocketClient,
+    new JavadslClientServiceCall[Request, Response, Response](new JavadslClientServiceCallInvoker[Request, Response](ws, webSocketClient,
       serviceInfo, serviceLocator, descriptor, endpoint, path, queryParams), identity, (_, msg) => msg)
   }
 }
@@ -103,8 +103,8 @@ private class ServiceCallInvocationHandler[Request, Response](ws: WSClient, webS
  * The service call implementation. Delegates actual work to the invoker, while maintaining the handler function for
  * the request header and a transformer function for the response.
  */
-private class ClientServiceCall[Request, ResponseMessage, ServiceCallResponse](
-  invoker: ClientServiceCallInvoker[Request, ResponseMessage], requestHeaderHandler: RequestHeader => RequestHeader,
+private class JavadslClientServiceCall[Request, ResponseMessage, ServiceCallResponse](
+  invoker: JavadslClientServiceCallInvoker[Request, ResponseMessage], requestHeaderHandler: RequestHeader => RequestHeader,
   responseHandler: (ResponseHeader, ResponseMessage) => ServiceCallResponse
 )(implicit ec: ExecutionContext) extends ServiceCall[Request, ServiceCallResponse] {
 
@@ -113,11 +113,11 @@ private class ClientServiceCall[Request, ResponseMessage, ServiceCallResponse](
   }
 
   override def handleRequestHeader(handler: function.Function[RequestHeader, RequestHeader]): ServiceCall[Request, ServiceCallResponse] = {
-    new ClientServiceCall(invoker, requestHeaderHandler.andThen(handler.apply), responseHandler)
+    new JavadslClientServiceCall(invoker, requestHeaderHandler.andThen(handler.apply), responseHandler)
   }
 
   override def handleResponseHeader[T](handler: BiFunction[ResponseHeader, ServiceCallResponse, T]): ServiceCall[Request, T] = {
-    new ClientServiceCall[Request, ResponseMessage, T](invoker, requestHeaderHandler,
+    new JavadslClientServiceCall[Request, ResponseMessage, T](invoker, requestHeaderHandler,
       (header, message) => handler.apply(header, responseHandler(header, message)))
   }
 
@@ -133,7 +133,7 @@ private class ClientServiceCall[Request, ResponseMessage, ServiceCallResponse](
   }
 }
 
-private class ClientServiceCallInvoker[Request, Response](
+private class JavadslClientServiceCallInvoker[Request, Response](
   ws: WSClient, webSocketClient: WebSocketClient, serviceInfo: ServiceInfo, serviceLocator: ServiceLocator,
   descriptor: Descriptor, val endpoint: Call[Request, Response], path: String, queryParams: Map[String, Seq[String]]
 )(implicit ec: ExecutionContext, mat: Materializer) {
@@ -273,8 +273,10 @@ private class ClientServiceCallInvoker[Request, Response](
 
   private def doMakeStreamedCall(requestStream: Source[ByteString, _], requestSerializer: MessageSerializer.NegotiatedSerializer[_, _],
                                  requestHeader: RequestHeader): Future[(ResponseHeader, Source[ByteString, _])] = {
-    webSocketClient.connect(descriptor.exceptionSerializer, WebSocketVersion.V13, requestHeader,
-      requestStream)
+    webSocketClient.connect(new JavadslLagomExceptionSerializer(descriptor.exceptionSerializer), WebSocketVersion.V13,
+      LagomTransportConverters.convertRequestHeader(requestHeader), requestStream).map {
+        case (responseHeader, source) => LagomTransportConverters.convertLagomResponseHeader(responseHeader) -> source
+      }
   }
 
   /**
