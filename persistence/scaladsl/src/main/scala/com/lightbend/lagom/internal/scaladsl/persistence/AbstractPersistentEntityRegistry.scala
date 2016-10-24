@@ -14,7 +14,6 @@ import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.stream.scaladsl
 import akka.util.Timeout
 import akka.{ Done, NotUsed }
-import com.google.inject.Injector
 import com.lightbend.lagom.scaladsl.persistence._
 
 import scala.concurrent.duration.{ FiniteDuration, _ }
@@ -27,7 +26,7 @@ import scala.concurrent.Future
  *
  * Akka persistence plugins can extend this to implement a custom registry.
  */
-abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) extends PersistentEntityRegistry {
+abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEntityRegistry {
 
   /**
    * The ID of the journal.
@@ -66,19 +65,12 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
 
   private val registeredTypeNames = new ConcurrentHashMap[String, Class[_]]()
 
-  override def register[C, E, S](entityClass: Class[_ <: PersistentEntity[C, E, S]]): Unit = {
+  override def register(entityFactory: => PersistentEntity[_, _, _]): Unit = {
 
-    val entityFactory: () => PersistentEntity[C, E, S] =
-      () => injector.getInstance(entityClass)
-
-    // try to create one instance to fail fast (e.g. wrong constructor)
-    val entityTypeName = try {
-      entityFactory().entityTypeName
-    } catch {
-      case NonFatal(e) => throw new IllegalArgumentException("Cannot create instance of " +
-        s"[${entityClass.getName}]. The class must extend PersistentEntity and have a " +
-        "constructor without parameters.", e)
-    }
+    // try to create one instance to fail fast
+    val proto = entityFactory
+    val entityTypeName = proto.entityTypeName
+    val entityClass = proto.getClass
 
     // detect non-unique short class names, since that is used as sharding type name
     val alreadyRegistered = registeredTypeNames.putIfAbsent(entityTypeName, entityClass)
@@ -90,7 +82,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
 
     if (role.forall(Cluster(system).selfRoles.contains)) {
       val entityProps = PersistentEntityActor.props(
-        persistenceIdPrefix = entityTypeName, None, entityFactory, snapshotAfter, passivateAfterIdleTimeout
+        persistenceIdPrefix = entityTypeName, None, () => entityFactory, snapshotAfter, passivateAfterIdleTimeout
       )
       sharding.start(entityTypeName, entityProps, shardingSettings, extractEntityId, extractShardId)
     } else {

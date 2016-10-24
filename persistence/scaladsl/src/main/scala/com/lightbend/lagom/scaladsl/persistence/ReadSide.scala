@@ -13,9 +13,10 @@ trait ReadSide {
   /**
    * Register a read-side processor with Lagom.
    *
-   * @param processorClass The read-side processor class to register. It will be instantiated using Guice, once for
-   *                       every shard that runs it. Typically it should not be a singleton.
+   * * The `processorFactory` will be called when a new processor instance is to be created.
+   * That will happen in another thread, so the `processorFactory` must be thread-safe, e.g.
+   * not close over shared mutable state that is not thread-safe.
    */
-  def register[Event <: AggregateEvent[Event]](processorClass: Class[_ <: ReadSideProcessor[Event]]): Unit
+  def register[Event <: AggregateEvent[Event]](processorFactory: => ReadSideProcessor[Event]): Unit
 
 }

@@ -59,10 +59,12 @@ object AggregateEventTag {
    * @return The aggregate event shards tagger.
    */
   def sharded[Event <: AggregateEvent[Event]: ClassTag](
-    baseTagName: String, numShards: Int): AggregateEventShards[Event] = {
+    baseTagName: String, numShards: Int
+  ): AggregateEventShards[Event] = {
     new AggregateEventShards[Event](
       implicitly[ClassTag[Event]].runtimeClass.asInstanceOf[Class[Event]],
-      baseTagName, numShards)
+      baseTagName, numShards
+    )
   }
 
   /**
@@ -109,7 +111,8 @@ sealed trait AggregateEventTagger[Event <: AggregateEvent[Event]] {
  */
 final class AggregateEventTag[Event <: AggregateEvent[Event]](
   val eventType: Class[Event],
-  val tag: String) extends AggregateEventTagger[Event] {
+  val tag:       String
+) extends AggregateEventTagger[Event] {
 
   override def toString: String = s"AggregateEventTag($eventType, $tag)"
 
@@ -135,8 +138,9 @@ final class AggregateEventTag[Event <: AggregateEvent[Event]](
  */
 final class AggregateEventShards[Event <: AggregateEvent[Event]](
   val eventType: Class[Event],
-  val tag: String,
-  val numShards: Int) extends AggregateEventTagger[Event] {
+  val tag:       String,
+  val numShards: Int
+) extends AggregateEventTagger[Event] {
 
   /**
    * Get the tag for the given entity ID.
@@ -146,7 +150,8 @@ final class AggregateEventShards[Event <: AggregateEvent[Event]](
    */
   def forEntityId(entityId: String): AggregateEventTag[Event] = new AggregateEventTag(
     eventType,
-    AggregateEventTag.shardTag(tag, AggregateEventTag.selectShard(numShards, entityId)))
+    AggregateEventTag.shardTag(tag, AggregateEventTag.selectShard(numShards, entityId))
+  )
 
   /**
    * Get all the tags for this shard.
@@ -156,7 +161,8 @@ final class AggregateEventShards[Event <: AggregateEvent[Event]](
   val allTags: Set[AggregateEventTag[Event]] = {
     (for (shardNo <- 0 until numShards) yield new AggregateEventTag(
       eventType,
-      AggregateEventTag.shardTag(tag, shardNo))).toSet
+      AggregateEventTag.shardTag(tag, shardNo)
+    )).toSet
   }
 
   override def toString: String = s"AggregateEventShards($eventType, $tag)"
