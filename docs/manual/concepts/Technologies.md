@@ -56,13 +56,13 @@ Lagom [[Persistence|PersistentEntity]], [[Publish-Subscribe|PubSub]], and [[Clus
 
 ## Akka Streams
 
-A Lagom service may be "simple" or "streamed"; this is described further under [[Implementing services|ServiceImplementation]].  Streaming, asynchronous Lagom services are built on top of [Akka Streams](http://doc.akka.io/docs/akka/2.4.4/java/stream/index.html).
+A Lagom service may be "simple" or "streamed"; this is described further under [[Implementing services|ServiceImplementation]].  Streaming, asynchronous Lagom services are built on top of [Akka Streams](http://doc.akka.io/docs/akka/2.4/java/stream/index.html).
 
 Communication with browser-based clients is via [WebSockets](https://tools.ietf.org/html/rfc6455).
 
 ## Clustering
 
-If you want to scale your microservices out across multiple servers, Lagom provides clustering via [Akka Cluster](http://doc.akka.io/docs/akka/2.4.4/java/cluster-usage.html).
+If you want to scale your microservices out across multiple servers, Lagom provides clustering via [Akka Cluster](http://doc.akka.io/docs/akka/2.4/java/cluster-usage.html).
 
 Customers of Lightbend's [Reactive Platform](http://www.lightbend.com/products/lightbend-reactive-platform) can additionally use [[Lightbend ConductR|ConductR]] and Akka's [Split Brain Resolver](http://doc.akka.io/docs/akka/rp-16s01p03/scala/split-brain-resolver.html) for deployment and cluster management and [Lightbend Monitoring](http://www.lightbend.com/products/monitoring) for monitoring production systems.
 
