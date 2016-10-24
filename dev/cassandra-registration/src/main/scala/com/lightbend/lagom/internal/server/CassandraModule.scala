@@ -17,7 +17,7 @@ import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import akka.NotUsed
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.javadsl.persistence.ServiceLocatorHolder
+import com.lightbend.lagom.internal.persistence.ServiceLocatorHolder
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint
 import play.api.Logger

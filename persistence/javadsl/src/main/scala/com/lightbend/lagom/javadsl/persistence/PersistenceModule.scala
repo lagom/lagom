@@ -11,7 +11,8 @@ import com.google.inject.spi.TypeListener
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule.InitServiceLocatorHolder
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.javadsl.persistence.{ ReadSideConfig, ReadSideConfigProvider, ReadSideImpl, ServiceLocatorHolder }
+import com.lightbend.lagom.internal.javadsl.persistence.{ ReadSideConfig, ReadSideConfigProvider, ReadSideImpl }
+import com.lightbend.lagom.internal.persistence.ServiceLocatorHolder
 
 /**
  * Guice module for the Persistence API.
@@ -65,7 +66,7 @@ private object PersistenceModule {
       // The `cassandra-register` module takes care of registering the Cassandra contact-points to the service locator,
       // so that the Cassandra contact-points can be successfully retrieved when they are looked up by the Akka
       // persistence internals (see `ServiceLocatorSessionProvider#lookupContactPoints`).
-      // Therefore, in DEV mode, `ServiceLocatorHolder#setServiceLocator` is expected to be called only after the 
+      // Therefore, in DEV mode, `ServiceLocatorHolder#setServiceLocator` is expected to be called only after the
       // Cassandra contact-points have been fully registered to the service locator. In all other cases (i.e., Test or
       // Prod), we expect that the Cassandra contact-points are known by the service locator prior to start the service.
       env match {
