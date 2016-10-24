@@ -9,7 +9,6 @@ import java.util.Optional
 import java.util.concurrent.CompletionStage
 
 import scala.annotation.varargs
-
 import akka.stream.javadsl
 import com.datastax.driver.core.BatchStatement
 import com.datastax.driver.core.PreparedStatement
@@ -19,14 +18,13 @@ import com.datastax.driver.core.Statement
 import akka.Done
 import akka.NotUsed
 import akka.actor.ActorSystem
+
 import scala.concurrent.ExecutionContext
 import javax.inject.Inject
+
 import akka.persistence.cassandra.session.CassandraSessionSettings
-import akka.actor.ExtendedActorSystem
-import akka.event.Logging
-import akka.persistence.cassandra.SessionProvider
-import scala.concurrent.Future
-import akka.persistence.cassandra.CassandraPluginConfig
+import akka.persistence.cassandra.session.javadsl.{ CassandraSession => AkkaJavaCassandraSession }
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSessionProvider
 
 /**
  * Data Access Object for Cassandra. The statements are expressed in
@@ -53,56 +51,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
       ))
     )
 
-  private val delegate: akka.persistence.cassandra.session.javadsl.CassandraSession = {
-
-    // FIXME all this can be extracted to core internal and used from both javadsl and scaladsl
-
-    import akka.util.Helpers.Requiring
-    import scala.collection.JavaConverters._
-    import akka.persistence.cassandra.ListenableFutureConverter // implicit asScala conversion
-    val cfg = settings.config
-    val replicationStrategy: String = CassandraPluginConfig.getReplicationStrategy(
-      cfg.getString("replication-strategy"),
-      cfg.getInt("replication-factor"),
-      cfg.getStringList("data-center-replication-factors").asScala
-    )
-
-    val keyspaceAutoCreate: Boolean = cfg.getBoolean("keyspace-autocreate")
-    val keyspace: String = cfg.getString("keyspace").requiring(
-      !keyspaceAutoCreate || _ > "",
-      "'keyspace' configuration must be defined, or use keyspace-autocreate=off"
-    )
-
-    def init(session: Session): Future[Done] = {
-      implicit val ec = executionContext
-      if (keyspaceAutoCreate) {
-        val result1 =
-          session.executeAsync(s"""
-            CREATE KEYSPACE IF NOT EXISTS $keyspace
-            WITH REPLICATION = { 'class' : $replicationStrategy }
-            """).asScala
-        result1.flatMap { _ =>
-          session.executeAsync(s"USE $keyspace;").asScala
-        }.map(_ => Done)
-      } else if (keyspace != "")
-        session.executeAsync(s"USE $keyspace;").asScala.map(_ => Done)
-      else
-        Future.successful(Done)
-    }
-
-    val metricsCategory = "lagom-" + system.name
-    // using the scaladsl API because the init function
-    val scaladslCassandraSession = new akka.persistence.cassandra.session.scaladsl.CassandraSession(
-      system,
-      SessionProvider(system.asInstanceOf[ExtendedActorSystem], settings.config),
-      settings,
-      executionContext,
-      Logging.getLogger(system, this.getClass),
-      metricsCategory,
-      init
-    )
-    new akka.persistence.cassandra.session.javadsl.CassandraSession(scaladslCassandraSession)
-  }
+  private val delegate: AkkaJavaCassandraSession =
+    new AkkaJavaCassandraSession(CassandraReadSideSessionProvider(system, settings, executionContext))
 
   /**
    * The `Session` of the underlying
