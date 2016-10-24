@@ -7,15 +7,18 @@ import akka.Done
 import akka.actor.{ ActorSystem, ExtendedActorSystem }
 import akka.event.Logging
 import akka.persistence.cassandra.session.CassandraSessionSettings
+import akka.persistence.cassandra.session.scaladsl.{ CassandraSession => AkkaScaladslCassandraSession }
 import akka.persistence.cassandra.{ CassandraPluginConfig, SessionProvider }
 import com.datastax.driver.core.Session
 
 import scala.concurrent.{ ExecutionContext, Future }
 
+/**
+ * Internal API
+ */
 object CassandraReadSideSessionProvider {
 
-  def apply(system: ActorSystem, settings: CassandraSessionSettings, executionContext: ExecutionContext) = {
-    // FIXME all this can be extracted to core internal and used from both javadsl and scaladsl
+  def apply(system: ActorSystem, settings: CassandraSessionSettings, executionContext: ExecutionContext): AkkaScaladslCassandraSession = {
 
     import akka.persistence.cassandra.ListenableFutureConverter
     import akka.util.Helpers.Requiring
@@ -55,7 +58,7 @@ object CassandraReadSideSessionProvider {
     val metricsCategory = "lagom-" + system.name
 
     // using the scaladsl API because the init function
-    new akka.persistence.cassandra.session.scaladsl.CassandraSession(
+    new AkkaScaladslCassandraSession(
       system,
       SessionProvider(system.asInstanceOf[ExtendedActorSystem], settings.config),
       settings,

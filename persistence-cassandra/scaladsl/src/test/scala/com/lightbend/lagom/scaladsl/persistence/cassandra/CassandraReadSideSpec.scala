@@ -1,23 +1,23 @@
 /*
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
  */
-package com.lightbend.lagom.javadsl.persistence.cassandra
+package com.lightbend.lagom.scaladsl.persistence.cassandra
 
 import akka.NotUsed
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import akka.persistence.query.PersistenceQuery
-import akka.stream.javadsl.Source
-import com.typesafe.config.ConfigFactory
-import com.lightbend.lagom.javadsl.persistence._
-import com.lightbend.lagom.internal.javadsl.persistence.cassandra.{ CassandraOffsetStore, CassandraReadSideImpl }
+import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
+import com.lightbend.lagom.internal.scaladsl.persistence.PersistentEntityActor
+import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.{ CassandraOffsetStore, CassandraReadSideImpl }
+import com.lightbend.lagom.scaladsl.persistence._
+import com.typesafe.config.ConfigFactory
 
 object CassandraReadSideSpec {
 
   val config = ConfigFactory.parseString(s"""
     akka.loglevel = INFO
-  """)
+    """)
 
 }
 
@@ -28,26 +28,25 @@ class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSp
   override def eventStream[Event <: AggregateEvent[Event]](
     aggregateTag: AggregateEventTag[Event],
     fromOffset:   Offset
-  ): Source[akka.japi.Pair[Event, Offset], NotUsed] = {
-    val tag = aggregateTag.tag
+  ): Source[EventStreamElement[Event], NotUsed] = {
     val offset = fromOffset match {
-      case Offset.NONE         => queries.firstOffset
-      case uuid: TimeBasedUUID => uuid.value()
+      case NoOffset            => queries.firstOffset
+      case TimeBasedUUID(uuid) => uuid
       case other               => throw new IllegalArgumentException("Cassandra does not support " + other.getClass.getName + " offsets")
     }
-    queries.eventsByTag(tag, offset)
-      .map { env => akka.japi.Pair.create(env.event.asInstanceOf[Event], Offset.timeBasedUUID(env.offset)) }
-      .asJava
+    queries.eventsByTag(aggregateTag.tag, offset)
+      .map { env => new EventStreamElement[Event](PersistentEntityActor.extractEntityId(env.persistenceId), env.event.asInstanceOf[Event], TimeBasedUUID(env.offset)) }
+
   }
 
-  val readSide = new TestEntityReadSide(testSession)
+  val readSide = new TestEntityReadSide(system, testSession)
   val cassandraReadSide = new CassandraReadSideImpl(system, testSession, new CassandraOffsetStore(system, testSession,
     ReadSideConfig())(system.dispatcher), null, null)
 
   override def getAppendCount(id: String) = readSide.getAppendCount(id)
 
   override def processorFactory(): ReadSideProcessor[TestEntity.Evt] = {
-    new TestEntityReadSide.TestEntityReadSideProcessor(cassandraReadSide, testSession)
+    new TestEntityReadSide.TestEntityReadSideProcessor(system, cassandraReadSide, testSession)
   }
 
 }

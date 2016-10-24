@@ -1,25 +1,19 @@
 /*
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
  */
-package com.lightbend.lagom.javadsl.persistence.cassandra
+package com.lightbend.lagom.scaladsl.persistence.cassandra
 
-import java.util.concurrent.CompletionStage
-import java.util.{ Optional, List => JList }
 import javax.inject.{ Inject, Singleton }
 
 import akka.actor.ActorSystem
 import akka.persistence.cassandra.session.CassandraSessionSettings
-import akka.persistence.cassandra.session.scaladsl.{ CassandraSession => AkkaScalaCassandraSession }
-import akka.stream.javadsl
+import akka.stream.scaladsl
 import akka.{ Done, NotUsed }
 import com.datastax.driver.core._
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSessionProvider
 
 import scala.annotation.varargs
-import scala.collection.JavaConverters._
-import scala.compat.java8.FutureConverters._
-import scala.compat.java8.OptionConverters._
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Data Access Object for Cassandra. The statements are expressed in
@@ -46,12 +40,11 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
       ))
     )
 
-  private implicit val ec = executionContext
-
   /**
    * Internal API
    */
-  private[lagom] val delegate: AkkaScalaCassandraSession = CassandraReadSideSessionProvider(system, settings, executionContext)
+  private[lagom] val delegate: akka.persistence.cassandra.session.scaladsl.CassandraSession =
+    CassandraReadSideSessionProvider(system, settings, executionContext)
 
   /**
    * The `Session` of the underlying
@@ -59,8 +52,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * Can be used in case you need to do something that is not provided by the
    * API exposed by this class. Be careful to not use blocking calls.
    */
-  def underlying(): CompletionStage[Session] =
-    delegate.underlying().toJava
+  def underlying(): Future[Session] =
+    delegate.underlying()
 
   /**
    * See <a href="http://docs.datastax.com/en/cql/3.3/cql/cql_using/useCreateTableTOC.html">Creating a table</a>.
@@ -68,15 +61,15 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * The returned `CompletionStage` is completed when the table has been created,
    * or if the statement fails.
    */
-  def executeCreateTable(stmt: String): CompletionStage[Done] =
-    delegate.executeCreateTable(stmt).toJava
+  def executeCreateTable(stmt: String): Future[Done] =
+    delegate.executeCreateTable(stmt)
 
   /**
    * Create a `PreparedStatement` that can be bound and used in
    * `executeWrite` or `select` multiple times.
    */
-  def prepare(stmt: String): CompletionStage[PreparedStatement] =
-    delegate.prepare(stmt).toJava
+  def prepare(stmt: String): Future[PreparedStatement] =
+    delegate.prepare(stmt)
 
   /**
    * Execute several statements in a batch. First you must [[#prepare]] the
@@ -90,8 +83,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * The returned `CompletionStage` is completed when the batch has been
    * successfully executed, or if it fails.
    */
-  def executeWriteBatch(batch: BatchStatement): CompletionStage[Done] =
-    delegate.executeWriteBatch(batch).toJava
+  def executeWriteBatch(batch: BatchStatement): Future[Done] =
+    delegate.executeWriteBatch(batch)
 
   /**
    * Execute one statement. First you must [[#prepare]] the
@@ -105,8 +98,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * The returned `CompletionStage` is completed when the statement has been
    * successfully executed, or if it fails.
    */
-  def executeWrite(stmt: Statement): CompletionStage[Done] =
-    delegate.executeWrite(stmt).toJava
+  def executeWrite(stmt: Statement): Future[Done] =
+    delegate.executeWrite(stmt)
 
   /**
    * Prepare, bind and execute one statement in one go.
@@ -119,8 +112,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * successfully executed, or if it fails.
    */
   @varargs
-  def executeWrite(stmt: String, bindValues: AnyRef*): CompletionStage[Done] =
-    delegate.executeWrite(stmt, bindValues: _*).toJava
+  def executeWrite(stmt: String, bindValues: AnyRef*): Future[Done] =
+    delegate.executeWrite(stmt, bindValues: _*)
 
   /**
    * Execute a select statement. First you must [[#prepare]] the
@@ -136,8 +129,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * Otherwise you have to connect a `Sink` that consumes the messages from
    * this `Source` and then `run` the stream.
    */
-  def select(stmt: Statement): javadsl.Source[Row, NotUsed] =
-    delegate.select(stmt).asJava
+  def select(stmt: Statement): scaladsl.Source[Row, NotUsed] =
+    delegate.select(stmt)
 
   /**
    * Prepare, bind and execute a select statement in one go.
@@ -152,8 +145,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * this `Source` and then `run` the stream.
    */
   @varargs
-  def select(stmt: String, bindValues: AnyRef*): javadsl.Source[Row, NotUsed] =
-    delegate.select(stmt, bindValues: _*)
+  def select(stmt: String, bindValues: AnyRef*): scaladsl.Source[Row, NotUsed] =
+    select(stmt, bindValues: _*)
 
   /**
    * Execute a select statement. First you must [[#prepare]] the statement and
@@ -166,8 +159,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    *
    * The returned `CompletionStage` is completed with the found rows.
    */
-  def selectAll(stmt: Statement): CompletionStage[JList[Row]] =
-    delegate.selectAll(stmt).map(_.asJava).toJava
+  def selectAll(stmt: Statement): Future[Seq[Row]] =
+    delegate.selectAll(stmt)
 
   /**
    * Prepare, bind and execute a select statement in one go. Only use this method
@@ -179,8 +172,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * The returned `CompletionStage` is completed with the found rows.
    */
   @varargs
-  def selectAll(stmt: String, bindValues: AnyRef*): CompletionStage[JList[Row]] =
-    delegate.selectAll(stmt, bindValues: _*).map(_.asJava).toJava
+  def selectAll(stmt: String, bindValues: AnyRef*): Future[Seq[Row]] =
+    delegate.selectAll(stmt, bindValues: _*)
 
   /**
    * Execute a select statement that returns one row. First you must [[#prepare]] the
@@ -192,8 +185,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * The returned `CompletionStage` is completed with the first row,
    * if any.
    */
-  def selectOne(stmt: Statement): CompletionStage[Optional[Row]] =
-    delegate.selectOne(stmt).map(_.asJava).toJava
+  def selectOne(stmt: Statement): Future[Option[Row]] =
+    delegate.selectOne(stmt)
 
   /**
    * Prepare, bind and execute a select statement that returns one row.
@@ -204,8 +197,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * if any.
    */
   @varargs
-  def selectOne(stmt: String, bindValues: AnyRef*): CompletionStage[Optional[Row]] =
-    delegate.selectOne(stmt, bindValues: _*).map(_.asJava).toJava
+  def selectOne(stmt: String, bindValues: AnyRef*): Future[Option[Row]] =
+    delegate.selectOne(stmt, bindValues: _*)
 
 }
 

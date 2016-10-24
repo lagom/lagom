@@ -18,6 +18,9 @@ import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint
 import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorSessionProvider
 
+/**
+ * Internal API
+ */
 // Injecting ActorSystem and not Configuration because Configuration isn't always bound when running tests
 @Singleton
 class CassandraConfigProvider @Inject() (system: ActorSystem) extends Provider[CassandraConfig] {
@@ -39,6 +42,9 @@ class CassandraConfigProvider @Inject() (system: ActorSystem) extends Provider[C
   }
 }
 
+/**
+ * Internal API
+ */
 private object CassandraConfigProvider {
   case class CassandraConfigImpl(uris: PSet[CassandraContactPoint]) extends CassandraConfig
 }

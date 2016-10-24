@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
  */
-package com.lightbend.lagom.internal.javadsl.persistence.cassandra
+package com.lightbend.lagom.internal.scaladsl.persistence.cassandra
 
 import javax.inject.{ Inject, Singleton }
 
@@ -9,20 +9,19 @@ import akka.Done
 import akka.actor.ActorSystem
 import akka.util.Timeout
 import com.datastax.driver.core.{ BoundStatement, PreparedStatement, Row }
-import com.lightbend.lagom.internal.javadsl.persistence.{ OffsetDao, OffsetStore }
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cassandra.AbstractCassandraOffsetStore
-import com.lightbend.lagom.javadsl.persistence.Offset
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession
+import com.lightbend.lagom.internal.scaladsl.persistence.{ OffsetDao, OffsetStore }
+import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import com.lightbend.lagom.scaladsl.persistence.{ NoOffset, Offset, Sequence, TimeBasedUUID }
 
-import scala.compat.java8.FutureConverters._
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Internal API
  */
 @Singleton
-private[lagom] class CassandraOffsetStore @Inject() (system: ActorSystem, session: CassandraSession, config: ReadSideConfig)(implicit ec: ExecutionContext)
+private[lagom] final class CassandraOffsetStore @Inject() (system: ActorSystem, session: CassandraSession, config: ReadSideConfig)(implicit ec: ExecutionContext)
   extends AbstractCassandraOffsetStore(system, session.delegate, config) with OffsetStore {
 
   override type DslOffset = Offset
@@ -47,23 +46,23 @@ private[lagom] class CassandraOffsetStore @Inject() (system: ActorSystem, sessio
       case Some(row) =>
         val uuid = row.getUUID("timeUuidOffset")
         if (uuid != null) {
-          Offset.timeBasedUUID(uuid)
+          TimeBasedUUID(uuid)
         } else {
           if (row.isNull("sequenceOffset")) {
-            Offset.NONE
+            NoOffset
           } else {
-            Offset.sequence(row.getLong("sequenceOffset"))
+            Sequence(row.getLong("sequenceOffset"))
           }
         }
-      case None => Offset.NONE
+      case None => NoOffset
     }
   }
 
   protected def writeOffset(statement: PreparedStatement, eventProcessorId: String, tag: String, offset: DslOffset): BoundStatement = {
     offset match {
-      case Offset.NONE                => statement.bind(eventProcessorId, tag, null, null)
-      case seq: Offset.Sequence       => statement.bind(eventProcessorId, tag, null, java.lang.Long.valueOf(seq.value()))
-      case uuid: Offset.TimeBasedUUID => statement.bind(eventProcessorId, tag, uuid.value(), null)
+      case NoOffset            => statement.bind(eventProcessorId, tag, null, null)
+      case Sequence(seq)       => statement.bind(eventProcessorId, tag, null, java.lang.Long.valueOf(seq))
+      case TimeBasedUUID(uuid) => statement.bind(eventProcessorId, tag, uuid, null)
     }
   }
 }
@@ -71,16 +70,16 @@ private[lagom] class CassandraOffsetStore @Inject() (system: ActorSystem, sessio
 /**
  * Internal API
  */
-class CassandraOffsetDao(session: CassandraSession, statement: PreparedStatement, eventProcessorId: String, tag: String,
-                         override val loadedOffset: Offset) extends OffsetDao {
+final class CassandraOffsetDao(session: CassandraSession, statement: PreparedStatement, eventProcessorId: String, tag: String,
+                               override val loadedOffset: Offset) extends OffsetDao {
   override def saveOffset(offset: Offset): Future[Done] = {
-    session.executeWrite(bindSaveOffset(offset)).toScala
+    session.executeWrite(bindSaveOffset(offset))
   }
   def bindSaveOffset(offset: Offset): BoundStatement = {
     offset match {
-      case Offset.NONE                => statement.bind(eventProcessorId, tag, null, null)
-      case seq: Offset.Sequence       => statement.bind(eventProcessorId, tag, null, java.lang.Long.valueOf(seq.value()))
-      case uuid: Offset.TimeBasedUUID => statement.bind(eventProcessorId, tag, uuid.value(), null)
+      case NoOffset            => statement.bind(eventProcessorId, tag, null, null)
+      case Sequence(seq)       => statement.bind(eventProcessorId, tag, null, java.lang.Long.valueOf(seq))
+      case TimeBasedUUID(uuid) => statement.bind(eventProcessorId, tag, uuid, null)
     }
   }
 }

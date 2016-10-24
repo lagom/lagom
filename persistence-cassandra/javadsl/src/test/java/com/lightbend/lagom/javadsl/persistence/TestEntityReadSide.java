@@ -38,8 +38,7 @@ public class TestEntityReadSide {
     private final CassandraReadSide readSide;
     private final CassandraSession session;
 
-    private PreparedStatement writeStmt;
-    private PreparedStatement readStmt;
+    volatile private PreparedStatement writeStmt;
 
     @Inject
     public TestEntityReadSideProcessor(CassandraReadSide readSide, CassandraSession session) {

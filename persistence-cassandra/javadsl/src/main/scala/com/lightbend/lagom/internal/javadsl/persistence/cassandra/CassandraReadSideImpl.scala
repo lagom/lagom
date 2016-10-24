@@ -6,25 +6,23 @@ package com.lightbend.lagom.internal.javadsl.persistence.cassandra
 import java.util
 import java.util.concurrent.{ CompletableFuture, CompletionStage }
 import java.util.function.{ BiFunction, Function, Supplier }
-
-import akka.actor.ActorSystem
-import com.google.inject.Injector
-import com.lightbend.lagom.javadsl.persistence._
-import javax.inject.Inject
-import javax.inject.Singleton
+import javax.inject.{ Inject, Singleton }
 
 import akka.Done
+import akka.actor.ActorSystem
 import akka.event.Logging
 import com.datastax.driver.core.BoundStatement
+import com.google.inject.Injector
 import com.lightbend.lagom.internal.javadsl.persistence.ReadSideImpl
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
-import com.lightbend.lagom.javadsl.persistence.cassandra.{ CassandraReadSideProcessor, CassandraSession }
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide
+import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide.ReadSideHandlerBuilder
+import com.lightbend.lagom.javadsl.persistence.cassandra.{ CassandraReadSide, CassandraReadSideProcessor, CassandraSession }
 import org.pcollections.{ PSequence, TreePVector }
-import com.lightbend.lagom.internal.javadsl.persistence.cassandra.LegacyCassandraReadSideHandler
-import com.lightbend.lagom.internal.javadsl.persistence.cassandra.CassandraAutoReadSideHandler
 
+/**
+ * Internal API
+ */
 @Singleton
 private[lagom] class CassandraReadSideImpl @Inject() (
   system: ActorSystem, session: CassandraSession, offsetStore: CassandraOffsetStore, readSide: ReadSideImpl, injector: Injector

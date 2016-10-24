@@ -13,23 +13,16 @@ import akka.cluster.sharding.ClusterShardingSettings
 import akka.pattern.BackoffSupervisor
 import akka.stream.Materializer
 import com.google.inject.Injector
+import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings, ClusterStartupTask }
 import com.lightbend.lagom.javadsl.persistence._
 import play.api.Configuration
 
+import scala.collection.JavaConverters._
+import scala.compat.java8.FutureConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
-import scala.collection.JavaConverters._
-import scala.compat.java8.FutureConverters._
-
-case class ReadSideConfig(
-  minBackoff:           FiniteDuration = 3.seconds,
-  maxBackoff:           FiniteDuration = 30.seconds,
-  randomBackoffFactor:  Double         = 0.2,
-  globalPrepareTimeout: FiniteDuration = 20.seconds,
-  role:                 Option[String] = None
-)
 
 @Singleton
 class ReadSideConfigProvider @Inject() (configuration: Configuration) extends Provider[ReadSideConfig] {

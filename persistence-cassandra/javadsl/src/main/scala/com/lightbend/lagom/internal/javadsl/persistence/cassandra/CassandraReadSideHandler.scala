@@ -5,23 +5,26 @@ package com.lightbend.lagom.internal.javadsl.persistence.cassandra
 
 import java.util.concurrent.CompletionStage
 import java.util.function.BiFunction
-import com.datastax.driver.core.{ BatchStatement, BoundStatement }
-import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, Offset }
 import java.util.{ UUID, List => JList }
+
 import akka.Done
 import akka.japi.Pair
 import akka.stream.ActorAttributes
 import akka.stream.javadsl.Flow
+import com.datastax.driver.core.{ BatchStatement, BoundStatement }
 import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.javadsl.persistence.cassandra.{ CassandraReadSideProcessor, CassandraSession }
+import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, Offset }
 import org.pcollections.TreePVector
 import org.slf4j.LoggerFactory
+
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.{ ExecutionContext, Future }
-import java.util.{ List => JList }
-import javax.inject.Singleton
 
+/**
+ * Internal API
+ */
 private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEvent[Event], Handler](
   session: CassandraSession, handlers: Map[Class[_ <: Event], Handler], dispatcher: String
 )(implicit ec: ExecutionContext) extends ReadSideHandler[Event] {
@@ -56,10 +59,16 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
   }
 }
 
+/**
+ * Internal API
+ */
 private[cassandra] object CassandraAutoReadSideHandler {
   type Handler[Event] = (_ <: Event, Offset) => CompletionStage[JList[BoundStatement]]
 }
 
+/**
+ * Internal API
+ */
 private[cassandra] class CassandraAutoReadSideHandler[Event <: AggregateEvent[Event]](
   session:               CassandraSession,
   offsetStore:           CassandraOffsetStore,
@@ -103,6 +112,9 @@ private[cassandra] class CassandraAutoReadSideHandler[Event <: AggregateEvent[Ev
   }
 }
 
+/**
+ * Internal API
+ */
 private[cassandra] class LegacyCassandraReadSideHandler[Event <: AggregateEvent[Event]](
   session:            CassandraSession,
   cassandraProcessor: CassandraReadSideProcessor[Event],

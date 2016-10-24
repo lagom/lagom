@@ -3,24 +3,23 @@
  */
 package com.lightbend.lagom.internal.persistence.cassandra
 
-import scala.concurrent.duration._
-import scala.compat.java8.FutureConverters._
-import scala.collection.immutable
-import akka.persistence.cassandra.ConfigSessionProvider
-import akka.actor.ActorSystem
-import com.typesafe.config.Config
-
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext
 import java.net.InetSocketAddress
 
+import akka.actor.ActorSystem
+import akka.persistence.cassandra.ConfigSessionProvider
 import com.lightbend.lagom.internal.persistence.ServiceLocatorHolder
-
-import scala.util.control.NoStackTrace
+import com.typesafe.config.Config
 import play.api.Logger
 
-import scala.concurrent.Promise
+import scala.collection.immutable
+import scala.compat.java8.FutureConverters._
+import scala.concurrent.{ ExecutionContext, Future, Promise }
+import scala.concurrent.duration._
+import scala.util.control.NoStackTrace
 
+/**
+ * Internal API
+ */
 private[lagom] class ServiceLocatorSessionProvider(system: ActorSystem, config: Config) extends ConfigSessionProvider(system, config) {
 
   private val log = Logger(getClass)
