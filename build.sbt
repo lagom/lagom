@@ -23,7 +23,7 @@ val GuavaVersion = "19.0"
 val MavenVersion = "3.3.9"
 val NettyVersion = "4.0.40.Final"
 val KafkaVersion = "0.10.0.1"
-val AkkaStreamKafka = "0.12"
+val AkkaStreamKafka = "0.13"
 val Log4j = "1.2.17"
 val ScalaJava8CompatVersion = "0.7.0"
 
