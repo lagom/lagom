@@ -19,15 +19,16 @@ import scala.util.control.Exception.Catcher
 import scala.util.control.NonFatal
 
 private[lagom] object PersistentEntityActor {
-  def props[C, E, S](
+  def props(
     persistenceIdPrefix:       String,
     entityId:                  Option[String],
-    entityFactory:             () => PersistentEntity[C, E, S],
+    entityFactory:             () => PersistentEntity[_, _, _],
     snapshotAfter:             Option[Int],
     passivateAfterIdleTimeout: FiniteDuration
   ): Props =
-    Props(new PersistentEntityActor(persistenceIdPrefix, entityId, entityFactory(), snapshotAfter.getOrElse(0),
-      passivateAfterIdleTimeout))
+    Props(new PersistentEntityActor(persistenceIdPrefix, entityId,
+      entityFactory().asInstanceOf[PersistentEntity[Any, Any, Any]],
+      snapshotAfter.getOrElse(0), passivateAfterIdleTimeout))
 
   /**
    * Stop the actor for passivation. `PoisonPill` does not work well
@@ -55,15 +56,21 @@ private[lagom] object PersistentEntityActor {
 /**
  * The `PersistentActor` that runs a [[com.lightbend.lagom.scaladsl.persistence.PersistentEntity]].
  */
-private[lagom] class PersistentEntityActor[C, E, S](
+private[lagom] class PersistentEntityActor(
   persistenceIdPrefix:       String,
   id:                        Option[String],
-  entity:                    PersistentEntity[C, E, S],
+  entity:                    PersistentEntity[Any, Any, Any],
   snapshotAfter:             Int,
   passivateAfterIdleTimeout: FiniteDuration
 ) extends PersistentActor {
 
   import PersistentEntityActor.EntityIdSeparator
+
+  // we don't care about the types in the actor, but using these aliases for better readability
+  private type C = Any
+  private type E = Any
+  private type S = Any
+
   private val log = Logger(this.getClass)
 
   private val entityId: String = id.getOrElse(

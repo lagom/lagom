@@ -6,7 +6,6 @@ package com.lightbend.lagom.internal.javadsl.persistence.jdbc
 import java.util.concurrent.CompletionStage
 import javax.inject.{ Inject, Singleton }
 
-import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcSession
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcSession.ConnectionFunction
 

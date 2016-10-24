@@ -4,9 +4,6 @@
 package com.lightbend.lagom.scaladsl.persistence.jdbc
 
 import java.sql.Connection
-import javax.inject.Inject
-
-import com.google.inject.Singleton
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence.{ AggregateEventTag, EventStreamElement, ReadSideProcessor, TestEntity }
@@ -15,7 +12,7 @@ import scala.concurrent.Future
 
 object JdbcTestEntityReadSide {
 
-  class TestEntityReadSideProcessor @Inject() (readSide: JdbcReadSide) extends ReadSideProcessor[TestEntity.Evt] {
+  class TestEntityReadSideProcessor(readSide: JdbcReadSide) extends ReadSideProcessor[TestEntity.Evt] {
 
     def buildHandler(): ReadSideHandler[TestEntity.Evt] =
       readSide.builder[TestEntity.Evt]("test-entity-read-side")
@@ -62,8 +59,7 @@ object JdbcTestEntityReadSide {
 
 }
 
-@Singleton
-class JdbcTestEntityReadSide @Inject() (session: JdbcSession) {
+class JdbcTestEntityReadSide(session: JdbcSession) {
 
   import JdbcTestEntityReadSide.tryWith
 

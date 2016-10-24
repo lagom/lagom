@@ -4,7 +4,6 @@
 package com.lightbend.lagom.internal.scaladsl.persistence.jdbc
 
 import java.util.UUID
-import javax.inject.{ Inject, Singleton }
 
 import akka.Done
 import akka.actor.ActorSystem
@@ -20,8 +19,7 @@ import scala.util.Try
 /**
  * INTERNAL API
  */
-@Singleton
-class OffsetTableConfiguration @Inject() (config: Configuration, readSideConfig: ReadSideConfig)
+class OffsetTableConfiguration(config: Configuration, readSideConfig: ReadSideConfig)
   extends AbstractSlickOffsetStoreConfiguration(config) {
   override def minBackoff: FiniteDuration = readSideConfig.minBackoff
   override def maxBackoff: FiniteDuration = readSideConfig.maxBackoff
@@ -34,9 +32,8 @@ class OffsetTableConfiguration @Inject() (config: Configuration, readSideConfig:
 /**
  * INTERNAL API
  */
-@Singleton
-private[lagom] class JdbcOffsetStore @Inject() (val slick: SlickProvider, system: ActorSystem, tableConfig: OffsetTableConfiguration,
-                                                readSideConfig: ReadSideConfig)(implicit ec: ExecutionContext)
+private[lagom] class JdbcOffsetStore(val slick: SlickProvider, system: ActorSystem, tableConfig: OffsetTableConfiguration,
+                                     readSideConfig: ReadSideConfig)(implicit ec: ExecutionContext)
   extends SlickOffsetStore(system, slick, tableConfig)
   with OffsetStore {
 

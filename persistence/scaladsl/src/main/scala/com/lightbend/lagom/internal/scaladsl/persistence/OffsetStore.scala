@@ -3,8 +3,6 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence
 
-import javax.inject.Singleton
-
 import akka.Done
 import com.lightbend.lagom.scaladsl.persistence.Offset
 
@@ -49,7 +47,6 @@ trait OffsetDao {
 /**
  * Not for production use.
  */
-@Singleton
 class InMemoryOffsetStore extends OffsetStore {
   private final val store: concurrent.Map[String, Offset] = concurrent.TrieMap.empty
 

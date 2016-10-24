@@ -4,7 +4,6 @@
 package com.lightbend.lagom.internal.scaladsl.persistence.jdbc
 
 import java.sql.Connection
-import javax.inject.{ Inject, Singleton }
 
 import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
 import com.lightbend.lagom.scaladsl.persistence.jdbc.JdbcSession
@@ -14,8 +13,7 @@ import scala.concurrent.Future
 /**
  * INTERNAL API
  */
-@Singleton
-final class JdbcSessionImpl @Inject() (slick: SlickProvider) extends JdbcSession {
+final class JdbcSessionImpl(slick: SlickProvider) extends JdbcSession {
 
   import slick.profile.api._
 
