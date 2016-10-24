@@ -3,7 +3,7 @@
 To use ConductR with sbt, add the [sbt-conductr plugin](https://github.com/typesafehub/sbt-conductr) to your `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.1.9")
+addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.1.13")
 ```
 
 sbt-conductr adds several commands to the activator console:
@@ -42,7 +42,7 @@ You can then install your entire Lagom system in one go:
 
 The install command will introspect your project and its sub-projects and then package, load and run everything in ConductR at once - including Cassandra. The local sandbox is expected to be running and it will first be restarted to ensure that it is in a clean state.
 
-We expect that you will use the `install` command early on, but graduate to ConductR's lower-level commands as you evolve your services through their development lifecyle.
+We expect that you will use the `install` command early on, but graduate to ConductR's lower-level commands as you evolve your services through their development lifecycle.
 
 The remainder of this document describes the lower level ConductR commands.
 
