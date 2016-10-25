@@ -3,24 +3,63 @@
  */
 package com.lightbend.lagom.internal.scaladsl.client
 
-import java.net.{ URI, URLEncoder }
+import java.net.{URI, URLEncoder}
 import java.util.Locale
+
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Sink, Source }
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import com.lightbend.lagom.internal.client.WebSocketClient
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, ServiceCall, ServiceInfo, ServiceLocator }
-import com.lightbend.lagom.scaladsl.api.Descriptor.{ Call, RestCallId }
-import com.lightbend.lagom.scaladsl.api.deser.{ MessageSerializer, RawExceptionMessage, StreamedMessageSerializer, StrictMessageSerializer }
+import com.lightbend.lagom.scaladsl.api._
+import com.lightbend.lagom.scaladsl.api.Descriptor.{Call, RestCallId}
+import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodCall
+import com.lightbend.lagom.scaladsl.api.deser.{MessageSerializer, RawExceptionMessage, StreamedMessageSerializer, StrictMessageSerializer}
 import com.lightbend.lagom.scaladsl.api.security.ServicePrincipal
-import com.lightbend.lagom.scaladsl.api.transport.{ MessageProtocol, RequestHeader, ResponseHeader, TransportErrorCode }
+import com.lightbend.lagom.scaladsl.api.transport.{MessageProtocol, RequestHeader, ResponseHeader, TransportErrorCode}
+import com.lightbend.lagom.scaladsl.client.{ServiceClient, ServiceClientContext, ServiceClientImplementationContext}
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import play.api.http.HeaderNames
 import play.api.libs.streams.AkkaStreams
-import play.api.libs.ws.{ InMemoryBody, WSClient }
+import play.api.libs.ws.{InMemoryBody, WSClient}
 
 import scala.collection.immutable
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.collection.immutable.Seq
+import scala.concurrent.{ExecutionContext, Future}
+
+private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: WebSocketClient, serviceInfo: ServiceInfo,
+  serviceLocator: ServiceLocator)(implicit ec: ExecutionContext, mat: Materializer) extends ServiceClient {
+
+  private val ctx: ServiceClientImplementationContext = new ServiceClientImplementationContext {
+    override def resolve(descriptor: Descriptor): ServiceClientContext = new ServiceClientContext {
+
+      val serviceCalls = descriptor.calls.map { call =>
+        call.serviceCallHolder match {
+          case methodServiceCall: ScalaMethodCall[_] =>
+            methodServiceCall.method.getName -> call
+        }
+      }.toMap
+
+      override def createServiceCall[Request, Response](methodName: String, params: Seq[Any]): ServiceCall[Request, Response] = {
+        serviceCalls.get(methodName) match {
+          case Some(call) =>
+
+
+
+            val invoker = new ScaladslClientServiceCallInvoker[Request, Response](ws, webSocketClient, serviceInfo,
+              serviceLocator, descriptor, call.asInstanceOf[Call[Request, Response]], )
+
+            new ScaladslClientServiceCall[Request, Response, Response](invoker, identity, (header, message) => message)
+
+          case None => throw new RuntimeException("No descriptor for service call method: " + methodName)
+        }
+      }
+    }
+  }
+
+  override def doImplement[S <: Service](constructor: (ServiceClientImplementationContext) => S): S = {
+
+  }
+}
 
 /**
  * The service call implementation. Delegates actual work to the invoker, while maintaining the handler function for

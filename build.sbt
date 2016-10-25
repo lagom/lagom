@@ -207,6 +207,16 @@ def multiJvmTestSettings: Seq[Setting[_]] = SbtMultiJvm.multiJvmSettings ++ Seq(
   }
 )
 
+def macroCompileSettings: Seq[Setting[_]] = Seq(
+  compile in Test ~= { a =>
+    // Delete classes in "compile" packages after compiling.
+    // These are used for compile-time tests and should be recompiled every time.
+    val products = a.relations.allProducts.toSeq ** new SimpleFileFilter(_.getParentFile.getName == "compile")
+    IO.delete(products.get)
+    a
+  }
+)
+
 val javadslProjects = Seq[ProjectReference](
   `api-javadsl`,
   `server-javadsl`,
@@ -400,8 +410,14 @@ lazy val `client-javadsl` = (project in file("service/javadsl/client"))
 lazy val `client-scaladsl` = (project in file("service/scaladsl/client"))
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(name := "lagom-scaladsl-client")
-  .dependsOn(client, `api-scaladsl`)
+  .settings(macroCompileSettings: _*)
+  .settings(
+    name := "lagom-scaladsl-client",
+    libraryDependencies ++= Seq(
+      scalaTest % Test
+    )
+  )
+  .dependsOn(client, `api-scaladsl`, `macro-testkit` % Test)
 
 lazy val `integration-client-javadsl` = (project in file("service/javadsl/integration-client"))
   .settings(name := "lagom-javadsl-integration-client")
@@ -995,3 +1011,10 @@ lazy val `kafka-server` = (project in file("dev") / "kafka-server")
       scalaTest % Test
     )
   )
+
+// Provides macros for testing macros. Is not aggregated or published.
+lazy val `macro-testkit` = (project in file("macro-testkit"))
+  .settings(runtimeLibCommon)
+  .settings(libraryDependencies ++= Seq(
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value
+  ))

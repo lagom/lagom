@@ -113,20 +113,25 @@ object ServiceSupport {
   private def methodForImpl[T](c: Context)(f: c.Expr[Any], ps: c.Expr[PathParamSerializer[_]]*)(implicit tType: c.WeakTypeTag[T]): c.Expr[ScalaMethodCall[T]] = {
     import c.universe._
 
-    f match {
-      case Expr(Block((_, Function(_, Apply(Select(This(thisType), TermName(methodName)), _))))) =>
-        val methodNameString = Literal(Constant(methodName))
-        val pathParamSerializers = c.Expr[Seq[PathParamSerializer[_]]](
-          Apply(
-            Select(reify(Seq).tree, TermName("apply")),
-            ps.map(_.tree).toList
-          )
-        )
+    val pathParamSerializers = c.Expr[Seq[PathParamSerializer[_]]](
+      Apply(
+        Select(reify(Seq).tree, TermName("apply")),
+        ps.map(_.tree).toList
+      )
+    )
 
-        c.Expr[ScalaMethodCall[T]](q"_root_.com.lightbend.lagom.scaladsl.api.ServiceSupport.getMethodWithName[${tType.tpe}](classOf[$thisType], $methodNameString, $pathParamSerializers)")
+    val (thisType, methodName) = f match {
+      // This handles functions with parameter lists (including an empty parameter list)
+      case Expr(Block((_, Function(_, Apply(Select(This(tt), TermName(tn)), _))))) => (tt, tn)
+      // This handles functions without parameter lists
+      case Expr(Function(_, Select(This(tt), TermName(tn))))                       => (tt, tn)
       case other =>
         c.abort(c.enclosingPosition, "methodFor must only be invoked with a reference to a function on this, for example, methodFor(this.someFunction)")
     }
+
+    val methodNameString = Literal(Constant(methodName))
+
+    c.Expr[ScalaMethodCall[T]](q"_root_.com.lightbend.lagom.scaladsl.api.ServiceSupport.getMethodWithName[${tType.tpe}](classOf[$thisType], $methodNameString, $pathParamSerializers)")
   }
 
 }
