@@ -46,8 +46,8 @@ class ServiceClientSpec extends WordSpec with Matchers with Inside {
     }
   }
 
-  object TestServiceClient extends ServiceClient {
-    override def doImplement[S <: Service](constructor: (ServiceClientImplementationContext) => S): S = {
+  object TestServiceClient extends ServiceClientConstructor {
+    override def construct[S <: Service](constructor: (ServiceClientImplementationContext) => S): S = {
       constructor(new ServiceClientImplementationContext {
         override def resolve(descriptor: Descriptor): ServiceClientContext = {
           new ServiceClientContext {

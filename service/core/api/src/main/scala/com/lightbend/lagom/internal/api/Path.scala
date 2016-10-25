@@ -6,8 +6,6 @@ package com.lightbend.lagom.internal.api
 import java.util.regex.Pattern
 
 import akka.util.ByteString
-import com.lightbend.lagom.javadsl.api.Descriptor.{ CallId, NamedCallId, PathCallId, RestCallId }
-import play.utils.UriEncoding
 
 import scala.util.parsing.combinator.JavaTokenParsers
 
@@ -115,19 +113,6 @@ object Path {
       case parts ~ queryParams => Path(spec, parts, queryParams.getOrElse(Nil))
     }
 
-  }
-
-  def fromCallId(callId: CallId): Path = {
-    callId match {
-      case rest: RestCallId =>
-        Path.parse(rest.pathPattern)
-      case path: PathCallId =>
-        Path.parse(path.pathPattern)
-      case named: NamedCallId =>
-        val name = named.name
-        val path = if (name.startsWith("/")) name else "/" + name
-        Path(path, Seq(StaticPathPart(path)), Nil)
-    }
   }
 
   def parse(spec: String): Path = {

@@ -9,44 +9,49 @@ import java.util.Locale
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
+import com.lightbend.lagom.internal.api.Path
 import com.lightbend.lagom.internal.client.WebSocketClient
+import com.lightbend.lagom.internal.scaladsl.api.ScaladslPath
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.Descriptor.{Call, RestCallId}
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodCall
-import com.lightbend.lagom.scaladsl.api.deser.{MessageSerializer, RawExceptionMessage, StreamedMessageSerializer, StrictMessageSerializer}
+import com.lightbend.lagom.scaladsl.api.deser._
 import com.lightbend.lagom.scaladsl.api.security.ServicePrincipal
 import com.lightbend.lagom.scaladsl.api.transport.{MessageProtocol, RequestHeader, ResponseHeader, TransportErrorCode}
-import com.lightbend.lagom.scaladsl.client.{ServiceClient, ServiceClientContext, ServiceClientImplementationContext}
+import com.lightbend.lagom.scaladsl.client.{ ServiceClientConstructor, ServiceClientContext, ServiceClientImplementationContext}
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import play.api.http.HeaderNames
 import play.api.libs.streams.AkkaStreams
 import play.api.libs.ws.{InMemoryBody, WSClient}
 
 import scala.collection.immutable
-import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
+
 private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: WebSocketClient, serviceInfo: ServiceInfo,
-  serviceLocator: ServiceLocator)(implicit ec: ExecutionContext, mat: Materializer) extends ServiceClient {
+                                           serviceLocator: ServiceLocator)(implicit ec: ExecutionContext, mat: Materializer) extends ServiceClientConstructor {
 
   private val ctx: ServiceClientImplementationContext = new ServiceClientImplementationContext {
     override def resolve(descriptor: Descriptor): ServiceClientContext = new ServiceClientContext {
 
-      val serviceCalls = descriptor.calls.map { call =>
+      val serviceCalls: Map[String, ScalaServiceCall] = descriptor.calls.map { call =>
         call.serviceCallHolder match {
           case methodServiceCall: ScalaMethodCall[_] =>
-            methodServiceCall.method.getName -> call
+            val pathSpec = ScaladslPath.fromCallId(call.callId)
+            methodServiceCall.method.getName -> ScalaServiceCall(call, pathSpec, methodServiceCall.pathParamSerializers)
         }
       }.toMap
 
-      override def createServiceCall[Request, Response](methodName: String, params: Seq[Any]): ServiceCall[Request, Response] = {
+      override def createServiceCall[Request, Response](methodName: String, params: immutable.Seq[Any]): ServiceCall[Request, Response] = {
         serviceCalls.get(methodName) match {
-          case Some(call) =>
-
-
+          case Some(ScalaServiceCall(call, pathSpec, pathParamSerializers)) =>
+            val serializedParams = pathParamSerializers.zip(params).map {
+              case (serializer: PathParamSerializer[Any], param) => serializer.serialize(param)
+            }
+            val (path, queryParams) = pathSpec.format(serializedParams)
 
             val invoker = new ScaladslClientServiceCallInvoker[Request, Response](ws, webSocketClient, serviceInfo,
-              serviceLocator, descriptor, call.asInstanceOf[Call[Request, Response]], )
+              serviceLocator, descriptor, call.asInstanceOf[Call[Request, Response]], path, queryParams)
 
             new ScaladslClientServiceCall[Request, Response, Response](invoker, identity, (header, message) => message)
 
@@ -56,9 +61,9 @@ private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: WebSoc
     }
   }
 
-  override def doImplement[S <: Service](constructor: (ServiceClientImplementationContext) => S): S = {
+  override def construct[S <: Service](constructor: (ServiceClientImplementationContext) => S): S = constructor(ctx)
 
-  }
+  private case class ScalaServiceCall(call: Call[_, _], pathSpec: Path, pathParamSerializers: immutable.Seq[PathParamSerializer[_]])
 }
 
 /**

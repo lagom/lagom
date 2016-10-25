@@ -4,7 +4,7 @@
 package com.lightbend.lagom.scaladsl.client.compile
 
 import com.lightbend.lagom.scaladsl.api.{ Service, ServiceCall }
-import com.lightbend.lagom.scaladsl.client.{ ServiceClient, ServiceClientImplementationContext }
+import com.lightbend.lagom.scaladsl.client.{ ServiceClient, ServiceClientConstructor, ServiceClientImplementationContext }
 import com.lightbend.lagom.macrotestkit.ShouldNotTypecheck
 import Service._
 
@@ -30,8 +30,8 @@ object ServiceClientMacroErrors {
 
 }
 
-object MacroErrorsServiceClient extends ServiceClient {
-  override def doImplement[S <: Service](constructor: (ServiceClientImplementationContext) => S): S = null.asInstanceOf[S]
+object MacroErrorsServiceClient extends ServiceClientConstructor {
+  override def construct[S <: Service](constructor: (ServiceClientImplementationContext) => S): S = null.asInstanceOf[S]
 }
 
 trait AbstractNonServiceCall extends Service {

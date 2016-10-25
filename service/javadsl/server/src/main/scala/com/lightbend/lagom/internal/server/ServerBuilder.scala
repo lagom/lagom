@@ -127,7 +127,7 @@ class ServiceRouter @Inject() (resolvedServices: ResolvedServices, httpConfigura
 }
 
 case class ServiceRoute(call: Descriptor.Call[_, _], service: Any) {
-  val path = Path.fromCallId(call.callId)
+  val path = JavadslPath.fromCallId(call.callId)
   val method = call.callId match {
     case rest: RestCallId => rest.method
     case _ => if (call.requestSerializer.isUsed) {

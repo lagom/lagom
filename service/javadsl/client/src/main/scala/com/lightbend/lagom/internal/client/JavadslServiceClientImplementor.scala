@@ -3,31 +3,31 @@
  */
 package com.lightbend.lagom.internal.client
 
-import java.lang.reflect.{ InvocationHandler, Method }
-import java.net.{ URI, URLEncoder }
-import java.util.{ Optional, function }
+import java.lang.reflect.{InvocationHandler, Method}
+import java.net.{URI, URLEncoder}
+import java.util.{Optional, function}
 import java.util.concurrent.CompletionStage
 import java.util.function.BiFunction
 
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
 import scala.compat.java8.OptionConverters._
-import scala.concurrent.{ ExecutionContext, Future }
-import org.pcollections.{ HashTreePMap, PSequence, TreePVector }
+import scala.concurrent.{ExecutionContext, Future}
+import org.pcollections.{HashTreePMap, PSequence, TreePVector}
 import org.slf4j.LoggerFactory
 import com.google.inject.Inject
-import com.lightbend.lagom.internal.api.{ MethodServiceCallHolder, MethodTopicHolder, Path }
+import com.lightbend.lagom.internal.api.{JavadslPath, MethodServiceCallHolder, MethodTopicHolder, Path}
 import com.lightbend.lagom.internal.api.broker.TopicFactoryProvider
-import com.lightbend.lagom.javadsl.api.{ Descriptor, ServiceCall, ServiceInfo, ServiceLocator }
-import com.lightbend.lagom.javadsl.api.Descriptor.{ Call, RestCallId }
+import com.lightbend.lagom.javadsl.api.{Descriptor, ServiceCall, ServiceInfo, ServiceLocator}
+import com.lightbend.lagom.javadsl.api.Descriptor.{Call, RestCallId}
 import com.lightbend.lagom.javadsl.api.broker.Topic
 import com.lightbend.lagom.javadsl.api.deser._
 import com.lightbend.lagom.javadsl.api.security.ServicePrincipal
 import com.lightbend.lagom.javadsl.api.transport._
 import akka.NotUsed
 import akka.stream.Materializer
-import akka.stream.javadsl.{ Source => JSource }
-import akka.stream.scaladsl.{ Sink, Source }
+import akka.stream.javadsl.{Source => JSource}
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import javax.inject.Singleton
@@ -35,7 +35,7 @@ import javax.inject.Singleton
 import play.api.Environment
 import play.api.http.HeaderNames
 import play.api.libs.streams.AkkaStreams
-import play.api.libs.ws.{ InMemoryBody, WSClient }
+import play.api.libs.ws.{InMemoryBody, WSClient}
 
 /**
  * Implements a service client.
@@ -89,7 +89,7 @@ class JavadslServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: 
 private class JavadslServiceCallInvocationHandler[Request, Response](ws: WSClient, webSocketClient: WebSocketClient,
                                                                      serviceInfo: ServiceInfo, serviceLocator: ServiceLocator,
                                                                      descriptor: Descriptor, endpoint: Call[Request, Response], holder: MethodServiceCallHolder)(implicit ec: ExecutionContext, mat: Materializer) {
-  private val pathSpec = Path.fromCallId(endpoint.callId)
+  private val pathSpec = JavadslPath.fromCallId(endpoint.callId)
 
   def invoke(args: Seq[AnyRef]): ServiceCall[Request, Response] = {
     val (path, queryParams) = pathSpec.format(holder.invoke(args))

@@ -14,10 +14,9 @@ private[lagom] object ScaladslClientMacroImpl {
     import c.universe._
 
     val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
-    val api = q"$scaladsl.api"
     val client = q"$scaladsl.client"
 
-    val serviceCallType = c.typecheck(q"null: $api.ServiceCall[_, _]").tpe.erasure
+    val serviceCallType = c.mirror.typeOf[ServiceCall[_, _]].erasure
 
     val serviceMethods = serviceType.tpe.members.collect {
       case method if method.isAbstract && method.isMethod => method.asMethod
@@ -46,9 +45,9 @@ private[lagom] object ScaladslClientMacroImpl {
     }
 
     // Extract the target that "implement" was invoked on, so we can invoke "doImplement" on it instead
-    val scalaClient = c.macroApplication match {
+    val serviceClient = c.macroApplication match {
       case TypeApply(Select(clientTarget, TermName("implement")), _) => clientTarget
-      case other => c.abort(c.enclosingPosition, "Don't know how to find the scala client from tree: " + c.macroApplication)
+      case other => c.abort(c.enclosingPosition, "Don't know how to find the service client from tree: " + c.macroApplication)
     }
 
     val implementationContext = TermName(c.freshName("implementationContext"))
@@ -69,11 +68,15 @@ private[lagom] object ScaladslClientMacroImpl {
     }
 
     c.Expr[T](q"""
-      $scalaClient.doImplement(($implementationContext: $client.ServiceClientImplementationContext) => new ${serviceType.tpe} {
-         private val $serviceContext: $client.ServiceClientContext = $implementationContext.resolve(this.descriptor)
+      $serviceClient match {
+        case serviceClientConstructor: $client.ServiceClientConstructor =>
+          serviceClientConstructor.construct(($implementationContext: $client.ServiceClientImplementationContext) => new ${serviceType.tpe} {
+            private val $serviceContext: $client.ServiceClientContext = $implementationContext.resolve(this.descriptor)
 
-         ..$serviceMethodImpls
-      })
+            ..$serviceMethodImpls
+          })
+        case other => throw new _root_.java.lang.RuntimeException(${serviceClient.toString} + " of type " + $serviceClient.getClass.getName + " does not implement ServiceClientConstructor")
+      }
     """)
   }
 

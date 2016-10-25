@@ -243,6 +243,7 @@ val scaladslProjects = Seq[ProjectReference](
 
 val coreProjects = Seq[ProjectReference](
   `api-tools`,
+  api,
   client,
   spi,
   jackson,
@@ -290,9 +291,11 @@ lazy val api = (project in file("service/core/api"))
   .settings(
     name := "lagom-api",
     libraryDependencies ++= Seq(
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
       "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
       "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
-      "com.typesafe.akka" %% "akka-stream" % AkkaVersion
+      "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
+      "com.typesafe.play" %% "play" % PlayVersion
     )
   )
 
@@ -309,7 +312,6 @@ lazy val `api-javadsl` = (project in file("service/javadsl/api"))
       // version we need closer to the root of the tree.
       guava,
       "org.pcollections" % "pcollections" % "2.1.2",
-      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
       scalaTest % Test,
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion % Test
     )
@@ -321,8 +323,6 @@ lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play" % PlayVersion,
-      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
       scalaTest % Test
     )
   ).dependsOn(api, spi)
