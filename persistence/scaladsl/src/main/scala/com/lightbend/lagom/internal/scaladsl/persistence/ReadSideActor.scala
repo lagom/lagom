@@ -19,7 +19,7 @@ private[lagom] object ReadSideActor {
 
   def props[Event <: AggregateEvent[Event]](
     processor:            () => ReadSideProcessor[Event],
-    eventStreamFactory:   (AggregateEventTag[Event], Offset) => Source[(Event, Offset), NotUsed],
+    eventStreamFactory:   (AggregateEventTag[Event], Offset) => Source[EventStreamElement[Event], NotUsed],
     clazz:                Class[Event],
     globalPrepareTask:    ClusterStartupTask,
     globalPrepareTimeout: FiniteDuration
@@ -38,7 +38,7 @@ private[lagom] object ReadSideActor {
  */
 private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   processorFactory:     () => ReadSideProcessor[Event],
-  eventStreamFactory:   (AggregateEventTag[Event], Offset) => Source[(Event, Offset), NotUsed],
+  eventStreamFactory:   (AggregateEventTag[Event], Offset) => Source[EventStreamElement[Event], NotUsed],
   clazz:                Class[Event],
   globalPrepareTask:    ClusterStartupTask,
   globalPrepareTimeout: FiniteDuration

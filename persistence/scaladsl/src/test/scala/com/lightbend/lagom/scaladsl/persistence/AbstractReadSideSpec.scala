@@ -31,7 +31,7 @@ trait AbstractReadSideSpec extends ImplicitSender { spec: ActorSystemSpec =>
   def eventStream[Event <: AggregateEvent[Event]](
     aggregateTag: AggregateEventTag[Event],
     fromOffset:   Offset
-  ): Source[(Event, Offset), NotUsed]
+  ): Source[EventStreamElement[Event], NotUsed]
 
   def processorFactory(): ReadSideProcessor[TestEntity.Evt]
 
