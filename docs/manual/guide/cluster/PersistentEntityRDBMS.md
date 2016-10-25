@@ -60,4 +60,4 @@ The database schemas needed for the tables can be found [here](https://github.co
 
 The full configuration options that Lagom provides for managing the creation of tables is here:
 
-@[persistence](../../../../persistence-jdbc/src/main/resources/reference.conf)
+@[persistence](../../../../persistence-jdbc/javadsl/src/main/resources/reference.conf)

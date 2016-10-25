@@ -113,7 +113,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
   override def eventStream[Event <: AggregateEvent[Event]](
     aggregateTag: AggregateEventTag[Event],
     fromOffset:   Offset
-  ): scaladsl.Source[(Event, Offset), NotUsed] = {
+  ): scaladsl.Source[EventStreamElement[Event], NotUsed] = {
     eventsByTagQuery match {
       case Some(queries) =>
         val tag = aggregateTag.tag
@@ -123,7 +123,12 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
           case other         => throw new IllegalArgumentException(s"$journalId does not support ${other.getClass.getSimpleName} offsets")
         }
         queries.eventsByTag(tag, offset)
-          .map { env => (env.event.asInstanceOf[Event], Sequence(env.offset)) }
+          .map(env =>
+            new EventStreamElement[Event](
+              PersistentEntityActor.extractEntityId(env.persistenceId),
+              env.event.asInstanceOf[Event],
+              Sequence(env.offset)
+            ))
       case None =>
         throw new UnsupportedOperationException(s"The $journalId Lagom persistence plugin does not support streaming events by tag")
     }

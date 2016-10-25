@@ -58,7 +58,7 @@ object ReadSideProcessor {
      * If the handler does any blocking, this flow should be configured to use a dispatcher that is configured to
      * allow for that blocking.
      */
-    def handle(): Flow[(Event, Offset), Done, NotUsed]
+    def handle(): Flow[EventStreamElement[Event], Done, NotUsed]
   }
 }
 
@@ -86,7 +86,7 @@ abstract class ReadSideProcessor[Event <: AggregateEvent[Event]] {
    *
    * @return The offset processor.
    */
-  def buildHandler: ReadSideProcessor.ReadSideHandler[Event]
+  def buildHandler(): ReadSideProcessor.ReadSideHandler[Event]
 
   /**
    * The tags to aggregate.

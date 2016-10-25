@@ -3,17 +3,13 @@
  */
 package com.lightbend.lagom.scaladsl.persistence
 
-import scala.collection.JavaConverters._
-import scala.concurrent.duration._
-import java.util.Optional
-
-import akka.testkit.{ ImplicitSender, TestProbe }
-import akka.actor.Actor
+import akka.actor.{ Actor, Props }
 import akka.cluster.sharding.ShardRegion
-import akka.actor.Props
+import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.scaladsl.persistence.PersistentEntityActor
-import org.scalatest.WordSpecLike
 import com.lightbend.lagom.persistence.ActorSystemSpec
+
+import scala.concurrent.duration._
 
 object AbstractPersistentEntityActorSpec {
   class TestPassivationParent extends Actor {
