@@ -277,6 +277,12 @@ lazy val spi = (project in file("spi"))
   .settings(name := "lagom-spi")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    unmanagedSourceDirectories in Compile := (javaSource in Compile).value :: Nil,
+    autoScalaLibrary := false,
+    crossPaths := false,
+    crossVersion := CrossVersion.Disabled
+  )
 
 lazy val jackson = (project in file("jackson"))
   .settings(name := "lagom-javadsl-jackson")
