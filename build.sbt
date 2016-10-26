@@ -410,7 +410,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
       scalaTest % Test
     )
   )
-  .dependsOn(`persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test")
+  .dependsOn(`persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test", `persistence-cassandra-scaladsl` % "test->test")
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
   .settings(name := "lagom-service-integration-tests")
