@@ -1,6 +1,6 @@
 # Lightbend Reactive Platform
 
-We recommend that you use [Lightbend Reactive Platform](http://www.lightbend.com/products/lightbend-reactive-platform) to take advantage of the [Split Brain Resolver](http://doc.akka.io/docs/akka/rp-16s01p05/scala/split-brain-resolver.html) and the [Diagnostics Recorder](http://doc.akka.io/docs/akka/rp-16s01p05/common/diagnostics-recorder.html).
+We recommend that you use [Lightbend Reactive Platform](http://www.lightbend.com/products/lightbend-reactive-platform) to take advantage of the [Split Brain Resolver](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/java/split-brain-resolver.html) and the [Diagnostics Recorder](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/common/diagnostics-recorder.html).
 
 Read about the importance of the Split Brain Resolver in the [[Cluster Downing|Cluster#Downing]] documentation.
 
