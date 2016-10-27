@@ -104,7 +104,7 @@ public interface HeaderServiceCall<Request, Response> extends ServerServiceCall<
      * &lt;Request, Response&gt; ServerServiceCall&lt;Request, Response&gt; authenticated(
      *     Function&lt;String, ServerServiceCall&lt;Request, Response&gt;&gt; block) {
      *
-     *     return HeaderServiceCall.compose(requestHeader -&gt; {
+     *     return HeaderServiceCall.composeAsync(requestHeader -&gt; {
      *
      *         // Get the user
      *         String userName = requestHeader.principal().orElseGet(() -&gt; {

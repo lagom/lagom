@@ -5,12 +5,12 @@ package com.lightbend.lagom.javadsl.api;
 
 import java.util.Optional;
 
-import com.lightbend.lagom.internal.api.MethodRefMessageSerializer;
-import com.lightbend.lagom.internal.api.MethodRefServiceCallHolder;
-import com.lightbend.lagom.internal.api.MethodRefTopicHolder;
+import com.lightbend.lagom.internal.javadsl.api.MethodRefMessageSerializer;
 
 import akka.japi.function.*;
 
+import com.lightbend.lagom.internal.javadsl.api.MethodRefServiceCallHolder;
+import com.lightbend.lagom.internal.javadsl.api.MethodRefTopicHolder;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.api.broker.Topic.TopicId;
 import com.lightbend.lagom.javadsl.api.transport.Method;

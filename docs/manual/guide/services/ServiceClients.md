@@ -54,7 +54,7 @@ In the above example the default identifer is used for the `sayHi` method, since
 
 On the client side you can configure the circuit breakers. The default configuration is:
 
-@[circuit-breaker-default](../../../../service/javadsl/client/src/main/resources/reference.conf)
+@[circuit-breaker-default](../../../../service/core/client/src/main/resources/reference.conf)
 
 That configuration will be used if you don't define any configuration yourself. 
 

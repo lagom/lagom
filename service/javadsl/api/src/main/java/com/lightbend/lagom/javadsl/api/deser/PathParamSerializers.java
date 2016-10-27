@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.javadsl.api.deser;
 
-import com.lightbend.lagom.internal.api.UnresolvedOptionalPathParamSerializer;
+import com.lightbend.lagom.internal.javadsl.api.UnresolvedOptionalPathParamSerializer;
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
 

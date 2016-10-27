@@ -51,7 +51,7 @@ sealed trait MessageProtocol {
    *
    * @return true if this message protocol is text based.
    */
-  def isText: Boolean = charset.isDefined
+  def isText: Boolean = charset.isDefined || contentType.contains("application/json")
 
   /**
    * Whether the protocol uses UTF-8.
@@ -59,7 +59,7 @@ sealed trait MessageProtocol {
    * @return true if the charset used by this protocol is UTF-8, false if it's some other encoding or if no charset is
    *         defined.
    */
-  def isUtf8: Boolean = charset.exists(cs => Charset.forName(cs) == Codec.UTF8.charSet)
+  def isUtf8: Boolean = charset.exists(cs => Charset.forName(cs) == Codec.UTF8.charSet) || charset.isEmpty && contentType.contains("application/json")
 
   /**
    * Convert this message protocol to a content type header, if the content type is defined.
@@ -72,7 +72,7 @@ sealed trait MessageProtocol {
 
 object MessageProtocol {
   def fromContentTypeHeader(contentType: Option[String]): MessageProtocol = {
-    contentType.fold(MessageProtocol()) { ct =>
+    contentType.fold(MessageProtocol.empty) { ct =>
       val parts = ct.split(";")
       val justContentType = parts(0)
       val charset = parts.collectFirst {
@@ -82,7 +82,7 @@ object MessageProtocol {
     }
   }
 
-  def apply(): MessageProtocol = {
+  val empty: MessageProtocol = {
     MessageProtocolImpl(None, None, None)
   }
 

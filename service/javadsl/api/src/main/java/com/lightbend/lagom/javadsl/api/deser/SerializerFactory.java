@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.javadsl.api.deser;
 
-import com.lightbend.lagom.internal.api.JacksonPlaceholderSerializerFactory$;
+import com.lightbend.lagom.internal.javadsl.api.JacksonPlaceholderSerializerFactory$;
 
 import java.lang.reflect.Type;
 

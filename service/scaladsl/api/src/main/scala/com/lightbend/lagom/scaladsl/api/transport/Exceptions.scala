@@ -180,7 +180,7 @@ final class ExceptionMessage(val name: String, val detail: String) extends Seria
 /**
  * An exception that can be translated down to a specific error in the transport.
  */
-class TransportException(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable) extends RuntimeException(exceptionMessage.detail, cause) {
+class TransportException(val errorCode: TransportErrorCode, val exceptionMessage: ExceptionMessage, cause: Throwable) extends RuntimeException(exceptionMessage.detail, cause) {
 
   def this(errorCode: TransportErrorCode, message: String) =
     this(errorCode, new ExceptionMessage(getClass.getSimpleName, message), null)
@@ -208,7 +208,8 @@ object TransportException {
     classOf[NotAcceptable].getSimpleName -> ((tec, em) => new NotAcceptable(tec, em)),
     classOf[PolicyViolation].getSimpleName -> ((tec, em) => new PolicyViolation(tec, em)),
     classOf[NotFound].getSimpleName -> ((tec, em) => new NotFound(tec, em)),
-    classOf[PayloadTooLarge].getSimpleName -> ((tec, em) => new PayloadTooLarge(tec, em))
+    classOf[PayloadTooLarge].getSimpleName -> ((tec, em) => new PayloadTooLarge(tec, em)),
+    classOf[Forbidden].getSimpleName -> ((tec, em) => new Forbidden(tec, em))
   )
 
   private val ByCodeTransportExceptions: Map[TransportErrorCode, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
@@ -216,7 +217,8 @@ object TransportException {
     UnsupportedMediaType.ErrorCode -> ((tec, em) => new UnsupportedMediaType(tec, em)),
     NotAcceptable.ErrorCode -> ((tec, em) => new NotAcceptable(tec, em)),
     PolicyViolation.ErrorCode -> ((tec, em) => new PolicyViolation(tec, em)),
-    PayloadTooLarge.ErrorCode -> ((tec, em) => new PayloadTooLarge(tec, em))
+    PayloadTooLarge.ErrorCode -> ((tec, em) => new PayloadTooLarge(tec, em)),
+    Forbidden.ErrorCode -> ((tec, em) => new Forbidden(tec, em))
   )
 
 }
@@ -317,6 +319,24 @@ object NotFound {
   def apply(cause: Throwable) = new NotFound(
     ErrorCode,
     new ExceptionMessage(classOf[NotFound].getSimpleName, cause.getMessage), cause
+  )
+}
+
+final class Forbidden(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable) extends TransportException(errorCode, exceptionMessage, cause) {
+  def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
+}
+
+object Forbidden {
+  val ErrorCode = TransportErrorCode.Forbidden
+
+  def apply(message: String) = new Forbidden(
+    ErrorCode,
+    new ExceptionMessage(classOf[Forbidden].getSimpleName, message), null
+  )
+
+  def apply(cause: Throwable) = new Forbidden(
+    ErrorCode,
+    new ExceptionMessage(classOf[Forbidden].getSimpleName, cause.getMessage), cause
   )
 }
 

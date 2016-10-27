@@ -44,7 +44,9 @@ object Service {
 object ServiceSupport {
   import com.lightbend.lagom.scaladsl.api.deser.{ PathParamSerializer => PPS }
 
-  final class ScalaMethodCall[T](val method: Method, val pathParamSerializers: immutable.Seq[PathParamSerializer[_]]) extends ServiceCallHolder
+  class ScalaMethodCall[T] private[lagom] (val method: Method, val pathParamSerializers: immutable.Seq[PathParamSerializer[_]]) extends ServiceCallHolder {
+    def invoke(service: Any, args: immutable.Seq[AnyRef]) = method.invoke(service, args: _*)
+  }
 
   object ScalaMethodCall {
 

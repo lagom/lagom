@@ -6,16 +6,16 @@ package com.lightbend.lagom.internal.broker.kafka
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import org.slf4j.LoggerFactory
-import com.lightbend.lagom.internal.api.MethodTopicHolder
-import com.lightbend.lagom.internal.server.ResolvedServices
 import com.lightbend.lagom.javadsl.api.ServiceInfo
-import com.lightbend.lagom.internal.api.broker.TopicFactory
 import akka.stream.Materializer
 import javax.inject.Inject
 
 import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
+import com.lightbend.lagom.internal.javadsl.api.MethodTopicHolder
+import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetStore
+import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 
 class RegisterTopicProducers @Inject() (resolvedServices: ResolvedServices, topicFactory: TopicFactory,

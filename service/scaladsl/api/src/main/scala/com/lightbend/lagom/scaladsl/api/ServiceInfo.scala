@@ -12,5 +12,7 @@ sealed trait ServiceInfo {
 
 object ServiceInfo {
 
-  private case class ServiceInfoImpl(serviceName: String)
+  def apply(name: String): ServiceInfo = ServiceInfoImpl(name)
+
+  private case class ServiceInfoImpl(serviceName: String) extends ServiceInfo
 }

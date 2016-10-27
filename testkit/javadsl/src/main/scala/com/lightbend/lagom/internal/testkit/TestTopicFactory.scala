@@ -9,10 +9,10 @@ import javax.inject.Inject
 import akka.Done
 import akka.stream.Materializer
 import akka.stream.javadsl.{ Flow, Sink, Source }
-import com.lightbend.lagom.internal.api.MethodTopicHolder
-import com.lightbend.lagom.internal.api.broker.TopicFactory
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
-import com.lightbend.lagom.internal.server.ResolvedServices
+import com.lightbend.lagom.internal.javadsl.api.MethodTopicHolder
+import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
+import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.broker.Topic.TopicId
 import com.lightbend.lagom.javadsl.api.broker.{ Subscriber, Topic }

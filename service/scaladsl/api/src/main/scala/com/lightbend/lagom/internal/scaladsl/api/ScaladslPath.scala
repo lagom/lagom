@@ -1,11 +1,14 @@
+/*
+ * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
+ */
 package com.lightbend.lagom.internal.scaladsl.api
 
-import com.lightbend.lagom.internal.api.{Path, StaticPathPart}
-import com.lightbend.lagom.scaladsl.api.Descriptor.{CallId, NamedCallId, PathCallId, RestCallId}
+import com.lightbend.lagom.internal.api.{ Path, StaticPathPart }
+import com.lightbend.lagom.scaladsl.api.Descriptor.{ CallId, NamedCallId, PathCallId, RestCallId }
 
 /**
-  * Path methods specific to the scaladsl
-  */
+ * Path methods specific to the scaladsl
+ */
 object ScaladslPath {
 
   def fromCallId(callId: CallId): Path = {

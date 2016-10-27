@@ -6,6 +6,7 @@ package com.lightbend.lagom.internal.api
 import java.util.regex.Pattern
 
 import akka.util.ByteString
+import play.utils.UriEncoding
 
 import scala.util.parsing.combinator.JavaTokenParsers
 

@@ -7,9 +7,12 @@ import akka.actor.ActorSystem;
 import akka.japi.Effect;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
-import com.lightbend.lagom.internal.api.broker.TopicFactory;
-import com.lightbend.lagom.internal.api.broker.TopicFactoryProvider;
+import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory;
+import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactoryProvider;
 import com.lightbend.lagom.internal.client.*;
+import com.lightbend.lagom.internal.javadsl.client.JavadslServiceClientImplementor;
+import com.lightbend.lagom.internal.javadsl.client.JavadslWebSocketClient;
+import com.lightbend.lagom.internal.javadsl.client.ServiceClientLoader;
 import com.lightbend.lagom.internal.registry.ServiceRegistry;
 import com.lightbend.lagom.internal.registry.ServiceRegistryServiceLocator;
 import com.lightbend.lagom.javadsl.api.Descriptor;
@@ -193,7 +196,7 @@ public class LagomClientFactory implements Closeable {
 
         // WebSocketClient
         // Use dummy lifecycle, we manage the lifecycle manually
-        WebSocketClient webSocketClient = new WebSocketClient(environment, eventLoop, new ApplicationLifecycle() {
+        JavadslWebSocketClient webSocketClient = new JavadslWebSocketClient(environment, eventLoop, new ApplicationLifecycle() {
             @Override
             public void addStopHook(Function0<Future<?>> hook) {
             }

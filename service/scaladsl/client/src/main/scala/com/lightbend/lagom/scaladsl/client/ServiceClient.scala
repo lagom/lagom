@@ -3,10 +3,16 @@
  */
 package com.lightbend.lagom.scaladsl.client
 
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall }
-import com.lightbend.lagom.internal.scaladsl.client.ScaladslClientMacroImpl
+import akka.stream.Materializer
+import com.lightbend.lagom.scaladsl.api._
+import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
+import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
+import play.api.Environment
+import play.api.inject.ApplicationLifecycle
+import play.api.libs.ws.WSClient
 
 import scala.collection.immutable
+import scala.concurrent.ExecutionContext
 import scala.language.experimental.macros
 
 /**
@@ -81,4 +87,24 @@ trait ServiceClientContext {
    * Create a service call for the given method name and passed in parameters.
    */
   def createServiceCall[Request, Response](methodName: String, params: immutable.Seq[Any]): ServiceCall[Request, Response]
+}
+
+trait ServiceResolver {
+  def resolve(descriptor: Descriptor): Descriptor
+}
+
+trait LagomServiceClientComponents {
+  def wsClient: WSClient
+  def serviceInfo: ServiceInfo
+  def serviceLocator: ServiceLocator
+  def materializer: Materializer
+  def executionContext: ExecutionContext
+  def environment: Environment
+  def applicationLifecycle: ApplicationLifecycle
+
+  lazy val serviceResolver: ServiceResolver = new ScaladslServiceResolver(defaultExceptionSerializer)
+  lazy val defaultExceptionSerializer: ExceptionSerializer = new DefaultExceptionSerializer(environment)
+  lazy val scaladslWebSocketClient: ScaladslWebSocketClient = new ScaladslWebSocketClient(environment, applicationLifecycle)(executionContext)
+  lazy val serviceClient: ServiceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
+    serviceLocator: ServiceLocator, serviceResolver)(executionContext, materializer)
 }

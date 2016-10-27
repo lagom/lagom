@@ -41,7 +41,10 @@ object ServicePrincipal {
    *
    * @return The service principal.
    */
-  def forServiceNamed(serviceName: String): ServicePrincipal = new ServicePrincipal {
-    override def getName: String = serviceName
+  def forServiceNamed(serviceName: String): ServicePrincipal = {
+    val _serviceName = serviceName
+    new ServicePrincipal {
+      override def getName: String = _serviceName
+    }
   }
 }

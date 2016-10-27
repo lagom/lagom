@@ -6,10 +6,10 @@ package com.lightbend.lagom.internal.api.tools
 import java.io.File
 import java.lang.reflect.Type
 import java.util
-import com.fasterxml.jackson.databind.ObjectMapper
+
 import com.google.inject.spi._
 import com.google.inject._
-import com.lightbend.lagom.internal.api._
+import com.lightbend.lagom.internal.javadsl.api._
 import com.lightbend.lagom.javadsl.api.{ Descriptor, Service }
 import com.lightbend.lagom.javadsl.api.deser._
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol
@@ -17,6 +17,7 @@ import org.apache.commons.lang3.ClassUtils
 import play.api._
 import play.api.inject.guice.{ BinderOption, GuiceableModule }
 import play.api.libs.json.Json
+
 import scala.collection.mutable
 import scala.collection.JavaConverters._
 

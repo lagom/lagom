@@ -192,6 +192,8 @@ object RequestHeader {
   ): RequestHeader = RequestHeaderImpl(method, uri, protocol, acceptedResponseProtocols, principal,
     headers.groupBy(_._1.toLowerCase(Locale.ENGLISH)))
 
+  val Default = RequestHeader(Method.GET, URI.create("/"), MessageProtocol.empty, Nil, None, Nil)
+
   private[lagom] def apply(
     method:                    Method,
     uri:                       URI,
@@ -272,7 +274,7 @@ object ResponseHeader {
     headerMap: Map[String, immutable.Seq[(String, String)]]
   ): ResponseHeader = ResponseHeaderImpl(status, protocol, headerMap)
 
-  val OK: ResponseHeader = ResponseHeaderImpl(200, MessageProtocol(), Map.empty)
+  val OK: ResponseHeader = ResponseHeaderImpl(200, MessageProtocol.empty, Map.empty)
 
   private case class ResponseHeaderImpl(
     status:    Int,

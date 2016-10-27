@@ -32,6 +32,10 @@ object LagomImport {
   val lagomJavadslTestKit = component("lagom-javadsl-testkit") % Test
   val lagomLogback = component(lagomLogbackModuleName)
 
+  val lagomScaladslApi = component("lagom-scaladsl-api")
+  val lagomScaladslClient = component("lagom-scaladsl-client")
+  val lagomScaladslServer = component("lagom-scaladsl-server")
+
   val lagomJUnitDeps = Seq(
     "junit" % "junit" % "4.12" % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test

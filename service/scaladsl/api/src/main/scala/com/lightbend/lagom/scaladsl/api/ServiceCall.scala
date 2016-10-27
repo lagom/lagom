@@ -7,7 +7,7 @@ import akka.NotUsed
 import com.lightbend.lagom.scaladsl.api.transport.{ RequestHeader, ResponseHeader }
 import play.api.libs.iteratee.Execution
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 
 /**
  * A service call for an entity.
@@ -33,7 +33,7 @@ trait ServiceCall[Request, Response] {
    *
    * @return A future of the response entity.
    */
-  def invoke(implicit evidence: Request =:= NotUsed): Future[Response] =
+  def invoke()(implicit evidence: Request =:= NotUsed): Future[Response] =
     this.asInstanceOf[ServiceCall[NotUsed, Response]].invoke(NotUsed)
 
   /**
@@ -91,7 +91,7 @@ trait ServiceCall[Request, Response] {
    *
    * @return The a service call that returns the response header and the response message.
    */
-  def withResponseHeader(implicit ec: ExecutionContext): ServiceCall[Request, (ResponseHeader, Response)] =
+  def withResponseHeader: ServiceCall[Request, (ResponseHeader, Response)] =
     handleResponseHeader((_, _))
 }
 

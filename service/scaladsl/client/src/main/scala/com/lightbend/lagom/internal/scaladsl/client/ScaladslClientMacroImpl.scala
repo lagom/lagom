@@ -9,12 +9,13 @@ import scala.reflect.macros.blackbox.Context
 
 private[lagom] object ScaladslClientMacroImpl {
 
-  def implementClient[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[T] = {
-
+  /**
+   * Do validation and extract the service call methods.
+   *
+   * todo also extract topic methods
+   */
+  def validateServiceInterface[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): Seq[c.universe.MethodSymbol] = {
     import c.universe._
-
-    val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
-    val client = q"$scaladsl.client"
 
     val serviceCallType = c.mirror.typeOf[ServiceCall[_, _]].erasure
 
@@ -44,6 +45,18 @@ private[lagom] object ScaladslClientMacroImpl {
       c.abort(c.enclosingPosition, s"Can't generate a Lagom client for ${serviceType.tpe} since the following abstract methods don't return service calls or topics:${nonServiceCallOrTopicMethods.map(_.name).mkString("\n", "\n", "")}")
     }
 
+    serviceCallMethods.toSeq
+  }
+
+  def implementClient[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[T] = {
+
+    import c.universe._
+
+    val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
+    val client = q"$scaladsl.client"
+
+    val serviceCallMethods = validateServiceInterface[T](c)
+
     // Extract the target that "implement" was invoked on, so we can invoke "doImplement" on it instead
     val serviceClient = c.macroApplication match {
       case TypeApply(Select(clientTarget, TermName("implement")), _) => clientTarget
@@ -53,7 +66,7 @@ private[lagom] object ScaladslClientMacroImpl {
     val implementationContext = TermName(c.freshName("implementationContext"))
     val serviceContext = TermName(c.freshName("serviceContext"))
 
-    val serviceMethodImpls = serviceMethods.map { serviceMethod =>
+    val serviceMethodImpls = serviceCallMethods.map { serviceMethod =>
       val methodParams = serviceMethod.paramLists.map { paramList =>
         paramList.map(param => q"${param.name.toTermName}: ${param.typeSignature}")
       }

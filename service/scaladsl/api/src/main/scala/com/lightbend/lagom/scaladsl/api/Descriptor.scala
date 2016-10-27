@@ -6,7 +6,7 @@ package com.lightbend.lagom.scaladsl.api
 import akka.NotUsed
 import akka.util.ByteString
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer, MessageSerializer }
-import com.lightbend.lagom.scaladsl.api.transport.{ HeaderFilter, Method }
+import com.lightbend.lagom.scaladsl.api.transport.{ HeaderFilter, Method, UserAgentHeaderFilter }
 
 import scala.collection.immutable
 import scala.reflect.ClassTag
@@ -140,6 +140,16 @@ object Descriptor {
      * Return a copy of this call with the given service call holder configured.
      */
     def withServiceCallHolder(serviceCallHolder: ServiceCallHolder): Call[Request, Response]
+
+    /**
+     * Return a copy of this call with the given request serializer configured.
+     */
+    def withRequestSerializer(requestSerializer: MessageSerializer[Request, _]): Call[Request, Response]
+
+    /**
+     * Return a copy of this call with the given request serializer configured.
+     */
+    def withResponseSerializer(responseSerializer: MessageSerializer[Response, _]): Call[Request, Response]
 
     /**
      * Return a copy of this call with the given circuit breaker configured.
@@ -316,10 +326,10 @@ object Descriptor {
     name:                String,
     calls:               immutable.Seq[Call[_, _]]   = Nil,
     topics:              immutable.Seq[TopicCall[_]] = Nil,
-    exceptionSerializer: ExceptionSerializer         = DefaultExceptionSerializer,
+    exceptionSerializer: ExceptionSerializer         = DefaultExceptionSerializer.Unresolved,
     autoAcl:             Boolean                     = false,
     acls:                immutable.Seq[ServiceAcl]   = Nil,
-    headerFilter:        HeaderFilter                = HeaderFilter.NoHeaderFilter,
+    headerFilter:        HeaderFilter                = UserAgentHeaderFilter,
     locatableService:    Boolean                     = true,
     circuitBreaker:      CircuitBreaker              = CircuitBreaker.PerNode
   ) extends Descriptor {
@@ -342,6 +352,8 @@ object Descriptor {
     autoAcl:            Option[Boolean]                = None
   ) extends Call[Request, Response] {
     override def withServiceCallHolder(serviceCallHolder: ServiceCallHolder): Call[Request, Response] = copy(serviceCallHolder = serviceCallHolder)
+    override def withRequestSerializer(requestSerializer: MessageSerializer[Request, _]): Call[Request, Response] = copy(requestSerializer = requestSerializer)
+    override def withResponseSerializer(responseSerializer: MessageSerializer[Response, _]): Call[Request, Response] = copy(responseSerializer = responseSerializer)
     override def withCircuitBreaker(circuitBreaker: CircuitBreaker): Call[Request, Response] = copy(circuitBreaker = Some(circuitBreaker))
     override def withAutoAcl(autoAcl: Boolean): Call[Request, Response] = copy(autoAcl = Some(autoAcl))
   }

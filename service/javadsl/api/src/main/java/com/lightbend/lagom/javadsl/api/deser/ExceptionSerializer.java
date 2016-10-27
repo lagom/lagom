@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.javadsl.api.deser;
 
-import com.lightbend.lagom.internal.api.JacksonPlaceholderExceptionSerializer$;
+import com.lightbend.lagom.internal.javadsl.api.JacksonPlaceholderExceptionSerializer$;
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol;
 
 import java.util.Collection;
