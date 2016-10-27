@@ -23,7 +23,7 @@ import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorSessionP
  */
 // Injecting ActorSystem and not Configuration because Configuration isn't always bound when running tests
 @Singleton
-class CassandraConfigProvider @Inject() (system: ActorSystem) extends Provider[CassandraConfig] {
+final class CassandraConfigProvider @Inject() (system: ActorSystem) extends Provider[CassandraConfig] {
   private val config = system.settings.config
 
   override lazy val get: CassandraConfig = CassandraConfigProvider.CassandraConfigImpl(cassandraUrisFromConfig)
@@ -46,5 +46,5 @@ class CassandraConfigProvider @Inject() (system: ActorSystem) extends Provider[C
  * Internal API
  */
 private object CassandraConfigProvider {
-  case class CassandraConfigImpl(uris: PSet[CassandraContactPoint]) extends CassandraConfig
+  final case class CassandraConfigImpl(uris: PSet[CassandraContactPoint]) extends CassandraConfig
 }

@@ -24,7 +24,7 @@ import org.pcollections.{ PSequence, TreePVector }
  * Internal API
  */
 @Singleton
-private[lagom] class CassandraReadSideImpl @Inject() (
+private[lagom] final class CassandraReadSideImpl @Inject() (
   system: ActorSystem, session: CassandraSession, offsetStore: CassandraOffsetStore, readSide: ReadSideImpl, injector: Injector
 ) extends CassandraReadSide {
 

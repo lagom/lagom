@@ -21,7 +21,7 @@ import com.lightbend.lagom.javadsl.persistence._
  * Internal API
  */
 @Singleton
-private[lagom] class CassandraPersistentEntityRegistry @Inject() (system: ActorSystem, injector: Injector)
+private[lagom] final class CassandraPersistentEntityRegistry @Inject() (system: ActorSystem, injector: Injector)
   extends AbstractPersistentEntityRegistry(system, injector) {
 
   override protected val journalId = CassandraReadJournal.Identifier

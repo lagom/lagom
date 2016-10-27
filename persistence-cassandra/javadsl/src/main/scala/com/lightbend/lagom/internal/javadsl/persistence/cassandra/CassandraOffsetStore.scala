@@ -22,7 +22,7 @@ import scala.concurrent.{ ExecutionContext, Future }
  * Internal API
  */
 @Singleton
-private[lagom] class CassandraOffsetStore @Inject() (system: ActorSystem, session: CassandraSession, config: ReadSideConfig)(implicit ec: ExecutionContext)
+private[lagom] final class CassandraOffsetStore @Inject() (system: ActorSystem, session: CassandraSession, config: ReadSideConfig)(implicit ec: ExecutionContext)
   extends AbstractCassandraOffsetStore(system, session.delegate, config) with OffsetStore {
 
   override type DslOffset = Offset
@@ -71,7 +71,7 @@ private[lagom] class CassandraOffsetStore @Inject() (system: ActorSystem, sessio
 /**
  * Internal API
  */
-class CassandraOffsetDao(session: CassandraSession, statement: PreparedStatement, eventProcessorId: String, tag: String,
+final class CassandraOffsetDao(session: CassandraSession, statement: PreparedStatement, eventProcessorId: String, tag: String,
                          override val loadedOffset: Offset) extends OffsetDao {
   override def saveOffset(offset: Offset): Future[Done] = {
     session.executeWrite(bindSaveOffset(offset)).toScala

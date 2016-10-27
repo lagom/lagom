@@ -20,7 +20,7 @@ import scala.util.control.NoStackTrace
 /**
  * Internal API
  */
-private[lagom] class ServiceLocatorSessionProvider(system: ActorSystem, config: Config) extends ConfigSessionProvider(system, config) {
+private[lagom] final class ServiceLocatorSessionProvider(system: ActorSystem, config: Config) extends ConfigSessionProvider(system, config) {
 
   private val log = Logger(getClass)
 
@@ -73,4 +73,4 @@ private[lagom] class ServiceLocatorSessionProvider(system: ActorSystem, config: 
 
 }
 
-private[lagom] class NoContactPointsException(msg: String) extends RuntimeException(msg) with NoStackTrace
+private[lagom] final class NoContactPointsException(msg: String) extends RuntimeException(msg) with NoStackTrace

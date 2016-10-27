@@ -11,7 +11,7 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
 /**
  * Guice module for the Persistence API.
  */
-class CassandraPersistenceModule extends AbstractModule {
+final class CassandraPersistenceModule extends AbstractModule {
   override def configure(): Unit = {
     binder.bind(classOf[PersistentEntityRegistry]).to(classOf[CassandraPersistentEntityRegistry])
     binder.bind(classOf[CassandraSession])

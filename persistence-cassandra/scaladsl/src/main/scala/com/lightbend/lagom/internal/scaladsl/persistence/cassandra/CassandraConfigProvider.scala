@@ -36,5 +36,5 @@ final class CassandraConfigProvider @Inject() (system: ActorSystem) extends Prov
 }
 
 private object CassandraConfigProvider {
-  case class CassandraConfigImpl(uris: immutable.Seq[CassandraContactPoint]) extends CassandraConfig
+  final case class CassandraConfigImpl(uris: immutable.Seq[CassandraContactPoint]) extends CassandraConfig
 }

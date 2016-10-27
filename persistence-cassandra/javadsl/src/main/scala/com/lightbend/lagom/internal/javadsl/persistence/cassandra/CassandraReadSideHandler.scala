@@ -69,7 +69,7 @@ private[cassandra] object CassandraAutoReadSideHandler {
 /**
  * Internal API
  */
-private[cassandra] class CassandraAutoReadSideHandler[Event <: AggregateEvent[Event]](
+private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEvent[Event]](
   session:               CassandraSession,
   offsetStore:           CassandraOffsetStore,
   handlers:              Map[Class[_ <: Event], CassandraAutoReadSideHandler.Handler[Event]],
@@ -115,7 +115,7 @@ private[cassandra] class CassandraAutoReadSideHandler[Event <: AggregateEvent[Ev
 /**
  * Internal API
  */
-private[cassandra] class LegacyCassandraReadSideHandler[Event <: AggregateEvent[Event]](
+private[cassandra] final class LegacyCassandraReadSideHandler[Event <: AggregateEvent[Event]](
   session:            CassandraSession,
   cassandraProcessor: CassandraReadSideProcessor[Event],
   dispatcher:         String
