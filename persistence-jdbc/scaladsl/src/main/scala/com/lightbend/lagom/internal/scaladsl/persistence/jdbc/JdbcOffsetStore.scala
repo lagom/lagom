@@ -7,8 +7,9 @@ import java.util.UUID
 
 import akka.Done
 import akka.actor.ActorSystem
+import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.jdbc.{ AbstractSlickOffsetStoreConfiguration, SlickOffsetStore, SlickProvider }
-import com.lightbend.lagom.internal.scaladsl.persistence.{ OffsetDao, OffsetStore, ReadSideConfig }
+import com.lightbend.lagom.internal.scaladsl.persistence.{ OffsetDao, OffsetStore }
 import com.lightbend.lagom.scaladsl.persistence.{ NoOffset, Offset, Sequence, TimeBasedUUID }
 import play.api.Configuration
 

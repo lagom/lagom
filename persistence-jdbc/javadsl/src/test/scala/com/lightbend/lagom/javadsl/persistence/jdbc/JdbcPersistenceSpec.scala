@@ -5,13 +5,12 @@ package com.lightbend.lagom.javadsl.persistence.jdbc
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import com.lightbend.lagom.internal.javadsl.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc.{ JdbcOffsetStore, JdbcReadSideImpl, JdbcSessionImpl, OffsetTableConfiguration }
 import com.lightbend.lagom.javadsl.persistence.jdbc.testkit.TestUtil
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
 import com.typesafe.config.{ Config, ConfigFactory }
-import play.api.{ Configuration, Environment }
 import play.api.db.{ Database, Databases }
+import play.api.{ Configuration, Environment }
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
