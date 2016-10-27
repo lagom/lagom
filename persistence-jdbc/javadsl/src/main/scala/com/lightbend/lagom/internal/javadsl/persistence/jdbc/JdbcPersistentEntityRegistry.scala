@@ -11,7 +11,6 @@ import akka.persistence.query.PersistenceQuery
 import akka.persistence.query.scaladsl.EventsByTagQuery
 import com.google.inject.Injector
 import com.lightbend.lagom.internal.javadsl.persistence.AbstractPersistentEntityRegistry
-import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity
 
 /**

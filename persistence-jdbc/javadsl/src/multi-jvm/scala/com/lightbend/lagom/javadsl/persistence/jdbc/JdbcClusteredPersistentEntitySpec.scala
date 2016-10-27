@@ -2,7 +2,7 @@ package com.lightbend.lagom.javadsl.persistence.jdbc
 
 import java.util.concurrent.CompletionStage
 
-import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
+import com.lightbend.lagom.internal.javadsl.persistence.jdbc.SlickProvider
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.javadsl.persistence.jdbc.testkit.TestUtil

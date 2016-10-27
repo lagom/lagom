@@ -14,7 +14,7 @@ import scala.concurrent.Promise
 import scala.concurrent.duration._
 import scala.util.Try
 import scala.util.control.NonFatal
-import com.lightbend.lagom.internal.cluster.JoinClusterModule
+import com.lightbend.lagom.internal.javadsl.cluster.JoinClusterModule
 import com.lightbend.lagom.internal.testkit.{ TestServiceLocator, TestServiceLocatorPort, TestTopicFactory }
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceLocator

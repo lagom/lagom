@@ -3,13 +3,10 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence.jdbc
 
-import javax.inject.{ Inject, Singleton }
-
 import akka.actor.ActorSystem
 import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
 import akka.persistence.query.PersistenceQuery
 import akka.persistence.query.scaladsl.EventsByTagQuery
-import com.google.inject.Injector
 import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
 import com.lightbend.lagom.internal.scaladsl.persistence.AbstractPersistentEntityRegistry
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
@@ -17,15 +14,14 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 /**
  * INTERNAL API
  */
-@Singleton
-private[lagom] final class JdbcPersistentEntityRegistry @Inject() (system: ActorSystem, injector: Injector, slickProvider: SlickProvider)
-  extends AbstractPersistentEntityRegistry(system, injector) {
+private[lagom] final class JdbcPersistentEntityRegistry(system: ActorSystem, slickProvider: SlickProvider)
+  extends AbstractPersistentEntityRegistry(system) {
 
   private lazy val ensureTablesCreated = slickProvider.ensureTablesCreated()
 
-  override def register[C, E, S](entityClass: Class[_ <: PersistentEntity[C, E, S]]): Unit = {
+  override def register(entityFactory: => PersistentEntity[_, _, _]): Unit = {
     ensureTablesCreated
-    super.register(entityClass)
+    super.register(entityFactory)
   }
 
   override protected val journalId: String = JdbcReadJournal.Identifier

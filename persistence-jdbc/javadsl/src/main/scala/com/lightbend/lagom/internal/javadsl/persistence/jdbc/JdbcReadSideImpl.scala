@@ -10,7 +10,6 @@ import javax.inject.{ Inject, Singleton }
 import akka.Done
 import akka.japi.Pair
 import akka.stream.javadsl.Flow
-import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcReadSide
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcReadSide._

@@ -5,14 +5,12 @@ package com.lightbend.lagom.internal.scaladsl.persistence
 
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
-import javax.inject.{ Inject, Provider, Singleton }
 
 import akka.actor.{ ActorSystem, SupervisorStrategy }
 import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.pattern.BackoffSupervisor
 import akka.stream.Materializer
-import com.google.inject.Injector
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings, ClusterStartupTask }
 import com.lightbend.lagom.scaladsl.persistence._
 import play.api.Configuration
@@ -20,19 +18,13 @@ import play.api.Configuration
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
+import com.typesafe.config.Config
 
-case class ReadSideConfig(
-  minBackoff:           FiniteDuration = 3.seconds,
-  maxBackoff:           FiniteDuration = 30.seconds,
-  randomBackoffFactor:  Double         = 0.2,
-  globalPrepareTimeout: FiniteDuration = 20.seconds,
-  role:                 Option[String] = None
-)
+object ReadSideConfig {
+  def apply(configuration: Configuration): ReadSideConfig =
+    apply(configuration.underlying.getConfig("lagom.persistence.read-side"))
 
-@Singleton
-class ReadSideConfigProvider @Inject() (configuration: Configuration) extends Provider[ReadSideConfig] {
-  lazy val get = {
-    val conf = configuration.underlying.getConfig("lagom.persistence.read-side")
+  def apply(conf: Config): ReadSideConfig = {
     ReadSideConfig(
       conf.getDuration("failure-exponential-backoff.min", TimeUnit.MILLISECONDS).millis,
       conf.getDuration("failure-exponential-backoff.max", TimeUnit.MILLISECONDS).millis,
@@ -44,44 +36,39 @@ class ReadSideConfigProvider @Inject() (configuration: Configuration) extends Pr
       }
     )
   }
+
 }
 
-@Singleton
-private[lagom] class ReadSideImpl @Inject() (
-  system: ActorSystem, config: ReadSideConfig, injector: Injector, registry: PersistentEntityRegistry
+final case class ReadSideConfig(
+  minBackoff:           FiniteDuration = 3.seconds,
+  maxBackoff:           FiniteDuration = 30.seconds,
+  randomBackoffFactor:  Double         = 0.2,
+  globalPrepareTimeout: FiniteDuration = 20.seconds,
+  role:                 Option[String] = None
+)
+
+private[lagom] class ReadSideImpl(
+  system: ActorSystem, config: ReadSideConfig, registry: PersistentEntityRegistry
 )(implicit ec: ExecutionContext, mat: Materializer) extends ReadSide {
 
-  override def register[Event <: AggregateEvent[Event]](
-    processorClass: Class[_ <: ReadSideProcessor[Event]]
-  ): Unit = {
-
-    val processorFactory: () => ReadSideProcessor[Event] =
-      () => injector.getInstance(processorClass)
-
-    registerFactory(processorFactory, processorClass)
-  }
+  override def register[Event <: AggregateEvent[Event]](processorFactory: => ReadSideProcessor[Event]): Unit =
+    registerFactory(() => processorFactory)
 
   private[lagom] def registerFactory[Event <: AggregateEvent[Event]](
-    processorFactory: () => ReadSideProcessor[Event], clazz: Class[_]
+    processorFactory: () => ReadSideProcessor[Event]
   ) = {
 
     // Only run if we're configured to run on this role
     if (config.role.forall(Cluster(system).selfRoles.contains)) {
-      // try to create one instance to fail fast (e.g. wrong constructor)
-      val dummyProcessor = try {
-        processorFactory()
-      } catch {
-        case NonFatal(e) => throw new IllegalArgumentException("Cannot create instance of " +
-          s"[${clazz.getName}]", e)
-      }
-
-      val readSideName = dummyProcessor.readSideName
+      // try to create one instance to fail fast
+      val proto = processorFactory()
+      val readSideName = proto.readSideName
       val encodedReadSideName = URLEncoder.encode(readSideName, "utf-8")
-      val tags = dummyProcessor.aggregateTags
+      val tags = proto.aggregateTags
       val entityIds = tags.map(_.tag)
       val eventClass = tags.headOption match {
         case Some(tag) => tag.eventType
-        case None      => throw new IllegalArgumentException(s"ReadSideProcessor ${clazz.getName} returned 0 tags")
+        case None      => throw new IllegalArgumentException(s"ReadSideProcessor ${proto.getClass.getName} returned 0 tags")
       }
 
       val globalPrepareTask = ClusterStartupTask(

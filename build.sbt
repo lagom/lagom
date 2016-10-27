@@ -220,7 +220,9 @@ val coreProjects = Seq[ProjectReference](
   jackson,
   `play-json`,
   core,
-  cluster,
+  `cluster-core`,
+  `cluster-javadsl`,
+  `cluster-scaladsl`,
   pubsub,
   `kafka-client`,
   `kafka-broker`,
@@ -447,15 +449,27 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   }
 }
 
-lazy val cluster = (project in file("cluster"))
+lazy val `cluster-core` = (project in file("cluster/core"))
+  .settings(name := "lagom-cluster-core")
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-cluster" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
+      scalaTest % Test,
+      "com.novocode" % "junit-interface" % "0.11" % "test"
+    )
+  )
+
+lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
   .settings(name := "lagom-javadsl-cluster")
-  .dependsOn(`api-javadsl`, jackson)
+  .dependsOn(`cluster-core`, jackson)
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-cluster" % AkkaVersion,
       "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion % "test",
       scalaJava8Compat,
@@ -465,9 +479,24 @@ lazy val cluster = (project in file("cluster"))
     )
   ) configs (MultiJvm)
 
+lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
+  .settings(name := "lagom-scaladsl-cluster")
+  .dependsOn(`cluster-core`, `play-json`)
+  .settings(runtimeLibCommon: _*)
+  .settings(multiJvmTestSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
+      "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion % "test",
+      scalaTest % Test,
+      "com.novocode" % "junit-interface" % "0.11" % "test"
+    )
+  ) configs (MultiJvm)
+
 lazy val pubsub = (project in file("pubsub"))
   .settings(name := "lagom-javadsl-pubsub")
-  .dependsOn(cluster)
+  .dependsOn(`cluster-javadsl`)
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -486,13 +515,12 @@ lazy val pubsub = (project in file("pubsub"))
 
 lazy val `persistence-core` = (project in file("persistence/core"))
   .settings(name := "lagom-persistence-core")
-  .dependsOn(cluster)
+  .dependsOn(`cluster-core`, `api-javadsl`) // FIXME replace api-javadsl dependency, ServiceLocatorHolder
   .settings(runtimeLibCommon: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "com.google.inject" % "guice" % "4.0",
       scalaJava8Compat,
       "com.typesafe.akka" %% "akka-persistence" % AkkaVersion,
       "com.typesafe.akka" %% "akka-persistence-query-experimental" % AkkaVersion,
@@ -507,14 +535,14 @@ lazy val `persistence-core` = (project in file("persistence/core"))
 
 lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
   .settings(name := "lagom-javadsl-persistence")
-  .dependsOn(`persistence-core` % "compile;test->test")
+  .dependsOn(`persistence-core` % "compile;test->test", jackson, `cluster-javadsl`)
   .settings(runtimeLibCommon: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
 
 lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
   .settings(name := "lagom-scaladsl-persistence")
-  .dependsOn(`persistence-core` % "compile;test->test", `play-json` % "test")
+  .dependsOn(`persistence-core` % "compile;test->test", `play-json`, `cluster-scaladsl`)
   .settings(runtimeLibCommon: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
