@@ -10,15 +10,13 @@ import javax.inject.{ Inject, Singleton }
 import akka.actor.ActorSystem
 import akka.persistence.cassandra.session.CassandraSessionSettings
 import akka.persistence.cassandra.session.scaladsl.{ CassandraSession => AkkaScalaCassandraSession }
+import akka.persistence.cassandra.session.javadsl.{ CassandraSession => AkkaJavaCassandraSession }
 import akka.stream.javadsl
 import akka.{ Done, NotUsed }
 import com.datastax.driver.core._
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSessionProvider
 
 import scala.annotation.varargs
-import scala.collection.JavaConverters._
-import scala.compat.java8.FutureConverters._
-import scala.compat.java8.OptionConverters._
 import scala.concurrent.ExecutionContext
 
 /**
@@ -51,7 +49,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
   /**
    * Internal API
    */
-  private[lagom] val delegate: AkkaScalaCassandraSession = CassandraReadSideSessionProvider(system, settings, executionContext)
+  private[lagom] val scalaDelegate: AkkaScalaCassandraSession = CassandraReadSideSessionProvider(system, settings, executionContext)
+  private val delegate = new AkkaJavaCassandraSession(scalaDelegate)
 
   /**
    * The `Session` of the underlying
@@ -60,7 +59,7 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * API exposed by this class. Be careful to not use blocking calls.
    */
   def underlying(): CompletionStage[Session] =
-    delegate.underlying().toJava
+    delegate.underlying()
 
   /**
    * See <a href="http://docs.datastax.com/en/cql/3.3/cql/cql_using/useCreateTableTOC.html">Creating a table</a>.
@@ -69,14 +68,14 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * or if the statement fails.
    */
   def executeCreateTable(stmt: String): CompletionStage[Done] =
-    delegate.executeCreateTable(stmt).toJava
+    delegate.executeCreateTable(stmt)
 
   /**
    * Create a `PreparedStatement` that can be bound and used in
    * `executeWrite` or `select` multiple times.
    */
   def prepare(stmt: String): CompletionStage[PreparedStatement] =
-    delegate.prepare(stmt).toJava
+    delegate.prepare(stmt)
 
   /**
    * Execute several statements in a batch. First you must [[#prepare]] the
@@ -91,7 +90,7 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * successfully executed, or if it fails.
    */
   def executeWriteBatch(batch: BatchStatement): CompletionStage[Done] =
-    delegate.executeWriteBatch(batch).toJava
+    delegate.executeWriteBatch(batch)
 
   /**
    * Execute one statement. First you must [[#prepare]] the
@@ -106,7 +105,7 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * successfully executed, or if it fails.
    */
   def executeWrite(stmt: Statement): CompletionStage[Done] =
-    delegate.executeWrite(stmt).toJava
+    delegate.executeWrite(stmt)
 
   /**
    * Prepare, bind and execute one statement in one go.
@@ -120,7 +119,7 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    */
   @varargs
   def executeWrite(stmt: String, bindValues: AnyRef*): CompletionStage[Done] =
-    delegate.executeWrite(stmt, bindValues: _*).toJava
+    delegate.executeWrite(stmt, bindValues: _*)
 
   /**
    * Execute a select statement. First you must [[#prepare]] the
@@ -137,7 +136,7 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * this `Source` and then `run` the stream.
    */
   def select(stmt: Statement): javadsl.Source[Row, NotUsed] =
-    delegate.select(stmt).asJava
+    delegate.select(stmt)
 
   /**
    * Prepare, bind and execute a select statement in one go.
@@ -167,7 +166,7 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * The returned `CompletionStage` is completed with the found rows.
    */
   def selectAll(stmt: Statement): CompletionStage[JList[Row]] =
-    delegate.selectAll(stmt).map(_.asJava).toJava
+    delegate.selectAll(stmt)
 
   /**
    * Prepare, bind and execute a select statement in one go. Only use this method
@@ -180,7 +179,7 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    */
   @varargs
   def selectAll(stmt: String, bindValues: AnyRef*): CompletionStage[JList[Row]] =
-    delegate.selectAll(stmt, bindValues: _*).map(_.asJava).toJava
+    delegate.selectAll(stmt, bindValues: _*)
 
   /**
    * Execute a select statement that returns one row. First you must [[#prepare]] the
@@ -193,7 +192,7 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    * if any.
    */
   def selectOne(stmt: Statement): CompletionStage[Optional[Row]] =
-    delegate.selectOne(stmt).map(_.asJava).toJava
+    delegate.selectOne(stmt)
 
   /**
    * Prepare, bind and execute a select statement that returns one row.
@@ -205,7 +204,7 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    */
   @varargs
   def selectOne(stmt: String, bindValues: AnyRef*): CompletionStage[Optional[Row]] =
-    delegate.selectOne(stmt, bindValues: _*).map(_.asJava).toJava
+    delegate.selectOne(stmt, bindValues: _*)
 
 }
 
