@@ -4,7 +4,6 @@
 package com.lightbend.lagom.internal.persistence.jdbc
 
 import java.util.concurrent.TimeUnit
-import javax.inject.{ Inject, Singleton }
 
 import akka.Done
 import akka.actor.ActorSystem
@@ -24,11 +23,9 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.util.{ Failure, Success }
 
-@Singleton
-class SlickProvider @Inject() (
+class SlickProvider(
   system: ActorSystem,
-  dbApi:  DBApi /* Ensures database is initialised before we start anything that needs it */
-)(implicit ec: ExecutionContext) {
+  dbApi:  DBApi /* Ensures database is initialised before we start anything that needs it */ )(implicit ec: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 

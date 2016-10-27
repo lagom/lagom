@@ -4,7 +4,6 @@
 package com.lightbend.lagom.internal.scaladsl.persistence.jdbc
 
 import java.sql.Connection
-import javax.inject.{ Inject, Singleton }
 
 import akka.stream.scaladsl.Flow
 import akka.{ Done, NotUsed }
@@ -20,8 +19,7 @@ import scala.reflect.ClassTag
 /**
  * INTERNAL API
  */
-@Singleton
-private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetStore: JdbcOffsetStore)(implicit val ec: ExecutionContext) extends JdbcReadSide {
+private[lagom] class JdbcReadSideImpl(slick: SlickProvider, offsetStore: JdbcOffsetStore)(implicit val ec: ExecutionContext) extends JdbcReadSide {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 

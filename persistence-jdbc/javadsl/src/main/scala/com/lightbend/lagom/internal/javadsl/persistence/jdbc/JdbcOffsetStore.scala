@@ -9,7 +9,7 @@ import javax.inject.{ Inject, Singleton }
 import akka.Done
 import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.javadsl.persistence.{ OffsetDao, OffsetStore, ReadSideConfig }
-import com.lightbend.lagom.internal.persistence.jdbc.{ AbstractSlickOffsetStoreConfiguration, SlickOffsetStore, SlickProvider }
+import com.lightbend.lagom.internal.persistence.jdbc.{ AbstractSlickOffsetStoreConfiguration, SlickOffsetStore }
 import com.lightbend.lagom.javadsl.persistence.Offset
 import play.api.Configuration
 

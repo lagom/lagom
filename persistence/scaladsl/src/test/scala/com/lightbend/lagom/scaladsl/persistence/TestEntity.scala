@@ -10,7 +10,6 @@ import akka.cluster.Cluster
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.persistence.testkit.SimulatedNullpointerException
 import com.lightbend.lagom.scaladsl.playjson.{ Jsonable, SerializerRegistry, Serializers }
-import javax.inject.Inject
 
 import play.api.libs.json.Json
 
@@ -132,7 +131,7 @@ class TestEntitySerializerRegistry extends SerializerRegistry {
 
 }
 
-class TestEntity @Inject() (system: ActorSystem)
+class TestEntity(system: ActorSystem)
   extends PersistentEntity[TestEntity.Cmd, TestEntity.Evt, TestEntity.State] {
   import TestEntity._
 
