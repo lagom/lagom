@@ -25,10 +25,8 @@ import scala.concurrent.{ ExecutionContext, Future }
  *
  * All methods are non-blocking.
  */
-@Singleton
 final class CassandraSession(system: ActorSystem, settings: CassandraSessionSettings, executionContext: ExecutionContext) {
 
-  @Inject
   def this(system: ActorSystem) =
     this(
       system,

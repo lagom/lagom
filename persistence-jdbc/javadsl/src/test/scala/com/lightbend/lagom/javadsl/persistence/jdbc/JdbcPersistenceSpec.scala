@@ -16,6 +16,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.Random
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc.SlickProvider
+import com.lightbend.lagom.internal.persistence.ReadSideConfig
 
 abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec(_system) {
 

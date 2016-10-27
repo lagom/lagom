@@ -16,11 +16,10 @@ import scala.collection.immutable
  * Internal API
  */
 // Injecting ActorSystem and not Configuration because Configuration isn't always bound when running tests
-@Singleton
-final class CassandraConfigProvider @Inject() (system: ActorSystem) extends Provider[CassandraConfig] {
+final class CassandraConfigProvider(system: ActorSystem) {
   private val config = system.settings.config
 
-  override lazy val get: CassandraConfig = CassandraConfigProvider.CassandraConfigImpl(cassandraUrisFromConfig)
+  def get: CassandraConfig = CassandraConfigProvider.CassandraConfigImpl(cassandraUrisFromConfig)
 
   private def cassandraUrisFromConfig: immutable.Seq[CassandraContactPoint] = {
     List("cassandra-journal", "cassandra-snapshot-store", "lagom.persistence.read-side.cassandra").flatMap { path =>

@@ -41,7 +41,7 @@ class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSp
 
   val readSide = new TestEntityReadSide(system, testSession)
   val cassandraReadSide = new CassandraReadSideImpl(system, testSession, new CassandraOffsetStore(system, testSession,
-    ReadSideConfig())(system.dispatcher), null, null)
+    ReadSideConfig())(system.dispatcher))
 
   override def getAppendCount(id: String) = readSide.getAppendCount(id)
 

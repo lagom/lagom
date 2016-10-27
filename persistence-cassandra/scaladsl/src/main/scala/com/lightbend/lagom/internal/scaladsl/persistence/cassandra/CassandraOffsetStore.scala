@@ -3,8 +3,6 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence.cassandra
 
-import javax.inject.{ Inject, Singleton }
-
 import akka.Done
 import akka.actor.ActorSystem
 import akka.util.Timeout
@@ -20,8 +18,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 /**
  * Internal API
  */
-@Singleton
-private[lagom] final class CassandraOffsetStore @Inject() (system: ActorSystem, session: CassandraSession, config: ReadSideConfig)(implicit ec: ExecutionContext)
+private[lagom] final class CassandraOffsetStore(system: ActorSystem, session: CassandraSession, config: ReadSideConfig)(implicit ec: ExecutionContext)
   extends AbstractCassandraOffsetStore(system, session.delegate, config) with OffsetStore {
 
   override type DslOffset = Offset

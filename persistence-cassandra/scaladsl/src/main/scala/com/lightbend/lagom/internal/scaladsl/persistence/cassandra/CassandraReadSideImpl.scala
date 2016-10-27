@@ -3,13 +3,9 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence.cassandra
 
-import javax.inject.{ Inject, Singleton }
-
 import akka.Done
 import akka.actor.ActorSystem
 import com.datastax.driver.core.BoundStatement
-import com.google.inject.Injector
-import com.lightbend.lagom.internal.scaladsl.persistence.ReadSideImpl
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide.ReadSideHandlerBuilder
 import com.lightbend.lagom.scaladsl.persistence.cassandra.{ CassandraReadSide, CassandraSession }
@@ -22,9 +18,8 @@ import scala.reflect.ClassTag
 /**
  * Internal API
  */
-@Singleton
-private[lagom] final class CassandraReadSideImpl @Inject() (
-  system: ActorSystem, session: CassandraSession, offsetStore: CassandraOffsetStore, readSide: ReadSideImpl, injector: Injector
+private[lagom] final class CassandraReadSideImpl(
+  system: ActorSystem, session: CassandraSession, offsetStore: CassandraOffsetStore
 ) extends CassandraReadSide {
 
   private val dispatcher = system.settings.config.getString("lagom.persistence.read-side.use-dispatcher")

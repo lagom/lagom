@@ -5,9 +5,8 @@ package com.lightbend.lagom.scaladsl.persistence.jdbc
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import com.lightbend.lagom.internal.scaladsl.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.jdbc._
+import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.{ JdbcOffsetStore, JdbcReadSideImpl, JdbcSessionImpl, OffsetTableConfiguration }
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
 import com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil
@@ -18,7 +17,6 @@ import play.api.{ Configuration, Environment }
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.Random
-import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
 
 abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec(_system) {
 

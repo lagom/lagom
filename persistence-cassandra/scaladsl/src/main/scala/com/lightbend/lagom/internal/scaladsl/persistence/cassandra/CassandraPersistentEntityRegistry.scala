@@ -3,24 +3,20 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence.cassandra
 
-import javax.inject.{ Inject, Singleton }
-
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import akka.persistence.query.PersistenceQuery
 import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.stream.scaladsl
-import com.google.inject.Injector
 import com.lightbend.lagom.internal.scaladsl.persistence.{ AbstractPersistentEntityRegistry, PersistentEntityActor }
 import com.lightbend.lagom.scaladsl.persistence._
 
 /**
  * Internal API
  */
-@Singleton
-private[lagom] final class CassandraPersistentEntityRegistry @Inject() (system: ActorSystem, injector: Injector)
-  extends AbstractPersistentEntityRegistry(system, injector) {
+private[lagom] final class CassandraPersistentEntityRegistry(system: ActorSystem)
+  extends AbstractPersistentEntityRegistry(system) {
 
   override protected val journalId = CassandraReadJournal.Identifier
 

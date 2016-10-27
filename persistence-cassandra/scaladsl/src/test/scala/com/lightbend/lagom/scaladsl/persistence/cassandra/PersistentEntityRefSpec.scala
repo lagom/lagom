@@ -9,6 +9,8 @@ import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.pattern.AskTimeoutException
 import akka.persistence.cassandra.testkit.CassandraLauncher
+import akka.stream.{ ActorMaterializer, Materializer }
+import akka.testkit.TestKit
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.{ InvalidCommandException, UnhandledCommandException }
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Mode
 import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
@@ -17,32 +19,24 @@ import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalactic.ConversionCheckedTripleEquals
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.Span
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
-import play.inject.Injector
-import play.inject.guice.GuiceApplicationBuilder
-import play.{ Application, Configuration }
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.concurrent.{ ExecutionContext, Future }
 
 class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures with ConversionCheckedTripleEquals {
 
-  private[cassandra] var injector: Injector = null
-  private[cassandra] var application: Application = null
-
-  override def beforeAll(): Unit = {
-    val config: Config = ConfigFactory.parseString("""
+  val config: Config = ConfigFactory.parseString("""
       akka.actor.provider = akka.cluster.ClusterActorRefProvider
       akka.remote.netty.tcp.port = 0
       akka.remote.netty.tcp.hostname = 127.0.0.1
       akka.loglevel = INFO
       lagom.serialization.play-json.serialization-registry="com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry"
-                                                   """).withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
+  """).withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
+  private val system: ActorSystem = ActorSystem("PersistentEntityRefSpec", config)
 
-    application = new GuiceApplicationBuilder().configure(new Configuration(config)).build
-    injector = application.injector
-    val system: ActorSystem = injector.instanceOf(classOf[ActorSystem])
+  override def beforeAll(): Unit = {
+
     Cluster.get(system).join(Cluster.get(system).selfAddress)
     val cassandraDirectory: File = new File("target/PersistentEntityRefTest")
     CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, true, 0)
@@ -50,8 +44,10 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
   }
 
   override def afterAll() {
-    application.getWrappedApplication.stop
+    // FIXME something else here to stop the app?
+    // application.getWrappedApplication.stop
     CassandraLauncher.stop()
+    TestKit.shutdownActorSystem(system)
   }
 
   class AnotherEntity extends PersistentEntity[Integer, String, String] {
@@ -59,9 +55,16 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
     override def behavior = Actions()
   }
 
+  val components = new CassandraPersistenceComponents {
+    override def actorSystem: ActorSystem = system
+    override def executionContext: ExecutionContext = system.dispatcher
+    override def configuration: play.api.Configuration = play.api.Configuration(config)
+    override def materializer: Materializer = ActorMaterializer()(system)
+  }
+
   private def registry: PersistentEntityRegistry = {
-    val reg: PersistentEntityRegistry = injector.instanceOf(classOf[PersistentEntityRegistry])
-    reg.register(classOf[TestEntity])
+    val reg: PersistentEntityRegistry = components.persistentEntityRegistry
+    reg.register(new TestEntity(system))
     reg
   }
 

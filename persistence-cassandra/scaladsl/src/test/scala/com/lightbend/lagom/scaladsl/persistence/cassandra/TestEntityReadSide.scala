@@ -15,7 +15,7 @@ import scala.collection.immutable
 import scala.concurrent.Future
 
 object TestEntityReadSide {
-  class TestEntityReadSideProcessor @Inject() (system: ActorSystem, readSide: CassandraReadSide, session: CassandraSession) extends ReadSideProcessor[TestEntity.Evt] {
+  class TestEntityReadSideProcessor(system: ActorSystem, readSide: CassandraReadSide, session: CassandraSession) extends ReadSideProcessor[TestEntity.Evt] {
 
     def buildHandler: ReadSideHandler[TestEntity.Evt] = {
       import system.dispatcher
@@ -57,7 +57,7 @@ object TestEntityReadSide {
 
 }
 
-class TestEntityReadSide @Inject() (system: ActorSystem, session: CassandraSession) {
+class TestEntityReadSide(system: ActorSystem, session: CassandraSession) {
 
   import system.dispatcher
 
