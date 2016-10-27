@@ -16,7 +16,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 /**
  * Internal API
  */
-object CassandraReadSideSessionProvider {
+private[lagom] object CassandraReadSideSessionProvider {
 
   def apply(system: ActorSystem, settings: CassandraSessionSettings, executionContext: ExecutionContext): AkkaScaladslCassandraSession = {
 

@@ -12,7 +12,7 @@ import com.lightbend.lagom.scaladsl.persistence._
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import org.slf4j.LoggerFactory
 
-import scala.collection.immutable.Seq
+import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
@@ -26,7 +26,7 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  protected def invoke(handler: Handler, event: EventStreamElement[Event]): Future[Seq[BoundStatement]]
+  protected def invoke(handler: Handler, event: EventStreamElement[Event]): Future[immutable.Seq[BoundStatement]]
 
   override def handle(): Flow[EventStreamElement[Event], Done, NotUsed] = {
 
@@ -62,7 +62,7 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
  * Internal API
  */
 private[cassandra] object CassandraAutoReadSideHandler {
-  type Handler[Event] = (EventStreamElement[_ <: Event]) => Future[Seq[BoundStatement]]
+  type Handler[Event] = (EventStreamElement[_ <: Event]) => Future[immutable.Seq[BoundStatement]]
 }
 
 /**
@@ -86,9 +86,9 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
   @volatile
   private var offsetDao: CassandraOffsetDao = _
 
-  override protected def invoke(handler: Handler[Event], element: EventStreamElement[Event]): Future[Seq[BoundStatement]] = {
+  override protected def invoke(handler: Handler[Event], element: EventStreamElement[Event]): Future[immutable.Seq[BoundStatement]] = {
     for {
-      statements <- (handler.asInstanceOf[EventStreamElement[Event] => Future[Seq[BoundStatement]]].apply(element))
+      statements <- (handler.asInstanceOf[EventStreamElement[Event] => Future[immutable.Seq[BoundStatement]]].apply(element))
     } yield statements :+ offsetDao.bindSaveOffset(element.offset)
   }
 

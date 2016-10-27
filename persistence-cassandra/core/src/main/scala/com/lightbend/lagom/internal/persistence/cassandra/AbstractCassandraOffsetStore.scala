@@ -15,7 +15,7 @@ import scala.concurrent.Future
 /**
  * Internal API
  */
-abstract class AbstractCassandraOffsetStore(
+private[lagom] abstract class AbstractCassandraOffsetStore(
   system:  ActorSystem,
   session: akka.persistence.cassandra.session.scaladsl.CassandraSession,
   config:  ReadSideConfig

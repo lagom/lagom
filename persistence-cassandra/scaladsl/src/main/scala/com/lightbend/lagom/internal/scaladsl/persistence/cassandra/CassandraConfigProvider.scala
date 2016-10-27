@@ -10,7 +10,7 @@ import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorSessionProvider
 import com.lightbend.lagom.scaladsl.persistence.cassandra.{ CassandraConfig, CassandraContactPoint }
 
-import scala.collection.immutable.Seq
+import scala.collection.immutable
 
 /**
  * Internal API
@@ -22,8 +22,8 @@ final class CassandraConfigProvider @Inject() (system: ActorSystem) extends Prov
 
   override lazy val get: CassandraConfig = CassandraConfigProvider.CassandraConfigImpl(cassandraUrisFromConfig)
 
-  private def cassandraUrisFromConfig: Seq[CassandraContactPoint] = {
-    Seq("cassandra-journal", "cassandra-snapshot-store", "lagom.persistence.read-side.cassandra").flatMap { path =>
+  private def cassandraUrisFromConfig: immutable.Seq[CassandraContactPoint] = {
+    List("cassandra-journal", "cassandra-snapshot-store", "lagom.persistence.read-side.cassandra").flatMap { path =>
       val c = config.getConfig(path)
       if (c.getString("session-provider") == classOf[ServiceLocatorSessionProvider].getName) {
         val name = c.getString("cluster-id")
@@ -36,5 +36,5 @@ final class CassandraConfigProvider @Inject() (system: ActorSystem) extends Prov
 }
 
 private object CassandraConfigProvider {
-  case class CassandraConfigImpl(uris: Seq[CassandraContactPoint]) extends CassandraConfig
+  case class CassandraConfigImpl(uris: immutable.Seq[CassandraContactPoint]) extends CassandraConfig
 }

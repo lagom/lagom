@@ -15,7 +15,7 @@ import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide.Read
 import com.lightbend.lagom.scaladsl.persistence.cassandra.{ CassandraReadSide, CassandraSession }
 import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, AggregateEventTag, EventStreamElement }
 
-import scala.collection.immutable.Seq
+import scala.collection.immutable
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
@@ -47,7 +47,7 @@ private[lagom] final class CassandraReadSideImpl @Inject() (
         this
       }
 
-      override def setEventHandler[E <: Event: ClassTag](handler: EventStreamElement[E] => Future[Seq[BoundStatement]]): ReadSideHandlerBuilder[Event] = {
+      override def setEventHandler[E <: Event: ClassTag](handler: EventStreamElement[E] => Future[immutable.Seq[BoundStatement]]): ReadSideHandlerBuilder[Event] = {
         val eventClass = implicitly[ClassTag[E]].runtimeClass.asInstanceOf[Class[Event]]
         handlers += (eventClass -> handler.asInstanceOf[Handler[Event]])
         this

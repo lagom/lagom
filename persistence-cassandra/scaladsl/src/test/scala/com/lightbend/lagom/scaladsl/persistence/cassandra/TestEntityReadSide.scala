@@ -11,9 +11,8 @@ import com.datastax.driver.core.{ BoundStatement, PreparedStatement }
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.scaladsl.persistence.{ AggregateEventTag, EventStreamElement, ReadSideProcessor, TestEntity }
 
-import scala.collection.immutable.Seq
+import scala.collection.immutable
 import scala.concurrent.Future
-import scala.compat.java8.FutureConverters._
 
 object TestEntityReadSide {
   class TestEntityReadSideProcessor @Inject() (system: ActorSystem, readSide: CassandraReadSide, session: CassandraSession) extends ReadSideProcessor[TestEntity.Evt] {
@@ -34,14 +33,14 @@ object TestEntityReadSide {
         }
       }
 
-      def updateCount(element: EventStreamElement[TestEntity.Appended]): Future[Seq[BoundStatement]] = {
+      def updateCount(element: EventStreamElement[TestEntity.Appended]): Future[immutable.Seq[BoundStatement]] = {
         return session.selectOne("SELECT count FROM testcounts WHERE id = ?", element.entityId).map { maybeRow =>
           val count =
             maybeRow match {
               case Some(row) => row.getLong("count")
               case None      => 0L
             }
-          Seq(writeStmt.bind(java.lang.Long.valueOf(count + 1L), element.entityId));
+          Vector(writeStmt.bind(java.lang.Long.valueOf(count + 1L), element.entityId));
         }
       }
 
