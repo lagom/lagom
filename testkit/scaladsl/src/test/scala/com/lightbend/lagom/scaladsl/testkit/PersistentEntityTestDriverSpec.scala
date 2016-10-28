@@ -6,7 +6,6 @@ package com.lightbend.lagom.scaladsl.testkit
 import akka.testkit.TestProbe
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.scaladsl.persistence.TestEntity
-import com.lightbend.lagom.scaladsl.playjson.{ SerializerRegistry, Serializers }
 import com.typesafe.config.ConfigFactory
 
 class PersistentEntityTestDriverSpec extends ActorSystemSpec(ConfigFactory.parseString(

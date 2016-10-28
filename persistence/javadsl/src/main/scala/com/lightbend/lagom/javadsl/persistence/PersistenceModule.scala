@@ -11,8 +11,8 @@ import com.google.inject.spi.TypeListener
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule.InitServiceLocatorHolder
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.javadsl.persistence.{ ReadSideConfig, ReadSideConfigProvider, ReadSideImpl }
-import com.lightbend.lagom.internal.persistence.ServiceLocatorHolder
+import com.lightbend.lagom.internal.javadsl.persistence.{ ReadSideConfigProvider, ReadSideImpl }
+import com.lightbend.lagom.internal.persistence.{ ReadSideConfig, ServiceLocatorHolder }
 
 /**
  * Guice module for the Persistence API.

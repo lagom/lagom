@@ -3,16 +3,12 @@
  */
 package com.lightbend.lagom.javadsl.persistence.cassandra
 
-import java.util.Collections
-import java.util.{ List => JList }
-import java.util.Optional
-import java.util.UUID
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionStage
+import java.util.concurrent.{ CompletableFuture, CompletionStage }
 import java.util.function.BiFunction
+import java.util.{ Collections, Optional, UUID, List => JList }
+
 import com.datastax.driver.core.BoundStatement
-import com.lightbend.lagom.javadsl.persistence.AggregateEvent
-import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
+import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag }
 
 /**
  * Consume events produced by [[com.lightbend.lagom.javadsl.persistence.PersistentEntity]]

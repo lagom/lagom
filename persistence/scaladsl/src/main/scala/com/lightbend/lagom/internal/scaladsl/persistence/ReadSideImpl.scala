@@ -4,48 +4,17 @@
 package com.lightbend.lagom.internal.scaladsl.persistence
 
 import java.net.URLEncoder
-import java.util.concurrent.TimeUnit
 
 import akka.actor.{ ActorSystem, SupervisorStrategy }
 import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.pattern.BackoffSupervisor
 import akka.stream.Materializer
+import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings, ClusterStartupTask }
 import com.lightbend.lagom.scaladsl.persistence._
-import play.api.Configuration
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
-import scala.util.control.NonFatal
-import com.typesafe.config.Config
-
-object ReadSideConfig {
-  def apply(configuration: Configuration): ReadSideConfig =
-    apply(configuration.underlying.getConfig("lagom.persistence.read-side"))
-
-  def apply(conf: Config): ReadSideConfig = {
-    ReadSideConfig(
-      conf.getDuration("failure-exponential-backoff.min", TimeUnit.MILLISECONDS).millis,
-      conf.getDuration("failure-exponential-backoff.max", TimeUnit.MILLISECONDS).millis,
-      conf.getDouble("failure-exponential-backoff.random-factor"),
-      conf.getDuration("global-prepare-timeout", TimeUnit.MILLISECONDS).millis,
-      conf.getString("run-on-role") match {
-        case "" => None
-        case r  => Some(r)
-      }
-    )
-  }
-
-}
-
-final case class ReadSideConfig(
-  minBackoff:           FiniteDuration = 3.seconds,
-  maxBackoff:           FiniteDuration = 30.seconds,
-  randomBackoffFactor:  Double         = 0.2,
-  globalPrepareTimeout: FiniteDuration = 20.seconds,
-  role:                 Option[String] = None
-)
 
 private[lagom] class ReadSideImpl(
   system: ActorSystem, config: ReadSideConfig, registry: PersistentEntityRegistry

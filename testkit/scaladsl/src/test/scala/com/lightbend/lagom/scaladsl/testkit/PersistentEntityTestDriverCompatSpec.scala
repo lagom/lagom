@@ -3,22 +3,25 @@
  */
 package com.lightbend.lagom.scaladsl.testkit
 
-import scala.concurrent.duration._
-import com.lightbend.lagom.scaladsl.persistence.TestEntity
 import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.scaladsl.persistence.PersistentEntityActor
-
-// FIXME enable this test when lagom-scaladsl-persistence-cassandra is ready, need CassandraPersistenceSpec
-/*
+import com.lightbend.lagom.scaladsl.persistence.TestEntity
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceSpec
+import com.typesafe.config.ConfigFactory
 
-class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec {
+import scala.concurrent.duration._
+
+class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec("PersistentEntityTestDriverCompatSpec", ConfigFactory.parseString(
+  """
+    lagom.serialization.play-json.serialization-registry="com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry"
+  """
+)) {
 
   "PersistentEntityActor and PersistentEntityTestDriver" must {
     "produce same events and state" in {
       val probe1 = TestProbe()
       val p = system.actorOf(PersistentEntityActor.props("test", Some("1"),
-        () => TestEntity(system, Some(probe1.ref)), None, 10.seconds))
+        () => new TestEntity(system, Some(probe1.ref)), None, 10.seconds))
       val probe2 = TestProbe()
       val driver = new PersistentEntityTestDriver(system, new TestEntity(system, Some(probe2.ref)), "1")
 
@@ -30,7 +33,8 @@ class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec {
         TestEntity.ChangeMode(TestEntity.Mode.Prepend),
         TestEntity.Add("C"),
         TestEntity.Add("D", 2),
-        TestEntity.Get)
+        TestEntity.Get
+      )
 
       val outcome = driver.run(commands: _*)
 
@@ -56,5 +60,3 @@ class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec {
   }
 
 }
-
-*/
