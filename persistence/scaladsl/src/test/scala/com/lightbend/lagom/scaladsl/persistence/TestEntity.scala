@@ -13,7 +13,7 @@ import com.lightbend.lagom.scaladsl.playjson.{ Jsonable, SerializerRegistry, Ser
 
 import play.api.libs.json.Json
 
-import scala.collection.immutable.Seq
+import scala.collection.immutable
 
 /**
  * NOTE to use this the serialization registry needs to be registered in actor system config
@@ -44,7 +44,7 @@ object TestEntity {
     import Serializers.emptySingletonFormat
     import SharedFormats._
 
-    val serializers = Seq(
+    val serializers = Vector(
       Serializers(Json.format[Add]),
       Serializers(Json.format[ChangeMode]),
       Serializers(emptySingletonFormat(Get)),
@@ -81,7 +81,7 @@ object TestEntity {
     import Serializers.emptySingletonFormat
     import SharedFormats._
 
-    val serializers = Seq(
+    val serializers = Vector(
       // events
       Serializers(Json.format[Appended]),
       Serializers(Json.format[Prepended]),
@@ -108,7 +108,7 @@ object TestEntity {
     import play.api.libs.json._
     import Serializers.emptySingletonFormat
     import SharedFormats._
-    val serializers = Seq(
+    val serializers = Vector(
       Serializers(Json.format[State])
     )
   }
@@ -127,7 +127,7 @@ object TestEntity {
 class TestEntitySerializerRegistry extends SerializerRegistry {
   import TestEntity._
 
-  override def serializers: Seq[Serializers[_]] = Cmd.serializers ++ Evt.serializers ++ State.serializers
+  override def serializers: immutable.Seq[Serializers[_]] = Cmd.serializers ++ Evt.serializers ++ State.serializers
 
 }
 

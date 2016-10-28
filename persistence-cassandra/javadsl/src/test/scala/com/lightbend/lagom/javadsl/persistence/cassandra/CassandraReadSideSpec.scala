@@ -7,17 +7,17 @@ import akka.NotUsed
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import akka.persistence.query.PersistenceQuery
 import akka.stream.javadsl.Source
-import com.lightbend.lagom.internal.javadsl.persistence.ReadSideConfig
 import com.typesafe.config.ConfigFactory
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.internal.javadsl.persistence.cassandra.{ CassandraOffsetStore, CassandraReadSideImpl }
+import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
 
 object CassandraReadSideSpec {
 
   val config = ConfigFactory.parseString(s"""
     akka.loglevel = INFO
-    """)
+  """)
 
 }
 
