@@ -3,8 +3,6 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.cassandra
 
-import javax.inject.Inject
-
 import akka.Done
 import akka.actor.ActorSystem
 import com.datastax.driver.core.{ BoundStatement, PreparedStatement }

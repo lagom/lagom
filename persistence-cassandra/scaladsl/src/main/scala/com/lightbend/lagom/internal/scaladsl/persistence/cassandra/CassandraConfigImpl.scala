@@ -4,25 +4,20 @@
 package com.lightbend.lagom.internal.scaladsl.persistence.cassandra
 
 import java.net.URI
-import javax.inject.{ Inject, Provider, Singleton }
 
-import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorSessionProvider
 import com.lightbend.lagom.scaladsl.persistence.cassandra.{ CassandraConfig, CassandraContactPoint }
+import com.typesafe.config.Config
 
 import scala.collection.immutable
 
 /**
  * Internal API
  */
-// Injecting ActorSystem and not Configuration because Configuration isn't always bound when running tests
-final class CassandraConfigProvider(system: ActorSystem) {
-  private val config = system.settings.config
+private[lagom] object CassandraConfigImpl {
 
-  def get: CassandraConfig = CassandraConfigProvider.CassandraConfigImpl(cassandraUrisFromConfig)
-
-  private def cassandraUrisFromConfig: immutable.Seq[CassandraContactPoint] = {
-    List("cassandra-journal", "cassandra-snapshot-store", "lagom.persistence.read-side.cassandra").flatMap { path =>
+  private def apply(config: Config): CassandraConfigImpl = {
+    val contactPoints = List("cassandra-journal", "cassandra-snapshot-store", "lagom.persistence.read-side.cassandra").flatMap { path =>
       val c = config.getConfig(path)
       if (c.getString("session-provider") == classOf[ServiceLocatorSessionProvider].getName) {
         val name = c.getString("cluster-id")
@@ -31,9 +26,8 @@ final class CassandraConfigProvider(system: ActorSystem) {
         Some(CassandraContactPoint(name, uri))
       } else None
     }
+    new CassandraConfigImpl(contactPoints)
   }
 }
 
-private object CassandraConfigProvider {
-  final case class CassandraConfigImpl(uris: immutable.Seq[CassandraContactPoint]) extends CassandraConfig
-}
+private[lagom] final case class CassandraConfigImpl(uris: immutable.Seq[CassandraContactPoint]) extends CassandraConfig

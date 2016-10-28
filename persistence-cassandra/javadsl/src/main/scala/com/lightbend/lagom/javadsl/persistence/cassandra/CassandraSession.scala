@@ -44,8 +44,6 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
       ))
     )
 
-  private implicit val ec = executionContext
-
   /**
    * Internal API
    */
