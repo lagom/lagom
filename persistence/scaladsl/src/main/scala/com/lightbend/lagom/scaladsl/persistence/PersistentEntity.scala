@@ -9,6 +9,7 @@ import scala.util.control.NoStackTrace
 import scala.annotation.tailrec
 import akka.event.Logging
 import akka.actor.ActorRef
+import scala.reflect.ClassTag
 
 object PersistentEntity {
   /**
@@ -17,9 +18,11 @@ object PersistentEntity {
    *
    * `akka.Done` can optionally be used as a "standard" acknowledgment message.
    *
-   * Type parameter `R` is the type of the reply message.
+   * @tparam R the type of the reply message
    */
-  trait ReplyType[-R]
+  trait ReplyType[R] {
+    type ReplyType = R
+  }
 
   /**
    * Standard exception when rejecting invalid commands.
@@ -90,12 +93,11 @@ object PersistentEntity {
  * @tparam State the type of the state
  */
 abstract class PersistentEntity[Command, Event, State] {
-  import PersistentEntity.ReplyType
 
   type Behavior = State => Actions
   type EventHandler = PartialFunction[(Event, State), State]
-  type CommandHandler = PartialFunction[(Command, CommandContext, State), Persist[Event]]
-  type ReadOnlyCommandHandler = PartialFunction[(Command, ReadOnlyCommandContext, State), Unit]
+  private[lagom]type CommandHandler = PartialFunction[(Command, CommandContext[Any], State), Persist[Event]]
+  private[lagom]type ReadOnlyCommandHandler = PartialFunction[(Command, ReadOnlyCommandContext[Any], State), Unit]
 
   private var _entityId: String = _
 
@@ -132,7 +134,7 @@ abstract class PersistentEntity[Command, Event, State] {
   def recoveryCompleted(state: State): State = state
 
   object Actions {
-    private val empty = new Actions(PartialFunction.empty, PartialFunction.empty)
+    private val empty = new Actions(PartialFunction.empty, Map.empty)
     def apply(): Actions = empty
   }
 
@@ -141,8 +143,8 @@ abstract class PersistentEntity[Command, Event, State] {
    * and persisted events. `Actions` is an immutable class.
    */
   class Actions(
-    val eventHandler:   EventHandler,
-    val commandHandler: CommandHandler
+    val eventHandler:    EventHandler,
+    val commandHandlers: Map[Class[_], CommandHandler]
   ) extends Function1[State, Actions] {
 
     /**
@@ -153,27 +155,36 @@ abstract class PersistentEntity[Command, Event, State] {
     def apply(state: State): Actions = this
 
     /**
-     * Add a command handler. Each handler is a `PartialFunction` and they
-     * will be tried in the order they were added, i.e. they are combined
-     * with `orElse`.
+     * Add a command handler. For each command class the handler is a
+     * `PartialFunction`. Adding a handler for a command class that was
+     * previously defined will replace the previous handler for that class.
+     * It is possible to combine handlers from two different `Actions` with
+     * [[#orElse]] method.
      */
-    def onCommand(handler: CommandHandler) =
-      new Actions(eventHandler, commandHandler.orElse(handler))
+    def onCommand[C <: Command with PersistentEntity.ReplyType[Reply]: ClassTag, Reply](
+      handler: PartialFunction[(Command, CommandContext[Reply], State), Persist[Event]]
+    ): Actions = {
+      val commandClass = implicitly[ClassTag[C]].runtimeClass.asInstanceOf[Class[C]]
+      new Actions(eventHandler, commandHandlers.updated(commandClass, handler.asInstanceOf[CommandHandler]))
+    }
 
     /**
      * Add a command handler that will not persist any events. This is a convenience
-     * method to [[#onCommand]]. Each handler is a `PartialFunction` and they
-     * will be tried in the order they were added, including the ones added with
-     * `onCommand`, i.e. they are combined with `orElse`.
+     * method to [[#onCommand]]. For each command class the handler is a
+     * `PartialFunction`. Adding a handler for a command class that was
+     * previously defined will replace the previous handler for that class.
+     * It is possible to combine handlers from two different `Actions` with
+     * [[#orElse]] method.
      */
-    def onReadOnlyCommand(handler: ReadOnlyCommandHandler) = {
-      val delegate: CommandHandler = {
+    def onReadOnlyCommand[C <: Command with PersistentEntity.ReplyType[Reply]: ClassTag, Reply](
+      handler: PartialFunction[(Command, ReadOnlyCommandContext[Reply], State), Unit]
+    ): Actions = {
+      val delegate: PartialFunction[(Command, CommandContext[Reply], State), Persist[Event]] = {
         case params @ (_, ctx, _) if handler.isDefinedAt(params) =>
           handler(params)
           ctx.done
       }
-
-      new Actions(eventHandler, commandHandler.orElse(delegate))
+      onCommand[C, Reply](delegate)
     }
 
     /**
@@ -181,30 +192,42 @@ abstract class PersistentEntity[Command, Event, State] {
      * will be tried in the order they were added, i.e. they are combined
      * with `orElse`.
      */
-    def onEvent(handler: EventHandler) = {
-      new Actions(eventHandler.orElse(handler), commandHandler)
+    def onEvent(handler: EventHandler): Actions = {
+      new Actions(eventHandler.orElse(handler), commandHandlers)
     }
 
     /**
-     * Append `eventHandler` and `commandHandler` from `b` to the handlers
-     * of this `Behavior`.
+     * Append `eventHandler` and `commandHandlers` from `b` to the handlers
+     * of this `Actions`.
+     *
+     * Event handlers are combined with `orElse` of the partial functions.
+     *
+     * Command handlers for a specific command class that are defined in
+     * both `b` and this `Actions` will be combined with `orElse` of the
+     * partial functions.
      */
-    def orElse(b: Actions): Actions =
-      new Actions(eventHandler.orElse(b.eventHandler), commandHandler.orElse(b.commandHandler))
+    def orElse(b: Actions): Actions = {
+      val commandsInBoth = commandHandlers.keySet intersect b.commandHandlers.keySet
+      val newCommandHandlers = commandHandlers ++ b.commandHandlers ++
+        commandsInBoth.map(c => c -> commandHandlers(c).orElse(b.commandHandlers(c)))
+      new Actions(eventHandler.orElse(b.eventHandler), newCommandHandlers)
+    }
 
   }
 
   /**
    * The context that is used by read-only command handlers.
    * Replies are sent with the context.
+   *
+   * @tparam R the reply type of the command
    */
-  abstract class ReadOnlyCommandContext {
+  abstract class ReadOnlyCommandContext[R] {
 
     /**
-     * Send reply to a command. The type `R` must be the type defined by
+     * Send reply to a command. The type `R` must be the reply type defined by
      * the command.
      */
-    def reply[R](currentCommand: Command with ReplyType[R], msg: R): Unit
+    def reply(msg: R): Unit
 
     /**
      * Reply with a negative acknowledgment.
@@ -222,8 +245,10 @@ abstract class PersistentEntity[Command, Event, State] {
   /**
    * The context that is used by command handler function.
    * Events are persisted with the context and replies are sent with the context.
+   *
+   * @tparam R the reply type of the command
    */
-  abstract class CommandContext extends ReadOnlyCommandContext {
+  abstract class CommandContext[R] extends ReadOnlyCommandContext[R] {
 
     /**
      * A command handler may return this `Persist` directive to define

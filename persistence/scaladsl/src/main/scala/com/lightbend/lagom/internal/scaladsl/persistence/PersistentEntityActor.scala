@@ -10,7 +10,6 @@ import akka.cluster.sharding.ShardRegion
 import akka.persistence.{ PersistentActor, RecoveryCompleted, SnapshotOffer }
 import akka.persistence.journal.Tagged
 import akka.util.ByteString
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, AggregateEventShards, AggregateEventTag, PersistentEntity }
 import play.api.Logger
 
@@ -120,7 +119,7 @@ private[lagom] class PersistentEntityActor(
     state = actions.eventHandler.applyOrElse((event, state), unhandledEvent)
   }
 
-  private def unhandledCommand: PartialFunction[(C, entity.CommandContext, S), entity.Persist[_]] = {
+  private def unhandledCommand: PartialFunction[(C, entity.CommandContext[Any], S), entity.Persist[_]] = {
     case (cmd, _, _) =>
       // not using akka.actor.Status.Failure because it is using Java serialization
       sender() ! PersistentEntity.UnhandledCommandException(
@@ -131,16 +130,10 @@ private[lagom] class PersistentEntityActor(
   }
 
   def receiveCommand: Receive = {
-    case cmd: PersistentEntity.ReplyType[_] =>
+    case cmd: PersistentEntity.ReplyType[Any] @unchecked =>
       val replyTo = sender()
-      val ctx = new entity.CommandContext {
-        def reply[R](currentCommand: C with ReplyType[R], msg: R): Unit = {
-          if (currentCommand ne cmd) throw new IllegalArgumentException(
-            "Reply must be sent in response to the command that is currently processed, " +
-              s"Received command is [$cmd], but reply was to [$currentCommand]"
-          )
-          replyTo ! msg
-        }
+      val ctx = new entity.CommandContext[Any] {
+        override def reply(msg: Any): Unit = replyTo ! msg
 
         override def commandFailed(cause: Throwable): Unit =
           // not using akka.actor.Status.Failure because it is using Java serialization
@@ -149,8 +142,11 @@ private[lagom] class PersistentEntityActor(
 
       try {
         val actions = try behavior(state) catch unhandledState
-        val result = actions.commandHandler.applyOrElse((cmd.asInstanceOf[C], ctx, state), unhandledCommand)
-
+        val commandHandler = actions.commandHandlers.get(cmd.getClass) match {
+          case Some(h) => h
+          case None    => PartialFunction.empty
+        }
+        val result = commandHandler.applyOrElse((cmd, ctx, state), unhandledCommand)
         result match {
           case _: entity.PersistNone[_] => // done
           case entity.PersistOne(event, afterPersist) =>
