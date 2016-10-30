@@ -127,7 +127,7 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
     )
   }
 
-  private def unhandledCommand: PartialFunction[(C, entity.CommandContext, S), entity.Persist[_]] = {
+  private def unhandledCommand: PartialFunction[(C, entity.CommandContext[Any], S), entity.Persist[_]] = {
     case (cmd, _, _) =>
       issues :+= UnhandledCommand(cmd)
       entity.persistNone
@@ -151,66 +151,69 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
     }
 
     var producedEvents: Vector[E] = Vector.empty
-    commands.foreach { cmd =>
-      val c = cmd.asInstanceOf[PersistentEntity.ReplyType[_]]
-      val ctx: entity.CommandContext = new entity.CommandContext {
-        override def reply[R](currentCommand: C with ReplyType[R], msg: R): Unit = {
-          if (currentCommand ne c) throw new IllegalArgumentException(
-            "Reply must be sent in response to the command that is currently processed, " +
-              s"Received command is [$cmd], but reply was to [$currentCommand]"
-          )
-          sideEffects :+= Reply(msg)
-          issues ++= checkSerialization(msg)
-        }
-
-        override def commandFailed(cause: Throwable): Unit = {
-          // not using akka.actor.Status.Failure because it is using Java serialization
-          sideEffects :+= Reply(cause)
-          issues ++= checkSerialization(cause)
-        }
-      }
-
-      issues ++= checkSerialization(cmd)
-
-      val actions = try behavior(state) catch unhandledState
-      val result = actions.commandHandler.applyOrElse((cmd.asInstanceOf[C], ctx, state), unhandledCommand)
-
-      result match {
-        case _: entity.PersistNone[_] => // done
-        case entity.PersistOne(event, afterPersist) =>
-          issues ++= checkSerialization(event)
-          try {
-            val evt = event.asInstanceOf[E]
-            producedEvents :+= evt
-            applyEvent(evt)
-            issues ++= checkSerialization(state)
-            if (afterPersist != null)
-              afterPersist(event)
-          } catch {
-            case NonFatal(e) =>
-              ctx.commandFailed(e) // reply with failure
-              throw e
+    commands.foreach {
+      case cmd: PersistentEntity.ReplyType[Any] @unchecked =>
+        val ctx = new entity.CommandContext[Any] {
+          override def reply(msg: Any): Unit = {
+            sideEffects :+= Reply(msg)
+            issues ++= checkSerialization(msg)
           }
-        case entity.PersistAll(events, afterPersist) =>
-          var count = events.size
-          events.foreach { event =>
-            val evt = event.asInstanceOf[E]
-            issues ++= checkSerialization(evt)
+
+          override def commandFailed(cause: Throwable): Unit = {
+            // not using akka.actor.Status.Failure because it is using Java serialization
+            sideEffects :+= Reply(cause)
+            issues ++= checkSerialization(cause)
+          }
+        }
+
+        issues ++= checkSerialization(cmd)
+
+        val actions = try behavior(state) catch unhandledState
+        val commandHandler = actions.commandHandlers.get(cmd.getClass) match {
+          case Some(h) => h
+          case None    => PartialFunction.empty
+        }
+        val result = commandHandler.applyOrElse((cmd.asInstanceOf[C], ctx, state), unhandledCommand)
+
+        result match {
+          case _: entity.PersistNone[_] => // done
+          case entity.PersistOne(event, afterPersist) =>
+            issues ++= checkSerialization(event)
             try {
+              val evt = event.asInstanceOf[E]
               producedEvents :+= evt
               applyEvent(evt)
               issues ++= checkSerialization(state)
-              count -= 1
-              if (afterPersist != null && count == 0)
-                afterPersist.apply()
+              if (afterPersist != null)
+                afterPersist(event)
             } catch {
               case NonFatal(e) =>
                 ctx.commandFailed(e) // reply with failure
                 throw e
             }
-          }
-      }
+          case entity.PersistAll(events, afterPersist) =>
+            var count = events.size
+            events.foreach { event =>
+              val evt = event.asInstanceOf[E]
+              issues ++= checkSerialization(evt)
+              try {
+                producedEvents :+= evt
+                applyEvent(evt)
+                issues ++= checkSerialization(state)
+                count -= 1
+                if (afterPersist != null && count == 0)
+                  afterPersist.apply()
+              } catch {
+                case NonFatal(e) =>
+                  ctx.commandFailed(e) // reply with failure
+                  throw e
+              }
+            }
+        }
 
+      case otherCommandType =>
+        // didn't implement PersistentEntity.ReplyType
+        issues :+= UnhandledCommand(otherCommandType)
     }
 
     allIssues ++= issues
@@ -264,11 +267,9 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
   }
 
   private def isOkForJavaSerialization(clazz: Class[_]): Boolean = {
-    // FIXME enable this when Play-json serializer is ready
-    true
     // e.g. String
-    //    clazz.getName.startsWith("java.lang.") ||
-    //      clazz.getName.startsWith("akka.")
+    clazz.getName.startsWith("java.lang.") ||
+      clazz.getName.startsWith("akka.")
   }
 
 }

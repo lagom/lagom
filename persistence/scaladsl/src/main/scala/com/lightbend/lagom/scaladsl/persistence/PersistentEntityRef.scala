@@ -35,7 +35,7 @@ final class PersistentEntityRef[Command](
    * or a `akka.pattern.AskTimeoutException` if there is no reply within a timeout.
    * The timeout can defined in configuration or overridden using [[#withAskTimeout]].
    */
-  def ask[Reply, Cmd <: Command with PersistentEntity.ReplyType[Reply]](command: Cmd): Future[Reply] = {
+  def ask[Cmd <: Command with PersistentEntity.ReplyType[_]](command: Cmd): Future[command.ReplyType] = {
     import scala.compat.java8.FutureConverters._
     import system.dispatcher
     (region ? CommandEnvelope(entityId, command)).flatMap {
@@ -43,7 +43,7 @@ final class PersistentEntityRef[Command](
         // not using akka.actor.Status.Failure because it is using Java serialization
         Future.failed(exc)
       case result => Future.successful(result)
-    }.asInstanceOf[Future[Reply]]
+    }.asInstanceOf[Future[command.ReplyType]]
   }
 
   /**

@@ -149,23 +149,28 @@ class TestEntity(system: ActorSystem)
     case State(Mode.Prepend, _) => prepending
   }
 
-  private val changeMode: CommandHandler = {
-    case (c @ ChangeMode(mode), ctx, state) => {
-      mode match {
-        case mode if state.mode == mode => ctx.done
-        case Mode.Append                => ctx.thenPersist(InAppendMode, ctx.reply(c, _))
-        case Mode.Prepend               => ctx.thenPersist(InPrependMode, ctx.reply(c, _))
+  private val changeMode: Actions = {
+    Actions()
+      .onCommand[ChangeMode, Evt] {
+        case (ChangeMode(mode), ctx, state) => {
+          mode match {
+            case mode if state.mode == mode => ctx.done
+            case Mode.Append                => ctx.thenPersist(InAppendMode, ctx.reply)
+            case Mode.Prepend               => ctx.thenPersist(InPrependMode, ctx.reply)
+          }
+        }
       }
-    }
   }
 
   val baseActions: Actions = {
     Actions()
-      .onReadOnlyCommand {
-        case (Get, ctx, state)        => ctx.reply(Get, state)
-        case (GetAddress, ctx, state) => ctx.reply(GetAddress, Cluster.get(system).selfAddress)
+      .onReadOnlyCommand[Get.type, State] {
+        case (Get, ctx, state) => ctx.reply(state)
       }
-      .onCommand(changeMode)
+      .onReadOnlyCommand[GetAddress.type, Address] {
+        case (GetAddress, ctx, state) => ctx.reply(Cluster.get(system).selfAddress)
+      }
+      .orElse(changeMode)
   }
 
   private val appending: Actions =
@@ -174,8 +179,8 @@ class TestEntity(system: ActorSystem)
         case (Appended(elem), state) => state.add(elem)
         case (InPrependMode, state)  => state.copy(mode = Mode.Prepend)
       }
-      .onCommand {
-        case (a @ Add(elem, times), ctx, state) =>
+      .onCommand[Add, Evt] {
+        case (Add(elem, times), ctx, state) =>
           // note that null should trigger NPE, for testing exception
           if (elem == null)
             throw new SimulatedNullpointerException
@@ -185,9 +190,9 @@ class TestEntity(system: ActorSystem)
           }
           val appended = Appended(elem.toUpperCase)
           if (times == 1)
-            ctx.thenPersist(appended, ctx.reply(a, _))
+            ctx.thenPersist(appended, ctx.reply)
           else
-            ctx.thenPersistAll(List.fill(times)(appended), () => ctx.reply(a, appended))
+            ctx.thenPersistAll(List.fill(times)(appended), () => ctx.reply(appended))
       }
 
   private val prepending: Actions =
@@ -196,17 +201,17 @@ class TestEntity(system: ActorSystem)
         case (Prepended(elem), state) => state.add(elem)
         case (InAppendMode, state)    => state.copy(mode = Mode.Append)
       }
-      .onCommand {
-        case (a @ Add(elem, times), ctx, state) =>
+      .onCommand[Add, Evt] {
+        case (Add(elem, times), ctx, state) =>
           if (elem == null || elem.length == 0) {
             ctx.invalidCommand("element must not be empty");
             ctx.done
           }
           val prepended = Prepended(elem.toLowerCase)
           if (times == 1)
-            ctx.thenPersist(prepended, ctx.reply(a, _))
+            ctx.thenPersist(prepended, ctx.reply)
           else
-            ctx.thenPersistAll(List.fill(times)(prepended), () => ctx.reply(a, prepended))
+            ctx.thenPersistAll(List.fill(times)(prepended), () => ctx.reply(prepended))
       }
 
   override def recoveryCompleted(state: State): State = {
