@@ -20,6 +20,7 @@ import scala.concurrent.duration.{ FiniteDuration, _ }
 import scala.util.control.NonFatal
 import com.lightbend.lagom.internal.persistence.cluster.GracefulLeave
 import scala.concurrent.Future
+import scala.reflect.ClassTag
 
 /**
  * Provides shared functionality for implementing a persistent entity registry.
@@ -65,7 +66,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
 
   private val registeredTypeNames = new ConcurrentHashMap[String, Class[_]]()
 
-  override def register(entityFactory: => PersistentEntity[_, _, _]): Unit = {
+  override def register(entityFactory: => PersistentEntity): Unit = {
 
     // try to create one instance to fail fast
     val proto = entityFactory
@@ -91,7 +92,8 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
     }
   }
 
-  override def refFor[C](entityClass: Class[_ <: PersistentEntity[C, _, _]], entityId: String): PersistentEntityRef[C] =
+  override def refFor[P <: PersistentEntity: ClassTag](entityId: String): PersistentEntityRef[P#Command] = {
+    val entityClass = implicitly[ClassTag[P]].runtimeClass.asInstanceOf[Class[P]]
     try
       new PersistentEntityRef(entityId, sharding.shardRegion(entityTypeName(entityClass)), system, askTimeout)
     catch {
@@ -99,6 +101,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
         // change the error message
         throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
     }
+  }
 
   private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)
 

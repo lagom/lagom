@@ -92,7 +92,11 @@ object PersistentEntity {
  * @tparam Event the super type of all events
  * @tparam State the type of the state
  */
-abstract class PersistentEntity[Command, Event, State] {
+abstract class PersistentEntity {
+
+  type Command
+  type Event
+  type State
 
   type Behavior = State => Actions
   type EventHandler = PartialFunction[(Event, State), State]

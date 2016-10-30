@@ -21,12 +21,12 @@ private[lagom] object PersistentEntityActor {
   def props(
     persistenceIdPrefix:       String,
     entityId:                  Option[String],
-    entityFactory:             () => PersistentEntity[_, _, _],
+    entityFactory:             () => PersistentEntity,
     snapshotAfter:             Option[Int],
     passivateAfterIdleTimeout: FiniteDuration
   ): Props =
     Props(new PersistentEntityActor(persistenceIdPrefix, entityId,
-      entityFactory().asInstanceOf[PersistentEntity[Any, Any, Any]],
+      entityFactory(),
       snapshotAfter.getOrElse(0), passivateAfterIdleTimeout))
 
   /**
@@ -58,7 +58,7 @@ private[lagom] object PersistentEntityActor {
 private[lagom] class PersistentEntityActor(
   persistenceIdPrefix:       String,
   id:                        Option[String],
-  entity:                    PersistentEntity[Any, Any, Any],
+  entity:                    PersistentEntity,
   snapshotAfter:             Int,
   passivateAfterIdleTimeout: FiniteDuration
 ) extends PersistentActor {
@@ -66,9 +66,9 @@ private[lagom] class PersistentEntityActor(
   import PersistentEntityActor.EntityIdSeparator
 
   // we don't care about the types in the actor, but using these aliases for better readability
-  private type C = Any
-  private type E = Any
-  private type S = Any
+  private type C = entity.Command
+  private type E = entity.Event
+  private type S = entity.State
 
   private val log = Logger(this.getClass)
 
@@ -146,7 +146,7 @@ private[lagom] class PersistentEntityActor(
           case Some(h) => h
           case None    => PartialFunction.empty
         }
-        val result = commandHandler.applyOrElse((cmd, ctx, state), unhandledCommand)
+        val result = commandHandler.applyOrElse((cmd.asInstanceOf[C], ctx, state), unhandledCommand)
         result match {
           case _: entity.PersistNone[_] => // done
           case entity.PersistOne(event, afterPersist) =>

@@ -68,7 +68,11 @@ object PersistentEntityTestDriver {
  * It also verifies that all commands, events, replies and state are
  * serializable, and reports any such problems in the `issues` of the `Outcome`.
  */
-class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: PersistentEntity[C, E, S], entityId: String) {
+class PersistentEntityTestDriver[C, E, S](
+  val system:   ActorSystem,
+  val entity:   PersistentEntity { type Command = C; type Event = E; type State = S },
+  val entityId: String
+) {
   import PersistentEntityTestDriver._
 
   private val serialization = SerializationExtension(system)
@@ -132,6 +136,8 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
       issues :+= UnhandledCommand(cmd)
       entity.persistNone
   }
+
+  def runOne[CC <: entity.Command](command: C): Outcome[E, S] = ???
 
   /**
    * The entity will process the commands and the emitted events and side effects
