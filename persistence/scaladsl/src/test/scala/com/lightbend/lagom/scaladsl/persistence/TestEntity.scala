@@ -132,8 +132,12 @@ class TestEntitySerializerRegistry extends SerializerRegistry {
 }
 
 class TestEntity(system: ActorSystem)
-  extends PersistentEntity[TestEntity.Cmd, TestEntity.Evt, TestEntity.State] {
+  extends PersistentEntity {
   import TestEntity._
+
+  override type Command = Cmd
+  override type Event = Evt
+  override type State = TestEntity.State
 
   def this(system: ActorSystem, probe: Option[ActorRef]) = {
     this(system)
