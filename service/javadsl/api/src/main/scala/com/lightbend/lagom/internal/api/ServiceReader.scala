@@ -255,17 +255,21 @@ object ServiceReader {
     override def invoke(proxy: scala.Any, method: Method, args: Array[AnyRef]): AnyRef = {
       // If it's a default method, invoke it
       if (method.isDefault) {
-        // This is the way to invoke default methods via reflection, using the JDK7 method handles API
-        val declaringClass = method.getDeclaringClass
-        // We create a MethodHandles.Lookup that is allowed to look up private methods
-        methodHandlesLookupConstructor.newInstance(declaringClass, new Integer(MethodHandles.Lookup.PRIVATE))
-          // Now using unreflect special, we get the default method from the declaring class, rather than the proxy
-          .unreflectSpecial(method, declaringClass)
-          // We bind to the proxy so that we end up invoking on the proxy
-          .bindTo(proxy)
-          // And now we actually invoke it
-          .invokeWithArguments(args: _*)
-
+        if (java.lang.reflect.Modifier.isPublic(serviceInterface.getModifiers)) {
+          // This is the way to invoke default methods via reflection, using the JDK7 method handles API
+          val declaringClass = method.getDeclaringClass
+          // We create a MethodHandles.Lookup that is allowed to look up private methods
+          methodHandlesLookupConstructor.newInstance(declaringClass, new Integer(MethodHandles.Lookup.PRIVATE))
+            // Now using unreflect special, we get the default method from the declaring class, rather than the proxy
+            .unreflectSpecial(method, declaringClass)
+            // We bind to the proxy so that we end up invoking on the proxy
+            .bindTo(proxy)
+            // And now we actually invoke it
+            .invokeWithArguments(args: _*)
+        } else {
+          // If the default descriptor method is implemented in a non-public interface, throw an exception.
+          throw new IllegalArgumentException("Service API must be described in a public interface")
+        }
       } else if (method.getName == DescriptorMethodName && method.getParameterCount == 0) {
         if (ScalaSig.isScala(serviceInterface)) {
           if (serviceInterface.isInterface()) {
