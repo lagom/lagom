@@ -74,15 +74,15 @@ final class Post extends PersistentEntity[Post.BlogCommand, Post.BlogEvent, Post
     Actions()
       // Command handlers are invoked for incoming messages (commands).
       // A command handler must "return" the events to be persisted (if any).
-      .onCommand {
-        case (cmd @ AddPost(content), ctx, state) =>
+      .onCommand[AddPost, AddPostDone] {
+        case (AddPost(content), ctx, state) =>
           if (content.title == null || content.title.equals("")) {
             ctx.invalidCommand("Title must be defined")
             ctx.done
           } else {
             ctx.thenPersist(PostAdded(entityId, content), evt =>
               // After persist is done additional side effects can be performed
-              ctx.reply(cmd, AddPostDone(entityId)))
+              ctx.reply(AddPostDone(entityId)))
           }
       }
       // Event handlers are used both when persisting new events and when replaying
@@ -95,9 +95,9 @@ final class Post extends PersistentEntity[Post.BlogCommand, Post.BlogEvent, Post
 
   private val postAdded: Actions = {
     Actions()
-      .onCommand {
-        case (cmd @ ChangeBody(body), ctx, state) =>
-          ctx.thenPersist(BodyChanged(entityId, body), _ => ctx.reply(cmd, Done))
+      .onCommand[ChangeBody, Done] {
+        case (ChangeBody(body), ctx, state) =>
+          ctx.thenPersist(BodyChanged(entityId, body), _ => ctx.reply(Done))
       }
   }
 
