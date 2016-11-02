@@ -103,7 +103,7 @@ public class StartAllIT {
     }
 
     private <T> T await(CompletionStage<T> future) throws Exception {
-        return future.toCompletableFuture().get(10, TimeUnit.SECONDS);
+        return future.toCompletableFuture().get(30, TimeUnit.SECONDS);
     }
 
     @AfterClass
