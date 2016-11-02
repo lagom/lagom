@@ -34,7 +34,7 @@ usage: conduct [-h]
 Now, add the [sbt-conductr plugin](https://github.com/typesafehub/sbt-conductr) to your `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.1.7")
+addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.1.14")
 ```
 
 sbt-conductr adds several commands to the activator console:
