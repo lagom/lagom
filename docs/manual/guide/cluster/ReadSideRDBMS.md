@@ -50,7 +50,7 @@ The global prepare callback runs at least once across the whole cluster.  It is 
 
 The global prepare callback is run from an Akka cluster singleton.  It may be run multiple times - every time a new node becomes the new singleton, the callback will be run.  Consequently, the task must be idempotent.  If it fails, it will be run again using an exponential backoff, and the read side processing of the whole cluster will not start until it has run successfully.
 
-Of course, setting a global prepare callback is completely optional, you may prefer to manage Cassandra tables manually, but it is very convenient for development and test environments to use this callback to create them for you.
+Of course, setting a global prepare callback is completely optional, you may prefer to manage database tables manually, but it is very convenient for development and test environments to use this callback to create them for you.
 
 Below is an example method that we've implemented to create tables:
 
