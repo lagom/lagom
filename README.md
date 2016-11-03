@@ -2,15 +2,15 @@
 
 ## Lagom Framework - The Reactive Microservices Framework
 
-Lagom is a Swedish word meaning just right, sufficient. Microservices are about creating services that are just the right size, that is, they have just the right level of functionality and isolation to be able to adequately implement a scalable and resilient system.
+Lagom is a Swedish word meaning *just right, sufficient*. Microservices are about creating services that are just the right size, that is, they have just the right level of functionality and isolation to be able to adequately implement a scalable and resilient system.
 
-Lagom focuses on ensuring that your application realises the full potention of the [Reactive Manifesto](http://reactivemanifesto.org), while delivering a high productivity development environment, and seamless production deployment experience.
+Lagom focuses on ensuring that your application realises the full potential of the [Reactive Manifesto](http://reactivemanifesto.org), while delivering a high productivity development environment, and seamless production deployment experience.
 
 ### Learn More
 
 * [Website](https://www.lightbend.com/lagom)
-* [Documentation](http://www.lagomframework.com/documentation/1.0.x/Home.html)
-* [Installation](http://www.lagomframework.com/documentation/1.0.x/Installation.html)
+* [Documentation](http://www.lagomframework.com/documentation/1.0.x/java/Home.html)
+* [Installation](http://www.lagomframework.com/documentation/1.0.x/java/Installation.html)
 * [Community Chat](https://gitter.im/lagom/lagom)
 * [Mailing list](https://groups.google.com/forum/#!forum/lagom-framework)
 * [Get help](https://stackoverflow.com/questions/ask?tags=lagom)
