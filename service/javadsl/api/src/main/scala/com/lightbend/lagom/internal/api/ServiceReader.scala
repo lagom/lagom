@@ -4,7 +4,7 @@
 package com.lightbend.lagom.internal.api
 
 import java.lang.invoke.MethodHandles
-import java.lang.reflect.{ InvocationHandler, Method, ParameterizedType, Type, Proxy => JProxy }
+import java.lang.reflect.{ InvocationHandler, Method, Modifier, ParameterizedType, Type, Proxy => JProxy }
 
 import com.google.common.reflect.TypeToken
 import com.lightbend.lagom.javadsl.api._
@@ -37,9 +37,14 @@ object ServiceReader {
   }
 
   def readServiceDescriptor(classLoader: ClassLoader, serviceInterface: Class[_ <: Service]): Descriptor = {
-    val invocationHandler = new ServiceInvocationHandler(classLoader, serviceInterface)
-    val serviceStub = JProxy.newProxyInstance(classLoader, Array(serviceInterface), invocationHandler).asInstanceOf[Service]
-    serviceStub.descriptor()
+    if (Modifier.isPublic(serviceInterface.getModifiers)) {
+      val invocationHandler = new ServiceInvocationHandler(classLoader, serviceInterface)
+      val serviceStub = JProxy.newProxyInstance(classLoader, Array(serviceInterface), invocationHandler).asInstanceOf[Service]
+      serviceStub.descriptor()
+    } else {
+      // If the default descriptor method is implemented in a non-public interface, throw an exception.
+      throw new IllegalArgumentException("Service API must be described in a public interface.")
+    }
   }
 
   def resolveServiceDescriptor(descriptor: Descriptor, classLoader: ClassLoader,
@@ -255,21 +260,17 @@ object ServiceReader {
     override def invoke(proxy: scala.Any, method: Method, args: Array[AnyRef]): AnyRef = {
       // If it's a default method, invoke it
       if (method.isDefault) {
-        if (java.lang.reflect.Modifier.isPublic(serviceInterface.getModifiers)) {
-          // This is the way to invoke default methods via reflection, using the JDK7 method handles API
-          val declaringClass = method.getDeclaringClass
-          // We create a MethodHandles.Lookup that is allowed to look up private methods
-          methodHandlesLookupConstructor.newInstance(declaringClass, new Integer(MethodHandles.Lookup.PRIVATE))
-            // Now using unreflect special, we get the default method from the declaring class, rather than the proxy
-            .unreflectSpecial(method, declaringClass)
-            // We bind to the proxy so that we end up invoking on the proxy
-            .bindTo(proxy)
-            // And now we actually invoke it
-            .invokeWithArguments(args: _*)
-        } else {
-          // If the default descriptor method is implemented in a non-public interface, throw an exception.
-          throw new IllegalArgumentException("Service API must be described in a public interface")
-        }
+        // This is the way to invoke default methods via reflection, using the JDK7 method handles API
+        val declaringClass = method.getDeclaringClass
+        // We create a MethodHandles.Lookup that is allowed to look up private methods
+        methodHandlesLookupConstructor.newInstance(declaringClass, new Integer(MethodHandles.Lookup.PRIVATE))
+          // Now using unreflect special, we get the default method from the declaring class, rather than the proxy
+          .unreflectSpecial(method, declaringClass)
+          // We bind to the proxy so that we end up invoking on the proxy
+          .bindTo(proxy)
+          // And now we actually invoke it
+          .invokeWithArguments(args: _*)
+
       } else if (method.getName == DescriptorMethodName && method.getParameterCount == 0) {
         if (ScalaSig.isScala(serviceInterface)) {
           if (serviceInterface.isInterface()) {
