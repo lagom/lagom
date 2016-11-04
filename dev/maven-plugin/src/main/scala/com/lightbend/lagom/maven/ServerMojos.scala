@@ -3,7 +3,7 @@ package com.lightbend.lagom.maven
 import javax.inject.Inject
 
 import com.lightbend.lagom.core.LagomVersion
-import com.lightbend.lagom.dev.Servers
+import com.lightbend.lagom.dev.{ Servers, StaticServiceLocations }
 import org.apache.maven.plugin.AbstractMojo
 import org.eclipse.aether.artifact.DefaultArtifact
 import java.util.{ Collections, List => JList, Map => JMap }
@@ -136,15 +136,28 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
   @BeanProperty
   var unmanagedServices: JMap[String, String] = Collections.emptyMap[String, String]
 
+  @BeanProperty
+  var cassandraPort: Int = _
+  @BeanProperty
+  var cassandraEnabled: Boolean = _
+
   override def execute(): Unit = {
+
     if (serviceLocatorEnabled) {
       val cp = facade.resolveArtifact(new DefaultArtifact("com.lightbend.lagom", "lagom-service-locator_2.11",
         "jar", LagomVersion.current))
 
       val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
 
+      val scalaUnmanagedServices =
+        if (cassandraEnabled) {
+          StaticServiceLocations.withCassandraLocation(cassandraPort, unmanagedServices.asScala.toMap)
+        } else {
+          unmanagedServices.asScala.toMap
+        }
+
       Servers.ServiceLocator.start(logger, scalaClassLoader, cp.map(_.getFile.toURI.toURL).toArray,
-        serviceLocatorPort, serviceGatewayPort, unmanagedServices.asScala.toMap)
+        serviceLocatorPort, serviceGatewayPort, scalaUnmanagedServices)
     }
   }
 }

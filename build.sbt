@@ -765,7 +765,7 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
   .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
-    `service-registration`, `cassandra-server`, `cassandra-registration`,  `play-integration`, `service-registry-client`,
+    `service-registration`, `cassandra-server`, `play-integration`, `service-registry-client`,
     `maven-java-archetype`, `kafka-server`)
   .settings(
     publish := {},
@@ -1016,12 +1016,6 @@ lazy val `service-registration` = (project in file("dev") / "service-registratio
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`server-javadsl`, `service-registry-client`)
-
-lazy val `cassandra-registration` = (project in file("dev") / "cassandra-registration")
-  .settings(name := "lagom-cassandra-registration")
-  .settings(runtimeLibCommon: _*)
-  .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(`api-javadsl`, `persistence-cassandra-javadsl`, `service-registry-client`)
 
 lazy val `play-integration` = (project in file("dev") / "play-integration")
   .settings(name := "lagom-play-integration")
