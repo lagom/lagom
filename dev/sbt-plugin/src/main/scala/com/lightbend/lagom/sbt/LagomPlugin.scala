@@ -389,26 +389,24 @@ object LagomPlugin extends AutoPlugin {
     ivyConfigurations ++= Seq(Internal.Configs.DevRuntime, Internal.Configs.CassandraRuntime),
     PlaySettings.manageClasspath(Internal.Configs.DevRuntime),
     PlaySettings.manageClasspath(Internal.Configs.CassandraRuntime),
-    libraryDependencies ++=
-      LagomImport.component("lagom-reloadable-server") % Internal.Configs.DevRuntime +:
-      cassandraRegistrationDependencies.value
-  )
 
-  // jar containing logic for automatic registration to the service locator is added to the classpath only if the
-  // service locator is enabled
-  private lazy val cassandraRegistrationDependencies = Def.setting {
-    if (lagomServiceLocatorEnabled.value)
-      Seq(LagomImport.component("lagom-cassandra-registration") % Internal.Configs.CassandraRuntime)
-    else
-      Seq.empty
-  }
+    libraryDependencies +=
+      LagomImport.component("lagom-reloadable-server") % Internal.Configs.DevRuntime
+  )
 
   private lazy val startServiceLocatorTask = Def.taskDyn {
     if ((lagomServiceLocatorEnabled in ThisBuild).value) {
+
       Def.task {
+        val unmanagedServices: Map[String, String] =
+          if ((lagomCassandraEnabled in ThisBuild).value) {
+            StaticServiceLocations.withCassandraLocation(lagomCassandraPort.value, lagomUnmanagedServices.value)
+          } else {
+            lagomUnmanagedServices.value
+          }
+
         val serviceLocatorPort = lagomServiceLocatorPort.value
         val serviceGatewayPort = lagomServiceGatewayPort.value
-        val unmanagedServices = lagomUnmanagedServices.value
         val urls = (managedClasspath in Compile).value.files.map(_.toURI.toURL).toArray
         val scala211 = scalaInstance.value
         val log = new SbtLoggerProxy(state.value.log)

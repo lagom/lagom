@@ -50,8 +50,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
         scalaBinaryVersion,
         Seq("lagom-reloadable-server") ++
           serviceLocatorUrl.fold(Seq.empty[String])(_ =>
-            Seq("lagom-service-registry-client", "lagom-service-registration") ++
-              cassandraPort.fold(Seq.empty[String])(_ => Seq("lagom-cassandra-registration")))
+            Seq("lagom-service-registry-client", "lagom-service-registration"))
       )
     }
   }

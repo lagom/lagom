@@ -403,6 +403,12 @@
                 <parameter>
                     <name>unmanagedServices</name>
                 </parameter>
+                <parameter>
+                    <name>cassandraPort</name>
+                </parameter>
+                <parameter>
+                    <name>cassandraEnabled</name>
+                </parameter>
             </parameters>
         </mojo>
         <mojo>
