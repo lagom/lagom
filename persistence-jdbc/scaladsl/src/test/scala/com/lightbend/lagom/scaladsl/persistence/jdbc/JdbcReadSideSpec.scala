@@ -5,7 +5,7 @@ package com.lightbend.lagom.scaladsl.persistence.jdbc
 
 import akka.NotUsed
 import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
-import akka.persistence.query.PersistenceQuery
+import akka.persistence.query.{ NoOffset, Offset, PersistenceQuery, Sequence }
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.scaladsl.persistence.PersistentEntityActor
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt

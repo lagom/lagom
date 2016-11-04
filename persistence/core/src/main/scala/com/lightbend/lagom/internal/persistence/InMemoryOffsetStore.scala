@@ -1,11 +1,12 @@
 /*
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
  */
-package com.lightbend.lagom.internal.scaladsl.persistence
+package com.lightbend.lagom.internal.persistence
+
+import javax.inject.Singleton
 
 import akka.Done
 import akka.persistence.query.{ NoOffset, Offset }
-import com.lightbend.lagom.internal.persistence.{ OffsetDao, OffsetStore }
 
 import scala.collection.concurrent
 import scala.concurrent.Future
@@ -13,6 +14,7 @@ import scala.concurrent.Future
 /**
  * Not for production use.
  */
+@Singleton
 class InMemoryOffsetStore extends OffsetStore {
   private final val store: concurrent.Map[String, Offset] = concurrent.TrieMap.empty
 

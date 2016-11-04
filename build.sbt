@@ -14,8 +14,8 @@ import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import de.heikoseeberger.sbtheader.HeaderPattern
 
 val PlayVersion = "2.5.4"
-val AkkaVersion = "2.4.11"
-val AkkaPersistenceCassandraVersion = "0.19"
+val AkkaVersion = "2.4.12"
+val AkkaPersistenceCassandraVersion = "0.20"
 val ScalaTestVersion = "2.2.4"
 val JacksonVersion = "2.7.8"
 val CassandraAllVersion = "3.0.9"
@@ -693,7 +693,7 @@ lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
   .settings(forkedTests: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.7",
+      "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.8",
       "com.typesafe.play" %% "play-jdbc" % PlayVersion
     )
   )

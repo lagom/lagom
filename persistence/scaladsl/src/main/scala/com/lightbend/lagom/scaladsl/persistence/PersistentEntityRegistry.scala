@@ -3,8 +3,9 @@
  */
 package com.lightbend.lagom.scaladsl.persistence
 
-import akka.{ Done, NotUsed }
+import akka.persistence.query.Offset
 import akka.stream.scaladsl
+import akka.{ Done, NotUsed }
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -44,7 +45,7 @@ trait PersistentEntityRegistry {
    *
    * The type of the offset is journal dependent, some journals use time-based
    * UUID offsets, while others use sequence numbers. The passed in `fromOffset`
-   * must either be [[Offset#NONE]], or an offset that has previously been produced
+   * must either be [[akka.persistence.query.NoOffset]], or an offset that has previously been produced
    * by this journal.
    *
    * @throws IllegalArgumentException If the `fromOffset` type is not supported

@@ -3,19 +3,15 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence.jdbc
 
-import java.util.UUID
-
 import akka.Done
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.persistence.ReadSideConfig
+import akka.persistence.query.Offset
 import com.lightbend.lagom.internal.persistence.jdbc.{ AbstractSlickOffsetStoreConfiguration, SlickOffsetStore, SlickProvider }
-import com.lightbend.lagom.internal.scaladsl.persistence.{ OffsetDao, OffsetStore }
-import com.lightbend.lagom.scaladsl.persistence.{ NoOffset, Offset, Sequence, TimeBasedUUID }
+import com.lightbend.lagom.internal.persistence.{ OffsetDao, OffsetStore, ReadSideConfig }
 import play.api.Configuration
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.Try
 
 /**
  * INTERNAL API
@@ -39,21 +35,8 @@ private[lagom] class JdbcOffsetStore(val slick: SlickProvider, system: ActorSyst
   with OffsetStore {
 
   type DslOffset = Offset
-
-  override protected def queryToOffsetRow(id: String, tag: String, offset: Offset): OffsetRow =
-    offset match {
-      case Sequence(value)     => OffsetRow(id, tag, Some(value), None)
-      case TimeBasedUUID(uuid) => OffsetRow(id, tag, None, Some(uuid.toString))
-      case NoOffset            => OffsetRow(id, tag, None, None)
-    }
-
-  override protected def offsetRowToOffset(row: Option[OffsetRow]): Offset = {
-    row.flatMap(row => row.sequenceOffset.map(Sequence).orElse(
-      row.timeUuidOffset.flatMap(uuid => Try(UUID.fromString(uuid)).toOption)
-        .filter(_.version == 1)
-        .map(TimeBasedUUID)
-    )).getOrElse(NoOffset)
-  }
+  override protected def offsetToDslOffset(offset: Offset): Offset = offset
+  override protected def dslOffsetToOffset(dslOffset: Offset): Offset = dslOffset
 
   override def prepare(eventProcessorId: String, tag: String): Future[JdbcOffsetDao] = {
     runPreparations(eventProcessorId, tag)

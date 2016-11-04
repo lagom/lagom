@@ -37,7 +37,8 @@ import akka.stream.javadsl.{ Source => JSource }
 import akka.stream.scaladsl.{ Flow, Sink, Source, SourceQueueWithComplete }
 import akka.testkit.EventFilter
 import com.lightbend.lagom.internal.broker.kafka.KafkaApiSpec.{ InMemoryOffsetStore, NoServiceLocator, NullPersistentEntityRegistry }
-import com.lightbend.lagom.internal.javadsl.persistence.{ OffsetDao, OffsetStore }
+import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
+import com.lightbend.lagom.internal.persistence.{ OffsetDao, OffsetStore }
 import com.lightbend.lagom.javadsl.broker.TopicProducer
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject._
@@ -145,7 +146,7 @@ class KafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll wit
       val testTopic = testService.test3Topic()
 
       def trackedOffset = KafkaApiSpec.InMemoryOffsetStore.prepare("topicProducer-" + testTopic.topicId().value(), "singleton")
-        .map(_.loadedOffset).futureValue
+        .map(dao => OffsetAdapter.offsetToDslOffset(dao.loadedOffset)).futureValue
 
       // No message was consumed from this topic, hence we expect the last stored offset to be NONE
       trackedOffset shouldBe Offset.NONE
@@ -289,15 +290,15 @@ object KafkaApiSpec {
     override def prepare(eventProcessorId: String, tag: String): Future[OffsetDao] = {
       val key = s"$eventProcessorId-$tag"
       val offset = offsets.getOrElseUpdate(key, Offset.NONE)
-      Future.successful(new InMemoryOffsetDao(key, offset))
+      Future.successful(new InMemoryOffsetDao(key, OffsetAdapter.dslOffsetToOffset(offset)))
     }
 
     @volatile var injectFailure = false
-    class InMemoryOffsetDao(key: String, override val loadedOffset: Offset) extends OffsetDao {
-      override def saveOffset(offset: Offset): Future[Done] = {
+    class InMemoryOffsetDao(key: String, override val loadedOffset: akka.persistence.query.Offset) extends OffsetDao {
+      override def saveOffset(offset: akka.persistence.query.Offset): Future[Done] = {
         if (injectFailure) throw new FakeCassandraException
         else {
-          offsets.put(key, offset)
+          offsets.put(key, OffsetAdapter.offsetToDslOffset(offset))
           Future.successful(Done)
         }
       }
