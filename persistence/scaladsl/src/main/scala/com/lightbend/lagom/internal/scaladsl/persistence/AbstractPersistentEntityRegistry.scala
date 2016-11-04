@@ -10,16 +10,16 @@ import akka.cluster.Cluster
 import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
 import akka.event.Logging
 import akka.pattern.ask
-import akka.persistence.query.scaladsl.EventsByTagQuery
+import akka.persistence.query.Offset
+import akka.persistence.query.scaladsl.EventsByTagQuery2
 import akka.stream.scaladsl
 import akka.util.Timeout
 import akka.{ Done, NotUsed }
+import com.lightbend.lagom.internal.persistence.cluster.GracefulLeave
 import com.lightbend.lagom.scaladsl.persistence._
 
-import scala.concurrent.duration.{ FiniteDuration, _ }
-import scala.util.control.NonFatal
-import com.lightbend.lagom.internal.persistence.cluster.GracefulLeave
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
 /**
@@ -37,7 +37,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
   /**
    * The events by tag query. Necessary for implementing read sides and the eventStream query.
    */
-  protected val eventsByTagQuery: Option[EventsByTagQuery] = None
+  protected val eventsByTagQuery: Option[EventsByTagQuery2] = None
 
   private val sharding = ClusterSharding(system)
   private val conf = system.settings.config.getConfig("lagom.persistence")
@@ -112,17 +112,12 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
     eventsByTagQuery match {
       case Some(queries) =>
         val tag = aggregateTag.tag
-        val offset = fromOffset match {
-          case NoOffset      => 0l
-          case seq: Sequence => seq.value + 1
-          case other         => throw new IllegalArgumentException(s"$journalId does not support ${other.getClass.getSimpleName} offsets")
-        }
-        queries.eventsByTag(tag, offset)
+        queries.eventsByTag(tag, fromOffset)
           .map(env =>
             new EventStreamElement[Event](
               PersistentEntityActor.extractEntityId(env.persistenceId),
               env.event.asInstanceOf[Event],
-              Sequence(env.offset)
+              env.offset
             ))
       case None =>
         throw new UnsupportedOperationException(s"The $journalId Lagom persistence plugin does not support streaming events by tag")

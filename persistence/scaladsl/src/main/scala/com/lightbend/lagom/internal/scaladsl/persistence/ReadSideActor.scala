@@ -5,6 +5,7 @@ package com.lightbend.lagom.internal.scaladsl.persistence
 
 import akka.{ Done, NotUsed }
 import akka.actor.{ Actor, ActorLogging, Props, Status }
+import akka.persistence.query.Offset
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.{ Keep, Sink }
 import akka.stream.{ KillSwitch, KillSwitches, Materializer }

@@ -5,22 +5,21 @@ package com.lightbend.lagom.scaladsl.persistence
 
 import java.util.Optional
 
+import akka.persistence.query.Offset
 import akka.{ Done, NotUsed }
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.testkit.ImplicitSender
 
-import scala.compat.java8.FutureConverters._
 import scala.concurrent.duration._
-import com.typesafe.config.ConfigFactory
 import com.lightbend.lagom.internal.scaladsl.persistence.{ PersistentEntityActor, ReadSideActor }
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
-import com.lightbend.lagom.scaladsl.persistence.TestEntity.InPrependMode
 
 import scala.concurrent.Await
 import com.lightbend.lagom.persistence.ActorSystemSpec
+
 import scala.concurrent.Future
 
 trait AbstractReadSideSpec extends ImplicitSender { spec: ActorSystemSpec =>
