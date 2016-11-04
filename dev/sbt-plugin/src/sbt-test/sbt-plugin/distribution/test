@@ -9,8 +9,6 @@ $ exists lagomProj/target/universal/stage/lib/lagom-dist-proj.lagom-dist-proj-1.
 > absence lagomProj/target/universal/stage/lib/*service-registry-client*.jar
 > checkDevRuntimeClasspath lagomProj service-registration
 > absence lagomProj/target/universal/stage/lib/*service-registration*.jar
-> checkCassandraRuntimeClasspath lagomProj cassandra-registration
-> absence lagomProj/target/universal/stage/lib/*cassandra-registration*.jar
 > checkDevRuntimeClasspath lagomProj reloadable-server
 > absence lagomProj/target/universal/stage/lib/*reloadable-server*.jar
 
