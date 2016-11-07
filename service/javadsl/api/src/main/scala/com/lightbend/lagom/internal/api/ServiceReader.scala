@@ -4,7 +4,7 @@
 package com.lightbend.lagom.internal.api
 
 import java.lang.invoke.MethodHandles
-import java.lang.reflect.{ InvocationHandler, Method, ParameterizedType, Type, Proxy => JProxy }
+import java.lang.reflect.{ InvocationHandler, Method, Modifier, ParameterizedType, Type, Proxy => JProxy }
 
 import com.google.common.reflect.TypeToken
 import com.lightbend.lagom.javadsl.api._
@@ -37,9 +37,14 @@ object ServiceReader {
   }
 
   def readServiceDescriptor(classLoader: ClassLoader, serviceInterface: Class[_ <: Service]): Descriptor = {
-    val invocationHandler = new ServiceInvocationHandler(classLoader, serviceInterface)
-    val serviceStub = JProxy.newProxyInstance(classLoader, Array(serviceInterface), invocationHandler).asInstanceOf[Service]
-    serviceStub.descriptor()
+    if (Modifier.isPublic(serviceInterface.getModifiers)) {
+      val invocationHandler = new ServiceInvocationHandler(classLoader, serviceInterface)
+      val serviceStub = JProxy.newProxyInstance(classLoader, Array(serviceInterface), invocationHandler).asInstanceOf[Service]
+      serviceStub.descriptor()
+    } else {
+      // If the default descriptor method is implemented in a non-public interface, throw an exception.
+      throw new IllegalArgumentException("Service API must be described in a public interface.")
+    }
   }
 
   def resolveServiceDescriptor(descriptor: Descriptor, classLoader: ClassLoader,
