@@ -84,6 +84,16 @@
                 <artifactId>${conductr.lib.name}</artifactId>
                 <version>1.4.7</version>
             </dependency>
+            <dependency>
+                <groupId>com.typesafe.akka</groupId>
+                <artifactId>akka-actor_2.11</artifactId>
+                <version>${akka.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.typesafe.akka</groupId>
+                <artifactId>akka-stream_2.11</artifactId>
+                <version>${akka.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -91,7 +101,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <lagom.version>%LAGOM-VERSION%</lagom.version>
-        <play.version>2.5.4</play.version>
+        <play.version>%PLAY-VERSION%</play.version>
+        <akka.version>%AKKA-VERSION%</akka.version>
         <conductr.lib.name>lagom10-conductr-bundle-lib_2.11</conductr.lib.name>
     </properties>
 </project>

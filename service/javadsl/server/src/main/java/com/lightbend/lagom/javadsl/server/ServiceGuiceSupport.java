@@ -3,12 +3,15 @@
  */
 package com.lightbend.lagom.javadsl.server;
 
+import com.lightbend.lagom.internal.javadsl.*;
+import com.lightbend.lagom.internal.javadsl.server.ResolvedServices;
+import com.lightbend.lagom.internal.javadsl.server.ResolvedServicesProvider;
+import com.lightbend.lagom.internal.javadsl.server.ServiceInfoProvider;
+import com.lightbend.lagom.internal.javadsl.server.JavadslServicesRouter;
 import com.lightbend.lagom.internal.server.status.MetricsServiceImpl;
 
 import com.lightbend.lagom.javadsl.server.status.MetricsService;
 import com.google.inject.Binder;
-import com.lightbend.lagom.internal.guice.BinderAccessor;
-import com.lightbend.lagom.internal.server.*;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
 import com.lightbend.lagom.javadsl.client.ServiceClientGuiceSupport;
 
@@ -43,7 +46,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
         binder.bind(ResolvedServices.class).toProvider(new ResolvedServicesProvider(allServiceBindings));
 
         // And bind the router
-        binder.bind(ServiceRouter.class);
+        binder.bind(JavadslServicesRouter.class);
     }
 
     default <T> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, Class<? extends T> serviceImplementation) {

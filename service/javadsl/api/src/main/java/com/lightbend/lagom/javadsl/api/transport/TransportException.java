@@ -80,12 +80,14 @@ public class TransportException extends RuntimeException {
         byName.put(NotAcceptable.class.getSimpleName(), NotAcceptable::new);
         byName.put(PolicyViolation.class.getSimpleName(), PolicyViolation::new);
         byName.put(NotFound.class.getSimpleName(), NotFound::new);
+        byName.put(Forbidden.class.getSimpleName(), Forbidden::new);
 
         Map<TransportErrorCode, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> byCode = new HashMap<>();
         byCode.put(DeserializationException.ERROR_CODE, DeserializationException::new);
         byCode.put(UnsupportedMediaType.ERROR_CODE, UnsupportedMediaType::new);
         byCode.put(NotAcceptable.ERROR_CODE, NotAcceptable::new);
         byCode.put(PolicyViolation.ERROR_CODE, PolicyViolation::new);
+        byCode.put(Forbidden.ERROR_CODE, Forbidden::new);
 
         BY_NAME_TRANSPORT_EXCEPTIONS = Collections.unmodifiableMap(byName);
         BY_CODE_TRANSPORT_EXCEPTIONS = Collections.unmodifiableMap(byCode);

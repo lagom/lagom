@@ -4,7 +4,7 @@
 package com.lightbend.lagom.internal.broker.kafka
 
 import com.google.inject.AbstractModule
-import com.lightbend.lagom.internal.api.broker.TopicFactory
+import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 
 class KafkaBrokerModule extends AbstractModule {
 

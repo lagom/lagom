@@ -3,7 +3,6 @@
  */
 package com.lightbend.lagom.javadsl.api.transport;
 
-import javax.naming.ServiceUnavailableException;
 import java.io.Serializable;
 import java.util.*;
 

@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.javadsl.api.deser;
 
-import com.lightbend.lagom.internal.api.UnresolvedOptionalPathParamSerializer;
+import com.lightbend.lagom.internal.javadsl.api.UnresolvedOptionalPathParamSerializer;
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
 
@@ -62,33 +62,39 @@ public final class PathParamSerializers {
     }
 
     /**
-     * A String id serializer.
+     * A String path param serializer.
      */
     public static final PathParamSerializer<String> STRING = required("String", Function.identity(),
             Function.identity());
 
     /**
-     * A Long id serializer.
+     * A Long path param serializer.
      */
     public static final PathParamSerializer<Long> LONG = required("Long", Long::parseLong, l -> l.toString());
 
     /**
-     * An Integer id serializer.
+     * An Integer path param serializer.
      */
     public static final PathParamSerializer<Integer> INTEGER = required("Integer", Integer::parseInt, i -> i.toString());
 
     /**
-     * A Boolean id serializer.
+     * A Boolean path param serializer.
      */
     public static final PathParamSerializer<Boolean> BOOLEAN = required("Boolean", Boolean::parseBoolean,
             b -> b.toString());
+
+    /**
+     * A UUID path param serializer.
+     */
+    public static final PathParamSerializer<UUID> UUID = required("UUID", java.util.UUID::fromString,
+            u -> u.toString());
 
     /**
      * A generic (unresolved) optional serializer.
      */
     public static final PathParamSerializer<Optional<Object>> OPTIONAL = new UnresolvedOptionalPathParamSerializer<>();
 
-    private static abstract class NamedPathParamSerializer<Id> implements PathParamSerializer<Id> {
+    private static abstract class NamedPathParamSerializer<Param> implements PathParamSerializer<Param> {
         private final String name;
 
         public NamedPathParamSerializer(String name) {

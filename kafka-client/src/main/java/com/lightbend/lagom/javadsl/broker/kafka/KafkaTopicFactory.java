@@ -5,7 +5,7 @@ package com.lightbend.lagom.javadsl.broker.kafka;
 
 import akka.actor.ActorSystem;
 import akka.stream.Materializer;
-import com.lightbend.lagom.internal.api.broker.TopicFactory;
+import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory;
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig;
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig$;
 import com.lightbend.lagom.internal.broker.kafka.KafkaTopic;

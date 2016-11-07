@@ -17,6 +17,7 @@ import com.lightbend.lagom.api.mock.{ BlogService, MockService }
 import org.scalatest._
 import com.lightbend.lagom.api.mock.ScalaMockService
 import com.lightbend.lagom.api.mock.ScalaMockServiceWrong
+import com.lightbend.lagom.internal.javadsl.api.{ JacksonPlaceholderExceptionSerializer, JacksonPlaceholderSerializerFactory, MethodServiceCallHolder, ServiceReader }
 import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceCall }
 
 import scala.reflect.ClassTag

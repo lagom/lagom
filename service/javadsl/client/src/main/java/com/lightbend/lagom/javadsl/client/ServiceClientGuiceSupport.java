@@ -3,8 +3,8 @@
  */
 package com.lightbend.lagom.javadsl.client;
 
-import com.lightbend.lagom.internal.client.ServiceClientProvider;
-import com.lightbend.lagom.internal.guice.BinderAccessor;
+import com.lightbend.lagom.internal.javadsl.client.ServiceClientProvider;
+import com.lightbend.lagom.internal.javadsl.BinderAccessor;
 
 import javax.inject.Singleton;
 

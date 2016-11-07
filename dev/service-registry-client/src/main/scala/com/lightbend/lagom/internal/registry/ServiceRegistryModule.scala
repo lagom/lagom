@@ -11,8 +11,9 @@ import javax.inject.{ Inject, Provider, Singleton }
 
 import akka.stream.Materializer
 import com.google.inject.AbstractModule
-import com.lightbend.lagom.internal.api.broker.NoTopicFactoryProvider
 import com.lightbend.lagom.internal.client._
+import com.lightbend.lagom.internal.javadsl.api.broker.NoTopicFactoryProvider
+import com.lightbend.lagom.internal.javadsl.client.{ JavadslServiceClientImplementor, JavadslWebSocketClient, ServiceClientLoader }
 import com.lightbend.lagom.javadsl.api.Descriptor.Call
 import com.lightbend.lagom.javadsl.api.transport.NotFound
 import com.lightbend.lagom.javadsl.api.{ ServiceInfo, ServiceLocator }
@@ -61,7 +62,7 @@ class ServiceRegistryModule(environment: Environment, configuration: Configurati
 class ServiceRegistryClientProvider extends Provider[ServiceRegistry] {
   @Inject private var config: ServiceRegistryServiceLocator.ServiceLocatorConfig = _
   @Inject private var ws: WSClient = _
-  @Inject private var webSocketClient: WebSocketClient = _
+  @Inject private var webSocketClient: JavadslWebSocketClient = _
   @Inject private var serviceInfo: ServiceInfo = _
   @Inject private var environment: Environment = _
   @Inject private var ec: ExecutionContext = _
@@ -72,7 +73,7 @@ class ServiceRegistryClientProvider extends Provider[ServiceRegistry] {
 
   lazy val get = {
     val serviceLocator = new ClientServiceLocator(config)
-    val implementor = new ServiceClientImplementor(ws, webSocketClient, serviceInfo, serviceLocator, environment,
+    val implementor = new JavadslServiceClientImplementor(ws, webSocketClient, serviceInfo, serviceLocator, environment,
       NoTopicFactoryProvider)(ec, mat)
     val loader = new ServiceClientLoader(jacksonSerializerFactory, jacksonExceptionSerializer, environment, implementor)
     loader.loadServiceClient(classOf[ServiceRegistry])

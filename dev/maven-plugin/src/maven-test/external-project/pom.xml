@@ -82,6 +82,11 @@
                 <artifactId>lagom-javadsl-integration-client_${scala.binary.version}</artifactId>
                 <version>${lagom.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.typesafe.akka</groupId>
+                <artifactId>akka-actor_${scala.binary.version}</artifactId>
+                <version>${akka.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
