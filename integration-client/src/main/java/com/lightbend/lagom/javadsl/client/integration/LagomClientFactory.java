@@ -199,7 +199,7 @@ public class LagomClientFactory implements Closeable {
         }, actorSystem.dispatcher());
 
         // ServiceClientLoader
-        CircuitBreakers circuitBreakers = new CircuitBreakers(actorSystem, new CircuitBreakerConfig(actorSystem),
+        CircuitBreakers circuitBreakers = new CircuitBreakers(actorSystem, new CircuitBreakerConfig(configuration),
                 new CircuitBreakerMetricsProviderImpl(actorSystem));
         ServiceInfo serviceInfo = new ServiceInfo(serviceName);
 
