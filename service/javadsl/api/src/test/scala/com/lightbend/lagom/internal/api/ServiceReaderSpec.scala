@@ -56,6 +56,13 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
       }
     }
 
+    "fail to read a Java service descriptor from a non-public interface (and report it in a user-friendly manner)" in {
+      val caught = intercept[IllegalArgumentException] {
+        ServiceReader.readServiceDescriptor(getClass.getClassLoader, classOf[NotPublicInterfaceService])
+      }
+      caught.getMessage should ===("Service API must be described in a public interface.")
+    }
+
     "resolve the service descriptor path param serializers" in {
       val descriptor = serviceDescriptor[BlogService]
 
