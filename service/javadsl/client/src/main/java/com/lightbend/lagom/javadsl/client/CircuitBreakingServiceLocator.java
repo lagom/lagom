@@ -7,6 +7,9 @@ import com.lightbend.lagom.internal.client.CircuitBreakers;
 import com.lightbend.lagom.javadsl.api.CircuitBreaker;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
+import scala.concurrent.Future;
+import scala.runtime.AbstractFunction0;
+import scala.compat.java8.FutureConverters;
 
 import java.net.URI;
 import java.util.Optional;
@@ -65,7 +68,15 @@ public abstract class CircuitBreakingServiceLocator implements ServiceLocator {
                 circuitBreakerId = serviceName;
             }
 
-            return doWithServiceImpl(serviceName, serviceCall, uri -> circuitBreakers.withCircuitBreaker(circuitBreakerId, () -> block.apply(uri)));
+            return doWithServiceImpl(serviceName, serviceCall, uri -> {
+                Future<T> future = circuitBreakers.withCircuitBreaker(circuitBreakerId, new AbstractFunction0<Future<T>>() {
+                    @Override
+                    public Future<T> apply() {
+                        return FutureConverters.toScala(block.apply(uri));
+                    }
+                });
+                return FutureConverters.toJava(future);
+            });
         }).orElseGet(() ->
                 doWithServiceImpl(serviceName, serviceCall, block)
         );

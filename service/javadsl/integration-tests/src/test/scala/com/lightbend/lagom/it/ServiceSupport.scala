@@ -32,7 +32,7 @@ trait ServiceSupport extends WordSpecLike with Matchers with Inside {
       override def apply(server: TestServer): Unit = {
         block(server.app.getWrappedApplication)
       }
-    };
+    }
     val setup = ServiceTest.defaultSetup.withConfigureBuilder(jConfigureBuilder).withCluster(false)
     ServiceTest.withServer(setup, jBlock)
   }

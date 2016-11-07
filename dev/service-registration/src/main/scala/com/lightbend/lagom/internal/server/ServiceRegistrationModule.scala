@@ -9,14 +9,14 @@ import java.util.function.{ Function => JFunction }
 import scala.compat.java8.FutureConverters.CompletionStageOps
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-
 import com.google.inject.Provider
 import com.lightbend.lagom.internal.registry.ServiceRegistry
 import com.lightbend.lagom.internal.registry.ServiceRegistryService
-
 import akka.NotUsed
 import javax.inject.Inject
 import javax.inject.Singleton
+
+import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
 import play.api.Configuration
 import play.api.Environment
 import play.api.Logger

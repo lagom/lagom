@@ -10,14 +10,14 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
 /**
- * An ID service call implementation that allows plugging directly into Play's request handling.
+ * A service call implementation that allows plugging directly into Play's request handling.
  */
 @FunctionalInterface
 public interface PlayServiceCall<Request, Response> extends ServiceCall<Request, Response> {
 
     @Override
     default CompletionStage<Response> invoke(Request request) {
-        throw new UnsupportedOperationException("Play ID service call must be invoked using Play specific methods");
+        throw new UnsupportedOperationException("Play service call must be invoked using Play specific methods");
     }
 
     /**
