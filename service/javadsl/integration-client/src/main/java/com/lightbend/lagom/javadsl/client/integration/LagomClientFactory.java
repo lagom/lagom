@@ -211,7 +211,7 @@ public class LagomClientFactory implements Closeable {
         TopicFactoryProvider topicFactoryProvider = () -> Some.apply(kafkaTopicFactory);
 
         // ServiceClientLoader
-        CircuitBreakers circuitBreakers = new CircuitBreakers(actorSystem, new CircuitBreakerConfig(actorSystem),
+        CircuitBreakers circuitBreakers = new CircuitBreakers(actorSystem, new CircuitBreakerConfig(configuration),
                 new CircuitBreakerMetricsProviderImpl(actorSystem));
 
         JacksonSerializerFactory serializerFactory = new JacksonSerializerFactory(actorSystem);

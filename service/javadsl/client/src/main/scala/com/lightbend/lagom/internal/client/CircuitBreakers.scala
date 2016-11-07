@@ -12,6 +12,7 @@ import akka.actor.ActorSystem
 import akka.pattern.{ CircuitBreakerOpenException, CircuitBreaker => AkkaCircuitBreaker }
 import com.lightbend.lagom.internal.spi.{ CircuitBreakerMetrics, CircuitBreakerMetricsProvider }
 import com.typesafe.config.Config
+import play.api.Configuration
 
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.duration._
@@ -71,7 +72,7 @@ class CircuitBreakers @Inject() (system: ActorSystem, circuitBreakerConfig: Circ
 }
 
 @Singleton
-class CircuitBreakerConfig @Inject() (system: ActorSystem) {
-  val config: Config = system.settings.config.getConfig("lagom.circuit-breaker")
+class CircuitBreakerConfig @Inject() (configuration: Configuration) {
+  val config: Config = configuration.underlying.getConfig("lagom.circuit-breaker")
   val default: Config = config.getConfig("default")
 }
