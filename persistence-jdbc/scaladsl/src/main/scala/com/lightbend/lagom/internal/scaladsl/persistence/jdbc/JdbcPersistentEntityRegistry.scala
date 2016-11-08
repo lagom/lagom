@@ -19,7 +19,7 @@ private[lagom] final class JdbcPersistentEntityRegistry(system: ActorSystem, sli
 
   private lazy val ensureTablesCreated = slickProvider.ensureTablesCreated()
 
-  override def register(entityFactory: => PersistentEntity[_, _, _]): Unit = {
+  override def register(entityFactory: => PersistentEntity): Unit = {
     ensureTablesCreated
     super.register(entityFactory)
   }
