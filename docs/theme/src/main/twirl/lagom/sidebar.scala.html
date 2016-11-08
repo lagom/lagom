@@ -1,0 +1,12 @@
+@import play.doc.Toc
+
+@(hierarchy: List[Toc])
+
+@for(toc <- hierarchy) {
+    <h3>@toc.title</h3>
+    <ul>
+        @for((_, page) <- toc.nodes) {
+            <li><a href="@{page.page}.html">@page.title</a></li>
+        }
+    </ul>
+}
