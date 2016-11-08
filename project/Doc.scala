@@ -84,14 +84,32 @@ object UnidocRoot extends AutoPlugin {
     javacOptions in doc := Seq(
       "-windowtitle", "Lagom Services API",
       "-public",
-      "-group", "Services API", packageList("com.lightbend.lagom.javadsl", "com.lightbend.lagom.javadsl.api",
-          "com.lightbend.lagom.javadsl.client", "com.lightbend.lagom.javadsl.server",
-          "com.lightbend.lagom.javadsl.api.deser", "com.lightbend.lagom.javadsl.api.paging"),
-      "-group", "Persistence", packageList("com.lightbend.lagom.javadsl.persistence",
-          "com.lightbend.lagom.javadsl.persistence.cassandra",
-          "com.lightbend.lagom.javadsl.persistence.testkit"),
-      "-group", "Cluster", packageList("com.lightbend.lagom.javadsl.pubsub", "com.lightbend.lagom.javadsl.cluster"),
-
+      "-group", "Services API", packageList(
+        "com.lightbend.lagom.javadsl",
+        "com.lightbend.lagom.javadsl.api",
+        "com.lightbend.lagom.javadsl.client",
+        "com.lightbend.lagom.javadsl.server",
+        "com.lightbend.lagom.javadsl.api.deser",
+        "com.lightbend.lagom.javadsl.api.paging"
+      ),
+      "-group", "Persistence", packageList(
+        "com.lightbend.lagom.javadsl.persistence",
+        "com.lightbend.lagom.javadsl.persistence.cassandra",
+        "com.lightbend.lagom.javadsl.persistence.cassandra.testkit",
+        "com.lightbend.lagom.javadsl.persistence.jdbc",
+        "com.lightbend.lagom.javadsl.persistence.jdbc.testkit",
+        "com.lightbend.lagom.javadsl.persistence.testkit"
+      ),
+      "-group", "Cluster", packageList(
+        "com.lightbend.lagom.javadsl.pubsub",
+        "com.lightbend.lagom.javadsl.cluster"
+      ),
+      "-group", "Message Broker", packageList(
+        "com.lightbend.lagom.javadsl.api.broker",
+        "com.lightbend.lagom.javadsl.api.broker.kafka",
+        "com.lightbend.lagom.javadsl.broker",
+        "com.lightbend.lagom.javadsl.broker.kafka"
+      ),
       "-noqualifier", "java.lang",
       "-encoding", "UTF-8", 
       "-source", "1.8",
