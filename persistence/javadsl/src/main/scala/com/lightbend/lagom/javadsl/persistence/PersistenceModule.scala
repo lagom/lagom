@@ -60,19 +60,7 @@ private object PersistenceModule {
     }
 
     private[PersistenceModule] def init(): Unit = {
-      // This implementation assumes that if the service is started in DEV mode, then the service is being started
-      // from within the Lagom development environment, via the `lagomRun` task. This is relevant because services
-      // that use the persistence module will get the `cassandra-register` module injected on their classpath.
-      // The `cassandra-register` module takes care of registering the Cassandra contact-points to the service locator,
-      // so that the Cassandra contact-points can be successfully retrieved when they are looked up by the Akka
-      // persistence internals (see `ServiceLocatorSessionProvider#lookupContactPoints`).
-      // Therefore, in DEV mode, `ServiceLocatorHolder#setServiceLocator` is expected to be called only after the
-      // Cassandra contact-points have been fully registered to the service locator. In all other cases (i.e., Test or
-      // Prod), we expect that the Cassandra contact-points are known by the service locator prior to start the service.
-      env match {
-        case Some(e) if e.isDev() => // nothing to do as `ServiceLocatorHolder#setServiceLocator` will be called by the bound RegisterCassandraContactPoints instance
-        case _                    => serviceLocator.foreach(ServiceLocatorHolder(system).setServiceLocator)
-      }
+      serviceLocator.foreach(ServiceLocatorHolder(system).setServiceLocator)
     }
   }
 }
