@@ -117,7 +117,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
     "send commands to target entity" in within(20.seconds) {
 
-      val ref1 = registry.refFor(classOf[TestEntity], "1").withAskTimeout(remaining)
+      val ref1 = registry.refFor[TestEntity]("1").withAskTimeout(remaining)
 
       // note that this is done on both node1 and node2
       val r1 = ref1.ask(TestEntity.Add("a"))
@@ -125,7 +125,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       expectMsg(TestEntity.Appended("A"))
       enterBarrier("appended-A")
 
-      val ref2 = registry.refFor(classOf[TestEntity], "2")
+      val ref2 = registry.refFor[TestEntity]("2")
       val r2 = ref2.ask(TestEntity.Add("b"))
       r2.pipeTo(testActor)
       expectMsg(TestEntity.Appended("B"))
@@ -156,7 +156,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       // and lagom.persistence.run-entities-on-role = backend
       // i.e. no entities on node3
 
-      val entities = for (n <- 10 to 29) yield registry.refFor(classOf[TestEntity], n.toString)
+      val entities = for (n <- 10 to 29) yield registry.refFor[TestEntity](n.toString)
       val addresses = entities.map { ent =>
         val r = ent.ask(TestEntity.GetAddress)
         val h: Future[String] = r.map(_.hostPort) // compile check that the reply type is inferred correctly
@@ -176,12 +176,12 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
       runOn(node1) {
         within(15.seconds) {
-          val ref1 = registry.refFor(classOf[TestEntity], "1").withAskTimeout(remaining)
+          val ref1 = registry.refFor[TestEntity]("1").withAskTimeout(remaining)
           val r1: Future[TestEntity.Evt] = ref1.ask(TestEntity.Add("a"))
           r1.pipeTo(testActor)
           expectMsg(TestEntity.Appended("A"))
 
-          val ref2 = registry.refFor(classOf[TestEntity], "2")
+          val ref2 = registry.refFor[TestEntity]("2")
           val r2: Future[TestEntity.Evt] = ref2.ask(TestEntity.Add("b"))
           r2.pipeTo(testActor)
           expectMsg(TestEntity.Appended("B"))

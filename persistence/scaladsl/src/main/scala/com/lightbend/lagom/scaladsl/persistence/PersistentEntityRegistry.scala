@@ -29,14 +29,14 @@ trait PersistentEntityRegistry {
    * That will happen in another thread, so the `entityFactory` must be thread-safe, e.g.
    * not close over shared mutable state that is not thread-safe.
    */
-  def register(entityFactory: => PersistentEntity[_, _, _]): Unit
+  def register(entityFactory: => PersistentEntity): Unit
 
   /**
    * Retrieve a [[com.lightbend.lagom.scaladsl.persistence.PersistentEntityRef]] for a
    * given [[com.lightbend.lagom.scaladsl.persistence.PersistentEntity]] class
    * and identifier. Commands are sent to a `PersistentEntity` using a `PersistentEntityRef`.
    */
-  def refFor[C](entityClass: Class[_ <: PersistentEntity[C, _, _]], entityId: String): PersistentEntityRef[C]
+  def refFor[P <: PersistentEntity: ClassTag](entityId: String): PersistentEntityRef[P#Command]
 
   /**
    * A stream of the persistent events that have the given `aggregateTag`, e.g.

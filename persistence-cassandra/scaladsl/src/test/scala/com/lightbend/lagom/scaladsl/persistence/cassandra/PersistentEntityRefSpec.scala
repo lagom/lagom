@@ -50,7 +50,11 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
     TestKit.shutdownActorSystem(system)
   }
 
-  class AnotherEntity extends PersistentEntity[Integer, String, String] {
+  class AnotherEntity extends PersistentEntity {
+    override type Command = Integer
+    override type Event = String
+    override type State = String
+
     def initialState: String = ""
     override def behavior = Actions()
   }
@@ -73,12 +77,12 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
   "The Cassandra persistence backend" should {
 
     "send commands to the registry" in {
-      val ref1 = registry.refFor(classOf[TestEntity], "1")
+      val ref1 = registry.refFor[TestEntity]("1")
       // FIXME remove type ascriptions when ask gets the right retur type
       (ref1.ask(TestEntity.Add("a")): Future[TestEntity.Evt])
         .futureValue(Timeout(15.seconds)) should ===(TestEntity.Appended("A"))
 
-      val ref2 = registry.refFor(classOf[TestEntity], "2")
+      val ref2 = registry.refFor[TestEntity]("2")
 
       (ref2.ask(TestEntity.Add("b")): Future[TestEntity.Evt]).futureValue should ===(TestEntity.Appended("B"))
 
@@ -90,7 +94,7 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
     }
 
     "ask timeout when reply does not reply in time" in {
-      val ref = registry.refFor(classOf[TestEntity], "10").withAskTimeout(1.millisecond)
+      val ref = registry.refFor[TestEntity]("10").withAskTimeout(1.millisecond)
 
       val replies =
         for (i <- 0 until 100) yield ref.ask(TestEntity.Add("c"))
@@ -100,24 +104,24 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
     }
 
     "fail future on invalid command" in {
-      val ref = registry.refFor(classOf[TestEntity], "10")
+      val ref = registry.refFor[TestEntity]("10")
       // empty not allowed
       ref.ask(TestEntity.Add("")).failed.futureValue shouldBe an[InvalidCommandException]
     }
 
     "fail future on error in entity" in {
-      val ref = registry.refFor(classOf[TestEntity], "10")
+      val ref = registry.refFor[TestEntity]("10")
       ref.ask(TestEntity.Add(null)).failed.futureValue shouldBe a[NullPointerException]
     }
 
     "fail future on unhandled command" in {
-      val ref = registry.refFor(classOf[TestEntity], "10")
+      val ref = registry.refFor[TestEntity]("10")
       ref.ask(TestEntity.UndefinedCmd).failed.futureValue shouldBe an[UnhandledCommandException]
     }
 
     "throw exception on unregistered entity" in {
       intercept[IllegalArgumentException] {
-        registry.refFor(classOf[AnotherEntity], "whatever")
+        registry.refFor[AnotherEntity]("whatever")
       }
     }
 
