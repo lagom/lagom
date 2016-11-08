@@ -18,7 +18,7 @@ An important thing to note here is that invoking the `sayHello()` method does no
 
 While the `sayHello()` method describes how the call will be programmatically invoked or implemented, it does not describe how this call gets mapped down onto the transport.  This is done by providing a `default` implementation of the [`descriptor()`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#descriptor--) call, whose interface is described by [`Service`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html).
 
-You can see that we're returning a service named `hello`, and we're describing one call, the `sayHello` call.  Because this service is so simple, in this case we don't need to do anything more than simply pass the call as a method reference to the [`call`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#call-java.util.function.Supplier-) method.  When mapped to a REST transport, Lagom will map `sayHello()` calls to a `POST` request on a static path of `/sayHello`, with `text/plain` request and response bodies.  All of this is configurable, as we'll see below.
+You can see that we're returning a service named `hello`, and we're describing one call, the `sayHello` call.  Because this service is so simple, in this case we don't need to do anything more than simply pass the call as a method reference to the [`call`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#call-java.util.function.Supplier-) method. 
 
 ## Call identifiers
 
@@ -45,6 +45,10 @@ Multiple parameters can of course be extracted out, these will be passed to your
 Query string parameters can also be extracted from the path, using a `&` separated list after a `?` at the end of the path.  For example, the following service call uses query string parameters to implement paging:
 
 @[call-query-string-parameters](code/docs/services/FirstDescriptor.java)
+
+
+When you use `call`, `namedCall` or `pathCall`, if Lagom maps that down to REST, Lagom will make a best effort attempt to map it down to REST in a semantic fashion, so that means if there is a request message, it will use `POST`, if there's none, it will use `GET`.
+
 
 ### REST identifiers
 
