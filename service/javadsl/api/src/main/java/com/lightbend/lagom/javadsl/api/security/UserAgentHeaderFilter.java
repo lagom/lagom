@@ -17,6 +17,7 @@ import java.util.Optional;
  * If using this on a service that serves requests from the outside world, it would be a good idea to block the
  * <tt>User-Agent</tt> header in the web facing load balancer/proxy.
  */
+//#user-agent-auth-filter
 public class UserAgentHeaderFilter implements HeaderFilter {
 
     @Override
@@ -54,3 +55,4 @@ public class UserAgentHeaderFilter implements HeaderFilter {
         return response;
     }
 }
+//#user-agent-auth-filter
