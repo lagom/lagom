@@ -79,3 +79,5 @@ If you are wondering why we have created two services in the seed template, inst
 > One microservice is no microservice - they come in systems.
 
 Said otherwise, we believe you will be creating several services, and we felt it was important to showcase intra-service communication.
+
+When developing in Lagom you will run several services in a single Java Virtual Machine. You may need to [[Increase Memory for Maven|JVMMemoryOnDev]].
