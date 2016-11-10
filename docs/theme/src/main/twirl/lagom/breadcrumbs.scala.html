@@ -1,0 +1,11 @@
+@import play.doc.Toc
+
+@(hierarchy: List[Toc])
+
+<nav class="breadcrumbs">
+    @for(first <- hierarchy.lastOption) {
+        <a href="/">Documentation</a>
+    } @for(toc <- hierarchy.reverse) {
+        &raquo; <a href="@{toc.page}.html">@toc.title</a>
+    }
+</nav>
