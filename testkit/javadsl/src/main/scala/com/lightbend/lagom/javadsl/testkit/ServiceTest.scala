@@ -27,7 +27,7 @@ import akka.japi.function.Procedure
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
-import com.lightbend.lagom.internal.persistence.{ InMemoryOffsetStore, OffsetStore }
+import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
 import org.apache.cassandra.io.util.FileUtils
 import play.Application
 import play.Configuration
@@ -66,7 +66,7 @@ object ServiceTest {
   // These are all specified as strings so that we can say they are disabled without having a dependency on them.
   private val JdbcPersistenceModule = "com.lightbend.lagom.javadsl.persistence.jdbc.JdbcPersistenceModule"
   private val CassandraPersistenceModule = "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule"
-  private val KafkaBrokerModule = "com.lightbend.lagom.internal.broker.kafka.KafkaBrokerModule"
+  private val KafkaBrokerModule = "com.lightbend.lagom.internal.javadsl.broker.kafka.KafkaBrokerModule"
   private val KafkaClientModule = "com.lightbend.lagom.javadsl.broker.kafka.KafkaClientModule"
 
   sealed trait Setup {

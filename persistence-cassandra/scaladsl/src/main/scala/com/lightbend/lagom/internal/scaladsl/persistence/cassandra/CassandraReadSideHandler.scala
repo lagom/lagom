@@ -8,6 +8,7 @@ import akka.stream.ActorAttributes
 import akka.stream.scaladsl.Flow
 import akka.{ Done, NotUsed }
 import com.datastax.driver.core.{ BatchStatement, BoundStatement }
+import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraOffsetDao, CassandraOffsetStore }
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.scaladsl.persistence._
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
@@ -85,7 +86,7 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
   import CassandraAutoReadSideHandler.Handler
 
   @volatile
-  private var offsetDao: offsetStore.CassandraOffsetDao = _
+  private var offsetDao: CassandraOffsetDao = _
 
   override protected def invoke(handler: Handler[Event], element: EventStreamElement[Event]): Future[immutable.Seq[BoundStatement]] = {
     for {

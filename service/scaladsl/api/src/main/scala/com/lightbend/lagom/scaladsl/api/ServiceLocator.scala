@@ -5,6 +5,8 @@ package com.lightbend.lagom.scaladsl.api
 
 import java.net.URI
 
+import com.lightbend.lagom.scaladsl.api.Descriptor.Call
+
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
@@ -52,4 +54,11 @@ trait ServiceLocator {
    * @return The result of the executed block, if the service was found.
    */
   def doWithService[T](name: String, serviceCall: Descriptor.Call[_, _])(block: URI => Future[T])(implicit ec: ExecutionContext): Future[Option[T]]
+}
+
+object ServiceLocator {
+  object NoServiceLocator extends ServiceLocator {
+    override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = Future.successful(None)
+    override def doWithService[T](name: String, serviceCall: Call[_, _])(block: (URI) => Future[T])(implicit ec: ExecutionContext): Future[Option[T]] = Future.successful(None)
+  }
 }

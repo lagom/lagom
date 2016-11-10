@@ -14,6 +14,7 @@ import akka.event.Logging
 import com.datastax.driver.core.BoundStatement
 import com.google.inject.Injector
 import com.lightbend.lagom.internal.javadsl.persistence.ReadSideImpl
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide.ReadSideHandlerBuilder

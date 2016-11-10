@@ -5,9 +5,7 @@ package com.lightbend.lagom.scaladsl.persistence.jdbc
 
 import scala.concurrent.ExecutionContext
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.persistence.OffsetStore
-import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
-import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcOffsetStore
+import com.lightbend.lagom.internal.persistence.jdbc.{ SlickOffsetStore, SlickProvider }
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcPersistentEntityRegistry
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcReadSideImpl
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcSessionImpl
@@ -16,6 +14,7 @@ import com.lightbend.lagom.scaladsl.persistence.PersistenceComponents
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 import com.lightbend.lagom.scaladsl.persistence.ReadSidePersistenceComponents
 import com.lightbend.lagom.scaladsl.persistence.WriteSidePersistenceComponents
+import com.lightbend.lagom.spi.persistence.OffsetStore
 import play.api.db.DBComponents
 
 /**
@@ -45,13 +44,12 @@ trait ReadSideJdbcPersistenceComponents extends ReadSidePersistenceComponents wi
   lazy val offsetTableConfiguration: OffsetTableConfiguration = new OffsetTableConfiguration(
     configuration, readSideConfig
   )
-  lazy val jdbcOffsetStore: JdbcOffsetStore = new JdbcOffsetStore(slickProvider, actorSystem, offsetTableConfiguration,
-    readSideConfig)(executionContext)
+  private[lagom] lazy val slickOffsetStore: SlickOffsetStore = new SlickOffsetStore(actorSystem, slickProvider,
+    offsetTableConfiguration)
 
-  // FIXME what about OffsetStore? OffsetStore is internal. Guice module defines:
-  lazy val offsetStore: OffsetStore = jdbcOffsetStore
+  lazy val offsetStore: OffsetStore = slickOffsetStore
 
-  lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(slickProvider, jdbcOffsetStore)(executionContext)
+  lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(slickProvider, slickOffsetStore)(executionContext)
 
   lazy val jdbcSession: JdbcSession = new JdbcSessionImpl(slickProvider)
 

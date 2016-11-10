@@ -29,7 +29,7 @@ The Lagom Kafka Client implementation is built using [akka-stream-kafka](https:/
 
 ### Lagom Kafka Client
 
-@[kafka-broker](../../../../../kafka-client/src/main/resources/reference.conf)
+@[kafka-broker](../../../../../service/core/kafka/client/src/main/resources/reference.conf)
 
 First, notice you can pass the location of your Kafka brokers via the key `lagom.broker.kafka.brokers`. In production, you will usually want to have at least two brokers for resiliency. Make sure to separate each broker URL with a comma.
 

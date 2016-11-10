@@ -22,16 +22,16 @@ private[lagom] object ScaladslServerMacroImpl {
     val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
     val server = q"$scaladsl.server"
 
-    val serviceCallMethods = ScaladslClientMacroImpl.validateServiceInterface[T](c)
+    val extracted = ScaladslClientMacroImpl.validateServiceInterface[T](c)
 
-    val serviceMethodImpls = serviceCallMethods.map { serviceMethod =>
+    val serviceMethodImpls = (extracted.serviceCalls ++ extracted.topics).map { serviceMethod =>
       val methodParams = serviceMethod.paramLists.map { paramList =>
         paramList.map(param => q"${param.name.toTermName}: ${param.typeSignature}")
       }
 
       q"""
         override def ${serviceMethod.name}(...$methodParams) = {
-          throw new _root_.scala.NotImplementedError("Service methods must not be invoked from service trait")
+          throw new _root_.scala.NotImplementedError("Service methods and topics must not be invoked from service trait")
         }
       """
     }

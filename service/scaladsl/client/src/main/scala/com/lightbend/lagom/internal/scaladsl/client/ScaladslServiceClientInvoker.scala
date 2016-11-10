@@ -9,9 +9,11 @@ import akka.util.ByteString
 import com.lightbend.lagom.internal.api.Path
 import com.lightbend.lagom.internal.client.ClientServiceCallInvoker
 import com.lightbend.lagom.internal.scaladsl.api.ScaladslPath
+import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
 import com.lightbend.lagom.scaladsl.api._
-import com.lightbend.lagom.scaladsl.api.Descriptor.Call
-import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodCall
+import com.lightbend.lagom.scaladsl.api.Descriptor.{ Call, TopicCall }
+import com.lightbend.lagom.scaladsl.api.ServiceSupport.{ ScalaMethodServiceCall, ScalaMethodTopic }
+import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser._
 import com.lightbend.lagom.scaladsl.api.transport.{ RequestHeader, ResponseHeader }
 import com.lightbend.lagom.scaladsl.client.{ ServiceClientConstructor, ServiceClientContext, ServiceClientImplementationContext, ServiceResolver }
@@ -22,7 +24,8 @@ import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
 
 private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: ScaladslWebSocketClient, serviceInfo: ServiceInfo,
-                                           serviceLocator: ServiceLocator, serviceResolver: ServiceResolver)(implicit ec: ExecutionContext, mat: Materializer) extends ServiceClientConstructor {
+                                           serviceLocator: ServiceLocator, serviceResolver: ServiceResolver,
+                                           topicFactory: Option[TopicFactory])(implicit ec: ExecutionContext, mat: Materializer) extends ServiceClientConstructor {
 
   private val ctx: ServiceClientImplementationContext = new ServiceClientImplementationContext {
     override def resolve(unresolvedDescriptor: Descriptor): ServiceClientContext = new ServiceClientContext {
@@ -31,9 +34,16 @@ private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: Scalad
 
       val serviceCalls: Map[String, ScalaServiceCall] = descriptor.calls.map { call =>
         call.serviceCallHolder match {
-          case methodServiceCall: ScalaMethodCall[_] =>
+          case methodServiceCall: ScalaMethodServiceCall[_, _] =>
             val pathSpec = ScaladslPath.fromCallId(call.callId)
             methodServiceCall.method.getName -> ScalaServiceCall(call, pathSpec, methodServiceCall.pathParamSerializers)
+        }
+      }.toMap
+
+      val topics: Map[String, TopicCall[_]] = descriptor.topics.map { topic =>
+        topic.topicHolder match {
+          case methodTopic: ScalaMethodTopic[_] =>
+            methodTopic.method.getName -> topic
         }
       }.toMap
 
@@ -51,6 +61,18 @@ private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: Scalad
             new ScaladslClientServiceCall[Request, Response, Response](invoker, identity, (header, message) => message)
 
           case None => throw new RuntimeException("No descriptor for service call method: " + methodName)
+        }
+      }
+
+      override def createTopic[Message](methodName: String): Topic[Message] = {
+        topicFactory match {
+          case Some(tf) =>
+            topics.get(methodName) match {
+              case Some(topicCall: TopicCall[Message]) => tf.create(topicCall)
+              case None                                => throw new RuntimeException("No descriptor for topic method: " + methodName)
+            }
+          case None =>
+            throw new RuntimeException("No message broker implementation to create topic from. Did you forget to include com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents in your application?")
         }
       }
     }

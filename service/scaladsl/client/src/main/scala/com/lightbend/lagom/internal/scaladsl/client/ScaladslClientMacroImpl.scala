@@ -3,21 +3,23 @@
  */
 package com.lightbend.lagom.internal.scaladsl.client
 
+import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.{ Service, ServiceCall }
 
 import scala.reflect.macros.blackbox.Context
 
 private[lagom] object ScaladslClientMacroImpl {
 
+  case class ExtractedMethods[MethodSymbol](serviceCalls: Seq[MethodSymbol], topics: Seq[MethodSymbol])
+
   /**
    * Do validation and extract the service call methods.
-   *
-   * todo also extract topic methods
    */
-  def validateServiceInterface[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): Seq[c.universe.MethodSymbol] = {
+  def validateServiceInterface[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): ExtractedMethods[c.universe.MethodSymbol] = {
     import c.universe._
 
     val serviceCallType = c.mirror.typeOf[ServiceCall[_, _]].erasure
+    val topicType = c.mirror.typeOf[Topic[_]].erasure
 
     val serviceMethods = serviceType.tpe.members.collect {
       case method if method.isAbstract && method.isMethod => method.asMethod
@@ -25,6 +27,10 @@ private[lagom] object ScaladslClientMacroImpl {
 
     val serviceCallMethods = serviceMethods.collect {
       case serviceCall if serviceCall.returnType.erasure =:= serviceCallType => serviceCall
+    }
+
+    val topicMethods = serviceMethods.collect {
+      case topic if topic.returnType.erasure =:= topicType => topic
     }
 
     // Check that descriptor is not abstract
@@ -40,12 +46,19 @@ private[lagom] object ScaladslClientMacroImpl {
     }
 
     // Validate that all the abstract methods are service call methods or topic methods
-    val nonServiceCallOrTopicMethods = serviceMethods.toSet -- serviceCallMethods
+    val nonServiceCallOrTopicMethods = serviceMethods.toSet -- serviceCallMethods -- topicMethods
     if (nonServiceCallOrTopicMethods.nonEmpty) {
       c.abort(c.enclosingPosition, s"Can't generate a Lagom client for ${serviceType.tpe} since the following abstract methods don't return service calls or topics:${nonServiceCallOrTopicMethods.map(_.name).mkString("\n", "\n", "")}")
     }
 
-    serviceCallMethods.toSeq
+    // Validate that all topics have zero parameters
+    topicMethods.foreach { topic =>
+      if (topic.paramLists.flatten.nonEmpty) {
+        c.abort(c.enclosingPosition, s"Topic methods must have zero parameters")
+      }
+    }
+
+    ExtractedMethods(serviceCallMethods.toSeq, topicMethods.toSeq)
   }
 
   def implementClient[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[T] = {
@@ -55,7 +68,7 @@ private[lagom] object ScaladslClientMacroImpl {
     val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
     val client = q"$scaladsl.client"
 
-    val serviceCallMethods = validateServiceInterface[T](c)
+    val extractedMethods = validateServiceInterface[T](c)
 
     // Extract the target that "implement" was invoked on, so we can invoke "doImplement" on it instead
     val serviceClient = c.macroApplication match {
@@ -66,10 +79,12 @@ private[lagom] object ScaladslClientMacroImpl {
     val implementationContext = TermName(c.freshName("implementationContext"))
     val serviceContext = TermName(c.freshName("serviceContext"))
 
-    val serviceMethodImpls = serviceCallMethods.map { serviceMethod =>
-      val methodParams = serviceMethod.paramLists.map { paramList =>
-        paramList.map(param => q"${param.name.toTermName}: ${param.typeSignature}")
-      }
+    def createMethodParams(method: c.universe.MethodSymbol) = method.paramLists.map { paramList =>
+      paramList.map(param => q"${param.name.toTermName}: ${param.typeSignature}")
+    }
+
+    val serviceMethodImpls = extractedMethods.serviceCalls.map { serviceMethod =>
+      val methodParams = createMethodParams(serviceMethod)
       val methodParamNames = serviceMethod.paramLists.flatten.map(_.name)
 
       q"""
@@ -80,6 +95,16 @@ private[lagom] object ScaladslClientMacroImpl {
       """
     }
 
+    val topicMethodImpls = extractedMethods.topics.map { topicMethod =>
+      val methodParams = createMethodParams(topicMethod)
+
+      q"""
+        override def ${topicMethod.name}(...$methodParams) = {
+          $serviceContext.createTopic(${topicMethod.name.decodedName.toString})
+        }
+       """
+    }
+
     c.Expr[T](q"""
       $serviceClient match {
         case serviceClientConstructor: $client.ServiceClientConstructor =>
@@ -87,6 +112,8 @@ private[lagom] object ScaladslClientMacroImpl {
             private val $serviceContext: $client.ServiceClientContext = $implementationContext.resolve(this.descriptor)
 
             ..$serviceMethodImpls
+
+            ..$topicMethodImpls
           })
         case other => throw new _root_.java.lang.RuntimeException(${serviceClient.toString} + " of type " + $serviceClient.getClass.getName + " does not implement ServiceClientConstructor")
       }

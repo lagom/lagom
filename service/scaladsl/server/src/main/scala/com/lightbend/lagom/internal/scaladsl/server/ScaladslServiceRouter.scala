@@ -11,7 +11,7 @@ import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceApiBridge
 import com.lightbend.lagom.internal.server.ServiceRouter
 import com.lightbend.lagom.scaladsl.api.Descriptor
 import com.lightbend.lagom.scaladsl.api.Descriptor.RestCallId
-import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodCall
+import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodServiceCall
 import com.lightbend.lagom.scaladsl.api.deser.StreamedMessageSerializer
 import com.lightbend.lagom.scaladsl.api.transport._
 import com.lightbend.lagom.scaladsl.server.PlayServiceCall
@@ -38,8 +38,8 @@ class ScaladslServiceRouter(override protected val descriptor: Descriptor, servi
     override val isWebSocket: Boolean = call.requestSerializer.isInstanceOf[StreamedMessageSerializer[_]] ||
       call.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]
 
-    private val holder: ScalaMethodCall[ServiceCall[Any, Any]] = call.serviceCallHolder match {
-      case holder: ScalaMethodCall[ServiceCall[Any, Any]] => holder
+    private val holder: ScalaMethodServiceCall[Any, Any] = call.serviceCallHolder match {
+      case holder: ScalaMethodServiceCall[Any, Any] => holder
     }
 
     override def createServiceCall(params: Seq[Seq[String]]): ServiceCall[Any, Any] = {
