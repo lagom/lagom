@@ -237,6 +237,8 @@ val javadslProjects = Seq[ProjectReference](
   `persistence-javadsl`,
   `persistence-cassandra-javadsl`,
   `persistence-jdbc-javadsl`,
+  pubsub,
+  jackson,
   `testkit-javadsl`,
   immutables,
   `integration-client-javadsl`
@@ -259,17 +261,14 @@ val coreProjects = Seq[ProjectReference](
   client,
   server,
   spi,
-  jackson,
   `play-json`,
   `cluster-core`,
-  pubsub,
   `kafka-client`,
   `kafka-broker`,
   `persistence-core`,
   `persistence-cassandra-core`,
   `persistence-jdbc-core`,
-  logback,
-  immutables
+  logback
 )
 
 val otherProjects = Seq[ProjectReference](
@@ -280,7 +279,7 @@ val otherProjects = Seq[ProjectReference](
 
 lazy val root = (project in file("."))
   .settings(name := "lagom")
-  .settings(common: _*)
+  .settings(runtimeLibCommon: _*)
   .settings(
     PgpKeys.publishSigned := {},
     publishLocal := {},
@@ -288,8 +287,7 @@ lazy val root = (project in file("."))
     publish := {}
   )
   .enablePlugins(lagom.UnidocRoot)
-  .settings(UnidocRoot.settings(Nil, otherProjects ++
-    Seq[ProjectReference](`sbt-scripted-library`, `sbt-scripted-tools`)): _*)
+  .settings(UnidocRoot.settings(javadslProjects, scaladslProjects): _*)
   .aggregate(javadslProjects: _*)
   .aggregate(scaladslProjects: _*)
   .aggregate(coreProjects: _*)

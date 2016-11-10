@@ -32,31 +32,35 @@ lazy val docs = project
     // This is needed so that Java APIs that use immutables will typecheck by the Scala compiler
     compileOrder in Test := CompileOrder.JavaThenScala,
 
-    markdownDocsTitle := "Lagom",
-    markdownDocPaths += {
-      // What I'd really like to do here is trigger the unidoc task in the root project externally,
-      // however I tried that and for some reason it doesn't work.  So instead we'll just depend on
-      // it being run manually.
+    markdownDocumentation := {
       val javaUnidocTarget = parentDir / "target" / "javaunidoc"
-      streams.value.log.info(s"Serving javadocs from $javaUnidocTarget. Rerun unidoc in root project to refresh")
-      javaUnidocTarget -> "api"
+      val unidocTarget = parentDir / "target" / "unidoc"
+      streams.value.log.info(s"Serving javadocs from $javaUnidocTarget and scaladocs from $unidocTarget. Rerun unidoc in root project to refresh")
+      Seq(
+        Documentation("java", Seq(
+          DocPath(baseDirectory.value / "manual" / "common", "."),
+          DocPath(baseDirectory.value / "manual" / "java", "."),
+          DocPath(javaUnidocTarget, "api")
+        ), "Home.html", "Java Home", Map("api/index.html" -> "Java")),
+        Documentation("scala", Seq(
+          DocPath(baseDirectory.value / "manual" / "common", "."),
+          DocPath(baseDirectory.value / "manual" / "scala", "."),
+          DocPath(unidocTarget, "api")
+        ), "Home.html", "Scala Home", Map("api/index.html" -> "Scala"))
+      )
     },
-    markdownApiDocs := Seq(
-        "api/index.html" -> "Java"
-    ),
+    // Disable scala validation while docs are incomplete
+    markdownDocumentation in markdownGenerateRefReports := {
+      markdownDocumentation.value.filter { doc =>
+        sys.props.get("validate.scala.docs").exists(_ == "true") || doc.name == "java"
+      }
+    },
     markdownUseBuiltinTheme := false,
     markdownTheme := Some("lagom.LagomMarkdownTheme"),
     markdownGenerateTheme := Some("bare"),
     markdownGenerateIndex := true,
-    markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/")),
-
-    markdownS3CredentialsHost := "downloads.typesafe.com.s3.amazonaws.com",
-    markdownS3Bucket := Some("downloads.typesafe.com"),
-    markdownS3Prefix := "rp/lagom/",
-    markdownS3Region := awscala.Region0.US_EAST_1,
-    excludeFilter in markdownS3PublishDocs ~= {
-      _ || "*.scala" || "*.java" || "*.sbt" || "*.conf" || "*.md" || "*.toc"
-    }
+    markdownStageIncludeWebJars := false,
+    markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/"))
 
   ).dependsOn(serviceIntegrationTests, persistenceJdbc, kafkaBroker, immutables % "test->compile", theme % "run-markdown")
 
@@ -99,10 +103,6 @@ lazy val theme = project
     scalaVersion := "2.11.7",
     resolvers += Resolver.typesafeIvyRepo("releases"),
     libraryDependencies ++= Seq(
-      "com.lightbend.markdown" %% "lightbend-markdown-server" % LightbendMarkdownVersion,
-      "org.webjars" % "jquery" % "1.9.0",
-      "org.webjars" % "prettify" % "4-Mar-2013"
-    ),
-    pipelineStages in Assets := Seq(uglify),
-    LessKeys.compress := true
+      "com.lightbend.markdown" %% "lightbend-markdown-server" % LightbendMarkdownVersion
+    )
   )

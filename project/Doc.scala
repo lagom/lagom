@@ -5,9 +5,10 @@ package lagom
 
 import sbt._
 import sbtunidoc.Plugin.UnidocKeys._
-import sbtunidoc.Plugin.{ ScalaUnidoc, JavaUnidoc, Genjavadoc, javaUnidocSettings, baseGenjavadocExtraTasks }
+import sbtunidoc.Plugin.{Genjavadoc, JavaUnidoc, ScalaUnidoc, scalaJavaUnidocSettings}
 import sbt.Keys._
 import sbt.File
+import sbt.ScopeFilter.ProjectFilter
 
 object Scaladoc extends AutoPlugin {
 
@@ -40,13 +41,15 @@ object UnidocRoot extends AutoPlugin {
 
   override def trigger = noTrigger
 
-  def settings(ignoreAggregates: Seq[ProjectReference], ignoreProjects: Seq[ProjectReference]) = {
-    val withoutAggregates = ignoreAggregates.foldLeft(inAnyProject) { _ -- inAggregates(_, transitive = true, includeRoot = true) }
-    val docProjectFilter = ignoreProjects.foldLeft(withoutAggregates) { _ -- inProjects(_) }
+  private def projectsAndDependencies(projects: Seq[ProjectReference]): ProjectFilter = {
+    //projects.map(p => inDependencies(p, transitive = true, includeRoot = true)).reduce(_ || _)
+    projects.map(p => inProjects(p)).reduce(_ || _)
+  }
 
+  def settings(javadslProjects: Seq[ProjectReference], scaladslProjects: Seq[ProjectReference]) = {
     inTask(unidoc)(Seq(
-      unidocProjectFilter in ScalaUnidoc := docProjectFilter,
-      unidocProjectFilter in JavaUnidoc := docProjectFilter,
+      unidocProjectFilter in ScalaUnidoc := projectsAndDependencies(scaladslProjects),
+      unidocProjectFilter in JavaUnidoc := projectsAndDependencies(javadslProjects),
       apiMappings in ScalaUnidoc := (apiMappings in (Compile, doc)).value
     ))
   }
@@ -75,7 +78,7 @@ object UnidocRoot extends AutoPlugin {
       |  }
       |</script>""".stripMargin.replaceAll("\n", "\\\\n").replaceAll("\"", "\\\\\"")
 
-  override lazy val projectSettings = javaUnidocSettings ++ Seq(
+  override lazy val projectSettings = scalaJavaUnidocSettings ++ Seq(
     unidocAllSources in (JavaUnidoc, unidoc) ++= allGenjavadocSources.value,
     unidocAllSources in (JavaUnidoc, unidoc) := {
       (unidocAllSources in (JavaUnidoc, unidoc)).value

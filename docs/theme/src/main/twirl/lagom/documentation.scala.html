@@ -1,120 +1,252 @@
 @*
 * Copyright (C) 2009-2016 Lightbend Inc. <https://www.lightbend.com>
 *@
-@(projectName: Option[String], title: Option[String], home: String, content: Html, sidebar: Option[Html], apiDocs: Seq[(String, String)], sourceUrl: Option[String])
+@(projectName: Option[String], title: Option[String], home: String, content: Html, sidebar: Option[Html],
+        breadcrumbs: Option[Html], apiDocs: Seq[(String, String)], sourceUrl: Option[String])
 
 <!DOCTYPE html>
-<html lang="en">
+<html class="noios">
     <head>
-        <title>Lightbend - Lagom - Documentation</title>
-        <meta charset="utf-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-
-        <meta name="description" content="Documentation for Lagom"/>
-
-        <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic,700italic" rel="stylesheet" type="text/css"/>
-        <link rel="stylesheet" href="webjars/lagom-docs-theme/stylesheets/normalize.css"/>
-        <link rel="stylesheet" href="webjars/lagom-docs-theme/stylesheets/foundation.min.css"/>
-        <link rel="stylesheet" href="webjars/lagom-docs-theme/stylesheets/main.min.css"/>
-        <script type="text/javascript" src="webjars/lagom-docs-theme/javascripts/vendor/modernizr.min.js"></script>
-        <link rel="shortcut icon" href="webjars/lagom-docs-theme/favicon.ico" />
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Lagom@title.map(" - " + _)</title>
+        <meta name="description" content="Lagom">
+        <meta name="viewport" content="width=device-width,maximum-scale=1"/>
+        <link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700" rel="stylesheet" type="text/css"/>
+        <link rel="stylesheet" href="/webjars/lagom-docs-theme/all-styles-concat.css" type="text/css">
+        <link rel="shortcut icon" href="/webjars/lagom-docs-theme/favicon.ico" type="image/x-icon"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css" />
     </head>
     <body>
-        <div class="off-canvas-wrap">
-            <div class="inner-wrap">
-                <nav class="tab-bar">
-                    <section class="left-small">
-                        <a class="left-off-canvas-toggle menu-icon" ><span></span></a>
-                    </section>
-                    <section class="right tab-bar-section">
-                        <h1 class="title"><a href="@home"> Lagom Documentation</a></h1>
-                        <span class="logo">
-                            <svg class="svg-icon svg-logom-logo-reverse" id="Lagom_Reverse" data-name="Lagom Reverse" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 752 192"><title>logom</title><g id="Lagom"><path d="M291.58,31.79h19.83v87.91c0,8.1,2.64,11.57,9.91,11.57a21.11,21.11,0,0,0,5.95-.66V148.3a35.63,35.63,0,0,1-9.42,1c-17.52,0-26.28-8.92-26.28-26.94V31.79Z" fill="#fff"/><path d="M398.34,75.75V63.69h19.83v58.17c0,7.11,1.65,9.75,6.11,9.75a41.28,41.28,0,0,0,4.13-.33v16a28.65,28.65,0,0,1-9.75,1.32c-4.79,0-8.59-.83-11.57-2.64a15.33,15.33,0,0,1-6.78-10.08C394.53,144.66,385,149,371.73,149A39.58,39.58,0,0,1,342,136.4c-7.93-8.43-11.9-18.67-11.9-31.07s4-22.64,11.9-30.9a39.58,39.58,0,0,1,29.75-12.56C385.12,61.87,395.2,67.82,398.34,75.75Zm-5.95,47.76a24.29,24.29,0,0,0,7.44-18.18,24.29,24.29,0,0,0-7.44-18.18,24.68,24.68,0,0,0-18-7.27,23.93,23.93,0,0,0-17.68,7.27c-4.63,4.79-6.94,10.91-6.94,18.18s2.31,13.39,6.94,18.18a23.93,23.93,0,0,0,17.68,7.27A24.68,24.68,0,0,0,392.39,123.51Z" fill="#fff"/><path d="M495.67,63.69H515.5v69.41c0,20-2.81,32.23-14,41-7.93,6.11-17.68,9.25-29.42,9.25-15.53,0-28.92-4-40.32-12.06l9.59-14.71a50.47,50.47,0,0,0,28.59,9.09q11.65,0,18.34-5c5.29-3.8,7.93-10.91,7.93-21.15v-4.13c-4,7.11-13.88,12.23-27.1,12.23a40.53,40.53,0,0,1-29.75-12.23c-7.93-8.1-11.9-18.34-11.9-30.41s4-22.31,12.06-30.57a39.23,39.23,0,0,1,29.58-12.56c13.72,0,23.8,5.78,26.61,13.88V63.69ZM489.72,123a24.19,24.19,0,0,0,7.44-18,23.82,23.82,0,0,0-7.44-17.85,24.68,24.68,0,0,0-18-7.27A23.93,23.93,0,0,0,454,87.15,24.69,24.69,0,0,0,447.09,105,25.08,25.08,0,0,0,454,123a23.79,23.79,0,0,0,17.68,7.11C478.81,130.12,484.93,127.81,489.72,123Z" fill="#fff"/><path d="M522.44,105.33a42.05,42.05,0,0,1,13.22-31.4c8.76-8.43,19.5-12.72,32.22-12.72s23.47,4.3,32.23,12.72a42.05,42.05,0,0,1,13.22,31.4,42.05,42.05,0,0,1-13.22,31.4c-8.76,8.43-19.5,12.72-32.23,12.72s-23.47-4.3-32.22-12.72A42.05,42.05,0,0,1,522.44,105.33ZM586.23,124a25.67,25.67,0,0,0,7.44-18.67,25,25,0,0,0-7.44-18.51,26.13,26.13,0,0,0-36.85,0,25.56,25.56,0,0,0-7.27,18.51A26.22,26.22,0,0,0,549.38,124,26.54,26.54,0,0,0,586.23,124Z" fill="#fff"/><path d="M620.6,147V63.69h19.67v11.9C643.74,67.49,652,62,662.58,62,674,62,681.91,66.83,686,76.58,690.84,66.83,699.76,62,712.81,62c18,0,28.42,12.72,28.42,33.38v26.28c0,6.44,1.16,8.76,5.62,8.76a14.56,14.56,0,0,0,2.81-.33v16.69a28.37,28.37,0,0,1-8.59,1c-13.05,0-19.5-7.27-19.5-21.81V98.23c0-11.4-5.29-18.51-14.54-18.51s-16,8.1-16,19.33V147H671.34V98.23c0-11.4-5.45-18.51-14.87-18.51-9.25,0-16.2,8.1-16.2,19.33V147H620.6Z" fill="#fff"/></g><g id="Icon"><g opacity="0.8"><path d="M261,84l-70,34,70,34S260.78,84.27,261,84Z" fill="#fff"/></g><g opacity="0.8"><polygon points="121 152 191 118 121 84 121 152" fill="#fff"/></g><path d="M191,118l70,34c-0.27,0-41.76,25-60.63,36.24a17.64,17.64,0,0,1-18,0C163.47,177,121,152,121,152Z" fill="#fff" opacity="0.6"/><path d="M200.23,47.65C219.09,58.88,261,84,261,84l-70,34L121,84c0.27,0,42.31-25.12,61.18-36.36A17.64,17.64,0,0,1,200.23,47.65Z" fill="#fff"/><g opacity="0.8"><path d="M145,20.58l-35,17,35,17S144.89,20.72,145,20.58Z" fill="#fff"/></g><g opacity="0.8"><polygon points="75 54.58 110 37.58 75 20.58 75 54.58" fill="#fff"/></g><path d="M110,37.58l35,17c-0.14,0-20.88,12.5-30.31,18.12a8.82,8.82,0,0,1-9,0C96.23,67.08,75,54.58,75,54.58Z" fill="#fff" opacity="0.6"/><path d="M114.61,2.4C124,8,145,20.58,145,20.58l-35,17-35-17C75.14,20.59,96.16,8,105.59,2.4A8.82,8.82,0,0,1,114.61,2.4Z" fill="#fff"/><g opacity="0.8"><path d="M101,91L51,115.54l50,24.53S100.84,91.21,101,91Z" fill="#fff"/></g><g opacity="0.8"><polygon points="1 140.07 51 115.54 1 91.02 1 140.07" fill="#fff"/></g><path d="M51,115.54l50,24.53c-0.19,0-29.83,18-43.3,26.14a12.5,12.5,0,0,1-12.89,0C31.34,158.1,1,140.07,1,140.07Z" fill="#fff" opacity="0.6"/><path d="M57.59,64.79C71.06,72.9,101,91,101,91L51,115.54,1,91C1.19,91,31.22,72.9,44.7,64.79A12.5,12.5,0,0,1,57.59,64.79Z" fill="#fff"/></g></svg>
-                        </span>
-                    </section>
-                </nav>
+        <div class="off-canvas-wrapper">
+            <div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+                <div class="off-canvas position-left" id="offCanvasLeft" data-off-canvas >
+                    <nav>
+                        <button class="close-button" aria-label="Close menu" type="button" data-close>
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <a href="http://www.lagomframework.com/download.html">Download</a>
+                        
 
-                <aside class="left-off-canvas-menu">
-                    <ul class="off-canvas-list">
-                        <li><label>API docs</label></li>
-                        @for((href, text) <- apiDocs) {
-                            <li><a href="@href">@text</a></li>
-                        }
-                        @sidebar
-                    </ul>
-                </aside>
-                <div class="row">
-                    <div class="small-12 large-10 large-centered columns">
+<h3>Documentation</h3>
+<ul>
+    <li><a href="/java/Installation.html">Installing</a></li>
+    <li><a href="/java/GettingStarted.html">Getting started</a></li>
+    <li><a href="/">Full documentation</a></li>
+    <li><a href="http://www.lagomframework.com/blog">Blog</a></li>
+</ul>
+<h3>Find help</h3>
+<ul>
+    <li><a href="https://gitter.im/lagom/lagom">Gitter channel</a></li>
+    <li><a href="https://stackoverflow.com/questions/tagged/lagom">Stack overflow</a></li>
+    <li><a href="https://www.lightbend.com/services/expert-support">Professional support</a></li>
+</ul>
+<h3>Contribute</h3>
+<ul>
+    <li><a href="http://www.lagomframework.com/get-involved.html">Get involved</a></li>
+    <li><a href="http://www.lagomframework.com/conduct.html">Code of conduct</a></li>
+    <li><a href="http://www.lagomframework.com/community-process.html">Community process</a></li>
+    <li><a href="http://www.lagomframework.com/contributing.html">Contributor guidelines</a></li>
+</ul>
 
-                        <article id="page-content">
-                            @content
-
-                            @sourceUrl.map { url =>
-                                <hr />
-                                <p>Found an error in this documentation? The source code for this page can be found <a href="@url">here</a>. Please feel free to edit and contribute a pull request.</p>
-                            }
-                        </article>
-
-                    </div>
+                    </nav>
                 </div>
-                <footer class="site-footer">
-                    <div class="row">
-                        <div class="small-12 large-10 large-centered columns">
-                            <div class="row">
-                                <div class="small-12 large-7 columns">
-                                    <div class="support-item">
-                                        <div class="support-icon">
-                                            <svg id="lightbend-icon-reverse" class="svg-icon svg-icon-lightbend-reverse" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 302 262">
-                                                <title>lightbend-icon</title>
-                                                <g id="icon">
-                                                    <path d="M1,195v56a10,10,0,0,0,10,10H291a10,10,0,0,0,10-10V195a557.85,557.85,0,0,1-150,20A557.85,557.85,0,0,1,1,195Z" style="fill:#fff" />
-                                                    <path d="M291,1H11A10,10,0,0,0,1,11V176a539.94,539.94,0,0,0,150,21,539.94,539.94,0,0,0,150-21V11A10,10,0,0,0,291,1Z" style="fill:#fff" />
-                                                </g>
-                                            </svg>
-                                        </div>
-                                        <div class="support-detail">
-                                            <h2>Commercial Support</h2>
-                                            <a href="https://www.lightbend.com/services/expert-support">Lightbend Subscription</a>&nbsp;|&nbsp;
-                                            <a href="https://www.lightbend.com/services/training">Training</a>&nbsp;|&nbsp;
-                                            <a href="https://www.lightbend.com/services/consulting">Consulting</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="small-12 large-5 columns large-text-right">
+                <div class="off-canvas-content" data-off-canvas-content>
+                    <header class="navbar show-for-medium">
+                        <div class="row">
+                            <div class="small-12 columns">
+                                <button class="menu-icon hide-for-medium" type="button" data-open="offCanvasLeft" data-toggle="offCanvas"></button>
+                                <a class="logo" href="/"><svg id="Lagom_Full_Color" class="svg-logo svg-logo-lagom-full-color" data-name="Lagom Full Color" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 752 192"><title>logom</title><g id="Lagom"><path d="M291.58,31.79h19.83v87.91c0,8.1,2.64,11.57,9.91,11.57a21.11,21.11,0,0,0,5.95-.66V148.3a35.63,35.63,0,0,1-9.42,1c-17.52,0-26.28-8.92-26.28-26.94V31.79Z" fill="#652b7c"/><path d="M398.34,75.75V63.69h19.83v58.17c0,7.11,1.65,9.75,6.11,9.75a41.28,41.28,0,0,0,4.13-.33v16a28.65,28.65,0,0,1-9.75,1.32c-4.79,0-8.59-.83-11.57-2.64a15.33,15.33,0,0,1-6.78-10.08C394.53,144.66,385,149,371.73,149A39.58,39.58,0,0,1,342,136.4c-7.93-8.43-11.9-18.67-11.9-31.07s4-22.64,11.9-30.9a39.58,39.58,0,0,1,29.75-12.56C385.12,61.87,395.2,67.82,398.34,75.75Zm-5.95,47.76a24.29,24.29,0,0,0,7.44-18.18,24.29,24.29,0,0,0-7.44-18.18,24.68,24.68,0,0,0-18-7.27,23.93,23.93,0,0,0-17.68,7.27c-4.63,4.79-6.94,10.91-6.94,18.18s2.31,13.39,6.94,18.18a23.93,23.93,0,0,0,17.68,7.27A24.68,24.68,0,0,0,392.39,123.51Z" fill="#652b7c"/><path d="M495.67,63.69H515.5v69.41c0,20-2.81,32.23-14,41-7.93,6.11-17.68,9.25-29.42,9.25-15.53,0-28.92-4-40.32-12.06l9.59-14.71a50.47,50.47,0,0,0,28.59,9.09q11.65,0,18.34-5c5.29-3.8,7.93-10.91,7.93-21.15v-4.13c-4,7.11-13.88,12.23-27.1,12.23a40.53,40.53,0,0,1-29.75-12.23c-7.93-8.1-11.9-18.34-11.9-30.41s4-22.31,12.06-30.57a39.23,39.23,0,0,1,29.58-12.56c13.72,0,23.8,5.78,26.61,13.88V63.69ZM489.72,123a24.19,24.19,0,0,0,7.44-18,23.82,23.82,0,0,0-7.44-17.85,24.68,24.68,0,0,0-18-7.27A23.93,23.93,0,0,0,454,87.15,24.69,24.69,0,0,0,447.09,105,25.08,25.08,0,0,0,454,123a23.79,23.79,0,0,0,17.68,7.11C478.81,130.12,484.93,127.81,489.72,123Z" fill="#652b7c"/><path d="M522.44,105.33a42.05,42.05,0,0,1,13.22-31.4c8.76-8.43,19.5-12.72,32.22-12.72s23.47,4.3,32.23,12.72a42.05,42.05,0,0,1,13.22,31.4,42.05,42.05,0,0,1-13.22,31.4c-8.76,8.43-19.5,12.72-32.23,12.72s-23.47-4.3-32.22-12.72A42.05,42.05,0,0,1,522.44,105.33ZM586.23,124a25.67,25.67,0,0,0,7.44-18.67,25,25,0,0,0-7.44-18.51,26.13,26.13,0,0,0-36.85,0,25.56,25.56,0,0,0-7.27,18.51A26.22,26.22,0,0,0,549.38,124,26.54,26.54,0,0,0,586.23,124Z" fill="#652b7c"/><path d="M620.6,147V63.69h19.67v11.9C643.74,67.49,652,62,662.58,62,674,62,681.91,66.83,686,76.58,690.84,66.83,699.76,62,712.81,62c18,0,28.42,12.72,28.42,33.38v26.28c0,6.44,1.16,8.76,5.62,8.76a14.56,14.56,0,0,0,2.81-.33v16.69a28.37,28.37,0,0,1-8.59,1c-13.05,0-19.5-7.27-19.5-21.81V98.23c0-11.4-5.29-18.51-14.54-18.51s-16,8.1-16,19.33V147H671.34V98.23c0-11.4-5.45-18.51-14.87-18.51-9.25,0-16.2,8.1-16.2,19.33V147H620.6Z" fill="#652b7c"/></g><g id="Icon"><path d="M261,84l-70,34,70,34S260.78,84.27,261,84Z" fill="#652b7c"/><polygon points="121 152 191 118 121 84 121 152" fill="#652b7c"/><path d="M191,118l70,34c-0.27,0-41.76,25-60.63,36.24a17.64,17.64,0,0,1-18,0C163.47,177,121,152,121,152Z" fill="#421540"/><path d="M200.23,47.65C219.09,58.88,261,84,261,84l-70,34L121,84c0.27,0,42.31-25.12,61.18-36.36A17.64,17.64,0,0,1,200.23,47.65Z" fill="#bf97c6"/><path d="M145,20.58l-35,17,35,17S144.89,20.72,145,20.58Z" fill="#652b7c"/><polygon points="75 54.58 110 37.58 75 20.58 75 54.58" fill="#652b7c"/><path d="M110,37.58l35,17c-0.14,0-20.88,12.5-30.31,18.12a8.82,8.82,0,0,1-9,0C96.23,67.08,75,54.58,75,54.58Z" fill="#421540"/><path d="M114.61,2.4C124,8,145,20.58,145,20.58l-35,17-35-17C75.14,20.59,96.16,8,105.59,2.4A8.82,8.82,0,0,1,114.61,2.4Z" fill="#bf97c6"/><path d="M101,91L51,115.54l50,24.53S100.84,91.21,101,91Z" fill="#652b7c"/><polygon points="1 140.07 51 115.54 1 91.02 1 140.07" fill="#652b7c"/><path d="M51,115.54l50,24.53c-0.19,0-29.83,18-43.3,26.14a12.5,12.5,0,0,1-12.89,0C31.34,158.1,1,140.07,1,140.07Z" fill="#421540"/><path d="M57.59,64.79C71.06,72.9,101,91,101,91L51,115.54,1,91C1.19,91,31.22,72.9,44.7,64.79A12.5,12.5,0,0,1,57.59,64.79Z" fill="#bf97c6"/></g></svg></a>
+                                <nav class="sections show-for-medium">
+                                    
 
-                                    <div class="footer-logos">
-                                        <a class="footer-logo lagom" href="@home">
-                                            <svg class="svg-icon svg-logom-logo-reverse" id="Lagom_Reverse" data-name="Lagom Reverse" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 752 192"><title>logom</title><g id="Lagom"><path d="M291.58,31.79h19.83v87.91c0,8.1,2.64,11.57,9.91,11.57a21.11,21.11,0,0,0,5.95-.66V148.3a35.63,35.63,0,0,1-9.42,1c-17.52,0-26.28-8.92-26.28-26.94V31.79Z" fill="#fff"/><path d="M398.34,75.75V63.69h19.83v58.17c0,7.11,1.65,9.75,6.11,9.75a41.28,41.28,0,0,0,4.13-.33v16a28.65,28.65,0,0,1-9.75,1.32c-4.79,0-8.59-.83-11.57-2.64a15.33,15.33,0,0,1-6.78-10.08C394.53,144.66,385,149,371.73,149A39.58,39.58,0,0,1,342,136.4c-7.93-8.43-11.9-18.67-11.9-31.07s4-22.64,11.9-30.9a39.58,39.58,0,0,1,29.75-12.56C385.12,61.87,395.2,67.82,398.34,75.75Zm-5.95,47.76a24.29,24.29,0,0,0,7.44-18.18,24.29,24.29,0,0,0-7.44-18.18,24.68,24.68,0,0,0-18-7.27,23.93,23.93,0,0,0-17.68,7.27c-4.63,4.79-6.94,10.91-6.94,18.18s2.31,13.39,6.94,18.18a23.93,23.93,0,0,0,17.68,7.27A24.68,24.68,0,0,0,392.39,123.51Z" fill="#fff"/><path d="M495.67,63.69H515.5v69.41c0,20-2.81,32.23-14,41-7.93,6.11-17.68,9.25-29.42,9.25-15.53,0-28.92-4-40.32-12.06l9.59-14.71a50.47,50.47,0,0,0,28.59,9.09q11.65,0,18.34-5c5.29-3.8,7.93-10.91,7.93-21.15v-4.13c-4,7.11-13.88,12.23-27.1,12.23a40.53,40.53,0,0,1-29.75-12.23c-7.93-8.1-11.9-18.34-11.9-30.41s4-22.31,12.06-30.57a39.23,39.23,0,0,1,29.58-12.56c13.72,0,23.8,5.78,26.61,13.88V63.69ZM489.72,123a24.19,24.19,0,0,0,7.44-18,23.82,23.82,0,0,0-7.44-17.85,24.68,24.68,0,0,0-18-7.27A23.93,23.93,0,0,0,454,87.15,24.69,24.69,0,0,0,447.09,105,25.08,25.08,0,0,0,454,123a23.79,23.79,0,0,0,17.68,7.11C478.81,130.12,484.93,127.81,489.72,123Z" fill="#fff"/><path d="M522.44,105.33a42.05,42.05,0,0,1,13.22-31.4c8.76-8.43,19.5-12.72,32.22-12.72s23.47,4.3,32.23,12.72a42.05,42.05,0,0,1,13.22,31.4,42.05,42.05,0,0,1-13.22,31.4c-8.76,8.43-19.5,12.72-32.23,12.72s-23.47-4.3-32.22-12.72A42.05,42.05,0,0,1,522.44,105.33ZM586.23,124a25.67,25.67,0,0,0,7.44-18.67,25,25,0,0,0-7.44-18.51,26.13,26.13,0,0,0-36.85,0,25.56,25.56,0,0,0-7.27,18.51A26.22,26.22,0,0,0,549.38,124,26.54,26.54,0,0,0,586.23,124Z" fill="#fff"/><path d="M620.6,147V63.69h19.67v11.9C643.74,67.49,652,62,662.58,62,674,62,681.91,66.83,686,76.58,690.84,66.83,699.76,62,712.81,62c18,0,28.42,12.72,28.42,33.38v26.28c0,6.44,1.16,8.76,5.62,8.76a14.56,14.56,0,0,0,2.81-.33v16.69a28.37,28.37,0,0,1-8.59,1c-13.05,0-19.5-7.27-19.5-21.81V98.23c0-11.4-5.29-18.51-14.54-18.51s-16,8.1-16,19.33V147H671.34V98.23c0-11.4-5.45-18.51-14.87-18.51-9.25,0-16.2,8.1-16.2,19.33V147H620.6Z" fill="#fff"/></g><g id="Icon"><g opacity="0.8"><path d="M261,84l-70,34,70,34S260.78,84.27,261,84Z" fill="#fff"/></g><g opacity="0.8"><polygon points="121 152 191 118 121 84 121 152" fill="#fff"/></g><path d="M191,118l70,34c-0.27,0-41.76,25-60.63,36.24a17.64,17.64,0,0,1-18,0C163.47,177,121,152,121,152Z" fill="#fff" opacity="0.6"/><path d="M200.23,47.65C219.09,58.88,261,84,261,84l-70,34L121,84c0.27,0,42.31-25.12,61.18-36.36A17.64,17.64,0,0,1,200.23,47.65Z" fill="#fff"/><g opacity="0.8"><path d="M145,20.58l-35,17,35,17S144.89,20.72,145,20.58Z" fill="#fff"/></g><g opacity="0.8"><polygon points="75 54.58 110 37.58 75 20.58 75 54.58" fill="#fff"/></g><path d="M110,37.58l35,17c-0.14,0-20.88,12.5-30.31,18.12a8.82,8.82,0,0,1-9,0C96.23,67.08,75,54.58,75,54.58Z" fill="#fff" opacity="0.6"/><path d="M114.61,2.4C124,8,145,20.58,145,20.58l-35,17-35-17C75.14,20.59,96.16,8,105.59,2.4A8.82,8.82,0,0,1,114.61,2.4Z" fill="#fff"/><g opacity="0.8"><path d="M101,91L51,115.54l50,24.53S100.84,91.21,101,91Z" fill="#fff"/></g><g opacity="0.8"><polygon points="1 140.07 51 115.54 1 91.02 1 140.07" fill="#fff"/></g><path d="M51,115.54l50,24.53c-0.19,0-29.83,18-43.3,26.14a12.5,12.5,0,0,1-12.89,0C31.34,158.1,1,140.07,1,140.07Z" fill="#fff" opacity="0.6"/><path d="M57.59,64.79C71.06,72.9,101,91,101,91L51,115.54,1,91C1.19,91,31.22,72.9,44.7,64.79A12.5,12.5,0,0,1,57.59,64.79Z" fill="#fff"/></g></svg>
-                                        </a>
-                                        <a class="footer-logo lightbend" href="http://www.lightbend.com">
-                                            <svg id="lightbend-reverse" class="svg-icon svg-icon-logo-lightbend-reverse" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1228 262"><title>lightbend</title><g id="lightbend"><path d="M355,64.6a7.11,7.11,0,1,1,14.22,0V171.16h45.34a6.61,6.61,0,0,1,6.48,6.66,6.45,6.45,0,0,1-6.48,6.48H362a7.19,7.19,0,0,1-7-7.2V64.6Z" style="fill:#fff"/><path d="M447.77,62.08c0-4.5,3.6-7.38,8.1-7.38,4.68,0,8.28,2.88,8.28,7.38v2.34c0,4.32-3.6,7.38-8.28,7.38-4.5,0-8.1-3.06-8.1-7.38V62.08ZM449,97.36a7,7,0,0,1,6.84-7,6.92,6.92,0,0,1,7,7v80.82a6.77,6.77,0,0,1-6.84,7,6.92,6.92,0,0,1-7-7V97.36Z" style="fill:#fff"/><path d="M500.33,202.47a6.41,6.41,0,0,1-3.6-5.76,6.61,6.61,0,0,1,6.3-6.12,5.59,5.59,0,0,1,3.06.9A58.76,58.76,0,0,0,539,201.57c20.52,0,33.84-11.34,33.84-33.12v-11c-8.1,10.8-19.44,19.62-36.54,19.62-22.32,0-43.74-16.74-43.74-43.56v-0.36c0-27.18,21.6-43.92,43.74-43.92,17.46,0,28.8,8.64,36.36,18.72V97.36a6.87,6.87,0,0,1,6.84-7,7,7,0,0,1,7,7V168.1c0,14.4-4.32,25.38-11.88,32.94-8.28,8.28-20.7,12.42-35.46,12.42A72.88,72.88,0,0,1,500.33,202.47Zm72.9-69.12V133c0-19.08-16.56-31.5-34.2-31.5s-32.22,12.24-32.22,31.32v0.36c0,18.72,14.94,31.68,32.22,31.68C556.66,164.86,573.22,152.08,573.22,133.36Z" style="fill:#fff"/><path d="M618.4,59a6.93,6.93,0,1,1,13.86,0v48.42c6.12-10.08,15.84-18.18,31.86-18.18,22.5,0,35.64,15.12,35.64,37.26v51.66a6.93,6.93,0,1,1-13.86,0V129.94c0-17.28-9.36-28.08-25.74-28.08-16,0-27.9,11.7-27.9,29.16v47.16a6.77,6.77,0,0,1-6.84,7,6.92,6.92,0,0,1-7-7V59Z" style="fill:#fff"/><path d="M732.52,159.64V103.48H725a6.31,6.31,0,0,1-6.12-6.12A6.18,6.18,0,0,1,725,91.24h7.56v-22a6.88,6.88,0,0,1,6.84-7,7.15,7.15,0,0,1,7,7v22H770.5a6.34,6.34,0,0,1,6.3,6.12,6.22,6.22,0,0,1-6.3,6.12H746.38v54.36c0,11.34,6.3,15.48,15.66,15.48,4.86,0,7.38-1.26,8.46-1.26a6,6,0,0,1,5.94,5.94,5.79,5.79,0,0,1-4,5.4,35,35,0,0,1-13.68,2.52C743.86,185.92,732.52,178.54,732.52,159.64Z" style="fill:#fff"/><path d="M806.5,59a6.93,6.93,0,1,1,13.86,0V110c7.56-11.16,18.54-20.7,35.64-20.7,22.32,0,44.46,17.64,44.46,48.24v0.36c0,30.42-22,48.42-44.46,48.42-17.28,0-28.44-9.36-35.64-19.8v11.7a6.88,6.88,0,0,1-6.84,7,7,7,0,0,1-7-7V59Zm79.74,79v-0.36c0-22-15.12-36-32.76-36-17.28,0-33.66,14.58-33.66,35.82v0.36c0,21.6,16.38,36,33.66,36C871.48,173.86,886.24,160.54,886.24,138Z" style="fill:#fff"/><path d="M964.9,186.46c-25.56,0-46.44-19.62-46.44-48.42v-0.36c0-26.82,18.9-48.42,44.64-48.42,27.54,0,43.2,22.5,43.2,47.16a6.45,6.45,0,0,1-6.48,6.48H932.5c2,20.16,16.2,31.5,32.76,31.5,11.52,0,20-4.5,26.82-10.8a6,6,0,0,1,10.08,4.32,6,6,0,0,1-2.16,4.5C991.17,180.88,980.74,186.46,964.9,186.46Zm27.54-53.82C991,115.72,981.28,101,962.74,101c-16.2,0-28.44,13.5-30.24,31.68h59.94Z" style="fill:#fff"/><path d="M1029.34,97.36a7,7,0,0,1,6.84-7,6.92,6.92,0,0,1,7,7v10.08c6.12-10.08,15.84-18.18,31.86-18.18,22.5,0,35.64,15.12,35.64,37.26v51.66a6.93,6.93,0,1,1-13.86,0V129.94c0-17.28-9.36-28.08-25.74-28.08-16,0-27.9,11.7-27.9,29.16v47.16a6.77,6.77,0,0,1-6.84,7,6.92,6.92,0,0,1-7-7V97.36Z" style="fill:#fff"/><path d="M1226.61,178.17a6.93,6.93,0,1,1-13.86,0v-12.6c-7.56,11.16-18.54,20.7-35.64,20.7-22.32,0-44.46-17.64-44.46-48.24v-0.36c0-30.42,22.14-48.42,44.46-48.42,17.28,0,28.44,9.36,35.64,19.8V59a6.77,6.77,0,0,1,6.84-7,6.92,6.92,0,0,1,7,7V178.17Zm-79.74-40.68v0.36c0,22,15.3,36,32.76,36,17.28,0,33.66-14.58,33.66-36V137.5c0-21.42-16.38-35.82-33.66-35.82C1161.64,101.68,1146.88,115,1146.88,137.5Z" style="fill:#fff"/></g><g id="icon"><path d="M1,195v56a10,10,0,0,0,10,10H291a10,10,0,0,0,10-10V195a557.85,557.85,0,0,1-150,20A557.85,557.85,0,0,1,1,195Z" style="fill:#fff"/><path d="M291,1H11A10,10,0,0,0,1,11V176a539.94,539.94,0,0,0,150,21,539.94,539.94,0,0,0,150-21V11A10,10,0,0,0,291,1Z" style="fill:#fff"/></g></svg>
-                                        </a>
-                                    </div>
-                                    <p class="copyright">&copy;2016 - All Rights Reserved</p>
-                                </div>
+<a href="http://www.lagomframework.com/download.html">Download</a>
+<a href="/">Documentation</a>
+<a href="http://www.lagomframework.com/get-involved.html">Get Involved</a>
+<a href="http://www.lagomframework.com/blog/">Blog</a>
+
+                                </nav>
+                            </div>
+                        </div>
+                    </header>
+                    <div class="fw-wrapper flush social-bar">
+                        <div class="row hide-for-medium">
+                            <div class="small-12 columns">
+                                <button class="menu-icon" type="button" data-open="offCanvasLeft" data-toggle="offCanvas"></button>
+                                <a class="logo-for-small" href="/"><svg id="Lagom_Reverse" class="svg-logo svg-logo-lagom-reverse" data-name="Lagom Reverse" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 752 192"><title>logom</title><g id="Lagom"><path d="M291.58,31.79h19.83v87.91c0,8.1,2.64,11.57,9.91,11.57a21.11,21.11,0,0,0,5.95-.66V148.3a35.63,35.63,0,0,1-9.42,1c-17.52,0-26.28-8.92-26.28-26.94V31.79Z" fill="#fff"/><path d="M398.34,75.75V63.69h19.83v58.17c0,7.11,1.65,9.75,6.11,9.75a41.28,41.28,0,0,0,4.13-.33v16a28.65,28.65,0,0,1-9.75,1.32c-4.79,0-8.59-.83-11.57-2.64a15.33,15.33,0,0,1-6.78-10.08C394.53,144.66,385,149,371.73,149A39.58,39.58,0,0,1,342,136.4c-7.93-8.43-11.9-18.67-11.9-31.07s4-22.64,11.9-30.9a39.58,39.58,0,0,1,29.75-12.56C385.12,61.87,395.2,67.82,398.34,75.75Zm-5.95,47.76a24.29,24.29,0,0,0,7.44-18.18,24.29,24.29,0,0,0-7.44-18.18,24.68,24.68,0,0,0-18-7.27,23.93,23.93,0,0,0-17.68,7.27c-4.63,4.79-6.94,10.91-6.94,18.18s2.31,13.39,6.94,18.18a23.93,23.93,0,0,0,17.68,7.27A24.68,24.68,0,0,0,392.39,123.51Z" fill="#fff"/><path d="M495.67,63.69H515.5v69.41c0,20-2.81,32.23-14,41-7.93,6.11-17.68,9.25-29.42,9.25-15.53,0-28.92-4-40.32-12.06l9.59-14.71a50.47,50.47,0,0,0,28.59,9.09q11.65,0,18.34-5c5.29-3.8,7.93-10.91,7.93-21.15v-4.13c-4,7.11-13.88,12.23-27.1,12.23a40.53,40.53,0,0,1-29.75-12.23c-7.93-8.1-11.9-18.34-11.9-30.41s4-22.31,12.06-30.57a39.23,39.23,0,0,1,29.58-12.56c13.72,0,23.8,5.78,26.61,13.88V63.69ZM489.72,123a24.19,24.19,0,0,0,7.44-18,23.82,23.82,0,0,0-7.44-17.85,24.68,24.68,0,0,0-18-7.27A23.93,23.93,0,0,0,454,87.15,24.69,24.69,0,0,0,447.09,105,25.08,25.08,0,0,0,454,123a23.79,23.79,0,0,0,17.68,7.11C478.81,130.12,484.93,127.81,489.72,123Z" fill="#fff"/><path d="M522.44,105.33a42.05,42.05,0,0,1,13.22-31.4c8.76-8.43,19.5-12.72,32.22-12.72s23.47,4.3,32.23,12.72a42.05,42.05,0,0,1,13.22,31.4,42.05,42.05,0,0,1-13.22,31.4c-8.76,8.43-19.5,12.72-32.23,12.72s-23.47-4.3-32.22-12.72A42.05,42.05,0,0,1,522.44,105.33ZM586.23,124a25.67,25.67,0,0,0,7.44-18.67,25,25,0,0,0-7.44-18.51,26.13,26.13,0,0,0-36.85,0,25.56,25.56,0,0,0-7.27,18.51A26.22,26.22,0,0,0,549.38,124,26.54,26.54,0,0,0,586.23,124Z" fill="#fff"/><path d="M620.6,147V63.69h19.67v11.9C643.74,67.49,652,62,662.58,62,674,62,681.91,66.83,686,76.58,690.84,66.83,699.76,62,712.81,62c18,0,28.42,12.72,28.42,33.38v26.28c0,6.44,1.16,8.76,5.62,8.76a14.56,14.56,0,0,0,2.81-.33v16.69a28.37,28.37,0,0,1-8.59,1c-13.05,0-19.5-7.27-19.5-21.81V98.23c0-11.4-5.29-18.51-14.54-18.51s-16,8.1-16,19.33V147H671.34V98.23c0-11.4-5.45-18.51-14.87-18.51-9.25,0-16.2,8.1-16.2,19.33V147H620.6Z" fill="#fff"/></g><g id="Icon"><g opacity="0.8"><path d="M261,84l-70,34,70,34S260.78,84.27,261,84Z" fill="#fff"/></g><g opacity="0.8"><polygon points="121 152 191 118 121 84 121 152" fill="#fff"/></g><path d="M191,118l70,34c-0.27,0-41.76,25-60.63,36.24a17.64,17.64,0,0,1-18,0C163.47,177,121,152,121,152Z" fill="#fff" opacity="0.6"/><path d="M200.23,47.65C219.09,58.88,261,84,261,84l-70,34L121,84c0.27,0,42.31-25.12,61.18-36.36A17.64,17.64,0,0,1,200.23,47.65Z" fill="#fff"/><g opacity="0.8"><path d="M145,20.58l-35,17,35,17S144.89,20.72,145,20.58Z" fill="#fff"/></g><g opacity="0.8"><polygon points="75 54.58 110 37.58 75 20.58 75 54.58" fill="#fff"/></g><path d="M110,37.58l35,17c-0.14,0-20.88,12.5-30.31,18.12a8.82,8.82,0,0,1-9,0C96.23,67.08,75,54.58,75,54.58Z" fill="#fff" opacity="0.6"/><path d="M114.61,2.4C124,8,145,20.58,145,20.58l-35,17-35-17C75.14,20.59,96.16,8,105.59,2.4A8.82,8.82,0,0,1,114.61,2.4Z" fill="#fff"/><g opacity="0.8"><path d="M101,91L51,115.54l50,24.53S100.84,91.21,101,91Z" fill="#fff"/></g><g opacity="0.8"><polygon points="1 140.07 51 115.54 1 91.02 1 140.07" fill="#fff"/></g><path d="M51,115.54l50,24.53c-0.19,0-29.83,18-43.3,26.14a12.5,12.5,0,0,1-12.89,0C31.34,158.1,1,140.07,1,140.07Z" fill="#fff" opacity="0.6"/><path d="M57.59,64.79C71.06,72.9,101,91,101,91L51,115.54,1,91C1.19,91,31.22,72.9,44.7,64.79A12.5,12.5,0,0,1,57.59,64.79Z" fill="#fff"/></g></svg></a>
+                            </div>
+                        </div>
+                        <div class="row show-for-medium">
+                            <div class="small-12 columns">
+                                <!-- social icons -->
+                                <a class="logo" href="/"><svg id="Lagom_Reverse" class="svg-logo svg-logo-lagom-reverse" data-name="Lagom Reverse" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 752 192"><title>logom</title><g id="Lagom"><path d="M291.58,31.79h19.83v87.91c0,8.1,2.64,11.57,9.91,11.57a21.11,21.11,0,0,0,5.95-.66V148.3a35.63,35.63,0,0,1-9.42,1c-17.52,0-26.28-8.92-26.28-26.94V31.79Z" fill="#fff"/><path d="M398.34,75.75V63.69h19.83v58.17c0,7.11,1.65,9.75,6.11,9.75a41.28,41.28,0,0,0,4.13-.33v16a28.65,28.65,0,0,1-9.75,1.32c-4.79,0-8.59-.83-11.57-2.64a15.33,15.33,0,0,1-6.78-10.08C394.53,144.66,385,149,371.73,149A39.58,39.58,0,0,1,342,136.4c-7.93-8.43-11.9-18.67-11.9-31.07s4-22.64,11.9-30.9a39.58,39.58,0,0,1,29.75-12.56C385.12,61.87,395.2,67.82,398.34,75.75Zm-5.95,47.76a24.29,24.29,0,0,0,7.44-18.18,24.29,24.29,0,0,0-7.44-18.18,24.68,24.68,0,0,0-18-7.27,23.93,23.93,0,0,0-17.68,7.27c-4.63,4.79-6.94,10.91-6.94,18.18s2.31,13.39,6.94,18.18a23.93,23.93,0,0,0,17.68,7.27A24.68,24.68,0,0,0,392.39,123.51Z" fill="#fff"/><path d="M495.67,63.69H515.5v69.41c0,20-2.81,32.23-14,41-7.93,6.11-17.68,9.25-29.42,9.25-15.53,0-28.92-4-40.32-12.06l9.59-14.71a50.47,50.47,0,0,0,28.59,9.09q11.65,0,18.34-5c5.29-3.8,7.93-10.91,7.93-21.15v-4.13c-4,7.11-13.88,12.23-27.1,12.23a40.53,40.53,0,0,1-29.75-12.23c-7.93-8.1-11.9-18.34-11.9-30.41s4-22.31,12.06-30.57a39.23,39.23,0,0,1,29.58-12.56c13.72,0,23.8,5.78,26.61,13.88V63.69ZM489.72,123a24.19,24.19,0,0,0,7.44-18,23.82,23.82,0,0,0-7.44-17.85,24.68,24.68,0,0,0-18-7.27A23.93,23.93,0,0,0,454,87.15,24.69,24.69,0,0,0,447.09,105,25.08,25.08,0,0,0,454,123a23.79,23.79,0,0,0,17.68,7.11C478.81,130.12,484.93,127.81,489.72,123Z" fill="#fff"/><path d="M522.44,105.33a42.05,42.05,0,0,1,13.22-31.4c8.76-8.43,19.5-12.72,32.22-12.72s23.47,4.3,32.23,12.72a42.05,42.05,0,0,1,13.22,31.4,42.05,42.05,0,0,1-13.22,31.4c-8.76,8.43-19.5,12.72-32.23,12.72s-23.47-4.3-32.22-12.72A42.05,42.05,0,0,1,522.44,105.33ZM586.23,124a25.67,25.67,0,0,0,7.44-18.67,25,25,0,0,0-7.44-18.51,26.13,26.13,0,0,0-36.85,0,25.56,25.56,0,0,0-7.27,18.51A26.22,26.22,0,0,0,549.38,124,26.54,26.54,0,0,0,586.23,124Z" fill="#fff"/><path d="M620.6,147V63.69h19.67v11.9C643.74,67.49,652,62,662.58,62,674,62,681.91,66.83,686,76.58,690.84,66.83,699.76,62,712.81,62c18,0,28.42,12.72,28.42,33.38v26.28c0,6.44,1.16,8.76,5.62,8.76a14.56,14.56,0,0,0,2.81-.33v16.69a28.37,28.37,0,0,1-8.59,1c-13.05,0-19.5-7.27-19.5-21.81V98.23c0-11.4-5.29-18.51-14.54-18.51s-16,8.1-16,19.33V147H671.34V98.23c0-11.4-5.45-18.51-14.87-18.51-9.25,0-16.2,8.1-16.2,19.33V147H620.6Z" fill="#fff"/></g><g id="Icon"><g opacity="0.8"><path d="M261,84l-70,34,70,34S260.78,84.27,261,84Z" fill="#fff"/></g><g opacity="0.8"><polygon points="121 152 191 118 121 84 121 152" fill="#fff"/></g><path d="M191,118l70,34c-0.27,0-41.76,25-60.63,36.24a17.64,17.64,0,0,1-18,0C163.47,177,121,152,121,152Z" fill="#fff" opacity="0.6"/><path d="M200.23,47.65C219.09,58.88,261,84,261,84l-70,34L121,84c0.27,0,42.31-25.12,61.18-36.36A17.64,17.64,0,0,1,200.23,47.65Z" fill="#fff"/><g opacity="0.8"><path d="M145,20.58l-35,17,35,17S144.89,20.72,145,20.58Z" fill="#fff"/></g><g opacity="0.8"><polygon points="75 54.58 110 37.58 75 20.58 75 54.58" fill="#fff"/></g><path d="M110,37.58l35,17c-0.14,0-20.88,12.5-30.31,18.12a8.82,8.82,0,0,1-9,0C96.23,67.08,75,54.58,75,54.58Z" fill="#fff" opacity="0.6"/><path d="M114.61,2.4C124,8,145,20.58,145,20.58l-35,17-35-17C75.14,20.59,96.16,8,105.59,2.4A8.82,8.82,0,0,1,114.61,2.4Z" fill="#fff"/><g opacity="0.8"><path d="M101,91L51,115.54l50,24.53S100.84,91.21,101,91Z" fill="#fff"/></g><g opacity="0.8"><polygon points="1 140.07 51 115.54 1 91.02 1 140.07" fill="#fff"/></g><path d="M51,115.54l50,24.53c-0.19,0-29.83,18-43.3,26.14a12.5,12.5,0,0,1-12.89,0C31.34,158.1,1,140.07,1,140.07Z" fill="#fff" opacity="0.6"/><path d="M57.59,64.79C71.06,72.9,101,91,101,91L51,115.54,1,91C1.19,91,31.22,72.9,44.7,64.79A12.5,12.5,0,0,1,57.59,64.79Z" fill="#fff"/></g></svg></a>
+                                <nav class="social">
+                                    <a href="//groups.google.com/forum/#!forum/lagom-framework"><span>Mailing list</span></a>
+                                    <a href="//twitter.com/lagom"><span>Twitter</span></a>
+                                    <a href="//github.com/lagom/lagom"><span>Github</span></a>
+                                    <a href="//stackoverflow.com/questions/tagged/lagom"><span>Stackoverflow</span></a>
+                                </nav>
+                                <nav class="sections-scroll">
+                                    
+
+<a href="http://www.lagomframework.com/download.html">Download</a>
+<a href="/">Documentation</a>
+<a href="http://www.lagomframework.com/get-involved.html">Get Involved</a>
+<a href="http://www.lagomframework.com/blog/">Blog</a>
+
+                                </nav>
                             </div>
                         </div>
                     </div>
-                </footer>
+
+                      
+    <header class="fw-wrapper lgm-purple page-title">
+        <div class="row">
+            <div class="small-12 columns">
+                <h1>@title.getOrElse("Documentation")</h1>
             </div>
         </div>
+    </header>
 
-        <script type="text/javascript" src="webjars/jquery/jquery.min.js"></script>
-        <script type="text/javascript" src="webjars/lagom-docs-theme/javascripts/vendor/fastclick.min.js"></script>
-        <script type="text/javascript" src="webjars/lagom-docs-theme/javascripts/foundation.min.js"></script>
-        <script type="text/javascript" src="webjars/lagom-docs-theme/javascripts/main.min.js"></script>
+    <div class="fw-wrapper documentation-content">
+        <div class="row">
+            <div class="small-12 large-7 columns">
 
-        <style type="text/css">
-            @@import "webjars/prettify/prettify.css";
-        </style>
-        <script type="text/javascript" charset="utf-8" src="webjars/prettify/prettify.js"></script>
-        <script type="text/javascript" charset="utf-8" src="webjars/prettify/lang-scala.js"></script>
-        <script type="text/javascript">
-                $(function(){
-                    window.prettyPrint && prettyPrint()
-                });
-        </script>
+                @breadcrumbs
 
+                <article>
+                    @content
+                </article>
+
+                @for(url <- sourceUrl) {
+                    <p class="edit-source">Found an error in this documentation? The source code for this page can be found
+                        <a href="@url">here</a>. Please feel free to edit and contribute a pull request.</p>
+                }
+
+            </div>
+            <aside class="small-12 large-4 columns">
+                <nav class="side-menu">
+
+                    <input type="text" id="docs-search" placeholder="Search"/>
+
+                    <a href="/documentation/1.1.x/java/api/index.html" class="api-docs">API Documentation</a>
+
+
+                    @sidebar
+                </nav>
+            </aside>
+        </div>
+   </div>
+
+
+                    <footer>
+                        <section class="fw-wrapper lb-grey-dkr support">
+                            <div class="row">
+                                <div class="small-12 medium-6 columns">
+                                    <svg class="svg-icon svg-icon-chat" version="1.1" id="Chat" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve">
+<path fill="#ffffff" d="M5.8,12.2V6H2C0.9,6,0,6.9,0,8v6c0,1.1,0.9,2,2,2h1v3l3-3h5c1.1,0,2-0.9,2-2v-1.82c-0.064,0.014-0.132,0.021-0.2,0.021h-7
+	V12.2z M18,1H9C7.9,1,7,1.9,7,3v8h7l3,3v-3h1c1.1,0,2-0.899,2-2V3C20,1.9,19.1,1,18,1z"/>
+</svg>
+
+                                    <h3>Community support</h3>
+                                    <ul>
+                                        <li><a href="//groups.google.com/forum/#!forum/lagom-framework">Mailing list</a></li>
+                                        <li><a href="//stackoverflow.com/questions/tagged/lagom">Stackoverflow</a></li>
+                                    </ul>
+                                </div>
+                                <div class="small-12 medium-6 columns">
+                                    <svg class="svg-icon svg-icon-lb-icon-reverse" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 302 262">
+    <title>lightbend-icon</title>
+    <path  fill="#ffffff" d="M1,195v56a10,10,0,0,0,10,10H291a10,10,0,0,0,10-10V195a557.85,557.85,0,0,1-150,20A557.85,557.85,0,0,1,1,195Z" />
+    <path  fill="#ffffff" d="M291,1H11A10,10,0,0,0,1,11V176a539.94,539.94,0,0,0,150,21,539.94,539.94,0,0,0,150-21V11A10,10,0,0,0,291,1Z" />
+</svg>
+
+                                    <h3>Professional support</h3>
+                                    <ul>
+                                        <li><a href="//www.lightbend.com/services/expert-support">Lightbend Subscription</a></li>
+                                        <li><a href="//www.lightbend.com/services/training">Training</a></li>
+                                        <li><a href="//www.lightbend.com/services/consulting">Consulting</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="fw-wrapper lb-grey links">
+                            <div class="row">
+                                <div class="small-12 medium-6 large-3 columns">
+                                    <h3>Lagom</h3>
+                                    <ul class="no-bullet">
+                                        <li><a href="http://www.lagomframework.com/download.html">Download</a></li>
+                                        <li><a href="http://www.lagomframework.com/blog">Blog</a></li>
+                                        <li><a href="/">Documentation</a></li>
+                                    </ul>
+                                </div>
+                                <div class="small-12 medium-6 large-3 columns">
+                                    <h3>Community links</h3>
+                                    <ul>
+                                        <li><a href="//www.eventbrite.com/directory/?q=lagom&amp;loc=Worldwide">Events <em>via Eventbrite</em></a></li>
+                                        <li><a href="http://www.indeed.com/jobs?q=%22lagom%22&amp;l=">Jobs <em>via Indeed</em></a></li>
+                                        <li><a href="http://www.scoop.it/lagom">Blogs <em>via Scoop.it</em></a></li>
+                                    </ul>
+                                </div>
+                                <div class="small-12 medium-6 large-3 columns">
+                                    <h3>Code &amp; contribution</h3>
+                                    <ul>
+                                        <li><a href="//github.com/lagom/lagom/issues">Bug tracker <em>GitHub</em></a></li>
+                                        <li><a href="http://www.lagomframework.com/get-involved.html">Get involved</a></li>
+                                    </ul>
+                                </div>
+                                <div class="small-12 medium-6 large-3 columns">
+                                    <h3>Social networks</h3>
+                                    <ul>
+                                        <li><a href="//twitter.com/lagom"><span>Twitter</span></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="fw-wrapper lgm-purple-dkr credits">
+                            <div class="row">
+                                <div class="small-12 medium-3 columns">
+                                    <a href="/" class="logo"><img src="/webjars/lagom-docs-theme/lagom-reverse.svg"></a>
+                                </div>
+                                <div class="small-12 medium-3 columns">
+                                    <a href="//lightbend.com" class="partner"><img src="/webjars/lagom-docs-theme/lightbend-reverse.svg"></a>
+                                </div>
+                                <div class="small-12 medium-6 columns">
+                                    <p>Lagom is released under the Apache 2 License</p>
+                                </div>
+                            </div>
+                        </section>
+
+                    </footer>
+
+                </div>
+            </div>
+        </div>
     </body>
+    <script src="/webjars/lagom-docs-theme/all-scripts-concat.js"></script>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script>
+    <script type="text/javascript"> docsearch({
+        apiKey: "77ef1e29e6bddfca861f7a42cc51725e",
+        indexName: "lagomframework",
+        inputSelector: "#docs-search",
+        algoliaOptions: {
+            facetFilters: '["version:1.2.x"]'
+        }
+    });
+    </script>
+
+    <script type="text/javascript">
+        $('a[href^="http://www.lagomframework.com"]').forEach(function(a) {
+            a.onclick = function() {
+                alert("You are now navigating away from the Lagom development documentation server.");
+                return true;
+            };
+        });
+    </script>
+
 </html>
+
