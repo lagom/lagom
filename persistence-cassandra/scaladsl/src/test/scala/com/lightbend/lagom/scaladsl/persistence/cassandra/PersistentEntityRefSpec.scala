@@ -44,8 +44,6 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
   }
 
   override def afterAll() {
-    // FIXME something else here to stop the app?
-    // application.getWrappedApplication.stop
     CassandraLauncher.stop()
     TestKit.shutdownActorSystem(system)
   }
@@ -78,19 +76,18 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
 
     "send commands to the registry" in {
       val ref1 = registry.refFor[TestEntity]("1")
-      // FIXME remove type ascriptions when ask gets the right retur type
-      (ref1.ask(TestEntity.Add("a")): Future[TestEntity.Evt])
+      ref1.ask(TestEntity.Add("a"))
         .futureValue(Timeout(15.seconds)) should ===(TestEntity.Appended("A"))
 
       val ref2 = registry.refFor[TestEntity]("2")
 
-      (ref2.ask(TestEntity.Add("b")): Future[TestEntity.Evt]).futureValue should ===(TestEntity.Appended("B"))
+      ref2.ask(TestEntity.Add("b")).futureValue should ===(TestEntity.Appended("B"))
 
-      (ref2.ask(TestEntity.Add("c")): Future[TestEntity.Evt]).futureValue should ===(TestEntity.Appended("C"))
+      ref2.ask(TestEntity.Add("c")).futureValue should ===(TestEntity.Appended("C"))
 
-      (ref1.ask(TestEntity.Get): Future[TestEntity.State]).futureValue should ===(TestEntity.State(Mode.Append, List("A")))
+      ref1.ask(TestEntity.Get).futureValue should ===(TestEntity.State(Mode.Append, List("A")))
 
-      (ref2.ask(TestEntity.Get): Future[TestEntity.State]).futureValue should ===(TestEntity.State(Mode.Append, List("B", "C")))
+      ref2.ask(TestEntity.Get).futureValue should ===(TestEntity.State(Mode.Append, List("B", "C")))
     }
 
     "ask timeout when reply does not reply in time" in {
