@@ -616,7 +616,7 @@ lazy val pubsub = (project in file("pubsub"))
 
 lazy val `persistence-core` = (project in file("persistence/core"))
   .settings(name := "lagom-persistence-core")
-  .dependsOn(`cluster-core`, `api-javadsl`) // FIXME replace api-javadsl dependency, ServiceLocatorHolder
+  .dependsOn(`cluster-core`)
   .settings(runtimeLibCommon: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
@@ -626,6 +626,7 @@ lazy val `persistence-core` = (project in file("persistence/core"))
       "com.typesafe.akka" %% "akka-persistence" % AkkaVersion,
       "com.typesafe.akka" %% "akka-persistence-query-experimental" % AkkaVersion,
       "com.typesafe.akka" %% "akka-cluster-sharding" % AkkaVersion,
+      "com.typesafe.play" %% "play" % PlayVersion,
       "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion % "test",
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
@@ -666,7 +667,7 @@ lazy val `persistence-cassandra-core` = (project in file("persistence-cassandra/
 lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassandra/javadsl"))
   .settings(name := "lagom-javadsl-persistence-cassandra")
   .dependsOn(`persistence-core` % "compile;test->test", `persistence-javadsl` % "compile;test->test",
-    `persistence-cassandra-core` % "compile;test->test")
+    `persistence-cassandra-core` % "compile;test->test", `api-javadsl`)
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -676,7 +677,7 @@ lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassand
 lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassandra/scaladsl"))
   .settings(name := "lagom-scaladsl-persistence-cassandra")
   .dependsOn(`persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test",
-    `persistence-cassandra-core` % "compile;test->test")
+    `persistence-cassandra-core` % "compile;test->test", `api-scaladsl`)
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
