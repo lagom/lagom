@@ -31,7 +31,7 @@ If you don't have java and javac, you can get it from the [Oracle Java downloads
 
 To install Maven, see the official [Maven installation page](https://maven.apache.org/install.html).
 
-There are many other ways to install Maven, Lagom should work with Maven no matter how it was installed, as long as it is a recent Maven version (we recommend at least Maven 3.3).
+Lagom requires at least Maven 3.2.1, earlier versions of Maven will not work with Lagom. We recommend that you use at least Maven 3.3. When checking your Maven version, make sure also that your IDE is configured to use a recent Maven version, many IDEs use an older version by default.
 
 ## Installing sbt
 

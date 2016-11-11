@@ -5,7 +5,6 @@ import java.util.Locale
 import java.util.zip.ZipFile
 import javax.inject.Inject
 
-import org.apache.maven.plugin.AbstractMojo
 import better.files.{ File => ScalaFile, _ }
 
 import scala.beans.BeanProperty
@@ -14,7 +13,7 @@ import scala.collection.JavaConverters._
 /**
  * Converts a zip artifact to one named according to ConductR's conventions.
  */
-class RenameConductRBundleMojo @Inject() (logger: MavenLoggerProxy) extends AbstractMojo {
+class RenameConductRBundleMojo @Inject() (logger: MavenLoggerProxy) extends LagomAbstractMojo {
 
   @BeanProperty
   var sourceConductRBundle: File = _
