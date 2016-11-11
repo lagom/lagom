@@ -96,7 +96,7 @@ Select and install the plugin.
 
 Repeat the same process for the "Scala" plugin.
 
-After restarting IntelliJ IDEA, go to "Import Project", and select your Lagom `build.sbt` file. An "Import Project from SBT" modal will open, and we suggest you to tick "Use auto-import", and also tick the option to download sources and javadocs:
+After restarting IntelliJ IDEA, go to "Open...", and select your Lagom `build.sbt` file. An "Import Project from SBT" modal will open, and we suggest you to tick "Use auto-import", and also tick the option to download sources and javadocs:
 
 [[idea_sbt_project_import.png]]
 
