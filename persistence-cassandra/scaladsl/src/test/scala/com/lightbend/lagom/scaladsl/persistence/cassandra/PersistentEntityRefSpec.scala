@@ -5,24 +5,25 @@ package com.lightbend.lagom.scaladsl.persistence.cassandra
 
 import java.io.File
 
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.duration._
+
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.pattern.AskTimeoutException
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.{ ActorMaterializer, Materializer }
 import akka.testkit.TestKit
+import com.lightbend.lagom.scaladsl.api.ServiceLocator
+import com.lightbend.lagom.scaladsl.persistence.{ PersistentEntity, PersistentEntityRegistry, TestEntity }
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.{ InvalidCommandException, UnhandledCommandException }
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Mode
 import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
-import com.lightbend.lagom.scaladsl.persistence.{ PersistentEntity, PersistentEntityRegistry, TestEntity }
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalactic.ConversionCheckedTripleEquals
+import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
-
-import scala.concurrent.duration._
-import scala.concurrent.{ ExecutionContext, Future }
 
 class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures with ConversionCheckedTripleEquals {
 
@@ -62,6 +63,7 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
     override def executionContext: ExecutionContext = system.dispatcher
     override def configuration: play.api.Configuration = play.api.Configuration(config)
     override def materializer: Materializer = ActorMaterializer()(system)
+    override def serviceLocator: Option[ServiceLocator] = None
   }
 
   private def registry: PersistentEntityRegistry = {

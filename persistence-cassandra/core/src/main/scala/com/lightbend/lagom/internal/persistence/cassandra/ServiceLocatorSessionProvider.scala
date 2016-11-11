@@ -4,40 +4,38 @@
 package com.lightbend.lagom.internal.persistence.cassandra
 
 import java.net.InetSocketAddress
-
-import akka.actor.ActorSystem
-import akka.persistence.cassandra.ConfigSessionProvider
-import com.lightbend.lagom.internal.persistence.ServiceLocatorHolder
-import com.typesafe.config.Config
-import play.api.Logger
+import java.net.URI
 
 import scala.collection.immutable
-import scala.compat.java8.FutureConverters._
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.concurrent.duration._
 import scala.util.control.NoStackTrace
 
+import akka.actor.ActorSystem
+import akka.persistence.cassandra.ConfigSessionProvider
+import com.typesafe.config.Config
+import play.api.Logger
+
 /**
  * Internal API
  */
-private[lagom] final class ServiceLocatorSessionProvider(system: ActorSystem, config: Config) extends ConfigSessionProvider(system, config) {
+private[lagom] final class ServiceLocatorSessionProvider(system: ActorSystem, config: Config)
+  extends ConfigSessionProvider(system, config) {
 
   private val log = Logger(getClass)
 
   override def lookupContactPoints(clusterId: String)(implicit ec: ExecutionContext): Future[immutable.Seq[InetSocketAddress]] = {
     val result = ServiceLocatorHolder(system).serviceLocator match {
       case Some(serviceLocator) =>
-        serviceLocator.locate(clusterId).toScala.map { location =>
-          if (location.isPresent) {
-            val uri = location.get
+        serviceLocator.locate(clusterId).map {
+          case Some(uri) =>
             log.debug(s"Found Cassandra contact points: $uri")
             require(uri.getHost != null, s"missing host in $uri for Cassandra contact points $clusterId")
             require(uri.getPort != -1, s"missing port in $uri for Cassandra contact points $clusterId")
             List(new InetSocketAddress(uri.getHost, uri.getPort))
-          } else {
+          case None =>
             // fail the future
             throw new NoContactPointsException(s"No contact points for [$clusterId]")
-          }
         }
 
       case None =>
