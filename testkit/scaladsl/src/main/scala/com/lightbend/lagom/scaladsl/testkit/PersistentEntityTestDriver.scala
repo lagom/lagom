@@ -28,7 +28,7 @@ object PersistentEntityTestDriver {
      * The messages that were sent as replies using the context that is
      * passed as parameter to the command handler functions.
      */
-    def getReplies: immutable.Seq[Any] = sideEffects.collect { case Reply(msg) => msg }
+    def replies: immutable.Seq[Any] = sideEffects.collect { case Reply(msg) => msg }
   }
 
   trait SideEffect
