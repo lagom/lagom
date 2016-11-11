@@ -4,16 +4,17 @@ import java.io.File
 
 import akka.actor.ActorSystem
 import akka.persistence.cassandra.testkit.CassandraLauncher
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.stream.{ ActorMaterializer, Materializer }
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
-import com.lightbend.lagom.scaladsl.persistence.multinode.{AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec}
+import com.lightbend.lagom.scaladsl.persistence.multinode.{ AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec }
 import com.typesafe.config.Config
 import play.api.Configuration
 import play.api.inject.DefaultApplicationLifecycle
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
+import com.lightbend.lagom.scaladsl.api.ServiceLocator
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
   override def additionalCommonConfig(databasePort: Int): Config =
@@ -45,7 +46,6 @@ class CassandraClusteredPersistentEntitySpec extends AbstractClusteredPersistent
     CassandraLauncher.stop()
   }
 
-
   lazy val defaultApplicationLifecycle = new DefaultApplicationLifecycle
 
   override lazy val components: CassandraPersistenceComponents =
@@ -54,13 +54,13 @@ class CassandraClusteredPersistentEntitySpec extends AbstractClusteredPersistent
       override def executionContext: ExecutionContext = system.dispatcher
       override def materializer: Materializer = ActorMaterializer()(system)
       override def configuration: Configuration = Configuration(system.settings.config)
+      override def serviceLocator: Option[ServiceLocator] = None
     }
 
   def testEntityReadSide = new TestEntityReadSide(components.actorSystem, components.cassandraSession)
 
   override protected def getAppendCount(id: String): Future[Long] =
     testEntityReadSide.getAppendCount(id)
-
 
   override protected def readSideProcessor: () => ReadSideProcessor[Evt] =
     () => new TestEntityReadSide.TestEntityReadSideProcessor(system, components.cassandraReadSide, components.cassandraSession)
