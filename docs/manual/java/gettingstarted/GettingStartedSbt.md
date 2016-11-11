@@ -80,3 +80,5 @@ If you are wondering why we have created two services in the seed template, inst
 > One microservice is no microservice - they come in systems.
 
 Said otherwise, we believe you will be creating several services, and we felt it was important to showcase intra-service communication.
+
+The `lagom-java` template you used to build `my-first-system` uses the `.sbtopts` file to increase the memory used by the `JVM` when starting your project. There's a few more ways to [[Increase Memory in sbt|JVMMemoryOnDev]]
