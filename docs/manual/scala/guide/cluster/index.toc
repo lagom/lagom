@@ -1,1 +1,4 @@
 PersistentEntity:Persistent Entity
+PersistentEntityCassandra:Cassandra Persistent Entities
+PersistentEntityRDBMS:Relational Database Persistent Entities
+
