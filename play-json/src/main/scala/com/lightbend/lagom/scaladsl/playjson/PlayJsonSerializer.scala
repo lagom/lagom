@@ -29,6 +29,10 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
   private val registry = {
     val registryClassName: String =
       system.settings.config.getString("lagom.serialization.play-json.serialization-registry")
+    require(
+      registryClassName != "",
+      "lagom.serialization.play-json.serialization-registry configuration property must be defined"
+    )
     system.dynamicAccess.createInstanceFor[SerializerRegistry](registryClassName, immutable.Seq.empty).get
   }
 
