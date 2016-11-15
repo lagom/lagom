@@ -19,3 +19,7 @@ abstract class SerializerRegistry {
   def migrations: Map[String, Migration] = Map.empty
 
 }
+
+class EmptySerializerRegistry extends SerializerRegistry {
+  override val serializers = Nil
+}
