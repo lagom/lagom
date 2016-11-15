@@ -87,6 +87,27 @@ Play system logging can be done by changing the `play` logger to DEBUG.
 <logger name="play" level="DEBUG" />
 ```
 
+## Default Log4j2 configuration
+
+Similarly to the default logback configuration, when using the Log4j2 Lagom module, a default configuration is provided. In development, the following is used by default:
+
+@[](code/log4j2-lagom-dev.xml)
+
+And in production, the following is the default configuration:
+
+@[](code/log4j2-lagom-default.xml)
+
+A few things to note:
+
+* A file appender that writes to `logs/application.log` is created.
+* The file appender logs full stack traces while the console logger limits it to 10 lines.
+* Console logging uses colored log levels by default.
+* In production, all loggers are configured to use [async loggers](https://logging.apache.org/log4j/2.x/manual/async.html) by default using the LMAX Disruptor library.
+
+### Custom configuration
+
+Including a file named `log4j2.xml` in your project's root will override the defaults. All other system properties specified for the logback integration above are also supported here.
+
 ## Using a Custom Logging Framework
 
 Lagom uses Logback by default, but it is possible to configure Lagom to use another logging framework, as long as there is an SLF4J adapter for it.

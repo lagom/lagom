@@ -563,6 +563,14 @@ object LagomLogback extends AutoPlugin {
   )
 }
 
+object LagomLog4j2 extends AutoPlugin {
+  override def requires = Lagom
+
+  override def projectSettings = Seq(
+    libraryDependencies += LagomImport.lagomLog4j2
+  )
+}
+
 private[sbt] object SbtConsoleHelper {
   private val consoleHelper = new ConsoleHelper(new Colors("sbt.log.noformat"))
   def printStartScreen(log: Logger, services: (String, DevServer)*): Unit =

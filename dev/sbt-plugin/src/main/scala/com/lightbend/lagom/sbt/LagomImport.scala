@@ -31,6 +31,7 @@ object LagomImport {
   val lagomJavadslServer = component("lagom-javadsl-server")
   val lagomJavadslTestKit = component("lagom-javadsl-testkit") % Test
   val lagomLogback = component(lagomLogbackModuleName)
+  val lagomLog4j2 = component("lagom-log4j2")
 
   val lagomScaladslApi = component("lagom-scaladsl-api")
   val lagomScaladslClient = component("lagom-scaladsl-client")
