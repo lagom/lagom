@@ -1,5 +1,6 @@
 package docs.home.scaladsl.persistence
 
+//#full-example
 import com.lightbend.lagom.scaladsl.playjson.Serializers
 
 object BlogState {
@@ -23,3 +24,4 @@ final case class BlogState(content: Option[PostContent], published: Boolean) {
 }
 
 final case class PostContent(title: String, body: String)
+//#full-example

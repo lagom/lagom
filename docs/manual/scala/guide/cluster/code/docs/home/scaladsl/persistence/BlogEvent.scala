@@ -1,5 +1,6 @@
 package docs.home.scaladsl.persistence
 
+//#full-example
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
 import com.lightbend.lagom.scaladsl.persistence.AggregateEventShards
 import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
@@ -28,3 +29,4 @@ final case class PostAdded(postId: String, content: PostContent) extends BlogEve
 final case class BodyChanged(postId: String, body: String) extends BlogEvent
 
 final case class PostPublished(postId: String) extends BlogEvent
+//#full-example

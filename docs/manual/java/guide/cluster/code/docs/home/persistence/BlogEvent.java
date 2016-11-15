@@ -1,5 +1,6 @@
 package docs.home.persistence;
 
+//#full-example
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
@@ -129,3 +130,4 @@ interface BlogEvent extends Jsonable, AggregateEvent<BlogEvent> {
   }
 
 }
+//#full-example
