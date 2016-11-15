@@ -7,7 +7,10 @@ object BlogState {
   val empty = BlogState(None, published = false)
 
   //FIXME serialization, how to handle Option?
-  val serializers = Vector.empty
+  import Serializers.Implicits._
+  val serializers = Vector(
+    Json.format[BlogState]
+  )
 }
 
 final case class BlogState(content: Option[PostContent], published: Boolean) {

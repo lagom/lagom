@@ -95,6 +95,8 @@ class TestRegistry3 extends SerializerRegistry {
   )
 }
 
+case class Box(surprise: Option[String])
+
 class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
   "The PlayJsonSerializer" should {
@@ -175,6 +177,48 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
       deserialized should be(event)
 
+    }
+
+  }
+
+  "The provided serializers" should {
+
+    object Singleton
+
+    "serialize and deserialize singletons" in {
+      val serializer = Serializers.emptySingletonFormat(Singleton)
+
+      val result = serializer.reads(serializer.writes(Singleton))
+      result.isSuccess shouldBe true
+      result.get shouldBe Singleton
+    }
+
+    "serialize and deserialize options" in {
+      val serializer = Serializers.optionFormat[String]
+
+      val someResult = serializer.reads(serializer.writes(Some("string")))
+      someResult.isSuccess shouldBe true
+      someResult.get shouldBe Some("string")
+
+      val noneResult = serializer.reads(serializer.writes(None))
+      noneResult.isSuccess shouldBe true
+      noneResult.get shouldBe None
+    }
+
+    "serialize and deserialize options inside macro serializers" in {
+
+      // box should pick up the implicit serializer?
+      import Serializers.Implicits._
+
+      val serializer = Json.format[Box]
+
+      val noneResult = serializer.reads(serializer.writes(Box(None)))
+      noneResult.isSuccess shouldBe true
+      noneResult.get shouldBe Box(None)
+
+      val someResult = serializer.reads(serializer.writes(Box(Some("surprise"))))
+      someResult.isSuccess shouldBe true
+      someResult.get shouldBe Box(Some("surprise"))
     }
 
   }
