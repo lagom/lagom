@@ -268,7 +268,8 @@ val coreProjects = Seq[ProjectReference](
   `persistence-core`,
   `persistence-cassandra-core`,
   `persistence-jdbc-core`,
-  logback
+  logback,
+  log4j2
 )
 
 val otherProjects = Seq[ProjectReference](
@@ -757,6 +758,21 @@ lazy val logback = (project in file("logback"))
       // needed only because we use play.utils.Colors
       "com.typesafe.play" %% "play" % PlayVersion
     ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % "1.1.3")
+  )
+
+lazy val log4j2 = (project in file("log4j2"))
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(runtimeLibCommon: _*)
+  .settings(
+    name := "lagom-log4j2",
+    libraryDependencies ++= Seq(
+      "log4j-api",
+      "log4j-core",
+      "log4j-slf4j-impl"
+    ).map("org.apache.logging.log4j" % _ % "2.7") ++ Seq(
+      "com.lmax" % "disruptor" % "3.3.6",
+      "com.typesafe.play" %% "play" % PlayVersion
+    )
   )
 
 lazy val `dev-environment` = (project in file("dev"))
