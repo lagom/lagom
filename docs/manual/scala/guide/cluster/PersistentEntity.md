@@ -204,7 +204,12 @@ In sbt:
 
 @[full-example](code/docs/home/scaladsl/persistence/Post.scala)
 
-You find the classes for the commands, events and state in the [[Immutable Objects|Immutable]] section.
+@[full-example](code/docs/home/scaladsl/persistence/BlogCommand.scala)
+
+@[full-example](code/docs/home/scaladsl/persistence/BlogEvent.scala)
+
+@[full-example](code/docs/home/scaladsl/persistence/BlogState.scala)
+
 
 ## Refactoring Consideration
 

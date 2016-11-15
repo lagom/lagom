@@ -1,5 +1,6 @@
 package docs.home.scaladsl.persistence
 
+//#full-example
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import akka.Done
 import com.lightbend.lagom.scaladsl.playjson.Serializers
@@ -29,3 +30,4 @@ case object GetPost extends BlogCommand with ReplyType[PostContent]
 final case class ChangeBody(body: String) extends BlogCommand with ReplyType[Done]
 
 case object Publish extends BlogCommand with ReplyType[Done]
+//#full-example
