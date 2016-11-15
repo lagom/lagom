@@ -1,6 +1,3 @@
-/*
- * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
- */
 package docs.home.scaladsl.persistence
 
 import akka.Done
@@ -11,57 +8,7 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 
-// FIXME move to docs project when API has settled
-
-object Post {
-
-  // FIXME Jsonable
-  sealed trait BlogCommand
-
-  final case class AddPost(content: PostContent) extends BlogCommand with ReplyType[AddPostDone]
-  final case class AddPostDone(postId: String)
-  case object GetPost extends BlogCommand with ReplyType[PostContent]
-  final case class ChangeBody(body: String) extends BlogCommand with ReplyType[Done]
-  case object Publish extends BlogCommand with ReplyType[Done]
-
-  object BlogEvent {
-    val NumShards = 20
-    // second param is optional, defaults to the class name
-    val aggregateEventShards = AggregateEventTag.sharded[BlogEvent](NumShards)
-  }
-
-  sealed trait BlogEvent extends AggregateEvent[BlogEvent] {
-    override def aggregateTag: AggregateEventShards[BlogEvent] = BlogEvent.aggregateEventShards
-  }
-
-  final case class PostAdded(postId: String, content: PostContent) extends BlogEvent
-  final case class BodyChanged(postId: String, body: String) extends BlogEvent
-  final case class PostPublished(postId: String) extends BlogEvent
-
-  final case class PostContent(title: String, body: String)
-
-  object BlogState {
-    val empty = BlogState(None, published = false)
-
-  }
-
-  final case class BlogState(content: Option[PostContent], published: Boolean) {
-    def withBody(body: String): BlogState = {
-      content match {
-        case Some(c) =>
-          copy(content = Some(c.copy(body = body)))
-        case None =>
-          throw new IllegalStateException("Can't set body without content")
-      }
-    }
-
-    def isEmpty: Boolean = content.isEmpty
-  }
-
-}
-
-final class Post extends PersistentEntity {
-  import Post._
+final class Post2 extends PersistentEntity {
 
   override type Command = BlogCommand
   override type Event = BlogEvent
@@ -69,13 +16,28 @@ final class Post extends PersistentEntity {
 
   override def initialState: BlogState = BlogState.empty
 
+  //#behavior
   override def behavior: Behavior = {
     case state if state.isEmpty  => initial
     case state if !state.isEmpty => postAdded
   }
+  //#behavior
 
+  //#initial-actions
   private val initial: Actions = {
+    //#initial-actions
+    //#command-handler
+    // Command handlers are invoked for incoming messages (commands).
+    // A command handler must "return" the events to be persisted (if any).
     Actions()
+      .onCommand[AddPost, AddPostDone] {
+        case (AddPost(content), ctx, state) =>
+          ctx.thenPersist(PostAdded(entityId, content), evt =>
+            // After persist is done additional side effects can be performed
+            ctx.reply(AddPostDone(entityId)))
+      }
+      //#command-handler
+      //#validate-command
       // Command handlers are invoked for incoming messages (commands).
       // A command handler must "return" the events to be persisted (if any).
       .onCommand[AddPost, AddPostDone] {
@@ -83,26 +45,44 @@ final class Post extends PersistentEntity {
           if (content.title == null || content.title.equals("")) {
             ctx.invalidCommand("Title must be defined")
             ctx.done
-          } else {
+          } //#validate-command
+          else {
             ctx.thenPersist(PostAdded(entityId, content), evt =>
               // After persist is done additional side effects can be performed
               ctx.reply(AddPostDone(entityId)))
           }
       }
+      //#validate-command
+      //#event-handler
       // Event handlers are used both when persisting new events and when replaying
       // events.
       .onEvent {
         case (PostAdded(postId, content), state) =>
           BlogState(Some(content), published = false)
       }
+    //#event-handler
   }
 
+  //#postAdded-actions
   private val postAdded: Actions = {
+    //#postAdded-actions
     Actions()
+      //#reply
       .onCommand[ChangeBody, Done] {
         case (ChangeBody(body), ctx, state) =>
           ctx.thenPersist(BodyChanged(entityId, body), _ => ctx.reply(Done))
       }
+      //#reply
+      .onEvent {
+        case (BodyChanged(_, body), state) =>
+          state.withBody(body)
+      }
+      //#read-only-command-handler
+      .onReadOnlyCommand[GetPost.type, PostContent] {
+        case (GetPost, ctx, state) =>
+          ctx.reply(state.content.get)
+      }
+    //#read-only-command-handler
   }
 
 }
