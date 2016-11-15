@@ -1,19 +1,24 @@
 //#cluster-dependency
-libraryDependencies += lagomScaladslCluster
+// FIXME
+//libraryDependencies += lagomScaladslCluster
 //#cluster-dependency
 
 //#cassandra-dependency
-libraryDependencies += lagomScaladslPersistenceCassandra
+// FIXME
+//libraryDependencies += lagomScaladslPersistenceCassandra
 //#cassandra-dependency
 
 //#jdbc-dependency
-libraryDependencies += lagomScaladslPersistenceJdbc
+// FIXME
+//libraryDependencies += lagomScaladslPersistenceJdbc
 //#jdbc-dependency
 
 //#pubsub-dependency
-libraryDependencies += lagomScaladslPubSub
+// FIXME
+//libraryDependencies += lagomScaladslPubSub
 //#pubsub-dependency
 
 //#testkit-dependency
-libraryDependencies += lagomScaladslTestKit
+// FIXME
+//libraryDependencies += lagomScaladslTestKit
 //#testkit-dependency
