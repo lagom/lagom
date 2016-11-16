@@ -35,8 +35,9 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Unzip
 import akka.stream.scaladsl.Zip
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
+import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings }
-import com.lightbend.lagom.internal.javadsl.persistence.{ OffsetDao, OffsetStore }
+import com.lightbend.lagom.internal.persistence.{ OffsetDao, OffsetStore }
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, Offset }
@@ -104,7 +105,8 @@ object Producer {
 
     private def preparing(tag: AggregateEventTag[Event]): Receive = {
       case dao: OffsetDao =>
-        val readSideSource = eventStreamFactory(tag, dao.loadedOffset).asScala.map(pair => pair.first -> pair.second)
+        val readSideSource = eventStreamFactory(tag, OffsetAdapter.offsetToDslOffset(dao.loadedOffset)).asScala
+          .map(pair => pair.first -> pair.second)
 
         val (killSwitch, streamDone) = readSideSource
           .viaMat(KillSwitches.single)(Keep.right)
@@ -139,7 +141,9 @@ object Producer {
       import GraphDSL.Implicits._
       val unzip = builder.add(Unzip[Message, Offset])
       val zip = builder.add(Zip[Any, Offset])
-      val offsetCommitter = builder.add(Flow.fromFunction { e: (Any, Offset) => offsetDao.saveOffset(e._2) })
+      val offsetCommitter = builder.add(Flow.fromFunction { e: (Any, Offset) =>
+        offsetDao.saveOffset(OffsetAdapter.dslOffsetToOffset(e._2))
+      })
 
       unzip.out0 ~> publishFlow ~> zip.in0
       unzip.out1 ~> zip.in1

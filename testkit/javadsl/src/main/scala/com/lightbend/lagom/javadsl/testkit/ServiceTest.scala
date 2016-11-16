@@ -27,7 +27,7 @@ import akka.japi.function.Procedure
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
-import com.lightbend.lagom.internal.javadsl.persistence.{ InMemoryOffsetStore, OffsetStore }
+import com.lightbend.lagom.internal.persistence.{ InMemoryOffsetStore, OffsetStore }
 import org.apache.cassandra.io.util.FileUtils
 import play.Application
 import play.Configuration

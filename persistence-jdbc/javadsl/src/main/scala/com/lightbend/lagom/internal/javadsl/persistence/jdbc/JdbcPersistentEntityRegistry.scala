@@ -8,7 +8,7 @@ import javax.inject.{ Inject, Singleton }
 import akka.actor.ActorSystem
 import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
 import akka.persistence.query.PersistenceQuery
-import akka.persistence.query.scaladsl.EventsByTagQuery
+import akka.persistence.query.scaladsl.EventsByTagQuery2
 import com.google.inject.Injector
 import com.lightbend.lagom.internal.javadsl.persistence.AbstractPersistentEntityRegistry
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity
@@ -29,5 +29,5 @@ private[lagom] final class JdbcPersistentEntityRegistry @Inject() (system: Actor
 
   override protected val journalId: String = JdbcReadJournal.Identifier
   private val jdbcReadJournal = PersistenceQuery(system).readJournalFor[JdbcReadJournal](journalId)
-  override protected val eventsByTagQuery: Option[EventsByTagQuery] = Some(jdbcReadJournal)
+  override protected val eventsByTagQuery: Option[EventsByTagQuery2] = Some(jdbcReadJournal)
 }

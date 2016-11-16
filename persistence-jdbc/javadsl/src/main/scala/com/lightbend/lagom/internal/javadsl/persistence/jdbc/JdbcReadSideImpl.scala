@@ -10,6 +10,7 @@ import javax.inject.{ Inject, Singleton }
 import akka.Done
 import akka.japi.Pair
 import akka.stream.javadsl.Flow
+import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcReadSide
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcReadSide._
@@ -88,7 +89,7 @@ private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetSto
         dao <- offsetStore.prepare(readSideId, tag.tag)
       } yield {
         offsetDao = dao
-        dao.loadedOffset
+        OffsetAdapter.offsetToDslOffset(dao.loadedOffset)
       }).toJava
     }
 

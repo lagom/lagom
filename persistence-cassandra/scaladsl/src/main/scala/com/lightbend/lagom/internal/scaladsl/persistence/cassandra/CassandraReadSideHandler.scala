@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence.cassandra
 
+import akka.persistence.query.Offset
 import akka.stream.ActorAttributes
 import akka.stream.scaladsl.Flow
 import akka.{ Done, NotUsed }
@@ -84,7 +85,7 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
   import CassandraAutoReadSideHandler.Handler
 
   @volatile
-  private var offsetDao: CassandraOffsetDao = _
+  private var offsetDao: offsetStore.CassandraOffsetDao = _
 
   override protected def invoke(handler: Handler[Event], element: EventStreamElement[Event]): Future[immutable.Seq[BoundStatement]] = {
     for {
