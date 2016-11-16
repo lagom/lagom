@@ -25,3 +25,5 @@ final case class BlogState(content: Option[PostContent], published: Boolean) {
 
 final case class PostContent(title: String, body: String)
 //#full-example
+
+final case class PostSummary(postId: String, title: String)
