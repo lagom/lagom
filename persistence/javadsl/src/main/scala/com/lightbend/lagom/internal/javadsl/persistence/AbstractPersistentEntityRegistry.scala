@@ -12,16 +12,17 @@ import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRe
 import akka.event.Logging
 import akka.japi.Pair
 import akka.pattern.ask
-import akka.persistence.query.scaladsl.EventsByTagQuery
+import akka.persistence.query.EventEnvelope
+import akka.persistence.query.scaladsl.{ EventsByTagQuery2, EventsByTagQuery }
 import akka.stream.javadsl
 import akka.util.Timeout
 import akka.{ Done, NotUsed }
 import com.google.inject.Injector
+import com.lightbend.lagom.internal.persistence.cluster.GracefulLeave
 import com.lightbend.lagom.javadsl.persistence._
 
 import scala.concurrent.duration.{ FiniteDuration, _ }
 import scala.util.control.NonFatal
-import com.lightbend.lagom.internal.persistence.cluster.GracefulLeave
 
 /**
  * Provides shared functionality for implementing a persistent entity registry.
@@ -38,7 +39,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
   /**
    * The events by tag query. Necessary for implementing read sides and the eventStream query.
    */
-  protected val eventsByTagQuery: Option[EventsByTagQuery] = None
+  protected val eventsByTagQuery: Option[EventsByTagQuery2] = None
 
   private val sharding = ClusterSharding(system)
   private val conf = system.settings.config.getConfig("lagom.persistence")
@@ -118,14 +119,13 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
     eventsByTagQuery match {
       case Some(queries) =>
         val tag = aggregateTag.tag
-        val offset = fromOffset match {
-          case Offset.NONE          => 0l
-          case seq: Offset.Sequence => seq.value() + 1
-          case other                => throw new IllegalArgumentException(s"$journalId does not support ${other.getClass.getSimpleName} offsets")
-        }
+
+        val offset = OffsetAdapter.dslOffsetToOffset(fromOffset)
+
         queries.eventsByTag(tag, offset)
-          .map { env => Pair.create(env.event.asInstanceOf[Event], Offset.sequence(env.offset)) }
+          .map { env => Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset)) }
           .asJava
+
       case None =>
         throw new UnsupportedOperationException(s"The $journalId Lagom persistence plugin does not support streaming events by tag")
     }

@@ -5,10 +5,11 @@ package com.lightbend.lagom.internal.persistence.cassandra
 
 import akka.Done
 import akka.actor.ActorSystem
+import akka.persistence.query.{ NoOffset, Offset, Sequence, TimeBasedUUID }
 import akka.util.Timeout
 import com.datastax.driver.core.{ BoundStatement, PreparedStatement, Row }
-import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.lightbend.lagom.internal.persistence.{ OffsetDao, ReadSideConfig }
 
 import scala.concurrent.Future
 
@@ -21,11 +22,11 @@ private[lagom] abstract class AbstractCassandraOffsetStore(
   config:  ReadSideConfig
 ) {
 
-  type DslOffset
+  protected type DslOffset
   import system.dispatcher
 
-  protected def extractOffset(maybeRow: Option[Row]): DslOffset
-  protected def writeOffset(statement: PreparedStatement, eventProcessorId: String, tag: String, offset: DslOffset): BoundStatement
+  protected def offsetToDslOffset(offset: Offset): DslOffset
+  protected def dslOffsetToOffset(dslOffset: DslOffset): Offset
 
   private val startupTask = ClusterStartupTask(
     system,
@@ -74,6 +75,51 @@ private[lagom] abstract class AbstractCassandraOffsetStore(
       s"SELECT timeUuidOffset, sequenceOffset FROM offsetStore WHERE eventProcessorId = ? AND tag = ?",
       eventProcessorId, tag
     ).map(extractOffset)
+  }
+
+  private def extractOffset(maybeRow: Option[Row]): DslOffset = {
+    val offset = maybeRow match {
+      case Some(row) =>
+        val uuid = row.getUUID("timeUuidOffset")
+        if (uuid != null) {
+          TimeBasedUUID(uuid)
+        } else {
+          if (row.isNull("sequenceOffset")) {
+            NoOffset
+          } else {
+            Sequence(row.getLong("sequenceOffset"))
+          }
+        }
+      case None => NoOffset
+    }
+    offsetToDslOffset(offset)
+  }
+
+  final def writeOffset(statement: PreparedStatement, eventProcessorId: String, tag: String, dslOffset: DslOffset): BoundStatement = {
+    val offset = dslOffsetToOffset(dslOffset)
+    offset match {
+      case NoOffset            => statement.bind(eventProcessorId, tag, null, null)
+      case Sequence(seq)       => statement.bind(eventProcessorId, tag, null, java.lang.Long.valueOf(seq))
+      case TimeBasedUUID(uuid) => statement.bind(eventProcessorId, tag, uuid, null)
+      case _                   => throw new IllegalArgumentException("Cassandra does not support " + offset.getClass.getName + " offsets")
+    }
+  }
+
+  final class CassandraOffsetDao(statement: PreparedStatement, eventProcessorId: String, tag: String,
+                                 override val loadedOffset: Offset) extends OffsetDao {
+
+    override def saveOffset(offset: Offset): Future[Done] = {
+      session.executeWrite(bindSaveOffset(offset))
+    }
+    def bindSaveOffset(offset: Offset): BoundStatement = {
+      offset match {
+        case NoOffset            => statement.bind(eventProcessorId, tag, null, null)
+        case Sequence(seq)       => statement.bind(eventProcessorId, tag, null, java.lang.Long.valueOf(seq))
+        case TimeBasedUUID(uuid) => statement.bind(eventProcessorId, tag, uuid, null)
+        case _                   => throw new IllegalArgumentException("Cassandra does not support " + offset.getClass.getName + " offsets")
+      }
+    }
+
   }
 
 }

@@ -6,16 +6,15 @@ package com.lightbend.lagom.javadsl.persistence.cassandra
 import java.net.URI
 
 import scala.concurrent.Future
-
 import akka.actor.ActorSystem
-import com.google.inject.{ AbstractModule, Inject, TypeLiteral }
+import com.google.inject.{ Inject, TypeLiteral }
 import com.google.inject.{ AbstractModule, Key }
 import com.google.inject.matcher.AbstractMatcher
 import com.google.inject.spi.InjectionListener
 import com.google.inject.spi.TypeEncounter
 import com.google.inject.spi.TypeListener
-import com.lightbend.lagom.internal.javadsl.persistence.OffsetStore
 import com.lightbend.lagom.internal.javadsl.persistence.cassandra._
+import com.lightbend.lagom.internal.persistence.OffsetStore
 import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorAdapter
 import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorHolder
 import com.lightbend.lagom.javadsl.api.ServiceLocator

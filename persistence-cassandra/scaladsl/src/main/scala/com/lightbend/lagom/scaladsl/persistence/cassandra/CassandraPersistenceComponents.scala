@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.cassandra
 
-import com.lightbend.lagom.internal.scaladsl.persistence.OffsetStore
+import com.lightbend.lagom.internal.persistence.OffsetStore
 import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.{ CassandraOffsetStore, CassandraPersistentEntityRegistry, CassandraReadSideImpl }
 import com.lightbend.lagom.scaladsl.persistence.{ PersistenceComponents, PersistentEntityRegistry, ReadSidePersistenceComponents, WriteSidePersistenceComponents }
 import com.lightbend.lagom.scaladsl.api.ServiceLocator

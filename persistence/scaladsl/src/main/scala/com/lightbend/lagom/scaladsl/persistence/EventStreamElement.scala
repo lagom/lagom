@@ -3,6 +3,8 @@
  */
 package com.lightbend.lagom.scaladsl.persistence
 
+import akka.persistence.query.Offset
+
 object EventStreamElement {
   def unapply[Event](elem: EventStreamElement[Event]): Option[(String, Event, Offset)] =
     Some((elem.entityId, elem.event, elem.offset))

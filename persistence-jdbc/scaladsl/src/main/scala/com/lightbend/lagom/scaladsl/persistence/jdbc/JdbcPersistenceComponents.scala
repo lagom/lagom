@@ -4,10 +4,9 @@
 package com.lightbend.lagom.scaladsl.persistence.jdbc
 
 import scala.concurrent.ExecutionContext
-
 import akka.actor.ActorSystem
+import com.lightbend.lagom.internal.persistence.OffsetStore
 import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
-import com.lightbend.lagom.internal.scaladsl.persistence.OffsetStore
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcOffsetStore
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcPersistentEntityRegistry
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcReadSideImpl

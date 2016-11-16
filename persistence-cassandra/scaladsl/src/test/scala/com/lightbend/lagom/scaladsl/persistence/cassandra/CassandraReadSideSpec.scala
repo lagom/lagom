@@ -5,7 +5,7 @@ package com.lightbend.lagom.scaladsl.persistence.cassandra
 
 import akka.NotUsed
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
-import akka.persistence.query.PersistenceQuery
+import akka.persistence.query.{ NoOffset, Offset, PersistenceQuery, TimeBasedUUID }
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.scaladsl.persistence.PersistentEntityActor
@@ -29,13 +29,8 @@ class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSp
     aggregateTag: AggregateEventTag[Event],
     fromOffset:   Offset
   ): Source[EventStreamElement[Event], NotUsed] = {
-    val offset = fromOffset match {
-      case NoOffset            => queries.firstOffset
-      case TimeBasedUUID(uuid) => uuid
-      case other               => throw new IllegalArgumentException("Cassandra does not support " + other.getClass.getName + " offsets")
-    }
-    queries.eventsByTag(aggregateTag.tag, offset)
-      .map { env => new EventStreamElement[Event](PersistentEntityActor.extractEntityId(env.persistenceId), env.event.asInstanceOf[Event], TimeBasedUUID(env.offset)) }
+    queries.eventsByTag(aggregateTag.tag, fromOffset)
+      .map { env => new EventStreamElement[Event](PersistentEntityActor.extractEntityId(env.persistenceId), env.event.asInstanceOf[Event], env.offset) }
 
   }
 

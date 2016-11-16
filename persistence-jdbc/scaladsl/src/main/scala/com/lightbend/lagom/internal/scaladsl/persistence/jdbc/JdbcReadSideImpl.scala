@@ -5,12 +5,13 @@ package com.lightbend.lagom.internal.scaladsl.persistence.jdbc
 
 import java.sql.Connection
 
+import akka.persistence.query.Offset
 import akka.stream.scaladsl.Flow
 import akka.{ Done, NotUsed }
 import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.scaladsl.persistence.jdbc.JdbcReadSide
-import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, AggregateEventTag, EventStreamElement, Offset }
+import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, AggregateEventTag, EventStreamElement }
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ ExecutionContext, Future }
