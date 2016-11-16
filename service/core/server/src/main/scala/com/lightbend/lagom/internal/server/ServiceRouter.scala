@@ -82,9 +82,17 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
     })
   }
 
-  private val inMemoryBodyParser = BodyParsers.parse.maxLength(httpConfiguration.parser.maxMemoryBuffer, BodyParser { req =>
-    Accumulator(Sink.fold[ByteString, ByteString](ByteString.empty)((state, bs) => state ++ bs)).map(Right.apply)
-  })
+  private val inMemoryBodyParser = BodyParser { req =>
+    val contentLength = req.headers.get(HeaderNames.CONTENT_LENGTH)
+    val hasBody = contentLength.filter(_ != "0").orElse(req.headers.get(HeaderNames.TRANSFER_ENCODING)).isDefined
+    if (hasBody) {
+      BodyParsers.parse.maxLength(httpConfiguration.parser.maxMemoryBuffer, BodyParser { _ =>
+        Accumulator(Sink.fold[ByteString, ByteString](ByteString.empty)((state, bs) => state ++ bs)).map(Right.apply)
+      }).apply(req)
+    } else {
+      Accumulator.done(Right(Right(ByteString.empty)))
+    }
+  }
 
   /**
    * Create the action.
