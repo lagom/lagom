@@ -1,4 +1,7 @@
 PersistentEntity:Persistent Entity
 PersistentEntityCassandra:Cassandra Persistent Entities
 PersistentEntityRDBMS:Relational Database Persistent Entities
+ReadSide:Persistent Read-Side
+ReadSideCassandra:Cassandra Read-Side Support
+ReadSideRDBMS:Relational Database Read-Side Support
 Cluster:Cluster

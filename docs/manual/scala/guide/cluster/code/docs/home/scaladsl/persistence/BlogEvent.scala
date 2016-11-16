@@ -9,7 +9,7 @@ import com.lightbend.lagom.scaladsl.playjson.Serializers
 object BlogEvent {
   val NumShards = 20
   // second param is optional, defaults to the class name
-  val aggregateEventShards = AggregateEventTag.sharded[BlogEvent](NumShards)
+  val Tag = AggregateEventTag.sharded[BlogEvent](NumShards)
 
   import play.api.libs.json._
   import Serializers.emptySingletonFormat
@@ -21,7 +21,7 @@ object BlogEvent {
 }
 
 sealed trait BlogEvent extends AggregateEvent[BlogEvent] {
-  override def aggregateTag: AggregateEventShards[BlogEvent] = BlogEvent.aggregateEventShards
+  override def aggregateTag: AggregateEventShards[BlogEvent] = BlogEvent.Tag
 }
 
 final case class PostAdded(postId: String, content: PostContent) extends BlogEvent
