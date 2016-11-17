@@ -1,10 +1,10 @@
 # Serialization
 
-Out of the box, Lagom will use JSON for request and response message format for the external API of the service, using Jackson to serialize and deserialize messages. The messages that are sent within the cluster of the service must also be serializable and so must the events that are stored by [[Persistent Entities|PersistentEntity]]. We recommend JSON for these as well and Lagom makes it easy to add Play JSON serialization support to such classes.
+Out of the box, Lagom will use JSON for request and response message format for the external API of the service, using Play JSON to serialize and deserialize messages. The messages that are sent within the cluster of the service must also be serializable and so must the events that are stored by [[Persistent Entities|PersistentEntity]]. We recommend JSON for these as well and Lagom makes it easy to add Play JSON serialization support to such classes.
 
 Do not depend on Java serialization for production deployments. It is inefficient both in serialization size and speed. It is very difficult to evolve the classes when using Java serialization, which is especially important for the persistent state and events, since you must be able to deserialize old objects that were stored.
 
-Runtime overhead is avoided by not basing the serialization on reflection. Transformations to and from JSON is defined either manually or by using a built in macro - essentially doing what reflection would do but at compile time instead of during runtime. This comes with one caveat, each top level class that can be serialized needs an explicit serializer defined. So to use the Play JSON support in Lagom you need to provide such serializers for each type.
+Runtime overhead is avoided by not basing the serialization on reflection. Transformations to and from JSON are defined either manually or by using a built in macro - essentially doing what reflection would do, but at compile time instead of during runtime. This comes with one caveat, each top level class that can be serialized needs an explicit serializer defined. To use the Play JSON support in Lagom you need to provide such serializers for each type.
 
 The Play JSON abstraction for serializing and deserializing a class into JSON is the [Format](https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.libs.json.Format) which in turn is a combination of [Reads](https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.libs.json.Reads) and [Writes](https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.libs.json.Writes). The library parses JSON into a JSON tree model, which is what the `Format`s work with.
 
@@ -51,7 +51,7 @@ Defining a `Format` can be done in several ways using the Play JSON APIs, either
 
 ### Mapping options
 
-TODO
+Lagom provides a mapping for `Option` that will turn `None` into JSON `null` or use an implicitly provided `Format[Inner]` to turn `Some(Inner)` into JSON. When transforming from JSON it will turn missing fields into `None` allowing adding new optional fields without having to define any schema migrations.  
 
 ### Mapping singletons
 
@@ -81,8 +81,6 @@ Removing a field can be done without any migration code. Both manual and automat
 
 ### Add Field
 
-TODO implement this in the default Option mapping as well -- missing field gives None rather than JsFailure? 
-
 Adding an optional field can be done without any migration code if using the built in `com.lightbend.lagom.scaladsl.playjson.Serializers.optionFormat`. The default value if the field is missing will be `None`.
 
 Old class:
@@ -101,7 +99,7 @@ To add a new mandatory field we have to use a JSON migration adding a default va
 
 This is how a migration logic would look like for adding a `discount` field using imperative code:
 
-@[imperative](code/docs/home/scaladsl/serialization/Registry.scala)
+@[imperative-migration](code/docs/home/scaladsl/serialization/v2b/ItemAdded.scala)
 
 Create a concrete subclass of `com.lightbend.lagom.scaladsl.playjson.Migration` handing it the current version of the schema as a parameter, then implement the transformation logic on the `JsObject` in the `transform` method when an older `fromVersion` is passed in.
 
@@ -109,22 +107,24 @@ Then provide your `Migration` together with the classname of the class that it m
 
 Alternatively you can use the [Play JSON transformers](https://www.playframework.com/documentation/2.5.x/ScalaJsonTransformers) API which is more concise but arguably has a much higher threshold to learn.
 
-@[transformers](code/docs/home/scaladsl/serialization/Registry.scala)
+@[transformer-migration](code/docs/home/scaladsl/serialization/v2b/ItemAdded.scala)
 
 In this case we give the `Migrations.transform` method the type it is for, and a sorted map of transformations that has happened leading up to the current version of the schema.
 
 
 ### Rename Field
 
-TODO - this is how far I got
-
 Let's say that we want to rename the `productId` field to `itemId` in the previous example.
 
-@[rename](code/docs/home/serialization/v2c/AbstractItemAdded.java)
+@[rename](code/docs/home/scaladsl/serialization/v2c/ItemAdded.scala)
 
-The migration code would look like:
+The imperative migration code would look like:
 
-@[rename](code/docs/home/serialization/v2c/ItemAddedMigration.java)
+@[imperative-migration](code/docs/home/scaladsl/serialization/v2c/ItemAdded.scala)
+
+And alternatively the transformer based migration:
+
+@[transformer-migration](code/docs/home/scaladsl/serialization/v2c/ItemAdded.scala)
 
 ### Structural Changes
 
@@ -132,19 +132,15 @@ In a similar way we can do arbitary structural changes.
 
 Old class:
 
-@[structural](code/docs/home/serialization/v1/AbstractCustomer.java)
+@[structural](code/docs/home/scaladsl/serialization/v1/Customer.scala)
 
-New class:
+New classes:
 
-@[structural](code/docs/home/serialization/v2a/AbstractCustomer.java)
+@[structural](code/docs/home/scaladsl/serialization/v2a/Customer.scala)
 
-with the `Address` class:
+The migration code could look like:
 
-@[structural](code/docs/home/serialization/v2a/AbstractAddress.java)
-
-The migration code would look like:
-
-@[structural](code/docs/home/serialization/v2a/CustomerMigration.java)
+@[structural-migration](code/docs/home/scaladsl/serialization/v2a/Customer.scala)
 
 ### Rename Class
 
@@ -152,20 +148,14 @@ It is also possible to rename the class. For example, let's rename `OrderAdded` 
 
 Old class:
 
-@[rename-class](code/docs/home/serialization/v1/AbstractOrderAdded.java)
+@[rename-class](code/docs/home/scaladsl/serialization/v1/OrderAdded.scala)
 
 New class:
 
-@[rename-class](code/docs/home/serialization/v2d/AbstractOrderPlaced.java)
+@[rename-class](code/docs/home/scaladsl/serialization/v2a/OrderPlaced.scala)
 
 The migration code would look like:
 
-@[rename-class](code/docs/home/serialization/v2d/OrderPlacedMigration.java)
+@[rename-class-migration](code/docs/home/scaladsl/serialization/v2a/OrderPlaced.scala)
 
-Note the override of the `transformClassName` method to define the new class name.
-
-That type of migration must be configured with the old class name as key. The actual class can be removed.
-
-    lagom.serialization.json.migrations {
-      "com.myservice.event.OrderAdded" = "com.myservice.event.OrderPlacedMigration"
-    }
+When a class has both been renamed and had other changes over time the name change is added separately as in the example and the transformations are defined for the new class name in the migrations map. The Lagom serialization logic will first look for name changes, and then use the changed name to resolve any schema migrations that will be done using the changed name.
