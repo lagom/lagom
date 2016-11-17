@@ -20,17 +20,19 @@ trait RDBMSReadSideQuery {
 
   //#service-impl
   class BlogServiceImpl(jdbcSession: JdbcSession) extends BlogService {
+    import JdbcSession.tryWith
 
     override def getPostSummaries() = ServiceCall { request =>
       jdbcSession.withConnection { connection =>
-        val rs = connection.prepareStatement("SELECT id, title FROM blogsummary")
-          .executeQuery()
-        val summaries = new VectorBuilder[PostSummary]
-        while (rs.next()) {
-          summaries +=
-            PostSummary(rs.getString("id"), rs.getString("title"))
+        tryWith(connection.prepareStatement("SELECT id, title FROM blogsummary")) { ps =>
+          tryWith(ps.executeQuery()) { rs =>
+            val summaries = new VectorBuilder[PostSummary]
+            while (rs.next()) {
+              summaries += PostSummary(rs.getString("id"), rs.getString("title"))
+            }
+            summaries.result()
+          }
         }
-        summaries.result()
       }
     }
     //#service-impl

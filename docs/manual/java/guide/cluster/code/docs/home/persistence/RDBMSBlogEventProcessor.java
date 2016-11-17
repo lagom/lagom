@@ -58,8 +58,10 @@ public interface RDBMSBlogEventProcessor {
 
         //#create-table
         private void createTable(Connection connection) throws SQLException {
-            connection.prepareStatement("CREATE TABLE IF NOT EXISTS blogsummary ( " +
-                    "id VARCHAR(64), title VARCHAR(256), PRIMARY KEY (id))").execute();
+            try (PreparedStatement ps = connection.prepareStatement("CREATE TABLE IF NOT EXISTS blogsummary ( " +
+                    "id VARCHAR(64), title VARCHAR(256), PRIMARY KEY (id))")) {
+              ps.execute();
+            }
         }
         //#create-table
 

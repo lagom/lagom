@@ -7,6 +7,19 @@ import java.sql.Connection
 
 import scala.concurrent.Future
 
+object JdbcSession {
+  /**
+   * Closes this resource after the block has finished.
+   */
+  def tryWith[Resource <: AutoCloseable, Out](resource: Resource)(block: Resource => Out): Out = {
+    try {
+      block(resource)
+    } finally {
+      resource.close()
+    }
+  }
+}
+
 trait JdbcSession {
   /**
    * Execute the given function with a connection.
