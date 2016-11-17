@@ -62,6 +62,7 @@ object ReadSideProcessor {
      */
     def handle(): Flow[EventStreamElement[Event], Done, NotUsed]
   }
+
 }
 
 /**

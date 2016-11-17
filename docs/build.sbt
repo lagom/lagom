@@ -1,6 +1,6 @@
 
-val PlayVersion = "2.5.0"
-val AkkaVersion = "2.4.11"
+val PlayVersion = "2.5.4"
+val AkkaVersion = "2.4.12"
 
 val branch = {
   val rev = "git rev-parse --abbrev-ref HEAD".!!.trim
@@ -63,15 +63,18 @@ lazy val docs = project
     markdownStageIncludeWebJars := false,
     markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/"))
 
-  ).dependsOn(serviceIntegrationTests, persistenceJdbcJavadsl, persistenceJdbcScaladsl, testkitScaladsl,
+  ).dependsOn(serviceIntegrationTestsJavadsl, persistenceJdbcJavadsl, 
+      serviceIntegrationTestsScaladsl, persistenceCassandraScaladsl, persistenceJdbcScaladsl, testkitScaladsl,
       kafkaBroker, immutables % "test->compile", theme % "run-markdown")
 
 lazy val parentDir = Path.fileProperty("user.dir").getParentFile
 
 // Depend on the integration tests, they should bring everything else in
-lazy val serviceIntegrationTests = ProjectRef(parentDir, "integration-tests-javadsl")
+lazy val serviceIntegrationTestsJavadsl = ProjectRef(parentDir, "integration-tests-javadsl")
+lazy val serviceIntegrationTestsScaladsl = ProjectRef(parentDir, "integration-tests-scaladsl")
 lazy val persistenceJdbcJavadsl = ProjectRef(parentDir, "persistence-jdbc-javadsl")
 lazy val persistenceJdbcScaladsl = ProjectRef(parentDir, "persistence-jdbc-scaladsl")
+lazy val persistenceCassandraScaladsl = ProjectRef(parentDir, "persistence-cassandra-scaladsl")
 lazy val testkitScaladsl = ProjectRef(parentDir, "testkit-scaladsl")
 lazy val kafkaBroker = ProjectRef(parentDir, "kafka-broker")
 

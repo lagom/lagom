@@ -13,6 +13,7 @@ import scala.concurrent.Future
 object JdbcTestEntityReadSide {
 
   class TestEntityReadSideProcessor(readSide: JdbcReadSide) extends ReadSideProcessor[TestEntity.Evt] {
+    import JdbcSession.tryWith
 
     def buildHandler(): ReadSideHandler[TestEntity.Evt] =
       readSide.builder[TestEntity.Evt]("test-entity-read-side")
@@ -48,20 +49,11 @@ object JdbcTestEntityReadSide {
     def aggregateTags: Set[AggregateEventTag[Evt]] = TestEntity.Evt.aggregateEventShards.allTags
   }
 
-  private[JdbcTestEntityReadSide] def tryWith[Resource <: AutoCloseable, Out](resource: Resource)(block: Resource => Out): Out = {
-    try {
-      block(resource)
-    } finally {
-      resource.close()
-    }
-
-  }
-
 }
 
 class JdbcTestEntityReadSide(session: JdbcSession) {
 
-  import JdbcTestEntityReadSide.tryWith
+  import JdbcSession.tryWith
 
   def getAppendCount(id: String): Future[Long] = session.withConnection(connection => {
     tryWith(connection.prepareStatement("select count from testcounts where id = ?")) { statement =>

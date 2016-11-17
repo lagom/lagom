@@ -11,7 +11,7 @@ In Maven:
 ```xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-persistence-cassandra_2.11</artifactId>
+    <artifactId>lagom-scaladsl-persistence-cassandra_2.11</artifactId>
     <version>${lagom.version}</version>
 </dependency>
 ```
