@@ -11,6 +11,7 @@ import com.lightbend.lagom.scaladsl.persistence.EventStreamElement
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import scala.concurrent.Promise
 
 //#imports
 
@@ -49,23 +50,24 @@ trait CassandraBlogEventProcessor {
     //#create-table
 
     //#prepare-statements
-    private var writeTitle: PreparedStatement = null // initialized in prepare
+    private val writeTitlePromise = Promise[PreparedStatement] // initialized in prepare
+    private def writeTitle: Future[PreparedStatement] = writeTitlePromise.future
 
     private def prepareWriteTitle(): Future[Done] = {
-      session.prepare("INSERT INTO blogsummary (id, title) VALUES (?, ?)")
-        .map { ps =>
-          this.writeTitle = ps
-          Done
-        }
+      val f = session.prepare("INSERT INTO blogsummary (id, title) VALUES (?, ?)")
+      writeTitlePromise.completeWith(f)
+      f.map(_ => Done)
     }
     //#prepare-statements
 
     //#post-added
     private def processPostAdded(eventElement: EventStreamElement[PostAdded]): Future[List[BoundStatement]] = {
-      val bindWriteTitle = writeTitle.bind()
-      bindWriteTitle.setString("id", eventElement.event.postId)
-      bindWriteTitle.setString("title", eventElement.event.content.title)
-      Future.successful(List(bindWriteTitle))
+      writeTitle.map { ps =>
+        val bindWriteTitle = ps.bind()
+        bindWriteTitle.setString("id", eventElement.event.postId)
+        bindWriteTitle.setString("title", eventElement.event.content.title)
+        List(bindWriteTitle)
+      }
     }
     //#post-added
 
