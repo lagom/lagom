@@ -11,6 +11,30 @@ import scala.reflect.ClassTag
 object Serializers {
 
   /**
+   * Implicitly provided serializers
+   */
+  object Implicits {
+    implicit def optionFormat[A](implicit innerFormat: Format[A]): Format[Option[A]] =
+      Serializers.optionFormat[A](innerFormat)
+  }
+
+  /**
+   * Format that will represent optional fields in JSON as the serialized value for their type
+   * when present and `null` when missing. Import from `Serializers.Implicits` when needed in
+   * a macro generated format
+   */
+  def optionFormat[A](implicit innerFormat: Format[A]): Format[Option[A]] = Format[Option[A]](
+    Reads[Option[A]] {
+      case JsNull => JsSuccess(None)
+      case other  => innerFormat.reads(other).map[Option[A]](Some.apply)
+    },
+    Writes[Option[A]] {
+      case None    => JsNull
+      case Some(a) => innerFormat.writes(a)
+    }
+  )
+
+  /**
    * Creates a format that will serialize and deserialize a singleton to an empty js object
    */
   def emptySingletonFormat[A](singleton: A) = Format[A](
