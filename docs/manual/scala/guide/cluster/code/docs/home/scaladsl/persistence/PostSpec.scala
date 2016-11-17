@@ -35,8 +35,7 @@ class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll
       outcome.state.published should ===(false)
       outcome.state.content should ===(Some(content))
       outcome.replies should ===(List(AddPostDone("post-1")))
-      //FIXME when serialization is done
-      //outcome.issues should be(Nil)
+      outcome.issues should be(Nil)
     }
 
     "validate title" in {
@@ -44,8 +43,7 @@ class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll
       val outcome = driver.run(AddPost(PostContent("", "Body")))
       outcome.replies.head.getClass should be(classOf[InvalidCommandException])
       outcome.events.size should ===(0)
-      //FIXME when serialization is done
-      //outcome.issues should be(Nil)
+      outcome.issues should be(Nil)
     }
 
     "handle ChangeBody" in {
@@ -59,8 +57,7 @@ class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll
       outcome.state.published should ===(false)
       outcome.state.content.get.body should ===("New body 2")
       outcome.replies should ===(List(Done, Done))
-      //FIXME when serialization is done
-      //outcome.issues should be(Nil)
+      outcome.issues should be(Nil)
     }
 
   }
