@@ -1,16 +1,21 @@
 package docs.home.scaladsl.persistence
 
 //#full-example
-import com.lightbend.lagom.scaladsl.playjson.Serializers
+import com.lightbend.lagom.scaladsl.playjson.{Jsonable, Serializers}
+import play.api.libs.json._
 
 object BlogState {
   val empty = BlogState(None, published = false)
 
-  //FIXME serialization, how to handle Option?
-  val serializers = Vector.empty
+  import Serializers.Implicits._
+  implicit val postContentFormat = Json.format[PostContent]
+
+  val serializers = Vector(
+    Serializers(Json.format[BlogState])
+  )
 }
 
-final case class BlogState(content: Option[PostContent], published: Boolean) {
+final case class BlogState(content: Option[PostContent], published: Boolean) extends Jsonable {
   def withBody(body: String): BlogState = {
     content match {
       case Some(c) =>

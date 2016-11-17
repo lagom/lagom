@@ -63,9 +63,9 @@ lazy val docs = project
     markdownStageIncludeWebJars := false,
     markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/"))
 
-  ).dependsOn(serviceIntegrationTestsJavadsl, persistenceJdbcJavadsl, 
+  ).dependsOn(serviceIntegrationTestsJavadsl, persistenceJdbcJavadsl,
       serviceIntegrationTestsScaladsl, persistenceCassandraScaladsl, persistenceJdbcScaladsl, testkitScaladsl,
-      kafkaBroker, immutables % "test->compile", theme % "run-markdown")
+      playJson, kafkaBroker, immutables % "test->compile", theme % "run-markdown")
 
 lazy val parentDir = Path.fileProperty("user.dir").getParentFile
 
@@ -76,6 +76,7 @@ lazy val persistenceJdbcJavadsl = ProjectRef(parentDir, "persistence-jdbc-javads
 lazy val persistenceJdbcScaladsl = ProjectRef(parentDir, "persistence-jdbc-scaladsl")
 lazy val persistenceCassandraScaladsl = ProjectRef(parentDir, "persistence-cassandra-scaladsl")
 lazy val testkitScaladsl = ProjectRef(parentDir, "testkit-scaladsl")
+lazy val playJson = ProjectRef(parentDir, "play-json")
 lazy val kafkaBroker = ProjectRef(parentDir, "kafka-broker")
 
 // Needed to compile test classes using immutables annotation
