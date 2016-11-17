@@ -9,6 +9,7 @@ import java.sql.PreparedStatement
 import java.sql.SQLException
 import com.lightbend.lagom.scaladsl.persistence.EventStreamElement
 import scala.concurrent.ExecutionContext
+import com.lightbend.lagom.scaladsl.persistence.jdbc.JdbcSession.tryWith
 
 //#imports
 
@@ -42,19 +43,22 @@ trait RDBMSBlogEventProcessor {
 
     //#create-table
     private def createTable(connection: Connection): Unit = {
-      connection.prepareStatement("CREATE TABLE IF NOT EXISTS blogsummary ( " +
-        "id VARCHAR(64), title VARCHAR(256), PRIMARY KEY (id))").execute()
+      tryWith(connection.prepareStatement("CREATE TABLE IF NOT EXISTS blogsummary ( " +
+        "id VARCHAR(64), title VARCHAR(256), PRIMARY KEY (id))")) { ps =>
+        ps.execute()
+      }
     }
     //#create-table
 
     //#post-added
     private def processPostAdded(connection: Connection,
       eventElement: EventStreamElement[PostAdded]): Unit = {
-      val statement = connection.prepareStatement(
-        "INSERT INTO blogsummary (id, title) VALUES (?, ?)")
-      statement.setString(1, eventElement.event.postId)
-      statement.setString(2, eventElement.event.content.title)
-      statement.execute()
+      tryWith(connection.prepareStatement(
+        "INSERT INTO blogsummary (id, title) VALUES (?, ?)")) { statement =>
+        statement.setString(1, eventElement.event.postId)
+        statement.setString(2, eventElement.event.content.title)
+        statement.execute()
+      }
     }
     //#post-added
 
