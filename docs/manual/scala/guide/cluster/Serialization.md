@@ -21,9 +21,9 @@ The second step is to define your [Format](https://www.playframework.com/documen
 
 @[format](code/docs/home/scaladsl/serialization/AddPost.scala)
 
-Best practice is to define the `Format` somewhere close to the class, for example all the `Format`s for the commands and events in the respective supertype companion object [[Persistent Entities|PersistentEntity]].
+Best practice is to define the `Format` somewhere close to the class, for example all the `Format`s for the commands and events in the respective supertype companion object.
  
-The third step is to implement `com.lightbend.lagom.scaladsl.playjson.SerializerRegistry` and have all the serivces formats returned from its `serializers` method.
+The third step is to implement `com.lightbend.lagom.scaladsl.playjson.SerializerRegistry` and have all the service formats returned from its `serializers` method.
 
  ... TODO document/decide the di part
    
