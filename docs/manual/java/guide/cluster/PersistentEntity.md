@@ -192,7 +192,11 @@ In sbt:
 
 @[full-example](code/docs/home/persistence/Post.java)
 
-You find the classes for the commands, events and state in the [[Immutable Objects|Immutable]] section.
+@[full-example](code/docs/home/persistence/BlogCommand.java)
+
+@[full-example](code/docs/home/persistence/BlogEvent.java)
+
+@[full-example](code/docs/home/persistence/BlogState.java)
 
 ## Refactoring Consideration
 
