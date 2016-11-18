@@ -51,7 +51,7 @@ Defining a `Format` can be done in several ways using the Play JSON APIs, either
 
 ### Mapping options
 
-Lagom provides a mapping for `Option` that will turn `None` into JSON `null` or use an implicitly provided `Format[Inner]` to turn `Some(Inner)` into JSON. When transforming from JSON it will turn missing fields into `None` allowing adding new optional fields without having to define any schema migrations.  
+The automatic mapping will handle `Option` fields, for manual mapping of optional fields you can use `(JsPath \ "optionalField").formatNullable[A]`. This will treat missing fields as `None` allowing for adding of new fields without providing an explicit schema migration step.
 
 ### Mapping singletons
 

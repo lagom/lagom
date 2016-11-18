@@ -12,7 +12,7 @@ case class OrderPlaced(shoppingCartId: String)
 
 class ShopSerializerRegistry extends SerializerRegistry {
 
-  override def serializers: Seq[Serializers[_]] = List.empty
+  override def serializers = Vector.empty[Serializers[_]]
 
   //#rename-class-migration
   override def migrations: Map[String, Migration] = Map(

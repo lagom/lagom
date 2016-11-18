@@ -18,7 +18,7 @@ object AddOrder {
   val format: Format[AddOrder] = (
     (JsPath \ "product_id").format[String] and
     (JsPath \ "quantity").format[Int]
-  )(AddOrder.apply)(unlift(AddOrder.unapply))
+  )(AddOrder.apply, unlift(AddOrder.unapply))
   //#manualMapping
 
 }
@@ -55,7 +55,7 @@ object Hierarchy {
         {
           case "pear" => JsSuccess(Pear)
           case "apple" => JsSuccess(Apple)
-          case "banana" => (js \ "data").transform(bananaFormat)
+          case "banana" => (JsPath \ "data").read[Banana].reads(js)
         }
       )
     },

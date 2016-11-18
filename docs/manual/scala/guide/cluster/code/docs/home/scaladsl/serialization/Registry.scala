@@ -3,20 +3,19 @@
  */
 package docs.home.scaladsl.serialization
 
-import com.lightbend.lagom.scaladsl.playjson.{Migration, Migrations, SerializerRegistry, Serializers}
-import play.api.libs.json.Format
+import com.lightbend.lagom.scaladsl.playjson.{SerializerRegistry, Serializers}
 
-import scala.collection.immutable.{Seq, SortedMap}
+import scala.collection.immutable
 
 object BlogCommands {
-  val serializers = Seq(
-    AddComment.format,
-    AddPost.format
+  val serializers =  Vector[Serializers[_]](
+    Serializers(AddComment.format),
+    Serializers(AddPost.format)
   )
 }
 
 object BlogEvents {
-  val serializers = Seq.empty[Format[_]]
+  val serializers = Vector.empty[Serializers[_]]
 }
 
 //#registry

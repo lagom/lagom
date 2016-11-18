@@ -6,7 +6,6 @@ package docs.home.scaladsl.serialization
 import com.lightbend.lagom.scaladsl.playjson.Jsonable
 import play.api.libs.json.Json
 
-
 object AddComment {
 
   //#complexMembers

@@ -3,8 +3,7 @@
  */
 package docs.home.scaladsl.serialization.v2b
 
-import com.lightbend.lagom.scaladsl.playjson.{Jsonable, Migration, Migrations, SerializerRegistry}
-import docs.home.scaladsl.serialization.v2b
+import com.lightbend.lagom.scaladsl.playjson._
 import play.api.libs.json.Format
 
 import scala.collection.immutable
@@ -19,13 +18,13 @@ case class ItemAdded(
 
 
 object ItemAddedMigration {
-  import v2b.ItemAdded
+
   object ShopCommands {
-    val serializers = Seq.empty[Format[_]]
+    val serializers = Vector.empty[Serializers[_]]
   }
 
   object ShopEvents {
-    val serializers = Seq.empty[Format[_]]
+    val serializers = Vector.empty[Serializers[_]]
   }
 
 
@@ -55,13 +54,13 @@ object ItemAddedMigration {
 }
 
 object ItemAddedMigrationTransformer {
-  import v2b.ItemAdded
+
   object ShopCommands {
-    val serializers = immutable.Seq.empty[Format[_]]
+    val serializers = immutable.Seq.empty[Serializers[_]]
   }
 
   object ShopEvents {
-    val serializers = immutable.Seq.empty[Format[_]]
+    val serializers = immutable.Seq.empty[Serializers[_]]
   }
 
   //#transformer-migration

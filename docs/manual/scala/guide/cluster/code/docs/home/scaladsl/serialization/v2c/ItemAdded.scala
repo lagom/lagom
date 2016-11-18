@@ -19,7 +19,7 @@ case class ItemAdded(
 object ItemAddedMigration {
 
   class ShopSerializerRegistry1 extends SerializerRegistry {
-    override def serializers = Seq.empty
+    override def serializers = Vector.empty
 
     //#imperative-migration
     private val itemAddedMigration = new Migration(2) {
@@ -41,7 +41,7 @@ object ItemAddedMigration {
 
   class ShopSerializerRegistry2 extends SerializerRegistry {
 
-    override val serializers = immutable.Seq.empty
+    override val serializers = Vector.empty
 
     //#transformer-migration
     val productIdToItemId =
