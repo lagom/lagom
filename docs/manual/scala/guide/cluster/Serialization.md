@@ -81,7 +81,7 @@ Removing a field can be done without any migration code. Both manual and automat
 
 ### Add Field
 
-Adding an optional field can be done without any migration code if using the built in `com.lightbend.lagom.scaladsl.playjson.Serializers.optionFormat`. The default value if the field is missing will be `None`.
+Adding an optional field can be done without any migration code if automated mapping is used or manual mapping is used and you have made sure a missing field is read as a `None` by your format (see [mapping options](#Mapping-options)).
 
 Old class:
 
