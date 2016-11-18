@@ -13,7 +13,7 @@ The Play JSON abstraction for serializing and deserializing a class into JSON is
 
 To enable JSON Serialization there are 3 steps you need to follow.
 
-The first step is to mark your class for JSON serialization by making it implement the [Jsonable](api/index.html?com/lightbend/lagom/serialization/Jsonable.html) marker trait. 
+The first step is to mark your class for JSON serialization by making it implement the [com.lightbend.lagom.scaladsl.playjson.Jsonable](api/index.html#com/lightbend/lagom/scaladsl/playjson/Jsonable) marker trait (note that it is not the same as `com.lightbend.lagom.Jsonable` which is for the Java Lagom API).
 
 @[markerTrait](code/docs/home/scaladsl/serialization/AddPost.scala)
 
@@ -23,9 +23,9 @@ The second step is to define your [Format](https://www.playframework.com/documen
 
 Best practice is to define the `Format` somewhere close to the class, for example all the `Format`s for the commands and events in the respective supertype companion object.
  
-The third step is to implement `com.lightbend.lagom.scaladsl.playjson.SerializerRegistry` and have all the service formats returned from its `serializers` method.
+The third step is to implement [com.lightbend.lagom.scaladsl.playjson.SerializerRegistry](api/index.html#com/lightbend/lagom/scaladsl/playjson/SerializerRegistry) and have all the service formats returned from its `serializers` method.
 
- ... TODO document/decide the di part
+ TODO document/decide the di part
    
 @[registry](code/docs/home/scaladsl/serialization/Registry.scala)
    
@@ -55,7 +55,7 @@ The automatic mapping will handle `Option` fields, for manual mapping of optiona
 
 ### Mapping singletons
 
-For toplevel singletons (Scala `object`s) you can use [com.lightbend.lagom.scaladsl.playjson.Serializers.emptySingletonFormat]() to get a `Format` that outputs empty JSON (as the type is also encoded along side the data).
+For toplevel singletons (Scala `object`s) you can use [com.lightbend.lagom.scaladsl.playjson.Serializers.emptySingletonFormat](api/index.html#com/lightbend/lagom/scaladsl/playjson/Serializers@emptySingletonFormat) to get a `Format` that outputs empty JSON (as the type is also encoded along side the data).
 
 @[singleton](code/docs/home/scaladsl/serialization/AddOrder.scala)
 
@@ -101,7 +101,7 @@ This is how a migration logic would look like for adding a `discount` field usin
 
 @[imperative-migration](code/docs/home/scaladsl/serialization/v2b/ItemAdded.scala)
 
-Create a concrete subclass of `com.lightbend.lagom.scaladsl.playjson.Migration` handing it the current version of the schema as a parameter, then implement the transformation logic on the `JsObject` in the `transform` method when an older `fromVersion` is passed in.
+Create a concrete subclass of [com.lightbend.lagom.scaladsl.playjson.Migration](api/index.html#com/lightbend/lagom/scaladsl/playjson/Migration) handing it the current version of the schema as a parameter, then implement the transformation logic on the `JsObject` in the `transform` method when an older `fromVersion` is passed in.
 
 Then provide your `Migration` together with the classname of the class that it migrates in the `migrations` map from your `SerializerRegistry`
 
