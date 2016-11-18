@@ -36,7 +36,7 @@ For instructions on configuring your project to use Cassandra, see [[Using Cassa
 
 ## PersistentEntity Stub
 
-This is how a [PersistentEntity](api/index.html?com/lightbend/lagom/scaladsl/persistence/PersistentEntity.html) class looks like before filling in the implementation details:
+This is how a [PersistentEntity](api/index.html#com/lightbend/lagom/scaladsl/persistence/PersistentEntity) class looks like before filling in the implementation details:
 
 @[post1](code/docs/home/scaladsl/persistence/Post1.scala)
 
@@ -62,7 +62,7 @@ You should define one command handler for each command class that the entity can
 
 A command handler is a partial function with 3 parameters (`Tuple3`) for the `Command`, the `CommandContext` and current `State`. 
 
-A command handler returns a [Persist](api/index.html?com/lightbend/lagom/scaladsl/persistence/PersistentEntity.Persist.html) directive that defines what event or events, if any, to persist. Use the `thenPersist`, `thenPersistAll` or `done` methods of the context that is passed to the command handler function to create the `Persist` directive.
+A command handler returns a [Persist](api/index.html#com/lightbend/lagom/scaladsl/persistence/PersistentEntity@Persist) directive that defines what event or events, if any, to persist. Use the `thenPersist`, `thenPersistAll` or `done` methods of the context that is passed to the command handler function to create the `Persist` directive.
 
 * `thenPersist` will persist one single event
 * `thenPersistAll` will persist several events atomically, i.e. all events
@@ -99,7 +99,7 @@ The section [[Immutable Objects|Immutable]] describes how to define immutable ev
 
 ## Replies
 
-Each command must define what type of message to use as reply to the command by implementing the [PersistentEntity.ReplyType](api/index.html?com/lightbend/lagom/scaladsl/persistence/PersistentEntity.ReplyType.html) interface.
+Each command must define what type of message to use as reply to the command by implementing the [PersistentEntity.ReplyType](api/index.html#com/lightbend/lagom/scaladsl/persistence/PersistentEntity@ReplyType) interface.
 
 @[AddPost](code/docs/home/scaladsl/persistence/BlogCommand.scala)
 
@@ -155,7 +155,7 @@ The section [[Immutable Objects|Immutable]] describes how to define immutable st
 
 ## Usage from Service Implementation
 
-To access an entity from a service implementation you first need to inject the [PersistentEntityRegistry](api/index.html?com/lightbend/lagom/scaladsl/persistence/PersistentEntityRegistry.html) and at startup (in the constructor) register the class that implements the `PersistentEntity`.
+To access an entity from a service implementation you first need to inject the [PersistentEntityRegistry](api/index.html#com/lightbend/lagom/scaladsl/persistence/PersistentEntityRegistry) and at startup (in the constructor) register the class that implements the `PersistentEntity`.
 
 In the service method you retrieve a `PersistentEntityRef` for a given entity identifier from the registry. Then you can send the command to the entity using the `ask` method of the `PersistentEntityRef`. `ask` returns a `Future` with the reply message.
 
@@ -178,11 +178,11 @@ JSON is the recommended format the persisted events and state. The [[Serializati
 
 ## Unit Testing
 
-For unit testing of the entity you can use the [PersistentEntityTestDriver](api/index.html?com/lightbend/lagom/scaladsl/testkit/PersistentEntityTestDriver.html), which will run the `PersistentEntity` without using a database. You can verify that it emits expected events and side-effects in response to incoming commands.
+For unit testing of the entity you can use the [PersistentEntityTestDriver](api/index.html#com/lightbend/lagom/scaladsl/testkit/PersistentEntityTestDriver), which will run the `PersistentEntity` without using a database. You can verify that it emits expected events and side-effects in response to incoming commands.
 
 @[unit-test](code/docs/home/scaladsl/persistence/PostSpec.scala)
 
-`run` may be invoked multiple times to divide the sequence of commands into manageable steps. The [Outcome](api/index.html?com/lightbend/lagom/scaladsl/testkit/PersistentEntityTestDriver.Outcome.html) contains the events and side-effects of the last `run`, but the state is not reset between different runs.
+`run` may be invoked multiple times to divide the sequence of commands into manageable steps. The [Outcome](api/index.html#com/lightbend/lagom/scaladsl/testkit/PersistentEntityTestDriver@Outcome) contains the events and side-effects of the last `run`, but the state is not reset between different runs.
 
 Note that it also verifies that all commands, events, replies and state are [[serializable|Serialization]], and reports any such problems in the `issues` of the `Outcome`.
 
