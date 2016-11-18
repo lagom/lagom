@@ -7,7 +7,6 @@ import play.api.libs.json._
 object BlogState {
   val empty = BlogState(None, published = false)
 
-  import Serializers.Implicits._
   implicit val postContentFormat = Json.format[PostContent]
 
   val serializers = Vector(

@@ -5,3 +5,4 @@ ReadSide:Persistent Read-Side
 ReadSideCassandra:Cassandra Read-Side Support
 ReadSideRDBMS:Relational Database Read-Side Support
 Cluster:Cluster
+Serialization:Serialization
