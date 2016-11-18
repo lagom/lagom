@@ -159,9 +159,12 @@ To access an entity from a service implementation you first need to inject the [
 
 In the service method you retrieve a `PersistentEntityRef` for a given entity identifier from the registry. Then you can send the command to the entity using the `ask` method of the `PersistentEntityRef`. `ask` returns a `Future` with the reply message.
 
+@[imports](code/docs/home/scaladsl/persistence/BlogServiceImpl.scala)
 @[service-impl](code/docs/home/scaladsl/persistence/BlogServiceImpl.scala)
 
-FIXME: BlogServiceImpl example
+The explicit type annotations in the above example are included for illustrative purposes. It can be written in a more compact way that is still has the same type safety:
+
+@[service-impl2](code/docs/home/scaladsl/persistence/BlogServiceImpl.scala)
 
 In this example we are using the command `AddPost` also as the request parameter of the service method, but you can of course use another type for the external API of the service.
 
