@@ -4,7 +4,7 @@ In Lagom you may add `HeaderFilter`s to your `ServiceDescriptor`. In a `HeaderFi
 
 A single `HeaderFilter` implementation may transform a request leaving a client or entering a server and a response leaving a server and entering a client.
 
-@[user-agent-auth-filter](../../../../../service/javadsl/api/src/main/java/com/lightbend/lagom/javadsl/api/security/UserAgentHeaderFilter.java)
+@[user-agent-auth-filter](../../../../api/src/main/java/com/lightbend/lagom/javadsl/api/security/UserAgentHeaderFilter.java)
 
 This [`UserAgentHeaderFilter`](api/index.html?com/lightbend/lagom/javadsl/api/security/UserAgentHeaderFilter.html) is the default `HeaderFilter` any Lagom service will use if none is specified. It uses a `ServicePrincipal` which identifies the client with the service name. This way a server may identify a caller client by the `User-Agent`. 
 
