@@ -4,7 +4,7 @@ Lagom provides an implementation of the Message Broker API that uses Kafka. In t
 
 ## Dependency
 
-To use this feature add the following in your project's build.
+To use this feature add the following in your project's build. 
 
 In Maven:
 
@@ -19,6 +19,9 @@ In Maven:
 In sbt:
 
 @[kafka-broker-dependency](code/build-kafka.sbt)
+
+When importing the Lagom Kafka Broker module keep in mind that the Lagom Kafka Broker module requires one implementation of a Lagom Persistence so make sure your dependencies include either [[Lagom Persistence Cassandra|PersistentEntityCassandra]] or [[Lagom Persistence JDBC|PersistentEntityRDBMS]]
+
 
 ## Configuration
 
@@ -48,3 +51,26 @@ akka.kafka.producer.kafka-clients {
 }
 ```
 
+## Subscriber only Services
+
+Sometimes you will implement a Lagom Service that will only consume from the Kafka Topic. In that case you can import the Lagom Kafka Client alone (instead of importing the Lagom Kafka Broker and a Lagom Persistence implementation).
+
+In Maven:
+
+```xml
+<dependency>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-javadsl-kafka-client_2.11</artifactId>
+    <version>${lagom.version}</version>
+</dependency>
+```
+
+In sbt:
+
+@[kafka-client-dependency](code/build-kafka.sbt)
+
+If/when your subscriber-only service evolves to include features that publish data to a topic, you will need to depend on Lagom Kafka Broker and remove the dependency to Lagom Kafka Client. The Lagom Kafka Broker module includes the Lagom Kafka Client module. 
+
+### Consuming Topics from 3rd parties
+
+You may want your Lagom service to consume data produced on services not implemented in Lagom. In that case, as described in the [[Service Clients|ServiceClients]] section, you can create a `third-party-service-api` module in your Lagom project. That module will contain a Service Descriptor [[declaring the topic|MessageBrokerApi#Declaring-a-topic]] you will consume from. Once you have your `ThirdPartyService` interface and related classes implemented, you should add `third-party-service-api` as a dependency on your `fancy-service-impl`. Finally, you can consume from the topic described in `ThirdPartyService` as documented in the [[Subscribe to a topic|MessageBrokerApi#Subscribe-to-a-topic]] section.
