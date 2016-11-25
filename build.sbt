@@ -748,6 +748,7 @@ lazy val `kafka-broker` = (project in file("kafka-broker"))
     )
   )
   .dependsOn(`kafka-client`, `broker-javadsl`, `client-javadsl` % "optional", `kafka-server` % Test, logback % Test, `server-javadsl`)
+  .settings(logLevel := Level.Info) // TEMP for debugging https://github.com/lagom/lagom/issues/215
 
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
