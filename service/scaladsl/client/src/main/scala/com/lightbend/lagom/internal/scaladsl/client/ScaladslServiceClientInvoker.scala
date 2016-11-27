@@ -11,11 +11,11 @@ import com.lightbend.lagom.internal.client.ClientServiceCallInvoker
 import com.lightbend.lagom.internal.scaladsl.api.ScaladslPath
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
 import com.lightbend.lagom.scaladsl.api._
-import com.lightbend.lagom.scaladsl.api.Descriptor.{ Call, TopicCall }
+import com.lightbend.lagom.scaladsl.api.Descriptor.{ Call, NamedCallId, TopicCall }
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.{ ScalaMethodServiceCall, ScalaMethodTopic }
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser._
-import com.lightbend.lagom.scaladsl.api.transport.{ RequestHeader, ResponseHeader }
+import com.lightbend.lagom.scaladsl.api.transport.{ Method, RequestHeader, ResponseHeader }
 import com.lightbend.lagom.scaladsl.client.{ ServiceClientConstructor, ServiceClientContext, ServiceClientImplementationContext, ServiceResolver }
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import play.api.libs.ws.WSClient
@@ -120,8 +120,34 @@ private class ScaladslClientServiceCallInvoker[Request, Response](
 
 private[lagom] class ScaladslServiceResolver(defaultExceptionSerializer: ExceptionSerializer) extends ServiceResolver {
   override def resolve(descriptor: Descriptor): Descriptor = {
-    if (descriptor.exceptionSerializer == DefaultExceptionSerializer.Unresolved) {
+    val withExceptionSerializer = if (descriptor.exceptionSerializer == DefaultExceptionSerializer.Unresolved) {
       descriptor.withExceptionSerializer(defaultExceptionSerializer)
     } else descriptor
+
+    val withAcls = {
+      val acls = descriptor.calls.collect {
+        case callWithAutoAcl if callWithAutoAcl.autoAcl.getOrElse(descriptor.autoAcl) =>
+          val pathSpec = ScaladslPath.fromCallId(callWithAutoAcl.callId).regex.regex
+          val method = methodFromSerializer(callWithAutoAcl.requestSerializer, callWithAutoAcl.responseSerializer)
+          ServiceAcl(Some(method), Some(pathSpec))
+      }
+
+      if (acls.nonEmpty) {
+        withExceptionSerializer.addAcls(acls: _*)
+      } else withExceptionSerializer
+    }
+
+    withAcls
   }
+
+  private def methodFromSerializer(requestSerializer: MessageSerializer[_, _], responseSerializer: MessageSerializer[_, _]) = {
+    if (requestSerializer.isStreamed || responseSerializer.isStreamed) {
+      Method.GET
+    } else if (requestSerializer.isUsed) {
+      Method.POST
+    } else {
+      Method.GET
+    }
+  }
+
 }

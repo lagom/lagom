@@ -6,7 +6,6 @@ package com.lightbend.lagom.sbt.run
 import com.lightbend.lagom.dev.Reloader
 import com.lightbend.lagom.dev.Reloader.{ CompileFailure, CompileResult, CompileSuccess, Source }
 import com.lightbend.lagom.sbt.Internal
-import com.lightbend.lagom.sbt.LagomImport
 import com.lightbend.lagom.sbt.LagomPlugin.autoImport._
 import com.lightbend.lagom.sbt.LagomReloadableService.autoImport._
 import sbt._
@@ -58,25 +57,7 @@ private[sbt] object RunSupport {
   }
 
   private def devModeDependencies = Def.task {
-    cassandraDependencyClasspath.value ++ (managedClasspath in Internal.Configs.DevRuntime).value
-  }
-
-  private def cassandraDependencyClasspath = Def.task {
-    val projectDependencies = (externalDependencyClasspath in Runtime).value
-
-    val crossVersion = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
-    val cassandraPersistence = crossVersion(LagomImport.lagomJavadslPersistenceCassandra)
-    def isCassandraPersistence(module: ModuleID) = {
-      cassandraPersistence.organization == module.organization &&
-        cassandraPersistence.name == crossVersion(module).name
-    }
-
-    if (projectDependencies.exists { dep =>
-      dep.metadata.get(moduleID.key).exists(isCassandraPersistence)
-    })
-      (managedClasspath in Internal.Configs.CassandraRuntime).value
-    else
-      Seq.empty
+    (managedClasspath in Internal.Configs.DevRuntime).value
   }
 
   def compile(reloadCompile: () => Result[sbt.inc.Analysis], classpath: () => Result[Classpath], streams: () => Option[Streams]): CompileResult = {

@@ -23,7 +23,7 @@ object JdbcClusteredPersistentEntityConfig extends AbstractClusteredPersistentEn
       db.default.driver=org.h2.Driver
       db.default.url="jdbc:h2:tcp://localhost:$databasePort/mem:JdbcClusteredPersistentEntitySpec"
       lagom.serialization.play-json {
-        serialization-registry = "com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry"
+        serializer-registry = "com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry"
       }
     """)
 }

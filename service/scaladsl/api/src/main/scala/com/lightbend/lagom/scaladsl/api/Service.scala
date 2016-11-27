@@ -142,25 +142,20 @@ object ServiceSupport {
       )
     )
 
-    val (thisType, methodName) = f match {
-      // Functions references with parameter lists
-      case Block((_, Function(_, Apply(Select(This(tt), TermName(tn)), _)))) => (tt, tn)
-      // Functions references with no parameter lists
-      case Function(_, Select(This(tt), TermName(tn)))                       => (tt, tn)
-      // Pass in the result of a function with a parameter list
-      case Apply(Select(This(tt), TermName(tn)), _)                          => (tt, tn)
-      // Pass in the result of a function with no parameter list
-      case Select(This(tt), TermName(tn))                                    => (tt, tn)
-      case other =>
-        c.abort(c.enclosingPosition, "methodFor must only be invoked with a reference to a function on this, for example, methodFor(this.someFunction _)")
-    }
+    val (thisClassExpr, methodNameLiteral) = resolveThisClassExpressionAndMethodName(c)("methodFor", f)
 
-    val methodNameString = Literal(Constant(methodName))
-
-    c.Expr[ScalaMethodServiceCall[Request, Response]](q"_root_.com.lightbend.lagom.scaladsl.api.ServiceSupport.getServiceCallMethodWithName[${requestType.tpe}, ${responseType.tpe}](classOf[$thisType], $methodNameString, $pathParamSerializers)")
+    c.Expr[ScalaMethodServiceCall[Request, Response]](q"_root_.com.lightbend.lagom.scaladsl.api.ServiceSupport.getServiceCallMethodWithName[${requestType.tpe}, ${responseType.tpe}]($thisClassExpr, $methodNameLiteral, $pathParamSerializers)")
   }
 
   def topicMethodForImpl[Message](c: Context)(f: c.Tree)(implicit messageType: c.WeakTypeTag[Message]): c.Expr[ScalaMethodTopic[Message]] = {
+    import c.universe._
+
+    val (thisClassExpr, methodNameLiteral) = resolveThisClassExpressionAndMethodName(c)("topicMethodFor", f)
+
+    c.Expr[ScalaMethodTopic[Message]](q"_root_.com.lightbend.lagom.scaladsl.api.ServiceSupport.getTopicMethodWithName[${messageType.tpe}]($thisClassExpr, $methodNameLiteral)")
+  }
+
+  private def resolveThisClassExpressionAndMethodName(c: Context)(methodDescription: String, f: c.Tree): (c.Tree, c.universe.Literal) = {
     import c.universe._
 
     val (thisType, methodName) = f match {
@@ -173,14 +168,24 @@ object ServiceSupport {
       // Pass in the result of a function with no parameter list
       case Select(This(tt), TermName(tn))                                    => (tt, tn)
       case other =>
-        c.abort(c.enclosingPosition, s"${other.getClass}")
-
-        c.abort(c.enclosingPosition, "topicMethodFor must only be invoked with a reference to a function on this, for example, methodFor(this.someFunction)")
+        c.abort(c.enclosingPosition, s"$methodDescription must only be invoked with a reference to a function on this, for example, $methodDescription(this.someFunction _)")
     }
 
-    val methodNameString = Literal(Constant(methodName))
+    val methodNameLiteral = Literal(Constant(methodName))
 
-    c.Expr[ScalaMethodTopic[Message]](q"_root_.com.lightbend.lagom.scaladsl.api.ServiceSupport.getTopicMethodWithName[${messageType.tpe}](classOf[$thisType], $methodNameString)")
+    val thisClassExpr = if (thisType.toString.isEmpty) {
+      // If the type is empty, it means the reference to this is unqualified, eg:
+      // namedCall(this.someServiceCall _)
+      q"this.getClass"
+    } else {
+      // Otherwise, it's a qualified reference, and we should use that type, eg:
+      // namedCall(MyService.this.someServiceCall _)
+      // This also happens to be what the type checker will infer when you don't explicitly refer to this, eg:
+      // namedCall(someServiceCall _)
+      q"classOf[$thisType]"
+    }
+
+    (thisClassExpr, methodNameLiteral)
   }
 
 }

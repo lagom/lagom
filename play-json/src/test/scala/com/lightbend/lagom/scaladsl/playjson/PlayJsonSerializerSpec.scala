@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets
 import akka.actor.ActorSystem
 import akka.serialization.{ SerializationExtension, SerializerWithStringManifest }
 import akka.testkit.TestKit
-import akka.util.ByteString
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalatest.{ Matchers, WordSpec }
 import play.api.libs.json._
@@ -16,6 +15,9 @@ import play.api.libs.json._
 import scala.collection.immutable.{ Seq, SortedMap }
 
 case class Event1(name: String, increment: Int) extends Jsonable
+object Event1 {
+  implicit val format: Format[Event1] = Json.format[Event1]
+}
 case class Event2(name: String, inner: Inner) extends Jsonable
 case class Inner(on: Boolean)
 case class MigratedEvent(addedField: Int, newName: String) extends Jsonable
@@ -26,7 +28,7 @@ class TestRegistry1 extends SerializerRegistry {
 
   override def serializers: Seq[Serializers[_]] =
     Seq(
-      Serializers(Json.reads[Event1], Json.writes[Event1]),
+      Serializers[Event1],
       Serializers(Json.format[Event2])
     )
 
@@ -103,7 +105,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
     "pick up serializers from configured registry" in withActorSystem(ConfigFactory.parseString(
       """
-          lagom.serialization.play-json.serialization-registry=com.lightbend.lagom.scaladsl.playjson.TestRegistry1
+          lagom.serialization.play-json.serializer-registry=com.lightbend.lagom.scaladsl.playjson.TestRegistry1
       """
     ).withFallback(ConfigFactory.load())) { system =>
 
@@ -123,7 +125,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
     "apply sequential migrations using json-transformations" in withActorSystem(ConfigFactory.parseString(
       """
-        lagom.serialization.play-json.serialization-registry=com.lightbend.lagom.scaladsl.playjson.TestRegistry2
+        lagom.serialization.play-json.serializer-registry=com.lightbend.lagom.scaladsl.playjson.TestRegistry2
       """
     ).withFallback(ConfigFactory.load())) { system =>
 
@@ -143,7 +145,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
     "apply migrations written imperatively" in withActorSystem(ConfigFactory.parseString(
       """
-        lagom.serialization.play-json.serialization-registry=com.lightbend.lagom.scaladsl.playjson.TestRegistry3
+        lagom.serialization.play-json.serializer-registry=com.lightbend.lagom.scaladsl.playjson.TestRegistry3
       """
     ).withFallback(ConfigFactory.load())) { system =>
 
@@ -163,7 +165,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
     "apply rename migration" in withActorSystem(ConfigFactory.parseString(
       """
-        lagom.serialization.play-json.serialization-registry=com.lightbend.lagom.scaladsl.playjson.TestRegistry2
+        lagom.serialization.play-json.serializer-registry=com.lightbend.lagom.scaladsl.playjson.TestRegistry2
       """
     ).withFallback(ConfigFactory.load())) { system =>
 
