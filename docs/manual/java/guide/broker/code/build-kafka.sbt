@@ -4,6 +4,10 @@ lazy val proj = (project in file("")).enablePlugins(LagomJava)
   libraryDependencies += lagomJavadslKafkaBroker
   //#kafka-broker-dependency
   ,
+  //#kafka-client-dependency
+  libraryDependencies += lagomJavadslKafkaClient
+  //#kafka-client-dependency
+  ,
   //#kafka-cassandra-store-dependency
   libraryDependencies += lagomJavadslKafkaCassandraStore
   //#kafka-cassandra-store-dependency
