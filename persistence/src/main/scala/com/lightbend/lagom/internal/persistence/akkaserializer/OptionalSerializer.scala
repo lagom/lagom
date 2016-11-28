@@ -30,13 +30,13 @@ class OptionalSerializer(val system: ExtendedActorSystem)
       val fqcn = obj1.getClass.getCanonicalName
       val srlzr = serializer(obj1.getClass)
 
-      if (srlzr.includeManifest) {
-        val manifest = srlzr.asInstanceOf[SerializerWithStringManifest].manifest(obj1)
-        s"P$separator$fqcn$separator$manifest"
-      } else {
-        s"P$separator$fqcn"
+      srlzr match {
+        case s: SerializerWithStringManifest =>
+          val manifest = srlzr.asInstanceOf[SerializerWithStringManifest].manifest(obj1)
+          s"P$separator$fqcn$separator$manifest"
+        case _ =>
+          s"P$separator$fqcn"
       }
-
     } else {
       emptyManifest
     }
@@ -57,11 +57,12 @@ class OptionalSerializer(val system: ExtendedActorSystem)
       case `emptyManifest` => Optional.empty()
       case _ => {
         val clazz = system.dynamicAccess.classLoader.loadClass(splits(1))
-        val srlrz = serializer(clazz)
-        if (srlrz.includeManifest) {
-          Optional.of(srlrz.asInstanceOf[SerializerWithStringManifest].fromBinary(bytes, splits(2)))
-        } else {
-          Optional.of(srlrz.fromBinary(bytes, clazz))
+        val srlzr = serializer(clazz)
+        srlzr match {
+          case s: SerializerWithStringManifest =>
+            Optional.of(srlzr.asInstanceOf[SerializerWithStringManifest].fromBinary(bytes, splits(2)))
+          case _ =>
+            Optional.of(srlzr.fromBinary(bytes, clazz))
         }
       }
     }
