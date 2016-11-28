@@ -12,7 +12,7 @@ public final class KafkaProperties {
   private KafkaProperties() {}
 
   private static final Descriptor.Properties.Property PARTITION_KEY_STRATEGY =
-          new Descriptor.Properties.Property<>(PartitionKeyStrategy.class, PartitionKeyStrategy.class.getName());
+          new Descriptor.Properties.Property<>(PartitionKeyStrategy.class, "kafkaPartitionKeyStrategy");
 
   /**
    * A PartitionKeyStrategy produces a key for each message published to a Kafka topic.

@@ -7,12 +7,13 @@ import java.util.UUID
 
 import akka.Done
 import akka.actor.ActorSystem
-import akka.persistence.query.{ NoOffset, Offset, Sequence, TimeBasedUUID }
+import akka.persistence.query.{ NoOffset, Offset, Sequence => AkkaSequence, TimeBasedUUID }
 import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
 import play.api.Configuration
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 
@@ -52,32 +53,17 @@ private[lagom] abstract class AbstractSlickOffsetStoreConfiguration(config: Conf
 /**
  * INTERNAL API
  */
-private[lagom] abstract class SlickOffsetStore(system: ActorSystem, slick: SlickProvider, config: SlickOffsetStoreConfiguration) {
+private[lagom] class SlickOffsetStore(system: ActorSystem, val slick: SlickProvider, config: SlickOffsetStoreConfiguration) extends OffsetStore {
 
   case class OffsetRow(id: String, tag: String, sequenceOffset: Option[Long], timeUuidOffset: Option[String])
 
-  protected type DslOffset
-  protected def offsetToDslOffset(offset: Offset): DslOffset
-  protected def dslOffsetToOffset(dslOffset: DslOffset): Offset
-
-  private def queryToOffsetRow(id: String, tag: String, offset: DslOffset): OffsetRow =
-    dslOffsetToOffset(offset) match {
-      case Sequence(value)     => OffsetRow(id, tag, Some(value), None)
-      case TimeBasedUUID(uuid) => OffsetRow(id, tag, None, Some(uuid.toString))
-      case NoOffset            => OffsetRow(id, tag, None, None)
-    }
-
-  private def offsetRowToOffset(row: Option[OffsetRow]): DslOffset = {
-    val offset = row.flatMap(row => row.sequenceOffset.map(Sequence).orElse(
-      row.timeUuidOffset.flatMap(uuid => Try(UUID.fromString(uuid)).toOption)
-        .filter(_.version == 1)
-        .map(TimeBasedUUID)
-    )).getOrElse(NoOffset)
-    offsetToDslOffset(offset)
-  }
-
   import system.dispatcher
   import slick.profile.api._
+
+  override def prepare(eventProcessorId: String, tag: String): Future[SlickOffsetDao] = {
+    runPreparations(eventProcessorId, tag).map(offset =>
+      new SlickOffsetDao(this, eventProcessorId, tag, offset))
+  }
 
   private class OffsetStore(_tag: Tag) extends Table[OffsetRow](_tag, _schemaName = config.schemaName, _tableName = config.tableName) {
     def * = (id, tag, sequenceOffset, timeUuidOffset) <> (OffsetRow.tupled, OffsetRow.unapply)
@@ -104,7 +90,7 @@ private[lagom] abstract class SlickOffsetStore(system: ActorSystem, slick: Slick
     config.randomBackoffFactor
   )
 
-  def runPreparations(eventProcessorId: String, tag: String): Future[DslOffset] = {
+  def runPreparations(eventProcessorId: String, tag: String): Future[Offset] = {
     implicit val timeout = Timeout(config.globalPrepareTimeout)
     for {
       _ <- startupTask.askExecute()
@@ -112,16 +98,32 @@ private[lagom] abstract class SlickOffsetStore(system: ActorSystem, slick: Slick
     } yield offset
   }
 
-  def updateOffsetQuery(id: String, tag: String, offset: DslOffset) = {
+  def updateOffsetQuery(id: String, tag: String, offset: Offset) = {
     offsets.insertOrUpdate(queryToOffsetRow(id, tag, offset))
   }
 
-  private def getOffsetQuery(id: String, tag: String): DBIOAction[DslOffset, NoStream, Effect.Read] = {
+  private def queryToOffsetRow(id: String, tag: String, offset: Offset): OffsetRow = {
+    offset match {
+      case AkkaSequence(value)  => OffsetRow(id, tag, Some(value), None)
+      case TimeBasedUUID(value) => OffsetRow(id, tag, None, Some(value.toString))
+      case NoOffset             => OffsetRow(id, tag, None, None)
+    }
+  }
+
+  private def getOffsetQuery(id: String, tag: String): DBIOAction[Offset, NoStream, Effect.Read] = {
     (for {
       offset <- offsets if offset.id === id && offset.tag === tag
     } yield {
       offset
     }).result.headOption.map(offsetRowToOffset)
+  }
+
+  private def offsetRowToOffset(row: Option[OffsetRow]): Offset = {
+    row.flatMap(row => row.sequenceOffset.map(AkkaSequence).orElse(
+      row.timeUuidOffset.flatMap(uuid => Try(UUID.fromString(uuid)).toOption)
+        .filter(_.version == 1)
+        .map(TimeBasedUUID)
+    )).getOrElse(NoOffset)
   }
 
   private def createTables() = {
@@ -132,4 +134,17 @@ private[lagom] abstract class SlickOffsetStore(system: ActorSystem, slick: Slick
       .map(_ => Done.getInstance()))
   }
 
+}
+
+private[lagom] class SlickOffsetDao(slickOffsetStore: SlickOffsetStore, readSideId: String, tag: String,
+                                    override val loadedOffset: Offset)(implicit ec: ExecutionContext) extends OffsetDao {
+
+  override def saveOffset(offset: Offset): Future[Done] = {
+    slickOffsetStore.slick.db.run(slickOffsetStore.updateOffsetQuery(readSideId, tag, offset)
+      .map(_ => Done.getInstance()))
+  }
+
+  def updateOffsetQuery(offset: Offset) = {
+    slickOffsetStore.updateOffsetQuery(readSideId, tag, offset)
+  }
 }

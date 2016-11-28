@@ -38,8 +38,11 @@ abstract class LagomApplication(context: LagomApplicationContext)
   extends BuiltInComponentsFromContext(context.playContext)
   with LagomServerComponents
   with LagomServiceClientComponents {
+
   override implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
-  override lazy val configuration: Configuration = Configuration.load(environment) ++ context.playContext.initialConfiguration
+  override lazy val configuration: Configuration = Configuration.load(environment) ++
+    context.playContext.initialConfiguration ++ additionalConfiguration
+  def additionalConfiguration: Configuration = Configuration.empty
 }
 
 trait LocalServiceLocator {

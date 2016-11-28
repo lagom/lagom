@@ -15,7 +15,7 @@ class ServiceSupportSpec extends WordSpec with Matchers with OptionValues {
     val holder = new MockService {
       override def foo(bar: String): ServiceCall[String, String] = null
     }.descriptor.calls.collect {
-      case CallImpl(PathCallIdImpl("/foo/:bar"), holder: ServiceSupport.ScalaMethodCall[_], _, _, _, _) => holder
+      case CallImpl(PathCallIdImpl("/foo/:bar"), holder: ServiceSupport.ScalaMethodServiceCall[_, _], _, _, _, _) => holder
     }.headOption
 
     "resolve the method name" in {

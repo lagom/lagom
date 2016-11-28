@@ -5,6 +5,7 @@ package com.lightbend.lagom.scaladsl.api
 
 import akka.NotUsed
 import akka.util.ByteString
+import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer, MessageSerializer }
 import com.lightbend.lagom.scaladsl.api.transport.{ HeaderFilter, Method, UserAgentHeaderFilter }
 
@@ -294,16 +295,18 @@ object Descriptor {
    */
   trait TopicHolder
 
-  sealed trait TopicId {
-    val name: String
-  }
-
-  object TopicId {
-    def apply(name: String): TopicId = TopicIdImpl(name)
-  }
-
+  /**
+   * Properties of a topic call.
+   */
   sealed trait Properties[Message] {
+    /**
+     * Get the given property.
+     */
     def get[T](property: Property[Message, T]): Option[T]
+
+    /**
+     * Add the given property.
+     */
     def +[T](propertyValue: (Property[Message, T], T)): Properties[Message]
   }
 
@@ -311,8 +314,18 @@ object Descriptor {
     def empty[Message]: Properties[Message] = PropertiesImpl(Map())
   }
 
-  sealed trait Property[+Message, T] {
+  /**
+   * A property.
+   */
+  sealed trait Property[-Message, T] {
+    /**
+     * The class of the value.
+     */
     val valueClass: Class[T]
+
+    /**
+     * The name of the property.
+     */
     val name: String
   }
 
@@ -366,7 +379,7 @@ object Descriptor {
     topicId:           TopicId,
     topicHolder:       TopicHolder,
     messageSerializer: MessageSerializer[Message, ByteString],
-    properties:        Properties[Message]                    = Properties.empty
+    properties:        Properties[Message]                    = Properties.empty[Message]
   ) extends TopicCall[Message] {
     override def withTopicHolder(topicHolder: TopicHolder): TopicCall[Message] = copy(topicHolder = topicHolder)
     override def addProperty[T](property: Property[Message, T], value: T): TopicCall[Message] =
@@ -378,7 +391,6 @@ object Descriptor {
     override def get[T](property: Property[Message, T]): Option[T] = properties.get(property).asInstanceOf[Option[T]]
     override def +[T](propertyValue: (Property[Message, T], T)): Properties[Message] = PropertiesImpl(properties + propertyValue)
   }
-  private case class TopicIdImpl(name: String) extends TopicId
 }
 
 sealed trait ServiceAcl {

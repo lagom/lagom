@@ -9,7 +9,7 @@ import akka.util.ByteString
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceClient
 import com.lightbend.lagom.scaladsl.api.{ Descriptor, ServiceCall }
 import com.lightbend.lagom.scaladsl.api.Descriptor.{ Call, CallId, NamedCallId, RestCallId }
-import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodCall
+import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodServiceCall
 import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.{ NegotiatedDeserializer, NegotiatedSerializer }
 import com.lightbend.lagom.scaladsl.api.deser.{ MessageSerializer, StreamedMessageSerializer, StrictMessageSerializer }
 import com.lightbend.lagom.scaladsl.api.transport._
@@ -18,7 +18,7 @@ import com.lightbend.lagom.scaladsl.it.mocks.{ MockRequestEntity, MockService, M
 import com.lightbend.lagom.scaladsl.server._
 import org.scalatest.{ Matchers, WordSpec }
 import play.api.libs.streams.AkkaStreams
-import play.api.{ Application, Environment, Mode }
+import play.api.{ Environment, Mode }
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.core.server.NettyServer
 
@@ -219,7 +219,7 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
       override lazy val serviceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
         serviceLocator, new ServiceResolver {
         override def resolve(descriptor: Descriptor): Descriptor = changeClient(serviceResolver.resolve(descriptor))
-      })(executionContext, materializer)
+      }, None)(executionContext, materializer)
     }
     val server = NettyServer.fromApplication(application.application)
     try {
@@ -302,8 +302,8 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
 
   def overrideServiceCall(serviceCall: ServiceCall[_, _]): Call[_, _] => Call[_, _] = { call =>
     call.serviceCallHolder match {
-      case scalaMethodCall: ScalaMethodCall[_] =>
-        call.asInstanceOf[Call[Any, Any]].withServiceCallHolder(new ScalaMethodCall[Any](scalaMethodCall.method, scalaMethodCall.pathParamSerializers) {
+      case scalaMethodCall: ScalaMethodServiceCall[_, _] =>
+        call.asInstanceOf[Call[Any, Any]].withServiceCallHolder(new ScalaMethodServiceCall[Any, Any](scalaMethodCall.method, scalaMethodCall.pathParamSerializers) {
           override def invoke(service: Any, parameters: immutable.Seq[AnyRef]) = serviceCall
         })
     }

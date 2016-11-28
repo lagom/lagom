@@ -5,7 +5,7 @@ package com.lightbend.lagom.javadsl.persistence.jdbc
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import com.lightbend.lagom.internal.javadsl.persistence.jdbc.{ JdbcOffsetStore, JdbcReadSideImpl, JdbcSessionImpl, OffsetTableConfiguration }
+import com.lightbend.lagom.internal.javadsl.persistence.jdbc.{ JavadslJdbcOffsetStore, JdbcReadSideImpl, JdbcSessionImpl, OffsetTableConfiguration }
 import com.lightbend.lagom.javadsl.persistence.jdbc.testkit.TestUtil
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
 import com.typesafe.config.{ Config, ConfigFactory }
@@ -45,7 +45,7 @@ abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec
   protected lazy val session: JdbcSession = new JdbcSessionImpl(slick)
   protected lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(
     slick,
-    new JdbcOffsetStore(
+    new JavadslJdbcOffsetStore(
       slick,
       system,
       new OffsetTableConfiguration(

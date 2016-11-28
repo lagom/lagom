@@ -4,8 +4,10 @@
 package com.lightbend.lagom.scaladsl.client
 
 import akka.stream.Materializer
+import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
+import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
 import play.api.Environment
 import play.api.inject.ApplicationLifecycle
@@ -87,13 +89,18 @@ trait ServiceClientContext {
    * Create a service call for the given method name and passed in parameters.
    */
   def createServiceCall[Request, Response](methodName: String, params: immutable.Seq[Any]): ServiceCall[Request, Response]
+
+  /**
+   * Create a topic for the given method name.
+   */
+  def createTopic[Message](methodName: String): Topic[Message]
 }
 
 trait ServiceResolver {
   def resolve(descriptor: Descriptor): Descriptor
 }
 
-trait LagomServiceClientComponents {
+trait LagomServiceClientComponents extends TopicFactoryProvider {
   def wsClient: WSClient
   def serviceInfo: ServiceInfo
   def serviceLocator: ServiceLocator
@@ -104,7 +111,10 @@ trait LagomServiceClientComponents {
 
   lazy val serviceResolver: ServiceResolver = new ScaladslServiceResolver(defaultExceptionSerializer)
   lazy val defaultExceptionSerializer: ExceptionSerializer = new DefaultExceptionSerializer(environment)
-  lazy val scaladslWebSocketClient: ScaladslWebSocketClient = new ScaladslWebSocketClient(environment, applicationLifecycle)(executionContext)
+  lazy val scaladslWebSocketClient: ScaladslWebSocketClient = new ScaladslWebSocketClient(
+    environment,
+    applicationLifecycle
+  )(executionContext)
   lazy val serviceClient: ServiceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
-    serviceLocator: ServiceLocator, serviceResolver)(executionContext, materializer)
+    serviceLocator, serviceResolver, optionalTopicFactory)(executionContext, materializer)
 }
