@@ -9,7 +9,7 @@ import akka.persistence.query.{ NoOffset, Offset, PersistenceQuery, TimeBasedUUI
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.scaladsl.persistence.PersistentEntityActor
-import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.{ CassandraOffsetStore, CassandraReadSideImpl }
+import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.{ ScaladslCassandraOffsetStore, CassandraReadSideImpl }
 import com.lightbend.lagom.scaladsl.persistence._
 import com.typesafe.config.ConfigFactory
 
@@ -35,7 +35,7 @@ class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSp
   }
 
   val readSide = new TestEntityReadSide(system, testSession)
-  val cassandraReadSide = new CassandraReadSideImpl(system, testSession, new CassandraOffsetStore(system, testSession,
+  val cassandraReadSide = new CassandraReadSideImpl(system, testSession, new ScaladslCassandraOffsetStore(system, testSession,
     ReadSideConfig())(system.dispatcher))
 
   override def getAppendCount(id: String) = readSide.getAppendCount(id)

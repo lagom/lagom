@@ -14,11 +14,12 @@ import com.google.inject.spi.InjectionListener
 import com.google.inject.spi.TypeEncounter
 import com.google.inject.spi.TypeListener
 import com.lightbend.lagom.internal.javadsl.persistence.cassandra._
-import com.lightbend.lagom.internal.persistence.OffsetStore
 import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorAdapter
 import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorHolder
 import com.lightbend.lagom.javadsl.api.ServiceLocator
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
+import com.lightbend.lagom.spi.persistence.OffsetStore
 
 /**
  * Guice module for the Persistence API.
@@ -30,7 +31,7 @@ final class CassandraPersistenceModule extends AbstractModule {
     binder.bind(classOf[CassandraSession])
     binder.bind(classOf[CassandraReadSide]).to(classOf[CassandraReadSideImpl])
     binder.bind(classOf[CassandraConfig]).toProvider(classOf[CassandraConfigProvider])
-    binder.bind(classOf[CassandraOffsetStore])
+    binder.bind(classOf[CassandraOffsetStore]).to(classOf[JavadslCassandraOffsetStore])
     binder.bind(classOf[OffsetStore]).to(Key.get(classOf[CassandraOffsetStore]))
     initServiceLocatorHolder()
   }

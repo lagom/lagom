@@ -11,6 +11,7 @@ import akka.Done
 import akka.japi.Pair
 import akka.stream.javadsl.Flow
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
+import com.lightbend.lagom.internal.persistence.jdbc.SlickOffsetDao
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcReadSide
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcReadSide._
@@ -24,7 +25,7 @@ import scala.concurrent.{ ExecutionContext, Future }
  * INTERNAL API
  */
 @Singleton
-private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetStore: JdbcOffsetStore)(implicit val ec: ExecutionContext) extends JdbcReadSide {
+private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetStore: JavadslJdbcOffsetStore)(implicit val ec: ExecutionContext) extends JdbcReadSide {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
@@ -66,7 +67,7 @@ private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetSto
     import slick.profile.api._
 
     @volatile
-    private var offsetDao: JdbcOffsetDao = _
+    private var offsetDao: SlickOffsetDao = _
 
     override def globalPrepare(): CompletionStage[Done] = {
       slick.ensureTablesCreated().flatMap { _ =>
@@ -102,7 +103,7 @@ private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetSto
                 _ <- SimpleDBIO { ctx =>
                   handler.asInstanceOf[(Connection, Event, Offset) => Unit](ctx.connection, pair.first, pair.second)
                 }
-                _ <- offsetDao.updateOffsetQuery(pair.second)
+                _ <- offsetDao.updateOffsetQuery(OffsetAdapter.dslOffsetToOffset(pair.second))
               } yield {
                 Done.getInstance()
               }).transactionally

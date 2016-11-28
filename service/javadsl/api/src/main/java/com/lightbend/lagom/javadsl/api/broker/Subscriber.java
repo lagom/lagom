@@ -28,7 +28,7 @@ public interface Subscriber<Message> {
    * machine or, as is more likely, they can be distributed over many machines
    * to provide scalability and fault tolerance for processing.
    */
-  public interface GroupId {
+  interface GroupId {
     String groupId();
   }
 
