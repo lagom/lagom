@@ -50,10 +50,9 @@ import play.inject.guice.GuiceApplicationBuilder
  * Dependencies to other services must be replaced by stub or mock implementations by
  * overriding the bindings of the `GuiceApplicationBuilder` in the `Setup`.
  *
- * The server is by default running with persistence, pubsub and cluster features
- * enabled. Cassandra is also started before the test server is started. If your service
- * does not use these features you can disable them in the `Setup`, which will reduce
- * the startup time.
+ * The server is ran standalone without persistence, pubsub or cluster features
+ * enabled. Cassandra is also disabled by default. If your service require either of these features you
+ * can enable them in the `Setup`.
  *
  * There are two different styles that can be used. It is most convenient to use [[#withServer withServer]],
  * since it automatically starts and stops the server before and after the given lambda.
@@ -77,7 +76,8 @@ object ServiceTest {
      * Enable or disable Cassandra.
      *
      * If enabled, this will start an embedded Cassandra server before the tests start, and shut it down afterwards.
-     * It will also configure Lagom to use the embedded Cassandra server.
+     * It will also configure Lagom to use the embedded Cassandra server. Enabling Cassandra will also enable the
+     * cluster.
      *
      * @param enabled True if Cassandra should be enabled, or false if disabled.
      * @return A copy of this setup.
