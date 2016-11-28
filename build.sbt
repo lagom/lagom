@@ -364,6 +364,9 @@ lazy val jackson = (project in file("jackson"))
   .settings(
     libraryDependencies ++= Seq(      
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
+      "com.fasterxml.jackson.core" % "jackson-core" % JacksonVersion,
+      "com.fasterxml.jackson.core" % "jackson-annotations" % JacksonVersion,
+      "com.fasterxml.jackson.core" % "jackson-databind" % JacksonVersion,
       "com.fasterxml.jackson.datatype" % "jackson-datatype-pcollections" % JacksonVersion,
       "com.fasterxml.jackson.datatype" % "jackson-datatype-guava" % JacksonVersion,
       "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % JacksonVersion,
@@ -459,6 +462,8 @@ lazy val `server-javadsl` = (project in file("service/javadsl/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
   .dependsOn(server, `client-javadsl`, immutables % "provided")
+  // bring jackson closer to the root of the dependency tree to prompt Maven to choose the right version
+  .dependsOn(jackson)
 
 lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
   .settings(
