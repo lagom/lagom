@@ -48,15 +48,15 @@ Dependencies to other services must be replaced by stub or mock implementations 
 
 Note how the dependency is overridden when constructing the test `Setup` object, which then can be used as parameter to the `withServer` method instead of the `defaultSetup()` in the above `HelloServiceTest`.
 
-The server is by default running with [[persistence|PersistentEntity]], [[pubsub|PubSub]] and [[cluster|Cluster]] features enabled. Cassandra is also started before the test server is started. If your service does not use these features you can disable them in the `Setup`, which will reduce the startup time.
+The server is by default running with [[persistence|PersistentEntity]], [[pubsub|PubSub]] and [[cluster|Cluster]] features disabled. Cassandra isn't started either by default. If your service needs these features you can enable them in the `Setup`. Cassandra requires cluster being enabled so when you request Cassandra enabled, the cluster features will be enabled too. If cluster is disabled the persistence is also disabled, since cluster is a prerequisite for persistence. 
 
-Disable persistence, including Cassandra startup:
+Enable Cassandra Persistence (including cluster):
 
-@[setup1](code/docs/services/test/DisablePersistence.java)
+@[setup1](code/docs/services/test/EnablePersistence.java)
 
-If cluster is disabled the persistence is also disabled, since cluster is a prerequisite for persistence. Disable cluster and pubsub:
+You may want to enable cluster only:
 
-@[setup2](code/docs/services/test/DisablePersistence.java)
+@[setup2](code/docs/services/test/EnablePersistence.java)
 
 There are two different styles that can be used when writing the tests. It is most convenient to use `withServer` as illustrated in the above `HelloServiceTest`. It automatically starts and stops the server before and after the given lambda.
 
