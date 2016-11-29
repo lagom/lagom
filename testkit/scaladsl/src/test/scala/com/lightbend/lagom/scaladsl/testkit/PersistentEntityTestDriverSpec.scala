@@ -10,7 +10,7 @@ import com.typesafe.config.ConfigFactory
 
 class PersistentEntityTestDriverSpec extends ActorSystemSpec(ConfigFactory.parseString(
   """
-    lagom.serialization.play-json.serialization-registry=com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
+    lagom.serialization.play-json.serializer-registry=com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
   """
 ).withFallback(ConfigFactory.load())) {
 

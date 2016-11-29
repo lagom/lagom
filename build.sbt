@@ -437,7 +437,7 @@ lazy val `integration-client-javadsl` = (project in file("service/javadsl/integr
   .settings(name := "lagom-javadsl-integration-client")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(`client-javadsl`, `service-registry-client`, `kafka-client-javadsl`)
+  .dependsOn(`client-javadsl`, `service-registry-client-javadsl`, `kafka-client-javadsl`)
 
 lazy val server = (project in file("service/core/server"))
   .settings(
@@ -825,7 +825,8 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
   .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
-    `service-registration`, `cassandra-server`, `play-integration`, `service-registry-client`,
+    `service-registration-javadsl`, `cassandra-server`, `play-integration-javadsl`,
+    `service-registry-client-javadsl`, 
     `maven-java-archetype`, `kafka-server`)
   .settings(
     publish := {},
@@ -951,16 +952,6 @@ lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
 def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++ 
   Seq(scriptedLaunchOpts <+= version apply { v => s"-Dproject.version=$v" }) ++
   Seq(
-    scriptedDependencies := {
-      startTick()
-      scriptedDependencies.value
-    },
-    scripted := {
-      // this actually get executed *after* scripted is evaluated, since the macro rewrites the below
-      // to be a dependency.
-      stopTick()
-      scripted.evaluated
-    },
     scripted <<= scripted.tag(Tags.Test),
     scriptedLaunchOpts ++= Seq(
       "-Xmx768m",
@@ -968,36 +959,6 @@ def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++
       "-Dscala.version=" + sys.props.get("scripted.scala.version").getOrElse((scalaVersion in `reloadable-server`).value)
     )
   )
-
-// This outputs a tick tock every minute to ensure travis doesn't decide that the build is frozen
-// during scripted tests
-val timer = new Timer("scripted-tick-timer", true)
-val task = new AtomicReference[TimerTask]()
-val ticks = new AtomicInteger()
-
-def startTick(): Unit = synchronized {
-  if (ticks.getAndIncrement() == 0) {
-    val t = new TimerTask {
-      var tick = true
-      override def run(): Unit = {
-        if (tick) {
-          println("tick")
-        } else {
-          println("tock")
-        }
-        tick = !tick
-      }
-    }
-    task.set(t)
-    timer.schedule(t, 60000, 60000)
-  }
-}
-
-def stopTick(): Unit = synchronized {
-  if (ticks.decrementAndGet() == 0) {
-    task.get().cancel()
-  }
-}
 
 def archetypeVariables(lagomVersion: String) = Map(
   "LAGOM-VERSION" -> lagomVersion,
@@ -1048,7 +1009,7 @@ lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-librar
   .settings(runtimeLibCommon: _*)
   .dependsOn(`server-javadsl`)
 
-lazy val `service-locator` = (project in file("dev") / "service-locator")
+lazy val `service-locator` = (project in file("dev") / "service-registry"/ "service-locator")
   .settings(name := "lagom-service-locator")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -1063,25 +1024,25 @@ lazy val `service-locator` = (project in file("dev") / "service-locator")
       scalaTest % Test
     )
   )
-  .dependsOn(`server-javadsl`, logback, `service-registry-client`)
+  .dependsOn(`server-javadsl`, logback, `service-registry-client-javadsl`)
 
-lazy val `service-registry-client` = (project in file("dev") / "service-registry-client")
+lazy val `service-registry-client-javadsl` = (project in file("dev") / "service-registry" / "client-javadsl")
   .settings(name := "lagom-service-registry-client")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-javadsl`, immutables % "provided")
 
-lazy val `service-registration` = (project in file("dev") / "service-registration")
+lazy val `service-registration-javadsl` = (project in file("dev") / "service-registry" / "registration-javadsl")
   .settings(name := "lagom-service-registration")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(`server-javadsl`, `service-registry-client`)
+  .dependsOn(`server-javadsl`, `service-registry-client-javadsl`)
 
-lazy val `play-integration` = (project in file("dev") / "play-integration")
-  .settings(name := "lagom-play-integration")
+lazy val `play-integration-javadsl` = (project in file("dev") / "service-registry" / "play-integration-javadsl")
+  .settings(name := "lagom-javadsl-play-integration")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(`service-registry-client`)
+  .dependsOn(`service-registry-client-javadsl`)
 
 lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
   .settings(name := "lagom-cassandra-server")

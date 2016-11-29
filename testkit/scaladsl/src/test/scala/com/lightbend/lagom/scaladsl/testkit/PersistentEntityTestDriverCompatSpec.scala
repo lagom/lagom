@@ -13,7 +13,7 @@ import scala.concurrent.duration._
 
 class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec("PersistentEntityTestDriverCompatSpec", ConfigFactory.parseString(
   """
-    lagom.serialization.play-json.serialization-registry="com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry"
+    lagom.serialization.play-json.serializer-registry="com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry"
   """
 )) {
 

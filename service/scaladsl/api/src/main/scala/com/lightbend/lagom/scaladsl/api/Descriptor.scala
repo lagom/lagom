@@ -401,6 +401,9 @@ sealed trait ServiceAcl {
 object ServiceAcl {
   def apply(method: Option[Method] = None, pathRegex: Option[String] = None): ServiceAcl = ServiceAclImpl(method, pathRegex)
 
+  def forPathRegex(pathRegex: String) = apply(None, Some(pathRegex))
+  def forMethodAndPathRegex(method: Method, pathRegex: String) = apply(Some(method), Some(pathRegex))
+
   private case class ServiceAclImpl(method: Option[Method], pathRegex: Option[String]) extends ServiceAcl
 }
 

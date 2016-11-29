@@ -24,21 +24,6 @@ import sbt.plugins.{ CorePlugin, IvyPlugin, JvmPlugin }
 object Lagom extends AutoPlugin {
   override def requires = LagomReloadableService && JavaAppPackaging
   val autoImport = LagomImport
-
-  override def projectSettings = Seq(
-    libraryDependencies ++= devServiceLocatorDependencies.value
-  )
-
-  // service locator dependencies are injected into services only iff dev service locator is enabled
-  private lazy val devServiceLocatorDependencies = Def.setting {
-    if (LagomPlugin.autoImport.lagomServiceLocatorEnabled.value)
-      Seq(
-        LagomImport.component("lagom-service-registry-client"),
-        LagomImport.component("lagom-service-registration")
-      ).map(_ % Internal.Configs.DevRuntime)
-    else
-      Seq.empty
-  }
 }
 
 /**
@@ -64,9 +49,48 @@ object LagomJava extends AutoPlugin {
     libraryDependencies ++= Seq(
       LagomImport.lagomJavadslServer,
       PlayImport.component("play-netty-server")
-    ) ++ LagomImport.lagomJUnitDeps,
+    ) ++ LagomImport.lagomJUnitDeps ++ devServiceLocatorDependencies.value,
     // Configure sbt junit-interface: https://github.com/sbt/junit-interface
     testOptions in Test += Tests.Argument(TestFrameworks.JUnit, "-v", "-a")
+  )
+
+  // service locator dependencies are injected into services only iff dev service locator is enabled
+  private lazy val devServiceLocatorDependencies = Def.setting {
+    if (LagomPlugin.autoImport.lagomServiceLocatorEnabled.value)
+      Seq(
+        LagomImport.component("lagom-service-registry-client"),
+        LagomImport.component("lagom-service-registration")
+      ).map(_ % Internal.Configs.DevRuntime)
+    else
+      Seq.empty
+  }
+
+}
+
+/**
+ * The main plugin for Lagom Java projects. To use this the plugin must be made available to your project
+ * via sbt's enablePlugins mechanism e.g.:
+ * {{{
+ *   lazy val root = project.in(file(".")).enablePlugins(LagomJava)
+ * }}}
+ */
+object LagomScala extends AutoPlugin {
+  override def requires = Lagom
+  override def trigger = noTrigger
+
+  import LagomPlugin.autoImport._
+
+  override def projectSettings = LagomSettings.defaultSettings ++ Seq(
+    Keys.run in Compile := {
+      val service = lagomRun.value
+      val log = state.value.log
+      SbtConsoleHelper.printStartScreen(log, service)
+      SbtConsoleHelper.blockUntilExit(log, Internal.Keys.interactionMode.value, service._2)
+    },
+    libraryDependencies ++= Seq(
+      LagomImport.lagomScaladslServer,
+      PlayImport.component("play-netty-server")
+    )
   )
 }
 
@@ -93,16 +117,27 @@ object LagomPlay extends AutoPlugin {
     lagomClassLoaderDecorator := PlayInternalKeys.playAssetsClassLoader.value,
 
     // Watch the files that Play wants to watch
-    lagomWatchDirectories := PlayKeys.playMonitoredFiles.value,
-    // adding dependencies needed to integrate Play in Lagom
+    lagomWatchDirectories := PlayKeys.playMonitoredFiles.value
+  )
+}
+
+/**
+ * This plugin will automatically be enabled if using PlayJava and LagomPlay, to add the play integration
+ */
+object LagomPlayJava extends AutoPlugin {
+  override def requires = LagomPlay && PlayJava
+  override def trigger = allRequirements
+
+  override def projectSettings = Seq(
     libraryDependencies ++= (
       // lagom-play-integration takes care of registering a stock Play app to the
       // Lagom development service locator. The dependency is needed only if the
       // development service locator is enabled.
-      if (LagomPlugin.autoImport.lagomServiceLocatorEnabled.value)
-        Seq(LagomImport.component("lagom-play-integration") % Internal.Configs.DevRuntime)
-      else
+      if (LagomPlugin.autoImport.lagomServiceLocatorEnabled.value) {
+        Seq(LagomImport.component("lagom-javadsl-play-integration") % Internal.Configs.DevRuntime)
+      } else {
         Seq.empty
+      }
     )
   )
 }
@@ -386,9 +421,8 @@ object LagomPlugin extends AutoPlugin {
         case _ => throw new RuntimeException("Play interaction mode must be non blocking to stop it")
       }
     },
-    ivyConfigurations ++= Seq(Internal.Configs.DevRuntime, Internal.Configs.CassandraRuntime),
+    ivyConfigurations ++= Seq(Internal.Configs.DevRuntime),
     PlaySettings.manageClasspath(Internal.Configs.DevRuntime),
-    PlaySettings.manageClasspath(Internal.Configs.CassandraRuntime),
 
     libraryDependencies +=
       LagomImport.component("lagom-reloadable-server") % Internal.Configs.DevRuntime
@@ -553,7 +587,7 @@ object LagomPlugin extends AutoPlugin {
 }
 
 object LagomLogback extends AutoPlugin {
-  override def requires = Lagom
+  override def requires = LagomPlugin
 
   // add this plugin automatically if Lagom is added.
   override def trigger = AllRequirements
@@ -564,7 +598,7 @@ object LagomLogback extends AutoPlugin {
 }
 
 object LagomLog4j2 extends AutoPlugin {
-  override def requires = Lagom
+  override def requires = LagomPlugin
 
   override def projectSettings = Seq(
     libraryDependencies += LagomImport.lagomLog4j2

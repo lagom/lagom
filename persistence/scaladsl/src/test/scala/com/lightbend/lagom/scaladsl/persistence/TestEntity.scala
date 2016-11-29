@@ -19,7 +19,7 @@ import scala.collection.immutable
  * NOTE to use this the serialization registry needs to be registered in actor system config
  * to be picked up like this:
  *
- * `lagom.serialization.play-json.serialization-registry =
+ * `lagom.serialization.play-json.serializer-registry =
  *   "com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry"`
  */
 object TestEntity {
