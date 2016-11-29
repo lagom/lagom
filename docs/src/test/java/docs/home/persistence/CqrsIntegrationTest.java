@@ -134,12 +134,22 @@ public class CqrsIntegrationTest {
     final AddPost cmd2 = new AddPost(new PostContent("Title 2", "Body"));
     ref2.ask(cmd2).toCompletableFuture().get(5, SECONDS); // await only for deterministic order
 
-    // We can query the blogsummary table via the CassandraSession,
-    // e.g. a Service API request
     final Materializer mat = ActorMaterializer.create(system);
+
+
+    // Eventually (when the BlogEventProcessor is ready), we can crate a PreparedStatement to query the
+    // blogsummary table via the CassandraSession,
+    // e.g. a Service API request
+    eventually(() -> {
+      // the creation of this PreparedStatement will fail while `blogsummary` doesn't exist.
+      cassandraSession.prepare("SELECT id, title FROM blogsummary").toCompletableFuture().get(5, SECONDS);
+    });
+
     final PreparedStatement selectStmt = cassandraSession.prepare("SELECT id, title FROM blogsummary")
-        .toCompletableFuture().get(5, SECONDS);
+            .toCompletableFuture().get(5, SECONDS);
     final BoundStatement boundSelectStmt = selectStmt.bind();
+
+
 
     eventually(() -> {
       // stream from a Cassandra select result set, e.g. response to a Service API request
