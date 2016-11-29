@@ -1,0 +1,90 @@
+# Structure of this test:
+# =======================
+
+# Here we test that the `lagomRunReloadAll` task on a multi-projects build. Both project 
+# `a` and `b` have the LagomScala plugin enable, while project `c` doesn't. Therefore, we
+# expect that evaluating the `runReloadAll` task will load both project `a` and `b` 
+# applications, but not the one for project `c`. Then, any change that result in a classpath 
+# change on either project `a` or `b` will cause the application to reload, while the same 
+# kind of changes applied to project `c` won't produce any effect.
+
+# Additionally, when making assertions about reloads, we need to wait:
+# 1) At least a second after changing the file before we make a request. The reason 
+#    for this is that the classpath change detection is based on file modification 
+#    times, which only have 1 second precision.
+# 2) Another 6 seconds to allow the application to be recompiled and reloaded. Because 
+#    we are waiting for "stuff" to happen in the background, it is possible that we 
+#    should wait for longer on slower machines (i.e., this test has the potential of 
+#    being flaky).
+
+# `runAll` tests
+# --------------
+> runAll
+> verifyReloadsProjA 1
+> assertRequest 10000 /foo ack foo
+# Make sure we can access it from the service gateway
+> assertRequest 9000 /foo ack foo
+
+# Change a scala file
+$ copy-file changes/a/FooServiceImpl.scala.1 a/impl/src/main/scala/impl/FooServiceImpl.scala
+> verifyReloadsProjA 2
+> assertRequest 10000 /foo ack updated foo 1
+
+# Introduce a compile error
+$ copy-file changes/a/FooServiceImpl.scala.2 a/impl/src/main/scala/impl/FooServiceImpl.scala
+$ sleep 7000
+> verifyReloadsProjA 2
+
+# Fix the compile error
+$ copy-file changes/a/FooServiceImpl.scala.3 a/impl/src/main/scala/impl/FooServiceImpl.scala
+> verifyReloadsProjA 3
+> assertRequest 10000 /foo ack updated foo 3
+
+
+# Let's do the same on project B
+> verifyReloadsProjB 1
+> assertRequest 10001 /bar ack updated foo 3 bar
+# Make sure we can access it from the service gateway
+> assertRequest 9000 /bar ack updated foo 3 bar
+
+# Change a scala file
+$ copy-file changes/b/BarServiceImpl.scala.1 b/impl/src/main/scala/impl/BarServiceImpl.scala
+> verifyReloadsProjB 2
+> assertRequest 10001 /bar ack updated foo 3 updated bar 1
+
+# Introduce a compile error
+$ copy-file changes/b/BarServiceImpl.scala.2 b/impl/src/main/scala/impl/BarServiceImpl.scala
+$ sleep 8000
+> verifyReloadsProjB 2
+
+# Fix the compile error
+$ copy-file changes/b/BarServiceImpl.scala.3 b/impl/src/main/scala/impl/BarServiceImpl.scala
+> verifyReloadsProjB 3
+> assertRequest 10001 /bar ack updated foo 3 updated bar 3
+
+
+# Now try the Play project
+> assertRequest 9001 /p Hello Play!
+# Make sure we can access it from the service gateway
+> assertRequest 9000 /p Hello Play!
+> assertRequest 9001 /assets/foo.js var foo
+> assertRequest 9000 /assets/foo.js var foo
+
+# Change a template
+$ copy-file changes/p/index.scala.html.1 p/app/views/index.scala.html
+> assertRequest 9001 /p Hello Changed Play!
+
+# Change an asset
+$ copy-file changes/p/foo.js.1 p/app/assets/foo.js
+> assertRequest 9001 /assets/foo.js var bar
+
+# And now let's try the same on project C (which isn't a microservice project)
+
+> verifyNoReloadsProjC
+
+# Change a scala file
+$ copy-file changes/c/BazServiceImpl.scala.1 c/src-c/main/scala/impl/BazServiceImpl.scala
+$ sleep 7000
+> verifyNoReloadsProjC
+
+> stop

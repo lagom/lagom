@@ -9,7 +9,6 @@ import play.sbt.PlayInteractionMode
 object Internal {
   object Configs {
     val DevRuntime = config("dev-mode").hide extend Runtime
-    val CassandraRuntime = config("dev-mode-cassandra").hide extend Runtime
   }
 
   object Keys {

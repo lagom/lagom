@@ -22,17 +22,17 @@ object Serializers {
    * Create a serializer for the PlayJsonSerializationRegistry, describes how a specific class can be read and written
    * as json using separate play-json [[Reads]] and [[Writes]]
    */
-  def apply[T: ClassTag](reads: Reads[T], writes: Writes[T]): Serializers[T] =
-    SerializersImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], reads, writes)
+  def apply[T: ClassTag: Format]: Serializers[T] =
+    SerializersImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], implicitly[Format[T]])
 
   /**
    * Create a serializer for the PlayJsonSerializationRegistry, describes how a specific class can be read and written
    * as json using separate play-json [[Reads]] and [[Writes]]
    */
   def apply[T: ClassTag](format: Format[T]): Serializers[T] =
-    SerializersImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], format, format)
+    SerializersImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], format)
 
-  private case class SerializersImpl[T](entityClass: Class[T], reads: Reads[T], writes: Writes[T]) extends Serializers[T]
+  private case class SerializersImpl[T](entityClass: Class[T], format: Format[T]) extends Serializers[T]
 }
 
 /**
@@ -41,7 +41,6 @@ object Serializers {
 sealed trait Serializers[T] {
   // the reason we need it over Format is to capture the type here
   def entityClass: Class[T]
-  def reads: Reads[T]
-  def writes: Writes[T]
+  def format: Format[T]
 }
 

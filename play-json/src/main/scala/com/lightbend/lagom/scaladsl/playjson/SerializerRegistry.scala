@@ -6,7 +6,7 @@ package com.lightbend.lagom.scaladsl.playjson
 import scala.collection.immutable
 
 /**
- * Create a concrete subclass of this and register using the `lagom.serialization.play-json.serialization-registry`
+ * Create a concrete subclass of this and register using the `lagom.serialization.play-json.serializer-registry`
  * setting to have your play-json serializers picked up and used by Lagom.
  */
 abstract class SerializerRegistry {

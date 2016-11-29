@@ -18,7 +18,7 @@ class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll
 
   val config = ConfigFactory.parseString(
     """
-      lagom.serialization.play-json.serialization-registry=docs.home.scaladsl.persistence.BlogPostSerializerRegistry
+      lagom.serialization.play-json.serializer-registry=docs.home.scaladsl.persistence.BlogPostSerializerRegistry
     """).withFallback(ConfigFactory.load())
   val system = ActorSystem("PostSpec", config)
 

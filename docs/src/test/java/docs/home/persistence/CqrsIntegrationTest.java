@@ -1,8 +1,7 @@
 package docs.home.persistence;
 
-import com.lightbend.lagom.internal.registry.NoServiceLocator;
+import com.lightbend.lagom.internal.javadsl.registry.NoServiceLocator;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
-import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil;
 import docs.home.persistence.BlogCommand.*;
 import docs.home.persistence.BlogEvent.*;

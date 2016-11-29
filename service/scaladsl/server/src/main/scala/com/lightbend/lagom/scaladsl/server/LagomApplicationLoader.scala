@@ -6,21 +6,31 @@ package com.lightbend.lagom.scaladsl.server
 import java.net.URI
 
 import akka.actor.ActorSystem
+import akka.stream.Materializer
 import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakerMetricsProviderImpl, CircuitBreakers }
+import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
+import com.lightbend.lagom.internal.scaladsl.registry.{ ServiceRegistration, ServiceRegistry, ServiceRegistryServiceLocator }
+import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
-import com.lightbend.lagom.scaladsl.api.ServiceLocator
+import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
+import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.scaladsl.client.{ CircuitBreakingServiceLocator, LagomServiceClientComponents }
 import play.api._
 import play.api.ApplicationLoader.Context
+import play.api.inject.ApplicationLifecycle
+import play.api.libs.ws.WSClient
 import play.core.DefaultWebCommands
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 abstract class LagomApplicationLoader extends ApplicationLoader {
-  override final def load(context: Context): Application =
-    load(LagomApplicationContext(context)).application
+  override final def load(context: Context): Application = context.environment.mode match {
+    case Mode.Dev => loadDevMode(LagomApplicationContext(context)).application
+    case _        => load(LagomApplicationContext(context)).application
+  }
 
   def load(context: LagomApplicationContext): LagomApplication
+  def loadDevMode(context: LagomApplicationContext): LagomApplication = load(context)
 }
 
 sealed trait LagomApplicationContext {
@@ -65,4 +75,50 @@ trait LocalServiceLocator {
     override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] =
       getUri(name)
   }
+}
+
+trait LagomDevModeComponents {
+  def wsClient: WSClient
+  def scaladslWebSocketClient: ScaladslWebSocketClient
+  def environment: Environment
+  def configuration: Configuration
+  def executionContext: ExecutionContext
+  def materializer: Materializer
+  def serviceInfo: ServiceInfo
+  def actorSystem: ActorSystem
+  def applicationLifecycle: ApplicationLifecycle
+
+  lazy val circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider = new CircuitBreakerMetricsProviderImpl(actorSystem)
+  lazy val circuitBreakerConfig: CircuitBreakerConfig = new CircuitBreakerConfig(configuration)
+  lazy val circuitBreakers: CircuitBreakers = new CircuitBreakers(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
+
+  lazy val serviceRegistry: ServiceRegistry = {
+    val staticServiceLocator = new ServiceLocator {
+      val serviceLocatorUrl = URI.create(configuration.underlying.getString("lagom.service-locator.url"))
+      override def doWithService[T](name: String, serviceCall: Call[_, _])(block: (URI) => Future[T])(implicit ec: ExecutionContext): Future[Option[T]] = {
+        if (name == ServiceRegistry.ServiceName) {
+          block(serviceLocatorUrl).map(Some.apply)
+        } else {
+          Future.successful(None)
+        }
+      }
+      override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = {
+        if (name == ServiceRegistry.ServiceName) {
+          Future.successful(Some(serviceLocatorUrl))
+        } else {
+          Future.successful(None)
+        }
+      }
+    }
+
+    val serviceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo, staticServiceLocator,
+      new ScaladslServiceResolver(new DefaultExceptionSerializer(environment)), None)(executionContext, materializer)
+
+    serviceClient.implement[ServiceRegistry]
+  }
+
+  lazy val serviceLocator: ServiceLocator = new ServiceRegistryServiceLocator(circuitBreakers, serviceRegistry, executionContext)
+
+  // Eagerly register services
+  new ServiceRegistration(serviceInfo, applicationLifecycle, configuration, serviceRegistry)(executionContext)
 }

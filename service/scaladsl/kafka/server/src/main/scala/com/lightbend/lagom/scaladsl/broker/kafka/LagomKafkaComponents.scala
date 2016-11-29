@@ -16,6 +16,7 @@ trait LagomKafkaComponents extends LagomKafkaClientComponents {
   def lagomServer: LagomServer
   def offsetStore: OffsetStore
 
-  private val registerTopicProducers = new ScaladslRegisterTopicProducers(lagomServer, topicFactory, serviceInfo,
-    actorSystem, offsetStore)(executionContext, materializer)
+  // Eagerly start topic producers
+  new ScaladslRegisterTopicProducers(lagomServer, topicFactory, serviceInfo, actorSystem,
+    offsetStore)(executionContext, materializer)
 }

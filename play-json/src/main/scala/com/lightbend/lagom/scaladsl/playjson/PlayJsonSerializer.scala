@@ -3,7 +3,6 @@
  */
 package com.lightbend.lagom.scaladsl.playjson
 
-import java.io.NotSerializableException
 import java.nio.charset.StandardCharsets
 
 import akka.actor.ExtendedActorSystem
@@ -28,17 +27,17 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
 
   private val registry = {
     val registryClassName: String =
-      system.settings.config.getString("lagom.serialization.play-json.serialization-registry")
+      system.settings.config.getString("lagom.serialization.play-json.serializer-registry")
     require(
       registryClassName != "",
-      "lagom.serialization.play-json.serialization-registry configuration property must be defined"
+      "lagom.serialization.play-json.serializer-registry configuration property must be defined"
     )
     system.dynamicAccess.createInstanceFor[SerializerRegistry](registryClassName, immutable.Seq.empty).get
   }
 
-  private val serializers: Map[String, (Reads[AnyRef], Writes[AnyRef])] = {
+  private val serializers: Map[String, Format[AnyRef]] = {
     registry.serializers.map(entry =>
-      (entry.entityClass.getName, (entry.reads.asInstanceOf[Reads[AnyRef]], entry.writes.asInstanceOf[Writes[AnyRef]]))).toMap
+      (entry.entityClass.getName, entry.format.asInstanceOf[Format[AnyRef]])).toMap
   }
 
   private def migrations: Map[String, Migration] = registry.migrations
@@ -55,12 +54,12 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
 
     val key = manifest(o)
-    val (_, writes) = serializers.getOrElse(
+    val format = serializers.getOrElse(
       key,
       throw new RuntimeException(s"Missing play-json serializer for [$key]")
     )
 
-    val json = writes.writes(o)
+    val json = format.writes(o)
     val result = Json.stringify(json).getBytes(charset)
 
     if (isDebugEnabled) {
@@ -89,7 +88,7 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
       case None => manifestClassName
     }
 
-    val (reads, _) = serializers.getOrElse(
+    val format = serializers.getOrElse(
       migratedManifest,
       throw new RuntimeException(s"Missing play-json serializer for [$migratedManifest], " +
         s"defined are [${serializers.keys.mkString(", ")}]")
@@ -108,7 +107,7 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
       case None => json
     }
 
-    val result = reads.reads(migratedJson) match {
+    val result = format.reads(migratedJson) match {
       case JsSuccess(obj, _) => obj
       case JsError(errors) =>
         throw new JsonSerializationFailed(

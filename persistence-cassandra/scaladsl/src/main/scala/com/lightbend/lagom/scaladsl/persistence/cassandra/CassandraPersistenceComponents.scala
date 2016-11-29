@@ -29,17 +29,15 @@ trait WriteSideCassandraPersistenceComponents extends WriteSidePersistenceCompon
   override lazy val persistentEntityRegistry: PersistentEntityRegistry =
     new CassandraPersistentEntityRegistry(actorSystem)
 
-  def serviceLocator: Option[ServiceLocator]
+  def serviceLocator: ServiceLocator
 
   // eager initialization
-  private[lagom] val serviceLocatorHolder: Option[ServiceLocatorHolder] = {
-    serviceLocator.map { locator =>
-      val holder = ServiceLocatorHolder(actorSystem)
-      holder.setServiceLocator(new ServiceLocatorAdapter {
-        override def locate(name: String): Future[Option[URI]] = locator.locate(name)
-      })
-      holder
-    }
+  private[lagom] val serviceLocatorHolder: ServiceLocatorHolder = {
+    val holder = ServiceLocatorHolder(actorSystem)
+    holder.setServiceLocator(new ServiceLocatorAdapter {
+      override def locate(name: String): Future[Option[URI]] = serviceLocator.locate(name)
+    })
+    holder
   }
 
 }

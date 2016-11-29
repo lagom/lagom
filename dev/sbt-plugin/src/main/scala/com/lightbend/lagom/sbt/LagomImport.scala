@@ -23,7 +23,6 @@ object LagomImport {
   val lagomJavadslBroker = component("lagom-javadsl-broker")
   val lagomJavadslKafkaClient = component("lagom-javadsl-kafka-client")
   val lagomJavadslKafkaBroker = component("lagom-javadsl-kafka-broker")
-  val lagomJavadslKafkaCassandraStore = component("lagom-javadsl-kafka-cassandra-store")
   val lagomJavadslPersistence = component("lagom-javadsl-persistence")
   val lagomJavadslPersistenceCassandra = component("lagom-javadsl-persistence-cassandra")
   val lagomJavadslPersistenceJdbc = component("lagom-javadsl-persistence-jdbc")
@@ -36,6 +35,15 @@ object LagomImport {
   val lagomScaladslApi = component("lagom-scaladsl-api")
   val lagomScaladslClient = component("lagom-scaladsl-client")
   val lagomScaladslServer = component("lagom-scaladsl-server")
+  val lagomScaladslCluster = component("lagom-scaladsl-cluster")
+  val lagomScaladslBroker = component("lagom-scaladsl-broker")
+  val lagomScaladslKafkaClient = component("lagom-scaladsl-kafka-client")
+  val lagomScaladslKafkaBroker = component("lagom-scaladsl-kafka-broker")
+  val lagomScaladslPersistence = component("lagom-scaladsl-persistence")
+  val lagomScaladslPersistenceCassandra = component("lagom-scaladsl-persistence-cassandra")
+  val lagomScaladslPersistenceJdbc = component("lagom-scaladsl-persistence-jdbc")
+  val lagomScaladslPubSub = component("lagom-scaladsl-pubsub")
+  val lagomScaladslTestKit = component("lagom-scaladsl-testkit") % Test
 
   val lagomJUnitDeps = Seq(
     "junit" % "junit" % "4.12" % Test,
