@@ -1,8 +1,6 @@
 # This is used to configure the sbt instance that Travis launches
 
--Xms768M
--Xmx768M
+-Xms1024M
+-Xmx1024M
 -Xss2M
 -XX:MaxMetaspaceSize=384M
-# Temporary to work around a current bintray configuration issue 2016-09-29
--Dsbt.repository.secure=false
