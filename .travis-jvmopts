@@ -3,4 +3,4 @@
 -Xms768M
 -Xmx768M
 -Xss2M
--XX:MaxMetaspaceSize=256M
+-XX:MaxMetaspaceSize=384M
