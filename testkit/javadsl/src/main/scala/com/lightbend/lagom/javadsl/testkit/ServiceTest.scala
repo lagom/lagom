@@ -20,13 +20,13 @@ import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
 import com.lightbend.lagom.javadsl.persistence.testkit.TestUtil
-import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 import akka.actor.ActorSystem
 import akka.japi.function.Effect
 import akka.japi.function.Procedure
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
+import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
 import org.apache.cassandra.io.util.FileUtils
 import play.Application
