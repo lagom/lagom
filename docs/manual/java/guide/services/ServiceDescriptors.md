@@ -62,7 +62,7 @@ Every service call in Lagom has a request message type and a response message ty
 
 ### Strict messages
 
-A strict message is a single message that can be represented by a simple Java object.  The message will be buffered into memory, and then parsed, for example, as json.  When both message types are strict, the call is said to be a synchronous call, that is, a request is sent and received, then a response is sent and received.  The caller and callee have synchronized in their communication.
+A strict message is a single message that can be represented by a simple Java object.  The message will be buffered into memory, and then parsed, for example, as JSON.  When both message types are strict, the call is said to be a synchronous call, that is, a request is sent and received, then a response is sent and received.  The caller and callee have synchronized in their communication.
 
 So far, all of the service call examples we've seen have used strict messages, for example, the order service descriptors above accept and return items and orders.  The input value is passed directly to the service call, and returned directly from the service call, and these values are serialized to a JSON buffer in memory before being sent, and read entirely into memory before being deserialized back from JSON.
 

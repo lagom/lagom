@@ -17,7 +17,7 @@ import com.lightbend.lagom.javadsl.api.transport.Method;
 import org.pcollections.HashTreePMap;
 
 /**
- * A self describing service.
+ * A Lagom service descriptor.
  *
  * This interface implements a DSL for describing a service. It is inherently constrained in its use.
  *

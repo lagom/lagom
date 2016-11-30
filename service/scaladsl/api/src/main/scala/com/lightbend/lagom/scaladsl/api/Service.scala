@@ -15,8 +15,20 @@ import scala.reflect.macros.blackbox.Context
 import scala.language.experimental.macros
 import scala.language.implicitConversions
 
+/**
+ * A Lagom service descriptor.
+ *
+ * This trait provides a DSL for describing a service. It is inherently constrained in its use.
+ *
+ * A service can describe itself by defining a trait that extends this trait, and provides an
+ * implementation for the [[Service#descriptor]] method.
+ */
 trait Service {
-
+  /**
+   * Describe this service.
+   *
+   * The intended mechanism for implementing this is to implement it on the trait for the service.
+   */
   def descriptor: Descriptor
 }
 
@@ -25,42 +37,201 @@ object Service {
   import ServiceSupport._
   import Descriptor._
 
+  /**
+   * Create a descriptor for a service with the given name.
+   *
+   * @param name The name of the service.
+   * @return The descriptor.
+   */
   def named(name: String): Descriptor = Descriptor(name)
 
+  /**
+   * Create a named service call descriptor, identified by the name of the method that implements the service call.
+   *
+   * The `method` parameter can be provided by passing a reference to the function that provides the service call.
+   * [[ServiceSupport]] provides a number of implicit conversions and macros for converting these references to a
+   * [[ScalaMethodServiceCall]], which captures the actual method.
+   *
+   * The DSL allows the following ways to pass method references:
+   *
+   * ```
+   * // Eta-expanded method on this
+   * call(getItem _)
+   * // Invocation of parameterless method on this
+   * call(getItem)
+   * // Invocation of zero argument method on this
+   * call(getItem())
+   * ```
+   *
+   * The service call may or may not be qualified by `this`. These are the only forms that the DSL permits, the macro
+   * that implements this will inspect the passed in Scala AST to extract which method is invoked. Anything else passed
+   * will result in a compilation failure.
+   *
+   * @param method A reference to the service call method.
+   * @return A named service call descriptor.
+   */
   def call[Request, Response](method: ScalaMethodServiceCall[Request, Response])(implicit requestSerializer: MessageSerializer[Request, _], responseSerializer: MessageSerializer[Response, _]): Call[Request, Response] =
     namedCall(method.method.getName, method)
 
+  /**
+   * Create a named service call descriptor, identified by the given name.
+   *
+   * The `method` parameter can be provided by passing a reference to the function that provides the service call.
+   * [[ServiceSupport]] provides a number of implicit conversions and macros for converting these references to a
+   * [[ScalaMethodServiceCall]], which captures the actual method.
+   *
+   * The DSL allows the following ways to pass method references:
+   *
+   * ```
+   * // Eta-expanded method on this
+   * namedCall("item", getItem _)
+   * // Invocation of parameterless method on this
+   * namedCall("item", getItem)
+   * // Invocation of zero argument method on this
+   * namedCall("item", getItem())
+   * ```
+   *
+   * The service call may or may not be qualified by `this`. These are the only forms that the DSL permits, the macro
+   * that implements this will inspect the passed in Scala AST to extract which method is invoked. Anything else passed
+   * will result in a compilation failure.
+   *
+   * @param name The name of the service call.
+   * @param method A reference to the service call method.
+   * @return A named service call descriptor.
+   */
   def namedCall[Request, Response](name: String, method: ScalaMethodServiceCall[Request, Response])(implicit requestSerializer: MessageSerializer[Request, _], responseSerializer: MessageSerializer[Response, _]): Call[Request, Response] = {
     CallImpl(NamedCallId(name), method, requestSerializer, responseSerializer)
   }
 
+  /**
+   * Create a path service call descriptor, identified by the given path pattern.
+   *
+   * The `method` parameter can be provided by passing a reference to the function that provides the service call.
+   * [[ServiceSupport]] provides a number of implicit conversions and macros for converting these references to a
+   * [[ScalaMethodServiceCall]], which captures the actual method, as well as the implicit serializers necessary to
+   * convert the path parameters specified in the `pathPattern` to and from the arguments for the method.
+   *
+   * The DSL allows the following ways to pass method references:
+   *
+   * ```
+   * // Eta-expanded method on this
+   * pathCall("/item/:id", getItem _)
+   * // Invocation of parameterless method on this
+   * pathCall("/items", getItem)
+   * // Invocation of zero argument method on this
+   * pathCall("/items", getItem())
+   * ```
+   *
+   * The service call may or may not be qualified by `this`. These are the only forms that the DSL permits, the macro
+   * that implements this will inspect the passed in Scala AST to extract which method is invoked. Anything else passed
+   * will result in a compilation failure.
+   *
+   * @param pathPattern The path pattern.
+   * @param method A reference to the service call method.
+   * @return A path based service call descriptor.
+   */
   def pathCall[Request, Response](pathPattern: String, method: ScalaMethodServiceCall[Request, Response])(implicit requestSerializer: MessageSerializer[Request, _], responseSerializer: MessageSerializer[Response, _]): Call[Request, Response] = {
     CallImpl(PathCallId(pathPattern), method, requestSerializer, responseSerializer)
   }
 
+  /**
+   * Create a REST service call descriptor, identified by the given HTTP method and path pattern.
+   *
+   * The `scalaMethod` parameter can be provided by passing a reference to the function that provides the service call.
+   * [[ServiceSupport]] provides a number of implicit conversions and macros for converting these references to a
+   * [[ScalaMethodServiceCall]], which captures the actual method, as well as the implicit serializers necessary to
+   * convert the path parameters specified in the `pathPattern` to and from the arguments for the method.
+   *
+   * The DSL allows the following ways to pass method references:
+   *
+   * ```
+   * // Eta-expanded method on this
+   * restCall(Method.GET, "/item/:id", getItem _)
+   * // Invocation of parameterless method on this
+   * restCall(Method.GET, "/items", getItem)
+   * // Invocation of zero argument method on this
+   * restCall(Method.GET, "/items", getItem())
+   * ```
+   *
+   * The service call may or may not be qualified by `this`. These are the only forms that the DSL permits, the macro
+   * that implements this will inspect the passed in Scala AST to extract which method is invoked. Anything else passed
+   * will result in a compilation failure.
+   *
+   * @param method      The HTTP method.
+   * @param pathPattern The path pattern.
+   * @param scalaMethod A reference to the service call method.
+   * @return A REST service call descriptor.
+   */
   def restCall[Request, Response](method: com.lightbend.lagom.scaladsl.api.transport.Method, pathPattern: String, scalaMethod: ScalaMethodServiceCall[Request, Response])(implicit requestSerializer: MessageSerializer[Request, _], responseSerializer: MessageSerializer[Response, _]): Call[Request, Response] = {
     CallImpl(RestCallId(method, pathPattern), scalaMethod, requestSerializer, responseSerializer)
   }
 
+  /**
+   * Create a topic descriptor.
+   *
+   * The `method` parameter can be provided by passing a reference to the function that provides the topic.
+   * [[ServiceSupport]] provides a number of implicit conversions and macros for converting these references to a
+   * [[ScalaMethodServiceCall]], which captures the actual method.
+   *
+   * The DSL allows the following ways to pass method references:
+   *
+   * ```
+   * // Eta-expanded method on this
+   * topic("item-events", itemEventStream _)
+   * // Invocation of parameterless method on this
+   * topic("item-events", itemEventStream)
+   * // Invocation of zero argument method on this
+   * topic("item-events", itemEventStream)
+   * ```
+   *
+   * The topic may or may not be qualified by `this`. These are the only forms that the DSL permits, the macro
+   * that implements this will inspect the passed in Scala AST to extract which method is invoked. Anything else passed
+   * will result in a compilation failure.
+   *
+   * @param topicId The name of the topic.
+   * @param method A reference to the topic method.
+   * @return A topic call descriptor.
+   */
   def topic[Message](topicId: String, method: ScalaMethodTopic[Message])(implicit messageSerializer: MessageSerializer[Message, ByteString]): TopicCall[Message] = {
     TopicCallImpl[Message](Topic.TopicId(topicId), method, messageSerializer)
   }
 }
 
+/**
+ * Provides implicit conversions and macros to implement the service descriptor DSL.
+ */
 object ServiceSupport {
   import com.lightbend.lagom.scaladsl.api.deser.{ PathParamSerializer => PPS }
 
+  /**
+   * A reference to a method that implements a topic.
+   *
+   * @param method The actual method that implements the topic.
+   */
   class ScalaMethodTopic[Message] private[lagom] (val method: Method) extends TopicHolder
 
+  /**
+   * Provides implicit conversions to convert Scala AST that references methods to actual method references.
+   */
   object ScalaMethodTopic {
     implicit def topicMethodFor[Message](f: => Topic[Message]): ScalaMethodTopic[Message] = macro topicMethodForImpl[Message]
     implicit def topicMethodFor0[Message](f: () => Topic[Message]): ScalaMethodTopic[Message] = macro topicMethodForImpl[Message]
   }
 
+  /**
+   * A reference to a method that implements a service call.
+   *
+   * @param method The actual method that implements the service call.
+   * @param pathParamSerializers The serializers used to convert parameters extracted from the path to and from the
+   *                             arguments for the method.
+   */
   class ScalaMethodServiceCall[Request, Response] private[lagom] (val method: Method, val pathParamSerializers: immutable.Seq[PathParamSerializer[_]]) extends ServiceCallHolder {
     def invoke(service: Any, args: immutable.Seq[AnyRef]) = method.invoke(service, args: _*)
   }
 
+  /**
+   * Provides implicit conversions to convert Scala AST that references methods to actual method references.
+   */
   object ScalaMethodServiceCall {
 
     implicit def methodFor[Q, R](f: => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl0[Q, R]
@@ -92,6 +263,16 @@ object ServiceSupport {
     implicit def methodFor22[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS, P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS, P18: PPS, P19: PPS, P20: PPS, P21: PPS, P22: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl22[Q, R]
   }
 
+  /**
+   * The code generated by the service call macros uses this method to look up the Java reflection API [[Method]] for
+   * the method that is being referenced, and uses it to create a [[ScalaMethodServiceCall]].
+   *
+   * @param clazz The class that the method should be looked up from (should be the service interface).
+   * @param name The name of the method to look up.
+   * @param pathParamSerializers The list of path parameter serializers, (typcially captured by implicit parameters),
+   *                             for the arguments to the method.
+   * @return The service call holder.
+   */
   def getServiceCallMethodWithName[Request, Response](clazz: Class[_], name: String, pathParamSerializers: Seq[PathParamSerializer[_]]): ScalaMethodServiceCall[Request, Response] = {
     new ScalaMethodServiceCall[Request, Response](
       clazz.getMethods.find(_.getName == name).getOrElse(throw new NoSuchMethodException(name)),
@@ -99,11 +280,23 @@ object ServiceSupport {
     )
   }
 
+  /**
+   * The code generated by the topic macros uses this method to look up the Java reflection API [[Method]] for
+   * the method that is being referenced, and uses it to create a [[ScalaMethodTopic]].
+   *
+   * @param clazz The class that the method should be looked up from (should be the service interface).
+   * @param name The name of the method to look up.
+   * @return The topic holder.
+   */
   def getTopicMethodWithName[Message](clazz: Class[_], name: String): ScalaMethodTopic[Message] = {
     new ScalaMethodTopic[Message](
       clazz.getMethods.find(_.getName == name).getOrElse(throw new NoSuchMethodException(name))
     )
   }
+
+  //
+  // Macro implementations
+  //
 
   def methodForImpl0[Q, R](c: Context)(f: c.Tree)(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f)
 
@@ -135,6 +328,7 @@ object ServiceSupport {
   private def methodForImpl[Request, Response](c: Context)(f: c.Tree, ps: c.Expr[PathParamSerializer[_]]*)(implicit requestType: c.WeakTypeTag[Request], responseType: c.WeakTypeTag[Response]): c.Expr[ScalaMethodServiceCall[Request, Response]] = {
     import c.universe._
 
+    // First reify the path parameter arguments into a Seq
     val pathParamSerializers = c.Expr[Seq[PathParamSerializer[_]]](
       Apply(
         Select(reify(Seq).tree, TermName("apply")),
@@ -142,19 +336,42 @@ object ServiceSupport {
       )
     )
 
+    // Resolve this class and the method name.
     val (thisClassExpr, methodNameLiteral) = resolveThisClassExpressionAndMethodName(c)("methodFor", f)
 
-    c.Expr[ScalaMethodServiceCall[Request, Response]](q"_root_.com.lightbend.lagom.scaladsl.api.ServiceSupport.getServiceCallMethodWithName[${requestType.tpe}, ${responseType.tpe}]($thisClassExpr, $methodNameLiteral, $pathParamSerializers)")
+    val serviceSupport = q"_root_.com.lightbend.lagom.scaladsl.api.ServiceSupport"
+
+    // Generate the actual AST that the macro will output
+    c.Expr[ScalaMethodServiceCall[Request, Response]](q"""
+      $serviceSupport.getServiceCallMethodWithName[${requestType.tpe}, ${responseType.tpe}](
+        $thisClassExpr, $methodNameLiteral, $pathParamSerializers
+      )
+    """)
   }
 
   def topicMethodForImpl[Message](c: Context)(f: c.Tree)(implicit messageType: c.WeakTypeTag[Message]): c.Expr[ScalaMethodTopic[Message]] = {
     import c.universe._
 
+    // Resolve this class and the method name.
     val (thisClassExpr, methodNameLiteral) = resolveThisClassExpressionAndMethodName(c)("topicMethodFor", f)
 
-    c.Expr[ScalaMethodTopic[Message]](q"_root_.com.lightbend.lagom.scaladsl.api.ServiceSupport.getTopicMethodWithName[${messageType.tpe}]($thisClassExpr, $methodNameLiteral)")
+    val serviceSupport = q"_root_.com.lightbend.lagom.scaladsl.api.ServiceSupport"
+
+    // Generate the actual AST that the macro will output
+    c.Expr[ScalaMethodTopic[Message]](q"""
+      $serviceSupport.getTopicMethodWithName[${messageType.tpe}]($thisClassExpr, $methodNameLiteral)
+    """)
   }
 
+  /**
+   * Given a passed in AST that should be a reference to a method call on this, generate AST to resolve the type of
+   * this and the name of the method.
+   *
+   * @param c The macro context
+   * @param methodDescription A description of the method that is being invoked, for error reporting.
+   * @param f The AST.
+   * @return A tuple of the AST to resolve the type of this, and a literal that contains the name of the method.
+   */
   private def resolveThisClassExpressionAndMethodName(c: Context)(methodDescription: String, f: c.Tree): (c.Tree, c.universe.Literal) = {
     import c.universe._
 
