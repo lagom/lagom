@@ -239,7 +239,7 @@ val javadslProjects = Seq[ProjectReference](
   `persistence-javadsl`,
   `persistence-cassandra-javadsl`,
   `persistence-jdbc-javadsl`,
-  pubsub,
+  `pubsub-javadsl`,
   jackson,
   `testkit-javadsl`,
   immutables,
@@ -257,6 +257,7 @@ val scaladslProjects = Seq[ProjectReference](
   `persistence-scaladsl`,
   `persistence-cassandra-scaladsl`,
   `persistence-jdbc-scaladsl`,
+  `pubsub-scaladsl`,
   `testkit-scaladsl`
 )
 
@@ -490,7 +491,7 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
       scalaTest % Test
     )
   )
-  .dependsOn(`server-javadsl`, pubsub, `broker-javadsl`, `persistence-core` % "compile;test->test", `persistence-cassandra-javadsl` % "test->test")
+  .dependsOn(`server-javadsl`, `pubsub-javadsl`, `broker-javadsl`, `persistence-core` % "compile;test->test", `persistence-cassandra-javadsl` % "test->test")
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
   .settings(name := "lagom-scaladsl-testkit")
@@ -522,7 +523,7 @@ lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integra
     PgpKeys.publishSigned := {},
     publish := {}
   )
-  .dependsOn(`server-javadsl`, `persistence-cassandra-javadsl`, pubsub, `testkit-javadsl`, logback,`integration-client-javadsl`)
+  .dependsOn(`server-javadsl`, `persistence-cassandra-javadsl`, `pubsub-javadsl`, `testkit-javadsl`, logback,`integration-client-javadsl`)
 
 lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integration-tests"))
   .settings(name := "lagom-scaladsl-integration-tests")
@@ -606,7 +607,7 @@ lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
     )
   ) configs (MultiJvm)
 
-lazy val pubsub = (project in file("pubsub"))
+lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
   .settings(name := "lagom-javadsl-pubsub")
   .dependsOn(`cluster-javadsl`)
   .settings(runtimeLibCommon: _*)
@@ -623,7 +624,23 @@ lazy val pubsub = (project in file("pubsub"))
       scalaTest % Test,
       "com.novocode" % "junit-interface" % "0.11" % "test"
     )
-  ) configs (MultiJvm)  
+  ) configs (MultiJvm)
+
+lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
+  .settings(name := "lagom-scaladsl-pubsub")
+  .dependsOn(`cluster-scaladsl`)
+  .settings(runtimeLibCommon: _*)
+  .settings(multiJvmTestSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-cluster-tools" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
+      "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion % "test",
+      "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
+      scalaTest % Test
+    )
+  ) configs (MultiJvm)
 
 lazy val `persistence-core` = (project in file("persistence/core"))
   .settings(name := "lagom-persistence-core")
