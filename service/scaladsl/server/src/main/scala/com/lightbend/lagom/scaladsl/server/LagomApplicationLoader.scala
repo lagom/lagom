@@ -23,27 +23,106 @@ import play.core.DefaultWebCommands
 
 import scala.concurrent.{ ExecutionContext, Future }
 
+/**
+ * A Play application loader for Lagom.
+ *
+ * Scala Lagom applications should provide a subclass of this to create their application, and configure it in their
+ * `application.conf` file using:
+ *
+ * ```
+ * play.application.loader = com.example.MyApplicationLoader
+ * ```
+ *
+ * This class provides an abstraction over Play's application loader that provides Lagom specific functionality.
+ */
 abstract class LagomApplicationLoader extends ApplicationLoader {
+
+  /**
+   * Implementation of Play's load method.
+   *
+   * Since Lagom applications need to use a different wiring in dev mode, using the dev mode service locator and
+   * registry, to what they use in prod, this separates the two possibilities out, invoking the
+   * [[load()]] method for prod, and the [[loadDevMode()]] method for development.
+   *
+   * It also wraps the Play specific types in Lagom types.
+   */
   override final def load(context: Context): Application = context.environment.mode match {
     case Mode.Dev => loadDevMode(LagomApplicationContext(context)).application
     case _        => load(LagomApplicationContext(context)).application
   }
 
+  /**
+   * Load a Lagom application for production.
+   *
+   * This should mix in a production service locator implementation, and anything else specific to production, to
+   * an application provided subclass of [[LagomApplication]]. It will be invoked to load the application in
+   * production.
+   *
+   * @param context The Lagom application context.
+   * @return A Lagom application.
+   */
   def load(context: LagomApplicationContext): LagomApplication
+
+  /**
+   * Load a Lagom application for development.
+   *
+   * This should mix in [[LagomDevModeComponents]] with an application provided subclass of [[LagomApplication]], such
+   * that the service locator used will be the dev mode service locator, and so that services get registered with the
+   * dev mode service registry.
+   *
+   * @param context The Lagom application context.
+   * @return A lagom application.
+   */
   def loadDevMode(context: LagomApplicationContext): LagomApplication = load(context)
 }
 
+/**
+ * The Lagom application context.
+ *
+ * This wraps a Play context, but is provided such that if in future Lagom needs to pass other context information
+ * to an app, this can be extended without breaking compatibility.
+ */
 sealed trait LagomApplicationContext {
+  /**
+   * The Play application loader context.
+   */
   val playContext: Context
 }
 
 object LagomApplicationContext {
+  /**
+   * Create a Lagom application loader context.
+   *
+   * @param context The Play context to wrap.
+   * @return A Lagom applciation context.
+   */
   def apply(context: Context): LagomApplicationContext = new LagomApplicationContext {
     override val playContext: Context = context
   }
-  def Test = apply(Context(Environment.simple(), None, new DefaultWebCommands, Configuration.empty))
+
+  /**
+   * A test application loader context, useful when loading the application in unit or integration tests.
+   */
+  val Test = apply(Context(Environment.simple(), None, new DefaultWebCommands, Configuration.empty))
 }
 
+/**
+ * A Lagom application.
+ *
+ * A Lagom service should subclass this in order to wire together a Lagom application.
+ *
+ * This includes the Lagom server components (which builds and provides the Lagom router) as well as the Lagom
+ * service client components (which allows implementing Lagom service clients from Lagom service descriptors).
+ *
+ * There are two abstract defs that must be implemented, one is [[LagomServerComponents.lagomServer]], the other
+ * is [[LagomServiceClientComponents.serviceLocator]]. Typically, the `lagomServer` component will be implemented by
+ * an abstract subclass of this class, and will bind all the services that this Lagom application provides. Meanwhile,
+ * the `serviceLocator` component will be provided by mixing in a service locator components trait in
+ * [[LagomApplicationLoader]], which trait is mixed in will vary depending on whether the application is being loaded
+ * for production or for development.
+ *
+ * @param context The application context.
+ */
 abstract class LagomApplication(context: LagomApplicationContext)
   extends BuiltInComponentsFromContext(context.playContext)
   with LagomServerComponents
@@ -52,10 +131,27 @@ abstract class LagomApplication(context: LagomApplicationContext)
   override implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
   override lazy val configuration: Configuration = Configuration.load(environment) ++
     context.playContext.initialConfiguration ++ additionalConfiguration
+
+  /**
+   * This can be overridden to provide any additional programatically configured configuration.
+   */
   def additionalConfiguration: Configuration = Configuration.empty
 }
 
+/**
+ * A service locator that just resolves locally provided services.
+ *
+ * This is useful for integration testing a single service, and can be mixed in to a [[LagomApplication]] class to
+ * provide the local service locator.
+ */
 trait LocalServiceLocator {
+  /**
+   * The service port.
+   *
+   * This should be provided by the application (test). It is a future so that automatic free port assignment can be
+   * used, so the application can be created, passed to the test server, and then test server can select a port. Once
+   * that's done, the promise that provides this future can be redeemed.
+   */
   def lagomServicePort: Future[Int]
   def lagomServer: LagomServer
   def actorSystem: ActorSystem
@@ -77,14 +173,33 @@ trait LocalServiceLocator {
   }
 }
 
+/**
+ * Provides the Lagom dev mode components.
+ *
+ * This trait primarily has two responsibilities, it provides a service locator that uses Lagom's development service
+ * locator, and it registers any services returned by the `serviceInfo` component with the Lagom develompent service
+ * registry.
+ *
+ * It can be used both by Lagom services, and also by non Lagom services, such as pure Play applications, in order to
+ * use the Lagom dev mode service locator and register components with Lagom. In the case of pure Play applications,
+ * `serviceInfo` will need to manually be implemented to return the service name and any ACLs for the service gateway
+ * to use.
+ *
+ * It expects the service locator URL to be provided using the `lagom.service-locator.url` property, which by default
+ * will be automatically provided to the service by Lagom's dev mode build plugins.
+ */
 trait LagomDevModeComponents {
+  /**
+   * If being used in a Lagom service, this will be implemented by [[LagomServerComponents]], however if it's being
+   * used by a Play application, this will need to be provided manually.
+   */
+  def serviceInfo: ServiceInfo
   def wsClient: WSClient
   def scaladslWebSocketClient: ScaladslWebSocketClient
   def environment: Environment
   def configuration: Configuration
   def executionContext: ExecutionContext
   def materializer: Materializer
-  def serviceInfo: ServiceInfo
   def actorSystem: ActorSystem
   def applicationLifecycle: ApplicationLifecycle
 
@@ -93,6 +208,8 @@ trait LagomDevModeComponents {
   lazy val circuitBreakers: CircuitBreakers = new CircuitBreakers(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
 
   lazy val serviceRegistry: ServiceRegistry = {
+
+    // We need to create our own static service locator since the service locator will depend on this service registry.
     val staticServiceLocator = new ServiceLocator {
       val serviceLocatorUrl = URI.create(configuration.underlying.getString("lagom.service-locator.url"))
       override def doWithService[T](name: String, serviceCall: Call[_, _])(block: (URI) => Future[T])(implicit ec: ExecutionContext): Future[Option[T]] = {

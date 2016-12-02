@@ -57,6 +57,10 @@ trait ServiceLocator {
 }
 
 object ServiceLocator {
+
+  /**
+   * A service locator that doesn't resolve any services.
+   */
   object NoServiceLocator extends ServiceLocator {
     override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = Future.successful(None)
     override def doWithService[T](name: String, serviceCall: Call[_, _])(block: (URI) => Future[T])(implicit ec: ExecutionContext): Future[Option[T]] = Future.successful(None)

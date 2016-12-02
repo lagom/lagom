@@ -274,7 +274,7 @@ object ResponseHeader {
     headerMap: Map[String, immutable.Seq[(String, String)]]
   ): ResponseHeader = ResponseHeaderImpl(status, protocol, headerMap)
 
-  val OK: ResponseHeader = ResponseHeaderImpl(200, MessageProtocol.empty, Map.empty)
+  val Ok: ResponseHeader = ResponseHeaderImpl(200, MessageProtocol.empty, Map.empty)
 
   private case class ResponseHeaderImpl(
     status:    Int,

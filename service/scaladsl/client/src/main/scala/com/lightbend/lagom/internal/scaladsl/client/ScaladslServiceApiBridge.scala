@@ -55,7 +55,7 @@ trait ScaladslServiceApiBridge extends LagomServiceApiBridge {
   override def responseHeaderWithProtocol(rh: ResponseHeader, mp: MessageProtocol): ResponseHeader = rh.withProtocol(mp)
   override def newResponseHeader(code: Int, mp: MessageProtocol, headers: Map[String, immutable.Seq[(String, String)]]): ResponseHeader =
     transport.ResponseHeader(code, mp, headers)
-  override def responseHeaderIsDefault(rh: ResponseHeader): Boolean = rh == transport.ResponseHeader.OK
+  override def responseHeaderIsDefault(rh: ResponseHeader): Boolean = rh == transport.ResponseHeader.Ok
 
   override type MessageSerializer[M, W] = deser.MessageSerializer[M, W]
   override def messageSerializerSerializerForRequest[M, W](ms: MessageSerializer[M, W]): NegotiatedSerializer[M, W] =
