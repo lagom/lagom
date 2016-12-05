@@ -23,10 +23,6 @@ import play.api.libs.iteratee.Execution.Implicits.trampoline
  * received (eg WebSockets), the response header may be ignored. In these cases, Lagom will make a best effort attempt
  * at determining whether there was custom information in the response header, and if so, log a warning that it wasn't
  * set.
- *
- * It is generally recommended that you use one of two ways to create a `ServerServiceCall`, one is to use
- * [[ServerServiceCall.apply]] if you just want to handle the request and response messages, the other is to use
- * [[HeaderServiceCall.apply]] if you want to handle the request header and produce a response header as well.
  */
 trait ServerServiceCall[Request, Response] extends ServiceCall[Request, Response] {
 
@@ -38,7 +34,7 @@ trait ServerServiceCall[Request, Response] extends ServiceCall[Request, Response
    * @return A future of the response header and response message.
    */
   def invokeWithHeaders(requestHeader: RequestHeader, request: Request): Future[(ResponseHeader, Response)] =
-    invoke(request).map(response => (ResponseHeader.OK, response))
+    invoke(request).map(response => (ResponseHeader.Ok, response))
 
   override def handleResponseHeader[T](handler: (ResponseHeader, Response) => T): ServerServiceCall[Request, T] = {
     val self: ServerServiceCall[Request, Response] = this
@@ -90,9 +86,7 @@ object ServerServiceCall {
       override def invoke(request: Request): Future[Response] = serviceCall(request)
     }
   }
-}
 
-object HeaderServiceCall {
   /**
    * A service call that can handle headers.
    *
@@ -108,7 +102,7 @@ object HeaderServiceCall {
   }
 
   /**
-   * Compose a header service call.
+   * Compose a server service call.
    *
    * This is useful for implementing service call composition.  For example:
    *
@@ -117,7 +111,7 @@ object HeaderServiceCall {
    *   authenticatedServiceCall: String => ServerServiceCall[Request, Response]
    * ): ServerServiceCall[Request, Response] = {
    *
-   *   HeaderServiceCall.compose { requestHeader =>
+   *   ServerServiceCall.compose { requestHeader =>
    *
    *     // Get the logged in user ID
    *     val userId = requestHeader.principal.getOrElse {
@@ -133,7 +127,7 @@ object HeaderServiceCall {
    * @param block The block that will do the composition.
    * @return A service call.
    */
-  def compose[Request, Response](block: RequestHeader => ServerServiceCall[Request, Response]): ServerServiceCall[Request, Response] = HeaderServiceCall { (requestHeader, request) =>
+  def compose[Request, Response](block: RequestHeader => ServerServiceCall[Request, Response]): ServerServiceCall[Request, Response] = ServerServiceCall { (requestHeader, request) =>
     block(requestHeader).invokeWithHeaders(requestHeader, request)
   }
 
@@ -147,7 +141,7 @@ object HeaderServiceCall {
    *   authenticatedServiceCall: String => ServerServiceCall[Request, Response]
    * ): ServerServiceCall[Request, Response] = {
    *
-   *   HeaderServiceCall.composeAsync { requestHeader =>
+   *   ServerServiceCall.composeAsync { requestHeader =>
    *
    *     // Get the logged in user ID
    *     val userId = requestHeader.principal.getOrElse {
@@ -167,7 +161,7 @@ object HeaderServiceCall {
    * @return A service call.
    */
   def composeAsync[Request, Response](block: RequestHeader => Future[ServerServiceCall[Request, Response]]): ServerServiceCall[Request, Response] = {
-    HeaderServiceCall { (requestHeader, request) =>
+    ServerServiceCall { (requestHeader, request) =>
       block(requestHeader).flatMap(_.invokeWithHeaders(requestHeader, request))
     }
   }

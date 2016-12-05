@@ -78,7 +78,7 @@ trait ServiceCall[Request, Response] {
     // Default implementation. For client service calls, this is overridden by the implementation to do something
     // with the handler.
     ServiceCall { request =>
-      invoke(request).map(response => handler(ResponseHeader.OK, response))(Execution.trampoline)
+      invoke(request).map(response => handler(ResponseHeader.Ok, response))(Execution.trampoline)
     }
   }
 
