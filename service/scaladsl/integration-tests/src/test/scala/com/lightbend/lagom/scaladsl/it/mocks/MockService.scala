@@ -14,7 +14,7 @@ import com.lightbend.lagom.scaladsl.api.Service._
 import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.{ NegotiatedDeserializer, NegotiatedSerializer }
 import com.lightbend.lagom.scaladsl.api.deser.{ MessageSerializer, StrictMessageSerializer }
 import com.lightbend.lagom.scaladsl.api.transport._
-import com.lightbend.lagom.scaladsl.server.{ HeaderServiceCall, ServerServiceCall }
+import com.lightbend.lagom.scaladsl.server.ServerServiceCall
 import play.api.libs.json.Json
 
 import scala.collection.immutable
@@ -146,15 +146,15 @@ class MockServiceImpl(implicit mat: Materializer, ec: ExecutionContext) extends 
     Future.successful(stream.map(req => MockResponseEntity(1, req)))
   }
 
-  override def customHeaders = HeaderServiceCall { (requestHeader, headerName) =>
+  override def customHeaders = ServerServiceCall { (requestHeader, headerName) =>
     val headerValue = requestHeader.getHeader(headerName).getOrElse {
       throw NotFound("Header " + headerName)
     }
-    Future.successful((ResponseHeader.OK.withStatus(201).withHeader("Header-Name", headerName), headerValue))
+    Future.successful((ResponseHeader.Ok.withStatus(201).withHeader("Header-Name", headerName), headerValue))
   }
 
-  override def streamCustomHeaders = HeaderServiceCall { (requestHeader, headerNames) =>
-    Future.successful((ResponseHeader.OK, headerNames.map { headerName =>
+  override def streamCustomHeaders = ServerServiceCall { (requestHeader, headerNames) =>
+    Future.successful((ResponseHeader.Ok, headerNames.map { headerName =>
       requestHeader.getHeader(headerName).getOrElse {
         throw NotFound("Header " + headerName)
       }
@@ -190,7 +190,7 @@ class MockServiceImpl(implicit mat: Materializer, ec: ExecutionContext) extends 
   }
 
   private def withServiceName[Request, Response](block: String => ServerServiceCall[Request, Response]): ServerServiceCall[Request, Response] = {
-    HeaderServiceCall.compose { requestHeader =>
+    ServerServiceCall.compose { requestHeader =>
       val serviceName = requestHeader.principal.map(_.getName).getOrElse {
         throw NotFound("principal")
       }
