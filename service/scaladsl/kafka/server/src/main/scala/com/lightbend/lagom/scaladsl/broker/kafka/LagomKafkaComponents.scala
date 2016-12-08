@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.scaladsl.broker.kafka
 
-import com.lightbend.lagom.internal.scalabsl.broker.kafka.ScaladslRegisterTopicProducers
+import com.lightbend.lagom.internal.scaladsl.broker.kafka.ScaladslRegisterTopicProducers
 import com.lightbend.lagom.scaladsl.server.LagomServer
 import com.lightbend.lagom.spi.persistence.OffsetStore
 
