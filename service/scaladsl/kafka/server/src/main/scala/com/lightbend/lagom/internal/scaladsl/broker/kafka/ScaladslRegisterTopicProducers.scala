@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
  */
-package com.lightbend.lagom.internal.scalabsl.broker.kafka
+package com.lightbend.lagom.internal.scaladsl.broker.kafka
 
 import akka.actor.ActorSystem
 import akka.persistence.query.Offset

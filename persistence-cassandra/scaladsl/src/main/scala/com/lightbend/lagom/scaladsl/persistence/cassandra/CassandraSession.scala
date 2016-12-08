@@ -144,7 +144,7 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
    */
   @varargs
   def select(stmt: String, bindValues: AnyRef*): scaladsl.Source[Row, NotUsed] =
-    select(stmt, bindValues: _*)
+    delegate.select(stmt, bindValues: _*)
 
   /**
    * Execute a select statement. First you must [[#prepare]] the statement and
