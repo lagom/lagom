@@ -232,3 +232,8 @@ private[lagom] object Servers {
     }
   }
 }
+
+private[lagom] object StaticServiceLocations {
+  def withCassandraLocation(lagomCassandraPort: Int, lagomUnmanagedServices: Map[String, String]): Map[String, String] =
+    Map("cas_native" -> s"tcp://127.0.0.1:$lagomCassandraPort/cas_native") ++ lagomUnmanagedServices
+}
