@@ -29,5 +29,5 @@ All fields are final and are assigned at construction time. There are no setter 
 
 As you can see, Scala's `case class` is very convenient for writing immutable classes.
 
-Note that contained members of an immutable class must also be immutable. Scala have nice immutable collections that you should use in your immutable classes. Be aware of that `scala.collection.Seq` is not guaranteed to be immutable. Instead you should use `scala.collection.immutable.Seq` or concrete immutable implementations such as `List` or `Vector`.
+Note that contained members of an immutable class must also be immutable. Scala has nice immutable collections that you should use in your immutable classes. Be aware of that `scala.collection.Seq` is not guaranteed to be immutable. Instead you should use `scala.collection.immutable.Seq` or concrete immutable implementations such as `List` or `Vector`.
 
