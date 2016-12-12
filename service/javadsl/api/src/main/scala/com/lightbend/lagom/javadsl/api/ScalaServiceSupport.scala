@@ -74,7 +74,7 @@ object ScalaServiceSupport {
     f match {
       case Expr(Block((_, Function(_, Apply(Select(This(thisType), TermName(methodName)), _))))) =>
         val methodNameString = Literal(Constant(methodName))
-        c.Expr[ScalaMethodCall[T]](q"_root_.com.lightbend.lagom.javadsl.api.ScalaServiceSupport.getMethodWithName[${tType.tpe}](classOf[$thisType], $methodNameString)")
+        c.Expr[ScalaMethodCall[T]](q"_root_.com.lightbend.lagom.javadsl.api.ScalaServiceSupport.getMethodWithName[${tType.tpe}](_root_.scala.Predef.classOf[$thisType], $methodNameString)")
       case other =>
         c.abort(c.enclosingPosition, "methodFor must only be invoked with a reference to a function on this, for example, methodFor(this.someFunction)")
     }

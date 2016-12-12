@@ -410,7 +410,7 @@ object ServiceSupport {
       // namedCall(MyService.this.someServiceCall _)
       // This also happens to be what the type checker will infer when you don't explicitly refer to this, eg:
       // namedCall(someServiceCall _)
-      q"classOf[$thisType]"
+      q"_root_.scala.Predef.classOf[$thisType]"
     }
 
     (thisClassExpr, methodNameLiteral)
