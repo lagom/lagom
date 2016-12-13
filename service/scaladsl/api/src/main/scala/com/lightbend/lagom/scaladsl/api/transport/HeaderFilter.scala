@@ -119,20 +119,34 @@ object HeaderFilter {
  * If using this on a service that serves requests from the outside world, it would be a good idea to block the
  * `User-Agent` header in the web facing load balancer/proxy.
  */
+//#user-agent-header-filter
 object UserAgentHeaderFilter extends HeaderFilter {
-  def transformClientRequest(request: RequestHeader) = request.principal match {
-    case Some(principal: ServicePrincipal) =>
-      request.withHeader(HeaderNames.USER_AGENT, principal.serviceName)
-    case _ => request
+  override def transformClientRequest(request: RequestHeader) = {
+    request.principal match {
+      case Some(principal: ServicePrincipal) =>
+        request.withHeader(HeaderNames.USER_AGENT, principal.serviceName)
+      case _ => request
+    }
   }
 
-  def transformServerRequest(request: RequestHeader) = request.getHeader(HeaderNames.USER_AGENT) match {
-    case Some(userAgent) => request.withPrincipal(ServicePrincipal.forServiceNamed(userAgent))
-    case _               => request
+  override def transformServerRequest(request: RequestHeader) = {
+    request.getHeader(HeaderNames.USER_AGENT) match {
+      case Some(userAgent) =>
+        request.withPrincipal(ServicePrincipal.forServiceNamed(userAgent))
+      case _ =>
+        request
+    }
   }
 
-  def transformServerResponse(response: ResponseHeader, request: RequestHeader): ResponseHeader = response
+  override def transformServerResponse(
+    response: ResponseHeader,
+    request:  RequestHeader
+  ) = response
 
-  def transformClientResponse(response: ResponseHeader, request: RequestHeader): ResponseHeader = response
+  override def transformClientResponse(
+    response: ResponseHeader,
+    request:  RequestHeader
+  ) = response
 }
+//#user-agent-header-filter
 
