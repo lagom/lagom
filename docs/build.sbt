@@ -32,6 +32,8 @@ lazy val docs = project
     // This is needed so that Java APIs that use immutables will typecheck by the Scala compiler
     compileOrder in Test := CompileOrder.JavaThenScala,
 
+    target in markdownStageSite := (target in markdownStageSite).value / "java",
+
     markdownDocsTitle := "Lagom",
     markdownDocPaths += {
       // What I'd really like to do here is trigger the unidoc task in the root project externally,
