@@ -21,7 +21,7 @@ import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.WSClient
 import play.core.DefaultWebCommands
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ ExecutionContext, Future, Promise }
 
 /**
  * A Play application loader for Lagom.
@@ -139,20 +139,40 @@ abstract class LagomApplication(context: LagomApplicationContext)
 }
 
 /**
+ * When using dynamic port allocation, a circular dependency may exist if the application needs to know what port it's
+ * running on, since the port won't be know until after the server has bound to the listening port (the OS will select
+ * a free port at bind time), but we can't bind the server to the listening port until we have an application to
+ * service incoming requests.
+ *
+ * This trait allows that circular dependency to be resolved, by making the port available as a future, and allowing it
+ * to be provided after the application has been created using the
+ * [[RequiresLagomServicePort.provideLagomServicePort()]] method.
+ *
+ * This is primarily useful for testing, where dynamic port allocation is often used.
+ */
+trait RequiresLagomServicePort {
+  private val servicePortPromise = Promise[Int]()
+
+  /**
+   * The service port. This will be redeemed when [[provideLagomServicePort()]] is invoked.
+   *
+   * Anything that needs to know what port the app is running on can attach callbacks to this to handle it.
+   */
+  final val lagomServicePort: Future[Int] = servicePortPromise.future
+
+  /**
+   * Provide the Lagom service port.
+   */
+  final def provideLagomServicePort(port: Int): Unit = servicePortPromise.success(port)
+}
+
+/**
  * A service locator that just resolves locally provided services.
  *
  * This is useful for integration testing a single service, and can be mixed in to a [[LagomApplication]] class to
  * provide the local service locator.
  */
-trait LocalServiceLocator {
-  /**
-   * The service port.
-   *
-   * This should be provided by the application (test). It is a future so that automatic free port assignment can be
-   * used, so the application can be created, passed to the test server, and then test server can select a port. Once
-   * that's done, the promise that provides this future can be redeemed.
-   */
-  def lagomServicePort: Future[Int]
+trait LocalServiceLocator extends RequiresLagomServicePort {
   def lagomServer: LagomServer
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext

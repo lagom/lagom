@@ -16,14 +16,14 @@ import com.lightbend.lagom.scaladsl.api.transport._
 import com.lightbend.lagom.scaladsl.client.ServiceResolver
 import com.lightbend.lagom.scaladsl.it.mocks.{ MockRequestEntity, MockService, MockServiceImpl }
 import com.lightbend.lagom.scaladsl.server._
+import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import org.scalatest.{ Matchers, WordSpec }
 import play.api.libs.streams.AkkaStreams
 import play.api.{ Environment, Mode }
 import play.api.libs.ws.ahc.AhcWSComponents
-import play.core.server.NettyServer
 
 import scala.collection.immutable
-import scala.concurrent.{ Await, Future, Promise }
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 
@@ -202,34 +202,27 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
   def withClient(changeClient: Descriptor => Descriptor = identity, changeServer: Descriptor => Descriptor = identity,
                  mode: Mode.Mode = Mode.Prod)(block: Materializer => MockService => Unit): Unit = {
 
-    val servicePort = Promise[Int]()
-    val application = new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LocalServiceLocator {
-      override def lagomServicePort = servicePort.future
-      override lazy val lagomServer = LagomServer.forServices(
-        bindService[MockService].to(new MockServiceImpl)
-      )
-      override lazy val environment = Environment.simple(mode = mode)
+    ServiceTest.withServer(ServiceTest.defaultSetup) { ctx =>
+      new LagomApplication(ctx) with AhcWSComponents with LocalServiceLocator {
+        override lazy val lagomServer = LagomServer.forServices(
+          bindService[MockService].to(new MockServiceImpl)
+        )
+        override lazy val environment = Environment.simple(mode = mode)
 
-      // Custom server builder to inject our changeServer callback
-      override lazy val lagomServerBuilder = new LagomServerBuilder(httpConfiguration, new ServiceResolver {
-        override def resolve(descriptor: Descriptor): Descriptor = changeServer(serviceResolver.resolve(descriptor))
-      })(materializer, executionContext)
+        // Custom server builder to inject our changeServer callback
+        override lazy val lagomServerBuilder = new LagomServerBuilder(httpConfiguration, new ServiceResolver {
+          override def resolve(descriptor: Descriptor): Descriptor = changeServer(serviceResolver.resolve(descriptor))
+        })(materializer, executionContext)
 
-      // Custom service client to inject our changeClient callback
-      override lazy val serviceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
-        serviceLocator, new ServiceResolver {
-        override def resolve(descriptor: Descriptor): Descriptor = changeClient(serviceResolver.resolve(descriptor))
-      }, None)(executionContext, materializer)
-    }
-    val server = NettyServer.fromApplication(application.application)
-    try {
-      servicePort.success(server.httpPort.get)
-
-      val client = application.serviceClient.implement[MockService]
-
-      block(application.materializer)(client)
-    } finally {
-      server.stop()
+        // Custom service client to inject our changeClient callback
+        override lazy val serviceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
+          serviceLocator, new ServiceResolver {
+          override def resolve(descriptor: Descriptor): Descriptor = changeClient(serviceResolver.resolve(descriptor))
+        }, None)(executionContext, materializer)
+      }
+    } { server =>
+      val client = server.serviceClient.implement[MockService]
+      block(server.materializer)(client)
     }
   }
 

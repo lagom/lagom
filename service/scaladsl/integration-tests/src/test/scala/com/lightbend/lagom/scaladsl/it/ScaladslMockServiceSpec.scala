@@ -9,10 +9,10 @@ import akka.stream.stage.{ Context, PushStage, SyncDirective }
 import akka.{ Done, NotUsed }
 import com.lightbend.lagom.scaladsl.it.mocks.{ MockRequestEntity, MockResponseEntity, MockService, MockServiceImpl }
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LagomServer, LocalServiceLocator }
+import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 import play.api.libs.streams.AkkaStreams
 import play.api.libs.ws.ahc.AhcWSComponents
-import play.core.server.NettyServer
 
 import scala.concurrent.{ Await, Promise }
 import scala.concurrent.duration._
@@ -20,18 +20,16 @@ import scala.util.{ Failure, Success, Try }
 
 class ScaladslMockServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 
-  val servicePort = Promise[Int]()
-  val application = new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LocalServiceLocator {
-    override def lagomServicePort = servicePort.future
-    override lazy val lagomServer = LagomServer.forServices(
-      bindService[MockService].to(new MockServiceImpl)
-    )
+  val server = ServiceTest.startServer(ServiceTest.defaultSetup) { ctx =>
+    new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LocalServiceLocator {
+      override lazy val lagomServer = LagomServer.forServices(
+        bindService[MockService].to(new MockServiceImpl)
+      )
+    }
   }
-  val server = NettyServer.fromApplication(application.application)
-  servicePort.success(server.httpPort.get)
 
-  val client = application.serviceClient.implement[MockService]
-  import application.materializer
+  val client = server.serviceClient.implement[MockService]
+  import server.materializer
 
   "A mock service" should {
     "be possible to invoke" in {
