@@ -3,8 +3,6 @@
  */
 package com.lightbend.lagom.scaladsl.cluster
 
-import scala.concurrent.ExecutionContext
-
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import com.lightbend.lagom.internal.cluster.JoinClusterImpl

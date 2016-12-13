@@ -16,7 +16,7 @@ import de.heikoseeberger.sbtheader.HeaderPattern
 val PlayVersion = "2.5.10"
 val AkkaVersion = "2.4.14"
 val AkkaPersistenceCassandraVersion = "0.22"
-val ScalaTestVersion = "2.2.4"
+val ScalaTestVersion = "3.0.1"
 val JacksonVersion = "2.7.8"
 val CassandraAllVersion = "3.0.9"
 val GuavaVersion = "19.0"
@@ -507,7 +507,8 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
       scalaTest % Test
     )
   )
-  .dependsOn(`persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test", `persistence-cassandra-scaladsl` % "test->test")
+  .dependsOn(`server-scaladsl`, `persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test",
+    `persistence-cassandra-scaladsl` % "compile;test->test")
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
   .settings(name := "lagom-javadsl-integration-tests")
@@ -523,7 +524,8 @@ lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integra
     PgpKeys.publishSigned := {},
     publish := {}
   )
-  .dependsOn(`server-javadsl`, `persistence-cassandra-javadsl`, `pubsub-javadsl`, `testkit-javadsl`, logback,`integration-client-javadsl`)
+  .dependsOn(`server-javadsl`, `persistence-cassandra-javadsl`, `pubsub-javadsl`, `testkit-javadsl`, logback,
+    `integration-client-javadsl`)
 
 lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integration-tests"))
   .settings(name := "lagom-scaladsl-integration-tests")
@@ -539,7 +541,7 @@ lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integ
     PgpKeys.publishSigned := {},
     publish := {}
   )
-  .dependsOn(`server-scaladsl`, logback)
+  .dependsOn(`server-scaladsl`, logback, `testkit-scaladsl`)
 
 // for forked tests, necessary for Cassandra
 def forkedTests: Seq[Setting[_]] = Seq(
