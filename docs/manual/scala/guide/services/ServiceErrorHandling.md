@@ -11,7 +11,7 @@ There are a number of principles behind the design of Lagom's built in error han
 
 ## Exception serializers
 
-Lagom provides an [`ExceptionSerializer`](api/com/lightbend/lagom/scaladsl/api/deser/ExceptionSerializer.html) interface that allows exceptions to be serialized into some form, such as JSON, and an error code to be selected.  It also allows an exception to be recreated from an error code and their serialized form.
+Lagom provides an [`ExceptionSerializer`](api/com/lightbend/lagom/scaladsl/api/deser/ExceptionSerializer.html) trait that allows exceptions to be serialized into some form, such as JSON, and an error code to be selected.  It also allows an exception to be recreated from an error code and their serialized form.
 
 Exception serializers convert exceptions to [`RawExceptionMessage`](api/com/lightbend/lagom/scaladsl/api/deser/RawExceptionMessage.html).  The raw exception message contains a status code, which will correspond to an HTTP status code or WebSocket close code, a message body, and a protocol descriptor to say what content type the message is - in HTTP, this will translate to a `Content-Type` header in the response.
 
