@@ -86,8 +86,12 @@ object MessageProtocol {
     MessageProtocolImpl(None, None, None)
   }
 
-  def apply(contentType: Option[String], charset: Option[String], version: Option[String]): MessageProtocol = {
+  def apply(contentType: Option[String] = None, charset: Option[String] = None, version: Option[String] = None): MessageProtocol = {
     MessageProtocolImpl(contentType, charset, version)
+  }
+
+  def unapply(messageProtocol: MessageProtocol): Option[(Option[String], Option[String], Option[String])] = {
+    Some((messageProtocol.contentType, messageProtocol.charset, messageProtocol.version))
   }
 
   private case class MessageProtocolImpl(contentType: Option[String], charset: Option[String], version: Option[String]) extends MessageProtocol {
