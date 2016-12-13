@@ -6,7 +6,6 @@ package com.lightbend.lagom.internal.client
 import java.net.URI
 import java.util.concurrent.TimeUnit
 import java.util.Locale
-import javax.inject.{ Inject, Singleton }
 
 import akka.stream.scaladsl._
 import akka.stream.stage.{ Context, PushStage, SyncDirective, TerminationDirective }
@@ -22,7 +21,6 @@ import io.netty.channel._
 import io.netty.handler.codec.http.websocketx._
 import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
-import org.asynchttpclient.netty.channel.CleanupChannelGroup
 import play.api.Environment
 import play.api.http.HeaderNames
 import play.api.inject.ApplicationLifecycle
@@ -33,6 +31,8 @@ import scala.collection.JavaConverters._
 import java.util.concurrent.atomic.AtomicReference
 
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
+import io.netty.channel.group.DefaultChannelGroup
+import io.netty.util.concurrent.GlobalEventExecutor
 
 import scala.collection.immutable
 
@@ -46,7 +46,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, eventLoo
 
   // Netty channel groups are used to track open channels (connections), they automatically clean themselves up when
   // the channels close, and can be used to force all channels to close.
-  val channelGroup = new CleanupChannelGroup
+  val channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE)
   val client = new Bootstrap()
     .group(eventLoop)
     .channel(classOf[NioSocketChannel])

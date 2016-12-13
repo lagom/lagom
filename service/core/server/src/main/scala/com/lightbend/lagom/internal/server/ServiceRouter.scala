@@ -54,11 +54,10 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
    */
   override val routes: Routes = Function.unlift { request =>
     val requestHeader = toRequestHeader(request)
-    val isWebSocket = request.headers.get(HeaderNames.UPGRADE).contains("websocket")
     serviceRoutes.collectFirst(Function.unlift { route =>
       // We match by method, but since we ignore the method if it's a WebSocket (because WebSockets require that GET
       // is used) we also match if it's a WebSocket request and this can be handled as a WebSocket.
-      if (methodName(route.method) == request.method || (isWebSocket && route.isWebSocket)) {
+      if (methodName(route.method) == request.method || (request.method == "GET" && route.isWebSocket)) {
 
         route.path.extract(requestHeaderUri(requestHeader).getRawPath, request.queryString).map { params =>
           val serviceCall = route.createServiceCall(params)
