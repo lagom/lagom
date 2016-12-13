@@ -13,7 +13,7 @@ import com.typesafe.sbt.SbtScalariform
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import de.heikoseeberger.sbtheader.HeaderPattern
 
-val PlayVersion = "2.5.4"
+val PlayVersion = "2.5.10"
 val AkkaVersion = "2.4.14"
 val AkkaPersistenceCassandraVersion = "0.22"
 val ScalaTestVersion = "2.2.4"
