@@ -81,11 +81,11 @@ Kafka is essentially a durable commit log. You can find all data persisted by Ka
 
 ## Start and stop
 
-The Kafka server is automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Cassandra server via the `lagom:startKafka` maven task or `lagomCKafkaStart` sbt task, and stopping it with the `lagom:stopKafka` Maven task or `lagomKafkaStop` sbt task.
+The Kafka server is automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Kafka server via the `lagom:startKafka` maven task or `lagomCKafkaStart` sbt task, and stopping it with the `lagom:stopKafka` Maven task or `lagomKafkaStop` sbt task.
 
 ## Disable it
 
-You can disable the embedded Cassandra server by adding the following in your build.
+You can disable the embedded Kafka server by adding the following in your build.
 
 In the Maven root project pom:
 
