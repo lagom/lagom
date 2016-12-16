@@ -10,7 +10,7 @@ The first thing necessary to consume a service is to create an implementation of
 
 ## Using a service client
 
-Having bound the client, you can now use it anywhere in your Lagom application. Typically this will be done by passing it to another component, such as a service implmentation, via that components constructor, which will be done automatically for you if you're using Macwire.  Here's an example of consuming one service from another service:
+Having bound the client, you can now use it anywhere in your Lagom application. Typically this will be done by passing it to another component, such as a service implementation, via that components constructor, which will be done automatically for you if you're using Macwire.  Here's an example of consuming one service from another service:
 
 @[hello-consumer](code/ServiceClients.scala)
 

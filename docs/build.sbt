@@ -66,7 +66,7 @@ lazy val docs = project
 
   ).dependsOn(serviceIntegrationTestsJavadsl, persistenceJdbcJavadsl,
       serviceIntegrationTestsScaladsl, persistenceCassandraScaladsl, persistenceJdbcScaladsl, testkitScaladsl,
-      playJson, kafkaBroker, immutables % "test->compile", theme % "run-markdown")
+      brokerScaladsl, playJson, kafkaBroker, immutables % "test->compile", theme % "run-markdown")
 
 lazy val parentDir = Path.fileProperty("user.dir").getParentFile
 
@@ -79,6 +79,7 @@ lazy val persistenceCassandraScaladsl = ProjectRef(parentDir, "persistence-cassa
 lazy val testkitScaladsl = ProjectRef(parentDir, "testkit-scaladsl")
 lazy val playJson = ProjectRef(parentDir, "play-json")
 lazy val kafkaBroker = ProjectRef(parentDir, "kafka-broker")
+lazy val brokerScaladsl = ProjectRef(parentDir, "broker-scaladsl")
 
 // Needed to compile test classes using immutables annotation
 lazy val immutables = ProjectRef(parentDir, "immutables")
