@@ -4,11 +4,18 @@ We've seen how to define service descriptors and how to implement them, now we n
 
 ## Binding a service client
 
-The first thing necessary to consume a service is to bind it, so that Lagom can provide an implementation for your application to use.  This can be done using the `bindClient` method on [ServiceClientGuiceSupport](api/index.html?com/lightbend/lagom/javadsl/client/ServiceClientGuiceSupport.html).  If you're already binding a service implementation using [ServiceGuiceSupport](api/index.html?com/lightbend/lagom/javadsl/server/ServiceGuiceSupport.html), this interface extends `ServiceClientGuiceSupport`, so your existing module can be used as is:
+The first thing necessary to consume a service is to bind it, so that Lagom can provide an implementation for your application to use.  This can be done using the `bindClient` method on [ServiceClientGuiceSupport](api/index.html?com/lightbend/lagom/javadsl/client/ServiceClientGuiceSupport.html).  
 
 @[bind-hello-client](code/docs/services/client/Module.java)
 
-Note that when you bind a server using `bindServices`, this will automatically bind a client for that service as well.
+When using a client Lagom will need a `ServiceInfo` implementation and use it to authenticate with the remote service. When you are developing an application that's only implementing `ServiceClientGuiceSupport` to consume Lagom services you will need to invoke `bindInfo()` and provide a `ServiceInfo` instance describing your app. 
+
+If you're already binding a service implementation using [ServiceGuiceSupport](api/index.html?com/lightbend/lagom/javadsl/server/ServiceGuiceSupport.html), this interface extends `ServiceClientGuiceSupport`, so your existing module can be used as is:
+
+@[bind-client](code/docs/services/server/ServiceModule.java)
+
+When you bind a client from within a Lagom service where you also bound services using `bindServices` a `ServiceInfo` is already available and will be used. So in this example, when using the client to access `EchoService` your service will the `ServiceInfo` created inside the `bindServices`.
+
 
 ## Using a service client
 

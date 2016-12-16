@@ -3,15 +3,21 @@
  */
 package com.lightbend.lagom.internal.javadsl.server
 
+import java.util.Optional
 import javax.inject.{ Inject, Provider, Singleton }
 
 import com.lightbend.lagom.javadsl.api.ServiceInfo
+
+import scala.collection.mutable
 
 /**
  * Provides the service info for a service
  */
 @Singleton
-class ServiceInfoProvider(interface: Class[_]) extends Provider[ServiceInfo] {
+class ServiceInfoProvider(name: Optional[String], interfaces: Array[Class[_]]) extends Provider[ServiceInfo] {
   @Inject private var serverBuilder: JavadslServerBuilder = _
-  override lazy val get = serverBuilder.createServiceInfo(interface)
+  override lazy val get = {
+    val serviceName: Option[String] = if (name.isPresent) Some(name.get()) else None
+    serverBuilder.createServiceInfo(serviceName, interfaces)
+  }
 }

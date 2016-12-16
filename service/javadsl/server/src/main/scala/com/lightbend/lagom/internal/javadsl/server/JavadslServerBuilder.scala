@@ -3,7 +3,9 @@
  */
 package com.lightbend.lagom.internal.javadsl.server
 
+import java.util
 import java.util.function.{ BiFunction, Function => JFunction }
+import java.util.stream.Collectors
 import javax.inject.{ Inject, Provider, Singleton }
 
 import akka.stream.Materializer
@@ -15,7 +17,7 @@ import com.lightbend.lagom.internal.server.ServiceRouter
 import com.lightbend.lagom.javadsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.javadsl.api.deser.StreamedMessageSerializer
 import com.lightbend.lagom.javadsl.api.transport.{ RequestHeader => _, _ }
-import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceInfo }
+import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceAcl, ServiceInfo }
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.{ ClassServiceBinding, InstanceServiceBinding }
 import com.lightbend.lagom.javadsl.server.{ PlayServiceCall, ServiceGuiceSupport }
@@ -67,25 +69,32 @@ class JavadslServerBuilder @Inject() (environment: Environment, httpConfiguratio
   }
 
   /**
-   * Create a service info for the given interface.
+   * Create a service info for the given interfaces.
    *
-   * @param interface The interface to create the service info for.
-   * @return The service info.
+   * @param name the name of the microservice where all the provided serviceInterface will be bundled.
+   * @param interfaces
+   * @return
    */
-  def createServiceInfo(interface: Class[_]): ServiceInfo = {
-    if (classOf[Service].isAssignableFrom(interface)) {
-      val descriptor = ServiceReader.readServiceDescriptor(
-        environment.classLoader,
-        interface.asSubclass(classOf[Service])
-      )
-      new ServiceInfo(descriptor.name())
+  def createServiceInfo(name: Option[String], interfaces: Seq[Class[_]]): ServiceInfo = {
+    if (interfaces.forall(classOf[Service].isAssignableFrom)) {
+      val descriptors = interfaces.map { serviceInterface =>
+        ServiceReader.readServiceDescriptor(
+          environment.classLoader,
+          serviceInterface.asSubclass(classOf[Service])
+        )
+      }
+      val locatableServices = descriptors.map { descriptor =>
+        descriptor.name() -> descriptor.acls().stream().collect(Collectors.toList())
+      }.toMap.asJava
+      new ServiceInfo(name.getOrElse(descriptors.head.name()), locatableServices)
     } else {
-      throw new IllegalArgumentException(s"Don't know how to load services that don't implement Service: $interface")
+      throw new IllegalArgumentException(s"Don't know how to load services that don't implement Service. Provided: ${interfaces.mkString("[", ", ", "]")}")
     }
   }
 }
 
 case class ResolvedServices(services: Seq[ResolvedService[_]])
+
 case class ResolvedService[T](interface: Class[T], service: T, descriptor: Descriptor)
 
 @Singleton
@@ -114,6 +123,7 @@ class JavadslServicesRouter @Inject() (resolvedServices: ResolvedServices, httpC
 
   override val routes: Routes =
     serviceRouters.foldLeft(PartialFunction.empty[PlayRequestHeader, Handler])((routes, router) => routes.orElse(router.routes))
+
   override def documentation: Seq[(String, String, String)] = serviceRouters.flatMap(_.documentation)
 }
 

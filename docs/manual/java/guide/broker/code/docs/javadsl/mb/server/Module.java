@@ -4,6 +4,7 @@ import docs.javadsl.mb.*;
 
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
+import com.lightbend.lagom.javadsl.api.ServiceInfo;
 
 public class Module extends AbstractModule implements ServiceGuiceSupport {
 

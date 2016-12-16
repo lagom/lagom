@@ -1,18 +1,20 @@
 package docs.services.server;
 
+import docs.services.EchoService;
 import docs.services.HelloService;
 import docs.services.HelloServiceImpl;
 
-//#hello-service-binding
+//#bind-client
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 
-public class Module extends AbstractModule implements ServiceGuiceSupport {
+public class ServiceModule extends AbstractModule implements ServiceGuiceSupport {
 
     protected void configure() {
         bindServices(
             "greetings", 
             serviceBinding(HelloService.class, HelloServiceImpl.class));
+        bindClient(EchoService.class);
     }
 }
-//#hello-service-binding
+//#bind-client
