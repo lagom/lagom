@@ -80,7 +80,7 @@ object SbtMavenPlugin extends AutoPlugin {
       outFiles
     },
 
-    resourceGenerators <+= mavenGeneratePluginXml.toTask
+    resourceGenerators += mavenGeneratePluginXml.taskValue
   )
 
   def mavenTestSettings: Seq[Setting[_]] = Seq(

@@ -202,19 +202,20 @@ def multiJvmTestSettings: Seq[Setting[_]] = SbtMultiJvm.multiJvmSettings ++ Seq(
   // make sure that MultiJvm test are compiled by the default test compilation
   compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test),
   // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
-  executeTests in MultiJvm <<= (executeTests in MultiJvm) tag(Tags.Test),
+  executeTests in MultiJvm := ((executeTests in MultiJvm) tag Tags.Test).value,
   // make sure that MultiJvm tests are executed by the default test target, 
   // and combine the results from ordinary test and multi-jvm tests
-  executeTests in Test <<= (executeTests in Test, executeTests in MultiJvm) map {
-    case (testResults, multiNodeResults)  =>
-      val overall =
-        if (testResults.overall.id < multiNodeResults.overall.id)
-          multiNodeResults.overall
-        else
-          testResults.overall
-      Tests.Output(overall,
-        testResults.events ++ multiNodeResults.events,
-        testResults.summaries ++ multiNodeResults.summaries)
+  executeTests in Test := {
+    val testResults = (executeTests in Test).value
+    val multiNodeResults = (executeTests in MultiJvm).value
+    val overall =
+      if (testResults.overall.id < multiNodeResults.overall.id)
+        multiNodeResults.overall
+      else
+        testResults.overall
+    Tests.Output(overall,
+      testResults.events ++ multiNodeResults.events,
+      testResults.summaries ++ multiNodeResults.summaries)
   }
 )
 
@@ -548,7 +549,7 @@ def forkedTests: Seq[Setting[_]] = Seq(
   fork in Test := true,
   concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
   javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M"),
-  testGrouping in Test <<= definedTests in Test map singleTestsGrouping
+  testGrouping in Test := singleTestsGrouping((definedTests in Test).value)
 )
 
 // group tests, a single test per group
@@ -560,7 +561,7 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
     new Tests.Group(
       name = test.name,
       tests = Seq(test),
-      runPolicy = Tests.SubProcess(javaOptions))
+      runPolicy = Tests.SubProcess(ForkOptions(runJVMOptions = javaOptions)))
   }
 }
 
@@ -882,7 +883,9 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     name := "lagom-build-tool-support",
     publishMavenStyle := true,
     crossPaths := false,
-    sourceGenerators in Compile <+= (version, sourceManaged in Compile) map Generators.version,
+    sourceGenerators in Compile += Def.task {
+      Generators.version(version.value, (sourceManaged in Compile).value)
+    }.taskValue,
     libraryDependencies ++= Seq(
       "com.lightbend.play" %% "play-file-watch" % "1.0.0",
       // This is used in the code to check if the embedded cassandra server is started
@@ -969,9 +972,9 @@ lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
     )
 
 def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++ 
-  Seq(scriptedLaunchOpts <+= version apply { v => s"-Dproject.version=$v" }) ++
+  Seq(scriptedLaunchOpts += s"-Dproject.version=$version.value") ++
   Seq(
-    scripted <<= scripted.tag(Tags.Test),
+    scripted := scripted.tag(Tags.Test).inputTaskValue,
     scriptedLaunchOpts ++= Seq(
       "-Xmx768m",
       "-XX:MaxMetaspaceSize=384m",
