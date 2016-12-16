@@ -3,6 +3,7 @@ import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.client.ServiceClientGuiceSupport;
 import com.lightbend.lagom.javadsl.api.*;
 import play.*;
+import api.FooService;
 import javax.inject.Inject;
 import java.util.Date;
 import java.io.*;
@@ -13,6 +14,8 @@ public class Module extends AbstractModule implements ServiceClientGuiceSupport 
     protected void configure() {
         ServiceAcl pAcl = new ServiceAcl(Optional.empty(), Optional.of("/p"));
         ServiceAcl assetsAcl = new ServiceAcl(Optional.empty(), Optional.of("/assets/.*"));
+
         bindServiceInfo(ServiceInfo.of("p", pAcl, assetsAcl));
+        bindClient(FooService.class);
     }
 }

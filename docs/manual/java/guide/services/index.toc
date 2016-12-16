@@ -1,5 +1,6 @@
 ServiceDescriptors:Service descriptors
 ServiceImplementation:Implementing services
+ServiceInfo:Service Metadata
 ServiceClients:Consuming services
 Test:Testing Services
 MessageSerializers:Message serializers
