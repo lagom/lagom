@@ -401,7 +401,7 @@ lazy val `api-tools` = (project in file("api-tools"))
     )
   )
   .dependsOn(
-    `api-javadsl`,
+    spi,
     `server-javadsl` % "compile->test"
   )
 
