@@ -21,12 +21,13 @@ trait BlogPostService extends Service {
 
   override final def descriptor: Descriptor = {
     import Service._
-    implicit val blogPostEventMessageSerializer = new serialization.BlogPostEventMessageSerializer
 
     //#publishing
+    implicit val blogPostEventMessageSerializer = new serialization.BlogPostEventMessageSerializer
+
     named("blogpostservice")
       .withTopics(
-        topic("blogposts", blogPostEvents)
+        topic("blogposts", blogPostEvents) // uses blogPostEventMessageSerializer implicitly
           .addProperty(
             KafkaProperties.partitionKeyStrategy,
             PartitionKeyStrategy[BlogPostEvent](_.postId)
@@ -38,7 +39,7 @@ trait BlogPostService extends Service {
   def blogPostEvents: Topic[BlogPostEvent]
 }
 
-
+//#content
 sealed trait BlogPostEvent {
   def postId: String
 }
@@ -46,12 +47,32 @@ sealed trait BlogPostEvent {
 case class BlogPostCreated(postId: String, title: String) extends BlogPostEvent
 
 case class BlogPostPublished(postId: String) extends BlogPostEvent
+//#content
 
 
 object serialization {
 
+  //#content-formatters
   implicit val blogPostCreatedFormat = Json.format[BlogPostCreated]
   implicit val blogPostPublishedFormat = Json.format[BlogPostPublished]
+  //#content-formatters
+
+  //#polymorphic-play-json
+
+  // Create a custom MessageSerializer you will use on the Service Descriptor.
+  class BlogPostEventMessageSerializer extends MessageSerializer[BlogPostEvent, ByteString] {
+
+    override def acceptResponseProtocols: Seq[MessageProtocol] =
+      List(MessageProtocol(Some("application/json"), None, None))
+
+    private val deserializer = new BlogPostEventDeserializer
+    private val serializer = new BlogPostEventSerializer
+
+    override def serializerForRequest = serializer
+    override def deserializer(protocol: MessageProtocol) =deserializer
+    override def serializerForResponse(acceptedMessageProtocols: Seq[MessageProtocol]) = serializer
+
+  }
 
   class BlogPostEventDeserializer extends NegotiatedDeserializer[BlogPostEvent, ByteString] {
 
@@ -83,23 +104,7 @@ object serialization {
     }
   }
 
-  class BlogPostEventMessageSerializer extends MessageSerializer[BlogPostEvent, ByteString] {
-
-    override def acceptResponseProtocols: Seq[MessageProtocol] =
-      List(MessageProtocol(Some("application/json"), None, None))
-
-    override def serializerForRequest =
-      serializer
-
-    override def deserializer(protocol: MessageProtocol): NegotiatedDeserializer[BlogPostEvent, ByteString] =
-      deserializer
-
-    override def serializerForResponse(acceptedMessageProtocols: Seq[MessageProtocol]): NegotiatedSerializer[BlogPostEvent, ByteString] =
-      serializer
-
-    private val deserializer = new BlogPostEventDeserializer
-    private val serializer = new BlogPostEventSerializer
-  }
+  //#polymorphic-play-json
 
 }
 

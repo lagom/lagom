@@ -1,6 +1,6 @@
 package docs.mb
 
-import akka.NotUsed
+import akka.{Done, NotUsed}
 import akka.stream.scaladsl.Flow
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 

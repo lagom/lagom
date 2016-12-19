@@ -52,21 +52,23 @@ Finally, subscribers are grouped together via [`Subscriber.withGroupId`](api/com
 
 ## Polymorphic event streams
 
-Typically you will want to publish more than one type of event to a particular topic. This can be done by creating an interface that each event implements, and then making the events implement that. In order to successfully serialize these events to and from JSON, a few extra annotations are needed to instruct Jackson to describe and consume the type of the event in the produced JSON.
+Typically you will want to publish more than one type of event to a particular topic. This can be done by creating an interface that each event implements, and then making the events implement that. In order to successfully serialize these events to and from JSON, you will have to include some extra information on your JSON representation of the data.
 
 For example, consider a situation where you have a blog post created event and a blog post published event. Here's what your event structure might look like:
 
-@[content](code/docs/mb/BlogPostEvent.java)
+@[content](code/docs/mb/BlogPostService.scala)
 
-The `@JsonTypeInfo` annotation describes how the type of the event will be serialised. In this case, it's saying each event type will be identified by it's name, and that name will go into a property called `type`. The `@JsonTypeName` on each event subclass says what the name of that event should be. And the `@JsonSubTypes` annotation is used to tell Jackson what the possible sub types of the event are, so that it knows where to look when deserializing.
+And that's how your Play Json formatters could look like:
 
-The resulting JSON for the `BlogPostCreated` event will look like this:
+@[content-formatters](code/docs/mb/BlogPostService.scala)
+
+You will have to implement a custom Message Serializer that adds extra information on each JSON message so that you know what deserializer to use on the other end. The resulting JSON for the `BlogPostCreated` event will look like this:
 
 ```json
 {
-  "type": "created",
-  "postId": "1234",
-  "title": "Some title"
+ "postId": "23",
+ "title": "new post",
+ "event_type": "postCreated"
 }
 ```
 
@@ -74,9 +76,14 @@ While the JSON for the `BlogPostPublished` event will look like this:
 
 ```json
 {
-  "type": "published",
-  "postId": "1234",
+ "postId": "23",
+ "event_type": "postPublished"
 }
 ```
 
-Finally, note the `defaultImpl = Void.class` in the `@JsonSubTypes` annotation. This tells Jackson that if it comes across an event type that it doesn't recognise the name for, to deserialize it as `null`. This is optional, but can be important for ensuring forwards compatibility in your services, if a service adds a new event subclass that it publishes, often you want your existing services that consume that event stream to just ignore it. Setting this will allow them to do that, otherwise, you'll have to upgrade all the services that consume that event stream to explicitly ignore it before you upgrade the producer that produces the events.
+You can do that using [Json transformers](https://www.playframework.com/documentation/2.5.x/ScalaJsonTransformers#Case-5:-Put-a-given-value-in-a-new-branch) provided by Play Json: 
+
+@[polymorphic-play-json](code/docs/mb/BlogPostService.scala)
+
+
+This approach has an added maintenance cost. Fortunately there are libraries that expand Play Json features and provide support for algebraic data type serialization. For example: [Play JSON Derived Codecs](https://github.com/julienrf/play-json-derived-codecs).
