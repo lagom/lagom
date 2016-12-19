@@ -95,7 +95,7 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
     *   readDescriptor[MyService]
     * )
     * ```
-0    */
+    */
   def describeServices: immutable.Seq[Descriptor] = Nil
 
   override final def discoverServices(classLoader: ClassLoader) = {

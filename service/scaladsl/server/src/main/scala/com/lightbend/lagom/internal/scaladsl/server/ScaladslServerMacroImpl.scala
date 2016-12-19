@@ -51,7 +51,7 @@ private[lagom] object ScaladslServerMacroImpl {
     c.Expr[Descriptor](q"""
       new ${serviceType.tpe} {
         ..$serviceMethodImpls
-      }.descriptor)
+      }.descriptor
     """)
   }
 
