@@ -1,7 +1,7 @@
 // Copyright (C) 2009-2015 Typesafe Inc. <http://www.typesafe.com>
 
 buildInfoSettings
-sourceGenerators in Compile <+= buildInfo
+sourceGenerators in Compile += buildInfo.taskValue
 
 libraryDependencies ++= Seq(
   "org.scala-sbt" % "scripted-plugin" % sbtVersion.value
