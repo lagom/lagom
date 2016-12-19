@@ -6,18 +6,6 @@ Lagom provides an implementation of the Message Broker API that uses Kafka. In t
 
 To use this feature add the following in your project's build. 
 
-In Maven:
-
-```xml
-<dependency>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-kafka-broker_2.11</artifactId>
-    <version>${lagom.version}</version>
-</dependency>
-```
-
-In sbt:
-
 @[kafka-broker-dependency](code/build-scaladsl-kafka.sbt)
 
 When importing the Lagom Kafka Broker module keep in mind that the Lagom Kafka Broker module requires one implementation of a Lagom Persistence so make sure your dependencies include either [[Lagom Persistence Cassandra|PersistentEntityCassandra]] or [[Lagom Persistence JDBC|PersistentEntityRDBMS]]
@@ -54,18 +42,6 @@ akka.kafka.producer.kafka-clients {
 ## Subscriber only Services
 
 Sometimes you will implement a Lagom Service that will only consume from the Kafka Topic. In that case you can import the Lagom Kafka Client alone (instead of importing the Lagom Kafka Broker and a Lagom Persistence implementation).
-
-In Maven:
-
-```xml
-<dependency>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-kafka-client_2.11</artifactId>
-    <version>${lagom.version}</version>
-</dependency>
-```
-
-In sbt:
 
 @[kafka-client-dependency](code/build-scaladsl-kafka.sbt)
 
