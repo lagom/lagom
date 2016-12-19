@@ -9,13 +9,15 @@ class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
 //#inject-service
   
   //#subscribe-to-topic
-  helloService.greetingsTopic()
+  helloService
+    .greetingsTopic()
     .subscribe // <-- you get back a Subscriber instance
     .atLeastOnce(
-    Flow.fromFunction(
-      doSomethingWithTheMessage
+      Flow[GreetingMessage].map{ msg => 
+        // Do somehting with the `msg`
+        Done
+      }
     )
-  )
   //#subscribe-to-topic
 
   private def doSomethingWithTheMessage(greetingMessage: GreetingMessage) = ???
