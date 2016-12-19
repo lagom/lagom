@@ -4,7 +4,7 @@
 package com.lightbend.lagom.internal.scaladsl.server
 
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslClientMacroImpl
-import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.{Descriptor, Service}
 import com.lightbend.lagom.scaladsl.server.LagomServiceBinder
 
 import scala.reflect.macros.blackbox.Context
@@ -12,8 +12,7 @@ import scala.reflect.macros.blackbox.Context
 private[lagom] object ScaladslServerMacroImpl {
 
   /**
-   * This macro provides a dummy implementation of the service so that it can read the service descriptor. This
-   * allows the service name to be extracted without having to instantiate the service, avoiding circular dependencies.
+   * Creates the binder for the service.
    */
   def createBinder[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[LagomServiceBinder[T]] = {
 
@@ -21,6 +20,19 @@ private[lagom] object ScaladslServerMacroImpl {
 
     val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
     val server = q"$scaladsl.server"
+
+    val descriptor = readDescriptor[T](c)
+    c.Expr[LagomServiceBinder[T]](q"""
+      $server.LagomServiceBinder(lagomServerBuilder, $descriptor)
+    """)
+  }
+
+  /**
+    * This macro provides a dummy implementation of the service so that it can read the service descriptor.
+    */
+  def readDescriptor[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[Descriptor] = {
+
+    import c.universe._
 
     val extracted = ScaladslClientMacroImpl.validateServiceInterface[T](c)
 
@@ -36,10 +48,10 @@ private[lagom] object ScaladslServerMacroImpl {
       """
     }
 
-    c.Expr[LagomServiceBinder[T]](q"""
-      $server.LagomServiceBinder(lagomServerBuilder, new ${serviceType.tpe} {
+    c.Expr[Descriptor](q"""
+      new ${serviceType.tpe} {
         ..$serviceMethodImpls
-      }.descriptor)
+      }.descriptor
     """)
   }
 

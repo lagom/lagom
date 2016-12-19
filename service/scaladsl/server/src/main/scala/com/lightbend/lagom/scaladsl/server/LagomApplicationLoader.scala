@@ -7,21 +7,24 @@ import java.net.URI
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakerMetricsProviderImpl, CircuitBreakers }
-import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
-import com.lightbend.lagom.internal.scaladsl.registry.{ ServiceRegistration, ServiceRegistry, ServiceRegistryServiceLocator }
-import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
+import com.lightbend.lagom.internal.client.{CircuitBreakerConfig, CircuitBreakerMetricsProviderImpl, CircuitBreakers}
+import com.lightbend.lagom.internal.scaladsl.client.{ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient}
+import com.lightbend.lagom.internal.scaladsl.registry.{ServiceRegistration, ServiceRegistry, ServiceRegistryServiceLocator}
+import com.lightbend.lagom.internal.scaladsl.server.ScaladslServerMacroImpl
+import com.lightbend.lagom.internal.spi.{CircuitBreakerMetricsProvider, ServiceAcl, ServiceDescription, ServiceDiscovery}
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
-import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
-import com.lightbend.lagom.scaladsl.client.{ CircuitBreakingServiceLocator, LagomServiceClientComponents }
+import com.lightbend.lagom.scaladsl.api.{Descriptor, Service, ServiceInfo, ServiceLocator}
+import com.lightbend.lagom.scaladsl.client.{CircuitBreakingServiceLocator, LagomServiceClientComponents}
 import play.api._
 import play.api.ApplicationLoader.Context
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.WSClient
 import play.core.DefaultWebCommands
 
-import scala.concurrent.{ ExecutionContext, Future, Promise }
+import scala.collection.immutable
+import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.language.experimental.macros
 
 /**
  * A Play application loader for Lagom.
@@ -35,7 +38,7 @@ import scala.concurrent.{ ExecutionContext, Future, Promise }
  *
  * This class provides an abstraction over Play's application loader that provides Lagom specific functionality.
  */
-abstract class LagomApplicationLoader extends ApplicationLoader {
+abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDiscovery {
 
   /**
    * Implementation of Play's load method.
@@ -74,6 +77,46 @@ abstract class LagomApplicationLoader extends ApplicationLoader {
    * @return A lagom application.
    */
   def loadDevMode(context: LagomApplicationContext): LagomApplication = load(context)
+
+  /**
+    * Describe a service, for use when implementing [[describeServices]].
+    */
+  protected def readDescriptor[S <: Service]: Descriptor = macro ScaladslServerMacroImpl.readDescriptor[S]
+
+  /**
+    * Implement this to allow tooling, such as ConductR, to discover the services offered by this application.
+    *
+    * This will be used to generate configuration regarding ACLs and service names for production deployment.
+    *
+    * For example:
+    *
+    * ```
+    * override def describeServices = List(
+    *   readDescriptor[MyService]
+    * )
+    * ```
+    */
+  def describeServices: immutable.Seq[Descriptor] = Nil
+
+  override final def discoverServices(classLoader: ClassLoader) = {
+    import scala.collection.JavaConverters._
+    import scala.compat.java8.OptionConverters._
+
+    val serviceResolver = new ScaladslServiceResolver(DefaultExceptionSerializer.Unresolved)
+    describeServices.map { descriptor =>
+      val resolved = serviceResolver.resolve(descriptor)
+      val convertedAcls = resolved.acls.map { acl =>
+        new ServiceAcl {
+          override def method() = acl.method.map(_.name).asJava
+          override def pathPattern() = acl.pathRegex.asJava
+        }.asInstanceOf[ServiceAcl]
+      }.asJava
+      new ServiceDescription {
+        override def acls() = convertedAcls
+        override def name() = resolved.name
+      }.asInstanceOf[ServiceDescription]
+    }.asJava
+  }
 }
 
 /**
