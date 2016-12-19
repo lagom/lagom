@@ -4,7 +4,7 @@
 
 [[Persistent Entities|PersistentEntity]] are used for holding the state of individual entities, but they cannot be used for serving queries that span more than one entity. You need to know the identifier of the entity to be able to interact with it. Therefore you need to create another view of the data that is tailored to the queries that the service provides. Lagom has support for populating this read-side view of the data and also for building queries of the read-side.
 
-This separation of the write-side and the read-side of the persistent data is often referred to as the [CQRS](https://msdn.microsoft.com/en-us/library/jj591573.aspx) (Command Query Responibility Segregation) pattern. The [CQRS Journey](https://msdn.microsoft.com/en-us/library/jj554200.aspx) is a great resource for learning more about CQRS.
+This separation of the write-side and the read-side of the persistent data is often referred to as the [CQRS](https://msdn.microsoft.com/en-us/library/jj591573.aspx) (Command Query Responsibility Segregation) pattern. The [CQRS Journey](https://msdn.microsoft.com/en-us/library/jj554200.aspx) is a great resource for learning more about CQRS.
 
 ## Dependency
 
@@ -14,7 +14,7 @@ To use this feature add the following in your project's build:
 
 ## Query the Read-Side Database
 
-Lagom has support for [Cassandra](http://cassandra.apache.org/) as data store, both for the write-side entities and the read-side queries. It is a very scalable distributed database, and also flexible enough to support most of the use cases that reactive services may have.
+Lagom has support for [Cassandra](http://cassandra.apache.org/) as a data store, both for the write-side entities and the read-side queries. It is a very scalable distributed database, and also flexible enough to support most of the use cases that reactive services may have.
 
 Let us first look at how a service implementation can retrieve data from Cassandra.
 
