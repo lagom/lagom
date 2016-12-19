@@ -58,7 +58,7 @@ For example, consider a situation where you have a blog post created event and a
 
 @[content](code/docs/mb/BlogPostService.scala)
 
-And that's how your Play Json formatters could look like:
+And that's how your Play JSON formatters could look like:
 
 @[content-formatters](code/docs/mb/BlogPostService.scala)
 
@@ -81,9 +81,9 @@ While the JSON for the `BlogPostPublished` event will look like this:
 }
 ```
 
-You can do that using [Json transformers](https://www.playframework.com/documentation/2.5.x/ScalaJsonTransformers#Case-5:-Put-a-given-value-in-a-new-branch) provided by Play Json: 
+You can do that using [Play JSON transformers](https://www.playframework.com/documentation/2.5.x/ScalaJsonTransformers#Case-5:-Put-a-given-value-in-a-new-branch): 
 
 @[polymorphic-play-json](code/docs/mb/BlogPostService.scala)
 
 
-This approach has an added maintenance cost. Fortunately there are libraries that expand Play Json features and provide support for algebraic data type serialization. For example: [Play JSON Derived Codecs](https://github.com/julienrf/play-json-derived-codecs).
+This approach has an added maintenance cost. Fortunately there are libraries that expand Play JSON features and provide support for algebraic data type serialization. For example: [Play JSON Derived Codecs](https://github.com/julienrf/play-json-derived-codecs).
