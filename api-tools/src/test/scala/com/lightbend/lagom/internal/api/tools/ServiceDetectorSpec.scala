@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.internal.api.tools
 
+import com.lightbend.lagom.internal.javadsl.server.JavadslServiceDiscovery
 import com.lightbend.lagom.javadsl.api.{ Descriptor, Service }
 import org.scalatest._
 import play.api.libs.json.Json
@@ -35,8 +36,7 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
           |]
         """.stripMargin
 
-      val classLoader = Thread.currentThread().getContextClassLoader()
-      val actualJsonString = ServiceDetector.services(classLoader)
+      val actualJsonString = ServiceDetector.services(this.getClass.getClassLoader)
       Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
     }
 
@@ -46,7 +46,7 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
       }
       class ServiceImpl extends ServiceInterface
 
-      ServiceDetector.serviceInterfaceResolver(classOf[ServiceImpl]) shouldBe Some(classOf[ServiceInterface])
+      new JavadslServiceDiscovery().serviceInterfaceResolver(classOf[ServiceImpl]) shouldBe Some(classOf[ServiceInterface])
     }
 
     "resolve the parent service interface that has implemented the descriptor method" in {
@@ -56,7 +56,7 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
       trait ChildServiceInterface extends ParentServiceInterface
       class ServiceImpl extends ChildServiceInterface
 
-      ServiceDetector.serviceInterfaceResolver(classOf[ServiceImpl]) shouldBe Some(classOf[ParentServiceInterface])
+      new JavadslServiceDiscovery().serviceInterfaceResolver(classOf[ServiceImpl]) shouldBe Some(classOf[ParentServiceInterface])
     }
 
     "resolve the child service interface that has implemented the descriptor method" in {
@@ -66,7 +66,7 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
       }
       class ServiceImpl extends ChildServiceInterface
 
-      ServiceDetector.serviceInterfaceResolver(classOf[ServiceImpl]) shouldBe Some(classOf[ChildServiceInterface])
+      new JavadslServiceDiscovery().serviceInterfaceResolver(classOf[ServiceImpl]) shouldBe Some(classOf[ChildServiceInterface])
     }
 
     def minify(s: String) =
