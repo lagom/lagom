@@ -37,6 +37,7 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
   private val system: ActorSystem = ActorSystem("PersistentEntityRefSpec", config)
 
   override def beforeAll(): Unit = {
+    super.beforeAll()
 
     Cluster.get(system).join(Cluster.get(system).selfAddress)
     val cassandraDirectory: File = new File("target/PersistentEntityRefTest")
@@ -47,6 +48,8 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
   override def afterAll() {
     CassandraLauncher.stop()
     TestKit.shutdownActorSystem(system)
+
+    super.afterAll()
   }
 
   class AnotherEntity extends PersistentEntity {

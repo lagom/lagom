@@ -38,6 +38,7 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 
   override def afterAll() {
     TestKit.shutdownActorSystem(system)
+    super.afterAll()
   }
 
   def awaitHasSubscribers(ref: PubSubRef[_], expected: Boolean) = {

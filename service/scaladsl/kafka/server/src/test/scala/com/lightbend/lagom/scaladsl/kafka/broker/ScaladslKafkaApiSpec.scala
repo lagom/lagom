@@ -57,6 +57,8 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
   private val kafkaServer = KafkaLocalServer(cleanOnStart = true)
 
   override def beforeAll() = {
+    super.beforeAll()
+
     kafkaServer.start()
     Cluster(application.actorSystem).join(Cluster(application.actorSystem).selfAddress)
   }
@@ -64,6 +66,8 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
   override def afterAll() = {
     application.application.stop().futureValue
     kafkaServer.stop()
+
+    super.afterAll()
   }
 
   implicit val patience = PatienceConfig(30.seconds, 150.millis)
