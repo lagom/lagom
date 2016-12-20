@@ -45,7 +45,7 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
     TestUtil.awaitPersistenceInit(system)
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     CassandraLauncher.stop()
     TestKit.shutdownActorSystem(system)
 
