@@ -39,7 +39,7 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
       override lazy val lagomServer = LagomServer.forServices(
         bindService[TestService].to(new TestServiceImpl)
       )
-      override lazy val additionalConfiguration = Configuration.from(Map(
+      override def additionalConfiguration = super.additionalConfiguration ++ Configuration.from(Map(
         "akka.remote.netty.tcp.port" -> "0",
         "akka.remote.netty.tcp.hostname" -> "127.0.0.1",
         "lagom.serialization.play-json.serializer-registry" -> "com.lightbend.lagom.scaladsl.playjson.EmptySerializerRegistry",

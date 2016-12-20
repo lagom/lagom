@@ -4,7 +4,7 @@
 package com.lightbend.lagom.internal.scaladsl.server
 
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslClientMacroImpl
-import com.lightbend.lagom.scaladsl.api.{Descriptor, Service}
+import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service }
 import com.lightbend.lagom.scaladsl.server.LagomServiceBinder
 
 import scala.reflect.macros.blackbox.Context
@@ -28,8 +28,8 @@ private[lagom] object ScaladslServerMacroImpl {
   }
 
   /**
-    * This macro provides a dummy implementation of the service so that it can read the service descriptor.
-    */
+   * This macro provides a dummy implementation of the service so that it can read the service descriptor.
+   */
   def readDescriptor[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[Descriptor] = {
 
     import c.universe._

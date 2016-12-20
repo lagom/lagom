@@ -3,9 +3,11 @@
  */
 package com.lightbend.lagom.scaladsl.api
 
-import java.net.URI
+import java.net.{ URI, URISyntaxException }
 
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
+import com.typesafe.config.ConfigException
+import play.api.Configuration
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -64,5 +66,44 @@ object ServiceLocator {
   object NoServiceLocator extends ServiceLocator {
     override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = Future.successful(None)
     override def doWithService[T](name: String, serviceCall: Call[_, _])(block: (URI) => Future[T])(implicit ec: ExecutionContext): Future[Option[T]] = Future.successful(None)
+  }
+}
+
+/**
+ * A service locator that uses static configuration.
+ */
+class ConfigurationServiceLocator(configuration: Configuration) extends ServiceLocator {
+  private val LagomServicesKey: String = "lagom.services"
+
+  private val services = {
+    if (configuration.underlying.hasPath(LagomServicesKey)) {
+      val config = configuration.underlying.getConfig(LagomServicesKey)
+      import scala.collection.JavaConverters._
+      (for {
+        key <- config.root.keySet.asScala
+      } yield {
+        try {
+          key -> URI.create(config.getString(key))
+        } catch {
+          case e: ConfigException.WrongType =>
+            throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a String, but was ${config.getValue(key).valueType}", e)
+          case e: URISyntaxException =>
+            throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a URI, but it failed to parse", e)
+        }
+      }).toMap
+    } else {
+      Map.empty[String, URI]
+    }
+  }
+
+  override def locate(name: String, serviceCall: Call[_, _]) = {
+    Future.successful(services.get(name))
+  }
+
+  override def doWithService[T](name: String, serviceCall: Call[_, _])(block: (URI) => Future[T])(implicit ec: ExecutionContext) = {
+    services.get(name) match {
+      case Some(uri) => block(uri).map(Some.apply)
+      case None      => Future.successful(None)
+    }
   }
 }
