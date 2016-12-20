@@ -7,15 +7,15 @@ import java.net.URI
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.client.{CircuitBreakerConfig, CircuitBreakerMetricsProviderImpl, CircuitBreakers}
-import com.lightbend.lagom.internal.scaladsl.client.{ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient}
-import com.lightbend.lagom.internal.scaladsl.registry.{ServiceRegistration, ServiceRegistry, ServiceRegistryServiceLocator}
+import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakerMetricsProviderImpl, CircuitBreakers }
+import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
+import com.lightbend.lagom.internal.scaladsl.registry.{ ServiceRegistration, ServiceRegistry, ServiceRegistryServiceLocator }
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServerMacroImpl
-import com.lightbend.lagom.internal.spi.{CircuitBreakerMetricsProvider, ServiceAcl, ServiceDescription, ServiceDiscovery}
+import com.lightbend.lagom.internal.spi.{ CircuitBreakerMetricsProvider, ServiceAcl, ServiceDescription, ServiceDiscovery }
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
-import com.lightbend.lagom.scaladsl.api.{Descriptor, Service, ServiceInfo, ServiceLocator}
-import com.lightbend.lagom.scaladsl.client.{CircuitBreakingServiceLocator, LagomServiceClientComponents}
+import com.lightbend.lagom.scaladsl.api._
+import com.lightbend.lagom.scaladsl.client.{ CircuitBreakingServiceLocator, LagomServiceClientComponents }
 import play.api._
 import play.api.ApplicationLoader.Context
 import play.api.inject.ApplicationLifecycle
@@ -23,7 +23,7 @@ import play.api.libs.ws.WSClient
 import play.core.DefaultWebCommands
 
 import scala.collection.immutable
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.language.experimental.macros
 
 /**
@@ -79,23 +79,23 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
   def loadDevMode(context: LagomApplicationContext): LagomApplication = load(context)
 
   /**
-    * Describe a service, for use when implementing [[describeServices]].
-    */
+   * Describe a service, for use when implementing [[describeServices]].
+   */
   protected def readDescriptor[S <: Service]: Descriptor = macro ScaladslServerMacroImpl.readDescriptor[S]
 
   /**
-    * Implement this to allow tooling, such as ConductR, to discover the services offered by this application.
-    *
-    * This will be used to generate configuration regarding ACLs and service names for production deployment.
-    *
-    * For example:
-    *
-    * ```
-    * override def describeServices = List(
-    *   readDescriptor[MyService]
-    * )
-    * ```
-    */
+   * Implement this to allow tooling, such as ConductR, to discover the services offered by this application.
+   *
+   * This will be used to generate configuration regarding ACLs and service names for production deployment.
+   *
+   * For example:
+   *
+   * ```
+   * override def describeServices = List(
+   *   readDescriptor[MyService]
+   * )
+   * ```
+   */
   def describeServices: immutable.Seq[Descriptor] = Nil
 
   override final def discoverServices(classLoader: ClassLoader) = {
@@ -168,17 +168,13 @@ object LagomApplicationContext {
  */
 abstract class LagomApplication(context: LagomApplicationContext)
   extends BuiltInComponentsFromContext(context.playContext)
+  with ProvidesAdditionalConfiguration
   with LagomServerComponents
   with LagomServiceClientComponents {
 
   override implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
   override lazy val configuration: Configuration = Configuration.load(environment) ++
-    context.playContext.initialConfiguration ++ additionalConfiguration
-
-  /**
-   * This can be overridden to provide any additional programatically configured configuration.
-   */
-  def additionalConfiguration: Configuration = Configuration.empty
+    additionalConfiguration.configuration ++ context.playContext.initialConfiguration
 }
 
 /**
