@@ -24,7 +24,7 @@ class CassandraPersistenceSpec(system: ActorSystem) extends ActorSystemSpec(syst
 
   def this() = this(ConfigFactory.empty())
 
-  override def beforeAll {
+  override def beforeAll(): Unit = {
     super.beforeAll()
 
     val cassandraDirectory = new File("target/" + system.name)
@@ -36,7 +36,7 @@ class CassandraPersistenceSpec(system: ActorSystem) extends ActorSystemSpec(syst
     cluster.join(cluster.selfAddress)
   }
 
-  override def afterAll {
+  override def afterAll(): Unit = {
     CassandraLauncher.stop()
     super.afterAll()
   }

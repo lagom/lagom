@@ -34,8 +34,9 @@ abstract class ActorSystemSpec(system: ActorSystem) extends TestKit(system)
 
   def this() = this(ConfigFactory.empty())
 
-  override def afterAll {
+  override def afterAll(): Unit = {
     shutdown()
+    super.afterAll()
   }
 
   val log: LoggingAdapter = Logging(system, this.getClass)

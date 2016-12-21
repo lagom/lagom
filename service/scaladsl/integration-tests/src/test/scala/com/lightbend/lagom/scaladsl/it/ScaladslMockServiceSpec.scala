@@ -201,5 +201,6 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers with BeforeAndAfter
 
   override protected def afterAll(): Unit = {
     server.stop()
+    super.afterAll()
   }
 }

@@ -56,7 +56,7 @@ abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec
     )
   )
 
-  override def beforeAll {
+  override def beforeAll(): Unit = {
     super.beforeAll()
 
     // Join ourselves - needed because we're using cluster singleton to create tables
@@ -72,9 +72,9 @@ abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec
     TestUtil.awaitPersistenceInit(system)
   }
 
-  override def afterAll {
-    super.afterAll()
+  override def afterAll(): Unit = {
     _database.foreach(_.shutdown())
+    super.afterAll()
   }
 
 }

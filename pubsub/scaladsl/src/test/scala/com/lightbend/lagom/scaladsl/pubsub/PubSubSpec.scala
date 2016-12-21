@@ -36,8 +36,9 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
   implicit val mat = ActorMaterializer.create(system)
   val registry = app.pubSubRegistry
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
+    super.afterAll()
   }
 
   def awaitHasSubscribers(ref: PubSubRef[_], expected: Boolean) = {
