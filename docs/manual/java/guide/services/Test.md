@@ -2,7 +2,7 @@
 
 ## Running tests
 
-You can run tests from the Activator console.
+You can run tests from the sbt console.
 
 * To run all tests, run `test`.
 * To run only one test class, run `testOnly` followed by the name of the class i.e. `testOnly my.namespace.MyTest`.

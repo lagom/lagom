@@ -33,17 +33,18 @@ Notice how each service is broken up into two projects: api and implementation. 
 
 ## Understanding services projects
 
+
 * The service interface is always placed in the api project. For instance, the service interface for the `hello` service can be found in the `hello-api` project (look for the `HelloService.java` source file).
 
-@[helloservice-interface](code/sample/helloworld/api/HelloService.java)
+@[helloservice-interface](code/docs/javadsl/gettingstarted/helloservice/HelloService.java)
 
-* The service interface needs to inherit from [`Service`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html) and provide an implementation of [`Service#descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#descriptor--) method.
+* The service interface needs to inherit from [`Service`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html) and provide an implementation of [`Service.descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#descriptor--) method.
 
-* The implementation of `Service#descriptor` returns a [`Descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html). A `Descriptor` defines the service name and the REST endpoints offered by a service. For each declared endpoint, an abstract method is declared in the service interface, e.g., see the `HelloService#hello` method.
+* The implementation of `Service.descriptor` returns a [`Descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html). A `Descriptor` defines the service name and the REST endpoints offered by a service. For each declared endpoint, an abstract method is declared in the service interface, e.g., see the `HelloService.hello` method.
 
-* The implementation of the service abstract methods is provided by the related implementation project. For instance, the service implementation of the `HelloService#hello` method, for the `hello` service, can be found in the `hello-impl` project (look for the `HelloServiceImpl.java` source file).
+* The implementation of the service abstract methods is provided by the related implementation project. For instance, the service implementation of the `HelloService.hello` method, for the `hello` service, can be found in the `hello-impl` project (look for the `HelloServiceImpl.java` source file).
 
-@[helloservice-impl](code/sample/helloworld/impl/HelloServiceImpl.java)
+@[helloservice-impl](code/docs/javadsl/gettingstarted/helloservice/HelloServiceImpl.java)
 
 * The [`PersistentEntityRegistry`](api/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html) allows to persist data in the database using [[Event Sourcing and CQRS|ES_CQRS]].
 
@@ -61,8 +62,8 @@ $ mvn lagom:runAll
 [info] Service locator is running at http://localhost:8000
 [info] Service gateway is running at http://localhost:9000
 ...
-[info] Service helloworld-impl listening for HTTP on 0:0:0:0:0:0:0:0:24266
-[info] Service hellostream-impl listening for HTTP on 0:0:0:0:0:0:0:0:26230
+[info] Service hello-impl listening for HTTP on 0:0:0:0:0:0:0:0:24266
+[info] Service stream-impl listening for HTTP on 0:0:0:0:0:0:0:0:26230
 (Services started, press enter to stop and go back to the console...)
 ```
 
