@@ -197,7 +197,7 @@ For more information on sbt plugins, see the sbt documentation on [Using Plugins
 
 An sbt build is defined in one or more `*.sbt` files in the build's root directory.  It's conventional to have a single file named `build.sbt`; you can split it into multiple files later if it becomes unwieldy.
 
-sbt build files are defined using a Scala-based DSL. Simple builds use only a small subset of the DSL, so there's no need to spend any time learning Scala. If you use an Activator template to get started, you'll have a working build from the start. From there, you'll probably only need to make small edits, or copy-and-paste existing code.
+sbt build files are defined using a Scala-based DSL. Simple builds use only a small subset of the DSL, so there's no need to spend any time learning Scala. If you use an sbt Giter8 to get started, you'll have a working build from the start. From there, you'll probably only need to make small edits, or copy-and-paste existing code.
 
 ### Setting the Scala version
 

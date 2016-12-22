@@ -12,17 +12,17 @@ If using Maven, use the m2clipse plugin in Eclipse, or the built in IntelliJ Mav
 
 [sbt-eclipse](https://github.com/typesafehub/sbteclipse) is needed to generate the Eclipse project files, which are required to import all projects defined in your Lagom build into Eclipse.
 
-If your Lagom build file is in directory `helloworld`, create a `project/eclipse.sbt` with the following content:
+If your Lagom build file is in directory `hello`, create a `project/eclipse.sbt` with the following content:
 
 ```
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "3.0.0")
 ```
 
-Save the file. Now, open the terminal, and `cd` to the `helloworld` directory, and type `activator`:
+Save the file. Now, open the terminal, and `cd` to the `hello` directory, and type `sbt`:
 
 ```
-$ cd helloworld
-$ activator
+$ cd hello
+$ sbt
 ... (booting up)
 >
 ```
@@ -33,10 +33,10 @@ If you have configured things correctly, typing `eclipse` will generate the Ecli
 > eclipse
 ...
 [info] Successfully created Eclipse project files for project(s):
-[info] helloworld-impl
-[info] helloworld-api
-[info] hellostream-impl
-[info] hellostream-api
+[info] hello-impl
+[info] hello-api
+[info] hello-stream-impl
+[info] hello-stream-api
 [info] lagom-internal-meta-project-service-locator
 [info] lagom-internal-meta-project-cassandra
 >
@@ -82,7 +82,7 @@ lazy val eclipseSettings = Seq(
 
 Now update all projects declarations in your Lagom build to use the newly created `project` method, so that the defined `eclipseSettings` are successfully applied to all projects.
 
-Finally, you will need to regenerate the Eclipse project files to account for the changes made in the build file. Go back to the activator console, type `reload` to reload the build file, and type `eclipse`. Once the `eclipse` task completes, go back to Eclipse, hit F5 to refresh all previously imported projects, and you are done.
+Finally, you will need to regenerate the Eclipse project files to account for the changes made in the build file. Go back to the sbt console, type `reload` to reload the build file, and type `eclipse`. Once the `eclipse` task completes, go back to Eclipse, hit F5 to refresh all previously imported projects, and you are done.
 
 ### IntelliJ
 

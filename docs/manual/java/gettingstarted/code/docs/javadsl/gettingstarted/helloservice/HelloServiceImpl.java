@@ -1,21 +1,19 @@
 /*
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
  */
-package sample.helloworld.impl;
+package docs.javadsl.gettingstarted.helloservice;
 
-import akka.Done;
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
+import docs.javadsl.gettingstarted.helloservice.HelloCommand.Hello;
 
 import java.util.Optional;
 
 import javax.inject.Inject;
-import sample.helloworld.api.HelloService;
-import sample.helloworld.impl.HelloCommand.*;
 
- //#helloservice-impl
+//#helloservice-impl
 public class HelloServiceImpl implements HelloService {
 
   private final PersistentEntityRegistry persistentEntityRegistry;

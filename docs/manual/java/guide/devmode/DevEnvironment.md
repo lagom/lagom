@@ -25,12 +25,12 @@ Assuming you have followed the [[Installation|Installation]] instructions, it's 
 
 ```console
 $ cd <path to your Lagom project>
-$ activator
+$ sbt
 [info] ...
 >
 ```
 
-To run all Lagom services together, with automatic reloading, just enter `runAll` in the activator console:
+To run all Lagom services together, with automatic reloading, just enter `runAll` in the sbt console:
 
 ```console
 > runAll
