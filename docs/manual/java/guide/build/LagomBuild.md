@@ -2,7 +2,7 @@
 
 As already discussed in [[Lagom build philosophy|BuildConcepts]], with Lagom you are free to combine all your services in a single build, or build them individually.
 
-Below, we describe how to make a single build containing all your services.  The `helloworld` sample follows this structure.
+Below, we describe how to make a single build containing all your services.  The `hello` sample follows this structure.
 
 Then, in the next section, we'll describe the alternative approach of one build per service.
 
@@ -18,7 +18,7 @@ Consider the sample system below:
 
 ![Lagom project structure](resources/guide/build/lagom-project-structure.png)
 
-This system has two services, one called `helloworld`, and one called `hellostream`.  Each service has two sbt projects defined, an API project, `helloworld-api` and `hellostream-api`, and an implementation project, `helloworld-impl` and `hellostream-impl`.  Additionally, `hellostream-impl` depends on `helloworld-api`, and uses that to invoke calls on `helloworld-stream`.
+This system has two services, one called `hello`, and one called `hello-stream`.  Each service has two sbt projects defined, an API project, `hello-api` and `hello-stream-api`, and an implementation project, `hello-impl` and `hello-stream-impl`.  Additionally, `hello-stream-impl` depends on `hello-api`, and uses that to invoke calls on `hello-stream`.
 
 * [Defining a build in Maven](#Defining-a-build-in-Maven)
 * [Defining a build in sbt](#Defining-a-build-in-sbt)
@@ -207,29 +207,29 @@ Even though you'll write your services in Java, Lagom itself uses Scala, so ever
 
 ### Defining a service
 
-Next we need to define the projects.  Recall that each service has at least two projects, API and implementation. First we'll define the `helloworld-api` project.
+Next we need to define the projects.  Recall that each service has at least two projects, API and implementation. First we'll define the `hello-api` project.
 
 A Lagom API project is an ordinary sbt project. Our first project looks like this:
 
-@[hello-world-api](code/lagom-build.sbt)
+@[hello-api](code/lagom-build.sbt)
 
 The first line defines the project itself, by declaring a `lazy val` of type `Project`. (sbt tip: declaring projects using `lazy val` instead of just `val` can prevent some issues with initialization order.)
 
-The project is defined to be the `helloworld-api` directory, as indicated by `project in file("helloworld-api")`.  This means all the source code for this project will be under that directory, laid out according to the usual Maven structure (which sbt adopts as well).  So our main Java sources go in `helloworld-api/src/main/java`.
+The project is defined to be the `hello-api` directory, as indicated by `project in file("hello-api")`.  This means all the source code for this project will be under that directory, laid out according to the usual Maven structure (which sbt adopts as well).  So our main Java sources go in `hello-api/src/main/java`.
 
 More settings follow, in which we set the project version and add a library dependency.  The Lagom plugin provides some predefined values to make the Lagom libraries easy to add. In this case, we're using `lagomJavadslApi`. (You can add other dependencies using the usual sbt shorthand for specifying the library's `groupId`, `artifactId` and `version`; see [Library dependencies](http://www.scala-sbt.org/0.13/docs/Library-Dependencies.html) in the sbt documentation.)
 
 Now we need to define the implementation project:
 
-@[hello-world-impl](code/lagom-build.sbt)
+@[hello-impl](code/lagom-build.sbt)
 
 The API project didn't need any plugins enabled, but the implementation project does. Enabling the `LagomJava` plugin adds necessary settings and dependencies and allows us to run the project in development.
 
-The implementation project declares a dependency on the `helloworld-api` project, so it can implement the API's interfaces.
+The implementation project declares a dependency on the `hello-api` project, so it can implement the API's interfaces.
 
 ### Adding a second service
 
-Our sample build will include two services, a producer (`helloworld`) and a consumer (`hellostream`).
+Our sample build will include two services, a producer (`hello`) and a consumer (`hello-stream`).
 
 Here's the definition of the second service:
 

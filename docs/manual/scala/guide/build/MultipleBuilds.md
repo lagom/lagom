@@ -22,12 +22,6 @@ If you are using Bintray, the first thing you'll need to do is sign up for an ac
 
 Having set Bintray up, you now need to configure your build to publish to this.
 
-#### Publishing to Bintray using Maven
-
-To publish to Bintray using Maven, you can follow the instructions published by bintray [here](https://blog.bintray.com/2015/09/17/publishing-your-maven-project-to-bintray/).
-
-#### Publishing to Bintray using sbt
-
 First, add the sbt-bintray plugin to your `project/plugins.sbt` file:
 
 @[bintray-plugin](code/multiple-builds.sbt)
@@ -40,38 +34,7 @@ Once you've authenticated with Bintray, you can then configure your build to pub
 
 ## Importing a service
 
-### Using Maven
-
-The `lagom-maven-plugin` offers a configuration item called `externalProjects` that can be configured on the root project to import external projects into a Maven build.  For example:
-
-```xml
-<plugin>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-maven-plugin</artifactId>
-    <version>${lagom.version}</version>
-    <configuration>
-        <externalProjects>
-            <externalProject>
-                <artifact>
-                    <groupId>com.example</groupId>
-                    <artifactId>hello-impl</artifactId>
-                    <version>1.2.3</version>
-                </artifact>
-            </externalProject>
-        </externalProjects>
-    </configuration>
-</plugin>
-```
-
-Now when you run `lagom:runAll`, the `hello-impl` service will also be started.  There are a few additional configuration items that `externalProject` supports:
-
-* `playService` - Indicates that this is a Play, rather than a Lagom service. Defaults to `false`.
-* `servicePort` - Allows the port that the service is run on to be overridden. Defaults to automatic selection of a port by Lagom.
-* `cassandraEnabled` - Configures whether this service needs Cassandra or not. Defaults to `true`.
-
-### Using sbt
-
-The `hellowold` Lagom service can be imported by adding the following declaration to your build:
+The `hello` Lagom service can be imported by adding the following declaration to your build:
 
 @[hello-external](code/multiple-builds.sbt)
 

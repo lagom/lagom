@@ -1,5 +1,6 @@
 //#add-sbt-plugin
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "X.Y.Z") // replace 'X.Y.Z' with your preferred version (e.g. '1.2.0-RC2').
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "X.Y.Z") 
+// replace 'X.Y.Z' with your preferred version (e.g. '1.2.0-RC2').
 //#add-sbt-plugin
 
 //#scala-version
@@ -10,13 +11,13 @@ scalaVersion in ThisBuild := "2.11.7"
 lazy val `hello-api` = (project in file("hello-api"))
   .settings(
     version := "1.0-SNAPSHOT",
-    libraryDependencies += lagomJavadslApi
+    libraryDependencies += lagomScaladslApi
   )
 //#hello-api
 
 //#hello-impl
 lazy val `hello-impl` = (project in file("hello-impl"))
-  .enablePlugins(LagomJava)
+  .enablePlugins(LagomScala)
   .settings(
     version := "1.0-SNAPSHOT"
   )
@@ -27,11 +28,11 @@ lazy val `hello-impl` = (project in file("hello-impl"))
 lazy val `hello-stream-api` = (project in file("hello-stream-api"))
   .settings(
     version := "1.0-SNAPSHOT",
-    libraryDependencies += lagomJavadslApi
+    libraryDependencies += lagomScaladslApi
   )
 
 lazy val `hello-stream-impl` = (project in file("hello-stream-impl"))
-  .enablePlugins(LagomJava)
+  .enablePlugins(LagomScala)
   .settings(
     version := "1.0-SNAPSHOT"
   )
