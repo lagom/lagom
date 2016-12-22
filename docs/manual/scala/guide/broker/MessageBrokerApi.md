@@ -48,8 +48,6 @@ When calling [`Topic.subscribe`](api/com/lightbend/lagom/scaladsl/api/broker/Top
 
 Finally, subscribers are grouped together via [`Subscriber.withGroupId`](api/com/lightbend/lagom/scaladsl/api/broker/Subscriber.html#withGroupId\(groupId:String\):com.lightbend.lagom.scaladsl.api.broker.Subscriber[Message]). A subscriber group allows many nodes in your cluster to consume a message stream while ensuring that each message is only handled once by each node in your cluster.  Without subscriber groups, all of your nodes for a particular service would get every message in the stream, leading to their processing being duplicated.  By default, Lagom will use a group id that has the same name as the service consuming the topic.
 
-// TODO: From this point on...
-
 ## Polymorphic event streams
 
 Typically you will want to publish more than one type of event to a particular topic. This can be done by creating an interface that each event implements, and then making the events implement that. In order to successfully serialize these events to and from JSON, you will have to include some extra information on your JSON representation of the data.
