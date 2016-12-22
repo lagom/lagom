@@ -1,11 +1,9 @@
 /*
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
  */
- package sample.helloworld.impl;
+ package docs.javadsl.gettingstarted.helloservice;
 
 import java.util.Optional;
-
-import javax.annotation.Nullable;
 
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 

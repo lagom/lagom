@@ -32,7 +32,7 @@ First, add the sbt-bintray plugin to your `project/plugins.sbt` file:
 
 @[bintray-plugin](code/multiple-builds.sbt)
 
-The Bintray plugin manages its own credentials, this can be configured by running `activator bintrayChangeCredentials`, which will save the credentials in `~/.bintray/.credentials`.
+The Bintray plugin manages its own credentials, this can be configured by running `sbt bintrayChangeCredentials`, which will save the credentials in `~/.bintray/.credentials`.
 
 Once you've authenticated with Bintray, you can then configure your build to publish to it, by adding the following configuration to `build.sbt`:
 
