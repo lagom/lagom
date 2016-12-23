@@ -115,7 +115,7 @@ As shown above, the the YAML configuration file can be configured by modifying t
 
 Logging is configured such that it goes to the standard output, and the log level for `org.apache.cassandra` is set to `ERROR`. Here is the used `logback.xml` file:
 
-@[](../../../../../../dev/cassandra-server/src/main/resources/logback.xml)
+@[](../../../../../dev/cassandra-server/src/main/resources/logback.xml)
 
 There is no mechanism in place to edit the used `logback.xml`. If you need to tune the logging configuration, you should install Cassandra, and [[read the instructions|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]] to connect to a locally running Cassandra. 
 
