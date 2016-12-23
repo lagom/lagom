@@ -15,12 +15,12 @@ import java.util.*;
  * a named group of {@link ServiceAcl}s.
  * </p>
  * <pre>
- *     Map<String, List<ServiceAcl>> locatableServices = new HashMap<>();
- *     List<ServiceAcl> helloAcls = Arrays.asList(
+ *     Map&lt;String, List&lt;ServiceAcl&gt;&gt; locatableServices = new HashMap&lt;&gt;();
+ *     List&lt;ServiceAcl&gt; helloAcls = Arrays.asList(
  *        new ServiceAcl(Optional.of(Method.GET), Optional.of("?/hello/.*")),
  *        new ServiceAcl(Optional.of(Method.POST), Optional.of("/login"))
  *        );
- *     List<ServiceAcl> goodbyeAcls = Arrays.asList(
+ *     List&lt;ServiceAcl&gt; goodbyeAcls = Arrays.asList(
  *       new ServiceAcl(Optional.of(Method.POST), Optional.of("/logout/.*")));
  *
  *     locatableServices.put("hello-service", helloAcls);
