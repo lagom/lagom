@@ -1,0 +1,1 @@
+JVMMemoryOnDev:Increase Memory in sbt and Maven
