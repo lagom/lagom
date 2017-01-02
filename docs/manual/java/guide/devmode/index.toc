@@ -1,2 +1,0 @@
-DevEnvironment:Development Environment
-detailedTopics:Detailed Topics
