@@ -228,7 +228,7 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
 
     withServer(
       _.bindings(
-        bind[ServiceInfo].to(new ServiceInfoProvider(Optional.of("mock"), Array(classOf[MockService])))
+        bind[ServiceInfo].to(new ServiceInfoProvider(classOf[MockService], Array.empty))
       )
         .overrides(bind[ResolvedServices].to(new MockResolvedServicesProvider(resolved, changeServer)))
     ) { app =>

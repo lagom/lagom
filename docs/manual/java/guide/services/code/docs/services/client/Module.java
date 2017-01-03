@@ -9,7 +9,7 @@ import com.lightbend.lagom.javadsl.api.ServiceInfo;
 public class Module extends AbstractModule implements ServiceClientGuiceSupport {
 
     protected void configure() {
-        bindInfo(ServiceInfo.of("hello-service")); 
+        bindServiceInfo(ServiceInfo.of("hello-service"));
         bindClient(HelloService.class);
     }
 }

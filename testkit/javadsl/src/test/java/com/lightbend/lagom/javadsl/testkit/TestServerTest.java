@@ -34,7 +34,7 @@ public class TestServerTest {
     public static class TestTopicServiceModule extends AbstractModule implements ServiceGuiceSupport {
         @Override
         protected void configure() {
-            bindServices("test", serviceBinding(TestTopicService.class, TestTopicService.Impl.class));
+            bindServices(serviceBinding(TestTopicService.class, TestTopicService.Impl.class));
         }
     }
 }

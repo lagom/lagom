@@ -73,7 +73,9 @@ public final class ServiceInfo {
         return serviceName;
     }
 
+
     public Map<String, List<ServiceAcl>> getLocatableServices() {
         return locatableServices;
     }
+
 }

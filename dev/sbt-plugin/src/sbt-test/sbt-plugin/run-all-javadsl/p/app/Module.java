@@ -14,7 +14,7 @@ public class Module extends AbstractModule implements ServiceClientGuiceSupport 
         ServiceAcl pAcl = new ServiceAcl(Optional.empty(), Optional.of("/p"));
         ServiceAcl assetsAcl = new ServiceAcl(Optional.empty(), Optional.of("/assets/.*"));
 
-        bindInfo(ServiceInfo.of("p", pAcl, assetsAcl));
+        bindServiceInfo(ServicInfo.of("p", pAcl, assetsAcl));
         bindClient(FooService.class);
         bind(OnStart.class).asEagerSingleton();
     }

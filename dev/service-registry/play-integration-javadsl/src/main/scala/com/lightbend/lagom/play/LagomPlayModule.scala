@@ -4,7 +4,7 @@
 package com.lightbend.lagom.play
 
 import java.net.URI
-import java.util.{List=> JList}
+import java.util.{ List => JList }
 import java.util.Optional
 import javax.inject.Inject
 

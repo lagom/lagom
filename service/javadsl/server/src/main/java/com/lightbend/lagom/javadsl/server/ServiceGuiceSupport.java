@@ -15,36 +15,16 @@ import com.lightbend.lagom.javadsl.client.ServiceClientGuiceSupport;
 import com.lightbend.lagom.javadsl.server.status.MetricsService;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
 
-    /**
-     * @deprecated use {@link ServiceGuiceSupport#bindServices(String, ServiceBinding[])} instead.
-     */
-    default void bindServices(ServiceBinding<?>... serviceBindings) {
-        bindServices(Optional.empty(), serviceBindings);
-    }
-
-    /**
-     * binds the provided services and builds the {@link ServiceInfo} for this service.
-     *
-     * @param serviceName
-     * @param serviceBindings
-     */
-    default void bindServices(String serviceName, ServiceBinding<?>... serviceBindings) {
-        bindServices(Optional.of(serviceName), serviceBindings);
-    }
-
-    /**
-     * binds the provided services and builds the {@link ServiceInfo} for this service. If <code>serviceName</code>
-     * is an {@link Optional#empty()}, the {@link ServiceInfo#serviceName} will be set to the name of the first
-     * serviceBinding. Passing an {@link Optional#empty()} as <code>serviceNam</code> is discouraged.
-     *
-     * @deprecated this method is an implementation detail and will likely bbe removed in future versions, use {@link ServiceGuiceSupport#bindServices(String, ServiceBinding[])} instead.
-     */
-    default void bindServices(Optional<String> serviceName, ServiceBinding<?>... serviceBindings) {
+    default void bindServices(ServiceBinding<?> primaryServiceBinding, ServiceBinding<?>... secondaryBindings) {
         Binder binder = BinderAccessor.binder(this);
+
+        ServiceBinding[] serviceBindings = new ServiceBinding[secondaryBindings.length+1];
+        serviceBindings[0]= primaryServiceBinding;
+        System.arraycopy(secondaryBindings, 0, serviceBindings, 1, secondaryBindings.length);
+
         for (ServiceBinding binding : serviceBindings) {
             // First, bind the client implementation.  A service should be able to be a client to itself.
             bindClient(binding.serviceInterface());
@@ -61,7 +41,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
         // Bind the service info for the first one passed in
         binder.bind(ServiceInfo.class).toProvider(
                 new ServiceInfoProvider(
-                        serviceName,
+                        primaryServiceBinding.serviceInterface(),
                         Arrays
                                 .stream(serviceBindings)
                                 .map(ServiceBinding::serviceInterface)

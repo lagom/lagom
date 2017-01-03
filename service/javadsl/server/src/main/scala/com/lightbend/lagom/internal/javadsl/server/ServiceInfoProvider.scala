@@ -14,10 +14,9 @@ import scala.collection.mutable
  * Provides the service info for a service
  */
 @Singleton
-class ServiceInfoProvider(name: Optional[String], interfaces: Array[Class[_]]) extends Provider[ServiceInfo] {
+class ServiceInfoProvider(primaryServiceInterface: Class[_], secondaryServices: Array[Class[_]]) extends Provider[ServiceInfo] {
   @Inject private var serverBuilder: JavadslServerBuilder = _
   override lazy val get = {
-    val serviceName: Option[String] = if (name.isPresent) Some(name.get()) else None
-    serverBuilder.createServiceInfo(serviceName, interfaces)
+    serverBuilder.createServiceInfo(primaryServiceInterface, secondaryServices)
   }
 }
