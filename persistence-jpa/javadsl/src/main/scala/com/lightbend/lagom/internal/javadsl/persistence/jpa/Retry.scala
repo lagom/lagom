@@ -42,8 +42,6 @@ class Retry(delay: FiniteDuration, delayFactor: Double, maxRetries: Int) {
 }
 
 object Retry {
-  def apply[T](delay: FiniteDuration, delayFactor: Double, maxRetries: Int)
-              (op: => T)
-              (implicit ec: ExecutionContext, s: Scheduler): Future[T] =
-    (new Retry(delay, delayFactor, maxRetries)) (op)
+  def apply[T](delay: FiniteDuration, delayFactor: Double, maxRetries: Int)(op: => T)(implicit ec: ExecutionContext, s: Scheduler): Future[T] =
+    (new Retry(delay, delayFactor, maxRetries))(op)
 }
