@@ -8,6 +8,7 @@ import javax.persistence.{ EntityManager, EntityTransaction }
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcPersistenceSpec
 import com.lightbend.lagom.javadsl.persistence.jpa.JpaSession
 import org.scalatest.matchers.{ BePropertyMatchResult, BePropertyMatcher }
+import play.Configuration
 import play.api.inject.DefaultApplicationLifecycle
 import play.inject.DelegateApplicationLifecycle
 
@@ -17,9 +18,10 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ Await, Future }
 
 class JpaSessionImplSpec extends JdbcPersistenceSpec {
-  protected lazy val applicationLifecycle = new DefaultApplicationLifecycle
-  protected lazy val delegateApplicationLifecycle = new DelegateApplicationLifecycle(applicationLifecycle)
-  protected lazy val jpa: JpaSession = new JpaSessionImpl(system, slick, delegateApplicationLifecycle)
+  private lazy val config = new Configuration(system.settings.config)
+  private lazy val applicationLifecycle = new DefaultApplicationLifecycle
+  private lazy val delegateApplicationLifecycle = new DelegateApplicationLifecycle(applicationLifecycle)
+  private lazy val jpa: JpaSession = new JpaSessionImpl(config, slick, system, delegateApplicationLifecycle)
 
   private val open = BePropertyMatcher[EntityManager] { entityManager =>
     BePropertyMatchResult(entityManager.isOpen, "open")

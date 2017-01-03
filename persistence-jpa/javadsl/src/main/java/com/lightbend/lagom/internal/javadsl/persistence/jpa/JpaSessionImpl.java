@@ -9,8 +9,10 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc.SlickProvider;
 import com.lightbend.lagom.javadsl.persistence.jpa.JpaSession;
+import com.typesafe.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import play.Configuration;
 import play.inject.ApplicationLifecycle;
 import scala.compat.java8.FutureConverters;
 import scala.compat.java8.JFunction0;
@@ -21,24 +23,31 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.time.Duration;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 @Singleton
 public class JpaSessionImpl implements JpaSession {
-    // TODO: Make these constants configuration parameters in the Lagom framework implementation
-    private static final String PERSISTENCE_UNIT_NAME = "default";
-    private static final FiniteDuration INIT_RETRY_INTERVAL = FiniteDuration.create(5, TimeUnit.SECONDS);
-    private static final double INIT_RETRY_FACTOR = 1.0;
-    private static final int INIT_RETRY_COUNT = 12;
-
     private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+    private final String persistenceUnitName;
+    private final FiniteDuration initRetryIntervalMin;
+    private final double initRetryIntervalFactor;
+    private final int initRetryMax;
+
     private final JdbcBackend.DatabaseDef slickDb;
     private final CompletionStage<EntityManagerFactory> factoryCompletionStage;
 
+
     @Inject
-    public JpaSessionImpl(ActorSystem actorSystem, SlickProvider slick, ApplicationLifecycle lifecycle) {
+    public JpaSessionImpl(Configuration config, SlickProvider slick, ActorSystem actorSystem, ApplicationLifecycle lifecycle) {
+        Config jpaConfig = config.underlying().getConfig("lagom.persistence.jpa");
+        this.persistenceUnitName = jpaConfig.getString("persistence-unit");
+        this.initRetryIntervalMin = toFiniteDuration(jpaConfig.getDuration("initialization-retry.interval.min"));
+        this.initRetryIntervalFactor = jpaConfig.getDouble("initialization-retry.interval.factor");
+        this.initRetryMax = jpaConfig.getInt("initialization-retry.max-retries");
+
         this.slickDb = slick.db();
         this.factoryCompletionStage = createEntityManagerFactory(actorSystem);
         lifecycle.addStopHook(this::close);
@@ -59,9 +68,13 @@ public class JpaSessionImpl implements JpaSession {
         });
     }
 
+    private static FiniteDuration toFiniteDuration(Duration duration) {
+        return FiniteDuration.fromNanos(duration.toNanos());
+    }
+
     private CompletionStage<EntityManagerFactory> createEntityManagerFactory(ActorSystem actorSystem) {
-        log.debug("Initializing JPA EntityManagerFactory with persistence unit name {}", PERSISTENCE_UNIT_NAME);
-        Retry jpaInitializer = new Retry(INIT_RETRY_INTERVAL, INIT_RETRY_FACTOR, INIT_RETRY_COUNT) {
+        log.debug("Initializing JPA EntityManagerFactory with persistence unit name {}", persistenceUnitName);
+        Retry jpaInitializer = new Retry(initRetryIntervalMin, initRetryIntervalFactor, initRetryMax) {
             @Override
             public void onRetry(Throwable throwable, FiniteDuration delay, int remainingRetries) {
                 log.warn("Exception while initializing JPA EntityManagerFactory", throwable);
@@ -69,7 +82,7 @@ public class JpaSessionImpl implements JpaSession {
             }
         };
         return jpaInitializer.retry(
-                () -> Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME),
+                () -> Persistence.createEntityManagerFactory(persistenceUnitName),
                 slickDb.ioExecutionContext(),
                 actorSystem.scheduler()
         ).whenComplete((entityManagerFactory, throwable) -> {
