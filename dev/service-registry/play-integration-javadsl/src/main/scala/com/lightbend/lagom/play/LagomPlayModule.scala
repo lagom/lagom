@@ -4,21 +4,73 @@
 package com.lightbend.lagom.play
 
 import java.net.URI
+import java.util.{List=> JList}
+import java.util.Optional
 import javax.inject.Inject
 
 import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistry, ServiceRegistryService }
-import com.lightbend.lagom.javadsl.api.ServiceInfo
+import com.lightbend.lagom.javadsl.api.{ ServiceAcl, ServiceInfo }
+import com.lightbend.lagom.javadsl.api.transport.Method
+import com.typesafe.config.Config
 import play.api.inject.{ ApplicationLifecycle, Binding, Module }
-import play.api.{ Configuration, Environment }
+import play.api.{ Configuration, Environment, Logger }
 
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
+import scala.util.{ Success, Try }
 
 class LagomPlayModule extends Module {
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+  private val logger = Logger(this.getClass)
+
+  override def bindings(environment: Environment, config: Configuration): Seq[Binding[_]] = {
+    val maybeServiceInfoBinding: Option[Binding[ServiceInfo]] = prepareServiceInfoBinding(config)
+    val playRegistry = bind[PlayRegisterWithServiceRegistry].toSelf.eagerly()
+
     Seq(
-      bind[PlayRegisterWithServiceRegistry].toSelf.eagerly()
-    )
+      playRegistry
+    ) ++ maybeServiceInfoBinding.toList
+
+  }
+
+  private def prepareServiceInfoBinding(config: Configuration) = {
+    val triedServiceName = Try(config.underlying.getString("lagom.play.service-name"))
+    val triedAcls: Try[JList[_ <: Config]] = Try(config.underlying.getConfigList("lagom.play.acls"))
+
+    val warning = "Service setup via 'application.conf' is deprecated. Remove 'lagom.play.service-name' and/or " +
+      "'lagom.play.acls' and use 'bindServiceInfo' on your Play's Module class."
+
+    val maybeServiceInfoBinding = (triedServiceName, triedAcls) match {
+      case (Success(serviceName), Success(aclList)) => {
+        logger.warn(warning)
+        // create a ServiceInfo in case user doesn't see the warning
+        val acls = parseAclList(aclList)
+        Some(bind[ServiceInfo].toInstance(ServiceInfo.of(serviceName, acls: _*)))
+      }
+      case (Success(serviceName), _) => {
+        logger.warn(warning)
+        // create a ServiceInfo in case user doesn't see the warning
+        Some(bind[ServiceInfo].toInstance(ServiceInfo.of(serviceName)))
+      }
+      case (_, Success(_)) => {
+        logger.warn(warning)
+        // can't create a ServiceInfo because service-name is missing
+        None
+      }
+      case _ => None
+    }
+    maybeServiceInfoBinding
+  }
+
+  private def parseAclList(aclList: JList[_ <: Config]): Seq[ServiceAcl] = {
+    aclList.asScala.map { aclConfig =>
+      val method = if (aclConfig.hasPath("method")) {
+        Optional.of(new Method(aclConfig.getString("method")))
+      } else Optional.empty[Method]
+      val pathRegex = if (aclConfig.hasPath("path-regex")) {
+        Optional.of(aclConfig.getString("path-regex"))
+      } else Optional.empty[String]
+      new ServiceAcl(method, pathRegex)
+    }
   }
 }
 
@@ -27,7 +79,7 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Configuration, serviceI
   private val httpPort = config.underlying.getString("play.server.http.port")
   private val serviceUrl = new URI(s"http://$httpAddress:$httpPort")
 
-  //  TODO: ServiceRegistryService should not flatmap the ACL lists (locatableService's names are lost)
+  // TODO: ServiceRegistryService should not flatmap the ACL lists (locatableService's names are lost)
   private val serviceAcls = serviceInfo.getLocatableServices.values().asScala.flatMap(_.asScala).toSeq.asJava
   private val service = new ServiceRegistryService(serviceUrl, serviceAcls)
   // TODO: fix -> this register operation is registering all ACLs under the microservice name, not under each locatable service name. Will lead to unlocatable.

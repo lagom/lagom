@@ -91,8 +91,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
     }
 
     abstract class ServiceBinding<T> {
-        private ServiceBinding() {
-        }
+        private ServiceBinding() {}
 
         public abstract Class<T> serviceInterface();
     }

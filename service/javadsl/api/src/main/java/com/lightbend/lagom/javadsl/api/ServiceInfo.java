@@ -35,10 +35,20 @@ public final class ServiceInfo {
 
     private final Map<String, List<ServiceAcl>> locatableServices;
 
+
+    /**
+     * @deprecated use {@link ServiceInfo#ServiceInfo(String, Map)} instead
+     */
+    public ServiceInfo(String serviceName) {
+        this(serviceName, new HashMap<>());
+    }
+
+
     /**
      * @param serviceName       identifies this service. This is the default id when this service act
      * @param locatableServices a group of locatable services. This information should be publicized on a Service
      *                          Registry for either client-side or server-side service discovery.
+     * @since 1.3
      */
     public ServiceInfo(String serviceName, Map<String, List<ServiceAcl>> locatableServices) {
         this.serviceName = serviceName;

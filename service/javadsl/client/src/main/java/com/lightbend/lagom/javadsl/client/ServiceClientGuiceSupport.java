@@ -20,7 +20,7 @@ public interface ServiceClientGuiceSupport {
     /**
      * Provides the ServiceInfo to use Lagom service clients.
      */
-    default void bindInfo(ServiceInfo serviceInfo) {
+    default void bindServiceInfo(ServiceInfo serviceInfo) {
         BinderAccessor.binder(this).bind(ServiceInfo.class)
                 .toInstance(serviceInfo);
     }
