@@ -26,7 +26,8 @@ lazy val docs = project
       "com.typesafe.play" %% "play-netty-server" % PlayVersion % Test,
       "com.typesafe.play" %% "play-logback" % PlayVersion % Test,
       "org.apache.logging.log4j" % "log4j-api" % "2.7" % "test",
-      "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
+      "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided",
+      "org.projectlombok" % "lombok" % "1.16.10"
     ),
     javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
     testOptions in Test += Tests.Argument("-oDF"),
