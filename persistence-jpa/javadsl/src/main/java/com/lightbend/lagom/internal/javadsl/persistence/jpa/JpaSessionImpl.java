@@ -58,18 +58,6 @@ public class JpaSessionImpl implements JpaSession {
     }
 
     @Override
-    public <T> CompletionStage<T> withEntityManager(Function<EntityManager, T> block) {
-        return factoryCompletionStage.thenCompose(factory -> executeInSlickContext(() -> {
-            EntityManager entityManager = factory.createEntityManager();
-            try {
-                return block.apply(entityManager);
-            } finally {
-                entityManager.close();
-            }
-        }));
-    }
-
-    @Override
     public <T> CompletionStage<T> withTransaction(Function<EntityManager, T> block) {
         return withEntityManager(entityManager -> {
             EntityTransaction transaction = entityManager.getTransaction();
@@ -118,6 +106,17 @@ public class JpaSessionImpl implements JpaSession {
             );
         }
         return future;
+    }
+
+    private <T> CompletionStage<T> withEntityManager(Function<EntityManager, T> block) {
+        return factoryCompletionStage.thenCompose(factory -> executeInSlickContext(() -> {
+            EntityManager entityManager = factory.createEntityManager();
+            try {
+                return block.apply(entityManager);
+            } finally {
+                entityManager.close();
+            }
+        }));
     }
 
     private <R> CompletionStage<R> executeInSlickContext(JFunction0<R> block) {

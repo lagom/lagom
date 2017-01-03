@@ -8,6 +8,5 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
 public interface JpaSession {
-    <T> CompletionStage<T> withEntityManager(Function<EntityManager, T> block);
     <T> CompletionStage<T> withTransaction(Function<EntityManager, T> block);
 }

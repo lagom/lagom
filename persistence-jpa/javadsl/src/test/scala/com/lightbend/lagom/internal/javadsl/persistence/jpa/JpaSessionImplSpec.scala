@@ -35,15 +35,12 @@ class JpaSessionImplSpec extends JdbcPersistenceSpec {
   }
 
   // Convenience for converting between Scala and Java 8
-  private def withEntityManager[T](block: EntityManager => T): Future[T] =
-    jpa.withEntityManager(block.asJava).toScala
-
   private def withTransaction[T](block: EntityManager => T): Future[T] =
     jpa.withTransaction(block.asJava).toScala
 
   "JpaSessionImpl" must {
     "provide an open EntityManager and close it when the block completes" in {
-      val entityManager = Await.result(withEntityManager { entityManager =>
+      val entityManager = Await.result(withTransaction { entityManager =>
         entityManager shouldBe open
         entityManager
       }, 65.seconds)
@@ -67,7 +64,8 @@ class JpaSessionImplSpec extends JdbcPersistenceSpec {
 
       Await.ready(withTransaction(_.persist(entity)), 10.seconds)
 
-      val retrievedEntity = Await.result(withEntityManager {
+      // Note that the retrieval runs in a new transaction
+      val retrievedEntity = Await.result(withTransaction {
         _.createQuery("SELECT test FROM TestJpaEntity test WHERE data = :data", classOf[TestJpaEntity])
           .setParameter("data", "test saving and reading entities")
           .getSingleResult
