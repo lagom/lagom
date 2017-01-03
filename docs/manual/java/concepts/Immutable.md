@@ -31,6 +31,39 @@ All fields are final and are assigned at construction time. There are no setter 
 
 Lagom doesn't care how you define your immutable objects. You can write out the constructor and getters by hand, as in the above sample.  But we recommend using third party tools to generate them instead. You can use the [Immutables](https://immutables.github.io) or [Lombok](https://projectlombok.org/index.html). Using a third party tool is easier and less error-prone than writing everything out by hand, and the resulting code is shorter and easier to read.
 
+### Lombok
+
+Here's a definition of a `User` implemented with Lombok:
+
+@[lombok-immutable](code/docs/home/immutable/LombokUser.java)
+
+That will:
+
+ * modify fields to be `private` and `final`
+ * create getters for each field
+ * create correct `equals`, `hashCode` and a human-friendly `toString`
+ * create a constructor requiring all fields.
+
+This example code is not demonstrating other Lombok feature like `@Builder` or `@Wither` which will help you create builder and copy methods. Be aware that Lombok is not an immutability library but a code generation library which means some setups might not create immutable objects. For example, Lombok's `@Data` is equivalent to Lombok's `@Value` but will also synthesize mutable methods. Don't use Lombok's `@Data` when creating immutable classes.
+
+Lombok is a simple dependency:
+
+```xml
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <version>1.16.12</version>
+</dependency>
+```
+
+or in sbt:
+
+@[lagom-immutables-lombok](code/lagom-immutables.sbt)
+
+
+Lombok integrates with popular IDE's too. In order to use Lombok in IntelliJ IDEA you'll need the [Lombok Plugin for IntelliJ IDEA](https://plugins.jetbrains.com/idea/plugin/6317-lombok-plugin) and you'll also need to enable Annotation Processing (`Settings / Build,Execution,Deployment / Compiler / Annotation Processors` and tick `Enable annotation processing`). Using Lombok in Eclipse requires running `java -jar lombok.jar` (see the video at [Project Lombok](https://projectlombok.org/)).
+
+
 ### Immutables
 
 Here is the corresponding definition of a `User` (like the above `ImmutableUser`) using Immutables:
@@ -59,36 +92,6 @@ In sbt:
 
 Immutables integrates with popular IDEs. Follow the instructions for [[Eclipse|ImmutablesInIDEs#eclipse]] or [[IntelliJ IDEA|ImmutablesInIDEs#intellij-idea]] to add the Immutables annotation processor to your IDE. We've found the integration with IntelliJ IDEA a bit cumbersome though.
 
-### Lombok
-
-You can achieve the same simplicity with Lombok. Here's yet another example of a `User` implemented with Lombok:
-
-@[lombok-immutable](code/docs/home/immutable/LombokUser.java)
-
-That will create:
-
- * getters for each field
- * correct `equals`, `hashCode` and a human-friendly `toString`
- * a constructor requiring all fields.
-
-This example code is not demonstrating other Lombok feature like `@Builder` or `@Wither` which will help you create builder and copy methods.
-
-Lombok is a simple dependency:
-
-```xml
-<dependency>
-    <groupId>org.projectlombok</groupId>
-    <artifactId>lombok</artifactId>
-    <version>1.16.12</version>
-</dependency>
-```
-
-or in sbt:
-
-@[lagom-immutables-lombok](code/lagom-immutables.sbt)
-
-
-Lombok integrates with popular IDE's too. In order to use Lombok in IntelliJ IDEA you'll need the [Lombok Plugin for IntelliJ IDEA](https://plugins.jetbrains.com/idea/plugin/6317-lombok-plugin) and you'll also need to enable Annotation Processing (`Settings / Build,Execution,Deployment / Compiler / Annotation Processors` and tick `Enable annotation processing`). Using Lombok in Eclipse requires running `java -jar lombok.jar` (see the video at [Project Lombok](https://projectlombok.org/)).
 
 
 ## Collections
