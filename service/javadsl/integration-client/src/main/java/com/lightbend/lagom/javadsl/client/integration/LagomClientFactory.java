@@ -207,7 +207,7 @@ public class LagomClientFactory implements Closeable {
         }, actorSystem.dispatcher());
 
         // TODO: review this. Building a kafka client shouldn't require the whole ServiceInfo, just the name.
-        ServiceInfo serviceInfo = new ServiceInfo(serviceName, new HashMap<>());
+        ServiceInfo serviceInfo = ServiceInfo.of(serviceName);
 
         // Kafka client
         TopicFactory kafkaTopicFactory = new KafkaTopicFactory(serviceInfo, actorSystem, materializer,

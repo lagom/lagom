@@ -3,6 +3,11 @@
  */
 package com.lightbend.lagom.javadsl.api;
 
+import org.pcollections.HashTreePMap;
+import org.pcollections.PMap;
+import org.pcollections.PSequence;
+import org.pcollections.TreePVector;
+
 import java.util.*;
 
 /**
@@ -33,24 +38,25 @@ public final class ServiceInfo {
 
     private final String serviceName;
 
-    private final Map<String, List<ServiceAcl>> locatableServices;
+    private final PMap<String, PSequence<ServiceAcl>> locatableServices;
 
 
     /**
-     * @deprecated use {@link ServiceInfo#ServiceInfo(String, Map)} instead
+     * @deprecated use {@link ServiceInfo#ServiceInfo(String, PMap)} instead.
      */
+    @Deprecated
     public ServiceInfo(String serviceName) {
-        this(serviceName, new HashMap<>());
+        this(serviceName, HashTreePMap.empty());
     }
 
 
     /**
-     * @param serviceName       identifies this service. This is the default id when this service act
+     * @param serviceName       identifies this service. This is the default id when this service acts as a client.
      * @param locatableServices a group of locatable services. This information should be publicized on a Service
      *                          Registry for either client-side or server-side service discovery.
      * @since 1.3
      */
-    public ServiceInfo(String serviceName, Map<String, List<ServiceAcl>> locatableServices) {
+    public ServiceInfo(String serviceName, PMap<String, PSequence<ServiceAcl>> locatableServices) {
         this.serviceName = serviceName;
         this.locatableServices = locatableServices;
     }
@@ -64,9 +70,9 @@ public final class ServiceInfo {
      * @return
      */
     public static ServiceInfo of(String serviceName, ServiceAcl... acls) {
-        Map<String, List<ServiceAcl>> locatableServices = new HashMap<>();
-        locatableServices.put(serviceName, Arrays.asList(acls));
-        return new ServiceInfo(serviceName, locatableServices);
+        Map<String, PSequence<ServiceAcl>> locatableServices = new HashMap<>();
+        locatableServices.put(serviceName, TreePVector.from(Arrays.asList(acls)));
+        return new ServiceInfo(serviceName, HashTreePMap.from(locatableServices));
     }
 
     public String serviceName() {
@@ -74,7 +80,7 @@ public final class ServiceInfo {
     }
 
 
-    public Map<String, List<ServiceAcl>> getLocatableServices() {
+    public PMap<String, PSequence<ServiceAcl>> getLocatableServices() {
         return locatableServices;
     }
 

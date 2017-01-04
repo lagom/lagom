@@ -20,6 +20,7 @@ import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceInfo }
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.{ ClassServiceBinding, InstanceServiceBinding }
 import com.lightbend.lagom.javadsl.server.{ PlayServiceCall, ServiceGuiceSupport }
+import org.pcollections.{ HashTreePMap, TreePVector }
 import play.api.http.HttpConfiguration
 import play.api.inject.Injector
 import play.api.mvc.{ RequestHeader => PlayRequestHeader, ResponseHeader => _, _ }
@@ -82,9 +83,9 @@ class JavadslServerBuilder @Inject() (environment: Environment, httpConfiguratio
       val locatableServices = descriptors
         .filter(_.locatableService())
         .map { descriptor =>
-          descriptor.name() -> descriptor.acls().stream().collect(Collectors.toList())
+          descriptor.name() -> TreePVector.from(descriptor.acls().stream().collect(Collectors.toList()))
         }.toMap.asJava
-      new ServiceInfo(descriptors.head.name, locatableServices)
+      new ServiceInfo(descriptors.head.name, HashTreePMap.from(locatableServices))
     } else {
       throw new IllegalArgumentException(s"Don't know how to load services that don't implement Service. Provided: ${interfaces.mkString("[", ", ", "]")}")
     }
