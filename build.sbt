@@ -240,6 +240,7 @@ val javadslProjects = Seq[ProjectReference](
   `persistence-javadsl`,
   `persistence-cassandra-javadsl`,
   `persistence-jdbc-javadsl`,
+  `persistence-jpa-javadsl`,
   `pubsub-javadsl`,
   jackson,
   `testkit-javadsl`,
@@ -744,6 +745,19 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*) configs (MultiJvm)
+
+lazy val `persistence-jpa-javadsl` = (project in file("persistence-jpa/javadsl"))
+  .settings(name := "lagom-javadsl-persistence-jpa")
+  .dependsOn(`persistence-jdbc-javadsl` % "compile;test->test", logback % Test)
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(forkedTests: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final" % Provided,
+      "org.hibernate" % "hibernate-core" % "5.2.5.Final" % Test
+    )
+  )
 
 lazy val `broker-javadsl` = (project in file("service/javadsl/broker"))
   .enablePlugins(RuntimeLibPlugins)
