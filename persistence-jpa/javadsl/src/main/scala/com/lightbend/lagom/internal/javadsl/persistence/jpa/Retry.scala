@@ -15,7 +15,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.control.NonFatal
 
 // With thanks to https://gist.github.com/viktorklang/9414163
-class Retry(delay: FiniteDuration, delayFactor: Double, maxRetries: Int) {
+private[lagom] class Retry(delay: FiniteDuration, delayFactor: Double, maxRetries: Int) {
   def apply[T](op: => T)(implicit ec: ExecutionContext, s: Scheduler): Future[T] = {
     def iterate(nextDelay: FiniteDuration, remainingRetries: Int): Future[T] =
       Future(op) recoverWith {
