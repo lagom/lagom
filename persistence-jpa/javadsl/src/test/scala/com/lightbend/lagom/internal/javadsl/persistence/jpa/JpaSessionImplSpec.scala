@@ -5,35 +5,21 @@ package com.lightbend.lagom.internal.javadsl.persistence.jpa
 
 import javax.persistence.{ EntityManager, EntityTransaction }
 
-import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcPersistenceSpec
-import com.lightbend.lagom.javadsl.persistence.jpa.JpaSession
+import com.lightbend.lagom.javadsl.persistence.jpa.TestJpaEntity
 import org.scalatest.matchers.{ BePropertyMatchResult, BePropertyMatcher }
-import play.Configuration
-import play.api.inject.DefaultApplicationLifecycle
-import play.inject.DelegateApplicationLifecycle
 
 import scala.compat.java8.FunctionConverters._
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ Await, Future }
 
-class JpaSessionImplSpec extends JdbcPersistenceSpec {
-  private lazy val config = new Configuration(system.settings.config)
-  private lazy val applicationLifecycle = new DefaultApplicationLifecycle
-  private lazy val delegateApplicationLifecycle = new DelegateApplicationLifecycle(applicationLifecycle)
-  private lazy val jpa: JpaSession = new JpaSessionImpl(config, slick, system, delegateApplicationLifecycle)
-
+class JpaSessionImplSpec extends JpaPersistenceSpec {
   private val open = BePropertyMatcher[EntityManager] { entityManager =>
     BePropertyMatchResult(entityManager.isOpen, "open")
   }
 
   private val active = BePropertyMatcher[EntityTransaction] { entityTransaction =>
     BePropertyMatchResult(entityTransaction.isActive, "active")
-  }
-
-  override def afterAll(): Unit = {
-    applicationLifecycle.stop()
-    super.afterAll()
   }
 
   // Convenience for converting between Scala and Java 8
@@ -61,19 +47,20 @@ class JpaSessionImplSpec extends JdbcPersistenceSpec {
     }
 
     "support saving and reading entities" in {
-      val entity = new TestJpaEntity("test saving and reading entities")
+      val entity = new TestJpaEntity("1", "test saving and reading entities")
       entity.getId shouldBe null
 
       Await.ready(withTransaction(_.persist(entity)), 10.seconds)
 
       // Note that the retrieval runs in a new transaction
       val retrievedEntity = Await.result(withTransaction {
-        _.createQuery("SELECT test FROM TestJpaEntity test WHERE data = :data", classOf[TestJpaEntity])
-          .setParameter("data", "test saving and reading entities")
+        _.createQuery("SELECT test FROM TestJpaEntity test WHERE parentId = :parentId", classOf[TestJpaEntity])
+          .setParameter("parentId", "1")
           .getSingleResult
       }, 10.seconds)
       retrievedEntity.getId should not be null
-      retrievedEntity.getData should equal("test saving and reading entities")
+      retrievedEntity.getParentId should equal("1")
+      retrievedEntity.getElement should equal("test saving and reading entities")
     }
   }
 }

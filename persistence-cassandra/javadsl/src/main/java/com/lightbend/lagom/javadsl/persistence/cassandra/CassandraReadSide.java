@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 /**
  * Cassandra read side support.
  *
- * This should be used to build and register readside
+ * This should be used to build and register a read side processor.
  */
 public interface CassandraReadSide {
     /**

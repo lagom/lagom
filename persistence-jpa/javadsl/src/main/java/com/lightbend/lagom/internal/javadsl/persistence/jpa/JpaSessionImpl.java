@@ -28,7 +28,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
 @Singleton
-public class JpaSessionImpl implements JpaSession {
+class JpaSessionImpl implements JpaSession {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final String persistenceUnitName;
