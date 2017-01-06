@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
+ * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.internal.scaladsl.persistence.protobuf
 
@@ -144,4 +144,3 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
   private def persistExceptionFromProto(exc: pm.Exception): PersistException =
     PersistException(if (exc.hasMessage) exc.getMessage else null)
 }
-

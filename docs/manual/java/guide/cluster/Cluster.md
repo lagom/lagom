@@ -73,7 +73,7 @@ The naïve approach is to remove an unreachable node from the cluster membership
 
 **We strongly recommend against using the auto-down feature of Akka Cluster.**
 
-A pre-packaged solution for the downing problem is provided by [Split Brain Resolver](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/java/split-brain-resolver.html), which is part of the [Lightbend Reactive Platform](http://www.lightbend.com/products/lightbend-reactive-platform). The `keep-majority` strategy is configured to be enabled by default if you use Lagom with the Reactive Platform.
+A pre-packaged solution for the downing problem is provided by [Split Brain Resolver](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/java/split-brain-resolver.html), which is part of the [Lightbend Reactive Platform](https://www.lightbend.com/products/lightbend-reactive-platform). The `keep-majority` strategy is configured to be enabled by default if you use Lagom with the Reactive Platform.
 
 See [Split Brain Resolver documentation](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/java/split-brain-resolver.html) and [[Reactive Platform instructions|ReactivePlatform]] for how to enable it in the build of your project.
 

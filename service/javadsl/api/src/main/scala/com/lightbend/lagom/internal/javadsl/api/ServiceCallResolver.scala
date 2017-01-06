@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
+ * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.internal.javadsl.api
 
@@ -97,4 +97,3 @@ class TopicCallResolver(
   messageSerializers: Map[Type, MessageSerializer[_, _]],
   serializerFactory:  SerializerFactory
 ) extends CallResolver(messageSerializers, serializerFactory)
-
