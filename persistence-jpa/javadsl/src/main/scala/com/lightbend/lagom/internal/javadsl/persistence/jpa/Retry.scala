@@ -41,7 +41,7 @@ private[lagom] class Retry(delay: FiniteDuration, delayFactor: Double, maxRetrie
     fromNanos((duration.toNanos * factor).toLong)
 }
 
-object Retry {
+private[lagom] object Retry {
   def apply[T](delay: FiniteDuration, delayFactor: Double, maxRetries: Int)(op: => T)(implicit ec: ExecutionContext, s: Scheduler): Future[T] =
     (new Retry(delay, delayFactor, maxRetries))(op)
 }
