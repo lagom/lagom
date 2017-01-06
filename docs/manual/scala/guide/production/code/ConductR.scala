@@ -17,6 +17,7 @@ package docs.scaladsl.production.conductr {
     import docs.scaladsl.services.lagomappliaction.HelloApplication
 
     //#conductr-application
+    import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
     import com.lightbend.lagom.scaladsl.server._
     import com.typesafe.conductr.bundlelib.lagom.scaladsl.ConductRApplicationComponents
 

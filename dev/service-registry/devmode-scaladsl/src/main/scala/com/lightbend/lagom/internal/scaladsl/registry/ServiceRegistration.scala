@@ -6,8 +6,8 @@ package com.lightbend.lagom.internal.scaladsl.registry
 import java.net.URI
 
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
-import play.api.{ Configuration, Logger }
 import play.api.inject.ApplicationLifecycle
+import play.api.{ Configuration, Logger }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success }
