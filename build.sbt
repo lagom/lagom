@@ -859,7 +859,7 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
   .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
-    `service-registration-javadsl`, `cassandra-server`, `play-integration-javadsl`,
+    `service-registration-javadsl`, `cassandra-server`, `play-integration-javadsl`, `devmode-scaladsl`,
     `service-registry-client-javadsl`, 
     `maven-java-archetype`, `kafka-server`)
   .settings(
@@ -1073,6 +1073,12 @@ lazy val `service-registration-javadsl` = (project in file("dev") / "service-reg
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`server-javadsl`, `service-registry-client-javadsl`)
+
+lazy val `devmode-scaladsl` = (project in file("dev") / "service-registry" / "devmode-scaladsl")
+  .settings(name := "lagom-scaladsl-dev-mode")
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .dependsOn(`client-scaladsl`)
 
 lazy val `play-integration-javadsl` = (project in file("dev") / "service-registry" / "play-integration-javadsl")
   .settings(name := "lagom-javadsl-play-integration")

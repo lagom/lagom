@@ -30,7 +30,7 @@ Running a package requires the provision of a service locator implementation i.e
 
 While we would never advise using static service locations in any production situation, as a means to demonstrating a working Lagom system in the absence of a managed runtime, you may decide to deploy Lagom systems to static locations with a static configuration saying where the systems live.
 
-To aid in achieving this, a [`ConfigurationServiceLocator`](api/com/lightbend/lagom/scaladsl/api/ConfigurationServiceLocator.html) is provided that reads the service locator configuration out of Lagom's `application.conf` file.  Here is an example of the configuration for it:
+To aid in achieving this, a [`ConfigurationServiceLocator`](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocator.html) is provided that reads the service locator configuration out of Lagom's `application.conf` file.  Here is an example of the configuration for it:
 
 ```
 lagom.services {
@@ -39,7 +39,7 @@ lagom.services {
 }
 ```
 
-To instruct Lagom to use the `ConfigurationServiceLocator`, you need to override the `serviceLocator` in your application cake to use it. For example:
+To instruct Lagom to use the `ConfigurationServiceLocator`, you can mix in the [`ConfigurationServiceLocatorComponents`](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocatorComponents.html) trait into your application:
 
 @[configuration-service-locator](code/ProductionOverview.scala)
 
