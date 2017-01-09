@@ -11,13 +11,11 @@ import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.{ NegotiatedDese
 import com.lightbend.lagom.scaladsl.api.deser.{ MessageSerializer, StrictMessageSerializer }
 import com.lightbend.lagom.scaladsl.api.transport.{ MessageProtocol, Method }
 import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceAcl, ServiceCall }
-import play.api.data.validation.ValidationError
-import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import play.api.libs.json._
 
 import scala.collection.immutable
 import scala.collection.immutable.Seq
-import scala.util.Try
 
 /**
  * This mirrors com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry. The service locator implements the

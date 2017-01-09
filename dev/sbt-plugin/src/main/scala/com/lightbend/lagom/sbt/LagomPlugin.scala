@@ -89,6 +89,7 @@ object LagomScala extends AutoPlugin {
     },
     libraryDependencies ++= Seq(
       LagomImport.lagomScaladslServer,
+      LagomImport.lagomScaladslDevMode,
       PlayImport.component("play-netty-server")
     )
   )
@@ -139,6 +140,18 @@ object LagomPlayJava extends AutoPlugin {
         Seq.empty
       }
     )
+  )
+}
+
+/**
+ * This plugin will automatically be enabled if using PlayScala and LagomPlay, to add the play integration
+ */
+object LagomPlayScala extends AutoPlugin {
+  override def requires = LagomPlay && PlayScala
+  override def trigger = allRequirements
+
+  override def projectSettings = Seq(
+    libraryDependencies += LagomImport.lagomScaladslDevMode
   )
 }
 
