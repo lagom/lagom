@@ -1,48 +1,52 @@
-# Import a Lagom build in your IDE
+#  Import Lagom projects into an IDE
 
-Here you will learn how to import projects defined in a Lagom build into your preferred IDE.
+To use existing Lagom projects with Eclipse and IntelliJ, see the section that describes your tool:
 
-## Using Maven
+* [Importing Maven projects](#maven)  
+* [Importing sbt projects into Eclipse](#sbt-eclipse)  
+* [Importing sbt projects into IntelliJ](#sbt-intellij)  
 
-If using Maven, use the m2clipse plugin in Eclipse, or the built in IntelliJ Maven support in IntelliJ, to import your project.
 
-## Using sbt
+## <a name="maven"></a>Importing Maven projects
+You can import Maven projects to Eclipse using the m2clipse plugin or use the built in Maven support in IntelliJ.
 
-### Eclipse
+## <a name="sbt-eclipse"></a>Importing sbt projects into Eclipse
 
-[sbt-eclipse](https://github.com/typesafehub/sbteclipse) is needed to generate the Eclipse project files, which are required to import all projects defined in your Lagom build into Eclipse.
+Use the [sbt-eclipse](https://github.com/typesafehub/sbteclipse) plugin to generate the Eclipse project files necessary to import all projects defined in your Lagom build into Eclipse.
 
-If your Lagom build file is in directory `hello`, create a `project/eclipse.sbt` with the following content:
+To add the plugin to an existing project, follow these steps:  
 
-```
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "3.0.0")
-```
+1. Create an `eclipse.sbt` file in your project's `project` directory. For example, if your project is in `my-first-system`, add the `eclipse.sbt` file to `my-first-system/project` on Linux systems, or `my-first-system\project` on Windows systems.  
 
-Save the file. Now, open the terminal, and `cd` to the `hello` directory, and type `sbt`:
+2. Add the following line to the file and save it:   
 
-```
-$ cd hello
-$ sbt
-... (booting up)
->
-```
+  ```addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "3.0.0") ```  
+ 
+3. Open a terminal or command prompt, `cd` to project home, such as the `my-first-system` directory, and start `sbt`:  
+    
+  ```
+     $ cd hello  
+     $ sbt  
+     ... (booting up)  
+     >  
+     ```
+4. Enter `eclipse` to generate the Eclipse project files for all projects in your build:  
+   ```  
+   > eclipse
+   ...  
+   [info] Successfully created Eclipse project files for project(s):  
+   [info] hello-impl  
+   [info] hello-api  
+   [info] hello-stream-impl  
+   [info] hello-stream-api  
+   [info] lagom-internal-meta-project-service-locator  
+   [info] lagom-internal-meta-project-cassandra  
+   
+   >
+   ```
+5. Open Eclipse and follow the [Eclipse instructions](http://help.eclipse.org/mars/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2Ftasks%2Ftasks-importproject.htm) for importing existing projects. 
 
-If you have configured things correctly, typing `eclipse` will generate the Eclipse project files for all projects in your build:
-
-```
-> eclipse
-...
-[info] Successfully created Eclipse project files for project(s):
-[info] hello-impl
-[info] hello-api
-[info] hello-stream-impl
-[info] hello-stream-api
-[info] lagom-internal-meta-project-service-locator
-[info] lagom-internal-meta-project-cassandra
->
-```
-
-Open Eclipse and follow the [Eclipse instructions](http://help.eclipse.org/mars/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2Ftasks%2Ftasks-importproject.htm) for importing existing projects. Also, mind that `lagom-internal-meta-project-service-locator` and `lagom-internal-meta-project-cassandra` are internal projects that you don't need to import, so just unselect them:
+Note: When importing, unselect the internal projects, `lagom-internal-meta-project-service-locator` and `lagom-internal-meta-project-cassandra`:
 
 [[eclipse_import_unselect_synthetic_projects.png]]
 
@@ -84,9 +88,9 @@ Now update all projects declarations in your Lagom build to use the newly create
 
 Finally, you will need to regenerate the Eclipse project files to account for the changes made in the build file. Go back to the sbt console, type `reload` to reload the build file, and type `eclipse`. Once the `eclipse` task completes, go back to Eclipse, hit F5 to refresh all previously imported projects, and you are done.
 
-### IntelliJ
+### <a name="sbt-intellij"></a>Importing sbt projects into IntelliJ
 
-Because the Lagom build file is written in sbt, we recommend to install the IntelliJ IDEA sbt plugin to facilitate importing projects. Unfortunately, for sbt plugin to properly work, you will need to install the Scala plugin as well. To do so, open the `Plugins` modal for installing plugins, search for the "SBT" plugin. If no match is found, you'll have to hit "Browse".
+Because the Lagom build file is written in sbt, we recommend that you install the IntelliJ IDEA sbt plugin to facilitate importing projects. The plugin has a dependency on the Scala plugin, so you will need to install it first. To do so, open the `Plugins` modal for installing plugins, search for the "SBT" plugin. If no match is found, you'll have to hit "Browse".
 
 [[idea_search_sbt_plugin.png]]
 
