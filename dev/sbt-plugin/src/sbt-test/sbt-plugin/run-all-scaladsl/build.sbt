@@ -37,12 +37,11 @@ lazy val c = (project in file("c"))
     libraryDependencies += macwire
   )
 
-lazy val p = (project in file("p")).enablePlugins(PlayJava && LagomPlay)
+lazy val p = (project in file("p")).enablePlugins(PlayScala && LagomPlay)
   .settings(
     lagomServicePort := 9001,
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      lagomScaladslServer,
       macwire
     )
   )

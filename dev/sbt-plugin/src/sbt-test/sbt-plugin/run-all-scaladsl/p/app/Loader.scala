@@ -4,7 +4,7 @@ import com.softwaremill.macwire._
 import router.Routes
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.client.LagomServiceClientComponents
-import com.lightbend.lagom.scaladsl.server.LagomDevModeComponents
+import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import scala.collection.immutable
 
 class Loader extends ApplicationLoader {

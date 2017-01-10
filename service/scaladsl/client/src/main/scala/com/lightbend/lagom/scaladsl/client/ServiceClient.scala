@@ -3,15 +3,19 @@
  */
 package com.lightbend.lagom.scaladsl.client
 
-import akka.stream.Materializer
+import java.io.File
+
+import akka.actor.ActorSystem
+import akka.stream.{ ActorMaterializer, Materializer }
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
-import play.api.Environment
-import play.api.inject.ApplicationLifecycle
+import play.api.{ Configuration, Environment, Mode }
+import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 import play.api.libs.ws.WSClient
+import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
@@ -100,6 +104,9 @@ trait ServiceResolver {
   def resolve(descriptor: Descriptor): Descriptor
 }
 
+/**
+ * The Lagom service client components.
+ */
 trait LagomServiceClientComponents extends TopicFactoryProvider {
   def wsClient: WSClient
   def serviceInfo: ServiceInfo
@@ -117,4 +124,31 @@ trait LagomServiceClientComponents extends TopicFactoryProvider {
   )(executionContext)
   lazy val serviceClient: ServiceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
     serviceLocator, serviceResolver, optionalTopicFactory)(executionContext, materializer)
+}
+
+/**
+ * Convienence for constructing service clients in a non Lagom server application.
+ *
+ * It is important to invoke [[#stop]] when the application is no longer needed, as this will trigger the shutdown
+ * of all thread and connection pools.
+ */
+abstract class LagomClientApplication(
+  clientName:  String,
+  classLoader: ClassLoader = classOf[LagomClientApplication].getClassLoader
+) extends LagomServiceClientComponents {
+  private val defaultApplicationLifecycle = new DefaultApplicationLifecycle
+
+  override lazy val serviceInfo: ServiceInfo = ServiceInfo(clientName, Map.empty)
+  override lazy val environment: Environment = Environment(new File("."), classLoader, Mode.Prod)
+  lazy val configuration: Configuration = Configuration.load(environment, Map.empty)
+  override lazy val applicationLifecycle: ApplicationLifecycle = defaultApplicationLifecycle
+  lazy val actorSystem: ActorSystem = ActorSystem("application", configuration.underlying.atKey("akka"),
+    environment.classLoader)
+  override lazy val materializer: Materializer = ActorMaterializer.create(actorSystem)
+  override lazy val executionContext: ExecutionContext = actorSystem.dispatcher
+
+  /**
+   * Stop the application.
+   */
+  def stop(): Unit = defaultApplicationLifecycle.stop()
 }

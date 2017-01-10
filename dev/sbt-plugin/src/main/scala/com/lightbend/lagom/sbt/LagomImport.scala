@@ -36,6 +36,7 @@ object LagomImport {
   val lagomScaladslApi = component("lagom-scaladsl-api")
   val lagomScaladslClient = component("lagom-scaladsl-client")
   val lagomScaladslServer = component("lagom-scaladsl-server")
+  val lagomScaladslDevMode = component("lagom-scaladsl-dev-mode")
   val lagomScaladslCluster = component("lagom-scaladsl-cluster")
   val lagomScaladslBroker = component("lagom-scaladsl-broker")
   val lagomScaladslKafkaClient = component("lagom-scaladsl-kafka-client")
