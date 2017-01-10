@@ -988,7 +988,7 @@ lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
 def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++ 
   Seq(scriptedLaunchOpts += s"-Dproject.version=$version.value") ++
   Seq(
-    scripted := scripted.tag(Tags.Test).inputTaskValue,
+    scripted <<= scripted.tag(Tags.Test),
     scriptedLaunchOpts ++= Seq(
       "-Xmx768m",
       "-XX:MaxMetaspaceSize=384m",
