@@ -63,16 +63,18 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
       import scala.collection.JavaConverters._
       sender() ! RegisteredServices(TreePVector.from(services.asJava))
     case route: Route =>
-      routerFunctions.count(_.isDefinedAt(route)) match {
-        case 0 => logger.warn(s"Can't serve route: $route.")
-        case 1 => // expected case
-        case _ =>
-          val servers = routerFunctions
-            .filter(_.isDefinedAt(route)).map(_.apply(route)).mkString("[", ",", "]")
-          logger.warn(s"Ambiguous route resolution serving route: $route. Route served by $servers")
-
-      }
       sender() ! router.lift(route).fold[RouteResult](NotFound(registry))(Found.apply)
+      warnOnAmbiguity(route)
+  }
+
+  private def warnOnAmbiguity(route: Route) = {
+    if (logger.isWarnEnabled) {
+      val servingRoutes = routerFunctions.filter(_.isDefinedAt(route))
+      if (servingRoutes.size > 1) {
+        val servers = servingRoutes.map(_.apply(route))
+        logger.warn(s"Ambiguous route resolution serving route: $route. Route served by ${servers.head} but also matches ${servers.tail.mkString("[", ",", "]")}.")
+      }
+    }
   }
 
   private def serviceRouter(service: ServiceRegistryService) = {
