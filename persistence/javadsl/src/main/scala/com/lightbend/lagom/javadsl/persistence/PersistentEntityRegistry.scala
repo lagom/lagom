@@ -3,17 +3,15 @@
  */
 package com.lightbend.lagom.javadsl.persistence
 
-import java.util.Optional
-import java.util.UUID
+import java.util.concurrent.CompletionStage
+import java.util.{ Optional, UUID }
 
-import scala.concurrent.duration._
 import akka.japi.Pair
 import akka.stream.javadsl
-import akka.NotUsed
-import java.util.concurrent.CompletionStage
-
-import akka.Done
+import akka.{ Done, NotUsed }
 import com.lightbend.lagom.javadsl.persistence.Offset.{ Sequence, TimeBasedUUID }
+
+import scala.concurrent.duration._
 
 /**
  * At system startup all [[PersistentEntity]] classes must be registered here
@@ -44,6 +42,11 @@ trait PersistentEntityRegistry {
    * UUID offsets, while others use sequence numbers. The passed in `fromOffset`
    * must either be [[Offset#NONE]], or an offset that has previously been produced
    * by this journal.
+   *
+   * The stream will begin with events starting ''after'' `fromOffset`.
+   * To resume an event stream, store the `Offset` corresponding to the most
+   * recently processed `Event`, and pass that back as the value for
+   * `fromOffset` to start the stream from events following that one.
    *
    * @throws IllegalArgumentException If the `fromOffset` type is not supported
    *   by this journal.

@@ -3,15 +3,15 @@
  */
 package com.lightbend.lagom.javadsl.persistence.cassandra
 
-import akka.NotUsed
-import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
-import akka.persistence.query.PersistenceQuery
-import akka.stream.javadsl.Source
-import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
-import com.lightbend.lagom.internal.javadsl.persistence.cassandra.{ CassandraReadSideImpl, JavadslCassandraOffsetStore }
+import java.util.concurrent.CompletionStage
+
+import com.google.inject.Guice
+import com.lightbend.lagom.internal.javadsl.persistence.cassandra.{ CassandraPersistentEntityRegistry, CassandraReadSideImpl, JavadslCassandraOffsetStore }
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.ConfigFactory
+
+import scala.concurrent.duration._
 
 object CassandraReadSideSpec {
 
@@ -22,27 +22,25 @@ object CassandraReadSideSpec {
 }
 
 class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.config) with AbstractReadSideSpec {
-  lazy val testSession: CassandraSession = new CassandraSession(system)
-  lazy val queries = PersistenceQuery(system).readJournalFor[CassandraReadJournal](CassandraReadJournal.Identifier)
+  import system.dispatcher
 
-  override def eventStream[Event <: AggregateEvent[Event]](
-    aggregateTag: AggregateEventTag[Event],
-    fromOffset:   Offset
-  ): Source[akka.japi.Pair[Event, Offset], NotUsed] = {
-    val tag = aggregateTag.tag
-    queries.eventsByTag(tag, OffsetAdapter.dslOffsetToOffset(fromOffset))
-      .map { env => akka.japi.Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset)) }
-      .asJava
-  }
+  private lazy val injector = Guice.createInjector()
+  override protected lazy val persistentEntityRegistry = new CassandraPersistentEntityRegistry(system, injector)
 
-  val readSide = new TestEntityReadSide(testSession)
-  val cassandraReadSide = new CassandraReadSideImpl(system, testSession, new JavadslCassandraOffsetStore(system, testSession,
-    ReadSideConfig())(system.dispatcher), null, null)
+  private lazy val testSession: CassandraSession = new CassandraSession(system)
+  private lazy val offsetStore = new JavadslCassandraOffsetStore(system, testSession, ReadSideConfig())
+  private lazy val cassandraReadSide = new CassandraReadSideImpl(system, testSession, offsetStore, null, injector)
 
-  override def getAppendCount(id: String) = readSide.getAppendCount(id)
-
-  override def processorFactory(): ReadSideProcessor[TestEntity.Evt] = {
+  override def processorFactory(): ReadSideProcessor[TestEntity.Evt] =
     new TestEntityReadSide.TestEntityReadSideProcessor(cassandraReadSide, testSession)
+
+  private lazy val readSide = new TestEntityReadSide(testSession)
+
+  override def getAppendCount(id: String): CompletionStage[java.lang.Long] = readSide.getAppendCount(id)
+
+  override def afterAll(): Unit = {
+    persistentEntityRegistry.gracefulShutdown(5.seconds)
+    super.afterAll()
   }
 
 }
