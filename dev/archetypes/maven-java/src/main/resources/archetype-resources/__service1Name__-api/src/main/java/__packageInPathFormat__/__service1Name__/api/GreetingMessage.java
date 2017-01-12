@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
+ */
 package ${package}.${service1Name}.api;
 
 import javax.annotation.Nullable;

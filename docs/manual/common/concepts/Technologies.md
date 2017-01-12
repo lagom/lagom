@@ -64,7 +64,7 @@ Communication with browser-based clients is via [WebSockets](https://tools.ietf.
 
 If you want to scale your microservices out across multiple servers, Lagom provides clustering via [Akka Cluster](http://doc.akka.io/docs/akka/2.4/java/cluster-usage.html).
 
-Customers of Lightbend's [Reactive Platform](http://www.lightbend.com/products/lightbend-reactive-platform) can additionally use [[Lightbend ConductR|ConductR]] and Akka's [Split Brain Resolver](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/java/split-brain-resolver.html) for deployment and cluster management and [Lightbend Monitoring](http://www.lightbend.com/products/monitoring) for monitoring production systems.
+Customers of Lightbend's [Reactive Platform](https://www.lightbend.com/products/lightbend-reactive-platform) can additionally use [[Lightbend ConductR|ConductR]] and Akka's [Split Brain Resolver](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/java/split-brain-resolver.html) for deployment and cluster management and [Lightbend Monitoring](https://www.lightbend.com/products/monitoring) for monitoring production systems.
 
 See [[Cluster]] in this manual for more details.
 

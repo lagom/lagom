@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
+ */
 package com.lightbend.lagom.maven
 
 import java.io.File
@@ -337,4 +340,3 @@ class RunAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, sessi
     facade.executeMavenPluginGoal(session.getCurrentProject, name)
   }
 }
-

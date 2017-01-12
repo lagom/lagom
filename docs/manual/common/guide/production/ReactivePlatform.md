@@ -1,6 +1,6 @@
 # Lightbend Reactive Platform
 
-We recommend that you use [Lightbend Reactive Platform](http://www.lightbend.com/products/lightbend-reactive-platform) to take advantage of the [Split Brain Resolver](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/java/split-brain-resolver.html) and the [Diagnostics Recorder](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/common/diagnostics-recorder.html).
+We recommend that you use [Lightbend Reactive Platform](https://www.lightbend.com/products/lightbend-reactive-platform) to take advantage of the [Split Brain Resolver](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/java/split-brain-resolver.html) and the [Diagnostics Recorder](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/common/diagnostics-recorder.html).
 
 Read about the importance of the Split Brain Resolver in the [[Cluster Downing|Cluster#Downing]] documentation.
 
@@ -10,7 +10,7 @@ To use Reactive Platform you need to adjust the build in your project.
 
     typesafe.subscription=YOUR_SUBSCRIPTION_ID
 
-([Click to obtain a subscription ID](http://www.lightbend.com/account/id))
+([Click to obtain a subscription ID](https://www.lightbend.com/account/id))
 
 2) Create a new file `project/project/typesafe.sbt` with the following content. (Note: It is `project/project` with two `project`.) The values of `rpVersion` and `rpUrl` are subject to change:
 

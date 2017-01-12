@@ -81,5 +81,5 @@ Information about the status of the circuit breakers and some metrics for throug
 * `/_status/circuit-breaker/current` - Snapshot of current circuit breaker status
 * `/_status/circuit-breaker/stream` - Stream of circuit breaker status
 
-[Lightbend Monitoring](http://www.lightbend.com/products/monitoring) will provide metrics for Lagom circuit breakers, including aggregated views of the information for all nodes in the cluster.
+[Lightbend Monitoring](https://www.lightbend.com/products/monitoring) will provide metrics for Lagom circuit breakers, including aggregated views of the information for all nodes in the cluster.
 

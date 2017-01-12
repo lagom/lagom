@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
+ * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.internal.scaladsl.persistence.jdbc
 
@@ -21,4 +21,3 @@ class OffsetTableConfiguration(config: Configuration, readSideConfig: ReadSideCo
   override def role: Option[String] = readSideConfig.role
   override def toString: String = s"OffsetTableConfiguration($tableName,$schemaName)"
 }
-

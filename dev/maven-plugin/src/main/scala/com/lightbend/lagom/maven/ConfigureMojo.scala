@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
+ */
 package com.lightbend.lagom.maven
 
 import javax.inject.Inject
@@ -23,4 +26,3 @@ class ConfigureMojo @Inject() (session: MavenSession) extends LagomAbstractMojo 
     LagomKeys.PlayService.put(session.getCurrentProject, playService)
   }
 }
-

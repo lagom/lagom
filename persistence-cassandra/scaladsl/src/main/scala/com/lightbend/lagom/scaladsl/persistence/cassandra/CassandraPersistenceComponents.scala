@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
+ * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.scaladsl.persistence.cassandra
 
@@ -54,4 +54,3 @@ trait ReadSideCassandraPersistenceComponents extends ReadSidePersistenceComponen
 
   lazy val cassandraReadSide: CassandraReadSide = new CassandraReadSideImpl(actorSystem, cassandraSession, cassandraOffsetStore)
 }
-
