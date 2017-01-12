@@ -42,7 +42,7 @@ The loader has two methods, `load` and `loadDevMode`. You can see that we've mix
 
 Finally, we need to tell Play about our application loader. We can do that by adding the following configuration to `application.conf`:
 
-    play.application.loader += com.example.HelloLoader
+    play.application.loader = com.example.HelloLoader
 
 ## Working with streams
 
