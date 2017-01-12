@@ -3,34 +3,32 @@
  */
 package com.lightbend.lagom.scaladsl.persistence
 
-import java.util.Optional
-
 import akka.persistence.query.Offset
-import akka.{ Done, NotUsed }
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.testkit.ImplicitSender
-
-import scala.concurrent.duration._
-import com.lightbend.lagom.internal.scaladsl.persistence.{ PersistentEntityActor, ReadSideActor }
+import akka.{ Done, NotUsed }
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
-
-import scala.concurrent.Await
+import com.lightbend.lagom.internal.scaladsl.persistence.{ PersistentEntityActor, ReadSideActor }
 import com.lightbend.lagom.persistence.ActorSystemSpec
 
-import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.concurrent.{ Await, Future }
 
 trait AbstractReadSideSpec extends ImplicitSender { spec: ActorSystemSpec =>
   import system.dispatcher
 
   implicit val mat = ActorMaterializer()
 
+  protected val persistentEntityRegistry: PersistentEntityRegistry
+
   def eventStream[Event <: AggregateEvent[Event]](
     aggregateTag: AggregateEventTag[Event],
     fromOffset:   Offset
-  ): Source[EventStreamElement[Event], NotUsed]
+  ): Source[EventStreamElement[Event], NotUsed] =
+    persistentEntityRegistry.eventStream(aggregateTag, fromOffset)
 
   def processorFactory(): ReadSideProcessor[TestEntity.Evt]
 

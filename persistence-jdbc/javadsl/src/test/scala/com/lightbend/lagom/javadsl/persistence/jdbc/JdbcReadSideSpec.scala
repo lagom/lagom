@@ -3,38 +3,30 @@
  */
 package com.lightbend.lagom.javadsl.persistence.jdbc
 
+import java.lang.Long
 import java.util.concurrent.CompletionStage
 
-import akka.NotUsed
-import akka.japi.Pair
-import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
-import akka.persistence.query.PersistenceQuery
-import akka.stream.javadsl.Source
-import com.lightbend.lagom.javadsl.persistence._
+import com.google.inject.Guice
+import com.lightbend.lagom.internal.javadsl.persistence.jdbc.JdbcPersistentEntityRegistry
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
+import com.lightbend.lagom.javadsl.persistence._
+
+import scala.concurrent.duration._
 
 class JdbcReadSideSpec extends JdbcPersistenceSpec with AbstractReadSideSpec {
+  private lazy val injector = Guice.createInjector()
+  override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, injector, slick)
 
-  lazy val readSide = new JdbcTestEntityReadSide(session)
-  lazy val queries = PersistenceQuery(system).readJournalFor[JdbcReadJournal](JdbcReadJournal.Identifier)
-
-  override def eventStream[Event <: AggregateEvent[Event]](aggregateTag: AggregateEventTag[Event], fromOffset: Offset): Source[Pair[Event, Offset], NotUsed] = {
-    val tag = aggregateTag.tag
-    val offset = fromOffset match {
-      case Offset.NONE          => 0l
-      case seq: Offset.Sequence => seq.value() + 1
-      case other                => throw new IllegalArgumentException(s"JDBC does not support ${other.getClass.getSimpleName} offsets")
-    }
-    queries.eventsByTag(tag, offset)
-      .map { env => Pair.create(env.event.asInstanceOf[Event], Offset.sequence(env.offset)) }
-      .asJava
-  }
-
-  override def processorFactory(): ReadSideProcessor[Evt] = {
+  override def processorFactory(): ReadSideProcessor[Evt] =
     new JdbcTestEntityReadSide.TestEntityReadSideProcessor(jdbcReadSide)
+
+  private lazy val readSide = new JdbcTestEntityReadSide(session)
+
+  override def getAppendCount(id: String): CompletionStage[Long] = readSide.getAppendCount(id)
+
+  override def afterAll(): Unit = {
+    persistentEntityRegistry.gracefulShutdown(5.seconds)
+    super.afterAll()
   }
 
-  override def getAppendCount(id: String): CompletionStage[java.lang.Long] = {
-    readSide.getAppendCount(id)
-  }
 }
