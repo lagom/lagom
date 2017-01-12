@@ -6,32 +6,32 @@ package com.lightbend.lagom.javadsl.persistence
 import java.util.Optional
 import java.util.concurrent.CompletionStage
 
-import akka.{ Done, NotUsed }
 import akka.stream.ActorMaterializer
 import akka.stream.javadsl.Source
 import akka.testkit.ImplicitSender
-
-import scala.compat.java8.FutureConverters._
-import scala.concurrent.duration._
-import com.typesafe.config.ConfigFactory
+import akka.{ Done, NotUsed }
 import com.lightbend.lagom.internal.javadsl.persistence.{ PersistentEntityActor, ReadSideActor }
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
-import com.lightbend.lagom.javadsl.persistence.TestEntity.InPrependMode
-
-import scala.concurrent.Await
 import com.lightbend.lagom.persistence.ActorSystemSpec
+
+import scala.compat.java8.FutureConverters._
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 trait AbstractReadSideSpec extends ImplicitSender { spec: ActorSystemSpec =>
   import system.dispatcher
 
   implicit val mat = ActorMaterializer()
 
+  protected val persistentEntityRegistry: PersistentEntityRegistry
+
   def eventStream[Event <: AggregateEvent[Event]](
     aggregateTag: AggregateEventTag[Event],
     fromOffset:   Offset
-  ): Source[akka.japi.Pair[Event, Offset], NotUsed]
+  ): Source[akka.japi.Pair[Event, Offset], NotUsed] =
+    persistentEntityRegistry.eventStream(aggregateTag, fromOffset)
 
   def processorFactory(): ReadSideProcessor[TestEntity.Evt]
 

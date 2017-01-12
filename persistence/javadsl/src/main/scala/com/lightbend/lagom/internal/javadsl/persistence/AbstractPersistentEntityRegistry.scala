@@ -12,8 +12,8 @@ import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRe
 import akka.event.Logging
 import akka.japi.Pair
 import akka.pattern.ask
-import akka.persistence.query.EventEnvelope
-import akka.persistence.query.scaladsl.{ EventsByTagQuery2, EventsByTagQuery }
+import akka.persistence.query.scaladsl.EventsByTagQuery2
+import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.javadsl
 import akka.util.Timeout
 import akka.{ Done, NotUsed }
@@ -120,9 +120,9 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
       case Some(queries) =>
         val tag = aggregateTag.tag
 
-        val offset = OffsetAdapter.dslOffsetToOffset(fromOffset)
+        val startingOffset = mapStartingOffset(fromOffset)
 
-        queries.eventsByTag(tag, offset)
+        queries.eventsByTag(tag, startingOffset)
           .map { env => Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset)) }
           .asJava
 
@@ -130,6 +130,24 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
         throw new UnsupportedOperationException(s"The $journalId Lagom persistence plugin does not support streaming events by tag")
     }
   }
+
+  /**
+   * Converts a stored event journal offset into the argument to an
+   * `eventsByTag` query.
+   *
+   * Different Akka Persistence back ends interpret the `offset` parameter to
+   * `eventsByTag` differently. Some return events starting ''after'' the given
+   * `offset`, others start with the event ''at'' that offset. In Lagom, we
+   * shield end users from this difference, and always want to return
+   * unprocessed events. Subclasses can override this method as necessary to
+   * convert a stored offset into a starting offset that ensures no stored
+   * values will be repeated in the stream.
+   *
+   * @param storedOffset the most recently seen offset
+   * @return an offset that can be provided to the `eventsByTag` query to
+   *         retrieve only unseen events
+   */
+  protected def mapStartingOffset(storedOffset: Offset): AkkaOffset = OffsetAdapter.dslOffsetToOffset(storedOffset)
 
   override def gracefulShutdown(timeout: FiniteDuration): CompletionStage[Done] = {
     import scala.collection.JavaConverters._

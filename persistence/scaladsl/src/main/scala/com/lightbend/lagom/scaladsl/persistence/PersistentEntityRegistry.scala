@@ -48,6 +48,11 @@ trait PersistentEntityRegistry {
    * must either be [[akka.persistence.query.NoOffset]], or an offset that has previously been produced
    * by this journal.
    *
+   * The stream will begin with events starting ''after'' `fromOffset`.
+   * To resume an event stream, store the `Offset` corresponding to the most
+   * recently processed `Event`, and pass that back as the value for
+   * `fromOffset` to start the stream from events following that one.
+   *
    * @throws IllegalArgumentException If the `fromOffset` type is not supported
    *   by this journal.
    */
