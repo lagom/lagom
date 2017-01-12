@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
+ * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.javadsl.persistence.testkit
 
@@ -69,4 +69,3 @@ trait AbstractEmbeddedPersistentActorSpec { spec: ActorSystemSpec =>
   }
 
 }
-

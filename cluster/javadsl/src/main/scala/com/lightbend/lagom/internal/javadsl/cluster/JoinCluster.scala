@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
+ * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.internal.javadsl.cluster
 
@@ -19,4 +19,3 @@ class JoinClusterModule extends AbstractModule {
 private[lagom] class JoinCluster @Inject() (system: ActorSystem) {
   JoinClusterImpl.join(system)
 }
-
