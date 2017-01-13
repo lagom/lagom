@@ -10,7 +10,7 @@ If you aren't concerned with scaling to multiple teams yet, feel free to skip th
 
 Even with multiple builds, you will still often want to run your services together in development.  Lagom allows importing services published from one build into another build.
 
-Suppose you have a `hello` service that you want to publish and import into another build.  You can publish this to your local repository by running `mvn install` if using Maven, or by running `publishLocal` if using sbt.  This is the simplest way to publish a service, however it means every developer that wants to run a build that imports the service will need publish it to their own repository themselves, and they'll need to do that for each version that they want to import.
+Suppose you have a `hello` service that you want to publish and import into another build.  You can publish this to your local repository by running `publishLocal` from sbt.  This is the simplest way to publish a service, however it means every developer that wants to run a build that imports the service will need publish it to their own repository themselves, and they'll need to do that for each version that they want to import.
 
 More commonly, many developers can share a single Maven or Ivy repository that they can publish and pull artifacts from.  There are a few options for how to do this, if you're happy to use a hosted repository, [Bintray](https://bintray.com) is a good option, if you want to run the repository locally, [Artifactory](https://www.jfrog.com/open-source/) or [Nexus](http://www.sonatype.com/nexus/solution-overview) are common solutions.  For information on how to configure these in sbt, see [how to publish artifacts](http://www.scala-sbt.org/0.13/docs/Publishing.html) .
 
@@ -21,12 +21,6 @@ Bintray offers both free open source hosting, as well as a paid private hosting 
 If you are using Bintray, the first thing you'll need to do is sign up for an account, and create an organization.  In your Bintray organization, you can then create a Bintray repository, we recommend creating a Maven repository.
 
 Having set Bintray up, you now need to configure your build to publish to this.
-
-#### Publishing to Bintray using Maven
-
-To publish to Bintray using Maven, you can follow the instructions published by bintray [here](https://blog.bintray.com/2015/09/17/publishing-your-maven-project-to-bintray/).
-
-#### Publishing to Bintray using sbt
 
 First, add the sbt-bintray plugin to your `project/plugins.sbt` file:
 
@@ -40,38 +34,7 @@ Once you've authenticated with Bintray, you can then configure your build to pub
 
 ## Importing a service
 
-### Using Maven
-
-The `lagom-maven-plugin` offers a configuration item called `externalProjects` that can be configured on the root project to import external projects into a Maven build.  For example:
-
-```xml
-<plugin>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-maven-plugin</artifactId>
-    <version>${lagom.version}</version>
-    <configuration>
-        <externalProjects>
-            <externalProject>
-                <artifact>
-                    <groupId>com.example</groupId>
-                    <artifactId>hello-impl</artifactId>
-                    <version>1.2.3</version>
-                </artifact>
-            </externalProject>
-        </externalProjects>
-    </configuration>
-</plugin>
-```
-
-Now when you run `lagom:runAll`, the `hello-impl` service will also be started.  There are a few additional configuration items that `externalProject` supports:
-
-* `playService` - Indicates that this is a Play, rather than a Lagom service. Defaults to `false`.
-* `servicePort` - Allows the port that the service is run on to be overridden. Defaults to automatic selection of a port by Lagom.
-* `cassandraEnabled` - Configures whether this service needs Cassandra or not. Defaults to `true`.
-
-### Using sbt
-
-The `hellowold` Lagom service can be imported by adding the following declaration to your build:
+The `hello` Lagom service can be imported by adding the following declaration to your build:
 
 @[hello-external](code/multiple-builds.sbt)
 
