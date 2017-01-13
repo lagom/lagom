@@ -63,7 +63,7 @@ private[lagom] class SubscriberStub[T](topicId: String, groupId: String = "defau
       .toMat(JSink.ignore, JKeep.right[Any, CompletionStage[Done]]).run(materializer)
   }
 
-  private def subscribeToBuffer[T](ref: ActorRef, t: T) = {
+  private def subscribeToBuffer[R](ref: ActorRef, t: R) = {
     topicBuffer.tell(TopicBufferActor.SubscribeToBuffer(groupId, ref), ActorRef.noSender)
     t
   }
