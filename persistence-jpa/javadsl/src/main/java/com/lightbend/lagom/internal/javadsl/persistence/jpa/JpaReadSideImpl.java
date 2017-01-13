@@ -116,7 +116,8 @@ class JpaReadSideImpl implements JpaReadSide {
                 log.debug("Completed prepare tag {} in JpaReadSideHandler: {}", tag, readSideId);
                 return Done.getInstance();
             }).thenCombine(prepareOffsetDao(tag), (done, offset) -> {
-                log.debug("Starting from offset {} in JpaReadSideHandler: {}", offset, readSideId);
+                log.debug("Starting events for tag {} from offset {} in JpaReadSideHandler: {}",
+                        tag, offset, readSideId);
                 return offset;
             });
         }
