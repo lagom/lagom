@@ -13,9 +13,9 @@ import com.lightbend.lagom.internal.testkit.{ TopicBufferActor, TopicStub }
 import com.lightbend.lagom.javadsl.api.broker.Topic
 
 /**
-  * Factors {{@link ProducerStub}}'s. This is a singleton that should be {{@link Inject}}ed
-  * on the stubbed Services when writing tests.
-  */
+ * Factors [[ProducerStub]]'s. This is a singleton that should be [[Inject]]ed
+ * on the stubbed Services when writing tests.
+ */
 @Singleton
 final class ProducerStubFactory @Inject() (actorSystem: ActorSystem, materializer: Materializer) {
 
@@ -30,7 +30,7 @@ final class ProducerStubFactory @Inject() (actorSystem: ActorSystem, materialize
 }
 
 /**
- * Stubs the production end of a {@link Topic} so that test writers can mock message production from upstream services
+ * Stubs the production end of a [[Topic]] so that test writers can mock message production from upstream services
  * into topics consumed by services under test.
  */
 final class ProducerStub[T] private[lagom] (topicName: String, actorSystem: ActorSystem, materializer: Materializer) {
@@ -42,14 +42,14 @@ final class ProducerStub[T] private[lagom] (topicName: String, actorSystem: Acto
   private lazy val _topic = new TopicStub[T](topicName, bufferActor, materializer)
 
   /**
-   * Sends the message via the {@link Topic} where this {@link ProducerStub} is connected to.
+   * Sends the message via the [[Topic]] where this [[ProducerStub]] is connected to.
    *
    * @param message
    */
   def send(message: T): Unit = bufferActor.tell(message, ActorRef.noSender)
 
   /**
-   * Returns the {@link Topic} where this {@link ProducerStub} is connected to.
+   * Returns the [[Topic]] where this [[ProducerStub]] is connected to.
    */
   def topic(): Topic[T] = _topic
 }
