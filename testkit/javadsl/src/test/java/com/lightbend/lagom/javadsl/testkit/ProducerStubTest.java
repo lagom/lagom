@@ -24,7 +24,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 
 
-public class TopicStubTest {
+public class ProducerStubTest {
 
     private static final ServiceTest.Setup setup = defaultSetup()
             .withCluster(false)
