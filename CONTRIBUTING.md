@@ -1,11 +1,16 @@
 <!--- Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com> -->
 # Lagom contributor guidelines
 
-### Prerequisites
+## Prerequisites
 
-Before making a contribution, it is important to make sure that the change you wish to make and the approach you wish to take will likely be accepted, otherwise you may end up doing a lot of work for nothing.  If the change is only small, for example, if it's a documentation change or a simple bugfix, then it's likely to be accepted with no prior discussion.  However, new features, or bigger refactorings should first be discussed in the [contributors](https://gitter.im/lagom/contributors).  Additionally, any issues with the [community label](https://github.com/lagom/lagom/labels/community) have been agreed to be a change that will likely be accepted.
+Before making a contribution, it is important to make sure that the change you wish to make and the approach you wish to take will likely be accepted, otherwise you may end up doing a lot of work for nothing.  If the change is only small, for example, if it's a documentation change or a simple bug fix, then it's likely to be accepted with no prior discussion.  However, new features, or bigger refactorings should first be discussed in the [contributors chat](https://gitter.im/lagom/contributors).  Additionally, any issues with the [community label](https://github.com/lagom/lagom/labels/community) have been agreed to be a change that will likely be accepted.
 
-### Procedure
+## Development tips
+
+- Use sbt launcher 0.13.13 or later, which will automatically read JVM options from `.jvmopts`.
+- If using IntelliJ IDEA, import `lagom/docs/build.sbt` rather than `lagom/build.sbt`. This ensures that the source code and build dependencies in the docs project are also imported.
+
+## Pull request procedure
 
 1. Make sure you have signed the [Lightbend CLA](https://www.lightbend.com/contribute/cla); if not, sign it online.
 2. Ensure that your contribution meets the following guidelines:
@@ -26,9 +31,9 @@ Before making a contribution, it is important to make sure that the change you w
         * Features are forever, always think about whether a new feature really belongs to the core framework or if it should be implemented as a module
         * Code must conform to standard style guidelines and pass all tests
     6. New files must:
-        * Have a Lightbend copyright header in the style of ``Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>``.
+        * Have a Lightbend copyright header in the style of ``Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>``. Running `sbt compile` will automatically add missing copyright headers.
         * Not use ``@author`` tags since it does not encourage [Collective Code Ownership](http://www.extremeprogramming.org/rules/collective.html).
-3. Ensure that your commits are squashed.  See the [Play working with git guide](https://playframework.com/documentation/latest/WorkingWithGit) for more information.
+3. Ensure that your commits are squashed.  See the [working with git guide](WorkingWithGit.md) for more information.
 4. Submit a pull request.
 
 If the pull request does not meet the above requirements then the code should **not** be merged into master, or even reviewed - regardless of how good or important it is. No exceptions.
