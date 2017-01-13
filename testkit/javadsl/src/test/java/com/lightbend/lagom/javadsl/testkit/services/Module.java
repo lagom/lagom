@@ -10,9 +10,9 @@ public class Module extends AbstractModule implements ServiceGuiceSupport {
     @Override
     protected void configure() {
         bindServices(
-                serviceBinding(CharlieDownstreamService.class, CharlieDownstreamServiceImpl.class),
-                serviceBinding(DeltaDownstreamService.class, DeltaDownstreamServiceImpl.class),
-                serviceBinding(FoxtrotDownstreamService.class, FoxtrotDownstreamServiceImpl.class)
+                serviceBinding(CharlieDownstreamService.class, CharlieDownstreamService.Impl.class),
+                serviceBinding(DeltaDownstreamService.class, DeltaDownstreamService.Impl.class),
+                serviceBinding(FoxtrotDownstreamService.class, FoxtrotDownstreamService.Impl.class)
         );
     }
 }
