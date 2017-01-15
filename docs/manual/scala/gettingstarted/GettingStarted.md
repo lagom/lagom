@@ -21,7 +21,7 @@ hello                   → Project root
  └ hello-api            → hello api project
  └ hello-impl           → hello implementation project
  └ hello-stream-api     → hello-stream api project
- └ hello-stream-impl    → hello-steram implementation project
+ └ hello-stream-impl    → hello-stream implementation project
  └ project              → sbt configuration files
    └ build.properties   → Marker for sbt project
    └ plugins.sbt        → sbt plugins including the declaration for Lagom itself
