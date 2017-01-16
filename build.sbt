@@ -502,7 +502,8 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
       "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion exclude("io.netty", "netty-all"),
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion,
       "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion,
-      scalaTest % Test
+      scalaTest % Test,
+      scalaJava8Compat
     )
   )
   .dependsOn(`testkit-core`, `server-javadsl`, `pubsub-javadsl`, `broker-javadsl`,

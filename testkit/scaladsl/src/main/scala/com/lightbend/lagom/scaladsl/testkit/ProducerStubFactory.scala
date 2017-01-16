@@ -7,14 +7,13 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.{ Function => JFunction }
 
 import akka.Done
-import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
-import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
-import akka.stream.{ Materializer, OverflowStrategy }
-import com.lightbend.lagom.internal.testkit.TopicBufferActor
+import akka.actor.{ ActorRef, ActorSystem, Props }
+import akka.stream.Materializer
+import akka.stream.scaladsl.{ Flow, Source }
+import com.lightbend.lagom.internal.testkit.{ InternalSubscriberStub, TopicBufferActor }
 import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId
 import com.lightbend.lagom.scaladsl.api.broker.{ Subscriber, Topic }
 
-import scala.collection.mutable
 import scala.concurrent.Future
 
 /**
@@ -44,38 +43,18 @@ final class ProducerStub[T] private[lagom] (topicName: String, actorSystem: Acto
   }
 
   val topic: Topic[T] = new TopicStub[T](TopicId(topicName), bufferActor)(materializer)
-
   def send(message: T): Unit = bufferActor.tell(message, ActorRef.noSender)
-
 }
 
 private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: ActorRef)(implicit materializer: Materializer) extends Topic[T] {
   def subscribe = new SubscriberStub[T]("default", topicBuffer)
-}
 
-private[lagom] class SubscriberStub[Message](
-  groupId:     String,
-  topicBuffer: ActorRef
-)(implicit materializer: Materializer)
-  extends Subscriber[Message] {
+  class SubscriberStub[Message](groupId: String, topicBuffer: ActorRef)(implicit materializer: Materializer)
+    extends InternalSubscriberStub(groupId, topicBuffer) with Subscriber[Message] {
 
-  def withGroupId(groupId: String): Subscriber[Message] = new SubscriberStub[Message](groupId, topicBuffer)
-
-  def atMostOnceSource: Source[Message, _] = {
-    Source
-      .actorRef[Message](1024, OverflowStrategy.fail)
-      .prependMat(Source.empty)(subscribeToBuffer)
+    override def withGroupId(groupId: String): Subscriber[Message] = new SubscriberStub[Message](groupId, topicBuffer)
+    override def atMostOnceSource: Source[Message, _] = super.mostOnceSource
+    override def atLeastOnce(flow: Flow[Message, Done, _]): Future[Done] = super.leastOnce(flow)
   }
 
-  def atLeastOnce(flow: Flow[Message, Done, _]): Future[Done] = {
-    atMostOnceSource
-      .via(flow)
-      .toMat(Sink.ignore)(Keep.right[Any, Future[Done]])
-      .run()
-  }
-
-  private def subscribeToBuffer[R](ref: ActorRef, t: R) = {
-    topicBuffer.tell(TopicBufferActor.SubscribeToBuffer(groupId, ref), ActorRef.noSender)
-    t
-  }
 }
