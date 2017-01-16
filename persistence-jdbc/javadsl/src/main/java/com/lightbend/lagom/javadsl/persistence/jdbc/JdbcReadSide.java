@@ -16,15 +16,15 @@ import java.sql.SQLException;
  *
  * This should be used to build and register a read side processor.
  *
- * All callbacks are executed in a transaction and are automatically committed or rollback based on whether they fail
- * or succeed.
+ * All callbacks are executed in a transaction and are automatically committed
+ * or rolled back based on whether they fail or succeed.
  *
  * Offsets are automatically handled.
  */
 public interface JdbcReadSide {
 
     /**
-     * Create a builder for a Cassandra read side event handler.
+     * Create a builder for a JDBC read side event handler.
      *
      * @param readSideId An identifier for this read side. This will be used to store offsets in the offset store.
      * @return The builder.

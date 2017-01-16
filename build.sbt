@@ -748,7 +748,7 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
 
 lazy val `persistence-jpa-javadsl` = (project in file("persistence-jpa/javadsl"))
   .settings(name := "lagom-javadsl-persistence-jpa")
-  .dependsOn(`persistence-jdbc-javadsl` % "compile;test->test", logback % Test)
+  .dependsOn(`persistence-jdbc-javadsl` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
