@@ -9,7 +9,8 @@ import javax.inject.{ Inject, Singleton }
 
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.testkit.{ TopicBufferActor, TopicStub }
+import com.lightbend.lagom.internal.javadsl.testkit.TopicStub
+import com.lightbend.lagom.internal.testkit.TopicBufferActor
 import com.lightbend.lagom.javadsl.api.broker.Topic
 
 /**
@@ -39,7 +40,10 @@ final class ProducerStub[T] private[lagom] (topicName: String, actorSystem: Acto
     actorSystem.actorOf(bufferProps)
   }
 
-  private lazy val _topic = new TopicStub[T](topicName, bufferActor, materializer)
+  /**
+   * Returns the [[com.lightbend.lagom.javadsl.api.broker.Topic]] where this [[com.lightbend.lagom.javadsl.testkit.ProducerStub]] is connected to.
+   */
+  val topic: Topic[T] = new TopicStub[T](Topic.TopicId.of(topicName), bufferActor)(materializer)
 
   /**
    * Sends the message via the [[com.lightbend.lagom.javadsl.api.broker.Topic]] where this [[com.lightbend.lagom.javadsl.testkit.ProducerStub]] is connected to.
@@ -48,9 +52,5 @@ final class ProducerStub[T] private[lagom] (topicName: String, actorSystem: Acto
    */
   def send(message: T): Unit = bufferActor.tell(message, ActorRef.noSender)
 
-  /**
-   * Returns the [[com.lightbend.lagom.javadsl.api.broker.Topic]] where this [[com.lightbend.lagom.javadsl.testkit.ProducerStub]] is connected to.
-   */
-  def topic(): Topic[T] = _topic
 }
 

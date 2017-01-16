@@ -10,6 +10,7 @@ import akka.Done
 import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
 import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
 import akka.stream.{ Materializer, OverflowStrategy }
+import com.lightbend.lagom.internal.testkit.TopicBufferActor
 import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId
 import com.lightbend.lagom.scaladsl.api.broker.{ Subscriber, Topic }
 
@@ -42,53 +43,23 @@ final class ProducerStub[T] private[lagom] (topicName: String, actorSystem: Acto
     actorSystem.actorOf(bufferProps)
   }
 
-  private lazy val _topic = new TopicStub[T](topicName, bufferActor)(materializer)
+  val topic: Topic[T] = new TopicStub[T](TopicId(topicName), bufferActor)(materializer)
 
   def send(message: T): Unit = bufferActor.tell(message, ActorRef.noSender)
 
-  def topic(): Topic[T] = _topic
 }
 
-private[lagom] class TopicStub[T](topicName: String, topicBuffer: ActorRef)(implicit materializer: Materializer) extends Topic[T] {
-  def topicId(): Topic.TopicId = TopicId(topicName)
-
-  def subscribe = new SubscriberStub[T](topicName, "default", topicBuffer)
-}
-
-private[lagom] object TopicBufferActor {
-  def props(): Props = Props(new TopicBufferActor())
-
-  case class SubscribeToBuffer(groupId: String, actorRef: ActorRef)
-
-}
-
-private[lagom] class TopicBufferActor extends Actor {
-
-  import TopicBufferActor._
-
-  var downstreams = Map.empty[String, ActorRef]
-  val buffer: mutable.Buffer[AnyRef] = mutable.Buffer.empty[AnyRef]
-
-  override def receive: Receive = {
-    case SubscribeToBuffer(groupId, ref) => {
-      downstreams = downstreams + (groupId -> ref)
-      buffer.foreach(msg => ref.tell(msg, ActorRef.noSender))
-    }
-    case message: AnyRef => {
-      downstreams.values.foreach(ref => ref ! message)
-      buffer append message
-    }
-  }
+private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: ActorRef)(implicit materializer: Materializer) extends Topic[T] {
+  def subscribe = new SubscriberStub[T]("default", topicBuffer)
 }
 
 private[lagom] class SubscriberStub[Message](
-  topicId:     String,
   groupId:     String,
   topicBuffer: ActorRef
 )(implicit materializer: Materializer)
   extends Subscriber[Message] {
 
-  def withGroupId(groupId: String): Subscriber[Message] = new SubscriberStub[Message](topicId, groupId, topicBuffer)
+  def withGroupId(groupId: String): Subscriber[Message] = new SubscriberStub[Message](groupId, topicBuffer)
 
   def atMostOnceSource: Source[Message, _] = {
     Source

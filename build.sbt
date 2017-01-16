@@ -479,6 +479,18 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
   .settings(runtimeLibCommon: _*)
   .dependsOn(server, `client-scaladsl`)
 
+lazy val `testkit-core` = (project in file("testkit/core"))
+  .settings(name := "lagom-core-testkit")
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-stream" % AkkaVersion
+    )
+  ).settings(forkedTests: _*)
+
+
 lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
   .settings(name := "lagom-javadsl-testkit")
   .settings(runtimeLibCommon: _*)
@@ -493,7 +505,8 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
       scalaTest % Test
     )
   )
-  .dependsOn(`server-javadsl`, `pubsub-javadsl`, `broker-javadsl`, `persistence-core` % "compile;test->test", `persistence-cassandra-javadsl` % "test->test")
+  .dependsOn(`testkit-core`, `server-javadsl`, `pubsub-javadsl`, `broker-javadsl`,
+    `persistence-core` % "compile;test->test", `persistence-cassandra-javadsl` % "test->test")
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
   .settings(name := "lagom-scaladsl-testkit")
@@ -509,8 +522,8 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
       scalaTest % Test
     )
   )
-  .dependsOn(`server-scaladsl`, `persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test",
-    `persistence-cassandra-scaladsl` % "compile;test->test")
+  .dependsOn(`testkit-core`, `server-scaladsl`, `persistence-core` % "compile;test->test",
+    `persistence-scaladsl` % "compile;test->test", `persistence-cassandra-scaladsl` % "compile;test->test")
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
   .settings(name := "lagom-javadsl-integration-tests")

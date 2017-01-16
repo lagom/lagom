@@ -11,7 +11,7 @@ import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 class ProducerStubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 
   var producerStub: ProducerStub[AlphaEvent] = _
-  
+
   private val stubbedApplication: LagomApplicationContext => DownstreamApplication = {
     ctx =>
       new DownstreamApplication(ctx) with LocalServiceLocator {
@@ -20,7 +20,6 @@ class ProducerStubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
         override lazy val alphaService = new AlphaServiceStub(producerStub)
       }
   }
-
 
   "The ProducerStub" should {
     "send message to consuming services" in ServiceTest.withServer(ServiceTest.defaultSetup)(stubbedApplication) { server =>
@@ -35,6 +34,6 @@ class ProducerStubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 }
 
 class AlphaServiceStub(stub: ProducerStub[AlphaEvent]) extends AlphaService {
-  override def messages: Topic[AlphaEvent] = stub.topic()
+  override def messages: Topic[AlphaEvent] = stub.topic
 
 }
