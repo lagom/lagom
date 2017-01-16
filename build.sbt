@@ -276,6 +276,7 @@ val coreProjects = Seq[ProjectReference](
   `persistence-core`,
   `persistence-cassandra-core`,
   `persistence-jdbc-core`,
+  `testkit-core`,
   logback,
   log4j2
 )
