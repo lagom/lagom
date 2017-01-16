@@ -43,18 +43,16 @@ abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec
 
   protected lazy val slick = new SlickProvider(system, null)
   protected lazy val session: JdbcSession = new JdbcSessionImpl(slick)
-  protected lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(
+  protected lazy val offsetStore = new JavadslJdbcOffsetStore(
     slick,
-    new JavadslJdbcOffsetStore(
-      slick,
-      system,
-      new OffsetTableConfiguration(
-        Configuration(system.settings.config),
-        ReadSideConfig()
-      ),
+    system,
+    new OffsetTableConfiguration(
+      Configuration(system.settings.config),
       ReadSideConfig()
-    )
+    ),
+    ReadSideConfig()
   )
+  protected lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(slick, offsetStore)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
