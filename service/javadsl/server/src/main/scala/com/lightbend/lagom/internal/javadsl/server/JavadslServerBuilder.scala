@@ -108,7 +108,7 @@ class JavadslServicesRouter @Inject() (resolvedServices: ResolvedServices, httpC
   ec: ExecutionContext,
                                                                                                                  mat: Materializer) extends SimpleRouter {
 
-  private val serviceRouters = resolvedServices.services.map { service =>
+  private[lagom] val serviceRouters = resolvedServices.services.map { service =>
     new JavadslServiceRouter(service.descriptor, service.service, httpConfiguration)
   }
 
@@ -120,7 +120,7 @@ class JavadslServicesRouter @Inject() (resolvedServices: ResolvedServices, httpC
 class JavadslServiceRouter(override protected val descriptor: Descriptor, service: Any, httpConfiguration: HttpConfiguration)(implicit ec: ExecutionContext, mat: Materializer)
   extends ServiceRouter(httpConfiguration) with JavadslServiceApiBridge {
 
-  private class JavadslServiceRoute(override val call: Call[Any, Any]) extends ServiceRoute {
+  private[lagom] class JavadslServiceRoute(override val call: Call[Any, Any]) extends ServiceRoute {
     override val path: Path = JavadslPath.fromCallId(call.callId)
     override val method: Method = call.callId match {
       case rest: RestCallId => rest.method
@@ -133,7 +133,7 @@ class JavadslServiceRouter(override protected val descriptor: Descriptor, servic
     override val isWebSocket: Boolean = call.requestSerializer.isInstanceOf[StreamedMessageSerializer[_]] ||
       call.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]
 
-    private val holder: MethodServiceCallHolder = call.serviceCallHolder() match {
+    private[lagom] val holder: MethodServiceCallHolder = call.serviceCallHolder() match {
       case holder: MethodServiceCallHolder => holder
     }
 
@@ -142,7 +142,7 @@ class JavadslServiceRouter(override protected val descriptor: Descriptor, servic
     }
   }
 
-  override protected val serviceRoutes: Seq[ServiceRoute] =
+  override protected val serviceRoutes: Seq[JavadslServiceRoute] =
     descriptor.calls.asScala.map(call => new JavadslServiceRoute(call.asInstanceOf[Call[Any, Any]]))
 
   /**

@@ -279,7 +279,8 @@ val coreProjects = Seq[ProjectReference](
   `persistence-jdbc-core`,
   `testkit-core`,
   logback,
-  log4j2
+  log4j2,
+  `open-api`
 )
 
 val otherProjects = Seq[ProjectReference](
@@ -869,6 +870,17 @@ lazy val log4j2 = (project in file("log4j2"))
       "com.typesafe.play" %% "play" % PlayVersion
     )
   )
+
+lazy val `open-api` = (project in file("open-api"))
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(runtimeLibCommon: _*)
+  .settings(
+    name := "lagom-open-api",
+    libraryDependencies ++= Seq(
+      "io.swagger" % "swagger-core" % "1.5.12"
+    )
+  )
+  .dependsOn(`server-javadsl`)
 
 lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
