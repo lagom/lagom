@@ -82,6 +82,6 @@ Read more about it in the documentation of the [Akka Streams TestKit](http://doc
 
 ## How to test PersistentEntity
 
-[[Persistent Entities|PersistentEntity]] can be used in the service tests described above. In addition to that you should write unit tests using the [PersistentEntityTestDriver](api/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html), which will run the `PersistentEntity` without using a database.
+[[Persistent Entities|PersistentEntity#unit-testing]] can be used in the service tests described above. In addition to that you should write unit tests using the [PersistentEntityTestDriver](api/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html), which will run the `PersistentEntity` without using a database.
 
 This is described in the documentation of [[Persistent Entity|PersistentEntity#Unit-Testing]]

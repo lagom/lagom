@@ -60,9 +60,9 @@ lazy val docs = project
     markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/"))
 
   ).dependsOn(serviceIntegrationTestsJavadsl, persistenceJdbcJavadsl,
-      serviceIntegrationTestsScaladsl, persistenceCassandraScaladsl, persistenceJdbcScaladsl, testkitScaladsl,
-      brokerScaladsl, playJson, kafkaBroker, pubsubScaladsl, immutables % "test->compile", theme % "run-markdown",
-      devmodeScaladsl)
+      serviceIntegrationTestsScaladsl, persistenceCassandraScaladsl, persistenceJdbcScaladsl, testkitJavadsl,
+      testkitScaladsl, brokerScaladsl, playJson, kafkaBroker, pubsubScaladsl, immutables % "test->compile", 
+      theme % "run-markdown", devmodeScaladsl)
 
 lazy val parentDir = Path.fileProperty("user.dir").getParentFile
 
@@ -72,6 +72,7 @@ lazy val serviceIntegrationTestsScaladsl = ProjectRef(parentDir, "integration-te
 lazy val persistenceJdbcJavadsl = ProjectRef(parentDir, "persistence-jdbc-javadsl")
 lazy val persistenceJdbcScaladsl = ProjectRef(parentDir, "persistence-jdbc-scaladsl")
 lazy val persistenceCassandraScaladsl = ProjectRef(parentDir, "persistence-cassandra-scaladsl")
+lazy val testkitJavadsl = ProjectRef(parentDir, "testkit-javadsl")
 lazy val testkitScaladsl = ProjectRef(parentDir, "testkit-scaladsl")
 lazy val playJson = ProjectRef(parentDir, "play-json")
 lazy val kafkaBroker = ProjectRef(parentDir, "kafka-broker")

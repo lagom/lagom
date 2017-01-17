@@ -1,11 +1,13 @@
 package docs.mb;
 
-import com.lightbend.lagom.javadsl.api.*;
-import akka.NotUsed;
 import akka.Done;
+import akka.NotUsed;
 import akka.stream.javadsl.Flow;
-import static java.util.concurrent.CompletableFuture.completedFuture;
+import com.lightbend.lagom.javadsl.api.ServiceCall;
+
 import javax.inject.Inject;
+
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public class AnotherServiceImpl implements AnotherService {
 
