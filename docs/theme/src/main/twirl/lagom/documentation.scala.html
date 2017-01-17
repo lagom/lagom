@@ -129,8 +129,9 @@
 
                     <input type="text" id="docs-search" placeholder="Search"/>
 
-                    <a href="/documentation/1.1.x/java/api/index.html" class="api-docs">API Documentation</a>
-
+                    @for((href, text) <- apiDocs) {
+                        <a href="@href" class="api-docs">@text</a>
+                    }
 
                     @sidebar
                 </nav>
