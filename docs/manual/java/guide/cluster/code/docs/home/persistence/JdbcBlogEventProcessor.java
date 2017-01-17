@@ -12,7 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 //#imports
 
-public interface RDBMSBlogEventProcessor {
+public interface JdbcBlogEventProcessor {
 
     interface Initial {
         //#initial

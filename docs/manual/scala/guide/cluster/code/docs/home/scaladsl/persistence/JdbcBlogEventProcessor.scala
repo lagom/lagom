@@ -13,7 +13,7 @@ import com.lightbend.lagom.scaladsl.persistence.jdbc.JdbcSession.tryWith
 
 //#imports
 
-trait RDBMSBlogEventProcessor {
+trait JdbcBlogEventProcessor {
 
   trait Initial {
     //#initial
