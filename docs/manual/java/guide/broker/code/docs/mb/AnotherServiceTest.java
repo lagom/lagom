@@ -1,0 +1,69 @@
+package docs.mb;
+
+import com.lightbend.lagom.javadsl.api.ServiceCall;
+import com.lightbend.lagom.javadsl.api.broker.Topic;
+import org.junit.Test;
+
+import javax.inject.Inject;
+
+import static com.lightbend.lagom.javadsl.testkit.ServiceTest.*;
+
+import com.lightbend.lagom.javadsl.testkit.ProducerStub;
+import com.lightbend.lagom.javadsl.testkit.ProducerStubFactory;
+
+//#topic-test-consuming-from-a-topic
+public class AnotherServiceTest {
+
+    // (1) creates a server using the Module for this service Module
+    // and we override the config to use HelloServiceStub
+    // implemented below.
+    private Setup setup = defaultSetup().configureBuilder(b ->
+            b.override(bind(HelloService.class).to(HelloServiceStub.class)));
+
+    // (2) an instance of ProducerStub allows test code to inject
+    // messages on the topic.
+    private ProducerStub<GreetingMessage> helloProducer;
+
+
+    @Test
+    public void shouldReceiveMessagesFromUpstream() {
+        // (1)
+        withServer(setup, server -> {
+
+            // (4) inject a message in the topic
+            GreetingMessage message = new GreetingMessage("someId", "Hi there!");
+            helloProducer.send(message);
+
+
+            // use a service client instance to interact with the service
+            // and assert the message was processed as expected.
+            AnotherService client = server.client(AnotherService.class);
+            // ...
+        });
+    }
+
+    // (1) Stub for the upstream Service
+    static class HelloServiceStub implements HelloService {
+        // (2) Receives a ProducerStubFactory that factors ProducerStubs
+        @Inject
+        HelloServiceStub(ProducerStubFactory producerFactory) {
+            // (3) requesting a producer for a specific topic weill create a Stub for it.
+            helloProducer = producerFactory.producer(GREETNIGS_TOPIC);
+        }
+
+        @Override
+        public Topic<GreetingMessage> greetingsTopic() {
+            // (3) the upstream stub must return the topic bound to the producer stub
+            return helloProducer.topic();
+        }
+        @Override
+        public ServiceCall<NotUsed, String> hello(String id) {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public ServiceCall<GreetingMessage, Done> useGreeting(String id) {
+            throw new UnsupportedOperationException();
+        }
+    }
+}
+    //#topic-test-consuming-from-a-topic
