@@ -5,7 +5,8 @@ package com.lightbend.lagom.dev
 
 import java.io.{ Closeable, File }
 import java.net.{ URI, URL }
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{ CompletableFuture, CompletionStage, TimeUnit }
+import java.util.function.Consumer
 import java.util.{ Properties, Map => JMap }
 
 import com.datastax.driver.core.Cluster
@@ -44,6 +45,7 @@ private[lagom] object Servers {
         // Note, don't use scala.util.Try, since it may have not been loaded yet, and the classloader that has it may
         // have already been shutdown when the shutdown hook is executed (this really does happen in maven).
         try {
+          promise.complete(0) // TODO: replace int with proper typing
           process.destroy()
           if (!process.waitFor(10, TimeUnit.SECONDS)) {
             process.destroyForcibly()
@@ -54,6 +56,17 @@ private[lagom] object Servers {
           // ignore, it's executed from a shutdown hook, not much we can or should do
         }
       }
+
+      // use CompletionStage / Runable / Thread in case scala equivalent are not available on classloader.
+      private val promise: CompletableFuture[Int] = new CompletableFuture[Int]()
+      new Thread(new Runnable {
+        override def run(): Unit = {
+          process.waitFor()
+          // if process completes via Kill, this promise.complete is ignored.
+          promise.complete(process.exitValue())   // TODO: replace int with proper typing
+        }
+      }).start()
+      def completionHook: CompletionStage[Int] = promise
     }
 
     protected var server: Server = _
@@ -209,6 +222,11 @@ private[lagom] object Servers {
       val sysProperties = List(s"-Dkafka.logs.dir=$log4jOutput")
       val process = LagomProcess.runJava(jvmOptions.toList ::: sysProperties, cp, "com.lightbend.lagom.internal.kafka.KafkaLauncher", args)
       server = new KafkaProcess(process)
+      server.completionHook.thenAccept(
+        new Consumer[Int] {
+          override def accept(exitCode: Int): Unit = if (exitCode != 0) println("Kafka Server closed unexpectedly.")
+        }
+      )
       server.enableKillOnExit()
       log.info("Starting Kafka")
       log.debug(s"Kafka log output can be found under ${log4jOutput}.")
