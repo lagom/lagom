@@ -44,12 +44,12 @@ lazy val docs = project
           DocPath(baseDirectory.value / "manual" / "common", "."),
           DocPath(baseDirectory.value / "manual" / "java", "."),
           DocPath(javaUnidocTarget, "api")
-        ), "Home.html", "Java Home", Map("api/index.html" -> "Java")),
+        ), "Home.html", "Java Home", Map("api/index.html" -> "API Documentation")),
         Documentation("scala", Seq(
           DocPath(baseDirectory.value / "manual" / "common", "."),
           DocPath(baseDirectory.value / "manual" / "scala", "."),
           DocPath(unidocTarget, "api")
-        ), "Home.html", "Scala Home", Map("api/index.html" -> "Scala"))
+        ), "Home.html", "Scala Home", Map("api/index.html" -> "API Documentation"))
       )
     },
     // Disable scala validation while docs are incomplete
