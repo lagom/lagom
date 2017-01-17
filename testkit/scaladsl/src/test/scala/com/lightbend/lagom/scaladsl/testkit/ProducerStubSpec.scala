@@ -16,7 +16,7 @@ class ProducerStubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
     ctx =>
       new DownstreamApplication(ctx) with LocalServiceLocator {
         val stubFactory = new ProducerStubFactory(actorSystem, materializer)
-        producerStub = stubFactory.producer(classOf[AlphaEvent], AlphaService.TOPIC_ID)
+        producerStub = stubFactory.producer[AlphaEvent](AlphaService.TOPIC_ID)
         override lazy val alphaService = new AlphaServiceStub(producerStub)
       }
   }

@@ -22,7 +22,7 @@ final class ProducerStubFactory @Inject() (actorSystem: ActorSystem, materialize
 
   private val topics = new ConcurrentHashMap[String, ProducerStub[_]]
 
-  def producer[T](clzz: Class[T], topicId: String): ProducerStub[T] = {
+  def producer[T](topicId: String): ProducerStub[T] = {
     val builder = new JFunction[String, ProducerStub[_]] {
       override def apply(t: String) = new ProducerStub[T](t, actorSystem, materializer)
     }

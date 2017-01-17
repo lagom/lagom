@@ -158,7 +158,7 @@ public class ProducerStubTest {
     static class AlphaUpstreamServiceStub implements AlphaUpstreamService {
         @Inject
         AlphaUpstreamServiceStub(ProducerStubFactory topicFactory) {
-            producerAStub = topicFactory.producer(AlphaEvent.class, TOPIC_ID);
+            producerAStub = topicFactory.producer(TOPIC_ID);
         }
 
         @Override
@@ -170,7 +170,7 @@ public class ProducerStubTest {
     static class BetaUpstreamServiceStub implements BetaUpstreamService {
         @Inject
         BetaUpstreamServiceStub(ProducerStubFactory topicFactory) {
-            producerBStub = topicFactory.producer(BetaEvent.class, TOPIC_ID);
+            producerBStub = topicFactory.producer(TOPIC_ID);
         }
 
         @Override
