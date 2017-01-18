@@ -11,10 +11,10 @@ providing multiple services. The easiest way to get started with a new Lagom
 system is to create a new project using the Maven archetype plugin, with the
 Lagom Maven archetype:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 $ mvn archetype:generate -DarchetypeGroupId=com.lightbend.lagom \
   -DarchetypeArtifactId=maven-archetype-lagom-java -DarchetypeVersion=1.1.0
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
 >   **Note:** Ensure you replace the 1.1.0 archetype version with the latest
 >   version of Lagom.
@@ -29,7 +29,7 @@ Anatomy of a Lagom project
 
 The created project contains the following elements:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 my-first-system          → Project root
  └ hello-api             → hello world api project
  └ hello-impl            → hello world implementation project
@@ -37,7 +37,7 @@ my-first-system          → Project root
  └ stream-impl           → stream implementation project
  └ integration-tests     → Integration tests
  └ pom.xml               → Project root build file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
 Notice how each service is broken up into two projects: api and implementation.
 The api project contains a service interface through which consumers may
@@ -84,7 +84,7 @@ Lagom includes a development environment that let you start all your services by
 invoking the `runAll` task on the Lagom maven plugin. Open the terminal and `cd`
 to your Lagom project (some log output cut for brevity):
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ console
+```
 $ cd my-first-system
 $ mvn lagom:runAll
 ...
@@ -97,17 +97,17 @@ $ mvn lagom:runAll
 [info] Service hello-impl listening for HTTP on 0:0:0:0:0:0:0:0:24266
 [info] Service stream-impl listening for HTTP on 0:0:0:0:0:0:0:0:26230
 (Services started, press enter to stop and go back to the console...)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
 You can verify that the services are indeed up and running by exercising one of
 its endpoints using any HTTP client. On Windows systems for example, you might
 use Postman. On a Linux system, you might use curl:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ console
+```
 $ curl http://localhost:9000/api/hello/World
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
-A successful invocation returns the message: `Hello, World!`.
+A successful request returns the message: `Hello, World!`.
 
 If you are wondering why we have created two services in the seed template,
 instead of having just one, the reason is simply that
