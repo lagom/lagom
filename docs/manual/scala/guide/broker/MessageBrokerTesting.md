@@ -8,26 +8,15 @@ The Lagom in-memory broker implementation will also help testing your message se
 
 The following code samples use the `HelloService` and `AnotherService` already presented in previous sections. `HelloService` publishes `GreetingsMessage`s on the `"greetings"` topic and `AnotherService` subscribed to those messages using `atLeastOnce` semantics.
 
-## Testing publish
-
-When a Service publishes data into a `Topic` the descriptor lists a `TopicCall` on the public API. Testing the event publishing is very similar to testing `ServiceCall`'s in your Service API (see [[Service testing|Test#How-to-test-one-service]]). 
-
-@[topic-test-publishing-into-a-topic](code/docs/javadsl/mb/HelloServiceTest.java)
-
-Using a [`ServiceTest`](api/com/lightbend/lagom/javadsl/testkit/ServiceTest.html) you create a client to your Service. Using that client you can `subscribe` to the published topics. Finally, after interacting with the Service to cause the emission of some events you can assert events were published on the `Topic`.
-
-The producer end is responsible to describe the public API and provide the serialisable mappings for all messages exchanged (both in `ServiceCall`s and `TopicCall`s). The tests granting the proper behavior of the publishing operations should also test the serialisbility and deserilisability of the messages.
-
 ## Testing subscription
 
 Testing the consumption of messages requires starting the Service under test with a stub of the upstream Service producing data into the topic. The following snippet demonstrates how to achieve it. 
 
-1. A ServiceTest instance is started with a modified `Setup` where the upstream `HelloService` is replaced with a HelloServiceStub`.
-2. An instance of a `ProducerStub` is declared. This instance will be bound when the Server is started and the `HelloServiceStub`.
-3. The Stub for the upstream Service must request a `ProducerStubFactory` from the Injector and use that to obtain a `ProducerStub` for the appropriate `Topic`. See how this snippet uses `GREETINGS_TOPIC` constant declared in the super interface `HelloService`. On the stubbed method that implements the `TopicCall` the stub must return the `Topic` bound to the `ProducerStub` created in the constructor.
-4. Use the `ProducerStub` on the tests to inject messages into the topic and interact normally with the service under test to verify the Service code. 
+1. An in-memory `Topic` is required and means to send messages into it. Using the `ProducerStubFactory` it's possible to obtain a `ProducerStub` given a topic name.
+2. With the `producerStub` instance a service stub can be build to replace the production ready upstream service. This will have to use the topic bound to the `ProducerStub` created in the previous step.
+3. Use the `ProducerStub` on the tests to send messages into the topic and interact normally with the service under test to verify the Service code. 
 
-@[topic-test-consuming-from-a-topic](code/docs/javadsl/mb/AnotherServiceTest.java)
+@[topic-test-consuming-from-a-topic](code/docs/scaladsl/mb/AnotherServiceSpec.scala)
 
 
 

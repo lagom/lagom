@@ -1,4 +1,4 @@
-package docs.mb
+package docs.scaladsl.mb
 
 import akka.{Done, NotUsed}
 import akka.stream.scaladsl.Flow

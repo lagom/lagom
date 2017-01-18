@@ -3,7 +3,7 @@ package docs.scaladsl.services
 package helloservicespec {
 
   import docs.scaladsl.services.helloservice.HelloService
-  import docs.scaladsl.services.lagomappliaction.HelloApplication
+  import docs.scaladsl.services.lagomapplication.HelloApplication
 
   //#hello-service-spec
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
@@ -31,7 +31,7 @@ package helloservicespec {
 package helloservicespecshared {
 
   import docs.scaladsl.services.helloservice.HelloService
-  import docs.scaladsl.services.lagomappliaction.HelloApplication
+  import docs.scaladsl.services.lagomapplication.HelloApplication
 
   //#hello-service-spec-shared
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
@@ -78,7 +78,7 @@ package stubservices {
     }
   }
 
-  abstract class HelloApplication(ctx: LagomApplicationContext) extends docs.scaladsl.services.lagomappliaction.HelloApplication(ctx) {
+  abstract class HelloApplication(ctx: LagomApplicationContext) extends docs.scaladsl.services.lagomapplication.HelloApplication(ctx) {
     lazy val greetingService: GreetingService = serviceClient.implement[GreetingService]
   }
 
@@ -101,7 +101,7 @@ package stubservices {
 
 package enablecassandra {
 
-  import docs.scaladsl.services.lagomappliaction.HelloApplication
+  import docs.scaladsl.services.lagomapplication.HelloApplication
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
   import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 
@@ -119,7 +119,7 @@ package enablecassandra {
 
 package enablecluster {
 
-  import docs.scaladsl.services.lagomappliaction.HelloApplication
+  import docs.scaladsl.services.lagomapplication.HelloApplication
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
   import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 
