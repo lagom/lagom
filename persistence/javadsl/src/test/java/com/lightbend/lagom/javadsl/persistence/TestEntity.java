@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableList;
 import com.lightbend.lagom.javadsl.persistence.testkit.SimulatedNullpointerException;
 import com.lightbend.lagom.serialization.Jsonable;
-import org.pcollections.PSequence;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity.ReplyType;
 
 import javax.inject.Inject;
@@ -26,6 +25,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
   }
 
   public static class Get implements Cmd, ReplyType<State> {
+
+    private static final long serialVersionUID = 1L;
+
     private static Get instance = new Get();
 
     @JsonCreator
@@ -38,6 +40,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
   }
 
   public static class Add implements Cmd, ReplyType<Evt> {
+
+    private static final long serialVersionUID = 1L;
+
     private final String element;
     private final int times;
 
@@ -99,6 +104,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
   }
 
   public static class ChangeMode implements Cmd, ReplyType<Evt> {
+
+    private static final long serialVersionUID = 1L;
+
     private final Mode mode;
 
     @JsonCreator
@@ -140,6 +148,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
   }
 
   public static class UndefinedCmd implements Cmd, ReplyType<Done> {
+
+    private static final long serialVersionUID = 1L;
+
     @Override
     public int hashCode() {
       return 0;
@@ -161,6 +172,8 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
 
   public static abstract class Evt implements AggregateEvent<Evt>, Jsonable {
 
+    private static final long serialVersionUID = 1L;
+
     public static final int NUM_SHARDS = 4;
 
     public static final AggregateEventShards<Evt> AGGREGATE_EVENT_SHARDS = AggregateEventTag.sharded(Evt.class,
@@ -173,6 +186,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
   }
 
   public static class Appended extends Evt {
+
+    private static final long serialVersionUID = 1L;
+
     private final String entityId;
     private final String element;
 
@@ -219,6 +235,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
   }
 
   public static class Prepended extends Evt {
+
+    private static final long serialVersionUID = 1L;
+
     private final String entityId;
     private final String element;
 
@@ -266,6 +285,8 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
 
   public static class InPrependMode extends Evt {
 
+    private static final long serialVersionUID = 1L;
+
     private final String entityId;
 
     @JsonCreator
@@ -302,6 +323,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
   }
 
   public static class InAppendMode extends Evt {
+
+    private static final long serialVersionUID = 1L;
+
     private final String entityId;
 
     @JsonCreator
@@ -338,6 +362,8 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
   }
 
   public static class State implements Jsonable {
+
+    private static final long serialVersionUID = 1L;
 
     public static final State EMPTY = new State(Mode.APPEND, ImmutableList.of());
 
@@ -411,6 +437,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
   }
 
   public static class GetAddress implements Cmd, ReplyType<Address> {
+
+    private static final long serialVersionUID = 1L;
+
     public static GetAddress instance = new GetAddress();
 
     private GetAddress() {

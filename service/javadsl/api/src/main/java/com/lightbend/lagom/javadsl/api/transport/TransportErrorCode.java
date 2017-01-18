@@ -29,6 +29,8 @@ import java.util.*;
  */
 public final class TransportErrorCode implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * A protocol error, or bad request.
      */

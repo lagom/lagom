@@ -9,7 +9,6 @@ import com.lightbend.lagom.javadsl.api.transport.MessageProtocol;
 import com.lightbend.lagom.javadsl.api.transport.NotAcceptable;
 import com.lightbend.lagom.javadsl.api.transport.UnsupportedMediaType;
 
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Optional;
 

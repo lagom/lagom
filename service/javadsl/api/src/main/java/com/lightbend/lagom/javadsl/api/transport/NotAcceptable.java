@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
  * Thrown when a protocol requested by the client cannot be negotiated.
  */
 public class NotAcceptable extends TransportException {
+
+    private static final long serialVersionUID = 1L;
+
     public static final TransportErrorCode ERROR_CODE = TransportErrorCode.NotAcceptable;
 
     public NotAcceptable(Collection<MessageProtocol> requested, MessageProtocol supported) {

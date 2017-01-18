@@ -14,6 +14,9 @@ import org.immutables.value.Value;
 @ImmutableStyle
 @JsonDeserialize(as = Greeting.class)
 public abstract class AbstractGreeting implements CompressedJsonable {
+
+  private static final long serialVersionUID = 1L;
+
   @Value.Parameter
   public abstract String getMessage();
 

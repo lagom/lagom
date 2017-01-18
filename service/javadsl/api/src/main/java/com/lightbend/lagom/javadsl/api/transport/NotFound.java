@@ -9,6 +9,9 @@ import com.lightbend.lagom.javadsl.api.deser.ExceptionMessage;
  * Exception thrown when the resource was not found.
  */
 public class NotFound extends TransportException {
+
+    private static final long serialVersionUID = 1L;
+
     public static final TransportErrorCode ERROR_CODE = TransportErrorCode.NotFound;
 
     public NotFound(String message) {
