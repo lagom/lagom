@@ -1,6 +1,7 @@
-package docs.mb;
+package docs.javadsl.mb;
 
 import com.lightbend.lagom.javadsl.api.*;
+import akka.NotUsed;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
 

@@ -1,10 +1,10 @@
-package docs.mb.server;
+package docs.javadsl.mb.server;
 
-import docs.mb.HelloService;
-import docs.mb.HelloServiceImpl;
+import docs.javadsl.mb.AnotherService;
+import docs.javadsl.mb.HelloService;
+import docs.javadsl.mb.HelloServiceImpl;
 
-import docs.mb.AnotherService;
-import docs.mb.AnotherServiceImpl;
+import docs.javadsl.mb.AnotherServiceImpl;
 
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;

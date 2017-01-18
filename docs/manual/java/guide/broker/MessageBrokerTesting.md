@@ -12,7 +12,7 @@ The following code samples use the `HelloService` and `AnotherService` already p
 
 When a Service publishes data into a `Topic` the descriptor lists a `TopicCall` on the public API. Testing the event publishing is very similar to testing `ServiceCall`'s in your Service API (see [[Service testing|Test#How-to-test-one-service]]). 
 
-@[topic-test-publishing-into-a-topic](code/docs/mb/HelloServiceTest.java)
+@[topic-test-publishing-into-a-topic](code/docs/javadsl/mb/HelloServiceTest.java)
 
 Using a [ServiceTest](api/index.html?com/lightbend/lagom/javadsl/testkit/ServiceTest.html) you create a client to your Service. Using that client you can `subscribe` to the published topics. Finally, after interacting with the Service to cause the emission of some events you can assert events were published on the `Topic`.
 
@@ -27,7 +27,7 @@ Testing the consumption of messages requires starting the Service under test wit
 3. The Stub for the upstream Service must request a `ProducerStubFactory` from the Injector and use that to obtain a `ProducerStub` for the appropriate `Topic`. See how this snippet uses `GREETINGS_TOPIC` constant declared in the super interface `HelloService`. On the stubbed method that implements the `TopicCall` the stub must return the `Topic` bound to the `ProducerStub` created in the constructor.
 4. Use the `ProducerStub` on the tests to inject messages into the topic and interact normally with the service under test to verify the Service code. 
 
-@[topic-test-consuming-from-a-topic](code/docs/mb/AnotherServiceTest.java)
+@[topic-test-consuming-from-a-topic](code/docs/javadsl/mb/AnotherServiceTest.java)
 
 
 

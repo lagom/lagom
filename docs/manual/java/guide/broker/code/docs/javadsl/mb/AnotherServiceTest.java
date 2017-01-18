@@ -1,8 +1,10 @@
-package docs.mb;
+package docs.javadsl.mb;
 
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import org.junit.Test;
+import akka.Done;
+import akka.NotUsed;
 
 import javax.inject.Inject;
 
@@ -18,11 +20,11 @@ public class AnotherServiceTest {
     // and we override the config to use HelloServiceStub
     // implemented below.
     private Setup setup = defaultSetup().configureBuilder(b ->
-            b.override(bind(HelloService.class).to(HelloServiceStub.class)));
+            b.overrides(bind(HelloService.class).to(HelloServiceStub.class)));
 
     // (2) an instance of ProducerStub allows test code to inject
     // messages on the topic.
-    private ProducerStub<GreetingMessage> helloProducer;
+    private static ProducerStub<GreetingMessage> helloProducer;
 
 
     @Test
@@ -48,7 +50,7 @@ public class AnotherServiceTest {
         @Inject
         HelloServiceStub(ProducerStubFactory producerFactory) {
             // (3) requesting a producer for a specific topic weill create a Stub for it.
-            helloProducer = producerFactory.producer(GREETNIGS_TOPIC);
+            helloProducer = producerFactory.producer(GREETINGS_TOPIC);
         }
 
         @Override
