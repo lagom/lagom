@@ -524,7 +524,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
       scalaTest % Test
     )
   )
-  .dependsOn(`testkit-core`, `server-scaladsl`, `persistence-core` % "compile;test->test",
+  .dependsOn(`testkit-core`, `server-scaladsl`, `broker-scaladsl`, `persistence-core` % "compile;test->test",
     `persistence-scaladsl` % "compile;test->test", `persistence-cassandra-scaladsl` % "compile;test->test")
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))

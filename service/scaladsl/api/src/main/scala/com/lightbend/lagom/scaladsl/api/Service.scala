@@ -6,9 +6,10 @@ package com.lightbend.lagom.scaladsl.api
 import java.lang.reflect.Method
 
 import akka.util.ByteString
-import com.lightbend.lagom.scaladsl.api.Descriptor.{ ServiceCallHolder, TopicHolder }
+import com.lightbend.lagom.javadsl.api.broker.Topic
+import com.lightbend.lagom.scaladsl.api.Descriptor.{ServiceCallHolder, TopicHolder}
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.api.deser.{ MessageSerializer, PathParamSerializer }
+import com.lightbend.lagom.scaladsl.api.deser.{MessageSerializer, PathParamSerializer}
 
 import scala.collection.immutable
 import scala.reflect.macros.blackbox.Context
