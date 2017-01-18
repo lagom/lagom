@@ -1,4 +1,4 @@
-package docs.mb;
+package docs.javadsl.mb;
 
 import akka.Done;
 import akka.NotUsed;
