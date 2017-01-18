@@ -4,9 +4,11 @@
 package com.lightbend.lagom.javadsl.api;
 
 /**
- * Circuit breaker descriptor.
- *
- * This describes how circuit breaking should be applied to a particular {@link ServiceCall}.
+ * Circuit breaker descriptor. Describes how circuit breaking should be applied
+ * to a particular {@link ServiceCall}.
+ * A circuit breaker is used to provide stability and prevent cascading
+ * failures in distributed systems. An example would be to begin to fail-fast
+ * after some number of failures due to a dependency on a hanging call.
  */
 public abstract class CircuitBreaker {
 
