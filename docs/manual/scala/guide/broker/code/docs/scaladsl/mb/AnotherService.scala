@@ -1,4 +1,4 @@
-package docs.mb
+package docs.scaladsl.mb
 
 import akka.NotUsed
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}

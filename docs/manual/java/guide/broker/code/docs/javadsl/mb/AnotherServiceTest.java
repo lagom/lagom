@@ -32,7 +32,7 @@ public class AnotherServiceTest {
         // (1)
         withServer(setup, server -> {
 
-            // (4) inject a message in the topic
+            // (4) send a message in the topic
             GreetingMessage message = new GreetingMessage("someId", "Hi there!");
             helloProducer.send(message);
 
