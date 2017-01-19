@@ -32,9 +32,10 @@ final class Post2 extends PersistentEntity {
     Actions()
       .onCommand[AddPost, AddPostDone] {
         case (AddPost(content), ctx, state) =>
-          ctx.thenPersist(PostAdded(entityId, content), evt =>
+          ctx.thenPersist(PostAdded(entityId, content)) { evt =>
             // After persist is done additional side effects can be performed
-            ctx.reply(AddPostDone(entityId)))
+            ctx.reply(AddPostDone(entityId))
+          }
       }
       //#command-handler
       //#validate-command
@@ -47,9 +48,10 @@ final class Post2 extends PersistentEntity {
             ctx.done
           } //#validate-command
           else {
-            ctx.thenPersist(PostAdded(entityId, content), evt =>
+            ctx.thenPersist(PostAdded(entityId, content)) { _ =>
               // After persist is done additional side effects can be performed
-              ctx.reply(AddPostDone(entityId)))
+              ctx.reply(AddPostDone(entityId))
+            }
           }
       }
       //#validate-command
@@ -70,7 +72,7 @@ final class Post2 extends PersistentEntity {
       //#reply
       .onCommand[ChangeBody, Done] {
         case (ChangeBody(body), ctx, state) =>
-          ctx.thenPersist(BodyChanged(entityId, body), _ => ctx.reply(Done))
+          ctx.thenPersist(BodyChanged(entityId, body))(_ => ctx.reply(Done))
       }
       //#reply
       .onEvent {

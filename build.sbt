@@ -260,7 +260,8 @@ val scaladslProjects = Seq[ProjectReference](
   `persistence-cassandra-scaladsl`,
   `persistence-jdbc-scaladsl`,
   `pubsub-scaladsl`,
-  `testkit-scaladsl`
+  `testkit-scaladsl`,
+  `devmode-scaladsl`
 )
 
 val coreProjects = Seq[ProjectReference](

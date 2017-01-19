@@ -6,19 +6,7 @@
 
 To use this feature add the following in your project's build:
 
-In Maven:
-
-```xml
-<dependency>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-pubsub_2.11</artifactId>
-    <version>${lagom.version}</version>
-</dependency>
-```
-
-In sbt:
-
-@[pubsub-dependency](code/build-cluster.sbt)
+@[pubsub-dependency](code/pubsub.sbt)
 
 ## Usage from Service Implementation
 
@@ -26,37 +14,37 @@ Let's look at an example of a service that publishes temperature measurements of
 
 The service API is defined as:
 
-@[service-api](code/docs/home/pubsub/SensorService.java)
+@[service-api](code/PubSub.scala)
 
 The implementation of this interface looks like:
 
-@[service-impl](code/docs/home/pubsub/SensorServiceImpl.java)
+@[service-impl](code/PubSub.scala)
 
 When a device submits its current temperature it is published to a topic that is unique for that device. Note that the topic where the message is published to is defined by the message class, here `Temperature`, and an optional classifier, here the device id. The messages of this topic will be instances of the message class or subclasses thereof. The qualifier can be used to distinguish topics that are using the same message class. The empty string can be used as qualifier if the message class is enough to define the topic identity.
 
-Use the method `publish` of the [PubSubRef](api/index.html?com/lightbend/lagom/javadsl/pubsub/PubSubRef.html) representing a given topic to publish a single message, see `registerTemperature` in the above code.
+Use the method `publish` of the [PubSubRef](api/com/lightbend/lagom/scaladsl/pubsub/PubSubRef.html) representing a given topic to publish a single message, see `registerTemperature` in the above code.
 
-Use the method `subscriber` of the [PubSubRef](api/index.html?com/lightbend/lagom/javadsl/pubsub/PubSubRef.html) to acquire a stream `Source` of messages published to a given topic, see `temperatureStream` in the above code.
+Use the method `subscriber` of the [PubSubRef](api/com/lightbend/lagom/scaladsl/pubsub/PubSubRef.html) to acquire a stream `Source` of messages published to a given topic, see `temperatureStream` in the above code.
 
 It is also possible to publish a stream of messages to a topic as is illustrated by this variant of the `SensorService`:
 
-@[service-impl](code/docs/home/pubsub/SensorServiceImpl2.java)
+@[service-impl-stream](code/PubSub.scala)
 
-Note how the incoming `Source` in `registerTemperature` is connected to the `publisher` `Sink` of the topic with the `runWith` method using the `Materializer` that is injected in the constructor. You can of course apply ordinary stream transformations of the incoming stream before connecting it to the `publisher`.
+Note how the incoming `Source` in `registerTemperature` is connected to the `publisher` `Sink` of the topic with the `runWith` method. Also note that we now have an implicit `Materializer` injected into the constructor, this is needed when running a stream. You can of course apply ordinary stream transformations of the incoming stream before connecting it to the `publisher`.
 
 ## Usage from Persistent Entity
 
-You can publish messages from a [[Persistent Entity|PersistentEntity]]. First you must inject the [PubSubRegistry](api/index.html?com/lightbend/lagom/javadsl/pubsub/PubSubRegistry.html) to get hold of a `PubSubRef` for a given topic.
+You can publish messages from a [[Persistent Entity|PersistentEntity]]. First you must inject the [PubSubRegistry](api/com/lightbend/lagom/scaladsl/pubsub/PubSubRegistry.html) to get hold of a `PubSubRef` for a given topic.
 
-@[inject](code/docs/home/persistence/Post4.java)
+@[persistent-entity-inject](code/PubSub.scala)
 
 A command handler that publishes messages, in this case the `PostPublished` event, may look like this:
 
-@[publish](code/docs/home/persistence/Post4.java)
+@[persistent-entity-publish](code/PubSub.scala)
 
 To complete the picture, a service method that delivers these `PostPublished` events as a stream:
 
-@[service-impl](code/docs/home/persistence/BlogServiceImpl4.java)
+@[entity-service-impl](code/PubSub.scala)
 
 ## Limitations
 
@@ -68,7 +56,7 @@ The registry of subscribers is eventually consistent, i.e. new subscribers are n
 
 ## Serialization
 
-The published messages must be serializable since they will be sent across the nodes in the cluster of the service. JSON is the recommended serialization format for these messages. The [[Serialization|Serialization]] section describes how to add Jackson serialization support to such message classes.
+The published messages must be serializable since they will be sent across the nodes in the cluster of the service. JSON is the recommended serialization format for these messages. The [[Serialization|Serialization]] section describes how to register serializers for the messages.
 
 ## Underlying Implementation
 

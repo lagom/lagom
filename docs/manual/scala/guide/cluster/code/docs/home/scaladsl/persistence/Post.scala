@@ -27,9 +27,10 @@ final class Post extends PersistentEntity {
             ctx.invalidCommand("Title must be defined")
             ctx.done
           } else {
-            ctx.thenPersist(PostAdded(entityId, content), evt =>
+            ctx.thenPersist(PostAdded(entityId, content)) { _ =>
               // After persist is done additional side effects can be performed
-              ctx.reply(AddPostDone(entityId)))
+              ctx.reply(AddPostDone(entityId))
+            }
           }
       }
       // Event handlers are used both when persisting new events and when replaying
@@ -44,7 +45,7 @@ final class Post extends PersistentEntity {
     Actions()
       .onCommand[ChangeBody, Done] {
         case (ChangeBody(body), ctx, state) =>
-          ctx.thenPersist(BodyChanged(entityId, body), _ => ctx.reply(Done))
+          ctx.thenPersist(BodyChanged(entityId, body))(_ => ctx.reply(Done))
       }
       .onEvent {
         case (BodyChanged(_, body), state) =>

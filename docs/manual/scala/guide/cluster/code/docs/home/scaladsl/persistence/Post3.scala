@@ -15,8 +15,9 @@ final class Post3 extends PersistentEntity {
     Actions()
       .onCommand[AddPost, AddPostDone] {
         case (AddPost(content), ctx, state) if state.isEmpty =>
-          ctx.thenPersist(PostAdded(entityId, content), evt =>
-            ctx.reply(AddPostDone(entityId)))
+          ctx.thenPersist(PostAdded(entityId, content)) { evt =>
+            ctx.reply(AddPostDone(entityId))
+          }
       }
       .onEvent {
         case (PostAdded(postId, content), state) =>

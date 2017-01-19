@@ -25,11 +25,10 @@ class HelloEntity extends PersistentEntity {
       case (UseGreetingMessage(newMessage), ctx, state) =>
         // In response to this command, we want to first persist it as a
         // GreetingMessageChanged event
-        ctx.thenPersist(
-          GreetingMessageChanged(newMessage),
+        ctx.thenPersist(GreetingMessageChanged(newMessage)) {
           // Then once the event is successfully persisted, we respond with done.
           _ => ctx.reply(Done)
-        )
+        }
 
     }.onReadOnlyCommand[Hello, String] {
 
