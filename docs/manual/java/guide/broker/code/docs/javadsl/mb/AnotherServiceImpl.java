@@ -20,7 +20,7 @@ public class AnotherServiceImpl implements AnotherService {
     }
     //#inject-service
 
-    public ServiceCall<NotUsed, NotUsed> foo() {
+    public ServiceCall<NotUsed, NotUsed> audit() {
         //#subscribe-to-topic
         helloService.greetingsTopic()
             .subscribe() // <-- you get back a Subscriber instance

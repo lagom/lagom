@@ -12,7 +12,7 @@ The following code samples use the `HelloService` and `AnotherService` already p
 
 When a Service publishes data into a `Topic` the descriptor lists a `TopicCall` on the public API. Testing the event publishing is very similar to testing `ServiceCall`'s in your Service API (see [[Service testing|Test#How-to-test-one-service]]). 
 
-@[topic-test-publishing-into-a-topic](code/docs/javadsl/mb/HelloServiceTest.java)
+@[topic-test-publishing-into-a-topic](../../../../../testkit/javadsl/src/test/java/com/lightbend/lagom/javadsl/testkit/PublishServiceTest.java)
 
 Using a [`ServiceTest`](api/com/lightbend/lagom/javadsl/testkit/ServiceTest.html) you create a client to your Service. Using that client you can `subscribe` to the published topics. Finally, after interacting with the Service to cause the emission of some events you can assert events were published on the `Topic`.
 
@@ -25,7 +25,7 @@ Testing the consumption of messages requires starting the Service under test wit
 1. A ServiceTest instance is started with a modified `Setup` where the upstream `HelloService` is replaced with a HelloServiceStub`.
 2. An instance of a `ProducerStub` is declared. This instance will be bound when the Server is started and the `HelloServiceStub`.
 3. The Stub for the upstream Service must request a `ProducerStubFactory` from the Injector and use that to obtain a `ProducerStub` for the appropriate `Topic`. See how this snippet uses `GREETINGS_TOPIC` constant declared in the super interface `HelloService`. On the stubbed method that implements the `TopicCall` the stub must return the `Topic` bound to the `ProducerStub` created in the constructor.
-4. Use the `ProducerStub` on the tests to inject messages into the topic and interact normally with the service under test to verify the Service code. 
+4. Use the `ProducerStub` on the tests to send messages into the topic and interact normally with the service under test to verify the Service code. 
 
 @[topic-test-consuming-from-a-topic](code/docs/javadsl/mb/AnotherServiceTest.java)
 

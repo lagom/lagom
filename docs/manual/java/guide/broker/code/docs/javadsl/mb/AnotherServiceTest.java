@@ -9,9 +9,12 @@ import akka.NotUsed;
 import javax.inject.Inject;
 
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.*;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.lightbend.lagom.javadsl.testkit.ProducerStub;
 import com.lightbend.lagom.javadsl.testkit.ProducerStubFactory;
+import scala.concurrent.Await;
+import scala.concurrent.duration.FiniteDuration;
 
 //#topic-test-consuming-from-a-topic
 public class AnotherServiceTest {
@@ -20,7 +23,10 @@ public class AnotherServiceTest {
     // and we override the config to use HelloServiceStub
     // implemented below.
     private Setup setup = defaultSetup().configureBuilder(b ->
-            b.overrides(bind(HelloService.class).to(HelloServiceStub.class)));
+            b.overrides(
+                    bind(HelloService.class).to(HelloServiceStub.class),
+                    bind(AnotherService.class).to(AnotherServiceImpl.class))
+    );
 
     // (2) an instance of ProducerStub allows test code to inject
     // messages on the topic.
@@ -32,14 +38,16 @@ public class AnotherServiceTest {
         // (1)
         withServer(setup, server -> {
 
-            // (4) send a message in the topic
             GreetingMessage message = new GreetingMessage("someId", "Hi there!");
-            helloProducer.send(message);
 
+            AnotherService client = server.client(AnotherService.class);
+            client.audit().invoke().toCompletableFuture().get(3, SECONDS);
+
+            // (4) send a message in the topic
+            helloProducer.send(message);
 
             // use a service client instance to interact with the service
             // and assert the message was processed as expected.
-            AnotherService client = server.client(AnotherService.class);
             // ...
         });
     }
@@ -49,23 +57,27 @@ public class AnotherServiceTest {
         // (2) Receives a ProducerStubFactory that factors ProducerStubs
         @Inject
         HelloServiceStub(ProducerStubFactory producerFactory) {
+            System.out.println("Built hello service");
             // (3) requesting a producer for a specific topic weill create a Stub for it.
             helloProducer = producerFactory.producer(GREETINGS_TOPIC);
         }
 
         @Override
         public Topic<GreetingMessage> greetingsTopic() {
+            System.out.println("returned topic");
             // (3) the upstream stub must return the topic bound to the producer stub
             return helloProducer.topic();
         }
+
         @Override
         public ServiceCall<NotUsed, String> hello(String id) {
             throw new UnsupportedOperationException();
         }
+
         @Override
         public ServiceCall<GreetingMessage, Done> useGreeting(String id) {
             throw new UnsupportedOperationException();
         }
     }
 }
-    //#topic-test-consuming-from-a-topic
+//#topic-test-consuming-from-a-topic

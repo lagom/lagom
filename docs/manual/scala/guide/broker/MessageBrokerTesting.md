@@ -8,6 +8,18 @@ The Lagom in-memory broker implementation will also help testing your message se
 
 The following code samples use the `HelloService` and `AnotherService` already presented in previous sections. `HelloService` publishes `GreetingsMessage`s on the `"greetings"` topic and `AnotherService` subscribed to those messages using `atLeastOnce` semantics.
 
+
+## Testing publish
+
+When a Service publishes data into a `Topic` the descriptor lists a `TopicCall` on the public API. Testing the event publishing is very similar to testing `ServiceCall`'s in your Service API (see [[Service testing|Test#How-to-test-one-service]]). 
+
+@[topic-test-publishing-into-a-topic](code/docs/scaladsl/mb/PublishServiceSpec.scala)
+
+Using a [`ServiceTest`](api/com/lightbend/lagom/scaladsl/testkit/ServiceTest$.html) you create a client to your Service. Using that client you can `subscribe` to the published topics. Finally, after interacting with the Service to cause the emission of some events you can assert events were published on the `Topic`.
+
+The producer end is responsible to describe the public API and provide the serialisable mappings for all messages exchanged (both in `ServiceCall`s and `TopicCall`s). The tests granting the proper behavior of the publishing operations should also test the serialisbility and deserilisability of the messages.
+
+
 ## Testing subscription
 
 Testing the consumption of messages requires starting the Service under test with a stub of the upstream Service producing data into the topic. The following snippet demonstrates how to achieve it. 
