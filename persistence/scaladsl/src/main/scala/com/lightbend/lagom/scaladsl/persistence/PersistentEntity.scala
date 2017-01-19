@@ -100,7 +100,7 @@ abstract class PersistentEntity {
 
   type Behavior = State => Actions
   type EventHandler = PartialFunction[(Event, State), State]
-  private[lagom]type CommandHandler = PartialFunction[(Command, CommandContext[Any], State), Persist[Event]]
+  private[lagom]type CommandHandler = PartialFunction[(Command, CommandContext[Any], State), Persist]
   private[lagom]type ReadOnlyCommandHandler = PartialFunction[(Command, ReadOnlyCommandContext[Any], State), Unit]
 
   private var _entityId: String = _
@@ -149,7 +149,7 @@ abstract class PersistentEntity {
   class Actions(
     val eventHandler:    EventHandler,
     val commandHandlers: Map[Class[_], CommandHandler]
-  ) extends Function1[State, Actions] {
+  ) extends (State => Actions) {
 
     /**
      * Extends `State => Actions` so that it can be used directly in
@@ -166,7 +166,7 @@ abstract class PersistentEntity {
      * [[#orElse]] method.
      */
     def onCommand[C <: Command with PersistentEntity.ReplyType[Reply]: ClassTag, Reply](
-      handler: PartialFunction[(Command, CommandContext[Reply], State), Persist[Event]]
+      handler: PartialFunction[(Command, CommandContext[Reply], State), Persist]
     ): Actions = {
       val commandClass = implicitly[ClassTag[C]].runtimeClass.asInstanceOf[Class[C]]
       new Actions(eventHandler, commandHandlers.updated(commandClass, handler.asInstanceOf[CommandHandler]))
@@ -183,7 +183,7 @@ abstract class PersistentEntity {
     def onReadOnlyCommand[C <: Command with PersistentEntity.ReplyType[Reply]: ClassTag, Reply](
       handler: PartialFunction[(Command, ReadOnlyCommandContext[Reply], State), Unit]
     ): Actions = {
-      val delegate: PartialFunction[(Command, CommandContext[Reply], State), Persist[Event]] = {
+      val delegate: PartialFunction[(Command, CommandContext[Reply], State), Persist] = {
         case params @ (_, ctx, _) if handler.isDefinedAt(params) =>
           handler(params)
           ctx.done
@@ -256,25 +256,11 @@ abstract class PersistentEntity {
 
     /**
      * A command handler may return this `Persist` directive to define
-     * that one event is to be persisted.
-     */
-    def thenPersist[B <: Event](event: B): Persist[B] =
-      return new PersistOne(event, afterPersist = null)
-
-    /**
-     * A command handler may return this `Persist` directive to define
      * that one event is to be persisted. External side effects can be
      * performed after successful persist in the `afterPersist` function.
      */
-    def thenPersist[B <: Event](event: B, afterPersist: Function1[B, Unit]): Persist[B] =
-      return new PersistOne(event, afterPersist)
-
-    /**
-     * A command handler may return this `Persist` directive to define
-     * that several events are to be persisted.
-     */
-    def thenPersistAll[B <: Event](events: immutable.Seq[B]): Persist[B] =
-      return new PersistAll(events, afterPersist = null)
+    def thenPersist[B <: Event](event: B)(afterPersist: B => Unit = (_: B) => ()): Persist =
+      PersistOne(event, afterPersist)
 
     /**
      * A command handler may return this `Persist` directive to define
@@ -283,24 +269,14 @@ abstract class PersistentEntity {
      * `afterPersist` is invoked once when all events have been persisted
      * successfully.
      */
-    def thenPersistAll[B <: Event](events: immutable.Seq[B], afterPersist: Function0[Unit]): Persist[B] =
-      return new PersistAll(events, afterPersist)
-
-    /**
-     * A command handler may return this `Persist` directive to define
-     * that several events are to be persisted. External side effects can be
-     * performed after successful persist in the `afterPersist` function.
-     * `afterPersist` is invoked once when all events have been persisted
-     * successfully.
-     */
-    def thenPersistAll[B <: Event](afterPersist: Function0[Unit], events: B*): Persist[B] =
-      return new PersistAll(events.toList, afterPersist)
+    def thenPersistAll(events: Event*)(afterPersist: () => Unit = () => ()): Persist =
+      PersistAll(events.to[immutable.Seq], afterPersist)
 
     /**
      * A command handler may return this `Persist` directive to define
      * that no events are to be persisted.
      */
-    def done[B <: Event]: Persist[B] = persistNone.asInstanceOf[Persist[B]]
+    def done[B <: Event]: Persist = PersistNone
 
   }
 
@@ -309,25 +285,21 @@ abstract class PersistentEntity {
    * if any, to persist. Use the `thenPersist`, `thenPersistAll` or `done` methods of the context
    * that is passed to the command handler function to create the `Persist` directive.
    */
-  trait Persist[B <: Event]
+  trait Persist
 
   /**
    * INTERNAL API
    */
-  private[lagom] case class PersistOne[B <: Event](val event: B, val afterPersist: Function1[B, Unit]) extends Persist[B]
+  private[lagom] case class PersistOne[B <: Event](event: B, afterPersist: B => Unit) extends Persist
 
   /**
    * INTERNAL API
    */
-  private[lagom] case class PersistAll[B <: Event](val events: immutable.Seq[B], val afterPersist: Function0[Unit]) extends Persist[B]
+  private[lagom] case class PersistAll(events: immutable.Seq[Event], afterPersist: () => Unit) extends Persist
 
   /**
    * INTERNAL API
    */
-  private[lagom] trait PersistNone[B <: Event] extends Persist[B] {
-    override def toString: String = "PersistNone"
-  }
-
-  private[lagom] val persistNone = new PersistNone[Nothing] {}
+  private[lagom] case object PersistNone extends Persist
 
 }

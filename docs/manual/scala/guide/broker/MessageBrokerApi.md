@@ -8,9 +8,9 @@ To publish data to a topic a service needs to declare the topic in its [[service
 
 @[hello-service](code/docs/mb/HelloService.scala)
 
-The syntax for declaring a topic is similar to the one used already to define services' endpoints. The [`Descriptor.withTopics`](api/com/lightbend/lagom/scaladsl/api/Descriptor.html) method accepts a sequence of topic calls, each topic call can be defined via the [`topic`](api/com/lightbend/lagom/scaladsl/api/Service$.html) method on the `Service` object. The latter takes a topic name (i.e., the topic identifier), and a method reference that returns a [`Topic`](api/com/lightbend/lagom/scaladsl/api/broker.Topic.html) instance.
+The syntax for declaring a topic is similar to the one used already to define services' endpoints. The [`Descriptor.withTopics`](api/com/lightbend/lagom/scaladsl/api/Descriptor.html) method accepts a sequence of topic calls, each topic call can be defined via the [`topic`](api/com/lightbend/lagom/scaladsl/api/Service$.html) method on the `Service` object. The latter takes a topic name (i.e., the topic identifier), and a method reference that returns a [`Topic`](api/com/lightbend/lagom/scaladsl/api/broker/Topic.html) instance.
 
-Data flowing through a topic is serialized to JSON by default. Of course, it is possible to use a different serialization format, and you can do so by providing an implicit message serializer for each topic defined in a service descriptor. This is the same approach described on [message serialization](ServiceDescriptors.html#Message-serialization) when presenting [Service Descriptors](ServiceDescriptors.html). You may want to review the [message serializers documentation](MessageSerializers.html) too.
+Data flowing through a topic is serialized to JSON by default. Of course, it is possible to use a different serialization format, and you can do so by providing an implicit message serializer for each topic defined in a service descriptor. This is the same approach described on [[message serialization|ServiceDescriptors#Message-serialization]] when presenting [[Service Descriptors|ServiceDescriptors]]. You may want to review the [[message serializers documentation|MessageSerializers]] too.
 
 ### Partitioning topics
 

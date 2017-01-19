@@ -52,12 +52,6 @@ lazy val docs = project
         ), "Home.html", "Scala Home", Map("api/index.html" -> "API Documentation"))
       )
     },
-    // Disable scala validation while docs are incomplete
-    markdownDocumentation in markdownGenerateRefReports := {
-      markdownDocumentation.value.filter { doc =>
-        sys.props.get("validate.scala.docs").exists(_ == "true") || doc.name == "java"
-      }
-    },
     markdownUseBuiltinTheme := false,
     markdownTheme := Some("lagom.LagomMarkdownTheme"),
     markdownGenerateTheme := Some("bare"),
@@ -67,7 +61,8 @@ lazy val docs = project
 
   ).dependsOn(serviceIntegrationTestsJavadsl, persistenceJdbcJavadsl,
       serviceIntegrationTestsScaladsl, persistenceCassandraScaladsl, persistenceJdbcScaladsl, testkitScaladsl,
-      brokerScaladsl, playJson, kafkaBroker, immutables % "test->compile", theme % "run-markdown", devmodeScaladsl)
+      brokerScaladsl, playJson, kafkaBroker, pubsubScaladsl, immutables % "test->compile", theme % "run-markdown",
+      devmodeScaladsl)
 
 lazy val parentDir = Path.fileProperty("user.dir").getParentFile
 
@@ -82,6 +77,7 @@ lazy val playJson = ProjectRef(parentDir, "play-json")
 lazy val kafkaBroker = ProjectRef(parentDir, "kafka-broker")
 lazy val brokerScaladsl = ProjectRef(parentDir, "broker-scaladsl")
 lazy val devmodeScaladsl = ProjectRef(parentDir, "devmode-scaladsl")
+lazy val pubsubScaladsl = ProjectRef(parentDir, "pubsub-scaladsl")
 
 // Needed to compile test classes using immutables annotation
 lazy val immutables = ProjectRef(parentDir, "immutables")
