@@ -159,8 +159,8 @@ class TestEntity(system: ActorSystem)
         case (ChangeMode(mode), ctx, state) => {
           mode match {
             case mode if state.mode == mode => ctx.done
-            case Mode.Append                => ctx.thenPersist(InAppendMode, ctx.reply)
-            case Mode.Prepend               => ctx.thenPersist(InPrependMode, ctx.reply)
+            case Mode.Append                => ctx.thenPersist(InAppendMode)(ctx.reply)
+            case Mode.Prepend               => ctx.thenPersist(InPrependMode)(ctx.reply)
           }
         }
       }
@@ -194,9 +194,9 @@ class TestEntity(system: ActorSystem)
           }
           val appended = Appended(elem.toUpperCase)
           if (times == 1)
-            ctx.thenPersist(appended, ctx.reply)
+            ctx.thenPersist(appended)(ctx.reply)
           else
-            ctx.thenPersistAll(List.fill(times)(appended), () => ctx.reply(appended))
+            ctx.thenPersistAll(List.fill(times)(appended): _*)(() => ctx.reply(appended))
       }
 
   private val prepending: Actions =
@@ -213,9 +213,9 @@ class TestEntity(system: ActorSystem)
           }
           val prepended = Prepended(elem.toLowerCase)
           if (times == 1)
-            ctx.thenPersist(prepended, ctx.reply)
+            ctx.thenPersist(prepended)(ctx.reply)
           else
-            ctx.thenPersistAll(List.fill(times)(prepended), () => ctx.reply(prepended))
+            ctx.thenPersistAll(List.fill(times)(prepended): _*)(() => ctx.reply(prepended))
       }
 
   override def recoveryCompleted(state: State): State = {

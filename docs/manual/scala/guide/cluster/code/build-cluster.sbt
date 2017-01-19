@@ -13,11 +13,6 @@
 //libraryDependencies += lagomScaladslPersistenceJdbc
 //#jdbc-dependency
 
-//#pubsub-dependency
-// FIXME
-//libraryDependencies += lagomScaladslPubSub
-//#pubsub-dependency
-
 //#testkit-dependency
 // FIXME
 //libraryDependencies += lagomScaladslTestKit

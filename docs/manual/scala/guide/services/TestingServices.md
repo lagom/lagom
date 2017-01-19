@@ -33,7 +33,7 @@ When using Cassandra the tests must be forked, which is enabled by adding the fo
 
 ## How to test one service
 
-Lagom provides support for writing functional tests for one service in isolation. The service is running in a server and in the test you can interact with it using its service client, i.e. calls to the service API. These utilities are defined in [ServiceTest](api/com/lightbend/lagom/scaladsl/testkit/ServiceTest.html).
+Lagom provides support for writing functional tests for one service in isolation. The service is running in a server and in the test you can interact with it using its service client, i.e. calls to the service API. These utilities are defined in [ServiceTest](api/com/lightbend/lagom/scaladsl/testkit/ServiceTest$.html).
 
 Here's what a simple test may look like:
 
@@ -42,7 +42,7 @@ Here's what a simple test may look like:
 There are a few points to note about this code:
 
 * The test is using ScalaTest's [asynchronous test support](http://www.scalatest.org/user_guide/async_testing). The actual test itself returns a future, and ScalaTest ensures that that future is handled appropriately.
-* `withServer` takes three parameters. The first is a setup parameter, which can be used to configure how the environment should be setup, for example, it can be used to start Cassandra. The second is a constructor for a [LagomApplication](api/com/lightbend/lagom/scaladsl/server/LagomAppication), which is where we construct the application, and the third is a block to run that takes the started server and runs the actual test.
+* `withServer` takes three parameters. The first is a setup parameter, which can be used to configure how the environment should be setup, for example, it can be used to start Cassandra. The second is a constructor for a [LagomApplication](api/com/lightbend/lagom/scaladsl/server/LagomApplication.html), which is where we construct the application, and the third is a block to run that takes the started server and runs the actual test.
 * When we construct the `LagomApplication`, we mix in `LocalServiceLocator`. This provides a local service locator which will resolve just the services that our application is running itself, and is how the service client we construct knows where to find our running service.
 * In the test callback, we implement a service client, which we can then use to talk to our service.
 

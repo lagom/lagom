@@ -56,4 +56,4 @@ The [CQRS Journey](https://msdn.microsoft.com/en-us/library/jj554200.aspx) is a 
 
 Then you should probably use something else than the Persistence module in Lagom. You can implement your Lagom services with whatever data store solution you like. Keep in mind that you should prefer asynchronous APIs to achieve best scalability. If you are using blocking APIs, such JDBC or JPA, you should carefully manage the blocking by using dedicated thread pools of fixed/limited size for the components that are calling those blocking APIs. Never cascade the blocking through several asynchronous calls, such as Service API calls.
 
-The [CassandraSession](api/index.html?com/lightbend/lagom/javadsl/persistence/cassandra/CassandraSession.html) in the Lagom Persistence module provides an asynchronous API that you can use for Cassandra even though you have chosen to not use Event Sourcing and CQRS.
+The `CassandraSession` in the Lagom Persistence module provides an asynchronous API that you can use for Cassandra even though you have chosen to not use Event Sourcing and CQRS.

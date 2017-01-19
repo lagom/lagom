@@ -131,10 +131,10 @@ class PersistentEntityTestDriver[C, E, S](
     )
   }
 
-  private def unhandledCommand: PartialFunction[(C, entity.CommandContext[Any], S), entity.Persist[_]] = {
+  private def unhandledCommand: PartialFunction[(C, entity.CommandContext[Any], S), entity.Persist] = {
     case (cmd, _, _) =>
       issues :+= UnhandledCommand(cmd)
-      entity.persistNone
+      entity.PersistNone
   }
 
   def runOne[CC <: entity.Command](command: C): Outcome[E, S] = ???
@@ -182,7 +182,7 @@ class PersistentEntityTestDriver[C, E, S](
         val result = commandHandler.applyOrElse((cmd.asInstanceOf[C], ctx, state), unhandledCommand)
 
         result match {
-          case _: entity.PersistNone[_] => // done
+          case entity.PersistNone => // done
           case entity.PersistOne(event, afterPersist) =>
             issues ++= checkSerialization(event)
             try {

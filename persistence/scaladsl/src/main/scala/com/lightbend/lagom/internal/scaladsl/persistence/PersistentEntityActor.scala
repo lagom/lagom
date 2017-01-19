@@ -119,14 +119,14 @@ private[lagom] class PersistentEntityActor(
     state = actions.eventHandler.applyOrElse((event, state), unhandledEvent)
   }
 
-  private def unhandledCommand: PartialFunction[(C, entity.CommandContext[Any], S), entity.Persist[_]] = {
+  private def unhandledCommand: PartialFunction[(C, entity.CommandContext[Any], S), entity.Persist] = {
     case (cmd, _, _) =>
       // not using akka.actor.Status.Failure because it is using Java serialization
       sender() ! PersistentEntity.UnhandledCommandException(
         s"Unhandled command [${cmd.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"
       )
       unhandled(cmd)
-      entity.persistNone
+      entity.PersistNone
   }
 
   def receiveCommand: Receive = {
@@ -148,7 +148,7 @@ private[lagom] class PersistentEntityActor(
         }
         val result = commandHandler.applyOrElse((cmd.asInstanceOf[C], ctx, state), unhandledCommand)
         result match {
-          case _: entity.PersistNone[_] => // done
+          case entity.PersistNone => // done
           case entity.PersistOne(event, afterPersist) =>
             // apply the event before persist so that validation exception is handled before persisting
             // the invalid event, in case such validation is implemented in the event handler.
