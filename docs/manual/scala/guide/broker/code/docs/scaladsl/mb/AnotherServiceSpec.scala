@@ -6,7 +6,7 @@ import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomApplicationCo
 import com.lightbend.lagom.scaladsl.testkit.{ProducerStubFactory, ServiceTest, _}
 import play.api.libs.ws.ahc.AhcWSComponents
 import org.scalatest.{AsyncWordSpec, Matchers}
-
+import akka.{NotUsed, Done}
 
 abstract class AnotherApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
@@ -23,7 +23,7 @@ abstract class AnotherApplication(context: LagomApplicationContext)
 class AnotherServiceSpec extends AsyncWordSpec with Matchers {
   var producerStub: ProducerStub[GreetingMessage] = _
 
-  "The HelloService" should {
+  "The AnotherService" should {
     "publish updates on greetings message" in
       ServiceTest.withServer(ServiceTest.defaultSetup) { ctx =>
         new AnotherApplication(ctx) with LocalServiceLocator {
@@ -43,7 +43,9 @@ class AnotherServiceSpec extends AsyncWordSpec with Matchers {
         producerStub.send(GreetingMessage("Hi there!"))
 
         // create a service client to assert the message was consumed
-        val client = server.serviceClient.implement[AnotherService]
+        server.serviceClient.implement[AnotherService].foo.invoke().map { resp =>
+          resp should ===("Hi there!")
+        }
 
       }
   }
@@ -55,11 +57,9 @@ class HelloServiceStub(stub: ProducerStub[GreetingMessage])
   extends HelloService {
   override def greetingsTopic(): Topic[GreetingMessage] = stub.topic
 
-  override def hello(id: String): ServiceCall[Any, String] = ???
+  override def hello(id: String): ServiceCall[NotUsed, String] = ???
 
-  override def useGreeting(
-                            id: String
-                          ): ServiceCall[GreetingMessage, Any] = ???
+  override def useGreeting(id: String): ServiceCall[GreetingMessage, Done] = ???
 }
 
 //#topic-test-consuming-from-a-topic
