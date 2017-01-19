@@ -67,9 +67,9 @@ $ sbt
 (Services started, press enter to stop and go back to the console...)
 ```
 
-You can verify that the services are indeed up and running by invoking one of its endpoints from any HTTP client. For example, on Windows you might use Postman. On Linux, you might use curl:
+You can verify that the services are indeed up and running by invoking one of its endpoints from any HTTP, such as a browser. The following request returns the message `Hello, World!`:
 
-```console
+```
 $ curl http://localhost:9000/api/hello/World
 ```
 
