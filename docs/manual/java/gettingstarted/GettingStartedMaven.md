@@ -67,13 +67,11 @@ $ mvn lagom:runAll
 (Services started, press enter to stop and go back to the console...)
 ```
 
-You can verify that the services are indeed up and running by invoking one of its endpoints, e.g:
+You can verify that the services are indeed up and running by invoking one of its endpoints from any HTTP client, such as a browser. The following request returns the message `Hello, World!`:
 
-```console
-$ curl http://localhost:9000/api/hello/World
 ```
-
-And you should get back the message `Hello, World!`.
+http://localhost:9000/api/hello/World
+```
 
 If you are wondering why we have created two services in the seed template, instead of having just one, the reason is simply that ([quoting](https://twitter.com/jboner/status/699536472442011648) Jonas Bonér):
 
