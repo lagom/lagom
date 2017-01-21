@@ -64,16 +64,15 @@ $ sbt
 [info] Service gateway is running at http://localhost:9000
 [info] Service hello-impl listening for HTTP on 0:0:0:0:0:0:0:0:24266
 [info] Service hello-stream-impl listening for HTTP on 0:0:0:0:0:0:0:0:26230
-(Services started, use Ctrl+D to stop and go back to the console...)
+(Services started, press enter to stop and go back to the console...)
 ```
 
-You can verify that the services are indeed up and running by exercising one of its endpoints, e.g:
+You can verify that the services are indeed up and running by invoking one of its endpoints from any HTTP client, such as a browser. The following request returns the message `Hello, World!`:
 
-```console
-$ curl http://localhost:9000/api/hello/World
+```
+http://localhost:9000/api/hello/World
 ```
 
-And you should get back the message `Hello, World!`.
 
 If you are wondering why we have created two services in the seed template, instead of having just one, the reason is simply that ([quoting](https://twitter.com/jboner/status/699536472442011648) Jonas Bonér):
 
