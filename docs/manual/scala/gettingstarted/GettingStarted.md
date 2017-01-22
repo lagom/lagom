@@ -81,3 +81,6 @@ If you are wondering why we have created two services in the seed template, inst
 Said otherwise, we believe you will be creating several services, and we felt it was important to showcase intra-service communication.
 
 The `lagom-scala.g8` template you used to build `hello` uses the `.sbtopts` file to increase the memory used by the `JVM` when starting your project. There's a few more ways to [[Increase Memory in sbt|JVMMemoryOnDev]]
+
+## Larger-scale sample project
+The [online-auction-scala](https://github.com/lagom/online-auction-scala) is a larger project comprising a number of services. Downloading this project and inspecting the source code will provide a valuable supplemental resource for this documentation.
