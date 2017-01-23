@@ -13,7 +13,6 @@ import akka.stream.testkit.TestSubscriber.Probe
 
 abstract class PublishApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
-    with TestTopicComponents
     with AhcWSComponents {
 
   override lazy val lagomServer = LagomServer.forServices(
@@ -64,6 +63,7 @@ class PublishServiceSpec extends AsyncWordSpec with Matchers {
   "The PublishService" should {
     "publish events on the topic" in ServiceTest.withServer(ServiceTest.defaultSetup) { ctx =>
       new PublishApplication(ctx) with LocalServiceLocator
+        with TestTopicComponents
     } { server =>
 
       implicit val system = server.actorSystem
