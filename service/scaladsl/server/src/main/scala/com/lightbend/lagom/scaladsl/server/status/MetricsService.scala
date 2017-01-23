@@ -28,7 +28,7 @@ trait MetricsService extends Service {
   /**
    * Stream of circuit breaker status
    */
-  def circuitBreakers: ServiceCall[NotUsed, Source[immutable.Seq[CircuitBreakerStatus], Any]]
+  def circuitBreakers: ServiceCall[NotUsed, Source[immutable.Seq[CircuitBreakerStatus], NotUsed]]
 
   override def descriptor = {
     import Service._
@@ -50,7 +50,7 @@ trait MetricsServiceComponents extends LagomServerComponents {
     // Can't use the bindService macro here, since it's in the same compilation unit. The code below is exactly what
     // the macro generates.
     LagomServiceBinder(lagomServerBuilder, new MetricsService {
-      override def circuitBreakers: ServiceCall[NotUsed, Source[Seq[CircuitBreakerStatus], Any]] =
+      override def circuitBreakers: ServiceCall[NotUsed, Source[Seq[CircuitBreakerStatus], NotUsed]] =
         throw new NotImplementedError("Service methods and topics must not be invoked from service trait")
       override def currentCircuitBreakers: ServiceCall[NotUsed, Seq[CircuitBreakerStatus]] =
         throw new NotImplementedError("Service methods and topics must not be invoked from service trait")
@@ -96,7 +96,7 @@ private class MetricsServiceImpl(circuitBreakerMetricsProvider: CircuitBreakerMe
   override def circuitBreakers = ServiceCall { _ =>
     val source = Source.tick(100.milliseconds, 2.seconds, "tick").map { _ =>
       allCircuitBreakerStatus
-    }
+    }.mapMaterializedValue(_ => NotUsed)
     Future.successful(source)
   }
 

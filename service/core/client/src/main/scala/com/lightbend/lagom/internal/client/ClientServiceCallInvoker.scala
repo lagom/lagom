@@ -6,6 +6,7 @@ package com.lightbend.lagom.internal.client
 import java.net.{ URI, URLEncoder }
 import java.util.Locale
 
+import akka.NotUsed
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Sink, Source }
 import akka.util.ByteString
@@ -52,18 +53,18 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
             responseSerializer.asInstanceOf[MessageSerializer[Response, ByteString]], request)
         case (false, true) =>
           makeStreamedResponseCall(requestHeader, requestSerializer.asInstanceOf[MessageSerializer[Request, ByteString]],
-            responseSerializer.asInstanceOf[MessageSerializer[Response, AkkaStreamsSource[ByteString]]], request)
+            responseSerializer.asInstanceOf[MessageSerializer[Response, AkkaStreamsSource[ByteString, NotUsed]]], request)
         case (true, false) =>
           makeStreamedRequestCall(
             requestHeader,
-            requestSerializer.asInstanceOf[MessageSerializer[Request, AkkaStreamsSource[ByteString]]],
+            requestSerializer.asInstanceOf[MessageSerializer[Request, AkkaStreamsSource[ByteString, NotUsed]]],
             responseSerializer.asInstanceOf[MessageSerializer[Response, ByteString]], request
           )
         case (true, true) =>
           makeStreamedCall(
             requestHeader,
-            requestSerializer.asInstanceOf[MessageSerializer[Request, AkkaStreamsSource[ByteString]]],
-            responseSerializer.asInstanceOf[MessageSerializer[Response, AkkaStreamsSource[ByteString]]], request
+            requestSerializer.asInstanceOf[MessageSerializer[Request, AkkaStreamsSource[ByteString, NotUsed]]],
+            responseSerializer.asInstanceOf[MessageSerializer[Response, AkkaStreamsSource[ByteString, NotUsed]]], request
           )
       }
 
@@ -83,7 +84,7 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
   private def makeStreamedResponseCall(
     requestHeader:      RequestHeader,
     requestSerializer:  MessageSerializer[Request, ByteString],
-    responseSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString]], request: Request
+    responseSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]], request: Request
   ): Future[(ResponseHeader, Response)] = {
 
     val serializer = messageSerializerSerializerForRequest[Request, ByteString](requestSerializer)
@@ -96,7 +97,7 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       Source.single(negotiatedSerializerSerialize(serializer, request)).concat(Source.maybe)
     } else {
       // If it's not used, don't send any message
-      Source.maybe
+      Source.maybe[ByteString].mapMaterializedValue(_ => NotUsed)
     }
     doMakeStreamedCall(requestAsStream, serializer, transportRequestHeader).map(
       (deserializeResponseStream(responseSerializer, requestHeader) _).tupled
@@ -110,12 +111,12 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
    * message is received, it assumes the response is an empty message.
    */
   private def makeStreamedRequestCall(
-    requestHeader: RequestHeader, requestSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString]],
+    requestHeader: RequestHeader, requestSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]],
     responseSerializer: MessageSerializer[Response, ByteString], request: Request
   ): Future[(ResponseHeader, Response)] = {
 
-    val serializer = messageSerializerSerializerForRequest(requestSerializer.asInstanceOf[MessageSerializer[AkkaStreamsSource[Any], AkkaStreamsSource[ByteString]]])
-    val requestStream = negotiatedSerializerSerialize(serializer, request.asInstanceOf[AkkaStreamsSource[Any]])
+    val serializer = messageSerializerSerializerForRequest(requestSerializer.asInstanceOf[MessageSerializer[AkkaStreamsSource[Any, NotUsed], AkkaStreamsSource[ByteString, NotUsed]]])
+    val requestStream = negotiatedSerializerSerialize(serializer, request.asInstanceOf[AkkaStreamsSource[Any, NotUsed]])
 
     val headerFilter = descriptorHeaderFilter(descriptor)
     val transportRequestHeader = headerFilterTransformClientRequest(headerFilter, requestHeader)
@@ -138,14 +139,14 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
    * A call that is streamed in both directions.
    */
   private def makeStreamedCall(
-    requestHeader: RequestHeader, requestSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString]],
-    responseSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString]], request: Request
+    requestHeader: RequestHeader, requestSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]],
+    responseSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]], request: Request
   ): Future[(ResponseHeader, Response)] = {
 
     val serializer = messageSerializerSerializerForRequest(
-      requestSerializer.asInstanceOf[MessageSerializer[AkkaStreamsSource[Any], AkkaStreamsSource[ByteString]]]
+      requestSerializer.asInstanceOf[MessageSerializer[AkkaStreamsSource[Any, NotUsed], AkkaStreamsSource[ByteString, NotUsed]]]
     )
-    val requestStream = negotiatedSerializerSerialize(serializer, request.asInstanceOf[AkkaStreamsSource[Any]])
+    val requestStream = negotiatedSerializerSerialize(serializer, request.asInstanceOf[AkkaStreamsSource[Any, NotUsed]])
 
     val transportRequestHeader = headerFilterTransformClientRequest(descriptorHeaderFilter(descriptor), requestHeader)
 
@@ -155,20 +156,20 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
   }
 
   private def deserializeResponseStream(
-    responseSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString]],
+    responseSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]],
     requestHeader:      RequestHeader
-  )(transportResponseHeader: ResponseHeader, response: Source[ByteString, _]): (ResponseHeader, Response) = {
+  )(transportResponseHeader: ResponseHeader, response: Source[ByteString, NotUsed]): (ResponseHeader, Response) = {
     val responseHeader = headerFilterTransformClientResponse(descriptorHeaderFilter(descriptor), transportResponseHeader, requestHeader)
 
     val deserializer = messageSerializerDeserializer(
-      responseSerializer.asInstanceOf[MessageSerializer[AkkaStreamsSource[Any], AkkaStreamsSource[ByteString]]],
+      responseSerializer.asInstanceOf[MessageSerializer[AkkaStreamsSource[Any, NotUsed], AkkaStreamsSource[ByteString, NotUsed]]],
       messageHeaderProtocol(responseHeader)
     )
     responseHeader -> negotiatedDeserializerDeserialize(deserializer, toAkkaStreamsSource(response)).asInstanceOf[Response]
   }
 
-  protected def doMakeStreamedCall(requestStream: Source[ByteString, _], requestSerializer: NegotiatedSerializer[_, _],
-                                   requestHeader: RequestHeader): Future[(ResponseHeader, Source[ByteString, _])]
+  protected def doMakeStreamedCall(requestStream: Source[ByteString, NotUsed], requestSerializer: NegotiatedSerializer[_, _],
+                                   requestHeader: RequestHeader): Future[(ResponseHeader, Source[ByteString, NotUsed])]
 
   /**
    * A call that is strict in both directions.

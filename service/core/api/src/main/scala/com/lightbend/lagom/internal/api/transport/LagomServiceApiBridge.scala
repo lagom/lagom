@@ -21,9 +21,9 @@ import scala.language.higherKinds
 trait LagomServiceApiBridge {
 
   // All the types that get adapted
-  type AkkaStreamsSource[T]
-  def akkaStreamsSourceAsScala[T](source: AkkaStreamsSource[T]): Source[T, _]
-  def toAkkaStreamsSource[T](source: Source[T, _]): AkkaStreamsSource[T]
+  type AkkaStreamsSource[T, M]
+  def akkaStreamsSourceAsScala[T, M](source: AkkaStreamsSource[T, M]): Source[T, M]
+  def toAkkaStreamsSource[T, M](source: Source[T, M]): AkkaStreamsSource[T, M]
 
   type FutureType[T]
 

@@ -7,6 +7,7 @@ import java.net.URI
 import java.util.{ Base64, Locale }
 import java.util.concurrent.CompletionException
 
+import akka.NotUsed
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
 import akka.stream.stage.{ Context, PushStage, SyncDirective, TerminationDirective }
@@ -238,7 +239,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
    */
   private def websocket[Request, Response](call: Call[Request, Response], descriptor: Descriptor,
                                            requestHeader: RequestHeader, serviceCall: ServiceCall[Request, Response],
-                                           requestSerializer: MessageSerializer[Request, _], responseSerializer: MessageSerializer[Response, _]): WebSocket = WebSocket.acceptOrResult { rh =>
+                                           requestSerializer: MessageSerializer[Request, _], responseSerializer: MessageSerializer[Response, _]): WebSocket = WebSocket.acceptOrResult[Message, Message] { rh =>
 
     val requestProtocol = messageHeaderProtocol(requestHeader)
     val acceptHeaders = requestHeaderAcceptedResponseProtocols(requestHeader)
@@ -264,7 +265,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
         // If it's a streamed message serializer, we return a sink that when materialized (which effectively represents
         // when the WebSocket handshake is complete), will redeem the request promise with a source that is hooked up
         // directly to this sink.
-        val deserializer = requestMessageDeserializer.asInstanceOf[NegotiatedDeserializer[Request, AkkaStreamsSource[ByteString]]]
+        val deserializer = requestMessageDeserializer.asInstanceOf[NegotiatedDeserializer[Request, AkkaStreamsSource[ByteString, _]]]
 
         val captureCancel = Flow[ByteString].transform(() => new PushStage[ByteString, ByteString] {
           override def onDownstreamFinish(ctx: Context[ByteString]): TerminationDirective = {
@@ -316,7 +317,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
 
           val outgoingSource = if (messageSerializerIsStreamed(responseSerializer)) {
             // If streamed, then the source is just the source stream.
-            val serializer = responseMessageSerializer.asInstanceOf[NegotiatedSerializer[Response, AkkaStreamsSource[ByteString]]]
+            val serializer = responseMessageSerializer.asInstanceOf[NegotiatedSerializer[Response, AkkaStreamsSource[ByteString, NotUsed]]]
             akkaStreamsSourceAsScala(negotiatedSerializerSerialize(serializer, response))
           } else {
             // If strict, then the source will be a single source of the response message, concatenated with a lazy

@@ -19,7 +19,7 @@ package example {
   trait SensorService extends Service {
     def registerTemperature(id: String): ServiceCall[Temperature, NotUsed]
 
-    def temperatureStream(id: String): ServiceCall[NotUsed, Source[Temperature, _]]
+    def temperatureStream(id: String): ServiceCall[NotUsed, Source[Temperature, NotUsed]]
 
     def descriptor = {
       import Service._
@@ -65,8 +65,8 @@ package serviceimplstream {
 
 
   trait SensorService extends Service {
-    def registerTemperature(id: String): ServiceCall[Source[Temperature, _], NotUsed]
-    def temperatureStream(id: String): ServiceCall[NotUsed, Source[Temperature, _]]
+    def registerTemperature(id: String): ServiceCall[Source[Temperature, NotUsed], NotUsed]
+    def temperatureStream(id: String): ServiceCall[NotUsed, Source[Temperature, NotUsed]]
     def descriptor = {
       import Service._
       named("/sensorservice").withCalls(
@@ -180,7 +180,7 @@ package persistententity {
   }
 
   trait BlogService extends Service {
-    def publishedStream: ServiceCall[NotUsed, Source[PostPublished, _]]
+    def publishedStream: ServiceCall[NotUsed, Source[PostPublished, NotUsed]]
 
     override def descriptor = {
       import Service._

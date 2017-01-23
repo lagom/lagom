@@ -77,7 +77,7 @@ trait StrictMessageSerializer[Message] extends MessageSerializer[Message, ByteSt
 /**
  * A streamed message serializer, for streams of messages.
  */
-trait StreamedMessageSerializer[Message] extends MessageSerializer[Source[Message, _], Source[ByteString, _]] {
+trait StreamedMessageSerializer[Message] extends MessageSerializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] {
   override def isStreamed: Boolean = true
 }
 
@@ -265,22 +265,22 @@ trait LowPriorityMessageSerializerImplicits {
   }
 
   implicit def sourceMessageSerializer[Message](implicit delegate: MessageSerializer[Message, ByteString]): StreamedMessageSerializer[Message] = new StreamedMessageSerializer[Message] {
-    private class SourceSerializer(delegate: NegotiatedSerializer[Message, ByteString]) extends NegotiatedSerializer[Source[Message, _], Source[ByteString, _]] {
+    private class SourceSerializer(delegate: NegotiatedSerializer[Message, ByteString]) extends NegotiatedSerializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] {
       override def protocol: MessageProtocol = delegate.protocol
-      override def serialize(messages: Source[Message, _]) = messages.map(delegate.serialize)
+      override def serialize(messages: Source[Message, NotUsed]) = messages.map(delegate.serialize)
     }
 
-    private class SourceDeserializer(delegate: NegotiatedDeserializer[Message, ByteString]) extends NegotiatedDeserializer[Source[Message, _], Source[ByteString, _]] {
-      override def deserialize(wire: Source[ByteString, _]) = wire.map(delegate.deserialize)
+    private class SourceDeserializer(delegate: NegotiatedDeserializer[Message, ByteString]) extends NegotiatedDeserializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] {
+      override def deserialize(wire: Source[ByteString, NotUsed]) = wire.map(delegate.deserialize)
     }
 
     override def acceptResponseProtocols: immutable.Seq[MessageProtocol] = delegate.acceptResponseProtocols
 
-    override def deserializer(protocol: MessageProtocol): NegotiatedDeserializer[Source[Message, _], Source[ByteString, _]] =
+    override def deserializer(protocol: MessageProtocol): NegotiatedDeserializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] =
       new SourceDeserializer(delegate.deserializer(protocol))
-    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]): NegotiatedSerializer[Source[Message, _], Source[ByteString, _]] =
+    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]): NegotiatedSerializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] =
       new SourceSerializer(delegate.serializerForResponse(acceptedMessageProtocols))
-    override def serializerForRequest: NegotiatedSerializer[Source[Message, _], Source[ByteString, _]] =
+    override def serializerForRequest: NegotiatedSerializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] =
       new SourceSerializer(delegate.serializerForRequest)
   }
 }

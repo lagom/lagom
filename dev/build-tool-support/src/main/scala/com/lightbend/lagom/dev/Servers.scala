@@ -63,7 +63,7 @@ private[lagom] object Servers {
         override def run(): Unit = {
           process.waitFor()
           // if process completes via Kill, this promise.complete is ignored.
-          promise.complete(process.exitValue())   // TODO: replace int with proper typing
+          promise.complete(process.exitValue()) // TODO: replace int with proper typing
         }
       }).start()
       def completionHook: CompletionStage[Int] = promise
