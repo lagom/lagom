@@ -7,7 +7,6 @@ import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
-import play.api.http.Status;
 
 import java.util.Locale;
 

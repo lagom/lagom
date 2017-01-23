@@ -10,6 +10,9 @@ import com.lightbend.lagom.javadsl.api.transport.TransportException;
  * Thrown when an error was encountered during serialization.
  */
 public class SerializationException extends TransportException {
+
+    private static final long serialVersionUID = 1L;
+
     public static final TransportErrorCode ERROR_CODE = TransportErrorCode.InternalServerError;
 
     public SerializationException(String message) {

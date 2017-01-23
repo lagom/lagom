@@ -17,4 +17,4 @@ addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
 addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "0.7.1")
 addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.5.1")
 addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm" % "0.3.8")
-
+addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.1.0")

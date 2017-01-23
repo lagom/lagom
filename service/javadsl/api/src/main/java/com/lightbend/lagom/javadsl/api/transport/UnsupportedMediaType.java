@@ -9,6 +9,9 @@ import com.lightbend.lagom.javadsl.api.deser.ExceptionMessage;
  * Exception thrown when a message can't be deserialized because its media type is not known.
  */
 public class UnsupportedMediaType extends TransportException {
+
+    private static final long serialVersionUID = 1L;
+
     public static final TransportErrorCode ERROR_CODE = TransportErrorCode.UnsupportedMediaType;
 
     public UnsupportedMediaType(MessageProtocol received, MessageProtocol supported) {

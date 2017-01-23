@@ -9,6 +9,9 @@ import com.lightbend.lagom.javadsl.api.deser.ExceptionMessage;
  * Exception thrown when a service call is forbidden.
  */
 public class Forbidden extends TransportException {
+
+    private static final long serialVersionUID = 1L;
+
     public static final TransportErrorCode ERROR_CODE = TransportErrorCode.Forbidden;
 
     public Forbidden(String message) {

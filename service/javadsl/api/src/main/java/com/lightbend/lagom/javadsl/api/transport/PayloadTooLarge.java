@@ -9,6 +9,9 @@ import com.lightbend.lagom.javadsl.api.deser.ExceptionMessage;
  * Thrown when the payload is too large.
  */
 public class PayloadTooLarge extends TransportException {
+
+    private static final long serialVersionUID = 1L;
+
     public static final TransportErrorCode ERROR_CODE = TransportErrorCode.PayloadTooLarge;
 
     public PayloadTooLarge(String message) {
