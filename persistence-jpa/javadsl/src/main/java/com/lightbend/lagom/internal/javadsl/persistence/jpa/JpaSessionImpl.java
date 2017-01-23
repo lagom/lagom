@@ -27,9 +27,12 @@ import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
+import static play.utils.Threads.withContextClassLoader;
+
 @Singleton
 class JpaSessionImpl implements JpaSession {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     private final String persistenceUnitName;
     private final FiniteDuration initRetryIntervalMin;
@@ -38,7 +41,6 @@ class JpaSessionImpl implements JpaSession {
 
     private final JdbcBackend.DatabaseDef slickDb;
     private final CompletionStage<EntityManagerFactory> factoryCompletionStage;
-
 
     @Inject
     public JpaSessionImpl(Configuration config, SlickProvider slick, ActorSystem actorSystem, ApplicationLifecycle lifecycle) {
@@ -106,7 +108,11 @@ class JpaSessionImpl implements JpaSession {
     }
 
     private <R> CompletionStage<R> executeInSlickContext(JFunction0<R> block) {
-        return FutureConverters.toJava(slickDb.io(block));
+        return FutureConverters.toJava(slickDb.io(wrapWithContextClassLoader(block)));
+    }
+
+    private <R> JFunction0<R> wrapWithContextClassLoader(JFunction0<R> block) {
+        return () -> withContextClassLoader(classLoader, block);
     }
 
     private CompletionStage<Done> close() {
