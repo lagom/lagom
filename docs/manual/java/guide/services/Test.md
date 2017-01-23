@@ -80,8 +80,12 @@ When writing tests for that the [Akka Streams TestKit](http://doc.akka.io/docs/a
 
 Read more about it in the documentation of the [Akka Streams TestKit](http://doc.akka.io/docs/akka/2.4/java/stream/stream-testkit.html#Streams_TestKit).
 
+## How to test broker publishing and consuming
+
+The section on [[Message Broker Testing|MessageBrokerTesting]] is related to Testing Services but is specific to testing the production and consumption via Brokers.
+
 ## How to test PersistentEntity
 
-[[Persistent Entities|PersistentEntity]] can be used in the service tests described above. In addition to that you should write unit tests using the [PersistentEntityTestDriver](api/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html), which will run the `PersistentEntity` without using a database.
+[[Persistent Entities|PersistentEntity#unit-testing]] can be used in the service tests described above. In addition to that you should write unit tests using the [PersistentEntityTestDriver](api/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html), which will run the `PersistentEntity` without using a database.
 
 This is described in the documentation of [[Persistent Entity|PersistentEntity#Unit-Testing]]

@@ -1,4 +1,4 @@
-package docs.mb
+package docs.scaladsl.mb
 
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}

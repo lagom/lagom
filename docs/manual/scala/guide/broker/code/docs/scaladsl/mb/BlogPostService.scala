@@ -1,4 +1,4 @@
-package docs.mb
+package docs.scaladsl.mb
 
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.broker.kafka.{KafkaProperties, PartitionKeyStrategy}

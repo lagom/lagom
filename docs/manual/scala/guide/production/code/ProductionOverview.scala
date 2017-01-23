@@ -2,7 +2,7 @@ package docs.scaladsl.production.overview
 
 package configurationservicelocator {
 
-  import docs.scaladsl.services.lagomappliaction.HelloApplication
+  import docs.scaladsl.services.lagomapplication.HelloApplication
 
   //#configuration-service-locator
   import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
