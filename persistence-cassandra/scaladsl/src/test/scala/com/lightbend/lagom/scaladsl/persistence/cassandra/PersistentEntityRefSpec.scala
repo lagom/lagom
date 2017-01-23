@@ -15,10 +15,11 @@ import akka.stream.{ ActorMaterializer, Materializer }
 import akka.testkit.TestKit
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
-import com.lightbend.lagom.scaladsl.persistence.{ PersistentEntity, PersistentEntityRegistry, TestEntity }
+import com.lightbend.lagom.scaladsl.persistence.{ PersistentEntity, PersistentEntityRegistry, TestEntity, TestEntitySerializerRegistry }
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.{ InvalidCommandException, UnhandledCommandException }
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Mode
 import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalactic.ConversionCheckedTripleEquals
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
@@ -67,6 +68,7 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
     override def configuration: play.api.Configuration = play.api.Configuration(config)
     override def materializer: Materializer = ActorMaterializer()(system)
     override def serviceLocator: ServiceLocator = NoServiceLocator
+    override def jsonSerializerRegistry: JsonSerializerRegistry = TestEntitySerializerRegistry
   }
 
   private def registry: PersistentEntityRegistry = {

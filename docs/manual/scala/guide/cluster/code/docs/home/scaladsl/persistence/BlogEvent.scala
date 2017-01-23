@@ -4,7 +4,7 @@ package docs.home.scaladsl.persistence
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
 import com.lightbend.lagom.scaladsl.persistence.AggregateEventShards
 import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
-import com.lightbend.lagom.scaladsl.playjson.{Jsonable, Serializers}
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializer
 
 object BlogEvent {
   val NumShards = 20
@@ -15,12 +15,12 @@ object BlogEvent {
   private implicit val postContentFormat = Json.format[PostContent]
 
   val serializers = Vector(
-    Serializers(Json.format[PostAdded]),
-    Serializers(Json.format[BodyChanged]),
-    Serializers(Json.format[PostPublished]))
+    JsonSerializer(Json.format[PostAdded]),
+    JsonSerializer(Json.format[BodyChanged]),
+    JsonSerializer(Json.format[PostPublished]))
 }
 
-sealed trait BlogEvent extends AggregateEvent[BlogEvent] with Jsonable {
+sealed trait BlogEvent extends AggregateEvent[BlogEvent] {
   override def aggregateTag: AggregateEventShards[BlogEvent] = BlogEvent.Tag
 }
 

@@ -3,26 +3,39 @@
  */
 package docs.home.scaladsl.serialization
 
-import com.lightbend.lagom.scaladsl.playjson.{SerializerRegistry, Serializers}
+//#registry
+import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
-import scala.collection.immutable
-
-object BlogCommands {
-  val serializers =  Vector[Serializers[_]](
-    Serializers(AddComment.format),
-    Serializers(AddPost.format)
+object MyRegistry extends JsonSerializerRegistry {
+  override val serializers = Vector(
+    JsonSerializer[AddComment],
+    JsonSerializer[AddPost]
   )
 }
-
-object BlogEvents {
-  val serializers = Vector.empty[Serializers[_]]
-}
-
-//#registry
-class MyRegistry extends SerializerRegistry {
-
-  override val serializers = BlogCommands.serializers ++ BlogEvents.serializers
-}
 //#registry
 
+//#application-cake
+import com.lightbend.lagom.scaladsl.server._
+import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 
+abstract class MyApplication(context: LagomApplicationContext)
+  extends LagomApplication(context)
+    with ClusterComponents {
+
+  override lazy val jsonSerializerRegistry = MyRegistry
+}
+//#application-cake
+
+object CreateActorSystem {
+
+  //#create-actor-system
+  import akka.actor.ActorSystem
+  import akka.actor.setup.ActorSystemSetup
+  import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
+
+  val system = ActorSystem("my-actor-system", ActorSystemSetup(
+    JsonSerializerRegistry.serializationSetupFor(MyRegistry)
+  ))
+  //#create-actor-system
+
+}

@@ -4,6 +4,7 @@
 package com.lightbend.lagom.persistence
 
 import akka.actor.ActorSystem
+import akka.actor.setup.ActorSystemSetup
 import akka.event.{ Logging, LoggingAdapter }
 import akka.testkit.{ ImplicitSender, TestKit }
 import com.typesafe.config.{ Config, ConfigFactory }
@@ -31,6 +32,8 @@ abstract class ActorSystemSpec(system: ActorSystem) extends TestKit(system)
     this(ActorSystem(testName, config))
 
   def this(config: Config) = this(ActorSystemSpec.getCallerName(getClass), config)
+
+  def this(setup: ActorSystemSetup) = this(ActorSystem(ActorSystemSpec.getCallerName(getClass), setup))
 
   def this() = this(ConfigFactory.empty())
 

@@ -10,7 +10,7 @@ import akka.stream.scaladsl.Flow
 import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall }
 import com.lightbend.lagom.scaladsl.api.Service._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.playjson.{ Jsonable, SerializerRegistry, Serializers }
+import com.lightbend.lagom.scaladsl.playjson.{ JsonSerializerRegistry, JsonSerializer }
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LagomServer }
 import play.api.libs.ws.ahc.AhcWSComponents
 
@@ -45,8 +45,8 @@ object AlphaEvent {
 }
 
 // ------------------------------------------------------
-class FakesSerializerRegistry extends SerializerRegistry {
-  override def serializers: Seq[Serializers[_]] = List(Serializers[AlphaEvent], Serializers[ReceivedMessage])
+object FakesSerializerRegistry extends JsonSerializerRegistry {
+  override def serializers: Seq[JsonSerializer[_]] = List(JsonSerializer[AlphaEvent], JsonSerializer[ReceivedMessage])
 }
 
 // ------------------------------------------------------

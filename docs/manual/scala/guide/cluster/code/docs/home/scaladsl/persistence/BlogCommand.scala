@@ -3,30 +3,29 @@ package docs.home.scaladsl.persistence
 //#full-example
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import akka.Done
-import com.lightbend.lagom.scaladsl.playjson.{Jsonable, Serializers}
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializer
 
-sealed trait BlogCommand extends Jsonable
+sealed trait BlogCommand
 
 object BlogCommand {
   import play.api.libs.json._
-  import Serializers.emptySingletonFormat
-
+  import JsonSerializer.emptySingletonFormat
 
   implicit val postContentFormat = Json.format[PostContent]
 
   val serializers = Vector(
-    Serializers(Json.format[AddPost]),
-    Serializers(Json.format[AddPostDone]),
-    Serializers(emptySingletonFormat(GetPost)),
-    Serializers(Json.format[ChangeBody]),
-    Serializers(emptySingletonFormat(Publish)))
+    JsonSerializer(Json.format[AddPost]),
+    JsonSerializer(Json.format[AddPostDone]),
+    JsonSerializer(emptySingletonFormat(GetPost)),
+    JsonSerializer(Json.format[ChangeBody]),
+    JsonSerializer(emptySingletonFormat(Publish)))
 }
 
 //#AddPost
 final case class AddPost(content: PostContent) extends BlogCommand with ReplyType[AddPostDone]
 //#AddPost
 
-final case class AddPostDone(postId: String) extends Jsonable
+final case class AddPostDone(postId: String)
 
 case object GetPost extends BlogCommand with ReplyType[PostContent]
 

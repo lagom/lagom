@@ -1,16 +1,13 @@
 package docs.home.scaladsl.serialization
 
-import com.lightbend.lagom.scaladsl.playjson.Jsonable
 import play.api.libs.json.{Format, Json}
 
-//#markerTrait
-case class AddPost(text: String) extends Jsonable
-//#markerTrait
+case class AddPost(text: String)
 
 object AddPost {
 
   //#format
-  val format: Format[AddPost] = Json.format[AddPost]
+  implicit val format: Format[AddPost] = Json.format
   //#format
 
 }

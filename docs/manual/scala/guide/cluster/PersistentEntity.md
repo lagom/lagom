@@ -186,20 +186,7 @@ For unit testing of the entity you can use the [PersistentEntityTestDriver](api/
 
 Note that it also verifies that all commands, events, replies and state are [[serializable|Serialization]], and reports any such problems in the `issues` of the `Outcome`.
 
-To use this feature add the following in your project's build.
-
-In Maven:
-
-```xml
-<dependency>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-scaladsl-testkit_2.11</artifactId>
-    <version>${lagom.version}</version>
-    <scope>test</scope>
-</dependency>
-```
-
-In sbt:
+To use this feature add the following in your project's build:
 
 @[testkit-dependency](code/build-cluster.sbt)
 

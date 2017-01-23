@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import akka.Done
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, AggregateEventTagger, PersistentEntity}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
-import com.lightbend.lagom.scaladsl.playjson.{Jsonable, SerializerRegistry, Serializers}
+import com.lightbend.lagom.scaladsl.playjson.{JsonSerializerRegistry, JsonSerializer}
 import play.api.libs.json.{Format, Json}
 
 import scala.collection.immutable.Seq
@@ -50,7 +50,7 @@ class HelloEntity extends PersistentEntity {
   }
 }
 
-case class HelloState(message: String, timestamp: String) extends Jsonable
+case class HelloState(message: String, timestamp: String)
 
 object HelloState {
   implicit val format: Format[HelloState] = Json.format
@@ -60,7 +60,7 @@ object HelloEventTag {
   val INSTANCE: AggregateEventTag[HelloEvent] = AggregateEventTag[HelloEvent]()
 }
 
-sealed trait HelloEvent extends Jsonable with AggregateEvent[HelloEvent]{
+sealed trait HelloEvent extends AggregateEvent[HelloEvent]{
   override def aggregateTag: AggregateEventTagger[HelloEvent] = HelloEventTag.INSTANCE
 }
 
@@ -69,7 +69,7 @@ case class GreetingMessageChanged(message: String) extends HelloEvent
 object GreetingMessageChanged {
   implicit val format: Format[GreetingMessageChanged] = Json.format
 }
-sealed trait HelloCommand[R] extends Jsonable with ReplyType[R]
+sealed trait HelloCommand[R] extends ReplyType[R]
 
 case class UseGreetingMessage(message: String) extends HelloCommand[Done]
 
@@ -83,11 +83,11 @@ object Hello {
   implicit val format: Format[Hello] = Json.format
 }
 
-class HelloSerializerRegistry extends SerializerRegistry {
-  override def serializers: Seq[Serializers[_]] = Seq(
-    Serializers[UseGreetingMessage],
-    Serializers[Hello],
-    Serializers[GreetingMessageChanged],
-    Serializers[HelloState]
+object HelloSerializerRegistry extends JsonSerializerRegistry {
+  override def serializers: Seq[JsonSerializer[_]] = Seq(
+    JsonSerializer[UseGreetingMessage],
+    JsonSerializer[Hello],
+    JsonSerializer[GreetingMessageChanged],
+    JsonSerializer[HelloState]
   )
 }

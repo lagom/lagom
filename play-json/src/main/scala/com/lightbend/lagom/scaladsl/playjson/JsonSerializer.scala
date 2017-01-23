@@ -8,7 +8,7 @@ import play.api.libs.json._
 import scala.collection.immutable.Seq
 import scala.reflect.ClassTag
 
-object Serializers {
+object JsonSerializer {
 
   /**
    * Creates a format that will serialize and deserialize a singleton to an empty js object
@@ -22,23 +22,23 @@ object Serializers {
    * Create a serializer for the PlayJsonSerializationRegistry, describes how a specific class can be read and written
    * as json using separate play-json [[Reads]] and [[Writes]]
    */
-  def apply[T: ClassTag: Format]: Serializers[T] =
-    SerializersImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], implicitly[Format[T]])
+  def apply[T: ClassTag: Format]: JsonSerializer[T] =
+    JsonSerializerImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], implicitly[Format[T]])
 
   /**
    * Create a serializer for the PlayJsonSerializationRegistry, describes how a specific class can be read and written
    * as json using separate play-json [[Reads]] and [[Writes]]
    */
-  def apply[T: ClassTag](format: Format[T]): Serializers[T] =
-    SerializersImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], format)
+  def apply[T: ClassTag](format: Format[T]): JsonSerializer[T] =
+    JsonSerializerImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], format)
 
-  private case class SerializersImpl[T](entityClass: Class[T], format: Format[T]) extends Serializers[T]
+  private case class JsonSerializerImpl[T](entityClass: Class[T], format: Format[T]) extends JsonSerializer[T]
 }
 
 /**
  * Describes how to serialize and deserialize a type using play-json
  */
-sealed trait Serializers[T] {
+sealed trait JsonSerializer[T] {
   // the reason we need it over Format is to capture the type here
   def entityClass: Class[T]
   def format: Format[T]

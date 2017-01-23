@@ -11,25 +11,26 @@ The Play JSON abstraction for serializing and deserializing a class into JSON is
 
 ## Enabling JSON Serialization
 
-To enable JSON Serialization there are 3 steps you need to follow.
+To enable JSON Serialization there are three steps you need to follow.
 
-The first step is to mark your class for JSON serialization by making it implement the [com.lightbend.lagom.scaladsl.playjson.Jsonable](api/index.html#com/lightbend/lagom/scaladsl/playjson/Jsonable) marker trait (note that it is not the same as `com.lightbend.lagom.Jsonable` which is for the Java Lagom API).
-
-@[markerTrait](code/docs/home/scaladsl/serialization/AddPost.scala)
-
-The second step is to define your [Format](https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.libs.json.Format) for each class that is to be serialized, this can be done using [automated mapping](#Automated-mapping) or [manual mapping](#Manual-mapping). 
+The first step is to define your [Format](https://www.playframework.com/documentation/2.5.x/api/scala/play/api/libs/json/Format.html) for each class that is to be serialized, this can be done using [automated mapping](#Automated-mapping) or [manual mapping](#Manual-mapping). 
 
 @[format](code/docs/home/scaladsl/serialization/AddPost.scala)
 
-Best practice is to define the `Format` somewhere close to the class, for example all the `Format`s for the commands and events in the respective supertype companion object.
+Best practice is to define the `Format` as an implicit in the classes companion object, so that it can be found by implicit resolution.
  
-The third step is to implement [com.lightbend.lagom.scaladsl.playjson.SerializerRegistry](api/index.html#com/lightbend/lagom/scaladsl/playjson/SerializerRegistry) and have all the service formats returned from its `serializers` method.
-
- TODO document/decide the di part
+The second step is to implement [JsonSerializerRegistry](api/com/lightbend/lagom/scaladsl/playjson/JsonSerializerRegistry.html) and have all the service formats returned from its `serializers` method.
    
 @[registry](code/docs/home/scaladsl/serialization/Registry.scala)
-   
 
+Having done that, you can provide the serializer registry by overriding the `jsonSerializerRegistry` component method in your application cake, for example:
+
+@[application-cake](code/docs/home/scaladsl/serialization/Registry.scala)
+
+If you need to use the registry outside of a Lagom application, for example, in tests, this can be done by customising the creation of the actor system, for example:
+
+@[create-actor-system](code/docs/home/scaladsl/serialization/Registry.scala)
+   
 ## Automated mapping
 
 The [Json.format\[MyClass\]](https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.libs.json.Json$@format[A]:play.api.libs.json.OFormat[A]) macro will inspect a `case class` for what fields it contains and produce a `Format` that uses the field names and types of the class in the resulting JSON.
@@ -45,7 +46,6 @@ If the class contains fields of complex types, it pulls those in from `implicit`
 Defining a `Format` can be done in several ways using the Play JSON APIs, either using [JSON Combinators](https://playframework.com/documentation/2.5.x/ScalaJsonCombinators#Format) or by manually implementing functions that turn a `JsValue` into a `JsSuccess(T)` or a `JsFailure()`.
 
 @[manualMapping](code/docs/home/scaladsl/serialization/AddOrder.scala)
-
 
 ## Special mapping considerations
 
@@ -101,15 +101,15 @@ This is how a migration logic would look like for adding a `discount` field usin
 
 @[imperative-migration](code/docs/home/scaladsl/serialization/v2b/ItemAdded.scala)
 
-Create a concrete subclass of [com.lightbend.lagom.scaladsl.playjson.Migration](api/index.html#com/lightbend/lagom/scaladsl/playjson/Migration) handing it the current version of the schema as a parameter, then implement the transformation logic on the `JsObject` in the `transform` method when an older `fromVersion` is passed in.
+Create a concrete subclass of [JsonMigration](api/com/lightbend/lagom/scaladsl/playjson/JsonMigration.html) handing it the current version of the schema as a parameter, then implement the transformation logic on the `JsObject` in the `transform` method when an older `fromVersion` is passed in.
 
-Then provide your `Migration` together with the classname of the class that it migrates in the `migrations` map from your `SerializerRegistry`
+Then provide your `JsonMigration` together with the classname of the class that it migrates in the `migrations` map from your `JsonSerializerRegistry`.
 
 Alternatively you can use the [Play JSON transformers](https://www.playframework.com/documentation/2.5.x/ScalaJsonTransformers) API which is more concise but arguably has a much higher threshold to learn.
 
 @[transformer-migration](code/docs/home/scaladsl/serialization/v2b/ItemAdded.scala)
 
-In this case we give the `Migrations.transform` method the type it is for, and a sorted map of transformations that has happened leading up to the current version of the schema.
+In this case we give the `JsonMigrations.transform` method the type it is for, and a sorted map of transformations that has happened leading up to the current version of the schema.
 
 
 ### Rename Field

@@ -4,7 +4,6 @@
 package docs.home.scaladsl.serialization.v2b
 
 import com.lightbend.lagom.scaladsl.playjson._
-import play.api.libs.json.Format
 
 import scala.collection.immutable
 
@@ -13,29 +12,29 @@ case class ItemAdded(
     shoppingCartId: String,
     productId: String,
     quantity: Int,
-    discount: Double) extends Jsonable
+    discount: Double)
 //#add-mandatory
 
 
 object ItemAddedMigration {
 
   object ShopCommands {
-    val serializers = Vector.empty[Serializers[_]]
+    val serializers = Vector.empty[JsonSerializer[_]]
   }
 
   object ShopEvents {
-    val serializers = Vector.empty[Serializers[_]]
+    val serializers = Vector.empty[JsonSerializer[_]]
   }
 
 
   //#imperative-migration
-  class ShopSerializerRegistry extends SerializerRegistry {
+  class ShopSerializerRegistry extends JsonSerializerRegistry {
 
     import play.api.libs.json._
 
     override val serializers = ShopCommands.serializers ++ ShopEvents.serializers
 
-    private val itemAddedMigration = new Migration(2) {
+    private val itemAddedMigration = new JsonMigration(2) {
       override def transform(fromVersion: Int, json: JsObject): JsObject = {
         if (fromVersion < 2) {
           json + ("discount" -> JsNumber(0.0D))
@@ -45,7 +44,7 @@ object ItemAddedMigration {
       }
     }
 
-    override def migrations = Map[String, Migration](
+    override def migrations = Map[String, JsonMigration](
       classOf[ItemAdded].getName -> itemAddedMigration
     )
   }
@@ -56,15 +55,15 @@ object ItemAddedMigration {
 object ItemAddedMigrationTransformer {
 
   object ShopCommands {
-    val serializers = immutable.Seq.empty[Serializers[_]]
+    val serializers = immutable.Seq.empty[JsonSerializer[_]]
   }
 
   object ShopEvents {
-    val serializers = immutable.Seq.empty[Serializers[_]]
+    val serializers = immutable.Seq.empty[JsonSerializer[_]]
   }
 
   //#transformer-migration
-  class ShopSerializerRegistry extends SerializerRegistry {
+  class ShopSerializerRegistry extends JsonSerializerRegistry {
 
     import play.api.libs.json._
 
@@ -72,8 +71,8 @@ object ItemAddedMigrationTransformer {
 
     val addDefaultDiscount = JsPath.json.update((JsPath \ "discount").json.put(JsNumber(0.0D)))
 
-    override def migrations = Map[String, Migration](
-      Migrations.transform[ItemAdded](immutable.SortedMap(
+    override def migrations = Map[String, JsonMigration](
+      JsonMigrations.transform[ItemAdded](immutable.SortedMap(
         1 -> addDefaultDiscount
       ))
     )

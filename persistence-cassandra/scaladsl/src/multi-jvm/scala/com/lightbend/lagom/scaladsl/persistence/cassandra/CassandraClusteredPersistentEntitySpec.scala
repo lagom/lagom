@@ -16,6 +16,7 @@ import play.api.inject.DefaultApplicationLifecycle
 import scala.concurrent.{ExecutionContext, Future}
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
   override def additionalCommonConfig(databasePort: Int): Config =
@@ -56,6 +57,7 @@ class CassandraClusteredPersistentEntitySpec extends AbstractClusteredPersistent
       override def materializer: Materializer = ActorMaterializer()(system)
       override def configuration: Configuration = Configuration(system.settings.config)
       override def serviceLocator: ServiceLocator = NoServiceLocator
+      override def jsonSerializerRegistry: JsonSerializerRegistry = ???
     }
 
   def testEntityReadSide = new TestEntityReadSide(components.actorSystem, components.cassandraSession)

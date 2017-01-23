@@ -26,7 +26,6 @@ object ClusteredPubSubConfig extends MultiNodeConfig {
   commonConfig(ConfigFactory.parseString(s"""
     akka.loglevel = INFO
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
-    lagom.serialization.play-json.serializer-registry = "com.lightbend.lagom.scaladsl.playjson.EmptySerializerRegistry"
     """))
 
 }

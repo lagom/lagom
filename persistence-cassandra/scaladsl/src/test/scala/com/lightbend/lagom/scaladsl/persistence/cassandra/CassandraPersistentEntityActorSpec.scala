@@ -3,6 +3,6 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.cassandra
 
-import com.lightbend.lagom.scaladsl.persistence.AbstractPersistentEntityActorSpec
+import com.lightbend.lagom.scaladsl.persistence.{ AbstractPersistentEntityActorSpec, TestEntitySerializerRegistry }
 
-class CassandraPersistentEntityActorSpec extends CassandraPersistenceSpec with AbstractPersistentEntityActorSpec
+class CassandraPersistentEntityActorSpec extends CassandraPersistenceSpec(TestEntitySerializerRegistry) with AbstractPersistentEntityActorSpec

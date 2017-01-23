@@ -3,11 +3,9 @@
  */
 package docs.home.scaladsl.serialization.v1
 
-import com.lightbend.lagom.scaladsl.playjson.Jsonable
-
 //#add-optional
 case class ItemAdded(
     shoppingCartId: String,
     productId: String,
-    quantity: Int) extends Jsonable
+    quantity: Int)
 //#add-optional
