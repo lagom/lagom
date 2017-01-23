@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.internal.scaladsl.client
 
+import akka.NotUsed
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
@@ -112,9 +113,9 @@ private class ScaladslClientServiceCallInvoker[Request, Response](
 )(implicit ec: ExecutionContext, mat: Materializer) extends ClientServiceCallInvoker[Request, Response](ws, serviceInfo.serviceName, path, queryParams) with ScaladslServiceApiBridge {
 
   override protected def doMakeStreamedCall(
-    requestStream:     Source[ByteString, _],
+    requestStream:     Source[ByteString, NotUsed],
     requestSerializer: NegotiatedSerializer[_, _], requestHeader: RequestHeader
-  ): Future[(ResponseHeader, Source[ByteString, _])] =
+  ): Future[(ResponseHeader, Source[ByteString, NotUsed])] =
     webSocketClient.connect(descriptor.exceptionSerializer, WebSocketVersion.V13, requestHeader, requestStream)
 }
 

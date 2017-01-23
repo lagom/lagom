@@ -30,6 +30,7 @@ import scala.util.control.NonFatal
 import scala.collection.JavaConverters._
 import java.util.concurrent.atomic.AtomicReference
 
+import akka.NotUsed
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
 import io.netty.channel.group.DefaultChannelGroup
 import io.netty.util.concurrent.GlobalEventExecutor
@@ -62,7 +63,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, eventLoo
    * Connect to the given URI
    */
   def connect(exceptionSerializer: ExceptionSerializer, version: WebSocketVersion, requestHeader: RequestHeader,
-              outgoing: Source[ByteString, _]): Future[(ResponseHeader, Source[ByteString, _])] = {
+              outgoing: Source[ByteString, NotUsed]): Future[(ResponseHeader, Source[ByteString, NotUsed])] = {
 
     val normalized = requestHeaderUri(requestHeader).normalize()
     val tgt = if (normalized.getPath == null || normalized.getPath.trim().isEmpty) {
@@ -92,7 +93,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, eventLoo
       channel = channelFuture.channel()
       handshaker = WebSocketClientHandshakerFactory.newHandshaker(tgt, version, null, false, headers)
       _ <- handshaker.handshake(channel).toScala
-      incomingPromise = Promise[(ResponseHeader, Source[ByteString, _])]()
+      incomingPromise = Promise[(ResponseHeader, Source[ByteString, NotUsed])]()
       _ = channel.pipeline().addLast("supervisor", new WebSocketSupervisor(exceptionSerializer, handshaker, outgoing,
         incomingPromise, messageHeaderProtocol(requestHeader)))
       _ = channel.read()
@@ -105,7 +106,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, eventLoo
   }
 
   private class WebSocketSupervisor(exceptionSerializer: ExceptionSerializer, handshaker: WebSocketClientHandshaker,
-                                    outgoing: Source[ByteString, _], incomingPromise: Promise[(ResponseHeader, Source[ByteString, _])],
+                                    outgoing: Source[ByteString, NotUsed], incomingPromise: Promise[(ResponseHeader, Source[ByteString, NotUsed])],
                                     requestProtocol: MessageProtocol) extends ChannelDuplexHandler {
 
     private val NormalClosure = 1000

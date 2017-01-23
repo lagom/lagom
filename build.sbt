@@ -14,7 +14,7 @@ import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import de.heikoseeberger.sbtheader.HeaderPattern
 
 val PlayVersion = "2.5.10"
-val AkkaVersion = "2.4.14"
+val AkkaVersion = "2.4.16"
 val AkkaPersistenceCassandraVersion = "0.22"
 val ScalaTestVersion = "3.0.1"
 val JacksonVersion = "2.7.8"
@@ -261,7 +261,8 @@ val scaladslProjects = Seq[ProjectReference](
   `persistence-jdbc-scaladsl`,
   `pubsub-scaladsl`,
   `testkit-scaladsl`,
-  `devmode-scaladsl`
+  `devmode-scaladsl`,
+  `play-json`
 )
 
 val coreProjects = Seq[ProjectReference](
@@ -270,7 +271,6 @@ val coreProjects = Seq[ProjectReference](
   client,
   server,
   spi,
-  `play-json`,
   `cluster-core`,
   `kafka-client`,
   `kafka-broker`,
@@ -479,7 +479,7 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
   )
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
-  .dependsOn(server, `client-scaladsl`)
+  .dependsOn(server, `client-scaladsl`, `play-json`)
 
 lazy val `testkit-core` = (project in file("testkit/core"))
   .settings(name := "lagom-core-testkit")

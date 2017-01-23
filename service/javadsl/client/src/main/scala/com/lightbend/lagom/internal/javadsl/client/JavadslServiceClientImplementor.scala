@@ -132,8 +132,8 @@ private class JavadslClientServiceCallInvoker[Request, Response](
   override val descriptor: Descriptor, override val call: Call[Request, Response], path: String, queryParams: Map[String, Seq[String]]
 )(implicit ec: ExecutionContext, mat: Materializer) extends ClientServiceCallInvoker[Request, Response](ws, serviceInfo.serviceName(), path, queryParams) with JavadslServiceApiBridge {
 
-  override protected def doMakeStreamedCall(requestStream: Source[ByteString, _], requestSerializer: MessageSerializer.NegotiatedSerializer[_, _],
-                                            requestHeader: RequestHeader): Future[(ResponseHeader, Source[ByteString, _])] = {
+  override protected def doMakeStreamedCall(requestStream: Source[ByteString, NotUsed], requestSerializer: MessageSerializer.NegotiatedSerializer[_, _],
+                                            requestHeader: RequestHeader): Future[(ResponseHeader, Source[ByteString, NotUsed])] = {
     webSocketClient.connect(descriptor.exceptionSerializer, WebSocketVersion.V13, requestHeader, requestStream)
   }
 

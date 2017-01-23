@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.scaladsl.it
 
+import akka.NotUsed
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Sink, Source }
 import akka.util.ByteString
@@ -236,7 +237,7 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
 
   def failingRequestSerializer: Call[_, _] => Call[_, _] = { call =>
     if (call.requestSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      call.asInstanceOf[Call[Source[Any, _], Any]]
+      call.asInstanceOf[Call[Source[Any, NotUsed], Any]]
         .withRequestSerializer(MessageSerializer.sourceMessageSerializer(failingSerializer))
     } else {
       call.asInstanceOf[Call[Any, Any]].withRequestSerializer(failingSerializer)
@@ -245,7 +246,7 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
 
   def failingResponseSerializer: Call[_, _] => Call[_, _] = { call =>
     if (call.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      call.asInstanceOf[Call[Any, Source[Any, _]]]
+      call.asInstanceOf[Call[Any, Source[Any, NotUsed]]]
         .withResponseSerializer(MessageSerializer.sourceMessageSerializer(failingSerializer))
     } else {
       call.asInstanceOf[Call[Any, Any]].withResponseSerializer(failingSerializer)
@@ -265,7 +266,7 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
 
   def failingRequestNegotiation: Call[_, _] => Call[_, _] = { call =>
     if (call.requestSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      call.asInstanceOf[Call[Source[Any, _], Any]]
+      call.asInstanceOf[Call[Source[Any, NotUsed], Any]]
         .withRequestSerializer(MessageSerializer.sourceMessageSerializer(failingNegotiation))
     } else {
       call.asInstanceOf[Call[Any, Any]].withRequestSerializer(failingNegotiation)
@@ -274,7 +275,7 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
 
   def failingResponseNegotation: Call[_, _] => Call[_, _] = { call =>
     if (call.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      call.asInstanceOf[Call[Any, Source[Any, _]]]
+      call.asInstanceOf[Call[Any, Source[Any, NotUsed]]]
         .withResponseSerializer(MessageSerializer.sourceMessageSerializer(failingNegotiation))
     } else {
       call.asInstanceOf[Call[Any, Any]].withResponseSerializer(failingNegotiation)
