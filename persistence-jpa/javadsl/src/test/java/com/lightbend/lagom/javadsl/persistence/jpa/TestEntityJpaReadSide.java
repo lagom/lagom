@@ -3,12 +3,14 @@
  */
 package com.lightbend.lagom.javadsl.persistence.jpa;
 
+import com.google.common.collect.ImmutableMap;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor;
 import com.lightbend.lagom.javadsl.persistence.TestEntity;
 import org.pcollections.PSequence;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Persistence;
 import java.util.concurrent.CompletionStage;
 
 public class TestEntityJpaReadSide {
@@ -38,6 +40,7 @@ public class TestEntityJpaReadSide {
         @Override
         public ReadSideHandler<TestEntity.Evt> buildHandler() {
             return readSide.<TestEntity.Evt>builder("test-entity-read-side")
+                    .setGlobalPrepare(unused -> createSchema())
                     .setEventHandler(TestEntity.Appended.class, this::insertElement)
                     .build();
         }
@@ -45,6 +48,10 @@ public class TestEntityJpaReadSide {
         @Override
         public PSequence<AggregateEventTag<TestEntity.Evt>> aggregateTags() {
             return TestEntity.Evt.AGGREGATE_EVENT_SHARDS.allTags();
+        }
+
+        private void createSchema() {
+            Persistence.generateSchema("default", ImmutableMap.of("hibernate.hbm2ddl.auto", "update"));
         }
 
         private void insertElement(EntityManager entityManager, TestEntity.Appended event) {

@@ -3,8 +3,9 @@
  */
 package com.lightbend.lagom.internal.javadsl.persistence.jpa
 
-import javax.persistence.{ EntityManager, EntityTransaction }
+import javax.persistence.{ EntityManager, EntityTransaction, Persistence }
 
+import com.google.common.collect.ImmutableMap
 import com.lightbend.lagom.javadsl.persistence.jpa.TestJpaEntity
 import org.scalatest.matchers.{ BePropertyMatchResult, BePropertyMatcher }
 
@@ -47,6 +48,7 @@ class JpaSessionImplSpec extends JpaPersistenceSpec {
     }
 
     "support saving and reading entities" in {
+      Persistence.generateSchema("default", ImmutableMap.of("hibernate.hbm2ddl.auto", "update"))
       val entity = new TestJpaEntity("1", "test saving and reading entities")
       entity.getId shouldBe null
 
