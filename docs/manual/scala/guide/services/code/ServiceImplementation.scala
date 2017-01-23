@@ -57,7 +57,9 @@ package lagomloader {
 
 package callstream {
 
+  import akka.NotUsed
   import com.lightbend.lagom.scaladsl.api.ServiceCall
+
   import scala.concurrent.Future
 
   class CallStreamImpl extends CallStream {
@@ -68,7 +70,7 @@ package callstream {
     override def tick(intervalMs: Int) = ServiceCall { tickMessage =>
       Future.successful(Source.tick(
         intervalMs.milliseconds, intervalMs.milliseconds, tickMessage
-      ))
+      ).mapMaterializedValue(_ => NotUsed))
     }
     //#tick-service-call
   }

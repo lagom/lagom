@@ -19,9 +19,9 @@ import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait ScaladslServiceApiBridge extends LagomServiceApiBridge {
-  override type AkkaStreamsSource[T] = Source[T, _]
-  override def akkaStreamsSourceAsScala[T](source: AkkaStreamsSource[T]): Source[T, _] = source
-  override def toAkkaStreamsSource[T](source: Source[T, _]): AkkaStreamsSource[T] = source
+  override type AkkaStreamsSource[T, M] = Source[T, M]
+  override def akkaStreamsSourceAsScala[T, M](source: AkkaStreamsSource[T, M]): Source[T, M] = source
+  override def toAkkaStreamsSource[T, M](source: Source[T, M]): AkkaStreamsSource[T, M] = source
 
   override type FutureType[_] = Future[_]
 

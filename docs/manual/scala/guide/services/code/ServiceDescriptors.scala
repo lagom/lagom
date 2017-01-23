@@ -134,9 +134,10 @@ package callstream {
 
   trait CallStream extends Service {
     //#call-stream
+    import akka.NotUsed
     import akka.stream.scaladsl.Source
 
-    def tick(interval: Int): ServiceCall[String, Source[String, _]]
+    def tick(interval: Int): ServiceCall[String, Source[String, NotUsed]]
 
     def descriptor = {
       import Service._
@@ -153,9 +154,10 @@ package hellostream {
 
   trait HelloStream extends Service {
     //#hello-stream
+    import akka.NotUsed
     import akka.stream.scaladsl.Source
 
-    def sayHello: ServiceCall[Source[String, _], Source[String, _]]
+    def sayHello: ServiceCall[Source[String, NotUsed], Source[String, NotUsed]]
 
     def descriptor = {
       import Service._

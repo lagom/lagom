@@ -26,9 +26,9 @@ import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait JavadslServiceApiBridge extends LagomServiceApiBridge {
-  override type AkkaStreamsSource[T] = JSource[T, Any]
-  override def akkaStreamsSourceAsScala[T](source: AkkaStreamsSource[T]): Source[T, _] = source.asScala
-  override def toAkkaStreamsSource[T](source: Source[T, _]): AkkaStreamsSource[T] = source.asJava
+  override type AkkaStreamsSource[T, M] = JSource[T, M]
+  override def akkaStreamsSourceAsScala[T, M](source: AkkaStreamsSource[T, M]): Source[T, M] = source.asScala
+  override def toAkkaStreamsSource[T, M](source: Source[T, M]): AkkaStreamsSource[T, M] = source.asJava
 
   override type FutureType[_] = CompletionStage[_]
 

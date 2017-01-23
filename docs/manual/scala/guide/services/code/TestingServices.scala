@@ -137,6 +137,7 @@ package enablecluster {
 
 package streamedservices {
 
+  import akka.NotUsed
   import akka.stream.scaladsl.Source
   import akka.stream.testkit.scaladsl.TestSink
   import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
@@ -149,7 +150,7 @@ package streamedservices {
 
   //#echo-service
   trait EchoService extends Service {
-    def echo: ServiceCall[Source[String, _], Source[String, _]]
+    def echo: ServiceCall[Source[String, NotUsed], Source[String, NotUsed]]
 
     override def descriptor = {
       import Service._
