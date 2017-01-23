@@ -11,6 +11,9 @@ import java.io.Serializable;
  * This is used by the default exception serializer to serialize exceptions into messages.
  */
 public class ExceptionMessage implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private final String name;
     private final String detail;
 

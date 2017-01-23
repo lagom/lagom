@@ -16,6 +16,9 @@ import java.util.function.BiFunction;
  * An exception that can be translated down to a specific error in the transport.
  */
 public class TransportException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+
     private final TransportErrorCode errorCode;
     private final ExceptionMessage exceptionMessage;
 

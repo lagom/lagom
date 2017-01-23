@@ -889,6 +889,7 @@ lazy val `build-link` = (project in file("dev") / "build-link")
   .settings(
     crossPaths := false,
     autoScalaLibrary := false,
+    EclipseKeys.projectFlavor := EclipseProjectFlavor.Java,
     libraryDependencies ++= Seq(
       "com.typesafe.play" % "play-exceptions" % PlayVersion,
       "com.typesafe.play" % "build-link" % PlayVersion
@@ -985,6 +986,7 @@ lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
     .settings(
       name := "lagom-maven-launcher",
       description := "Dummy project, exists only to resolve the maven launcher classpath",
+      EclipseKeys.projectFlavor := EclipseProjectFlavor.Java,
       libraryDependencies := Seq(
         // These dependencies come from https://github.com/apache/maven/blob/master/apache-maven/pom.xml, they are
         // what maven bundles into its own distribution.
@@ -1043,7 +1045,7 @@ def archetypeProject(archetypeName: String) =
         }
         (copyResources in Compile).value
       }
-    )
+    ).disablePlugins(EclipsePlugin)
 
 lazy val `maven-java-archetype` = archetypeProject("java")
 
