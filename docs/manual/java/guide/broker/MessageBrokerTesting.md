@@ -22,8 +22,8 @@ The producer end is responsible to describe the public API and provide the seria
 
 Testing the consumption of messages requires starting the Service under test with a stub of the upstream Service producing data into the topic. The following snippet demonstrates how to achieve it. 
 
-1. A ServiceTest instance is started with a modified `Setup` where the upstream `HelloService` is replaced with a HelloServiceStub`.
-2. An instance of a `ProducerStub` is declared. This instance will be bound when the Server is started and the `HelloServiceStub`.
+1. A ServiceTest instance is started with a modified `Setup` where the upstream `HelloService` is replaced with a `HelloServiceStub`.
+2. An instance of a `ProducerStub` is declared. This instance will be bound when the Server is started and the `HelloServiceStub` created.
 3. The Stub for the upstream Service must request a `ProducerStubFactory` from the Injector and use that to obtain a `ProducerStub` for the appropriate `Topic`. See how this snippet uses `GREETINGS_TOPIC` constant declared in the super interface `HelloService`. On the stubbed method that implements the `TopicCall` the stub must return the `Topic` bound to the `ProducerStub` created in the constructor.
 4. Use the `ProducerStub` on the tests to send messages into the topic and interact normally with the service under test to verify the Service code. 
 

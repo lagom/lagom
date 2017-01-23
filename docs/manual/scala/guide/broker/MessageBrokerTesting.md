@@ -15,7 +15,9 @@ When a Service publishes data into a `Topic` the descriptor lists a `TopicCall` 
 
 @[topic-test-publishing-into-a-topic](code/docs/scaladsl/mb/PublishServiceSpec.scala)
 
-Using a [`ServiceTest`](api/com/lightbend/lagom/scaladsl/testkit/ServiceTest$.html) you create a client to your Service. Using that client you can `subscribe` to the published topics. Finally, after interacting with the Service to cause the emission of some events you can assert events were published on the `Topic`.
+In order to start the application with a stubbed broker you will have to mixin a `TestTopicComponents` into your test application.
+
+Use a [`ServiceTest`](api/com/lightbend/lagom/scaladsl/testkit/ServiceTest$.html) you to create a client to your Service and using that client you can `subscribe` to the published topics. Finally, after interacting with the Service to cause the emission of some events you can assert events were published on the `Topic`.
 
 The producer end is responsible to describe the public API and provide the serialisable mappings for all messages exchanged (both in `ServiceCall`s and `TopicCall`s). The tests granting the proper behavior of the publishing operations should also test the serialisbility and deserilisability of the messages.
 

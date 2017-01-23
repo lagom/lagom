@@ -57,14 +57,12 @@ public class AnotherServiceTest {
         // (2) Receives a ProducerStubFactory that factors ProducerStubs
         @Inject
         HelloServiceStub(ProducerStubFactory producerFactory) {
-            System.out.println("Built hello service");
             // (3) requesting a producer for a specific topic weill create a Stub for it.
             helloProducer = producerFactory.producer(GREETINGS_TOPIC);
         }
 
         @Override
         public Topic<GreetingMessage> greetingsTopic() {
-            System.out.println("returned topic");
             // (3) the upstream stub must return the topic bound to the producer stub
             return helloProducer.topic();
         }
