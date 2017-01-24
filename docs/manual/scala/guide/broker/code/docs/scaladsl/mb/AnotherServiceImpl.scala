@@ -1,4 +1,4 @@
-package docs.mb
+package docs.scaladsl.mb
 
 import akka.{Done, NotUsed}
 import akka.stream.scaladsl.Flow
@@ -15,13 +15,20 @@ class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
     .atLeastOnce(
       Flow[GreetingMessage].map{ msg => 
         // Do somehting with the `msg`
+        doSomethingWithTheMessage(msg)
         Done
       }
     )
   //#subscribe-to-topic
 
-  private def doSomethingWithTheMessage(greetingMessage: GreetingMessage) = ???
+  var lastObservedMessage: String = _
+  private def doSomethingWithTheMessage(greetingMessage: GreetingMessage) = {
+    lastObservedMessage = greetingMessage.message
+  }
+  import scala.concurrent.ExecutionContext.Implicits.global
 
-  override def foo: ServiceCall[NotUsed, NotUsed] = ???
+  override def foo: ServiceCall[NotUsed, String] = ServiceCall {
+    req => scala.concurrent.Future.successful(lastObservedMessage)
+  }
 }
 

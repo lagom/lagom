@@ -1,11 +1,13 @@
-package docs.mb;
+package docs.javadsl.mb;
 
-import com.lightbend.lagom.javadsl.api.*;
-import akka.NotUsed;
 import akka.Done;
+import akka.NotUsed;
 import akka.stream.javadsl.Flow;
-import static java.util.concurrent.CompletableFuture.completedFuture;
+import com.lightbend.lagom.javadsl.api.ServiceCall;
+
 import javax.inject.Inject;
+
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public class AnotherServiceImpl implements AnotherService {
 
@@ -18,7 +20,7 @@ public class AnotherServiceImpl implements AnotherService {
     }
     //#inject-service
 
-    public ServiceCall<NotUsed, NotUsed> foo() {
+    public ServiceCall<NotUsed, NotUsed> audit() {
         //#subscribe-to-topic
         helloService.greetingsTopic()
             .subscribe() // <-- you get back a Subscriber instance

@@ -6,7 +6,7 @@ The Lagom Message Broker API provides a distributed publish-subscribe model that
 
 To publish data to a topic a service needs to declare the topic in its [[service descriptor|ServiceDescriptors#service-descriptors]].
 
-@[hello-service](code/docs/mb/HelloService.java)
+@[hello-service](code/docs/javadsl/mb/HelloService.java)
 
 The syntax for declaring a topic is similar to the one used already to define services' endpoints. The [`Descriptor.publishing`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html#publishing-com.lightbend.lagom.javadsl.api.Descriptor.TopicCall...-) method accepts a sequence of topic calls, each topic call can be defined via the [`Service.topic`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#topic-java.lang.String-java.lang.reflect.Method-) static method. The latter takes a topic name (i.e., the topic identifier), and a reference to a method that returns a [`Topic`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Topic.html) instance.
 
@@ -18,7 +18,7 @@ Kafka will distribute messages for a particular topic across many partitions, so
 
 Lagom allows this by allowing you to configure a partition key strategy, which extracts the partition key out of a message. Kafka will then use this key to help decide what partition to send each message to. The partition can be selected using the [`partitionKeyStrategy`](api/index.html?com/lightbend/lagom/javadsl/api/broker/kafka/KafkaProperties.html#partitionKeyStrategy--) property, by passing a [`PartitionKeyStrategy`](api/index.html?com/lightbend/lagom/javadsl/api/broker/kafka/PartitionKeyStrategy.html) to it: 
 
-@[publishing](code/docs/mb/BlogPostService.java)
+@[publishing](code/docs/javadsl/mb/BlogPostService.java)
 
 ## Implementing a topic
 
@@ -30,7 +30,7 @@ Lagom will, in the case of the `singleStreamWithOffset` method, ensure that your
 
 Here's an example of publishing a single, non sharded event stream:
 
-@[implement-topic](code/docs/mb/HelloServiceImpl.java)
+@[implement-topic](code/docs/javadsl/mb/HelloServiceImpl.java)
 
 Note that the read-side event stream you passed to the topic producer is "activated" as soon as the service is started. That means all events persisted by your services will eventually be published to the connected topic. Also, you will generally want to map your domain events into some other type, so that other service won't be tightly coupled to another service's domain model events. In other words, domain model events are an implementation detail of the service, and should not be leaked.
 
@@ -42,11 +42,11 @@ Lagom will use your configured persistence API provider to store the offsets for
 
 To subscribe to a topic, a service just needs to call [`Topic.subscribe()`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Topic.html#subscribe--) on the topic of interest. For instance, imagine that a service wants to collect all greetings messages published by the `HelloService` (refer to the code snippet above). The first thing you should do is inject a `HelloService`.
 
-@[inject-service](code/docs/mb/AnotherServiceImpl.java)
+@[inject-service](code/docs/javadsl/mb/AnotherServiceImpl.java)
 
 Then, subscribe to the greetings topic, and hook your logic to apply to each messages that published to the topic.
 
-@[subscribe-to-topic](code/docs/mb/AnotherServiceImpl.java)
+@[subscribe-to-topic](code/docs/javadsl/mb/AnotherServiceImpl.java)
 
 When calling [`Topic.subscribe()`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Topic.html#subscribe--) you will get back a [`Subscriber`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Subscriber.html) instance. In the above code snippet we have subscribed to the `greetings` topic using at-least-once delivery semantics. That means each message published to the `greetings` topic is received at least once, but possibly more. The subscriber also offers a [`atMostOnceSource`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Subscriber.html#atMostOnceSource--) that gives you at-most-once delivery semantics. If in doubt, prefer using at-least-once delivery semantics.
 
@@ -58,7 +58,7 @@ Typically you will want to publish more than one type of event to a particular t
 
 For example, consider a situation where you have a blog post created event and a blog post published event. Here's what your event structure might look like:
 
-@[content](code/docs/mb/BlogPostEvent.java)
+@[content](code/docs/javadsl/mb/BlogPostEvent.java)
 
 The `@JsonTypeInfo` annotation describes how the type of the event will be serialised. In this case, it's saying each event type will be identified by it's name, and that name will go into a property called `type`. The `@JsonTypeName` on each event subclass says what the name of that event should be. And the `@JsonSubTypes` annotation is used to tell Jackson what the possible sub types of the event are, so that it knows where to look when deserializing.
 

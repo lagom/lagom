@@ -1,4 +1,4 @@
-package docs.mb
+package docs.scaladsl.mb
 
 import akka.{Done, NotUsed}
 
@@ -7,6 +7,9 @@ import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json.{Format, Json}
 
+object HelloService  {
+  val TOPIC_NAME = "greetings"
+}
 trait HelloService extends Service {
 
   override final def descriptor = {
@@ -15,7 +18,7 @@ trait HelloService extends Service {
       pathCall("/api/hello/:id", hello _),
       pathCall("/api/hello/:id", useGreeting _)
     ).withTopics(
-      topic("greetings", greetingsTopic)
+      topic(HelloService.TOPIC_NAME, greetingsTopic)
     ).withAutoAcl(true)
   }
 
