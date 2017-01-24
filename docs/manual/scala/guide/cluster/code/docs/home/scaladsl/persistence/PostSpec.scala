@@ -6,6 +6,7 @@ import scala.concurrent.duration._
 import akka.Done
 import akka.actor.ActorSystem
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.InvalidCommandException
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.lightbend.lagom.scaladsl.testkit.PersistentEntityTestDriver
 import com.typesafe.config.ConfigFactory
 import org.scalactic.ConversionCheckedTripleEquals
@@ -16,11 +17,7 @@ import org.scalatest.WordSpecLike
 class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll
   with ConversionCheckedTripleEquals {
 
-  val config = ConfigFactory.parseString(
-    """
-      lagom.serialization.play-json.serializer-registry=docs.home.scaladsl.persistence.BlogPostSerializerRegistry
-    """).withFallback(ConfigFactory.load())
-  val system = ActorSystem("PostSpec", config)
+  val system = ActorSystem("PostSpec", JsonSerializerRegistry.actorSystemSetupFor(BlogPostSerializerRegistry))
 
   override def afterAll(): Unit = {
     Await.ready(system.terminate, 10.seconds)

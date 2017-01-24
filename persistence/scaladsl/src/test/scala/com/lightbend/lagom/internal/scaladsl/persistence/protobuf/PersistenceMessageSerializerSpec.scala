@@ -18,11 +18,7 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRef
 import com.lightbend.lagom.scaladsl.persistence.TestEntity
 import com.typesafe.config.ConfigFactory
 
-class PersistenceMessageSerializerSpec extends ActorSystemSpec(ConfigFactory.parseString(
-  """
-    lagom.serialization.play-json.serializer-registry=com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
-  """
-)) {
+class PersistenceMessageSerializerSpec extends ActorSystemSpec {
 
   val serializer = new PersistenceMessageSerializer(system.asInstanceOf[ExtendedActorSystem])
 

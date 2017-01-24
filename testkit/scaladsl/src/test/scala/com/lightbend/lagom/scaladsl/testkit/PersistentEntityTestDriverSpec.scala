@@ -5,14 +5,10 @@ package com.lightbend.lagom.scaladsl.testkit
 
 import akka.testkit.TestProbe
 import com.lightbend.lagom.persistence.ActorSystemSpec
-import com.lightbend.lagom.scaladsl.persistence.TestEntity
-import com.typesafe.config.ConfigFactory
+import com.lightbend.lagom.scaladsl.persistence.{ TestEntity, TestEntitySerializerRegistry }
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 
-class PersistentEntityTestDriverSpec extends ActorSystemSpec(ConfigFactory.parseString(
-  """
-    lagom.serialization.play-json.serializer-registry=com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
-  """
-).withFallback(ConfigFactory.load())) {
+class PersistentEntityTestDriverSpec extends ActorSystemSpec(JsonSerializerRegistry.actorSystemSetupFor(TestEntitySerializerRegistry)) {
 
   def newDriver() = new PersistentEntityTestDriver(system, new TestEntity(system, Some(TestProbe().ref)), "1")
 

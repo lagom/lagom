@@ -17,7 +17,7 @@ import scala.collection.immutable
  *
  * Akka serializer using the registered play-json serializers and migrations
  */
-private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
+private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, registry: JsonSerializerRegistry)
   extends SerializerWithStringManifest
   with BaseSerializer {
 
@@ -25,22 +25,12 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem)
   private val log = Logging.getLogger(system, getClass)
   private val isDebugEnabled = log.isDebugEnabled
 
-  private val registry = {
-    val registryClassName: String =
-      system.settings.config.getString("lagom.serialization.play-json.serializer-registry")
-    require(
-      registryClassName != "",
-      "lagom.serialization.play-json.serializer-registry configuration property must be defined"
-    )
-    system.dynamicAccess.createInstanceFor[SerializerRegistry](registryClassName, immutable.Seq.empty).get
-  }
-
   private val serializers: Map[String, Format[AnyRef]] = {
     registry.serializers.map(entry =>
       (entry.entityClass.getName, entry.format.asInstanceOf[Format[AnyRef]])).toMap
   }
 
-  private def migrations: Map[String, Migration] = registry.migrations
+  private def migrations: Map[String, JsonMigration] = registry.migrations
 
   override def manifest(o: AnyRef): String = {
     val className = o.getClass.getName

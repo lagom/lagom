@@ -3,6 +3,6 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.jdbc
 
-import com.lightbend.lagom.scaladsl.persistence.AbstractPersistentEntityActorSpec
+import com.lightbend.lagom.scaladsl.persistence.{ AbstractPersistentEntityActorSpec, TestEntitySerializerRegistry }
 
-class JdbcPersistentEntityActorSpec extends JdbcPersistenceSpec with AbstractPersistentEntityActorSpec
+class JdbcPersistentEntityActorSpec extends JdbcPersistenceSpec(TestEntitySerializerRegistry) with AbstractPersistentEntityActorSpec

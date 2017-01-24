@@ -26,7 +26,6 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
       akka.remote.netty.tcp.port = 0
       akka.remote.netty.tcp.hostname = 127.0.0.1
       akka.loglevel = INFO
-      lagom.serialization.play-json.serializer-registry = com.lightbend.lagom.scaladsl.playjson.EmptySerializerRegistry
     """)
       ActorSystem("PubSubTest", config)
     }

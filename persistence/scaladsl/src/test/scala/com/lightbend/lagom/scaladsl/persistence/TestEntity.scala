@@ -9,19 +9,10 @@ import akka.actor.Address
 import akka.cluster.Cluster
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.persistence.testkit.SimulatedNullpointerException
-import com.lightbend.lagom.scaladsl.playjson.{ Jsonable, SerializerRegistry, Serializers }
-
-import play.api.libs.json.Json
+import com.lightbend.lagom.scaladsl.playjson.{ JsonSerializerRegistry, JsonSerializer }
 
 import scala.collection.immutable
 
-/**
- * NOTE to use this the serialization registry needs to be registered in actor system config
- * to be picked up like this:
- *
- * `lagom.serialization.play-json.serializer-registry =
- *   "com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry"`
- */
 object TestEntity {
 
   object SharedFormats {
@@ -41,20 +32,20 @@ object TestEntity {
 
   object Cmd {
     import play.api.libs.json._
-    import Serializers.emptySingletonFormat
+    import JsonSerializer.emptySingletonFormat
     import SharedFormats._
 
     val serializers = Vector(
-      Serializers(Json.format[Add]),
-      Serializers(Json.format[ChangeMode]),
-      Serializers(emptySingletonFormat(Get)),
-      Serializers(emptySingletonFormat(UndefinedCmd)),
-      Serializers(emptySingletonFormat(GetAddress))
+      JsonSerializer(Json.format[Add]),
+      JsonSerializer(Json.format[ChangeMode]),
+      JsonSerializer(emptySingletonFormat(Get)),
+      JsonSerializer(emptySingletonFormat(UndefinedCmd)),
+      JsonSerializer(emptySingletonFormat(GetAddress))
     )
 
   }
 
-  sealed trait Cmd extends Jsonable
+  sealed trait Cmd
 
   case object Get extends Cmd with ReplyType[State]
 
@@ -78,19 +69,19 @@ object TestEntity {
     val aggregateEventShards = AggregateEventTag.sharded[Evt](NumShards)
 
     import play.api.libs.json._
-    import Serializers.emptySingletonFormat
+    import JsonSerializer.emptySingletonFormat
     import SharedFormats._
 
     val serializers = Vector(
       // events
-      Serializers(Json.format[Appended]),
-      Serializers(Json.format[Prepended]),
-      Serializers(emptySingletonFormat(InPrependMode)),
-      Serializers(emptySingletonFormat(InAppendMode))
+      JsonSerializer(Json.format[Appended]),
+      JsonSerializer(Json.format[Prepended]),
+      JsonSerializer(emptySingletonFormat(InPrependMode)),
+      JsonSerializer(emptySingletonFormat(InAppendMode))
     )
   }
 
-  sealed trait Evt extends AggregateEvent[Evt] with Jsonable {
+  sealed trait Evt extends AggregateEvent[Evt] {
     override def aggregateTag: AggregateEventShards[Evt] = Evt.aggregateEventShards
   }
 
@@ -106,14 +97,14 @@ object TestEntity {
     val empty: State = State(Mode.Append, Nil)
 
     import play.api.libs.json._
-    import Serializers.emptySingletonFormat
+    import JsonSerializer.emptySingletonFormat
     import SharedFormats._
     val serializers = Vector(
-      Serializers(Json.format[State])
+      JsonSerializer(Json.format[State])
     )
   }
 
-  final case class State(mode: Mode, elements: List[String]) extends Jsonable {
+  final case class State(mode: Mode, elements: List[String]) {
     def add(elem: String): State = mode match {
       case Mode.Prepend => new State(mode, elem +: elements)
       case Mode.Append  => new State(mode, elements :+ elem)
@@ -124,10 +115,10 @@ object TestEntity {
   final case class AfterRecovery(state: State)
 }
 
-class TestEntitySerializerRegistry extends SerializerRegistry {
+object TestEntitySerializerRegistry extends JsonSerializerRegistry {
   import TestEntity._
 
-  override def serializers: immutable.Seq[Serializers[_]] = Cmd.serializers ++ Evt.serializers ++ State.serializers
+  override def serializers: immutable.Seq[JsonSerializer[_]] = Cmd.serializers ++ Evt.serializers ++ State.serializers
 
 }
 

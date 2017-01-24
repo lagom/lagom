@@ -5,24 +5,29 @@ package com.lightbend.lagom.scaladsl.persistence.cassandra
 
 import java.io.File
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, BootstrapSetup }
+import akka.actor.setup.ActorSystemSetup
 import akka.cluster.Cluster
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{ Config, ConfigFactory }
 
-class CassandraPersistenceSpec(system: ActorSystem) extends ActorSystemSpec(system) {
+class CassandraPersistenceSpec private (system: ActorSystem) extends ActorSystemSpec(system) {
 
-  def this(testName: String, config: Config) =
-    this(ActorSystem(testName, config.withFallback(TestUtil.persistenceConfig(
-      testName,
-      CassandraLauncher.randomPort
-    ))))
+  def this(testName: String, config: Config, jsonSerializerRegistry: JsonSerializerRegistry) =
+    this(ActorSystem(testName, ActorSystemSetup(
+      BootstrapSetup(TestUtil.persistenceConfig(
+        testName,
+        CassandraLauncher.randomPort
+      )),
+      JsonSerializerRegistry.serializationSetupFor(jsonSerializerRegistry)
+    )))
 
-  def this(config: Config) = this(PersistenceSpec.getCallerName(getClass), config)
+  def this(config: Config, jsonSerializerRegistry: JsonSerializerRegistry) = this(PersistenceSpec.getCallerName(getClass), config, jsonSerializerRegistry)
 
-  def this() = this(ConfigFactory.empty())
+  def this(jsonSerializerRegistry: JsonSerializerRegistry) = this(ConfigFactory.empty(), jsonSerializerRegistry)
 
   override def beforeAll(): Unit = {
     super.beforeAll()

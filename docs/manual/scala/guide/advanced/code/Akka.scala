@@ -17,14 +17,13 @@ package workerservice {
 package dataobjects {
 
   //#dataobjects
-  import com.lightbend.lagom.scaladsl.playjson.Jsonable
   import play.api.libs.json.{Format, Json}
 
-  case class Job(jobId: String, task: String, payload: String) extends Jsonable
+  case class Job(jobId: String, task: String, payload: String)
   object Job {
     implicit val format: Format[Job] = Json.format
   }
-  case class JobAccepted(jobId: String) extends Jsonable
+  case class JobAccepted(jobId: String)
   object JobAccepted {
     implicit val format: Format[JobAccepted] = Json.format
   }

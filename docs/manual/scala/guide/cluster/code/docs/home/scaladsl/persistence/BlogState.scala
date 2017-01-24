@@ -1,7 +1,6 @@
 package docs.home.scaladsl.persistence
 
 //#full-example
-import com.lightbend.lagom.scaladsl.playjson.{Jsonable, Serializers}
 import play.api.libs.json._
 
 object BlogState {
@@ -9,12 +8,10 @@ object BlogState {
 
   implicit val postContentFormat = Json.format[PostContent]
 
-  val serializers = Vector(
-    Serializers(Json.format[BlogState])
-  )
+  implicit val format: Format[BlogState] = Json.format[BlogState]
 }
 
-final case class BlogState(content: Option[PostContent], published: Boolean) extends Jsonable {
+final case class BlogState(content: Option[PostContent], published: Boolean) {
   def withBody(body: String): BlogState = {
     content match {
       case Some(c) =>
