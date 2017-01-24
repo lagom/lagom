@@ -13,7 +13,7 @@ package helloservice {
   //#hello-service-impl
 }
 
-package lagomappliaction {
+package lagomapplication {
 
   import helloservice._
 
@@ -35,7 +35,7 @@ package lagomappliaction {
 
 package lagomloader {
 
-  import lagomappliaction._
+  import lagomapplication._
 
   //#lagom-loader
   import com.lightbend.lagom.scaladsl.server._

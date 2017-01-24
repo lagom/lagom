@@ -502,6 +502,7 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-netty-server" % PlayVersion,
       "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion exclude("io.netty", "netty-all"),
+      "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion,
       "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion,
       scalaTest % Test,
@@ -509,7 +510,10 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
     )
   )
   .dependsOn(`testkit-core`, `server-javadsl`, `pubsub-javadsl`, `broker-javadsl`,
-    `persistence-core` % "compile;test->test", `persistence-cassandra-javadsl` % "test->test")
+    `persistence-core` % "compile;test->test",
+    `persistence-cassandra-javadsl` % "test->test",
+    `jackson` % "test->test"
+  )
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
   .settings(name := "lagom-scaladsl-testkit")
@@ -525,7 +529,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
       scalaTest % Test
     )
   )
-  .dependsOn(`testkit-core`, `server-scaladsl`, `persistence-core` % "compile;test->test",
+  .dependsOn(`testkit-core`, `server-scaladsl`, `broker-scaladsl`, `persistence-core` % "compile;test->test",
     `persistence-scaladsl` % "compile;test->test", `persistence-cassandra-scaladsl` % "compile;test->test")
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))

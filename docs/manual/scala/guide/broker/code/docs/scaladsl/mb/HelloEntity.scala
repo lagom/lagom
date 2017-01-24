@@ -1,4 +1,4 @@
-package docs.mb
+package docs.scaladsl.mb
 
 import java.time.LocalDateTime
 

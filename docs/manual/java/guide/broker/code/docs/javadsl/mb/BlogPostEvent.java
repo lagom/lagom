@@ -1,4 +1,4 @@
-package docs.mb;
+package docs.javadsl.mb;
 
 //#content
 import com.fasterxml.jackson.annotation.JsonCreator;

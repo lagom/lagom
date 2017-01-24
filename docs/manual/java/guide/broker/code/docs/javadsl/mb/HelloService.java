@@ -1,4 +1,4 @@
-package docs.mb;
+package docs.javadsl.mb;
 
 import akka.NotUsed;
 import akka.Done;
@@ -10,6 +10,7 @@ import com.lightbend.lagom.javadsl.api.broker.Topic;
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface HelloService extends Service {
+  String GREETINGS_TOPIC = "greetings";
   @Override
   default Descriptor descriptor() {
     return named("helloservice").withCalls(
@@ -18,7 +19,7 @@ public interface HelloService extends Service {
       )
       // here we declare the topic(s) this service will publish to
       .publishing(
-        topic("greetings", this::greetingsTopic)
+        topic(GREETINGS_TOPIC, this::greetingsTopic)
       )
       .withAutoAcl(true);
   }
