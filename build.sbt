@@ -237,9 +237,9 @@ def mimaSettings(versions: Seq[String]): Seq[Setting[_]] = {
   )
 }
 
-def since10 = Seq("1.0.0")
-def since11 = Seq("1.1.0")
-def since12 = Seq("1.2.1")
+def since10 = Seq("1.0.0") ++ since11
+def since11 = Seq("1.1.0") ++ since12
+def since12 = Seq("1.2.2")
 
 val javadslProjects = Seq[ProjectReference](
   `api-javadsl`,

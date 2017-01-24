@@ -1,7 +1,6 @@
 target
 ideatarget
 .target
-bin
 .cache
 .cache-main
 .cache-tests
