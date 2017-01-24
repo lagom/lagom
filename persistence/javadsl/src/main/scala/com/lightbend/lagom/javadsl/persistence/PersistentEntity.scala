@@ -387,7 +387,7 @@ abstract class PersistentEntity[Command, Event, State] {
    * if any, to persist. Use the `thenPersist`, `thenPersistAll` or `done` methods of the context
    * that is passed to the command handler function to create the `Persist` directive.
    */
-  trait Persist[B <: Event]
+  abstract class Persist[B <: Event]
 
   /**
    * INTERNAL API
