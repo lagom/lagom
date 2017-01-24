@@ -7,7 +7,8 @@ import java.io.File
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, BootstrapSetup }
+import akka.actor.setup.ActorSystemSetup
 import akka.cluster.Cluster
 import akka.pattern.AskTimeoutException
 import akka.persistence.cassandra.testkit.CassandraLauncher
@@ -33,9 +34,11 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
       akka.remote.netty.tcp.port = 0
       akka.remote.netty.tcp.hostname = 127.0.0.1
       akka.loglevel = INFO
-      lagom.serialization.play-json.serializer-registry="com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry"
   """).withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
-  private val system: ActorSystem = ActorSystem("PersistentEntityRefSpec", config)
+  private val system: ActorSystem = ActorSystem("PersistentEntityRefSpec", ActorSystemSetup(
+    BootstrapSetup(config),
+    JsonSerializerRegistry.serializationSetupFor(TestEntitySerializerRegistry)
+  ))
 
   override def beforeAll(): Unit = {
     super.beforeAll()

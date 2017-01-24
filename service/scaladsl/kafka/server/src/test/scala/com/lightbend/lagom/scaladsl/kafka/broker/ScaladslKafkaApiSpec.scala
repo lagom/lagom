@@ -42,7 +42,6 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
       override def additionalConfiguration = super.additionalConfiguration ++ Configuration.from(Map(
         "akka.remote.netty.tcp.port" -> "0",
         "akka.remote.netty.tcp.hostname" -> "127.0.0.1",
-        "lagom.serialization.play-json.serializer-registry" -> "com.lightbend.lagom.scaladsl.playjson.EmptySerializerRegistry",
         "akka.persistence.journal.plugin" -> "akka.persistence.journal.inmem",
         "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local"
       ))

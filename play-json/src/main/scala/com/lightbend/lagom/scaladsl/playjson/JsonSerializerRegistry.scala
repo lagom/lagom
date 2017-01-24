@@ -10,8 +10,8 @@ import akka.serialization.{ SerializationSetup, SerializerDetails }
 import scala.collection.immutable
 
 /**
- * Create a concrete subclass of this and register using the `lagom.serialization.play-json.serializer-registry`
- * setting to have your play-json serializers picked up and used by Lagom.
+ * Create a concrete subclass of this and initialise the actor system either by providing it in your application cake
+ * or manually by creating a serialization setup and passing it to the ActorSystem constructor.
  */
 abstract class JsonSerializerRegistry {
 
