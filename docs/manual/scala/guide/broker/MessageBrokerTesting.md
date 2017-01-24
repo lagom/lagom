@@ -11,7 +11,7 @@ The following code samples use the `HelloService` and `AnotherService` already p
 
 ## Testing publish
 
-When a Service publishes data into a `Topic` the descriptor lists a `TopicCall` on the public API. Testing the event publishing is very similar to testing `ServiceCall`'s in your Service API (see [[Service testing|Test#How-to-test-one-service]]). 
+When a Service publishes data into a `Topic` the descriptor lists a `TopicCall` on the public API. Testing the event publishing is very similar to testing `ServiceCall`'s in your Service API (see [[Service testing|TestingServices#How-to-test-one-service]]). 
 
 @[topic-test-publishing-into-a-topic](code/docs/scaladsl/mb/PublishServiceSpec.scala)
 
