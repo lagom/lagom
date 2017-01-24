@@ -3,7 +3,7 @@
  */
 package docs.home.scaladsl.serialization.v1
 
-import com.lightbend.lagom.scaladsl.playjson.{Migration, Migrations, SerializerRegistry, Serializers}
+import com.lightbend.lagom.scaladsl.playjson.{JsonMigration, JsonMigrations, JsonSerializerRegistry, JsonSerializer}
 
 import scala.collection.immutable.Seq
 

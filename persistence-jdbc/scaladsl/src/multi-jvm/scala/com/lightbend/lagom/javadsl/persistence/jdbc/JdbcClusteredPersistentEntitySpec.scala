@@ -2,14 +2,14 @@ package com.lightbend.lagom.scaladsl.persistence.jdbc
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.Materializer
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
+import com.lightbend.lagom.scaladsl.persistence.{ReadSideProcessor, TestEntitySerializerRegistry}
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
-import com.lightbend.lagom.scaladsl.persistence.multinode.{ AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec }
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.lightbend.lagom.scaladsl.persistence.multinode.{AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec}
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
+import com.typesafe.config.{Config, ConfigFactory}
 import org.h2.tools.Server
 import play.api.Configuration
 import play.api.Environment
@@ -22,9 +22,6 @@ object JdbcClusteredPersistentEntityConfig extends AbstractClusteredPersistentEn
     s"""
       db.default.driver=org.h2.Driver
       db.default.url="jdbc:h2:tcp://localhost:$databasePort/mem:JdbcClusteredPersistentEntitySpec"
-      lagom.serialization.play-json {
-        serializer-registry = "com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry"
-      }
     """)
 }
 
@@ -66,6 +63,7 @@ class JdbcClusteredPersistentEntitySpec extends AbstractClusteredPersistentEntit
       override lazy val configuration: Configuration = Configuration(system.settings.config)
       override def environment: Environment = JdbcClusteredPersistentEntityConfig.environment
       override lazy val applicationLifecycle: ApplicationLifecycle = defaultApplicationLifecycle
+      override def jsonSerializerRegistry: JsonSerializerRegistry = TestEntitySerializerRegistry
     }
 
   lazy val jdbcTestEntityReadSide: JdbcTestEntityReadSide =

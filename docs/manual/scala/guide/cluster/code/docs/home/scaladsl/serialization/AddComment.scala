@@ -3,17 +3,15 @@
  */
 package docs.home.scaladsl.serialization
 
-import com.lightbend.lagom.scaladsl.playjson.Jsonable
-import play.api.libs.json.Json
+import play.api.libs.json.{Format, Json}
 
-object AddComment {
-
-  //#complexMembers
-  case class UserMetadata(twitterHandle: String)
-  case class AddComment(userId: String, comment: String, userMetadata: UserMetadata) extends Jsonable
-
-  implicit val metadataFormat = Json.format[UserMetadata]
-  val format = Json.format[AddComment]
-  //#complexMembers
-
+//#complexMembers
+case class UserMetadata(twitterHandle: String)
+object UserMetadata {
+  implicit val format: Format[UserMetadata] = Json.format
 }
+case class AddComment(userId: String, comment: String, userMetadata: UserMetadata)
+object AddComment {
+  implicit val format: Format[AddComment] = Json.format
+}
+//#complexMembers

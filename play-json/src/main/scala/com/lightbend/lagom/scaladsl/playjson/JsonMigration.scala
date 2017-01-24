@@ -9,16 +9,16 @@ import scala.collection.immutable
 import scala.reflect.ClassTag
 
 /**
- * Conveneince factories to create [[Migration]]s.
+ * Conveneince factories to create [[JsonMigration]]s.
  */
-object Migrations {
+object JsonMigrations {
 
   def apply(
     currentVersion:          Int,
     transformation:          (Int, JsObject) => JsObject,
     classNameTransformation: (Int, String) => String
-  ): Migration =
-    new Migration(currentVersion) {
+  ): JsonMigration =
+    new JsonMigration(currentVersion) {
       override def transform(fromVersion: Int, json: JsObject): JsObject = transformation(fromVersion, json)
       override def transformClassName(fromVersion: Int, className: String): String = classNameTransformation(fromVersion, className)
     }
@@ -28,9 +28,9 @@ object Migrations {
    *                        each entry is the version when the change was introduced and the json transformation (created
    *                        through the play-json transformation DSL)
    */
-  def transform[T: ClassTag](transformations: immutable.SortedMap[Int, Reads[JsObject]]): (String, Migration) = {
+  def transform[T: ClassTag](transformations: immutable.SortedMap[Int, Reads[JsObject]]): (String, JsonMigration) = {
     val className = implicitly[ClassTag[T]].runtimeClass.getName
-    className -> new Migration(transformations.keys.last + 1) {
+    className -> new JsonMigration(transformations.keys.last + 1) {
       override def transform(fromVersion: Int, json: JsObject): JsObject = {
         val keyIterator = transformations.keysIteratorFrom(fromVersion)
         // apply each transformation from the stored version up to current
@@ -51,11 +51,11 @@ object Migrations {
     }
   }
 
-  def renamed(fromClassName: String, inVersion: Int, toClass: Class[_]): (String, Migration) =
+  def renamed(fromClassName: String, inVersion: Int, toClass: Class[_]): (String, JsonMigration) =
     renamed(fromClassName, inVersion, toClass.getName)
 
-  def renamed(fromClassName: String, inVersion: Int, toClassName: String): (String, Migration) =
-    fromClassName -> new Migration(inVersion) {
+  def renamed(fromClassName: String, inVersion: Int, toClassName: String): (String, JsonMigration) =
+    fromClassName -> new JsonMigration(inVersion) {
       override def transformClassName(fromVersion: Int, className: String): String = toClassName
     }
 }
@@ -63,7 +63,7 @@ object Migrations {
 /**
  * Data migration of old formats to current format can
  * be implemented in a concrete subclass or provided through the
- * factories in [[Migrations]] and configured to be used by the
+ * factories in [[JsonMigrations]] and configured to be used by the
  * `PlayJsonSerializer` for a changed class.
  *
  * It is used when deserializing data of older version than the
@@ -72,7 +72,7 @@ object Migrations {
  * class name you should override [[transformClassName]] and return
  * current class name.
  */
-abstract class Migration(val currentVersion: Int) {
+abstract class JsonMigration(val currentVersion: Int) {
 
   /**
    * Override to provide transformation of the old JSON structure to the new

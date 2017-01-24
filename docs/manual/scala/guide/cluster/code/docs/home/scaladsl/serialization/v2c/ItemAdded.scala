@@ -3,7 +3,7 @@
  */
 package docs.home.scaladsl.serialization.v2c
 
-import com.lightbend.lagom.scaladsl.playjson.{Jsonable, Migration, Migrations, SerializerRegistry}
+import com.lightbend.lagom.scaladsl.playjson.{JsonMigration, JsonMigrations, JsonSerializerRegistry}
 import play.api.libs.json.{JsObject, JsPath, JsString}
 
 import scala.collection.immutable
@@ -12,17 +12,17 @@ import scala.collection.immutable
 case class ItemAdded(
     shoppingCartId: String,
     itemId: String,
-    quantity: Int) extends Jsonable
+    quantity: Int)
 //#rename
 
 
 object ItemAddedMigration {
 
-  class ShopSerializerRegistry1 extends SerializerRegistry {
+  class ShopSerializerRegistry1 extends JsonSerializerRegistry {
     override def serializers = Vector.empty
 
     //#imperative-migration
-    private val itemAddedMigration = new Migration(2) {
+    private val itemAddedMigration = new JsonMigration(2) {
       override def transform(fromVersion: Int, json: JsObject): JsObject = {
         if (fromVersion < 2) {
           val productId = (JsPath \ "productId").read[JsString].reads(json).get
@@ -33,13 +33,13 @@ object ItemAddedMigration {
       }
     }
 
-    override def migrations = Map[String, Migration](
+    override def migrations = Map[String, JsonMigration](
       classOf[ItemAdded].getName -> itemAddedMigration
     )
     //#imperative-migration
   }
 
-  class ShopSerializerRegistry2 extends SerializerRegistry {
+  class ShopSerializerRegistry2 extends JsonSerializerRegistry {
 
     override val serializers = Vector.empty
 
@@ -49,8 +49,8 @@ object ItemAddedMigration {
       (JsPath \ "itemId").json.copyFrom((JsPath \ "productId").json.pick)
     ) andThen (JsPath \ "productId").json.prune
 
-    override def migrations = Map[String, Migration](
-      Migrations.transform[ItemAdded](immutable.SortedMap(
+    override def migrations = Map[String, JsonMigration](
+      JsonMigrations.transform[ItemAdded](immutable.SortedMap(
         1 -> productIdToItemId
       ))
     )

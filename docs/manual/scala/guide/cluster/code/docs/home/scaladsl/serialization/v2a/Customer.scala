@@ -3,7 +3,7 @@
  */
 package docs.home.scaladsl.serialization.v2a
 
-import com.lightbend.lagom.scaladsl.playjson.{Migration, SerializerRegistry}
+import com.lightbend.lagom.scaladsl.playjson.{JsonMigration, JsonSerializerRegistry}
 import play.api.libs.json.{JsObject, JsPath, Json, Reads}
 
 import scala.collection.immutable.Seq
@@ -28,7 +28,7 @@ object Customer {
   val customerFormat = Json.format[Customer]
 }
 
-class CustomerMigration extends SerializerRegistry {
+class CustomerMigration extends JsonSerializerRegistry {
 
   override def serializers = Seq.empty
 
@@ -37,7 +37,7 @@ class CustomerMigration extends SerializerRegistry {
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
 
-  val customerMigration = new Migration(2) {
+  val customerMigration = new JsonMigration(2) {
 
     // use arbitrary logic to parse an Address
     // out of the old schema
@@ -62,7 +62,7 @@ class CustomerMigration extends SerializerRegistry {
     }
   }
 
-  override def migrations: Map[String, Migration] = Map(
+  override def migrations: Map[String, JsonMigration] = Map(
     classOf[Customer].getName -> customerMigration
   )
   //#structural-migration

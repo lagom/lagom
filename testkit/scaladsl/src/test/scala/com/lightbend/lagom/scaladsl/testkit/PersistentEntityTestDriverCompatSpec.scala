@@ -5,17 +5,12 @@ package com.lightbend.lagom.scaladsl.testkit
 
 import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.scaladsl.persistence.PersistentEntityActor
-import com.lightbend.lagom.scaladsl.persistence.TestEntity
+import com.lightbend.lagom.scaladsl.persistence.{ TestEntity, TestEntitySerializerRegistry }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceSpec
-import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.duration._
 
-class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec("PersistentEntityTestDriverCompatSpec", ConfigFactory.parseString(
-  """
-    lagom.serialization.play-json.serializer-registry="com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry"
-  """
-)) {
+class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec(TestEntitySerializerRegistry) {
 
   "PersistentEntityActor and PersistentEntityTestDriver" must {
     "produce same events and state" in {

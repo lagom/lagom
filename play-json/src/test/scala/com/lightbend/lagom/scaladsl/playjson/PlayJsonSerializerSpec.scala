@@ -8,42 +8,41 @@ import java.nio.charset.StandardCharsets
 import akka.actor.ActorSystem
 import akka.serialization.{ SerializationExtension, SerializerWithStringManifest }
 import akka.testkit.TestKit
-import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalatest.{ Matchers, WordSpec }
 import play.api.libs.json._
 
 import scala.collection.immutable.{ Seq, SortedMap }
 
-case class Event1(name: String, increment: Int) extends Jsonable
+case class Event1(name: String, increment: Int)
 object Event1 {
   implicit val format: Format[Event1] = Json.format[Event1]
 }
-case class Event2(name: String, inner: Inner) extends Jsonable
+case class Event2(name: String, inner: Inner)
 case class Inner(on: Boolean)
-case class MigratedEvent(addedField: Int, newName: String) extends Jsonable
+case class MigratedEvent(addedField: Int, newName: String)
 
-class TestRegistry1 extends SerializerRegistry {
+object TestRegistry1 extends JsonSerializerRegistry {
 
   implicit val innerFormat = Json.format[Inner]
 
-  override def serializers: Seq[Serializers[_]] =
+  override def serializers: Seq[JsonSerializer[_]] =
     Seq(
-      Serializers[Event1],
-      Serializers(Json.format[Event2])
+      JsonSerializer[Event1],
+      JsonSerializer(Json.format[Event2])
     )
 
 }
 
-class TestRegistry2 extends SerializerRegistry {
+object TestRegistry2 extends JsonSerializerRegistry {
   override def serializers =
     Seq(
-      Serializers(Json.format[MigratedEvent]),
-      Serializers(Json.format[Event1])
+      JsonSerializer(Json.format[MigratedEvent]),
+      JsonSerializer(Json.format[Event1])
     )
 
   import play.api.libs.json._
   override def migrations = Map(
-    Migrations.transform[MigratedEvent](
+    JsonMigrations.transform[MigratedEvent](
       // something like a history of changes, if version is oldest each one needs to be applied
       SortedMap(
         // remove field (not really needed, here for completeness)
@@ -59,18 +58,18 @@ class TestRegistry2 extends SerializerRegistry {
           (__ \ "addedField").json.update(Format.of[JsString].map { case JsString(value) => JsNumber(value.toInt) })
       )
     ),
-    Migrations.renamed("event1.old.ClassName", inVersion = 2, toClass = classOf[Event1])
+    JsonMigrations.renamed("event1.old.ClassName", inVersion = 2, toClass = classOf[Event1])
   )
 }
 
-class TestRegistry3 extends SerializerRegistry {
+object TestRegistry3 extends JsonSerializerRegistry {
   override def serializers = Seq(
-    Serializers(Json.format[MigratedEvent])
+    JsonSerializer(Json.format[MigratedEvent])
   )
 
   // manual way to do the same transformations (compared to json transformations above)
-  override def migrations: Map[String, Migration] = Map(
-    classOf[MigratedEvent].getName -> new Migration(5) {
+  override def migrations: Map[String, JsonMigration] = Map(
+    classOf[MigratedEvent].getName -> new JsonMigration(5) {
       override def transform(fromVersion: Int, json: JsObject): JsObject = {
         var toUpdate = json
         if (fromVersion < 2) {
@@ -103,11 +102,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
   "The PlayJsonSerializer" should {
 
-    "pick up serializers from configured registry" in withActorSystem(ConfigFactory.parseString(
-      """
-          lagom.serialization.play-json.serializer-registry=com.lightbend.lagom.scaladsl.playjson.TestRegistry1
-      """
-    ).withFallback(ConfigFactory.load())) { system =>
+    "pick up serializers from configured registry" in withActorSystem(TestRegistry1) { system =>
 
       val serializeExt = SerializationExtension(system)
       List(Event1("test", 1), Event2("test2", Inner(on = true))).foreach { event =>
@@ -123,11 +118,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       }
     }
 
-    "apply sequential migrations using json-transformations" in withActorSystem(ConfigFactory.parseString(
-      """
-        lagom.serialization.play-json.serializer-registry=com.lightbend.lagom.scaladsl.playjson.TestRegistry2
-      """
-    ).withFallback(ConfigFactory.load())) { system =>
+    "apply sequential migrations using json-transformations" in withActorSystem(TestRegistry2) { system =>
 
       val expectedEvent = MigratedEvent(addedField = 2, newName = "some value")
       val oldJsonBytes = Json.stringify(JsObject(Seq(
@@ -143,11 +134,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
     }
 
-    "apply migrations written imperatively" in withActorSystem(ConfigFactory.parseString(
-      """
-        lagom.serialization.play-json.serializer-registry=com.lightbend.lagom.scaladsl.playjson.TestRegistry3
-      """
-    ).withFallback(ConfigFactory.load())) { system =>
+    "apply migrations written imperatively" in withActorSystem(TestRegistry3) { system =>
 
       val expectedEvent = MigratedEvent(addedField = 2, newName = "some value")
       val oldJsonBytes = Json.stringify(JsObject(Seq(
@@ -163,11 +150,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
     }
 
-    "apply rename migration" in withActorSystem(ConfigFactory.parseString(
-      """
-        lagom.serialization.play-json.serializer-registry=com.lightbend.lagom.scaladsl.playjson.TestRegistry2
-      """
-    ).withFallback(ConfigFactory.load())) { system =>
+    "apply rename migration" in withActorSystem(TestRegistry2) { system =>
 
       val event = Event1("something", 25)
 
@@ -188,7 +171,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
     object Singleton
 
     "serialize and deserialize singletons" in {
-      val serializer = Serializers.emptySingletonFormat(Singleton)
+      val serializer = JsonSerializer.emptySingletonFormat(Singleton)
 
       val result = serializer.reads(serializer.writes(Singleton))
       result.isSuccess shouldBe true
@@ -198,11 +181,11 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
   }
 
   private var counter = 0
-  def withActorSystem(config: Config)(test: ActorSystem => Unit): Unit = {
+  def withActorSystem(registry: JsonSerializerRegistry)(test: ActorSystem => Unit): Unit = {
     var system: ActorSystem = null
     try {
       counter += 1
-      system = ActorSystem(s"PlayJsonSerializerSpec-$counter", config)
+      system = ActorSystem(s"PlayJsonSerializerSpec-$counter", JsonSerializerRegistry.actorSystemSetupFor(registry))
       test(system)
     } finally {
       if (system ne null) TestKit.shutdownActorSystem(system)

@@ -10,7 +10,7 @@ import com.lightbend.lagom.scaladsl.persistence._
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class JdbcReadSideSpec extends JdbcPersistenceSpec with AbstractReadSideSpec {
+class JdbcReadSideSpec extends JdbcPersistenceSpec(TestEntitySerializerRegistry) with AbstractReadSideSpec {
   override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, slick)
 
   override def processorFactory(): ReadSideProcessor[Evt] =

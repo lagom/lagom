@@ -3,13 +3,15 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.jdbc
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, BootstrapSetup }
+import akka.actor.setup.ActorSystemSetup
 import akka.cluster.Cluster
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.jdbc.{ SlickOffsetStore, SlickProvider }
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.{ JdbcReadSideImpl, JdbcSessionImpl, OffsetTableConfiguration }
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
 import com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{ Config, ConfigFactory }
 import play.api.db.{ Database, Databases }
 import play.api.{ Configuration, Environment }
@@ -18,14 +20,19 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.Random
 
-abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec(_system) {
+abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorSystemSpec(_system) {
 
-  def this(testName: String, config: Config) =
-    this(ActorSystem(testName, config.withFallback(TestUtil.clusterConfig()).withFallback(Configuration.load(Environment.simple()).underlying)))
+  def this(testName: String, config: Config, registry: JsonSerializerRegistry) =
+    this(ActorSystem(testName, ActorSystemSetup(
+      BootstrapSetup(
+        config.withFallback(TestUtil.clusterConfig()).withFallback(Configuration.load(Environment.simple()).underlying)
+      ),
+      JsonSerializerRegistry.serializationSetupFor(registry)
+    )))
 
-  def this(config: Config) = this(PersistenceSpec.getCallerName(getClass), config)
+  def this(config: Config, registry: JsonSerializerRegistry) = this(PersistenceSpec.getCallerName(getClass), config, registry)
 
-  def this() = this(ConfigFactory.empty())
+  def this(registry: JsonSerializerRegistry) = this(ConfigFactory.empty(), registry)
 
   // late initialization of database
   private var _database: Option[Database] = None
