@@ -47,6 +47,9 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
     case Register(name, service) =>
       registry.get(name) match {
         case None =>
+          if (logger.isDebugEnabled) {
+            logger.debug(s"Registering service [$name] with ACLs [${service.acls().asScala.map { acl => acl.toString }.mkString(", ")}] on ${service.uri()}).")
+          }
           registry += (name -> service)
           rebuildRouter()
           sender() ! Done
