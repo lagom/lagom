@@ -24,7 +24,7 @@ import com.lightbend.lagom.spi.persistence.OffsetStore
 /**
  * Guice module for the Persistence API.
  */
-final class CassandraPersistenceModule extends AbstractModule {
+class CassandraPersistenceModule extends AbstractModule {
   override def configure(): Unit = {
     binder.bind(classOf[CassandraPersistenceModule.InitServiceLocatorHolder]).asEagerSingleton()
     binder.bind(classOf[PersistentEntityRegistry]).to(classOf[CassandraPersistentEntityRegistry])
