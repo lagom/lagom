@@ -3,8 +3,9 @@
  */
 package com.lightbend.lagom.internal.persistence.cassandra
 
+import scala.concurrent.{ Future, Promise }
+import scala.util.Success
 import akka.actor.{ ActorSystem, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider }
-import scala.concurrent.Future
 import java.net.URI
 
 /**
@@ -27,10 +28,15 @@ private[lagom] object ServiceLocatorHolder extends ExtensionId[ServiceLocatorHol
 private[lagom] class ServiceLocatorHolder extends Extension {
   @volatile private var _serviceLocator: Option[ServiceLocatorAdapter] = None
 
-  def serviceLocator: Option[ServiceLocatorAdapter] = _serviceLocator
+  private val promisedServiceLocator = Promise[ServiceLocatorAdapter]()
+  def serviceLocatorEventually: Future[ServiceLocatorAdapter] = promisedServiceLocator.future
 
-  def setServiceLocator(locator: ServiceLocatorAdapter): Unit =
+  def setServiceLocator(locator: ServiceLocatorAdapter): Unit = {
+    require(_serviceLocator.isEmpty, "Service locator has already been defined")
+
     _serviceLocator = Some(locator)
+    promisedServiceLocator.complete(Success(locator))
+  }
 }
 
 /**
@@ -39,3 +45,4 @@ private[lagom] class ServiceLocatorHolder extends Extension {
 private[lagom] trait ServiceLocatorAdapter {
   def locate(name: String): Future[Option[URI]]
 }
+
