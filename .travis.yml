@@ -3,17 +3,14 @@ sudo: false
 jdk:
   - oraclejdk8
 env:
-  global:
-    - SBT="sbt --warn -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)'"
-    - SBT_NOISY="sbt -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)'"
   matrix:
-    - SCRIPT="$SBT test"
-    # Run scripted in a separate process without --warn so we can see its progress
-    - SCRIPT="$SBT publishLocal && $SBT_NOISY scripted"
-    - SCRIPT="$SBT publishM2 && $SBT_NOISY mavenTest"
-    - SCRIPT="$SBT_NOISY unidoc && cd docs && $SBT markdownValidateDocs test markdownEvaluateSbtFiles"
+    - SCRIPT=test
+    - SCRIPT=test-sbt
+    - SCRIPT=test-maven
+    - SCRIPT=test-documentation
+    - SCRIPT=test-code-style
 # important to use eval, otherwise "&&" is passed as an argument to sbt rather than being processed by bash
-script: eval $SCRIPT
+script: bin/$SCRIPT
 before_install:
     # See https://github.com/travis-ci/travis-ci/issues/4629#issuecomment-239493916
     - rm ~/.m2/settings.xml

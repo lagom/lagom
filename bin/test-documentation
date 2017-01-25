@@ -1,0 +1,9 @@
+#! /bin/bash
+
+. "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
+
+runSbt unidoc
+
+cd docs
+
+runSbt markdownValidateDocs test markdownEvaluateSbtFiles
