@@ -241,7 +241,7 @@ def since10 = Seq("1.0.0") ++ since11
 def since11 = Seq("1.1.0") ++ since12
 def since12 = Seq("1.2.2")
 
-val javadslProjects = Seq[ProjectReference](
+val javadslProjects = Seq[Project](
   `api-javadsl`,
   `server-javadsl`,
   `client-javadsl`,
@@ -260,7 +260,7 @@ val javadslProjects = Seq[ProjectReference](
   `integration-client-javadsl`
 )
 
-val scaladslProjects = Seq[ProjectReference](
+val scaladslProjects = Seq[Project](
   `api-scaladsl`,
   `client-scaladsl`,
   `broker-scaladsl`,
@@ -277,7 +277,7 @@ val scaladslProjects = Seq[ProjectReference](
   `play-json`
 )
 
-val coreProjects = Seq[ProjectReference](
+val coreProjects = Seq[Project](
   `api-tools`,
   api,
   client,
@@ -294,7 +294,7 @@ val coreProjects = Seq[ProjectReference](
   log4j2
 )
 
-val otherProjects = Seq[ProjectReference](
+val otherProjects = Seq[Project](
   `dev-environment`,
   `integration-tests-javadsl`,
   `integration-tests-scaladsl`
@@ -310,11 +310,11 @@ lazy val root = (project in file("."))
     publish := {}
   )
   .enablePlugins(lagom.UnidocRoot)
-  .settings(UnidocRoot.settings(javadslProjects, scaladslProjects): _*)
-  .aggregate(javadslProjects: _*)
-  .aggregate(scaladslProjects: _*)
-  .aggregate(coreProjects: _*)
-  .aggregate(otherProjects: _*)
+  .settings(UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*)
+  .aggregate(javadslProjects.map(Project.projectToRef): _*)
+  .aggregate(scaladslProjects.map(Project.projectToRef): _*)
+  .aggregate(coreProjects.map(Project.projectToRef): _*)
+  .aggregate(otherProjects.map(Project.projectToRef): _*)
 
 def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) 
 def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype) 
@@ -527,7 +527,8 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
       scalaJava8Compat
     ),
     mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest$Setup")
+      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest$Setup"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest$Setup$")
     )
   )
   .dependsOn(`testkit-core`, `server-javadsl`, `pubsub-javadsl`, `broker-javadsl`,
@@ -841,16 +842,18 @@ lazy val `kafka-client` = (project in file("service/core/kafka/client"))
       "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafka exclude("org.slf4j","slf4j-log4j12"),
       "org.apache.kafka" %% "kafka" % KafkaVersion exclude("org.slf4j","slf4j-log4j12") exclude("javax.jms", "jms") exclude("com.sun.jdmk", "jmxtools") exclude("com.sun.jmx", "jmxri"),
       scalaTest % Test
-    ),
-    mimaBinaryIssueFilters += ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.broker.kafka.KafkaTopicFactory")
+    )
   )
   .dependsOn(`api`)
 
 lazy val `kafka-client-javadsl` = (project in file("service/javadsl/kafka/client"))
   .enablePlugins(RuntimeLibPlugins)
-  .settings(name := "lagom-javadsl-kafka-client")
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since12): _*)
+  .settings(
+    name := "lagom-javadsl-kafka-client",
+    mimaBinaryIssueFilters += ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.broker.kafka.KafkaTopicFactory")
+  )
   .dependsOn(`api-javadsl`, `kafka-client`)
 
 lazy val `kafka-client-scaladsl` = (project in file("service/scaladsl/kafka/client"))
@@ -1200,5 +1203,25 @@ lazy val `macro-testkit` = (project in file("macro-testkit"))
     "org.scala-lang" % "scala-reflect" % scalaVersion.value
   ))
 
+// We can't just run a big aggregated mimaReportBinaryIssues due to
+// https://github.com/typesafehub/migration-manager/issues/163
+// Travis doesn't provide us enough memory to do so. So instead, we
+// run the binary compatibility checks one at a time, which works
+// around the issue.
+commands += Command.command("mimaCheckOneAtATime") { state =>
+  val extracted = Project.extract(state)
+  val results = (javadslProjects ++ scaladslProjects).map { project =>
+    println(s"Checking binary compatibility for ${project.id}")
+    try {
+      extracted.runTask(mimaReportBinaryIssues in project, state)
+      true
+    } catch {
+      case scala.util.control.NonFatal(e) => false
+    }
+  }
 
-
+  if (results.contains(false)) {
+    throw new FeedbackProvidedException {}
+  }
+  state
+}
