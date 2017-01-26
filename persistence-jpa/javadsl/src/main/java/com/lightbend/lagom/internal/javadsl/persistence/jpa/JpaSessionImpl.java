@@ -30,7 +30,7 @@ import java.util.function.Function;
 import static play.utils.Threads.withContextClassLoader;
 
 @Singleton
-class JpaSessionImpl implements JpaSession {
+public class JpaSessionImpl implements JpaSession {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
