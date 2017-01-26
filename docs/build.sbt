@@ -60,10 +60,24 @@ lazy val docs = project
     markdownStageIncludeWebJars := false,
     markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/"))
 
-  ).dependsOn(serviceIntegrationTestsJavadsl, persistenceJdbcJavadsl, persistenceJpaJavadsl,
-      serviceIntegrationTestsScaladsl, persistenceCassandraScaladsl, persistenceJdbcScaladsl, testkitJavadsl,
-      testkitScaladsl, brokerScaladsl, playJson, kafkaBroker, pubsubScaladsl, immutables % "test->compile", 
-      theme % "run-markdown", devmodeScaladsl)
+  )
+  .dependsOn(
+    serviceIntegrationTestsJavadsl,
+    persistenceJdbcJavadsl,
+    persistenceJpaJavadsl,
+    serviceIntegrationTestsScaladsl,
+    persistenceCassandraScaladsl,
+    persistenceJdbcScaladsl,
+    testkitJavadsl,
+    testkitScaladsl,
+    brokerScaladsl,
+    playJson,
+    kafkaBroker,
+    pubsubScaladsl,
+    immutables % "test->compile",
+    theme % "run-markdown",
+    devmodeScaladsl
+  )
 
 lazy val parentDir = Path.fileProperty("user.dir").getParentFile
 
