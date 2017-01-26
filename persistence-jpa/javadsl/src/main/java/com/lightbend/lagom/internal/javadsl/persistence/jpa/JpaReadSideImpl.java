@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 import static scala.collection.JavaConversions.asJavaIterable;
 
 @Singleton
-class JpaReadSideImpl implements JpaReadSide {
+public class JpaReadSideImpl implements JpaReadSide {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final JpaSession jpa;
