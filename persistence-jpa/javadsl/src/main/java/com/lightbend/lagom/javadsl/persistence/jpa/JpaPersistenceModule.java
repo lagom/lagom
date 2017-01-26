@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
  */
-package com.lightbend.lagom.internal.javadsl.persistence.jpa;
+package com.lightbend.lagom.javadsl.persistence.jpa;
 
-import com.lightbend.lagom.javadsl.persistence.jpa.JpaReadSide;
-import com.lightbend.lagom.javadsl.persistence.jpa.JpaSession;
+import com.lightbend.lagom.internal.javadsl.persistence.jpa.JpaReadSideImpl;
+import com.lightbend.lagom.internal.javadsl.persistence.jpa.JpaSessionImpl;
 import play.api.Configuration;
 import play.api.Environment;
 import play.api.inject.Binding;
