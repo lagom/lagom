@@ -26,4 +26,15 @@ trait TopicFactory {
  */
 trait TopicFactoryProvider {
   def optionalTopicFactory: Option[TopicFactory] = None
+
+  /**
+   * The name of the topic publisher.
+   *
+   * Since topic publishers don't actually provide any components, they just consume a LagomServer and publish the
+   * topics they find there, this can be used to signal that a topic publisher has been provided to publish
+   * topics, so that the LagomServerComponents can detect a misconfiguration where one hasn't been provided.
+   *
+   * @return The name of the topic publisher that has published topics, if one has been provided.
+   */
+  def topicPublisherName: Option[String] = None
 }

@@ -26,6 +26,12 @@ trait TestTopicComponents extends TopicFactoryProvider {
 
   override def optionalTopicFactory: Option[TopicFactory] = Some(topicFactory)
 
+  override def topicPublisherName: Option[String] = super.topicPublisherName match {
+    case Some(other) =>
+      sys.error(s"Cannot provide the test topic factory as the default topic publisher since a default topic publisher has already been mixed into this cake: $other")
+    case None => Some("test")
+  }
+
   lazy val topicFactory: TopicFactory = new TestTopicFactory(lagomServer)(materializer)
 
 }
