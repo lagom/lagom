@@ -716,7 +716,13 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
     name := "lagom-javadsl-persistence",
     mimaBinaryIssueFilters ++= Seq(
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.PersistenceModule$InitServiceLocatorHolder"),
-      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.PersistenceModule$")
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.PersistenceModule$"),
+      // See https://github.com/lagom/lagom/pull/405 for justification for this breaking change,
+      // and verification that it causes no binary compatibility problems in practice.
+      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$Persist"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistOne"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistAll"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistNone")
     )
   )
   .dependsOn(`persistence-core` % "compile;test->test", jackson, `cluster-javadsl`)
