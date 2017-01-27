@@ -12,6 +12,7 @@ import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
 
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 //#imports
@@ -24,10 +25,6 @@ public interface JpaReadSideQuery {
 
     //#service-impl
     public class BlogServiceImpl implements BlogService {
-        private static final String SELECT_POST_SUMMARIES =
-                "SELECT NEW " +
-                        "docs.home.persistence.PostSummary(s.id, s.title) " +
-                        "FROM BlogSummaryJpaEntity s";
 
         private final JpaSession jpaSession;
 
@@ -38,15 +35,19 @@ public interface JpaReadSideQuery {
 
         @Override
         public ServiceCall<NotUsed, PSequence<PostSummary>> getPostSummaries() {
-            return request -> {
-                CompletionStage<List<PostSummary>> results = jpaSession.withTransaction(entityManager ->
-                        entityManager.createQuery(
-                                SELECT_POST_SUMMARIES,
-                                PostSummary.class
-                        ).getResultList()
-                );
-                return results.thenApply(TreePVector::from);
-            };
+            return request -> jpaSession
+                    .withTransaction(this::selectPostSummaries)
+                    .thenApply(TreePVector::from);
+        }
+
+        private List<PostSummary> selectPostSummaries(EntityManager entityManager) {
+            return entityManager
+                    .createQuery("SELECT" +
+                                    " NEW com.example.PostSummary(s.id, s.title)" +
+                                    " FROM BlogSummaryJpaEntity s",
+                            PostSummary.class
+                    )
+                    .getResultList();
         }
     }
     //#service-impl

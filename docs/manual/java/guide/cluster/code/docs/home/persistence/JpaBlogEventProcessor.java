@@ -59,14 +59,16 @@ public interface JpaBlogEventProcessor {
         }
         //#tag
 
-        //#create-table
+        //#create-schema
         private void createSchema(@SuppressWarnings("unused") EntityManager ignored) {
-            Persistence.generateSchema("default", ImmutableMap.of("hibernate.hbm2ddl.auto", "update"));
+            Persistence.generateSchema("default",
+                    ImmutableMap.of("hibernate.hbm2ddl.auto", "update"));
         }
-        //#create-table
+        //#create-schema
 
         //#post-added
-        private void processPostAdded(EntityManager entityManager, BlogEvent.PostAdded event) {
+        private void processPostAdded(EntityManager entityManager,
+                                      BlogEvent.PostAdded event) {
             BlogSummaryJpaEntity summary = new BlogSummaryJpaEntity();
             summary.setId(event.getPostId());
             summary.setTitle(event.getContent().getTitle());

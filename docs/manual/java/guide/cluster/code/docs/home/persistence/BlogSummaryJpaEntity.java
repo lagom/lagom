@@ -3,6 +3,7 @@
  */
 package docs.home.persistence;
 
+//#entity
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
@@ -31,3 +32,4 @@ public class BlogSummaryJpaEntity {
         this.title = title;
     }
 }
+//#entity
