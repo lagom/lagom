@@ -179,7 +179,7 @@ A few things to notice here are:
 * This particular service uses the Lagom persistence API to persist data, and so has a dependency on `lagom-javadsl-persistence`.
 * A logging implementation needs to be configured, this uses the default `lagom-logback` logging implementation.
 * An implementation of the Play HTTP server needs to be configured - Play provides two server implementations, one in Netty, and one in Akka HTTP.  In this case, Netty has been selected.
-* The `lagam-maven-plugin` has been configured to say that `lagomService` is `true`, this tells Lagom that this is a lagom service that should be run when you run `lagom:runAll`.
+* The `lagom-maven-plugin` has been configured to say that `lagomService` is `true`, this tells Lagom that this is a lagom service that should be run when you run `lagom:runAll`.
 
 ## Defining a build in sbt
 
