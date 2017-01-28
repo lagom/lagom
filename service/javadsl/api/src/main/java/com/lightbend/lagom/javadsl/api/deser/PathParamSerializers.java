@@ -101,10 +101,6 @@ public final class PathParamSerializers {
             this.name = name;
         }
 
-        public String name() {
-            return name;
-        }
-
         @Override
         public String toString() {
             return "PathParamSerializer(" + name + ")";

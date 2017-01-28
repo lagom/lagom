@@ -33,7 +33,7 @@ trait ServiceSupport extends WordSpecLike with Matchers with Inside {
         block(server.app.getWrappedApplication)
       }
     }
-    val setup = ServiceTest.defaultSetup.withConfigureBuilder(jConfigureBuilder).withCluster(false)
+    val setup = ServiceTest.defaultSetup.configureBuilder(jConfigureBuilder).withCluster(false)
     ServiceTest.withServer(setup, jBlock)
   }
 

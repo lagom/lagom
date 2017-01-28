@@ -93,7 +93,7 @@ class CharlieServiceImpl(alpha: AlphaService) extends CharlieService {
     })
   )
 
-  override def messages(): ServiceCall[NotUsed, Seq[ReceivedMessage]] = ServiceCall { _ =>
+  override def messages: ServiceCall[NotUsed, Seq[ReceivedMessage]] = ServiceCall { _ =>
     Future.successful(receivedMessages.iterator().asInstanceOf[Seq[ReceivedMessage]])
   }
 }
