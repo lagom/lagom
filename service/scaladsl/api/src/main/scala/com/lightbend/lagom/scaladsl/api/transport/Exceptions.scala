@@ -153,13 +153,18 @@ object TransportErrorCode {
     }
   }
 
-  private case class TransportErrorCodeImpl(http: Int, webSocket: Int, description: String) extends TransportErrorCode
+  private case class TransportErrorCodeImpl(http: Int, webSocket: Int, description: String) extends TransportErrorCode {
+    override def toString = s"$http/$webSocket $description"
+  }
 }
 
 /**
  * A high level exception message.
  *
  * This is used by the default exception serializer to serialize exceptions into messages.
+ *
+ * @param name The name of the exception. This is usually the simple name of the class of the exception.
+ * @param detail The detailed description of the exception.
  */
 final class ExceptionMessage(val name: String, val detail: String) extends Serializable {
   override def equals(other: Any): Boolean = other match {
@@ -179,6 +184,11 @@ final class ExceptionMessage(val name: String, val detail: String) extends Seria
 
 /**
  * An exception that can be translated down to a specific error in the transport.
+ *
+ * Transport exceptions describe the HTTP/WebSocket error code associated with them, allowing Lagom to send an error
+ * code specific to the type of error. They also have an exception message, which is used both to capture exception
+ * details, as well as to identify the exception, so that the right type of exception can be deserialized at the other
+ * end.
  */
 class TransportException(val errorCode: TransportErrorCode, val exceptionMessage: ExceptionMessage, cause: Throwable) extends RuntimeException(exceptionMessage.detail, cause) {
 
@@ -195,6 +205,18 @@ class TransportException(val errorCode: TransportErrorCode, val exceptionMessage
 }
 
 object TransportException {
+
+  /**
+   * Convert an error code and exception message to an exception.
+   *
+   * This will only return Lagom built in exceptions. A custom exception that extends [[TransportException]] that has
+   * been serialized by the [[com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer]] will not be returned
+   * by this method, instead, a best match based on the HTTP/WebSocket error code will be selected.
+   *
+   * @param errorCode The error code.
+   * @param exceptionMessage The exception message.
+   * @return A built in TransportException that best matches the given error code and exception message.
+   */
   def fromCodeAndMessage(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage): TransportException = {
     ByNameTransportExceptions.get(exceptionMessage.name).orElse {
       ByCodeTransportExceptions.get(errorCode)
