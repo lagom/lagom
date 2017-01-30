@@ -50,6 +50,9 @@ trait ExceptionSerializer {
  * The default exception serializer.
  *
  * Serializes exception messages to JSON.
+ *
+ * This serializer is capable of converting Lagom built-in exceptions to and from JSON. Custom sub classes of
+ * TransportException can also be deserialized by extending this class and overriding [[fromCodeAndMessage()]].
  */
 class DefaultExceptionSerializer(environment: Environment) extends ExceptionSerializer {
 
@@ -94,7 +97,21 @@ class DefaultExceptionSerializer(environment: Environment) extends ExceptionSeri
       case JsError(_)      => new ExceptionMessage("UndeserializableException", message.message.utf8String)
     }
 
-    TransportException.fromCodeAndMessage(message.errorCode, exceptionMessage)
+    fromCodeAndMessage(message.errorCode, exceptionMessage)
+  }
+
+  /**
+   * Override this if you wish to deserialize your own custom Exceptions.
+   *
+   * The default implementation delegates to [[TransportException.fromCodeAndMessage()]], which will return a best match
+   * Lagom built-in exception.
+   *
+   * @param transportErrorCode The transport error code.
+   * @param exceptionMessage The exception message.
+   * @return The exception.
+   */
+  protected def fromCodeAndMessage(transportErrorCode: TransportErrorCode, exceptionMessage: ExceptionMessage): Throwable = {
+    TransportException.fromCodeAndMessage(transportErrorCode, exceptionMessage)
   }
 }
 
