@@ -491,7 +491,8 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
   .settings(
     name := "lagom-scaladsl-server",
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor" % AkkaVersion
+      "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
+      scalaTest % Test
     )
   )
   .enablePlugins(RuntimeLibPlugins)
