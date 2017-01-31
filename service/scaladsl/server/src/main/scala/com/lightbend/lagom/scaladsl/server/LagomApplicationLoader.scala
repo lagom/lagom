@@ -184,6 +184,7 @@ abstract class LagomApplication(context: LagomApplicationContext)
     system
   }
 
+  LagomServerTopicFactoryVerifier.verify(lagomServer, topicPublisherName)
 }
 
 private[server] object ActorSystemProvider {
@@ -298,4 +299,32 @@ trait LocalServiceLocator extends RequiresLagomServicePort {
     override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] =
       getUri(name)
   }
+}
+
+/**
+ * Verifies that if there are any topics published by the Lagom server, that there is also a topic publisher.
+ */
+private[lagom] object LagomServerTopicFactoryVerifier {
+
+  def verify(lagomServer: LagomServer, topicPublisherName: Option[String]): Unit = {
+    topicPublisherName match {
+      case None =>
+        // No topic publisher has been provided, make sure there are no topics to publish
+        lagomServer.serviceBindings.flatMap(_.descriptor.topics) match {
+          case Nil =>
+          // No problemo
+          case some =>
+            // Uh oh
+            throw new NoTopicPublisherException("The bound Lagom server provides topics, but no topic publisher has been provided. " +
+              "This can be resolved by mixing in a topic publisher trait, such as " +
+              "com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents or " +
+              "com.lightbend.lagom.scaladsl.testkit.TestTopicComponents into your application cake. " +
+              "The topics published are " + some.mkString(", "))
+        }
+      case Some(_) =>
+      // No need to do anything, a topic publisher has been provided
+    }
+  }
+
+  class NoTopicPublisherException(msg: String) extends RuntimeException(msg)
 }
