@@ -60,7 +60,7 @@ There's no way to explicitly enable or disable [[pubsub|PubSub]]. When cluster i
 
 There are two different styles that can be used when writing the tests. It is most convenient to use `withServer` as illustrated in the above `HelloServiceTest`. It automatically starts and stops the server before and after the given lambda.
 
-When your test have several test methods, and especially when using persistence, it is faster to only start the server once in a static method annotated with `@BeforeClass` and stop it in a method annotated with `@AfterClass`.
+When your tests have several test methods, and especially when using persistence, it is faster to only start the server once in a static method annotated with `@BeforeClass` and stop it in a method annotated with `@AfterClass`.
 
 @[test](code/docs/services/test/AdvancedHelloServiceTest.java)
 
