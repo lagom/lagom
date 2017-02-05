@@ -57,7 +57,8 @@ public class ConfigurationServiceLocator implements ServiceLocator {
     @Override
     public <T> CompletionStage<Optional<T>> doWithService(String name, Descriptor.Call<?, ?> serviceCall, Function<URI, CompletionStage<T>> block) {
         return Optional.ofNullable(services.get(name))
-                .map(block.andThen(cs -> cs.thenApply(Optional::ofNullable)))
+                // type parameter specified to work around https://bugs.eclipse.org/bugs/show_bug.cgi?id=511252
+                .<CompletionStage<Optional<T>>>map(block.andThen(cs -> cs.thenApply(Optional::ofNullable)))
                 .orElse(CompletableFuture.completedFuture(Optional.empty()));
     }
 }
