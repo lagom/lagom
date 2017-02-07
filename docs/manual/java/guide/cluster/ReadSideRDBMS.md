@@ -12,7 +12,7 @@ JPA builds on top of JDBC to provide object-relational mapping capabilities. Amo
 
 Using JPA with a Lagom service requires adding an additional dependency from your project to a JPA 2.1 provider such as [Hibernate ORM](http://hibernate.org/orm/) (recommended) or [EclipseLink](http://www.eclipse.org/eclipselink/).
 
-Both options build on top of the same support for [[storing persistent entities in a relational database]] and share the same offset store. It is possible to mix both JDBC-based and JPA-based read-sides in the same service.
+Both options build on top of the same support for [[storing persistent entities in a relational database|PersistentEntityRDBMS]] and share the same offset store. It is possible to mix both JDBC-based and JPA-based read-sides in the same service.
 
 ## Implementing a relational database read side
 
