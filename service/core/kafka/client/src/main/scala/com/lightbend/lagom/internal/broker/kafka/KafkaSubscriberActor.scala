@@ -40,6 +40,7 @@ private[lagom] class KafkaSubscriberActor[Message](
 
   override def receive: Actor.Receive = {
     case Status.Failure(e) =>
+      log.error("Topic subscription interrupted due to failure", e)
       throw e
 
     case Done =>
