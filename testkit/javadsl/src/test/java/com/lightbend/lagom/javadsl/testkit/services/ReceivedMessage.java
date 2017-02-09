@@ -7,6 +7,9 @@ import com.lightbend.lagom.serialization.Jsonable;
 
 
 public class ReceivedMessage implements Jsonable {
+
+    private static final long serialVersionUID = 1L;
+
     private String source;
     private int msg;
 
