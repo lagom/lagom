@@ -10,7 +10,6 @@ import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.internal.broker.kafka.{ KafkaConfig, Producer }
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
-import com.lightbend.lagom.internal.scaladsl.broker.kafka.{ ScaladslKafkaSerializer, ScaladslKafkaTopic }
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodTopic

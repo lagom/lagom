@@ -9,7 +9,6 @@ import com.lightbend.lagom.javadsl.pubsub.PubSubModule;
 import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import static org.junit.Assert.assertEquals;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 

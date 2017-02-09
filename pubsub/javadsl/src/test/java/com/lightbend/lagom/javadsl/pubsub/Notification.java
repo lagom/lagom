@@ -6,6 +6,9 @@ package com.lightbend.lagom.javadsl.pubsub;
 import java.io.Serializable;
 
 public class Notification implements Serializable {
+
+  private static final long serialVersionUID = 1L;
+
   private final String msg;
 
   public Notification(String msg) {
