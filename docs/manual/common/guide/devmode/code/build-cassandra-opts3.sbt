@@ -1,4 +1,4 @@
 //#local-instance
 lagomCassandraEnabled in ThisBuild := false
-lagomCassandraPort in ThisBuild := 9042
+lagomUnmanagedServices in ThisBuild := Map("cas_native" -> "http://localhost:9042")
 //#local-instance

@@ -81,7 +81,7 @@ Kafka is essentially a durable commit log. You can find all data persisted by Ka
 
 ## Start and stop
 
-The Kafka server is automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Cassandra server via the `lagom:startKafka` maven task or `lagomCKafkaStart` sbt task, and stopping it with the `lagom:stopKafka` Maven task or `lagomKafkaStop` sbt task.
+The Kafka server is automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Cassandra server via the `lagom:startKafka` maven task or `lagomKafkaStart` sbt task, and stopping it with the `lagom:stopKafka` Maven task or `lagomKafkaStop` sbt task.
 
 ## Disable it
 
@@ -118,8 +118,8 @@ In the Maven root project pom:
     <artifactId>lagom-maven-plugin</artifactId>
     <version>${lagom.version}</version>
     <configuration>
-        <kafkaAddress>localhost:10000</cassandraPort>
-        <kafkaEnabled>false</cassandraEnabled>
+        <kafkaAddress>localhost:10000</kafkaAddress>
+        <kafkaEnabled>false</kafkaEnabled>
     </configuration>
 </plugin>
 ```
@@ -137,7 +137,7 @@ As you have probably noticed, the above configured Kafka server is actually runn
     <version>${lagom.version}</version>
     <configuration>
         <kafkaPort>10000</kafkaPort>
-        <kafkaEnabled>false</cassandraEnabled>
+        <kafkaEnabled>false</kafkaEnabled>
     </configuration>
 </plugin>
 ```
