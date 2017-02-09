@@ -118,8 +118,8 @@ In the Maven root project pom:
     <artifactId>lagom-maven-plugin</artifactId>
     <version>${lagom.version}</version>
     <configuration>
-        <kafkaAddress>localhost:10000</cassandraPort>
-        <kafkaEnabled>false</cassandraEnabled>
+        <kafkaAddress>localhost:10000</kafkaAddress>
+        <kafkaEnabled>false</kafkaEnabled>
     </configuration>
 </plugin>
 ```
@@ -137,7 +137,7 @@ As you have probably noticed, the above configured Kafka server is actually runn
     <version>${lagom.version}</version>
     <configuration>
         <kafkaPort>10000</kafkaPort>
-        <kafkaEnabled>false</cassandraEnabled>
+        <kafkaEnabled>false</kafkaEnabled>
     </configuration>
 </plugin>
 ```
