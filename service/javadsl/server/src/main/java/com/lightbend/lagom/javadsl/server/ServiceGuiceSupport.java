@@ -18,12 +18,26 @@ import java.util.Arrays;
 
 public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
 
-    default void bindServices(ServiceBinding<?> primaryServiceBinding, ServiceBinding<?>... secondaryBindings) {
+    // redefines bindServiceInfo from super interface.
+    default void bindServiceInfo(ServiceInfo serviceInfo) {
+        // copied from super interface since default methods in JAVA can't be invoked from extending interfaces.
         Binder binder = BinderAccessor.binder(this);
+        binder.bind(ServiceInfo.class).toInstance(serviceInfo);
 
-        ServiceBinding[] serviceBindings = new ServiceBinding[secondaryBindings.length+1];
-        serviceBindings[0]= primaryServiceBinding;
-        System.arraycopy(secondaryBindings, 0, serviceBindings, 1, secondaryBindings.length);
+        // Bind the metrics
+        ServiceBinding<MetricsService> metricsServiceBinding = serviceBinding(MetricsService.class, MetricsServiceImpl.class);
+        binder.bind(((ClassServiceBinding<?>) metricsServiceBinding).serviceImplementation).asEagerSingleton();
+        ServiceBinding<?>[] allServiceBindings = {metricsServiceBinding};
+
+        // Bind the resolved services
+        binder.bind(ResolvedServices.class).toProvider(new ResolvedServicesProvider(allServiceBindings));
+
+        // And bind the router
+        binder.bind(JavadslServicesRouter.class);
+    }
+
+    default void bindServices(ServiceBinding<?>... serviceBindings) {
+        Binder binder = BinderAccessor.binder(this);
 
         for (ServiceBinding binding : serviceBindings) {
             // First, bind the client implementation.  A service should be able to be a client to itself.
@@ -38,6 +52,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
             }
         }
 
+        ServiceBinding<?> primaryServiceBinding = serviceBindings[0];
         // Bind the service info for the first one passed in
         binder.bind(ServiceInfo.class).toProvider(
                 new ServiceInfoProvider(
@@ -71,7 +86,8 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
     }
 
     abstract class ServiceBinding<T> {
-        private ServiceBinding() {}
+        private ServiceBinding() {
+        }
 
         public abstract Class<T> serviceInterface();
     }

@@ -16,6 +16,7 @@ import scala.compat.java8.FutureConverters.toJava
 
 private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: ActorRef)(implicit materializer: Materializer) extends Topic[T] {
 
+  // TODO: use ServiceInfo's name as a default value.
   def subscribe = new SubscriberStub("default", topicBuffer)
 
   class SubscriberStub(groupId: String, topicBuffer: ActorRef)(implicit materializer: Materializer)
