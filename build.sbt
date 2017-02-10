@@ -414,13 +414,13 @@ lazy val `api-tools` = (project in file("api-tools"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % PlayVersion,
+      "com.typesafe.play" %% "play" % PlayVersion,
       scalaTest % Test
     )
   )
   .dependsOn(
     spi,
-    `server-javadsl` % "compile->test"
+    `server-javadsl` % Test
   )
 
 lazy val client = (project in file("service/core/client"))
