@@ -1,0 +1,23 @@
+@*
+* Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
+*@
+@(nextLinks: Seq[play.doc.TocTree])
+
+@if(nextLinks.nonEmpty) {
+    @if(nextLinks.tail.nonEmpty) {
+        <nav class="next-links">
+            <strong>Next:</strong>
+            <ul>
+            @for(link <- nextLinks) {
+                <li><a href="@{link.page}.html">@link.title</a></li>
+            }
+            </ul>
+        </nav>
+    } else {
+        @for(link <- nextLinks) {
+            <nav class="next-link">
+                <a href="@{link.page}.html"><strong>Next: </strong> @link.title</a>
+            </nav>
+        }
+    }
+}
