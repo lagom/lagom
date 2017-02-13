@@ -101,14 +101,27 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
     }
   }
 
-  override def refFor[C](entityClass: Class[_ <: PersistentEntity[C, _, _]], entityId: String): PersistentEntityRef[C] =
+  override def refFor[C](entityClass: Class[_ <: PersistentEntity[C, _, _]], entityId: String): PersistentEntityRef[C] = {
+    val entityFactory: () => PersistentEntity[C, _, _] =
+      () => injector.getInstance(entityClass)
+
+    // try to create one instance to fail fast (e.g. wrong constructor)
+    val entityName = try {
+      entityFactory().entityTypeName
+    } catch {
+      case NonFatal(e) => throw new IllegalArgumentException("Cannot create instance of " +
+        s"[${entityClass.getName}]. The class must extend PersistentEntity and have a " +
+        "constructor without parameters.", e)
+    }
+
     try
-      new PersistentEntityRef(entityId, sharding.shardRegion(entityTypeName(entityClass)), system, askTimeout)
+      new PersistentEntityRef(entityId, sharding.shardRegion(entityName), system, askTimeout)
     catch {
       case e: IllegalArgumentException =>
         // change the error message
         throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
     }
+  }
 
   private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)
 

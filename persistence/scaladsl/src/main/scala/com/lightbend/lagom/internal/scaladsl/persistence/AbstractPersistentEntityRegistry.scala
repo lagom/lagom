@@ -94,8 +94,10 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
 
   override def refFor[P <: PersistentEntity: ClassTag](entityId: String): PersistentEntityRef[P#Command] = {
     val entityClass = implicitly[ClassTag[P]].runtimeClass.asInstanceOf[Class[P]]
+    // TODO: use  Akka's ReflectiveDynamicAccess ??
+    val entityName = entityClass.newInstance().entityTypeName
     try
-      new PersistentEntityRef(entityId, sharding.shardRegion(entityTypeName(entityClass)), system, askTimeout)
+      new PersistentEntityRef(entityId, sharding.shardRegion(entityName), system, askTimeout)
     catch {
       case e: IllegalArgumentException =>
         // change the error message
