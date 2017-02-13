@@ -46,7 +46,7 @@ hello                   → Project root
 
 ## Run Hello World
 
-Lagom includes a development environment that let you start all your services by simply typing `runAll` in the sbt console. From a console change directories to the top-level directory, start sbt, and invoke `runAll`:
+Lagom includes a development environment that let you start all your services by simply typing `runAll` in the sbt console. From a console change directories to the top-level directory and start sbt, when the command prompt displays, invoke `runAll`:
 
 ```
 cd hello

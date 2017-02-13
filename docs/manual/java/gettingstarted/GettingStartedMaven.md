@@ -64,7 +64,7 @@ mvn lagom:runAll
 (Services started, press enter to stop and go back to the console...)
 ```
 
-You can verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser: 
+Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser: 
 
 ```
 http://localhost:9000/api/hello/World

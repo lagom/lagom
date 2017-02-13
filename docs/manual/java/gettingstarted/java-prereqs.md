@@ -35,6 +35,7 @@ If you have the correct JDK and the console cannot find `java` or `javac`, searc
 * [On systems running Linux](http://stackoverflow.com/questions/33860560/how-to-set-java-environment-variables-using-shell-script)
 * [On MacOS](http://osxdaily.com/2015/07/28/set-enviornment-variables-mac-os-x/)
 * [On Windows systems](http://stackoverflow.com/questions/1672281/environment-variables-for-java-installation)
+
 If you do not have the correct JDK, download it from the  [Oracle website](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
 
 

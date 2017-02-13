@@ -1,4 +1,4 @@
-# Create your first project
+# Introduction
 
 Lagom exposes two APIs, Java and Scala, and provides a framework and development environment as a set of libraries and build tool plugins. While the libraries can be consumed from any build tool, you can only take advantage of Lagom's high productivity development environment by using one of the supported build tools, Maven or sbt. You can use Maven with Java or sbt with  Java or Scala.
 

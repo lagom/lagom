@@ -1,3 +1,6 @@
-Installation:Installing Lagom
-GettingStarted:Getting started with Lagom
-IDEs:Import a Lagom build in your IDE
+Installation:Introduction and prerequisites
+GettingStarted:Creating and running Hello World
+understand-hello-scala:Understanding Hello World;next=scala-eclipse,sbt-intellij
+sbt-intellij:Integrating sbt builds with IntelliJ;next=lagom-examples
+scala-eclipse:Integrating sbt builds with Eclipse;next=lagom-examples
+lagom-examples:Learning more from Lagom examples

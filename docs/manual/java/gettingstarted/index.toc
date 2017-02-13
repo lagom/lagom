@@ -1,4 +1,4 @@
-intro-gs:Create your first project
+intro-gs:Introduction
 java-prereqs:Lagom Java prerequisites;next=GettingStartedMaven,GettingStartedSbt
 GettingStartedMaven:Creating and running Hello World with Maven;next=understand-hello
 GettingStartedSbt:Creating and running Hello World with sbt;next=understand-hello
