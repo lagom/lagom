@@ -7,7 +7,7 @@ Before integrating a Lagom sbt build with Eclipse, you must download and install
 If your Lagom build file is in directory `hello`, create a `project/eclipse.sbt` with the following content:
 
 ```
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "3.0.0")
+addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.1.0")
 ```
 
 Save the file. Now, open the terminal, and `cd` to the `hello` directory, and type `sbt`:
