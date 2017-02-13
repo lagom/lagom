@@ -10,7 +10,7 @@ Factoring or re-factoring functionality into right-sized services will be critic
 
 The template also gives you a quick way to verify that your project and build tool are set up correctly. Later, you can download more complex [Lagom examples](lagom-examples.md) that demonstrate Lagom functionality. 
  
-We also suggest that you start from the command line. After using the template to create an sbt build, you can integrate it into any Java IDE. The documentation provides tips to help you with Eclipse or IntelliJ, two popular IDEs. 
+We also suggest that you start from the command line. After using the template to create an sbt build, you can integrate it into any IDE. The documentation provides tips to help you with Eclipse or IntelliJ, two popular IDEs. 
  
 Before trying the template, make sure that your environment conforms to Lagom prerequisites:
 
