@@ -35,7 +35,8 @@ lazy val c = (project in file("c"))
 lazy val p = (project in file("p")).enablePlugins(PlayJava && LagomPlay)
   .settings(
     lagomServicePort := 9001,
-    routesGenerator := InjectedRoutesGenerator
+    routesGenerator := InjectedRoutesGenerator,
+    libraryDependencies ++= Seq(lagomJavadslClient, lagomJavadslApi)
   )
 
 InputKey[Unit]("verifyReloadsProjA") := {
