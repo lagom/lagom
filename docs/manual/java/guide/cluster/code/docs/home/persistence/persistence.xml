@@ -1,0 +1,25 @@
+<!--
+  ~ Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
+  -->
+<!-- #persistence-unit -->
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+             http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
+             version="2.1">
+
+    <persistence-unit name="default" transaction-type="RESOURCE_LOCAL">
+        <!-- Replace provider with the correct provider
+             class for your JPA implementation -->
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <non-jta-data-source>DefaultDS</non-jta-data-source>
+        <properties>
+            <!-- Configure the provider for the database you use -->
+            <property name="hibernate.dialect"
+                      value="org.hibernate.dialect.H2Dialect"/>
+            <!-- Add any other standard or provider-specific properties -->
+        </properties>
+    </persistence-unit>
+
+</persistence>
+<!-- #persistence-unit -->
