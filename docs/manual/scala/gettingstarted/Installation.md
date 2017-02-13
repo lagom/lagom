@@ -2,7 +2,7 @@
 
 Lagom exposes two APIs, Java and Scala, and provides a framework and development environment as a set of libraries and build tool plugins. While the libraries can be consumed from any build tool, you can only take advantage of Lagom's high productivity development environment by using one of the supported build tools, Maven or sbt. 
 
-To use the Scala API, you must use [sbt](http://www.scala-sbt.org). The sbt build tool provides dependency management, which downloads the Lagom libraries and plugins for you. When you create an sbt build, Lagom tool plugins will run your services and the associated Lagom infrastructure with a single command and hot reload when the tool detects code changes.
+We recommend using [sbt](http://www.scala-sbt.org) as the build tool for the Lagom Scala API. The sbt build tool provides dependency management, which downloads the Lagom libraries and plugins for you. When you create an sbt build, Lagom tool plugins will run your services and the associated Lagom infrastructure with a single command and hot reload when the tool detects code changes.
 
 Factoring or re-factoring functionality into right-sized services will be critical to the success of your project. And Lagom's opinionated framework will steer you in the right direction. But, it is a good idea to start small. For this reason, Lagom provides a Giter8 template that sets up a build structure for a Hello World application. The template contains two services to demonstrate intra-service communication, because, ([to quote](https://twitter.com/jboner/status/699536472442011648) Jonas Bonér):
 
