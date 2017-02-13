@@ -71,4 +71,4 @@ http://localhost:9000/api/hello/World
 ```
 The request returns the message `Hello, World!`.
 
-Congratulations! You've created and run your first Lagom system. Jump to [[Understanding Hello World|understand-hello]] to learn more.
+Congratulations! You've created and run your first Lagom system. 

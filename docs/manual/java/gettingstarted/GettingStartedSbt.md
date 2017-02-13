@@ -71,8 +71,7 @@ You can verify that the services are indeed up and running by invoking a service
 ```
 http://localhost:9000/api/hello/World
 ```
-Congratulations! You've created and run your first Lagom system. Jump to [[Understanding Hello World|understand-hello]] to learn more.
-
+Congratulations! You've created and run your first Lagom system. 
 
 
 

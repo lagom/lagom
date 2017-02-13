@@ -13,7 +13,8 @@ How to use persistence| Y | Y
 How to use the message broker API| N | Y
 How to communicate between services| Y | Y
 How streaming service calls work | Y | N
-How to connect a front-end Play app | Y | Y
+How to develop a Play app with Lagom | Y | Y
+How to consume Lagom services from a front-end Play app | N | Y
 
 
 

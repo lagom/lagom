@@ -1,6 +1,6 @@
 Home:Home
 welcome:Welcome to Lagom
-concepts:Lagom core concepts
 gettingstarted:Getting started with Lagom
+concepts:Lagom core concepts
 guide:Lagom reference guide
 appendix:Appendix
