@@ -122,10 +122,11 @@ public interface MockService extends Service {
                 throw new UnsupportedMediaType(protocol, new MessageProtocol().withContentType(contentType));
             }
             return string -> {
-                Scanner scanner = new Scanner(string.utf8String()).useDelimiter("\n");
-                int field2 = scanner.nextInt();
-                String field1 = scanner.next();
-                return new MockRequestEntity(field1, field2);
+                try (Scanner scanner = new Scanner(string.utf8String()).useDelimiter("\n")) {
+                    int field2 = scanner.nextInt();
+                    String field1 = scanner.next();
+                    return new MockRequestEntity(field1, field2);
+                }
             };
         }
 

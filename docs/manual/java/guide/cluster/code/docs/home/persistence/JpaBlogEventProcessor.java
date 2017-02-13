@@ -1,27 +1,30 @@
+/*
+ * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
+ */
 package docs.home.persistence;
 
 //#imports
+import com.google.common.collect.ImmutableMap;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor;
-import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcReadSide;
+import com.lightbend.lagom.javadsl.persistence.jpa.JpaReadSide;
 import org.pcollections.PSequence;
 
 import javax.inject.Inject;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import javax.persistence.EntityManager;
+import javax.persistence.Persistence;
 //#imports
 
-public interface RDBMSBlogEventProcessor {
+public interface JpaBlogEventProcessor {
 
     interface Initial {
         //#initial
         public class BlogEventProcessor extends ReadSideProcessor<BlogEvent> {
 
-            private final JdbcReadSide readSide;
+            private final JpaReadSide readSide;
 
             @Inject
-            public BlogEventProcessor(JdbcReadSide readSide) {
+            public BlogEventProcessor(JpaReadSide readSide) {
                 this.readSide = readSide;
             }
 
@@ -42,10 +45,10 @@ public interface RDBMSBlogEventProcessor {
 
     public class BlogEventProcessor extends ReadSideProcessor<BlogEvent> {
 
-        private final JdbcReadSide readSide;
+        private final JpaReadSide readSide;
 
         @Inject
-        public BlogEventProcessor(JdbcReadSide readSide) {
+        public BlogEventProcessor(JpaReadSide readSide) {
             this.readSide = readSide;
         }
 
@@ -56,34 +59,32 @@ public interface RDBMSBlogEventProcessor {
         }
         //#tag
 
-        //#create-table
-        private void createTable(Connection connection) throws SQLException {
-            try (PreparedStatement ps = connection.prepareStatement("CREATE TABLE IF NOT EXISTS blogsummary ( " +
-                    "id VARCHAR(64), title VARCHAR(256), PRIMARY KEY (id))")) {
-              ps.execute();
-            }
+        //#create-schema
+        private void createSchema(@SuppressWarnings("unused") EntityManager ignored) {
+            Persistence.generateSchema("default",
+                    ImmutableMap.of("hibernate.hbm2ddl.auto", "update"));
         }
-        //#create-table
+        //#create-schema
 
         //#post-added
-        private void processPostAdded(Connection connection, BlogEvent.PostAdded event) throws SQLException {
-            PreparedStatement statement = connection.prepareStatement(
-                    "INSERT INTO blogsummary (id, title) VALUES (?, ?)");
-            statement.setString(1, event.getPostId());
-            statement.setString(2, event.getContent().getTitle());
-            statement.execute();
+        private void processPostAdded(EntityManager entityManager,
+                                      BlogEvent.PostAdded event) {
+            BlogSummaryJpaEntity summary = new BlogSummaryJpaEntity();
+            summary.setId(event.getPostId());
+            summary.setTitle(event.getContent().getTitle());
+            entityManager.persist(summary);
         }
         //#post-added
 
         @Override
         public ReadSideHandler<BlogEvent> buildHandler() {
             //#create-builder
-            JdbcReadSide.ReadSideHandlerBuilder<BlogEvent> builder =
+            JpaReadSide.ReadSideHandlerBuilder<BlogEvent> builder =
                     readSide.builder("blogsummaryoffset");
             //#create-builder
 
             //#register-global-prepare
-            builder.setGlobalPrepare(this::createTable);
+            builder.setGlobalPrepare(this::createSchema);
             //#register-global-prepare
 
             //#set-event-handler

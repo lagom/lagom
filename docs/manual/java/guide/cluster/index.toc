@@ -4,6 +4,8 @@ PersistentEntityRDBMS:Relational Database Persistent Entities
 ReadSide:Persistent Read-Side
 ReadSideCassandra:Cassandra Read-Side Support
 ReadSideRDBMS:Relational Database Read-Side Support
+ReadSideJDBC:JDBC Read-Side Support
+ReadSideJPA:JPA Read-Side Support
 PubSub:Publish-Subscribe
 Serialization:Serialization
 Cluster:Cluster

@@ -10,6 +10,10 @@ libraryDependencies += lagomJavadslPersistenceCassandra
 libraryDependencies += lagomJavadslPersistenceJdbc
 //#jdbc-dependency
 
+//#jpa-dependency
+libraryDependencies += lagomJavadslPersistenceJpa
+//#jpa-dependency
+
 //#pubsub-dependency
 libraryDependencies += lagomJavadslPubSub
 //#pubsub-dependency

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 intro-gs:Create your first project
 java-prereqs:Lagom Java prerequisites
 GettingStartedMaven:Creating and running Hello World with Maven
@@ -7,3 +8,10 @@ maven-IDEs:Integrating Maven projects with an IDE
 sbt-eclipse:Using sbt with Eclipse
 sbt-intellij:Using sbt with IntelliJ
 lagom-examples:Lagom examples
+=======
+Installation:Installing Lagom
+GettingStarted:Getting started with Lagom;next=GettingStartedMaven,GettingStartedSbt
+GettingStartedMaven:Getting started with Lagom in Maven;next=IDEs
+GettingStartedSbt:Getting started with Lagom in Sbt
+IDEs:Import a Lagom build in your IDE
+>>>>>>> 54ab27dd4b2cb9e60e338f2b0faa29c7dcdf73f9

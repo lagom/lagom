@@ -196,7 +196,7 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
           try {
             e.exceptionMessage.detail should include("application/json")
           } catch {
-            case e => println("SKIPPED - Requires https://github.com/playframework/playframework/issues/5322")
+            case e: Throwable => println("SKIPPED - Requires https://github.com/playframework/playframework/issues/5322")
           }
       }
     }

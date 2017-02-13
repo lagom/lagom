@@ -171,7 +171,7 @@ One good reason to disable the embedded Cassandra server is if you need your ser
 
 ## Connecting to a locally running Cassandra instance
 
-It's possible to connect to a locally running Cassandra instance in place of the embedded one. All you need to do is adding the following in your build.
+It's possible to connect to an [[externally run|ServiceLocator#communicating-with-external-services]] Cassandra instance in place of the embedded one. All you need to do is adding the following in your build.
 
 In the Maven root project pom:
 
@@ -181,7 +181,9 @@ In the Maven root project pom:
     <artifactId>lagom-maven-plugin</artifactId>
     <version>${lagom.version}</version>
     <configuration>
-        <cassandraPort>9042</cassandraPort>
+        <unmanagedServices>
+            <cas_native>http://localhost:9042</cas_native>
+        </unmanagedServices>
         <cassandraEnabled>false</cassandraEnabled>
     </configuration>
 </plugin>

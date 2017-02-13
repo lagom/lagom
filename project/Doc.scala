@@ -102,6 +102,7 @@ object UnidocRoot extends AutoPlugin {
         "com.lightbend.lagom.javadsl.persistence.cassandra.testkit",
         "com.lightbend.lagom.javadsl.persistence.jdbc",
         "com.lightbend.lagom.javadsl.persistence.jdbc.testkit",
+        "com.lightbend.lagom.javadsl.persistence.jpa",
         "com.lightbend.lagom.javadsl.persistence.testkit"
       ),
       "-group", "Cluster", packageList(

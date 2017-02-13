@@ -27,7 +27,8 @@ lazy val docs = project
       "com.typesafe.play" %% "play-logback" % PlayVersion % Test,
       "org.apache.logging.log4j" % "log4j-api" % "2.7" % "test",
       "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided",
-      "org.projectlombok" % "lombok" % "1.16.10"
+      "org.projectlombok" % "lombok" % "1.16.10",
+      "org.hibernate" % "hibernate-core" % "5.2.5.Final"
     ),
     javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
     testOptions in Test += Tests.Argument("-oDF"),
@@ -59,10 +60,24 @@ lazy val docs = project
     markdownStageIncludeWebJars := false,
     markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/"))
 
-  ).dependsOn(serviceIntegrationTestsJavadsl, persistenceJdbcJavadsl,
-      serviceIntegrationTestsScaladsl, persistenceCassandraScaladsl, persistenceJdbcScaladsl, testkitJavadsl,
-      testkitScaladsl, brokerScaladsl, playJson, kafkaBroker, pubsubScaladsl, immutables % "test->compile", 
-      theme % "run-markdown", devmodeScaladsl)
+  )
+  .dependsOn(
+    serviceIntegrationTestsJavadsl,
+    persistenceJdbcJavadsl,
+    persistenceJpaJavadsl,
+    serviceIntegrationTestsScaladsl,
+    persistenceCassandraScaladsl,
+    persistenceJdbcScaladsl,
+    testkitJavadsl,
+    testkitScaladsl,
+    brokerScaladsl,
+    playJson,
+    kafkaBroker,
+    pubsubScaladsl,
+    immutables % "test->compile",
+    theme % "run-markdown",
+    devmodeScaladsl
+  )
 
 lazy val parentDir = Path.fileProperty("user.dir").getParentFile
 
@@ -71,6 +86,7 @@ lazy val serviceIntegrationTestsJavadsl = ProjectRef(parentDir, "integration-tes
 lazy val serviceIntegrationTestsScaladsl = ProjectRef(parentDir, "integration-tests-scaladsl")
 lazy val persistenceJdbcJavadsl = ProjectRef(parentDir, "persistence-jdbc-javadsl")
 lazy val persistenceJdbcScaladsl = ProjectRef(parentDir, "persistence-jdbc-scaladsl")
+lazy val persistenceJpaJavadsl = ProjectRef(parentDir, "persistence-jpa-javadsl")
 lazy val persistenceCassandraScaladsl = ProjectRef(parentDir, "persistence-cassandra-scaladsl")
 lazy val testkitJavadsl = ProjectRef(parentDir, "testkit-javadsl")
 lazy val testkitScaladsl = ProjectRef(parentDir, "testkit-scaladsl")

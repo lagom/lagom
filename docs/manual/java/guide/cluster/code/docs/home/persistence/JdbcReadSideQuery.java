@@ -1,7 +1,6 @@
 package docs.home.persistence;
 
 //#imports
-
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcSession;
@@ -13,7 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 //#imports
 
-public interface RDBMSReadSideQuery {
+public interface JdbcReadSideQuery {
 
     interface BlogService {
         public ServiceCall<NotUsed, PSequence<PostSummary>> getPostSummaries();
