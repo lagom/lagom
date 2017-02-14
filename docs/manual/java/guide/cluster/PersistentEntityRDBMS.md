@@ -56,7 +56,7 @@ By default, Lagom will automatically create the tables it needs for you if they 
 lagom.persistence.jdbc.create-tables.auto = false
 ```
 
-The database schemas needed for the tables can be found [here](https://github.com/dnvriend/akka-persistence-jdbc/tree/v2.6.8/src/main/resources/schema).
+The database schemas needed for the tables can be found [here](https://github.com/dnvriend/akka-persistence-jdbc/tree/v2.6.8/src/test/resources/schema).
 
 The full configuration options that Lagom provides for managing the creation of tables is here:
 
