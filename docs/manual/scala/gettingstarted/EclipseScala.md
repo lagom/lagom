@@ -1,6 +1,6 @@
 # Integrating sbt builds with Eclipse
 
-If you worked through the command line example for [[sbt|GettingStartedSbt]], you have an sbt build. This page describes how to integrate with Eclipse.
+If you worked through the command line example for [[sbt|GettingStarted]], you have an sbt build. This page describes how to integrate with Eclipse.
 
 Before integrating a Lagom sbt build with Eclipse, you must download and install [sbt-eclipse](https://github.com/typesafehub/sbteclipse). This plugin provides the support to generate Eclipse project files, which are required to import Lagom builds into Eclipse.
 

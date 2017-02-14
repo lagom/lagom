@@ -21,13 +21,13 @@ Factoring or re-factoring functionality into right-sized services will be critic
  
 To simplify your development experience, Lagom provides a Maven archetype and an sbt Giter8 template. Both create a build structure with a simple Hello World service and all of the components necessary to run it. The Lagom template illustrates intra-service communication, providing an example to learn from and a quick way to verify that your project and build tool are set up correctly. 
 
-Later, you can download more complex [Lagom examples](lagom-examples.md) that demonstrate Lagom functionality. Both Maven and sbt integrate with IDEs, but we suggest that you start from the command line with your choice of tool. Once you have a Maven project group or an sbt build, you can integrate these structures into any Java IDE. We have some tips to help you with Eclipse or IntelliJ, two popular IDEs.
+Later, you can download more complex [Lagom examples](LagomExamples.md) that demonstrate Lagom functionality. Both Maven and sbt integrate with IDEs, but we suggest that you start from the command line with your choice of tool. Once you have a Maven project group or an sbt build, you can integrate these structures into any Java IDE. We have some tips to help you with Eclipse or IntelliJ, two popular IDEs.
 
 >**Note:** Shell terminology and appearance differs between Windows, Linux, and Mac operating systems. Our Getting Started instructions for a command line assume familiarity with a shell and that your account has the appropriate permissions. For example, if you are using a DOS shell, you'll want to run it as administrator. 
 
 To set up your environment and use a template to create your first project from the command line, follow the appropriate steps:
 
-* [[Verify Java prerequisites|java-prereqs]]
+* [[Verify Java prerequisites|JavaPrereqs]]
 
 * [[Create and run Hello World with  Maven|GettingStartedMaven]]
 
