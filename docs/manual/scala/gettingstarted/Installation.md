@@ -8,7 +8,7 @@ Factoring or re-factoring functionality into right-sized services will be critic
 
 > One microservice is no microservice - they come in systems.
 
-The template also gives you a quick way to verify that your project and build tool are set up correctly. Later, you can download more complex [Lagom examples](LagomExamples.md) that demonstrate Lagom functionality. 
+The template also gives you a quick way to verify that your project and build tool are set up correctly. Later, you can download more complex [[Lagom examples|LagomExamples]] that demonstrate Lagom functionality. 
  
 We also suggest that you start from the command line. After using the template to create an sbt build, you can integrate it into any IDE. The documentation provides tips to help you with Eclipse or IntelliJ, two popular IDEs. 
  
@@ -24,7 +24,7 @@ For more details on verifying or installing prerequisites see the following sect
 * [Installing sbt](#sbt)
 * [Proxy setup](#proxy-setup)
 
-When your environment is ready, follow the instructions for [Creating and running Hello World](GettingStarted).
+When your environment is ready, follow the instructions for [Creating and running Hello World|GettingStarted].
 
 ## JDK
 
