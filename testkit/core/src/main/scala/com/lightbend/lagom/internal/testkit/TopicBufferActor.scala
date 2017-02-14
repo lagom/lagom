@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.internal.testkit
 
@@ -37,4 +37,3 @@ private[lagom] class TopicBufferActor extends Actor with ActorLogging {
     }
   }
 }
-

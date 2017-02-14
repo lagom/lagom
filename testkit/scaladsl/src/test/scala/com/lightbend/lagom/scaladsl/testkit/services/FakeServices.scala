@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.scaladsl.testkit.services
 
@@ -97,4 +97,3 @@ class CharlieServiceImpl(alpha: AlphaService) extends CharlieService {
     Future.successful(receivedMessages.iterator().asInstanceOf[Seq[ReceivedMessage]])
   }
 }
-
