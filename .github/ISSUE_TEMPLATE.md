@@ -2,7 +2,7 @@
 
 This is an issue tracker, used to manage and track the development of Lagom. It is not a support system and so it is not a place to ask questions or get help. If you're not sure if you have found a bug, the best place to start is with either the [users mailing list](https://groups.google.com/forum/#!forum/lagom-framework) or [Stack Overflow](http://stackoverflow.com/questions/ask?tags=lagom). If you have a feature request, the [contributors channel](https://gitter.im/lagom/contributors) is a better forum than an issue tracker to discuss it.
 
-### Lagom Version (2.5.x / etc)
+### Lagom Version (1.2.x / 1.3.x / etc)
 
 
 
@@ -14,7 +14,7 @@ This is an issue tracker, used to manage and track the development of Lagom. It 
 
 Use `uname -a` if on Linux.
 
-### JDK (Oracle 1.8.0_72, OpenJDK 1.8.x, Azul Zing)
+### JDK (Oracle 1.8.0_112, OpenJDK 1.8.x, Azul Zing)
 
 Paste the output from `java -version` at the command line.
 
