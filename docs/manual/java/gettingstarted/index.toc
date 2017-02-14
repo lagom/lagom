@@ -1,11 +1,11 @@
-intro-gs:Introduction
-java-prereqs:Lagom Java prerequisites;next=GettingStartedMaven,GettingStartedSbt
-GettingStartedMaven:Creating and running Hello World with Maven;next=understand-hello
-GettingStartedSbt:Creating and running Hello World with sbt;next=understand-hello
-understand-hello:Understanding Hello World;next=maven-IDEs,sbt-eclipse,sbt-intellij
-maven-IDEs:Integrating Maven projects with an IDE
-sbt-eclipse:Using sbt with Eclipse
-sbt-intellij:Using sbt with IntelliJ
-lagom-examples:Lagom examples
+IntroGetStarted:Introduction
+JavaPrereqs:Lagom Java prerequisites;next=GettingStartedMaven,GettingStartedSbt
+GettingStartedMaven:Creating and running Hello World with Maven;next=UnderstandHello
+GettingStartedSbt:Creating and running Hello World with sbt;next=UnderstandHello
+UnderstandHello:Understanding Hello World;next=MavenIDEs,EclipseSbt,IntellijSbt
+MavenIDEs:Integrating Maven projects with an IDE;next=LagomExamples
+EclipseSbt:Integrating sbt with Eclipse;next=LagomExamples
+IntellijSbt:Integrating sbt with IntelliJ;next=LagomExamples
+LagomExamples:Lagom examples
 
 
