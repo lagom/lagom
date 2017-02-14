@@ -69,7 +69,10 @@ The command can be validated before persisting state changes. Use `ctx.invalidCo
 
 @[validate-command](code/docs/home/persistence/Post2.java)
 
-A `PersistentEntity` may also process commands that do not change application state, such as query commands. Such command handlers are registered using `setReadOnlyCommandHandler` of the `BehaviorBuilder`. Replies are sent with the `reply` method of the context that is passed to the command handler function.
+A `PersistentEntity` may also process commands that do not change application state, such as query commands  or commands that are not valid in the entity's current state (such as a bid placed after the auction closed). Such command handlers are registered using `setReadOnlyCommandHandler` of the `BehaviorBuilder`. Replies are sent with the `reply` method of the context that is passed to the command handler function.
+
+The `setReadOnlyCommandHandler` is simply a convenience function that avoids you having to return no events followed by a side effect.
+
 
 @[read-only-command-handler](code/docs/home/persistence/Post3.java)
 
