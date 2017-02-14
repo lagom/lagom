@@ -1,9 +1,0 @@
-ConfiguringDev:Configuring the development environment
-BuildConcepts:Lagom build philosophy
-build:Defining a Lagom build for Me
-devmode:Running Lagom in development
-LagomBuild:Defining a Lagom build
-MultipleBuilds:Splitting a system into multiple builds
-IDEs:Import a Lagom build in your IDE
-ImmutablesInIDEs:Set up Immutables in your IDE
-JVMMemoryOnDev:Increase Memory in sbt and Maven
