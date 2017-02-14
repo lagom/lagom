@@ -16,7 +16,7 @@ Note that:
  
 * The service interface inherits from [`Service`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html) and provides an implementation of [`Service.descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#descriptor--) method.
 
-* The implementation of `Service.descriptor` returns a [`Descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html). The `HelloService` descriptor defines the service name and the REST endpoints offered by a service. For each endpoint, declare an abstract method in the service interface, as illustrated in the `HelloService.hello` method. For more information, see [[Service Descriptors|ServiceDescriptors]].
+* The implementation of `Service.descriptor` returns a [`Descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html). The `HelloService` descriptor defines the service name and the REST endpoints it offers. For each endpoint, declare an abstract method in the service interface, as illustrated in the `HelloService.hello` method. For more information, see [[Service Descriptors|ServiceDescriptors]].
 
 ## Service implementation
 
