@@ -1,4 +1,4 @@
-<!--- Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com> -->
+<!--- Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com> -->
 # Lagom contributor guidelines
 
 ## Prerequisites
@@ -31,7 +31,7 @@ Before making a contribution, it is important to make sure that the change you w
         * Features are forever, always think about whether a new feature really belongs to the core framework or if it should be implemented as a module
         * Code must conform to standard style guidelines and pass all tests
     6. New files must:
-        * Have a Lightbend copyright header in the style of ``Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>``. Running `sbt compile` will automatically add missing copyright headers.
+        * Have a Lightbend copyright header in the style of ``Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>``. Running `sbt compile` will automatically add missing copyright headers.
         * Not use ``@author`` tags since it does not encourage [Collective Code Ownership](http://www.extremeprogramming.org/rules/collective.html).
 3. Ensure that your commits are squashed.  See the [working with git guide](WorkingWithGit.md) for more information.
 4. Submit a pull request.
