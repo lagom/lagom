@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.javadsl.testkit
 
@@ -53,4 +53,3 @@ final class ProducerStub[T] private[lagom] (topicName: String, actorSystem: Acto
   def send(message: T): Unit = bufferActor.tell(message, ActorRef.noSender)
 
 }
-
