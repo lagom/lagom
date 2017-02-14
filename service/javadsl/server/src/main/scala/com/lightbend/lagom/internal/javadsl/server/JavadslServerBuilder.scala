@@ -83,7 +83,7 @@ class JavadslServerBuilder @Inject() (environment: Environment, httpConfiguratio
       val locatableServices = descriptors
         .filter(_.locatableService())
         .map { descriptor =>
-          descriptor.name() -> TreePVector.from(descriptor.acls().stream().collect(Collectors.toList()))
+          descriptor.name() -> descriptor.acls()
         }.toMap.asJava
       new ServiceInfo(descriptors.head.name, HashTreePMap.from(locatableServices))
     } else {

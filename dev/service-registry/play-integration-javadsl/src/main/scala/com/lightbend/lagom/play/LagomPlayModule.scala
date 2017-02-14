@@ -37,7 +37,7 @@ class LagomPlayModule extends Module {
     val triedAcls: Try[JList[_ <: Config]] = Try(config.underlying.getConfigList("lagom.play.acls"))
 
     val warning = "Service setup via 'application.conf' is deprecated. Remove 'lagom.play.service-name' and/or " +
-      "'lagom.play.acls' and use 'bindServiceInfo' on your Play's Module class."
+      "'lagom.play.acls' and use 'bindServiceInfo' on your Guice's Module class."
 
     val maybeServiceInfoBinding = (triedServiceName, triedAcls) match {
       case (Success(serviceName), Success(aclList)) => {

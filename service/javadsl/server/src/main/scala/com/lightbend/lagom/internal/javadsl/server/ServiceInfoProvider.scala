@@ -3,12 +3,9 @@
  */
 package com.lightbend.lagom.internal.javadsl.server
 
-import java.util.Optional
 import javax.inject.{ Inject, Provider, Singleton }
 
 import com.lightbend.lagom.javadsl.api.ServiceInfo
-
-import scala.collection.mutable
 
 /**
  * Provides the service info for a service

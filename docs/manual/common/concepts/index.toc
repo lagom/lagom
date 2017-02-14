@@ -5,4 +5,3 @@ Technologies:Lagom component technologies
 BuildConcepts:Lagom build philosophy
 Immutable:Immutable Objects
 ES_CQRS:Event Sourcing and CQRS
-ServiceDiscovery: Service Discovery

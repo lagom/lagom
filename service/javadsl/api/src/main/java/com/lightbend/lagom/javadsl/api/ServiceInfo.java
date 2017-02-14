@@ -20,18 +20,21 @@ import java.util.*;
  * a named group of {@link ServiceAcl}s.
  * </p>
  * <pre>
- *     Map&lt;String, List&lt;ServiceAcl&gt;&gt; locatableServices = new HashMap&lt;&gt;();
- *     List&lt;ServiceAcl&gt; helloAcls = Arrays.asList(
- *        new ServiceAcl(Optional.of(Method.GET), Optional.of("?/hello/.*")),
- *        new ServiceAcl(Optional.of(Method.POST), Optional.of("/login"))
- *        );
- *     List&lt;ServiceAcl&gt; goodbyeAcls = Arrays.asList(
- *       new ServiceAcl(Optional.of(Method.POST), Optional.of("/logout/.*")));
+ * {@code
+ *         PSequence<ServiceAcl> helloAcls = TreePVector.from(Arrays.asList(
+ *              ServiceAcl.methodAndPath(Method.GET, "?/hello/.*"),
+ *              ServiceAcl.methodAndPath(Method.POST, "/login"))
+ *         );
+ *         PSequence<ServiceAcl> goodbyeAcls = TreePVector.singleton(
+ *              ServiceAcl.methodAndPath(Method.POST, "/logout/.*")
+ *         );
  *
- *     locatableServices.put("hello-service", helloAcls);
- *     locatableServices.put("goodbye-service", goodbyeAcls);
- *
- *     new ServiceInfo("GreetingService",locatableServices);
+ *         PMap<String, PSequence<ServiceAcl>> locatableServices =
+ *              HashTreePMap.<String, PSequence<ServiceAcl>>empty()
+ *                  .plus("hello-service", helloAcls)
+ *                  .plus("goodbye-service", goodbyeAcls);
+ *         new ServiceInfo("GreetingService", locatableServices);
+ * }
  * </pre>
  */
 public final class ServiceInfo {
@@ -39,7 +42,6 @@ public final class ServiceInfo {
     private final String serviceName;
 
     private final PMap<String, PSequence<ServiceAcl>> locatableServices;
-
 
     /**
      * @deprecated use {@link ServiceInfo#ServiceInfo(String, PMap)} instead.
@@ -78,7 +80,6 @@ public final class ServiceInfo {
     public String serviceName() {
         return serviceName;
     }
-
 
     public PMap<String, PSequence<ServiceAcl>> getLocatableServices() {
         return locatableServices;

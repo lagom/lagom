@@ -1,0 +1,16 @@
+# Structure of this test:
+# =======================
+
+# Here we test that the `lagomRunReloadAll` task on a play app that uses deprecated serviceInfo config.
+
+# `runAll` tests
+# --------------
+> runAll
+> assertRequest 9001 /p Hello Play!
+> assertRequest 9001 /p/assets/foo.js var foo
+
+# Change an asset
+$ copy-file changes/p/foo.js.1 p/app/assets/foo.js
+> assertRequest 9001 /p/assets/foo.js var bar
+
+> stop
