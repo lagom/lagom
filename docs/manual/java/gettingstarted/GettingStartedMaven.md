@@ -43,7 +43,7 @@ my-first-system
 Note that the `hello` and `stream` services each have: 
 
 * An `api` project that contains a service interface through which consumers can interact with the service. 
-* An `imp` project that contains the service implementation.
+* An `impl` project that contains the service implementation.
 
 ## Run Hello World
 
