@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 Typesafe Inc. <https://www.typesafe.com>
+ * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 package controllers
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.internal.javadsl.testkit
 
@@ -26,4 +26,3 @@ private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: Actor
     override def atLeastOnce(flow: Flow[T, Done, _]): CompletionStage[Done] = toJava(super.leastOnce(flow.asScala))
   }
 }
-

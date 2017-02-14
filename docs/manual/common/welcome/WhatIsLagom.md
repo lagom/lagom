@@ -1,4 +1,4 @@
-<!--- Copyright (C) 2009-2017 Lightbend Inc. <https://www.lightbend.com> -->
+<!--- Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com> -->
 # What is Lagom?
 
 Lagom is a framework for creating microservice-based systems. It offers four main features:
