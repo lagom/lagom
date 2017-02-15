@@ -20,10 +20,13 @@ import org.pcollections.PMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.compat.java8.FutureConverters;
+import slick.driver.JdbcProfile;
+import slick.driver.PostgresDriver;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
@@ -168,15 +171,61 @@ public class JpaReadSideImpl implements JpaReadSide {
                     asJavaIterable(offsetDao.updateOffsetQuery(OffsetAdapter.dslOffsetToOffset(offset)).statements());
 
             for (String statement : sqlStatements) {
+                log.debug("Updating offset to {} in JpaReadsideHandler {} with statement: {}",
+                        offset, readSideId, statement);
+                Query updateOffsetQuery = entityManager.createNativeQuery(statement);
                 // NOTE: The order of parameters here depends on the order chosen
-                // by Slick, based on the table definition in JdbcOffsetStore.
-                entityManager.createNativeQuery(statement)
-                        .setParameter(1, readSideId)
-                        .setParameter(2, tag.tag())
-                        .setParameter(3, sequenceOffset)
-                        .setParameter(4, timeUuidOffset)
-                        .executeUpdate();
+                // by Slick, based on the table definition in JdbcOffsetStore
+                // and the specific database profile in use.
+                JdbcProfile profile = getSlickDatabaseProfile();
+                if (profile instanceof PostgresDriver) {
+                    postgresqlBindUpdateOffsetQuery(updateOffsetQuery, sequenceOffset, timeUuidOffset);
+                } else {
+                    defaultBindUpdateOffsetQuery(updateOffsetQuery, sequenceOffset, timeUuidOffset);
+                }
+                updateOffsetQuery.executeUpdate();
             }
+        }
+
+        private JdbcProfile getSlickDatabaseProfile() {
+            return offsetStore.slick().profile();
+        }
+
+        private Query postgresqlBindUpdateOffsetQuery(Query query, Long sequenceOffset, String timeUuidOffset) {
+            // Slick emulates insert or update on PostgreSQL using this compound statement:
+            // begin;
+            //   update "read_side_offsets"
+            //     set "sequence_offset"=?,"time_uuid_offset"=?
+            //     where "read_side_id"=?
+            //     and "tag"=?;
+            //   insert into "read_side_offsets" ("read_side_id","tag","sequence_offset","time_uuid_offset")
+            //     select ?,?,?,?
+            //     where not exists (
+            //       select 1 from "read_side_offsets" where "read_side_id"=? and "tag"=?
+            //     );
+            // end
+            return query
+                    .setParameter(1, sequenceOffset)
+                    .setParameter(2, timeUuidOffset)
+                    .setParameter(3, readSideId)
+                    .setParameter(4, tag.tag())
+                    .setParameter(5, readSideId)
+                    .setParameter(6, tag.tag())
+                    .setParameter(7, sequenceOffset)
+                    .setParameter(8, timeUuidOffset)
+                    .setParameter(9, readSideId)
+                    .setParameter(10, tag.tag());
+        }
+
+        private Query defaultBindUpdateOffsetQuery(Query query, Long sequenceOffset, String timeUuidOffset) {
+            // H2:
+            // merge into "read_side_offsets" ("read_side_id","tag","sequence_offset","time_uuid_offset")
+            //   values (?,?,?,?)
+            return query
+                    .setParameter(1, readSideId)
+                    .setParameter(2, tag.tag())
+                    .setParameter(3, sequenceOffset)
+                    .setParameter(4, timeUuidOffset);
         }
     }
 }
