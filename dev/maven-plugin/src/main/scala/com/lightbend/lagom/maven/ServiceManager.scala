@@ -118,16 +118,14 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
             new File(project.getBuild.getOutputDirectory)
           }
 
-          val devSettings = LagomConfig.actorSystemConfig(project.getArtifactId) ++
-            serviceLocatorUrl.map(LagomConfig.ServiceLocatorUrl -> _).toMap ++
-            cassandraPort.fold(Map.empty[String, String]) { port =>
-              // FIXME: The cassandra configuration should be always injected
-              // (even when the cassandraEnabled flag is false, as otherwise the 
-              // Lagom services won't properly work with a locally running Cassandra
-              // instance - see
-              // http://www.lagomframework.com/documentation/1.0.x/java/CassandraServer.html#Connecting-to-a-locally-running-Cassandra-instance).
-              LagomConfig.cassandraPort(port) ++ LagomConfig.cassandraKeySpace(cassandraKeyspace)
-            } ++ Map(LagomConfig.KafkaAddress -> kafkaAddress)
+          val devSettings =
+            LagomConfig.actorSystemConfig(project.getArtifactId) ++
+              serviceLocatorUrl.map(LagomConfig.ServiceLocatorUrl -> _).toMap ++
+              cassandraPort.fold(Map.empty[String, String]) { port =>
+                LagomConfig.cassandraPort(port)
+              } ++
+              LagomConfig.cassandraKeySpace(cassandraKeyspace) ++
+              Map(LagomConfig.KafkaAddress -> kafkaAddress)
 
           val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(projectDependencies.external)
 
@@ -206,14 +204,11 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
 
         val devSettings = LagomConfig.actorSystemConfig(dependency.getArtifact.getArtifactId) ++
           serviceLocatorUrl.map(LagomConfig.ServiceLocatorUrl -> _).toMap ++
-          // FIXME: The cassandra configuration should be always injected
-          // (even when the cassandraEnabled flag is false, as otherwise the 
-          // Lagom services won't properly work with a locally running Cassandra
-          // instance - see
-          // http://www.lagomframework.com/documentation/1.0.x/java/CassandraServer.html#Connecting-to-a-locally-running-Cassandra-instance).
           cassandraPort.fold(Map.empty[String, String]) { port =>
-            LagomConfig.cassandraPort(port) ++ LagomConfig.cassandraKeySpace(cassandraKeyspace)
-          } ++ Map(LagomConfig.KafkaAddress -> kafkaAddress)
+            LagomConfig.cassandraPort(port)
+          } ++
+          LagomConfig.cassandraKeySpace(cassandraKeyspace) ++
+          Map(LagomConfig.KafkaAddress -> kafkaAddress)
 
         val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(dependencies)
 
@@ -258,7 +253,8 @@ object ServiceManager {
   val DefaultScalaBinaryVersion = "NONE"
 
   // These regexps are pulled from sbt's CrossVersionUtil
-  private val ScalaReleaseVersion = """(\d+\.\d+)\.\d+(?:-\d+)?""".r
+  private val ScalaReleaseVersion =
+    """(\d+\.\d+)\.\d+(?:-\d+)?""".r
   private val ScalaBinCompatVersion = """(\d+\.\d+)\.\d+-bin(?:-.*)?""".r
   private val ScalaNonReleaseVersion = """(\d+\.\d+)\.(\d+)-\w+""".r
 
