@@ -23,7 +23,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.util.{ Failure, Success }
 
-class SlickProvider(
+private[lagom] class SlickProvider(
   system: ActorSystem,
   dbApi:  DBApi /* Ensures database is initialised before we start anything that needs it */ )(implicit ec: ExecutionContext) {
 
@@ -34,7 +34,8 @@ class SlickProvider(
   private val createTables = jdbcConfig.getConfig("create-tables")
 
   private val slickConfig = new SlickConfiguration(readSideConfig)
-  private val autoCreateTables = createTables.getBoolean("auto")
+
+  val autoCreateTables: Boolean = createTables.getBoolean("auto")
 
   val db = SlickDatabase.forConfig(readSideConfig, slickConfig)
   val profile = SlickDriver.forDriverName(readSideConfig)
