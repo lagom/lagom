@@ -83,7 +83,7 @@ private[lagom] class SlickOffsetStore(system: ActorSystem, val slick: SlickProvi
     implicit val timeout = Timeout(config.globalPrepareTimeout)
     ClusterStartupTask(
       system,
-      "cassandraOffsetStorePrepare",
+      "slickOffsetStorePrepare",
       createTables,
       config.globalPrepareTimeout,
       config.role,
