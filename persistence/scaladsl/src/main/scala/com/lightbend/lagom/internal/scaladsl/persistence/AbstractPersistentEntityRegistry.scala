@@ -65,6 +65,10 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
   }
 
   private val registeredTypeNames = new ConcurrentHashMap[String, Class[_]]()
+  private val reverseRegister: (Class[_]) => Option[String] = { entityClass =>
+    import scala.collection.JavaConversions.mapAsScalaConcurrentMap
+    registeredTypeNames.filter { case (name, className) => className == entityClass }.keys.headOption
+  }
 
   override def register(entityFactory: => PersistentEntity): Unit = {
 
@@ -94,14 +98,18 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
 
   override def refFor[P <: PersistentEntity: ClassTag](entityId: String): PersistentEntityRef[P#Command] = {
     val entityClass = implicitly[ClassTag[P]].runtimeClass.asInstanceOf[Class[P]]
-    // TODO: use  Akka's ReflectiveDynamicAccess ??
-    val entityName = entityClass.newInstance().entityTypeName
+
+    // change the error message
+    def iae = new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
+
     try
-      new PersistentEntityRef(entityId, sharding.shardRegion(entityName), system, askTimeout)
+      reverseRegister(entityClass) match {
+        case None => throw iae
+        case Some(entityName) =>
+          new PersistentEntityRef(entityId, sharding.shardRegion(entityName), system, askTimeout)
+      }
     catch {
-      case e: IllegalArgumentException =>
-        // change the error message
-        throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
+      case e: IllegalArgumentException => throw iae
     }
   }
 
