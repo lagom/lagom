@@ -12,7 +12,7 @@ import com.lightbend.lagom.internal.client.ClientServiceCallInvoker
 import com.lightbend.lagom.internal.scaladsl.api.ScaladslPath
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
 import com.lightbend.lagom.scaladsl.api._
-import com.lightbend.lagom.scaladsl.api.Descriptor.{ Call, NamedCallId, TopicCall }
+import com.lightbend.lagom.scaladsl.api.Descriptor.{ Call, RestCallId, TopicCall }
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.{ ScalaMethodServiceCall, ScalaMethodTopic }
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser._
@@ -129,7 +129,7 @@ private[lagom] class ScaladslServiceResolver(defaultExceptionSerializer: Excepti
       val acls = descriptor.calls.collect {
         case callWithAutoAcl if callWithAutoAcl.autoAcl.getOrElse(descriptor.autoAcl) =>
           val pathSpec = ScaladslPath.fromCallId(callWithAutoAcl.callId).regex.regex
-          val method = methodFromSerializer(callWithAutoAcl.requestSerializer, callWithAutoAcl.responseSerializer)
+          val method = calculateMethod(callWithAutoAcl)
           ServiceAcl(Some(method), Some(pathSpec))
       }
 
@@ -141,13 +141,21 @@ private[lagom] class ScaladslServiceResolver(defaultExceptionSerializer: Excepti
     withAcls
   }
 
-  private def methodFromSerializer(requestSerializer: MessageSerializer[_, _], responseSerializer: MessageSerializer[_, _]) = {
-    if (requestSerializer.isStreamed || responseSerializer.isStreamed) {
-      Method.GET
-    } else if (requestSerializer.isUsed) {
-      Method.POST
-    } else {
-      Method.GET
+  private def calculateMethod(serviceCall: Descriptor.Call[_, _]): Method = {
+    serviceCall.callId match {
+      case rest: RestCallId => rest.method
+      case _ =>
+        // If either the request or the response serializers are streamed, then WebSockets will be used, in which case
+        // the method must be GET
+        if (serviceCall.requestSerializer.isStreamed || serviceCall.responseSerializer.isStreamed) {
+          Method.GET
+          // Otherwise, if the request serializer is used, we default to POST
+        } else if (serviceCall.requestSerializer.isUsed) {
+          Method.POST
+        } else {
+          // And if not, to GET
+          Method.GET
+        }
     }
   }
 
