@@ -4,53 +4,53 @@
 package com.lightbend.lagom.internal.javadsl.persistence
 
 import java.util.Optional
-import java.util.concurrent.{CompletionStage, ConcurrentHashMap, TimeUnit}
+import java.util.concurrent.{ CompletionStage, ConcurrentHashMap, TimeUnit }
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings, ShardRegion}
+import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
 import akka.event.Logging
 import akka.japi.Pair
 import akka.pattern.ask
 import akka.persistence.query.scaladsl.EventsByTagQuery2
-import akka.persistence.query.{Offset => AkkaOffset}
+import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.javadsl
 import akka.util.Timeout
-import akka.{Done, NotUsed}
+import akka.{ Done, NotUsed }
 import com.google.inject.Injector
 import com.lightbend.lagom.internal.persistence.cluster.GracefulLeave
 import com.lightbend.lagom.javadsl.persistence._
 
-import scala.concurrent.duration.{FiniteDuration, _}
+import scala.concurrent.duration.{ FiniteDuration, _ }
 import scala.util.control.NonFatal
 
 /**
-  * Provides shared functionality for implementing a persistent entity registry.
-  *
-  * Akka persistence plugins can extend this to implement a custom registry.
-  */
+ * Provides shared functionality for implementing a persistent entity registry.
+ *
+ * Akka persistence plugins can extend this to implement a custom registry.
+ */
 abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) extends PersistentEntityRegistry {
 
   /**
-    * The ID of the journal.
-    */
+   * The ID of the journal.
+   */
   protected val journalId: String
 
   /**
-    * The events by tag query. Necessary for implementing read sides and the eventStream query.
-    */
+   * The events by tag query. Necessary for implementing read sides and the eventStream query.
+   */
   protected val eventsByTagQuery: Option[EventsByTagQuery2] = None
 
   private val sharding = ClusterSharding(system)
   private val conf = system.settings.config.getConfig("lagom.persistence")
   private val snapshotAfter: Optional[Int] = conf.getString("snapshot-after") match {
     case "off" => Optional.empty()
-    case _ => Optional.of(conf.getInt("snapshot-after"))
+    case _     => Optional.of(conf.getInt("snapshot-after"))
   }
   private val maxNumberOfShards: Int = conf.getInt("max-number-of-shards")
   private val role: Option[String] = conf.getString("run-entities-on-role") match {
     case "" => None
-    case r => Some(r)
+    case r  => Some(r)
   }
   private val passivateAfterIdleTimeout: FiniteDuration =
     conf.getDuration("passivate-after-idle-timeout", TimeUnit.MILLISECONDS).millis
@@ -120,13 +120,12 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
     }
   }
 
-
   private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)
 
   override def eventStream[Event <: AggregateEvent[Event]](
-                                                            aggregateTag: AggregateEventTag[Event],
-                                                            fromOffset: Offset
-                                                          ): javadsl.Source[Pair[Event, Offset], NotUsed] = {
+    aggregateTag: AggregateEventTag[Event],
+    fromOffset:   Offset
+  ): javadsl.Source[Pair[Event, Offset], NotUsed] = {
     eventsByTagQuery match {
       case Some(queries) =>
         val tag = aggregateTag.tag
@@ -143,21 +142,21 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
   }
 
   /**
-    * Converts a stored event journal offset into the argument to an
-    * `eventsByTag` query.
-    *
-    * Different Akka Persistence back ends interpret the `offset` parameter to
-    * `eventsByTag` differently. Some return events starting ''after'' the given
-    * `offset`, others start with the event ''at'' that offset. In Lagom, we
-    * shield end users from this difference, and always want to return
-    * unprocessed events. Subclasses can override this method as necessary to
-    * convert a stored offset into a starting offset that ensures no stored
-    * values will be repeated in the stream.
-    *
-    * @param storedOffset the most recently seen offset
-    * @return an offset that can be provided to the `eventsByTag` query to
-    *         retrieve only unseen events
-    */
+   * Converts a stored event journal offset into the argument to an
+   * `eventsByTag` query.
+   *
+   * Different Akka Persistence back ends interpret the `offset` parameter to
+   * `eventsByTag` differently. Some return events starting ''after'' the given
+   * `offset`, others start with the event ''at'' that offset. In Lagom, we
+   * shield end users from this difference, and always want to return
+   * unprocessed events. Subclasses can override this method as necessary to
+   * convert a stored offset into a starting offset that ensures no stored
+   * values will be repeated in the stream.
+   *
+   * @param storedOffset the most recently seen offset
+   * @return an offset that can be provided to the `eventsByTag` query to
+   *         retrieve only unseen events
+   */
   protected def mapStartingOffset(storedOffset: Offset): AkkaOffset = OffsetAdapter.dslOffsetToOffset(storedOffset)
 
   override def gracefulShutdown(timeout: FiniteDuration): CompletionStage[Done] = {
