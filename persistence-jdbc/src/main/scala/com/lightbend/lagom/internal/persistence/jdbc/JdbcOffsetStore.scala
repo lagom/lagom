@@ -58,21 +58,23 @@ private[lagom] class JdbcOffsetStore @Inject() (val slick: SlickProvider, system
 
   private val offsets = TableQuery[OffsetStore]
 
-  private val startupTask = ClusterStartupTask(
-    system,
-    "cassandraOffsetStorePrepare",
-    createTables,
-    readSideConfig.globalPrepareTimeout,
-    readSideConfig.role,
-    readSideConfig.minBackoff,
-    readSideConfig.maxBackoff,
-    readSideConfig.randomBackoffFactor
-  )
+  private val startupTask = if (slick.autoCreateTables) {
+    implicit val timeout = Timeout(readSideConfig.globalPrepareTimeout)
+    ClusterStartupTask(
+      system,
+      "jdbcOffsetStorePrepare",
+      createTables,
+      readSideConfig.globalPrepareTimeout,
+      readSideConfig.role,
+      readSideConfig.minBackoff,
+      readSideConfig.maxBackoff,
+      readSideConfig.randomBackoffFactor
+    ).askExecute()
+  } else Future.successful(Done)
 
   override def prepare(eventProcessorId: String, tag: String): Future[JdbcOffsetDao] = {
-    implicit val timeout = Timeout(readSideConfig.globalPrepareTimeout)
     for {
-      _ <- startupTask.askExecute()
+      _ <- startupTask
       offset <- slick.db.run(getOffsetQuery(eventProcessorId, tag))
     } yield {
       new JdbcOffsetDao(this, eventProcessorId, tag, offset)
