@@ -36,7 +36,7 @@ In the Maven root project pom:
     <artifactId>lagom-maven-plugin</artifactId>
     <version>${lagom.version}</version>
     <configuration>
-        <kafkaPropertiesFile>path/to/your/own/server.properties</kafkaPropertiesFile>
+        <kafkaPropertiesFile>${basedir}/kafka-server.properties</kafkaPropertiesFile>
     </configuration>
 </plugin>
 ```
@@ -44,8 +44,6 @@ In the Maven root project pom:
 In sbt:
 
 @[kafka-properties](code/build-kafka-opts.sbt)
-
-The path should be *relative* to your project's root. 
 
 ## JVM options
 
