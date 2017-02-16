@@ -21,17 +21,20 @@ public class NamedEntity extends PersistentEntity<NamedEntity.Cmd, NamedEntity.E
 
     public static abstract class Evt implements AggregateEvent<Evt>, Jsonable {
         private static final long serialVersionUID = 1L;
-        public static final AggregateEventShards<Evt> AGGREGATE_EVENT_SHARDS = AggregateEventTag.of(Evt.class);
+        public static final AggregateEventTag<Evt> AGGREGATE_EVENT_SHARDS = AggregateEventTag.of(Evt.class);
+
         @Override
-        public AggregateEventShards<Evt> aggregateTag() {
+        public AggregateEventTagger<Evt> aggregateTag() {
             return AGGREGATE_EVENT_SHARDS;
         }
     }
 
     public static class State implements Jsonable {
         private static final long serialVersionUID = 1L;
+
         @JsonCreator
-        public State() {}
+        public State() {
+        }
     }
 
     @Inject

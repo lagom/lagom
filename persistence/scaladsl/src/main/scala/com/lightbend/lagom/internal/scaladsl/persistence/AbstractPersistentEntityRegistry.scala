@@ -100,7 +100,6 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
     val entityName = reverseRegister.get(entityClass)
     if (entityName == null) throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
     new PersistentEntityRef(entityId, sharding.shardRegion(entityName), system, askTimeout)
-    new PersistentEntityRef(entityId, sharding.shardRegion(entityName), system, askTimeout)
   }
 
   private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)
