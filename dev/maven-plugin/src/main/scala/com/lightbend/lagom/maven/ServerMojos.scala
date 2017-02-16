@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.maven
 
+import java.io.File
 import javax.inject.Inject
 
 import com.lightbend.lagom.core.LagomVersion
@@ -68,7 +69,7 @@ class StartKafkaMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, m
   @BeanProperty
   var kafkaCleanOnStart: Boolean = _
   @BeanProperty
-  var kafkaPropertiesFile: String = _
+  var kafkaPropertiesFile: File = _
   @BeanProperty // I'm not sure if it's possible to specify a default value for a literal list in plugin.xml, so specify it here.
   var kafkaJvmOptions: JList[String] = Seq("-Xms256m", "-Xmx1024m").asJava
 
@@ -108,7 +109,7 @@ class StartKafkaMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, m
       // target directory matches the one used in the Lagom sbt plugin
       val targetDir = new java.io.File(projectTargetDir + / + "lagom-dynamic-projects" + / + "lagom-internal-meta-project-kafka" + / + "target")
       // properties file doesn't need to be provided by users, in which case the default one included with Lagom will be used
-      val kafkaPropertiesFile = Option(this.kafkaPropertiesFile).map(new java.io.File(_))
+      val kafkaPropertiesFile = Option(this.kafkaPropertiesFile)
 
       Servers.KafkaServer.start(logger, cp.map(_.getFile), kafkaPort, zookeeperPort, kafkaPropertiesFile, kafkaJvmOptions.asScala, targetDir, kafkaCleanOnStart)
     }

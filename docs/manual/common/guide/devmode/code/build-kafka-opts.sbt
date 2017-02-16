@@ -5,7 +5,8 @@ lagomKafkaZookeperPort in ThisBuild := 9999
 //#kafka-port
 
 //#kafka-properties
-lagomKafkaPropertiesFile in ThisBuild := Some(file("path") / "to" / "your" / "own" / "server.properties")
+lagomKafkaPropertiesFile in ThisBuild :=
+  Some((baseDirectory in ThisBuild).value / "project" / "kafka-server.properties")
 //#kafka-properties
 
 //#kafka-jvm-options
