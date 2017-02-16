@@ -155,7 +155,7 @@
         </parameter>
         <parameter>
             <name>kafkaPropertiesFile</name>
-            <type>java.lang.String</type>
+            <type>java.util.File</type>
             <required>false</required>
             <editable>true</editable>
             <description>The relative path to the sever.properties to use to start Kafka.</description>
