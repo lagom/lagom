@@ -75,7 +75,7 @@ The `hellowold` Lagom service can be imported by adding the following declaratio
 
 @[hello-external](code/multiple-builds.sbt)
 
-The first argument passed to `lagomExternalProject` is the name that will be used in your build to refer to this externally defined project. While, the second argument provides the dependency to the `hello-impl` JAR, using the conventional sbt syntax for declaring dependencies. Note in fact that the `lagomExternalProject` method returns a sbt `Project`, which you can further customize if needed.
+The first argument passed to `lagomExternalJavadslProject` is the name that will be used in your build to refer to this externally defined project. While, the second argument provides the dependency to the `hello-impl` JAR, using the conventional sbt syntax for declaring dependencies. Note in fact that the `lagomExternalJavadslProject` method returns a sbt `Project`, which you can further customize if needed.
 
 After having added the external Lagom project to your build, just type `reload` in the sbt console. Then, when executing `runAll`, you should see that the `hello` service is started, together with all other services defined in the build:
 
