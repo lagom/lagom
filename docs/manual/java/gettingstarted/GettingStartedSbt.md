@@ -1,20 +1,31 @@
-# Getting started with Lagom in sbt
+# Creating and running Hello World with sbt
 
-This page shows how to create and run your first Lagom project using sbt.
+A Lagom system is typically made up of a set of sbt builds, with each build containing multiple services. The easiest way to get started with sbt is to create a new build using the sbt Giter8 `lagom` template. 
 
-## Creating a new Lagom project
+The `lagom-java` template uses the `.sbtopts` file to increase the memory used by the `JVM` when starting your project. See [[Increase Memory in sbt|JVMMemoryOnDev]] for other ways to configure memory usage. 
 
-A Lagom system is typically made up of a set of sbt builds, each build providing multiple services.  The easiest way to get started with a new Lagom system is to create a new project using the `lagom` sbt Giter8 template:
+Follow these steps to create your first Lagom build:
 
+1. [Create a new Lagom build](#create-a-new-lagom-build)
+1. [Browse the build](#browse-the-build)
+1. [Run Hello World](#run-hello-world)
+
+## Create a new Lagom build
+
+From the command line, invoke `sbt new` and specify the Lagom Giter8 template:
 ```
-$ sbt new lagom/lagom-java.g8
+sbt new lagom/lagom-java.g8
 ```
+The sbt Lagom template prompts for the following parameters. Press `Enter` to accept the defaults or specify your own values:
 
-After following the prompts, this will create a new system with two services, if you went with the default name of `Hello`, these services will be called `hello` and `hello-stream`. The documentation below assumes that you selected the default name of `Hello`.
+* `name` - Becomes the name of the top-level directory.
+* `organization` - Used as a package name.
+* `version` - A version number for your system.
+* `lagom-version` - The version number of Lagom, such as 1.3.0. We suggest that you use the latest official release.
 
-## Anatomy of a Lagom project
+## Browse the build
 
-The created project contains the following elements:
+The build created by the template contains the following elements:
 
 ```
 hello                   → Project root
@@ -25,38 +36,26 @@ hello                   → Project root
  └ project              → sbt configuration files
    └ build.properties   → Marker for sbt project
    └ plugins.sbt        → sbt plugins including the declaration for Lagom itself
- └ build.sbt            → Your project build file
+ └ build.sbt            → Build configuration
 ```
 
-* Notice how each service is broken up into two projects: api and implementation. The api project contains a service interface through which consumers may interact with the service. While the implementation project contains the actual service implementation.
+* Notice how each service is broken up into two projects: api and implementation. The api project contains a service interface through which consumers may interact with the service. While the `impl` project contains the actual service implementation.
 * The `project` folder contains sbt specific files.
-* The `build.sbt` file, which contains all information necessary to build, run, and deploy your services.   
+* The `build.sbt` file contains all information necessary to build, run, and deploy your services.   
 
-## Understanding services projects
 
-* The service interface is always placed in the api project. For instance, the service interface for the `hello` service can be found in the `hello-api` project (look for the `HelloService.java` source file).
+## Run Hello World
 
-@[helloservice-interface](code/docs/javadsl/gettingstarted/helloservice/HelloService.java)
+Lagom includes a development environment that let you start all your services by simply typing `runAll` in the sbt console. From a console change directories to the top-level directory and start sbt, when the command prompt displays, invoke `runAll`:
 
-* The service interface needs to inherit from [`Service`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html) and provide an implementation of [`Service.descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#descriptor--) method.
-
-* The implementation of `Service.descriptor` returns a [`Descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html). A `Descriptor` defines the service name and the REST endpoints offered by a service. For each declared endpoint, an abstract method is declared in the service interface, e.g., see the `HelloService.hello` method.
-
-* The implementation of the service abstract methods is provided by the related implementation project. For instance, the service implementation of the `HelloService.hello` method, for the `hello` service, can be found in the `hello-impl` project (look for the `HelloServiceImpl.java` source file).
-
-@[helloservice-impl](code/docs/javadsl/gettingstarted/helloservice/HelloServiceImpl.java)
-
-* The [`PersistentEntityRegistry`](api/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html) allows to persist data in the database using [[Event Sourcing and CQRS|ES_CQRS]].
-
-## Running Lagom services
-
-Lagom includes a development environment that let you start all your services by simply typing `runAll` in the sbt console. Open the terminal and `cd` to your Lagom project:
-
-```console
-$ cd my-first-system
-$ sbt
+```
+cd hello
+sbt
 ... (booting up)
 > runAll
+```
+Among other messages, you should see the following:
+```
 [info] Starting embedded Cassandra server
 ..........
 [info] Cassandra server running at 127.0.0.1:4000
@@ -67,17 +66,12 @@ $ sbt
 (Services started, press enter to stop and go back to the console...)
 ```
 
-You can verify that the services are indeed up and running by invoking one of its endpoints from any HTTP client, such as a browser. The following request returns the message `Hello, World!`:
+You can verify that the services are indeed up and running by invoking a service endpoint from any HTTP client, such as a browser. The following request returns the message `Hello, World!`:
 
 ```
 http://localhost:9000/api/hello/World
 ```
+Congratulations! You've created and run your first Lagom system. 
 
 
-If you are wondering why we have created two services in the seed template, instead of having just one, the reason is simply that ([quoting](https://twitter.com/jboner/status/699536472442011648) Jonas Bonér):
 
-> One microservice is no microservice - they come in systems.
-
-Said otherwise, we believe you will be creating several services, and we felt it was important to showcase intra-service communication.
-
-The `lagom-java` template you used to build `my-first-system` uses the `.sbtopts` file to increase the memory used by the `JVM` when starting your project. There's a few more ways to [[Increase Memory in sbt|JVMMemoryOnDev]]

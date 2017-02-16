@@ -1,60 +1,57 @@
-# Getting started with Lagom in Maven
+# Creating and running Hello World with Maven
+The easiest way to get started with Lagom and Maven is to use the Maven archetype plugin and a Lagom archetype to create a new project.  A Maven project includes sub-projects organized in sub-directories. The top-level and sub-project directories each include a [Project Object Model (POM)](https://maven.apache.org/pom.html) that contains build configuration. When you run the `generate` command, Maven prompts you for POM element values. The Lagom archetype creates a project that includes two Lagom services, `hello` and `stream`.   
 
-This page shows how to create and run your first Lagom project.
+Follow these instructions to create and run your first project:
 
-## Creating a new Lagom project
+1. [Generate a project with the Lagom archetype](#generate-a-project-with-the-lagom-archetype)
+1. [Browse the project structure](#browse-the-project-structure)
+1. [Run Hello World](#run-hello-world)
 
-A Lagom system is typically made up of a set of maven projects, each build providing multiple services.  The easiest way to get started with a new Lagom system is to create a new project using the Maven archetype plugin, with the Lagom Maven archetype:
+## Generate a project with the Lagom archetype
 
-```
-$ mvn archetype:generate -DarchetypeGroupId=com.lightbend.lagom \
-  -DarchetypeArtifactId=maven-archetype-lagom-java -DarchetypeVersion=1.1.0
-```
-
-> **Note:** Ensure you replace the 1.1.0 archetype version with the latest version of Lagom.
-
-This will prompt you for a `groupId`, `artifactId` and `version`.  You might choose, for example, `com.example` as a `groupId`, and `my-first-system` for an `artifactId`.  Once you've followed the prompts, it will create a new system with two services in it: `hello` and `stream`.
-
-## Anatomy of a Lagom project
-
-The created project contains the following elements:
+To create a project, invoke `mvn archetype:generate` from the command line with the following parameters (all on one line). The `archetypeVersion` parameter specifies the Lagom version (in this example, 1.3.0).  
 
 ```
-my-first-system          → Project root
- └ hello-api             → hello world api project
- └ hello-impl            → hello world implementation project
- └ stream-api            → stream api project
- └ stream-impl           → stream implementation project
- └ integration-tests     → Integration tests
- └ pom.xml               → Project root build file
+mvn archetype:generate -DarchetypeGroupId=com.lightbend.lagom -DarchetypeArtifactId=maven-archetype-lagom-java
+-DarchetypeVersion=1.3.0
 ```
 
-Notice how each service is broken up into two projects: api and implementation. The api project contains a service interface through which consumers may interact with the service. While the implementation project contains the actual service implementation.
+When the template prompts you for POM values, accept defaults by pressing `Enter` or specify your own for:
 
-## Understanding services projects
+* `groupId`  - Usually a reversed domain name, such as `com.example.hello`.
+* `artifactId` - Maven also uses this value as the name for the top-level project folder. You might want to use a value such as `my-first-system`
+* `version` - A version number for your project.
+* `package` - By default, the same as the `groupId`.  
+> **Note:** Be sure to use the latest version of Lagom for the `archetypeVersion` parameter.
 
+## Browse the project structure
 
-* The service interface is always placed in the api project. For instance, the service interface for the `hello` service can be found in the `hello-api` project (look for the `HelloService.java` source file).
+The structure for a project created with the Maven archetype generate command will look similar to the following (assuming `my-first-system` as an `artifactId`):
 
-@[helloservice-interface](code/docs/javadsl/gettingstarted/helloservice/HelloService.java)
+```
+my-first-system 
+ └ cassandra-config      
+ └ hello-api             → hello world api project dir
+ └ hello-impl            → hello world implementation dir 
+ └ integration-tests    
+ └ stream-api            → stream api project dir
+ └ stream-impl           → stream implementation project dir
+ 
+ └ pom.xml               → Project group build file
+```
 
-* The service interface needs to inherit from [`Service`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html) and provide an implementation of [`Service.descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#descriptor--) method.
+Note that the `hello` and `stream` services each have: 
 
-* The implementation of `Service.descriptor` returns a [`Descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html). A `Descriptor` defines the service name and the REST endpoints offered by a service. For each declared endpoint, an abstract method is declared in the service interface, e.g., see the `HelloService.hello` method.
+* An `api` project that contains a service interface through which consumers can interact with the service. 
+* An `impl` project that contains the service implementation.
 
-* The implementation of the service abstract methods is provided by the related implementation project. For instance, the service implementation of the `HelloService.hello` method, for the `hello` service, can be found in the `hello-impl` project (look for the `HelloServiceImpl.java` source file).
+## Run Hello World
 
-@[helloservice-impl](code/docs/javadsl/gettingstarted/helloservice/HelloServiceImpl.java)
-
-* The [`PersistentEntityRegistry`](api/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html) allows to persist data in the database using [[Event Sourcing and CQRS|ES_CQRS]].
-
-## Running Lagom services
-
-Lagom includes a development environment that let you start all your services by invoking the `runAll` task on the Lagom maven plugin. Open the terminal and `cd` to your Lagom project (some log output cut for brevity):
+Lagom provides a `runAll` command to start the Lagom `hello` and `stream` services and runtime components, which include: Cassandra, Akka, and Kafka. From the top-level group directory, such as `my-first-system`, execute `lagom:runAll` (some console output omitted for brevity):
 
 ```console
-$ cd my-first-system
-$ mvn lagom:runAll
+cd my-first-system
+mvn lagom:runAll
 ...
 [info] Starting embedded Cassandra server
 ..........
@@ -67,16 +64,11 @@ $ mvn lagom:runAll
 (Services started, press enter to stop and go back to the console...)
 ```
 
-You can verify that the services are indeed up and running by invoking one of its endpoints from any HTTP client, such as a browser. The following request returns the message `Hello, World!`:
+Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser: 
 
 ```
 http://localhost:9000/api/hello/World
 ```
+The request returns the message `Hello, World!`.
 
-If you are wondering why we have created two services in the seed template, instead of having just one, the reason is simply that ([quoting](https://twitter.com/jboner/status/699536472442011648) Jonas Bonér):
-
-> One microservice is no microservice - they come in systems.
-
-Said otherwise, we believe you will be creating several services, and we felt it was important to showcase intra-service communication.
-
-When developing in Lagom you will run several services in a single Java Virtual Machine. You may need to [[Increase Memory for Maven|JVMMemoryOnDev]].
+Congratulations! You've created and run your first Lagom system. 
