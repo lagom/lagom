@@ -1,21 +1,13 @@
-# Import a Lagom build in your IDE
+# Integrating sbt builds with Eclipse
 
-Here you will learn how to import projects defined in a Lagom build into your preferred IDE.
+If you worked through the command line example for [[sbt|GettingStartedSbt]], you have an sbt build. This page describes how to integrate with Eclipse.
 
-## Using Maven
-
-If using Maven, use the m2clipse plugin in Eclipse, or the built in IntelliJ Maven support in IntelliJ, to import your project.
-
-## Using sbt
-
-### Eclipse
-
-[sbt-eclipse](https://github.com/typesafehub/sbteclipse) is needed to generate the Eclipse project files, which are required to import all projects defined in your Lagom build into Eclipse.
+Before integrating a Lagom sbt build with Eclipse, you must download and install [sbt-eclipse](https://github.com/typesafehub/sbteclipse). This plugin provides the support to generate Eclipse project files, which are required to import Lagom builds into Eclipse.
 
 If your Lagom build file is in directory `hello`, create a `project/eclipse.sbt` with the following content:
 
 ```
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "3.0.0")
+addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.1.0")
 ```
 
 Save the file. Now, open the terminal, and `cd` to the `hello` directory, and type `sbt`:
@@ -83,21 +75,3 @@ lazy val eclipseSettings = Seq(
 Now update all projects declarations in your Lagom build to use the newly created `project` method, so that the defined `eclipseSettings` are successfully applied to all projects.
 
 Finally, you will need to regenerate the Eclipse project files to account for the changes made in the build file. Go back to the sbt console, type `reload` to reload the build file, and type `eclipse`. Once the `eclipse` task completes, go back to Eclipse, hit F5 to refresh all previously imported projects, and you are done.
-
-### IntelliJ
-
-Because the Lagom build file is written in sbt, we recommend to install the IntelliJ IDEA sbt plugin to facilitate importing projects. Unfortunately, for sbt plugin to properly work, you will need to install the Scala plugin as well. To do so, open the `Plugins` modal for installing plugins, search for the "SBT" plugin. If no match is found, you'll have to hit "Browse".
-
-[[idea_search_sbt_plugin.png]]
-
-Select and install the plugin.
-
-[[idea_install_sbt_plugin.png]]
-
-Repeat the same process for the "Scala" plugin.
-
-After restarting IntelliJ IDEA, go to "Open...", and select your Lagom `build.sbt` file. An "Import Project from SBT" modal will open, and we suggest you to tick "Use auto-import", and also tick the option to download sources and javadocs:
-
-[[idea_sbt_project_import.png]]
-
-Click "OK" and continue by importing all projects.
