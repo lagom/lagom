@@ -24,7 +24,7 @@ The [ParameterNamesModule](https://github.com/FasterXML/jackson-module-parameter
 
 The section [[Immutable Objects|Immutable]] contains more examples of classes that are `Jsonable`.
 
-You can use the [PersistentEntityTestDriver](api/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html) that is described in the [[Persistent Entity Unit Testing|PersistentEntity#Unit Testing]] section to verify that all commands, events, replies and state are serializable.
+You can use the [PersistentEntityTestDriver](api/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html) that is described in the [[Persistent Entity Unit Testing|PersistentEntity#Unit-Testing]] section to verify that all commands, events, replies and state are serializable.
 
 ### Compression
 
