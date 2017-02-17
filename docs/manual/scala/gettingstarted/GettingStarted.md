@@ -4,9 +4,9 @@ A Lagom system is typically made up of a set of sbt builds, with each build prov
 
 Follow these steps to create and run Hello World:
 
-1. [Create the build](#create-the-build)
-1. [Browse the build](#browse-the-build)
-1. [Run Hello World](#run-hello-world)
+1. [Create the build](#Create-the-build)
+1. [Browse the build](#Browse-the-build)
+1. [Run Hello World](#Run-Hello-World)
 
 ## Create the build
 

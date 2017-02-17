@@ -6,9 +6,9 @@ The `lagom-java` template uses the `.sbtopts` file to increase the memory used b
 
 Follow these steps to create your first Lagom build:
 
-1. [Create a new Lagom build](#create-a-new-lagom-build)
-1. [Browse the build](#browse-the-build)
-1. [Run Hello World](#run-hello-world)
+1. [Create a new Lagom build](#Create-a-new-Lagom-build)
+1. [Browse the build](#Browse-the-build)
+1. [Run Hello World](#Run-Hello-World)
 
 ## Create a new Lagom build
 

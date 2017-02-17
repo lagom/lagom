@@ -4,7 +4,7 @@ The Lagom Message Broker API provides a distributed publish-subscribe model that
 
 ## Declaring a topic
 
-To publish data to a topic a service needs to declare the topic in its [[service descriptor|ServiceDescriptors#service-descriptors]].
+To publish data to a topic a service needs to declare the topic in its [[service descriptor|ServiceDescriptors#Service-descriptors]].
 
 @[hello-service](code/docs/scaladsl/mb/HelloService.scala)
 
@@ -24,7 +24,7 @@ Lagom allows this by allowing you to configure a partition key strategy, which e
 
 The primary source of messages that Lagom is designed to produce is persistent entity events. Rather than publishing events in an ad-hoc fashion in response to particular things happen, it is better to take the stream of events from your persistent entities, and adapt that to a stream of messages sent to the message broker. In this way, you can ensure at least once processing of events by both publishers and consumers, which allows you to guarantee a very strong level of consistency throughout your system.
 
-Lagom's [`TopicProducer`](api/com/lightbend/lagom/scaladsl/broker/TopicProducer$.html) helper provides two methods for publishing a persistent entities event stream, [`singleStreamWithOffset`](api/com/lightbend/lagom/scaladsl/broker/TopicProducer$.html) for use with non sharded read side event streams, and [`taggedStreamWithOffset`](api/com/lightbend/lagom/scaladsl/broker/TopicProducer$.html) for use with sharded read side event streams.  Both of these methods take a callback which takes the last offset that the topic producer published, and allows resumption of the event stream from that offset via the [`PersistentEntityRegistry.eventStream`](api/com/lightbend/lagom/scaladsl/persistence/PersistentEntityRegistry.html) method for obtaining a read-side stream. For more details on read-side streams, see [[Persistent Read-Side's|ReadSide#raw-stream-of-events]].
+Lagom's [`TopicProducer`](api/com/lightbend/lagom/scaladsl/broker/TopicProducer$.html) helper provides two methods for publishing a persistent entities event stream, [`singleStreamWithOffset`](api/com/lightbend/lagom/scaladsl/broker/TopicProducer$.html) for use with non sharded read side event streams, and [`taggedStreamWithOffset`](api/com/lightbend/lagom/scaladsl/broker/TopicProducer$.html) for use with sharded read side event streams.  Both of these methods take a callback which takes the last offset that the topic producer published, and allows resumption of the event stream from that offset via the [`PersistentEntityRegistry.eventStream`](api/com/lightbend/lagom/scaladsl/persistence/PersistentEntityRegistry.html) method for obtaining a read-side stream. For more details on read-side streams, see [[Persistent Read-Side's|ReadSide#Raw-Stream-of-Events]].
 
 Lagom will, in the case of the `singleStreamWithOffset` method, ensure that your topic producer only runs on one node of your cluster, or with the `taggedStreamWithOffset` method will distribute the tags evenly across the cluster to distribute the publishing load.
 

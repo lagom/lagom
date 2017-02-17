@@ -86,6 +86,6 @@ The section on [[Message Broker Testing|MessageBrokerTesting]] is related to Tes
 
 ## How to test PersistentEntity
 
-[[Persistent Entities|PersistentEntity#unit-testing]] can be used in the service tests described above. In addition to that you should write unit tests using the [PersistentEntityTestDriver](api/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html), which will run the `PersistentEntity` without using a database.
+[[Persistent Entities|PersistentEntity#Unit-Testing]] can be used in the service tests described above. In addition to that you should write unit tests using the [PersistentEntityTestDriver](api/index.html?com/lightbend/lagom/javadsl/testkit/PersistentEntityTestDriver.html), which will run the `PersistentEntity` without using a database.
 
 This is described in the documentation of [[Persistent Entity|PersistentEntity#Unit-Testing]]
