@@ -67,6 +67,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
   }
 
   private val registeredTypeNames = new ConcurrentHashMap[String, Class[_]]()
+  private val reverseRegister = new ConcurrentHashMap[Class[_], String]()
 
   override def register[C, E, S](entityClass: Class[_ <: PersistentEntity[C, E, S]]): Unit = {
 
@@ -79,7 +80,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
     } catch {
       case NonFatal(e) => throw new IllegalArgumentException("Cannot create instance of " +
         s"[${entityClass.getName}]. The class must extend PersistentEntity and have a " +
-        "constructor without parameters.", e)
+        "constructor without parameters or annotated with @Inject.", e)
     }
 
     // detect non-unique short class names, since that is used as sharding type name
@@ -89,6 +90,8 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
         s"[${entityClass.getName}] is not unique. It is already registered by [${alreadyRegistered.getName}]. " +
         "Override entityTypeName in the PersistentEntity to define a unique name.")
     }
+    // if the entityName is deemed unique, we add the entity to the reverse index:
+    reverseRegister.putIfAbsent(entityClass, entityTypeName)
 
     if (role.forall(Cluster(system).selfRoles.contains)) {
       val entityProps = PersistentEntityActor.props(
@@ -101,14 +104,11 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
     }
   }
 
-  override def refFor[C](entityClass: Class[_ <: PersistentEntity[C, _, _]], entityId: String): PersistentEntityRef[C] =
-    try
-      new PersistentEntityRef(entityId, sharding.shardRegion(entityTypeName(entityClass)), system, askTimeout)
-    catch {
-      case e: IllegalArgumentException =>
-        // change the error message
-        throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
-    }
+  override def refFor[C](entityClass: Class[_ <: PersistentEntity[C, _, _]], entityId: String): PersistentEntityRef[C] = {
+    val entityName = reverseRegister.get(entityClass)
+    if (entityName == null) throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
+    new PersistentEntityRef(entityId, sharding.shardRegion(entityName), system, askTimeout)
+  }
 
   private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)
 
