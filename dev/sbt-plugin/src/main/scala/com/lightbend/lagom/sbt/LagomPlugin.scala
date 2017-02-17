@@ -310,10 +310,7 @@ object LagomPlugin extends AutoPlugin {
     val lagomKafkaAddress = settingKey[String]("Address of the kafka brokers (comma-separated list)")
 
     @deprecated("Use lagomExternalJavadslProject or lagomExternalScaladslProject instead", "1.3.0")
-    def lagomExternalProject(name: String, module: ModuleID): Project =
-      Project(name, file("target") / "lagom-external-projects" / name).
-        enablePlugins(LagomExternalProject).
-        settings(Seq(libraryDependencies += module))
+    def lagomExternalProject(name: String, module: ModuleID): Project = lagomExternalJavadslProject(name, module)
 
     /** Allows to integrate an external Lagom scaladsl project in the current build, so that when runAll is run, this service is also started.*/
     def lagomExternalScaladslProject(name: String, module: ModuleID): Project =
