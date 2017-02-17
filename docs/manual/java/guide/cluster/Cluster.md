@@ -8,7 +8,7 @@ If instances of a service need to know about each other, they must join the same
 
 ## Dependency
 
-The clustering feature is already included if you are using the [[persistence|PersistentEntity#Dependency]] or [[pubsub|PubSub#Dependency]] modules.
+The clustering feature is already included if you are using either of the [[persistence|PersistentEntity]] or [[pubsub|PubSub#Dependency]] modules.
 
 If you want to enable it without those modules, add the following dependency your project's build.
 
