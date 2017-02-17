@@ -113,7 +113,7 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig)
         enterBarrier("subscription-established-2")
 
         ref2.publisher.runWith(
-          Source(List("a", "b", "c", "d", "e").map(Notification(_))))
+          Source(List("a", "b", "c", "d", "e").map(Notification)))
       }
 
       enterBarrier("after-2")

@@ -101,7 +101,7 @@ final class PubSubRef[T](val topic: TopicId[T], mediator: ActorRef, system: Acto
    * This method is especially useful when writing tests that require that a subscriber
    * is known before sending messages to a topic.
    */
-  def hasAnySubscribers(): CompletionStage[java.lang.Boolean] = {
+  def hasAnySubscribers: CompletionStage[java.lang.Boolean] = {
     import scala.compat.java8.FutureConverters._
     import system.dispatcher
     implicit val timeout = hasAnySubscribersTimeout
@@ -115,6 +115,6 @@ final class PubSubRef[T](val topic: TopicId[T], mediator: ActorRef, system: Acto
   protected def writeReplace(): AnyRef =
     throw new NotSerializableException(s"${getClass.getName} is not serializable. Send the entityId instead.")
 
-  override def toString(): String = s"PubSubRef($topic)"
+  override def toString: String = s"PubSubRef($topic)"
 
 }
