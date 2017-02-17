@@ -4,8 +4,8 @@ After creating and running Hello World from the command line, you no doubt appre
 
 The separation of concerns illustrated in Hello World and an introduction to service descriptors and the registry will help you as you start developing your own microservices:
 
-* [Service interface](#service-interface)
-* [Service implementation](#service-implementation)
+* [Service interface](#Service-interface)
+* [Service implementation](#Service-implementation)
 
 ## Service interface
 The source file defining a service interface belongs in the service's api project.  For example, in Hello World, `HelloService.java`, the source file for the `hello` service interface resides in the `hello-api` directory of the Maven project or sbt build.

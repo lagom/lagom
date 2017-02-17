@@ -4,9 +4,9 @@ Before starting with Lagom, check to make sure that you have the correct version
 
 Reference these sections for help with:
 
-1. [JDK](#jdk)
-1. [Maven](#maven) or [sbt](#sbt)
-1. [Internet access through a proxy](#internet-access-through-a-proxy)
+1. [JDK](#JDK)
+1. [Maven](#Maven) or [sbt](#sbt)
+1. [Internet access through a proxy](#Internet-access-through-a-proxy)
 
 
 

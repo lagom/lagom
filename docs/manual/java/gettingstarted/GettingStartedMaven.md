@@ -3,9 +3,9 @@ The easiest way to get started with Lagom and Maven is to use the Maven archetyp
 
 Follow these instructions to create and run your first project:
 
-1. [Generate a project with the Lagom archetype](#generate-a-project-with-the-lagom-archetype)
-1. [Browse the project structure](#browse-the-project-structure)
-1. [Run Hello World](#run-hello-world)
+1. [Generate a project with the Lagom archetype](#Generate-a-project-with-the-Lagom-archetype)
+1. [Browse the project structure](#Browse-the-project-structure)
+1. [Run Hello World](#Run-Hello-World)
 
 ## Generate a project with the Lagom archetype
 
