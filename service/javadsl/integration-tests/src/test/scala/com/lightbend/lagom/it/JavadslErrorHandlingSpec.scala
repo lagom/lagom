@@ -4,6 +4,7 @@
 package com.lightbend.lagom.it
 
 import java.util
+import java.util.Optional
 import java.util.concurrent.{ CompletableFuture, CompletionStage, ExecutionException, TimeUnit }
 import javax.inject.Singleton
 import javax.inject.{ Inject, Provider }
@@ -35,7 +36,7 @@ import akka.actor.ReflectiveDynamicAccess
 import com.lightbend.lagom.internal.jackson.JacksonObjectMapperProvider
 import com.lightbend.lagom.internal.javadsl.api._
 import com.lightbend.lagom.internal.javadsl.client.JavadslServiceClientImplementor
-import com.lightbend.lagom.internal.javadsl.server.{ ResolvedService, ResolvedServices, JavadslServerBuilder, ServiceInfoProvider }
+import com.lightbend.lagom.internal.javadsl.server.{ JavadslServerBuilder, ResolvedService, ResolvedServices, ServiceInfoProvider }
 
 /**
  * A brief explanation of this spec.
@@ -227,7 +228,7 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
 
     withServer(
       _.bindings(
-        bind[ServiceInfo].to(new ServiceInfoProvider(classOf[MockService]))
+        bind[ServiceInfo].to(new ServiceInfoProvider(classOf[MockService], Array.empty))
       )
         .overrides(bind[ResolvedServices].to(new MockResolvedServicesProvider(resolved, changeServer)))
     ) { app =>
