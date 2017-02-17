@@ -4,7 +4,7 @@ The Lagom Message Broker API provides a distributed publish-subscribe model that
 
 ## Declaring a topic
 
-To publish data to a topic a service needs to declare the topic in its [[service descriptor|ServiceDescriptors#Service-descriptors]].
+To publish data to a topic a service needs to declare the topic in its [[service descriptor|ServiceDescriptors#Service-Descriptors]].
 
 @[hello-service](code/docs/scaladsl/mb/HelloService.scala)
 

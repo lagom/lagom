@@ -121,7 +121,7 @@ There is no mechanism in place to edit the used `logback.xml`. If you need to tu
 
 ## Cassandra start time
 
-[[As mentioned|DevEnvironment#Cassandra]], the `runAll` task also takes care of starting the embedded Cassandra server, before starting any other service. Moreover, services are usually started only after the Cassandra server is reachable. By default, the Cassandra server is given up to 20 seconds to be up and running, but you can change this default by adding the following in your build.
+[[As mentioned|DevEnvironment]], the `runAll` task also takes care of starting the embedded Cassandra server, before starting any other service. Moreover, services are usually started only after the Cassandra server is reachable. By default, the Cassandra server is given up to 20 seconds to be up and running, but you can change this default by adding the following in your build.
 
 In the Maven root project pom:
 
