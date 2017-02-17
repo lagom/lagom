@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2009-2015 Typesafe Inc. <http://www.typesafe.com>
+ * Copyright (C) 2016-2017 Typesafe Inc. <http://www.typesafe.com>
  */
 import java.net.HttpURLConnection
 import java.io.{BufferedReader, InputStreamReader}
