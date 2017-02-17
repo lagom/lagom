@@ -55,7 +55,7 @@ object LagomJava extends AutoPlugin {
   )
 
   // service locator dependencies are injected into services only iff dev service locator is enabled
-  private lazy val devServiceLocatorDependencies = Def.setting {
+  private[sbt] lazy val devServiceLocatorDependencies = Def.setting {
     if (LagomPlugin.autoImport.lagomServiceLocatorEnabled.value)
       Seq(
         LagomImport.component("lagom-service-registry-client"),
@@ -309,11 +309,22 @@ object LagomPlugin extends AutoPlugin {
     val lagomKafkaPort = settingKey[Int]("Port used by the local kafka broker")
     val lagomKafkaAddress = settingKey[String]("Address of the kafka brokers (comma-separated list)")
 
-    /** Allows to integrate an external Lagom project in the current build, so that when runAll is run, this service is also started.*/
-    def lagomExternalProject(name: String, module: ModuleID): Project =
+    @deprecated("Use lagomExternalJavadslProject or lagomExternalScaladslProject instead", "1.3.0")
+    def lagomExternalProject(name: String, module: ModuleID): Project = lagomExternalJavadslProject(name, module)
+
+    /** Allows to integrate an external Lagom scaladsl project in the current build, so that when runAll is run, this service is also started.*/
+    def lagomExternalScaladslProject(name: String, module: ModuleID): Project =
       Project(name, file("target") / "lagom-external-projects" / name).
         enablePlugins(LagomExternalProject).
         settings(Seq(libraryDependencies += module))
+
+    /** Allows to integrate an external Lagom javadsl project in the current build, so that when runAll is run, this service is also started.*/
+    def lagomExternalJavadslProject(name: String, module: ModuleID): Project = {
+      // Same as scaladsl, but Java projects need to have the dev mode service registration explicitly added.
+      lagomExternalScaladslProject(name, module).settings(
+        libraryDependencies ++= LagomJava.devServiceLocatorDependencies.value
+      )
+    }
   }
 
   import autoImport._

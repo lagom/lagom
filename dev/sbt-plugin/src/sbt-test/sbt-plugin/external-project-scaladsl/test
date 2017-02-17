@@ -1,0 +1,13 @@
+# First, publish the a project, so that it can be depended on as an external project
+> a/publishLocal
+
+# Now run all
+> runAll
+
+# Check that external service a is registered with the service locator
+> validateRequest retry-until-success http://localhost:8000/services/a status 200
+
+# Check that external service a is accessible through the gateway
+> validateRequest retry-until-success http://localhost:9000/hello/World status 200 body-contains Hello body-contains World
+
+> stop
