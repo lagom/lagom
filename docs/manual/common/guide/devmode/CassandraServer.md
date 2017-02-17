@@ -171,7 +171,7 @@ One good reason to disable the embedded Cassandra server is if you need your ser
 
 ## Connecting to a locally running Cassandra instance
 
-It's possible to connect to an [[externally run|ServiceLocator#communicating-with-external-services]] Cassandra instance in place of the embedded one. All you need to do is adding the following in your build.
+It's possible to connect to an [[externally run|ServiceLocator#Communicating-with-external-services]] Cassandra instance in place of the embedded one. All you need to do is adding the following in your build.
 
 In the Maven root project pom:
 
