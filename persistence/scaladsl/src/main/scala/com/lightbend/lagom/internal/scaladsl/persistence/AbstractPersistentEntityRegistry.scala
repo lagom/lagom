@@ -65,6 +65,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
   }
 
   private val registeredTypeNames = new ConcurrentHashMap[String, Class[_]]()
+  private val reverseRegister = new ConcurrentHashMap[Class[_], String]()
 
   override def register(entityFactory: => PersistentEntity): Unit = {
 
@@ -80,6 +81,8 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
         s"[${entityClass.getName}] is not unique. It is already registered by [${alreadyRegistered.getName}]. " +
         "Override entityTypeName in the PersistentEntity to define a unique name.")
     }
+    // if the entityName is deemed unique, we add the entity to the reverse index:
+    reverseRegister.putIfAbsent(entityClass, entityTypeName)
 
     if (role.forall(Cluster(system).selfRoles.contains)) {
       val entityProps = PersistentEntityActor.props(
@@ -94,13 +97,9 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
 
   override def refFor[P <: PersistentEntity: ClassTag](entityId: String): PersistentEntityRef[P#Command] = {
     val entityClass = implicitly[ClassTag[P]].runtimeClass.asInstanceOf[Class[P]]
-    try
-      new PersistentEntityRef(entityId, sharding.shardRegion(entityTypeName(entityClass)), system, askTimeout)
-    catch {
-      case e: IllegalArgumentException =>
-        // change the error message
-        throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
-    }
+    val entityName = reverseRegister.get(entityClass)
+    if (entityName == null) throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
+    new PersistentEntityRef(entityId, sharding.shardRegion(entityName), system, askTimeout)
   }
 
   private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)
