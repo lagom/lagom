@@ -28,7 +28,7 @@ lazy val `hello-impl` = (project in file("hello-impl"))
 //#hello-build
 
 //#hello-external
-lazy val hello = lagomExternalProject("hello", "com.example" %% "hello-impl" % "1.0")
+lazy val hello = lagomExternalScaladslProject("hello", "com.example" %% "hello-impl" % "1.0")
 //#hello-external
 
 //#hello-communication
