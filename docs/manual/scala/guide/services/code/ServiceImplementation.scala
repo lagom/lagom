@@ -36,6 +36,7 @@ package lagomapplication {
 package lagomloader {
 
   import lagomapplication._
+  import helloservice._
 
   //#lagom-loader
   import com.lightbend.lagom.scaladsl.server._
@@ -51,6 +52,10 @@ package lagomloader {
       new HelloApplication(context) {
         override def serviceLocator = ServiceLocator.NoServiceLocator
       }
+
+    override def describeServices = List(
+      readDescriptor[HelloService]
+    )
   }
   //#lagom-loader
 }
