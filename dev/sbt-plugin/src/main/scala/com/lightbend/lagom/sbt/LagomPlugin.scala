@@ -30,7 +30,7 @@ object Lagom extends AutoPlugin {
   )
 
   // service locator dependencies are injected into services only iff dev service locator is enabled
-  private lazy val devServiceLocatorDependencies = Def.setting {
+  private[sbt] lazy val devServiceLocatorDependencies = Def.setting {
     if (LagomPlugin.autoImport.lagomServiceLocatorEnabled.value)
       Seq(
         LagomImport.component("lagom-service-registry-client"),
@@ -265,7 +265,7 @@ object LagomPlugin extends AutoPlugin {
     def lagomExternalProject(name: String, module: ModuleID): Project =
       Project(name, file("target") / "lagom-external-projects" / name).
         enablePlugins(LagomExternalProject).
-        settings(Seq(libraryDependencies += module))
+        settings(Seq(libraryDependencies ++= module +: Lagom.devServiceLocatorDependencies.value))
   }
 
   import autoImport._
