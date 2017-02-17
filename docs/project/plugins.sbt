@@ -3,7 +3,7 @@ lazy val plugins = (project in file(".")).dependsOn(dev)
 lazy val dev = ProjectRef(Path.fileProperty("user.dir").getParentFile, "sbt-plugin")
 
 resolvers += Resolver.typesafeIvyRepo("releases")
-addSbtPlugin("com.lightbend.markdown" % "sbt-lightbend-markdown" % "1.5.1")
+addSbtPlugin("com.lightbend.markdown" % "sbt-lightbend-markdown" % "1.5.2")
 
 // Needed for bintray configuration code samples
 addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")

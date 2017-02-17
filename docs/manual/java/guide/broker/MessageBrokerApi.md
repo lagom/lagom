@@ -4,7 +4,7 @@ The Lagom Message Broker API provides a distributed publish-subscribe model that
 
 ## Declaring a topic
 
-To publish data to a topic a service needs to declare the topic in its [[service descriptor|ServiceDescriptors#Service-descriptors]].
+To publish data to a topic a service needs to declare the topic in its [[service descriptor|ServiceDescriptors#Service-Descriptors]].
 
 @[hello-service](code/docs/javadsl/mb/HelloService.java)
 
@@ -36,7 +36,7 @@ Note that the read-side event stream you passed to the topic producer is "activa
 
 ### Offset storage
 
-Lagom will use your configured persistence API provider to store the offsets for your event streams. To read more about offset storage, see the [[Cassandra offset documentation|ReadSideCassandra#Building-the-read-side-handler]] and [[Relational database offset documentation|ReadSideRDBMS#Building-the-read-side-handler]].
+Lagom will use your configured persistence API provider to store the offsets for your event streams. To read more about offset storage, see the [[Cassandra offset documentation|ReadSideCassandra#Building-the-read-side-handler]], [[JDBC database offset documentation|ReadSideJDBC#Building-the-read-side-handler]] and [[JPA database offset documentation|ReadSideJPA#Building-the-read-side-handler]].
 
 ## Subscribe to a topic
 
