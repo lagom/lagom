@@ -11,6 +11,7 @@ public class ServiceTestModule extends AbstractModule implements ServiceGuiceSup
   protected void configure() {
     bindServices(
       serviceBinding(EchoService.class, EchoServiceImpl.class),
-      serviceBinding(HelloService.class, HelloServiceImpl.class));
+      serviceBinding(HelloService.class, HelloServiceImpl.class)
+    );
   }
 }
