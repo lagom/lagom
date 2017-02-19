@@ -14,7 +14,7 @@ Let's have a look at our [`ServiceCall`](api/com/lightbend/lagom/scaladsl/api/Se
 
 It will take the request, and return the response as a [`Future`](http://www.scala-lang.org/api/2.12.x/scala/concurrent/Future.html).  If you've never seen `Future` before, it is a value that may not be available until later.  When an API returns a future, that value might not yet be computed, but the API promises that at some point in future, it will be.  Since the value isn't computed yet, you can't interact with it immediately.  What you can do though is attach callbacks that transform the promise to a promise of a new value, using the `map` and `flatMap` methods.  `Future` with its `map` and `flatMap` methods are fundamental building blocks for doing reactive programming in Scala, they allow your code to be asynchronous, not waiting for things to happen, but attaching callbacks that react to computations being completed.
 
-Of course, a simple hello world computation is not asynchronous, all it needs is to do is build a String, and that returns immediately.  In this case, we need to wrap the result of that in a `Future`.  This can be done by calling `Future.successful()`, which returns a future that has an immediately available value.
+Of course, a simple hello world computation is not asynchronous, all it needs to do is build a String, and that returns immediately.  In this case, we need to wrap the result of that in a `Future`.  This can be done by calling `Future.successful()`, which returns a future that has an immediately available value.
 
 ## Wiring together a Lagom application
 
@@ -56,7 +56,7 @@ The `tick` service call is going to return a `Source` that sends messages at the
 
 The first two arguments are the delay before messages should be sent, and the interval at which they should be sent. The third argument is the message that should be sent on each tick. Calling this service call with an interval of `1000` and a request message of `tick` will result in a stream being returned that sent a `tick` message every second.
 
-A streamed `sayHello` service call can be implemented by mapping the incoming `Source` of the names to say hello to:
+A streamed `sayHello` service call can be implemented by mapping the incoming `Source` of the names to say hello:
 
 @[hello-service-call](code/ServiceImplementation.scala)
 
@@ -70,7 +70,7 @@ Sometimes you may need to handle the request header, or add information to the r
 
 `ServerServiceCall` is an interface that extends `ServiceCall`, and provides an additional method, `invokeWithHeaders`.  This is different from the regular `invoke` method because in addition to the `Request` parameter, it also accepts a [`RequestHeader`](api/com/lightbend/lagom/scaladsl/api/transport/RequestHeader.html) parameter.  And rather than returning a `Future[Response]`, it returns a `Future[(ResponseHeader, Response)]`.  Hence it allows you to handle the request header, and send a custom response header.  `ServerServiceCall` implements the `handleRequestHeader` and `handleResponseHeader` methods, so that when Lagom calls the `invoke` method, it is delegated to the `invokeWithHeaders` method.
 
-The [`ServerServiceCall`](api/com/lightbend/lagom/scaladsl/server/ServerServiceCall$.html) companion object provides a factories for creating `ServerServiceCall`'s both that work with headers and that don't. It may seem counter intuitive to be able to create a `ServerServiceCall` that doesn't work with headers, but the reason for doing this is to assist in service call composition, where a composing service call might want to compose both types of service call.
+The [`ServerServiceCall`](api/com/lightbend/lagom/scaladsl/server/ServerServiceCall$.html) companion object provides a factory method for creating `ServerServiceCall`'s that work with both request and response headers. It may seem counter intuitive to be able to create a `ServerServiceCall` that doesn't work with headers, but the reason for doing this is to assist in service call composition, where a composing service call might want to compose both types of service call.
 
 Here's an example of working with the headers:
 
