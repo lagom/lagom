@@ -32,7 +32,7 @@ Before making a contribution, it is important to make sure that the change you w
         * Code must conform to standard style guidelines and pass all tests
         * Features and documentation must be provided for both Scala and Java API (unless they only make sense for one of the languages)
         * Java APIs should go to `com.lightbend.lagom.javadsl.xxxxx` in `xxxxx-javadsl` sbt project (the sbt project might be in a folder named xxxx/javadsl or similar)
-        * Scala APIs should go to `com.lightbend.lagom.javadsl.xxxxx` in `xxxxx-scalaadsl` sbt project (the sbt project might be in a folder named xxxx/scaladsl or similar)
+        * Scala APIs should go to `com.lightbend.lagom.scaladsl.xxxxx` in `xxxxx-scaladsl` sbt project (the sbt project might be in a folder named xxxx/scaladsl or similar)
     6. New files must:
         * Have a Lightbend copyright header in the style of ``Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>``. Running `sbt compile` will automatically add missing copyright headers.
         * Not use ``@author`` tags since it does not encourage [Collective Code Ownership](http://www.extremeprogramming.org/rules/collective.html).
