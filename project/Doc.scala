@@ -71,7 +71,7 @@ object UnidocRoot extends AutoPlugin {
     * I'm not sure exactly how this string is processed by what and where, but it seems escaping
     * newlines and double quotes makes it work with javadoc.
     */
-  private val framesHashScrollingCode =
+  private val framesHashScrollingCode = ""
     """<script type="text/javascript">
       |  if (window.name == "classFrame" && window.top.location.hash) {
       |    window.location.href = window.top.location.hash;
