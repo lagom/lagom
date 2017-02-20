@@ -38,6 +38,7 @@ lazy val p = (project in file("p")).enablePlugins(PlayJava && LagomPlay)
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(lagomJavadslClient, lagomJavadslApi)
   )
+  .dependsOn(`a-api`)
 
 InputKey[Unit]("verifyReloadsProjA") := {
   val expected = Def.spaceDelimited().parsed.head.toInt
