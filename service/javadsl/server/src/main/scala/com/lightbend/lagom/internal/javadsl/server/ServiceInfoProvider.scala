@@ -12,7 +12,7 @@ import com.lightbend.lagom.javadsl.api.ServiceInfo
  */
 @Singleton
 class ServiceInfoProvider(primaryServiceInterface: Class[_], secondaryServices: Array[Class[_]]) extends Provider[ServiceInfo] {
-  @Inject private val serverBuilder: JavadslServerBuilder = _
+  @Inject private var serverBuilder: JavadslServerBuilder = _
   override lazy val get = {
     serverBuilder.createServiceInfo(primaryServiceInterface, secondaryServices)
   }
