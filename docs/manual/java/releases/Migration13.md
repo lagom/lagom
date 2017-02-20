@@ -28,7 +28,7 @@ In addition, when importing external Lagom projects into the Lagom development e
 
 ## Service Info 
 
-It is now compulsory for Play applications to provide a [[ServiceInfo|ServiceInfo]] programmatically to run in the development unvironment. If you were providing `lagom.play.service-name` and `lagom.play.acls` via `aplication.conf` on your Play application the Developer Mode's `runAll` will still work but this is now deprecated. If your Play app is not implementing a `Module` you should add one and use the new `bindServiceInfo` to setup the service name and `ServiceAcl`s. The suggested location is `<play_app_folder>/app/Module.java` so that Guice will find it automatically.
+It is now compulsory for Play applications to provide a [[ServiceInfo|ServiceInfo]] programmatically to run in the development environment. If you were providing `lagom.play.service-name` and `lagom.play.acls` via `aplication.conf` on your Play application the Developer Mode's `runAll` will still work but this is now deprecated. If your Play app is not implementing a `Module` you should add one and use the new `bindServiceInfo` to setup the service name and `ServiceAcl`s. The suggested location is `<play_app_folder>/app/Module.java` so that Guice will find it automatically.
 
 ## ConductR
 
