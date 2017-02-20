@@ -70,7 +70,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
     case Done =>
       val handler = processorFactory().buildHandler()
-      handler.prepare(tag).toScala.map(Start(_)) pipeTo self
+      handler.prepare(tag).toScala.map(Start) pipeTo self
       context become active(handler, tag)
 
     case Status.Failure(e) =>

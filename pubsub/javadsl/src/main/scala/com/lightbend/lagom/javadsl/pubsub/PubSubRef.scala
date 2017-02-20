@@ -115,6 +115,6 @@ final class PubSubRef[T](val topic: TopicId[T], mediator: ActorRef, system: Acto
   protected def writeReplace(): AnyRef =
     throw new NotSerializableException(s"${getClass.getName} is not serializable. Send the entityId instead.")
 
-  override def toString(): String = s"PubSubRef($topic)"
+  override def toString: String = s"PubSubRef($topic)"
 
 }

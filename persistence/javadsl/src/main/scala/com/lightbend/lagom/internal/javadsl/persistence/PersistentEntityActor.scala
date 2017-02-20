@@ -92,16 +92,16 @@ private[lagom] class PersistentEntityActor[C, E, S](
 
     def initEmpty(): Unit =
       if (!initialized) {
-        val inital = entity.initialBehavior(Optional.empty[S])
-        entity.internalSetCurrentBehavior(inital)
+        val initial = entity.initialBehavior(Optional.empty[S])
+        entity.internalSetCurrentBehavior(initial)
         initialized = true
       }
 
     {
       case SnapshotOffer(_, snapshot) =>
         if (!initialized) {
-          val inital = entity.initialBehavior(Optional.ofNullable(snapshot.asInstanceOf[S]))
-          entity.internalSetCurrentBehavior(inital)
+          val initial = entity.initialBehavior(Optional.ofNullable(snapshot.asInstanceOf[S]))
+          entity.internalSetCurrentBehavior(initial)
           initialized = true
         }
 
