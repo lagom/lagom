@@ -4,11 +4,18 @@ We've seen how to define service descriptors and how to implement them, now we n
 
 ## Binding a service client
 
-The first thing necessary to consume a service is to bind it, so that Lagom can provide an implementation for your application to use.  This can be done using the `bindClient` method on [ServiceClientGuiceSupport](api/index.html?com/lightbend/lagom/javadsl/client/ServiceClientGuiceSupport.html).  If you're already binding a service implementation using [ServiceGuiceSupport](api/index.html?com/lightbend/lagom/javadsl/server/ServiceGuiceSupport.html), this interface extends `ServiceClientGuiceSupport`, so your existing module can be used as is:
+The first thing necessary to consume a service is to bind it, so that Lagom can provide an implementation for your application to use.  This can be done using the `bindClient` method on [ServiceClientGuiceSupport](api/index.html?com/lightbend/lagom/javadsl/client/ServiceClientGuiceSupport.html).  
 
 @[bind-hello-client](code/docs/services/client/Module.java)
 
-Note that when you bind a server using `bindServices`, this will automatically bind a client for that service as well.
+When using a client Lagom will need a [`ServiceInfo`](api/com/lightbend/lagom/javadsl/api/ServiceInfo.html) implementation and use it to identify itself to the remote service. When you are developing an application that's only implementing `ServiceClientGuiceSupport` to consume Lagom services you will need to invoke `bindServiceInfo()` and provide a `ServiceInfo` instance describing your app. 
+
+If you're already binding a service implementation using [ServiceGuiceSupport](api/index.html?com/lightbend/lagom/javadsl/server/ServiceGuiceSupport.html), this interface extends `ServiceClientGuiceSupport`, so your existing module can be used as is:
+
+@[bind-client](code/docs/services/server/ServiceModule.java)
+
+Note that when you bind a server using `bindServices`, this will automatically bind a client for that service as well. So in the previous example, when we start the application there will be one service (`HelloService`) and two clients (`HelloService` and `EchoService`) available.
+ 
 
 ## Using a service client
 

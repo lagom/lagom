@@ -28,7 +28,9 @@ Next we need to create an application cake. The simplest way of doing this is by
 
 @[lagom-application](code/ServiceImplementation.scala)
 
-The important method to implement here is the `lagomServer` method. Lagom will use this to discover your service bindings and create a Play router for handling your service calls. You can see that we've bound one service descriptor, the `HelloService`, to our `HelloServiceImpl` implementation. We've used Macwire's `wire` macro to wire the dependencies - at the moment our service actually has no dependencies so we could just construct it manually ourselves, but it's not likely that a real service implementation would have no dependencies.
+The important method to implement here is the `lagomServer` method. Lagom will use this to discover your service bindings and create a Play router for handling your service calls. You can see that we've bound one service descriptor, the `HelloService`, to our `HelloServiceImpl` implementation. `LagomServer.forServices()` takes an variable number of arguments so you can build a server with many  `Service`s in it (this is often useful to include admin or metrics services with your primary service). When you create a server with many services the first parameter in `LagomServer.forServices()` will be considered the `primary service` and Lagom will use it's name as the server name. So if you create a server with the services `Orders`, `Metrics` and `FraudDetection` then your server will be named `Orders` as that is the primary service.
+
+We've used Macwire's `wire` macro to wire the dependencies - at the moment our service actually has no dependencies so we could just construct it manually ourselves, but it's not likely that a real service implementation would have no dependencies.
 
 You can see that we've also mixed in the Play `AhcWSComponents` trait. Play's HTTP client, the WS API, which is used by Lagom for making service calls, is pluggable, and so an implementation needs to be selected when we wire our application together. We've selected Play's async-http-client implementation, provided by `AhcWSComponents`.
 
