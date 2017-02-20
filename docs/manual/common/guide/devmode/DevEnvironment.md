@@ -21,7 +21,7 @@ This may take a while if you have a lot of services or if dependencies are being
 
 ## Starting the sbt development console
 
-Assuming you have followed the [[Installation|Installation]] instructions, it's now time to fire up the console on your Lagom project directory:
+Assuming you have have an sbt project, it's now time to fire up the console on your Lagom project directory:
 
 ```console
 $ cd <path to your Lagom project>

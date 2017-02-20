@@ -55,7 +55,7 @@ object LagomJava extends AutoPlugin {
   )
 
   // service locator dependencies are injected into services only iff dev service locator is enabled
-  private lazy val devServiceLocatorDependencies = Def.setting {
+  private[sbt] lazy val devServiceLocatorDependencies = Def.setting {
     if (LagomPlugin.autoImport.lagomServiceLocatorEnabled.value)
       Seq(
         LagomImport.component("lagom-service-registry-client"),
@@ -301,7 +301,7 @@ object LagomPlugin extends AutoPlugin {
     // kafka tasks and settings
     val lagomKafkaStart = taskKey[Unit]("Start the local kafka server")
     val lagomKafkaStop = taskKey[Unit]("Stop the local kafka server")
-    val lagomKafkaPropertiesFile = settingKey[Option[File]]("Properties file used by the local kafka broker (file's location is relative to the project's root)")
+    val lagomKafkaPropertiesFile = settingKey[Option[File]]("Properties file used by the local kafka broker")
     val lagomKafkaEnabled = settingKey[Boolean]("Enable/Disable the kafka server")
     val lagomKafkaCleanOnStart = settingKey[Boolean]("Wipe the kafka log before starting")
     val lagomKafkaJvmOptions = settingKey[Seq[String]]("JVM options used by the forked kafka process")
@@ -309,11 +309,22 @@ object LagomPlugin extends AutoPlugin {
     val lagomKafkaPort = settingKey[Int]("Port used by the local kafka broker")
     val lagomKafkaAddress = settingKey[String]("Address of the kafka brokers (comma-separated list)")
 
-    /** Allows to integrate an external Lagom project in the current build, so that when runAll is run, this service is also started.*/
-    def lagomExternalProject(name: String, module: ModuleID): Project =
+    @deprecated("Use lagomExternalJavadslProject or lagomExternalScaladslProject instead", "1.3.0")
+    def lagomExternalProject(name: String, module: ModuleID): Project = lagomExternalJavadslProject(name, module)
+
+    /** Allows to integrate an external Lagom scaladsl project in the current build, so that when runAll is run, this service is also started.*/
+    def lagomExternalScaladslProject(name: String, module: ModuleID): Project =
       Project(name, file("target") / "lagom-external-projects" / name).
         enablePlugins(LagomExternalProject).
         settings(Seq(libraryDependencies += module))
+
+    /** Allows to integrate an external Lagom javadsl project in the current build, so that when runAll is run, this service is also started.*/
+    def lagomExternalJavadslProject(name: String, module: ModuleID): Project = {
+      // Same as scaladsl, but Java projects need to have the dev mode service registration explicitly added.
+      lagomExternalScaladslProject(name, module).settings(
+        libraryDependencies ++= LagomJava.devServiceLocatorDependencies.value
+      )
+    }
   }
 
   import autoImport._
@@ -492,35 +503,7 @@ object LagomPlugin extends AutoPlugin {
         val log = new SbtLoggerProxy(state.value.log)
         val zooKeeperPort = lagomKafkaZookeperPort.value
         val kafkaPort = lagomKafkaPort.value
-        val kafkaPropertiesFile: Option[File] = {
-          lagomKafkaPropertiesFile.value match {
-            case None =>
-              log.debug("Kafka will start using the default server.properties included in Lagom.")
-              None
-            case file @ Some(propertiesFile) =>
-              if (propertiesFile.exists()) {
-                log.debug {
-                  """You have provided an absolute path to a Kafka properties file. I will use the provided path,
-                   | but consider using a relative path instead of an absolute one. If you decide to use a relative path,
-                   | make sure the provided path is relative to this project's build root directory.""".stripMargin
-                }
-                file
-              } else {
-                val rootDir = (Keys.baseDirectory in ThisBuild).value
-                val file = rootDir / propertiesFile.getPath
-                if (file.exists()) Some(file)
-                else {
-                  log.warn {
-                    s"""No properties file can be found at the provided path ${propertiesFile.getPath}. Hence, the local Kafka
-                      | server will be started with the default server.properties included in Lagom. To remove this warning, you
-                      | shall update the path provided in the sbt key ${lagomKafkaPropertiesFile.key.label} to point an existing
-                      | properties file.""".stripMargin
-                  }
-                  None
-                }
-              }
-          }
-        }
+        val kafkaPropertiesFile = lagomKafkaPropertiesFile.value
         val classpath = (managedClasspath in Compile).value.map(_.data)
         val jvmOptions = lagomKafkaJvmOptions.value
         val targetDir = target.value

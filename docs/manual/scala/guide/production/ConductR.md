@@ -56,7 +56,7 @@ It also adds the ConductR libraries to your classpath, which provide components,
 
 @[conductr-application](code/ConductR.scala)
 
-Once you have added this to each of your services, you should be ready to run in ConductR.
+Once you have added this to each of your services, you should be ready to run in ConductR. Also note that it's very important to implement the `describeServices` method on `LagomApplicationLoader`, as this will ensure that the ConductR sbt tooling is able to correctly discover the Lagom service APIs offered by each service.
 
 ## Run it all
 

@@ -121,7 +121,7 @@ There is no mechanism in place to edit the used `logback.xml`. If you need to tu
 
 ## Cassandra start time
 
-[[As mentioned|DevEnvironment#Cassandra]], the `runAll` task also takes care of starting the embedded Cassandra server, before starting any other service. Moreover, services are usually started only after the Cassandra server is reachable. By default, the Cassandra server is given up to 20 seconds to be up and running, but you can change this default by adding the following in your build.
+[[As mentioned|DevEnvironment]], the `runAll` task also takes care of starting the embedded Cassandra server, before starting any other service. Moreover, services are usually started only after the Cassandra server is reachable. By default, the Cassandra server is given up to 20 seconds to be up and running, but you can change this default by adding the following in your build.
 
 In the Maven root project pom:
 
@@ -171,7 +171,7 @@ One good reason to disable the embedded Cassandra server is if you need your ser
 
 ## Connecting to a locally running Cassandra instance
 
-It's possible to connect to an [[externally run|ServiceLocator#communicating-with-external-services]] Cassandra instance in place of the embedded one. All you need to do is adding the following in your build.
+It's possible to connect to an [[externally run|ServiceLocator#Communicating-with-external-services]] Cassandra instance in place of the embedded one. All you need to do is adding the following in your build.
 
 In the Maven root project pom:
 

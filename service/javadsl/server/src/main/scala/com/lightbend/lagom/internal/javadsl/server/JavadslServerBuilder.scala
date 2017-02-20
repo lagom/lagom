@@ -4,6 +4,7 @@
 package com.lightbend.lagom.internal.javadsl.server
 
 import java.util.function.{ BiFunction, Function => JFunction }
+import java.util.stream.Collectors
 import javax.inject.{ Inject, Provider, Singleton }
 
 import akka.stream.Materializer
@@ -19,6 +20,7 @@ import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceInfo }
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.{ ClassServiceBinding, InstanceServiceBinding }
 import com.lightbend.lagom.javadsl.server.{ PlayServiceCall, ServiceGuiceSupport }
+import org.pcollections.{ HashTreePMap, TreePVector }
 import play.api.http.HttpConfiguration
 import play.api.inject.Injector
 import play.api.mvc.{ RequestHeader => PlayRequestHeader, ResponseHeader => _, _ }
@@ -67,25 +69,31 @@ class JavadslServerBuilder @Inject() (environment: Environment, httpConfiguratio
   }
 
   /**
-   * Create a service info for the given interface.
-   *
-   * @param interface The interface to create the service info for.
-   * @return The service info.
+   * Create a service info for the given interfaces.
    */
-  def createServiceInfo(interface: Class[_]): ServiceInfo = {
-    if (classOf[Service].isAssignableFrom(interface)) {
-      val descriptor = ServiceReader.readServiceDescriptor(
-        environment.classLoader,
-        interface.asSubclass(classOf[Service])
-      )
-      new ServiceInfo(descriptor.name())
+  def createServiceInfo(primaryServiceInterface: Class[_], secondaryServices: Seq[Class[_]]): ServiceInfo = {
+    val interfaces = primaryServiceInterface +: secondaryServices
+    if (interfaces.forall(classOf[Service].isAssignableFrom)) {
+      val descriptors = interfaces.map { serviceInterface =>
+        ServiceReader.readServiceDescriptor(
+          environment.classLoader,
+          serviceInterface.asSubclass(classOf[Service])
+        )
+      }
+      val locatableServices = descriptors
+        .filter(_.locatableService())
+        .map { descriptor =>
+          descriptor.name() -> descriptor.acls()
+        }.toMap.asJava
+      new ServiceInfo(descriptors.head.name, HashTreePMap.from(locatableServices))
     } else {
-      throw new IllegalArgumentException(s"Don't know how to load services that don't implement Service: $interface")
+      throw new IllegalArgumentException(s"Don't know how to load services that don't implement Service. Provided: ${interfaces.mkString("[", ", ", "]")}")
     }
   }
 }
 
 case class ResolvedServices(services: Seq[ResolvedService[_]])
+
 case class ResolvedService[T](interface: Class[T], service: T, descriptor: Descriptor)
 
 @Singleton
@@ -114,6 +122,7 @@ class JavadslServicesRouter @Inject() (resolvedServices: ResolvedServices, httpC
 
   override val routes: Routes =
     serviceRouters.foldLeft(PartialFunction.empty[PlayRequestHeader, Handler])((routes, router) => routes.orElse(router.routes))
+
   override def documentation: Seq[(String, String, String)] = serviceRouters.flatMap(_.documentation)
 }
 

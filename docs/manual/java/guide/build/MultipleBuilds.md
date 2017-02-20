@@ -1,6 +1,6 @@
 # Splitting a system into multiple builds
 
-For a small system maintained by a single team, it's fine to have all your services in one build. Doing it that way makes it really easy to run all your services with the `runAll` task, as we'll see later in the [[Running Services|RunningServices]] section of this manual.
+When designing a Lagom system, you have flexibility to organize your services into build units that best meet your requirements. For a small system maintained by a single team, it's fine to have all your services in one build. Doing it that way makes it really easy to run all your services with the `runAll` task, as we'll see later in the [[Running Services|RunningServices]] section of this manual.
 
 If you have multiple teams, though, then as described already in [[Lagom build concepts|BuildConcepts]], we recommend splitting your system into multiple builds.
 
@@ -75,7 +75,7 @@ The `hellowold` Lagom service can be imported by adding the following declaratio
 
 @[hello-external](code/multiple-builds.sbt)
 
-The first argument passed to `lagomExternalProject` is the name that will be used in your build to refer to this externally defined project. While, the second argument provides the dependency to the `hello-impl` JAR, using the conventional sbt syntax for declaring dependencies. Note in fact that the `lagomExternalProject` method returns a sbt `Project`, which you can further customize if needed.
+The first argument passed to `lagomExternalJavadslProject` is the name that will be used in your build to refer to this externally defined project. While, the second argument provides the dependency to the `hello-impl` JAR, using the conventional sbt syntax for declaring dependencies. Note in fact that the `lagomExternalJavadslProject` method returns a sbt `Project`, which you can further customize if needed.
 
 After having added the external Lagom project to your build, just type `reload` in the sbt console. Then, when executing `runAll`, you should see that the `hello` service is started, together with all other services defined in the build:
 

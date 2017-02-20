@@ -26,7 +26,7 @@ Having provided an implementation of the service, we can now register that with 
 
 @[hello-service-binding](code/docs/services/server/Module.java)
 
-As you can see, the module extends Guice's `AbstractModule`, as well as Lagom's `ServiceGuiceSupport`.  In this module, you can provide any Guice bindings you like.  In this case, we're just providing a binding for the Guice service.  Lagom allows you to bind multiple services, however, `bindServices()` may only be invoked once, as this will bind a router for Play to use to route Lagom service calls, which if bound multiple times, will cause a Guice configuration error.
+As you can see, the module extends Guice's `AbstractModule`, as well as Lagom's `ServiceGuiceSupport`.  In this module, you can provide any Guice bindings you like.  In this case, we're just providing a binding for the `HelloService`.  Lagom allows you to bind multiple services, however, `bindServices()` may only be invoked once, as this will bind a router for Play to use to route Lagom service calls, which if bound multiple times, will cause a Guice configuration error. The first binding you specify will be considered the `primaryServiceBinding` and its Descriptor's name will be used to name your Service. This name will be used by Lagom as the default value to identify your microservice when interacting with other microservices. 
 
 By convention, Play will automatically load a module called `Module` in the root package if it can find one, however if you'd prefer to call your module another name, or not put it in the root package, then you can manually add your module to Play's list of enabled modules by adding the following to `application.conf`:
 

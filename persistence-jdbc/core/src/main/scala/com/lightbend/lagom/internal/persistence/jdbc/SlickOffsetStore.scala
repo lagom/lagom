@@ -79,21 +79,23 @@ private[lagom] class SlickOffsetStore(system: ActorSystem, val slick: SlickProvi
 
   private val offsets = TableQuery[OffsetStore]
 
-  val startupTask = ClusterStartupTask(
-    system,
-    "cassandraOffsetStorePrepare",
-    createTables,
-    config.globalPrepareTimeout,
-    config.role,
-    config.minBackoff,
-    config.maxBackoff,
-    config.randomBackoffFactor
-  )
+  private val startupTask = if (slick.autoCreateTables) {
+    implicit val timeout = Timeout(config.globalPrepareTimeout)
+    ClusterStartupTask(
+      system,
+      "slickOffsetStorePrepare",
+      createTables,
+      config.globalPrepareTimeout,
+      config.role,
+      config.minBackoff,
+      config.maxBackoff,
+      config.randomBackoffFactor
+    ).askExecute()
+  } else Future.successful(Done)
 
   def runPreparations(eventProcessorId: String, tag: String): Future[Offset] = {
-    implicit val timeout = Timeout(config.globalPrepareTimeout)
     for {
-      _ <- startupTask.askExecute()
+      _ <- startupTask
       offset <- slick.db.run(getOffsetQuery(eventProcessorId, tag))
     } yield offset
   }

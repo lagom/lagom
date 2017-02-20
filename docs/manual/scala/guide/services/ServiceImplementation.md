@@ -14,7 +14,7 @@ Let's have a look at our [`ServiceCall`](api/com/lightbend/lagom/scaladsl/api/Se
 
 It will take the request, and return the response as a [`Future`](http://www.scala-lang.org/api/2.12.x/scala/concurrent/Future.html).  If you've never seen `Future` before, it is a value that may not be available until later.  When an API returns a future, that value might not yet be computed, but the API promises that at some point in future, it will be.  Since the value isn't computed yet, you can't interact with it immediately.  What you can do though is attach callbacks that transform the promise to a promise of a new value, using the `map` and `flatMap` methods.  `Future` with its `map` and `flatMap` methods are fundamental building blocks for doing reactive programming in Scala, they allow your code to be asynchronous, not waiting for things to happen, but attaching callbacks that react to computations being completed.
 
-Of course, a simple hello world computation is not asynchronous, all it needs is to do is build a String, and that returns immediately.  In this case, we need to wrap the result of that in a `Future`.  This can be done by calling `Future.successful()`, which returns a future that has an immediately available value.
+Of course, a simple hello world computation is not asynchronous, all it needs to do is build a String, and that returns immediately.  In this case, we need to wrap the result of that in a `Future`.  This can be done by calling `Future.successful()`, which returns a future that has an immediately available value.
 
 ## Wiring together a Lagom application
 
@@ -28,7 +28,9 @@ Next we need to create an application cake. The simplest way of doing this is by
 
 @[lagom-application](code/ServiceImplementation.scala)
 
-The important method to implement here is the `lagomServer` method. Lagom will use this to discover your service bindings and create a Play router for handling your service calls. You can see that we've bound one service descriptor, the `HelloService`, to our `HelloServiceImpl` implementation. We've used Macwire's `wire` macro to wire the dependencies - at the moment our service actually has no dependencies so we could just construct it manually ourselves, but it's not likely that a real service implementation would have no dependencies.
+The important method to implement here is the `lagomServer` method. Lagom will use this to discover your service bindings and create a Play router for handling your service calls. You can see that we've bound one service descriptor, the `HelloService`, to our `HelloServiceImpl` implementation. `LagomServer.forServices()` takes an variable number of arguments so you can build a server with many  `Service`s in it (this is often useful to include admin or metrics services with your primary service). When you create a server with many services the first parameter in `LagomServer.forServices()` will be considered the `primary service` and Lagom will use it's name as the server name. So if you create a server with the services `Orders`, `Metrics` and `FraudDetection` then your server will be named `Orders` as that is the primary service.
+
+We've used Macwire's `wire` macro to wire the dependencies - at the moment our service actually has no dependencies so we could just construct it manually ourselves, but it's not likely that a real service implementation would have no dependencies.
 
 You can see that we've also mixed in the Play `AhcWSComponents` trait. Play's HTTP client, the WS API, which is used by Lagom for making service calls, is pluggable, and so an implementation needs to be selected when we wire our application together. We've selected Play's async-http-client implementation, provided by `AhcWSComponents`.
 
@@ -38,7 +40,9 @@ Having created our application cake, we can now write an application loader. Pla
 
 @[lagom-loader](code/ServiceImplementation.scala)
 
-The loader has two methods, `load` and `loadDevMode`. You can see that we've mixed in different service locators for each method, we've mixed in [`LagomDevModeComponents`](api/com/lightbend/lagom/scaladsl/devmode/LagomDevModeComponents.html) that provides the dev mode service locator and registers the services with it in dev mode, and in prod mode, for now, we've simply provided [`NoServiceLocator`](api/com/lightbend/lagom/scaladsl/api/ServiceLocator$$NoServiceLocator$.html) as the service locator - this is a service locator that will return nothing for every lookup. We'll see in the [[deploying to production|ProductionOverview]] documentation how to select the right service locator for production.
+The loader has two methods that must be implemented, `load` and `loadDevMode`. You can see that we've mixed in different service locators for each method, we've mixed in [`LagomDevModeComponents`](api/com/lightbend/lagom/scaladsl/devmode/LagomDevModeComponents.html) that provides the dev mode service locator and registers the services with it in dev mode, and in prod mode, for now, we've simply provided [`NoServiceLocator`](api/com/lightbend/lagom/scaladsl/api/ServiceLocator$$NoServiceLocator$.html) as the service locator - this is a service locator that will return nothing for every lookup. We'll see in the [[deploying to production|ProductionOverview]] documentation how to select the right service locator for production.
+
+A third method, `describeServices`, is optional, but may be used by tooling, for example by [[ConductR]], to discover what service APIs are offered by this service. The meta data read from here may in turn be used to configure service gateways and other components.
 
 Finally, we need to tell Play about our application loader. We can do that by adding the following configuration to `application.conf`:
 
@@ -54,7 +58,7 @@ The `tick` service call is going to return a `Source` that sends messages at the
 
 The first two arguments are the delay before messages should be sent, and the interval at which they should be sent. The third argument is the message that should be sent on each tick. Calling this service call with an interval of `1000` and a request message of `tick` will result in a stream being returned that sent a `tick` message every second.
 
-A streamed `sayHello` service call can be implemented by mapping the incoming `Source` of the names to say hello to:
+A streamed `sayHello` service call can be implemented by mapping the incoming `Source` of the names to say hello:
 
 @[hello-service-call](code/ServiceImplementation.scala)
 
@@ -68,7 +72,7 @@ Sometimes you may need to handle the request header, or add information to the r
 
 `ServerServiceCall` is an interface that extends `ServiceCall`, and provides an additional method, `invokeWithHeaders`.  This is different from the regular `invoke` method because in addition to the `Request` parameter, it also accepts a [`RequestHeader`](api/com/lightbend/lagom/scaladsl/api/transport/RequestHeader.html) parameter.  And rather than returning a `Future[Response]`, it returns a `Future[(ResponseHeader, Response)]`.  Hence it allows you to handle the request header, and send a custom response header.  `ServerServiceCall` implements the `handleRequestHeader` and `handleResponseHeader` methods, so that when Lagom calls the `invoke` method, it is delegated to the `invokeWithHeaders` method.
 
-The [`ServerServiceCall`](api/com/lightbend/lagom/scaladsl/server/ServerServiceCall$.html) companion object provides a factories for creating `ServerServiceCall`'s both that work with headers and that don't. It may seem counter intuitive to be able to create a `ServerServiceCall` that doesn't work with headers, but the reason for doing this is to assist in service call composition, where a composing service call might want to compose both types of service call.
+The [`ServerServiceCall`](api/com/lightbend/lagom/scaladsl/server/ServerServiceCall$.html) companion object provides a factory method for creating `ServerServiceCall`'s that work with both request and response headers. It may seem counter intuitive to be able to create a `ServerServiceCall` that doesn't work with headers, but the reason for doing this is to assist in service call composition, where a composing service call might want to compose both types of service call.
 
 Here's an example of working with the headers:
 

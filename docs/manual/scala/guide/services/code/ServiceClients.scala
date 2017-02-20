@@ -62,7 +62,7 @@ package circuitbreakers {
     def hiAgain: ServiceCall[String, String]
 
     // @formatter:off
-    //#circuit-breakers
+    //#circuit-breaker
     import com.lightbend.lagom.scaladsl.api.CircuitBreaker
 
     def descriptor: Descriptor = {
@@ -74,7 +74,7 @@ package circuitbreakers {
           .withCircuitBreaker(CircuitBreaker.identifiedBy("hello2"))
       )
     }
-    //#circuit-breakers
+    //#circuit-breaker
     // @formatter:on
   }
 

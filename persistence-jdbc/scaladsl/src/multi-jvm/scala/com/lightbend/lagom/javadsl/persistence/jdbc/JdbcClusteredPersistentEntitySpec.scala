@@ -1,21 +1,19 @@
 package com.lightbend.lagom.scaladsl.persistence.jdbc
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import akka.stream.Materializer
-import com.lightbend.lagom.scaladsl.persistence.{ReadSideProcessor, TestEntitySerializerRegistry}
+import akka.stream.{ActorMaterializer, Materializer}
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence.multinode.{AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec}
+import com.lightbend.lagom.scaladsl.persistence.{ReadSideProcessor, TestEntitySerializerRegistry}
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{Config, ConfigFactory}
 import org.h2.tools.Server
-import play.api.Configuration
-import play.api.Environment
+import play.api.{Configuration, Environment}
 import play.api.db.HikariCPComponents
-import play.api.inject.ApplicationLifecycle
-import play.api.inject.DefaultApplicationLifecycle
+import play.api.inject.{ApplicationLifecycle, DefaultApplicationLifecycle}
+
+import scala.concurrent.{ExecutionContext, Future}
+
 
 object JdbcClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
   override def additionalCommonConfig(databasePort: Int): Config = ConfigFactory.parseString(

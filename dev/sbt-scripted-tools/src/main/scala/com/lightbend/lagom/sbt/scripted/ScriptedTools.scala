@@ -69,6 +69,7 @@ object ScriptedTools extends AutoPlugin {
         attempt()
       }
     },
+    aggregate in validateRequest := false,
     validateFile := {
       val validateFile = validateFileParser.parsed
       val file = baseDirectory.value / validateFile.file.get
@@ -87,6 +88,7 @@ object ScriptedTools extends AutoPlugin {
       }
       file
     },
+    aggregate in validateFile := false,
     Internal.Keys.interactionMode := NonBlockingInteractionMode
   )
 
