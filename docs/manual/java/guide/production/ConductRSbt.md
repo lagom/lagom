@@ -7,7 +7,7 @@ To use ConductR with sbt, add the [sbt-conductr plugin](https://github.com/types
 sbt-conductr adds several commands to the sbt console:
 
 * `install` to introspect your project and deploy all services within the ConductR sandbox
-* `generateInstallationScript` to produce an deployment script for all your services that you can then tailor
+* `generateInstallationScript` to produce a deployment script for all your services that you can then tailor
 * `bundle:dist` to produce individual ConductR packages for your services
 * `configuration:dist` to produce individual ConductR configurations for your services
 * `cassandra-configuration:dist` to produce a Cassandra ConductR configuration
