@@ -2,9 +2,9 @@
 
 The Lagom Maven archetype allows you to quickly create a project for development. Follow these steps to:
 
-* [[Check Prerequisites|#check-prerequisites]]
-* [[Create your project|#create-a-project]]
-* [[Create an Eclipse Run Configuration|EclipseRunConfig]]
+* [Check Prerequisites](check-prerequisites)
+* [Create your project](#create-a-project)
+* [[Create an Eclipse Run Configuration](EclipseRunConfig)
 
 ## Check Prerequisites
 Before attempting to create a Lagom Maven project in Eclipse, ensure that Eclipse is configured with the following:

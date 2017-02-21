@@ -5,4 +5,4 @@ EclipseMavenNew:Creating a new Maven Eclipse project with the Lagom archetype;ne
 EclipseRunConfig: Creating an Eclipse Run Configuration;;next=RunningServices
 EclipseSbt:Importing an sbt project into Eclipse;next=RunningServices
 IntellijMaven:Importing an existing Maven Project into Intellij;next=RunningServices
-IntellijSbt:Importing an sbt project into Intellij;next=RunningServices
+IntellijSbtJava:Importing an sbt project into Intellij;next=RunningServices
