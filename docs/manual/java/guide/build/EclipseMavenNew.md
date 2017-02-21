@@ -2,8 +2,8 @@
 
 The Lagom Maven archetype allows you to quickly create a project for development. Follow these steps to:
 
-<!--  [Check Prerequisites](#check-prerequisites)
- [Create your project](#create-an-eclipse-project) -->
+[Check Prerequisites](#Check-prerequisites)
+ [Create your project](#Create-an-Eclipse-project)
 
 ## Check prerequisites
 
