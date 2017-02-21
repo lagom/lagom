@@ -46,10 +46,11 @@ To use ConductR with sbt, add the [sbt-conductr plugin](https://github.com/types
 
 sbt-conductr adds several commands to the sbt console:
 
-* `install` to introspect your projects and then load and run them within the sandbox
-* `generateInstallationScript` to produce an installation script to deploy your Lagom system that you can then tailor
+* `install` to introspect your project and deploy all services within the ConductR sandbox
+* `generateInstallationScript` to produce a deployment script for all your services that you can then tailor
 * `bundle:dist` to produce individual ConductR packages for your services
-* `configuration:dist` to produce individual custom ConductR configuration for your services
+* `configuration:dist` to produce individual ConductR configurations for your services
+* `cassandra-configuration:dist` to produce a Cassandra ConductR configuration
 * Commands from the `conductr-cli`
 
 It also adds the ConductR libraries to your classpath, which provide components, including the service locator and other components necessary for initialization on ConductR, which you can mix in with your application cake. To do so, mix `ConductRApplicationComponents` into your production cake:
