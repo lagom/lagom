@@ -4,10 +4,12 @@ Before importing, configure IntelliJ IDEA to use the most recent Scala plugin, w
 
 > **Note** The instructions on this page were verified with IntelliJ IDEA Community Version 2016.3.4. The procedures and screens can differ depending on the version, but the basic flow should be the same.
 
-The following sections provide detailed steps for configuring IDEA and importing an sbt project.
+The following sections provide detailed steps for configuring IDEA and importing an sbt project:
+
 
 * [Verify or add the Scala plugin](#verify-or-add-the-scala-plugin)
 * [Import an sbt project](#import-an-sbt-project)
+
 
 ## Verify or add the Scala plugin
 A number of Scala plugins are available. We recommend the plugin provided by JetBrains:
