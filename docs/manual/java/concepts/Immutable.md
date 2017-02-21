@@ -90,7 +90,7 @@ In sbt:
 
 @[lagom-immutables](code/lagom-immutables.sbt)
 
-Immutables integrates with popular IDEs. Follow the instructions for [[Eclipse|ImmutablesInIDEs#eclipse]] or [[IntelliJ IDEA|ImmutablesInIDEs#intellij-idea]] to add the Immutables annotation processor to your IDE. We've found the integration with IntelliJ IDEA a bit cumbersome though.
+Immutables integrates with popular IDEs. Follow the instructions for [[Eclipse|ImmutablesInIDEs#Eclipse]] or [[IntelliJ IDEA|ImmutablesInIDEs#IntelliJ-IDEA]] to add the Immutables annotation processor to your IDE. We've found the integration with IntelliJ IDEA a bit cumbersome though.
 
 
 

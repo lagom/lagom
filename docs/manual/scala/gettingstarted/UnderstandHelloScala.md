@@ -4,8 +4,8 @@ After creating and running Hello World from the command line, you no doubt appre
 
 The separation of concerns illustrated in Hello World and an introduction to service descriptors and the registry will help you as you start developing your own microservices:
 
-* [Service interface](#service-interface)
-* [Service implementation](#service-implementation)
+* [Service interface](#Service-interface)
+* [Service implementation](#Service-implementation)
 
 # Service interface
 

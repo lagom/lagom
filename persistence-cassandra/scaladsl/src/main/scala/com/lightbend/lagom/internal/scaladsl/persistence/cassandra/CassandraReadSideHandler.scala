@@ -90,7 +90,9 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
 
   override protected def invoke(handler: Handler[Event], element: EventStreamElement[Event]): Future[immutable.Seq[BoundStatement]] = {
     for {
-      statements <- (handler.asInstanceOf[EventStreamElement[Event] => Future[immutable.Seq[BoundStatement]]].apply(element))
+      statements <- handler
+        .asInstanceOf[EventStreamElement[Event] => Future[immutable.Seq[BoundStatement]]]
+        .apply(element)
     } yield statements :+ offsetDao.bindSaveOffset(element.offset)
   }
 

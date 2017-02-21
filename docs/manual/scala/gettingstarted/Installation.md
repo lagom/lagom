@@ -20,9 +20,9 @@ Before trying the template, make sure that your environment conforms to Lagom pr
 
 For more details on verifying or installing prerequisites see the following sections:
 
-* [JDK](#jdk)
+* [JDK](#JDK)
 * [Installing sbt](#sbt)
-* [Proxy setup](#proxy-setup)
+* [Proxy setup](#Proxy-setup)
 
 When your environment is ready, follow the instructions for [[Creating and running Hello World|GettingStarted]].
 
@@ -64,6 +64,6 @@ To check which version of sbt you are using, run `sbt sbt-version` from the comm
 [info] 0.13.13
 ```
 
-## Proxy Setup
+## Proxy setup
 
 If you can only access the web through a proxy, create and/or set the `HTTP_PROXY` environment variable on your machine  to your proxy's URL, for example, `HTTP_PROXY=http://<host>:<port>`.

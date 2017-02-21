@@ -15,6 +15,7 @@ package docs.scaladsl.production.conductr {
   package conductrapplication {
 
     import docs.scaladsl.services.lagomapplication.HelloApplication
+    import docs.scaladsl.services.helloservice.HelloService
 
     //#conductr-application
     import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -29,6 +30,9 @@ package docs.scaladsl.production.conductr {
       override def loadDevMode(context: LagomApplicationContext) =
         new HelloApplication(context) with LagomDevModeComponents
 
+      override def describeServices = List(
+        readDescriptor[HelloService]
+      )
     }
     //#conductr-application
   }
