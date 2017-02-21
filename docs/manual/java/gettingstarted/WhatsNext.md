@@ -9,6 +9,6 @@ After working through "Getting started with Lagom", follow the path that make th
     
 * Learn how to intgrate with Intellij:
     * [[Import an existing Maven project into Intellij|intellijMaven]]
-    * [[Import an existing sbt build into Intellij|IntellijSbt]]
+    * [[Import an existing sbt build into Intellij|IntellijSbtJava]]
     
 * [[Learn about Lagom core concepts|CoreConcepts]]

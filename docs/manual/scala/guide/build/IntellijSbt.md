@@ -7,11 +7,13 @@ Before importing, configure IntelliJ IDEA to use the most recent Scala plugin, w
 The following sections provide detailed steps for configuring IDEA and importing an sbt project:
 
 
-* [Verify or add the Scala plugin](#verify-or-add-the-scala-plugin)
-* [Import an sbt project](#import-an-sbt-project)
+* [Verify or add the Scala plugin](#add-the-scala-plugin)
+* [Import an sbt project](import-an-sbt-project)
 
 
-## Verify or add the Scala plugin
+## Add the Scala plugin
+
+
 A number of Scala plugins are available. We recommend the plugin provided by JetBrains:
 [[IDEAScalaPlugin.png]]
 
@@ -29,6 +31,8 @@ To verify or add the JetBrains Scala plugin, follow these steps:
 Now you are ready to import your project.
 
 ## Import an sbt project
+
+
 After you have an sbt build -- one you created yourself or from a template -- follow these steps to import the project into IntelliJ IDEA:
 
 1. From the **Welcome Screen** or **File** menu, select **Open**.
