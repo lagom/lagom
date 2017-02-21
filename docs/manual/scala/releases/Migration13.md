@@ -17,7 +17,7 @@ Generally, across your codebase, you will need to do the following:
 
 ## Lagom Service API changes
 
-The primary change necessary for the Lagom Service API is to declare Play JSON formats for all of your request and response messages. These formats should replace any Jackson annotations on your message classes. These formats are typically best declared as an implicit parameter on your message classes companion objects, using the Play JSON macros as a convenience, for example:
+The primary change necessary for the Lagom Service API is to declare Play JSON formats for all of your request and response messages. These formats should replace any Jackson annotations on your message classes. These formats are typically best declared as an implicit parameter on your message classes' companion objects, using the Play JSON macros as a convenience, for example:
 
 ```scala
 import play.api.libs.json._
@@ -29,7 +29,7 @@ object Post {
 }
 ```
 
-For more details, see [[the message serializer documentation|ServiceDescriptors#Message-serialization]] for more information.
+For more details, see [[the message serializer documentation|ServiceDescriptors#Message-serialization]].
 
 If using custom path parameter serializers, these will need to be passed via implicit parameters, rather than being registered with the service descriptor explicitly.
 
@@ -50,7 +50,7 @@ Furthermore, there is no need for `HeaderServiceCall` in Lagom, since the Scala 
 
 ## Persistence changes
 
-Persistent entities in Lagom express their command, event and state types using abstract types, rather than type parameters, on the `PersistentEntity` class. Lagom's persistent entity Scala behaviour builders also make use of partial functions and other Scala features. The full documentation on Scala's persistent entities is [[here|PersistentEntity]].
+Persistent entities in Lagom express their command, event and state types using abstract types, rather than type parameters on the `PersistentEntity` class. Lagom's persistent entity Scala behavior builders also make use of partial functions and other Scala features. The full documentation on Scala's persistent entities is [[here|PersistentEntity]].
 
 Like the message serializers for services, serializers for messages sent over Akka remoting, and for the persistent entity events and state, need to be defined explicitly, by default this can be done using Play JSON. Since serializers are supplied explicitly, there is no need for a `Jsonable` interface in the Scala API.  For more details, see the [[serialization documentation|Serialization]].
 
