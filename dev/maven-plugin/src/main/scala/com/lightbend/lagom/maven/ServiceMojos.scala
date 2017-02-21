@@ -75,12 +75,6 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
   var cassandraPort: Int = _
 
   @BeanProperty
-  var kafkaPort: Int = _
-
-  @BeanProperty
-  var kafkaAddress: String = _
-
-  @BeanProperty
   var externalProjects: JList[ExternalProject] = Collections.emptyList()
 
   @BeanProperty
@@ -126,10 +120,8 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
 
     val cassandraKeyspace = LagomConfig.normalizeCassandraKeyspaceName(project.getArtifactId)
 
-    val kafkaAddress = if (this.kafkaAddress == null) s"localhost:${this.kafkaPort}" else this.kafkaAddress
-
     serviceManager.startServiceDevMode(project, selectedPort, serviceLocatorUrl, cassandraPort, cassandraKeyspace,
-      kafkaAddress, playService = playService, resolvedWatchDirs)
+      playService = playService, resolvedWatchDirs)
   }
 }
 
@@ -178,12 +170,6 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
   @BeanProperty
   var cassandraPort: Int = _
 
-  @BeanProperty
-  var kafkaPort: Int = _
-
-  @BeanProperty
-  var kafkaAddress: String = _
-
   override def execute(): Unit = {
 
     val serviceLocatorUrl = (serviceLocatorEnabled, this.serviceLocatorUrl) match {
@@ -195,8 +181,6 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
     val cassandraPort = if (cassandraEnabled) {
       Some(this.cassandraPort)
     } else None
-
-    val kafkaAddress = if (this.kafkaAddress == null) s"localhost:${this.kafkaPort}" else this.kafkaAddress
 
     lazy val portMap = serviceManager.getPortMap(
       servicePortRange,
@@ -225,7 +209,7 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
       val dependency = RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
 
       serviceManager.startExternalProject(dependency, selectedPort, serviceLocatorUrl, serviceCassandraPort, cassandraKeyspace,
-        kafkaAddress, playService = project.playService)
+        playService = project.playService)
     }
   }
 

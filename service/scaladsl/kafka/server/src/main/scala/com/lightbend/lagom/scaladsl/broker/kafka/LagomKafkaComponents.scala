@@ -4,6 +4,7 @@
 package com.lightbend.lagom.scaladsl.broker.kafka
 
 import com.lightbend.lagom.internal.scaladsl.broker.kafka.ScaladslRegisterTopicProducers
+import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.server.LagomServer
 import com.lightbend.lagom.spi.persistence.OffsetStore
 
@@ -15,6 +16,7 @@ import com.lightbend.lagom.spi.persistence.OffsetStore
 trait LagomKafkaComponents extends LagomKafkaClientComponents {
   def lagomServer: LagomServer
   def offsetStore: OffsetStore
+  def serviceLocator: ServiceLocator
 
   override def topicPublisherName: Option[String] = super.topicPublisherName match {
     case Some(other) =>
@@ -24,5 +26,5 @@ trait LagomKafkaComponents extends LagomKafkaClientComponents {
 
   // Eagerly start topic producers
   new ScaladslRegisterTopicProducers(lagomServer, topicFactory, serviceInfo, actorSystem,
-    offsetStore)(executionContext, materializer)
+    offsetStore, serviceLocator)(executionContext, materializer)
 }

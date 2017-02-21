@@ -19,11 +19,8 @@ import org.scalatest.WordSpecLike
 import org.scalatest.concurrent.ScalaFutures
 import com.google.inject.AbstractModule
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer
-import com.lightbend.lagom.javadsl.api.Descriptor
+import com.lightbend.lagom.javadsl.api._
 import com.lightbend.lagom.javadsl.api.ScalaService._
-import com.lightbend.lagom.javadsl.api.Service
-import com.lightbend.lagom.javadsl.api.ServiceInfo
-import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.api.broker.{ Topic => ApiTopic }
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
@@ -51,12 +48,13 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
         bind[OffsetStore].toInstance(InMemoryOffsetStore),
         bind[PersistentEntityRegistry].toInstance(NullPersistentEntityRegistry),
         JavadslKafkaApiSpec.testModule,
-        bind[ServiceLocator].to[NoServiceLocator]
+        bind[ServiceLocator].to[ConfigurationServiceLocator]
       ).configure(
           "akka.remote.netty.tcp.port" -> "0",
           "akka.remote.netty.tcp.hostname" -> "127.0.0.1",
           "akka.persistence.journal.plugin" -> "akka.persistence.journal.inmem",
-          "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local"
+          "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local",
+          "lagom.services.kafka_native" -> s"tcp://localhost:${KafkaLocalServer.DefaultPort}"
         ).build()
   }
 
