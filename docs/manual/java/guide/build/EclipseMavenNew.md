@@ -2,16 +2,18 @@
 
 The Lagom Maven archetype allows you to quickly create a project for development. Follow these steps to:
 
-* [Check Prerequisites](#check-prerequisites)
-* [Create your project](#create-an-eclipse-project)
+[Check Prerequisites](#check-prerequisites)
+[Create your project](#create-an-eclipse-project)
 
 ## Check prerequisites
+
 Before attempting to create a Lagom Maven project in Eclipse, ensure that Eclipse is configured with the following:
 
 * An [m2eclipse](http://www.eclipse.org/m2e/documentation/m2e-documentation.html) plugin compatible with Maven 3.3 or higher.
 * A JDK 1.8 or higher.
 
 ## Create an Eclipse project
+
 The screen shots on this page reflect Eclipse Neon (4.6.2) with M2E (Maven Integration for Eclipse) version 1.7.0. If you are using different versions, screens might differ, but the procedures should be the same.
 
 In Eclipse, follow these steps to create a project using the Lagom Maven archetype:
