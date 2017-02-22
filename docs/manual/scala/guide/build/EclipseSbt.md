@@ -42,4 +42,4 @@ Follow these steps to integrate your project with Eclipse:
     [[EclBrowseToSbt.png]]
 1. Click **Finish**.
 
-Your project should be imported and ready to work with. As a reminder on how to run and test a project creatd with the template, see [[Creating and Running Hello World with sbt|IntroGetStarted]].
+Your project should be imported and ready to work with. As a reminder on how to run and test a project created with the template, see [[Creating and Running Hello World with sbt|IntroGetStarted]].
