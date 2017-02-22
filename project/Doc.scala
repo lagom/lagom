@@ -71,12 +71,22 @@ object UnidocRoot extends AutoPlugin {
     * I'm not sure exactly how this string is processed by what and where, but it seems escaping
     * newlines and double quotes makes it work with javadoc.
     */
-  private val framesHashScrollingCode = ""
+  private val framesHashScrollingCode =
     """<script type="text/javascript">
       |  if (window.name == "classFrame" && window.top.location.hash) {
       |    window.location.href = window.top.location.hash;
       |  }
       |</script>""".stripMargin.replaceAll("\n", "\\\\n").replaceAll("\"", "\\\\\"")
+
+  /**
+    * JDK 1.8.8_121 introduced a restriction that prevents the inclusion of JS inside generated
+    * javadoc HTML files. That check can be disabled but requires an extra argument.
+    */
+  private val JavaBuildVersion = """1\.8\.0_(\d+)""".r
+  private val enableScriptsArgs = sys.props.get("java.version") match {
+    case Some(JavaBuildVersion(build)) if build.toInt < 121 => Nil
+    case _ => Seq("--allow-script-in-comments")
+  }
 
   override lazy val projectSettings = scalaJavaUnidocSettings ++ Seq(
     unidocAllSources in (JavaUnidoc, unidoc) ++= allGenjavadocSources.value,
@@ -116,13 +126,15 @@ object UnidocRoot extends AutoPlugin {
         "com.lightbend.lagom.javadsl.broker.kafka"
       ),
       "-noqualifier", "java.lang",
-      "-encoding", "UTF-8", 
+      "-encoding", "UTF-8",
       "-source", "1.8",
       "-notimestamp",
       "-footer", framesHashScrollingCode
-    ))
+    )
+    ++ enableScriptsArgs
+  )
 
-  def packageList(names: String*): String = 
+  def packageList(names: String*): String =
     names.mkString(":")
 }
 
