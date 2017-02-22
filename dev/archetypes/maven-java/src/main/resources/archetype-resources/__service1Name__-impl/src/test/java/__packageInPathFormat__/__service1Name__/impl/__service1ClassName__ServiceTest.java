@@ -10,7 +10,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import akka.NotUsed;
 import ${package}.${service1Name}.api.GreetingMessage;
 import ${package}.${service1Name}.api.${service1ClassName}Service;
 
