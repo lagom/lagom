@@ -16,11 +16,11 @@ If you're using maven, you'll need to add the Lagom logback dependency to your c
 </dependency>
 ```
 
-If you're using sbt, you'll automatically get the Lagom logback support when you enable the `LagomJava` plugin on a project:
+If you're using sbt, you'll automatically get the Lagom logback support when you enable the Lagom plugin on a project:
 
-@[lagom-logback-plugin-lagomjava](code/build-log.sbt)
+@[lagom-logback-plugin-lagomxxx](code/build-log-lang.sbt)
 
-If you'd like to use the Lagom logger module on a project that doesn't have the `LagomJava` sbt plugin enabled (e.g., a Lagom API project), simply add the Lagom logger module as an explicit library dependency:
+If you'd like to use the Lagom logger module on a project that doesn't have the Lagom sbt plugin enabled (e.g., a Lagom API project), simply add the Lagom logger module as an explicit library dependency:
 
 @[lagom-logback-libdep](code/build-log.sbt)
 
@@ -44,11 +44,11 @@ If you're using maven, you'll need to add the Lagom log4j2 dependency to your cl
 
 Note that this dependency replaces logback here, so remove any logback dependencies from your pom.xml as well.
 
-If you're using sbt, you'll have to disable the `LagomLogback` plugin and enable the `LagomLog4j2` plugin instead. So for example, if you're using the `LagomJava` plugin:
+If you're using sbt, you'll have to disable the `LagomLogback` plugin and enable the `LagomLog4j2` plugin instead. So for example, if you're using the Lagom plugin:
 
-@[lagom-log4j2-plugin-lagomjava](code/build-log.sbt)
+@[lagom-log4j2-plugin-lagomjava](code/build-log-lang.sbt)
 
-When you're not using the `LagomJava` plugin, add the Lagom Log4j2 module as a dependency:
+When you're not using the Lagom plugin, add the Lagom Log4j2 module as a dependency:
 
 @[lagom-log4j2-libdep](code/build-log.sbt)
 
