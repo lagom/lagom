@@ -6,7 +6,7 @@ lazy val usersImpl = (project in file("usersImpl")).enablePlugins(LagomScala)
 //#cassandra-users-project
 
 //#cassandra-users-project-with-keyspace
-lazy val usersImpl = (project in file("usersImpl")).enablePlugins(LagomScala)
+lazy val usersImplKeyspaced = (project in file("usersImpl")).enablePlugins(LagomScala)
   .settings(
     name := "users-impl",
     lagomCassandraKeyspace := "users"
