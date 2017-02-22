@@ -114,7 +114,7 @@ Lagom uses Logback by default, but it is possible to configure Lagom to use anot
 
 If you're using Maven, you simply need to remove the logback dependency from your projects dependencies.  If using sbt, you need to disable the `LagomLogback` plugin in your sbt project:
 
-@[lagom-logback-plugin-disabled](code/build-log.sbt)
+@[lagom-logback-plugin-disabled](code/build-log-lang.sbt)
 
 From there, a custom logging framework can be used.  Here, Log4J 2 is used as an example.
 

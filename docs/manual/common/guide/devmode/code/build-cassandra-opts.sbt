@@ -8,7 +8,7 @@ lagomCassandraCleanOnStart in ThisBuild := false
 //#cassandra-clean-on-start
 
 //#cassandra-jvm-options
-lagomCassandraJvmOptions in ThisBuild := 
+lagomCassandraJvmOptions in ThisBuild :=
   Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099",
     "-DCassandraLauncher.configResource=dev-embedded-cassandra.yaml") // these are actually the default jvm options
 //#cassandra-jvm-options
@@ -21,8 +21,3 @@ lagomCassandraMaxBootWaitingTime in ThisBuild := 0.seconds
 //#cassandra-enabled
 lagomCassandraEnabled in ThisBuild := false
 //#cassandra-enabled
-
-//#cassandra-users-project
-lazy val usersImpl = (project in file("usersImpl")).enablePlugins(LagomJava)
-  .settings(name := "users-impl")
-//#cassandra-users-project
