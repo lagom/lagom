@@ -115,6 +115,7 @@ trait LagomServiceApiBridge {
 
   // Exceptions
   def newPayloadTooLarge(msg: String): Throwable
+  def newBadRequest(msg: String): Throwable
   def newPolicyViolation(msg: String, detail: String): Throwable
   def newTransportException(errorCode: ErrorCode, message: String): Exception
 

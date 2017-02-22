@@ -240,6 +240,7 @@ object TransportException {
     NotAcceptable.ErrorCode -> ((tec, em) => new NotAcceptable(tec, em)),
     PolicyViolation.ErrorCode -> ((tec, em) => new PolicyViolation(tec, em)),
     PayloadTooLarge.ErrorCode -> ((tec, em) => new PayloadTooLarge(tec, em)),
+    BadRequest.ErrorCode -> ((tec, em) => new BadRequest(tec, em)),
     Forbidden.ErrorCode -> ((tec, em) => new Forbidden(tec, em))
   )
 
@@ -377,5 +378,23 @@ object PayloadTooLarge {
   def apply(cause: Throwable) = new PayloadTooLarge(
     ErrorCode,
     new ExceptionMessage(classOf[PayloadTooLarge].getSimpleName, cause.getMessage), cause
+  )
+}
+
+final class BadRequest(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable) extends TransportException(errorCode, exceptionMessage, cause) {
+  def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
+}
+
+object BadRequest {
+  val ErrorCode = TransportErrorCode.BadRequest
+
+  def apply(message: String) = new BadRequest(
+    ErrorCode,
+    new ExceptionMessage(classOf[BadRequest].getSimpleName, message), null
+  )
+
+  def apply(cause: Throwable) = new BadRequest(
+    ErrorCode,
+    new ExceptionMessage(classOf[BadRequest].getSimpleName, cause.getMessage), cause
   )
 }
