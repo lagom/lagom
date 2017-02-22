@@ -1,7 +1,6 @@
 package ${package}.it;
 
 import akka.actor.ActorSystem;
-import akka.japi.Effect;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
@@ -14,14 +13,11 @@ import ${package}.${service2Name}.api.${service2ClassName}Service;
 import ${package}.${service1Name}.api.GreetingMessage;
 import ${package}.${service1Name}.api.${service1ClassName}Service;
 
-import java.io.File;
 import java.net.URI;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
