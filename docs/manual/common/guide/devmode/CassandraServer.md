@@ -63,11 +63,11 @@ In Maven, you can do this by modifying the service implementations pom configura
 
 In sbt, let's assume you have the following Lagom project in your build:
 
-@[cassandra-users-project](code/build-cassandra-opts-lang-dependant.sbt)
+@[cassandra-users-project](code/build-cassandra-opts-lang.sbt)
 
 Because the project's name is `users-impl`, the generated Cassandra keyspace will be `users_impl` (note that dashes are replaced with underscores). If you'd prefer the keyspace to be named simply `users`, you could either change the project's `name` to be `users`, or alternatively add the following setting:
 
-@[cassandra-users-project-with-keyspace](code/build-cassandra-opts-lang-dependant.sbt)
+@[cassandra-users-project-with-keyspace](code/build-cassandra-opts-lang.sbt)
 
 It is worth pointing out that, despite the above, a Cassandra keyspace will still need to be provided when running your service in production. Hence, if you'd like to provide a Cassandra keyspace name that can be used both in development and production, it is recommended to do so via a configuration file.
 
