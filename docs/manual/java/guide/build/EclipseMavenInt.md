@@ -11,7 +11,7 @@ If you have a Maven project created from an archetype (as described in [[Creatin
     [[EclBrowseMvnImp.png]]  
 1. Verify that the **Projects** list includes all subprojects and click **Finish**.
 
-> **Note**  You can ignore warning decorations on project folders.
+
 
 You should be all set to build and run your project.
 

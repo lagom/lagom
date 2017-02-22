@@ -1,4 +1,4 @@
-# Creating an Eclipse Run Configuration
+# Creating an Eclipse Run Configuration for a Maven project
 
 A **Run Configuration** allows you to run your new project in the **Eclipse Console** with one click. Follow these steps to create a **Run Configuration**:
 

@@ -14,22 +14,10 @@ Follow these steps to integrate your project with Eclipse:
     ```
     1. Save the file. 
     
-1. In a console, `cd` to the top-level folder, and enter `sbt` to start the build tool.
-
-    Continuing with the example of a `hello` project: 
-
-    ```
-    cd hello
-    sbt
-    ... (booting up)
-    >
-    ```
-    The `>` prompt tells you that sbt is running.
-
-1. Enter `eclipse` to generate the Eclipse project files for all projects in your build:
+1. In a console, `cd` to the top-level folder, and enter `sbt eclipse` to start the build tool and generate the eclipse project for all projects in your build.
+    The output will look similar to the following:
 
     ```
-    > eclipse
     ...
     [info] Successfully created Eclipse project files for project(s):
     [info] hello-impl
@@ -38,7 +26,7 @@ Follow these steps to integrate your project with Eclipse:
     [info] hello-stream-api
     [info] lagom-internal-meta-project-service-locator
     [info] lagom-internal-meta-project-cassandra
-    >
+    
     ```
 
 1. Start Eclipse and switch to the Workspace you want to use for your Lagom project.

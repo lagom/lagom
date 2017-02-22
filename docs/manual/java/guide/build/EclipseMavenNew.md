@@ -42,6 +42,6 @@ In Eclipse, follow these steps to create a project using the Lagom Maven archety
     
 1. Click **Finish** and the projects created by the archetype display in the **Package Explorer**. 
 
-> **Note**  You can ignore warning decorations on project folders.
+Eclipse puts all of the Maven project folders at the same level. When running your project, make sure you select the parent folder. For example, if you used `my-first-system` as the Maven artifact ID, invoke `lagom:runAll` from that folder. 
     
   
