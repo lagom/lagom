@@ -13,7 +13,7 @@ import scala.util.control.NoStackTrace
 sealed trait KafkaConfig {
   /** The name of the Kafka server to look up out of the service locator. */
   def serviceName: Option[String]
-  /** A comma separated list of Kafka brokers. Will be ignored if useServiceLocator is true. */
+  /** A comma separated list of Kafka brokers. Will be ignored if serviceName is defined. */
   def brokers: String
 }
 

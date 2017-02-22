@@ -84,22 +84,18 @@ private[lagom] object Producer {
 
     override def receive = {
       case EnsureActive(tag) =>
-        offsetStore.prepare(s"topicProducer-$topicId", tag) pipeTo self
-
-        kafkaConfig.serviceName match {
+        val daoFuture = offsetStore.prepare(s"topicProducer-$topicId", tag)
+        // Left means no service lookup was attempted, Right means a service lookup was done - this allows us to
+        // distinguish between no service lookup, and a not found service lookup.
+        val serviceUriFuture: Future[Either[Unit, Option[URI]]] = kafkaConfig.serviceName match {
           case None =>
-            context.become(waitingForOffsetDao(dao => run(tag, None, dao)))
+            Future.successful(Left(()))
           case Some(name) =>
-            locateService(name) pipeTo self
-
-            // We locate the service and load the offset in parallel, so there's two possibilities, the offset could
-            // be loaded first, or the service could be located first. We combine the handlers for both using an
-            // orElse, and whichever one happens first causes us to switch to waiting for just the other one.
-            context.become(
-              waitingForOffsetDao(dao => context.become(waitingForServiceLocator(name, uri => run(tag, uri, dao))))
-                .orElse(waitingForServiceLocator(name, uri => context.become(waitingForOffsetDao(dao => run(tag, uri, dao)))))
-            )
+            locateService(name).map(Right.apply)
         }
+        serviceUriFuture.zip(daoFuture) pipeTo self
+
+        context.become(initializing(tag))
     }
 
     def generalHandler: Receive = {
@@ -109,18 +105,15 @@ private[lagom] object Producer {
       case EnsureActive(tagName) =>
     }
 
-    private def waitingForOffsetDao(daoProvided: OffsetDao => Unit): Receive = generalHandler.orElse {
-      case dao: OffsetDao => daoProvided(dao)
-    }
-
-    private def waitingForServiceLocator(name: String, uriProvided: Option[URI] => Unit): Receive = generalHandler.orElse {
-      case None =>
-        log.error("Unable to locate Kafka service named [{}]", name)
+    private def initializing(tag: String): Receive = generalHandler.orElse {
+      case (Left(()), dao: OffsetDao) =>
+        run(tag, None, dao)
+      case (Right(Some(uri: URI)), dao: OffsetDao) =>
+        log.debug("Kafka service [{}] located at URI [{}] for producer of [{}]", kafkaConfig.serviceName.getOrElse(""), uri, topicId)
+        run(tag, Some(uri), dao)
+      case (Right(None), _) =>
+        log.error("Unable to locate Kafka service named [{}]", kafkaConfig.serviceName.getOrElse(""))
         context.stop(self)
-
-      case Some(uri: URI) =>
-        log.debug("Kafka service [{}] located at URI [{}] for producer of [{}]", name, uri, topicId)
-        uriProvided(Some(uri))
     }
 
     private def active: Receive = generalHandler.orElse {
