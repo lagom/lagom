@@ -1,6 +1,6 @@
 # Importing an sbt project into Eclipse
 
-If you worked through the command line example for [[sbt|GettingStarted]], you have an sbt build. The sbt tool provides an [sbt-eclipse](https://github.com/typesafehub/sbteclipse) plugin that generates Eclipse project artifacts, which you can then import into Eclipse.
+If you worked through the command line example for [[sbt|IntroGetStarted]], you have an sbt build. The sbt tool provides an [sbt-eclipse](https://github.com/typesafehub/sbteclipse) plugin that generates Eclipse project artifacts, which you can then import into Eclipse.
 
 Follow these steps to integrate your project with Eclipse:
 
@@ -42,4 +42,4 @@ Follow these steps to integrate your project with Eclipse:
     [[EclBrowseToSbt.png]]
 1. Click **Finish**.
 
-Your project should be imported and ready to work with.
+Your project should be imported and ready to work with. As a reminder on how to run and test a project creatd with the template, see [[Creating and Running Hello World with sbt|IntroGetStarted]].
