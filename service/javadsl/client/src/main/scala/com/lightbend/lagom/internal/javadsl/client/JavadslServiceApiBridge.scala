@@ -17,6 +17,7 @@ import com.lightbend.lagom.javadsl.api
 import com.lightbend.lagom.javadsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.javadsl.api.deser.ExceptionMessage
 import com.lightbend.lagom.javadsl.api.security.ServicePrincipal
+import com.lightbend.lagom.javadsl.api.transport.BadRequest
 import org.pcollections.{ HashTreePMap, PSequence, TreePVector }
 
 import scala.compat.java8.OptionConverters._
@@ -150,6 +151,7 @@ trait JavadslServiceApiBridge extends LagomServiceApiBridge {
 
   // Exceptions
   override def newPayloadTooLarge(msg: String): Throwable = new transport.PayloadTooLarge(msg)
+  override def newBadRequest(msg: String): Throwable = new transport.BadRequest(msg)
   override def newPolicyViolation(msg: String, detail: String): Throwable =
     new transport.TransportException(transport.TransportErrorCode.PolicyViolation, new ExceptionMessage(msg, detail))
   override def newTransportException(errorCode: ErrorCode, message: String): Exception =
