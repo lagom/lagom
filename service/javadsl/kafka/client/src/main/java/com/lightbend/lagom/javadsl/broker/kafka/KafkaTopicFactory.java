@@ -11,6 +11,7 @@ import com.lightbend.lagom.internal.broker.kafka.KafkaConfig$;
 import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaTopic;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
+import com.lightbend.lagom.javadsl.api.ServiceLocator;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import scala.concurrent.ExecutionContext;
 
@@ -25,20 +26,21 @@ public class KafkaTopicFactory implements TopicFactory {
     private final Materializer materializer;
     private final ExecutionContext executionContext;
     private final KafkaConfig config;
+    private final ServiceLocator serviceLocator;
 
     @Inject
     public KafkaTopicFactory(ServiceInfo serviceInfo, ActorSystem system, Materializer materializer,
-            ExecutionContext executionContext) {
+            ExecutionContext executionContext, ServiceLocator serviceLocator) {
         this.serviceInfo = serviceInfo;
         this.system = system;
         this.materializer = materializer;
         this.executionContext = executionContext;
-
         this.config = KafkaConfig$.MODULE$.apply(system.settings().config());
+        this.serviceLocator = serviceLocator;
     }
 
     @Override
     public <Message> Topic<Message> create(Descriptor.TopicCall<Message> topicCall) {
-        return new JavadslKafkaTopic<>(config, topicCall, serviceInfo, system, materializer, executionContext);
+        return new JavadslKafkaTopic<>(config, topicCall, serviceInfo, system, serviceLocator, materializer, executionContext);
     }
 }

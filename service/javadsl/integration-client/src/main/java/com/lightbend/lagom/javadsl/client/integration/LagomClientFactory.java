@@ -49,7 +49,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -209,11 +208,6 @@ public class LagomClientFactory implements Closeable {
         // TODO: review this. Building a kafka client shouldn't require the whole ServiceInfo, just the name.
         ServiceInfo serviceInfo = ServiceInfo.of(serviceName);
 
-        // Kafka client
-        TopicFactory kafkaTopicFactory = new KafkaTopicFactory(serviceInfo, actorSystem, materializer,
-                actorSystem.dispatcher());
-        TopicFactoryProvider topicFactoryProvider = () -> Some.apply(kafkaTopicFactory);
-
         // ServiceClientLoader
         CircuitBreakers circuitBreakers = new CircuitBreakers(actorSystem, new CircuitBreakerConfig(configuration),
                 new CircuitBreakerMetricsProviderImpl(actorSystem));
@@ -222,6 +216,11 @@ public class LagomClientFactory implements Closeable {
         JacksonExceptionSerializer exceptionSerializer = new JacksonExceptionSerializer(new play.Environment(environment));
 
         Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator = serviceLocator -> {
+            // Kafka client
+            TopicFactory kafkaTopicFactory = new KafkaTopicFactory(serviceInfo, actorSystem, materializer,
+                    actorSystem.dispatcher(), serviceLocator);
+            TopicFactoryProvider topicFactoryProvider = () -> Some.apply(kafkaTopicFactory);
+
             JavadslServiceClientImplementor implementor = new JavadslServiceClientImplementor(wsClient, webSocketClient, serviceInfo,
                     serviceLocator, environment, topicFactoryProvider, actorSystem.dispatcher(), materializer);
             return new ServiceClientLoader(serializerFactory, exceptionSerializer, environment, implementor);

@@ -74,8 +74,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
   }
 
   def startServiceDevMode(project: MavenProject, port: Int, serviceLocatorUrl: Option[String],
-    cassandraPort: Option[Int], cassandraKeyspace: String, kafkaAddress: String,
-    playService: Boolean, additionalWatchDirs: Seq[File]): Unit = synchronized {
+    cassandraPort: Option[Int], cassandraKeyspace: String, playService: Boolean, additionalWatchDirs: Seq[File]): Unit = synchronized {
     runningServices.get(project) match {
       case Some(service) =>
         logger.info("Service " + project.getArtifactId + " already running!")
@@ -124,8 +123,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
               cassandraPort.fold(Map.empty[String, String]) { port =>
                 LagomConfig.cassandraPort(port)
               } ++
-              LagomConfig.cassandraKeySpace(cassandraKeyspace) ++
-              Map(LagomConfig.KafkaAddress -> kafkaAddress)
+              LagomConfig.cassandraKeySpace(cassandraKeyspace)
 
           val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(projectDependencies.external)
 
@@ -186,7 +184,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
   }
 
   def startExternalProject(dependency: Dependency, port: Int, serviceLocatorUrl: Option[String],
-    cassandraPort: Option[Int], cassandraKeyspace: String, kafkaAddress: String, playService: Boolean) = synchronized {
+    cassandraPort: Option[Int], cassandraKeyspace: String, playService: Boolean) = synchronized {
     runningExternalProjects.get(dependency) match {
       case Some(service) =>
         logger.info("External project " + dependency.getArtifact.getArtifactId + " already running!")
@@ -207,8 +205,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
           cassandraPort.fold(Map.empty[String, String]) { port =>
             LagomConfig.cassandraPort(port)
           } ++
-          LagomConfig.cassandraKeySpace(cassandraKeyspace) ++
-          Map(LagomConfig.KafkaAddress -> kafkaAddress)
+          LagomConfig.cassandraKeySpace(cassandraKeyspace)
 
         val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(dependencies)
 

@@ -17,6 +17,7 @@ import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceLocator }
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
+import com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocatorComponents
 import com.lightbend.lagom.scaladsl.kafka.broker.ScaladslKafkaApiSpec.{ InMemoryOffsetStore, TestService, TestServiceImpl }
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
 import com.lightbend.lagom.scaladsl.server._
@@ -33,8 +34,7 @@ import scala.concurrent.duration._
 class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures {
 
   private val application = {
-    new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LagomKafkaComponents {
-      override lazy val serviceLocator = ServiceLocator.NoServiceLocator
+    new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LagomKafkaComponents with ConfigurationServiceLocatorComponents {
       override lazy val offsetStore = InMemoryOffsetStore
       override lazy val lagomServer = LagomServer.forServices(
         bindService[TestService].to(new TestServiceImpl)
@@ -43,7 +43,8 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
         "akka.remote.netty.tcp.port" -> "0",
         "akka.remote.netty.tcp.hostname" -> "127.0.0.1",
         "akka.persistence.journal.plugin" -> "akka.persistence.journal.inmem",
-        "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local"
+        "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local",
+        "lagom.services.kafka_native" -> s"tcp://localhost:${KafkaLocalServer.DefaultPort}"
       ))
 
       lazy val testService = serviceClient.implement[TestService]
