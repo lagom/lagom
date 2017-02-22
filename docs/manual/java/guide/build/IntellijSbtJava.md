@@ -54,6 +54,12 @@ After you have an sbt build -- one you created yourself or from a template -- fo
     1. Click **Run**.
         A **Run** tab opens and you should see messages from the build, with the services starting up at the end:
         [[IDEAsbtRunning.png]]
+    1. Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser: 
+        
+        ```
+        http://localhost:9000/api/hello/World
+        ```
+        The request returns the message `Hello, World!`.
         
 
          

@@ -10,10 +10,21 @@ If you have a Maven project created from an archetype (as described in [[Creatin
 1. For **Root Directory**, click **Browse** and select the top-level project folder.
     [[EclBrowseMvnImp.png]]  
 1. Verify that the **Projects** list includes all subprojects and click **Finish**.
-
-
-
-You should be all set to build and run your project.
+1. Run the project:
+    1. Right-click the parent project folder.
+    Eclipse puts all of the Maven project folders at the same level, so be sure to select the correct one. For example, if you used `my-first-system` as the Maven artifact ID, right-click `my-first-system`.
+    1. Optionally, change the name.
+    1. Select **Run as ...** > **Maven Build**.
+    1. In the **Goals** field, enter `lagom:runAll`.
+    1. Select the **JRE** tab and make sure it is pointing at a JRE associated with a JDK. 
+    1. Click **Run**.
+    
+The console should report that the services started. Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser: 
+    
+    ```
+    http://localhost:9000/api/hello/World
+    ```
+The request returns the message `Hello, World!`.
 
 
 

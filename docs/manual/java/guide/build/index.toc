@@ -2,9 +2,8 @@ LagomBuild:Defining a Lagom build
 MultipleBuilds:Splitting a system into multiple builds
 JVMMemoryOnDev:Increase memory for sbt and Maven
 ImmutablesInIDEs:Set up Immutables in your IDE
-EclipseMavenInt:Importing an existing Maven project into Eclipse;next=EclipseRunConfig
-EclipseMavenNew:Creating a new Maven Eclipse project with the Lagom archetype;next=EclipseRunConfig
-EclipseRunConfig: Creating an Eclipse Run Configuration;;next=RunningServices
+EclipseMavenInt:Importing an existing Maven project into Eclipse;next=RunningServices
+EclipseMavenNew:Creating a new Maven Eclipse project with the Lagom archetype;next=RunningServices
 EclipseSbt:Importing an sbt project into Eclipse;next=RunningServices
 IntellijMaven:Importing an existing Maven Project into Intellij;next=RunningServices
 IntellijSbtJava:Importing an sbt project into Intellij;next=RunningServices

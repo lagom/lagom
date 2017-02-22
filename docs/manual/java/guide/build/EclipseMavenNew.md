@@ -42,6 +42,18 @@ In Eclipse, follow these steps to create a project using the Lagom Maven archety
     
 1. Click **Finish** and the projects created by the archetype display in the **Package Explorer**. 
 
-Eclipse puts all of the Maven project folders at the same level. When running your project, make sure you select the parent folder. For example, if you used `my-first-system` as the Maven artifact ID, invoke `lagom:runAll` from that folder. 
+1. Run the project:
+    1. Right-click the parent project folder.
+    Eclipse puts all of the Maven project folders at the same level, so be sure to select the correct one. For example, if you used `my-first-system` as the Maven artifact ID, right-click `my-first-system`.
+    1. Select **Run as ...** > **Maven Build**.
+    1. In the **Goals** field, enter `lagom:runAll`.
+    1. Select the **JRE** tab and make sure it is pointing at a JRE associated with a JDK. 
+    1. Click **Run**.
     
+The console should report that the services started. Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser: 
+    
+```
+http://localhost:9000/api/hello/World
+```
+The request returns the message `Hello, World!`.
   
