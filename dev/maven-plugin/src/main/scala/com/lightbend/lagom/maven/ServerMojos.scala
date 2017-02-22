@@ -143,6 +143,12 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
   var cassandraPort: Int = _
   @BeanProperty
   var cassandraEnabled: Boolean = _
+  @BeanProperty
+  var kafkaPort: Int = _
+  @BeanProperty
+  var kafkaAddress: String = _
+  @BeanProperty
+  var kafkaEnabled: Boolean = _
 
   override def execute(): Unit = {
 
@@ -152,12 +158,10 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
 
       val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
 
-      val scalaUnmanagedServices =
-        if (cassandraEnabled) {
-          StaticServiceLocations.withCassandraLocation(cassandraPort, unmanagedServices.asScala.toMap)
-        } else {
-          unmanagedServices.asScala.toMap
-        }
+      val theKafkaAddress = if (kafkaAddress == null) s"127.0.0.1:$kafkaPort" else kafkaAddress
+
+      val scalaUnmanagedServices = StaticServiceLocations.staticServiceLocations(cassandraPort, theKafkaAddress) ++
+        unmanagedServices.asScala.toMap
 
       Servers.ServiceLocator.start(logger, scalaClassLoader, cp.map(_.getFile.toURI.toURL).toArray,
         serviceLocatorPort, serviceGatewayPort, scalaUnmanagedServices)

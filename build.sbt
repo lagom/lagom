@@ -859,7 +859,13 @@ lazy val `kafka-client-javadsl` = (project in file("service/javadsl/kafka/client
   .settings(mimaSettings(since12): _*)
   .settings(
     name := "lagom-javadsl-kafka-client",
-    mimaBinaryIssueFilters += ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.broker.kafka.KafkaTopicFactory")
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.broker.kafka.KafkaTopicFactory"),
+      // Needed to add service locator to Kafka topic factory, which required changing
+      // the public constructor. Since this will generally only ever be invoked by Guice,
+      // there should be no bin compat problem here.
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.broker.kafka.KafkaTopicFactory.this")
+    )
   )
   .dependsOn(`api-javadsl`, `kafka-client`)
 

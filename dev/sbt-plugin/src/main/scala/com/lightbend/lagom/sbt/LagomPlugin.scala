@@ -457,11 +457,7 @@ object LagomPlugin extends AutoPlugin {
 
       Def.task {
         val unmanagedServices: Map[String, String] =
-          if ((lagomCassandraEnabled in ThisBuild).value) {
-            StaticServiceLocations.withCassandraLocation(lagomCassandraPort.value, lagomUnmanagedServices.value)
-          } else {
-            lagomUnmanagedServices.value
-          }
+          StaticServiceLocations.staticServiceLocations(lagomCassandraPort.value, lagomKafkaAddress.value) ++ lagomUnmanagedServices.value
 
         val serviceLocatorPort = lagomServiceLocatorPort.value
         val serviceGatewayPort = lagomServiceGatewayPort.value
@@ -568,17 +564,13 @@ object LagomPlugin extends AutoPlugin {
     LagomConfig.cassandraPort(port)
   }
 
-  private lazy val kafkaServerConfiguration: Initialize[Map[String, String]] = Def.setting {
-    Map(LagomConfig.KafkaAddress -> lagomKafkaAddress.value)
-  }
-
   private lazy val actorSystemsConfig: Initialize[Map[String, String]] = Def.setting {
     LagomConfig.actorSystemConfig(name.value)
   }
 
   private[sbt] lazy val managedSettings: Initialize[Map[String, String]] = Def.setting {
     serviceLocatorConfiguration.value ++ cassandraServerConfiguration.value ++
-      cassandraKeyspaceConfig.value ++ kafkaServerConfiguration.value ++ actorSystemsConfig.value
+      cassandraKeyspaceConfig.value ++ actorSystemsConfig.value
   }
 }
 
