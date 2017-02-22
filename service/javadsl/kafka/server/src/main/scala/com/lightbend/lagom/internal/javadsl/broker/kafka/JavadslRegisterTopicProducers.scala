@@ -3,10 +3,12 @@
  */
 package com.lightbend.lagom.internal.javadsl.broker.kafka
 
+import java.net.URI
+
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 import org.slf4j.LoggerFactory
-import com.lightbend.lagom.javadsl.api.ServiceInfo
+import com.lightbend.lagom.javadsl.api.{ ServiceInfo, ServiceLocator }
 import akka.stream.Materializer
 import javax.inject.Inject
 
@@ -22,10 +24,14 @@ import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.spi.persistence.OffsetStore
+
 import scala.collection.immutable
+import scala.compat.java8.FutureConverters._
+import scala.compat.java8.OptionConverters._
 
 class JavadslRegisterTopicProducers @Inject() (resolvedServices: ResolvedServices, topicFactory: TopicFactory,
-                                               info: ServiceInfo, actorSystem: ActorSystem, offsetStore: OffsetStore)(implicit ec: ExecutionContext, mat: Materializer) {
+                                               info: ServiceInfo, actorSystem: ActorSystem, offsetStore: OffsetStore,
+                                               serviceLocator: ServiceLocator)(implicit ec: ExecutionContext, mat: Materializer) {
 
   private val log = LoggerFactory.getLogger(classOf[JavadslRegisterTopicProducers])
   private val kafkaConfig = KafkaConfig(actorSystem.settings.config)
@@ -69,8 +75,8 @@ class JavadslRegisterTopicProducers @Inject() (resolvedServices: ResolvedService
                   } else None
                 }
 
-                Producer.startTaggedOffsetProducer(actorSystem, tags.map(_.tag), kafkaConfig, topicId.value(),
-                  eventStreamFactory, partitionKeyStrategy,
+                Producer.startTaggedOffsetProducer(actorSystem, tags.map(_.tag), kafkaConfig, locateService,
+                  topicId.value(), eventStreamFactory, partitionKeyStrategy,
                   new JavadslKafkaSerializer(topicCall.messageSerializer().serializerForRequest()),
                   offsetStore)
               case other => log.warn {
@@ -93,5 +99,8 @@ class JavadslRegisterTopicProducers @Inject() (resolvedServices: ResolvedService
         }
     }
   }
+
+  private def locateService(name: String): Future[Option[URI]] =
+    serviceLocator.locate(name).toScala.map(_.asScala)
 
 }

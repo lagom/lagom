@@ -17,8 +17,6 @@ object LagomConfig {
   def cassandraKeySpace(keyspace: String) = cassandraConfig("keyspace", keyspace)
   def cassandraPort(port: Int) = cassandraConfig("port", port.toString)
 
-  val KafkaAddress = "lagom.broker.defaults.kafka.brokers"
-
   def actorSystemConfig(name: String) = Map(
     "lagom.akka.dev-mode.actor-system.name" -> s"$name-internal-dev-mode",
     "play.akka.actor-system" -> s"$name-application",

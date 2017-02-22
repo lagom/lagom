@@ -85,7 +85,8 @@ private[lagom] object Servers {
       def serviceGatewayAddress: URI
     }
 
-    def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Array[URL], serviceLocatorPort: Int, serviceGatewayPort: Int, unmanagedServices: Map[String, String]): Unit = synchronized {
+    def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Array[URL], serviceLocatorPort: Int,
+      serviceGatewayPort: Int, unmanagedServices: Map[String, String]): Unit = synchronized {
       if (server == null) {
         withContextClassloader(new java.net.URLClassLoader(classpath, parentClassLoader)) { loader =>
           val serverClass = loader.loadClass("com.lightbend.lagom.discovery.ServiceLocatorServer")
@@ -252,6 +253,10 @@ private[lagom] object Servers {
 }
 
 private[lagom] object StaticServiceLocations {
-  def withCassandraLocation(lagomCassandraPort: Int, lagomUnmanagedServices: Map[String, String]): Map[String, String] =
-    Map("cas_native" -> s"tcp://127.0.0.1:$lagomCassandraPort/cas_native") ++ lagomUnmanagedServices
+  def staticServiceLocations(lagomCassandraPort: Int, lagomKafkaAddress: String): Map[String, String] = {
+    Map(
+      "cas_native" -> s"tcp://127.0.0.1:$lagomCassandraPort/cas_native",
+      "kafka_native" -> s"tcp://$lagomKafkaAddress/kafka_native"
+    )
+  }
 }

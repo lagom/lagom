@@ -11,7 +11,7 @@ import com.lightbend.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.internal.broker.kafka.{ KafkaConfig, Producer }
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
-import com.lightbend.lagom.scaladsl.api.ServiceInfo
+import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodTopic
 import com.lightbend.lagom.scaladsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.scaladsl.server.LagomServer
@@ -21,7 +21,8 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.ExecutionContext
 
 class ScaladslRegisterTopicProducers(lagomServer: LagomServer, topicFactory: TopicFactory,
-                                     info: ServiceInfo, actorSystem: ActorSystem, offsetStore: OffsetStore)(implicit ec: ExecutionContext, mat: Materializer) {
+                                     info: ServiceInfo, actorSystem: ActorSystem, offsetStore: OffsetStore,
+                                     serviceLocator: ServiceLocator)(implicit ec: ExecutionContext, mat: Materializer) {
 
   private val log = LoggerFactory.getLogger(classOf[ScaladslRegisterTopicProducers])
   private val kafkaConfig = KafkaConfig(actorSystem.settings.config)
@@ -59,8 +60,8 @@ class ScaladslRegisterTopicProducers(lagomServer: LagomServer, topicFactory: Top
                   }
                 }
 
-                Producer.startTaggedOffsetProducer(actorSystem, tags.map(_.tag), kafkaConfig, topicId.name,
-                  eventStreamFactory, partitionKeyStrategy,
+                Producer.startTaggedOffsetProducer(actorSystem, tags.map(_.tag), kafkaConfig, serviceLocator.locate,
+                  topicId.name, eventStreamFactory, partitionKeyStrategy,
                   new ScaladslKafkaSerializer(topicCall.messageSerializer.serializerForRequest),
                   offsetStore)
               case other => log.warn {
