@@ -19,6 +19,7 @@ If you have a Maven project created from an archetype (as described in [[Creatin
     1. Select the **JRE** tab and make sure it is pointing at a JRE associated with a JDK. 
     1. Click **Run**.
     
+    
 The console should report that the services started. Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser: 
     
     ```
