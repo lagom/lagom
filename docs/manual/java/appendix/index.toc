@@ -1,2 +1,2 @@
-ImmutablesInIDEs:Set up Immutables in your IDE
-JVMMemoryOnDev:Increase Memory in sbt and Maven
+
+
