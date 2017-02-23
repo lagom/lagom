@@ -1,3 +1,3 @@
 WhatIsLagom:What is Lagom?
 WhatDoesLagomMean:What’s in the name?
-LagomDesignPhilosophy:Lagom design philosophy
+WhereToStart:Where to begin
