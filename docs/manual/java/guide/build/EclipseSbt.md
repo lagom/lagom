@@ -47,7 +47,7 @@ Follow these steps to integrate your project with Eclipse:
 1. Create your configuration as follows:
     1. Enter a name.
     1. On the **Main** tab in the **Location** field, enter the location of your sbt installation.
-    For Windows, browse to the location where you installed sbt and select `sbt.bat`. On Linux, you can find the location by opening a terminal and entering `which sbt`.
+    For Windows, browse to the location where you installed sbt and select `sbt.bat`. On Linux, you can find the location of sbt by opening a terminal and entering `which sbt`.
     1. For **Working Directory** browse to the top-level sbt project folder. (This is the folder containing the `build.sbt` file.)
     1. In the **Arguments** field, enter `runAll`.
     1. Click **Apply**. Your screen should look similar to the following:
