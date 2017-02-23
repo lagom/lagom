@@ -90,7 +90,7 @@ private[lagom] object ScaladslClientMacroImpl {
       q"""
         override def ${serviceMethod.name}(...$methodParams) = {
           $serviceContext.createServiceCall(${serviceMethod.name.decodedName.toString},
-            _root_.scala.collection.immutable.Seq(..$methodParamNames))
+            _root_.scala.collection.immutable.Seq[_root_.scala.Any](..$methodParamNames))
         }
       """
     }
