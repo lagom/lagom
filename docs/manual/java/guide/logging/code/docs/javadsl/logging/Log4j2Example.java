@@ -1,4 +1,4 @@
-package docs.logging;
+package docs.javadsl.logging;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

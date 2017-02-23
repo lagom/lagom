@@ -118,6 +118,6 @@ If you're using Maven, you simply need to remove the logback dependency from you
 
 From there, a custom logging framework can be used.  Here, Log4J 2 is used as an example.
 
-@[lagom-logback-plugin-disabled-log4j](code/build-log2.sbt)
+@[lagom-logback-plugin-disabled-log4j](code/build-log-lang.sbt)
 
 Once the libraries and the SLF4J adapter are loaded, the `log4j.configurationFile` system property can be set on the command line as usual.
