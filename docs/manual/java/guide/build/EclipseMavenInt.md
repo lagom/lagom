@@ -2,6 +2,18 @@
 
 If you have a Maven project created from an archetype (as described in [[Creating and running Hello World with Maven|GettingStartedMaven]]) or one you created on your own, import it into Eclipse as follows:
 
+* [Check Prerequisites](#Check-prerequisites)
+* [Import the project](#Import-the-project)
+
+## Check prerequisites
+
+Before attempting to create a Lagom Maven project in Eclipse, ensure that Eclipse is configured with the following:
+
+* An [m2eclipse](http://www.eclipse.org/m2e/documentation/m2e-documentation.html) plugin compatible with Maven 3.3 or higher.
+* A JDK 1.8 or higher.
+
+# Import the project
+
 1. From the **File** menu, select **Import**.
    The **Select** screen opens. 
 1. Expand **Maven** and select **Existing Maven Projects**.

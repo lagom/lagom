@@ -17,6 +17,6 @@ Learn more about Lagom:
 
 * [[Core concepts|CoreConcepts]]
 * [[Using the service locator|ServiceLocator]]
-* [[Using the message broker|MessageBrokerAPI]]
+* [[Using the message broker|MessageBroker]]
 * [[Using publish-subscribe|PubSub]]
 * [[Using persistent entities|PersistentEntity]]
