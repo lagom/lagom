@@ -15,6 +15,7 @@ import scala.concurrent.duration.FiniteDuration;
 
 import javax.inject.Inject;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,9 +50,11 @@ public class ProducerStubTest {
             int msg = 1;
             producerAStub.send(new AlphaEvent(msg));
 
-            // check it was received downstream
-            PSequence<ReceivedMessage> messages = client.retrieveMessagesC().invoke().toCompletableFuture().get(3, SECONDS);
-            Assert.assertEquals(msg, messages.get(0).getMsg());
+            eventually(new FiniteDuration(5, SECONDS), new FiniteDuration(1, SECONDS), () -> {
+                // check it was received downstream
+                PSequence<ReceivedMessage> messages = client.retrieveMessagesC().invoke().toCompletableFuture().get(3, SECONDS);
+                Assert.assertEquals(msg, messages.get(0).getMsg());
+            });
         });
     }
 
@@ -63,11 +66,13 @@ public class ProducerStubTest {
             List<Integer> msgs = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
             msgs.forEach(msg -> producerAStub.send(new AlphaEvent(msg)));
 
-            // check it was received downstream
-            PSequence<ReceivedMessage> messages = foxtrot.retrieveMessagesF().invoke().toCompletableFuture().get(3, SECONDS);
-            PSequence<ReceivedMessage> expected = TreePVector.from(
-                    msgs.stream().map(msg -> new ReceivedMessage("A", msg)).collect(Collectors.toList()));
-            assertEquals(expected, messages);
+            eventually(new FiniteDuration(5, SECONDS), new FiniteDuration(1, SECONDS), () -> {
+                // check it was received downstream
+                PSequence<ReceivedMessage> messages = foxtrot.retrieveMessagesF().invoke().toCompletableFuture().get(3, SECONDS);
+                PSequence<ReceivedMessage> expected = TreePVector.from(
+                        msgs.stream().map(msg -> new ReceivedMessage("A", msg)).collect(Collectors.toList()));
+                assertEquals(expected, messages);
+            });
         });
     }
 
@@ -81,10 +86,12 @@ public class ProducerStubTest {
             producerAStub.send(new AlphaEvent(2));
             producerAStub.send(new AlphaEvent(3));
 
-            // check it was received downstream
-            PSequence<ReceivedMessage> messages = client.retrieveMessagesC().invoke().toCompletableFuture().get(3, SECONDS);
-            List<ReceivedMessage> expected = Stream.of(1, 2, 3).map(i -> new ReceivedMessage("A", i)).collect(Collectors.toList());
-            assertEquals(expected, messages);
+            eventually(new FiniteDuration(5, SECONDS), new FiniteDuration(1, SECONDS), () -> {
+                // check it was received downstream
+                PSequence<ReceivedMessage> messages = client.retrieveMessagesC().invoke().toCompletableFuture().get(3, SECONDS);
+                List<ReceivedMessage> expected = Stream.of(1, 2, 3).map(i -> new ReceivedMessage("A", i)).collect(Collectors.toList());
+                assertEquals(expected, messages);
+            });
         });
     }
 
@@ -100,9 +107,11 @@ public class ProducerStubTest {
             client.startSubscriptionOnBeta().invoke().toCompletableFuture().get(3, SECONDS);
 
             // check it was received downstream
-            PSequence<ReceivedMessage> messages = client.retrieveMessagesC().invoke().toCompletableFuture().get(3, SECONDS);
-            List<ReceivedMessage> expected = Arrays.asList(new ReceivedMessage("B", 1), new ReceivedMessage("B", 2));
-            assertEquals(expected, messages);
+            eventually(new FiniteDuration(5, SECONDS), new FiniteDuration(1, SECONDS), () -> {
+                PSequence<ReceivedMessage> messages = client.retrieveMessagesC().invoke().toCompletableFuture().get(3, SECONDS);
+                List<ReceivedMessage> expected = Arrays.asList(new ReceivedMessage("B", 1), new ReceivedMessage("B", 2));
+                assertEquals(expected, messages);
+            });
         });
     }
 
@@ -119,14 +128,21 @@ public class ProducerStubTest {
             // subscribe charlie to b-topic
             charlie.startSubscriptionOnBeta().invoke().toCompletableFuture().get(3, SECONDS);
 
-            PSequence<ReceivedMessage> messagesOnC = charlie.retrieveMessagesC().invoke().toCompletableFuture().get(3, SECONDS);
-            PSequence<ReceivedMessage> messagesOnD = delta.retrieveMessagesD().invoke().toCompletableFuture().get(3, SECONDS);
-            ReceivedMessage a1 = new ReceivedMessage("A", 1);
-            ReceivedMessage a2 = new ReceivedMessage("A", 2);
-            ReceivedMessage b23 = new ReceivedMessage("B", 23);
             eventually(new FiniteDuration(5, SECONDS), new FiniteDuration(1, SECONDS), () -> {
-                assertEquals(Arrays.asList(a1, a2, b23), messagesOnC);
+                PSequence<ReceivedMessage> messagesOnC = charlie.retrieveMessagesC().invoke().toCompletableFuture().get(3, SECONDS);
+                PSequence<ReceivedMessage> messagesOnD = delta.retrieveMessagesD().invoke().toCompletableFuture().get(3, SECONDS);
+                ReceivedMessage a1 = new ReceivedMessage("A", 1);
+                ReceivedMessage a2 = new ReceivedMessage("A", 2);
+                ReceivedMessage b23 = new ReceivedMessage("B", 23);
+
                 assertEquals(Arrays.asList(a1, a2), messagesOnD);
+
+                // messages incoming from Alpha and Beta could be received interlaced.
+                List<ReceivedMessage> messagesOnCFromA = messagesOnC.stream().filter(m -> m.getSource().equals("A")).collect(Collectors.toList());
+                List<ReceivedMessage> messagesOnCFromB = messagesOnC.stream().filter(m -> m.getSource().equals("B")).collect(Collectors.toList());
+                assertEquals(Arrays.asList(a1, a2), messagesOnCFromA);
+                assertEquals(b23, messagesOnCFromB.get(0));
+
             });
         });
 
@@ -144,12 +160,14 @@ public class ProducerStubTest {
             producerAStub.send(new AlphaEvent(2));
             producerBStub.send(new BetaEvent(23));
 
-            charlie.startSubscriptionOnBeta().invoke().toCompletableFuture().get(3, SECONDS);
-            PSequence<ReceivedMessage> messages = delta.retrieveMessagesD().invoke().toCompletableFuture().get(3, SECONDS);
-            ReceivedMessage a1 = new ReceivedMessage("A", 1);
-            ReceivedMessage a2 = new ReceivedMessage("A", 2);
-            List<ReceivedMessage> expectedAs = Arrays.asList(a1, a2);
-            assertEquals(expectedAs, messages);
+            eventually(new FiniteDuration(5, SECONDS), new FiniteDuration(1, SECONDS), () -> {
+                charlie.startSubscriptionOnBeta().invoke().toCompletableFuture().get(3, SECONDS);
+                PSequence<ReceivedMessage> messages = delta.retrieveMessagesD().invoke().toCompletableFuture().get(3, SECONDS);
+                ReceivedMessage a1 = new ReceivedMessage("A", 1);
+                ReceivedMessage a2 = new ReceivedMessage("A", 2);
+                List<ReceivedMessage> expectedAs = Arrays.asList(a1, a2);
+                assertEquals(expectedAs, messages);
+            });
         });
 
     }
