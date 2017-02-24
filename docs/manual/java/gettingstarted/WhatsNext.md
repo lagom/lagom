@@ -8,7 +8,7 @@ Learn how to integrate with Eclipse:
 * [[Create a new Eclipse project using the Lagom Maven archetype|EclipseMavenNew]]
 * [[Import an existing sbt build into Eclipse|EclipseSbt]]
     
-Learn how to intgrate with Intellij:
+Learn how to integrate with Intellij:
 
 * [[Import an existing Maven project into Intellij|intellijMaven]]
 * [[Import an existing sbt build into Intellij|IntellijSbtJava]]
