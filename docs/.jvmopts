@@ -1,4 +1,4 @@
 # This is used to configure sbt in development
 # Note that you need to use version 0.13.13+ of the sbt launcher
--Xms1024M
--Xmx1024M
+-Xms1536M
+-Xmx1536M
