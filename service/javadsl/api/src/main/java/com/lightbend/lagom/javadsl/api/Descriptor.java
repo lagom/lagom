@@ -711,7 +711,7 @@ public final class Descriptor {
     }
 
     /**
-     * Replace all the service calls provided by this descriptor with the the given service calls.
+     * Replace all the service calls provided by this descriptor with the given service calls.
      *
      * @param calls The calls to replace the existing ones with.
      * @return A copy of this descriptor with the new calls.
@@ -721,7 +721,7 @@ public final class Descriptor {
     }
 
     /**
-     * Replace all the path param serializers registered with this descriptor with the the given path param serializers.
+     * Replace all the path param serializers registered with this descriptor with the given path param serializers.
      *
      * @param pathParamSerializers The path param serializers to replace the existing ones with.
      * @return A copy of this descriptor with the new path param serializers.
@@ -731,7 +731,7 @@ public final class Descriptor {
     }
 
     /**
-     * Replace all the message serializers registered with this descriptor with the the given message serializers.
+     * Replace all the message serializers registered with this descriptor with the given message serializers.
      *
      * @param messageSerializers The message serializers to replace the existing ones with.
      * @return A copy of this descriptor with the new message serializers.
@@ -741,7 +741,7 @@ public final class Descriptor {
     }
 
     /**
-     * Replace all the topic calls provided by this descriptor with the the given topic calls.
+     * Replace all the topic calls provided by this descriptor with the given topic calls.
      *
      * @param topicCalls The topic calls to replace the existing ones with.
      * @return A copy of this descriptor with the new topic calls.

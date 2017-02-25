@@ -118,7 +118,7 @@ You can send a negative acknowledgment with `ctx.commandFailed`, which will fail
 
 If persisting the events fails a negative acknowledgment is automatically sent, which will fail the `CompletionStage` on the sender side with `PersistentEntity.PersistException`.
 
-If the `PersistentEntity` receives a command for which there is no registered command handler a negative acknowledgment is automatically sent, which will fail the the `CompletionStage` on the sender side with `PersistentEntity.UnhandledCommandException`.
+If the `PersistentEntity` receives a command for which there is no registered command handler a negative acknowledgment is automatically sent, which will fail the `CompletionStage` on the sender side with `PersistentEntity.UnhandledCommandException`.
 
 If you don't reply to a command the `CompletionStage` on the sender side will be completed with a `akka.pattern.AskTimeoutException` after a timeout.
 
