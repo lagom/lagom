@@ -53,6 +53,14 @@ class ServiceClientSpec extends WordSpec with Matchers with Inside {
           methodName should ===("twoArguments")
           params should ===(Seq("foo", "bar"))
       }
+      inside(mockServiceClient.twoPrimitiveArguments(1L, 2)) {
+        case TestServiceCall(descriptor, methodName, params) =>
+          descriptor.name should ===("mockservice")
+          methodName should ===("twoPrimitiveArguments")
+          params should ===(Seq(1, 2))
+          params(0) shouldBe a[java.lang.Long]
+          params(1) shouldBe an[java.lang.Integer]
+      }
       inside(mockServiceClient.streamNoParamList) {
         case TestTopic(descriptor, methodName) =>
           descriptor.name should ===("mockservice")
@@ -102,6 +110,7 @@ trait MockService extends Service {
   def noArgumentsRef(): ServiceCall[String, String]
   def oneArgument(arg: String): ServiceCall[String, String]
   def twoArguments(arg1: String, arg2: String): ServiceCall[String, String]
+  def twoPrimitiveArguments(arg1: Long, arg2: Int): ServiceCall[String, String]
   def streamNoParamList: Topic[String]
   def streamNoParamListRef: Topic[String]
   def streamNoArguments(): Topic[String]

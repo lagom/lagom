@@ -409,6 +409,15 @@
                 <parameter>
                     <name>cassandraEnabled</name>
                 </parameter>
+                <parameter>
+                    <name>kafkaPort</name>
+                </parameter>
+                <parameter>
+                    <name>kafkaAddress</name>
+                </parameter>
+                <parameter>
+                    <name>kafkaEnabled</name>
+                </parameter>
             </parameters>
         </mojo>
         <mojo>
@@ -462,12 +471,6 @@
                 </parameter>
                 <parameter>
                     <name>cassandraKeyspace</name>
-                </parameter>
-                <parameter>
-                    <name>kafkaPort</name>
-                </parameter>
-                <parameter>
-                    <name>kafkaAddress</name>
                 </parameter>
                 <parameter>
                     <name>externalProjects</name>
@@ -531,12 +534,6 @@
                 </parameter>
                 <parameter>
                     <name>cassandraPort</name>
-                </parameter>
-                <parameter>
-                    <name>kafkaPort</name>
-                </parameter>
-                <parameter>
-                    <name>kafkaAddress</name>
                 </parameter>
             </parameters>
         </mojo>
