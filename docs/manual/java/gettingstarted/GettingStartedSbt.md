@@ -21,7 +21,7 @@ The sbt Lagom template prompts for the following parameters. Press `Enter` to ac
 * `name` - Becomes the name of the top-level directory.
 * `organization` - Used as a package name.
 * `version` - A version number for your system.
-* `lagom-version` - The version number of Lagom, such as 1.3.0. We suggest that you use the latest official release.
+* `lagom-version` - The version number of Lagom, such as 1.3.0. Be sure to use the [current stable release](http://www.lagomframework.com/documentation/).
 
 ## Browse the build
 

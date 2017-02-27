@@ -3,5 +3,4 @@ welcome:Welcome to Lagom
 gettingstarted:Getting started with Lagom
 concepts:Lagom core concepts
 guide:Lagom reference guide
-appendix:Appendix
 releases:Lagom releases

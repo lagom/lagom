@@ -1,4 +1,4 @@
-# Increase Memory in sbt and Maven
+# Increase Memory for sbt and Maven
 
 Lagom in dev mode starts all your services plus some internal Lagom services in a single JVM. This can cause `OutOfMemoryError`s depending on your JVM setup. It is possible to start Maven and sbt with increased memory.
 

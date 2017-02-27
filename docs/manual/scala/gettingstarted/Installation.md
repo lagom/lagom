@@ -24,7 +24,7 @@ For more details on verifying or installing prerequisites see the following sect
 * [Installing sbt](#sbt)
 * [Proxy setup](#Proxy-setup)
 
-When your environment is ready, follow the instructions for [[Creating and running Hello World|GettingStarted]].
+When your environment is ready, follow the instructions for [[Creating and running Hello World|IntroGetStarted]].
 
 ## JDK
 
