@@ -9,20 +9,42 @@ Follow these instructions to create and run your first project:
 
 ## Generate a project with the Lagom archetype
 
-To create a project, invoke `mvn archetype:generate` from the command line with the following parameters (all on one line). The `archetypeVersion` parameter specifies the Lagom version (in this example, 1.3.0).  
+To create a project, follow these steps:  
 
+1. Invoke `mvn archetype:generate` from the command line:
+    ```
+    mvn archetype:generate -Dfilter=com.lightbend.lagom:maven-archetype-lagom-java
+    ```
+    Maven starts in interactive mode and prompts you to choose an archetype:
+    ```
+    Choose archetype:
+    1: remote -> com.lightbend.lagom:maven-archetype-lagom-java (maven-archetype-lagom-java)
+    Choose a number or apply filter (format: [groupId:]artifactId, case sensitive contains): :
+    ```
+1. Enter the number that corresponds with `com.lightbend.lagom:maven-archetype-lagom-java` (at time of writing, the number `1`, and the only one available).
+    Maven prompts you for the version.
+1. Enter the number corresponding with the version of Lagom you want to use. We recommend using the [current stable release](http://www.lagomframework.com/documentation/)).
+    The template prompts you for POM values. 
+1. Specify values for:
+    * `groupId`  - Usually a reversed domain name, such as `com.example.hello`.
+    * `artifactId` - Maven also uses this value as the name for the top-level project folder. You might want to use a value such as `my-first-system`
+    * `version` - Press `Enter` to accept the default or enter a version number for your project.
+    * `package` - Press `Enter` to accept the default, which is the same as the `groupId`.  
+    Maven prompts you to confirm POM values.    
+1. Enter `Y` to accept the values.
+   Maven creates the project, and completes with a message similar to the following:
+   
 ```
-mvn archetype:generate -DarchetypeGroupId=com.lightbend.lagom -DarchetypeArtifactId=maven-archetype-lagom-java
--DarchetypeVersion=1.3.0
+   [INFO] ------------------------------------------------------------------------
+   [INFO] BUILD SUCCESS
+   [INFO] ------------------------------------------------------------------------
+   [INFO] Total time: 10:42 min
+   [INFO] Finished at: 2017-02-24T11:58:08-06:00
+   [INFO] Final Memory: 17M/252M
+   [INFO] ------------------------------------------------------------------------
+   
 ```
 
-When the template prompts you for POM values, accept defaults by pressing `Enter` or specify your own for:
-
-* `groupId`  - Usually a reversed domain name, such as `com.example.hello`.
-* `artifactId` - Maven also uses this value as the name for the top-level project folder. You might want to use a value such as `my-first-system`
-* `version` - A version number for your project.
-* `package` - By default, the same as the `groupId`.  
-> **Note:** Be sure to use the latest version of Lagom for the `archetypeVersion` parameter.
 
 ## Browse the project structure
 

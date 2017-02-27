@@ -3,6 +3,4 @@
 
 Lagom is a Swedish word [meaning](https://en.wikipedia.org/wiki/Lagom) "just the right amount".
 
-Often, when people talk about microservices, they focus on the micro part, saying that a service should be small. We want to emphasize that the important thing when splitting a system into services is to find the right boundaries between services, aligning them with bounded contexts, business capabilities, and isolation requirements. As a result, a microservice-based system can achieve its scalability and resilience requirements, making it easy to deploy and manage.
-
-So, the focus should not be on how small the services are, but rather on having services that are just the right size. They should be "Lagom" size services.
+Often, when people talk about microservices, they focus on the micro part of the name, assuming it means that a service should be small. We want to emphasize that the important thing when splitting a system into services is to find the right boundaries between services. This means aligning them with bounded contexts, business capabilities, and isolation requirements. A system of right-sized microservices will naturally achieve scalability and resilience requirements and be easy to deploy and manage. So, rather than focus on how small your services should be, design "Lagom" size services.
