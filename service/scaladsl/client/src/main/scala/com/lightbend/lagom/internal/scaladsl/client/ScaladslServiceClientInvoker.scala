@@ -121,11 +121,11 @@ private class ScaladslClientServiceCallInvoker[Request, Response](
 
 private[lagom] class ScaladslServiceResolver(defaultExceptionSerializer: ExceptionSerializer) extends ServiceResolver {
   override def resolve(descriptor: Descriptor): Descriptor = {
-    val withExceptionSerializer = if (descriptor.exceptionSerializer == DefaultExceptionSerializer.Unresolved) {
+    val withExceptionSerializer: Descriptor = if (descriptor.exceptionSerializer == DefaultExceptionSerializer.Unresolved) {
       descriptor.withExceptionSerializer(defaultExceptionSerializer)
     } else descriptor
 
-    val withAcls = {
+    val withAcls: Descriptor = {
       val acls = descriptor.calls.collect {
         case callWithAutoAcl if callWithAutoAcl.autoAcl.getOrElse(descriptor.autoAcl) =>
           val pathSpec = ScaladslPath.fromCallId(callWithAutoAcl.callId).regex.regex
@@ -138,7 +138,16 @@ private[lagom] class ScaladslServiceResolver(defaultExceptionSerializer: Excepti
       } else withExceptionSerializer
     }
 
-    withAcls
+    val withCircuitBreakers = {
+      // iterate all calls and replace those where CB is None with their setup or the default.
+      val callsWithCircuitBreakers: Seq[Call[_, _]] = descriptor.calls.map { call =>
+        val circuitBreaker = call.circuitBreaker.getOrElse(descriptor.circuitBreaker)
+        call.withCircuitBreaker(circuitBreaker)
+      }
+      withAcls.withCalls(callsWithCircuitBreakers: _*)
+    }
+
+    withCircuitBreakers
   }
 
   private def calculateMethod(serviceCall: Descriptor.Call[_, _]): Method = {
