@@ -3,14 +3,14 @@
  */
 package com.lightbend.lagom.scaladsl.testkit.services
 
-import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.{ ConcurrentLinkedQueue, TimeUnit }
 
 import akka.{ Done, NotUsed }
 import akka.stream.scaladsl.Flow
 import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall }
 import com.lightbend.lagom.scaladsl.api.Service._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.playjson.{ JsonSerializerRegistry, JsonSerializer }
+import com.lightbend.lagom.scaladsl.playjson.{ JsonSerializer, JsonSerializerRegistry }
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LagomServer }
 import play.api.libs.ws.ahc.AhcWSComponents
 
@@ -94,6 +94,9 @@ class CharlieServiceImpl(alpha: AlphaService) extends CharlieService {
   )
 
   override def messages: ServiceCall[NotUsed, Seq[ReceivedMessage]] = ServiceCall { _ =>
-    Future.successful(receivedMessages.iterator().asInstanceOf[Seq[ReceivedMessage]])
+    Future.successful {
+      import collection.JavaConverters._
+      Seq(receivedMessages.asScala.toSeq: _*)
+    }
   }
 }
