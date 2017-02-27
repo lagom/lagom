@@ -1,2 +1,5 @@
 LagomBuild:Defining a Lagom build
 MultipleBuilds:Splitting a system into multiple builds
+IntellijSbt:Import an sbt project into Intellij;next=RunningServices,TestingServices
+EclipseSbt:Import an sbt project into Eclipse;next=RunningServices,TestingServices
+JVMMemoryOnDev:Increase Memory in sbt

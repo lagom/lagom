@@ -1,5 +1,5 @@
 ReferenceGuide:Reference Guide
-build:Defining a Lagom build
+build:Configuring builds and the development environment
 devmode:Running Lagom in development
 services:Writing Lagom services
 cluster:Writing persistent and clustered services
