@@ -11,7 +11,7 @@ import de.heikoseeberger.sbtheader.HeaderPattern
 import com.typesafe.tools.mima.core._
 
 val PlayVersion = "2.5.10"
-val AkkaVersion = "2.4.16"
+val AkkaVersion = "2.4.17"
 val AkkaPersistenceCassandraVersion = "0.22"
 val ScalaTestVersion = "3.0.1"
 val JacksonVersion = "2.7.8"
