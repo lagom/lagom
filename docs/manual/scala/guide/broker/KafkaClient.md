@@ -13,7 +13,10 @@ When importing the Lagom Kafka Broker module keep in mind that the Lagom Kafka B
 
 ## Configuration
 
+After adding the dependency you also need to mix-in the `LagomKafkaComponents` trait on your `Application` to ensure it is enabled and usable at runtime.
+
 The Lagom Kafka Client implementation is built using [akka-stream-kafka](https://github.com/akka/reactive-kafka). The akka-stream-kafka library wraps the official [Apache Java Kafka client](http://kafka.apache.org/documentation.html) and exposes a (Akka) stream based API to publish/consume messages to/from Kafka. Therefore, we have effectively three libraries at play, with each of them exposing its own configuration. Let's explore  the configuration keys exposed by each layer, starting with the one sitting at the top, i.e., the Lagom Kafka Client.
+
 
 ### Lagom Kafka Client
 
@@ -44,6 +47,8 @@ akka.kafka.producer.kafka-clients {
 Sometimes you will implement a Lagom Service that will only consume from the Kafka Topic. In that case you can import the Lagom Kafka Client alone (instead of importing the Lagom Kafka Broker and a Lagom Persistence implementation).
 
 @[kafka-client-dependency](code/build-scaladsl-kafka.sbt)
+
+After adding the dependency you also need to mix-in the `LagomKafkaClientComponents` trait on your `Application` to ensure it is enabled and usable at runtime.
 
 If/when your subscriber-only service evolves to include features that publish data to a topic, you will need to depend on Lagom Kafka Broker and remove the dependency to Lagom Kafka Client. The Lagom Kafka Broker module includes the Lagom Kafka Client module. 
 
