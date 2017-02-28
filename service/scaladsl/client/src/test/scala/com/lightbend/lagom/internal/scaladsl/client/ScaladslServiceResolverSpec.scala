@@ -1,16 +1,18 @@
+/*
+ * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ */
 package com.lightbend.lagom.internal.scaladsl.client
 
 import akka.NotUsed
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
-import com.lightbend.lagom.scaladsl.api.{CircuitBreaker, Descriptor, Service, ServiceCall}
+import com.lightbend.lagom.scaladsl.api.{ CircuitBreaker, Descriptor, Service, ServiceCall }
 import com.lightbend.lagom.scaladsl.client.TestServiceClient
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 /**
-  *
-  */
+ *
+ */
 class ScaladslServiceResolverSpec extends FlatSpec with Matchers {
-
 
   behavior of "ScaladslServiceResolver"
 
@@ -25,9 +27,9 @@ class ScaladslServiceResolverSpec extends FlatSpec with Matchers {
   }
 
   // --------------------------------------------------------------------------------------------
-  def assertCircuitBreaking(service: Service, expected:CircuitBreaker) = {
+  def assertCircuitBreaking(service: Service, expected: CircuitBreaker) = {
     val resolved = new ScaladslServiceResolver(DefaultExceptionSerializer.Unresolved).resolve(service.descriptor)
-    resolved.calls.head.circuitBreaker should be (Some(expected))
+    resolved.calls.head.circuitBreaker should be(Some(expected))
   }
 
   trait Unspecified extends Service {
@@ -48,8 +50,8 @@ class ScaladslServiceResolverSpec extends FlatSpec with Matchers {
       named(
         "Unspecified"
       ).withCalls(
-        namedCall("one", one)
-      ).withCircuitBreaker(CircuitBreaker.identifiedBy("general-cb"))
+          namedCall("one", one)
+        ).withCircuitBreaker(CircuitBreaker.identifiedBy("general-cb"))
     }
   }
 
@@ -60,10 +62,9 @@ class ScaladslServiceResolverSpec extends FlatSpec with Matchers {
       named(
         "Unspecified"
       ).withCalls(
-        namedCall("one", one).withCircuitBreaker(CircuitBreaker.identifiedBy("one-cb")) // overwrites default.
-      ).withCircuitBreaker(CircuitBreaker.identifiedBy("general-cb"))
+          namedCall("one", one).withCircuitBreaker(CircuitBreaker.identifiedBy("one-cb")) // overwrites default.
+        ).withCircuitBreaker(CircuitBreaker.identifiedBy("general-cb"))
     }
   }
 
 }
-

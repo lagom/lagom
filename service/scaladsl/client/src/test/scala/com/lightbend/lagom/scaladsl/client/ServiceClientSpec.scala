@@ -84,7 +84,6 @@ class ServiceClientSpec extends WordSpec with Matchers with Inside {
     }
   }
 
-
 }
 
 trait MockService extends Service {
