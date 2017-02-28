@@ -86,7 +86,7 @@ This is a list of available `Components` you will need to build your application
 
 
 
-You can mix in other `Components` from other frameworks or libraries, for example:
+You can mix in `Components` from other frameworks or libraries, for example:
 
  * [ConductRApplicationComponents](https://github.com/typesafehub/conductr-lib/blob/master/lagom1-scala-conductr-bundle-lib/src/main/scala/com/typesafe/conductr/bundlelib/lagom/scaladsl/ConductRApplicationComponents.scala)
  * [AhcWSComponents](https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.libs.ws.ahc.AhcWSComponents): provides Async HTTP communication
