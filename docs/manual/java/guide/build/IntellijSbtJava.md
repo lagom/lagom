@@ -1,4 +1,4 @@
-# Integrating sbt builds with IntelliJ
+# Importing an sbt project into IntelliJ
 
 Before importing, configure IntelliJ IDEA to use the most recent Scala plugin, which includes sbt support (Use this plugin regardless of whether you are using the Java or the Scala API).
 
