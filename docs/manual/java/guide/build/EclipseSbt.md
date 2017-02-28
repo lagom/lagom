@@ -12,17 +12,17 @@ Follow these steps to integrate your project with Eclipse:
 1. In a console, `cd` to the top-level folder of your existing sbt project, and enter `sbt eclipse` to generate the Eclipse project files for all projects in your build.
     The sbt plugin creates `.project` and `.classpath` files for the subprojects. The last few lines of output confirm success:
 
-```
-...
-[info] Successfully created Eclipse project files for project(s):
-[info] hello-impl
-[info] hello-api
-[info] hello-stream-impl
-[info] hello-stream-api
-[info] lagom-internal-meta-project-service-locator
-[info] lagom-internal-meta-project-cassandra
+    ```
+    ...
+    [info] Successfully created Eclipse project files for project(s):
+    [info] hello-impl
+    [info] hello-api
+    [info] hello-stream-impl
+    [info] hello-stream-api
+    [info] lagom-internal-meta-project-service-locator
+    [info] lagom-internal-meta-project-cassandra
 
-```
+    ```
 
 1. Start Eclipse and switch to the Workspace you want to use for your Lagom project.
 
@@ -53,14 +53,14 @@ Follow these steps to integrate your project with Eclipse:
     1. Click **Apply**. Your screen should look similar to the following:
     [[EclSbtConfig.png]]
 1. Click **Run**.
-    On success, the console shows that the services are running.
-    [[EclSbtSuccess.png]]
 
-    Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser:
+On success, the console shows that the services are running.
+[[EclSbtSuccess.png]]
+
+Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser:
 
 ```
 http://localhost:9000/api/hello/World
 ```
-
 
 The request returns the message `Hello, World!`.
