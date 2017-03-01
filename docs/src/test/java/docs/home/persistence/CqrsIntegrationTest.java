@@ -131,7 +131,7 @@ public class CqrsIntegrationTest {
 
     final PersistentEntityRef<BlogCommand> ref2 = registry().refFor(Post.class, "2");
     final AddPost cmd2 = new AddPost(new PostContent("Title 2", "Body"));
-    ref2.ask(cmd2).toCompletableFuture().get(5, SECONDS); // await only for deterministic order
+    ref2.ask(cmd2).toCompletableFuture().get(15, SECONDS); // await only for deterministic order
 
     final Materializer mat = ActorMaterializer.create(system);
 
@@ -145,7 +145,7 @@ public class CqrsIntegrationTest {
     });
 
     final PreparedStatement selectStmt = cassandraSession.prepare("SELECT id, title FROM blogsummary")
-            .toCompletableFuture().get(5, SECONDS);
+            .toCompletableFuture().get(15, SECONDS);
     final BoundStatement boundSelectStmt = selectStmt.bind();
 
 
