@@ -119,8 +119,8 @@ private[lagom] class SlickProvider(
    */
   def createTable(schemaStatements: Seq[String], tableExists: (Vector[MTable], Option[String]) => Boolean) = {
     for {
-      tables <- getTables
       currentSchema <- getCurrentSchema
+      tables <- getTables(currentSchema)
       _ <- createTableInternal(tables, currentSchema, schemaStatements, tableExists)
     } yield Done.getInstance()
   }
@@ -142,7 +142,7 @@ private[lagom] class SlickProvider(
       }).asTry.flatMap {
         case Success(_) => DBIO.successful(())
         case Failure(f) =>
-          getTables.map { tables =>
+          getTables(currentSchema).map { tables =>
             if (tableExists(tables, currentSchema)) {
               logger.debug("Table creation failed, but table existed after it was created, ignoring failure", f)
               ()
@@ -154,23 +154,32 @@ private[lagom] class SlickProvider(
     }
   }
 
-  private def getTables = {
+  private def getTables(currentSchema: Option[String]) = {
     // Calling MTable.getTables without parameters fails on MySQL
     // See https://github.com/lagom/lagom/issues/446
     // and https://github.com/slick/slick/issues/1692
-    MTable.getTables("%")
+    MTable.getTables(None, currentSchema, Option("%"), None)
   }
 
   private def getCurrentSchema: DBIO[Option[String]] = {
-    profile match {
-      case _: H2Driver =>
-        sql"SELECT SQL FROM INFORMATION_SCHEMA.SESSION_STATE WHERE KEY='SCHEMA_SEARCH_PATH';".as[String]
-          .headOption.map(_.orElse(Some("PUBLIC")))
-      case _: PostgresDriver =>
-        sql"SELECT current_schema();".as[String].headOption
-      case _ =>
-        DBIO.successful(None)
+    SimpleDBIO(ctx => ctx.connection.getSchema).flatMap { schema =>
+      if (schema == null) {
+        // Not all JDBC drivers support the getSchema method:
+        // some always return null.
+        // In that case, fall back to vendor-specific queries.
+        profile match {
+          case _: H2Driver =>
+            sql"SELECT SCHEMA();".as[String].headOption
+          case _: MySQLDriver =>
+            sql"SELECT DATABASE();".as[String].headOption
+          case _: PostgresDriver =>
+            sql"SELECT current_schema();".as[String].headOption
+          case _ =>
+            DBIO.successful(None)
+        }
+      } else DBIO.successful(Some(schema))
     }
+
   }
 
   def tableExists(schemaName: Option[String], tableName: String)(tables: Vector[MTable], currentSchema: Option[String]): Boolean = {
