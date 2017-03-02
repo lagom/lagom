@@ -176,7 +176,7 @@ abstract class LagomApplication(context: LagomApplicationContext)
 
   override implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
   override lazy val configuration: Configuration = Configuration.load(environment) ++
-    additionalConfiguration.configuration ++ context.playContext.initialConfiguration
+    context.playContext.initialConfiguration ++ additionalConfiguration.configuration
 
   override lazy val actorSystem: ActorSystem = {
     val (system, stopHook) = ActorSystemProvider.start(configuration, environment, optionalJsonSerializerRegistry)
