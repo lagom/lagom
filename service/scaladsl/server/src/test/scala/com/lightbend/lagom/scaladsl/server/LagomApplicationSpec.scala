@@ -6,12 +6,16 @@ package com.lightbend.lagom.scaladsl.server
 import akka.NotUsed
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
-import com.lightbend.lagom.scaladsl.api.{ Service, ServiceCall }
+import com.lightbend.lagom.scaladsl.api.{ AdditionalConfiguration, ProvidesAdditionalConfiguration, Service, ServiceCall }
 import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId
 import com.lightbend.lagom.scaladsl.api.broker.Topic
+import com.typesafe.config.ConfigFactory
 import org.scalatest.{ Matchers, WordSpec }
+import play.api.ApplicationLoader.Context
+import play.api.{ Configuration, Environment }
 import play.api.inject.DefaultApplicationLifecycle
 import play.api.libs.ws.ahc.AhcWSComponents
+import play.core.DefaultWebCommands
 
 import scala.concurrent.Future
 
@@ -44,6 +48,28 @@ class LagomApplicationSpec extends WordSpec with Matchers {
         override def serviceLocator = NoServiceLocator
       }.applicationLifecycle.stop()
     }
+
+    "preserve config settings provided via ProvidesAdditionalConfiguration trait extension" in {
+      val contextConfig = Configuration(ConfigFactory.parseString(configKey + "=\"via context\""))
+      val expected = Configuration(ConfigFactory.parseString(configKey + "=\"via additional\""))
+
+      val context = LagomApplicationContext(Context(Environment.simple(), None, new DefaultWebCommands, contextConfig))
+      new LagomApplication(context) with AhcWSComponents with FakeComponent {
+        configuration.getString(configKey) shouldBe expected.getString(configKey)
+
+        // following is required to complete the cake. Irrelevant for the test.
+        override def lagomServer = LagomServer.forServices(bindService[AppWithNoTopics].to(AppWithNoTopics))
+
+        override def serviceLocator = NoServiceLocator
+      }.applicationLifecycle.stop()
+    }
+
+  }
+  private val configKey = "akka.cluster.seed-nodes"
+
+  trait FakeComponent extends ProvidesAdditionalConfiguration {
+    override def additionalConfiguration: AdditionalConfiguration = super.additionalConfiguration ++
+      Configuration(ConfigFactory.parseString(configKey + "=\"via additional\""))
   }
 
   trait MockTopicComponents extends TopicFactoryProvider {
