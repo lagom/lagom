@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.internal.persistence.jdbc
 
+import java.sql.Connection
 import java.util.concurrent.TimeUnit
 
 import akka.Done
@@ -15,13 +16,12 @@ import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import org.slf4j.LoggerFactory
 import play.api.db.DBApi
-import slick.ast._
 import slick.driver.{ H2Driver, JdbcProfile, MySQLDriver, PostgresDriver }
 import slick.jdbc.meta.MTable
 
-import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
-import scala.util.{ Failure, Success }
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.{ Failure, Success, Try }
 
 private[lagom] class SlickProvider(
   system: ActorSystem,
@@ -162,7 +162,7 @@ private[lagom] class SlickProvider(
   }
 
   private def getCurrentSchema: DBIO[Option[String]] = {
-    SimpleDBIO(ctx => ctx.connection.getSchema).flatMap { schema =>
+    SimpleDBIO(ctx => tryGetSchema(ctx.connection).getOrElse(null)).flatMap { schema =>
       if (schema == null) {
         // Not all JDBC drivers support the getSchema method:
         // some always return null.
@@ -179,8 +179,17 @@ private[lagom] class SlickProvider(
         }
       } else DBIO.successful(Some(schema))
     }
-
   }
+
+  // Some older JDBC drivers don't implement Connection.getSchema
+  // (including some builds of H2). This causes them to throw an
+  // AbstractMethodError at runtime.
+  // Because Try$.apply only catches NonFatal errors, and AbstractMethodError
+  // is considered fatal, we need to construct the Try explicitly.
+  private def tryGetSchema(connection: Connection): Try[String] =
+    try Success(connection.getSchema) catch {
+      case e: AbstractMethodError => Failure(e)
+    }
 
   def tableExists(schemaName: Option[String], tableName: String)(tables: Vector[MTable], currentSchema: Option[String]): Boolean = {
     tables.exists { t =>
