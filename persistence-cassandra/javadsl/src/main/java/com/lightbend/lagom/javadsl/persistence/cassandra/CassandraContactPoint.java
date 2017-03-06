@@ -41,8 +41,7 @@ public final class CassandraContactPoint {
    */
   @Override
   public boolean equals(@Nullable Object another) {
-    if (this == another) return true;
-    return another instanceof CassandraContactPoint
+    return this == another || another instanceof CassandraContactPoint
         && equalTo((CassandraContactPoint) another);
   }
 

@@ -21,9 +21,7 @@ public final class GreetingMessage {
 
   @Override
   public boolean equals(@Nullable Object another) {
-    if (this == another)
-      return true;
-    return another instanceof GreetingMessage && equalTo((GreetingMessage) another);
+    return this == another || another instanceof GreetingMessage && equalTo((GreetingMessage) another);
   }
 
   private boolean equalTo(GreetingMessage another) {

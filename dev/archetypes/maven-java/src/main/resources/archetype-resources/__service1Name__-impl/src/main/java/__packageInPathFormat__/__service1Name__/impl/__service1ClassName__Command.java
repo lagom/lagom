@@ -46,9 +46,7 @@ public interface ${service1ClassName}Command extends Jsonable {
 
     @Override
     public boolean equals(@Nullable Object another) {
-      if (this == another)
-        return true;
-      return another instanceof UseGreetingMessage && equalTo((UseGreetingMessage) another);
+      return this == another || another instanceof UseGreetingMessage && equalTo((UseGreetingMessage) another);
     }
 
     private boolean equalTo(UseGreetingMessage another) {
@@ -89,9 +87,7 @@ public interface ${service1ClassName}Command extends Jsonable {
 
     @Override
     public boolean equals(@Nullable Object another) {
-      if (this == another)
-        return true;
-      return another instanceof Hello && equalTo((Hello) another);
+      return this == another || another instanceof Hello && equalTo((Hello) another);
     }
 
     private boolean equalTo(Hello another) {
