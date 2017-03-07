@@ -1,18 +1,27 @@
-# Lagom core concepts
+# Introduction to Lagom concepts
 
-Lagom is a framework for creating microservice-based systems. It offers four main features:
 
-* [[Service API|ServiceDescriptors]]
-* [[Persistence API|PersistentEntity]]
-* [[Development Environment|DevEnvironment]]
-* [[Production Environment|ConductR]]
 
-The [[Service API|ServiceDescriptors]] provides a way to declare and implement service interfaces, to be consumed by clients. For location transparency, clients discover services through a Service Locator. The Service API supports synchronous request-response calls as well as asynchronous streaming between services.
+The Lagom framework supports you from development to deployment:
 
-The [[Persistence API|PersistentEntity]] provides event-sourced persistent entities for services that store data. Command Query Responsibility Segregation (CQRS) read-side support is provided as well. Lagom manages the distribution of persisted entities across a cluster of nodes, enabling sharding and horizontal scaling. Cassandra is provided as a database out-of-the-box.
+* You can create microservices using Java or Scala. Lagom offers an especially seamless experience for communication between microservices. Service location, communication protocols, and other issues are handled by Lagom transparently, maximizing convenience and productivity. Lagom supports Event sourcing and CQRS (Command Query Responsibility Segregation) for persistence.
+* During development, a single command builds your project and starts all of your services and the supporting Lagom infrastructure. It hot-reloads when you modify code. The development environment allows you to bring up a new service or join an existing Lagom development team in just minutes.
+* Deploy on your platform of choice. To simplify deployment, Lagom supports [the Lightbend Production Suite](http://lightbend.com/platform/production) out-of-the-box. The Production Suite provides a simple way to deploy, scale, monitor, and manage Lagom services in a container environment.
 
-The [[Development Environment|DevEnvironment]] allows running all your services, and the supporting Lagom infrastructure, with one command. It hot-reloads your services when code changes; no fragile scripts are needed to set up and maintain a development environment. With Lagom, a developer can bring up a new service or join an existing Lagom development team in just a few minutes.
+The remaining topics in this section further introduce:
 
-[[Lightbend ConductR|ConductR]] is the out-of-the-box supported production environment. Lightbend ConductR allows simple deployment, monitoring, and scaling, of Lagom services in a container environment.
+* Lagom system architecture:
+    * [[Lagom design philosophy|LagomDesignPhilosophy]]
+    * [[Polyglot systems|PolyglotSystems]]
+* Lagom development environment: 
+    * [[Overview|DevEnvOvr]]
+    * [[Build philosophy|BuildConcepts]]
+    * [[Component technologies|ComponentTechnologies]]
+* Patterns to use in your system:
+    * [[Basic design principles|Microservices]]
+    * [[Registering and discovering services|ServiceDiscovery]]
+    * [[Using immutable objects|Immutable]]
+    * [[Managing data persistence|ES_CQRS]]
+    
 
 @toc@

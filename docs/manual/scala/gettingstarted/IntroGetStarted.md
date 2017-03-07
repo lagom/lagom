@@ -10,7 +10,7 @@ Follow these steps to create and run Hello World:
 
 ## Create the build
 
-To create a new build using the Giter8 template, open a console and enter the following:
+To create a new build using the Giter8 template, open a console where you have administrative privileges. Enter the following:
 
 ```
 sbt new lagom/lagom-scala.g8

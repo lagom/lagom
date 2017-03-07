@@ -1,14 +1,12 @@
-# Event Sourcing and CQRS
+# Managing data persistence
 
-Event sourcing and CQRS (Command Query Responsibility Segregation) are fundamental concepts behind Lagom's support for services that store information.
+If a service stores information, a core principle is that each service should own its data and it is only the service itself that should have direct access to the database. Other services must use the Service API to interact with the data. There must be no sharing of databases across different services since that would result in a too tight coupling between the services. This is like a [Bounded Context](http://martinfowler.com/bliki/BoundedContext.html) in Domain-Driven Design terminology. Each service defines a Bounded Context.
 
-## Why event sourcing?
+To achieve this, Lagom's persistence module promotes use of [event sourcing](https://msdn.microsoft.com/en-us/library/jj591559.aspx) and [CQRS](https://msdn.microsoft.com/en-us/library/jj591573.aspx).
 
-If a service stores information, a core principle is that each service should own its data and it is only the service itself that should have direct access to the database. Other services must use the Service API to interact with the data. There must be no sharing of databases across different services since that would result in a too tight coupling between the services. This is like a [Bounded Context](https://martinfowler.com/bliki/BoundedContext.html) in Domain-Driven Design terminology. Each service defines a Bounded Context.
+If you do not want to use event sourcing and CQRS, you should probably use something else than the Persistence module in Lagom. You can implement your Lagom services with any data storage solution. Use asynchronous APIs to achieve best scalability. If you are using blocking APIs, such JDBC or JPA, you should carefully manage the blocking by using dedicated thread pools of fixed/limited size for the components that are calling those blocking APIs. Never cascade the blocking through several asynchronous calls, such as Service API calls.
 
-To achieve this, Lagom's persistence module advocates the use of [event sourcing](https://msdn.microsoft.com/en-us/library/jj591559.aspx) and [CQRS](https://msdn.microsoft.com/en-us/library/jj591573.aspx) (Command Query Responsibility Segregation).
-
-## What is event sourcing?
+If you opt not to use Lagom's persistence module, the `CassandraSession` in the Lagom Persistence module provides an asynchronous API for storing data in Cassandra.
 
 When using event sourcing, we capture all changes as domain events, which are immutable facts of things that have happened. For example "the seat was reserved by Alice". The events are stored and the current state can be derived from the events.
 
@@ -32,28 +30,4 @@ Event Sourcing is used for an [Aggregate Root](https://martinfowler.com/bliki/DD
 
 The aggregate can reply to queries for a specific identifier but it cannot be used for serving queries that span more than one aggregate. Therefore you need to create another view of the data that is tailored to the queries that the service provides.
 
-This separation of the write-side and the read-side of the persistent data is often referred to as the [CQRS](https://msdn.microsoft.com/en-us/library/jj591573.aspx) (Command Query Responsibility Segregation) pattern.
 
-### Write-side vs. read-side
-
-A benefit of this pattern is the separation of concerns between the write and the read-side. Then the entities can focus on the updating commands and the read-side can be optimized for various queries and reporting jobs. A single conceptual model that tries to encapsulate both read and write operations may do neither well.
-
-It is important to realize that the write-side has completely different needs from the read-side, and separating those concerns makes it possible to offer the best experience for the write and read-sides independently.
-
-For example, in a bidding system it is important to "take the write" and respond to the bidder that we have accepted the bid as soon as possible, which means that write-throughput is of highest importance for the write-side.
-
-On the other hand the same application may have some complex statistics view or we may have analysts working with the data to figure out best bidding strategies and trends – this often requires some kind of expressive query capabilities and a different data model than the write-side.
-
-This separation is also great for scalability, since the read-side can be scaled out to many nodes independently of the write-side, and its often on the read-side that you need massive scalability.
-
-A consequence of separating the read-side is that it is eventually consistent, i.e. it may take a few seconds until an update to the write-side is visible on the read-side.
-
-## Further reading
-
-The [CQRS Journey](https://msdn.microsoft.com/en-us/library/jj554200.aspx) is a great resource for learning more about CQRS and Event Sourcing.
-
-## What if I don't want to use Event Sourcing and CQRS?
-
-Then you should probably use something else than the Persistence module in Lagom. You can implement your Lagom services with whatever data store solution you like. Keep in mind that you should prefer asynchronous APIs to achieve best scalability. If you are using blocking APIs, such JDBC or JPA, you should carefully manage the blocking by using dedicated thread pools of fixed/limited size for the components that are calling those blocking APIs. Never cascade the blocking through several asynchronous calls, such as Service API calls.
-
-The `CassandraSession` in the Lagom Persistence module provides an asynchronous API that you can use for Cassandra even though you have chosen to not use Event Sourcing and CQRS.

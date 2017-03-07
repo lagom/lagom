@@ -74,3 +74,4 @@ Lagom and many of its component technologies are configured using the [Typesafe 
 
 Lagom uses [SLF4J](https://www.slf4j.org/) for logging, backed by [Logback](https://logback.qos.ch/) as its default logging engine.
 See the [[Logging]] section of this manual for more information.
+

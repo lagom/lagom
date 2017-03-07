@@ -12,7 +12,7 @@ Follow these steps to create your first Lagom build:
 
 ## Create a new Lagom build
 
-From the command line, invoke `sbt new` and specify the Lagom Giter8 template:
+Open a terminal or command window with administrative privileges. From the command line, invoke `sbt new` and specify the Lagom Giter8 template:
 ```
 sbt new lagom/lagom-java.g8
 ```

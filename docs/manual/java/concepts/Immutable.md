@@ -1,8 +1,6 @@
-# Immutable Objects
+# Using immutable objects
 
-An immutable object is an object that cannot be modified after it was created.
-
-Immutable objects have two great advantages:
+An immutable object cannot be modified after it was created. Immutable objects have two great advantages:
 
 * Code based on immutable objects is clearer and likelier to be correct. Bugs involving unexpected changes simply can't occur.
 * Multiple threads can safely access immutable objects concurrently.
@@ -13,40 +11,42 @@ In Lagom, immutable objects are required in several places, such as:
 * Persistent entity commands, events, and states
 * Publish and subscribe messages
 
-## Mutable vs. immutable
+Lagom doesn't care how you define immutable objects. You can write out the constructor and getters by hand, but we recommend using third party tools to generate them instead. Using a third party tool, such as the [Immutables](https://immutables.github.io) tool or [Lombok](https://projectlombok.org/index.html), is easier and less error-prone than coding by hand and the resulting code is shorter and easier to read.
 
-Here is an example of a mutable object:
+The following sections provide more information on immutables:
+
+* [Mutable and immutable examples](#Mutable-and-immutable-examples)
+* [Lombok example](#Lombok-example)
+* [Immutables tool example](#Immutables-tool-example)
+
+## Mutable and immutable example
+In the following example of a mutable object, the setter methods can be used to modify the object after construction:
 
 @[mutable](code/docs/home/immutable/MutableUser.java)
 
-The setter methods can be used to modify the object after construction.
-
-Here, by contrast, is an immutable object:
+In contrast, in the following example of an immutable object, all fields are final and assigned at construction time (it contains no setter methods).
 
 @[immutable](code/docs/home/immutable/ImmutableUser.java)
 
-All fields are final and are assigned at construction time. There are no setter methods.
-
 ## Easier immutability
 
-Lagom doesn't care how you define your immutable objects. You can write out the constructor and getters by hand, as in the above sample.  But we recommend using third party tools to generate them instead. You can use the [Immutables](https://immutables.github.io) or [Lombok](https://projectlombok.org/index.html). Using a third party tool is easier and less error-prone than writing everything out by hand, and the resulting code is shorter and easier to read.
+## Lombok example
 
-### Lombok
+The following example shows the definition of a `User` implemented with Lombok. Lombok handles the following details for you. It:
 
-Here's a definition of a `User` implemented with Lombok:
+* modifies fields to be `private` and `final`
+* creates getters for each field
+* creates correct `equals`, `hashCode` and a human-friendly `toString`
+* creates a constructor requiring all fields.
 
 @[lombok-immutable](code/docs/home/immutable/LombokUser.java)
 
-That will:
+The example does not demonstrate other useful Lombok feature like `@Builder` or `@Wither` which will help you create builder and copy methods. Be aware that Lombok is not an immutability library but a code generation library which means some setups might not create immutable objects. For example, Lombok's `@Data` is equivalent to Lombok's `@Value` but will also synthesize mutable methods. Don't use Lombok's `@Data` when creating immutable classes.
 
- * modify fields to be `private` and `final`
- * create getters for each field
- * create correct `equals`, `hashCode` and a human-friendly `toString`
- * create a constructor requiring all fields.
+**RS: The procedures for adding Lombok or Immutables to your project don't belong on this page, but I've left them so that you can review them. I will probably move them to the "Configuring the build and development environment" section.**
 
-This example code is not demonstrating other Lombok feature like `@Builder` or `@Wither` which will help you create builder and copy methods. Be aware that Lombok is not an immutability library but a code generation library which means some setups might not create immutable objects. For example, Lombok's `@Data` is equivalent to Lombok's `@Value` but will also synthesize mutable methods. Don't use Lombok's `@Data` when creating immutable classes.
-
-Lombok is a simple dependency:
+### Adding Lombok to a Maven project
+To add Lombok to a Maven project, declare it as a simple dependency:
 
 ```xml
 <dependency>
@@ -56,27 +56,30 @@ Lombok is a simple dependency:
 </dependency>
 ```
 
-or in sbt:
+### Adding Lombok to an sbt projects
+For sbt, add the following line to ????
 
 @[lagom-immutables-lombok](code/lagom-immutables.sbt)
 
+### Integrating Lombok with an IDE
+Lombok integrates with popular IDEs:
+* To use Lombok in IntelliJ IDEA you'll need the [Lombok Plugin for IntelliJ IDEA](https://plugins.jetbrains.com/idea/plugin/6317-lombok-plugin) and you'll also need to enable Annotation Processing (`Settings / Build,Execution,Deployment / Compiler / Annotation Processors` and tick `Enable annotation processing`)
+* To Use Lombok in Eclipse, run `java -jar lombok.jar` (see the video at [Project Lombok](https://projectlombok.org/)).
 
-Lombok integrates with popular IDE's too. In order to use Lombok in IntelliJ IDEA you'll need the [Lombok Plugin for IntelliJ IDEA](https://plugins.jetbrains.com/idea/plugin/6317-lombok-plugin) and you'll also need to enable Annotation Processing (`Settings / Build,Execution,Deployment / Compiler / Annotation Processors` and tick `Enable annotation processing`). Using Lombok in Eclipse requires running `java -jar lombok.jar` (see the video at [Project Lombok](https://projectlombok.org/)).
 
-
-### Immutables
+## Immutables tool example
 
 Here is the corresponding definition of a `User` (like the above `ImmutableUser`) using Immutables:
 
 @[immutable](code/docs/home/immutable/AbstractUser.java)
 
-For free you get things like:
+Immutables generates for you:
 
 * builders (very convenient when your class has many fields)
-* correct `equals`, `hashCode`, `toString` implementations
+* correct implementations of `equals`, `hashCode`, `toString`
 * copy methods to make new instances based on old ones, e.g. `withEmail`
 
-In maven:
+### Adding Immutables to a Maven project
 
 ```xml
 <dependency>
@@ -86,13 +89,16 @@ In maven:
 </dependency>
 ```
 
-In sbt:
+### Adding Immutables to an sbt project
 
 @[lagom-immutables](code/lagom-immutables.sbt)
 
-Immutables integrates with popular IDEs. Follow the instructions for [[Eclipse|ImmutablesInIDEs#Eclipse]] or [[IntelliJ IDEA|ImmutablesInIDEs#IntelliJ-IDEA]] to add the Immutables annotation processor to your IDE. We've found the integration with IntelliJ IDEA a bit cumbersome though.
+### Integrating Immmutables with an IDE
+
+Immutables integrates with popular IDEs. Follow the instructions for [[Eclipse|ImmutablesInIDEs#Eclipse]] or [[IntelliJ IDEA|ImmutablesInIDEs#IntelliJ-IDEA]] to add the Immutables annotation processor to your IDE. 
 
 
+**RS: Probably better to remove the following:** We've found the integration with IntelliJ IDEA a bit cumbersome though.
 
 ## Collections
 
