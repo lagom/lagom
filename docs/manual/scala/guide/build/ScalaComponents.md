@@ -1,6 +1,6 @@
 # Scala Components
 
-The Lagom scaladsl requires building an Application that mixes in all the Components that will enable the required features for your code. This means each Application will need a specific set of cake slices. Not only that but `Dev` mode and `Prod` mode need adjusting the cake since the environments where the Service is run will vary.
+The Lagom Scala API requires building an Application that mixes in all the Components that will enable the required features for your code. This means each Application will need a specific set of cake slices. Not only that but `Dev` mode and `Prod` mode need adjusting the cake since the environments where the Service is run will vary.
 
 ### A brief intro to Cake Pattern
 
@@ -18,36 +18,37 @@ In the `ApplicationLoader` depending on the runtime environment we will complete
 
 This is a brief introduction to Lagom Application cake, there's more information in [[Wiring together a Lagom application|ServiceImplementation#Wiring-together-a-Lagom-application]].
 
+### Defining your own components
+
+To create a complex Application (one that uses Persistence, Clustering, the Broker API, etc...) you will need to mix in many Components. It is a good choice to create small custom traits that mix in some of those Components and build the Application by mixing in your small custom traits. That will let you test parts of the complete Application in isolation.
+
+Imagine your Service consumes messages from a Broker topic where `Orders` are notified. Then your service stores that info into a database and does some processing with a final step of invoking a third party endpoint. If you only wanted to test the consuming of messages and proper storage you could create an `OrderConsumingComponent` trait and mix in `LagomServiceClientComponents` and `CassandraPersistenceComponents` so that you could consume the messages and store them. On your test you could extend your `OrderConsumingComponent` with `TestTopicComponents` that provides a mocked up broker so you didn't need to start a broker to run the tests. Finally, on your Application you would mix in the tested `OrderConsumingComponent` and `LagomKafkaClientComponents`.
+
 ## Components
 
-This is a list of available `Components` you may use to build your application cake. This list contains Components provided by Lagom, Play and other projects or libraries. You may develop your own Components and use those instead of the provided on this list as long as the contracts are fulfilled.
+This is a list of available Components you may use to build your application cake. This list contains Components provided by Lagom, Play and ConductR. You may develop your own Components and use those instead of the provided on this list as long as the contracts are fulfilled.
 
-|  Service Components  ||
+#####  Service Components
+
 | -------------------- | ----------- |
-| [LagomServerComponents](api/com/lightbend/lagom/scaladsl/server/LagomServerComponents.html) | a main Component for any Lagom Service. See [[Building a cake step by step|ScalaComponents#Building-a-cake-step-by-step]].|
+| [LagomServerComponents](api/com/lightbend/lagom/scaladsl/server/LagomServerComponents.html) | a main Component for any Lagom Service. See [[Defining your own components|ScalaComponents#Defining-your-own-components]].|
 | [LagomServiceClientComponents](api/com/lightbend/lagom/scaladsl/client/LagomServiceClientComponents.html) | a main Component for any Lagom Service or application consuming Lagom Services. See [[Building a cake step by step|ScalaComponents#Building-a-cake-step-by-step]] and  [[Binding a service client|ServiceClients#Binding-a-service-client]].|
 | [MetricsServiceComponents](api/com/lightbend/lagom/scaladsl/server/status/MetricsServiceComponents.html) | adds a `MetricsService` to your service so you can remotely track the status of the CircuitBreakers on your service. Using this only makes sense when you Application is consuming other services (hence using remote calls protected with Circuit Breakers). See [[Circuit Breaker Metrics|ServiceClients#Circuit-breaker-metrics]] |
 
-#### Building a cake step by step
-
-`LagomServerComponents` and `LagomServiceClientComponents` are a bit special because they are already mixed into `LagomApplication` and `LagomClientApplication` respectively so you will rarely need to explicitly mix either of them into your Application. The reason why `LagomServerComponents` and `LagomServiceClientComponents` exist is so that you can build your Application cake as the sum of middle-sized portions. Instead of creating a single `abstract class` where you mix in all the Componenets, you may create one trait `MyPartialFooTrait` where you mix in `LagomServerComponents` and parts of your logic and then you could create `MyPartialBarTrait` with some other parts. Then you would build a `MyApplication` mixing in `MyPartialFooTrait` and `MyPartialBarTrait`. so far it's not very different from having a single Application where all Components are mixed. The key advantage of partially creating your cake is that you can use `MyPartialTrait` in isolation in your tests (instead of using a complete `MyApplication`) which will be lighter and provide decoupling.
-
-| Persistence and Cluster Components  ||
+##### Persistence and Cluster Components
 | -------------------- | ----------- |
 | [ClusterComponents](api/com/lightbend/lagom/scaladsl/cluster/ClusterComponents.html) |  registers the node to the Akka Cluster. Tha Akka Cluster is required by Pub-Sub and Persistent Entity support and you will rarely need to use it explicitly. See [[Cluster]]|
 | [PubSubComponents](api/com/lightbend/lagom/scaladsl/pubsub/PubSubComponents.html) | provides [[Publish-Subscribe|PubSub#Publish-Subscribe]]. This requires `ClusterComponents`. See [[Publish-Subscribe|PubSub#Publish-Subscribe]]|
 | [CassandraPersistenceComponents](api/com/lightbend/lagom/scaladsl/persistence/cassandra/CassandraPersistenceComponents.html) |  provides both Read-Side and Write-Side components for Cassandra-backed CQRS. It provides `ReadSideCassandraPersistenceComponents` and `WriteSideCassandraPersistenceComponents` which you might want to use in isolation. See [[PersistentEntityCassandra]] for more info. |
 | [JdbcPersistenceComponents](api/com/lightbend/lagom/scaladsl/persistence/jdbc/JdbcPersistenceComponents.html) | provides both Read-Side and Write-Side components for Cassandra-backed CQRS. It provides `ReadSideJdbcPersistenceComponents`and `WriteSideJdbcPersistenceComponents` which you might want to use in isolation. See [[PersistentEntityRDBMS]]. |
 
-
-| Broker API Components ||
+##### Broker API Components
 | -------------------- | ----------- |
 | [LagomKafkaClientComponents](api/com/lightbend/lagom/scaladsl/broker/kafka/LagomKafkaClientComponents.html) | provide a Kafka implementation for the Broker API so that you Service can subscribe to a Kafka topic. See[[KafkaClient|KafkaClient#Subscriber-only-Services]]. |
 | [LagomKafkaComponents](api/com/lightbend/lagom/scaladsl/broker/kafka/LagomKafkaComponents.html) | provides a Kafka implementation for the Broker API so that you Service can `publish` to a Kafka topic. This component includes `LagomKafkaClientComponents` so if you mix this one in, you will be able to `publish` and `subscribe`. See [[Kafka Client|KafkaClient#Dependency]]. |
 | [TestTopicComponents](api/com/lightbend/lagom/scaladsl/testkit/TestTopicComponents.html) | provides stubbing tools to test services that use the Broker API. This is meant to be used only on Applications you build on your tests. See [[Testing publish|MessageBrokerTesting#Testing-publish]] |
 
-
-| Service Locator Components ||
+##### Service Locator Components
 | -------------------- | ----------- |
 | [LagomDevModeServiceLocatorComponents](api/com/lightbend/lagom/scaladsl/devmode/LagomDevModeServiceLocatorComponents.html) | provides the dev mode service locator. This is meant to be used by Lagom Services and other applications such as Play Apps that want to interact with Lagom Services in Dev Mode. See the [scaladocs](api/com/lightbend/lagom/scaladsl/devmode/LagomDevModeServiceLocatorComponents.html) for more details. |
 | [LagomDevModeComponents](api/com/lightbend/lagom/scaladsl/devmode/LagomDevModeComponents.html) | provides the dev mode service locator and registers the services with it in dev mode. See [[Wiring together a Lagom application|ServiceImplementation#Wiring-together-a-Lagom-application]].|
@@ -56,7 +57,7 @@ This is a list of available `Components` you may use to build your application c
 | [RoundRobinServiceLocatorComponents](api/com/lightbend/lagom/scaladsl/client/RoundRobinServiceLocatorComponents.html)| provides a Service Locator that applies a Round Robin over the passed in sequence of URI. |
 | [CircuitBreakerComponents](api/com/lightbend/lagom/scaladsl/client/CircuitBreakerComponents.html)| implementors of a Service Locator will need to extend this to reuse the Circuit Breaker config provided by Lagom.|
 
-
+##### Third party Components
 
 You can mix in `Components` from other frameworks or libraries, for example:
 
@@ -65,4 +66,4 @@ You can mix in `Components` from other frameworks or libraries, for example:
  * [DBComponents](https://www.playframework.com/documentation/2.5.x/api/scala/play/api/db/DBComponents.html)
  * [HikariCPComponents](https://www.playframework.com/documentation/2.5.x/api/scala/play/api/db/HikariCPComponents.html)
 
-You can find a complete list of inherited `Components` in [Play docs](https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.db.HikariCPComponents).
+Lagom inherits all Components provided by Play. You can find the complete list of inherited `Components` by searching for _components_ in [Play docs](https://www.playframework.com/documentation/2.5.x/api/scala/index.html).
