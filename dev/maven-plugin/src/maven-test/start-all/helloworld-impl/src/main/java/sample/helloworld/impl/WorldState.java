@@ -31,9 +31,7 @@ public final class WorldState implements CompressedJsonable {
 
   @Override
   public boolean equals(@Nullable Object another) {
-    if (this == another)
-      return true;
-    return another instanceof WorldState && equalTo((WorldState) another);
+    return this == another || another instanceof WorldState && equalTo((WorldState) another);
   }
 
   private boolean equalTo(WorldState another) {

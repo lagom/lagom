@@ -50,9 +50,7 @@ public interface HelloEvent extends Jsonable, AggregateEvent<HelloEvent> {
 
     @Override
     public boolean equals(@Nullable Object another) {
-      if (this == another)
-        return true;
-      return another instanceof GreetingMessageChanged && equalTo((GreetingMessageChanged) another);
+      return this == another || another instanceof GreetingMessageChanged && equalTo((GreetingMessageChanged) another);
     }
 
     private boolean equalTo(GreetingMessageChanged another) {

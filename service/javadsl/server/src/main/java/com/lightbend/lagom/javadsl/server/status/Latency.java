@@ -225,8 +225,7 @@ public final class Latency implements AbstractLatency {
    */
   @Override
   public boolean equals(@Nullable Object another) {
-    if (this == another) return true;
-    return another instanceof Latency
+    return this == another || another instanceof Latency
         && equalTo((Latency) another);
   }
 

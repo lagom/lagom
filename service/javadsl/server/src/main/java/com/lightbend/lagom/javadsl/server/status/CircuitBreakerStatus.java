@@ -307,8 +307,7 @@ public final class CircuitBreakerStatus
    */
   @Override
   public boolean equals(@Nullable Object another) {
-    if (this == another) return true;
-    return another instanceof CircuitBreakerStatus
+    return this == another || another instanceof CircuitBreakerStatus
         && equalTo((CircuitBreakerStatus) another);
   }
 

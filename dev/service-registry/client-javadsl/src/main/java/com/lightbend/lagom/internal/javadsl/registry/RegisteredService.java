@@ -92,8 +92,7 @@ public final class RegisteredService
    */
   @Override
   public boolean equals(@Nullable Object another) {
-    if (this == another) return true;
-    return another instanceof RegisteredService
+    return this == another || another instanceof RegisteredService
         && equalTo((RegisteredService) another);
   }
 
