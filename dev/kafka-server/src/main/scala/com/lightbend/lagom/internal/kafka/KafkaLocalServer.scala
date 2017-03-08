@@ -22,7 +22,7 @@ import kafka.server.KafkaServerStartable
 import scala.collection.JavaConverters._
 import java.util.Comparator
 
-class KafkaLocalServer private (kafkaProperties: Properties, zooKeeperServer: KafkaLocalServer.ZooKeperLocalServer) {
+class KafkaLocalServer private (kafkaProperties: Properties, zooKeeperServer: KafkaLocalServer.ZooKeeperLocalServer) {
 
   private val kafkaServerRef = new AtomicReference[KafkaServerStartable](null)
 
@@ -55,11 +55,11 @@ class KafkaLocalServer private (kafkaProperties: Properties, zooKeeperServer: Ka
     if (kafkaServer != null) {
       try kafkaServer.shutdown()
       catch {
-        case t: Throwable => ()
+        case _: Throwable => ()
       }
       try zooKeeperServer.stop()
       catch {
-        case e: InstanceNotFoundException => () // swallow, see https://github.com/Netflix/curator/issues/121 for why it's ok to do so
+        case _: InstanceNotFoundException => () // swallow, see https://github.com/Netflix/curator/issues/121 for why it's ok to do so
       }
     }
     // else it's already stopped
@@ -78,27 +78,27 @@ object KafkaLocalServer {
 
   private lazy val tempDir = System.getProperty("java.io.tmpdir")
 
-  def apply(cleanOnStart: Boolean): KafkaLocalServer = this(DefaultPort, ZooKeperLocalServer.DefaultPort, DefaultPropertiesFile, Some(tempDir), cleanOnStart)
+  def apply(cleanOnStart: Boolean): KafkaLocalServer = this(DefaultPort, ZooKeeperLocalServer.DefaultPort, DefaultPropertiesFile, Some(tempDir), cleanOnStart)
 
-  def apply(kafkaPort: Int, zooKeperServerPort: Int, kafkaPropertiesFile: String, targetDir: Option[String], cleanOnStart: Boolean): KafkaLocalServer = {
+  def apply(kafkaPort: Int, zookeeperServerPort: Int, kafkaPropertiesFile: String, targetDir: Option[String], cleanOnStart: Boolean): KafkaLocalServer = {
     val kafkaDataDir = dataDirectory(targetDir, KafkaDataFolderName)
     Log.info(s"Kafka data directory is $kafkaDataDir.")
 
-    val kafkaProperties = createKafkaProperties(kafkaPropertiesFile, kafkaPort, zooKeperServerPort, kafkaDataDir)
+    val kafkaProperties = createKafkaProperties(kafkaPropertiesFile, kafkaPort, zookeeperServerPort, kafkaDataDir)
 
     if (cleanOnStart) deleteDirectory(kafkaDataDir)
 
-    new KafkaLocalServer(kafkaProperties, new ZooKeperLocalServer(zooKeperServerPort, cleanOnStart, targetDir))
+    new KafkaLocalServer(kafkaProperties, new ZooKeeperLocalServer(zookeeperServerPort, cleanOnStart, targetDir))
   }
 
   /**
    * Creates a Properties instance for Kafka customized with values passed in argument.
    */
-  private def createKafkaProperties(kafkaPropertiesFile: String, kafkaPort: Int, zooKeperServerPort: Int, dataDir: File): Properties = {
+  private def createKafkaProperties(kafkaPropertiesFile: String, kafkaPort: Int, zookeeperServerPort: Int, dataDir: File): Properties = {
     val kafkaProperties = PropertiesLoader.from(kafkaPropertiesFile)
     kafkaProperties.setProperty("log.dirs", dataDir.getAbsolutePath)
     kafkaProperties.setProperty("listeners", s"PLAINTEXT://:$kafkaPort")
-    kafkaProperties.setProperty("zookeeper.connect", s"localhost:$zooKeperServerPort")
+    kafkaProperties.setProperty("zookeeper.connect", s"localhost:$zookeeperServerPort")
     kafkaProperties
   }
 
@@ -153,11 +153,11 @@ object KafkaLocalServer {
     dataDirectory
   }
 
-  private class ZooKeperLocalServer(port: Int, cleanOnStart: Boolean, targetDir: Option[String]) {
+  private class ZooKeeperLocalServer(port: Int, cleanOnStart: Boolean, targetDir: Option[String]) {
     private val zooKeeperServerRef = new AtomicReference[TestingServer](null)
 
     def start(): Unit = {
-      val zookeeperDataDir = dataDirectory(targetDir, ZooKeperLocalServer.ZookeeperDataFolderName)
+      val zookeeperDataDir = dataDirectory(targetDir, ZooKeeperLocalServer.ZookeeperDataFolderName)
       if (zooKeeperServerRef.compareAndSet(null, new TestingServer(port, zookeeperDataDir, /*start=*/ false))) {
         Log.info(s"Zookeeper data directory is $zookeeperDataDir.")
 
@@ -174,13 +174,13 @@ object KafkaLocalServer {
       if (zooKeeperServer != null)
         try zooKeeperServer.stop()
         catch {
-          case e: IOException => () // nothing to do if an exception is thrown while shutting down
+          case _: IOException => () // nothing to do if an exception is thrown while shutting down
         }
       // else it's already stopped
     }
   }
 
-  object ZooKeperLocalServer {
+  object ZooKeeperLocalServer {
     private[kafka] final val DefaultPort = 2181
     private final val ZookeeperDataFolderName = "zookeeper_data"
   }

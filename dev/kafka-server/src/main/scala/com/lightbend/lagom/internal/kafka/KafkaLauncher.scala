@@ -9,9 +9,9 @@ object KafkaLauncher {
       if (args.length > 0) args(0).toInt
       else Integer.getInteger("KafkaServer.port", KafkaLocalServer.DefaultPort)
 
-    val zookeperServerPort: Int =
+    val zookeeperServerPort: Int =
       if (args.length > 1) args(1).toInt
-      else Integer.getInteger("ZooKeeperServer.port", KafkaLocalServer.ZooKeperLocalServer.DefaultPort)
+      else Integer.getInteger("ZooKeeperServer.port", KafkaLocalServer.ZooKeeperLocalServer.DefaultPort)
 
     val targetDir: Option[String] =
       if (args.length > 2) Some(args(2))
@@ -34,7 +34,7 @@ object KafkaLauncher {
       if (args.length > 4) args(4)
       else System.getProperty("Kafka.propertiesFile", KafkaLocalServer.DefaultPropertiesFile)
 
-    val kafkaServer = KafkaLocalServer(kafkaServerPort, zookeperServerPort, kafkaPropertiesFile, targetDir, kafkaCleanOnStart)
+    val kafkaServer = KafkaLocalServer(kafkaServerPort, zookeeperServerPort, kafkaPropertiesFile, targetDir, kafkaCleanOnStart)
 
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run(): Unit = {

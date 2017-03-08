@@ -31,9 +31,7 @@ public final class ${service1ClassName}State implements CompressedJsonable {
 
   @Override
   public boolean equals(@Nullable Object another) {
-    if (this == another)
-      return true;
-    return another instanceof ${service1ClassName}State && equalTo((${service1ClassName}State) another);
+    return this == another || another instanceof ${service1ClassName}State && equalTo((${service1ClassName}State) another);
   }
 
   private boolean equalTo(${service1ClassName}State another) {
