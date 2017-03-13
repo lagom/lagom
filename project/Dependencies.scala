@@ -4,7 +4,7 @@ import sbt.Keys._
 object Dependencies {
 
   // Version numbers
-  val PlayVersion = "2.5.10"
+  val PlayVersion = "2.5.13"
   val AkkaVersion = "2.4.17"
   val AkkaPersistenceCassandraVersion = "0.22"
   val ScalaTestVersion = "3.0.1"
@@ -12,7 +12,7 @@ object Dependencies {
   val CassandraAllVersion = "3.0.9"
   val GuavaVersion = "19.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.0.40.Final"
+  val NettyVersion = "4.0.42.Final"
   val KafkaVersion = "0.10.0.1"
   val AkkaStreamKafka = "0.13"
   val Log4j = "1.2.17"
@@ -67,7 +67,7 @@ object Dependencies {
   val `play-json` = libraryDependencies ++= Seq(
     "com.typesafe.play" %% "play-json" % PlayVersion,
     "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
-    "com.typesafe.akka" %% "akka-testkit" % AkkaVersion,
+    "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test",
     scalaTest % Test
   )
 
