@@ -11,6 +11,8 @@ ServiceDiscovery: Registering and discovering services
 Immutable:Using Immutable Objects
 ReadVWrite:Separating reads from writes
 ES_CQRS:Managing data persistence
+ESAdvantage:Advantages of Event Sourcing
+ScalableDeployment:Deploying scalable, resilient systems
 
 
 

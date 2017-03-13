@@ -43,7 +43,9 @@ For example, a browser can display a hello message to a user by requesting the `
 
 The following diagram illustrates server-side service discovery. (TBA)
 
-To simplify testing of server-side service discovery, the Lagom development environment starts all your services plus a Service Registry and a Service Gateway.
+To simplify testing of server-side service discovery, the Lagom development environment starts all your services plus a Service Registry and a Service Gateway. 
+
+**Reviewers: I think we should probably add illustrations of the difference between server and client side discovery and the relationships of a Service Gateway to the service registry. I just realized this before sending for review, so will work on it while you are reviewing.
 
 
 
