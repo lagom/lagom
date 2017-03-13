@@ -128,6 +128,9 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val bytes = serializer.toBinary(migratedEvent)
       val manifest = serializer.manifest(migratedEvent)
 
+
+      manifest shouldEqual classOf[MigratedEvent].getName + "#5"
+
       bytes.isEmpty should be(false)
 
       val deserialized = serializer.fromBinary(bytes, manifest)
