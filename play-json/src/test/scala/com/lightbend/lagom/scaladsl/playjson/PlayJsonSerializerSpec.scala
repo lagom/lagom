@@ -138,6 +138,21 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
     }
 
+    "throw runtime exception when deserialization target type has version greater than defined migration"  in withActorSystem(TestRegistry3) { system =>
+
+      val migratedEvent = MigratedEvent(addedField = 2, newName = "some value")
+
+      val serializeExt = SerializationExtension(system)
+      val serializer = serializeExt.findSerializerFor(migratedEvent).asInstanceOf[SerializerWithStringManifest]
+
+      val illegalManifest = classOf[MigratedEvent].getName + "#6"
+
+      assertThrows[IllegalStateException] {
+        serializer.fromBinary(Array[Byte](), illegalManifest)
+      }
+
+    }
+
     "apply sequential migrations using json-transformations" in withActorSystem(TestRegistry2) { system =>
 
       val expectedEvent = MigratedEvent(addedField = 2, newName = "some value")

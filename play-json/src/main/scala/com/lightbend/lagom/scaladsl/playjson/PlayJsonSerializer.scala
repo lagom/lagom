@@ -74,6 +74,9 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
     val migratedManifest = migration match {
       case Some(migration) if (migration.currentVersion > fromVersion) =>
         migration.transformClassName(fromVersion, manifestClassName)
+      case Some(migration) if (migration.currentVersion < fromVersion) =>
+        throw new IllegalStateException(s"Migration version ${migration.currentVersion} is " +
+          s"behind version $fromVersion of deserialized type [$manifestClassName]")
       case _ => manifestClassName
     }
 
