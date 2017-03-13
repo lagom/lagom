@@ -118,6 +118,23 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       }
     }
 
+    "pick up serializers for registry with migration" in withActorSystem(TestRegistry3) { system =>
+
+      val migratedEvent = MigratedEvent(addedField = 2, newName = "some value")
+
+      val serializeExt = SerializationExtension(system)
+      val serializer = serializeExt.findSerializerFor(migratedEvent).asInstanceOf[SerializerWithStringManifest]
+
+      val bytes = serializer.toBinary(migratedEvent)
+      val manifest = serializer.manifest(migratedEvent)
+
+      bytes.isEmpty should be(false)
+
+      val deserialized = serializer.fromBinary(bytes, manifest)
+      deserialized should be(migratedEvent)
+
+    }
+
     "apply sequential migrations using json-transformations" in withActorSystem(TestRegistry2) { system =>
 
       val expectedEvent = MigratedEvent(addedField = 2, newName = "some value")

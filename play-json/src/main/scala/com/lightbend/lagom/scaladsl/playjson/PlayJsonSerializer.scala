@@ -43,10 +43,11 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
   override def toBinary(o: AnyRef): Array[Byte] = {
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
 
-    val key = manifest(o)
+    val (_, manifestClassName: String) = parseManifest(manifest(o))
+
     val format = serializers.getOrElse(
-      key,
-      throw new RuntimeException(s"Missing play-json serializer for [$key]")
+      manifestClassName,
+      throw new RuntimeException(s"Missing play-json serializer for [$manifestClassName]")
     )
 
     val json = format.writes(o)
@@ -66,16 +67,14 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
   override def fromBinary(bytes: Array[Byte], manifest: String): AnyRef = {
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
 
-    val i = manifest.lastIndexOf('#')
-    val fromVersion = if (i == -1) 1 else manifest.substring(i + 1).toInt
-    val manifestClassName = if (i == -1) manifest else manifest.substring(0, i)
+    val (fromVersion: Int, manifestClassName: String) = parseManifest(manifest)
 
     val migration = migrations.get(manifestClassName)
 
     val migratedManifest = migration match {
-      case Some(migration) if migration.currentVersion > fromVersion =>
+      case Some(migration) if (migration.currentVersion > fromVersion) =>
         migration.transformClassName(fromVersion, manifestClassName)
-      case None => manifestClassName
+      case _ => manifestClassName
     }
 
     val format = serializers.getOrElse(
@@ -94,7 +93,7 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
     val migratedJson = migration match {
       case Some(migration) if migration.currentVersion > fromVersion =>
         migration.transform(fromVersion, json)
-      case None => json
+      case _ => json
     }
 
     val result = format.reads(migratedJson) match {
@@ -116,5 +115,12 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
       )
     }
     result
+  }
+
+  private def parseManifest(manifest: String) = {
+    val i = manifest.lastIndexOf('#')
+    val fromVersion = if (i == -1) 1 else manifest.substring(i + 1).toInt
+    val manifestClassName = if (i == -1) manifest else manifest.substring(0, i)
+    (fromVersion, manifestClassName)
   }
 }
