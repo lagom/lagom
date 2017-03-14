@@ -67,9 +67,11 @@ object TestRegistry3 extends JsonSerializerRegistry {
     JsonSerializer(Json.format[MigratedEvent])
   )
 
+  def currentMigrationVersion: Int = 5
+
   // manual way to do the same transformations (compared to json transformations above)
   override def migrations: Map[String, JsonMigration] = Map(
-    classOf[MigratedEvent].getName -> new JsonMigration(5) {
+    classOf[MigratedEvent].getName -> new JsonMigration(currentMigrationVersion) {
       override def transform(fromVersion: Int, json: JsObject): JsObject = {
         var toUpdate = json
         if (fromVersion < 2) {
@@ -118,6 +120,52 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       }
     }
 
+    "pick up serializers for registry with migration" in withActorSystem(TestRegistry3) { system =>
+
+      val migratedEvent = MigratedEvent(addedField = 2, newName = "some value")
+
+      val serializeExt = SerializationExtension(system)
+      val serializer = serializeExt.findSerializerFor(migratedEvent).asInstanceOf[SerializerWithStringManifest]
+
+      val bytes = serializer.toBinary(migratedEvent)
+      val manifest = serializer.manifest(migratedEvent)
+
+      bytes.isEmpty should be(false)
+
+      val deserialized = serializer.fromBinary(bytes, manifest)
+      deserialized should be(migratedEvent)
+
+    }
+
+    "format manifest of migrated type to include the version defined in migration registry" in withActorSystem(TestRegistry3) { system =>
+
+      val migratedEvent = MigratedEvent(addedField = 2, newName = "some value")
+
+      val serializeExt = SerializationExtension(system)
+      val serializer = serializeExt.findSerializerFor(migratedEvent).asInstanceOf[SerializerWithStringManifest]
+
+      val manifest = serializer.manifest(migratedEvent)
+
+      manifest shouldEqual expectedVersionedManifest(classOf[MigratedEvent], TestRegistry3.currentMigrationVersion)
+
+    }
+
+    "throw runtime exception when deserialization target type version is ahead of that defined in migration registry" in withActorSystem(TestRegistry3) { system =>
+
+      val migratedEvent = MigratedEvent(addedField = 2, newName = "some value")
+
+      val serializeExt = SerializationExtension(system)
+      val serializer = serializeExt.findSerializerFor(migratedEvent).asInstanceOf[SerializerWithStringManifest]
+
+      val illegalVersion = TestRegistry3.currentMigrationVersion + 1
+      val illegalManifest = expectedVersionedManifest(classOf[MigratedEvent], illegalVersion)
+
+      assertThrows[IllegalStateException] {
+        serializer.fromBinary(Array[Byte](), illegalManifest)
+      }
+
+    }
+
     "apply sequential migrations using json-transformations" in withActorSystem(TestRegistry2) { system =>
 
       val expectedEvent = MigratedEvent(addedField = 2, newName = "some value")
@@ -129,7 +177,9 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val serializeExt = SerializationExtension(system)
       val serializer = serializeExt.findSerializerFor(expectedEvent).asInstanceOf[SerializerWithStringManifest]
 
-      val deserialized = serializer.fromBinary(oldJsonBytes, classOf[MigratedEvent].getName + "#1")
+      val oldVersionBeforeThanCurrentMigration = 1
+      val manifest = expectedVersionedManifest(classOf[MigratedEvent], oldVersionBeforeThanCurrentMigration)
+      val deserialized = serializer.fromBinary(oldJsonBytes, manifest)
       deserialized should be(expectedEvent)
 
     }
@@ -145,7 +195,9 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val serializeExt = SerializationExtension(system)
       val serializer = serializeExt.findSerializerFor(expectedEvent).asInstanceOf[SerializerWithStringManifest]
 
-      val deserialized = serializer.fromBinary(oldJsonBytes, classOf[MigratedEvent].getName + "#1")
+      val oldVersionBeforeThanCurrentMigration = 1
+      val manifest = expectedVersionedManifest(classOf[MigratedEvent], oldVersionBeforeThanCurrentMigration)
+      val deserialized = serializer.fromBinary(oldJsonBytes, manifest)
       deserialized should be(expectedEvent)
 
     }
@@ -162,6 +214,10 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
       deserialized should be(event)
 
+    }
+
+    def expectedVersionedManifest[T](clazz: Class[T], migrationVersion: Int) = {
+      s"${clazz.getName}#$migrationVersion"
     }
 
   }
