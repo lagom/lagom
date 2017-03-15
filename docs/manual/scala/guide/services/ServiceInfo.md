@@ -4,7 +4,7 @@ Service metadata, also referred to as `ServiceInfo`, includes a name and a colle
 
 There are several scenarios supported by Lagom:
 
-1. When you create a Lagom Service and you [[wire together the application|ServiceImplementation#Wiring-together-a-Lagom-application]] Lagom will consider the first argument in `LagomServer.forServices(...)` to be the `primaryService`. The name of the primary Service will be used as the `ServiceInfo` name. Then Lagom will gather all the ACLs from all the Services you wire. Finally, Lagom will bundle the `name` and the ACLs into a `ServiceInfo` and use that.
+1. When you create a Lagom Service and you [[wire together the application|DependencyInjection#Wiring-together-a-Lagom-application]] Lagom will consider the first argument in `LagomServer.forServices(...)` to be the `primaryService`. The name of the primary Service will be used as the `ServiceInfo` name. Then Lagom will gather all the ACLs from all the Services you wire. Finally, Lagom will bundle the `name` and the ACLs into a `ServiceInfo` and use that.
 2. When you consume Lagom Services and mix-in `LagomServiceClientComponents` to [[bind clients|ServiceClients#Binding-a-service-client]] Lagom is not wiring a ServiceInfo under the covers and you will have to provide one programatically.
 3. The final scenario is that where the client app is not using Guice and connect to Lagom via the [[Lagom Client Factory|IntegratingNonLagom]]. In this scenario, Lagom will also create the metadata on your behalf.
 
@@ -23,5 +23,3 @@ Services may publish ACLs in a Service Gateway to list what endpoints are provid
 @[service-acls](code/ServiceInfo.scala)
 
 In this example, the developer of `UsersService` set `withAutoAcl` to `true`. That is instructing Lagom to generate Service ACLs from each call's `pathPattern`. In this example, an ACL for `/api/users/login` will be created. When deploying, your tools should honour these specifications and make sure your API Gateway is properly setup.
-
-
