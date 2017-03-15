@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
  */
-package com.lightbend.lagom.internal.api.tools;
+package com.lightbend.lagom.api.tools.tests.javadsl;
 
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;

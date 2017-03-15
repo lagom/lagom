@@ -3,8 +3,9 @@
  */
 package com.lightbend.lagom.internal.api.tools
 
+import com.lightbend.lagom.api.tools.tests.scaladsl.StubServiceLoader
 import com.lightbend.lagom.internal.javadsl.server.JavadslServiceDiscovery
-import com.lightbend.lagom.javadsl.api.{ Descriptor, Service }
+import com.lightbend.lagom.javadsl.api.{Descriptor, Service}
 import org.scalatest._
 import play.api.libs.json.Json
 
@@ -12,7 +13,7 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
 
   "The service detector" should {
 
-    "resolve the service descriptions for a lagom project" in {
+    "resolve the service descriptions for a LagomJava project" in {
       val expectedJsonString =
         """
           |[
@@ -36,7 +37,36 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
           |]
         """.stripMargin
 
-      val actualJsonString = ServiceDetector.services(this.getClass.getClassLoader)
+      val javaServiceDiscovery = "com.lightbend.lagom.internal.javadsl.server.JavadslServiceDiscovery"
+      val actualJsonString = ServiceDetector.services(this.getClass.getClassLoader, javaServiceDiscovery)
+      Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
+    }
+
+    "resolve the service descriptions for a LagomScala project" in {
+      val expectedJsonString =
+        """
+          |[
+          |  {
+          |    "name": "/aclservice",
+          |    "acls": [
+          |      {
+          |        "method": "GET",
+          |        "pathPattern": "\\Q/scala-mocks/\\E([^/]+)"
+          |      },
+          |      {
+          |        "method": "POST",
+          |        "pathPattern": "\\Q/scala-mocks\\E"
+          |      }
+          |    ]
+          |  },
+          |  {
+          |    "name": "/noaclservice",
+          |    "acls": []
+          |  }
+          |]
+        """.stripMargin
+
+      val actualJsonString = ServiceDetector.services(this.getClass.getClassLoader, classOf[StubServiceLoader].getName)
       Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
     }
 
