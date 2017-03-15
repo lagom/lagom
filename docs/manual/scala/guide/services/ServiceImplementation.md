@@ -16,38 +16,6 @@ It will take the request, and return the response as a [`Future`](http://www.sca
 
 Of course, a simple hello world computation is not asynchronous, all it needs to do is build a String, and that returns immediately.  In this case, we need to wrap the result of that in a `Future`.  This can be done by calling `Future.successful()`, which returns a future that has an immediately available value.
 
-## Wiring together a Lagom application
-
-Having provided an implementation of the service, we can now register that with the Lagom framework.  Lagoms Scala API is built on top of Play Framework, and uses Play's [compile time dependency injection support](https://www.playframework.com/documentation/2.5.x/ScalaCompileTimeDependencyInjection) to wire together a Lagom application.
-
-Although it's not strictly necessary, we recommend that you use [Macwire](https://github.com/adamw/macwire) to assist in wiring dependencies together. Macwire provides some very lightweight macros that locate dependencies for the components you wish to create so that you don't have to manually wire them together yourself. Macwire can be added to your service by adding the following to your service implementations dependencies:
-
-@[macwire](code/macwire.sbt)
-
-Next we need to create an application cake. The simplest way of doing this is by creating an abstract class that extends [`LagomApplication`](api/com/lightbend/lagom/scaladsl/server/LagomApplication.html):
-
-@[lagom-application](code/ServiceImplementation.scala)
-
-The important method to implement here is the `lagomServer` method. Lagom will use this to discover your service bindings and create a Play router for handling your service calls. You can see that we've bound one service descriptor, the `HelloService`, to our `HelloServiceImpl` implementation. `LagomServer.forServices()` takes an variable number of arguments so you can build a server with many  `Service`s in it (this is often useful to include admin or metrics services with your primary service). When you create a server with many services the first parameter in `LagomServer.forServices()` will be considered the `primary service` and Lagom will use it's name as the server name. So if you create a server with the services `Orders`, `Metrics` and `FraudDetection` then your server will be named `Orders` as that is the primary service.
-
-We've used Macwire's `wire` macro to wire the dependencies - at the moment our service actually has no dependencies so we could just construct it manually ourselves, but it's not likely that a real service implementation would have no dependencies.
-
-You can see that we've also mixed in the Play `AhcWSComponents` trait. Play's HTTP client, the WS API, which is used by Lagom for making service calls, is pluggable, and so an implementation needs to be selected when we wire our application together. We've selected Play's async-http-client implementation, provided by `AhcWSComponents`.
-
-The `HelloApplication` is an abstract class, the reason for this is that there is still one method that hasn't been implemented, the `serviceLocator` method. A typical application will use different service locators in different environments, in development, it will use the service locator provided by the Lagom development environment, while in production it will use whatever is appropriate for your production environment, such as the `ConductR` service locator implementation. So our main application cake leaves this method abstract so that it can mix in the right one depending on which mode it is in when the application gets loaded.
-
-Having created our application cake, we can now write an application loader. Play's mechanism for loading an application is for the application to provide an application loader. Play will pass some context information to this loader, such as a classloader, the running mode, and any extra configuration, so that the application can bootstrap itself. Lagom provides a convenient mechanism for implementing this, the [`LagomApplicationLoader`](api/com/lightbend/lagom/scaladsl/server/LagomApplicationLoader.html):
-
-@[lagom-loader](code/ServiceImplementation.scala)
-
-The loader has two methods that must be implemented, `load` and `loadDevMode`. You can see that we've mixed in different service locators for each method, we've mixed in [`LagomDevModeComponents`](api/com/lightbend/lagom/scaladsl/devmode/LagomDevModeComponents.html) that provides the dev mode service locator and registers the services with it in dev mode, and in prod mode, for now, we've simply provided [`NoServiceLocator`](api/com/lightbend/lagom/scaladsl/api/ServiceLocator$$NoServiceLocator$.html) as the service locator - this is a service locator that will return nothing for every lookup. We'll see in the [[deploying to production|ProductionOverview]] documentation how to select the right service locator for production.
-
-A third method, `describeServices`, is optional, but may be used by tooling, for example by [[ConductR]], to discover what service APIs are offered by this service. The meta data read from here may in turn be used to configure service gateways and other components.
-
-Finally, we need to tell Play about our application loader. We can do that by adding the following configuration to `application.conf`:
-
-    play.application.loader = com.example.HelloLoader
-
 ## Working with streams
 
 When the request and response bodies are strict, working with them is straightforward.  If they are streamed, however, you'll need to use Akka streams to work with them.  Let's take a look at how some of the streamed service calls in the [[service descriptors|ServiceDescriptors#Streamed-messages]] examples might be implemented.
