@@ -1,5 +1,7 @@
 ServiceDescriptors:Service descriptors
 ServiceImplementation:Implementing services
+DependencyInjection:Dependency Injection;next=ServiceInfo
+ScalaComponents:Scala Components
 ServiceInfo:Service Metadata
 ServiceClients:Consuming services
 TestingServices:Testing Services

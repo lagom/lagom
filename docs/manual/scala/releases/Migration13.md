@@ -56,4 +56,4 @@ Like the message serializers for services, serializers for messages sent over Ak
 
 ## Application wiring changes
 
-The Lagom Scala API is designed to be used with compile time dependency injection, not Guice. In general, this means removing all JSR-330 annotations from components, such as `@Inject` and `@Singleton`, and creating an application cake to replace the Guice `Module` that the Java API needs defined. For documentation about how to wire together a Lagom Scala application, see [[Wiring together a Lagom application|ServiceImplementation#Wiring-together-a-Lagom-application]].
+The Lagom Scala API is designed to be used with compile time dependency injection, not Guice. In general, this means removing all JSR-330 annotations from components, such as `@Inject` and `@Singleton`, and creating an application cake to replace the Guice `Module` that the Java API needs defined. For documentation about how to wire together a Lagom Scala application, see [[Wiring together a Lagom application|DependencyInjection#Wiring-together-a-Lagom-application]].
