@@ -62,7 +62,9 @@ To complete the picture, a service method that delivers these `PostPublished` ev
 
 This feature is specifically for providing publish and subscribe functionality within a single services cluster. To publish and subscribe between services, you should instead use Lagom's [[message broker support|MessageBrokerApi]].
 
-Published messages may be lost. For example in case of networks problems messages might not be delivered to all subscribers. You can provision publish-subscribe with at-least-once delivery by using the message broker support with Kafka Akka Streams integration.
+Published messages may be lost. For example in case of networks problems messages might not be delivered to all subscribers. Future version of Lagom may include intra-service pub-sub with at-least-once delivery, in the meantime you can achieve at-least-once delivery by using Lagom's [[message broker support|MessageBrokerApi]].
+
+Note that anytime you fallback to [[message broker support|MessageBrokerApi]] you will expose your messages via a public topic making them part of your public API.
 
 The registry of subscribers is eventually consistent, i.e. new subscribers are not immediately visible at other nodes, but typically the information will be fully replicated to all other nodes after a few seconds.
 
