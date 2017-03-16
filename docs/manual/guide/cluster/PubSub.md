@@ -62,7 +62,7 @@ To complete the picture, a service method that delivers these `PostPublished` ev
 
 It is only possible to publish and subscribe within a single service. It is not possible to publish messages in one service and subscribe to them in another service. We will probably provide publish-subscribe across services in a future release of Lagom.
 
-Published messages may be lost. For example in case of networks problems messages might not be delivered to all subscribers. We might provide publish-subscribe with at-least-once delivery in a future release of Lagom.
+Published messages may be lost. For example in case of networks problems messages might not be delivered to all subscribers. You can provision publish-subscribe with at-least-once delivery by using the message broker support with Kafka Akka Streams integration.
 
 The registry of subscribers is eventually consistent, i.e. new subscribers are not immediately visible at other nodes, but typically the information will be fully replicated to all other nodes after a few seconds.
 
