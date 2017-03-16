@@ -29,6 +29,7 @@ abstract class StubServiceApplication(context: LagomApplicationContext)
 
 	override lazy val lagomServer = LagomServer.forServices(
 		bindService[AclService].to(new AclServiceImpl),
-		bindService[NoAclService].to(new NoAclServiceImpl)
+		bindService[NoAclService].to(new NoAclServiceImpl),
+		bindService[UndescribedService].to(new UndescribedServiceImpl)
 	)
 }

@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.internal.api.tools
 
-import com.lightbend.lagom.internal.spi.{ServiceAcl, ServiceDescription, ServiceDiscovery}
+import com.lightbend.lagom.internal.spi.{ ServiceAcl, ServiceDescription, ServiceDiscovery }
 import com.typesafe.config.ConfigFactory
 import play.api._
 import play.api.libs.functional.syntax._

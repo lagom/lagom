@@ -42,7 +42,7 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
       Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
     }
 
-    "resolve the service descriptions for a LagomScala project" in {
+    "resolve the service descriptions for a LagomScala project using `describeServices` (different list than `bindServices`)" in {
       val expectedJsonString =
         """
           |[
