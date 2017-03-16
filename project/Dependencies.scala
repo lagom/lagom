@@ -16,17 +16,18 @@ object Dependencies {
   val NettyVersion = "4.0.42.Final"
   val KafkaVersion = "0.10.0.1"
   val AkkaStreamKafkaVersion = "0.13"
-  val Log4j = "1.2.17"
+  val Log4jVersion = "1.2.17"
   val ScalaJava8CompatVersion = "0.7.0"
   val ScalaXmlVersion = "1.0.5"
 
   // Specific libraries that get reused
   private val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
   private val guava = "com.google.guava" % "guava" % GuavaVersion
-  private val log4J = "log4j" % "log4j" % Log4j
+  private val log4J = "log4j" % "log4j" % Log4jVersion
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
   private val jbossLogging = "org.jboss.logging" % "jboss-logging" % "3.3.0.Final"
+  private val typesafeConfig = "com.typesafe" % "config" % "1.3.1"
 
   private val akkaActor = "com.typesafe.akka" %% "akka-actor" % AkkaVersion
   private val akkaCluster = "com.typesafe.akka" %% "akka-cluster" % AkkaVersion
@@ -92,7 +93,7 @@ object Dependencies {
       "com.ning" % "compress-lzf" % "0.8.4",
       "com.novocode" % "junit-interface" % "0.11",
       "com.thinkaurelius.thrift" % "thrift-server" % "0.3.7",
-      "com.typesafe" % "config" % "1.3.0",
+      typesafeConfig,
       "com.typesafe" %% "ssl-config-core" % "0.2.1",
       akkaStreamKafka,
       akkaPersistenceCassandra,
@@ -104,7 +105,7 @@ object Dependencies {
       "com.zaxxer" % "HikariCP" % "2.5.1",
       "commons-cli" % "commons-cli" % "1.1",
       "commons-codec" % "commons-codec" % "1.10",
-      "commons-logging" % "commons-logging" % "1.1.1",
+      "commons-logging" % "commons-logging" % "1.2",
       "io.aeron" % "aeron-client" % "1.1.0",
       "io.aeron" % "aeron-driver" % "1.1.0",
       "io.dropwizard.metrics" % "metrics-core" % "3.1.2",
@@ -131,8 +132,8 @@ object Dependencies {
       "org.apache.cassandra" % "cassandra-thrift" % CassandraAllVersion,
       "org.apache.commons" % "commons-lang3" % "3.4",
       "org.apache.commons" % "commons-math3" % "3.2",
-      "org.apache.httpcomponents" % "httpclient" % "4.2.5",
-      "org.apache.httpcomponents" % "httpcore" % "4.2.4",
+      "org.apache.httpcomponents" % "httpclient" % "4.5.2",
+      "org.apache.httpcomponents" % "httpcore" % "4.4.4",
       "org.apache.kafka" % "kafka-clients" % "0.10.0.1",
       "org.apache.thrift" % "libthrift" % "0.9.2",
       "org.apache.tomcat" % "tomcat-servlet-api" % "8.0.33",
@@ -144,7 +145,7 @@ object Dependencies {
       "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final",
       "org.immutables" % "value" % "2.3.2",
-      "org.javassist" % "javassist" % "3.20.0-GA",
+      "org.javassist" % "javassist" % "3.21.0-GA",
       jbossLogging,
       "org.joda" % "joda-convert" % "1.8.1",
       "org.hamcrest" % "hamcrest-core" % "1.3",
@@ -197,8 +198,8 @@ object Dependencies {
     ) ++ libraryFamily("org.apache.logging.log4j", "2.7")(
       "log4j-api", "log4j-core", "log4j-slf4j-impl"
 
-    ) ++ libraryFamily("org.asynchttpclient", "2.0.11")(
-      "async-http-client", "netty-codec-dns", "netty-resolver", "netty-resolver-dns"
+    ) ++ libraryFamily("org.asynchttpclient", "2.0.24")(
+      "async-http-client", "async-http-client-netty-utils", "netty-codec-dns", "netty-resolver", "netty-resolver-dns"
 
     ) ++ libraryFamily("org.ow2.asm", "5.0.3")(
       "asm", "asm-analysis", "asm-commons", "asm-tree", "asm-util"
@@ -265,7 +266,7 @@ object Dependencies {
     playJava,
     "org.pcollections" % "pcollections" % "2.1.2",
     // Needed to upgrade from 3.18 to ensure everything is on 3.20
-    "org.javassist" % "javassist" % "3.20.0-GA",
+    "org.javassist" % "javassist" % "3.21.0-GA",
     "com.fasterxml" % "classmate" % "1.3.0",
     jbossLogging,
     scalaTest % Test,
@@ -320,11 +321,7 @@ object Dependencies {
     // Needed to match whitelist versions
     "io.netty" % "netty-codec-http" % NettyVersion,
     "io.netty" % "netty-transport-native-epoll" % NettyVersion,
-    "com.typesafe.netty" % "netty-reactive-streams" % "1.0.8",
-    // These are required by signpost, which are required by play-ws. Can be removed when
-    // https://github.com/playframework/playframework/issues/5905 is fixed.
-    "org.apache.httpcomponents" % "httpclient" % "4.2.5",
-    "org.apache.httpcomponents" % "httpcore" % "4.2.4"
+    "com.typesafe.netty" % "netty-reactive-streams" % "1.0.8"
   )
 
   val `client-javadsl` = libraryDependencies ++= Nil
@@ -353,7 +350,8 @@ object Dependencies {
 
   val `testkit-core` = libraryDependencies ++= Seq(
     akkaActor,
-    akkaStream
+    akkaStream,
+    typesafeConfig
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
@@ -410,6 +408,7 @@ object Dependencies {
 
   val `cluster-core` = libraryDependencies ++= Seq(
     akkaCluster,
+    typesafeConfig,
     akkaTestkit % Test,
     scalaTest % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test
@@ -493,7 +492,8 @@ object Dependencies {
 
     "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion % Test exclude("io.netty", "netty-all"),
     "io.netty" % "netty-codec-http" % NettyVersion % Test,
-    "io.netty" % "netty-transport-native-epoll" % NettyVersion % Test classifier "linux-x86_64"
+    "io.netty" % "netty-transport-native-epoll" % NettyVersion % Test classifier "linux-x86_64",
+    "org.apache.httpcomponents" % "httpclient" % "4.5.2" % Test
   )
 
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Nil
