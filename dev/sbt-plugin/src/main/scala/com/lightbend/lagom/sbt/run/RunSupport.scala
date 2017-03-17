@@ -104,7 +104,7 @@ private[sbt] object RunSupport {
 
   def getScopedKey(incomplete: Incomplete): Option[ScopedKey[_]] = incomplete.node flatMap {
     case key: ScopedKey[_] => Option(key)
-    case task: Task[_] => task.info.attributes get taskDefinitionKey
+    case task: Task[_]     => task.info.attributes get taskDefinitionKey
   }
 
   def getProblems(incomplete: Incomplete, streams: Option[Streams]): Seq[xsbti.Problem] = {
@@ -161,7 +161,7 @@ private[sbt] object RunSupport {
   def problems(es: Seq[Throwable]): Seq[xsbti.Problem] = {
     es flatMap {
       case cf: xsbti.CompileFailed => cf.problems
-      case _ => Nil
+      case _                       => Nil
     }
   }
 

@@ -14,7 +14,7 @@ class NamedURLClassLoader(name: String, urls: Array[URL], parent: ClassLoader) e
 }
 
 class DelegatingClassLoader(commonLoader: ClassLoader, sharedClasses: Set[String], buildLoader: ClassLoader,
-    applicationClassLoader: () => Option[ClassLoader]) extends ClassLoader(commonLoader) {
+                            applicationClassLoader: () => Option[ClassLoader]) extends ClassLoader(commonLoader) {
 
   lazy val findResourceMethod = {
     val method = classOf[ClassLoader].getDeclaredMethod("findResource", classOf[String])

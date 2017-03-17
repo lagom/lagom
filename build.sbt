@@ -83,7 +83,11 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
     "-parameters",
     "-Xlint:unchecked",
     "-Xlint:deprecation"
-  )
+  ),
+
+  ScalariformKeys.preferences in Compile  := formattingPreferences,
+  ScalariformKeys.preferences in Test     := formattingPreferences,
+  ScalariformKeys.preferences in MultiJvm := formattingPreferences
 )
 
 def bintraySettings: Seq[Setting[_]] = Seq(
@@ -116,14 +120,13 @@ def releaseSettings: Seq[Setting[_]] = Seq(
 )
 
 def runtimeLibCommon: Seq[Setting[_]] = common ++ Seq(
-  crossScalaVersions := Seq("2.11.8"),
+  crossScalaVersions := Seq(Dependencies.ScalaVersion),
   scalaVersion := crossScalaVersions.value.head,
   crossVersion := CrossVersion.binary,
   crossPaths := false,
 
-  // todo Remove when #528 is done
-  dependencyOverrides += "com.typesafe.akka" %% "akka-actor" % Dependencies.AkkaVersion,
-  dependencyOverrides += "com.typesafe.akka" %% "akka-slf4j" % Dependencies.AkkaVersion,
+  Dependencies.validateDependenciesSetting,
+  Dependencies.dependencyWhitelistSetting,
 
   // compile options
   scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.8", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint", "-deprecation"),
@@ -134,11 +137,7 @@ def runtimeLibCommon: Seq[Setting[_]] = common ++ Seq(
   testOptions in Test += Tests.Argument("-oDF"),
   // -v Log "test run started" / "test started" / "test run finished" events on log level "info" instead of "debug".
   // -a Show stack traces and exception class name for AssertionErrors.
-  testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
-
-  ScalariformKeys.preferences in Compile  := formattingPreferences,
-  ScalariformKeys.preferences in Test     := formattingPreferences,
-  ScalariformKeys.preferences in MultiJvm := formattingPreferences
+  testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a")
 )
 
 def formattingPreferences = {
@@ -698,7 +697,8 @@ lazy val `persistence-jpa-javadsl` = (project in file("persistence-jpa/javadsl")
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-javadsl-persistence-jpa",
-    Dependencies.`persistence-jpa-javadsl`
+    Dependencies.`persistence-jpa-javadsl`,
+    Dependencies.dependencyWhitelist ++= Dependencies.JpaTestWhitelist
   )
 
 lazy val `broker-javadsl` = (project in file("service/javadsl/broker"))
@@ -772,7 +772,8 @@ lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-javadsl-kafka-broker",
-    Dependencies.`kafka-broker-javadsl`
+    Dependencies.`kafka-broker-javadsl`,
+    Dependencies.dependencyWhitelist ++= Dependencies.KafkaTestWhitelist
   )
   .dependsOn(`broker-javadsl`, `kafka-broker`, `kafka-client-javadsl`, `server-javadsl`, `kafka-server` % Test, logback % Test)
 
@@ -782,7 +783,8 @@ lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/serv
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-scaladsl-kafka-broker",
-    Dependencies.`kafka-broker-scaladsl`
+    Dependencies.`kafka-broker-scaladsl`,
+    Dependencies.dependencyWhitelist ++= Dependencies.KafkaTestWhitelist
   )
   .dependsOn(`broker-scaladsl`, `kafka-broker`, `kafka-client-scaladsl`, `server-scaladsl`, `kafka-server` % Test, logback % Test)
 
@@ -1008,19 +1010,21 @@ lazy val `play-integration-javadsl` = (project in file("dev") / "service-registr
   .dependsOn(`service-registry-client-javadsl`)
 
 lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
-  .settings(runtimeLibCommon: _*)
+  .settings(common: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-cassandra-server",
-    Dependencies.`cassandra-server`
+    Dependencies.`cassandra-server`,
+    scalaVersion := Dependencies.ScalaVersion
   )
 
 lazy val `kafka-server` = (project in file("dev") / "kafka-server")
-  .settings(runtimeLibCommon: _*)
+  .settings(common: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-kafka-server",
-    Dependencies.`kafka-server`
+    Dependencies.`kafka-server`,
+    scalaVersion := Dependencies.ScalaVersion
   )
 
 // Provides macros for testing macros. Is not aggregated or published.
