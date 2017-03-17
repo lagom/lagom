@@ -27,7 +27,7 @@ In Eclipse, follow these steps to create a project using the Lagom Maven archety
 1. If the Lagom archetype appears in the list, select it. If not, click **Add Archetype** and supply the following values:
     * **Archetype Group Id:** com.lightbend.lagom
     * **Archetype Artifact Id:** maven-archetype-lagom-java
-    * **Version:** The Lagom version number. Be sure to use the [current stable release](http://www.lagomframework.com/documentation/). 
+    * **Version:** The Lagom version number. Be sure to use the [current stable release](https://www.lagomframework.com/documentation/). 
     * **Repository URL:** Leave blank
     [[EclAddArchetype.png]]
     

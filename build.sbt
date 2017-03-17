@@ -14,7 +14,7 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   organization := "com.lightbend.lagom",
   // Must be "Apache-2.0", because bintray requires that it is a license that it knows about
   licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))),
-  homepage := Some(url("http://www.lagomframework.com/")),
+  homepage := Some(url("https://www.lagomframework.com/")),
   sonatypeProfileName := "com.lightbend",
   headers := headers.value ++ Map(
      "scala" -> (

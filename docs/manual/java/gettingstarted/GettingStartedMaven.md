@@ -23,7 +23,7 @@ To create a project, follow these steps:
     ```
 1. Enter the number that corresponds with `com.lightbend.lagom:maven-archetype-lagom-java` (at time of writing, the number `1`, and the only one available).
     Maven prompts you for the version.
-1. Enter the number corresponding with the version of Lagom you want to use. We recommend using the [current stable release](http://www.lagomframework.com/documentation/)).
+1. Enter the number corresponding with the version of Lagom you want to use. We recommend using the [current stable release](https://www.lagomframework.com/documentation/)).
     The template prompts you for POM values. 
 1. Specify values for:
     * `groupId`  - Usually a reversed domain name, such as `com.example.hello`.
