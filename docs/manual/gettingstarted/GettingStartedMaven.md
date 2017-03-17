@@ -8,10 +8,10 @@ A Lagom system is typically made up of a set of maven projects, each build provi
 
 ```
 $ mvn archetype:generate -DarchetypeGroupId=com.lightbend.lagom \
-  -DarchetypeArtifactId=maven-archetype-lagom-java -DarchetypeVersion=1.2.0
+  -DarchetypeArtifactId=maven-archetype-lagom-java -DarchetypeVersion=<DESIRED_VERSION>
 ```
 
-> **Note:** Ensure you replace the 1.2.0 archetype version with the latest version of Lagom.
+> **Note:** Ensure you replace the _DESIRED_VERSION_ bit with the version string of the latest version of Lagom.
 
 This will prompt you for a `groupId`, `artifactId` and `version`.  You might choose, for example, `com.example` as a `groupId`, and `my-first-system` for an `artifactId`.  Once you've followed the prompts, it will create a new system with two services in it: `hello` and `stream`.
 
