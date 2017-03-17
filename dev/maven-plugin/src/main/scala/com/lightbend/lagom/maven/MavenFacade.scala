@@ -34,8 +34,8 @@ import scala.collection.JavaConverters._
  */
 @Singleton
 class MavenFacade @Inject() (repoSystem: RepositorySystem, session: MavenSession,
-    buildPluginManager: BuildPluginManager, lifecycleExecutionPlanCalculator: LifecycleExecutionPlanCalculator,
-    logger: MavenLoggerProxy) {
+                             buildPluginManager: BuildPluginManager, lifecycleExecutionPlanCalculator: LifecycleExecutionPlanCalculator,
+                             logger: MavenLoggerProxy) {
 
   /**
    * Resolve the classpath for the given artifact.
@@ -168,7 +168,7 @@ class MavenFacade @Inject() (repoSystem: RepositorySystem, session: MavenSession
 
   private def isLagomOrPlayService(project: MavenProject): Option[Boolean] = {
     LagomKeys.LagomService.get(project).flatMap {
-      case true => Some(true)
+      case true  => Some(true)
       case false => LagomKeys.PlayService.get(project)
     }
   }
