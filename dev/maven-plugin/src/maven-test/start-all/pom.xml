@@ -48,44 +48,10 @@
         <dependencies>
             <dependency>
                 <groupId>com.lightbend.lagom</groupId>
-                <artifactId>lagom-javadsl-server_${scala.binary.version}</artifactId>
+                <artifactId>lagom-maven-dependencies</artifactId>
                 <version>${lagom.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.typesafe.play</groupId>
-                <artifactId>play-netty-server_${scala.binary.version}</artifactId>
-                <version>${play.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.lightbend.lagom</groupId>
-                <artifactId>lagom-javadsl-api_${scala.binary.version}</artifactId>
-                <version>${lagom.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.lightbend.lagom</groupId>
-                <artifactId>lagom-javadsl-persistence-cassandra_${scala.binary.version}</artifactId>
-                <version>${lagom.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-stream-kafka_${scala.binary.version}</artifactId>
-                <version>0.11</version>
-            </dependency>
-            <dependency>
-                <groupId>com.lightbend.lagom</groupId>
-                <artifactId>lagom-logback_${scala.binary.version}</artifactId>
-                <version>${lagom.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.lightbend.lagom</groupId>
-                <artifactId>lagom-javadsl-testkit_${scala.binary.version}</artifactId>
-                <version>${lagom.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.lightbend.lagom</groupId>
-                <artifactId>lagom-javadsl-integration-client_${scala.binary.version}</artifactId>
-                <version>${lagom.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>

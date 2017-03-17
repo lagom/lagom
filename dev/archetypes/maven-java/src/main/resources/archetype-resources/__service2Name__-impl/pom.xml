@@ -39,6 +39,7 @@
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
             <artifactId>lagom-javadsl-testkit_2.11</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.typesafe.conductr</groupId>
