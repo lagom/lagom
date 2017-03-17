@@ -128,7 +128,7 @@ class StopKafkaMojo @Inject() (logger: MavenLoggerProxy) extends LagomAbstractMo
 }
 
 class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: MavenFacade,
-    scalaClassLoaderManager: ScalaClassLoaderManager) extends LagomAbstractMojo {
+                                         scalaClassLoaderManager: ScalaClassLoaderManager) extends LagomAbstractMojo {
 
   @BeanProperty
   var serviceLocatorEnabled: Boolean = _

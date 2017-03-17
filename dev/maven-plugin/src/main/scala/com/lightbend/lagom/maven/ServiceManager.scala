@@ -27,7 +27,7 @@ import scala.util.control.NonFatal
  */
 @Singleton
 class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession, facade: MavenFacade,
-    scalaClassLoaderManager: ScalaClassLoaderManager) {
+                                scalaClassLoaderManager: ScalaClassLoaderManager) {
 
   private var runningServices = Map.empty[MavenProject, DevServer]
   private var runningExternalProjects = Map.empty[Dependency, DevServer]
@@ -45,7 +45,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
   }
 
   private def calculateDevModeDependencies(scalaBinaryVersion: String, playService: Boolean,
-    serviceLocatorUrl: Option[String], cassandraPort: Option[Int]): Seq[Dependency] = {
+                                           serviceLocatorUrl: Option[String], cassandraPort: Option[Int]): Seq[Dependency] = {
     if (playService) {
       devModeDependencies(scalaBinaryVersion, Seq("lagom-play-integration", "lagom-reloadable-server"))
     } else {
@@ -74,7 +74,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
   }
 
   def startServiceDevMode(project: MavenProject, port: Int, serviceLocatorUrl: Option[String],
-    cassandraPort: Option[Int], cassandraKeyspace: String, playService: Boolean, additionalWatchDirs: Seq[File]): Unit = synchronized {
+                          cassandraPort: Option[Int], cassandraKeyspace: String, playService: Boolean, additionalWatchDirs: Seq[File]): Unit = synchronized {
     runningServices.get(project) match {
       case Some(service) =>
         logger.info("Service " + project.getArtifactId + " already running!")
@@ -179,12 +179,12 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
   def stopService(project: MavenProject) = synchronized {
     runningServices.get(project) match {
       case Some(service) => service.close()
-      case None => logger.info("Service " + project.getArtifactId + " was not running!")
+      case None          => logger.info("Service " + project.getArtifactId + " was not running!")
     }
   }
 
   def startExternalProject(dependency: Dependency, port: Int, serviceLocatorUrl: Option[String],
-    cassandraPort: Option[Int], cassandraKeyspace: String, playService: Boolean) = synchronized {
+                           cassandraPort: Option[Int], cassandraKeyspace: String, playService: Boolean) = synchronized {
     runningExternalProjects.get(dependency) match {
       case Some(service) =>
         logger.info("External project " + dependency.getArtifact.getArtifactId + " already running!")
@@ -219,7 +219,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
   def stopExternalProject(dependency: Dependency) = synchronized {
     runningExternalProjects.get(dependency) match {
       case Some(service) => service.close()
-      case None => logger.info("Service " + dependency.getArtifact.getArtifactId + " was not running!")
+      case None          => logger.info("Service " + dependency.getArtifact.getArtifactId + " was not running!")
     }
   }
 
@@ -232,7 +232,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
       val artifact = dep.getArtifact
       val projectKey = ArtifactUtils.key(artifact.getGroupId, artifact.getArtifactId, artifact.getVersion)
       session.getProjectMap.get(projectKey) match {
-        case null => Left(dep)
+        case null       => Left(dep)
         case projectDep => Right(projectDep)
       }
     }

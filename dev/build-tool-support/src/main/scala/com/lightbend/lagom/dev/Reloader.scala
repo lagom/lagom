@@ -143,7 +143,7 @@ object Reloader {
    * Start the Lagom server without hot reloading
    */
   def startNoReload(parentClassLoader: ClassLoader, dependencyClasspath: Seq[File], buildProjectPath: File,
-    devSettings: Seq[(String, String)], httpPort: Int): DevServer = {
+                    devSettings: Seq[(String, String)], httpPort: Int): DevServer = {
     val buildLoader = this.getClass.getClassLoader
 
     lazy val delegatingLoader: ClassLoader = new DelegatingClassLoader(
@@ -193,13 +193,13 @@ object Reloader {
 import Reloader._
 
 class Reloader(
-    reloadCompile: () => CompileResult,
-    baseLoader: ClassLoader,
-    val projectPath: File,
-    devSettings: Seq[(String, String)],
-    monitoredFiles: Seq[File],
-    fileWatchService: FileWatchService,
-    reloadLock: AnyRef
+  reloadCompile:    () => CompileResult,
+  baseLoader:       ClassLoader,
+  val projectPath:  File,
+  devSettings:      Seq[(String, String)],
+  monitoredFiles:   Seq[File],
+  fileWatchService: FileWatchService,
+  reloadLock:       AnyRef
 ) extends BuildLink {
 
   // The current classloader for the application
