@@ -281,10 +281,6 @@ object Dependencies {
 
   val jackson = libraryDependencies ++= Seq(
     "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
-    // todo Many of these won't be needed when #530 is done
-    "com.fasterxml.jackson.core" % "jackson-core" % JacksonVersion,
-    "com.fasterxml.jackson.core" % "jackson-annotations" % JacksonVersion,
-    "com.fasterxml.jackson.core" % "jackson-databind" % JacksonVersion,
     "com.fasterxml.jackson.datatype" % "jackson-datatype-pcollections" % JacksonVersion,
     "com.fasterxml.jackson.datatype" % "jackson-datatype-guava" % JacksonVersion,
     "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % JacksonVersion,
@@ -332,19 +328,11 @@ object Dependencies {
 
   val `integration-client-javadsl` = libraryDependencies ++= Nil
 
-  val server = libraryDependencies ++= Seq(
-    // todo probably not needed when #530 is done
-    akkaActor
-  )
+  val server = libraryDependencies ++= Nil
 
-  val `server-javadsl` = libraryDependencies ++= Seq(
-    // todo probably not needed when #530 is done
-    akkaActor,
-    guava
-  )
+  val `server-javadsl` = libraryDependencies ++= Nil
 
   val `server-scaladsl` = libraryDependencies ++= Seq(
-    akkaActor,
     scalaTest % Test
   )
 
@@ -357,7 +345,6 @@ object Dependencies {
   val `testkit-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
     "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion exclude("io.netty", "netty-all"),
-    akkaStream,
     akkaStreamTestkit,
     akkaPersistenceCassandra,
     scalaTest % Test,
@@ -574,7 +561,6 @@ object Dependencies {
   )
 
   val `reloadable-server` = libraryDependencies ++= Seq(
-    play,
     playServer,
 
     // Upgrades for Play dependencies
@@ -621,8 +607,6 @@ object Dependencies {
   )
 
   val `service-locator` = libraryDependencies ++= Seq(
-    // Explicit akka dependency because maven chooses the wrong version
-    akkaActor,
     playNettyServer,
     // Need to upgrade Netty due to encountering this deadlock in the service gateway
     // https://github.com/netty/netty/pull/5110
