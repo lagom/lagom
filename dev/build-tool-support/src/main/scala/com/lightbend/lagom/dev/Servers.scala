@@ -86,7 +86,7 @@ private[lagom] object Servers {
     }
 
     def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Array[URL], serviceLocatorPort: Int,
-      serviceGatewayPort: Int, unmanagedServices: Map[String, String]): Unit = synchronized {
+              serviceGatewayPort: Int, unmanagedServices: Map[String, String]): Unit = synchronized {
       if (server == null) {
         withContextClassloader(new java.net.URLClassLoader(classpath, parentClassLoader)) { loader =>
           val serverClass = loader.loadClass("com.lightbend.lagom.discovery.ServiceLocatorServer")

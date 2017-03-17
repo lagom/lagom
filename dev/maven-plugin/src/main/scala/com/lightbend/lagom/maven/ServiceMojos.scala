@@ -96,8 +96,8 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
     }
 
     val serviceLocatorUrl = (serviceLocatorEnabled, this.serviceLocatorUrl) match {
-      case (false, _) => None
-      case (true, null) => Some(s"http://localhost:$serviceLocatorPort")
+      case (false, _)         => None
+      case (true, null)       => Some(s"http://localhost:$serviceLocatorPort")
       case (true, configured) => Some(configured)
     }
 
@@ -173,8 +173,8 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
   override def execute(): Unit = {
 
     val serviceLocatorUrl = (serviceLocatorEnabled, this.serviceLocatorUrl) match {
-      case (false, _) => None
-      case (true, null) => Some(s"http://localhost:$serviceLocatorPort")
+      case (false, _)         => None
+      case (true, null)       => Some(s"http://localhost:$serviceLocatorPort")
       case (true, configured) => Some(configured)
     }
 
