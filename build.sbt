@@ -45,31 +45,6 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
         <url>https://github.com/lagom</url>
       </developer>
     </developers>
-    <dependencyManagement>
-      <dependencies>
-        {
-        // Here we force the version of every Akka and Netty dependency, since Mavens transitive dependency resolution
-        // strategy is so incredibly lame, without using dependency management to force it, you can count on always
-        // getting the version you least want.
-        // Eventually we should automate this somehow to force the versions of all dependencies to be the same as what
-        // sbt resolves, but that's going to require some sbt voodoo. For now, this does the job well enough.
-        // todo - put this in a parent pom rather than in each project
-        Seq("buffer", "codec", "codec-http", "common", "handler", "transport", "transport-native-epoll").map { nettyDep =>
-          <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-{nettyDep}</artifactId>
-            <version>{Dependencies.NettyVersion}</version>
-          </dependency>
-        } ++ Seq("actor", "cluster-sharding", "cluster-tools", "cluster", "persistence-query-experimental", "persistence", "protobuf", "remote", "slf4j", "stream-testkit", "stream", "testkit").map { akkaDep =>
-          <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-{akkaDep}_{scalaBinaryVersion.value}</artifactId>
-            <version>{Dependencies.AkkaVersion}</version>
-          </dependency>
-        }
-        }
-      </dependencies>
-    </dependencyManagement>
   },
   pomIncludeRepository := { _ => false },
  
@@ -811,7 +786,7 @@ lazy val `dev-environment` = (project in file("dev"))
   .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
     `service-registration-javadsl`, `cassandra-server`, `play-integration-javadsl`, `devmode-scaladsl`,
     `service-registry-client-javadsl`, 
-    `maven-java-archetype`, `kafka-server`)
+    `maven-java-archetype`, `maven-dependencies`, `kafka-server`)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}
@@ -949,6 +924,52 @@ def archetypeProject(archetypeName: String) =
     ).disablePlugins(EclipsePlugin)
 
 lazy val `maven-java-archetype` = archetypeProject("java")
+
+lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
+    .settings(common: _*)
+    .settings(
+      name := "lagom-maven-dependencies",
+      crossPaths := false,
+      autoScalaLibrary := false,
+      scalaVersion := Dependencies.ScalaVersion,
+      pomExtra := pomExtra.value :+ {
+
+        val lagomDeps = Def.settingDyn {
+          val sv = scalaVersion.value
+          val sbv = scalaBinaryVersion.value
+          (javadslProjects ++ coreProjects).map { project =>
+            Def.setting {
+              val cross = CrossVersion((crossVersion in project).value, sv, sbv)
+              val artifactName = (artifact in project).value.name
+              val artifactId = cross.fold(artifactName)(_(artifactName))
+              <dependency>
+                <groupId>{(organization in project).value}</groupId>
+                <artifactId>{artifactId}</artifactId>
+                <version>{(version in project).value}</version>
+              </dependency>
+            }
+          }.join
+        }.value
+
+        <dependencyManagement>
+          <dependencies>
+            {lagomDeps}
+            {Dependencies.DependencyWhitelist.value.map { dep =>
+              val crossDep = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)(dep)
+              <dependency>
+                <groupId>{crossDep.organization}</groupId>
+                <artifactId>{crossDep.name}</artifactId>
+                <version>{crossDep.revision}</version>
+              </dependency>
+            }}
+          </dependencies>
+        </dependencyManagement>
+      }
+    ).settings(
+      // This disables creating jar, source jar and javadocs, and will cause the packaging type to be "pom" when the
+      // pom is created
+      Classpaths.defaultPackageKeys.map(key => publishArtifact in key := false): _*
+    )
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
