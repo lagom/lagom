@@ -4,7 +4,7 @@
 
 A `PersistentEntity` has a stable entity identifier, with which it can be accessed from the service implementation or other places. The state of an entity is persistent (durable) using [Event Sourcing](https://msdn.microsoft.com/en-us/library/jj591559.aspx). We represent all state changes as events and those immutable facts are appended to an event log. To recreate the current state of an entity when it is started we replay these events.
 
-A persistent entity corresponds to an [Aggregate Root](http://martinfowler.com/bliki/DDD_Aggregate.html) in Domain-Driven Design terms. Each instance has a stable identifier and for a given id there will only be one instance of the entity. Lagom takes care of distributing those instances across the cluster of the service. If you know the identifier you can send messages, so called commands, to the entity.
+A persistent entity corresponds to an [Aggregate Root](https://martinfowler.com/bliki/DDD_Aggregate.html) in Domain-Driven Design terms. Each instance has a stable identifier and for a given id there will only be one instance of the entity. Lagom takes care of distributing those instances across the cluster of the service. If you know the identifier you can send messages, so called commands, to the entity.
 
 The persistent entity is also a transaction boundary. Invariants can be maintained within one entity but not across several entities.
 
@@ -78,7 +78,7 @@ The `setReadOnlyCommandHandler` is simply a convenience function that avoids you
 
 The commands must be immutable to avoid concurrency issues that may occur from changing a command instance that has been sent.
 
-The section [[Immutable Objects|Immutable]] describes how to define immutable command classes.  
+The section [[Immutable Objects|Immutable]] describes how to define immutable command classes.
 
 ## Event Handlers
 
@@ -100,7 +100,7 @@ Each command must define what type of message to use as reply to the command by 
 
 @[AddPost](code/docs/home/persistence/BlogCommand.java)
 
-You send the reply message using the `reply` method of the context that is passed to the command handler function.  
+You send the reply message using the `reply` method of the context that is passed to the command handler function.
 
 Typically the reply will be an acknowledgment that the entity processed the command successfully, i.e. you send it after persist.
 

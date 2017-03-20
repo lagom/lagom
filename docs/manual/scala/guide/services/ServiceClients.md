@@ -16,7 +16,7 @@ Having bound the client, you can now use it anywhere in your Lagom application. 
 
 ## Circuit Breakers
 
-A [circuit breaker](http://martinfowler.com/bliki/CircuitBreaker.html) is used to provide stability and prevent cascading failures in distributed systems. These should be used in conjunction with judicious timeouts at the interfaces between services to prevent the failure of a single service from bringing down other services.
+A [circuit breaker](https://martinfowler.com/bliki/CircuitBreaker.html) is used to provide stability and prevent cascading failures in distributed systems. These should be used in conjunction with judicious timeouts at the interfaces between services to prevent the failure of a single service from bringing down other services.
 
 As an example, we have a web application interacting with a third-party web service. Let's say the third-party has oversold their capacity and their database melts down under load. Assume that the database fails in such a way that it takes a very long time to hand back an error to the third-party web service. This in turn makes calls fail after a long period of time. Back to our web application, the users have noticed that their form submissions take much longer seeming to hang. The users do what they know to do which is use the refresh button, adding more requests to their already running requests. This eventually causes the failure of the web application due to resource exhaustion.
 
@@ -54,21 +54,21 @@ On the client side you can configure the circuit breakers. The default configura
 
 @[circuit-breaker-default](../../../../../service/core/client/src/main/resources/reference.conf)
 
-That configuration will be used if you don't define any configuration yourself. 
+That configuration will be used if you don't define any configuration yourself.
 
 With the above "hello" example we could adjust the configuration by defining properties in `application.conf` such as:
 
     lagom.circuit-breaker {
-    
+
       # will be used by sayHi method
       hello.max-failures = 5
-      
+
       # will be used by hiAgain method
       hello2 {
         max-failures = 7
         reset-timeout = 30s
       }
-    
+
       # Change the default call-timeout
       # will be used for both sayHi and hiAgain methods
       default.call-timeout = 5s

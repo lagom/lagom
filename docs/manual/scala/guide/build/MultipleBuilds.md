@@ -12,7 +12,7 @@ Even with multiple builds, you will still often want to run your services togeth
 
 Suppose you have a `hello` service that you want to publish and import into another build.  You can publish this to your local repository by running `publishLocal` from sbt.  This is the simplest way to publish a service, however it means every developer that wants to run a build that imports the service will need publish it to their own repository themselves, and they'll need to do that for each version that they want to import.
 
-More commonly, many developers can share a single Maven or Ivy repository that they can publish and pull artifacts from.  There are a few options for how to do this, if you're happy to use a hosted repository, [Bintray](https://bintray.com) is a good option, if you want to run the repository locally, [Artifactory](https://www.jfrog.com/open-source/) or [Nexus](http://www.sonatype.com/nexus/solution-overview) are common solutions.  For information on how to configure these in sbt, see [how to publish artifacts](http://www.scala-sbt.org/0.13/docs/Publishing.html) .
+More commonly, many developers can share a single Maven or Ivy repository that they can publish and pull artifacts from.  There are a few options for how to do this, if you're happy to use a hosted repository, [Bintray](https://bintray.com) is a good option, if you want to run the repository locally, [Artifactory](https://www.jfrog.com/open-source/) or [Nexus](https://www.sonatype.com/products-overview) are common solutions.  For information on how to configure these in sbt, see [how to publish artifacts](http://www.scala-sbt.org/0.13/docs/Publishing.html) .
 
 ### Publishing to Bintray
 
