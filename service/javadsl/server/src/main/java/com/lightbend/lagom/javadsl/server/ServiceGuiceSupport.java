@@ -57,9 +57,9 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * <p>
      * Builds the {@link ServiceInfo} metadata using only the <code>locatable</code> services.
      *
-     * @param serviceBindings an arbitrary list of {@link ServiceBinding}'s (use the convenience method
-     *                        {@link ServiceGuiceSupport#serviceBinding(Class, Class)} to build a
-     *                        {@link ServiceBinding}). Despite being a <code>varargs</code> argument, it is required to
+     * @param serviceBindings an arbitrary list of {@link ServiceBinding}s. Use the convenience method
+     *                        {@link ServiceGuiceSupport#serviceBinding(Class, Class)} to build the
+     *                        {@link ServiceBinding}s. Despite being a <code>varargs</code> argument, it is required to
      *                        provide at least one {@link ServiceBinding} as argument. If you are building a Lagom
      *                        service that acts only as a consumer and doesn't need to bind any service you should
      *                        not use {@link ServiceGuiceSupport#bindServices(ServiceBinding[])} and should use
