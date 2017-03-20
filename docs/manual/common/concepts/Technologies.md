@@ -10,7 +10,7 @@ Some of these libraries and tools were developed at Lightbend, others are third-
 
 Lagom makes heavy use of immutable values, for example to represent commands, events, and states.  We recommend using the third-party [Immutables](https://immutables.github.io) library to define immutable objects in Java.
 
-For immutable collections, we recommend [PCollections](http://pcollections.org), but you may also use another library such as [Guava collections](https://github.com/google/guava/wiki/ImmutableCollectionsExplained).
+For immutable collections, we recommend [PCollections](https://pcollections.org/), but you may also use another library such as [Guava collections](https://github.com/google/guava/wiki/ImmutableCollectionsExplained).
 
 In this manual, see [[Immutable Objects|Immutable]] for more details.
 
@@ -72,5 +72,5 @@ Lagom and many of its component technologies are configured using the [Typesafe 
 
 ## Logging
 
-Lagom uses [SLF4J](http://www.slf4j.org/) for logging, backed by [Logback](http://logback.qos.ch/) as its default logging engine.
+Lagom uses [SLF4J](https://www.slf4j.org/) for logging, backed by [Logback](https://logback.qos.ch/) as its default logging engine.
 See the [[Logging]] section of this manual for more information.

@@ -1,10 +1,10 @@
 # Logging
 
-Lagom uses SLF4J for logging, backed by [Logback](http://logback.qos.ch/) as its default logging engine. Here is a short example showcasing how you can access the logger:
+Lagom uses SLF4J for logging, backed by [Logback](https://logback.qos.ch/) as its default logging engine. Here is a short example showcasing how you can access the logger:
 
 @[](code/docs/javadsl/logging/LoggingExample.java)
 
-And you can read of more advanced usages on the [SLF4J user manual](http://www.slf4j.org/manual.html).
+And you can read of more advanced usages on the [SLF4J user manual](https://www.slf4j.org/manual.html).
 
 If you're using maven, you'll need to add the Lagom logback dependency to your classpath to get Logback support:
 
