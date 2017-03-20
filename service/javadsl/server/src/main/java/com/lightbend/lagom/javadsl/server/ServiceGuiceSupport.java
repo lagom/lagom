@@ -55,15 +55,15 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * <p>
      * Inspects all bindings and creates routes to serve every call described in the services bound.
      * <p>
-     * The service bindings are used to build a {@link ServiceInfo} but only the <code>locatable</code>
-     * services will be part of the {@link ServiceInfo} metadata.
+     * Builds the {@link ServiceInfo} metadata using only the <code>locatable</code> services.
      *
      * @param serviceBindings an arbitrary list of {@link ServiceBinding}'s (use the convenience method
      *                        {@link ServiceGuiceSupport#serviceBinding(Class, Class)} to build a
      *                        {@link ServiceBinding}). Despite being a <code>varargs</code> argument, it is required to
-     *                        provide at least one {@link ServiceBinding} as argument, if you are building a Lagom
-     *                        service that acts only as a consumer use {@link ServiceGuiceSupport#bindServiceInfo}
-     *                        instead.
+     *                        provide at least one {@link ServiceBinding} as argument. If you are building a Lagom
+     *                        service that acts only as a consumer and doesn't need to bind any service you should
+     *                        not use {@link ServiceGuiceSupport#bindServices(ServiceBinding[])} and should use
+     *                        {@link ServiceGuiceSupport#bindServiceInfo} instead.
      */
     default void bindServices(ServiceBinding<?>... serviceBindings) {
         Binder binder = BinderAccessor.binder(this);

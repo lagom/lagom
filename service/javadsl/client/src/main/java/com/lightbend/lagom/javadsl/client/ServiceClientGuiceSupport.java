@@ -16,11 +16,11 @@ import javax.inject.Singleton;
 public interface ServiceClientGuiceSupport {
 
     /**
-     * Request a client for <code>clientInterface</code> is bound. The bound client is available via Guice's Injector
+     * Binds a client for <code>clientInterface</code> which Guice's Injector makes available
      * so client classes may declare the dependency on their <code>@Inject</code> annotated constructor.
      * <p>
-     * Applications that want to consume Lagom services must provide a {@link ServiceInfo} so using
-     * {@link ServiceClientGuiceSupport#bindClient(Class)} at least once requires using
+     * Applications that want to consume Lagom services must provide a {@link ServiceInfo}. Using
+     * {@link ServiceClientGuiceSupport#bindClient(Class)} requires providing a {@link ServiceInfo} via
      * {@link ServiceClientGuiceSupport@bindServiceInfo}.
      */
     default <T> void bindClient(Class<T> clientInterface) {
