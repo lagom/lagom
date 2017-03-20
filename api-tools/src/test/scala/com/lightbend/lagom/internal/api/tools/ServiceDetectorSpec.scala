@@ -5,7 +5,7 @@ package com.lightbend.lagom.internal.api.tools
 
 import com.lightbend.lagom.api.tools.tests.scaladsl.StubServiceLoader
 import com.lightbend.lagom.internal.javadsl.server.JavadslServiceDiscovery
-import com.lightbend.lagom.javadsl.api.{Descriptor, Service}
+import com.lightbend.lagom.javadsl.api.{ Descriptor, Service }
 import org.scalatest._
 import play.api.libs.json.Json
 

@@ -1,9 +1,12 @@
+/*
+ * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ */
 package com.lightbend.lagom.api.tools.tests.scaladsl
 
 import akka.NotUsed
-import com.lightbend.lagom.scaladsl.api.transport.Method
-import com.lightbend.lagom.scaladsl.api.{Descriptor, Service, _}
 import com.lightbend.lagom.scaladsl.api.Service._
+import com.lightbend.lagom.scaladsl.api.transport.Method
+import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, _ }
 
 import scala.concurrent.Future
 
