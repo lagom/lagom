@@ -1,6 +1,6 @@
 # Configuring Logging
 
-Lagom uses SLF4J for logging, backed by [Logback](http://logback.qos.ch/) as its default logging engine.  See the [Logback documentation](http://logback.qos.ch/manual/configuration.html) for details on configuration.
+Lagom uses SLF4J for logging, backed by [Logback](https://logback.qos.ch/) as its default logging engine.  See the [Logback documentation](https://logback.qos.ch/manual/configuration.html) for details on configuration.
 
 ## Default configuration
 
@@ -17,7 +17,7 @@ A few things to note:
 * A file appender that writes to `logs/application.log` is declared.
 * The file logger logs full exception stack traces, while the console logger only logs 10 lines of an exception stack trace.
 * Lagom uses ANSI color codes by default in level messages.
-* In production, Lagom puts both the console and the file logger behind the logback [AsyncAppender](http://logback.qos.ch/manual/appenders.html#AsyncAppender).  For details on the performance implications on this, see this [blog post](https://blog.takipi.com/how-to-instantly-improve-your-java-logging-with-7-logback-tweaks/).
+* In production, Lagom puts both the console and the file logger behind the logback [AsyncAppender](https://logback.qos.ch/manual/appenders.html#AsyncAppender).  For details on the performance implications on this, see this [blog post](http://blog.takipi.com/how-to-instantly-improve-your-java-logging-with-7-logback-tweaks/).
 
 ## Custom configuration
 
