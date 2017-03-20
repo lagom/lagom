@@ -130,7 +130,6 @@ trait ScaladslServiceApiBridge extends LagomServiceApiBridge {
 
   // Exceptions
   override def newPayloadTooLarge(msg: String): Throwable = transport.PayloadTooLarge(msg)
-  override def newBadRequest(msg: String): Throwable = transport.BadRequest(msg)
   override def newPolicyViolation(msg: String, detail: String): Throwable =
     new transport.TransportException(transport.TransportErrorCode.PolicyViolation, new ExceptionMessage(msg, detail))
   override def newTransportException(errorCode: ErrorCode, message: String): Exception =
