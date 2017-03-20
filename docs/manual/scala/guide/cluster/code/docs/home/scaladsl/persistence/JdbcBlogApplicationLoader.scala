@@ -6,7 +6,6 @@ import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.jdbc.JdbcPersistenceComponents
 import com.lightbend.lagom.scaladsl.server._
 import com.softwaremill.macwire._
-import docs.home.scaladsl.persistence.BlogService
 import play.api.db.HikariCPComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 
@@ -35,11 +34,12 @@ abstract class BlogApplication(context: LagomApplicationContext)
 
   // Bind the services that this server provides
   override lazy val lagomServer = LagomServer.forServices(
-    bindService[BlogService].to(wire[BlogServiceImpl])
+// TODO for docs BlogServiceImpl has to be class, no trait
+// bindService[BlogService].to(wire[BlogServiceImpl])
   )
 
   // Register the JSON serializer registry
-  override lazy val jsonSerializerRegistry = BlogSerializerRegistry
+  override lazy val jsonSerializerRegistry = BlogPostSerializerRegistry
 
   // Register the Blog application persistent entity
   persistentEntityRegistry.register(wire[Post])
