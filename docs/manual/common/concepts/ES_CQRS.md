@@ -4,7 +4,7 @@ Event sourcing and CQRS (Command Query Responsibility Segregation) are fundament
 
 ## Why event sourcing?
 
-If a service stores information, a core principle is that each service should own its data and it is only the service itself that should have direct access to the database. Other services must use the Service API to interact with the data. There must be no sharing of databases across different services since that would result in a too tight coupling between the services. This is like a [Bounded Context](http://martinfowler.com/bliki/BoundedContext.html) in Domain-Driven Design terminology. Each service defines a Bounded Context.
+If a service stores information, a core principle is that each service should own its data and it is only the service itself that should have direct access to the database. Other services must use the Service API to interact with the data. There must be no sharing of databases across different services since that would result in a too tight coupling between the services. This is like a [Bounded Context](https://martinfowler.com/bliki/BoundedContext.html) in Domain-Driven Design terminology. Each service defines a Bounded Context.
 
 To achieve this, Lagom's persistence module advocates the use of [event sourcing](https://msdn.microsoft.com/en-us/library/jj591559.aspx) and [CQRS](https://msdn.microsoft.com/en-us/library/jj591573.aspx) (Command Query Responsibility Segregation).
 
@@ -28,7 +28,7 @@ Here are some advantages of using event sourcing:
 
 ### Aggregate Root and CQRS
 
-Event Sourcing is used for an [Aggregate Root](http://martinfowler.com/bliki/DDD_Aggregate.html). For example, a customer with a given customer identifier. The write-side is fully consistent within an aggregate. This makes it easy to reason about things like maintaining invariants and validating incoming commands.
+Event Sourcing is used for an [Aggregate Root](https://martinfowler.com/bliki/DDD_Aggregate.html). For example, a customer with a given customer identifier. The write-side is fully consistent within an aggregate. This makes it easy to reason about things like maintaining invariants and validating incoming commands.
 
 The aggregate can reply to queries for a specific identifier but it cannot be used for serving queries that span more than one aggregate. Therefore you need to create another view of the data that is tailored to the queries that the service provides.
 

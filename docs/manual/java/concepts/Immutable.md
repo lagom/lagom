@@ -27,7 +27,7 @@ Here, by contrast, is an immutable object:
 
 All fields are final and are assigned at construction time. There are no setter methods.
 
-## Easier immutability 
+## Easier immutability
 
 Lagom doesn't care how you define your immutable objects. You can write out the constructor and getters by hand, as in the above sample.  But we recommend using third party tools to generate them instead. You can use the [Immutables](https://immutables.github.io) or [Lombok](https://projectlombok.org/index.html). Using a third party tool is easier and less error-prone than writing everything out by hand, and the resulting code is shorter and easier to read.
 
@@ -122,7 +122,7 @@ As seen above, Immutables uses [Guava immutable collections](https://github.com/
 
 The Guava collections are certainly better for this purpose than plain `java.util` collections. However, the Guava collections are cumbersome and inefficient for some common operations (for example, making a slightly modified copy of an existing collection).
 
-Therefore, we recommend [PCollections](http://pcollections.org), which is a collection library that is designed from the ground up for immutability and efficiency.
+Therefore, we recommend [PCollections](https://pcollections.org/), which is a collection library that is designed from the ground up for immutability and efficiency.
 
 This is how the above example looks like using a PCollection:
 

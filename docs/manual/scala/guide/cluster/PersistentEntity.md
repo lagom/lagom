@@ -4,7 +4,7 @@
 
 A `PersistentEntity` has a stable entity identifier, with which it can be accessed from the service implementation or other places. The state of an entity is persistent (durable) using [Event Sourcing](https://msdn.microsoft.com/en-us/library/jj591559.aspx). We represent all state changes as events and those immutable facts are appended to an event log. To recreate the current state of an entity when it is started we replay these events.
 
-A persistent entity corresponds to an [Aggregate Root](http://martinfowler.com/bliki/DDD_Aggregate.html) in Domain-Driven Design terms. Each instance has a stable identifier and for a given id there will only be one instance of the entity. Lagom takes care of distributing those instances across the cluster of the service. If you know the identifier you can send messages, so called commands, to the entity.
+A persistent entity corresponds to an [Aggregate Root](https://martinfowler.com/bliki/DDD_Aggregate.html) in Domain-Driven Design terms. Each instance has a stable identifier and for a given id there will only be one instance of the entity. Lagom takes care of distributing those instances across the cluster of the service. If you know the identifier you can send messages, so called commands, to the entity.
 
 The persistent entity is also a transaction boundary. Invariants can be maintained within one entity but not across several entities.
 
@@ -48,7 +48,7 @@ The three abstract type members that the concrete `PersistentEntity` subclass mu
 
 `initialState` is an abstract method that your concrete subclass must implement to define the `State` when the entity is first created.
 
-`behavior` is an abstract method that your concrete subclass must implement. It returns the `Behavior` of the entity. `Behavior` is a function from current `State` to `Actions`, which defines command and event handlers. 
+`behavior` is an abstract method that your concrete subclass must implement. It returns the `Behavior` of the entity. `Behavior` is a function from current `State` to `Actions`, which defines command and event handlers.
 
 Use `Actions()` to create an immutable builder for defining the behavior. The behavior functions process incoming commands and persisted events as described in the following sections.
 
@@ -60,7 +60,7 @@ The functions that process incoming commands are registered using `onCommand` of
 
 You should define one command handler for each command class that the entity can receive.
 
-A command handler is a partial function with 3 parameters (`Tuple3`) for the `Command`, the `CommandContext` and current `State`. 
+A command handler is a partial function with 3 parameters (`Tuple3`) for the `Command`, the `CommandContext` and current `State`.
 
 A command handler returns a [Persist](api/index.html#com/lightbend/lagom/scaladsl/persistence/PersistentEntity@Persist) directive that defines what event or events, if any, to persist. Use the `thenPersist`, `thenPersistAll` or `done` methods of the context that is passed to the command handler function to create the `Persist` directive.
 
@@ -75,7 +75,7 @@ The command can be validated before persisting state changes. Note that current 
 
 @[validate-command](code/docs/home/scaladsl/persistence/Post2.scala)
 
-A `PersistentEntity` may also process commands that do not change application state, such as query commands or commands that are not valid in the entity's current state (such as a bid placed after the auction closed). Such command handlers are registered using `onReadOnlyCommand` of the `Actions`. Replies are sent with the `reply` method of the context that is passed to the command handler function. 
+A `PersistentEntity` may also process commands that do not change application state, such as query commands or commands that are not valid in the entity's current state (such as a bid placed after the auction closed). Such command handlers are registered using `onReadOnlyCommand` of the `Actions`. Replies are sent with the `reply` method of the context that is passed to the command handler function.
 
 The `onReadOnlyCommand` is simply a convenience function that avoids you having to return no events followed by a side effect.
 
@@ -83,7 +83,7 @@ The `onReadOnlyCommand` is simply a convenience function that avoids you having 
 
 The commands must be immutable to avoid concurrency issues that may occur from changing a command instance that has been sent.
 
-The section [[Immutable Objects|Immutable]] describes how to define immutable command classes.  
+The section [[Immutable Objects|Immutable]] describes how to define immutable command classes.
 
 ## Event Handlers
 
