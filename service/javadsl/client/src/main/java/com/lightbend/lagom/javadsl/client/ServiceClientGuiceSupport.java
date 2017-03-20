@@ -9,8 +9,20 @@ import com.lightbend.lagom.javadsl.api.ServiceInfo;
 
 import javax.inject.Singleton;
 
+/**
+ * Applications that already use Guice as their DI framework may implement this interface to bind clients for Lagom
+ * services.
+ */
 public interface ServiceClientGuiceSupport {
 
+    /**
+     * Request a client for <code>clientInterface</code> is bound. The bound client is available via Guice's Injector
+     * so client classes may declare the dependency on their <code>@Inject</code> annotated constructor.
+     * <p>
+     * Applications that want to consume Lagom services must provide a {@link ServiceInfo} so using
+     * {@link ServiceClientGuiceSupport#bindClient(Class)} at least once requires using
+     * {@link ServiceClientGuiceSupport@bindServiceInfo}.
+     */
     default <T> void bindClient(Class<T> clientInterface) {
         BinderAccessor.binder(this).bind(clientInterface)
                 .toProvider(new ServiceClientProvider<T>(clientInterface))
@@ -18,7 +30,11 @@ public interface ServiceClientGuiceSupport {
     }
 
     /**
-     * Provides the ServiceInfo to use Lagom service clients.
+     * Registers a {@link ServiceInfo} for this application. This step is required to interact with Lagom services.
+     * <p>
+     * This method must be invoked exactly once.
+     *
+     * @param serviceInfo the metadata identifying this Lagom Service.
      */
     default void bindServiceInfo(ServiceInfo serviceInfo) {
         BinderAccessor.binder(this).bind(ServiceInfo.class)

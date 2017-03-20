@@ -16,9 +16,21 @@ import com.lightbend.lagom.javadsl.server.status.MetricsService;
 
 import java.util.Arrays;
 
+/**
+ * Lagom service implementations must create one implementation of this interface and use it to bind Service
+ * implementations.
+ */
 public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
 
-    // redefines bindServiceInfo from super interface.
+    /**
+     * Creates a custom {@link ServiceInfo} for this Lagom service. This method overrides
+     * {@link ServiceClientGuiceSupport#bindServiceInfo(ServiceInfo)} with custom behavior for consume-only Lagom
+     * services.
+     * <p>
+     * The customization may be used by Lagom to add features only applicatble to Lagom services transparently.
+     *
+     * @param serviceInfo the metadata identifying this Lagom Service.
+     */
     default void bindServiceInfo(ServiceInfo serviceInfo) {
         // copied from super interface since default methods in JAVA can't be invoked from extending interfaces.
         Binder binder = BinderAccessor.binder(this);
@@ -36,6 +48,23 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
         binder.bind(JavadslServicesRouter.class);
     }
 
+    /**
+     * Binds Service interfaces with their implementations and registers them for publishing. This method must be
+     * invoked exactly one per Lagom service unless you are developing a consume-only service (see
+     * {@link ServiceGuiceSupport#bindServiceInfo} for consume-only service support).
+     * <p>
+     * Inspects all bindings and creates routes to serve every call described in the services bound.
+     * <p>
+     * The service bindings are used to build a {@link ServiceInfo} but only the <code>locatable</code>
+     * services will be part of the {@link ServiceInfo} metadata.
+     *
+     * @param serviceBindings an arbitrary list of {@link ServiceBinding}'s (use the convenience method
+     *                        {@link ServiceGuiceSupport#serviceBinding(Class, Class)} to build a
+     *                        {@link ServiceBinding}). Despite being a <code>varargs</code> argument, it is required to
+     *                        provide at least one {@link ServiceBinding} as argument, if you are building a Lagom
+     *                        service that acts only as a consumer use {@link ServiceGuiceSupport#bindServiceInfo}
+     *                        instead.
+     */
     default void bindServices(ServiceBinding<?>... serviceBindings) {
         Binder binder = BinderAccessor.binder(this);
 
@@ -77,10 +106,24 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
         binder.bind(JavadslServicesRouter.class);
     }
 
+    /**
+     * Convenience method to create {@link ServiceGuiceSupport.ServiceBinding} when using {@link ServiceGuiceSupport#bindServices(ServiceBinding[])}.
+     * @param serviceInterface the interface class for a service
+     * @param serviceImplementation the implementation class for the service
+     * @param <T> type constraint ensuring <code>serviceImplementation</code> implements <code>serviceInterface</code>
+     * @return a {@link ServiceGuiceSupport.ServiceBinding} to be used as argument in {@link ServiceGuiceSupport#bindServices(ServiceBinding[])}.
+     */
     default <T> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, Class<? extends T> serviceImplementation) {
         return new ClassServiceBinding<>(serviceInterface, serviceImplementation);
     }
 
+    /**
+     * Convenience method to create {@link ServiceGuiceSupport.ServiceBinding} when using {@link ServiceGuiceSupport#bindServices(ServiceBinding[])}.
+     * @param serviceInterface the interface class for a service
+     * @param service an instance of the service
+     * @param <T> type constraint ensuring <code>service</code> implements <code>serviceInterface</code>
+     * @return a {@link ServiceGuiceSupport.ServiceBinding} to be used as argument in {@link ServiceGuiceSupport#bindServices(ServiceBinding[])}.
+     */
     default <T> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, T service) {
         return new InstanceServiceBinding<>(serviceInterface, service);
     }
