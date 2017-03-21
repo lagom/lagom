@@ -50,15 +50,15 @@ By default, Lagom automatically creates the configured keyspaces and its interna
 
 ```conf
 cassandra-journal {
-  keyspace-autocreate = true
-  tables-autocreate = true
+  keyspace-autocreate = false
+  tables-autocreate = false
 }
 cassandra-snapshot-store {
-  keyspace-autocreate = true
-  tables-autocreate = true
+  keyspace-autocreate = false
+  tables-autocreate = false
 }
 lagom.persistence.read-side.cassandra {
-  keyspace-autocreate = true
+  keyspace-autocreate = false
 }
 ```
 
