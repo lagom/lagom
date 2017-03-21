@@ -27,7 +27,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * {@link ServiceClientGuiceSupport#bindServiceInfo(ServiceInfo)} with custom behavior for consume-only Lagom
      * services.
      * <p>
-     * The customization may be used by Lagom to add features only applicatble to Lagom services transparently.
+     * The customization may be used by Lagom to add features only applicable to Lagom services transparently.
      *
      * @param serviceInfo the metadata identifying this Lagom Service.
      */

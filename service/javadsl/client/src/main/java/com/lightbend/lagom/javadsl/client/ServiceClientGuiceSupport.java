@@ -21,7 +21,7 @@ public interface ServiceClientGuiceSupport {
      * <p>
      * Applications that want to consume Lagom services must provide a {@link ServiceInfo}. Using
      * {@link ServiceClientGuiceSupport#bindClient(Class)} requires providing a {@link ServiceInfo} via
-     * {@link ServiceClientGuiceSupport@bindServiceInfo}.
+     * {@link ServiceClientGuiceSupport#bindServiceInfo(ServiceInfo)}.
      */
     default <T> void bindClient(Class<T> clientInterface) {
         BinderAccessor.binder(this).bind(clientInterface)
