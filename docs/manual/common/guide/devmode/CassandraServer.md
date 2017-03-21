@@ -75,9 +75,9 @@ cassandra-snapshot-store.keyspace=users
 lagom.persistence.read-side.cassandra.keyspace=users
 ```
 
-Note that the keyspace values provided via the `application.conf` will always win over any keyspace name that may be set in the build. For that reason, overriding the keyspace in the build is deprecated, and will be removed in a future version of Lagom.
+Note that Cassandra uses keyspace values from the `application.conf` file instead of any you might define in the build. For that reason, overriding the keyspace in the build is deprecated, and will be removed in a future version of Lagom.
 
-There is more information about configuring keyspaces in the documentation for [[Cassandra persistent entity configuration|PersistentEntityCassandra#Configuration]].
+See [[Cassandra persistent entity configuration|PersistentEntityCassandra#Configuration]] for more information about configuring keyspaces.
 
 ## JVM options
 
