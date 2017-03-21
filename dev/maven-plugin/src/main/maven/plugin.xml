@@ -104,6 +104,7 @@
             <required>false</required>
             <editable>true</editable>
             <description>The keyspace to use for Cassandra.</description>
+            <deprecated>Configure in application.conf instead.</deprecated>
         </parameter>
 
         <parameter>
