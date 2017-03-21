@@ -22,31 +22,37 @@ In sbt:
 
 ## Configuration
 
-Lagom uses several internal Cassandra tables to persist entity data. These are known as the journal, which stores events, and the snapshot store, which stores snapshots of the state as an optimization for faster recovery (see [[Snapshots|PersistentEntity#Snapshots]] for details). [[Cassandra Read-Side support|ReadSideCassandra]] also uses a table to store the event offsets last processed by each read-side processor (detailed in [[Read-side design|ReadSide#Read-side-design]]). You will need to configure the keyspaces that contain the tables for each of these components.
+Lagom uses several internal Cassandra tables to persist entity data. You need to configure the keyspaces that are used for these tables. By default, Lagom automatically creates these keyspaces and tables at startup if they're missing.
 
-A keyspace in Cassandra is a namespace that defines data replication on nodes. Each service should use a unique keyspace name so that the tables of different services do not conflict with each other.
+A keyspace in Cassandra is a namespace that defines data replication on nodes and acts as a container for tables. Each service should use a unique keyspace name so that the tables of different services do not conflict with each other.
 
 Cassandra keyspace names must start with an alphanumeric character and contain only alphanumeric and underscore characters. They are case-insensitive and stored in lowercase.
 
-You can configure these keyspaces in each service implementation project's `application.conf` file:
+Lagom has three internal components that require keyspace configuration:
+
+* The **journal** stores serialized events
+* The **snapshot store** stores snapshots of the state as an optimization for faster recovery (see [[Snapshots|PersistentEntity#Snapshots]] for details)
+* The **offset store** is used for [[Cassandra Read-Side support|ReadSideCassandra]] to keep track of the most recent event handled by each read-side processor (detailed in [[Read-side design|ReadSide#Read-side-design]]).
+
+You can configure these keyspace names in each service implementation project's `application.conf` file:
 
 ```conf
-cassandra-journal.keyspace = users_journal
-cassandra-snapshot-store.keyspace = users_snapshot
-lagom.persistence.read-side.cassandra.keyspace = users_read_side
+cassandra-journal.keyspace = my_service_journal
+cassandra-snapshot-store.keyspace = my_service_snapshot
+lagom.persistence.read-side.cassandra.keyspace = my_service_read_side
 ```
 
 While different services should be isolated by using different keyspaces, it is perfectly fine to use the same keyspace for all of these components within one service. In that case, it can be convenient to define a custom keyspace configuration property and use [property substitution](https://github.com/typesafehub/config#factor-out-common-values) to avoid repeating it.
 
 ```conf
-users.cassandra.keyspace = users
+my-service.cassandra.keyspace = my_service
 
-cassandra-journal.keyspace = ${users.cassandra.keyspace}
-cassandra-snapshot-store.keyspace = ${users.cassandra.keyspace}
-lagom.persistence.read-side.cassandra.keyspace = ${users.cassandra.keyspace}
+cassandra-journal.keyspace = ${my-service.cassandra.keyspace}
+cassandra-snapshot-store.keyspace = ${my-service.cassandra.keyspace}
+lagom.persistence.read-side.cassandra.keyspace = ${my-service.cassandra.keyspace}
 ```
 
-By default, Lagom automatically creates the configured keyspaces and its internal tables if they are missing. If you prefer to manage the schema explicitly, you can disable automatic creation with these properties:
+When your service starts up, Lagom creates these keyspaces by default if they are missing, and automatically creates its internal tables within them. If you prefer to manage the schema explicitly, you can disable automatic creation with these properties:
 
 ```conf
 cassandra-journal {
@@ -61,6 +67,8 @@ lagom.persistence.read-side.cassandra {
   keyspace-autocreate = false
 }
 ```
+
+With these properties set to `false`, if the keyspaces or tables are missing at startup your service will log an error and fail to start.
 
 It is not possible to disable automatic creation of the offset store table at this time.
 
