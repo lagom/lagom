@@ -294,6 +294,7 @@ object LagomPlugin extends AutoPlugin {
     val lagomCassandraPort = settingKey[Int]("Port used by the local cassandra server")
     val lagomCassandraEnabled = settingKey[Boolean]("Enable/Disable the cassandra server")
     val lagomCassandraCleanOnStart = settingKey[Boolean]("Wipe the cassandra database before starting")
+    @deprecated("Configure in application.conf instead.", "1.3.2")
     val lagomCassandraKeyspace = settingKey[String]("Cassandra keyspace used by a Lagom service")
     val lagomCassandraJvmOptions = settingKey[Seq[String]]("JVM options used by the forked cassandra process")
     val lagomCassandraMaxBootWaitingTime = settingKey[FiniteDuration]("Max waiting time to start cassandra")
