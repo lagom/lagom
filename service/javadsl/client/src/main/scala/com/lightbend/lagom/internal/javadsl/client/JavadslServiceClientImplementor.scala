@@ -136,7 +136,6 @@ private class JavadslClientServiceCallInvoker[Request, Response](
                                             requestHeader: RequestHeader): Future[(ResponseHeader, Source[ByteString, NotUsed])] = {
     webSocketClient.connect(descriptor.exceptionSerializer, WebSocketVersion.V13, requestHeader, requestStream)
   }
-
 }
 
 case object NoTopicFactory
