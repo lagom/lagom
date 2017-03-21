@@ -26,6 +26,8 @@ Lagom uses several internal Cassandra tables to persist entity data. These are k
 
 A keyspace in Cassandra is a namespace that defines data replication on nodes. Each service should use a unique keyspace name so that the tables of different services do not conflict with each other.
 
+Cassandra keyspace names must start with an alphanumeric character and contain only alphanumeric and underscore characters. They are case-insensitive and stored in lowercase.
+
 You can configure these keyspaces in each service implementation project's `application.conf` file:
 
 ```conf
@@ -33,8 +35,6 @@ cassandra-journal.keyspace = users_journal
 cassandra-snapshot-store.keyspace = users_snapshot
 lagom.persistence.read-side.cassandra.keyspace = users_read_side
 ```
-
-Cassandra keyspace names must start with an alphanumeric character and contain only alphanumeric and underscore characters. They are case-insensitive and stored in lowercase.
 
 While different services should be isolated by using different keyspaces, it is perfectly fine to use the same keyspace for all of these components within one service. In that case, it can be convenient to define a custom keyspace configuration property and use [property substitution](https://github.com/typesafehub/config#factor-out-common-values) to avoid repeating it.
 
