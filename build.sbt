@@ -340,8 +340,10 @@ lazy val `api-tools` = (project in file("api-tools"))
   )
   .dependsOn(
     spi,
-    `server-javadsl` % Test
+    `server-javadsl` % Test,
+    `server-scaladsl` % Test
   )
+
 
 lazy val client = (project in file("service/core/client"))
   .settings(runtimeLibCommon: _*)
