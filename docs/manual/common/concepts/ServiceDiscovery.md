@@ -8,7 +8,7 @@ Lagom provides the following functionality for your microservice systems:
 * [Client-side service discovery](#Client-side-service-discovery)
 * [Server-side service discovery](#Server-side-service-discovery)
 
-*Note*: This page uses HTTP-REST in the examples but the concepts apply to any kind of traffic such as plain HTTP, binary over tcp, etc.
+*Note*: This page uses HTTP-REST in the examples but the concepts apply to any kind of traffic such as plain HTTP and binary over tcp.
 
 ## Service registration
 
