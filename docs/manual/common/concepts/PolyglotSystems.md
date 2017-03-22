@@ -10,6 +10,6 @@ A microservice's API specifies how that service uses HTTP. REST service calls ar
 
 ## Design driven APIs
 
-Lagom's interface specifications are designed to be compatible with design driven API approaches to system development. However currently, aside from using the same interfaces in Lagom to Lagom service communication, Lagom does not include specific support for design driven API development. In future releases, we plan to implement support for popular design driven API technologies, which will make it  possible to generate Lagom service interfaces from specifications and allow transparent integration across any framework that supports these technologies.
+Lagom's interface specifications are designed to be compatible with design driven API approaches to system development. Lagom uses the same interfaces in Lagom to Lagom service communication. 
 
-**Reviewers:** Is it acceptable to document future plans? In commercial product doc, that was a no-no, but open source might be quite different.
+
