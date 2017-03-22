@@ -1,5 +1,6 @@
 # Using immutable objects
 
+<!--- This page will move and/or change as a result of https://github.com/lagom/lagom/issues/592 -->
 An immutable object cannot be modified after it was created. Immutable objects have two great advantages:
 
 * Code based on immutable objects is clearer and likelier to be correct. Bugs involving unexpected changes simply can't occur.
@@ -43,7 +44,6 @@ The following example shows the definition of a `User` implemented with Lombok. 
 
 The example does not demonstrate other useful Lombok feature like `@Builder` or `@Wither` which will help you create builder and copy methods. Be aware that Lombok is not an immutability library but a code generation library which means some setups might not create immutable objects. For example, Lombok's `@Data` is equivalent to Lombok's `@Value` but will also synthesize mutable methods. Don't use Lombok's `@Data` when creating immutable classes.
 
-**RS: The procedures for adding Lombok or Immutables to your project don't belong on this page, but I've left them so that you can review them. I will probably move them to the "Configuring the build and development environment" section.**
 
 ### Adding Lombok to a Maven project
 To add Lombok to a Maven project, declare it as a simple dependency:
@@ -97,8 +97,6 @@ Immutables generates for you:
 
 Immutables integrates with popular IDEs. Follow the instructions for [[Eclipse|ImmutablesInIDEs#Eclipse]] or [[IntelliJ IDEA|ImmutablesInIDEs#IntelliJ-IDEA]] to add the Immutables annotation processor to your IDE. 
 
-
-**RS: Probably better to remove the following:** We've found the integration with IntelliJ IDEA a bit cumbersome though.
 
 ## Collections
 

@@ -16,7 +16,7 @@ A Service Registry collaborates with microservice instances to maintain an up-to
 
 When booting a Lagom microservice instance, a registrar will register the name of the microservice, the URL and the names of the locatable Service Descriptors on the Service Registry so that they can be located. When powering down an instance of a service, the registrar will have to update the Service Registry too. Lagom's [[Developer Environment|DevEnvironment]] provides an implementation of a Service Registry and a registrar so you can run your microservices locally.
  
-The following diagram illustrates service registration. (TBA)
+<!---The following diagram illustrates service registration. (TBA) --->
 
 Many available technologies provide Service Registry capabilities. You will need to choose and/or develop a Service Locator for your services to run in your deployment environment (see for example [Lagom ZooKeeper Service Locator](https://github.com/jboner/lagom-service-locator-zookeeper)). You may need to work out a way to plug your Lagom services with a registrar. Lagom's integration with [[ConductR|ConductR]] makes these two steps seamless.
 
@@ -29,7 +29,7 @@ From Bonér's [Reactive Microservices Architecture: Design Principles for Distri
 
 Lagom creates service clients for each Service Descriptor so that applications can interact with Lagom Services. Suppose a non-Lagom [[an app|IntegratingNonLagom]] app wants to consume a hello service. It can use the Welcome Service Client and simply invoke the `hello` method. The Welcome Service Client will use the Service Registry to find a valid URL where  `welcome` is available and fulfill the request. This approach requires using Lagom provided code. In production, the Service Locator plugged into your services will be an element participating in this Client-Side Discovery.
 
-The following diagram illustrates client-side service discovery. (TBA)
+<!--- The following diagram illustrates client-side service discovery. (TBA) --->
 
 ## Server-side service discovery
 
@@ -41,11 +41,11 @@ If you can't embed a Service Locator on every client, you can use server-side se
 
 For example, a browser can display a hello message to a user by requesting the `/hello/steve` path from the Service Gateway. The Service Gateway will know which service provides that endpoint and will ask the Service Registry for an instance of that service. The Service Registry will respond with the host and port of the instance where the request can be fulfilled. Finally the Service Gateway will perform the request and return the result to the browser.  
 
-The following diagram illustrates server-side service discovery. (TBA)
+<!--- The following diagram illustrates server-side service discovery. (TBA) -->
 
 To simplify testing of server-side service discovery, the Lagom development environment starts all your services plus a Service Registry and a Service Gateway. 
 
-**Reviewers: I think we should probably add illustrations of the difference between server and client side discovery and the relationships of a Service Gateway to the service registry. I just realized this before sending for review, so will work on it while you are reviewing.
+
 
 
 

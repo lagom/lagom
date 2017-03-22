@@ -9,9 +9,9 @@ MicroserviceDesign:Sizing individual microservices
 IntAndExtComm:Internal and external communication
 ServiceDiscovery: Registering and discovering services
 Immutable:Using Immutable Objects
-ReadVWrite:Separating reads from writes
 ES_CQRS:Managing data persistence
 ESAdvantage:Advantages of Event Sourcing
+ReadVWrite:Separating reads from writes
 ScalableDeployment:Deploying scalable, resilient systems
 
 
