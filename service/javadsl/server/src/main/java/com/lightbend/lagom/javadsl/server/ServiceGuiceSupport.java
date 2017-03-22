@@ -19,6 +19,11 @@ import java.util.Arrays;
 /**
  * Lagom service implementations must create one implementation of this interface and use it to bind Service
  * implementations.
+ *
+ * Implementors of this interface must invoke {@link ServiceGuiceSupport#bindServices(ServiceBinding[])} or
+ * {@link ServiceGuiceSupport#bindServiceInfo(ServiceInfo)} exactly-once depending on the type of Lagom service being
+ * implemented (exposing API or consume-only respsectively). These methods setup the service and may transparently add
+ * cross-cutting services like {@link MetricsService} (allows monitoring circuit-breakers from the outside).
  */
 public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
 
@@ -26,8 +31,6 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * Creates a custom {@link ServiceInfo} for this Lagom service. This method overrides
      * {@link ServiceClientGuiceSupport#bindServiceInfo(ServiceInfo)} with custom behavior for consume-only Lagom
      * services.
-     * <p>
-     * The customization may be used by Lagom to add features only applicable to Lagom services transparently.
      *
      * @param serviceInfo the metadata identifying this Lagom Service.
      */
@@ -53,7 +56,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * invoked exactly one per Lagom service unless you are developing a consume-only service (see
      * {@link ServiceGuiceSupport#bindServiceInfo} for consume-only service support).
      * <p>
-     * Inspects all bindings and creates routes to serve every call described in the services bound.
+     * Inspects all bindings and creates routes to serve every call described in the bound services.
      * <p>
      * Builds the {@link ServiceInfo} metadata using only the <code>locatable</code> services.
      *
@@ -63,7 +66,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      *                        provide at least one {@link ServiceBinding} as argument. If you are building a Lagom
      *                        service that acts only as a consumer and doesn't need to bind any service you should
      *                        not use {@link ServiceGuiceSupport#bindServices(ServiceBinding[])} and should use
-     *                        {@link ServiceGuiceSupport#bindServiceInfo} instead.
+     *                        {@link ServiceGuiceSupport#bindServiceInfo(ServiceInfo)} instead.
      */
     default void bindServices(ServiceBinding<?>... serviceBindings) {
         Binder binder = BinderAccessor.binder(this);
