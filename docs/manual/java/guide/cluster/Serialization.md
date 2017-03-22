@@ -10,7 +10,7 @@ To enable JSON serialization for a class you need to implement the [Jsonable](ap
 
 @[jsonable](code/docs/home/serialization/AbstractUser.java)
 
-Note that we're using the [[Immutables|Immutable#Immutables]] library here, so this will generate an immutable `User` class. This is the reason for adding the `@JsonDeserialize` annotation.
+Note that we're using the [[Immutables|Immutable]] library here, so this will generate an immutable `User` class. This is the reason for adding the `@JsonDeserialize` annotation.
 
 ### Jackson Modules
 

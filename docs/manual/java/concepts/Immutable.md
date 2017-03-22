@@ -20,7 +20,7 @@ The following sections provide more information on immutables:
 * [Lombok example](#Lombok-example)
 * [Immutables tool example](#Immutables-tool-example)
 
-## Mutable and immutable example
+## Mutable and immutable examples
 In the following example of a mutable object, the setter methods can be used to modify the object after construction:
 
 @[mutable](code/docs/home/immutable/MutableUser.java)

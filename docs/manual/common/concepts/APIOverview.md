@@ -10,12 +10,6 @@ Important APIs that you will use when developing with Lagom include:
 * [[Persistence API|PersistentEntity]]
     Provides event-sourced persistent entities for services that store data. Command Query Responsibility Segregation (CQRS) read-side support is provided as well. Lagom manages the distribution of persisted entities across a cluster of nodes, enabling sharding and horizontal scaling. Cassandra is provided as a database out-of-the-box, but other DBs are supported.
 
-## Immutables
-    
-Lagom makes heavy use of [[immutable object values|Immutable]], for example to represent commands, events, and states. As you develop your microservices, we also recommend that you take advantage of the following:
-
-* The third-party [Immutables](https://immutables.github.io) library to define immutable objects in Java.
-* For immutable collections, [PCollections](http://pcollections.org), or other libraries such as [Guava collections](https://github.com/google/guava/wiki/ImmutableCollectionsExplained).
 
 ## Serialization
 
