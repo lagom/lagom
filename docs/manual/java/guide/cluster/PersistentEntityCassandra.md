@@ -22,9 +22,7 @@ In sbt:
 
 ## Configuration
 
-Lagom uses several internal Cassandra tables to persist entity data. You need to configure the keyspaces that are used for these tables. By default, Lagom automatically creates these keyspaces and tables at startup if they're missing.
-
-A keyspace in Cassandra is a namespace that defines data replication on nodes and acts as a container for tables. Each service should use a unique keyspace name so that the tables of different services do not conflict with each other.
+Lagom's persistence needs a few tables to store its data. These tables are stored in Cassandra keyspaces. A keyspace in Cassandra is a namespace that defines data replication on Cassandra nodes. Each service should use a unique keyspace name so that the tables of different services do not conflict with each other. You need to configure the keyspaces that are used for these tables in each of your service implementation projects.
 
 Cassandra keyspace names must start with an alphanumeric character and contain only alphanumeric and underscore characters. They are case-insensitive and stored in lowercase.
 
