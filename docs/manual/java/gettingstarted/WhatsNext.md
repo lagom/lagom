@@ -10,7 +10,7 @@ Learn how to integrate with Eclipse:
     
 Learn how to integrate with Intellij:
 
-* [[Import an existing Maven project into Intellij|intellijMaven]]
+* [[Import an existing Maven project into Intellij|IntellijMaven]]
 * [[Import an existing sbt build into Intellij|IntellijSbtJava]]
     
 Learn more about Lagom:
