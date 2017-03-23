@@ -1,6 +1,6 @@
 # Using immutable objects
 
-<!--- This page will move and/or change as a result of https://github.com/lagom/lagom/issues/592 -->
+<!--- The information on this page on how to implement immutables will move and/or change as a result of https://github.com/lagom/lagom/issues/592 -->
 An immutable object cannot be modified after it was created. Immutable objects have two great advantages:
 
 * Code based on immutable objects is clearer and likelier to be correct. Bugs involving unexpected changes simply can't occur.

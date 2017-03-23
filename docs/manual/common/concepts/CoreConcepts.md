@@ -19,18 +19,19 @@ The remaining topics in this section further introduce:
     * [[Lagom design philosophy|LagomDesignPhilosophy]]
     * [[Polyglot systems|PolyglotSystems]]
 * Lagom development environment: 
-    * [[Overview|DevEnvOvr]]
+    * [[Overview|DevelopmentEnvironmentOverview]]
     * [[Build philosophy|BuildConcepts]]
     * [[Component technologies|ComponentTechnologies]]
     * [[API Overview|APIOverview]]
 * Patterns to use in your system:
     * [[Designing your microservices system|MicroserviceSystemDesign]]
     * [[Sizing individual microservices|MicroserviceDesign]]
+    * [[Internal and external communication|InternalAndExternalCommunication]]
     * [[Registering and discovering services|ServiceDiscovery]]
     * [[Using immutable objects|Immutable]]
     * [[Managing data persistence|ES_CQRS]]
     * [[Advantages of Event Sourcing|ESAdvantage]]
-    * [[Separating reads from writes|ReadVWrite]]
+    * [[Separating reads from writes|ReadVsWrite]]
     * [[Deploying resilient, scalable systems|ScalableDeployment]]
     
 

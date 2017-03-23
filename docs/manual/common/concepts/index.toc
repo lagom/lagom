@@ -1,18 +1,18 @@
 CoreConcepts:Introduction to Lagom concepts
 LagomDesignPhilosophy:Lagom design philosophy
 PolyglotSystems:Polyglot systems with Lagom
-DevEnvOvr:Development environment overview
+DevelopmentEnvironmentOverview:Development environment overview
 BuildConcepts:Lagom build philosophy
 ComponentTechnologies:Component technologies
 APIOverview:API Overview
 MicroserviceSystemDesign:Designing your microservices system
 MicroserviceDesign:Sizing individual microservices
-IntAndExtComm:Internal and external communication
+InternalAndExternalCommunication:Internal and external communication
 ServiceDiscovery: Registering and discovering services
 Immutable:Using Immutable Objects
 ES_CQRS:Managing data persistence
 ESAdvantage:Advantages of Event Sourcing
-ReadVWrite:Separating reads from writes
+ReadVsWrite:Separating reads from writes
 ScalableDeployment:Deploying scalable, resilient systems
 
 

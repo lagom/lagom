@@ -12,11 +12,20 @@ Follow these steps to create your first Lagom build:
 
 ## Create a new Lagom build
 
-Open a terminal or command window with administrative privileges. From the command line, invoke `sbt new` and specify the Lagom Giter8 template:
-```
-sbt new lagom/lagom-java.g8
-```
-The sbt Lagom template prompts for the following parameters. Press `Enter` to accept the defaults or specify your own values:
+Open a terminal and follow these steps:
+
+1. Create a new directory for your build. For example:
+   ```
+   mkdir lagom
+   ```
+
+1. Change into the new directory.
+
+1. Enter the following command to invoke `sbt new` using the Lagom Giter8 template:
+   ```
+   sbt new -Dsbt.version=0.13.13 lagom/lagom-java.g8
+   ```
+1. The sbt Lagom template prompts for the following parameters. Press `Enter` to accept the defaults or specify your own values:
 
 * `name` - Becomes the name of the top-level directory.
 * `organization` - Used as a package name.

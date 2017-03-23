@@ -27,7 +27,7 @@ From Bonér's [Reactive Microservices Architecture: Design Principles for Distri
 
 > Once the information about each service has been stored it can be made available through a Service Registry that services can use to look the information up—using a pattern called Client-Side Service Discovery.
 
-Lagom creates service clients for each Service Descriptor so that applications can interact with Lagom Services. Suppose a non-Lagom [[an app|IntegratingNonLagom]] app wants to consume a hello service. It can use the Welcome Service Client and simply invoke the `hello` method. The Welcome Service Client will use the Service Registry to find a valid URL where  `welcome` is available and fulfill the request. This approach requires using Lagom provided code. In production, the Service Locator plugged into your services will be an element participating in this Client-Side Discovery.
+Lagom creates service clients for each Service Descriptor so that applications can interact with Lagom Services. Suppose a non-Lagom app wants to consume a hello service. It can use the Welcome Service Client and simply invoke the `hello` method. The Welcome Service Client will use the Service Registry to find a valid URL where  `welcome` is available and fulfill the request. This approach requires using Lagom provided code. In production, the Service Locator plugged into your services will be an element participating in this Client-Side Discovery. See [[Integrating with non-Lagom services|IntegratingNonLagom]] for more information.
 
 <!--- The following diagram illustrates client-side service discovery. (TBA) --->
 

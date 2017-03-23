@@ -10,18 +10,26 @@ Follow these steps to create and run Hello World:
 
 ## Create the build
 
-To create a new build using the Giter8 template, open a console where you have administrative privileges. Enter the following:
+To create a new build using the Giter8 template, open a console, and follow these steps:
 
-```
-sbt new lagom/lagom-scala.g8
-```
+1. Create a new directory for your build. For example:
+   ```
+   mkdir lagom
+   ```
+   
+1. Change into the new directory.
 
-The template prompts for the following parameters. Press `Enter` to accept the defaults or specify your own values:
+1. Enter the following command:
+   ```
+   sbt new -Dsbt.version=0.13.13 lagom/lagom-scala.g8
+   ```
 
-* `name` - Becomes the name of the top-level directory.
-* `organization` - Used as a package name.
-* `version` - A version number for your system.
-* `lagom-version` - The version number of Lagom, such as 1.3.0. Be sure to use the [current stable release](https://www.lagomframework.com/documentation/).
+1. The template prompts for the following parameters. Press `Enter` to accept the defaults or specify your own values:
+
+   * `name` - Becomes the name of the top-level directory.
+   * `organization` - Used as a package name.
+   * `version` - A version number for your system.
+   * `lagom-version` - The version number of Lagom, such as 1.3.0. Be sure to use the [current stable release](https://www.lagomframework.com/documentation/).
 
 ## Browse the build
 
