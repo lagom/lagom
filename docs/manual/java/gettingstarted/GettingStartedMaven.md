@@ -9,14 +9,11 @@ Follow these instructions to create and run your first project:
 
 ## Generate a project with the Lagom archetype
 
-To create a project, open a command window and follow these steps:
+Choose a location on your file system for your Lagom projects. Maven will prompt you for a project name and will create a directory with that name that contains the build structure and Lagom example services. 
 
-1. Create a new directory for your build. For example:
-   ```
-   mkdir lagom
-   ```
+To create your project, follow these steps:
 
-1. Change into the new directory.
+1. Open a console and change into the directory you selected for your project.
 1. Invoke `mvn archetype:generate` from the command line:
     ```
     mvn archetype:generate -Dfilter=com.lightbend.lagom:maven-archetype-lagom-java

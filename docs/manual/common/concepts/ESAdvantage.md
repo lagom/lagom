@@ -1,6 +1,6 @@
 # Advantages of Event Sourcing
 
-For decades, developers have implemented persistence using the traditional Create, Read, Update, Delete (CRUD) model. As previously introduced, the event sourcing model achieves persistence by storing state changes as historical events that capture business activity before writes occur to the data store. This decouples the events from the storage mechanism, allowing them to be aggregated, or placed in a group with logical boundaries. Event Sourcing is one of the patterns that enables concurrent, distributed systems to achieve high performance, scalability and resilience.
+For years, developers have implemented persistence using the traditional Create, Read, Update, Delete (CRUD) model. As previously introduced, the event sourcing model achieves persistence by storing state changes as historical events that capture business activity before writes occur to the data store. This decouples the events from the storage mechanism, allowing them to be aggregated, or placed in a group with logical boundaries. Event Sourcing is one of the patterns that enables concurrent, distributed systems to achieve high performance, scalability and resilience.
 
 In a distributed architecture, event sourcing provides the following advantages:
 

@@ -2,13 +2,13 @@
 
 To be resilient and scalable, a system must support location transparency.  This allows you to run instances of the same microservice on multiple hosts, to move instances from one host to another when failures occur, and to scale the number of hosts up and down as load changes. In such a reactive system where microservice instances keep moving, spawning and dying, both clients and other microservices need a way to locate available service instances. 
 
-Lagom provides the following functionality for your microservice systems:
+Lagom provides the following functionality for your microservice systems during development:
 
 * [Service registration](#Service-registration)
 * [Client-side service discovery](#Client-side-service-discovery)
 * [Server-side service discovery](#Server-side-service-discovery)
 
-*Note*: This page uses HTTP-REST in the examples but the concepts apply to any kind of traffic such as plain HTTP and binary over tcp.
+*Note*: This page uses HTTP examples but the concepts apply to any kind of traffic such as binary over tcp.
 
 ## Service registration
 

@@ -12,14 +12,12 @@ Follow these steps to create your first Lagom build:
 
 ## Create a new Lagom build
 
-Open a terminal and follow these steps:
+Choose a location on your file system for your Lagom projects. The template will prompt you for a project name and will create a directory with that name that contains the build structure and Lagom example services. 
 
-1. Create a new directory for your build. For example:
-   ```
-   mkdir lagom
-   ```
+To create your project, follow these steps:
 
-1. Change into the new directory.
+
+1. Open a console and change into the directory you selected for your project.
 
 1. Enter the following command to invoke `sbt new` using the Lagom Giter8 template:
    ```

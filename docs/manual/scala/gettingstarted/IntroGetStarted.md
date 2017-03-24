@@ -10,14 +10,11 @@ Follow these steps to create and run Hello World:
 
 ## Create the build
 
-To create a new build using the Giter8 template, open a console, and follow these steps:
+Choose a location on your file system for your Lagom projects. The template will prompt you for a project name and will create a directory with that name that contains the build structure and Lagom example services. 
 
-1. Create a new directory for your build. For example:
-   ```
-   mkdir lagom
-   ```
-   
-1. Change into the new directory.
+To create your project, follow these steps:
+
+1. Open a console and change into the directory you selected for your project.
 
 1. Enter the following command:
    ```
@@ -26,7 +23,7 @@ To create a new build using the Giter8 template, open a console, and follow thes
 
 1. The template prompts for the following parameters. Press `Enter` to accept the defaults or specify your own values:
 
-   * `name` - Becomes the name of the top-level directory.
+   * `name` - Becomes the name of the top-level project directory.
    * `organization` - Used as a package name.
    * `version` - A version number for your system.
    * `lagom-version` - The version number of Lagom, such as 1.3.0. Be sure to use the [current stable release](https://www.lagomframework.com/documentation/).
