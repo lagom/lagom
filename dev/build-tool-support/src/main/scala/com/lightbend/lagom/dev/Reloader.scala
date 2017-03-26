@@ -79,7 +79,7 @@ object Reloader {
     /*
      * We need to do a bit of classloader magic to run the Play application.
      *
-     * There are seven classloaders:
+     * There are six classloaders:
      *
      * 1. buildLoader, the classloader of the build tool plugin (sbt/maven lagom plugin).
      * 2. parentClassLoader, a possibly shared classloader that may contain artifacts
