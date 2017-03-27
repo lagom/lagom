@@ -13,8 +13,5 @@ Important APIs that you will use when developing with Lagom include:
     Provides event-sourced persistent entities for services that store data. Command Query Responsibility Segregation (CQRS) read-side support is provided as well. Lagom manages the distribution of persisted entities across a cluster of nodes, enabling sharding and horizontal scaling. Cassandra is provided as a database out-of-the-box, but other DBs are supported.
 
 
-## Serialization
 
-Lagom's recommended serialization format is JSON.  The default engine used for JSON serialization and deserialization is [Jackson](https://github.com/FasterXML/jackson).
 
-Other serialization formats are also supported.

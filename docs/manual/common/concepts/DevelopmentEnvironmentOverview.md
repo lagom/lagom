@@ -6,13 +6,13 @@ Setting up a Lagom development environment takes only minutes using an sbt templ
 
 * The infrastructure necessary to run and test your services locally:
     
-    * A [[Kafka server|KafkaClient]] for handling messages. 
+    * A [[Kafka server|KafkaServer]] for handling messages. 
 
-    * A [[Cassandra server|PersistentEntityCassandra]] for handling persistence.  
+    * A [[Cassandra server|CassandraServer]] for handling persistence.  
 
-    * A [[Service Registry and Service Gateway|ServiceDiscovery]] to support location transparency. 
+    * A [[Service Registry and Service Gateway|ServiceLocator]] to support location transparency. 
 
-* The scripts necessary to build and run the services and infrastructure.
+* The configuration necessary to build and run the services and infrastructure.
 
 After you have created a project using one of these templates, the `runAll` command starts all of the runtime components and you can test immediately. 
 
