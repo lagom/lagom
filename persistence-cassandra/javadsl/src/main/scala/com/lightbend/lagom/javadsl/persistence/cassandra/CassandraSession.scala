@@ -8,13 +8,14 @@ import java.util.{ Optional, List => JList }
 import javax.inject.{ Inject, Singleton }
 
 import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.persistence.cassandra.session.CassandraSessionSettings
 import akka.persistence.cassandra.session.scaladsl.{ CassandraSession => AkkaScalaCassandraSession }
 import akka.persistence.cassandra.session.javadsl.{ CassandraSession => AkkaJavaCassandraSession }
 import akka.stream.javadsl
 import akka.{ Done, NotUsed }
 import com.datastax.driver.core._
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSessionProvider
+import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraKeyspaceConfig, CassandraReadSideSessionProvider }
 
 import scala.annotation.varargs
 import scala.concurrent.ExecutionContext
@@ -43,6 +44,14 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
         "lagom.persistence.read-side.use-dispatcher"
       ))
     )
+
+  implicit private val config = system.settings.config
+  implicit private val log = Logging.getLogger(system, getClass)
+
+  CassandraKeyspaceConfig.validateKeyspace(
+    namespace = "lagom.persistence.read-side.cassandra",
+    defaultNamespace = "lagom.defaults.persistence.read-side.cassandra"
+  )
 
   /**
    * Internal API
