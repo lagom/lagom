@@ -22,11 +22,16 @@ import scala.language.experimental.macros
  */
 sealed trait LagomServer {
   val name: String
+  // TODO: replace with LagomServiceBinding[_] when removing LagomServer.forServices
   val serviceBindings: immutable.Seq[LagomServiceBinding[_]]
   def router: Router
 }
 
 object LagomServer {
+  def forService(binding: LagomServiceBinding[_]): LagomServer = {
+    forServices(binding)
+  }
+  @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Use LagomServer.forService() instead", "1.3.1")
   def forServices(bindings: LagomServiceBinding[_]*): LagomServer = {
     new LagomServer {
       override val serviceBindings: immutable.Seq[LagomServiceBinding[_]] = bindings.to[immutable.Seq]

@@ -126,8 +126,6 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      *                       not use {@link ServiceGuiceSupport#bindService(ServiceBinding)}  or
      *                       {@link ServiceGuiceSupport#bindServices(ServiceBinding[])} and should use
      *                       {@link ServiceGuiceSupport#bindServiceInfo(ServiceInfo)} instead.
-     * @deprecated support for multiple locatable ServiceDescriptors per Lagom service was
-     * removed in 1.3.1. Use {@link ServiceGuiceSupport#bindService(ServiceBinding)} instead
      */
     default void bindService(ServiceBinding<?> serviceBinding) {
         bindServices(serviceBinding);
