@@ -36,7 +36,7 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
   private val application = {
     new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LagomKafkaComponents with ConfigurationServiceLocatorComponents {
       override lazy val offsetStore = InMemoryOffsetStore
-      override lazy val lagomServer = LagomServer.forServices(
+      override lazy val lagomServer = LagomServer.forService(
         bindService[TestService].to(new TestServiceImpl)
       )
       override def additionalConfiguration = super.additionalConfiguration ++ Configuration.from(Map(

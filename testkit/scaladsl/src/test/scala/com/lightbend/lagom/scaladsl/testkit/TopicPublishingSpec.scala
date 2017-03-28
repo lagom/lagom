@@ -21,7 +21,7 @@ abstract class AlphaApplication(context: LagomApplicationContext)
   with TestTopicComponents
   with AhcWSComponents {
 
-  override lazy val lagomServer = LagomServer.forServices(
+  override lazy val lagomServer = LagomServer.forService(
     bindService[AlphaService].to(new AlphaServiceImpl())
   )
 

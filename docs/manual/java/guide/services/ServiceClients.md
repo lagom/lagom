@@ -14,7 +14,7 @@ If you're already binding a service implementation using [ServiceGuiceSupport](a
 
 @[bind-client](code/docs/services/server/ServiceModule.java)
 
-Note that when you bind a server using `bindServices`, this will automatically bind a client for that service as well. So in the previous example, when we start the application there will be one service (`HelloService`) and two clients (`HelloService` and `EchoService`) available.
+Note that when you bind a server using `bindService`, this will automatically bind a client for that service as well. So in the previous example, when we start the application there will be one service (`HelloService`) and two clients (`HelloService` and `EchoService`) available.
 
 
 ## Using a service client

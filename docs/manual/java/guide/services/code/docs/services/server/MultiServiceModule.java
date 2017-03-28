@@ -12,7 +12,7 @@ import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 public class MultiServiceModule extends AbstractModule implements ServiceGuiceSupport {
 
     protected void configure() {
-        bindServices(
+        bindService(
                 serviceBinding(HelloService.class, HelloServiceImpl.class),
                 serviceBinding(EchoService.class, EchoServiceImpl.class));
     }

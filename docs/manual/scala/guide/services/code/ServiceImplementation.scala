@@ -26,7 +26,7 @@ package lagomapplication {
     extends LagomApplication(context)
       with AhcWSComponents {
 
-    override lazy val lagomServer = LagomServer.forServices(
+    override lazy val lagomServer = LagomServer.forService(
       bindService[HelloService].to(wire[HelloServiceImpl])
     )
   }

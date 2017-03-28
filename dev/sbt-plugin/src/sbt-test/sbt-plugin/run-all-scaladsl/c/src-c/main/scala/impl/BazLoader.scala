@@ -25,7 +25,7 @@ abstract class BazApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
     with AhcWSComponents {
 
-  override lazy val lagomServer = LagomServer.forServices(
+  override lazy val lagomServer = LagomServer.forService(
     bindService[BazService].to(wire[BazServiceImpl])
   )
 

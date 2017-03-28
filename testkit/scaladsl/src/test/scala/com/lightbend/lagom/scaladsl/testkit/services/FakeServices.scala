@@ -57,7 +57,7 @@ abstract class DownstreamApplication(context: LagomApplicationContext)
 
   lazy val alphaService = serviceClient.implement[AlphaService]
 
-  override lazy val lagomServer = LagomServer.forServices(
+  override lazy val lagomServer = LagomServer.forService(
     bindService[CharlieService].to(new CharlieServiceImpl(alphaService))
   )
 

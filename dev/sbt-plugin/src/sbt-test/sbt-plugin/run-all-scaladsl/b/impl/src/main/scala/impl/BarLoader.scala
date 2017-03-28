@@ -25,7 +25,7 @@ abstract class BarApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
     with AhcWSComponents {
 
-  override lazy val lagomServer = LagomServer.forServices(
+  override lazy val lagomServer = LagomServer.forService(
     bindService[BarService].to(wire[BarServiceImpl])
   )
 

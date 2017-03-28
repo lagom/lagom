@@ -14,7 +14,7 @@ abstract class AnotherApplication(context: LagomApplicationContext)
 
   lazy val helloService = serviceClient.implement[HelloService]
 
-  override lazy val lagomServer = LagomServer.forServices(
+  override lazy val lagomServer = LagomServer.forService(
     bindService[AnotherService].to(new AnotherServiceImpl(helloService))
   )
 }
