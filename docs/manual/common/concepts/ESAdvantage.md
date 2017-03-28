@@ -4,7 +4,7 @@ For years, developers have implemented persistence using the traditional Create,
 
 In a distributed architecture, event sourcing provides the following advantages:
 
-* In a traditional CRUD model, entity instances are usually represented dually as a mutable object in memory and a mutable row in a relational database table. This leads to the infamous "object relational impedance mismatch" (https://en.wikipedia.org/wiki/Object-relational_impedance_mismatch). Object-relational mappers were created to bridge this divide, but bring new complexities of their own. The event sourcing model treats the database as an append-only log of serialized events. It does not attempt to model the state of each entity or the relationships between them directly in the database schema. This greatly simplifies the code that writes to and reads from the database.
+* In a traditional CRUD model, entity instances are usually represented dually as a mutable object in memory and a mutable row in a relational database table. This leads to the infamous [object relational impedance mismatch](https://en.wikipedia.org/wiki/Object-relational_impedance_mismatch). Object-relational mappers were created to bridge this divide, but bring new complexities of their own. The event sourcing model treats the database as an append-only log of serialized events. It does not attempt to model the state of each entity or the relationships between them directly in the database schema. This greatly simplifies the code that writes to and reads from the database.
 
 * The history of how an entity reached its current state remains in the stored events. Consistency between transactional data and audit data is assured, because these are actually the same data.
 
