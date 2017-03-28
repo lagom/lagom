@@ -88,18 +88,19 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
   protected def readDescriptor[S <: Service]: Descriptor = macro ScaladslServerMacroImpl.readDescriptor[S]
 
   /**
-   * Implement this to allow tooling, such as ConductR, to discover the services offered by this application.
+   * Implement this to allow tooling, such as ConductR, to discover the service (if any) offered by this application.
    *
-   * This will be used to generate configuration regarding ACLs and service names for production deployment.
+   * This will be used to generate configuration regarding ACLs and service name for production deployment.
    *
    * For example:
    *
    * ```
-   * override def describeServices = List(
-   * readDescriptor[MyService]
-   * )
+   * override def describeService = Some(readDescriptor[MyService])
    * ```
    */
+  def describeService: Option[Descriptor] = None
+
+  @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Override LagomApplicationLoader.describeService() instead", "1.3.1")
   def describeServices: immutable.Seq[Descriptor] = Nil
 
   override final def discoverService(classLoader: ClassLoader): Optional[ServiceDescription] = {
