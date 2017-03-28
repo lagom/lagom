@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface ServiceDiscovery {
     /**
      * @deprecated support for multiple locatable ServiceDescriptors per Lagom service was
-     *             removed in 1.3.1. Use {@link ServiceDiscovery@discoverService} instead
+     *             removed in 1.3.1. Use {@link ServiceDiscovery#discoverService(ClassLoader)} instead
      */
     @Deprecated
     List<ServiceDescription> discoverServices(ClassLoader classLoader);
