@@ -4,6 +4,7 @@
 package com.lightbend.lagom.scaladsl.server
 
 import java.net.URI
+import java.util.Optional
 import java.util.concurrent.{ TimeUnit, TimeoutException }
 
 import akka.actor.{ ActorSystem, BootstrapSetup }
@@ -40,6 +41,8 @@ import scala.language.experimental.macros
  * This class provides an abstraction over Play's application loader that provides Lagom specific functionality.
  */
 abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDiscovery {
+
+  val logger = Logger(classOf[LagomApplicationLoader])
 
   /**
    * Implementation of Play's load method.
@@ -93,15 +96,34 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
    *
    * ```
    * override def describeServices = List(
-   *   readDescriptor[MyService]
+   * readDescriptor[MyService]
    * )
    * ```
    */
   def describeServices: immutable.Seq[Descriptor] = Nil
 
+  override final def discoverService(classLoader: ClassLoader): Optional[ServiceDescription] = {
+    import scala.compat.java8.OptionConverters._
+    val descriptions = doDiscovery(classLoader)
+    descriptions.size match {
+      case x if x > 1 => throw new IllegalArgumentException(s"Too many ServiceDescriptions found: ${descriptions.map(_.name()).mkString("[", ",", "]")}")
+      case _          => descriptions.headOption.asJava
+    }
+  }
+
   override final def discoverServices(classLoader: ClassLoader) = {
     import scala.collection.JavaConverters._
+    val descriptions = doDiscovery(classLoader)
+    if (descriptions.size > 1) {
+      logger.warn(s"Found ServiceDescriptions: ${descriptions.map(_.name()).mkString("[", ",", "]")}. Support for multiple locatable services will be removed.")
+    }
+    descriptions.asJava
+
+  }
+
+  private final def doDiscovery(classLoader: ClassLoader) = {
     import scala.compat.java8.OptionConverters._
+    import scala.collection.JavaConverters._
 
     val serviceResolver = new ScaladslServiceResolver(DefaultExceptionSerializer.Unresolved)
     describeServices.map { descriptor =>
@@ -109,14 +131,16 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
       val convertedAcls = resolved.acls.map { acl =>
         new ServiceAcl {
           override def method() = acl.method.map(_.name).asJava
+
           override def pathPattern() = acl.pathRegex.asJava
         }.asInstanceOf[ServiceAcl]
       }.asJava
       new ServiceDescription {
         override def acls() = convertedAcls
+
         override def name() = resolved.name
       }.asInstanceOf[ServiceDescription]
-    }.asJava
+    }
   }
 }
 
@@ -236,6 +260,7 @@ private[server] object ActorSystemProvider {
         system.whenTerminated.map(_ => ())(new ExecutionContext {
           override def reportFailure(cause: Throwable): Unit =
             cause.printStackTrace()
+
           override def execute(runnable: Runnable): Unit =
             runnable.run()
         })
@@ -282,8 +307,11 @@ trait RequiresLagomServicePort {
  */
 trait LocalServiceLocator extends RequiresLagomServicePort {
   def lagomServer: LagomServer
+
   def actorSystem: ActorSystem
+
   def executionContext: ExecutionContext
+
   def configuration: Configuration
 
   lazy val circuitBreakerConfig: CircuitBreakerConfig = new CircuitBreakerConfig(configuration)
@@ -327,4 +355,5 @@ private[lagom] object LagomServerTopicFactoryVerifier {
   }
 
   class NoTopicPublisherException(msg: String) extends RuntimeException(msg)
+
 }
