@@ -14,8 +14,9 @@ private[lagom] object CassandraKeyspaceConfig {
       val defaultPath = s"$defaultNamespace.keyspace"
       if (config.hasPath(defaultPath) && keyspace == config.getString(defaultPath)) {
         log.warning(
-          "Configuration for [{}] is using deprecated default value [{}]. " +
-            "Please set an explicit keyspace value in application.conf",
+          "Configuration for [{}] uses deprecated default value [{}]. " +
+            "Please set an explicit keyspace value in application.conf if you haven't already. " +
+            "The default will be removed in a future version of Lagom.",
           s"$namespace.keyspace",
           keyspace
         )
