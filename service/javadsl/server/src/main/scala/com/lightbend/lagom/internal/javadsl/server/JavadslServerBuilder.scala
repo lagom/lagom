@@ -90,6 +90,7 @@ class JavadslServerBuilder @Inject() (environment: Environment, httpConfiguratio
       if (locatableServices.size() > 1) {
         log.warn("Bundling more than one locatable service descriptor inside a single LagomService is deprecated.")
       }
+      // TODO: replace with factory method ServiceInfo#of when dropping support for multiple locatable services
       new ServiceInfo(descriptors.head.name, HashTreePMap.from(locatableServices))
     } else {
       throw new IllegalArgumentException(s"Don't know how to load services that don't implement Service. Provided: ${interfaces.mkString("[", ", ", "]")}")
