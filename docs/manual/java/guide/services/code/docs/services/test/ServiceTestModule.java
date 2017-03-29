@@ -9,7 +9,7 @@ public class ServiceTestModule extends AbstractModule implements ServiceGuiceSup
 
   @Override
   protected void configure() {
-    bindService(
+    bindServices(
       serviceBinding(EchoService.class, EchoServiceImpl.class),
       serviceBinding(HelloService.class, HelloServiceImpl.class)
     );

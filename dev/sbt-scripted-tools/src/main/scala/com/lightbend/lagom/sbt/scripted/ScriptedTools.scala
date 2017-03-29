@@ -114,9 +114,9 @@ object ScriptedTools extends AutoPlugin {
   case class Response(status: Int, body: String)
 
   private case class ValidateRequest(uri: Option[URI] = None, retry: Boolean = false,
-    shouldBeDown: Boolean = false,
-    statusAssertion: Int => Unit = _ => (),
-    bodyAssertion: String => Unit = _ => ())
+                                     shouldBeDown:    Boolean        = false,
+                                     statusAssertion: Int => Unit    = _ => (),
+                                     bodyAssertion:   String => Unit = _ => ())
 
   private val validateRequestParser: Parser[ValidateRequest] = {
     import complete.DefaultParsers._
