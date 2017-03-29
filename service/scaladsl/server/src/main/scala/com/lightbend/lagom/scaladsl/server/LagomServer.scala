@@ -7,6 +7,7 @@ import akka.stream.Materializer
 import com.lightbend.lagom.internal.scaladsl.server.{ ScaladslServerMacroImpl, ScaladslServiceRouter }
 import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceInfo }
 import com.lightbend.lagom.scaladsl.client.ServiceResolver
+import com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents
 import play.api.http.HttpConfiguration
 import play.api.mvc.{ Handler, RequestHeader }
 import play.api.routing.Router.Routes
@@ -28,8 +29,7 @@ sealed trait LagomServer {
 }
 
 object LagomServer {
-
-  @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Use LagomServer.forService() instead", "1.3.2")
+  @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Use LagomServer.forService() instead", "1.3.1")
   def forServices(bindings: LagomServiceBinding[_]*): LagomServer = {
     new LagomServer {
       override val serviceBindings: immutable.Seq[LagomServiceBinding[_]] = bindings.to[immutable.Seq]

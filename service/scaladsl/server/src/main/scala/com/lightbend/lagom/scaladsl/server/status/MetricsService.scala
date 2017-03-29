@@ -6,6 +6,7 @@ package com.lightbend.lagom.scaladsl.server.status
 import java.time.Instant
 
 import akka.NotUsed
+import akka.actor.ActorSystem
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.client.{ CircuitBreakerMetricsImpl, CircuitBreakerMetricsProviderImpl }
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
@@ -44,7 +45,8 @@ trait MetricsService extends Service {
  * Provides an in-built metrics service.
  */
 trait MetricsServiceComponents extends LagomServerComponents {
-  def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
+  def actorSystem: ActorSystem
+  def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider = new CircuitBreakerMetricsProviderImpl(actorSystem)
 
   lazy val metricsServiceBinding: LagomServiceBinding[MetricsService] = {
     // Can't use the bindService macro here, since it's in the same compilation unit. The code below is exactly what

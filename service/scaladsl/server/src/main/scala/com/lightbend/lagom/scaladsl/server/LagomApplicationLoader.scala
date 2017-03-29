@@ -18,6 +18,7 @@ import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.client.{ CircuitBreakingServiceLocator, LagomServiceClientComponents }
 import com.lightbend.lagom.scaladsl.playjson.{ EmptyJsonSerializerRegistry, JsonSerializerRegistry, ProvidesJsonSerializerRegistry }
+import com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents
 import com.typesafe.config.Config
 import play.api._
 import play.api.ApplicationLoader.Context
@@ -187,7 +188,8 @@ abstract class LagomApplication(context: LagomApplicationContext)
   with ProvidesAdditionalConfiguration
   with ProvidesJsonSerializerRegistry
   with LagomServerComponents
-  with LagomServiceClientComponents {
+  with LagomServiceClientComponents
+  with MetricsServiceComponents {
 
   override implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
   override lazy val configuration: Configuration = Configuration.load(environment) ++
