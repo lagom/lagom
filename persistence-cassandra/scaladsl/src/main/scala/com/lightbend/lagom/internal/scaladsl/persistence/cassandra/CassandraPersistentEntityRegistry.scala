@@ -17,11 +17,20 @@ import com.lightbend.lagom.internal.scaladsl.persistence.AbstractPersistentEntit
 private[lagom] final class CassandraPersistentEntityRegistry(system: ActorSystem)
   extends AbstractPersistentEntityRegistry(system) {
 
-  implicit private val config = system.settings.config
-  implicit private val log = Logging.getLogger(system, getClass)
+  private val log = Logging.getLogger(system, getClass)
 
-  for (namespace <- Seq("cassandra-journal", "cassandra-snapshot-store"))
-    CassandraKeyspaceConfig.validateKeyspace(namespace)
+  CassandraKeyspaceConfig.validateKeyspace(
+    namespace = "cassandra-journal",
+    defaultNamespace = "cassandra-journal.defaults",
+    system.settings.config,
+    log
+  )
+  CassandraKeyspaceConfig.validateKeyspace(
+    namespace = "cassandra-snapshot-store",
+    defaultNamespace = "cassandra-snapshot-store.defaults",
+    system.settings.config,
+    log
+  )
 
   override protected val journalId = CassandraReadJournal.Identifier
 

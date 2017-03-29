@@ -21,11 +21,20 @@ import com.lightbend.lagom.internal.persistence.cassandra.CassandraKeyspaceConfi
 private[lagom] final class CassandraPersistentEntityRegistry @Inject() (system: ActorSystem, injector: Injector)
   extends AbstractPersistentEntityRegistry(system, injector) {
 
-  implicit private val config = system.settings.config
-  implicit private val log = Logging.getLogger(system, getClass)
+  private val log = Logging.getLogger(system, getClass)
 
-  for (namespace <- Seq("cassandra-journal", "cassandra-snapshot-store"))
-    CassandraKeyspaceConfig.validateKeyspace(namespace)
+  CassandraKeyspaceConfig.validateKeyspace(
+    namespace = "cassandra-journal",
+    defaultNamespace = "cassandra-journal.defaults",
+    system.settings.config,
+    log
+  )
+  CassandraKeyspaceConfig.validateKeyspace(
+    namespace = "cassandra-snapshot-store",
+    defaultNamespace = "cassandra-snapshot-store.defaults",
+    system.settings.config,
+    log
+  )
 
   override protected val journalId = CassandraReadJournal.Identifier
 
