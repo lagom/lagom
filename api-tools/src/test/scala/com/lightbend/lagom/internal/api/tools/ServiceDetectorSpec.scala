@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.internal.api.tools
 
-import com.lightbend.lagom.api.tools.tests.scaladsl.StubServiceLoader
+import com.lightbend.lagom.api.tools.tests.scaladsl.{ AclServiceLoader, NoAclServiceLoader, UndescribedServiceLoader }
 import com.lightbend.lagom.internal.javadsl.server.JavadslServiceDiscovery
 import com.lightbend.lagom.javadsl.api.{ Descriptor, Service }
 import org.scalatest._
@@ -42,7 +42,7 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
       Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
     }
 
-    "resolve the service descriptions for a LagomScala project using `describeServices` (different list than `bindService`)" in {
+    "resolve the service descriptions for a LagomScala project using `describeService` (with ACLs)" in {
       val expectedJsonString =
         """
           |[
@@ -58,7 +58,18 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
           |        "pathPattern": "\\Q/scala-mocks\\E"
           |      }
           |    ]
-          |  },
+          |  }
+          |]
+        """.stripMargin
+
+      val actualJsonString = ServiceDetector.services(this.getClass.getClassLoader, classOf[AclServiceLoader].getName)
+      Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
+    }
+
+    "resolve the service descriptions for a LagomScala project using `describeService` (without ACLs)" in {
+      val expectedJsonString =
+        """
+          |[
           |  {
           |    "name": "/noaclservice",
           |    "acls": []
@@ -66,7 +77,14 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
           |]
         """.stripMargin
 
-      val actualJsonString = ServiceDetector.services(this.getClass.getClassLoader, classOf[StubServiceLoader].getName)
+      val actualJsonString = ServiceDetector.services(this.getClass.getClassLoader, classOf[NoAclServiceLoader].getName)
+      Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
+    }
+
+    "resolve the service descriptions for a LagomScala project using `describeService` (service is not locatable)" in {
+      val expectedJsonString = "[]"
+
+      val actualJsonString = ServiceDetector.services(this.getClass.getClassLoader, classOf[UndescribedServiceLoader].getName)
       Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
     }
 
