@@ -103,14 +103,6 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
   @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Override LagomApplicationLoader.describeService() instead", "1.3.2")
   def describeServices: immutable.Seq[Descriptor] = Nil
 
-  override final def discoverService(classLoader: ClassLoader): Optional[ServiceDescription] = {
-    import scala.compat.java8.OptionConverters._
-    val descriptions = doDiscovery(classLoader)
-    descriptions.size match {
-      case x if x > 1 => throw new IllegalArgumentException(s"Too many ServiceDescriptions found: ${descriptions.map(_.name()).mkString("[", ",", "]")}")
-      case _          => descriptions.headOption.asJava
-    }
-  }
 
   override final def discoverServices(classLoader: ClassLoader) = {
     import scala.collection.JavaConverters._
@@ -119,7 +111,6 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
       logger.warn(s"Found ServiceDescriptions: ${descriptions.map(_.name()).mkString("[", ",", "]")}. Support for multiple locatable services will be removed.")
     }
     descriptions.asJava
-
   }
 
   private final def doDiscovery(classLoader: ClassLoader) = {

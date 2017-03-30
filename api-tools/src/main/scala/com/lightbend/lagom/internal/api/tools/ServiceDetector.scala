@@ -57,8 +57,6 @@ object ServiceDetector {
     val serviceDiscoverClass = classLoader.loadClass(serviceDiscoveryClassName)
     val castServiceDiscoveryClass = serviceDiscoverClass.asSubclass(classOf[ServiceDiscovery])
     val serviceDiscovery = castServiceDiscoveryClass.newInstance()
-    // TODO: replace with non-deprecated when dropping support.
-    // val services = serviceDiscovery.discoverService(classLoader).asScala.to[immutable.Seq]
     val services = serviceDiscovery.discoverServices(classLoader).asScala.to[immutable.Seq]
     Json.stringify(Json.toJson(services))
   }

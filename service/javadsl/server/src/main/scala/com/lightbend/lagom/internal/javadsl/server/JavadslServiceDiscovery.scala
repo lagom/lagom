@@ -35,14 +35,6 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
   private final val exceptionSerializers: Map[PlaceholderExceptionSerializer, ExceptionSerializer] =
     Map(JacksonPlaceholderExceptionSerializer -> new ExceptionSerializerStub)
 
-  override def discoverService(classLoader: ClassLoader): Optional[ServiceDescription] = {
-    val descriptions = doDiscovery(classLoader)
-    descriptions.size match {
-      case x if x > 1 => throw new IllegalArgumentException(s"Too many ServiceDescriptions found: ${descriptions.map(_.name()).mkString("[", ",", "]")}")
-      case _          => descriptions.headOption.asJava
-    }
-  }
-
   override def discoverServices(classLoader: ClassLoader): util.List[ServiceDescription] = {
     val descriptions = doDiscovery(classLoader)
     if (descriptions.size > 1) {
