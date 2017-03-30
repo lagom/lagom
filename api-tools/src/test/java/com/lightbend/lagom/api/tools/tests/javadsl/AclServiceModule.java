@@ -1,15 +1,14 @@
 /*
  * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
  */
-package com.lightbend.lagom.javadsl.testkit.services;
+package com.lightbend.lagom.api.tools.tests.javadsl;
 
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 
-public class Module extends AbstractModule implements ServiceGuiceSupport {
+public class AclServiceModule extends AbstractModule implements ServiceGuiceSupport {
     @Override
     protected void configure() {
-        bindService(serviceBinding(DownstreamService.class, DownstreamService.Impl.class));
+        bindService(serviceBinding(AclService.class, AclServiceImpl.class));
     }
 }
-

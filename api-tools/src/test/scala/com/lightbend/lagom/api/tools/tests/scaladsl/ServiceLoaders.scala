@@ -45,7 +45,7 @@ class NoAclServiceLoader extends LagomApplicationLoader {
 
 abstract class NoAclServiceApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
-    with AhcWSComponents {
+  with AhcWSComponents {
 
   override lazy val lagomServer = LagomServer.forService(bindService[NoAclService].to(new NoAclServiceImpl))
 }
@@ -64,7 +64,7 @@ class UndescribedServiceLoader extends LagomApplicationLoader {
 
 abstract class UndescribedServiceApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
-    with AhcWSComponents {
+  with AhcWSComponents {
   override lazy val lagomServer = LagomServer.forService(bindService[UndescribedService].to(new UndescribedServiceImpl))
 }
 // ---------------------------------------

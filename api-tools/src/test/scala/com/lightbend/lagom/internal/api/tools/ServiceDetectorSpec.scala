@@ -3,6 +3,9 @@
  */
 package com.lightbend.lagom.internal.api.tools
 
+import java.net.URL
+import java.util
+
 import com.lightbend.lagom.api.tools.tests.scaladsl.{ AclServiceLoader, NoAclServiceLoader, UndescribedServiceLoader }
 import com.lightbend.lagom.internal.javadsl.server.JavadslServiceDiscovery
 import com.lightbend.lagom.javadsl.api.{ Descriptor, Service }
@@ -13,7 +16,7 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
 
   "The service detector" should {
 
-    "resolve the service descriptions for a LagomJava project" in {
+    "resolve the service descriptor for a LagomJava project with ACLs" in {
       val expectedJsonString =
         """
           |[
@@ -29,7 +32,20 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
           |        "pathPattern": "\\Q/mocks\\E"
           |      }
           |    ]
-          |  },
+          |  }
+          |]
+        """.stripMargin
+
+      val javaServiceDiscovery = "com.lightbend.lagom.internal.javadsl.server.JavadslServiceDiscovery"
+      val decoratedCL = decorateWithConfig(this.getClass.getClassLoader, "application-acl.conf")
+      val actualJsonString = ServiceDetector.services(decoratedCL, javaServiceDiscovery)
+      Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
+    }
+
+    "resolve the service descriptor for a LagomJava project without ACLs" in {
+      val expectedJsonString =
+        """
+          |[
           |  {
           |    "name": "/noaclservice",
           |    "acls": []
@@ -38,8 +54,21 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
         """.stripMargin
 
       val javaServiceDiscovery = "com.lightbend.lagom.internal.javadsl.server.JavadslServiceDiscovery"
-      val actualJsonString = ServiceDetector.services(this.getClass.getClassLoader, javaServiceDiscovery)
+      val decoratedCL = decorateWithConfig(this.getClass.getClassLoader, "application-noacl.conf")
+      val actualJsonString = ServiceDetector.services(decoratedCL, javaServiceDiscovery)
       Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
+    }
+
+    def decorateWithConfig(classLoader: ClassLoader, desiredApplicationConf: String): ClassLoader = {
+      new ClassLoader() {
+        override def getResources(name: String): util.Enumeration[URL] = {
+          if (name.equals("application.conf")) {
+            super.getResources(desiredApplicationConf)
+          } else {
+            super.getResources(name)
+          }
+        }
+      }
     }
 
     "resolve the service descriptions for a LagomScala project using `describeService` (with ACLs)" in {
