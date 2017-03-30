@@ -14,7 +14,7 @@ sealed trait ServiceInfo {
   /**
    * All the locatable services and their ACLs
    */
-  @deprecated("Lagom will no longer support multiple locatable descriptors per service.", "1.3.1")
+  @deprecated("Lagom will no longer support multiple locatable descriptors per service.", "1.3.2")
   val locatableServices: Map[String, immutable.Seq[ServiceAcl]]
 
   /**

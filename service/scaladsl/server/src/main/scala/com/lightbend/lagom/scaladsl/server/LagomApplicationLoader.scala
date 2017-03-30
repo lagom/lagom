@@ -100,7 +100,7 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
    */
   def describeService: Option[Descriptor] = None
 
-  @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Override LagomApplicationLoader.describeService() instead", "1.3.1")
+  @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Override LagomApplicationLoader.describeService() instead", "1.3.2")
   def describeServices: immutable.Seq[Descriptor] = Nil
 
   override final def discoverService(classLoader: ClassLoader): Optional[ServiceDescription] = {

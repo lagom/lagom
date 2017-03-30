@@ -31,7 +31,7 @@ object LagomServer {
   def forService(binding: LagomServiceBinding[_]): LagomServer = {
     forServices(binding)
   }
-  @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Use LagomServer.forService() instead", "1.3.1")
+  @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Use LagomServer.forService() instead", "1.3.2")
   def forServices(bindings: LagomServiceBinding[_]*): LagomServer = {
     new LagomServer {
       override val serviceBindings: immutable.Seq[LagomServiceBinding[_]] = bindings.to[immutable.Seq]
