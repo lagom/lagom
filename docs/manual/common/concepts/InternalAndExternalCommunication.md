@@ -17,7 +17,7 @@ While similar in principle, inter- and intra-service communication have very dif
 
 Nodes of a single service (collectively called a cluster) require less decoupling. They share the same code and are managed together, as a set, by a single team or individual. For this reason, intra-service communication can take advantage of mechanisms that have less overhead and better performance. For example:
 
-* Many Lagom components use Akka remoting internally, and you can use it directly in your services.
+* Many Lagom components use [Akka remoting](http://doc.akka.io/docs/akka/2.4/general/remoting.html) internally, and you can use it directly in your services.
 
 * [[Distributed publish-subscribe|PubSub]] can be used for low-latency, at-most-once messaging between nodes. Limitations include:
 <ul><ul>
@@ -31,9 +31,9 @@ This diagram illustrates each of these types of inter- and intra-service communi
 
 ## Communication with parties outside of a microservices system
 
-Lagom promotes use of asynchronous communication without preventing use of synchronous communication where necessary. For such extra-service communication, third parties can obtain data asychronously from Lagom services that publish to the Broker API and enjoy the at-least-once guarantee. Lagom services also expose an API for third parties to exchange data synchronously. This is usually mapped to HTTP. Lagom Service APIs also support streaming data to external clients by means of websockets. See [[ServiceDescriptors]] for more information. 
+Lagom promotes use of asynchronous communication without preventing use of synchronous communication where necessary. Third parties can obtain data asychronously from Lagom services that publish to the Broker API and enjoy the at-least-once guarantee. Lagom services also expose an API for third parties to exchange data synchronously. This is usually mapped to HTTP. Lagom Service APIs also support streaming data to external clients by means of websockets. See [[ServiceDescriptors]] for more information. 
 
-Interaction with the outside world could mean clients that use the services over the internet, such as browsers, mobile apps or IoT devices. While using standard HTTP or WebSockets, typically such clients do not communicate directly with individual services. Usually, a network boundary acts as a perimeter, and a well-controlled communication point acts as the intermediary between the outside world and the inside world. In Lagom, this communication point is service gateway. Envision your microservices system as a Medieval town with a wall around it and one gate offers the only way in or out. Communication inside the walls is free and direct, but communication to or from the outside world must come through the service gateway, as illustrated in the following graphic. [[ExtraSystemCommunication.png]]
+Interaction with the outside world could mean clients that use the services over the internet, such as browsers, mobile apps or IoT devices. While using standard HTTP or WebSockets, typically such clients do not communicate directly with individual services. Usually, a network boundary acts as a perimeter, and a well-controlled communication point acts as the intermediary between the outside world and the inside world. In Lagom, this communication point is a service gateway. Envision your microservices system as a Medieval town with a wall around it and one gate offers the only way in or out. Communication inside the walls is free and direct, but communication to or from the outside world must come through the service gateway, as illustrated in the following graphic. [[ExtraSystemCommunication.png]]
 
 
 
