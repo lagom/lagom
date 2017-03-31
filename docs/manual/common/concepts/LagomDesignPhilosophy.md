@@ -1,26 +1,17 @@
 <!--- Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com> -->
 # Lagom design philosophy
 
-Lagom's design rests on these main principles:
+Consider some of the basic requirements of a Reactive Microservice as identified by Jonas Bonér (quotes extracted from [*Reactive Microservices Architecture: Design Principles for Distributed Systems*] (http://www.oreilly.com/programming/free/reactive-microservices-architecture.html)):
 
-## Asynchronous
+* "*Isolation* is a prerequisite for resilience and elasticity and requires asynchronous communication between service boundaries ..."
+* "An *autonomous service* can only *promise* its own behaviour by publishing its protocol/API." and "For a service to become location transparent, it needs to be addressable."
+* "What is needed is that each Microservice take sole responsibility for their own state and the persistence thereof."
 
-Lagom is asynchronous by default.
+The following Lagom characteristics promote these best practices:
 
-All Lagom APIs use the asynchronous IO capabilities of [Akka Stream](http://akka.io/) for asynchronous streaming and the [JDK8 `CompletionStage`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletionStage.html) API for asynchronous computation.
+* Lagom is asynchronous by default --- its APIs make inter-service communication via streaming a first-class concept. All Lagom APIs use the asynchronous IO capabilities of [Akka Stream](http://akka.io/) for asynchronous streaming; the Java API uses [JDK8 `CompletionStage`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletionStage.html)  for asynchronous computation; the Scala API uses [Futures](https://www.scala-lang.org/api/2.11.8/#scala.concurrent.Future).
 
-Furthermore, Lagom also makes asynchronous communication the default: when communicating between services, streaming is provided as a first-class concept. Developers are encouraged and enabled to use asynchronous messaging via streaming, rather than synchronous request-response communication. Asynchronous messaging is fundamental to system resilience and scalability.
+* Lagom favors distributed persistent patterns in contrast with traditional centralized databases. We encourage --- but do not require --- an event-sourced architecture for data persistence. The default pattern for persisting entities takes advantage of Event Sourcing (ES) with Command Query Responsibility Segregation (CQRS). [[Managing data persistence|ES_CQRS]] explains at a high level what event sourcing is and why it is valuable. [[Persistent Entity|PersistentEntity]] introduces Lagom's implementation of event sourcing.
 
-## Distributed persistence
+* Lagom provides an implementation of a service registry and a service gateway for development purposes along with the internal plumbing for managing client and server-side service discovery. [[Registering and discovering services|ServiceDiscovery]] introduces these concepts.
 
-Lagom favours distributed persistent patterns, in contrast to the traditional centralized database. [[Event Sourcing (ES) with Command Query Responsibility Segregation (CQRS)|ES_CQRS]] is the default way to persist entities in Lagom.
-
-## Developer productivity
-
-Lagom places a high emphasis on productivity. Developers should be focused on solving their business problems, not on wiring services together.
-
-Lagom's [[expressive service interface declarations|ServiceDescriptors]] let developers quickly define interfaces and immediately start implementing them.
-
-Lagom's development environment is particularly important in developer productivity, both while developing and in the maintenance of it. In a system with many services, developers should not be spending time updating their own environment to ensure that services are configured to run correctly. Going to production, developers should be able to just as easily run their services as they are doing during development.
-
-Through using [[Lightbend ConductR|ConductR]] tooling, developers can first test the production configuration locally. Then, with zero friction, they push their services out to production and manage them through Lightbend ConductR interfaces.

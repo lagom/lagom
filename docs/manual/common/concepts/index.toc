@@ -1,9 +1,19 @@
-CoreConcepts:Lagom core concepts
+CoreConcepts:Introduction to Lagom concepts
 LagomDesignPhilosophy:Lagom design philosophy
-Microservices:Microservices in Lagom
 PolyglotSystems:Polyglot systems with Lagom
-Technologies:Lagom component technologies
+DevelopmentEnvironmentOverview:Development environment overview
 BuildConcepts:Lagom build philosophy
-Immutable:Immutable Objects
-ES_CQRS:Event Sourcing and CQRS
-ServiceDiscovery: Service Discovery
+ComponentTechnologies:Component technologies
+APIOverview:API Overview
+MicroserviceSystemDesign:Designing your microservices system
+MicroserviceDesign:Sizing individual microservices
+InternalAndExternalCommunication:Internal and external communication
+ServiceDiscovery: Registering and discovering services
+Immutable:Using Immutable Objects
+ES_CQRS:Managing data persistence
+ESAdvantage:Advantages of Event Sourcing
+ReadVsWrite:Separating reads from writes
+ScalableDeployment:Deploying scalable, resilient systems
+
+
+
