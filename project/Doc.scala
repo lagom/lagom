@@ -79,7 +79,7 @@ object UnidocRoot extends AutoPlugin {
       |</script>""".stripMargin.replaceAll("\n", "\\\\n").replaceAll("\"", "\\\\\"")
 
   /**
-    * JDK 1.8.8_121 introduced a restriction that prevents the inclusion of JS inside generated
+    * JDK 1.8.0_121 introduced a restriction that prevents the inclusion of JS inside generated
     * javadoc HTML files. That check can be disabled but requires an extra argument.
     */
   private val JavaBuildVersion = """1\.8\.0_(\d+)""".r
