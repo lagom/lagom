@@ -1,18 +1,38 @@
-# Lagom core concepts
+# Introduction to Lagom concepts
 
-Lagom is a framework for creating microservice-based systems. It offers four main features:
+The Lagom framework includes libraries and a development environment that support you from development to deployment:
 
-* [[Service API|ServiceDescriptors]]
-* [[Persistence API|PersistentEntity]]
-* [[Development Environment|DevEnvironment]]
-* [[Production Environment|ConductR]]
+* During development, a single command builds your project and starts all of your services and the supporting Lagom infrastructure. It hot-reloads when you modify code. The development environment allows you to bring up a new service or join an existing Lagom development team in just minutes.
+* You can create microservices using Java or Scala. Lagom offers an especially seamless experience for communication between microservices. Service location, communication protocols, and other issues are handled by Lagom transparently, maximizing convenience and productivity. Lagom supports Event sourcing and CQRS (Command Query Responsibility Segregation) for persistence.
+* Deploy on your platform of choice. To simplify deployment, Lagom supports [the Lightbend Production Suite](http://lightbend.com/platform/production) out-of-the-box. The Production Suite provides a simple way to deploy, scale, monitor, and manage Lagom services in a container environment.
 
-The [[Service API|ServiceDescriptors]] provides a way to declare and implement service interfaces, to be consumed by clients. For location transparency, clients discover services through a Service Locator. The Service API supports synchronous request-response calls as well as asynchronous streaming between services.
+Designing a microservices system that achieves high scalability and manifests resilience in the face of unexpected failures is extremely difficult. Without a framework such as Lagom, you would need to deal with all of the complex threading and concurrency issues inherent in highly distributed systems. By using Lagom as it was designed to be used, you can avoid many of these pitfalls and increase productivity at the same time. But, rather than throwing everything out and starting anew, Lagom allows you to adopt a [reactive architecture](https://info.lightbend.com/COLL-20XX-Reactive-Microservices-Architecture-RES-LP.html) within existing constraints. For example, you can create microservices that:
 
-The [[Persistence API|PersistentEntity]] provides event-sourced persistent entities for services that store data. Command Query Responsibility Segregation (CQRS) read-side support is provided as well. Lagom manages the distribution of persisted entities across a cluster of nodes, enabling sharding and horizontal scaling. Cassandra is provided as a database out-of-the-box.
+* Interact with legacy systems and/or replace monolithic application functionality.
+* Use Cassandra for persistence or your database of choice and/or integrate with other data stores. (Lagom's persistence APIs support Cassandra by default because it provides functionality such as sharding and read-side support that work well in a microservices system)  
 
-The [[Development Environment|DevEnvironment]] allows running all your services, and the supporting Lagom infrastructure, with one command. It hot-reloads your services when code changes; no fragile scripts are needed to set up and maintain a development environment. With Lagom, a developer can bring up a new service or join an existing Lagom development team in just a few minutes.
 
-[[Lightbend ConductR|ConductR]] is the out-of-the-box supported production environment. Lightbend ConductR allows simple deployment, monitoring, and scaling, of Lagom services in a container environment.
+
+The remaining topics in this section further introduce:
+
+* Lagom system architecture:
+    * [[Lagom design philosophy|LagomDesignPhilosophy]]
+    * [[Polyglot systems|PolyglotSystems]]
+* Lagom development environment: 
+    * [[Overview|DevelopmentEnvironmentOverview]]
+    * [[Build philosophy|BuildConcepts]]
+    * [[Component technologies|ComponentTechnologies]]
+    * [[API Overview|APIOverview]]
+* Patterns to use in your system:
+    * [[Designing your microservices system|MicroserviceSystemDesign]]
+    * [[Sizing individual microservices|MicroserviceDesign]]
+    * [[Internal and external communication|InternalAndExternalCommunication]]
+    * [[Registering and discovering services|ServiceDiscovery]]
+    * [[Using immutable objects|Immutable]]
+    * [[Managing data persistence|ES_CQRS]]
+    * [[Advantages of Event Sourcing|ESAdvantage]]
+    * [[Separating reads from writes|ReadVsWrite]]
+    * [[Deploying resilient, scalable systems|ScalableDeployment]]
+    
 
 @toc@

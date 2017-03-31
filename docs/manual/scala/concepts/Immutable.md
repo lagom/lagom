@@ -1,4 +1,4 @@
-# Immutable Objects
+# Using immutable objects
 
 An immutable object is an object that cannot be modified after it was created.
 
