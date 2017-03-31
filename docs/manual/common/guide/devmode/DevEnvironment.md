@@ -54,6 +54,7 @@ Once the "Services started" message has appeared, if you make a change to your s
 
 ## Behind the scenes
 
+<!-- copied this section to concepts, perhaps it can be removed later -->
 What's happening behind the scenes when you `runAll`?
 
 * an embedded Service Locator is started
@@ -63,6 +64,8 @@ What's happening behind the scenes when you `runAll`?
     * ...and register with the Service Locator
 
 This all happens automatically without special code or additional configuration.
+
+<!--end copied section -->
 
 You can verify that your services are running by viewing `http://localhost:8000/services` in a web browser (or with a command line tool such as `curl`).  The Service Locator, running on port 8000, will return JSON such as:
 

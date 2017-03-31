@@ -18,7 +18,7 @@ Services interact with each other. This interaction requires each service to ide
 
 If Greetings Service packaged `HelloService` and Greetings Service was invoking I18n Service (not in the snippet) those calls would include the identity `hello` since that is the `HelloService` name (see `named("hello")`).
 
-Services may publish ACLs in a Service Gateway to list what endpoints are provided by the service. These ACLs will allow you to develop [[Server-Side Service Discovery|ServiceDiscovery#Server-Side-Service-Discovery]] via a Service Gateway.
+Services may publish ACLs in a Service Gateway to list what endpoints are provided by the service. These ACLs will allow you to develop [[Server-Side Service Discovery|ServiceDiscovery#Server-side-service-discovery]] via a Service Gateway.
 
 @[with-auto-acl](code/docs/services/UsersService.java)
 
