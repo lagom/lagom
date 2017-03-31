@@ -9,7 +9,7 @@ import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 public class Module extends AbstractModule implements ServiceGuiceSupport {
     @Override
     protected void configure() {
-        bindService(serviceBinding(DownstreamService.class, DownstreamService.Impl.class));
+        bindService(DownstreamService.class, DownstreamService.Impl.class);
     }
 }
 

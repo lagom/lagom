@@ -9,6 +9,6 @@ import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 public class MockServiceModule extends AbstractModule implements ServiceGuiceSupport {
     @Override
     protected void configure() {
-        bindService(serviceBinding(MockService.class, MockServiceImpl.class));
+        bindService(MockService.class, MockServiceImpl.class);
     }
 }

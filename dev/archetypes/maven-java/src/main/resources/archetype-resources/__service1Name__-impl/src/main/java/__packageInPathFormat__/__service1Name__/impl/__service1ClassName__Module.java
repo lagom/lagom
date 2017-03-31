@@ -13,6 +13,6 @@ import ${package}.${service1Name}.api.${service1ClassName}Service;
 public class ${service1ClassName}Module extends AbstractModule implements ServiceGuiceSupport {
   @Override
   protected void configure() {
-    bindService(serviceBinding(${service1ClassName}Service.class, ${service1ClassName}ServiceImpl.class));
+    bindService(${service1ClassName}Service.class, ${service1ClassName}ServiceImpl.class);
   }
 }

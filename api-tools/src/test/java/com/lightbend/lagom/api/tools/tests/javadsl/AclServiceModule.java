@@ -9,6 +9,6 @@ import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 public class AclServiceModule extends AbstractModule implements ServiceGuiceSupport {
     @Override
     protected void configure() {
-        bindService(serviceBinding(AclService.class, AclServiceImpl.class));
+        bindService(AclService.class, AclServiceImpl.class);
     }
 }
