@@ -14,8 +14,8 @@ import play.api.routing.{ Router, SimpleRouter }
 
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
-import scala.reflect.ClassTag
 import scala.language.experimental.macros
+import scala.reflect.ClassTag
 
 /**
  * A Lagom server
@@ -28,9 +28,7 @@ sealed trait LagomServer {
 }
 
 object LagomServer {
-  def forService(binding: LagomServiceBinding[_]): LagomServer = {
-    forServices(binding)
-  }
+
   @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Use LagomServer.forService() instead", "1.3.2")
   def forServices(bindings: LagomServiceBinding[_]*): LagomServer = {
     new LagomServer {
@@ -58,6 +56,7 @@ trait LagomServerComponents {
 
   lazy val lagomServerBuilder: LagomServerBuilder = new LagomServerBuilder(httpConfiguration, serviceResolver)(materializer, executionContext)
   protected def bindService[T <: Service]: LagomServiceBinder[T] = macro ScaladslServerMacroImpl.createBinder[T]
+  protected def serverFor[T <: Service]: (T) => LagomServer = macro ScaladslServerMacroImpl.simpleBind[T]
 
   lazy val serviceInfo: ServiceInfo = {
     val locatableServices = lagomServer.serviceBindings.map(_.descriptor).collect {

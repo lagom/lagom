@@ -33,9 +33,7 @@ abstract class BlogApplication(context: LagomApplicationContext)
 //#load-components
 
   // Bind the services that this server provides
-  override lazy val lagomServer = LagomServer.forService(
-// TODO for docs BlogServiceImpl has to be class, no trait
-// bindService[BlogService].to(wire[BlogServiceImpl])
+  override lazy val lagomServer = ???
   )
 
   // Register the JSON serializer registry

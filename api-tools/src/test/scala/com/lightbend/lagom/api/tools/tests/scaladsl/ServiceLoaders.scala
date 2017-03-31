@@ -24,7 +24,7 @@ class AclServiceLoader extends LagomApplicationLoader {
 abstract class AclServiceApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
   with AhcWSComponents {
-  override lazy val lagomServer = LagomServer.forService(bindService[AclService].to(new AclServiceImpl))
+  override lazy val lagomServer = serverFor[AclService](new AclServiceImpl)
 }
 
 // ---------------------------------------
@@ -47,7 +47,7 @@ abstract class NoAclServiceApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
   with AhcWSComponents {
 
-  override lazy val lagomServer = LagomServer.forService(bindService[NoAclService].to(new NoAclServiceImpl))
+  override lazy val lagomServer = serverFor[NoAclService](new NoAclServiceImpl)
 }
 // ---------------------------------------
 class UndescribedServiceLoader extends LagomApplicationLoader {
@@ -65,6 +65,6 @@ class UndescribedServiceLoader extends LagomApplicationLoader {
 abstract class UndescribedServiceApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
   with AhcWSComponents {
-  override lazy val lagomServer = LagomServer.forService(bindService[UndescribedService].to(new UndescribedServiceImpl))
+  override lazy val lagomServer = serverFor[UndescribedService](new UndescribedServiceImpl)
 }
 // ---------------------------------------
