@@ -63,11 +63,14 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
       new ClassLoader() {
         override def getResources(name: String): util.Enumeration[URL] = {
           if (name.equals("application.conf")) {
-            super.getResources(desiredApplicationConf)
+            classLoader.getResources(desiredApplicationConf)
           } else {
-            super.getResources(name)
+            classLoader.getResources(name)
           }
         }
+
+        override def loadClass(name: String): Class[_] = classLoader.loadClass(name)
+
       }
     }
 
