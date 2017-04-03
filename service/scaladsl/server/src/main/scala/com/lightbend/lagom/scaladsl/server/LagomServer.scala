@@ -56,7 +56,7 @@ trait LagomServerComponents {
 
   lazy val lagomServerBuilder: LagomServerBuilder = new LagomServerBuilder(httpConfiguration, serviceResolver)(materializer, executionContext)
   protected def bindService[T <: Service]: LagomServiceBinder[T] = macro ScaladslServerMacroImpl.createBinder[T]
-  protected def serverFor[T <: Service]: (T) => LagomServer = macro ScaladslServerMacroImpl.simpleBind[T]
+  protected def serverFor[T <: Service](serviceFactory: => T): LagomServer = macro ScaladslServerMacroImpl.simpleBind[T]
 
   lazy val serviceInfo: ServiceInfo = {
     val locatableServices = lagomServer.serviceBindings.map(_.descriptor).collect {

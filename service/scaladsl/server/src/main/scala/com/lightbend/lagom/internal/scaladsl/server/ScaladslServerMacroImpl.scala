@@ -11,17 +11,16 @@ import scala.reflect.macros.blackbox.Context
 
 private[lagom] object ScaladslServerMacroImpl {
 
-  def simpleBind[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[T => LagomServer] = {
-
+  def simpleBind[T <: Service](c: Context)(serviceFactory: c.Tree)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[LagomServer] = {
     import c.universe._
 
     val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
     val server = q"$scaladsl.server"
 
     val descriptor = readDescriptor[T](c)
-    c.Expr[T => LagomServer](q"""{ serviceFactory =>
+    c.Expr[LagomServer](q"""{
       _root_.com.lightbend.lagom.scaladsl.server.LagomServer.forServices(
-        $server.LagomServiceBinder(lagomServerBuilder, $descriptor).to(serviceFactory)
+        $server.LagomServiceBinder(lagomServerBuilder, $descriptor).to($serviceFactory)
       )
     }
     """)
