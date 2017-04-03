@@ -20,8 +20,8 @@ import org.pcollections.PMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.compat.java8.FutureConverters;
-import slick.driver.JdbcProfile;
-import slick.driver.PostgresDriver;
+import slick.jdbc.JdbcProfile;
+import slick.jdbc.PostgresProfile;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -178,7 +178,7 @@ public class JpaReadSideImpl implements JpaReadSide {
                 // by Slick, based on the table definition in JdbcOffsetStore
                 // and the specific database profile in use.
                 JdbcProfile profile = getSlickDatabaseProfile();
-                if (profile instanceof PostgresDriver) {
+                if (profile instanceof PostgresProfile) {
                     postgresqlBindUpdateOffsetQuery(updateOffsetQuery, sequenceOffset, timeUuidOffset);
                 } else {
                     defaultBindUpdateOffsetQuery(updateOffsetQuery, sequenceOffset, timeUuidOffset);
