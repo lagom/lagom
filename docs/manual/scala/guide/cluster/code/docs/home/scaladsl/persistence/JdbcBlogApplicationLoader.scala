@@ -34,7 +34,6 @@ abstract class BlogApplication(context: LagomApplicationContext)
 
   // Bind the services that this server provides
   override lazy val lagomServer = ???
-  )
 
   // Register the JSON serializer registry
   override lazy val jsonSerializerRegistry = BlogPostSerializerRegistry

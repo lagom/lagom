@@ -47,7 +47,7 @@ trait ServiceSupport extends WordSpecLike with Matchers {
   def withService[S: ClassTag, I <: S: ClassTag](applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()): WithService[S] =
     withServiceImpl(applicationBuilder.bindings(new AbstractModule with ServiceGuiceSupport {
         override def configure(): Unit = {
-          bindService(serviceBinding(implicitly[ClassTag[S]].runtimeClass.asInstanceOf[Class[Any]], implicitly[ClassTag[I]].runtimeClass))
+          bindServices(serviceBinding(implicitly[ClassTag[S]].runtimeClass.asInstanceOf[Class[Any]], implicitly[ClassTag[I]].runtimeClass))
         }
       })
     )
@@ -56,7 +56,7 @@ trait ServiceSupport extends WordSpecLike with Matchers {
     withServiceImpl(applicationBuilder
       .bindings(new AbstractModule with ServiceGuiceSupport {
         override def configure(): Unit = {
-          bindService(serviceBinding(implicitly[ClassTag[S]].runtimeClass.asInstanceOf[Class[Any]], impl))
+          bindServices(serviceBinding(implicitly[ClassTag[S]].runtimeClass.asInstanceOf[Class[Any]], impl))
         }
       })
     )
