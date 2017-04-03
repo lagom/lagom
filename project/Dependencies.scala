@@ -19,6 +19,7 @@ object Dependencies {
   val Log4jVersion = "1.2.17"
   val ScalaJava8CompatVersion = "0.7.0"
   val ScalaXmlVersion = "1.0.5"
+  val SlickVersion = "3.2.0"
 
   // Specific libraries that get reused
   private val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
@@ -72,7 +73,7 @@ object Dependencies {
       "com.datastax.cassandra" % "cassandra-driver-core" % "3.1.0",
       "com.fasterxml" % "classmate" % "1.3.0",
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
-      "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.8",
+      "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.4.17.1",
       "com.github.jbellis" % "jamm" % "0.3.0",
       "com.github.jnr" % "jffi" % "1.2.10",
       "com.github.jnr" % "jffi" % "1.2.10",
@@ -100,8 +101,8 @@ object Dependencies {
       "com.typesafe.netty" % "netty-reactive-streams" % "1.0.8",
       "com.typesafe.netty" % "netty-reactive-streams-http" % "1.0.8",
       "com.typesafe.play" %% "twirl-api" % "1.1.1",
-      "com.typesafe.slick" %% "slick" % "3.1.1",
-      "com.typesafe.slick" %% "slick-hikaricp" % "3.1.1",
+      "com.typesafe.slick" %% "slick" % SlickVersion,
+      "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.5.1",
       "commons-cli" % "commons-cli" % "1.1",
       "commons-codec" % "commons-codec" % "1.10",
@@ -488,7 +489,7 @@ object Dependencies {
   val `persistence-cassandra-scaladsl` = libraryDependencies ++= Nil
 
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
-    "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.8",
+    "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.4.17.1",
     playJdbc
   )
 
