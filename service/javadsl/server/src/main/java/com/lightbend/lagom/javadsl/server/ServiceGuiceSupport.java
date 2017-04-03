@@ -146,7 +146,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      *
      * @return a {@link ServiceGuiceSupport.ServiceBinding} to be used as argument in {@link ServiceGuiceSupport#bindServices(ServiceBinding[])}.
      */
-    default <T extends Service> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, Class<? extends T> serviceImplementation) {
+    default <T> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, Class<? extends T> serviceImplementation) {
         return new ClassServiceBinding<>(serviceInterface, serviceImplementation);
     }
 
@@ -158,7 +158,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * @param <T>              type constraint ensuring <code>service</code> implements <code>serviceInterface</code>
      * @return a {@link ServiceGuiceSupport.ServiceBinding} to be used as argument in {@link ServiceGuiceSupport#bindServices(ServiceBinding[])}.
      */
-    default <T extends Service> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, T service) {
+    default <T> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, T service) {
         return new InstanceServiceBinding<>(serviceInterface, service);
     }
 
