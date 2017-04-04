@@ -48,7 +48,7 @@ After you have an sbt build -- one you created yourself or from a template -- fo
     1. From the **Run** menu, select **Run**.
     1. Click **Edit Configurations...**.
     1. Click **+** (Add New Configuration).
-    1. Select **SBT**.
+    1. Select **SBT Task**.
     1. Name your configuration. 
     1. In the **Tasks** field, enter `runAll`.
     1. Click **Run**.

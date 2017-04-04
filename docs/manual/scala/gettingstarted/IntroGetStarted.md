@@ -10,7 +10,7 @@ Follow these steps to create and run Hello World:
 
 ## Create the build
 
-Choose a location on your file system for your Lagom projects. The template will prompt you for a project name and will create a directory with that name that contains the build structure and Lagom example services. 
+Choose a location on your file system for your Lagom projects. The template will prompt you for a project name and will create a directory with that name that contains the build structure and Lagom example services. Note that it can take from a few seconds to a few minutes for sbt to download dependencies.
 
 To create your project, follow these steps:
 
@@ -59,7 +59,7 @@ sbt
 ... (booting up)
 > runAll
 ```
-Among other messages, you should see the following:
+It will take a bit of time to build the project and start the services. Among other messages, you should see the following:
 ```
 [info] Starting embedded Cassandra server
 ..........
@@ -71,11 +71,12 @@ Among other messages, you should see the following:
 (Services started, press enter to stop and go back to the console...)
 ```
 
-Verify that the services are indeed up and running by invoking one of its endpoints from any HTTP client, such as a browser. The following request returns the message `Hello, World!`:
+Verify that the services are indeed up and running by invoking one of its endpoints from any HTTP client, such as a browser:
 
 ```
 http://localhost:9000/api/hello/World
 ```
 
+The service returns the message, `Hello, World!`. Congratulations, you've built your first Lagom project!
 
 
