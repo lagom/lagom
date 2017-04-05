@@ -11,4 +11,4 @@ We strongly recommend reading Bonér's book before learning Lagom. Much of the d
 Choose the next step that's right for you:
 
 * Take Lagom for a quick spin by creating and running a [[Hello World|IntroGetStarted]] app.
-* Read [[Core Concepts|CoreConcepts]] to underand how the Lagom framework puts microservice-based design principles into practice.
+* Read [[Core Concepts|CoreConcepts]] to understand how the Lagom framework puts microservice-based design principles into practice.
