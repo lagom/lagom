@@ -9,7 +9,7 @@ Follow these instructions to create and run your first project:
 
 ## Generate a project with the Lagom archetype
 
-Choose a location on your file system for your Lagom projects. Maven will prompt you for a project name and will create a directory with that name that contains the build structure and Lagom example services. 
+Choose a location on your file system for your Lagom projects. Maven will prompt you for a project name and will create a directory with that name that contains the build structure and Lagom example services. Note that it can take from a few seconds to a few minutes for Maven to download dependencies.
 
 To create your project, follow these steps:
 
@@ -23,7 +23,8 @@ To create your project, follow these steps:
     Choose archetype:
     1: remote -> com.lightbend.lagom:maven-archetype-lagom-java (maven-archetype-lagom-java)
     Choose a number or apply filter (format: [groupId:]artifactId, case sensitive contains): :
-    ```
+    ``` 
+    
 1. Enter the number that corresponds with `com.lightbend.lagom:maven-archetype-lagom-java` (at time of writing, the number `1`, and the only one available).
     Maven prompts you for the version.
 1. Enter the number corresponding with the version of Lagom you want to use. We recommend using the [current stable release](https://www.lagomframework.com/documentation/)).
@@ -35,7 +36,7 @@ To create your project, follow these steps:
     * `package` - Press `Enter` to accept the default, which is the same as the `groupId`.  
     Maven prompts you to confirm POM values.    
 1. Enter `Y` to accept the values.
-   Maven creates the project, and completes with a message similar to the following:
+   When finished, Maven creates the project, and completes with a message similar to the following:
    
 ```
    [INFO] ------------------------------------------------------------------------
@@ -72,11 +73,17 @@ Note that the `hello` and `stream` services each have:
 
 ## Run Hello World
 
-Lagom provides a `runAll` command to start the Lagom `hello` and `stream` services and runtime components, which include: Cassandra, Akka, and Kafka. From the top-level group directory, such as `my-first-system`, execute `lagom:runAll` (some console output omitted for brevity):
+Lagom provides a `runAll` command to start the Lagom `hello` and `stream` services and runtime components, which include: Cassandra, Akka, and Kafka. From the top-level group directory, such as `my-first-system`, execute `lagom:runAll`.
+
+For example:
 
 ```console
 cd my-first-system
 mvn lagom:runAll
+```
+It will take a bit of time for the services to start. The `Services started` message indicates the system is running:
+
+```
 ...
 [info] Starting embedded Cassandra server
 ..........
