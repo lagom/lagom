@@ -10,6 +10,7 @@ import com.lightbend.lagom.internal.javadsl.server.ResolvedServices;
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServicesProvider;
 import com.lightbend.lagom.internal.javadsl.server.ServiceInfoProvider;
 import com.lightbend.lagom.internal.server.status.MetricsServiceImpl;
+import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
 import com.lightbend.lagom.javadsl.client.ServiceClientGuiceSupport;
 import com.lightbend.lagom.javadsl.server.status.MetricsService;
@@ -19,10 +20,11 @@ import java.util.Arrays;
 /**
  * Lagom service implementations must create one implementation of this interface and use it to bind Service
  * implementations.
- *
- * Implementors of this interface must invoke {@link ServiceGuiceSupport#bindServices(ServiceBinding[])} or
+ * <p>
+ * Implementors of this interface must invoke {@link ServiceGuiceSupport#bindService},
+ * {@link ServiceGuiceSupport#bindServices(ServiceBinding[])} or
  * {@link ServiceGuiceSupport#bindServiceInfo(ServiceInfo)} exactly-once depending on the type of Lagom service being
- * implemented (exposing API or consume-only respsectively). These methods setup the service and may transparently add
+ * implemented (1 service, many services, consume-only). These methods setup the service and may transparently add
  * cross-cutting services like {@link MetricsService} (allows monitoring circuit-breakers from the outside).
  */
 public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
@@ -52,9 +54,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
     }
 
     /**
-     * Binds Service interfaces with their implementations and registers them for publishing. This method must be
-     * invoked exactly one per Lagom service unless you are developing a consume-only service (see
-     * {@link ServiceGuiceSupport#bindServiceInfo} for consume-only service support).
+     * Binds Service interfaces with their implementations and registers them for publishing.
      * <p>
      * Inspects all bindings and creates routes to serve every call described in the bound services.
      * <p>
@@ -63,10 +63,9 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * @param serviceBindings an arbitrary list of {@link ServiceBinding}s. Use the convenience method
      *                        {@link ServiceGuiceSupport#serviceBinding(Class, Class)} to build the
      *                        {@link ServiceBinding}s. Despite being a <code>varargs</code> argument, it is required to
-     *                        provide at least one {@link ServiceBinding} as argument. If you are building a Lagom
-     *                        service that acts only as a consumer and doesn't need to bind any service you should
-     *                        not use {@link ServiceGuiceSupport#bindServices(ServiceBinding[])} and should use
-     *                        {@link ServiceGuiceSupport#bindServiceInfo(ServiceInfo)} instead.
+     *                        provide at least one {@link ServiceBinding} as argument.
+     * @deprecated support for multiple locatable ServiceDescriptors per Lagom service will be removed.
+     * Use {@link ServiceGuiceSupport#bindService} instead
      */
     default void bindServices(ServiceBinding<?>... serviceBindings) {
         Binder binder = BinderAccessor.binder(this);
@@ -110,10 +109,41 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
     }
 
     /**
+     * Binds a Service interface with its implementation.
+     * <p>
+     * Inspects the service descriptor and creates routes to serve every call described.
+     * <p>
+     * Builds the {@link ServiceInfo} metadata.
+     *
+     * @param serviceInterface      the interface class for a {@link Service}
+     * @param serviceImplementation the implementation class for the <code>serviceInterface</code>
+     * @param <T>                   type constraint ensuring <code>serviceImplementation</code> implements <code>serviceInterface</code>
+     */
+    default <T extends Service> void bindService(Class<T> serviceInterface, Class<? extends T> serviceImplementation) {
+        bindServices(serviceBinding(serviceInterface, serviceImplementation));
+    }
+
+    /**
+     * Binds a Service interface with an instance that implements it.
+     * <p>
+     * Inspects the service descriptor and creates routes to serve every call described.
+     * <p>
+     * Builds the {@link ServiceInfo} metadata.
+     *
+     * @param serviceInterface the interface class for a {@link Service}
+     * @param service          an instance of a class implementing <code>serviceInterface</code>
+     * @param <T>              type constraint ensuring <code>serviceImplementation</code> implements <code>serviceInterface</code>
+     */
+    default <T extends Service> void bindService(Class<T> serviceInterface, T service) {
+        bindServices(serviceBinding(serviceInterface, service));
+    }
+
+
+    // TODO: move all code related to ServiceBinding to an internal package when removing bindServices(...)
+
+    /**
      * Convenience method to create {@link ServiceGuiceSupport.ServiceBinding} when using {@link ServiceGuiceSupport#bindServices(ServiceBinding[])}.
-     * @param serviceInterface the interface class for a service
-     * @param serviceImplementation the implementation class for the service
-     * @param <T> type constraint ensuring <code>serviceImplementation</code> implements <code>serviceInterface</code>
+     *
      * @return a {@link ServiceGuiceSupport.ServiceBinding} to be used as argument in {@link ServiceGuiceSupport#bindServices(ServiceBinding[])}.
      */
     default <T> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, Class<? extends T> serviceImplementation) {
@@ -122,9 +152,10 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
 
     /**
      * Convenience method to create {@link ServiceGuiceSupport.ServiceBinding} when using {@link ServiceGuiceSupport#bindServices(ServiceBinding[])}.
+     *
      * @param serviceInterface the interface class for a service
-     * @param service an instance of the service
-     * @param <T> type constraint ensuring <code>service</code> implements <code>serviceInterface</code>
+     * @param service          an instance of the service
+     * @param <T>              type constraint ensuring <code>service</code> implements <code>serviceInterface</code>
      * @return a {@link ServiceGuiceSupport.ServiceBinding} to be used as argument in {@link ServiceGuiceSupport#bindServices(ServiceBinding[])}.
      */
     default <T> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, T service) {

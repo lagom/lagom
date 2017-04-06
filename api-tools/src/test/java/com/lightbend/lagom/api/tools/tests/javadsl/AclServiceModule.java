@@ -6,10 +6,9 @@ package com.lightbend.lagom.api.tools.tests.javadsl;
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 
-public class StubServiceModule extends AbstractModule implements ServiceGuiceSupport {
+public class AclServiceModule extends AbstractModule implements ServiceGuiceSupport {
     @Override
     protected void configure() {
-        bindServices(serviceBinding(AclService.class, AclServiceImpl.class),
-                serviceBinding(NoAclService.class, NoAclServiceImpl.class));
+        bindService(AclService.class, AclServiceImpl.class);
     }
 }

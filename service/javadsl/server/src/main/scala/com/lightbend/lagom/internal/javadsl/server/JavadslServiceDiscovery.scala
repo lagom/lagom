@@ -6,6 +6,7 @@ package com.lightbend.lagom.internal.javadsl.server
 import java.io.File
 import java.lang.reflect.Type
 import java.util
+import java.util.Optional
 
 import com.google.inject.{ Binding, Module }
 import com.google.inject.spi._
@@ -35,8 +36,16 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
     Map(JacksonPlaceholderExceptionSerializer -> new ExceptionSerializerStub)
 
   override def discoverServices(classLoader: ClassLoader): util.List[ServiceDescription] = {
+    val descriptions = doDiscovery(classLoader)
+    if (descriptions.size > 1) {
+      log.warn(s"Found ServiceDescriptions: ${descriptions.map(_.name()).mkString("[", ",", "]")}. Support for multiple locatable services will be removed.")
+    }
+    descriptions.asJava
+  }
+
+  private def doDiscovery(classLoader: ClassLoader): Seq[ServiceDescription] = {
     val modules = loadModules(classLoader)
-    val serviceDescriptions = resolveServiceInterfaces(modules).flatMap { serviceInterface =>
+    resolveServiceInterfaces(modules).flatMap { serviceInterface =>
       val unresolvedDescriptor = ServiceReader.readServiceDescriptor(classLoader, serviceInterface)
       val resolvedDescriptor = ServiceReader.resolveServiceDescriptor(unresolvedDescriptor, classLoader, serializerFactories, exceptionSerializers)
       if (resolvedDescriptor.locatableService)
@@ -44,7 +53,6 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
       else
         None
     }
-    serviceDescriptions.asJava
   }
 
   private def createServiceDescription(descriptor: Descriptor): ServiceDescription = {

@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.scaladsl.testkit.services
 
-import java.util.concurrent.{ ConcurrentLinkedQueue, TimeUnit }
+import java.util.concurrent.ConcurrentLinkedQueue
 
 import akka.{ Done, NotUsed }
 import akka.stream.scaladsl.Flow
@@ -11,7 +11,7 @@ import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall }
 import com.lightbend.lagom.scaladsl.api.Service._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.playjson.{ JsonSerializer, JsonSerializerRegistry }
-import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LagomServer }
+import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext }
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.immutable.Seq
@@ -57,9 +57,7 @@ abstract class DownstreamApplication(context: LagomApplicationContext)
 
   lazy val alphaService = serviceClient.implement[AlphaService]
 
-  override lazy val lagomServer = LagomServer.forServices(
-    bindService[CharlieService].to(new CharlieServiceImpl(alphaService))
-  )
+  override lazy val lagomServer = serverFor[CharlieService](new CharlieServiceImpl(alphaService))
 
 }
 

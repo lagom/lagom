@@ -15,9 +15,7 @@ abstract class PublishApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
     with AhcWSComponents {
 
-  override lazy val lagomServer = LagomServer.forServices(
-    bindService[service.PublishService].to(new service.PublishServiceImpl())
-  )
+  override lazy val lagomServer = serverFor[service.PublishService](new service.PublishServiceImpl())
 }
 
 package service {

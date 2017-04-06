@@ -80,7 +80,7 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Configuration, serviceI
   private val serviceUrl = new URI(s"http://$httpAddress:$httpPort")
 
   // TODO: ServiceRegistryService should not flatmap the ACL lists (locatableService's names are lost)
-  private val serviceAcls = serviceInfo.getLocatableServices.values().asScala.flatMap(_.asScala).toSeq.asJava
+  private val serviceAcls = serviceInfo.getAcls
   private val service = new ServiceRegistryService(serviceUrl, serviceAcls)
   // TODO: fix -> this register operation is registering all ACLs under the microservice name, not under each locatable service name. Will lead to unlocatable.
   serviceRegistry.register(serviceInfo.serviceName()).invoke(service)
