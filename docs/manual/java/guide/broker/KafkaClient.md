@@ -4,7 +4,7 @@ Lagom provides an implementation of the Message Broker API that uses Kafka. In t
 
 ## Dependency
 
-To use this feature add the following in your project's build. 
+To use this feature add the following in your project's build.
 
 In Maven:
 
@@ -31,7 +31,7 @@ The Lagom Kafka Client implementation is built using [akka-stream-kafka](https:/
 
 @[kafka-broker](../../../../../service/core/kafka/client/src/main/resources/reference.conf)
 
-First, notice that the `service-name` is set to "kafka_native" by default. This property defines how the kafka broker URL will be looked up in the service locator (since v1.3.1). If you choose you can disable the lookup by setting the service-name to an empty string and pass the location of your Kafka brokers via the key `lagom.broker.kafka.brokers`. In production, you will usually want to have at least two brokers for resiliency. Make sure to separate each broker URL with a comma. Note again that since v1.3.1 this property is only used if `service-name` is empty.
+First, notice that the `service-name` is set to "kafka_native" by default. This property defines how the kafka broker URI will be looked up in the service locator (since v1.3.1). If you choose you can disable the lookup by setting the service-name to an empty string and pass the location of your Kafka brokers via the key `lagom.broker.kafka.brokers`. This setting is mapped to Kafka's [boot-strap server](https://kafka.apache.org/documentation/#producerconfigs) list so only a few of the brokers need to be specified since the rest will be discovered dynamically. In production, you will usually want to have at least two brokers for resiliency. Make sure to separate each broker URL with a comma.
 
 Second, we have configuration that is specific to the publisher and the subscriber. The `lagom.broker.kafka.client.default.failure-exponential-backoff` defines configuration for what to do when a publisher or subscriber stream fails. Specifically, it allows you to configure the backoff time that is awaited before restarting a publishing/consuming stream. Failure can happen for different reasons, for instance it may be due to an application error, or because of a network error. Independently of the cause, Lagom will keep retrying to restart the stream (whilst waiting longer and longer between each failed retry). As you can see, both the publisher and subscriber use the same defaults, but different values for either of them can be set.
 
@@ -69,7 +69,7 @@ In sbt:
 
 @[kafka-client-dependency](code/build-kafka.sbt)
 
-If/when your subscriber-only service evolves to include features that publish data to a topic, you will need to depend on Lagom Kafka Broker and remove the dependency to Lagom Kafka Client. The Lagom Kafka Broker module includes the Lagom Kafka Client module. 
+If/when your subscriber-only service evolves to include features that publish data to a topic, you will need to depend on Lagom Kafka Broker and remove the dependency to Lagom Kafka Client. The Lagom Kafka Broker module includes the Lagom Kafka Client module.
 
 ### Consuming Topics from 3rd parties
 
