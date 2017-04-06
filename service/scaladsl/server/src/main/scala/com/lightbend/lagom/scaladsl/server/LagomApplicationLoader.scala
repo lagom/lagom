@@ -4,24 +4,22 @@
 package com.lightbend.lagom.scaladsl.server
 
 import java.net.URI
-import java.util.Optional
 import java.util.concurrent.{ TimeUnit, TimeoutException }
 
-import akka.actor.{ ActorSystem, BootstrapSetup }
 import akka.actor.setup.ActorSystemSetup
-import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakerMetricsProviderImpl, CircuitBreakers }
+import akka.actor.{ ActorSystem, BootstrapSetup }
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServerMacroImpl
-import com.lightbend.lagom.internal.spi.{ ServiceAcl, ServiceDescription, ServiceDiscovery }
+import com.lightbend.lagom.internal.spi.{ CircuitBreakerMetricsProvider, ServiceAcl, ServiceDescription, ServiceDiscovery }
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
-import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.api._
-import com.lightbend.lagom.scaladsl.client.{ CircuitBreakingServiceLocator, LagomServiceClientComponents }
+import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
+import com.lightbend.lagom.scaladsl.client.{ CircuitBreakerComponents, CircuitBreakingServiceLocator, LagomServiceClientComponents }
 import com.lightbend.lagom.scaladsl.playjson.{ EmptyJsonSerializerRegistry, JsonSerializerRegistry, ProvidesJsonSerializerRegistry }
 import com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents
 import com.typesafe.config.Config
-import play.api._
 import play.api.ApplicationLoader.Context
+import play.api._
 import play.core.DefaultWebCommands
 
 import scala.collection.immutable
@@ -114,8 +112,8 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
   }
 
   private final def doDiscovery(classLoader: ClassLoader) = {
-    import scala.compat.java8.OptionConverters._
     import scala.collection.JavaConverters._
+    import scala.compat.java8.OptionConverters._
 
     val serviceResolver = new ScaladslServiceResolver(DefaultExceptionSerializer.Unresolved)
     describeServices.map { descriptor =>
@@ -188,8 +186,7 @@ abstract class LagomApplication(context: LagomApplicationContext)
   with ProvidesAdditionalConfiguration
   with ProvidesJsonSerializerRegistry
   with LagomServerComponents
-  with LagomServiceClientComponents
-  with MetricsServiceComponents {
+  with LagomServiceClientComponents {
 
   override implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
   override lazy val configuration: Configuration = Configuration.load(environment) ++
@@ -298,17 +295,13 @@ trait RequiresLagomServicePort {
  * This is useful for integration testing a single service, and can be mixed in to a [[LagomApplication]] class to
  * provide the local service locator.
  */
-trait LocalServiceLocator extends RequiresLagomServicePort {
+trait LocalServiceLocator extends RequiresLagomServicePort with CircuitBreakerComponents {
   def lagomServer: LagomServer
-
   def actorSystem: ActorSystem
-
   def executionContext: ExecutionContext
-
   def configuration: Configuration
+  def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
 
-  lazy val circuitBreakerConfig: CircuitBreakerConfig = new CircuitBreakerConfig(configuration)
-  lazy val circuitBreakers = new CircuitBreakers(actorSystem, circuitBreakerConfig, new CircuitBreakerMetricsProviderImpl(actorSystem))
   lazy val serviceLocator: ServiceLocator = new CircuitBreakingServiceLocator(circuitBreakers)(executionContext) {
     val services = lagomServer.serviceBindings.map(_.descriptor.name).toSet
 

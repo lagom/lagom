@@ -7,16 +7,15 @@ import java.net.URI
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakerMetricsProviderImpl, CircuitBreakers }
 import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
 import com.lightbend.lagom.internal.scaladsl.registry.{ ServiceRegistration, ServiceRegistry, ServiceRegistryServiceLocator }
-import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
-import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
-import play.api.{ Configuration, Environment }
+import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
+import com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.WSClient
+import play.api.{ Configuration, Environment }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -52,7 +51,7 @@ trait LagomDevModeComponents extends LagomDevModeServiceLocatorComponents {
  * It expects the service locator URL to be provided using the `lagom.service-locator.url` property, which by default
  * will be automatically provided to the service by Lagom's dev mode build plugins.
  */
-trait LagomDevModeServiceLocatorComponents {
+trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
   /**
    * If being used in a Lagom service, this will be implemented by
    * [[com.lightbend.lagom.scaladsl.server.LagomServerComponents]], however if it's being
@@ -66,10 +65,6 @@ trait LagomDevModeServiceLocatorComponents {
   def executionContext: ExecutionContext
   def materializer: Materializer
   def actorSystem: ActorSystem
-
-  lazy val circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider = new CircuitBreakerMetricsProviderImpl(actorSystem)
-  lazy val circuitBreakerConfig: CircuitBreakerConfig = new CircuitBreakerConfig(configuration)
-  lazy val circuitBreakers: CircuitBreakers = new CircuitBreakers(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
 
   lazy val devModeServiceLocatorUrl: URI = URI.create(configuration.underlying.getString("lagom.service-locator.url"))
   lazy val serviceRegistry: ServiceRegistry = {

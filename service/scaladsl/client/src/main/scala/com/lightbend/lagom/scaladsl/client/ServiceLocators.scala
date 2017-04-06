@@ -7,7 +7,8 @@ import java.net.{ URI, URISyntaxException }
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakerMetricsProviderImpl, CircuitBreakers }
+import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakers }
+import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.api.{ CircuitBreaker, Descriptor, ServiceLocator }
 import com.typesafe.config.ConfigException
@@ -69,9 +70,10 @@ trait CircuitBreakerComponents {
   def actorSystem: ActorSystem
   def configuration: Configuration
   def executionContext: ExecutionContext
+  def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
 
   lazy val circuitBreakerConfig: CircuitBreakerConfig = new CircuitBreakerConfig(configuration)
-  lazy val circuitBreakers = new CircuitBreakers(actorSystem, circuitBreakerConfig, new CircuitBreakerMetricsProviderImpl(actorSystem))
+  lazy val circuitBreakers = new CircuitBreakers(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
 }
 
 /**

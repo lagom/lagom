@@ -5,7 +5,7 @@ package com.lightbend.lagom.api.tools.tests.scaladsl
 
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
-import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LagomApplicationLoader, LagomServer }
+import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LagomApplicationLoader }
 import play.api.libs.ws.ahc.AhcWSComponents
 
 class AclServiceLoader extends LagomApplicationLoader {

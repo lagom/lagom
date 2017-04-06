@@ -48,7 +48,7 @@ object LagomServer {
   }
 }
 
-trait LagomServerComponents {
+trait LagomServerComponents extends MetricsServiceComponents {
   def httpConfiguration: HttpConfiguration
   def materializer: Materializer
   def executionContext: ExecutionContext

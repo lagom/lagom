@@ -4,18 +4,19 @@
 package play.core.server
 
 import java.io.File
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.lightbend.lagom.sbt.server.ReloadableServer
 import play.api._
-import play.api.libs.concurrent.ActorSystemProvider
 import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
 import play.utils.Threads
-import scala.concurrent.{ Await, Future }
+
+import scala.collection.JavaConverters._
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
-import scala.collection.JavaConverters._
 
 /**
  * Used to start servers in 'dev' mode, a mode where the application
