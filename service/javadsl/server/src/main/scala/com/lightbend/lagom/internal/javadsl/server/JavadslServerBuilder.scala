@@ -39,6 +39,8 @@ class JavadslServerBuilder @Inject() (environment: Environment, httpConfiguratio
                                       jacksonSerializerFactory:   JacksonSerializerFactory,
                                       jacksonExceptionSerializer: JacksonExceptionSerializer)(implicit ec: ExecutionContext, mat: Materializer) {
 
+  private val log = Logger(this.getClass)
+
   /**
    * Create a router for the given services.
    *
@@ -85,6 +87,10 @@ class JavadslServerBuilder @Inject() (environment: Environment, httpConfiguratio
         .map { descriptor =>
           descriptor.name() -> descriptor.acls()
         }.toMap.asJava
+      if (locatableServices.size() > 1) {
+        log.warn("Bundling more than one locatable service descriptor inside a single LagomService is deprecated.")
+      }
+      // TODO: replace with factory method ServiceInfo#of when dropping support for multiple locatable services
       new ServiceInfo(descriptors.head.name, HashTreePMap.from(locatableServices))
     } else {
       throw new IllegalArgumentException(s"Don't know how to load services that don't implement Service. Provided: ${interfaces.mkString("[", ", ", "]")}")

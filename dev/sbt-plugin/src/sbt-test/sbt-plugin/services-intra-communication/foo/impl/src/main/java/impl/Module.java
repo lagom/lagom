@@ -13,7 +13,7 @@ import java.io.*;
 public class Module extends AbstractModule implements ServiceGuiceSupport, ServiceClientGuiceSupport {
 	@Override
 	protected void configure() {
-		bindServices(serviceBinding(FooService.class, FooServiceImpl.class));
+		bindService(FooService.class, FooServiceImpl.class);
     bindClient(BarService.class);
 		bind(OnStart.class).asEagerSingleton();
 	}

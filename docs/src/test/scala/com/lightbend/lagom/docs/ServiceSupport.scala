@@ -3,16 +3,16 @@ package com.lightbend.lagom.docs
 import java.util.concurrent.CompletionStage
 
 import com.google.inject.AbstractModule
-import com.lightbend.lagom.javadsl.api.transport.{RequestHeader, ResponseHeader}
-import com.lightbend.lagom.javadsl.api.{ServiceCall, ServiceLocator}
-import com.lightbend.lagom.javadsl.server.{HeaderServiceCall, ServiceGuiceSupport}
-import org.scalatest.{Matchers, WordSpecLike}
+import com.lightbend.lagom.javadsl.api.transport.{ RequestHeader, ResponseHeader }
+import com.lightbend.lagom.javadsl.api.{ ServiceCall, ServiceLocator, Service}
+import com.lightbend.lagom.javadsl.server.{ HeaderServiceCall, ServiceGuiceSupport }
+import org.scalatest.{ Matchers, WordSpecLike }
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.bind
 import play.core.server.Server
 
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{ Future, Promise }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.reflect.ClassTag
 import scala.compat.java8.FutureConverters._
@@ -20,7 +20,7 @@ import com.lightbend.lagom.internal.testkit.TestServiceLocator
 import docs.services.test.ServiceTestModule
 import com.lightbend.lagom.internal.testkit.TestServiceLocatorPort
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcPersistenceModule
-import play.api.db.{DBModule, HikariCPModule}
+import play.api.db.{ DBModule, HikariCPModule }
 
 trait ServiceSupport extends WordSpecLike with Matchers {
 
@@ -44,22 +44,26 @@ trait ServiceSupport extends WordSpecLike with Matchers {
     def apply[T](block: Application => S => T): T
   }
 
-  def withService[S: ClassTag, I <: S: ClassTag](applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()): WithService[S] =
+
+  def withService[S <: Service : ClassTag, I <: S : ClassTag](applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()): WithService[S] =
     withServiceImpl(applicationBuilder.bindings(new AbstractModule with ServiceGuiceSupport {
+      override def configure(): Unit = {
+        val serviceClass: Class[S] = implicitly[ClassTag[S]].runtimeClass.asInstanceOf[Class[S]]
+        val implClass: Class[I] = implicitly[ClassTag[I]].runtimeClass.asInstanceOf[Class[I]]
+        bindService(serviceClass, implClass)
+      }
+    })
+    )
+
+  def withServiceInstance[S <: Service : ClassTag](impl: S, applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()): WithService[S] =
+    withServiceImpl(applicationBuilder
+      .bindings(new AbstractModule with ServiceGuiceSupport {
         override def configure(): Unit = {
-          bindServices(serviceBinding(implicitly[ClassTag[S]].runtimeClass.asInstanceOf[Class[Any]], implicitly[ClassTag[I]].runtimeClass))
+          bindService(implicitly[ClassTag[S]].runtimeClass.asInstanceOf[Class[S]], impl)
         }
       })
     )
 
-  def withServiceInstance[S: ClassTag](impl: S, applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()): WithService[S] =
-    withServiceImpl(applicationBuilder
-      .bindings(new AbstractModule with ServiceGuiceSupport {
-        override def configure(): Unit = {
-          bindServices(serviceBinding(implicitly[ClassTag[S]].runtimeClass.asInstanceOf[Class[Any]], impl))
-        }
-      })
-    )
 
   private def withServiceImpl[S: ClassTag](applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()): WithService[S] = new WithService[S] {
     def apply[T](block: Application => S => T) = {

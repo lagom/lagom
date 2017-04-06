@@ -9,6 +9,7 @@ import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -56,33 +57,47 @@ public final class ServiceInfo {
      * @param serviceName       identifies this service. This is the default id when this service acts as a client.
      * @param locatableServices a group of locatable services. This information should be publicized on a Service
      *                          Registry for either client-side or server-side service discovery.
-     * @since 1.3
+     * @deprecated use {@link ServiceInfo#of(String, ServiceAcl...)} instead.
      */
+    @Deprecated
     public ServiceInfo(String serviceName, PMap<String, PSequence<ServiceAcl>> locatableServices) {
         this.serviceName = serviceName;
         this.locatableServices = locatableServices;
     }
 
+    private ServiceInfo(String serviceName, PSequence<ServiceAcl> acls) {
+        this.serviceName = serviceName;
+        this.locatableServices = HashTreePMap.<String, PSequence<ServiceAcl>>empty().plus(serviceName, acls);
+    }
+
     /**
-     * Factory method to conveniently create ServiceInfo instances that contain a single locatable service whose name
-     * equals the <code>serviceName</code>.
+     * Factory method to create ServiceInfo instances that contain a single locatable service.
      *
      * @param serviceName
      * @param acls        for the single locatableService of this Service.
      * @return
      */
     public static ServiceInfo of(String serviceName, ServiceAcl... acls) {
-        Map<String, PSequence<ServiceAcl>> locatableServices = new HashMap<>();
-        locatableServices.put(serviceName, TreePVector.from(Arrays.asList(acls)));
-        return new ServiceInfo(serviceName, HashTreePMap.from(locatableServices));
+        return new ServiceInfo(serviceName, TreePVector.from(Arrays.asList(acls)));
     }
 
     public String serviceName() {
         return serviceName;
     }
 
+    /**
+     * @deprecated this method will be removed when dropping support for multiple locatable service descriptors per service.
+     */
+    @Deprecated
     public PMap<String, PSequence<ServiceAcl>> getLocatableServices() {
         return locatableServices;
+    }
+
+    /**
+     * @return a complete flattened list of ACLs listing all ACLs in this service info.
+     */
+    public PSequence<ServiceAcl> getAcls() {
+        return TreePVector.from(locatableServices.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
     }
 
 }

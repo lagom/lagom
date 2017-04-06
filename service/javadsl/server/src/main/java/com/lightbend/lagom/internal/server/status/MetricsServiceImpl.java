@@ -30,7 +30,7 @@ public class MetricsServiceImpl implements MetricsService {
 
   @Inject
   public MetricsServiceImpl(CircuitBreakerMetricsProvider metricsProvider, ActorSystem system) {
-    // TODO it would be better to do this in ServiceGuiceSupport.bindServices,
+    // TODO it would be better to do this in ServiceGuiceSupport.bindService,
     // but I'm not sure how to access config from there
     boolean statusEnabled = system.settings().config().getBoolean("lagom.status-endpoint.enabled");
     if (statusEnabled && metricsProvider instanceof CircuitBreakerMetricsProviderImpl)

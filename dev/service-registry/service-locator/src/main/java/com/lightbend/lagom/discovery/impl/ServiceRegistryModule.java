@@ -30,7 +30,7 @@ public class ServiceRegistryModule extends AbstractModule implements ServiceGuic
 
 	@Override
 	protected void configure() {
-		bindServices(serviceBinding(ServiceRegistry.class, ServiceRegistryImpl.class));
+		bindService(ServiceRegistry.class, ServiceRegistryImpl.class);
 		bindActor(ServiceRegistryActor.class, SERVICE_REGISTRY_ACTOR);
 		bind(ServiceGatewayConfig.class).toInstance(serviceGatewayConfig);
 		bind(UnmanagedServices.class).toInstance(UnmanagedServices.apply(unmanagedServices));

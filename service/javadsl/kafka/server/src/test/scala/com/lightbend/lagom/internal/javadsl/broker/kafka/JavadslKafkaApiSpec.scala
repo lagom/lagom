@@ -270,7 +270,7 @@ object JavadslKafkaApiSpec {
 
   val testModule = new AbstractModule with ServiceGuiceSupport {
     override def configure(): Unit = {
-      bindServices(serviceBinding(classOf[TestService], classOf[TestServiceImpl]))
+      bindService(classOf[TestService], classOf[TestServiceImpl])
     }
   }
 

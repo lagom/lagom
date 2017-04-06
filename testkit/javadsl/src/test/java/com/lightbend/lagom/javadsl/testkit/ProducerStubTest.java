@@ -15,7 +15,6 @@ import scala.concurrent.duration.FiniteDuration;
 
 import javax.inject.Inject;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,7 +44,7 @@ public class ProducerStubTest {
     @Test
     public void shouldAtLeastOnceSendToSubscribersWhatIsProduced() {
         withServer(setup, server -> {
-            CharlieDownstreamService client = server.client(CharlieDownstreamService.class);
+            DownstreamService client = server.client(DownstreamService.class);
 
             int msg = 1;
             producerAStub.send(new AlphaEvent(msg));
@@ -61,7 +60,7 @@ public class ProducerStubTest {
     @Test
     public void shouldAtMostOnceSendToSubscribersWhatIsProduced() {
         withServer(setup, server -> {
-            FoxtrotDownstreamService foxtrot = server.client(FoxtrotDownstreamService.class);
+            DownstreamService foxtrot = server.client(DownstreamService.class);
 
             List<Integer> msgs = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
             msgs.forEach(msg -> producerAStub.send(new AlphaEvent(msg)));
@@ -80,7 +79,7 @@ public class ProducerStubTest {
     @Test
     public void shouldAtLeastOnceSendToSubscribersWhatIsProducedInTheRightOrder() {
         withServer(setup, server -> {
-            CharlieDownstreamService client = server.client(CharlieDownstreamService.class);
+            DownstreamService client = server.client(DownstreamService.class);
 
             producerAStub.send(new AlphaEvent(1));
             producerAStub.send(new AlphaEvent(2));
@@ -98,7 +97,7 @@ public class ProducerStubTest {
     @Test
     public void shouldAtLeastOnceSendToNewSubscribersWhatIsProducedSinceTheBeginningOfTimes() {
         withServer(setup, server -> {
-            CharlieDownstreamService client = server.client(CharlieDownstreamService.class);
+            DownstreamService client = server.client(DownstreamService.class);
 
             // send before subscribing
             producerBStub.send(new BetaEvent(1));
@@ -118,8 +117,7 @@ public class ProducerStubTest {
     @Test
     public void shouldAtLeastOnceSendToMultipleSubscriberGroupsWhatIsProduced() {
         withServer(setup, server -> {
-            CharlieDownstreamService charlie = server.client(CharlieDownstreamService.class);
-            DeltaDownstreamService delta = server.client(DeltaDownstreamService.class);
+            DownstreamService charlie = server.client(DownstreamService.class);
 
             producerAStub.send(new AlphaEvent(1));
             producerAStub.send(new AlphaEvent(2));
@@ -130,7 +128,7 @@ public class ProducerStubTest {
 
             eventually(new FiniteDuration(5, SECONDS), new FiniteDuration(1, SECONDS), () -> {
                 PSequence<ReceivedMessage> messagesOnC = charlie.retrieveMessagesC().invoke().toCompletableFuture().get(3, SECONDS);
-                PSequence<ReceivedMessage> messagesOnD = delta.retrieveMessagesD().invoke().toCompletableFuture().get(3, SECONDS);
+                PSequence<ReceivedMessage> messagesOnD = charlie.retrieveMessagesD().invoke().toCompletableFuture().get(3, SECONDS);
                 ReceivedMessage a1 = new ReceivedMessage("A", 1);
                 ReceivedMessage a2 = new ReceivedMessage("A", 2);
                 ReceivedMessage b23 = new ReceivedMessage("B", 23);
@@ -152,8 +150,7 @@ public class ProducerStubTest {
     @Test
     public void shouldNotReceiveMessagesFromTopicsNotSubscribedTo() {
         withServer(setup, server -> {
-            CharlieDownstreamService charlie = server.client(CharlieDownstreamService.class);
-            DeltaDownstreamService delta = server.client(DeltaDownstreamService.class);
+            DownstreamService charlie = server.client(DownstreamService.class);
 
             // send before subscribing
             producerAStub.send(new AlphaEvent(1));
@@ -162,7 +159,7 @@ public class ProducerStubTest {
 
             eventually(new FiniteDuration(5, SECONDS), new FiniteDuration(1, SECONDS), () -> {
                 charlie.startSubscriptionOnBeta().invoke().toCompletableFuture().get(3, SECONDS);
-                PSequence<ReceivedMessage> messages = delta.retrieveMessagesD().invoke().toCompletableFuture().get(3, SECONDS);
+                PSequence<ReceivedMessage> messages = charlie.retrieveMessagesD().invoke().toCompletableFuture().get(3, SECONDS);
                 ReceivedMessage a1 = new ReceivedMessage("A", 1);
                 ReceivedMessage a2 = new ReceivedMessage("A", 2);
                 List<ReceivedMessage> expectedAs = Arrays.asList(a1, a2);

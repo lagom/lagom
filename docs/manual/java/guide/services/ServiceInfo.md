@@ -1,13 +1,13 @@
 # Service Metadata
 
-Service metadata, also referred to as `ServiceInfo`, includes a name and a collection of Service ACLs. Metadata is computed automatically in most scenarios and you won't need to review it or even provide it.
+Service metadata, also referred to as `ServiceInfo`, includes a name and a collection of ACLs. Metadata is computed automatically in most scenarios and you won't need to review it or even provide it.
 
 There are several scenarios supported by Lagom:
 
-1. When you create a Lagom Service and you use the [[bindServices|ServiceImplementation]] method to register services Lagom will consider the first argument in `bindServices` to be the `primaryService`. The name of the primary Service will be used as the `ServiceInfo` name. Then Lagom will gather all the ACLs from all the Services you bind using `bindServices`. Finally, Lagom will bundle the `name` and the ACLs into a `ServiceInfo`.
-2. When you create a Lagom Service but you don't bind any service. In this situation you can use the [[bindServiceInfo|ServiceClients#Binding-a-service-client]] method and provide the metadata manually.
+1. When you create a Lagom Service and you use the [[bindService|ServiceImplementation]] method to bind a service Lagom will bundle the `name` and the ACLs of the Service Descriptor into a `ServiceInfo`.
+2. When you create a Lagom Service but you don't bind any service you should use the [[bindServiceInfo|ServiceClients#Binding-a-service-client]] method and provide the metadata manually.
 3. When you consume Lagom Services from an app that already uses Guice, you simply [[bind a Service Client|ServiceClients#Binding-a-service-client]]. In this scenario Lagom is not bundling a ServiceInfo under the covers and you will have to provide one programatically.
-4. The final scenario is that where the client app is not using Guice and connect to Lagom via the [[Lagom Client Factory|IntegratingNonLagom]]. In this scenario, Lagom will also create the metadata on your behalf.
+4. The final scenario is that where the client app is not using Guice and connects to Lagom via the [[Lagom Client Factory|IntegratingNonLagom]]. In this scenario, Lagom will also create the metadata on your behalf.
 
 
 ## Service Name and Service ACLs

@@ -25,9 +25,7 @@ abstract class FooApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
     with AhcWSComponents {
 
-  override lazy val lagomServer = LagomServer.forServices(
-    bindService[FooService].to(wire[FooServiceImpl])
-  )
+  override lazy val lagomServer = serverFor[FooService](wire[FooServiceImpl])
 
   Files.write(environment.getFile("target/reload.log").toPath, s"${new Date()} - reloaded\n".getBytes("utf-8"),
     StandardOpenOption.CREATE, StandardOpenOption.APPEND)

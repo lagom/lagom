@@ -25,9 +25,8 @@ abstract class BazApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
     with AhcWSComponents {
 
-  override lazy val lagomServer = LagomServer.forServices(
-    bindService[BazService].to(wire[BazServiceImpl])
-  )
+  override lazy val lagomServer =serverFor[BazService](wire[BazServiceImpl])
+
 
   Files.write(environment.getFile("target/reload.log").toPath, s"${new Date()} - reloaded\n".getBytes("utf-8"),
     StandardOpenOption.CREATE, StandardOpenOption.APPEND)

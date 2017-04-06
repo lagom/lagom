@@ -22,9 +22,7 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers with BeforeAndAfter
 
   val server = ServiceTest.startServer(ServiceTest.defaultSetup) { ctx =>
     new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LocalServiceLocator {
-      override lazy val lagomServer = LagomServer.forServices(
-        bindService[MockService].to(new MockServiceImpl)
-      )
+      override lazy val lagomServer = serverFor[MockService](new MockServiceImpl)
     }
   }
 
