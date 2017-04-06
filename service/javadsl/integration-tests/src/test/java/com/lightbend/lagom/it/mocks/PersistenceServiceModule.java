@@ -9,6 +9,6 @@ import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 public class PersistenceServiceModule extends AbstractModule implements ServiceGuiceSupport {
     @Override
     protected void configure() {
-        bindServices(serviceBinding(PersistenceService.class, PersistenceServiceImpl.class));
+        bindService(PersistenceService.class, PersistenceServiceImpl.class);
     }
 }

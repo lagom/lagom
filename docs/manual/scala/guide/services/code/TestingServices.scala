@@ -169,9 +169,7 @@ package streamedservices {
 
     lazy val server = ServiceTest.startServer(ServiceTest.defaultSetup) { ctx =>
       new LagomApplication(ctx) with LocalServiceLocator with AhcWSComponents {
-        override lazy val lagomServer = LagomServer.forServices(
-          bindService[EchoService].to(new EchoServiceImpl)
-        )
+        override lazy val lagomServer = serverFor[EchoService](new EchoServiceImpl)
       }
     }
     lazy val client = server.serviceClient.implement[EchoService]

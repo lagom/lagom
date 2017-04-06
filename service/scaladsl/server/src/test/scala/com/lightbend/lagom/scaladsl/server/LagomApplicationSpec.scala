@@ -28,7 +28,7 @@ class LagomApplicationSpec extends WordSpec with Matchers {
       a[LagomServerTopicFactoryVerifier.NoTopicPublisherException] should be thrownBy {
         new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents {
           override lazy val applicationLifecycle = lifecycle
-          override def lagomServer = LagomServer.forServices(bindService[AppWithTopics].to(AppWithTopics))
+          override def lagomServer = serverFor[AppWithTopics](AppWithTopics)
           override def serviceLocator = NoServiceLocator
         }
       }
@@ -37,14 +37,14 @@ class LagomApplicationSpec extends WordSpec with Matchers {
 
     "start if there are topics to publish but and no topic publisher is provided" in {
       new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents {
-        override def lagomServer = LagomServer.forServices(bindService[AppWithNoTopics].to(AppWithNoTopics))
+        override def lagomServer = serverFor[AppWithNoTopics](AppWithNoTopics)
         override def serviceLocator = NoServiceLocator
       }.applicationLifecycle.stop()
     }
 
     "start if there are topics to publish and a topic publisher is provided" in {
       new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with MockTopicComponents {
-        override def lagomServer = LagomServer.forServices(bindService[AppWithTopics].to(AppWithTopics))
+        override def lagomServer = serverFor[AppWithTopics](AppWithTopics)
         override def serviceLocator = NoServiceLocator
       }.applicationLifecycle.stop()
     }
@@ -58,7 +58,7 @@ class LagomApplicationSpec extends WordSpec with Matchers {
         configuration.getString(configKey) shouldBe expected.getString(configKey)
 
         // following is required to complete the cake. Irrelevant for the test.
-        override def lagomServer = LagomServer.forServices(bindService[AppWithNoTopics].to(AppWithNoTopics))
+        override def lagomServer = serverFor[AppWithNoTopics](AppWithNoTopics)
 
         override def serviceLocator = NoServiceLocator
       }.applicationLifecycle.stop()

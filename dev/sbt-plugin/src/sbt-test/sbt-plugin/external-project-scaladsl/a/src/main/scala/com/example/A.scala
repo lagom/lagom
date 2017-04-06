@@ -28,7 +28,7 @@ class AImpl extends A {
 abstract class AApplication(context: LagomApplicationContext)
   extends LagomApplication(context) with AhcWSComponents {
 
-  override def lagomServer = LagomServer.forServices(bindService[A].to(new AImpl))
+  override def lagomServer = serverFor[A](new AImpl)
 }
 
 class ALoader extends LagomApplicationLoader {

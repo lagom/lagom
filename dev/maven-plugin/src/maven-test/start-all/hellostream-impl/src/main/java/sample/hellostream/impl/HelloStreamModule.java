@@ -15,7 +15,7 @@ public class HelloStreamModule extends AbstractModule implements ServiceGuiceSup
   @Override
   protected void configure() {
     // Bind the HelloStream service
-    bindServices(serviceBinding(HelloStream.class, HelloStreamImpl.class));
+    bindService(HelloStream.class, HelloStreamImpl.class);
     // Bind the HelloService client
     bindClient(HelloService.class);
   }
