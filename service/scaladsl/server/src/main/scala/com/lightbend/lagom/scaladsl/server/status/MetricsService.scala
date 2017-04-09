@@ -6,11 +6,12 @@ package com.lightbend.lagom.scaladsl.server.status
 import java.time.Instant
 
 import akka.NotUsed
+import akka.actor.ActorSystem
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.client.{ CircuitBreakerMetricsImpl, CircuitBreakerMetricsProviderImpl }
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api.{ Service, ServiceCall }
-import com.lightbend.lagom.scaladsl.server.{ LagomServerComponents, LagomServiceBinder, LagomServiceBinding }
+import com.lightbend.lagom.scaladsl.server.{ LagomServerBuilder, LagomServerComponents, LagomServiceBinder, LagomServiceBinding }
 import play.api.libs.json.{ Format, Json }
 
 import scala.collection.immutable
@@ -43,8 +44,11 @@ trait MetricsService extends Service {
 /**
  * Provides an in-built metrics service.
  */
-trait MetricsServiceComponents extends LagomServerComponents {
+trait MetricsServiceComponents {
+  def actorSystem: ActorSystem
   def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
+  def lagomServerBuilder: LagomServerBuilder
+  def executionContext: ExecutionContext
 
   lazy val metricsServiceBinding: LagomServiceBinding[MetricsService] = {
     // Can't use the bindService macro here, since it's in the same compilation unit. The code below is exactly what
@@ -52,6 +56,7 @@ trait MetricsServiceComponents extends LagomServerComponents {
     LagomServiceBinder(lagomServerBuilder, new MetricsService {
       override def circuitBreakers: ServiceCall[NotUsed, Source[Seq[CircuitBreakerStatus], NotUsed]] =
         throw new NotImplementedError("Service methods and topics must not be invoked from service trait")
+
       override def currentCircuitBreakers: ServiceCall[NotUsed, Seq[CircuitBreakerStatus]] =
         throw new NotImplementedError("Service methods and topics must not be invoked from service trait")
     }.descriptor).to(new MetricsServiceImpl(circuitBreakerMetricsProvider)(executionContext))

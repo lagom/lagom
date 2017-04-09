@@ -3,11 +3,9 @@
  */
 package com.lightbend.lagom.scaladsl.api
 
-import java.net.{ URI, URISyntaxException }
+import java.net.URI
 
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
-import com.typesafe.config.ConfigException
-import play.api.Configuration
 
 import scala.concurrent.{ ExecutionContext, Future }
 
