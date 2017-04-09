@@ -76,6 +76,7 @@ With the above "hello" example we could adjust the configuration by defining pro
 
 ### Circuit breaker metrics
 
+
 Lagom allows you to publish metrics for circuit breakers via a metrics service. To enable this service, mix in the [`MetricsServiceComponents`](api/com/lightbend/lagom/scaladsl/server/status/MetricsServiceComponents.html) trait into your application, and add the provided `metricsServiceBinding` to your service bindings in your `lagomServer` declaration, like so:
 
 @[metrics-service](code/ServiceClients.scala)
@@ -86,4 +87,3 @@ The service provides the following endpoints:
 * `/_status/circuit-breaker/stream` - Stream of circuit breaker status
 
 [Lightbend Monitoring](https://www.lightbend.com/products/monitoring) will provide metrics for Lagom circuit breakers, including aggregated views of the information for all nodes in the cluster.
-

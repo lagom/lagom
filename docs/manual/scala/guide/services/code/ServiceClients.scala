@@ -80,6 +80,7 @@ package circuitbreakers {
 
 }
 
+
 package metricsservice {
 
   import helloservice._
@@ -92,8 +93,7 @@ package metricsservice {
 
   abstract class MyApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
-      with AhcWSComponents
-      with MetricsServiceComponents {
+      with AhcWSComponents {
 
     lazy val lagomServer = LagomServer.forServices(
       bindService[HelloService].to(wire[HelloServiceImpl]),
