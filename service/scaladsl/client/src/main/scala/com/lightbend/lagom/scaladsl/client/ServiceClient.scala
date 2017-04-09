@@ -7,15 +7,16 @@ import java.io.File
 
 import akka.actor.ActorSystem
 import akka.stream.{ ActorMaterializer, Materializer }
+import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
-import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
+import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
+import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
-import play.api.{ Configuration, Environment, Mode }
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 import play.api.libs.ws.WSClient
-import play.api.libs.ws.ahc.AhcWSComponents
+import play.api.{ Configuration, Environment, Mode }
 
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
@@ -112,9 +113,12 @@ trait LagomServiceClientComponents extends TopicFactoryProvider {
   def serviceInfo: ServiceInfo
   def serviceLocator: ServiceLocator
   def materializer: Materializer
+  def actorSystem: ActorSystem
   def executionContext: ExecutionContext
   def environment: Environment
   def applicationLifecycle: ApplicationLifecycle
+
+  lazy val circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider = new CircuitBreakerMetricsProviderImpl(actorSystem)
 
   lazy val serviceResolver: ServiceResolver = new ScaladslServiceResolver(defaultExceptionSerializer)
   lazy val defaultExceptionSerializer: ExceptionSerializer = new DefaultExceptionSerializer(environment)
@@ -127,7 +131,7 @@ trait LagomServiceClientComponents extends TopicFactoryProvider {
 }
 
 /**
- * Convienence for constructing service clients in a non Lagom server application.
+ * Convenience for constructing service clients in a non Lagom server application.
  *
  * It is important to invoke [[#stop]] when the application is no longer needed, as this will trigger the shutdown
  * of all thread and connection pools.
