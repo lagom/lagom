@@ -44,41 +44,6 @@ In sbt:
 
 @[cassandra-clean-on-start](code/build-cassandra-opts.sbt)
 
-## Keyspace _(deprecated)_
-
-A keyspace in Cassandra is a namespace that defines data replication on nodes. Each service should use a unique keyspace name so that the tables of different services do not conflict with each other. In the development environment, the keyspace is automatically set to be the project's name by default (after possibly having replaced a few characters that aren't allowed). If the generated keyspace doesn't suit you, you are free to provide a custom one.
-
-In Maven, you can do this by modifying the service implementation's pom configuration:
-
-```xml
-<plugin>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-maven-plugin</artifactId>
-    <configuration>
-        <lagomService>true</lagomService>
-        <cassandraKeyspace>users</cassandraKeyspace>
-    </configuration>
-</plugin>
-```
-
-In sbt, add the `lagomCassandraKeyspace` setting to the service implementation project:
-
-@[cassandra-users-project-with-keyspace](code/build-cassandra-opts-lang.sbt)
-
-It is worth pointing out that, despite the above, a Cassandra keyspace will still need to be provided when running your service in production. Hence, if you'd like to provide a Cassandra keyspace name that can be used both in development and production, it is recommended to do so via a configuration file.
-
-For instance, instead of setting the keyspace using the `lagomCassandraKeyspace` as we did before, we can obtain the same result by adding the following additional keys/values in the project's `application.conf` (note that if you do not have an `application.conf`, you should create one. For the above defined project, it would be typically placed under `usersImpl/src/main/resources/`):
-
-```
-cassandra-journal.keyspace=users
-cassandra-snapshot-store.keyspace=users
-lagom.persistence.read-side.cassandra.keyspace=users
-```
-
-Note that Cassandra uses keyspace values from the `application.conf` file instead of any you might define in the build. For that reason, overriding the keyspace in the build is deprecated, and will be removed in a future version of Lagom.
-
-See [[Cassandra persistent entity configuration|PersistentEntityCassandra#Configuration]] for more information about configuring keyspaces.
-
 ## JVM options
 
 The Cassandra server is run on a separate process, and a JVM is started with sensible memory defaults. However, if the default JVM options don't suit you, you can override them by adding the following in your build.
