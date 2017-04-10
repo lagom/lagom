@@ -57,7 +57,7 @@ public class AnotherServiceTest {
         // (2) Receives a ProducerStubFactory that factors ProducerStubs
         @Inject
         HelloServiceStub(ProducerStubFactory producerFactory) {
-            // (3) requesting a producer for a specific topic weill create a Stub for it.
+            // (3) Create a stub to request a producer for a specific topic
             helloProducer = producerFactory.producer(GREETINGS_TOPIC);
         }
 
