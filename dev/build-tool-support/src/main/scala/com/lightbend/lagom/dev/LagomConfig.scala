@@ -14,7 +14,7 @@ object LagomConfig {
     s"cassandra-snapshot-store.defaults.$key" -> value,
     s"lagom.defaults.persistence.read-side.cassandra.$key" -> value
   )
-  def cassandraKeySpace(keyspace: String) = cassandraConfig("keyspace", keyspace)
+
   def cassandraPort(port: Int) = cassandraConfig("port", port.toString)
 
   def actorSystemConfig(name: String) = Map(
@@ -23,17 +23,4 @@ object LagomConfig {
     "lagom.defaults.cluster.join-self" -> "on"
   )
 
-  private val cassandraKeyspaceNameRegex = """^("[a-zA-Z]{1}[\w]{0,47}"|[a-zA-Z]{1}[\w]{0,47})$""".r
-
-  def normalizeCassandraKeyspaceName(projectName: String): String = {
-    def isValidKeyspaceName(name: String): Boolean = cassandraKeyspaceNameRegex.pattern.matcher(name).matches()
-    if (isValidKeyspaceName(projectName)) projectName
-    else {
-      // I'm confident the normalized name will work in most situations. If it doesn't, then
-      // the application will fail at runtime and users will have to provide a valid keyspace
-      // name in the application.conf
-      val normalizedName = projectName.replaceAll("""[^\w]""", "_")
-      normalizedName
-    }
-  }
 }

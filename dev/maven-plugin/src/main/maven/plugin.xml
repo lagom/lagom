@@ -98,14 +98,6 @@
             <editable>true</editable>
             <description>The JVM options to pass to Cassandra.</description>
         </parameter>
-        <parameter>
-            <name>cassandraKeyspace</name>
-            <type>java.lang.String</type>
-            <required>false</required>
-            <editable>true</editable>
-            <description>The keyspace to use for Cassandra.</description>
-            <deprecated>Configure in application.conf instead.</deprecated>
-        </parameter>
 
         <parameter>
             <name>kafkaPort</name>
@@ -469,9 +461,6 @@
                 </parameter>
                 <parameter>
                     <name>cassandraPort</name>
-                </parameter>
-                <parameter>
-                    <name>cassandraKeyspace</name>
                 </parameter>
                 <parameter>
                     <name>externalProjects</name>

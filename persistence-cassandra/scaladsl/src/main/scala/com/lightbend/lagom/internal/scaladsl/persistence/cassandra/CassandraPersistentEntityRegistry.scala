@@ -19,18 +19,8 @@ private[lagom] final class CassandraPersistentEntityRegistry(system: ActorSystem
 
   private val log = Logging.getLogger(system, getClass)
 
-  CassandraKeyspaceConfig.validateKeyspace(
-    namespace = "cassandra-journal",
-    defaultNamespace = "cassandra-journal.defaults",
-    system.settings.config,
-    log
-  )
-  CassandraKeyspaceConfig.validateKeyspace(
-    namespace = "cassandra-snapshot-store",
-    defaultNamespace = "cassandra-snapshot-store.defaults",
-    system.settings.config,
-    log
-  )
+  CassandraKeyspaceConfig.validateKeyspace("cassandra-journal", system.settings.config, log)
+  CassandraKeyspaceConfig.validateKeyspace("cassandra-snapshot-store", system.settings.config, log)
 
   override protected val journalId = CassandraReadJournal.Identifier
 
