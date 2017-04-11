@@ -294,8 +294,6 @@ object LagomPlugin extends AutoPlugin {
     val lagomCassandraPort = settingKey[Int]("Port used by the local cassandra server")
     val lagomCassandraEnabled = settingKey[Boolean]("Enable/Disable the cassandra server")
     val lagomCassandraCleanOnStart = settingKey[Boolean]("Wipe the cassandra database before starting")
-    @deprecated("Configure in application.conf instead.", "1.3.2")
-    val lagomCassandraKeyspace = settingKey[String]("Cassandra keyspace used by a Lagom service")
     val lagomCassandraJvmOptions = settingKey[Seq[String]]("JVM options used by the forked cassandra process")
     val lagomCassandraMaxBootWaitingTime = settingKey[FiniteDuration]("Max waiting time to start cassandra")
 
@@ -329,11 +327,6 @@ object LagomPlugin extends AutoPlugin {
   }
 
   import autoImport._
-
-  private lazy val cassandraKeyspaceConfig: Initialize[Map[String, String]] = Def.setting {
-    val keyspace = lagomCassandraKeyspace.value
-    LagomConfig.cassandraKeySpace(keyspace)
-  }
 
   private val serviceLocatorProject = Project("lagom-internal-meta-project-service-locator", file("."),
     configurations = Configurations.default,
@@ -438,7 +431,6 @@ object LagomPlugin extends AutoPlugin {
     lagomFileWatchService := {
       FileWatchService.defaultWatchService(target.value, pollInterval.value, new SbtLoggerProxy(sLog.value))
     },
-    lagomCassandraKeyspace := LagomConfig.normalizeCassandraKeyspaceName(name.value),
     lagomServicePort := LagomPlugin.assignedPortFor(ProjectName(name.value), state.value).value,
     Internal.Keys.stop := {
       Internal.Keys.interactionMode.value match {
@@ -570,8 +562,7 @@ object LagomPlugin extends AutoPlugin {
   }
 
   private[sbt] lazy val managedSettings: Initialize[Map[String, String]] = Def.setting {
-    serviceLocatorConfiguration.value ++ cassandraServerConfiguration.value ++
-      cassandraKeyspaceConfig.value ++ actorSystemsConfig.value
+    serviceLocatorConfiguration.value ++ cassandraServerConfiguration.value ++ actorSystemsConfig.value
   }
 }
 

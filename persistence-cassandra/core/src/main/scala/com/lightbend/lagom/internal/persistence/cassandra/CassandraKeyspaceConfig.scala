@@ -8,18 +8,11 @@ import com.typesafe.config.Config
 
 private[lagom] object CassandraKeyspaceConfig {
 
-  def validateKeyspace(namespace: String, defaultNamespace: String, config: Config, log: LoggingAdapter): Unit = {
-    if (log.isWarningEnabled) {
-      val keyspace = config.getString(s"$namespace.keyspace")
-      val defaultPath = s"$defaultNamespace.keyspace"
-      if (config.hasPath(defaultPath) && keyspace == config.getString(defaultPath)) {
-        log.warning(
-          "Configuration for [{}] uses deprecated default value [{}]. " +
-            "Please set an explicit keyspace value in application.conf if you haven't already. " +
-            "The default will be removed in a future version of Lagom.",
-          s"$namespace.keyspace",
-          keyspace
-        )
+  def validateKeyspace(namespace: String, config: Config, log: LoggingAdapter): Unit = {
+    if (log.isErrorEnabled) {
+      val keyspacePath = s"$namespace.keyspace"
+      if (!config.hasPath(keyspacePath)) {
+        log.error("Configuration for [{}] must be set in application.conf ", keyspacePath)
       }
     }
   }

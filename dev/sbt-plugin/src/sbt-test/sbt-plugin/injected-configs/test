@@ -15,11 +15,8 @@
 
 > run
 $ sleep 1000
-> journalKeyspace my_project
 > journalPort 4000
-> snapshotStoreKeyspace my_project
 > snapshotStorePort 4000
-> readKeyspace my_project
 > readPort 4000
 > readInternalActorSystemName my-project-internal-dev-mode
 > readApplicationActorSystemName my-project-application

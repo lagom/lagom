@@ -6,7 +6,7 @@ package com.lightbend.lagom.maven
 import java.io.File
 import javax.inject.Inject
 
-import com.lightbend.lagom.dev.{ Colors, ConsoleHelper, LagomConfig }
+import com.lightbend.lagom.dev.{ Colors, ConsoleHelper }
 import com.lightbend.lagom.dev.PortAssigner.ProjectName
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.model.Dependency
@@ -118,10 +118,7 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
       Some(this.cassandraPort)
     } else None
 
-    val cassandraKeyspace = LagomConfig.normalizeCassandraKeyspaceName(project.getArtifactId)
-
-    serviceManager.startServiceDevMode(project, selectedPort, serviceLocatorUrl, cassandraPort, cassandraKeyspace,
-      playService = playService, resolvedWatchDirs)
+    serviceManager.startServiceDevMode(project, selectedPort, serviceLocatorUrl, cassandraPort, playService = playService, resolvedWatchDirs)
   }
 }
 
@@ -204,12 +201,9 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
 
       val serviceCassandraPort = cassandraPort.filter(_ => project.cassandraEnabled)
 
-      val cassandraKeyspace = LagomConfig.normalizeCassandraKeyspaceName(project.artifact.getArtifactId)
-
       val dependency = RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
 
-      serviceManager.startExternalProject(dependency, selectedPort, serviceLocatorUrl, serviceCassandraPort, cassandraKeyspace,
-        playService = project.playService)
+      serviceManager.startExternalProject(dependency, selectedPort, serviceLocatorUrl, serviceCassandraPort, playService = project.playService)
     }
   }
 

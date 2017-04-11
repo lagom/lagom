@@ -47,12 +47,7 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
 
   private val log = Logging.getLogger(system, getClass)
 
-  CassandraKeyspaceConfig.validateKeyspace(
-    namespace = "lagom.persistence.read-side.cassandra",
-    defaultNamespace = "lagom.defaults.persistence.read-side.cassandra",
-    system.settings.config,
-    log
-  )
+  CassandraKeyspaceConfig.validateKeyspace("lagom.persistence.read-side.cassandra", system.settings.config, log)
 
   /**
    * Internal API
