@@ -7,11 +7,8 @@ scalaVersion := Option(System.getProperty("scala.version")).getOrElse("2.11.7")
 
 interactionMode := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 
-val CassandraJournalKeyspace       = "cassandra-journal.keyspace"
 val CassandraJournalPort           = "cassandra-journal.port"
-val CassandraSnapshotStoreKeyspace = "cassandra-snapshot-store.keyspace"
 val CassandraSnapshotStorePort     = "cassandra-snapshot-store.port"
-val LagomCassandraReadKeyspace     = "lagom.persistence.read-side.cassandra.keyspace"
 val LagomCassandraReadPort         = "lagom.persistence.read-side.cassandra.port"
 val InternalActorSystemName        = "lagom.akka.dev-mode.actor-system.name"
 val ApplicationActorSystemName     = "play.akka.actor-system"
@@ -31,31 +28,16 @@ def validate(configFile: java.io.File, key: String, expected: String) = {
   }	
 }
 
-InputKey[Unit]("journalKeyspace") := {
-  val expectedValue = Def.spaceDelimited().parsed.head
-  validate(injectedCassandraConfig.value, CassandraJournalKeyspace, expectedValue)
-}
-
 InputKey[Unit]("journalPort") := {
   val expectedValue = Def.spaceDelimited().parsed.head
   expectedValue.toInt // here just to check it doesn't throw
   validate(injectedCassandraConfig.value, CassandraJournalPort, expectedValue)
 }
 
-InputKey[Unit]("snapshotStoreKeyspace") := {
-  val expectedValue = Def.spaceDelimited().parsed.head
-  validate(injectedCassandraConfig.value, CassandraSnapshotStoreKeyspace, expectedValue)
-}
-
 InputKey[Unit]("snapshotStorePort") := {
   val expectedValue = Def.spaceDelimited().parsed.head
   expectedValue.toInt // here just to check it doesn't throw
   validate(injectedCassandraConfig.value, CassandraSnapshotStorePort, expectedValue)
-}
-
-InputKey[Unit]("readKeyspace") := {
-  val expectedValue = Def.spaceDelimited().parsed.head
-  validate(injectedCassandraConfig.value, LagomCassandraReadKeyspace, expectedValue)
 }
 
 InputKey[Unit]("readPort") := {
