@@ -44,6 +44,10 @@
             <groupId>com.typesafe.conductr</groupId>
             <artifactId>${conductr.lib.name}</artifactId>
         </dependency>
+       <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
