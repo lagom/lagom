@@ -1,6 +1,9 @@
 # Importing an existing Maven project into IntelliJ
 
-If you worked through the command line example for [[Maven|GettingStartedMaven]], you have a Maven project that you can integrate into Intellij IDEA Using built in [IntelliJ Maven](https://www.jetbrains.com/help/idea/2016.3/getting-started-with-maven.html) support.
+If you worked through the command line example for [[Maven|GettingStartedMaven]], you have a Maven project that you can integrate into Intellij IDEA Using built in [IntelliJ Maven](https://www.jetbrains.com/help/idea/2016.3/getting-started-with-maven.html) support. Before integrating your project, make sure that your IntelliJ **Settings** use the following:
+
+* Maven 3.3 or higher
+* A JDK 1.8 or higher
 
 > **Note** When developing with Lagom you will often run several services in a single Java Virtual Machine. See how to [[increase Memory for Maven|JVMMemoryOnDev]].
 
