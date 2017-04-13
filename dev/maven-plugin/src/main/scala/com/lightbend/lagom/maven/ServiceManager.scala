@@ -47,7 +47,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
   private def calculateDevModeDependencies(scalaBinaryVersion: String, playService: Boolean,
                                            serviceLocatorUrl: Option[String], cassandraPort: Option[Int]): Seq[Dependency] = {
     if (playService) {
-      devModeDependencies(scalaBinaryVersion, Seq("lagom-play-integration", "lagom-reloadable-server"))
+      devModeDependencies(scalaBinaryVersion, Seq("lagom-javadsl-play-integration", "lagom-reloadable-server"))
     } else {
       devModeDependencies(
         scalaBinaryVersion,
