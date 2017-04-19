@@ -22,6 +22,9 @@ In sbt:
 
 You will also need to add the jar for your JDBC database driver.
 
+To enable the RDBMS Persistence on your Application you will have to mix in | [JdbcPersistenceComponents](api/com/lightbend/lagom/scaladsl/persistence/jdbc/JdbcPersistenceComponents.html) and [HikariCPComponents](https://www.playframework.com/documentation/2.5.x/api/scala/play/api/db/HikariCPComponents.html) as described in [[Dependency Injection|DependencyInjection#Wiring-together-a-Lagom-application]].
+ 
+
 ## Configuration
 
 Lagom uses the [`akka-persistence-jdbc`](https://github.com/dnvriend/akka-persistence-jdbc) plugin to persist entities to the database.  This supports four different relational databases:
