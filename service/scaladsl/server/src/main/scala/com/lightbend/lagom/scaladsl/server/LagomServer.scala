@@ -5,7 +5,7 @@ package com.lightbend.lagom.scaladsl.server
 
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.scaladsl.server.{ ScaladslServerMacroImpl, ScaladslServiceRouter }
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceInfo }
+import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCallTransport, ServiceInfo }
 import com.lightbend.lagom.scaladsl.client.ServiceResolver
 import com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents
 import play.api.http.HttpConfiguration
@@ -91,7 +91,12 @@ trait LagomServerComponents extends MetricsServiceComponents {
 
 final class LagomServerBuilder(httpConfiguration: HttpConfiguration, serviceResolver: ServiceResolver)(implicit materializer: Materializer, executionContext: ExecutionContext) {
   def buildRouter(service: Service): Router = {
-    new ScaladslServiceRouter(serviceResolver.resolve(service.descriptor), service, httpConfiguration)(executionContext, materializer)
+    if (service.descriptor.serviceCallTransports.contains(ServiceCallTransport.Http)) {
+      new ScaladslServiceRouter(serviceResolver.resolve(service.descriptor), service, httpConfiguration)(executionContext, materializer)
+    } else {
+      // Don't build a router if HTTP isn't being used
+      Router.empty
+    }
   }
 }
 

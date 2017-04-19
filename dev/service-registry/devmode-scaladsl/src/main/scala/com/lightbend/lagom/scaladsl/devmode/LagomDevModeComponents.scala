@@ -87,7 +87,7 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
       }
     }
 
-    val serviceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo, staticServiceLocator,
+    val serviceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, null, serviceInfo, staticServiceLocator,
       new ScaladslServiceResolver(new DefaultExceptionSerializer(environment)), None)(executionContext, materializer)
 
     serviceClient.implement[ServiceRegistry]

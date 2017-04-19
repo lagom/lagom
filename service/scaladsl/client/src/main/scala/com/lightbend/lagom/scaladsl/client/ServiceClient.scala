@@ -7,13 +7,14 @@ import java.io.File
 
 import akka.actor.ActorSystem
 import akka.stream.{ ActorMaterializer, Materializer }
-import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl
+import com.lightbend.lagom.internal.client.{ CircuitBreakerMetricsProviderImpl, WebSocketClient }
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
-import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
+import com.lightbend.lagom.internal.scaladsl.client._
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
+import io.netty.channel.EventLoopGroup
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 import play.api.libs.concurrent.ActorSystemProvider
 import play.api.libs.ws.WSClient
@@ -123,12 +124,15 @@ trait LagomServiceClientComponents extends TopicFactoryProvider {
 
   lazy val serviceResolver: ServiceResolver = new ScaladslServiceResolver(defaultExceptionSerializer)
   lazy val defaultExceptionSerializer: ExceptionSerializer = new DefaultExceptionSerializer(environment)
+  lazy val eventLoopGroup: EventLoopGroup = WebSocketClient.createEventLoopGroup(applicationLifecycle)
   lazy val scaladslWebSocketClient: ScaladslWebSocketClient = new ScaladslWebSocketClient(
     environment,
+    eventLoopGroup,
     applicationLifecycle
   )(executionContext)
-  lazy val serviceClient: ServiceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
-    serviceLocator, serviceResolver, optionalTopicFactory)(executionContext, materializer)
+  lazy val grpcChannelPool: GrpcChannelPool = new GrpcChannelPool(actorSystem, eventLoopGroup)
+  lazy val serviceClient: ServiceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, grpcChannelPool,
+    serviceInfo, serviceLocator, serviceResolver, optionalTopicFactory)(executionContext, materializer)
 }
 
 /**

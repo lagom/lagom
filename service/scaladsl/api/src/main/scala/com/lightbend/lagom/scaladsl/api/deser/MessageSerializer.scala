@@ -10,7 +10,9 @@ import com.lightbend.lagom.scaladsl.api.transport._
 import play.api.libs.json._
 
 import scala.collection.immutable
+import scala.collection.immutable.Seq
 import scala.util.control.NonFatal
+import com.trueaccord.scalapb
 
 trait MessageSerializer[Message, WireFormat] {
   /**
@@ -282,5 +284,24 @@ trait LowPriorityMessageSerializerImplicits {
       new SourceSerializer(delegate.serializerForResponse(acceptedMessageProtocols))
     override def serializerForRequest: NegotiatedSerializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] =
       new SourceSerializer(delegate.serializerForRequest)
+  }
+
+  implicit def scalapbMessageSerializer[Message <: scalapb.GeneratedMessage with scalapb.Message[Message]: scalapb.GeneratedMessageCompanion]: StrictMessageSerializer[Message] = new StrictMessageSerializer[Message] {
+    private object ScalapbSerializer extends NegotiatedSerializer[Message, ByteString] {
+      override def serialize(message: Message): ByteString = {
+        val bytes = ByteString.createBuilder
+        message.writeTo(bytes.asOutputStream)
+        bytes.result
+      }
+      override val protocol: MessageProtocol = MessageProtocol(Some("application/protobuf"))
+    }
+    private object ScalapbDeserializer extends NegotiatedDeserializer[Message, ByteString] {
+      override def deserialize(bytes: ByteString): Message = {
+        implicitly[scalapb.GeneratedMessageCompanion[Message]].parseFrom(bytes.iterator.asInputStream)
+      }
+    }
+    override def deserializer(protocol: MessageProtocol): NegotiatedDeserializer[Message, ByteString] = ScalapbDeserializer
+    override def serializerForResponse(acceptedMessageProtocols: Seq[MessageProtocol]): NegotiatedSerializer[Message, ByteString] = ScalapbSerializer
+    override def serializerForRequest: NegotiatedSerializer[Message, ByteString] = ScalapbSerializer
   }
 }

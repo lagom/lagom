@@ -69,6 +69,13 @@ sealed trait Descriptor {
    */
   val circuitBreaker: CircuitBreaker
 
+  /**
+   * The transports that are supported by this service.
+   *
+   * The first transport in the sequence is the default that will be used by clients.
+   */
+  val serviceCallTransports: immutable.Seq[ServiceCallTransport]
+
   def addCalls(calls: Call[_, _]*): Descriptor = withCalls(this.calls ++ calls: _*)
   def withCalls(calls: Call[_, _]*): Descriptor
 
@@ -84,6 +91,15 @@ sealed trait Descriptor {
   def withHeaderFilter(headerFilter: HeaderFilter): Descriptor
   def withLocatableService(locatableService: Boolean): Descriptor
   def withCircuitBreaker(circuitBreaker: CircuitBreaker): Descriptor
+
+  def withServiceCallTransports(transports: ServiceCallTransport*): Descriptor
+}
+
+sealed trait ServiceCallTransport
+
+object ServiceCallTransport {
+  case object Http extends ServiceCallTransport
+  case object Grpc extends ServiceCallTransport
 }
 
 object Descriptor {
@@ -336,15 +352,16 @@ object Descriptor {
   }
 
   private[api] case class DescriptorImpl(
-    name:                String,
-    calls:               immutable.Seq[Call[_, _]]   = Nil,
-    topics:              immutable.Seq[TopicCall[_]] = Nil,
-    exceptionSerializer: ExceptionSerializer         = DefaultExceptionSerializer.Unresolved,
-    autoAcl:             Boolean                     = false,
-    acls:                immutable.Seq[ServiceAcl]   = Nil,
-    headerFilter:        HeaderFilter                = UserAgentHeaderFilter,
-    locatableService:    Boolean                     = true,
-    circuitBreaker:      CircuitBreaker              = CircuitBreaker.PerNode
+    name:                  String,
+    calls:                 immutable.Seq[Call[_, _]]           = Nil,
+    topics:                immutable.Seq[TopicCall[_]]         = Nil,
+    exceptionSerializer:   ExceptionSerializer                 = DefaultExceptionSerializer.Unresolved,
+    autoAcl:               Boolean                             = false,
+    acls:                  immutable.Seq[ServiceAcl]           = Nil,
+    headerFilter:          HeaderFilter                        = UserAgentHeaderFilter,
+    locatableService:      Boolean                             = true,
+    circuitBreaker:        CircuitBreaker                      = CircuitBreaker.PerNode,
+    serviceCallTransports: immutable.Seq[ServiceCallTransport] = List(ServiceCallTransport.Http)
   ) extends Descriptor {
     override def withCalls(calls: Call[_, _]*): Descriptor = copy(calls = calls.to[immutable.Seq])
     override def withTopics(topics: TopicCall[_]*): Descriptor = copy(topics = topics.to[immutable.Seq])
@@ -354,6 +371,7 @@ object Descriptor {
     override def withHeaderFilter(headerFilter: HeaderFilter): Descriptor = copy(headerFilter = headerFilter)
     override def withLocatableService(locatableService: Boolean): Descriptor = copy(locatableService = locatableService)
     override def withCircuitBreaker(circuitBreaker: CircuitBreaker): Descriptor = copy(circuitBreaker = circuitBreaker)
+    override def withServiceCallTransports(transports: ServiceCallTransport*): Descriptor = copy(serviceCallTransports = transports.to[immutable.Seq])
   }
 
   private[api] case class CallImpl[Request, Response](
