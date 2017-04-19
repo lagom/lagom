@@ -89,6 +89,7 @@ object Dependencies {
       "com.fasterxml" % "classmate" % "1.3.0",
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
       akkaPersistenceJdbc,
+      "com.github.jbellis" % "jamm" % "0.3.0", // ???
       "com.github.jnr" % "jffi" % "1.2.14",
       "com.github.jnr" % "jnr-constants" % "0.9.6",
       "com.github.jnr" % "jnr-ffi" % "2.1.2",
@@ -199,6 +200,8 @@ object Dependencies {
     ) ++ crossLibraryFamily("com.typesafe.play", PlayVersion)(
       "play", "play-datacommons", "play-guice", "play-iteratees", "play-java", "play-jdbc", "play-jdbc-api",
       "play-netty-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
+//      "play", "play-ahc-ws", "play-datacommons", "play-functional", "play-guice", "play-iteratees", "play-java", "play-jdbc", "play-jdbc-api",  // ??
+//      "play-json", "play-netty-server", "play-server", "play-streams", "play-ws"  // ??
 
     ) ++ libraryFamily("ch.qos.logback", "1.1.3")(
       "logback-classic", "logback-core"
