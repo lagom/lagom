@@ -8,9 +8,9 @@ import java.util.{ Base64, Locale }
 import java.util.concurrent.CompletionException
 
 import akka.NotUsed
-import akka.stream.Materializer
+import akka.stream._
 import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
-import akka.stream.stage.{ Context, PushStage, SyncDirective, TerminationDirective }
+import akka.stream.stage.{ GraphStage, GraphStageLogic, InHandler, OutHandler }
 import akka.util.ByteString
 import com.lightbend.lagom.internal.api.Path
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
@@ -267,13 +267,24 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
         // directly to this sink.
         val deserializer = requestMessageDeserializer.asInstanceOf[NegotiatedDeserializer[Request, AkkaStreamsSource[ByteString, _]]]
 
-        val captureCancel = Flow[ByteString].transform(() => new PushStage[ByteString, ByteString] {
-          override def onDownstreamFinish(ctx: Context[ByteString]): TerminationDirective = {
-            incomingCancelled.success(None)
-            ctx.finish()
-          }
+        val captureCancel = Flow[ByteString].via(new GraphStage[FlowShape[ByteString, ByteString]] {
 
-          override def onPush(elem: ByteString, ctx: Context[ByteString]): SyncDirective = ctx.push(elem)
+          val in = Inlet[ByteString]("CaptureCancelIn")
+          val out = Outlet[ByteString]("CaptureCancelOut")
+
+          override def shape = FlowShape(in, out)
+          override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
+            setHandler(in, new InHandler {
+              override def onPush(): Unit = push(out, grab(in))
+            })
+            setHandler(out, new OutHandler {
+              override def onPull(): Unit = pull(in)
+              override def onDownstreamFinish(): Unit = {
+                incomingCancelled.success(None)
+                cancel(in)
+              }
+            })
+          }
         })
 
         AkkaStreams.ignoreAfterCancellation via captureCancel to Sink.asPublisher[ByteString](fanout = false).mapMaterializedValue { publisher =>

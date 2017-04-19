@@ -155,7 +155,6 @@ object Reloader {
 
     val _buildLink = new BuildLink {
       private val initialized = new java.util.concurrent.atomic.AtomicBoolean(false)
-      override def runTask(task: String): AnyRef = throw new UnsupportedOperationException("Run task not supported in Lagom")
       override def reload(): AnyRef = {
         if (initialized.compareAndSet(false, true)) applicationLoader
         else null // this means nothing to reload

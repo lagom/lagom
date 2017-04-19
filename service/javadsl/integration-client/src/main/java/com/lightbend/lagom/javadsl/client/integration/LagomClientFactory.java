@@ -24,7 +24,6 @@ import com.lightbend.lagom.javadsl.jackson.JacksonExceptionSerializer;
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.pcollections.PVector;
 import org.pcollections.TreePVector;
 import org.slf4j.Logger;
@@ -36,11 +35,9 @@ import play.api.inject.ApplicationLifecycle;
 import play.api.libs.ws.WSClient;
 import play.api.libs.ws.WSClientConfig;
 import play.api.libs.ws.WSConfigParser;
-import play.api.libs.ws.ahc.AhcConfigBuilder;
 import play.api.libs.ws.ahc.AhcWSClient;
 import play.api.libs.ws.ahc.AhcWSClientConfig;
 import play.api.libs.ws.ahc.AhcWSClientConfigParser;
-import play.api.libs.ws.ssl.SystemConfiguration;
 import scala.Function0;
 import scala.Some;
 import scala.concurrent.Future;
@@ -187,12 +184,9 @@ public class LagomClientFactory implements Closeable {
         EventLoopGroup eventLoop = new NioEventLoopGroup();
 
         // WS
-        WSClientConfig wsClientConfig = new WSConfigParser(configuration, environment).parse();
-        AhcWSClientConfig ahcWSClientConfig = new AhcWSClientConfigParser(wsClientConfig, configuration, environment).parse();
-        new SystemConfiguration().configure(wsClientConfig);
-        DefaultAsyncHttpClientConfig.Builder configBuilder = new AhcConfigBuilder(ahcWSClientConfig).configure();
-        configBuilder.setEventLoopGroup(eventLoop);
-        WSClient wsClient = new AhcWSClient(configBuilder.build(), materializer);
+        WSClientConfig wsClientConfig = new WSConfigParser(configuration.underlying(), environment.classLoader()).parse();
+        AhcWSClientConfig ahcWSClientConfig = new AhcWSClientConfigParser(wsClientConfig, configuration.underlying(), environment.classLoader()).parse();
+        WSClient wsClient = AhcWSClient.apply(ahcWSClientConfig, scala.Option.empty(), materializer);
 
         // WebSocketClient
         // Use dummy lifecycle, we manage the lifecycle manually

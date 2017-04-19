@@ -13,10 +13,6 @@ import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
 import java.util.List;
 import javax.annotation.Generated;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
-import javax.annotation.concurrent.NotThreadSafe;
 
 /**
  * Immutable implementation of {@link AbstractLatency}.
@@ -25,9 +21,7 @@ import javax.annotation.concurrent.NotThreadSafe;
  * {@code Latency.builder()}.
  */
 @SuppressWarnings("all")
-@ParametersAreNonnullByDefault
 @Generated({"Immutables.generator", "AbstractLatency"})
-@Immutable
 public final class Latency implements AbstractLatency {
   private final double median;
   private final double percentile98th;
@@ -224,7 +218,7 @@ public final class Latency implements AbstractLatency {
    * @return {@code true} if {@code this} is equal to {@code another} instance
    */
   @Override
-  public boolean equals(@Nullable Object another) {
+  public boolean equals(Object another) {
     return this == another || another instanceof Latency
         && equalTo((Latency) another);
   }
@@ -281,13 +275,13 @@ public final class Latency implements AbstractLatency {
   @Deprecated
   @JsonDeserialize
   static final class Json implements AbstractLatency {
-    @Nullable java.lang.Double median;
-    @Nullable java.lang.Double percentile98th;
-    @Nullable java.lang.Double percentile99th;
-    @Nullable java.lang.Double percentile999th;
-    @Nullable java.lang.Double mean;
-    @Nullable Long min;
-    @Nullable Long max;
+    java.lang.Double median;
+    java.lang.Double percentile98th;
+    java.lang.Double percentile99th;
+    java.lang.Double percentile999th;
+    java.lang.Double mean;
+    Long min;
+    Long max;
 
     public void setMedian(double median) {
       this.median = median;
@@ -396,7 +390,6 @@ public final class Latency implements AbstractLatency {
    * <p><em>{@code Builder} is not thread-safe and generally should not be stored in a field or collection,
    * but instead used immediately to create instances.</em>
    */
-  @NotThreadSafe
   public static final class Builder {
     private static final long INIT_BIT_MEDIAN = 0x1L;
     private static final long INIT_BIT_PERCENTILE98TH = 0x2L;

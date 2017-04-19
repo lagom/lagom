@@ -28,7 +28,6 @@ import io.netty.util.concurrent.EventExecutor
 import org.slf4j.LoggerFactory
 import play.api.{ PlayException, UsefulException }
 import play.api.inject.ApplicationLifecycle
-import play.api.libs.iteratee.Execution.Implicits.trampoline
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 
@@ -39,6 +38,8 @@ import scala.concurrent.{ Await, ExecutionContext }
 import scala.concurrent.duration._
 import scala.compat.java8.OptionConverters._
 import scala.util.{ Failure, Success }
+
+import com.lightbend.lagom.internal.api.Execution.trampoline
 
 case class ServiceGatewayConfig(
   port: Int
@@ -355,7 +356,6 @@ class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConf
 
   private val bindFuture = server.bind(config.port).channelFutureToScala
   lifecycle.addStopHook(() => {
-    import play.api.libs.iteratee.Execution.Implicits.trampoline
     for {
       channel <- bindFuture
       closed <- channel.close().channelFutureToScala

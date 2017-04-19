@@ -14,6 +14,7 @@ import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationC
 import org.apache.cassandra.io.util.FileUtils
 import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
+import play.api.inject.DefaultApplicationLifecycle
 import play.api.{ Configuration, Environment, Play }
 import play.core.DefaultWebCommands
 import play.core.server.{ Server, ServerConfig, ServerProvider }
@@ -201,7 +202,8 @@ object ServiceTest {
         Configuration.empty
       }
 
-    val lagomApplication = applicationConstructor(LagomApplicationContext(Context(Environment.simple(), None, new DefaultWebCommands, config)))
+    val lagomApplication = applicationConstructor(LagomApplicationContext(Context(Environment.simple(), None,
+      new DefaultWebCommands, config, new DefaultApplicationLifecycle)))
 
     Play.start(lagomApplication.application)
     val serverConfig = ServerConfig(port = Some(0), mode = lagomApplication.environment.mode)

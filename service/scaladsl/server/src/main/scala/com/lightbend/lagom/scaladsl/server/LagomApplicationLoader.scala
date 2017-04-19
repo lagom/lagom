@@ -20,6 +20,8 @@ import com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents
 import com.typesafe.config.Config
 import play.api.ApplicationLoader.Context
 import play.api._
+import play.api.inject.DefaultApplicationLifecycle
+import play.api.mvc.EssentialFilter
 import play.core.DefaultWebCommands
 
 import scala.collection.immutable
@@ -161,7 +163,7 @@ object LagomApplicationContext {
   /**
    * A test application loader context, useful when loading the application in unit or integration tests.
    */
-  val Test = apply(Context(Environment.simple(), None, new DefaultWebCommands, Configuration.empty))
+  val Test = apply(Context(Environment.simple(), None, new DefaultWebCommands, Configuration.empty, new DefaultApplicationLifecycle))
 }
 
 /**
@@ -188,7 +190,8 @@ abstract class LagomApplication(context: LagomApplicationContext)
   with LagomServerComponents
   with LagomServiceClientComponents {
 
-  override implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
+  override val httpFilters: Seq[EssentialFilter] = Nil
+
   override lazy val configuration: Configuration = Configuration.load(environment) ++
     context.playContext.initialConfiguration ++ additionalConfiguration.configuration
 

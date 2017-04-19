@@ -12,10 +12,6 @@ import com.google.common.collect.Lists;
 import java.net.URI;
 import java.util.List;
 import javax.annotation.Generated;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
-import javax.annotation.concurrent.NotThreadSafe;
 
 /**
  * Immutable implementation of {@link AbstractRegisteredService}.
@@ -26,9 +22,7 @@ import javax.annotation.concurrent.NotThreadSafe;
  * {@code RegisteredService.of()}.
  */
 @SuppressWarnings("all")
-@ParametersAreNonnullByDefault
 @Generated({"Immutables.generator", "AbstractRegisteredService"})
-@Immutable
 public final class RegisteredService
     implements AbstractRegisteredService {
   private final String name;
@@ -91,7 +85,7 @@ public final class RegisteredService
    * @return {@code true} if {@code this} is equal to {@code another} instance
    */
   @Override
-  public boolean equals(@Nullable Object another) {
+  public boolean equals(Object another) {
     return this == another || another instanceof RegisteredService
         && equalTo((RegisteredService) another);
   }
@@ -133,8 +127,8 @@ public final class RegisteredService
   @Deprecated
   @JsonDeserialize
   static final class Json implements AbstractRegisteredService {
-    @Nullable String name;
-    @Nullable URI url;
+    String name;
+    URI url;
 
     public void setName(String name) {
       this.name = name;
@@ -208,14 +202,13 @@ public final class RegisteredService
    * <p><em>{@code Builder} is not thread-safe and generally should not be stored in a field or collection,
    * but instead used immediately to create instances.</em>
    */
-  @NotThreadSafe
   public static final class Builder {
     private static final long INIT_BIT_NAME = 0x1L;
     private static final long INIT_BIT_URL = 0x2L;
     private long initBits = 0x3;
 
-    private @Nullable String name;
-    private @Nullable URI url;
+    private String name;
+    private URI url;
 
     private Builder() {}
 

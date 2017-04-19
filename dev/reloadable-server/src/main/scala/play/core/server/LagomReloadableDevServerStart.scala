@@ -156,7 +156,8 @@ object LagomReloadableDevServerStart {
 
                       Success(newApplication)
                     } catch {
-                      case e: com.google.inject.CreationException =>
+                      // No binary dependency on play-guice
+                      case e if e.getClass.getName == "com.google.inject.CreationException" =>
                         lastState = Failure(e)
                         val hint = "Hint: Maybe you have forgot to enable your service Module class via `play.modules.enabled`? (check in your project's application.conf)"
                         logExceptionAndGetResult(path, e, hint)

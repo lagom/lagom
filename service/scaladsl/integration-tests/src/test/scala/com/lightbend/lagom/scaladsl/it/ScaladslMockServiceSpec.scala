@@ -5,10 +5,9 @@ package com.lightbend.lagom.scaladsl.it
 
 import akka.pattern.CircuitBreakerOpenException
 import akka.stream.scaladsl.{ Flow, Sink, Source }
-import akka.stream.stage.{ Context, PushStage, SyncDirective }
 import akka.{ Done, NotUsed }
 import com.lightbend.lagom.scaladsl.it.mocks.{ MockRequestEntity, MockResponseEntity, MockService, MockServiceImpl }
-import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LagomServer, LocalServiceLocator }
+import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LocalServiceLocator }
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 import play.api.libs.streams.AkkaStreams
@@ -94,7 +93,7 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers with BeforeAndAfter
         // Use a source that never terminates so we don't close the upstream (which would close the downstream), and then
         // use takeUpTo so that we close downstream when we've got everything we want
         val resultStream = Await.result(client.bidiStream.invoke(Source(requests).concat(Source.maybe)), 10.seconds)
-        consume(resultStream via takeUpTo(3)) should ===(requests.map(r => MockResponseEntity(1, r)))
+        consume(resultStream.take(3)) should ===(requests.map(r => MockResponseEntity(1, r)))
       }
       "the server closes the connection" in {
         val requests = (1 to 3).map(i => new MockRequestEntity("request", i))
@@ -103,7 +102,7 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers with BeforeAndAfter
         val serverClosed = Promise[Done]()
         val trackServerClosed = AkkaStreams.ignoreAfterCancellation[MockResponseEntity].mapMaterializedValue(serverClosed.completeWith)
         val resultStream = Await.result(client.bidiStream.invoke(Source(requests).concat(closeWhenGotResponse)), 10.seconds)
-        consume(resultStream via trackServerClosed via takeUpTo(3)) should ===(requests.map(r => MockResponseEntity(1, r)))
+        consume(resultStream via trackServerClosed take 3) should ===(requests.map(r => MockResponseEntity(1, r)))
         gotResponse.success(None)
         Await.result(serverClosed.future, 10.seconds) should ===(Done)
       }
@@ -184,18 +183,6 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers with BeforeAndAfter
   private def consume[A](source: Source[A, _]): Seq[A] = {
     Await.result(source.runWith(Sink.seq), 10.seconds)
   }
-
-  def takeUpTo[T](n: Int): Flow[T, T, _] = Flow[T].transform(() => new PushStage[T, T] {
-    var count = 0
-    override def onPush(elem: T, ctx: Context[T]): SyncDirective = {
-      count += 1
-      if (count >= n) {
-        ctx.pushAndFinish(elem)
-      } else {
-        ctx.push(elem)
-      }
-    }
-  })
 
   override protected def afterAll(): Unit = {
     server.stop()

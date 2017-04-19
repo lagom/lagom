@@ -4,16 +4,16 @@ import sbt.Keys._
 object Dependencies {
 
   // Version numbers
-  val PlayVersion = "2.5.13"
-  val AkkaVersion = "2.4.17"
+  val PlayVersion = "2.6.0-M3"
+  val AkkaVersion = "2.5.0"
   val ScalaVersion = "2.11.11"
-  val AkkaPersistenceCassandraVersion = "0.26"
+  val AkkaPersistenceCassandraVersion = "0.50"
   val ScalaTestVersion = "3.0.1"
   val JacksonVersion = "2.7.8"
-  val CassandraAllVersion = "3.0.9"
+  val CassandraAllVersion = "3.8"
   val GuavaVersion = "19.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.0.42.Final"
+  val NettyVersion = "4.1.8.Final"
   val KafkaVersion = "0.10.0.1"
   val AkkaStreamKafkaVersion = "0.13"
   val Log4jVersion = "1.2.17"
@@ -29,6 +29,7 @@ object Dependencies {
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
   private val jbossLogging = "org.jboss.logging" % "jboss-logging" % "3.3.0.Final"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.1"
+  private val h2 = "com.h2database" % "h2" % "1.4.192"
 
   private val akkaActor = "com.typesafe.akka" %% "akka-actor" % AkkaVersion
   private val akkaCluster = "com.typesafe.akka" %% "akka-cluster" % AkkaVersion
@@ -36,7 +37,7 @@ object Dependencies {
   private val akkaClusterTools = "com.typesafe.akka" %% "akka-cluster-tools" % AkkaVersion
   private val akkaMultiNodeTestkit = "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion
   private val akkaPersistence = "com.typesafe.akka" %% "akka-persistence" % AkkaVersion
-  private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query-experimental" % AkkaVersion
+  private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % AkkaVersion
   private val akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion
   private val akkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
@@ -48,12 +49,13 @@ object Dependencies {
   private val play = "com.typesafe.play" %% "play" % PlayVersion
   private val playBuildLink = "com.typesafe.play" % "build-link" % PlayVersion
   private val playExceptions =  "com.typesafe.play" % "play-exceptions" % PlayVersion
+  private val playGuice = "com.typesafe.play" %% "play-guice" % PlayVersion
   private val playJava = "com.typesafe.play" %% "play-java" % PlayVersion
   private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion
   private val playJson = "com.typesafe.play" %% "play-json" % PlayVersion
   private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion
   private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion
-  private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion
+  private val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % PlayVersion
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.
@@ -73,7 +75,7 @@ object Dependencies {
       "com.datastax.cassandra" % "cassandra-driver-core" % "3.1.4",
       "com.fasterxml" % "classmate" % "1.3.0",
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
-      "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.4.17.1",
+      "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.0.0",
       "com.github.jbellis" % "jamm" % "0.3.0",
       "com.github.jnr" % "jffi" % "1.2.10",
       "com.github.jnr" % "jffi" % "1.2.10",
@@ -88,7 +90,7 @@ object Dependencies {
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4",
       "com.googlecode.json-simple" % "json-simple" % "1.1",
       "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
-      "com.h2database" % "h2" % "1.4.192",
+      h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
       "com.lmax" % "disruptor" % "3.3.6",
       "com.ning" % "compress-lzf" % "0.8.4",
@@ -179,14 +181,14 @@ object Dependencies {
 
     ) ++ crossLibraryFamily("com.typesafe.akka", AkkaVersion)(
       "akka-actor", "akka-cluster", "akka-cluster-sharding", "akka-cluster-tools", "akka-multi-node-testkit",
-      "akka-persistence", "akka-persistence-query-experimental", "akka-protobuf", "akka-remote", "akka-slf4j",
+      "akka-persistence", "akka-persistence-query", "akka-protobuf", "akka-remote", "akka-slf4j",
       "akka-stream", "akka-stream-testkit", "akka-testkit"
 
     ) ++ libraryFamily("com.typesafe.play", PlayVersion)(
       "build-link", "play-exceptions", "play-netty-utils"
 
     ) ++ crossLibraryFamily("com.typesafe.play", PlayVersion)(
-      "play", "play-datacommons", "play-functional", "play-iteratees", "play-java", "play-jdbc", "play-jdbc-api",
+      "play", "play-ahc-ws", "play-datacommons", "play-functional", "play-guice", "play-iteratees", "play-java", "play-jdbc", "play-jdbc-api",
       "play-json", "play-netty-server", "play-server", "play-streams", "play-ws"
 
     ) ++ libraryFamily("ch.qos.logback", "1.1.3")(
@@ -265,6 +267,7 @@ object Dependencies {
 
   val `api-javadsl` = libraryDependencies ++= Seq(
     playJava,
+    playGuice,
     "org.pcollections" % "pcollections" % "2.1.2",
     // Needed to upgrade from 3.18 to ensure everything is on 3.20
     "org.javassist" % "javassist" % "3.21.0-GA",
@@ -312,7 +315,7 @@ object Dependencies {
   )
 
   val client = libraryDependencies ++= Seq(
-    playWs,
+    playAhcWs,
     "io.dropwizard.metrics" % "metrics-core" % "3.1.2",
 
     // Needed to match whitelist versions
@@ -464,9 +467,13 @@ object Dependencies {
     "com.fasterxml" % "classmate" % "1.3.0" % Test
   )
 
-  val `persistence-javadsl` = libraryDependencies ++= Nil
+  val `persistence-javadsl` = libraryDependencies ++= Seq(
+    akkaTestkit
+  )
 
-  val `persistence-scaladsl` = libraryDependencies ++= Nil
+  val `persistence-scaladsl` = libraryDependencies ++= Seq(
+    akkaTestkit
+  )
 
   val `persistence-cassandra-core` = libraryDependencies ++= Seq(
     akkaPersistenceCassandra,
@@ -489,17 +496,22 @@ object Dependencies {
   val `persistence-cassandra-scaladsl` = libraryDependencies ++= Nil
 
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
-    "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.4.17.1",
+    "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.0.0",
     playJdbc
   )
 
-  val `persistence-jdbc-javadsl` = libraryDependencies ++= Nil
+  val `persistence-jdbc-javadsl` = libraryDependencies ++= Seq(
+    h2 % Test
+  )
 
-  val `persistence-jdbc-scaladsl` = libraryDependencies ++= Nil
+  val `persistence-jdbc-scaladsl` = libraryDependencies ++= Seq(
+    h2 % Test
+  )
 
   val `persistence-jpa-javadsl` = libraryDependencies ++= Seq(
     "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final" % Provided,
-    "org.hibernate" % "hibernate-core" % "5.2.5.Final" % Test
+    "org.hibernate" % "hibernate-core" % "5.2.5.Final" % Test,
+    h2 % Test
   )
 
   val `broker-javadsl` = libraryDependencies ++= Nil

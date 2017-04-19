@@ -89,7 +89,7 @@ class JavadslMockServiceSpec extends ServiceSupport {
         // Use a source that never terminates so we don't close the upstream (which would close the downstream), and then
         // use takeUpTo so that we close downstream when we've got everything we want
         val resultStream = client.bidiStream().invoke(Source(requests).concat(Source.maybe).asJava).toCompletableFuture.get(10, TimeUnit.SECONDS)
-        consume(resultStream.asScala via takeUpTo(3)) should ===(requests.map(r => new MockResponseEntity(1, r)))
+        consume(resultStream.asScala.take(3)) should ===(requests.map(r => new MockResponseEntity(1, r)))
       }
       "the server closes the connection" in withMockServiceClient { implicit app => client =>
         val requests = (1 to 3).map(i => new MockRequestEntity("request", i))
@@ -98,7 +98,7 @@ class JavadslMockServiceSpec extends ServiceSupport {
         val serverClosed = Promise[Done]()
         val trackServerClosed = AkkaStreams.ignoreAfterCancellation[MockResponseEntity].mapMaterializedValue(serverClosed.completeWith)
         val resultStream = client.bidiStream().invoke(Source(requests).concat(closeWhenGotResponse).asJava).toCompletableFuture.get(10, TimeUnit.SECONDS)
-        consume(resultStream.asScala via trackServerClosed via takeUpTo(3)) should ===(requests.map(r => new MockResponseEntity(1, r)))
+        consume(resultStream.asScala via trackServerClosed take 3) should ===(requests.map(r => new MockResponseEntity(1, r)))
         gotResponse.success(None)
         Await.result(serverClosed.future, 10.seconds) should ===(Done)
       }
