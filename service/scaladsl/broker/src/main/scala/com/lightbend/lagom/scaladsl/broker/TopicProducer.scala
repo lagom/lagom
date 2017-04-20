@@ -7,7 +7,7 @@ import akka.persistence.query.Offset
 import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, AggregateEventTag }
+import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, AggregateEventShards, AggregateEventTag }
 
 import scala.collection.immutable
 
@@ -51,5 +51,23 @@ object TopicProducer {
     eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
   ): Topic[Message] =
     new TaggedOffsetTopicProducer[Message, Event](tags, eventStream)
+
+  /**
+   * Publish all tags of a stream that is sharded across many tags.
+   *
+   * The tags will be distributed around the cluster, ensuring that at most one event stream for each tag is
+   * being published at a particular time.
+   *
+   * This producer will ensure every element from each tags stream will be published at least once (usually only
+   * once), using the message offsets to track where in the stream the producer is up to publishing.
+   *
+   * @param shards        The tags to publish.
+   * @param eventStream A function event stream for a given shard given the last offset that was published.
+   * @return The topic producer.
+   */
+  def taggedStreamWithOffset[Message, Event <: AggregateEvent[Event]](shards: AggregateEventShards[Event])(
+    eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
+  ): Topic[Message] =
+    new TaggedOffsetTopicProducer[Message, Event](shards.allTags.toList, eventStream)
 
 }

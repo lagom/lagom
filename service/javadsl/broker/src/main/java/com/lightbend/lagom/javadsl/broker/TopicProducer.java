@@ -8,6 +8,7 @@ import akka.stream.javadsl.Source;
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
+import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
 import org.pcollections.PSequence;
@@ -61,6 +62,27 @@ public final class TopicProducer {
             BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Message, Offset>, ?>> eventStream) {
         return new TaggedOffsetTopicProducer<>(tags, eventStream);
     }
+
+
+    /**
+     * Publish all tags of a stream that is sharded across many tags.
+     *
+     * The tags will be distributed around the cluster, ensuring that at most one event stream for each tag is
+     * being published at a particular time.
+     *
+     * This producer will ensure every element from each tags stream will be published at least once (usually only
+     * once), using the message offsets to track where in the stream the producer is up to publishing.
+     *
+     * @param shards The tags to publish.
+     * @param eventStream A function event stream for a given shard given the last offset that was published.
+     * @return The topic producer.
+     */
+    public static <Message, Event extends AggregateEvent<Event>> Topic<Message> taggedStreamWithOffset(
+            AggregateEventShards<Event> shards,
+            BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Message, Offset>, ?>> eventStream) {
+        return new TaggedOffsetTopicProducer<>(shards.allTags(), eventStream);
+    }
+
 
 
 }
