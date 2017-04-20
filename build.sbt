@@ -478,7 +478,7 @@ lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integ
   )
   .dependsOn(`server-scaladsl`, logback, `testkit-scaladsl`)
 
-// for forked tests, necessary for Cassandra
+// for forked tests
 def forkedTests: Seq[Setting[_]] = Seq(
   fork in Test := true,
   concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
@@ -594,7 +594,6 @@ lazy val `persistence-cassandra-core` = (project in file("persistence-cassandra/
   .dependsOn(`persistence-core` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*)
   .settings(
     name := "lagom-persistence-cassandra-core",
     Dependencies.`persistence-cassandra-core`
@@ -615,7 +614,6 @@ lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassand
   .settings(mimaSettings(since12): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*)
   .settings() configs (MultiJvm)
 
 lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassandra/scaladsl"))
@@ -628,7 +626,6 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*)
   .settings() configs (MultiJvm)
 
 
