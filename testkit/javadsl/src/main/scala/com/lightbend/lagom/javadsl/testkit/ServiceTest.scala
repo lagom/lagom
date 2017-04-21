@@ -28,7 +28,6 @@ import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
-import org.apache.cassandra.io.util.FileUtils
 import play.Application
 import play.Configuration
 import play.api.Logger
@@ -259,7 +258,6 @@ object ServiceTest {
       if (setup.cassandra) {
         val cassandraPort = CassandraLauncher.randomPort
         val cassandraDirectory = Files.createTempDirectory(testName).toFile
-        FileUtils.deleteRecursiveOnExit(cassandraDirectory)
         val t0 = System.nanoTime()
         CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort)
         log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")

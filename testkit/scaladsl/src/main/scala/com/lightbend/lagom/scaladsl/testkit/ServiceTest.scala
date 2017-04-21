@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, RequiresLagomServicePort }
-import org.apache.cassandra.io.util.FileUtils
 import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
 import play.api.inject.DefaultApplicationLifecycle
@@ -190,7 +189,6 @@ object ServiceTest {
       if (setup.cassandra) {
         val cassandraPort = CassandraLauncher.randomPort
         val cassandraDirectory = Files.createTempDirectory(testName).toFile
-        FileUtils.deleteRecursiveOnExit(cassandraDirectory)
         val t0 = System.nanoTime()
         CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort)
         log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")

@@ -47,7 +47,8 @@ public class PersistentEntityRefTest {
         "akka.actor.provider = akka.cluster.ClusterActorRefProvider \n" +
         "akka.remote.netty.tcp.port = 0 \n" +
         "akka.remote.netty.tcp.hostname = 127.0.0.1 \n" +
-        "akka.loglevel = INFO \n")
+        "akka.loglevel = INFO \n" +
+        "akka.cluster.sharding.distributed-data.durable.keys = [] \n")
         .withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort()));
 
     application = new GuiceApplicationBuilder()

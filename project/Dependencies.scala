@@ -7,11 +7,11 @@ object Dependencies {
   val PlayVersion = "2.6.0-M3"
   val AkkaVersion = "2.5.0"
   val ScalaVersion = "2.11.11"
-  val AkkaPersistenceCassandraVersion = "0.50"
+  val AkkaPersistenceCassandraVersion = "0.52"
   val ScalaTestVersion = "3.0.1"
   val JacksonVersion = "2.7.8"
   val CassandraAllVersion = "3.8"
-  val GuavaVersion = "19.0"
+  val GuavaVersion = "20.0"
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.1.8.Final"
   val KafkaVersion = "0.10.0.1"
@@ -44,6 +44,7 @@ object Dependencies {
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
 
   private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion
+  private val akkaPersistenceCassandraLauncher = "com.typesafe.akka" %% "akka-persistence-cassandra-launcher" % AkkaPersistenceCassandraVersion
   private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafkaVersion
 
   private val play = "com.typesafe.play" %% "play" % PlayVersion
@@ -72,7 +73,7 @@ object Dependencies {
       "com.addthis.metrics" % "reporter-config3" % "3.0.0",
       "com.boundary" % "high-scale-lib" % "1.0.6",
       "com.clearspring.analytics" % "stream" % "2.5.2",
-      "com.datastax.cassandra" % "cassandra-driver-core" % "3.1.4",
+      "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0",
       "com.fasterxml" % "classmate" % "1.3.0",
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
       "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.0.0",
@@ -100,6 +101,7 @@ object Dependencies {
       "com.typesafe" %% "ssl-config-core" % "0.2.1",
       akkaStreamKafka,
       akkaPersistenceCassandra,
+      akkaPersistenceCassandraLauncher,
       "com.typesafe.netty" % "netty-reactive-streams" % "1.0.8",
       "com.typesafe.netty" % "netty-reactive-streams-http" % "1.0.8",
       "com.typesafe.play" %% "twirl-api" % "1.1.1",
@@ -348,41 +350,19 @@ object Dependencies {
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
-    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion exclude("io.netty", "netty-all"),
     akkaStreamTestkit,
-    akkaPersistenceCassandra,
+    akkaPersistenceCassandraLauncher,
     scalaTest % Test,
     scalaJava8Compat,
-    "junit" % "junit" % "4.11",
-
-    // These deps are depended on by cassandra-all, and need to be upgraded in order to be consistent with transitive
-    // dependencies from our other libraries
-    "com.lmax" % "disruptor" % "3.3.6",
-    "javax.validation" % "validation-api" % "1.1.0.Final",
-    "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
-    "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
-    "org.xerial.snappy" % "snappy-java" % "1.1.2.6",
-    "org.yaml" % "snakeyaml" % "1.16"
+    "junit" % "junit" % "4.11"
   )
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
     playNettyServer,
-    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion exclude("io.netty", "netty-all"),
     akkaStreamTestkit,
-    akkaPersistenceCassandra,
+    akkaPersistenceCassandraLauncher,
     scalaTest % Test,
-    "junit" % "junit" % "4.11",
-
-    // These deps are depended on by cassandra-all, and need to be upgraded in order to be consistent with transitive
-    // dependencies from our other libraries
-    "com.lmax" % "disruptor" % "3.3.6",
-    "javax.validation" % "validation-api" % "1.1.0.Final",
-    "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
-    jbossLogging,
-    "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
-    "org.xerial.snappy" % "snappy-java" % "1.1.2.6",
-    "org.yaml" % "snakeyaml" % "1.16",
-    "com.fasterxml" % "classmate" % "1.3.0"
+    "junit" % "junit" % "4.11"
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
@@ -477,6 +457,7 @@ object Dependencies {
 
   val `persistence-cassandra-core` = libraryDependencies ++= Seq(
     akkaPersistenceCassandra,
+    "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0",
 
     // cassandra-driver-core pulls in an older version of all these
     "io.netty" % "netty-buffer" % NettyVersion,
@@ -485,10 +466,7 @@ object Dependencies {
     "io.netty" % "netty-handler" % NettyVersion,
     "io.netty" % "netty-transport" % NettyVersion,
 
-    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion % Test exclude("io.netty", "netty-all"),
-    "io.netty" % "netty-codec-http" % NettyVersion % Test,
-    "io.netty" % "netty-transport-native-epoll" % NettyVersion % Test classifier "linux-x86_64",
-    "org.apache.httpcomponents" % "httpclient" % "4.5.2" % Test
+    akkaPersistenceCassandraLauncher % Test
   )
 
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Nil
@@ -591,7 +569,7 @@ object Dependencies {
   val `build-tool-support` = libraryDependencies ++= Seq(
     "com.lightbend.play" %% "play-file-watch" % "1.0.0",
     // This is used in the code to check if the embedded cassandra server is started
-    "com.datastax.cassandra" % "cassandra-driver-core" % "3.0.0",
+    "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0",
     scalaTest % Test
   )
 
@@ -640,12 +618,7 @@ object Dependencies {
   val `play-integration-javadsl` = libraryDependencies ++= Nil
 
   val `cassandra-server` = libraryDependencies ++= Seq(
-    // Cassandra goes into 100% CPU spin when starting with netty jars of different versions. Hence,
-    // we are making sure that the only netty dependency comes from cassandra-all, and manually excludes
-    // all netty transitive dependencies of akka-persistence-cassandra. Mind that dependencies are
-    // excluded one-by-one because exclusion rules do not work with maven dependency resolution - see
-    // https://github.com/lagom/lagom/issues/26#issuecomment-196718818
-    akkaPersistenceCassandra
+    akkaPersistenceCassandraLauncher
       exclude("io.netty", "netty-all") exclude("io.netty", "netty-handler") exclude("io.netty", "netty-buffer")
       exclude("io.netty", "netty-common") exclude("io.netty", "netty-transport") exclude("io.netty", "netty-codec"),
     "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion
