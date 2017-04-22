@@ -46,7 +46,7 @@ hello                   → Project root
  └ build.sbt            → Build configuration
 ```
 
-* Notice how each service is broken up into two projects: api and implementation. The api project contains a service interface through which consumers may interact with the service. While the `impl` project contains the actual service implementation.
+* Notice how each service is broken up into two projects: api and implementation. The api project contains a service interface through which consumers may interact with the service, while the `impl` project contains the actual service implementation.
 * The `project` folder contains sbt specific files.
 * The `build.sbt` file contains all information necessary to build, run, and deploy your services.   
 

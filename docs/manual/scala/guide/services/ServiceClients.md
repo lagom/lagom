@@ -48,7 +48,7 @@ All service calls with Lagom service clients are by default using circuit breake
 
 @[circuit-breaker](code/ServiceClients.scala)
 
-In the above example the default identifer is used for the `sayHi` method, since no specific identifier is given. The default identifier is the same as the service name, i.e. `"hello"` in this example. The `hiAgain` method will use another circuit breaker instance, since `"hello2"` is specified as circuit breaker identifier.
+In the above example the default identifier is used for the `sayHi` method, since no specific identifier is given. The default identifier is the same as the service name, i.e. `"hello"` in this example. The `hiAgain` method will use another circuit breaker instance, since `"hello2"` is specified as circuit breaker identifier.
 
 On the client side you can configure the circuit breakers. The default configuration is:
 

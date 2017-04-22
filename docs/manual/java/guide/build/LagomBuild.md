@@ -27,7 +27,7 @@ This system has two services, one called `hello`, and one called `hello-stream`.
 
 ### Configuring the root project
 
-In Lagom, it is typcial to use a multi module build. The Lagom maven plugin will generally be configured in the root project, which can be done by adding it to the `\<plugins\>` section of your `pom.xml`:
+In Lagom, it is typical to use a multi module build. The Lagom maven plugin will generally be configured in the root project, which can be done by adding it to the `\<plugins\>` section of your `pom.xml`:
 
 ```xml
 <plugin>
@@ -87,7 +87,7 @@ When adding dependencies to Lagom libraries, you need to ensure that you include
 
 Lagom itself is implemented mostly in Scala. Unlike Java, where the Java maintainers control the virtual machine and so can build backwards compatibility into the virtual machine when new features are added, when new features are added in Scala, backwards compatibility is very difficult if not impossible to maintain. Therefore, libraries have to be compiled against a particular major version of Scala.
 
-Often libraries will want to support multiple versions of Scala, doing this requires building one artifact for each version of Scala that they support, which introduces the problem of how to differentiate between those artifacts, seeing as maven doesn't support the idea of adding aditional metadata to dependencies to specify what version of Scala they require. To solve this, the convention of appending the Scala version to the artifact is used.
+Often libraries will want to support multiple versions of Scala, doing this requires building one artifact for each version of Scala that they support, which introduces the problem of how to differentiate between those artifacts, seeing as maven doesn't support the idea of adding additional metadata to dependencies to specify what version of Scala they require. To solve this, the convention of appending the Scala version to the artifact is used.
 
 ### Defining a service
 
