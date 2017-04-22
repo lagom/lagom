@@ -1,6 +1,6 @@
 # Polyglot systems with Lagom
 
-Lagom does not expect that every service in your system will be a Lagom microservice.  After all, a big advantage of using microservices in the first place is to pragmatically select the best language and technology for each service. Lagom's idiomatic usage of standard comunication protocols and general compatibility with design driven API approaches allow it to work well in such a polyglot system.
+Lagom does not expect that every service in your system will be a Lagom microservice.  After all, a big advantage of using microservices in the first place is to pragmatically select the best language and technology for each service. Lagom's idiomatic usage of standard communication protocols and general compatibility with design driven API approaches allow it to work well in such a polyglot system.
 
 Lagom service calls map down to standard HTTP for synchronous communication and WebSockets for streaming and asynchronous messaging. Any language or framework that supports these protocols can easily consume a Lagom service.  Conversely, a Lagom service can easily talk to any service that exposes a REST API.
 

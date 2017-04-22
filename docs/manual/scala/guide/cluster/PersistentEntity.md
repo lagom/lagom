@@ -91,7 +91,7 @@ When an event has been persisted successfully the current state is updated by ap
 
 @[event-handler](code/docs/home/scaladsl/persistence/Post2.scala)
 
-You should define one event handler for each event class that the entity can persists.
+You should define one event handler for each event class that the entity can persist.
 
 The event handler returns the new state. The state must be immutable, so you return a new instance of the state. Current state is passed as a parameter to the event handler function. The same event handlers are also used when the entity is started up to recover its state from the stored events.
 

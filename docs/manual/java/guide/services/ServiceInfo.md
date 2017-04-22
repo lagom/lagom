@@ -6,7 +6,7 @@ There are several scenarios supported by Lagom:
 
 1. When you create a Lagom Service and you use the [[bindService|ServiceImplementation]] method to bind a service Lagom will bundle the `name` and the ACLs of the Service Descriptor into a `ServiceInfo`.
 2. When you create a Lagom Service but you don't bind any service you should use the [[bindServiceInfo|ServiceClients#Binding-a-service-client]] method and provide the metadata manually.
-3. When you consume Lagom Services from an app that already uses Guice, you simply [[bind a Service Client|ServiceClients#Binding-a-service-client]]. In this scenario Lagom is not bundling a ServiceInfo under the covers and you will have to provide one programatically.
+3. When you consume Lagom Services from an app that already uses Guice, you simply [[bind a Service Client|ServiceClients#Binding-a-service-client]]. In this scenario Lagom is not bundling a ServiceInfo under the covers and you will have to provide one programmatically.
 4. The final scenario is that where the client app is not using Guice and connects to Lagom via the [[Lagom Client Factory|IntegratingNonLagom]]. In this scenario, Lagom will also create the metadata on your behalf.
 
 

@@ -50,7 +50,7 @@ Lagom message serializers are able to use content negotiation to decide on the r
 
 Lagom's content negotiation mirrors the same capabilities as HTTP.  For request messages, a client will select whatever protocol it wants to use, and so no negotiation is necessary there.  The server then uses the message protocol sent by the client to decide how to deserialize the request.
 
-For the response, the client sends a list of message protocols that it will accepts, and the server should choose a protocol from that list to respond with.  The client will then read the servers chosen protocol, and deserialize the response using that.
+For the response, the client sends a list of message protocols that it will accept, and the server should choose a protocol from that list to respond with.  The client will then read the servers chosen protocol, and deserialize the response using that.
 
 ### Negotiated serializers
 
@@ -94,7 +94,7 @@ Now let's implement the `serializerForRequest` method.  This is used by the clie
 
 @[text-serializer-request](code/docs/services/MessageSerializers.java)
 
-Next we'll implement the `deserializer` method.  This is used both by the server to select the deserializer for the request, and the client to select deserializer for the response.  The passed in `MessageProtocol` is the content type that was sent with the request or response, and we need to inspect it to see if its a content type that we can deserialize, and return the appropriate content type:
+Next we'll implement the `deserializer` method.  This is used both by the server to select the deserializer for the request, and the client to select deserializer for the response.  The passed in `MessageProtocol` is the content type that was sent with the request or response, and we need to inspect it to see if it's a content type that we can deserialize, and return the appropriate content type:
 
 @[text-deserializer](code/docs/services/MessageSerializers.java)
 

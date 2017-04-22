@@ -4,7 +4,7 @@ This guide gives a brief description of the steps required to migrate a Lagom 1.
 
 ## Build changes
 
-1. Ugrade the Lagom plugin version in `project/plugins.sbt` to `1.3.0`.
+1. Upgrade the Lagom plugin version in `project/plugins.sbt` to `1.3.0`.
 1. Replace `LagomJava` with `LagomScala`, and any references to `javadsl` components to their `scaladsl` equivalents.
 
 ## General code changes

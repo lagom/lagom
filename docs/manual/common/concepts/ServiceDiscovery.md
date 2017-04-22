@@ -8,7 +8,7 @@ Lagom provides the following functionality for your microservice systems during 
 * [Client-side service discovery](#Client-side-service-discovery)
 * [Server-side service discovery](#Server-side-service-discovery)
 
-*Note*: This page uses HTTP examples but the concepts apply to any kind of traffic such as binary over tcp.
+*Note*: This page uses HTTP examples but the concepts apply to any kind of traffic such as binary over TCP.
 
 ## Service registration
 
