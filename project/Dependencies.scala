@@ -116,6 +116,7 @@ object Dependencies {
       "com.typesafe.play" %% "cachecontrol" % "1.1.2",
       playJson,
       playFunctional,
+
       // play client libs
       playWs,
       playAhcWs,
@@ -388,13 +389,15 @@ object Dependencies {
     scalaTest % Test,
     "junit" % "junit" % "4.11"
   )
-
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
     playNettyServer,
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
-    "junit" % "junit" % "4.11"
+    "junit" % "junit" % "4.11",
+
+    // Upgrades needed to mtach whitelist
+    "io.netty" % "netty-codec-http" % NettyVersion
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
