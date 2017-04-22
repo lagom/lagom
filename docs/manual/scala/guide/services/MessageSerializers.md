@@ -84,7 +84,7 @@ Now let's implement the `serializerForRequest` method.  This is used by the clie
 
 @[text-serializer-request](code/MessageSerializers.scala)
 
-Next we'll implement the `deserializer` method.  This is used both by the server to select the deserializer for the request, and the client to select deserializer for the response.  The passed in `MessageProtocol` is the content type that was sent with the request or response, and we need to inspect it to see if its a content type that we can deserialize, and return the appropriate content type:
+Next we'll implement the `deserializer` method.  This is used both by the server to select the deserializer for the request, and the client to select deserializer for the response.  The passed in `MessageProtocol` is the content type that was sent with the request or response, and we need to inspect it to see if it's a content type that we can deserialize, and return the appropriate content type:
 
 @[text-deserializer](code/MessageSerializers.scala)
 

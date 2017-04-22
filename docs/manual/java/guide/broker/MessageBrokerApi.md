@@ -60,7 +60,7 @@ For example, consider a situation where you have a blog post created event and a
 
 @[content](code/docs/javadsl/mb/BlogPostEvent.java)
 
-The `@JsonTypeInfo` annotation describes how the type of the event will be serialised. In this case, it's saying each event type will be identified by it's name, and that name will go into a property called `type`. The `@JsonTypeName` on each event subclass says what the name of that event should be. And the `@JsonSubTypes` annotation is used to tell Jackson what the possible sub types of the event are, so that it knows where to look when deserializing.
+The `@JsonTypeInfo` annotation describes how the type of the event will be serialised. In this case, it's saying each event type will be identified by its name, and that name will go into a property called `type`. The `@JsonTypeName` on each event subclass says what the name of that event should be. And the `@JsonSubTypes` annotation is used to tell Jackson what the possible sub types of the event are, so that it knows where to look when deserializing.
 
 The resulting JSON for the `BlogPostCreated` event will look like this:
 

@@ -4,7 +4,7 @@ Lagom provides a number of different mechanisms for controlling and customising 
 
 There are a number of principles behind the design of Lagom's built in error handling:
 
-* In production, a Lagom service should never give out details of the errors it encounters to another service, unless it knows it is safe to do so.  This is for security reasons, uncensored error messages can be used by attackers to gain detailed information about how a service is implemented.  In practice, this means there are a number of built in exceptions that Lagom considers safe that it will returns the details of, and the rest it returns nothing for.
+* In production, a Lagom service should never give out details of the errors it encounters to another service, unless it knows it is safe to do so.  This is for security reasons, uncensored error messages can be used by attackers to gain detailed information about how a service is implemented.  In practice, this means there are a number of built in exceptions that Lagom considers safe that it will return the details of, and the rest it returns nothing for.
 * In development, it's useful to have full error messages sent over the wire.  Lagom will attempt to send useful information about exceptions when the service is running in development.
 * If possible, Lagom will try to reconstruct errors on the client side when thrown on the service side.  So, if the server side throws an exception saying it couldn't serialize something, the client code should receive that same exception.
 * If possible, exceptions should be mapped to idiomatic protocol response codes, such as HTTP 4xx and 5xx status codes and WebSocket error close codes.

@@ -5,7 +5,7 @@ Service metadata, also referred to as `ServiceInfo`, includes a name and a colle
 There are several scenarios supported by Lagom:
 
 1. When you create a Lagom Service and you [[wire together the application|DependencyInjection#Wiring-together-a-Lagom-application]] Lagom will bundle the `name` and the ACLs into a `ServiceInfo`.
-2. When you consume Lagom Services and mix-in `LagomServiceClientComponents` to [[bind clients|ServiceClients#Binding-a-service-client]] Lagom is not wiring a ServiceInfo under the covers and you will have to provide one programatically.
+2. When you consume Lagom Services and mix-in `LagomServiceClientComponents` to [[bind clients|ServiceClients#Binding-a-service-client]] Lagom is not wiring a ServiceInfo under the covers and you will have to provide one programmatically.
 3. The final scenario is that where the client app is not using Guice and connect to Lagom via the [[Lagom Client Factory|IntegratingNonLagom]]. In this scenario, Lagom will also create the metadata on your behalf.
 
 

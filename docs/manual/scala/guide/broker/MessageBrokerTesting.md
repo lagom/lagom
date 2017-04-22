@@ -1,6 +1,6 @@
 # Message Broker Testing
 
-When decoupling communication via a Broker you can test from both ends of the `Topic`. When your `Service` is publishing events into a `Topic` (as described in [[Declaring a Topic|MessageBrokerApi#Declaring-a-topic]]) your tests should verify the proper data is being pushed into the Topic. At same time, when your service is subscribed to an upstream `Topic` you may want to test how your `Service` behaves when there are incoming events.
+When decoupling communication via a Broker you can test from both ends of the `Topic`. When your `Service` is publishing events into a `Topic` (as described in [[Declaring a Topic|MessageBrokerApi#Declaring-a-topic]]) your tests should verify the proper data is being pushed into the Topic. At same time, when your service is subscribed to an upstream `Topic` you may want to test how your `Service` behaves when there are incoming events.
 
 A broker will not be started neither when writing publish nor consumption tests. Instead, Lagom provides in-memory implementations or the Broker API in order to make  tests faster. Integration tests with a complete broker should be later implemented but that is out of scope of this documentation. The provided in-memory implementation of the Broker API runs locally and provides exactly-once delivery. If you want to test your code under scenarios where there's message loss (`at-most-once`) or message duplicates (`at-least-once`) you will be responsible for writing such behaviour by injecting duplicates or skipping messages.
 
