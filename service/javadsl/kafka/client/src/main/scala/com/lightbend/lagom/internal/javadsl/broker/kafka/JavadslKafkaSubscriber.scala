@@ -40,9 +40,9 @@ private[lagom] class JavadslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, t
   private def consumerConfig = ConsumerConfig(system.settings.config)
 
   @throws(classOf[IllegalArgumentException])
-  override def withGroupId(groupId: String): Subscriber[Message] = {
+  override def withGroupId(groupIdName: String): Subscriber[Message] = {
     val newGroupId = {
-      if (groupId == null) {
+      if (groupIdName == null) {
         // An empty group id is not allowed by Kafka (see https://issues.apache.org/jira/browse/KAFKA-2648
         // and https://github.com/akka/reactive-kafka/issues/155)
         val defaultGroupId = GroupId.default(info)
@@ -51,10 +51,10 @@ private[lagom] class JavadslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, t
             s"Defaulting $this consumer groupId to $defaultGroupId."
         }
         defaultGroupId
-      } else GroupId(groupId)
+      } else GroupId(groupIdName)
     }
 
-    if (newGroupId.groupId == groupId) this
+    if (newGroupId == groupId) this
     else new JavadslKafkaSubscriber(kafkaConfig, topicCall, newGroupId, info, system, serviceLocator)
   }
 
