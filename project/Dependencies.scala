@@ -512,9 +512,13 @@ object Dependencies {
     scalaTest % Test
   )
 
-  val `kafka-client-javadsl` = libraryDependencies ++= Nil
+  val `kafka-client-javadsl` = libraryDependencies ++= Seq(
+    scalaTest % Test
+  )
 
-  val `kafka-client-scaladsl` = libraryDependencies ++= Nil
+  val `kafka-client-scaladsl` = libraryDependencies ++= Seq(
+    scalaTest % Test
+  )
 
   val `kafka-broker` = libraryDependencies ++= Nil
 
