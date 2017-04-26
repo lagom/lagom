@@ -26,7 +26,7 @@ To create your project, follow these steps:
    * `name` - Becomes the name of the top-level project directory.
    * `organization` - Used as a package name.
    * `version` - A version number for your system.
-   * `lagom-version` - The version number of Lagom, such as 1.3.0. Be sure to use the [current stable release](https://www.lagomframework.com/documentation/).
+   * `lagom-version` - The version number of Lagom, such as 1.3.2. Be sure to use the [current stable release](https://www.lagomframework.com/documentation/).
 
 ## Browse the build
 
