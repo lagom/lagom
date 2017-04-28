@@ -70,7 +70,7 @@ In sbt:
 
 @[cassandra-jvm-options](code/build-cassandra-opts.sbt)
 
-## Yaml configuration
+## YAML configuration
 
 As shown above, the YAML configuration file can be configured by modifying the Cassandra JVM options to include a `-DCassandraLauncher.configResource` system property that points to a resource in your `src/main/resources` directory.
 
