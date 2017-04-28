@@ -10,6 +10,21 @@ The version of Lagom can be updated by editing the `project/plugins.sbt` file, a
 addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0")
 ```
 
+## Binding services
+
+Binding multiple Lagom service descriptors in one Lagom service has been deprecated. If you are currently binding multiple Lagom service descriptors in one Lagom service, you should combine these into one. The reason for this change is that we found most microservice deployment platforms simply don't support having multiple names for the one service, hence a service that serves multiple service descriptors, each with their own name, would not be compatible with those environments.
+
+Consequently, we have deprecated the methods for binding multiple service descriptors. To migrate, in your Guice module that binds your services, change the following code:
+
+```scala
+lazy val lagomServer = LagomServer.forServices(bindService[MyService].to(wire[MyServiceImpl]))
+```
+
+to:
+
+```scala
+lazy val lagomServer = serverFor[MyService](wire[MyServiceImpl])
+```
 
 ## Configuring Cassandra keyspaces
 
