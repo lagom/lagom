@@ -156,7 +156,7 @@ In sbt:
 
 @[local-instance](code/build-cassandra-opts3.sbt)
 
-These two settings will only be used when using Lagom in DevMode. The purpose of these two settings is to disabled the embedded Cassandra server and configure the Service Locator in DevMode to still be able to locate Cassandra when looking for `cas_native`.
+These two settings will only be used when running Lagom in DevMode. The purpose of these two settings is to disabled the embedded Cassandra server and configure the Service Locator in DevMode to still be able to locate Cassandra when looking for `cas_native`.
 
 The service locator setup in these examples assumes your local Cassandra instance is running on port `9042`.
 
@@ -166,7 +166,7 @@ The service locator setup in these examples assumes your local Cassandra instanc
 
 It is possible to hardcode the list of `contact-points` where Cassandra may be located. That is the default behavior in `akka-persistence-cassandra` but Lagom overrides that behavior implementing a Session provider based on service location. That allows all services to continue to operate without the need to redeploy if/when the Cassandra `contact-points` are updated or fail. Using a Service Location based approach provides higher resiliency.
 
-Despite that, there scenarios where a hard-coded list of contact-points is required and updating and maintaining a list of endpoints in a service locator is not a viable option. In that case a user may use the following setup:
+Despite that, there scenarios where a hard-coded list of contact-points is required and updating and maintaining a list of endpoints in a service locator is not a viable option. In that case a user may use the following setup in the `application.conf` of your service:
 
 ```
 cassandra {
@@ -176,3 +176,5 @@ cassandra {
   session-provider = akka.persistence.cassandra.ConfigSessionProvider
 }
 ```
+
+This configuration is part of `application.conf` and therefore it will be applied in all environments unless overriden. See previous sections on this page on [[overriding Cassandra setup in Dev Mode|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]].
