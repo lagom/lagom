@@ -156,4 +156,23 @@ In sbt:
 
 @[local-instance](code/build-cassandra-opts3.sbt)
 
-Assuming your local Cassandra instance is running on port `9042`.
+These two settings will only be used when using Lagom in DevMode. The purpose of these two settings is to disabled the embedded Cassandra server and configure the Service Locator in DevMode to still be able to locate Cassandra when looking for `cas_native`.
+
+The service locator setup in these examples assumes your local Cassandra instance is running on port `9042`.
+
+## Disabling Service Location
+
+**DISCLAIMER** The following is unrecommended. Prefer [[Service Location|ServiceDiscovery]] over static lists of endpoints.
+
+It is possible to hardcode the list of `contact-points` where Cassandra may be located. That is the default behavior in `akka-persistence-cassandra` but Lagom overrides that behavior implementing a Session provider based on service location. That allows all services to continue to operate without the need to redeploy if/when the Cassandra `contact-points` are updated or fail. Using a Service Location based approach provides higher resiliency.
+
+Despite that, there scenarios where a hard-coded list of contact-points is required and updating and maintaining a list of endpoints in a service locator is not a viable option. In that case a user may use the following setup:
+
+```
+cassandra {
+  ## list the contact points  here
+  contact-points = ["10.0.1.71", "23.51.143.11"]
+  ## override Lagom’s ServiceLocator-based ConfigSessionProvider
+  session-provider = akka.persistence.cassandra.ConfigSessionProvider
+}
+```
