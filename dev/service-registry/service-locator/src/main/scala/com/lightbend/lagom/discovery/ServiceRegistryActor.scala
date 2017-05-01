@@ -82,7 +82,15 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
 
   private def serviceRouter(service: ServiceRegistryService) = {
     val addressUri = service.uri
-    val address = new InetSocketAddress(addressUri.getHost, addressUri.getPort)
+    // lazy because if there's no ACLs, then there's no need to create an InetSocketAddress, and hence no need to fail
+    // if the port can't be calculated.
+    lazy val address = (addressUri.getScheme, addressUri.getHost, addressUri.getPort) match {
+      case (_, null, _)        => throw new IllegalArgumentException("Cannot register a URI that doesn't have a host: " + addressUri)
+      case ("http", host, -1)  => new InetSocketAddress(host, 80)
+      case ("https", host, -1) => new InetSocketAddress(host, 443)
+      case (_, _, -1)          => throw new IllegalArgumentException("Cannot register a URI that does not specify a port: " + addressUri)
+      case (_, host, port)     => new InetSocketAddress(host, port)
+    }
     val routerFunctions: Seq[PartialFunction[Route, InetSocketAddress]] = service.acls.asScala.map {
       case acl =>
         acl.method().asScala -> acl.pathRegex().asScala.map(Pattern.compile)

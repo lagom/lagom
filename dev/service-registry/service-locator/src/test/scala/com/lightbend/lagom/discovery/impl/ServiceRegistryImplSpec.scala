@@ -3,14 +3,14 @@
  */
 package com.lightbend.lagom.discovery.impl
 
-import java.util.Collections
+import java.util.{ Collections, Optional }
 import java.util.concurrent.ExecutionException
 
-import akka.actor.{ ActorSystem, Props }
+import akka.actor.{ ActorRef, ActorSystem, Props }
+import akka.pattern.ask
 import com.lightbend.lagom.discovery.ServiceRegistryActor
 import com.lightbend.lagom.javadsl.api.ServiceAcl
-import com.lightbend.lagom.javadsl.api.transport.NotFound
-
+import com.lightbend.lagom.javadsl.api.transport.{ Method, NotFound }
 import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
 import com.lightbend.lagom.discovery.UnmanagedServices
@@ -18,11 +18,16 @@ import akka.NotUsed
 import java.util.concurrent.TimeUnit
 import java.net.URI
 
+import akka.util.Timeout
 import com.lightbend.lagom.internal.javadsl.registry.{ RegisteredService, ServiceRegistry, ServiceRegistryService }
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
 
   private val testTimeoutInSeconds = 5
+  implicit private val testTimeout = Timeout(testTimeoutInSeconds.seconds)
 
   "A service registry" should {
     "allow to register a service" in withServiceRegistry() { registry =>
@@ -85,15 +90,59 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
       }
     }
 
+    "default to well-known port for http URLs if no port number provided" in withServiceRegistryActor() { actor =>
+      val registry = new ServiceRegistryImpl(actor)
+      registry.register("fooservice").invoke(new ServiceRegistryService(
+        URI.create("http://localhost"),
+        Collections.singletonList(new ServiceAcl(Optional.of(Method.GET), Optional.of("/")))
+      )).toCompletableFuture.get(testTimeoutInSeconds, TimeUnit.SECONDS)
+
+      Await.result(actor ? ServiceRegistryActor.Route("GET", "/"), testTimeoutInSeconds.seconds) match {
+        case ServiceRegistryActor.Found(address) =>
+          address.getHostName should ===("localhost")
+          address.getPort should ===(80)
+      }
+    }
+
+    "default to well-known port for https URLs if no port number provided" in withServiceRegistryActor() { actor =>
+      val registry = new ServiceRegistryImpl(actor)
+      registry.register("fooservice").invoke(new ServiceRegistryService(
+        URI.create("https://localhost"),
+        Collections.singletonList(new ServiceAcl(Optional.of(Method.GET), Optional.of("/")))
+      )).toCompletableFuture.get(testTimeoutInSeconds, TimeUnit.SECONDS)
+
+      Await.result(actor ? ServiceRegistryActor.Route("GET", "/"), testTimeoutInSeconds.seconds) match {
+        case ServiceRegistryActor.Found(address) =>
+          address.getHostName should ===("localhost")
+          address.getPort should ===(443)
+      }
+    }
+
+    "be able to register URLs that have no port and no ACLs" in withServiceRegistry() { registry =>
+      registry.register("fooservice")
+        .invoke(new ServiceRegistryService(URI.create("tcp://localhost"), Collections.emptyList()))
+        .toCompletableFuture.get(testTimeoutInSeconds, TimeUnit.SECONDS)
+
+      val registeredUrl = registry.lookup("fooservice").invoke(NotUsed).toCompletableFuture
+        .get(testTimeoutInSeconds, TimeUnit.SECONDS)
+      registeredUrl should ===(URI.create("tcp://localhost"))
+    }
+
     def withServiceRegistry[T](registeredServices: Map[String, ServiceRegistryService] = Map.empty)(body: ServiceRegistry => T): T = {
+      withServiceRegistryActor(registeredServices) { actor =>
+        body(new ServiceRegistryImpl(actor));
+      }
+    }
+
+    def withServiceRegistryActor[T](registeredServices: Map[String, ServiceRegistryService] = Map.empty)(body: ActorRef => T): T = {
       val system = ActorSystem()
       try {
         val actor = system.actorOf(Props(new ServiceRegistryActor(new UnmanagedServices(registeredServices))))
-        val registry = new ServiceRegistryImpl(actor)
-        body(registry)
+        body(actor)
       } finally {
         system.terminate()
       }
     }
+
   }
 }
