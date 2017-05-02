@@ -137,7 +137,6 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
             () => {
               reloadCompile(buildProjects, serviceClassPath)
             },
-            identity,
             sourceDirsToWatch,
             watchService,
             new File(project.getBuild.getDirectory),
