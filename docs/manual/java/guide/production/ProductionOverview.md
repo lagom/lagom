@@ -62,11 +62,26 @@ But that is only possible if all your service uses a static service locator.
 If you want to use dynamic service location for your services but need to statically locate Cassandra you may use the following setup in the `application.conf` of your service:
 
 ```
-cassandra {
+cassandra.default {
   ## list the contact points  here
   contact-points = ["10.0.1.71", "23.51.143.11"]
   ## override Lagom’s ServiceLocator-based ConfigSessionProvider
   session-provider = akka.persistence.cassandra.ConfigSessionProvider
+}
+
+cassandra-journal {
+  contact-points = ${cassandra.default.contact-points}
+  session-provider = ${cassandra.default.session-provider}
+}
+
+cassandra-snapshot-store {
+  contact-points = ${cassandra.default.contact-points}
+  session-provider = ${cassandra.default.session-provider}
+}
+
+lagom.persistence.read-side.cassandra {
+  contact-points = ${cassandra.default.contact-points}
+  session-provider = ${cassandra.default.session-provider}
 }
 ```
 
