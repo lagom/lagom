@@ -27,8 +27,8 @@ class SlickReadSideImpl(slick: SlickProvider, offsetStore: SlickOffsetStore)(imp
   private val log = LoggerFactory.getLogger(this.getClass)
 
   override def builder[Event <: AggregateEvent[Event]](readSideId: String): ReadSideHandlerBuilder[Event] = new ReadSideHandlerBuilder[Event] {
-    var globalPrepare: DBIOAction[Any, _, _] = DBIOAction.successful()
-    var prepare: (AggregateEventTag[Event]) => DBIOAction[Any, NoStream, Nothing] = (_) => DBIOAction.successful()
+    var globalPrepare: DBIOAction[Any, _, _] = DBIOAction.successful(())
+    var prepare: (AggregateEventTag[Event]) => DBIOAction[Any, NoStream, Nothing] = (_) => DBIOAction.successful(())
     var eventHandlers = Map.empty[Class[_ <: Event], (EventStreamElement[_ <: Event]) => DBIOAction[Any, NoStream, Nothing]]
 
     override def setGlobalPrepare(callback: DBIOAction[Any, _, _]): ReadSideHandlerBuilder[Event] = {
