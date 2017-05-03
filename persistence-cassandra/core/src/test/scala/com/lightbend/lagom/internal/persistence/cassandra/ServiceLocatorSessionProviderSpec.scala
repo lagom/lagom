@@ -37,14 +37,14 @@ class ServiceLocatorSessionProviderSpec extends WordSpec with MustMatchers {
     "Get the address when the contact points exist" in {
       val future = provider.lookupContactPoints("existing")
 
-      Await.result(future, 3 seconds) mustBe Seq(new InetSocketAddress(uri.getHost, uri.getPort))
+      Await.result(future, 3.seconds) mustBe Seq(new InetSocketAddress(uri.getHost, uri.getPort))
     }
 
     "Fail the future when the contact points do not exist" in {
       val future = provider.lookupContactPoints("absent")
 
       intercept[NoContactPointsException] {
-        Await.result(future, 3 seconds)
+        Await.result(future, 3.seconds)
       }
     }
   }

@@ -29,15 +29,16 @@ final class CassandraConfigProvider @Inject() (system: ActorSystem) extends Prov
   override lazy val get: CassandraConfig = CassandraConfigProvider.CassandraConfigImpl(cassandraUrisFromConfig)
 
   private def cassandraUrisFromConfig: PSet[CassandraContactPoint] = {
-    val contactPoints = List("cassandra-journal", "cassandra-snapshot-store", "lagom.persistence.read-side.cassandra").flatMap { path =>
-      val c = config.getConfig(path)
-      if (c.getString("session-provider") == classOf[ServiceLocatorSessionProvider].getName) {
-        val name = c.getString("cluster-id")
-        val port = c.getInt("port")
-        val uri = new URI(s"tcp://127.0.0.1:$port/$name")
-        Some(CassandraContactPoint.of(name, uri))
-      } else None
-    }.toSet
+    val contactPoints: Set[CassandraContactPoint] =
+      List("cassandra-journal", "cassandra-snapshot-store", "lagom.persistence.read-side.cassandra").flatMap { path =>
+        val c = config.getConfig(path)
+        if (c.getString("session-provider") == classOf[ServiceLocatorSessionProvider].getName) {
+          val name = c.getString("cluster-id")
+          val port = c.getInt("port")
+          val uri = new URI(s"tcp://127.0.0.1:$port/$name")
+          Some(CassandraContactPoint.of(name, uri))
+        } else None
+      }.toSet
     HashTreePSet.from(contactPoints.asJava)
   }
 }
@@ -46,5 +47,7 @@ final class CassandraConfigProvider @Inject() (system: ActorSystem) extends Prov
  * Internal API
  */
 private object CassandraConfigProvider {
+
   final case class CassandraConfigImpl(uris: PSet[CassandraContactPoint]) extends CassandraConfig
+
 }

@@ -8,6 +8,9 @@ import scala.util.Success
 import akka.actor.{ ActorSystem, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider }
 import java.net.URI
 
+import scala.concurrent.duration._
+import scala.util.control.NoStackTrace
+
 /**
  * The `ServiceLocatorHolder` is used by the `ServiceLocatorSessionProvider` to
  * locate the contact point address of the Cassandra cluster via the `ServiceLocator`.
@@ -22,14 +25,21 @@ private[lagom] object ServiceLocatorHolder extends ExtensionId[ServiceLocatorHol
   override def lookup = ServiceLocatorHolder
 
   override def createExtension(system: ExtendedActorSystem): ServiceLocatorHolder =
-    new ServiceLocatorHolder
+    new ServiceLocatorHolder(system)
 }
 
-private[lagom] class ServiceLocatorHolder extends Extension {
+private[lagom] class ServiceLocatorHolder(system: ExtendedActorSystem) extends Extension {
   @volatile private var _serviceLocator: Option[ServiceLocatorAdapter] = None
 
   private val promisedServiceLocator = Promise[ServiceLocatorAdapter]()
-  def serviceLocatorEventually: Future[ServiceLocatorAdapter] = promisedServiceLocator.future
+
+  private implicit val exCtx = system.dispatcher
+  private val delayed = akka.pattern.after(10.seconds, using = system.scheduler) {
+    Future.failed(new NoServiceLocatorException("Timed out."))
+  }
+
+  def serviceLocatorEventually: Future[ServiceLocatorAdapter] =
+    Future firstCompletedOf Seq(promisedServiceLocator.future, delayed)
 
   def setServiceLocator(locator: ServiceLocatorAdapter): Unit = {
     require(_serviceLocator.isEmpty, "Service locator has already been defined")
@@ -38,6 +48,8 @@ private[lagom] class ServiceLocatorHolder extends Extension {
     promisedServiceLocator.complete(Success(locator))
   }
 }
+
+private[lagom] final class NoServiceLocatorException(msg: String) extends RuntimeException(msg) with NoStackTrace
 
 /**
  * scaladsl and javadsl specific implementations
