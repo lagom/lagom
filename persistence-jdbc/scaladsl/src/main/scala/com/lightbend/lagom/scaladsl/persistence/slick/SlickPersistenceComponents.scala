@@ -8,20 +8,20 @@ import com.lightbend.lagom.scaladsl.persistence.PersistenceComponents
 import com.lightbend.lagom.scaladsl.persistence.jdbc.{ ReadSideJdbcPersistenceComponents, WriteSideJdbcPersistenceComponents }
 
 /**
- * Persistence JDBC components (for compile-time injection).
+ * Persistence Slick components (for compile-time injection).
  */
 trait SlickPersistenceComponents
   extends PersistenceComponents
   with ReadSideSlickPersistenceComponents
 
 /**
- * Write-side persistence JDBC components (for compile-time injection).
+ * Write-side persistence Slick components (for compile-time injection).
  */
 trait WriteSideSlickPersistenceComponents
   extends WriteSideJdbcPersistenceComponents
 
 /**
- * Read-side persistence JDBC components (for compile-time injection).
+ * Read-side persistence Slick components (for compile-time injection).
  */
 trait ReadSideSlickPersistenceComponents
   extends ReadSideJdbcPersistenceComponents {
