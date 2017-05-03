@@ -71,3 +71,9 @@ With these properties set to `false`, if the keyspaces or tables are missing at 
 It is not possible to disable automatic creation of the offset store table at this time.
 
 Lagom's Cassandra support is provided by the [`akka-persistence-cassandra`](https://github.com/akka/akka-persistence-cassandra) plugin. A full configuration reference can be in the plugin's [`reference.conf`](https://github.com/akka/akka-persistence-cassandra/blob/v0.20/src/main/resources/reference.conf).
+
+## Cassandra Location
+
+Lagom will start an embedded Cassandra server when running in developer mode. You can review the configuration options or how to disable the embedded server in the section on Cassandra Server in [[Running Lagom in development|CassandraServer]].
+
+In production you usually will prefer a dynamically locatable Cassandra server for resiliency. If you need to use a static list of contact-points to locate your Cassandra server review the section on deploying using static service location for Cassandra Service in [[Running Lagom in Production|ProductionOverview#Deploying-using-static-Cassandra-contact-points]].
