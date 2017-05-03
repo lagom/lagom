@@ -219,9 +219,6 @@ object LagomReloadableDevServerStart {
         val actorSystem = ActorSystem(actorSystemName, devModeAkkaConfig)
         val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem,
           ActorMaterializer()(actorSystem), () => {
-            // The execution context won't be needed after merging
-            // https://github.com/playframework/playframework/pull/5506
-            import scala.concurrent.ExecutionContext.Implicits.global
             actorSystem.terminate().map(_ => ())
           })
         val serverProvider = ServerProvider.fromConfiguration(classLoader, serverConfig.configuration)
