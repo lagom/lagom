@@ -44,3 +44,47 @@ To instruct Lagom to use the `ConfigurationServiceLocator`, you need to bind it 
 @[content](code/docs/production/ConfigurationServiceLocatorModule.java)
 
 Of course, you don't have to configure a separate module, this configuration can be added to your existing Guice module.
+
+### Deploying using static Cassandra contact-points
+
+Static lookup is the default behavior in `akka-persistence-cassandra` but Lagom overrides that behavior implementing a Session provider based on service location. That allows all services to continue to operate without the need to redeploy if/when the Cassandra `contact-points` are updated or fail. Using a Service Location based approach provides higher resiliency. It is possible to hardcode the list of `contact-points` where Cassandra may be located even when the server is stared with a dynamic service locator.
+
+You can decide to hardcode the Cassandra contact points when using a static service locator as described above using:
+
+```
+lagom.services {
+  cas_native = "tcp://10.1.2.3:9042"
+}
+```
+
+But that is only possible if all your service uses a static service locator.
+
+If you want to use dynamic service location for your services but need to statically locate Cassandra you may use the following setup in the `application.conf` of your service:
+
+```
+cassandra.default {
+  ## list the contact points  here
+  contact-points = ["10.0.1.71", "23.51.143.11"]
+  ## override Lagom’s ServiceLocator-based ConfigSessionProvider
+  session-provider = akka.persistence.cassandra.ConfigSessionProvider
+}
+
+cassandra-journal {
+  contact-points = ${cassandra.default.contact-points}
+  session-provider = ${cassandra.default.session-provider}
+}
+
+cassandra-snapshot-store {
+  contact-points = ${cassandra.default.contact-points}
+  session-provider = ${cassandra.default.session-provider}
+}
+
+lagom.persistence.read-side.cassandra {
+  contact-points = ${cassandra.default.contact-points}
+  session-provider = ${cassandra.default.session-provider}
+}
+```
+
+This setup disables Lagom's `ConfigSessionProvider` and falls back to that provided in `akka-persistence-cassandra` which uses the list of endpoints listed in `contact-points`.
+
+This configuration is part of `application.conf` and therefore it will be applied in all environments (development and production) unless overridden. See developer mode settings on [[overriding Cassandra setup in Dev Mode|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]] for more information on settings up Cassandra in dev mode.
