@@ -49,7 +49,7 @@ This shows the configuration service locator being used only in prod mode, while
 
 Static lookup is the default behavior in `akka-persistence-cassandra` but Lagom overrides that behavior implementing a Session provider based on service location. That allows all services to continue to operate without the need to redeploy if/when the Cassandra `contact-points` are updated or fail. Using a Service Location based approach provides higher resiliency. It is possible to hardcode the list of `contact-points` where Cassandra may be located even when the server is stared with a dynamic service locator.
 
-You can decide to harcode the Cassandra contact points when using a static service locator as described above using:
+You can decide to hardcode the Cassandra contact points when using a static service locator as described above using:
 
 ```
 lagom.services {
@@ -70,6 +70,6 @@ cassandra {
 }
 ```
 
-This setup disables Lagom's `ConfigSessionProvider` and fallbacks to that provided in `akka-persistence-cassandra` which uses the list of endpoints listed in `contact-points`.
+This setup disables Lagom's `ConfigSessionProvider` and falls back to that provided in `akka-persistence-cassandra` which uses the list of endpoints listed in `contact-points`.
 
-This configuration is part of `application.conf` and therefore it will be applied in all environments (develpment and production) unless overriden. See developer mode settings on [[overriding Cassandra setup in Dev Mode|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]] for more information on settings up Cassandra in dev mode.
+This configuration is part of `application.conf` and therefore it will be applied in all environments (development and production) unless overridden. See developer mode settings on [[overriding Cassandra setup in Dev Mode|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]] for more information on settings up Cassandra in dev mode.
