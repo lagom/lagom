@@ -13,7 +13,7 @@ import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
 import play.utils.Threads
 
 import scala.collection.JavaConverters._
-import scala.concurrent.Await
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
@@ -217,10 +217,10 @@ object LagomReloadableDevServerStart {
         val devModeAkkaConfig = serverConfig.configuration.underlying.getConfig("lagom.akka.dev-mode.config")
         val actorSystemName = serverConfig.configuration.underlying.getString("lagom.akka.dev-mode.actor-system.name")
         val actorSystem = ActorSystem(actorSystemName, devModeAkkaConfig)
-        val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem,
-          ActorMaterializer()(actorSystem), () => {
-            actorSystem.terminate().map(_ => ())
-          })
+        val stopHook: () => Future[_] = () => {
+          actorSystem.terminate().map(_ => ())(scala.concurrent.ExecutionContext.Implicits.global)
+        }
+        val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem, ActorMaterializer()(actorSystem), stopHook)
         val serverProvider = ServerProvider.fromConfiguration(classLoader, serverConfig.configuration)
         val server = serverProvider.createServer(serverContext)
         val reloadableServer = new ReloadableServer(server) {
