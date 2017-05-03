@@ -191,4 +191,6 @@ In sbt:
 
 @[local-instance](code/build-cassandra-opts3.sbt)
 
-Assuming your local Cassandra instance is running on port `9042`.
+These two settings will only be used when running Lagom in DevMode. The purpose of these two settings is to disable the embedded Cassandra server and configure the Service Locator in DevMode to still be able to locate Cassandra when looking for `cas_native`. You may want to disable the Lagom-managed Cassandra server if you already have a Cassandra server running locally or in your company infrastructure and prefer using that. In that scenario it doesn't make sense for Lagom to start a Cassandra server and you will also gain few seconds of bootup time.
+
+The service locator setup in these examples assumes your local Cassandra instance is running on port `9042`.
