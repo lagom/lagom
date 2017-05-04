@@ -15,7 +15,6 @@
         <module>${service2Name}-api</module>
         <module>${service2Name}-impl</module>
         <module>integration-tests</module>
-        <module>cassandra-config</module>
     </modules>
 
     <build>
