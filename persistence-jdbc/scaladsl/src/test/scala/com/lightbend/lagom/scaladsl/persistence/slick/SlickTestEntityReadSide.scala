@@ -14,9 +14,8 @@ import slick.jdbc.JdbcProfile
 trait Tables {
 
   val profile: JdbcProfile
-  implicit val executionContext: ExecutionContext
-
   import profile.api._
+  implicit val ec: ExecutionContext
 
   case class TestCount(id: String, count: Long)
   class TestCounts(tag: Tag) extends Table[TestCount](tag, "testcounts") {
@@ -44,12 +43,9 @@ trait Tables {
 
 object SlickTestEntityReadSide {
 
-  class TestEntityReadSideProcessor(val readSide: SlickReadSide)
+  class TestEntityReadSideProcessor(readSide: SlickReadSide, db: Database, val profile: JdbcProfile)(implicit val ec: ExecutionContext)
     extends ReadSideProcessor[TestEntity.Evt]
     with Tables {
-
-    val profile: JdbcProfile = readSide.profile
-    val executionContext: ExecutionContext = readSide.executionContext
 
     def buildHandler(): ReadSideHandler[TestEntity.Evt] = readSide
       .builder[TestEntity.Evt]("test-entity-read-side")
@@ -63,7 +59,7 @@ object SlickTestEntityReadSide {
   }
 }
 
-class SlickTestEntityReadSide(db: Database, val profile: JdbcProfile)(implicit val executionContext: ExecutionContext)
+class SlickTestEntityReadSide(db: Database, val profile: JdbcProfile)(implicit val ec: ExecutionContext)
   extends Tables {
 
   import profile.api._

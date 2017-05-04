@@ -18,11 +18,11 @@ import slick.jdbc.JdbcBackend.Database
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.reflect.ClassTag
 
-class SlickReadSideImpl(slick: SlickProvider, offsetStore: SlickOffsetStore)(implicit val executionContext: ExecutionContext)
+/**
+ * INTERNAL API
+ */
+private[lagom] class SlickReadSideImpl(slick: SlickProvider, offsetStore: SlickOffsetStore)(implicit val executionContext: ExecutionContext)
   extends SlickReadSide {
-
-  override val db: Database = slick.db
-  override val profile: JdbcProfile = slick.profile
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
@@ -57,7 +57,7 @@ class SlickReadSideImpl(slick: SlickProvider, offsetStore: SlickOffsetStore)(imp
     eventHandlers:         Map[Class[_ <: Event], (EventStreamElement[_ <: Event]) => DBIOAction[Any, NoStream, Nothing]]
   ) extends ReadSideHandler[Event] {
 
-    import profile.api._
+    import slick.profile.api._
 
     @volatile
     private var offsetDao: SlickOffsetDao = _

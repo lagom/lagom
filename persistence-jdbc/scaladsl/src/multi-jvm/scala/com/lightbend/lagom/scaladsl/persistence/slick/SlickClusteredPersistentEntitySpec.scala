@@ -61,12 +61,14 @@ class SlickClusteredPersistentEntitySpec
     }
 
   lazy val jdbcTestEntityReadSide: SlickTestEntityReadSide =
-    new SlickTestEntityReadSide(components.db, components.profile)(system.dispatcher)
+    new SlickTestEntityReadSide(
+      components.db, components.profile)(components.executionContext)
 
   override protected def getAppendCount(id: String): Future[Long] =
     jdbcTestEntityReadSide.getAppendCount(id)
 
   override protected def readSideProcessor: () => ReadSideProcessor[Evt] = {
-    () => new SlickTestEntityReadSide.TestEntityReadSideProcessor(components.slickReadSide)
+    () => new SlickTestEntityReadSide.TestEntityReadSideProcessor(
+      components.slickReadSide, components.db, components.profile)(components.executionContext)
   }
 }

@@ -7,19 +7,19 @@ import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcPersistentEnti
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence._
 
+import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.concurrent.duration._
 
 class SlickReadSideSpec(implicit ec: ExecutionContext)
   extends SlickPersistenceSpec(TestEntitySerializerRegistry)
   with AbstractReadSideSpec {
 
-  override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, slick)
+  override protected val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, slick)
 
   override def processorFactory(): ReadSideProcessor[Evt] =
-    new SlickTestEntityReadSide.TestEntityReadSideProcessor(slickReadSide)
+    new SlickTestEntityReadSide.TestEntityReadSideProcessor(slickReadSide, slick.db, slick.profile)
 
-  lazy val readSide = new SlickTestEntityReadSide(slickReadSide.db, slickReadSide.profile)
+  lazy val readSide = new SlickTestEntityReadSide(slick.db, slick.profile)
 
   override def getAppendCount(id: String): Future[Long] = readSide.getAppendCount(id)
 

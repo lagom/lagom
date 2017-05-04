@@ -6,6 +6,8 @@ package com.lightbend.lagom.scaladsl.persistence.slick
 import com.lightbend.lagom.internal.scaladsl.persistence.slick.SlickReadSideImpl
 import com.lightbend.lagom.scaladsl.persistence.PersistenceComponents
 import com.lightbend.lagom.scaladsl.persistence.jdbc.{ ReadSideJdbcPersistenceComponents, WriteSideJdbcPersistenceComponents }
+import slick.jdbc.JdbcBackend.Database
+import slick.jdbc.JdbcProfile
 
 /**
  * Persistence Slick components (for compile-time injection).
@@ -27,6 +29,6 @@ trait ReadSideSlickPersistenceComponents
   extends ReadSideJdbcPersistenceComponents {
 
   lazy val slickReadSide: SlickReadSide = new SlickReadSideImpl(slickProvider, slickOffsetStore)(executionContext)
-  lazy val db = slickProvider.db
-  lazy val profile = slickProvider.profile
+  lazy val db: Database = slickProvider.db
+  lazy val profile: JdbcProfile = slickProvider.profile
 }
