@@ -55,14 +55,12 @@ The structure for a project created with the Maven archetype generate command wi
 
 ```
 my-first-system 
- └ cassandra-config      
- └ hello-api             → hello world api project dir
- └ hello-impl            → hello world implementation dir 
- └ integration-tests    
- └ stream-api            → stream api project dir
- └ stream-impl           → stream implementation project dir
- 
- └ pom.xml               → Project group build file
+ └ hello-api/             → hello world api project dir
+ └ hello-impl/            → hello world implementation dir 
+ └ integration-tests/
+ └ stream-api/            → stream api project dir
+ └ stream-impl/           → stream implementation project dir
+ └ pom.xml                → Project group build file
 ```
 
 Note that the `hello` and `stream` services each have: 
