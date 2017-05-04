@@ -26,25 +26,26 @@ private[lagom] object ServiceLocatorHolder extends ExtensionId[ServiceLocatorHol
 
   override def createExtension(system: ExtendedActorSystem): ServiceLocatorHolder =
     new ServiceLocatorHolder(system)
+
+  val TIMEOUT = 2.seconds
 }
 
 private[lagom] class ServiceLocatorHolder(system: ExtendedActorSystem) extends Extension {
-  @volatile private var _serviceLocator: Option[ServiceLocatorAdapter] = None
-
   private val promisedServiceLocator = Promise[ServiceLocatorAdapter]()
 
+  import ServiceLocatorHolder.TIMEOUT
+
   private implicit val exCtx = system.dispatcher
-  private val delayed = akka.pattern.after(10.seconds, using = system.scheduler) {
-    Future.failed(new NoServiceLocatorException("Timed out."))
+  private val delayed = {
+    akka.pattern.after(TIMEOUT, using = system.scheduler) {
+      Future.failed(new NoServiceLocatorException(s"Timed out after $TIMEOUT while waiting for a ServiceLocator. Have you configured one?"))
+    }
   }
 
   def serviceLocatorEventually: Future[ServiceLocatorAdapter] =
     Future firstCompletedOf Seq(promisedServiceLocator.future, delayed)
 
   def setServiceLocator(locator: ServiceLocatorAdapter): Unit = {
-    require(_serviceLocator.isEmpty, "Service locator has already been defined")
-
-    _serviceLocator = Some(locator)
     promisedServiceLocator.complete(Success(locator))
   }
 }
