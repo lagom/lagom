@@ -16,7 +16,7 @@ class ServiceLocatorHolderSpec extends WordSpec with MustMatchers {
     "timeout when no service locator is found" in {
       val eventually = ServiceLocatorHolder(system).serviceLocatorEventually
       assertThrows[NoServiceLocatorException](
-        Await.result(eventually, ServiceLocatorHolder.TIMEOUT + 2.seconds )
+        Await.result(eventually, ServiceLocatorHolder.TIMEOUT + 2.seconds)
       )
     }
   }
