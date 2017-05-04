@@ -49,6 +49,12 @@ public class AnotherServiceTest {
             // use a service client instance to interact with the service
             // and assert the message was processed as expected.
             // ...
+
+            // You will probably need to wrap your assertion in an
+            // `eventually()` clause so you can retry your assertion
+            // since your invocation via the service client may arrive
+            // before the message was consumed.
+
         });
     }
 
