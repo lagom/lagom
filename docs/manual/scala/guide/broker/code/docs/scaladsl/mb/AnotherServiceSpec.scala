@@ -7,6 +7,8 @@ import com.lightbend.lagom.scaladsl.testkit.{ProducerStubFactory, ServiceTest, _
 import play.api.libs.ws.ahc.AhcWSComponents
 import org.scalatest.{AsyncWordSpec, Matchers}
 import akka.{NotUsed, Done}
+import org.scalatest.concurrent.Eventually
+import org.scalatest.time.{ Seconds, Span }
 
 abstract class AnotherApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
@@ -19,7 +21,7 @@ abstract class AnotherApplication(context: LagomApplicationContext)
 }
 
 //#topic-test-consuming-from-a-topic
-class AnotherServiceSpec extends AsyncWordSpec with Matchers {
+class AnotherServiceSpec extends AsyncWordSpec with Matchers with Eventually {
   var producerStub: ProducerStub[GreetingMessage] = _
 
   "The AnotherService" should {
@@ -42,10 +44,13 @@ class AnotherServiceSpec extends AsyncWordSpec with Matchers {
         producerStub.send(GreetingMessage("Hi there!"))
 
         // create a service client to assert the message was consumed
-        server.serviceClient.implement[AnotherService].foo.invoke().map { resp =>
-          resp should ===("Hi there!")
+        eventually(timeout(Span(5, Seconds))) {
+          server.serviceClient.implement[AnotherService].foo.invoke().map { resp =>
+            resp should ===("Hi there!")
+          }
+        }.recover {
+          case t: Throwable => fail(t)
         }
-
       }
   }
 }
