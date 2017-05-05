@@ -16,7 +16,7 @@ As a complete microservices platform, Lagom assembles a collection of technologi
 
 * Play Framework --- Lagom is implemented on top of [Play Framework](https://www.playframework.com), Lightbend's web framework. This is an implementation detail that does not directly concern you when developing simple microservices.  However, advanced users can call some Play APIs directly. If you have an existing Play Framework application to which you want to add microservices, Lagom provides support for that use case.
 
-* SLF4J & Logback --- Lagom uses [SLF4J](http://www.slf4j.org/) for logging, backed by [Logback](http://logback.qos.ch/) as its default logging engine. See [[Logging]] for more information.
+* SLF4J & Logback --- Lagom uses [SLF4J](https://www.slf4j.org/) for logging, backed by [Logback](https://logback.qos.ch/) as its default logging engine. See [[Logging]] for more information.
 
 * Typesafe Config Library --- Lagom and many of its component technologies are configured using the [Typesafe Config](https://github.com/typesafehub/config) library.  The configuration file format is [HOCON](https://github.com/typesafehub/config/blob/master/HOCON.md), a powerful and expressive superset of JSON.
 
