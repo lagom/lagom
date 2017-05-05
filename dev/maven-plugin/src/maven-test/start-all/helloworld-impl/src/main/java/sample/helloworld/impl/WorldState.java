@@ -3,9 +3,6 @@
  */
 package sample.helloworld.impl;
 
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.MoreObjects;
@@ -16,7 +13,6 @@ import com.lightbend.lagom.serialization.CompressedJsonable;
  * The state for the {@link HelloWorld} entity.
  */
 @SuppressWarnings("serial")
-@Immutable
 @JsonDeserialize
 public final class WorldState implements CompressedJsonable {
 
@@ -30,7 +26,7 @@ public final class WorldState implements CompressedJsonable {
   }
 
   @Override
-  public boolean equals(@Nullable Object another) {
+  public boolean equals(Object another) {
     return this == another || another instanceof WorldState && equalTo((WorldState) another);
   }
 

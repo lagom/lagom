@@ -19,13 +19,13 @@ import com.lightbend.lagom.internal.testkit.{ TestServiceLocator, TestServiceLoc
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
-import com.lightbend.lagom.javadsl.persistence.testkit.TestUtil
 import akka.actor.ActorSystem
 import akka.japi.function.Effect
 import akka.japi.function.Procedure
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
+import com.lightbend.lagom.internal.javadsl.persistence.testkit.CassandraTestConfig
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
 import play.Application
@@ -259,13 +259,14 @@ object ServiceTest {
         val cassandraPort = CassandraLauncher.randomPort
         val cassandraDirectory = Files.createTempDirectory(testName).toFile
         val t0 = System.nanoTime()
-        CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort)
+        CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort,
+          CassandraLauncher.classpathForResources(LagomTestConfigResource))
         log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
-        val b2 = b1.configure(new Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = false)))
+        val b2 = b1.configure(new Configuration(CassandraTestConfig.persistenceConfig(testName, cassandraPort)))
           .configure("lagom.cluster.join-self", "on")
         disableModules(b2, KafkaClientModule, KafkaBrokerModule)
       } else if (setup.cluster) {
-        val b2 = b1.configure(new Configuration(TestUtil.clusterConfig))
+        val b2 = b1.configure(new Configuration(CassandraTestConfig.clusterConfig))
           .configure("lagom.cluster.join-self", "on")
           .disable(classOf[PersistenceModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
@@ -287,7 +288,7 @@ object ServiceTest {
 
     if (setup.cassandra) {
       val system = application.injector().instanceOf(classOf[ActorSystem])
-      TestUtil.awaitPersistenceInit(system)
+      CassandraTestConfig.awaitPersistenceInit(system)
     }
 
     new TestServer(assignedPort, application, srv)

@@ -190,7 +190,8 @@ object ServiceTest {
         val cassandraPort = CassandraLauncher.randomPort
         val cassandraDirectory = Files.createTempDirectory(testName).toFile
         val t0 = System.nanoTime()
-        CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort)
+        CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort,
+          CassandraLauncher.classpathForResources(LagomTestConfigResource))
         log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
         Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = false)) ++
           Configuration("lagom.cluster.join-self" -> "on")

@@ -5,7 +5,7 @@ object Dependencies {
 
   // Version numbers
   val PlayVersion = "2.6.0-M3"
-  val AkkaVersion = "2.5.0"
+  val AkkaVersion = "2.5.1"
   val ScalaVersion = "2.11.11"
   val AkkaPersistenceCassandraVersion = "0.52"
   val ScalaTestVersion = "3.0.3"
@@ -106,8 +106,8 @@ object Dependencies {
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.6.1",
       "commons-codec" % "commons-codec" % "1.10",
-      "io.aeron" % "aeron-client" % "1.2.3",
-      "io.aeron" % "aeron-driver" % "1.2.3",
+      "io.aeron" % "aeron-client" % "1.2.5",
+      "io.aeron" % "aeron-driver" % "1.2.5",
       "io.dropwizard.metrics" % "metrics-core" % "3.2.2",
       "io.jsonwebtoken" % "jjwt" % "0.7.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
@@ -119,7 +119,7 @@ object Dependencies {
       "junit" % "junit" % "4.11",
       "net.jodah" % "typetools" % "0.4.9",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
-      "org.agrona" % "agrona" % "0.9.3",
+      "org.agrona" % "agrona" % "0.9.5",
       "org.apache.commons" % "commons-lang3" % "3.5",
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final",

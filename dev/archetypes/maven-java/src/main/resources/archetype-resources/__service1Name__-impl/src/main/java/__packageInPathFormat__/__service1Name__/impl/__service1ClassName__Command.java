@@ -5,7 +5,6 @@ package ${package}.${service1Name}.impl;
 
 import java.util.Optional;
 
-import javax.annotation.Nullable;
 import lombok.Value;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

@@ -5,9 +5,6 @@ package sample.helloworld.impl;
 
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.MoreObjects;
@@ -34,7 +31,6 @@ public interface HelloCommand extends Jsonable {
    * when all the events emitted by this command are successfully persisted.
    */
   @SuppressWarnings("serial")
-  @Immutable
   @JsonDeserialize
   public final class UseGreetingMessage implements HelloCommand, CompressedJsonable, PersistentEntity.ReplyType<Done> {
     public final String message;
@@ -45,7 +41,7 @@ public interface HelloCommand extends Jsonable {
     }
 
     @Override
-    public boolean equals(@Nullable Object another) {
+    public boolean equals(Object another) {
       return this == another || another instanceof UseGreetingMessage && equalTo((UseGreetingMessage) another);
     }
 
@@ -73,7 +69,6 @@ public interface HelloCommand extends Jsonable {
    * person.
    */
   @SuppressWarnings("serial")
-  @Immutable
   @JsonDeserialize
   public final class Hello implements HelloCommand, PersistentEntity.ReplyType<String> {
     public final String name;
@@ -86,7 +81,7 @@ public interface HelloCommand extends Jsonable {
     }
 
     @Override
-    public boolean equals(@Nullable Object another) {
+    public boolean equals(Object another) {
       return this == another || another instanceof Hello && equalTo((Hello) another);
     }
 

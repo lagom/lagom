@@ -578,7 +578,12 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
       ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$Persist"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistOne"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistAll"),
-      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistNone")
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistNone"),
+
+      // Deprecated in 1.2.0, deleted due to other binary incompatibility introduced when Akka 2.5.0 was upgraded.
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil$AwaitPersistenceInit")
     ),
     Dependencies.`persistence-javadsl`
   )
@@ -993,7 +998,21 @@ lazy val `service-locator` = (project in file("dev") / "service-registry"/ "serv
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-service-locator",
-    Dependencies.`service-locator`
+    Dependencies.`service-locator`,
+    // Need to ensure that the service locator uses the Lagom dependency management
+    pomExtra := pomExtra.value :+ {
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>{organization.value}</groupId>
+            <artifactId>lagom-maven-dependencies</artifactId>
+            <version>{version.value}</version>
+            <scope>import</scope>
+            <type>pom</type>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+    }
   )
   .dependsOn(`server-javadsl`, logback, `service-registry-client-javadsl`)
 
