@@ -22,6 +22,8 @@ saved_caches_directory: $DIR/saved_caches
 
 hints_directory: $DIR/hints
 
+cdc_raw_directory: $DIR/cdc_raw
+
 commitlog_sync: periodic
 commitlog_sync_period_in_ms: 10000
 

@@ -584,9 +584,6 @@ object Dependencies {
 
   val `cassandra-server` = libraryDependencies ++= Seq(
     akkaPersistenceCassandraLauncher
-      exclude("io.netty", "netty-all") exclude("io.netty", "netty-handler") exclude("io.netty", "netty-buffer")
-      exclude("io.netty", "netty-common") exclude("io.netty", "netty-transport") exclude("io.netty", "netty-codec"),
-    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion
   )
 
   val `kafka-server` = libraryDependencies ++= Seq(

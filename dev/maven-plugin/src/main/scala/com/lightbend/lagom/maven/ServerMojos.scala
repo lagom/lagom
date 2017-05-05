@@ -19,7 +19,8 @@ import scala.beans.BeanProperty
 import org.apache.maven.execution.MavenSession
 import org.eclipse.aether.graph.Dependency
 
-class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, mavenLoggerManager: LoggerManager) extends LagomAbstractMojo {
+class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, mavenLoggerManager: LoggerManager,
+                                    scalaClassLoaderManager: ScalaClassLoaderManager) extends LagomAbstractMojo {
 
   @BeanProperty
   var cassandraMaxBootWaitingSeconds: Int = _
@@ -30,8 +31,7 @@ class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProx
   @BeanProperty
   var cassandraCleanOnStart: Boolean = _
   @BeanProperty // I'm not sure if it's possible to specify a default value for a literal list in plugin.xml, so specify it here.
-  var cassandraJvmOptions: JList[String] = Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099",
-    "-DCassandraLauncher.configResource=dev-embedded-cassandra.yaml").asJava
+  var cassandraJvmOptions: JList[String] = Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099").asJava
 
   override def execute(): Unit = {
     if (cassandraEnabled) {
@@ -41,8 +41,10 @@ class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProx
       val cp = facade.resolveArtifact(new DefaultArtifact("com.lightbend.lagom", "lagom-cassandra-server_2.11",
         "jar", LagomVersion.current))
 
-      Servers.CassandraServer.start(logger, cp.map(_.getFile), cassandraPort, cassandraCleanOnStart, cassandraJvmOptions.asScala,
-        cassandraMaxBootWaitingSeconds.seconds)
+      val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
+
+      Servers.CassandraServer.start(logger, scalaClassLoader, cp.map(_.getFile), cassandraPort, cassandraCleanOnStart,
+        cassandraJvmOptions.asScala, cassandraMaxBootWaitingSeconds.seconds)
     }
   }
 }
@@ -81,13 +83,6 @@ class StartKafkaMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, m
         val artifact = new DefaultArtifact("com.lightbend.lagom", "lagom-kafka-server_2.11",
           "jar", LagomVersion.current)
         new Dependency(artifact, "runtime")
-      }
-      val additionalDependencies = {
-        val zooKeeper = {
-          val artifact = new DefaultArtifact("org.apache.zookeeper", "zookeeper", "jar", "3.3.4")
-          new Dependency(artifact, "runtime")
-        }
-        Seq(zooKeeper)
       }
       val cp = facade.resolveArtifact(dependency.getArtifact)
 

@@ -1,4 +1,4 @@
-import play.api._
+import play.api.{ Application, ApplicationLoader, BuiltInComponentsFromContext }
 import play.api.libs.ws.ahc.AhcWSComponents
 import com.softwaremill.macwire._
 import router.Routes

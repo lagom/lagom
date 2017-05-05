@@ -7,7 +7,7 @@ import java.io.{ Closeable, File }
 import java.net.{ URI, URL }
 import java.util.concurrent.{ CompletableFuture, CompletionStage, TimeUnit }
 import java.util.function.Consumer
-import java.util.{ Properties, Map => JMap }
+import java.util.{ Map => JMap }
 
 import com.datastax.driver.core.Cluster
 import play.dev.filewatch.LoggerProxy
@@ -16,6 +16,8 @@ import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
+
+import scala.language.reflectiveCalls
 
 private[lagom] object Servers {
 
@@ -136,28 +138,25 @@ private[lagom] object Servers {
   }
 
   private[lagom] object CassandraServer extends ServerContainer {
-    import scala.concurrent.duration._
-    import scala.util.Try
-    import scala.util.control.NonFatal
-
-    protected case class CassandraProcess(process: Process, port: Int) extends ServerProcess(process) {
-      def hostname: String = "127.0.0.1"
-      def address: String = s"$hostname:$port"
+    protected type Server = {
+      def start(cassandraDirectory: File, configResource: String, clean: Boolean, port: Int, jvmOptions: Array[String]): Unit
+      def stop(): Unit
+      def address: String
+      def hostname: String
+      def port: Int
     }
 
-    protected type Server = CassandraProcess
+    def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Seq[File], port: Int, cleanOnStart: Boolean, jvmOptions: Seq[String], maxWaiting: FiniteDuration): Closeable = synchronized {
+      if (server != null) {
+        log.info(s"Cassandra is running at ${server.address}")
+      } else {
+        val loader = new java.net.URLClassLoader(classpath.map(_.toURI.toURL).toArray, parentClassLoader)
+        val directory = new File("target/embedded-cassandra")
+        val serverClass = loader.loadClass("com.lightbend.lagom.internal.cassandra.CassandraLauncher")
+        server = serverClass.newInstance().asInstanceOf[Server]
 
-    def start(log: LoggerProxy, cp: Seq[File], port: Int, cleanOnStart: Boolean, jvmOptions: Seq[String], maxWaiting: FiniteDuration): Closeable = synchronized {
-      if (server != null) log.info(s"Cassandra is running at ${server.address}")
-      else {
-        // see https://github.com/krasserm/akka-persistence-cassandra/blob/5efcd16bfc5a72ad277cb5687a62542f00ae8857/src/main/scala/akka/persistence/cassandra/testkit/CassandraLauncher.scala#L29-L31
-        val args = List(
-          port.toString,
-          cleanOnStart.toString
-        )
-        val process = LagomProcess.runJava(jvmOptions.toList, cp, "com.lightbend.lagom.internal.cassandra.CassandraLauncher", args)
-        server = CassandraProcess(process, port)
-        server.enableKillOnExit()
+        server.start(directory, "dev-embedded-cassandra.yaml", cleanOnStart, port, jvmOptions.toArray)
+
         waitForRunningCassandra(log, server, maxWaiting)
       }
       new Closeable {
@@ -165,16 +164,16 @@ private[lagom] object Servers {
       }
     }
 
-    private def waitForRunningCassandra(log: LoggerProxy, server: CassandraProcess, maxWaiting: FiniteDuration): Unit = {
+    private def waitForRunningCassandra(log: LoggerProxy, server: Server, maxWaiting: FiniteDuration): Unit = {
       val contactPoint = Seq(new java.net.InetSocketAddress(server.hostname, server.port)).asJava
       val clusterBuilder = Cluster.builder.addContactPointsWithPorts(contactPoint)
 
       @annotation.tailrec
       def tryConnect(deadline: Deadline): Unit = {
-        print(".") // each attempts prints a dot (informing the user of progress) 
+        print(".") // each attempts prints a dot (informing the user of progress)
         try {
           val session = clusterBuilder.build().connect()
-          println() // we don't want to print the message on the same line of the dots... 
+          println() // we don't want to print the message on the same line of the dots...
           log.info("Cassandra server running at " + server.address)
           session.closeAsync()
           session.getCluster.closeAsync()
@@ -188,7 +187,7 @@ private[lagom] object Servers {
               val msg = s"""Cassandra server is not yet started.\n
                            |The value assigned to
                            |`lagomCassandraMaxBootWaitingTime`
-                           |is either too short, or this may indicate another 
+                           |is either too short, or this may indicate another
                            |process is already running on port ${server.port}""".stripMargin
               println() // we don't want to print the message on the same line of the dots...
               log.info(msg)
@@ -201,18 +200,20 @@ private[lagom] object Servers {
 
     protected def stop(log: LoggerProxy): Unit = synchronized {
       if (server == null) {
-        log.info("Cassandra was already stopped")
+        log.info("Service locator was already stopped")
       } else {
-        log.info("Stopping Cassandra...")
-        try {
-          server.kill()
-          log.info("Cassandra is stopped.")
-        } finally {
-          try server.disableKillOnExit()
-          catch {
-            case NonFatal(_) => ()
-          } finally server = null
-        }
+        log.info("Stopping service locator")
+        stop()
+      }
+    }
+
+    private def stop(): Unit = synchronized {
+      try {
+        server.stop()
+      } catch {
+        case _: Exception => ()
+      } finally {
+        server = null.asInstanceOf[Server]
       }
     }
   }
