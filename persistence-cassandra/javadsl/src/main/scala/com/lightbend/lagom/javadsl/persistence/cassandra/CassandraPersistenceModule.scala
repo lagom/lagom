@@ -41,14 +41,14 @@ class CassandraPersistenceModule extends AbstractModule {
       override def hear[I](typeLiteral: TypeLiteral[I], typeEncounter: TypeEncounter[I]): Unit = {
         typeEncounter.register(new InjectionListener[I] {
           override def afterInjection(i: I): Unit = {
-            i.asInstanceOf[CassandraPersistenceModule.InitServiceLocatorHolder].init();
+            i.asInstanceOf[CassandraPersistenceModule.InitServiceLocatorHolder].init()
           }
         })
       }
     }
     val matcher = new AbstractMatcher[TypeLiteral[_]] {
       override def matches(typeLiteral: TypeLiteral[_]): Boolean = {
-        return classOf[CassandraPersistenceModule.InitServiceLocatorHolder] == typeLiteral.getRawType;
+        classOf[CassandraPersistenceModule.InitServiceLocatorHolder] == typeLiteral.getRawType
       }
     }
     binder.bindListener(matcher, listener)
@@ -83,4 +83,5 @@ private object CassandraPersistenceModule {
       }
     }
   }
+
 }
