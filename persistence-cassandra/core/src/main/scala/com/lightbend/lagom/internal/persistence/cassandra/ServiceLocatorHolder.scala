@@ -3,9 +3,13 @@
  */
 package com.lightbend.lagom.internal.persistence.cassandra
 
+import scala.concurrent.{ Future, Promise }
+import scala.util.Success
 import akka.actor.{ ActorSystem, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider }
-import scala.concurrent.Future
 import java.net.URI
+
+import scala.concurrent.duration._
+import scala.util.control.NoStackTrace
 
 /**
  * The `ServiceLocatorHolder` is used by the `ServiceLocatorSessionProvider` to
@@ -21,17 +25,32 @@ private[lagom] object ServiceLocatorHolder extends ExtensionId[ServiceLocatorHol
   override def lookup = ServiceLocatorHolder
 
   override def createExtension(system: ExtendedActorSystem): ServiceLocatorHolder =
-    new ServiceLocatorHolder
+    new ServiceLocatorHolder(system)
+
+  val TIMEOUT = 2.seconds
 }
 
-private[lagom] class ServiceLocatorHolder extends Extension {
-  @volatile private var _serviceLocator: Option[ServiceLocatorAdapter] = None
+private[lagom] class ServiceLocatorHolder(system: ExtendedActorSystem) extends Extension {
+  private val promisedServiceLocator = Promise[ServiceLocatorAdapter]()
 
-  def serviceLocator: Option[ServiceLocatorAdapter] = _serviceLocator
+  import ServiceLocatorHolder.TIMEOUT
 
-  def setServiceLocator(locator: ServiceLocatorAdapter): Unit =
-    _serviceLocator = Some(locator)
+  private implicit val exCtx = system.dispatcher
+  private val delayed = {
+    akka.pattern.after(TIMEOUT, using = system.scheduler) {
+      Future.failed(new NoServiceLocatorException(s"Timed out after $TIMEOUT while waiting for a ServiceLocator. Have you configured one?"))
+    }
+  }
+
+  def serviceLocatorEventually: Future[ServiceLocatorAdapter] =
+    Future firstCompletedOf Seq(promisedServiceLocator.future, delayed)
+
+  def setServiceLocator(locator: ServiceLocatorAdapter): Unit = {
+    promisedServiceLocator.complete(Success(locator))
+  }
 }
+
+private[lagom] final class NoServiceLocatorException(msg: String) extends RuntimeException(msg) with NoStackTrace
 
 /**
  * scaladsl and javadsl specific implementations
@@ -39,3 +58,4 @@ private[lagom] class ServiceLocatorHolder extends Extension {
 private[lagom] trait ServiceLocatorAdapter {
   def locate(name: String): Future[Option[URI]]
 }
+
