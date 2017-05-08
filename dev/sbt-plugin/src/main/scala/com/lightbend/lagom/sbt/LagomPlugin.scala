@@ -561,8 +561,12 @@ object LagomPlugin extends AutoPlugin {
   }
 
   private lazy val cassandraServerConfiguration: Initialize[Map[String, String]] = Def.setting {
-    val port = lagomCassandraPort.value
-    LagomConfig.cassandraPort(port)
+    if ((lagomCassandraEnabled in ThisBuild).value) {
+      val port = lagomCassandraPort.value
+      LagomConfig.cassandraPort(port)
+    } else
+      // cassandra's default port should not be set if the embedded server is not used.
+      Map.empty
   }
 
   private lazy val actorSystemsConfig: Initialize[Map[String, String]] = Def.setting {
