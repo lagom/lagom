@@ -46,6 +46,28 @@ cassandra-snapshot-store.keyspace = ${my-service.cassandra.keyspace}
 lagom.persistence.read-side.cassandra.keyspace = ${my-service.cassandra.keyspace}
 ```
 
+If you are using macOS or Linux, or have other access to a bash scripting environment, running this shell script in your base project directory can help add this configuration to existing services:
+
+```bash
+#!/bin/bash
+
+set -eu
+
+for svc_dir in *-impl; do
+    svc=${svc_dir%-impl}
+
+    # change $svc_dir to $svc on the next line to leave out the _impl suffix
+    keyspace=$(tr - _ <<<$svc_dir)
+    cat >> $svc_dir/src/main/resources/application.conf <<END
+$svc.cassandra.keyspace = $keyspace
+
+cassandra-journal.keyspace = \${$svc.cassandra.keyspace}
+cassandra-snapshot-store.keyspace = \${$svc.cassandra.keyspace}
+lagom.persistence.read-side.cassandra.keyspace = \${$svc.cassandra.keyspace}
+END
+done
+```
+
 Previous versions of Lagom automatically calculated a default Cassandra keyspace for each service, based on the name of the service project, and injected this keyspace configuration in development mode. When running in production, these calculated keyspaces were not used, resulting in multiple services sharing the same keyspaces by default.
 
 In Lagom 1.4, services that use Cassandra persistence will fail on startup when these properties are not defined.
