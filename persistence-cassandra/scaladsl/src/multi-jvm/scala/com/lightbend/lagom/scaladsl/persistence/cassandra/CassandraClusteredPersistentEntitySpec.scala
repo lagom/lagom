@@ -34,7 +34,7 @@ class CassandraClusteredPersistentEntitySpec extends AbstractClusteredPersistent
   override protected def atStartup() {
     runOn(node1) {
       val cassandraDirectory = new File("target/" + system.name)
-      CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = true, port = databasePort)
+      CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", clean = true, port = databasePort)
       TestUtil.awaitPersistenceInit(system)
     }
     enterBarrier("cassandra-started")

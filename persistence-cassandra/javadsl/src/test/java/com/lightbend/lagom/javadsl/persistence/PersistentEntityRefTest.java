@@ -60,7 +60,7 @@ public class PersistentEntityRefTest {
     Cluster.get(system).join(Cluster.get(system).selfAddress());
 
     File cassandraDirectory = new File("target/PersistentEntityRefTest");
-    CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource(), true, 0);
+    CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", true, 0);
     TestUtil.awaitPersistenceInit(system);
 
   }

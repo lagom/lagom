@@ -28,7 +28,7 @@ class CassandraPersistenceSpec(system: ActorSystem) extends ActorSystemSpec(syst
     super.beforeAll()
 
     val cassandraDirectory = new File("target/" + system.name)
-    CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = true, port = 0)
+    CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", clean = true, port = 0)
     TestUtil.awaitPersistenceInit(system)
 
     // Join ourselves - needed because the Cassandra offset store uses cluster startup task
