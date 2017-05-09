@@ -1,8 +1,8 @@
 # Lightbend Reactive Platform
 
- [Lightbend Reactive Platform](https://www.lightbend.com/products/lightbend-reactive-platform) is an application development solution powered by an open source core and commercial Production Suite for building scalable Reactive systems on the JVM. The open source components can be used via public repositories as normal, while **the commercial ones are in a secure repository requiring Lightbend-provided credentials**.
+[Lightbend Reactive Platform](https://www.lightbend.com/products/lightbend-reactive-platform) is an application development solution powered by an open source core and commercial [Enterprise Suite](https://www.lightbend.com/platform/production) for building Reactive systems on the JVM. The open source components can be used via public repositories as normal, while **Enterprise Suite components are in a secure repository requiring Lightbend-provided credentials**.
 
-We recommend that you use the Lightbend Reactive Platform to take advantage of the [Split Brain Resolver](http://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) and the [Diagnostics Recorder](http://tech-hub.lightbend.com/docs/akka-commercial-addons/current/diagnostics-recorder.html).
+We recommend that you use the Lightbend Enterprise Suite to take advantage of the [Split Brain Resolver](http://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) and the [Diagnostics Recorder](http://tech-hub.lightbend.com/docs/akka-commercial-addons/current/diagnostics-recorder.html).
 
 Read about the importance of the Split Brain Resolver in the [[Cluster Downing|Cluster#Downing]] documentation.
 
