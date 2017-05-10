@@ -309,7 +309,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
           // Then we can invoke the service call
           (responseHeader, response) <- invokeServiceCall(serviceCall, requestHeader, request)
         } yield {
-          if (responseHeaderIsDefault(responseHeader)) {
+          if (!responseHeaderIsDefault(responseHeader)) {
             Logger.warn("Response header contains a custom status code and/or custom protocol and/or custom headers, " +
               "but this was invoked by a transport (eg WebSockets) that does not allow sending custom headers. " +
               "This response header will be ignored: " + responseHeader)
