@@ -156,6 +156,7 @@ def multiJvmTestSettings: Seq[Setting[_]] =
     HeaderPlugin.settingsFor(MultiJvm) ++
     AutomateHeaderPlugin.automateFor(MultiJvm) ++
     inConfig(MultiJvm)(SbtScalariform.configScalariformSettings) ++
+    (compileInputs in (MultiJvm, compile) <<= (compileInputs in (MultiJvm, compile)) dependsOn (scalariformFormat in MultiJvm)) ++
     Seq(
       parallelExecution in Test := false,
       MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting :: defaultMultiJvmOptions,
