@@ -149,28 +149,35 @@ def databasePortSetting: String = {
   s"-Ddatabase.port=$port"
 }
 
-def multiJvmTestSettings: Seq[Setting[_]] = SbtMultiJvm.multiJvmSettings ++ Seq(
-  parallelExecution in Test := false,
-  MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting :: defaultMultiJvmOptions,
-  // make sure that MultiJvm test are compiled by the default test compilation
-  compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test),
-  // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
-  executeTests in MultiJvm := ((executeTests in MultiJvm) tag Tags.Test).value,
-  // make sure that MultiJvm tests are executed by the default test target, 
-  // and combine the results from ordinary test and multi-jvm tests
-  executeTests in Test := {
-    val testResults = (executeTests in Test).value
-    val multiNodeResults = (executeTests in MultiJvm).value
-    val overall =
-      if (testResults.overall.id < multiNodeResults.overall.id)
-        multiNodeResults.overall
-      else
-        testResults.overall
-    Tests.Output(overall,
-      testResults.events ++ multiNodeResults.events,
-      testResults.summaries ++ multiNodeResults.summaries)
-  }
-)
+def multiJvmTestSettings: Seq[Setting[_]] =
+  SbtMultiJvm.multiJvmSettings ++
+    // enabling HeaderPlugin in MultiJvm requires two sets of settings.
+    // see https://github.com/sbt/sbt-header/issues/37
+    HeaderPlugin.settingsFor(MultiJvm) ++
+    AutomateHeaderPlugin.automateFor(MultiJvm) ++
+    inConfig(MultiJvm)(SbtScalariform.configScalariformSettings) ++
+    Seq(
+      parallelExecution in Test := false,
+      MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting :: defaultMultiJvmOptions,
+      // make sure that MultiJvm test are compiled by the default test compilation
+      compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test),
+      // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
+      executeTests in MultiJvm := ((executeTests in MultiJvm) tag Tags.Test).value,
+      // make sure that MultiJvm tests are executed by the default test target,
+      // and combine the results from ordinary test and multi-jvm tests
+      executeTests in Test := {
+        val testResults = (executeTests in Test).value
+        val multiNodeResults = (executeTests in MultiJvm).value
+        val overall =
+          if (testResults.overall.id < multiNodeResults.overall.id)
+            multiNodeResults.overall
+          else
+            testResults.overall
+        Tests.Output(overall,
+          testResults.events ++ multiNodeResults.events,
+          testResults.summaries ++ multiNodeResults.summaries)
+      }
+    )
 
 def macroCompileSettings: Seq[Setting[_]] = Seq(
   compile in Test ~= { a =>
