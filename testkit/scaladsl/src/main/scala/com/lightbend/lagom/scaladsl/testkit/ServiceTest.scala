@@ -36,6 +36,8 @@ import scala.util.control.NonFatal
  */
 object ServiceTest {
 
+  private val LagomTestConfigResource: String = "lagom-test-embedded-cassandra.yaml"
+
   sealed trait Setup {
     /**
      * Enable or disable Cassandra.
@@ -189,7 +191,7 @@ object ServiceTest {
         val cassandraDirectory = Files.createTempDirectory(testName).toFile
         FileUtils.deleteRecursiveOnExit(cassandraDirectory)
         val t0 = System.nanoTime()
-        CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = false, port = 0)
+        CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = 0)
         log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
         Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = false)) ++
           Configuration("lagom.cluster.join-self" -> "on")
