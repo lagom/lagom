@@ -59,7 +59,7 @@ public class CqrsIntegrationTest {
     Config config = TestUtil.persistenceConfig("CqrsIntegrationTest", CassandraLauncher.randomPort());
 
     File cassandraDirectory = new File("target/CqrsIntegrationTest");
-    CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource(), true, 0);
+    CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", true, 0);
 
     application = new GuiceApplicationBuilder()
             .configure(new Configuration(config))

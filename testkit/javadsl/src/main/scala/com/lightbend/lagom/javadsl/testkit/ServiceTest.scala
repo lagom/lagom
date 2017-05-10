@@ -68,6 +68,8 @@ object ServiceTest {
   private val KafkaBrokerModule = "com.lightbend.lagom.internal.javadsl.broker.kafka.KafkaBrokerModule"
   private val KafkaClientModule = "com.lightbend.lagom.javadsl.broker.kafka.KafkaClientModule"
 
+  private val LagomTestConfigResource: String = "lagom-test-embedded-cassandra.yaml"
+
   sealed trait Setup {
     @deprecated(message = "Use withCassandra instead", since = "1.2.0")
     def withPersistence(enabled: Boolean): Setup = withCassandra(enabled)
@@ -259,7 +261,7 @@ object ServiceTest {
         val cassandraDirectory = Files.createTempDirectory(testName).toFile
         FileUtils.deleteRecursiveOnExit(cassandraDirectory)
         val t0 = System.nanoTime()
-        CassandraLauncher.start(cassandraDirectory, CassandraLauncher.DefaultTestConfigResource, clean = false, port = 0)
+        CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = 0)
         log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
         val b2 = b1.configure(new Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = false)))
           .configure("lagom.cluster.join-self", "on")
