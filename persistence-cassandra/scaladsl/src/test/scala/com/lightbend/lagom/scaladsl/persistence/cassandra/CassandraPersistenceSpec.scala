@@ -20,7 +20,8 @@ class CassandraPersistenceSpec private (system: ActorSystem) extends ActorSystem
     this(ActorSystem(testName, ActorSystemSetup(
       BootstrapSetup(TestUtil.persistenceConfig(
         testName,
-        CassandraLauncher.randomPort
+        CassandraLauncher.randomPort,
+        offsetStoreAutoCreate = false
       )),
       JsonSerializerRegistry.serializationSetupFor(jsonSerializerRegistry)
     )))
