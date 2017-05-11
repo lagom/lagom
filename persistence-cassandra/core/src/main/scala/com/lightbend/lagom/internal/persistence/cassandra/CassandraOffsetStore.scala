@@ -19,10 +19,10 @@ import scala.concurrent.Future
  * Internal API
  */
 private[lagom] abstract class CassandraOffsetStore(
-  system:            ActorSystem,
-  session:           CassandraSession,
-  cassandraProvider: CassandraProvider,
-  config:            ReadSideConfig
+  system: ActorSystem,
+  session: CassandraSession,
+  cassandraReadSideSettings: CassandraReadSideSettings,
+  config: ReadSideConfig
 ) extends OffsetStore {
 
   import system.dispatcher
@@ -35,7 +35,7 @@ private[lagom] abstract class CassandraOffsetStore(
     }
   }
 
-  val startupTask = if (cassandraProvider.autoCreateTables) {
+  val startupTask = if (cassandraReadSideSettings.autoCreateTables) {
     implicit val timeout = Timeout(config.globalPrepareTimeout)
 
     ClusterStartupTask(

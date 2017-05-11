@@ -9,7 +9,7 @@ import java.net.URI
 import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.{ CassandraPersistentEntityRegistry, CassandraReadSideImpl, ScaladslCassandraOffsetStore }
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.persistence.{ PersistenceComponents, PersistentEntityRegistry, ReadSidePersistenceComponents, WriteSidePersistenceComponents }
-import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraProvider, CassandraOffsetStore, ServiceLocatorAdapter, ServiceLocatorHolder }
+import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraReadSideSettings, CassandraOffsetStore, ServiceLocatorAdapter, ServiceLocatorHolder }
 import com.lightbend.lagom.spi.persistence.OffsetStore
 
 /**
@@ -44,10 +44,10 @@ trait WriteSideCassandraPersistenceComponents extends WriteSidePersistenceCompon
  */
 trait ReadSideCassandraPersistenceComponents extends ReadSidePersistenceComponents {
   lazy val cassandraSession: CassandraSession = new CassandraSession(actorSystem)
-  lazy val cassandraConfigProvider: CassandraProvider = new CassandraProvider(actorSystem)
+  lazy val testCasReadSideSettings: CassandraReadSideSettings = new CassandraReadSideSettings(actorSystem)
 
   private[lagom] lazy val cassandraOffsetStore: CassandraOffsetStore =
-    new ScaladslCassandraOffsetStore(actorSystem, cassandraSession, cassandraConfigProvider, readSideConfig)(executionContext)
+    new ScaladslCassandraOffsetStore(actorSystem, cassandraSession, testCasReadSideSettings, readSideConfig)(executionContext)
   lazy val offsetStore: OffsetStore = cassandraOffsetStore
 
   lazy val cassandraReadSide: CassandraReadSide = new CassandraReadSideImpl(actorSystem, cassandraSession, cassandraOffsetStore)

@@ -8,7 +8,7 @@ import java.util.concurrent.CompletionStage
 import com.google.inject.Guice
 import com.lightbend.lagom.internal.javadsl.persistence.cassandra.{ CassandraPersistentEntityRegistry, CassandraReadSideImpl, JavadslCassandraOffsetStore }
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraProvider
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
 import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.ConfigFactory
 
@@ -27,8 +27,8 @@ class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSp
   override protected lazy val persistentEntityRegistry = new CassandraPersistentEntityRegistry(system, injector)
 
   private lazy val testSession: CassandraSession = new CassandraSession(system)
-  private lazy val testCasConfigProvider: CassandraProvider = new CassandraProvider(system)
-  private lazy val offsetStore = new JavadslCassandraOffsetStore(system, testSession, testCasConfigProvider, ReadSideConfig())
+  private lazy val testCasReadSideSettings: CassandraReadSideSettings = new CassandraReadSideSettings(system)
+  private lazy val offsetStore = new JavadslCassandraOffsetStore(system, testSession, testCasReadSideSettings, ReadSideConfig())
   private lazy val cassandraReadSide = new CassandraReadSideImpl(system, testSession, offsetStore, null, injector)
 
   override def processorFactory(): ReadSideProcessor[TestEntity.Evt] =
@@ -49,11 +49,12 @@ class CassandraReadSideAutoCreateSpec extends CassandraPersistenceSpec(Cassandra
   import system.dispatcher
 
   private lazy val testSession: CassandraSession = new CassandraSession(system)
-  private lazy val testCasConfigProvider: CassandraProvider = new CassandraProvider(system)
-  private lazy val offsetStore = new JavadslCassandraOffsetStore(system, testSession, testCasConfigProvider, ReadSideConfig())
+  private lazy val testCasReadSideSettings: CassandraReadSideSettings = new CassandraReadSideSettings(system)
+  private lazy val offsetStore = new JavadslCassandraOffsetStore(system, testSession, testCasReadSideSettings, ReadSideConfig())
 
-  "ReadSide" must {
-    "not auto create offset store table when 'lagom.persistence.read-side.cassandra.tables-autocreate' flag is 'false'" in {
+  "A Cassandra Read-Side" must {
+    "not send ClusterStartupTask message and future should be returned with Done result " +
+      "immediately if 'lagom.persistence.read-side.cassandra.tables-autocreate' flag is 'false'" in {
       offsetStore.startupTask.isCompleted shouldBe true
     }
   }
