@@ -60,9 +60,8 @@ private[lagom] abstract class CassandraOffsetStore(
 
   protected def doPrepare(eventProcessorId: String, tag: String): Future[(Offset, PreparedStatement)] = {
     implicit val timeout = Timeout(config.globalPrepareTimeout)
-    startupTask.foreach(_.askExecute)
-
     for {
+      _ <- startupTask.fold(Future.successful[Done](Done))(task => task.askExecute)
       offset <- readOffset(eventProcessorId, tag)
       statement <- prepareWriteOffset
     } yield {
