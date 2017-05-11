@@ -151,6 +151,7 @@ def databasePortSetting: String = {
 
 def multiJvmTestSettings: Seq[Setting[_]] =
   SbtMultiJvm.multiJvmSettings ++
+    forkedTests ++
     // enabling HeaderPlugin in MultiJvm requires two sets of settings.
     // see https://github.com/sbt/sbt-header/issues/37
     HeaderPlugin.settingsFor(MultiJvm) ++
