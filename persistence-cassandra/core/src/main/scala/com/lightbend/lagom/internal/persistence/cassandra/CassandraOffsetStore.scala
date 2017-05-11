@@ -19,9 +19,10 @@ import scala.concurrent.Future
  * Internal API
  */
 private[lagom] abstract class CassandraOffsetStore(
-  system:  ActorSystem,
-  session: CassandraSession,
-  config:  ReadSideConfig
+  system:            ActorSystem,
+  session:           CassandraSession,
+  cassandraProvider: CassandraProvider,
+  config:            ReadSideConfig
 ) extends OffsetStore {
 
   import system.dispatcher
@@ -34,16 +35,20 @@ private[lagom] abstract class CassandraOffsetStore(
     }
   }
 
-  private val startupTask = ClusterStartupTask(
-    system,
-    "cassandraOffsetStorePrepare",
-    createTable,
-    config.globalPrepareTimeout,
-    config.role,
-    config.minBackoff,
-    config.maxBackoff,
-    config.randomBackoffFactor
-  )
+  val startupTask = if (cassandraProvider.autoCreateTables) {
+    implicit val timeout = Timeout(config.globalPrepareTimeout)
+
+    ClusterStartupTask(
+      system,
+      "cassandraOffsetStorePrepare",
+      createTable,
+      config.globalPrepareTimeout,
+      config.role,
+      config.minBackoff,
+      config.maxBackoff,
+      config.randomBackoffFactor
+    ).askExecute()
+  } else Future.successful(Done)
 
   private def createTable(): Future[Done] = {
     session.executeCreateTable(s"""
@@ -54,9 +59,8 @@ private[lagom] abstract class CassandraOffsetStore(
   }
 
   protected def doPrepare(eventProcessorId: String, tag: String): Future[(Offset, PreparedStatement)] = {
-    implicit val timeout = Timeout(config.globalPrepareTimeout)
     for {
-      _ <- startupTask.askExecute()
+      _ <- startupTask
       offset <- readOffset(eventProcessorId, tag)
       statement <- prepareWriteOffset
     } yield {
@@ -81,12 +85,12 @@ private[lagom] abstract class CassandraOffsetStore(
       case Some(row) =>
         val uuid = row.getUUID("timeUuidOffset")
         if (uuid != null) {
-          new TimeBasedUUID(uuid)
+          TimeBasedUUID(uuid)
         } else {
           if (row.isNull("sequenceOffset")) {
             NoOffset
           } else {
-            new Sequence(row.getLong("sequenceOffset"))
+            Sequence(row.getLong("sequenceOffset"))
           }
         }
       case None => NoOffset
