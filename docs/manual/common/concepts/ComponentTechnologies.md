@@ -8,7 +8,15 @@ As a complete microservices platform, Lagom assembles a collection of technologi
      
     * As described in [[Implementing services|ServiceImplementation]], A Lagom service may be "simple" or "streamed".  Streaming, asynchronous Lagom services are built on top of [Akka Streams](http://doc.akka.io/docs/akka/2.4/java/stream/index.html).
 
-* Customers of Lightbend's [Reactive Platform](https://www.lightbend.com/products/lightbend-reactive-platform) can additionally use [[Lightbend ConductR|ConductR]] and Akka's [Split Brain Resolver](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/java/split-brain-resolver.html) for deployment and cluster management and [Lightbend Monitoring](https://www.lightbend.com/products/monitoring) for monitoring production systems. See [[Cluster]] for more details.
+* Lightbend customers can additionally use [Enterprise Suite](https://www.lightbend.com/platform/production) components to operationalize and production-harden their systems.
+
+    * [[Lightbend ConductR|ConductR]] greatly simplifies service orchestration.
+
+    * Akka's [Split Brain Resolver](http://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) handles network failures and system crashes.
+
+    * [Lightbend Application Monitoring](https://www.lightbend.com/products/monitoring) provides real time monitoring of system health, availability and performance.
+
+    * See [[Cluster]] for more details.
 
 * Cassandra --- By default, Lagom microservices that need to persist data use the  [Cassandra](http://cassandra.apache.org) instance that runs as part of the development environment. You can also use an existing [[Cassandra Server|CassandraServer]] database or another type of database. See [[Managing data persistence|ES_CQRS]] for more information.   
 

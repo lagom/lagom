@@ -73,11 +73,11 @@ The naïve approach is to remove an unreachable node from the cluster membership
 
 **We strongly recommend against using the auto-down feature of Akka Cluster.**
 
-A pre-packaged solution for the downing problem is provided by [Split Brain Resolver](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/scala/split-brain-resolver.html), which is part of the [Lightbend Reactive Platform](https://www.lightbend.com/products/lightbend-reactive-platform). The `keep-majority` strategy is configured to be enabled by default if you use Lagom with the Reactive Platform.
+A pre-packaged solution for the downing problem is provided by [Split Brain Resolver](http://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html), which is part of the [Lightbend Enterprise Suite](https://www.lightbend.com/platform/production). The `keep-majority` strategy is configured to be enabled by default if you use Lagom with the Enterprise Suite.
 
-See [Split Brain Resolver documentation](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/scala/split-brain-resolver.html) and [[Reactive Platform instructions|ReactivePlatform]] for how to enable it in the build of your project.
+See [Split Brain Resolver documentation](http://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) and [[Reactive Platform instructions|ReactivePlatform]] for how to enable it in the build of your project.
 
-If you don't use RP, you should anyway carefully read the documentation of the [Split Brain Resolver](http://doc.akka.io/docs/akka/akka-commercial-addons-1.0/scala/split-brain-resolver.html) and make sure that the solution you are using handles the concerns described there.
+Even if you don't use the commercial Enterprise Suite, you should still read & understand the concepts behind [Split Brain Resolver](http://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) to ensure your solution handles the concerns described there.
 
 ## Leaving
 
