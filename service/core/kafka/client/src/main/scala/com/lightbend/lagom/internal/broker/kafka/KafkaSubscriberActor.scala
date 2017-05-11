@@ -57,7 +57,7 @@ private[lagom] class KafkaSubscriberActor[Message](
 
   private def running: Receive = {
     case Status.Failure(e) =>
-      log.error("Topic subscription interrupted due to failure", e)
+      log.error("Topic subscription interrupted due to failure: [{}]", e)
       throw e
 
     case Done =>
