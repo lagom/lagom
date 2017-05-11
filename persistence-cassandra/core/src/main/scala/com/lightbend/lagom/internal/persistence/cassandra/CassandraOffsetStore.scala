@@ -36,19 +36,19 @@ private[lagom] abstract class CassandraOffsetStore(
   }
 
   val startupTask = if (cassandraReadSideSettings.autoCreateTables) {
-    implicit val timeout = Timeout(config.globalPrepareTimeout)
-
-    ClusterStartupTask(
-      system,
-      "cassandraOffsetStorePrepare",
-      createTable,
-      config.globalPrepareTimeout,
-      config.role,
-      config.minBackoff,
-      config.maxBackoff,
-      config.randomBackoffFactor
-    ).askExecute()
-  } else Future.successful(Done)
+    Some(
+      ClusterStartupTask(
+        system,
+        "cassandraOffsetStorePrepare",
+        createTable,
+        config.globalPrepareTimeout,
+        config.role,
+        config.minBackoff,
+        config.maxBackoff,
+        config.randomBackoffFactor
+      )
+    )
+  } else None
 
   private def createTable(): Future[Done] = {
     session.executeCreateTable(s"""
@@ -59,8 +59,10 @@ private[lagom] abstract class CassandraOffsetStore(
   }
 
   protected def doPrepare(eventProcessorId: String, tag: String): Future[(Offset, PreparedStatement)] = {
+    implicit val timeout = Timeout(config.globalPrepareTimeout)
+    startupTask.foreach(_.askExecute)
+
     for {
-      _ <- startupTask
       offset <- readOffset(eventProcessorId, tag)
       statement <- prepareWriteOffset
     } yield {
