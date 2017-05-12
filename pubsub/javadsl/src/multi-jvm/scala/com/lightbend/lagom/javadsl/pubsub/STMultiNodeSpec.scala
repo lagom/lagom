@@ -11,8 +11,11 @@ import org.scalatest.WordSpecLike
 /**
  * Hooks up MultiNodeSpec with ScalaTest
  */
-trait STMultiNodeSpec extends MultiNodeSpecCallbacks
-  with WordSpecLike with Matchers with BeforeAndAfterAll {
+trait STMultiNodeSpec
+  extends MultiNodeSpecCallbacks
+  with WordSpecLike
+  with Matchers
+  with BeforeAndAfterAll {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
