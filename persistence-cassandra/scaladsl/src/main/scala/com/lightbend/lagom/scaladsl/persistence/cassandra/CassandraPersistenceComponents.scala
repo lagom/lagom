@@ -3,17 +3,16 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.cassandra
 
-import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorHolder
-import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorAdapter
+import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraConsistencyValidator, CassandraOffsetStore, ServiceLocatorAdapter, ServiceLocatorHolder }
 
 import scala.concurrent.Future
 import java.net.URI
 
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
 import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.{ CassandraPersistentEntityRegistry, CassandraReadSideImpl, ScaladslCassandraOffsetStore }
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.persistence.{ PersistenceComponents, PersistentEntityRegistry, ReadSidePersistenceComponents, WriteSidePersistenceComponents }
 import com.lightbend.lagom.spi.persistence.OffsetStore
+import play.api.{ Configuration, Environment }
 
 /**
  * Persistence Cassandra components (for compile-time injection).
@@ -31,6 +30,10 @@ trait WriteSideCassandraPersistenceComponents extends WriteSidePersistenceCompon
 
   def serviceLocator: ServiceLocator
 
+  def configuration: Configuration
+  def environment: Environment
+  require(CassandraConsistencyValidator.validate(configuration, environment))
+
   // eager initialization
   private[lagom] val serviceLocatorHolder: ServiceLocatorHolder = {
     val holder = ServiceLocatorHolder(actorSystem)
@@ -46,6 +49,11 @@ trait WriteSideCassandraPersistenceComponents extends WriteSidePersistenceCompon
  * Read-side persistence Cassandra components (for compile-time injection).
  */
 trait ReadSideCassandraPersistenceComponents extends ReadSidePersistenceComponents {
+
+  def configuration: Configuration
+  def environment: Environment
+  require(CassandraConsistencyValidator.validate(configuration, environment))
+
   lazy val cassandraSession: CassandraSession = new CassandraSession(actorSystem)
 
   private[lagom] lazy val cassandraOffsetStore: CassandraOffsetStore =
