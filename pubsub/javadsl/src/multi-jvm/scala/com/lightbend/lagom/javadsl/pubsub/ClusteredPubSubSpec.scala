@@ -10,7 +10,6 @@ import akka.testkit.ImplicitSender
 import com.typesafe.config.ConfigFactory
 import akka.remote.testconductor.RoleName
 import akka.cluster.Cluster
-import java.util.concurrent.CompletionStage
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
@@ -109,7 +108,8 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig)
         enterBarrier("subscription-established-2")
 
         ref2.publisher().asScala.runWith(
-          Source(List("a", "b", "c", "d", "e").map(new Notification(_))))
+          Source(List("a", "b", "c", "d", "e").map(new Notification(_)))
+        )
       }
 
       enterBarrier("after-2")
