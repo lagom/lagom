@@ -9,7 +9,7 @@ import scala.concurrent.duration._
 import com.typesafe.config.ConfigFactory
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
-import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.{CassandraPersistentEntityRegistry, CassandraReadSideImpl, ScaladslCassandraOffsetStore}
+import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.{ CassandraPersistentEntityRegistry, CassandraReadSideImpl, ScaladslCassandraOffsetStore }
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence._
 
@@ -52,8 +52,8 @@ class CassandraReadSideAutoCreateSpec
 
   "A Cassandra Read-Side" must {
     "not send ClusterStartupTask message, so startupTask must return None" +
-    "when 'lagom.persistence.read-side.cassandra.tables-autocreate' flag is 'false'" in {
-      offsetStore.startupTask shouldBe None
-    }
+      "when 'lagom.persistence.read-side.cassandra.tables-autocreate' flag is 'false'" in {
+        offsetStore.startupTask shouldBe None
+      }
   }
 }

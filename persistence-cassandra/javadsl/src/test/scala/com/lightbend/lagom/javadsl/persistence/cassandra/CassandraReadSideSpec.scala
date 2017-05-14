@@ -6,7 +6,7 @@ package com.lightbend.lagom.javadsl.persistence.cassandra
 import java.util.concurrent.CompletionStage
 
 import com.google.inject.Guice
-import com.lightbend.lagom.internal.javadsl.persistence.cassandra.{CassandraPersistentEntityRegistry, CassandraReadSideImpl, JavadslCassandraOffsetStore}
+import com.lightbend.lagom.internal.javadsl.persistence.cassandra.{ CassandraPersistentEntityRegistry, CassandraReadSideImpl, JavadslCassandraOffsetStore }
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
 import com.lightbend.lagom.javadsl.persistence._
@@ -54,8 +54,8 @@ class CassandraReadSideAutoCreateSpec extends CassandraPersistenceSpec(Cassandra
 
   "A Cassandra Read-Side" must {
     "not send ClusterStartupTask message, so startupTask must return None" +
-    "when 'lagom.persistence.read-side.cassandra.tables-autocreate' flag is 'false'" in {
-      offsetStore.startupTask shouldBe None
-    }
+      "when 'lagom.persistence.read-side.cassandra.tables-autocreate' flag is 'false'" in {
+        offsetStore.startupTask shouldBe None
+      }
   }
 }

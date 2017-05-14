@@ -19,10 +19,10 @@ import scala.concurrent.Future
  * Internal API
  */
 private[lagom] abstract class CassandraOffsetStore(
-  system: ActorSystem,
-  session: CassandraSession,
+  system:                    ActorSystem,
+  session:                   CassandraSession,
   cassandraReadSideSettings: CassandraReadSideSettings,
-  config: ReadSideConfig
+  config:                    ReadSideConfig
 ) extends OffsetStore {
 
   import system.dispatcher

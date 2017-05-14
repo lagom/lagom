@@ -18,5 +18,5 @@ import scala.concurrent.ExecutionContext
 @Singleton
 private[lagom] final class JavadslCassandraOffsetStore @Inject() (system: ActorSystem, session: CassandraSession,
                                                                   cassandraReadSideSettings: CassandraReadSideSettings,
-                                                                  config: ReadSideConfig)(implicit ec: ExecutionContext)
+                                                                  config:                    ReadSideConfig)(implicit ec: ExecutionContext)
   extends CassandraOffsetStore(system, session.scalaDelegate, cassandraReadSideSettings, config)
