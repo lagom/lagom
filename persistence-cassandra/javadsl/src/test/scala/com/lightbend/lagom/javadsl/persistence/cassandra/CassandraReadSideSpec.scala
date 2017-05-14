@@ -6,7 +6,7 @@ package com.lightbend.lagom.javadsl.persistence.cassandra
 import java.util.concurrent.CompletionStage
 
 import com.google.inject.Guice
-import com.lightbend.lagom.internal.javadsl.persistence.cassandra.{ CassandraPersistentEntityRegistry, CassandraReadSideImpl, JavadslCassandraOffsetStore }
+import com.lightbend.lagom.internal.javadsl.persistence.cassandra.{CassandraPersistentEntityRegistry, CassandraReadSideImpl, JavadslCassandraOffsetStore}
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
 import com.lightbend.lagom.javadsl.persistence._

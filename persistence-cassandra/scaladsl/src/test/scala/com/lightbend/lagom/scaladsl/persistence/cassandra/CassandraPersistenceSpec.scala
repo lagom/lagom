@@ -9,6 +9,7 @@ import akka.actor.{ ActorSystem, BootstrapSetup }
 import akka.actor.setup.ActorSystemSetup
 import akka.cluster.Cluster
 import akka.persistence.cassandra.testkit.CassandraLauncher
+
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
@@ -16,13 +17,12 @@ import com.typesafe.config.{ Config, ConfigFactory }
 
 class CassandraPersistenceSpec private (system: ActorSystem) extends ActorSystemSpec(system) {
 
-  def this(testName: String, config: Config, jsonSerializerRegistry: JsonSerializerRegistry) =
+  def this(testName: String, config: Config, jsonSerializerRegistry: JsonSerializerRegistry, offsetStoreAutoCreate: Boolean = true) =
     this(ActorSystem(testName, ActorSystemSetup(
-      BootstrapSetup(TestUtil.persistenceConfig(
+      BootstrapSetup(config.withFallback(TestUtil.persistenceConfig(
         testName,
-        CassandraLauncher.randomPort,
-        offsetStoreAutoCreate = false
-      )),
+        CassandraLauncher.randomPort
+      ))),
       JsonSerializerRegistry.serializationSetupFor(jsonSerializerRegistry)
     )))
 

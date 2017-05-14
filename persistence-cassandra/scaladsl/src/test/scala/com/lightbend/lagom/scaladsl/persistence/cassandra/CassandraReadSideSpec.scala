@@ -5,12 +5,13 @@ package com.lightbend.lagom.scaladsl.persistence.cassandra
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
+
+import com.typesafe.config.ConfigFactory
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
 import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.{CassandraPersistentEntityRegistry, CassandraReadSideImpl, ScaladslCassandraOffsetStore}
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence._
-import com.typesafe.config.ConfigFactory
 
 object CassandraReadSideSpec {
 
@@ -41,7 +42,8 @@ class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSp
   }
 }
 
-class CassandraReadSideAutoCreateSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.noAutoCreateConfig, TestEntitySerializerRegistry) {
+class CassandraReadSideAutoCreateSpec
+  extends CassandraPersistenceSpec(CassandraReadSideSpec.noAutoCreateConfig, TestEntitySerializerRegistry) {
   import system.dispatcher
 
   private lazy val testSession: CassandraSession = new CassandraSession(system)

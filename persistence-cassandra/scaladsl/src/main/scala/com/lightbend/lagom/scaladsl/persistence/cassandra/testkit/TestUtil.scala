@@ -9,7 +9,7 @@ import com.typesafe.config.{ Config, ConfigFactory }
 
 object TestUtil extends AbstractTestUtil {
 
-  def persistenceConfig(testName: String, cassandraPort: Int, useServiceLocator: Boolean, offsetStoreAutoCreate: Boolean = true) = ConfigFactory.parseString(s"""
+  def persistenceConfig(testName: String, cassandraPort: Int, useServiceLocator: Boolean) = ConfigFactory.parseString(s"""
     cassandra-journal.session-provider = akka.persistence.cassandra.ConfigSessionProvider
     cassandra-snapshot-store.session-provider = akka.persistence.cassandra.ConfigSessionProvider
     lagom.persistence.read-side.cassandra.session-provider = akka.persistence.cassandra.ConfigSessionProvider
@@ -30,7 +30,6 @@ object TestUtil extends AbstractTestUtil {
     lagom.persistence.read-side.cassandra {
       port = $cassandraPort
       keyspace = ${testName}_read
-      tables-autocreate = $offsetStoreAutoCreate
     }
 
     akka.test.single-expect-default = 5s
@@ -55,9 +54,4 @@ object TestUtil extends AbstractTestUtil {
   def persistenceConfig(testName: String, cassandraPort: Int): Config = {
     persistenceConfig(testName, cassandraPort, useServiceLocator = false)
   }
-
-  def persistenceConfig(testName: String, cassandraPort: Int, offsetStoreAutoCreate: Boolean): Config = {
-    persistenceConfig(testName, cassandraPort, useServiceLocator = false, offsetStoreAutoCreate)
-  }
-
 }
