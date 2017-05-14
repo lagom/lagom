@@ -17,7 +17,7 @@ import com.typesafe.config.{ Config, ConfigFactory }
 
 class CassandraPersistenceSpec private (system: ActorSystem) extends ActorSystemSpec(system) {
 
-  def this(testName: String, config: Config, jsonSerializerRegistry: JsonSerializerRegistry, offsetStoreAutoCreate: Boolean = true) =
+  def this(testName: String, config: Config, jsonSerializerRegistry: JsonSerializerRegistry) =
     this(ActorSystem(testName, ActorSystemSetup(
       BootstrapSetup(config.withFallback(TestUtil.persistenceConfig(
         testName,
