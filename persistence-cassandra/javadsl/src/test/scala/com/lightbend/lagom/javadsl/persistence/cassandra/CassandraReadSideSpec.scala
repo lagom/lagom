@@ -54,7 +54,7 @@ class CassandraReadSideAutoCreateSpec extends CassandraPersistenceSpec(Cassandra
 
   "A Cassandra Read-Side" must {
     "not send ClusterStartupTask message, so startupTask must return None" +
-      "when 'lagom.persistence.read-side.cassandra.tables-autocreate' flag is 'false'" in {
+    "when 'lagom.persistence.read-side.cassandra.tables-autocreate' flag is 'false'" in {
       offsetStore.startupTask shouldBe None
     }
   }
