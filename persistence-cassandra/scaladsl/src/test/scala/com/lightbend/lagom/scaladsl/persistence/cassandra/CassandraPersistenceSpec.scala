@@ -9,7 +9,6 @@ import akka.actor.{ ActorSystem, BootstrapSetup }
 import akka.actor.setup.ActorSystemSetup
 import akka.cluster.Cluster
 import akka.persistence.cassandra.testkit.CassandraLauncher
-
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
