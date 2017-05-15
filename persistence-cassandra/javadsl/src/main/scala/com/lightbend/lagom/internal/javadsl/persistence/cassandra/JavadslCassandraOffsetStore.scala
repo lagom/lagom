@@ -7,7 +7,7 @@ import javax.inject.{ Inject, Singleton }
 
 import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
+import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraOffsetStore, CassandraReadSideSettings }
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession
 
 import scala.concurrent.ExecutionContext
@@ -17,5 +17,6 @@ import scala.concurrent.ExecutionContext
  */
 @Singleton
 private[lagom] final class JavadslCassandraOffsetStore @Inject() (system: ActorSystem, session: CassandraSession,
-                                                                  config: ReadSideConfig)(implicit ec: ExecutionContext)
-  extends CassandraOffsetStore(system, session.scalaDelegate, config)
+                                                                  cassandraReadSideSettings: CassandraReadSideSettings,
+                                                                  config:                    ReadSideConfig)(implicit ec: ExecutionContext)
+  extends CassandraOffsetStore(system, session.scalaDelegate, cassandraReadSideSettings, config)

@@ -68,8 +68,6 @@ lagom.persistence.read-side.cassandra {
 
 With these properties set to `false`, if the keyspaces or tables are missing at startup your service will log an error and fail to start.
 
-It is not possible to disable automatic creation of the offset store table at this time.
-
 Lagom's Cassandra support is provided by the [`akka-persistence-cassandra`](https://github.com/akka/akka-persistence-cassandra) plugin. A full configuration reference can be in the plugin's [`reference.conf`](https://github.com/akka/akka-persistence-cassandra/blob/v0.20/src/main/resources/reference.conf).
 
 ## Cassandra Location

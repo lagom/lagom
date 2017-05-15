@@ -18,10 +18,10 @@ class CassandraPersistenceSpec private (system: ActorSystem) extends ActorSystem
 
   def this(testName: String, config: Config, jsonSerializerRegistry: JsonSerializerRegistry) =
     this(ActorSystem(testName, ActorSystemSetup(
-      BootstrapSetup(TestUtil.persistenceConfig(
+      BootstrapSetup(config.withFallback(TestUtil.persistenceConfig(
         testName,
         CassandraLauncher.randomPort
-      )),
+      ))),
       JsonSerializerRegistry.serializationSetupFor(jsonSerializerRegistry)
     )))
 
