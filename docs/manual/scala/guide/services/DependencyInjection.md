@@ -6,7 +6,7 @@ Your service's dependencies will have their own dependencies on other APIs in tu
 
 It is common to have clusters of interdependent classes that together form a larger logical component. It can be useful to modularize wiring code in a way that reflects these groupings. You can do so in Scala by defining a "component" trait that includes a combination of lazy val declarations that instantiate concrete implementations of interfaces that the component provides. Some of their constructor parameters may be declared as abstract methods, indicating a dependency that must be provided by another component or your application itself. Your application can then extend multiple components to mix them together into a fully assembled dependency graph. If you don't fulfill all of the declared requirements for the components you include in your service, it will not compile.
 
-In "[Dependency Injection in Scala: guide](http://di-in-scala.github.io/#modules)" this method of mixing components together to form an application is referred to as the "thin cake pattern". The guide also introduces [Macwire](http://di-in-scala.github.io/#macwire) which we'll use in the next steps.
+In "[Dependency Injection in Scala: guide](https://di-in-scala.github.io/#modules)" this method of mixing components together to form an application is referred to as the "thin cake pattern". The guide also introduces [Macwire](https://di-in-scala.github.io/#macwire) which we'll use in the next steps.
 
 ## Wiring together a Lagom application
 

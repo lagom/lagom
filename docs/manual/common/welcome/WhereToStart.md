@@ -6,7 +6,7 @@ It takes time to adopt a new way of thinking about and solving problems. Lagom p
 
 > As we detangle our systems, we shift the power from central governing bodies to smaller teams who can seize opportunities rapidly and stay nimble because they understand the software within well defined boundaries that they control.
 
-We strongly recommend reading Bonér's book before learning Lagom. Much of the documentation builds upon and refers to it. (You can download it for free from the [Lightbend website](http://www.lightbend.com/resources/e-books).)
+We strongly recommend reading Bonér's book before learning Lagom. Much of the documentation builds upon and refers to it. (You can download it for free from the [Lightbend website](https://www.lightbend.com/resources/e-books).)
 
 Choose the next step that's right for you:
 

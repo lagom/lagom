@@ -15,7 +15,7 @@ When importing the Lagom Kafka Broker module keep in mind that the Lagom Kafka B
 
 After adding the dependency you also need to mix-in the `LagomKafkaComponents` trait on your `Application` to ensure it is enabled and usable at runtime.
 
-The Lagom Kafka Client implementation is built using [akka-stream-kafka](https://github.com/akka/reactive-kafka). The akka-stream-kafka library wraps the official [Apache Java Kafka client](http://kafka.apache.org/documentation.html) and exposes a (Akka) stream based API to publish/consume messages to/from Kafka. Therefore, we have effectively three libraries at play, with each of them exposing its own configuration. Let's explore  the configuration keys exposed by each layer, starting with the one sitting at the top, i.e., the Lagom Kafka Client.
+The Lagom Kafka Client implementation is built using [akka-stream-kafka](https://github.com/akka/reactive-kafka). The akka-stream-kafka library wraps the official [Apache Java Kafka client](https://kafka.apache.org/documentation.html) and exposes a (Akka) stream based API to publish/consume messages to/from Kafka. Therefore, we have effectively three libraries at play, with each of them exposing its own configuration. Let's explore  the configuration keys exposed by each layer, starting with the one sitting at the top, i.e., the Lagom Kafka Client.
 
 
 ### Lagom Kafka Client
@@ -34,7 +34,7 @@ See the [akka-stream-kafka reference.conf](https://github.com/akka/reactive-kafk
 
 ### Apache Java Kafka Client
 
-See the [Producer Configs](http://kafka.apache.org/documentation.html#producerconfigs) documentation to learn about the exposed configuration for the publisher. While, for the subscriber, see the [New Consumer Configs](http://kafka.apache.org/documentation.html#newconsumerconfigs). The only caveat is that if you need to change the value of any of the configuration provided by the Java Kafka Client, you must prepend the desired configuration key you want to change with `akka.kafka.consumer.kafka-clients`, for the consumer, or `akka.kafka.producer.kafka-clients`. For instance, let's assume you'd like to change the consumer's `request.timeout.ms`, you should add the following in the service's application.conf:
+See the [Producer Configs](https://kafka.apache.org/documentation.html#producerconfigs) documentation to learn about the exposed configuration for the publisher. While, for the subscriber, see the [New Consumer Configs](https://kafka.apache.org/documentation.html#newconsumerconfigs). The only caveat is that if you need to change the value of any of the configuration provided by the Java Kafka Client, you must prepend the desired configuration key you want to change with `akka.kafka.consumer.kafka-clients`, for the consumer, or `akka.kafka.producer.kafka-clients`. For instance, let's assume you'd like to change the consumer's `request.timeout.ms`, you should add the following in the service's application.conf:
 
 ```conf
 akka.kafka.producer.kafka-clients {

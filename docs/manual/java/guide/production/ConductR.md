@@ -4,8 +4,8 @@ ConductR is a container orchestration tool with the main goal of delivering oper
 
 ConductR is free for development usage and comes with a "sandbox" so that you can run ConductR locally and test your services. For more information on ConductR go to:
 
-* [ConductR product page](http://lightbend.com/products/conductr)
-* [ConductR documentation](http://conductr.lightbend.com)
+* [ConductR product page](https://www.lightbend.com/products/conductr)
+* [ConductR documentation](https://conductr.lightbend.com)
 
 This guide will explain how to:
 

@@ -12,13 +12,13 @@ As a complete microservices platform, Lagom assembles a collection of technologi
 
     * [[Lightbend ConductR|ConductR]] greatly simplifies service orchestration.
 
-    * Akka's [Split Brain Resolver](http://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) handles network failures and system crashes.
+    * Akka's [Split Brain Resolver](https://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) handles network failures and system crashes.
 
     * [Lightbend Application Monitoring](https://www.lightbend.com/products/monitoring) provides real time monitoring of system health, availability and performance.
 
     * See [[Cluster]] for more details.
 
-* Cassandra --- By default, Lagom microservices that need to persist data use the  [Cassandra](http://cassandra.apache.org) instance that runs as part of the development environment. You can also use an existing [[Cassandra Server|CassandraServer]] database or another type of database. See [[Managing data persistence|ES_CQRS]] for more information.   
+* Cassandra --- By default, Lagom microservices that need to persist data use the  [Cassandra](https://cassandra.apache.org) instance that runs as part of the development environment. You can also use an existing [[Cassandra Server|CassandraServer]] database or another type of database. See [[Managing data persistence|ES_CQRS]] for more information.
 
 * Guice --- Like Play, Lagom uses [Guice](https://github.com/google/guice) for dependency injection.
 
