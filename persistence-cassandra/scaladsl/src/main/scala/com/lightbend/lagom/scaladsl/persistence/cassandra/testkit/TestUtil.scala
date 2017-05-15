@@ -54,5 +54,4 @@ object TestUtil extends AbstractTestUtil {
   def persistenceConfig(testName: String, cassandraPort: Int): Config = {
     persistenceConfig(testName, cassandraPort, useServiceLocator = false)
   }
-
 }
