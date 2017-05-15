@@ -1,6 +1,6 @@
 # API Overview
 
-Lagom provides both Java and Scala APIs. The Java API targets Java 8 and assumes familiarity with features such as [lambdas](http://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html), [default methods](http://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html), and [`Optional`](http://docs.oracle.com/javase/8/docs/api/java/util/Optional.html). Most of Lagom is implemented in Scala.  But, this is an implementation detail that shouldn't concern you, even if you are developing with the Java API.
+Lagom provides both Java and Scala APIs. The Java API targets Java 8 and assumes familiarity with features such as [lambdas](https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html), [default methods](https://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html), and [`Optional`](https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html). Most of Lagom is implemented in Scala.  But, this is an implementation detail that shouldn't concern you, even if you are developing with the Java API.
 
 Lagom's [[expressive service interface declarations|ServiceDescriptors]] let developers quickly define interfaces and immediately start implementing them.
 

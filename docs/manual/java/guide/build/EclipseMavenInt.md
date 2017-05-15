@@ -9,7 +9,7 @@ If you have a Maven project created from an archetype (as described in [[Creatin
 
 Before attempting to create a Lagom Maven project in Eclipse, ensure that Eclipse is configured with the following:
 
-* An [m2eclipse](http://www.eclipse.org/m2e/documentation/m2e-documentation.html) plugin compatible with Maven 3.3 or higher.
+* An [m2eclipse](https://www.eclipse.org/m2e/documentation/m2e-documentation.html) plugin compatible with Maven 3.3 or higher.
 * A JDK 1.8 or higher.
 
 # Import the project

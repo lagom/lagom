@@ -11,7 +11,7 @@ Tests can be run from sbt, or from your IDE. Running tests from your IDE will be
 
 ## Testing libraries
 
-You can use any testing framework with Lagom, popular ones include [ScalaTest](http://www.scalatest.org/) and [Specs2](http://etorreborre.github.io/specs2/). If you're not sure which to use, or don't have a preference, we use ScalaTest for testing Lagom itself, and we'll document it here.
+You can use any testing framework with Lagom, popular ones include [ScalaTest](http://www.scalatest.org/) and [Specs2](https://etorreborre.github.io/specs2/). If you're not sure which to use, or don't have a preference, we use ScalaTest for testing Lagom itself, and we'll document it here.
 
 In addition to a test framework, Lagom also provides a helper library for testing common Lagom components, called the Lagom testkit.
 

@@ -32,9 +32,9 @@ for `javac`, the console should respond with something similar to:
 javac 1.8.0_74
 ```
 If you have the correct JDK and the console cannot find `java` or `javac`, search the web for information about setting environment variables on your system. For example, the following pages provide tips for configuring Java:
-* [On systems running Linux](http://stackoverflow.com/questions/33860560/how-to-set-java-environment-variables-using-shell-script)
+* [On systems running Linux](https://stackoverflow.com/questions/33860560/how-to-set-java-environment-variables-using-shell-script)
 * [On MacOS](http://osxdaily.com/2015/07/28/set-enviornment-variables-mac-os-x/)
-* [On Windows systems](http://stackoverflow.com/questions/1672281/environment-variables-for-java-installation)
+* [On Windows systems](https://stackoverflow.com/questions/1672281/environment-variables-for-java-installation)
 
 If you do not have the correct JDK, download it from the  [Oracle website](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
 
