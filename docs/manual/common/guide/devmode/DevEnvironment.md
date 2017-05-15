@@ -75,6 +75,6 @@ You can verify that your services are running by viewing `http://localhost:8000/
  {"name":"hello","url":"http://0.0.0.0:24266"}]
 ```
 
-`cas_native` is the [Cassandra](http://cassandra.apache.org/) server. As you will learn in the [[documentation for writing persistent and clustered services|PersistentEntity]], Cassandra is the default database in Lagom, and it's an integral part of the development environment.
+`cas_native` is the [Cassandra](https://cassandra.apache.org/) server. As you will learn in the [[documentation for writing persistent and clustered services|PersistentEntity]], Cassandra is the default database in Lagom, and it's an integral part of the development environment.
 
 The Service Locator, Cassandra, and Kafka are covered in more detail in the sections that follow.

@@ -83,7 +83,7 @@ You can make the start script whatever you want, but there are some important th
 
 ### Creating an assembly descriptor
 
-Having created the files necessary for the bundle, we need to package them together.  The simplest way to do this is using the [Maven assembly plugin](http://maven.apache.org/plugins/maven-assembly-plugin/). For detailed documentation on using the assembly plugin, you should visit the above website, but an example assembly descriptor for use with ConductR would be:
+Having created the files necessary for the bundle, we need to package them together.  The simplest way to do this is using the [Maven assembly plugin](https://maven.apache.org/plugins/maven-assembly-plugin/). For detailed documentation on using the assembly plugin, you should visit the above website, but an example assembly descriptor for use with ConductR would be:
 
 ```xml
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3"

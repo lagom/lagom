@@ -26,7 +26,7 @@ Lagom supports the following databases:
 * [PostgreSQL](https://www.postgresql.org/)
 * [MySQL](https://www.mysql.com/)
 * [Oracle](https://www.oracle.com/database/index.html)
-* [H2](http://www.h2database.com/)
+* [H2](https://www.h2database.com/)
 
 We recommend using Cassandra. Cassandra is a very scalable distributed database, and it is also flexible enough to support typical use cases of reactive services. In contrast to most relational databases, it natively supports sharding and replication, and is emerging as an industry standard open source NoSQL database.
 

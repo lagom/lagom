@@ -20,7 +20,7 @@ In sbt:
 
 @[jpa-dependency](code/build-cluster.sbt)
 
-You will also need to add dependencies on your JPA provider (such as [Hibernate ORM](http://hibernate.org/orm/) or [EclipseLink](http://www.eclipse.org/eclipselink/)) and database driver.
+You will also need to add dependencies on your JPA provider (such as [Hibernate ORM](http://hibernate.org/orm/) or [EclipseLink](https://www.eclipse.org/eclipselink/)) and database driver.
 
 
 ## Configuration
@@ -29,7 +29,7 @@ JPA support builds on top of Lagom's support for [[storing persistent entities i
 
 Next, we need to configure JPA to communicate with our database, and optionally configure Lagom to initialize a JPA persistence unit.
 
-JPA is configured using a file called [`persistence.xml`](http://docs.oracle.com/javaee/7/tutorial/persistence-intro003.htm#JEETT01162). Create a file at `src/main/resources/META-INF/persistence.xml` in your service implementation project using this template as a guide:
+JPA is configured using a file called [`persistence.xml`](https://docs.oracle.com/javaee/7/tutorial/persistence-intro003.htm#JEETT01162). Create a file at `src/main/resources/META-INF/persistence.xml` in your service implementation project using this template as a guide:
 
 @[persistence-unit](code/docs/home/persistence/persistence.xml)
 
@@ -43,7 +43,7 @@ The full set of configuration options that Lagom provides for initializing JPA i
 
 ## Write a JPA entity class
 
-JPA [entities](http://docs.oracle.com/javaee/7/tutorial/persistence-intro001.htm#BNBQA) represent tables in the read-side database. Here is an example of a JPA entity representing a summary of a blog post, which could be used to query for an index of all blog entries:
+JPA [entities](https://docs.oracle.com/javaee/7/tutorial/persistence-intro001.htm#BNBQA) represent tables in the read-side database. Here is an example of a JPA entity representing a summary of a blog post, which could be used to query for an index of all blog entries:
 
 @[entity](code/docs/home/persistence/BlogSummaryJpaEntity.java)
 
@@ -58,7 +58,7 @@ Let us next look at how a service implementation can retrieve data from a relati
 
 Note that the [`JpaSession`](api/index.html?com/lightbend/lagom/javadsl/persistence/jpa/JpaSession.html) is injected in the constructor. `JpaSession` allows access to the JPA `EntityManager`, and will manage transactions using the `withTransaction` method.  Importantly, `JpaSession` also manages execution of the blocking JPA calls in a thread pool designed to handle it, which is why the `withTransaction` method returns `CompletionStage`.
 
-As noted above, it's important to prevent mutable JPA entity instances from escaping the thread used to execute the blocking JPA calls. To achieve this, in the query itself, we use a JPQL [constructor expression](http://docs.oracle.com/javaee/7/tutorial/persistence-querylanguage005.htm#JEETT00746) to return immutable `PostSummary` instances from the query instead of mutable `BlogSummaryJpaEntity` instances. JPA requires constructor expressions to use the fully-qualified name of the class to construct. You could also convert to immutable data in other ways, such as by returning JPA entities from your query and then converting them explicitly, but use of constructor expressions is a convenient way to do this that avoids extra code and object allocation.
+As noted above, it's important to prevent mutable JPA entity instances from escaping the thread used to execute the blocking JPA calls. To achieve this, in the query itself, we use a JPQL [constructor expression](https://docs.oracle.com/javaee/7/tutorial/persistence-querylanguage005.htm#JEETT00746) to return immutable `PostSummary` instances from the query instead of mutable `BlogSummaryJpaEntity` instances. JPA requires constructor expressions to use the fully-qualified name of the class to construct. You could also convert to immutable data in other ways, such as by returning JPA entities from your query and then converting them explicitly, but use of constructor expressions is a convenient way to do this that avoids extra code and object allocation.
 
 ## Update the Read-Side
 

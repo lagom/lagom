@@ -4,7 +4,7 @@ By default, Lagom services needing to share information between each others use 
 
 ## Default port
 
-By default, the [Kafka](http://kafka.apache.org/) server is started on port `9092`. Kafka uses [ZooKeeper](https://zookeeper.apache.org/), and hence a ZooKeeper server is also started on port `2181`. If the current default ports don't suit you, you can change either by adding the following in your build.
+By default, the [Kafka](https://kafka.apache.org/) server is started on port `9092`. Kafka uses [ZooKeeper](https://zookeeper.apache.org/), and hence a ZooKeeper server is also started on port `2181`. If the current default ports don't suit you, you can change either by adding the following in your build.
 
 In the Maven root project pom:
 
