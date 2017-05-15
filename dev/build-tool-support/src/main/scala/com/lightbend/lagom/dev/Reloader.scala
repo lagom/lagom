@@ -52,7 +52,7 @@ object Reloader {
   private def urls(cp: Seq[File]): Array[URL] = cp.map(_.toURI.toURL).toArray
 
   /**
-   * Play dev server
+   * Dev server
    */
   trait DevServer extends Closeable {
     val buildLink: BuildLink
@@ -72,14 +72,14 @@ object Reloader {
    */
   def startDevMode(
     parentClassLoader: ClassLoader, dependencyClasspath: Seq[File],
-    reloadCompile: () => CompileResult, classLoaderDecorator: ClassLoader => ClassLoader,
+    reloadCompile:  () => CompileResult,
     monitoredFiles: Seq[File], fileWatchService: FileWatchService, projectPath: File,
     devSettings: Seq[(String, String)], httpPort: Int, reloadLock: AnyRef
   ): DevServer = {
     /*
-     * We need to do a bit of classloader magic to run the Play application.
+     * We need to do a bit of classloader magic to run the application.
      *
-     * There are six classloaders:
+     * There are five classloaders:
      *
      * 1. buildLoader, the classloader of the build tool plugin (sbt/maven lagom plugin).
      * 2. parentClassLoader, a possibly shared classloader that may contain artifacts
@@ -91,8 +91,7 @@ object Reloader {
      * 4. applicationLoader, contains the application dependencies. Has the
      *    delegatingLoader as its parent. Classes from the commonLoader and
      *    the delegatingLoader are checked for loading first.
-     * 5. decoratedClassloader, allows the classloader to be decorated.
-     * 6. reloader.currentApplicationClassLoader, contains the user classes
+     * 5. reloader.currentApplicationClassLoader, contains the user classes
      *    and resources. Has applicationLoader as its parent, where the
      *    application dependencies are found, and which will delegate through
      *    to the buildLoader via the delegatingLoader for the shared link.
@@ -117,9 +116,8 @@ object Reloader {
     lazy val delegatingLoader: ClassLoader = new DelegatingClassLoader(parentClassLoader, Build.sharedClasses.asScala.toSet, buildLoader, reloader.getClassLoader _)
 
     lazy val applicationLoader = new NamedURLClassLoader("LagomDependencyClassLoader", urls(dependencyClasspath), delegatingLoader)
-    lazy val decoratedLoader = classLoaderDecorator(applicationLoader)
 
-    lazy val reloader = new Reloader(reloadCompile, decoratedLoader, projectPath, devSettings, monitoredFiles, fileWatchService, reloadLock)
+    lazy val reloader = new Reloader(reloadCompile, applicationLoader, projectPath, devSettings, monitoredFiles, fileWatchService, reloadLock)
 
     val server = {
       val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")

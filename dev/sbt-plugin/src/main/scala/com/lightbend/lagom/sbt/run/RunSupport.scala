@@ -34,7 +34,6 @@ private[sbt] object RunSupport {
       scalaInstance.value.loader,
       classpath,
       reloadCompile,
-      lagomClassLoaderDecorator.value,
       lagomWatchDirectories.value,
       lagomFileWatchService.value,
       baseDirectory.value,

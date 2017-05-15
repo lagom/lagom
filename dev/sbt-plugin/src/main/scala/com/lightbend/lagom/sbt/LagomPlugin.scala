@@ -114,9 +114,6 @@ object LagomPlay extends AutoPlugin {
     // Run the Play reload task when Lagom requests a reload
     lagomReload := PlayInternalKeys.playReload.value,
 
-    // Play wants to add the assets classloader to the application classloader
-    lagomClassLoaderDecorator := PlayInternalKeys.playAssetsClassLoader.value,
-
     // Watch the files that Play wants to watch
     lagomWatchDirectories := PlayKeys.playMonitoredFiles.value
   )
@@ -187,7 +184,6 @@ object LagomReloadableService extends AutoPlugin {
   object autoImport {
     val lagomReload = taskKey[sbt.inc.Analysis]("Executed when sources of changed, to recompile (and possibly reload) the app")
     val lagomReloaderClasspath = taskKey[Classpath]("The classpath that gets used to create the reloaded classloader")
-    val lagomClassLoaderDecorator = taskKey[ClassLoader => ClassLoader]("Function that decorates the Lagom classloader. Can be used to inject things into the classpath.")
     val lagomWatchDirectories = taskKey[Seq[File]]("The directories that Lagom should be watching")
   }
 
@@ -212,7 +208,6 @@ object LagomReloadableService extends AutoPlugin {
     },
 
     lagomReloaderClasspath <<= Classpaths.concatDistinct(exportedProducts in Runtime, internalDependencyClasspath in Runtime),
-    lagomClassLoaderDecorator := identity,
 
     lagomWatchDirectories <<= Def.taskDyn {
       val projectRef = thisProjectRef.value
