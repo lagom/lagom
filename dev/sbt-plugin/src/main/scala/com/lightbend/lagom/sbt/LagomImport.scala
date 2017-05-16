@@ -57,19 +57,19 @@ object LagomImport {
     fork in Test := true,
     concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
     javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M"),
-    testGrouping in Test <<= definedTests in Test map singleTestsGrouping
+    testGrouping in Test := singleTestsGrouping((definedTests in Test).value)
   )
 
   // group tests, a single test per group
   private def singleTestsGrouping(tests: Seq[TestDefinition]) = {
     // We could group non Cassandra tests into another group
     // to avoid new JVM for each test, see http://www.scala-sbt.org/release/docs/Testing.html
-    val javaOptions = Seq("-Xms256M", "-Xmx512M")
+    val forkOptions = ForkOptions(runJVMOptions = Seq("-Xms256M", "-Xmx512M"))
     tests map { test =>
       new Tests.Group(
         name = test.name,
         tests = Seq(test),
-        runPolicy = Tests.SubProcess(javaOptions)
+        runPolicy = Tests.SubProcess(forkOptions)
       )
     }
   }
