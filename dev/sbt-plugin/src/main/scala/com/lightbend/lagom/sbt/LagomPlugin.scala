@@ -171,9 +171,9 @@ object LagomExternalProject extends AutoPlugin {
       SbtConsoleHelper.printStartScreen(log, service)
       SbtConsoleHelper.blockUntilExit(log, Internal.Keys.interactionMode.value, service._2)
     },
-    lagomRun <<= Def.taskDyn {
+    lagomRun := Def.taskDyn {
       RunSupport.nonReloadRunTask(LagomPlugin.managedSettings.value).map(name.value -> _)
-    }
+    }.value
   )
 }
 
@@ -203,18 +203,21 @@ object LagomReloadableService extends AutoPlugin {
       service.addChangeListener(() => service.reload())
       (name.value, service)
     },
-    lagomReload <<= Def.taskDyn {
+    lagomReload := Def.taskDyn {
       (compile in Compile).all(
         ScopeFilter(
           inDependencies(thisProjectRef.value)
         )
       ).map(_.reduceLeft(_ ++ _))
-    },
+    }.value,
 
-    lagomReloaderClasspath <<= Classpaths.concatDistinct(exportedProducts in Runtime, internalDependencyClasspath in Runtime),
+    lagomReloaderClasspath := Classpaths.concatDistinct(
+      exportedProducts in Runtime,
+      internalDependencyClasspath in Runtime
+    ).value,
     lagomClassLoaderDecorator := identity,
 
-    lagomWatchDirectories <<= Def.taskDyn {
+    lagomWatchDirectories := Def.taskDyn {
       val projectRef = thisProjectRef.value
 
       import com.typesafe.sbt.web.Import._
@@ -245,7 +248,7 @@ object LagomReloadableService extends AutoPlugin {
 
         distinctDirectories.map(_.toFile)
       }
-    }
+    }.value
   )
 
   private lazy val runLagomTask: Initialize[Task[DevServer]] = Def.taskDyn {
@@ -411,7 +414,7 @@ object LagomPlugin extends AutoPlugin {
     lagomKafkaCleanOnStart := false,
     lagomKafkaAddress := s"localhost:${lagomKafkaPort.value}",
     lagomKafkaJvmOptions := Seq("-Xms256m", "-Xmx1024m"),
-    runAll <<= runServiceLocatorAndMicroservicesTask,
+    runAll := runServiceLocatorAndMicroservicesTask.value,
     Internal.Keys.interactionMode := PlayConsoleInteractionMode,
     lagomDevSettings := Nil
   ) ++
