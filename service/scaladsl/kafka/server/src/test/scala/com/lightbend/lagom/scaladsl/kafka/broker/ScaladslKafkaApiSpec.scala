@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.scaladsl.kafka.broker
 
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{ CountDownLatch, TimeUnit }
 
 import akka.Done
@@ -200,6 +201,22 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
       expectFailure.failed.futureValue shouldBe an[SimulateFailure.type]
       countProcessedMessages shouldBe 1
     }
+
+    "allow the consumer to batch" in {
+      val batchSize = 4
+      val latch = new CountDownLatch(batchSize)
+      testService.test6Topic.subscribe.atLeastOnce(
+        Flow[String].grouped(batchSize).mapConcat { messages =>
+          messages.map { _ =>
+            latch.countDown()
+            Done
+          }
+        }
+      )
+      val queue = ScaladslKafkaApiSpec.test6Queue.futureValue
+      for (i <- 1 to batchSize) queue.offer((i.toString, NoOffset))
+      latch.await(10, TimeUnit.SECONDS) shouldBe true
+    }
   }
 
 }
@@ -211,6 +228,7 @@ object ScaladslKafkaApiSpec {
   private val (test3Source, test3Queue) = publisher
   private val (test4Source, test4Queue) = publisher
   private val (test5Source, test5Queue) = publisher
+  private val (test6Source, test6Queue) = publisher
 
   private def publisher = {
     val promise = Promise[SourceQueueWithComplete[(String, Offset)]]()
@@ -231,6 +249,8 @@ object ScaladslKafkaApiSpec {
 
     def test5Topic: Topic[String]
 
+    def test6Topic: Topic[String]
+
     import Service._
 
     override def descriptor: Descriptor =
@@ -240,7 +260,8 @@ object ScaladslKafkaApiSpec {
           topic("test2", test2Topic),
           topic("test3", test3Topic),
           topic("test4", test4Topic),
-          topic("test5", test5Topic)
+          topic("test5", test5Topic),
+          topic("test6", test6Topic)
         )
   }
 
@@ -256,6 +277,8 @@ object ScaladslKafkaApiSpec {
     override def test4Topic = createTopicProducer(test4Source)
 
     override def test5Topic = createTopicProducer(test5Source)
+
+    override def test6Topic = createTopicProducer(test6Source)
 
     private def createTopicProducer(publisher: Source[(String, Offset), _]): Topic[String] = {
       TopicProducer.singleStreamWithOffset(offset => publisher)

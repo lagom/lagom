@@ -59,6 +59,7 @@ object ProducerConfig {
 }
 
 sealed trait ConsumerConfig extends ClientConfig {
+  def offsetBuffer: Int
   def batchingSize: Int
   def batchingInterval: FiniteDuration
 }
@@ -71,6 +72,7 @@ object ConsumerConfig {
     extends ClientConfig.ClientConfigImpl(conf)
     with ConsumerConfig {
 
+    override val offsetBuffer: Int = conf.getInt("offset-buffer")
     override val batchingSize: Int = conf.getInt("batching-size")
     override val batchingInterval: FiniteDuration = {
       val interval = conf.getDuration("batching-interval")
