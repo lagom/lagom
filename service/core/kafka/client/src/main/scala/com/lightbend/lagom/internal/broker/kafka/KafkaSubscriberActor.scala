@@ -12,7 +12,7 @@ import akka.kafka.scaladsl.{ Consumer => ReactiveConsumer }
 import akka.kafka.{ AutoSubscription, ConsumerSettings }
 import akka.pattern.pipe
 import akka.stream.scaladsl.{ Flow, GraphDSL, Keep, Sink, Source, Unzip, Zip }
-import akka.stream.{ FlowShape, KillSwitch, KillSwitches, Materializer }
+import akka.stream._
 
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 
@@ -105,8 +105,11 @@ private[lagom] class KafkaSubscriberActor[Message](
           .mapAsync(parallelism = 3)(_.commitScaladsl())
         builder.add(commitFlow)
       }
+      // To allow the user flow to do its own batching, the offset side of the flow needs to effectively buffer
+      // infinitely to give full control of backpressure to the user side of the flow.
+      val offsetBuffer = Flow[CommittableOffset].buffer(consumerConfig.offsetBuffer, OverflowStrategy.backpressure)
 
-      unzip.out0 ~> zip.in0
+      unzip.out0 ~> offsetBuffer ~> zip.in0
       unzip.out1 ~> flow ~> zip.in1
       zip.out ~> committer.in
 
