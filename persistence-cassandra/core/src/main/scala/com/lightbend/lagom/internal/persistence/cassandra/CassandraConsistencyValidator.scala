@@ -3,19 +3,34 @@
  */
 package com.lightbend.lagom.internal.persistence.cassandra
 
-import play.api.{ Configuration, Environment }
+import play.api.Configuration
 
 object CassandraConsistencyValidator {
 
-  def validate(configuration: Configuration, environment: Environment): Boolean = {
+  def validateWriteSide(configuration: Configuration): Seq[String] = {
     val journalConfig: Option[Configuration] = configuration.getConfig("cassandra-journal")
+    if (!isValid(journalConfig)) {
+      Seq("""Invalid consistency level or replication factor for "cassandra-journal".""")
+    } else {
+      Seq.empty[String]
+    }
+  }
 
-    CassandraConsistencyConfig.load(journalConfig.get).exists {
+  def validateReadSide(configuration: Configuration): Seq[String] = {
+    val journalConfig: Option[Configuration] = configuration.getConfig("lagom.persistence.read-side.cassandra")
+    if (!isValid(journalConfig)) {
+      Seq("""Invalid consistency level or replication factor for "lagom.persistence.read-side.cassandra".""")
+    } else {
+      Seq.empty[String]
+    }
+  }
+
+  private def isValid(configuration: Option[Configuration]) = {
+    CassandraConsistencyConfig.load(configuration.get).exists {
       case CassandraConsistencyConfig("QUORUM", "QUORUM", Some(rf)) if rf >= 3 => true
       case _ => false
     }
   }
-
 }
 
 case class CassandraConsistencyConfig(
