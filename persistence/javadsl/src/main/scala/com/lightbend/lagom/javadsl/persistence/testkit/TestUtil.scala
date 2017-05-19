@@ -27,16 +27,19 @@ object TestUtil extends AbstractTestUtil {
     cassandra-journal {
       port = $cassandraPort
       keyspace = $testName
+      contact-points = ["127.0.0.1"]
     }
     cassandra-snapshot-store {
       port = $cassandraPort
       keyspace = $testName
+      contact-points = ["127.0.0.1"]
     }
     cassandra-query-journal.eventual-consistency-delay = 2s
 
     lagom.persistence.read-side.cassandra {
       port = $cassandraPort
       keyspace = ${testName}_read
+      contact-points = ["127.0.0.1"]
     }
 
     akka.test.single-expect-default = 5s
