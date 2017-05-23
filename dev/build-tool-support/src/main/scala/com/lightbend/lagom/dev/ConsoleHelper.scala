@@ -31,7 +31,7 @@ class ConsoleHelper(colors: Colors) {
     System.in.read()
   }
 
-  def shutdownAsynchronously(log: LoggerProxy, services: Seq[Closeable]) = {
+  def shutdownAsynchronously(log: LoggerProxy, services: Seq[Closeable], infrastructureServices: Seq[Closeable]) = {
     // shut down all running services
     log.info("Stopping services")
 
@@ -53,7 +53,9 @@ class ConsoleHelper(colors: Colors) {
 
       println()
       // and finally shut down any other possibly running embedded server
-      Await.result(Servers.asyncTryStop(log), 60.seconds)
+      Await.result(Future.traverse(infrastructureServices)(serv => Future {
+        serv.close()
+      }), 60.seconds)
     } finally {
       // and the last part concern the closing of execution context that has been created above
       ecn.shutdown()

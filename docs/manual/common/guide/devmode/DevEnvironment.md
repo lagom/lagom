@@ -52,6 +52,20 @@ Once the "Services started" message has appeared, if you make a change to your s
 --- (RELOAD) ---
 ```
 
+## Managing custom services
+
+By default, Lagom will, in addition to running your services, also start a service locator, a Cassandra server and a Kafka server. If using sbt, you can customise what Lagom starts, including adding other databases and infrastructure services.
+
+> **Note:** Managing custom services is not currently supported in Maven, due to Maven's inability to arbitrarily add behaviour, such as the logic necessary to start and stop an external process, to a build. This is typically not a big problem, it simply means developers have to manually install, start and stop these services themselves.
+
+To add a custom service, first you need to define a task to start the service in your `build.sbt`. The task should produce a result of `Closeable`, which can be used to stop the service. Here's an example for Elastic Search:
+
+@[start-elastic-search](code/dev-environment.sbt)
+
+Now we're able to start Elastic Search, we need to add this task to Lagom's list of infrastructure services, so that Lagom will start it when `runAll` is executed. This can be done by modifying the `lagomInfrastructureServices` setting:
+
+@[infrastructure-services](code/dev-environment.sbt)
+
 ## Behind the scenes
 
 <!-- copied this section to concepts, perhaps it can be removed later -->

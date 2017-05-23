@@ -32,22 +32,11 @@
 # ---------------
 
 > set lagomServiceLocatorEnabled := false
-
 # Part 1
-> validateRequest http://localhost:8000 should-be-down
-> lagomServiceLocatorStart
-$ sleep 1000
-> validateRequest http://localhost:8000 should-be-down
-
-# Part 2
 > runAll
 $ sleep 1000
 > validateRequest http://localhost:8000 should-be-down
 > validateFile retry-until-success target/reload.log line-count 1
-
-# Part 3
-> lagomServiceLocatorStop
-> validateFile target/reload.log line-count 1
 
 # Cleanup
 > stop

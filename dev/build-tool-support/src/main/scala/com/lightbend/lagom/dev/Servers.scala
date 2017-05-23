@@ -86,7 +86,7 @@ private[lagom] object Servers {
     }
 
     def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Array[URL], serviceLocatorPort: Int,
-              serviceGatewayPort: Int, unmanagedServices: Map[String, String]): Unit = synchronized {
+              serviceGatewayPort: Int, unmanagedServices: Map[String, String]): Closeable = synchronized {
       if (server == null) {
         withContextClassloader(new java.net.URLClassLoader(classpath, parentClassLoader)) { loader =>
           val serverClass = loader.loadClass("com.lightbend.lagom.discovery.ServiceLocatorServer")
@@ -105,6 +105,9 @@ private[lagom] object Servers {
       if (server != null) {
         log.info("Service locator is running at " + server.serviceLocatorAddress)
         log.info("Service gateway is running at " + server.serviceGatewayAddress)
+      }
+      return new Closeable {
+        override def close(): Unit = stop(log)
       }
     }
 
@@ -144,7 +147,7 @@ private[lagom] object Servers {
 
     protected type Server = CassandraProcess
 
-    def start(log: LoggerProxy, cp: Seq[File], port: Int, cleanOnStart: Boolean, jvmOptions: Seq[String], maxWaiting: FiniteDuration): Unit = synchronized {
+    def start(log: LoggerProxy, cp: Seq[File], port: Int, cleanOnStart: Boolean, jvmOptions: Seq[String], maxWaiting: FiniteDuration): Closeable = synchronized {
       if (server != null) log.info(s"Cassandra is running at ${server.address}")
       else {
         // see https://github.com/krasserm/akka-persistence-cassandra/blob/5efcd16bfc5a72ad277cb5687a62542f00ae8857/src/main/scala/akka/persistence/cassandra/testkit/CassandraLauncher.scala#L29-L31
@@ -156,6 +159,9 @@ private[lagom] object Servers {
         server = CassandraProcess(process, port)
         server.enableKillOnExit()
         waitForRunningCassandra(log, server, maxWaiting)
+      }
+      new Closeable {
+        override def close(): Unit = stop(log)
       }
     }
 
@@ -216,7 +222,7 @@ private[lagom] object Servers {
 
     protected type Server = KafkaProcess
 
-    def start(log: LoggerProxy, cp: Seq[File], kafkaPort: Int, zooKeperPort: Int, kafkaPropertiesFile: Option[File], jvmOptions: Seq[String], targetDir: File, cleanOnStart: Boolean): Unit = {
+    def start(log: LoggerProxy, cp: Seq[File], kafkaPort: Int, zooKeperPort: Int, kafkaPropertiesFile: Option[File], jvmOptions: Seq[String], targetDir: File, cleanOnStart: Boolean): Closeable = {
       val args = kafkaPort.toString :: zooKeperPort.toString :: targetDir.getAbsolutePath :: cleanOnStart.toString :: kafkaPropertiesFile.toList.map(_.getAbsolutePath)
 
       val log4jOutput = targetDir.getAbsolutePath + java.io.File.separator + "log4j_output"
@@ -231,6 +237,10 @@ private[lagom] object Servers {
       server.enableKillOnExit()
       log.info("Starting Kafka")
       log.debug(s"Kafka log output can be found under ${log4jOutput}.")
+
+      new Closeable {
+        override def close(): Unit = stop(log)
+      }
     }
 
     protected def stop(log: LoggerProxy): Unit = {
