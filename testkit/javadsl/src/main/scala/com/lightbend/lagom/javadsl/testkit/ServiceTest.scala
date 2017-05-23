@@ -261,7 +261,7 @@ object ServiceTest {
         val cassandraDirectory = Files.createTempDirectory(testName).toFile
         FileUtils.deleteRecursiveOnExit(cassandraDirectory)
         val t0 = System.nanoTime()
-        CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = 0)
+        CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort)
         log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
         val b2 = b1.configure(new Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = false)))
           .configure("lagom.cluster.join-self", "on")
