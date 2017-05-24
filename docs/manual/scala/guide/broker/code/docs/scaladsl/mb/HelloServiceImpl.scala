@@ -29,9 +29,9 @@ class HelloServiceImpl(persistentEntityRegistry: PersistentEntityRegistry) exten
   //#implement-topic
   override def greetingsTopic(): Topic[GreetingMessage] =
     TopicProducer.singleStreamWithOffset {
-      offset =>
-        persistentEntityRegistry.eventStream(HelloEventTag.INSTANCE, offset)
-          .map(ev => (convertEvent(ev), offset))
+      fromOffset =>
+        persistentEntityRegistry.eventStream(HelloEventTag.INSTANCE, fromOffset)
+          .map(ev => (convertEvent(ev), ev.offset))
     }
 
   private def convertEvent(helloEvent: EventStreamElement[HelloEvent]): GreetingMessage = {
