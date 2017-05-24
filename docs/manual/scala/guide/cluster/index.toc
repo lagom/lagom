@@ -3,7 +3,9 @@ PersistentEntityCassandra:Cassandra Persistent Entities
 PersistentEntityRDBMS:Relational Database Persistent Entities
 ReadSide:Persistent Read-Side
 ReadSideCassandra:Cassandra Read-Side Support
-ReadSideRDBMS:Relational Database Read-Side Support
+ReadSideRDBMS:Relational Database Read-Side Support;next=ReadSideJDBC,ReadSideSlick
+ReadSideJDBC:JDBC Read-Side Support
+ReadSideSlick:Slick Read-Side Support
 PubSub:Publish-Subscribe
 Cluster:Cluster
 Serialization:Serialization

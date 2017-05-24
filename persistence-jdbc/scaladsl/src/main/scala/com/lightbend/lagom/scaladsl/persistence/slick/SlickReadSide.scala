@@ -16,8 +16,7 @@ import scala.reflect.ClassTag
  *
  * This should be used to build and register a read side processor.
  *
- * All callbacks are executed in a transaction and are automatically committed or rollback based on whether they fail
- * or succeed.
+ * All callbacks are executed in a transaction and are automatically committed or rollback based on whether they succeed or fail.
  *
  * Offsets are automatically handled.
  */

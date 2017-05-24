@@ -17,6 +17,3 @@ Both options build on top of the same support for [[storing persistent entities 
 ## Implementing a relational database read side
 
 Follow the instructions for the specific relational database API you want to use:
-
-* [[JDBC read-side support|ReadSideJDBC]]
-* [[JPA read-side support|ReadSideJPA]]

@@ -27,20 +27,20 @@ Available sbt options
 
 The following sbt options are available:
 
--   `run `invoke from the `docs `directory to build the docs and start an HTTP
+-   `run` invoke from the `docs` directory to build the docs and start an HTTP
     server.
 
--   `unidoc `invoke from the root directory (`lagom`) to build the scala
+-   `unidoc` invoke from the root directory (`lagom`) to build the scala
     javadocs.
 
--   `test `invoke from the `docs `directory to extract and test doc code
+-   `test `invoke from the `docs` directory to extract and test doc code
     snippets.
 
--   `markdownEvaluateSbtFiles `invoke from the docs directory to test the sbt
+-   `markdownEvaluateSbtFiles` invoke from the docs directory to test the sbt
     code snippets.
 
--   `markdownValidateDocs `invoke from the `docs `directory to validate internal
+-   `markdownValidateDocs` invoke from the `docs` directory to validate internal
     links in the docs and links from docs to javadocs.
 
--   `markdownValidateExternalLinks `invoke from the `docs `directory to validate
+-   `markdownValidateExternalLinks` invoke from the `docs` directory to validate
     external links.
