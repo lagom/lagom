@@ -70,7 +70,7 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
     super.afterAll()
   }
 
-  implicit val patience = PatienceConfig(30.seconds, 150.millis)
+  implicit val patience = PatienceConfig(30.seconds, 300.millis)
 
   "The Kafka message broker api" should {
 
