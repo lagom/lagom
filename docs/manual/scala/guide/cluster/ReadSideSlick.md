@@ -7,7 +7,7 @@ This page is specifically about Lagom's support for relational database read-sid
 
 Slick support builds on top of Lagom's support for [[storing persistent entities in a relational database|PersistentEntityRDBMS]]. See that guide for instructions on configuring Lagom to use the correct JDBC driver and database URL.
 
-Next we need to configure the Slick mappings for the read-side model. Note that this example is using the `slick.jdbc.H2Profile`. Make sure you import your profile of choice instead. It's important that you Slick mapping uses the
+Next we need to configure the Slick mappings for the read-side model. Note that this example is using the `slick.jdbc.H2Profile`. Make sure you import your profile of choice instead.
 
 @[slick-mapping-initial](code/docs/home/scaladsl/persistence/SlickRepos.scala)
 
