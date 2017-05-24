@@ -16,7 +16,7 @@ Data flowing through a topic is serialized to JSON by default. Of course, it is 
 
 Kafka will distribute messages for a particular topic across many partitions, so that the topic can scale. Messages sent to different partitions may be processed out of order, so if the ordering of the messages you are publishing matters, you need to ensure that the messages are partitioned in such a way that order is preserved.  Typically, this means ensuring each message for a particular entity goes to the same partition.
 
-Lagom allows this by allowing you to configure a partition key strategy, which extracts the partition key out of a message. Kafka will then use this key to help decide what partition to send each message to. The partition can be selected using the [`partitionKeyStrategy`](api/com/lightbend/lagom/scaladsl/api/broker/kafka/KafkaProperties$.html#partitionKeyStrategy[Message]:com.lightbend.lagom.scaladsl.api.Descriptor.Property[Message,com.lightbend.lagom.scaladsl.api.broker.kafka.PartitionKeyStrategy[Message]]) property, by passing a [`PartitionKeyStrategy`](api/com/lightbend/lagom/scaladsl/api/broker/kafka/PartitionKeyStrategy.html) to it: 
+Lagom allows this by allowing you to configure a partition key strategy, which extracts the partition key out of a message. Kafka will then use this key to help decide what partition to send each message to. The partition can be selected using the [`partitionKeyStrategy`](api/com/lightbend/lagom/scaladsl/api/broker/kafka/KafkaProperties$.html#partitionKeyStrategy[Message]:com.lightbend.lagom.scaladsl.api.Descriptor.Property[Message,com.lightbend.lagom.scaladsl.api.broker.kafka.PartitionKeyStrategy[Message]]) property, by passing a [`PartitionKeyStrategy`](api/com/lightbend/lagom/scaladsl/api/broker/kafka/PartitionKeyStrategy.html) to it:
 
 @[publishing](code/docs/scaladsl/mb/BlogPostService.scala)
 
@@ -36,7 +36,7 @@ Note that the read-side event stream you passed to the topic producer is "activa
 
 ### Offset storage
 
-Lagom will use your configured persistence API provider to store the offsets for your event streams. To read more about offset storage, see the [[Cassandra offset documentation|ReadSideCassandra#Building-the-read-side-handler]] and [[Relational database offset documentation|ReadSideRDBMS#Building-the-read-side-handler]].
+Lagom will use your configured persistence API provider to store the offsets for your event streams. To read more about offset storage, see the [[Cassandra offset documentation|ReadSideCassandra#Building-the-read-side-handler]], [[JDBC database offset documentation|ReadSideJDBC#Building-the-read-side-handler]] and [[Slick database offset documentation|ReadSideSlick#Building-the-read-side-handler]].
 
 ## Subscribe to a topic
 
@@ -79,7 +79,7 @@ While the JSON for the `BlogPostPublished` event will look like this:
 }
 ```
 
-You can do that using [Play JSON transformers](https://www.playframework.com/documentation/2.5.x/ScalaJsonTransformers#Case-5:-Put-a-given-value-in-a-new-branch): 
+You can do that using [Play JSON transformers](https://www.playframework.com/documentation/2.5.x/ScalaJsonTransformers#Case-5:-Put-a-given-value-in-a-new-branch):
 
 @[polymorphic-play-json](code/docs/scaladsl/mb/BlogPostService.scala)
 
