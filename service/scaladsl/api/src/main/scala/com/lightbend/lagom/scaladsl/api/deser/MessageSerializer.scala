@@ -293,6 +293,11 @@ trait LowPriorityMessageSerializerImplicits {
         message.writeTo(bytes.asOutputStream)
         bytes.result
       }
+      // TODO: protocol "application/protobuf" makes sense when this serializer is used over plain HTTP. When used on
+      // gRPC it may need to be "application/grpc-protobuf" (See http://www.grpc.io/docs/guides/wire.html#appendix-a---grpc-for-protobuf)
+      // This protocol distinction could break the MessageSerializer abstraction as it is now, or we may need to
+      // overwrite the protocol value as it enters Lagom to replace "application/grpc-protobuf" with
+      // "application/protobuf" in lower layers so that message de/ser is independant of what transport is used.
       override val protocol: MessageProtocol = MessageProtocol(Some("application/protobuf"))
     }
     private object ScalapbDeserializer extends NegotiatedDeserializer[Message, ByteString] {
