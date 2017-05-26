@@ -14,6 +14,7 @@ import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{ Flow, Sink, Source, SourceQueueWithComplete }
 import akka.testkit.EventFilter
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer
+import com.lightbend.lagom.internal.kafka.KafkaLocalServer.ZooKeeperLocalServer
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceLocator }
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
@@ -23,6 +24,11 @@ import com.lightbend.lagom.scaladsl.kafka.broker.ScaladslKafkaApiSpec.{ InMemory
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
+import kafka.admin.AdminUtils
+import kafka.utils.ZkUtils
+import org.I0Itec.zkclient.ZkClient
+import org.I0Itec.zkclient.exception.ZkMarshallingError
+import org.I0Itec.zkclient.serialize.ZkSerializer
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
 import org.scalatest.concurrent.ScalaFutures
 import play.api.Configuration
@@ -60,6 +66,9 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
     super.beforeAll()
 
     kafkaServer.start()
+
+    KafkaSpecTools.createTopics((1 to ScaladslKafkaApiSpec.topicCount).map(i => s"test$i"))
+
     Cluster(application.actorSystem).join(Cluster(application.actorSystem).selfAddress)
   }
 
@@ -132,6 +141,7 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
 
       // The subscriber flow should have self-healed and hence it will process the second message (this time, succeeding)
       secondMessageToPublish shouldBe secondTimeReceived.future.futureValue
+
     }
 
     "keep track of the read-side offset when publishing events" in {
@@ -221,7 +231,37 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
 
 }
 
+object KafkaSpecTools {
+
+  // copy pasted from Kafka sources to make it visible (in Kafka that is pakage private
+  private[this] object StringSerializer extends ZkSerializer {
+
+    @throws(classOf[ZkMarshallingError])
+    def serialize(data: Object): Array[Byte] = data.asInstanceOf[String].getBytes("UTF-8")
+
+    @throws(classOf[ZkMarshallingError])
+    def deserialize(bytes: Array[Byte]): Object = {
+      if (bytes == null)
+        null
+      else
+        new String(bytes, "UTF-8")
+    }
+  }
+
+  def createTopics(topics: Seq[String]): Any = {
+    // based on https://stackoverflow.com/a/23360100/103190
+    val zkClient = new ZkClient(s"localhost:${ZooKeeperLocalServer.DefaultPort}", 1000, 1000, StringSerializer)
+    val zkUtils: kafka.utils.ZkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
+    topics.foreach(t =>
+      AdminUtils.createTopic(zkUtils, t, 1, 1))
+    zkClient.close()
+  }
+
+}
+
 object ScaladslKafkaApiSpec {
+
+  val topicCount = 6 // this value is used in beforeAll to ensure all topics exist in Kafka.
 
   private val (test1Source, test1Queue) = publisher
   private val (test2Source, test2Queue) = publisher
@@ -253,7 +293,7 @@ object ScaladslKafkaApiSpec {
 
     import Service._
 
-    override def descriptor: Descriptor =
+    override def descriptor: Descriptor = {
       named("testservice")
         .withTopics(
           topic("test1", test1Topic),
@@ -263,6 +303,7 @@ object ScaladslKafkaApiSpec {
           topic("test5", test5Topic),
           topic("test6", test6Topic)
         )
+    }
   }
 
   trait TestEvent extends AggregateEvent[TestEvent]
@@ -310,4 +351,5 @@ object ScaladslKafkaApiSpec {
     class FakeCassandraException extends RuntimeException
 
   }
+
 }
