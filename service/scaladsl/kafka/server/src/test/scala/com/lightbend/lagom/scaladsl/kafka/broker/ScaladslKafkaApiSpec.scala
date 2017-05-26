@@ -3,11 +3,9 @@
  */
 package com.lightbend.lagom.scaladsl.kafka.broker
 
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{ CountDownLatch, TimeUnit }
 
 import akka.Done
-import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.persistence.query.{ NoOffset, Offset, Sequence }
 import akka.stream.OverflowStrategy
@@ -16,7 +14,7 @@ import akka.testkit.EventFilter
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer.ZooKeeperLocalServer
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceLocator }
+import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service }
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocatorComponents
@@ -29,14 +27,14 @@ import kafka.utils.ZkUtils
 import org.I0Itec.zkclient.ZkClient
 import org.I0Itec.zkclient.exception.ZkMarshallingError
 import org.I0Itec.zkclient.serialize.ZkSerializer
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
 import play.api.Configuration
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.concurrent.TrieMap
-import scala.concurrent.{ Future, Promise }
 import scala.concurrent.duration._
+import scala.concurrent.{ Future, Promise }
 
 class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures {
 
@@ -57,8 +55,7 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
     }
   }
 
-  import application.executionContext
-  import application.materializer
+  import application.{ executionContext, materializer }
 
   private val kafkaServer = KafkaLocalServer(cleanOnStart = true)
 
