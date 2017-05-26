@@ -86,7 +86,7 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
       val testTopic = testService.test1Topic()
 
       val messageReceived = Promise[String]()
-      testTopic.subscribe().atLeastOnce(Flow.fromFunction { (message: String) =>
+      testTopic.subscribe().withGroupId("testservice1").atLeastOnce(Flow.fromFunction { (message: String) =>
         messageReceived.trySuccess(message)
         Done
       }.asJava)
@@ -106,7 +106,7 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
       val secondTimeReceived = Promise[String]()
       val messageCommitFailureInjected = new CountDownLatch(1)
 
-      testTopic.subscribe().atLeastOnce(Flow.fromFunction { (message: String) =>
+      testTopic.subscribe().withGroupId("testservice2").atLeastOnce(Flow.fromFunction { (message: String) =>
         if (!firstTimeReceived.isCompleted) {
           firstTimeReceived.trySuccess(message)
           messageCommitFailureInjected.await()
@@ -154,7 +154,7 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
       trackedOffset shouldBe Offset.NONE
 
       val messageReceived = Promise[String]()
-      testTopic.subscribe().atLeastOnce(Flow.fromFunction { (message: String) =>
+      testTopic.subscribe().withGroupId("testservice3").atLeastOnce(Flow.fromFunction { (message: String) =>
         messageReceived.trySuccess(message)
         Done
       }.asJava)
@@ -175,7 +175,7 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
       val materialized = new CountDownLatch(2)
 
       @volatile var failOnMessageReceived = true
-      testTopic.subscribe().atLeastOnce(Flow.fromFunction { (message: String) =>
+      testTopic.subscribe().withGroupId("testservice4").atLeastOnce(Flow.fromFunction { (message: String) =>
         if (failOnMessageReceived) {
           failOnMessageReceived = false
           throw new IllegalStateException("Simulate consumer failure")
@@ -204,7 +204,7 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
       // Now we register a consumer that will fail while processing a message. Because we are using at-most-once
       // delivery, the message that caused the failure won't be re-processed.
       @volatile var countProcessedMessages = 0
-      val expectFailure = testTopic.subscribe().atMostOnceSource().asScala
+      val expectFailure = testTopic.subscribe().withGroupId("testservice5").atMostOnceSource().asScala
         .via(Flow.fromFunction { (message: String) =>
           countProcessedMessages += 1
           throw SimulateFailure
