@@ -19,6 +19,10 @@
             <artifactId>lagom-javadsl-api_2.11</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.lightbend.lagom</groupId>
+            <artifactId>lagom-javadsl-kafka-broker_2.11</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
