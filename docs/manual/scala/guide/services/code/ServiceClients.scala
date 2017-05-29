@@ -93,7 +93,8 @@ package metricsservice {
 
   abstract class MyApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
-      with AhcWSComponents {
+      with AhcWSComponents
+      with MetricsServiceComponents {
 
     lazy val lagomServer = LagomServer.forServices(
       bindService[HelloService].to(wire[HelloServiceImpl]),
