@@ -275,7 +275,11 @@ lazy val root = (project in file("."))
   )
   .enablePlugins(lagom.UnidocRoot)
   .settings(UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*)
-  .aggregate(javadslProjects.map(Project.projectToRef): _*)
+  .settings(
+    whitesourceProduct in ThisBuild               := "Lightbend Reactive Platform",
+    whitesourceAggregateProjectName in ThisBuild  := "lagom-master",
+    whitesourceAggregateProjectToken in ThisBuild := "b47efd29-4a67-4ece-94d5-a7f38c362d8a"
+  ).aggregate(javadslProjects.map(Project.projectToRef): _*)
   .aggregate(scaladslProjects.map(Project.projectToRef): _*)
   .aggregate(coreProjects.map(Project.projectToRef): _*)
   .aggregate(otherProjects.map(Project.projectToRef): _*)
