@@ -16,7 +16,7 @@ import play.api.{ Configuration, Environment, Logger }
 class CircuitBreakerModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
     Seq(
-      bind[CircuitBreakers].toSelf,
+      bind[CircuitBreakers].to[CircuitBreakersImpl],
       bind[CircuitBreakerMetricsProvider].toProvider[CircuitBreakerMetricsProviderProvider]
     )
   }

@@ -209,7 +209,7 @@ public class LagomClientFactory implements Closeable {
         ServiceInfo serviceInfo = ServiceInfo.of(serviceName);
 
         // ServiceClientLoader
-        CircuitBreakers circuitBreakers = new CircuitBreakers(actorSystem, new CircuitBreakerConfig(configuration),
+        CircuitBreakers circuitBreakers = new CircuitBreakersImpl(actorSystem, new CircuitBreakerConfig(configuration),
                 new CircuitBreakerMetricsProviderImpl(actorSystem));
 
         JacksonSerializerFactory serializerFactory = new JacksonSerializerFactory(actorSystem);

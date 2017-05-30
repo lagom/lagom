@@ -321,7 +321,9 @@ object Dependencies {
     "com.typesafe.netty" % "netty-reactive-streams" % "1.0.8"
   )
 
-  val `client-javadsl` = libraryDependencies ++= Nil
+  val `client-javadsl` = libraryDependencies ++= Seq(
+    scalaTest % Test
+  )
 
   val `client-scaladsl` = libraryDependencies ++= Seq(
     scalaTest % Test
