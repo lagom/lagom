@@ -54,7 +54,7 @@ Finally, subscribers are grouped together via [`Subscriber.withGroupId`](api/ind
 
 ## Polymorphic event streams
 
-Typically you will want to publish more than one type of event to a particular topic. This can be done by creating an interface that each event implements, and then making the events implement that. In order to successfully serialize these events to and from JSON, a few extra annotations are needed to instruct Jackson to describe and consume the type of the event in the produced JSON.
+Typically you will want to publish more than one type of event to a particular topic. This can be done by creating an interface that each event implements. In order to successfully serialize these events to and from JSON, a few extra annotations are needed to instruct Jackson to describe and consume the type of the event in the produced JSON.
 
 For example, consider a situation where you have a blog post created event and a blog post published event. Here's what your event structure might look like:
 
