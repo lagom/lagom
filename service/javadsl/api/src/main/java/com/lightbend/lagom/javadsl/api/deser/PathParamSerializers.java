@@ -78,6 +78,11 @@ public final class PathParamSerializers {
     public static final PathParamSerializer<Integer> INTEGER = required("Integer", Integer::parseInt, i -> i.toString());
 
     /**
+     * An Double path param serializer.
+     */
+    public static final PathParamSerializer<Double> DOUBLE = required("Double", Double::parseDouble, d -> d.toString());
+
+    /**
      * A Boolean path param serializer.
      */
     public static final PathParamSerializer<Boolean> BOOLEAN = required("Boolean", Boolean::parseBoolean,

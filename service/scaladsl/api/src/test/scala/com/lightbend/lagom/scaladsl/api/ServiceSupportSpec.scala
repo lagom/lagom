@@ -26,6 +26,19 @@ class ServiceSupportSpec extends WordSpec with Matchers with OptionValues {
       holder.value.pathParamSerializers should have size 1
       holder.value.pathParamSerializers.head should ===(PathParamSerializer.StringPathParamSerializer)
     }
+
+    "Double path params support" should {
+      val holder = new DoubleMockService {
+        override def foo(bar: Double): ServiceCall[String, String] = null
+      }.descriptor.calls.collect {
+        case CallImpl(PathCallIdImpl("/foo/:bar"), holder: ServiceSupport.ScalaMethodServiceCall[_, _], _, _, _, _) => holder
+      }.headOption
+
+      "pass the path param serializers " in {
+        holder.value.pathParamSerializers should have size 1
+        holder.value.pathParamSerializers.head should ===(PathParamSerializer.DoublePathParamSerializer)
+      }
+    }
   }
 }
 
@@ -37,4 +50,13 @@ trait MockService extends Service {
     pathCall("/foo/:bar", foo _)
   )
 
+}
+
+trait DoubleMockService extends Service {
+
+  def foo(bar: Double): ServiceCall[String, String]
+
+  override def descriptor = named("mock").withCalls(
+    pathCall("/foo/:bar", foo _)
+  )
 }

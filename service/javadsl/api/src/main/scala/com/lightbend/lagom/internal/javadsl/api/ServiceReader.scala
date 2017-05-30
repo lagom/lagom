@@ -55,6 +55,7 @@ object ServiceReader {
       classOf[String] -> PathParamSerializers.STRING,
       classOf[java.lang.Long] -> PathParamSerializers.LONG,
       classOf[java.lang.Integer] -> PathParamSerializers.INTEGER,
+      classOf[java.lang.Double] -> PathParamSerializers.DOUBLE,
       classOf[java.lang.Boolean] -> PathParamSerializers.BOOLEAN,
       classOf[java.util.Optional[_]] -> PathParamSerializers.OPTIONAL
     )
