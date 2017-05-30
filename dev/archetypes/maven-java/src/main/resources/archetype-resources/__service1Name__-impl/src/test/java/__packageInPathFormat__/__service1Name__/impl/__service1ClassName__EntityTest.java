@@ -42,14 +42,14 @@ public class ${service1ClassName}EntityTest {
     PersistentEntityTestDriver<${service1ClassName}Command, ${service1ClassName}Event, ${service1ClassName}State> driver = new PersistentEntityTestDriver<>(system,
         new ${service1ClassName}Entity(), "world-1");
 
-    Outcome<${service1ClassName}Event, ${service1ClassName}State> outcome1 = driver.run(new Hello("Alice", Optional.empty()));
+    Outcome<${service1ClassName}Event, ${service1ClassName}State> outcome1 = driver.run(new Hello("Alice"));
     assertEquals("Hello, Alice!", outcome1.getReplies().get(0));
     assertEquals(Collections.emptyList(), outcome1.issues());
 
     Outcome<${service1ClassName}Event, ${service1ClassName}State> outcome2 = driver.run(new UseGreetingMessage("Hi"),
-        new Hello("Bob", Optional.empty()));
+        new Hello("Bob"));
     assertEquals(1, outcome2.events().size());
-    assertEquals(new GreetingMessageChanged("Hi"), outcome2.events().get(0));
+    assertEquals(new GreetingMessageChanged("world-1", "Hi"), outcome2.events().get(0));
     assertEquals("Hi", outcome2.state().message);
     assertEquals(Done.getInstance(), outcome2.getReplies().get(0));
     assertEquals("Hi, Bob!", outcome2.getReplies().get(1));
