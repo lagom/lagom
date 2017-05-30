@@ -59,7 +59,7 @@ public class ${service1ClassName}Entity extends PersistentEntity<${service1Class
     b.setCommandHandler(UseGreetingMessage.class, (cmd, ctx) ->
     // In response to this command, we want to first persist it as a
     // GreetingMessageChanged event
-    ctx.thenPersist(new GreetingMessageChanged(cmd.message),
+    ctx.thenPersist(new GreetingMessageChanged(entityId(), cmd.message),
         // Then once the event is successfully persisted, we respond with done.
         evt -> ctx.reply(Done.getInstance())));
 
