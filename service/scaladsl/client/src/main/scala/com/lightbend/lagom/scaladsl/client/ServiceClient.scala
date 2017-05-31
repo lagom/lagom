@@ -15,6 +15,7 @@ import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
+import play.api.libs.concurrent.ActorSystemProvider
 import play.api.libs.ws.WSClient
 import play.api.{ Configuration, Environment, Mode }
 
@@ -146,8 +147,8 @@ abstract class LagomClientApplication(
   override lazy val environment: Environment = Environment(new File("."), classLoader, Mode.Prod)
   lazy val configuration: Configuration = Configuration.load(environment, Map.empty)
   override lazy val applicationLifecycle: ApplicationLifecycle = defaultApplicationLifecycle
-  lazy val actorSystem: ActorSystem = ActorSystem("application", configuration.underlying.atKey("akka"),
-    environment.classLoader)
+  lazy val actorSystem: ActorSystem = new ActorSystemProvider(environment, configuration, applicationLifecycle).get
+
   override lazy val materializer: Materializer = ActorMaterializer.create(actorSystem)
   override lazy val executionContext: ExecutionContext = actorSystem.dispatcher
 
