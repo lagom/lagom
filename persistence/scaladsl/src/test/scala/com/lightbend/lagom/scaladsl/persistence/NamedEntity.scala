@@ -13,5 +13,5 @@ class NamedEntity() extends PersistentEntity {
 
   override def initialState: State = ""
 
-  override def behavior: Behavior = Actions()
+  override def behavior: Behavior = Actions.empty
 }

@@ -138,7 +138,7 @@ abstract class PersistentEntity {
   def recoveryCompleted(state: State): State = state
 
   object Actions {
-    private val empty = new Actions(PartialFunction.empty, Map.empty)
+    val empty = new Actions(PartialFunction.empty, Map.empty)
     def apply(): Actions = empty
   }
 
