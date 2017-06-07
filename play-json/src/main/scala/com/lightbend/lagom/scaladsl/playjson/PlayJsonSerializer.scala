@@ -25,6 +25,7 @@ private[lagom] final class PlayJsonSerializer(
   extends SerializerWithStringManifest
   with BaseSerializer {
 
+  private val format: Format[AnyRef] = serializer.format.asInstanceOf[Format[AnyRef]]
   private val charset = StandardCharsets.UTF_8
   private val log = Logging.getLogger(system, getClass)
   private val isDebugEnabled = log.isDebugEnabled
@@ -39,8 +40,6 @@ private[lagom] final class PlayJsonSerializer(
 
   override def toBinary(o: AnyRef): Array[Byte] = {
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
-
-    val format = serializer.format.asInstanceOf[Format[AnyRef]]
 
     val json = format.writes(o)
     val result = Json.stringify(json).getBytes(charset)
@@ -71,9 +70,7 @@ private[lagom] final class PlayJsonSerializer(
           s"behind version $fromVersion of deserialized type [$manifestClassName]")
       case _ => manifestClassName
     }
-
-    val format = serializer.format.asInstanceOf[Format[AnyRef]]
-
+    
     val json = Json.parse(bytes) match {
       case jsObject: JsObject => jsObject
       case other =>
