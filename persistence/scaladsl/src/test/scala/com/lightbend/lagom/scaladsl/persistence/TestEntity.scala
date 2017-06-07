@@ -9,7 +9,7 @@ import akka.actor.Address
 import akka.cluster.Cluster
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.persistence.testkit.SimulatedNullpointerException
-import com.lightbend.lagom.scaladsl.playjson.{ JsonSerializerRegistry, JsonSerializer }
+import com.lightbend.lagom.scaladsl.playjson.{ JsonSerializer, JsonSerializerRegistry, Jsonable }
 
 import scala.collection.immutable
 
@@ -45,13 +45,13 @@ object TestEntity {
 
   }
 
-  sealed trait Cmd
+  sealed trait Cmd extends Jsonable
 
   case object Get extends Cmd with ReplyType[State]
 
   final case class Add(element: String, times: Int = 1) extends Cmd with ReplyType[Evt]
 
-  sealed trait Mode
+  sealed trait Mode extends Jsonable
   object Mode {
     case object Prepend extends Mode
     case object Append extends Mode
@@ -81,7 +81,7 @@ object TestEntity {
     )
   }
 
-  sealed trait Evt extends AggregateEvent[Evt] {
+  sealed trait Evt extends AggregateEvent[Evt] with Jsonable {
     override def aggregateTag: AggregateEventShards[Evt] = Evt.aggregateEventShards
   }
 
@@ -104,7 +104,7 @@ object TestEntity {
     )
   }
 
-  final case class State(mode: Mode, elements: List[String]) {
+  final case class State(mode: Mode, elements: List[String]) extends Jsonable {
     def add(elem: String): State = mode match {
       case Mode.Prepend => new State(mode, elem +: elements)
       case Mode.Append  => new State(mode, elements :+ elem)

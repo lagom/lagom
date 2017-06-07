@@ -10,7 +10,7 @@ import akka.stream.scaladsl.Flow
 import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall }
 import com.lightbend.lagom.scaladsl.api.Service._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.playjson.{ JsonSerializer, JsonSerializerRegistry }
+import com.lightbend.lagom.scaladsl.playjson.{ JsonSerializer, JsonSerializerRegistry, Jsonable }
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext }
 import play.api.libs.ws.ahc.AhcWSComponents
 
@@ -35,7 +35,7 @@ trait AlphaService extends Service {
   def messages: Topic[AlphaEvent]
 }
 
-case class AlphaEvent(message: Int)
+case class AlphaEvent(message: Int) extends Jsonable
 
 object AlphaEvent {
 
@@ -72,7 +72,7 @@ trait CharlieService extends Service {
   def messages: ServiceCall[NotUsed, Seq[ReceivedMessage]]
 }
 
-case class ReceivedMessage(topicId: String, msg: Int)
+case class ReceivedMessage(topicId: String, msg: Int) extends Jsonable
 
 object ReceivedMessage {
 

@@ -22,14 +22,14 @@ object JsonSerializer {
    * Create a serializer for the PlayJsonSerializationRegistry, describes how a specific class can be read and written
    * as json using separate play-json [[Reads]] and [[Writes]]
    */
-  def apply[T: ClassTag: Format]: JsonSerializer[T] =
+  def apply[T <: Jsonable: ClassTag: Format]: JsonSerializer[T] =
     JsonSerializerImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], implicitly[Format[T]])
 
   /**
    * Create a serializer for the PlayJsonSerializationRegistry, describes how a specific class can be read and written
    * as json using separate play-json [[Reads]] and [[Writes]]
    */
-  def apply[T: ClassTag](format: Format[T]): JsonSerializer[T] =
+  def apply[T <: Jsonable: ClassTag](format: Format[T]): JsonSerializer[T] =
     JsonSerializerImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], format)
 
   private case class JsonSerializerImpl[T](entityClass: Class[T], format: Format[T]) extends JsonSerializer[T]
