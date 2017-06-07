@@ -17,20 +17,17 @@ import scala.collection.immutable
  *
  * Akka serializer using the registered play-json serializers and migrations
  */
-private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, registry: JsonSerializerRegistry)
+private[lagom] final class PlayJsonSerializer(
+  val system: ExtendedActorSystem,
+  serializer: JsonSerializer[_],
+  migrations: Map[String, JsonMigration]
+)
   extends SerializerWithStringManifest
   with BaseSerializer {
 
   private val charset = StandardCharsets.UTF_8
   private val log = Logging.getLogger(system, getClass)
   private val isDebugEnabled = log.isDebugEnabled
-
-  private val serializers: Map[String, Format[AnyRef]] = {
-    registry.serializers.map(entry =>
-      (entry.entityClass.getName, entry.format.asInstanceOf[Format[AnyRef]])).toMap
-  }
-
-  private def migrations: Map[String, JsonMigration] = registry.migrations
 
   override def manifest(o: AnyRef): String = {
     val className = o.getClass.getName
@@ -43,12 +40,7 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
   override def toBinary(o: AnyRef): Array[Byte] = {
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
 
-    val (_, manifestClassName: String) = parseManifest(manifest(o))
-
-    val format = serializers.getOrElse(
-      manifestClassName,
-      throw new RuntimeException(s"Missing play-json serializer for [$manifestClassName]")
-    )
+    val format = serializer.format.asInstanceOf[Format[AnyRef]]
 
     val json = format.writes(o)
     val result = Json.stringify(json).getBytes(charset)
@@ -69,9 +61,9 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
 
     val (fromVersion: Int, manifestClassName: String) = parseManifest(manifest)
 
-    val renameMigration = migrations.get(manifestClassName)
+    val migration = migrations.get(manifestClassName)
 
-    val migratedManifest = renameMigration match {
+    val migratedManifest = migration match {
       case Some(migration) if (migration.currentVersion > fromVersion) =>
         migration.transformClassName(fromVersion, manifestClassName)
       case Some(migration) if (migration.currentVersion < fromVersion) =>
@@ -80,13 +72,7 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
       case _ => manifestClassName
     }
 
-    val transformMigration = migrations.get(migratedManifest)
-
-    val format = serializers.getOrElse(
-      migratedManifest,
-      throw new RuntimeException(s"Missing play-json serializer for [$migratedManifest], " +
-        s"defined are [${serializers.keys.mkString(", ")}]")
-    )
+    val format = serializer.format.asInstanceOf[Format[AnyRef]]
 
     val json = Json.parse(bytes) match {
       case jsObject: JsObject => jsObject
@@ -95,7 +81,7 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
           s"Expected a JSON object, but was [${other.getClass.getName}]")
     }
 
-    val migratedJson = transformMigration match {
+    val migratedJson = migration match {
       case Some(migration) if migration.currentVersion > fromVersion =>
         migration.transform(fromVersion, json)
       case _ => json

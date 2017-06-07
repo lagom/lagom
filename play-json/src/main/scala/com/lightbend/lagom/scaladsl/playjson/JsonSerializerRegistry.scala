@@ -38,12 +38,14 @@ object JsonSerializerRegistry {
   /**
    * Create the serializer details for the given serializer registry.
    */
-  def serializerDetailsFor(system: ExtendedActorSystem, registry: JsonSerializerRegistry): SerializerDetails = {
-    SerializerDetails(
-      "lagom-play-json",
-      new PlayJsonSerializer(system, registry),
-      registry.serializers.map(_.entityClass)
-    )
+  def serializerDetailsFor(system: ExtendedActorSystem, registry: JsonSerializerRegistry): immutable.Seq[SerializerDetails] = {
+    registry.serializers.map { serializer =>
+      SerializerDetails(
+        s"lagom-play-json.serialization.bindings.${serializer.entityClass.getName}",
+        new PlayJsonSerializer(system, serializer, registry.migrations),
+        Vector(serializer.entityClass)
+      )
+    }
   }
 
   /**
@@ -54,7 +56,7 @@ object JsonSerializerRegistry {
    */
   def serializationSetupFor(registry: JsonSerializerRegistry): SerializationSetup = {
     SerializationSetup { system =>
-      Vector(serializerDetailsFor(system, registry))
+      serializerDetailsFor(system, registry)
     }
   }
 
