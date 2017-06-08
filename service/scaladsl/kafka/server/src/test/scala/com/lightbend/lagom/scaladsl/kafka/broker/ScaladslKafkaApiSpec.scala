@@ -7,7 +7,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{ CountDownLatch, TimeUnit }
 
 import akka.Done
-import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.persistence.query.{ NoOffset, Offset, Sequence }
 import akka.stream.OverflowStrategy
@@ -15,7 +14,7 @@ import akka.stream.scaladsl.{ Flow, Sink, Source, SourceQueueWithComplete }
 import akka.testkit.EventFilter
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceLocator }
+import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service }
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocatorComponents
@@ -23,16 +22,16 @@ import com.lightbend.lagom.scaladsl.kafka.broker.ScaladslKafkaApiSpec.{ InMemory
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
+import org.scalatest.concurrent.{ Eventually, ScalaFutures }
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
-import org.scalatest.concurrent.ScalaFutures
 import play.api.Configuration
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.concurrent.TrieMap
-import scala.concurrent.{ Future, Promise }
 import scala.concurrent.duration._
+import scala.concurrent.{ Future, Promise }
 
-class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures {
+class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures with Eventually {
 
   private val application = {
     new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LagomKafkaComponents with ConfigurationServiceLocatorComponents {
@@ -51,8 +50,7 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
     }
   }
 
-  import application.executionContext
-  import application.materializer
+  import application.{ executionContext, materializer }
 
   private val kafkaServer = KafkaLocalServer(cleanOnStart = true)
 
@@ -70,7 +68,7 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
     super.afterAll()
   }
 
-  implicit val patience = PatienceConfig(30.seconds, 150.millis)
+  implicit val patience = PatienceConfig(35.seconds, 300.millis)
 
   "The Kafka message broker api" should {
 
@@ -202,7 +200,7 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
       countProcessedMessages shouldBe 1
     }
 
-    "allow the consumer to batch" in {
+    "allow the consumer to batch (using latch)" in {
       val batchSize = 4
       val latch = new CountDownLatch(batchSize)
       testService.test6Topic.subscribe.atLeastOnce(
@@ -217,6 +215,25 @@ class ScaladslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfte
       for (i <- 1 to batchSize) queue.offer((i.toString, NoOffset))
       latch.await(10, TimeUnit.SECONDS) shouldBe true
     }
+
+    "allow the consumer to batch (using eventually)" in {
+      val batchSize = 4
+      val counter = new AtomicInteger(0)
+      testService.test7Topic.subscribe.atLeastOnce(
+        Flow[String].grouped(batchSize).mapConcat { messages =>
+          messages.map { _ =>
+            counter.incrementAndGet()
+            Done
+          }
+        }
+      )
+      val queue = ScaladslKafkaApiSpec.test7Queue.futureValue
+      for (i <- 1 to batchSize) queue.offer((i.toString, NoOffset))
+      eventually {
+        counter.intValue() shouldBe batchSize
+      }
+    }
+
   }
 
 }
@@ -229,6 +246,7 @@ object ScaladslKafkaApiSpec {
   private val (test4Source, test4Queue) = publisher
   private val (test5Source, test5Queue) = publisher
   private val (test6Source, test6Queue) = publisher
+  private val (test7Source, test7Queue) = publisher
 
   private def publisher = {
     val promise = Promise[SourceQueueWithComplete[(String, Offset)]]()
@@ -251,6 +269,8 @@ object ScaladslKafkaApiSpec {
 
     def test6Topic: Topic[String]
 
+    def test7Topic: Topic[String]
+
     import Service._
 
     override def descriptor: Descriptor =
@@ -261,7 +281,8 @@ object ScaladslKafkaApiSpec {
           topic("test3", test3Topic),
           topic("test4", test4Topic),
           topic("test5", test5Topic),
-          topic("test6", test6Topic)
+          topic("test6", test6Topic),
+          topic("test7", test7Topic)
         )
   }
 
@@ -279,6 +300,8 @@ object ScaladslKafkaApiSpec {
     override def test5Topic = createTopicProducer(test5Source)
 
     override def test6Topic = createTopicProducer(test6Source)
+
+    override def test7Topic = createTopicProducer(test7Source)
 
     private def createTopicProducer(publisher: Source[(String, Offset), _]): Topic[String] = {
       TopicProducer.singleStreamWithOffset(offset => publisher)

@@ -58,7 +58,7 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
         ).build()
   }
 
-  @volatile private var kafkaServer = KafkaLocalServer(cleanOnStart = true)
+  private val kafkaServer = KafkaLocalServer(cleanOnStart = true)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -75,7 +75,7 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
     super.afterAll()
   }
 
-  implicit val patience = PatienceConfig(30.seconds, 150.millis)
+  implicit val patience = PatienceConfig(30.seconds, 300.millis)
 
   "The Kafka message broker api" should {
 
