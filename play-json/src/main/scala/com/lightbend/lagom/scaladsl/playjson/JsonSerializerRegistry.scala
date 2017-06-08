@@ -6,6 +6,7 @@ package com.lightbend.lagom.scaladsl.playjson
 import akka.actor.ExtendedActorSystem
 import akka.actor.setup.ActorSystemSetup
 import akka.serialization.{ SerializationSetup, SerializerDetails }
+import play.api.libs.json.{ Format, Reads, Writes }
 
 import scala.collection.immutable
 
@@ -15,12 +16,28 @@ import scala.collection.immutable
  */
 abstract class JsonSerializerRegistry {
 
-  def serializers: immutable.Seq[JsonSerializer[_]]
+  private lazy val registry: Map[String, Format[AnyRef]] = {
+    serializers.map(entry =>
+      (entry.entityClass.getName, entry.format.asInstanceOf[Format[AnyRef]])).toMap
+  }
+
+  protected def serializers: immutable.Seq[JsonSerializer[_]]
 
   /**
    * A set of migrations keyed by the fully classified class name that the migration should be triggered for
    */
   def migrations: Map[String, JsonMigration] = Map.empty
+
+  def writesFor(clazz: Class[_]): Writes[AnyRef] = serializers
+    .collectFirst { case serializer if clazz.isAssignableFrom(serializer.entityClass) => serializer.format.asInstanceOf[Writes[AnyRef]] }
+    .getOrElse(throw new RuntimeException(s"Missing play-json serializer for [${clazz.getName}], " +
+      s"defined are [${registry.keys.mkString(", ")}]"))
+
+  def readsFor(manifest: String): Reads[AnyRef] = registry.getOrElse(
+    manifest,
+    throw new RuntimeException(s"Missing play-json serializer for [$manifest], " +
+      s"defined are [${registry.keys.mkString(", ")}]")
+  )
 
   /**
    * Concatenate the serializers and migrations of this registry with another registry to form a new registry.
@@ -42,7 +59,7 @@ object JsonSerializerRegistry {
     registry.serializers.map { serializer =>
       SerializerDetails(
         s"lagom-play-json.serialization.bindings.${serializer.entityClass.getName}",
-        new PlayJsonSerializer(system, serializer, registry.migrations),
+        new PlayJsonSerializer(system, writerFor = serializer.entityClass, registry),
         Vector(serializer.entityClass)
       )
     }

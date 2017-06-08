@@ -19,16 +19,18 @@ import scala.collection.immutable
  */
 private[lagom] final class PlayJsonSerializer(
   val system: ExtendedActorSystem,
-  serializer: JsonSerializer[_],
-  migrations: Map[String, JsonMigration]
+  writerFor:  Class[_],
+  registry:   JsonSerializerRegistry
 )
   extends SerializerWithStringManifest
   with BaseSerializer {
 
-  private val format: Format[AnyRef] = serializer.format.asInstanceOf[Format[AnyRef]]
+  private val writes: Writes[AnyRef] = registry.writesFor(writerFor)
   private val charset = StandardCharsets.UTF_8
   private val log = Logging.getLogger(system, getClass)
   private val isDebugEnabled = log.isDebugEnabled
+
+  private def migrations: Map[String, JsonMigration] = registry.migrations
 
   override def manifest(o: AnyRef): String = {
     val className = o.getClass.getName
@@ -41,7 +43,7 @@ private[lagom] final class PlayJsonSerializer(
   override def toBinary(o: AnyRef): Array[Byte] = {
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
 
-    val json = format.writes(o)
+    val json = writes.writes(o)
     val result = Json.stringify(json).getBytes(charset)
 
     if (isDebugEnabled) {
@@ -70,7 +72,9 @@ private[lagom] final class PlayJsonSerializer(
           s"behind version $fromVersion of deserialized type [$manifestClassName]")
       case _ => manifestClassName
     }
-    
+
+    val reads = registry.readsFor(migratedManifest)
+
     val json = Json.parse(bytes) match {
       case jsObject: JsObject => jsObject
       case other =>
@@ -84,7 +88,7 @@ private[lagom] final class PlayJsonSerializer(
       case _ => json
     }
 
-    val result = format.reads(migratedJson) match {
+    val result = reads.reads(migratedJson) match {
       case JsSuccess(obj, _) => obj
       case JsError(errors) =>
         throw new JsonSerializationFailed(
