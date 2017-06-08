@@ -66,15 +66,20 @@ private[lagom] final class PlayJsonSerializer(
 
     val migration = migrations.get(manifestClassName)
 
-    val (migratedOriginalWriterFor, migratedManifest) = migration match {
-      case Some(m) if m.currentVersion > fromVersion =>
-        val owf = m.transformClassName(fromVersion, originalWriterForClassName)
-        val mm = m.transformClassName(fromVersion, manifestClassName)
-        (owf, mm)
-      case Some(m) if m.currentVersion < fromVersion =>
-        throw new IllegalStateException(s"Migration version ${m.currentVersion} is " +
-          s"behind version $fromVersion of deserialized type [$manifestClassName]")
-      case _ => (originalWriterForClassName, manifestClassName)
+    val migratedOriginalWriterFor = {
+      if (originalWriterForClassName != manifestClassName) {
+        val writerForClassNameMigration = migrations.get(originalWriterForClassName)
+        writerForClassNameMigration match {
+          case Some(m) if m.currentVersion > fromVersion =>
+            m.transformClassName(fromVersion, originalWriterForClassName)
+          case Some(m) if m.currentVersion < fromVersion =>
+            throw new IllegalStateException(s"Migration version ${m.currentVersion} is " +
+              s"behind version $fromVersion of deserialized type [$originalWriterForClassName]")
+          case _ => originalWriterForClassName
+        }
+      } else {
+        originalWriterForClassName
+      }
     }
 
     val json = Json.parse(bytes) match {
@@ -90,13 +95,18 @@ private[lagom] final class PlayJsonSerializer(
       case _ => json
     }
 
+    println(migrations)
+    println(migration.get)
+    println(migration.get.currentVersion)
+    println(migratedJson)
+
     val reads = registry.readsFor(migratedOriginalWriterFor)
 
     val result = reads.reads(migratedJson) match {
       case JsSuccess(obj, _) => obj
       case JsError(errors) =>
         throw new JsonSerializationFailed(
-          s"Failed to de-serialize bytes with manifest [$migratedManifest]",
+          s"Failed to de-serialize bytes with manifest [$manifest]",
           errors,
           migratedJson
         )
