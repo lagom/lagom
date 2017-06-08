@@ -64,21 +64,27 @@ private[lagom] final class PlayJsonSerializer(
 
     val (fromVersion, originalWriterForClassName, manifestClassName) = parseManifest(manifest)
 
-    val migration = migrations.get(manifestClassName)
+    val migratedManifest = {
+      val renameMigration = migrations.get(manifestClassName)
+      renameMigration match {
+        case Some(migration) if migration.currentVersion > fromVersion =>
+          migration.transformClassName(fromVersion, manifestClassName)
+        case Some(migration) if migration.currentVersion < fromVersion =>
+          throw new IllegalStateException(s"Migration version ${migration.currentVersion} is " +
+            s"behind version $fromVersion of deserialized type [$manifestClassName]")
+        case _ => manifestClassName
+      }
+    }
 
     val migratedOriginalWriterFor = {
-      if (originalWriterForClassName != manifestClassName) {
-        val writerForClassNameMigration = migrations.get(originalWriterForClassName)
-        writerForClassNameMigration match {
-          case Some(m) if m.currentVersion > fromVersion =>
-            m.transformClassName(fromVersion, originalWriterForClassName)
-          case Some(m) if m.currentVersion < fromVersion =>
-            throw new IllegalStateException(s"Migration version ${m.currentVersion} is " +
-              s"behind version $fromVersion of deserialized type [$originalWriterForClassName]")
-          case _ => originalWriterForClassName
-        }
-      } else {
-        originalWriterForClassName
+      val writerForClassNameMigration = migrations.get(originalWriterForClassName)
+      writerForClassNameMigration match {
+        case Some(m) if m.currentVersion > fromVersion =>
+          m.transformClassName(fromVersion, originalWriterForClassName)
+        case Some(m) if m.currentVersion < fromVersion =>
+          throw new IllegalStateException(s"Migration version ${m.currentVersion} is " +
+            s"behind version $fromVersion of deserialized type [$originalWriterForClassName]")
+        case _ => originalWriterForClassName
       }
     }
 
@@ -89,16 +95,13 @@ private[lagom] final class PlayJsonSerializer(
           s"Expected a JSON object, but was [${other.getClass.getName}]")
     }
 
-    val migratedJson = migration match {
+    val transformMigration = migrations.get(migratedManifest)
+
+    val migratedJson = transformMigration match {
       case Some(m) if m.currentVersion > fromVersion =>
         m.transform(fromVersion, json)
       case _ => json
     }
-
-    println(migrations)
-    println(migration.get)
-    println(migration.get.currentVersion)
-    println(migratedJson)
 
     val reads = registry.readsFor(migratedOriginalWriterFor)
 
