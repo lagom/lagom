@@ -33,11 +33,13 @@ abstract class JsonSerializerRegistry {
     .getOrElse(throw new RuntimeException(s"Missing play-json serializer for [${clazz.getName}], " +
       s"defined are [${registry.keys.mkString(", ")}]"))
 
-  def readsFor(manifest: String): Reads[AnyRef] = registry.getOrElse(
-    manifest,
-    throw new RuntimeException(s"Missing play-json serializer for [$manifest], " +
-      s"defined are [${registry.keys.mkString(", ")}]")
-  )
+  def readsFor(manifest: String): Reads[AnyRef] = {
+    registry.getOrElse(
+      manifest,
+      throw new RuntimeException(s"Missing play-json serializer for [$manifest], " +
+        s"defined are [${registry.keys.mkString(", ")}]")
+    )
+  }
 
   /**
    * Concatenate the serializers and migrations of this registry with another registry to form a new registry.

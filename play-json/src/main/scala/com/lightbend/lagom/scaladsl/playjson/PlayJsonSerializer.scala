@@ -26,6 +26,7 @@ private[lagom] final class PlayJsonSerializer(
   with BaseSerializer {
 
   private val writes: Writes[AnyRef] = registry.writesFor(writerFor)
+  private val writerForClassName = writerFor.getName
   private val charset = StandardCharsets.UTF_8
   private val log = Logging.getLogger(system, getClass)
   private val isDebugEnabled = log.isDebugEnabled
@@ -35,8 +36,8 @@ private[lagom] final class PlayJsonSerializer(
   override def manifest(o: AnyRef): String = {
     val className = o.getClass.getName
     migrations.get(className) match {
-      case Some(migration) => className + "#" + migration.currentVersion
-      case None            => className
+      case Some(migration) => writerForClassName + "#" + className + "#" + migration.currentVersion
+      case None            => writerForClassName + "#" + className + "#1"
     }
   }
 
@@ -58,22 +59,21 @@ private[lagom] final class PlayJsonSerializer(
   }
 
   override def fromBinary(bytes: Array[Byte], manifest: String): AnyRef = {
+
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
 
-    val (fromVersion: Int, manifestClassName: String) = parseManifest(manifest)
+    val (fromVersion, originalWriterForClassName, manifestClassName) = parseManifest(manifest)
 
     val migration = migrations.get(manifestClassName)
 
     val migratedManifest = migration match {
-      case Some(migration) if (migration.currentVersion > fromVersion) =>
-        migration.transformClassName(fromVersion, manifestClassName)
-      case Some(migration) if (migration.currentVersion < fromVersion) =>
-        throw new IllegalStateException(s"Migration version ${migration.currentVersion} is " +
+      case Some(m) if m.currentVersion > fromVersion =>
+        m.transformClassName(fromVersion, manifestClassName)
+      case Some(m) if m.currentVersion < fromVersion =>
+        throw new IllegalStateException(s"Migration version ${m.currentVersion} is " +
           s"behind version $fromVersion of deserialized type [$manifestClassName]")
       case _ => manifestClassName
     }
-
-    val reads = registry.readsFor(migratedManifest)
 
     val json = Json.parse(bytes) match {
       case jsObject: JsObject => jsObject
@@ -87,6 +87,8 @@ private[lagom] final class PlayJsonSerializer(
         migration.transform(fromVersion, json)
       case _ => json
     }
+
+    val reads = registry.readsFor(originalWriterForClassName)
 
     val result = reads.reads(migratedJson) match {
       case JsSuccess(obj, _) => obj
@@ -109,10 +111,23 @@ private[lagom] final class PlayJsonSerializer(
     result
   }
 
-  private def parseManifest(manifest: String) = {
-    val i = manifest.lastIndexOf('#')
-    val fromVersion = if (i == -1) 1 else manifest.substring(i + 1).toInt
-    val manifestClassName = if (i == -1) manifest else manifest.substring(0, i)
-    (fromVersion, manifestClassName)
+  private def parseManifest(manifest: String): (Int, String, String) = {
+    val parts = manifest.split("#")
+
+    parts.size match {
+      case 3 => // updated format for supporting serialization of subclasses
+        val originalWriterForClassName = parts(0)
+        val manifestClassName = parts(1)
+        val fromVersion = parts(2)
+        (fromVersion.toInt, originalWriterForClassName, manifestClassName)
+
+      case 2 => // for backwards compatibility when version was specified
+        val manifestClassName = parts(0)
+        val fromVersion = parts(1)
+        (fromVersion.toInt, manifestClassName, manifestClassName)
+
+      case 1 => // for backwards compatibility when no version was specified
+        (1, manifest, manifest)
+    }
   }
 }
