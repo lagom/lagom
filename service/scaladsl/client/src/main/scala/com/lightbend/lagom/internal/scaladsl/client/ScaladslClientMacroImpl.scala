@@ -121,3 +121,4 @@ private[lagom] object ScaladslClientMacroImpl {
   }
 
 }
+

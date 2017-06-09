@@ -13,7 +13,7 @@ import play.api.libs.json._
 
 import scala.collection.immutable.{ Seq, SortedMap }
 
-sealed trait GenericEvent
+sealed trait GenericEvent extends Jsonable
 case class SpecificEvent1(x: Int) extends GenericEvent
 case class SpecificEvent2(s: String) extends GenericEvent
 case class MigratedSpecificEvent(addedField: Int, newName: String) extends GenericEvent
@@ -49,13 +49,13 @@ object UnrelatedEvent {
   implicit val format: Format[UnrelatedEvent] = Json.format[UnrelatedEvent]
 }
 
-case class Event1(name: String, increment: Int)
+case class Event1(name: String, increment: Int) extends Jsonable
 object Event1 {
   implicit val format: Format[Event1] = Json.format[Event1]
 }
-case class Event2(name: String, inner: Inner)
-case class Inner(on: Boolean)
-case class MigratedEvent(addedField: Int, newName: String)
+case class Event2(name: String, inner: Inner) extends Jsonable
+case class Inner(on: Boolean) extends Jsonable
+case class MigratedEvent(addedField: Int, newName: String) extends Jsonable
 
 object TestRegistry1 extends JsonSerializerRegistry {
 
