@@ -17,18 +17,21 @@ import scala.collection.immutable
 abstract class JsonSerializerRegistry {
 
   private lazy val registry: Map[String, Format[AnyRef]] = {
-    serializers.map(entry =>
-      (entry.entityClass.getName, entry.format.asInstanceOf[Format[AnyRef]])).toMap
+    upcastSerializers.map { entry =>
+      (entry.entityClass.getName, entry.format.asInstanceOf[Format[AnyRef]])
+    }.toMap
   }
 
-  protected def serializers: immutable.Seq[JsonSerializer[_]]
+  protected def serializers[T <: Jsonable]: immutable.Seq[JsonSerializer[T]]
+
+  private[playjson] def upcastSerializers: immutable.Seq[JsonSerializer[_]] = serializers
 
   /**
    * A set of migrations keyed by the fully classified class name that the migration should be triggered for
    */
   def migrations: Map[String, JsonMigration] = Map.empty
 
-  def writesFor(clazz: Class[_]): Writes[AnyRef] = serializers
+  def writesFor(clazz: Class[_]): Writes[AnyRef] = upcastSerializers
     .collectFirst { case serializer if clazz.isAssignableFrom(serializer.entityClass) => serializer.format.asInstanceOf[Writes[AnyRef]] }
     .getOrElse(throw new RuntimeException(s"Missing play-json serializer for [${clazz.getName}], " +
       s"defined are [${registry.keys.mkString(", ")}]"))
@@ -58,7 +61,7 @@ object JsonSerializerRegistry {
    * Create the serializer details for the given serializer registry.
    */
   def serializerDetailsFor(system: ExtendedActorSystem, registry: JsonSerializerRegistry): immutable.Seq[SerializerDetails] = {
-    registry.serializers.map { serializer =>
+    registry.upcastSerializers.map { serializer =>
       SerializerDetails(
         s"lagom-play-json.serialization.bindings.${serializer.entityClass.getName}",
         new PlayJsonSerializer(system, writerFor = serializer.entityClass, registry),

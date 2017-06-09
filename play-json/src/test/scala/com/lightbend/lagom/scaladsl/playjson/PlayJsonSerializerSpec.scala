@@ -17,7 +17,7 @@ sealed trait GenericEvent extends Jsonable
 case class SpecificEvent1(x: Int) extends GenericEvent
 case class SpecificEvent2(s: String) extends GenericEvent
 case class MigratedSpecificEvent(addedField: Int, newName: String) extends GenericEvent
-case class UnrelatedEvent(y: Boolean)
+case class UnrelatedEvent(y: Boolean) extends Jsonable
 
 object GenericEvent {
 
