@@ -69,9 +69,9 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
 
     val (fromVersion: Int, manifestClassName: String) = parseManifest(manifest)
 
-    val migration = migrations.get(manifestClassName)
+    val renameMigration = migrations.get(manifestClassName)
 
-    val migratedManifest = migration match {
+    val migratedManifest = renameMigration match {
       case Some(migration) if (migration.currentVersion > fromVersion) =>
         migration.transformClassName(fromVersion, manifestClassName)
       case Some(migration) if (migration.currentVersion < fromVersion) =>
@@ -79,6 +79,8 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
           s"behind version $fromVersion of deserialized type [$manifestClassName]")
       case _ => manifestClassName
     }
+
+    val transformMigration = migrations.get(migratedManifest)
 
     val format = serializers.getOrElse(
       migratedManifest,
@@ -93,7 +95,7 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
           s"Expected a JSON object, but was [${other.getClass.getName}]")
     }
 
-    val migratedJson = migration match {
+    val migratedJson = transformMigration match {
       case Some(migration) if migration.currentVersion > fromVersion =>
         migration.transform(fromVersion, json)
       case _ => json
