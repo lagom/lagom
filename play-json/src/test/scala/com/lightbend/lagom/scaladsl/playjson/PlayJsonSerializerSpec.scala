@@ -157,8 +157,10 @@ object TestRegistry4 extends JsonSerializerRegistry {
           (__ \ "addedField").json.update(Format.of[JsString].map { case JsString(value) => JsNumber(value.toInt) })
       )
     ),
-    JsonMigrations.renamed("MigratedSpecificEvent.old.ClassName", inVersion = 2, toClass = classOf[MigratedSpecificEvent]),
-    JsonMigrations.renamed("GenericEvent.old.ClassName", inVersion = 3, toClass = classOf[GenericEvent])
+    JsonMigrations.renamed("MigratedSpecificEvent.older.ClassName", inVersion = 2, toClass = classOf[MigratedSpecificEvent]),
+    JsonMigrations.renamed("MigratedSpecificEvent.old.ClassName", inVersion = 3, toClass = classOf[MigratedSpecificEvent]),
+    JsonMigrations.renamed("GenericEvent.older.ClassName", inVersion = 3, toClass = classOf[GenericEvent]),
+    JsonMigrations.renamed("GenericEvent.old.ClassName", inVersion = 4, toClass = classOf[GenericEvent])
   )
 }
 
@@ -210,7 +212,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
       val manifest = serializer.manifest(migratedEvent)
 
-      manifest shouldEqual expectedVersionedManifest(classOf[MigratedEvent], classOf[MigratedEvent], TestRegistry3.currentMigrationVersion)
+      manifest shouldEqual expectedVersionedManifest(classOf[MigratedEvent], TestRegistry3.currentMigrationVersion, classOf[MigratedEvent], TestRegistry3.currentMigrationVersion)
 
     }
 
@@ -259,7 +261,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val serializer = serializeExt.findSerializerFor(migratedEvent).asInstanceOf[SerializerWithStringManifest]
 
       val illegalVersion = TestRegistry3.currentMigrationVersion + 1
-      val illegalManifest = expectedVersionedManifest(classOf[MigratedEvent], classOf[MigratedEvent], illegalVersion)
+      val illegalManifest = expectedVersionedManifest(classOf[MigratedEvent], illegalVersion, classOf[MigratedEvent], illegalVersion)
 
       assertThrows[IllegalStateException] {
         serializer.fromBinary(Array[Byte](), illegalManifest)
@@ -279,7 +281,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val serializer = serializeExt.findSerializerFor(expectedEvent).asInstanceOf[SerializerWithStringManifest]
 
       val oldVersionBeforeThanCurrentMigration = 1
-      val manifest = expectedVersionedManifest(classOf[MigratedEvent], classOf[MigratedEvent], oldVersionBeforeThanCurrentMigration)
+      val manifest = expectedVersionedManifest(classOf[MigratedEvent], oldVersionBeforeThanCurrentMigration, classOf[MigratedEvent], oldVersionBeforeThanCurrentMigration)
       val deserialized = serializer.fromBinary(oldJsonBytes, manifest)
       deserialized should be(expectedEvent)
 
@@ -297,7 +299,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val serializer = serializeExt.findSerializerFor(expectedEvent).asInstanceOf[SerializerWithStringManifest]
 
       val oldVersionBeforeThanCurrentMigration = 1
-      val manifest = expectedVersionedManifest(classOf[MigratedEvent], classOf[MigratedEvent], oldVersionBeforeThanCurrentMigration)
+      val manifest = expectedVersionedManifest(classOf[MigratedEvent], oldVersionBeforeThanCurrentMigration, classOf[MigratedEvent], oldVersionBeforeThanCurrentMigration)
       val deserialized = serializer.fromBinary(oldJsonBytes, manifest)
       deserialized should be(expectedEvent)
 
@@ -329,7 +331,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       }
     }
 
-    "migrate generic trait name, migrated event name, and run migration" in withActorSystem(TestRegistry4) { system =>
+    "migrate registered class name, migrated actual class name, and run migration" in withActorSystem(TestRegistry4) { system =>
       val serializeExt = SerializationExtension(system)
       val expectedEvent = MigratedSpecificEvent(addedField = 2, newName = "some value")
       val oldJsonBytes = Json.stringify(JsObject(Seq(
@@ -339,37 +341,45 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       ))).getBytes(StandardCharsets.UTF_8)
       val serializer = serializeExt.findSerializerFor(expectedEvent).asInstanceOf[SerializerWithStringManifest]
       val oldVersion = 1
-      val manifestV2 = s"GenericEvent.old.ClassName#MigratedSpecificEvent.old.ClassName#$oldVersion"
+      val manifestV2 = s"GenericEvent.old.ClassName#$oldVersion#MigratedSpecificEvent.old.ClassName#$oldVersion"
       val deserialized = serializer.fromBinary(oldJsonBytes, manifestV2)
       deserialized should be(expectedEvent)
     }
 
-    "serialize with specific serializer and deserialize with any serializer" in withActorSystem(TestRegistry4) { system =>
+    "migrate older generation registered class name, use current class name, and run migration" in withActorSystem(TestRegistry4) { system =>
       val serializeExt = SerializationExtension(system)
-      val specificEvent = SpecificEvent1(x = 1)
-      val unrelatedEvent = UnrelatedEvent(y = true)
-      val genericEventSerializer = serializeExt.findSerializerFor(specificEvent).asInstanceOf[SerializerWithStringManifest]
-      val unrelatedEventSerializer = serializeExt.findSerializerFor(unrelatedEvent).asInstanceOf[SerializerWithStringManifest]
-
-      val specificEventBytes = genericEventSerializer.toBinary(specificEvent)
-      val unrelatedEventBytes = unrelatedEventSerializer.toBinary(unrelatedEvent)
-
-      val specificEventManifest = genericEventSerializer.manifest(specificEvent)
-      val unrelatedEventManifest = unrelatedEventSerializer.manifest(unrelatedEvent)
-
-      val specificEventDeserializedByGenericEventSerializer = genericEventSerializer.fromBinary(specificEventBytes, specificEventManifest)
-      val unrelatedEventDeserializedByGenericEventSerializer = genericEventSerializer.fromBinary(unrelatedEventBytes, unrelatedEventManifest)
-      val specificEventDeserializedByUnrelatedEventSerializer = unrelatedEventSerializer.fromBinary(specificEventBytes, specificEventManifest)
-      val unrelatedEventDeserializedByUnrelatedEventSerializer = unrelatedEventSerializer.fromBinary(unrelatedEventBytes, unrelatedEventManifest)
-
-      specificEventDeserializedByGenericEventSerializer should be(specificEvent)
-      specificEventDeserializedByUnrelatedEventSerializer should be(specificEvent)
-      unrelatedEventDeserializedByGenericEventSerializer should be(unrelatedEvent)
-      unrelatedEventDeserializedByUnrelatedEventSerializer should be(unrelatedEvent)
+      val expectedEvent = MigratedSpecificEvent(addedField = 2, newName = "some value")
+      val oldJsonBytes = Json.stringify(JsObject(Seq(
+        "removedField" -> JsString("doesn't matter"),
+        "oldName" -> JsString("some value"),
+        "$type" -> JsString("MigratedSpecificEvent.old.ClassNam")
+      ))).getBytes(StandardCharsets.UTF_8)
+      val serializer = serializeExt.findSerializerFor(expectedEvent).asInstanceOf[SerializerWithStringManifest]
+      val oldVersion = 1
+      val manifestV2 = s"GenericEvent.older.ClassName#$oldVersion#${expectedEvent.getClass.getCanonicalName}#$oldVersion"
+      val deserialized = serializer.fromBinary(oldJsonBytes, manifestV2)
+      deserialized should be(expectedEvent)
     }
 
-    def expectedVersionedManifest[A, B <: A](writerForClass: Class[A], clazz: Class[B], migrationVersion: Int) = {
-      s"${writerForClass.getName}#${clazz.getName}#$migrationVersion"
+    "find PlayJsonSerializer for all registered types" in withActorSystem(TestRegistry4) { system =>
+
+      val serializeExt = SerializationExtension(system)
+      val specificEvent1 = SpecificEvent1(x = 1)
+      val specificEvent2 = SpecificEvent2(s = "test")
+      val migratedSpecificEvent = MigratedSpecificEvent(5, "test")
+      val unrelatedEvent = UnrelatedEvent(true)
+
+      val s1 = serializeExt.findSerializerFor(specificEvent1).asInstanceOf[PlayJsonSerializer]
+      val s2 = serializeExt.findSerializerFor(specificEvent2).asInstanceOf[PlayJsonSerializer]
+      val s3 = serializeExt.findSerializerFor(migratedSpecificEvent).asInstanceOf[PlayJsonSerializer]
+      val s4 = serializeExt.findSerializerFor(unrelatedEvent).asInstanceOf[PlayJsonSerializer]
+      s1 should be(s2)
+      s1 should be(s3)
+      s1 should be(s4)
+    }
+
+    def expectedVersionedManifest[A, B <: A](registeredClass: Class[A], registeredClassMigrationVersion: Int, actualClass: Class[B], actualClassMigrationVersion: Int) = {
+      s"${registeredClass.getName}#$registeredClassMigrationVersion#${actualClass.getName}#$actualClassMigrationVersion"
     }
 
   }

@@ -19,14 +19,11 @@ import scala.collection.immutable
  */
 private[lagom] final class PlayJsonSerializer(
   val system: ExtendedActorSystem,
-  writerFor:  Class[_],
   registry:   JsonSerializerRegistry
 )
   extends SerializerWithStringManifest
   with BaseSerializer {
 
-  private val writes: Writes[AnyRef] = registry.writesFor(writerFor)
-  private val writerForClassName = writerFor.getName
   private val charset = StandardCharsets.UTF_8
   private val log = Logging.getLogger(system, getClass)
   private val isDebugEnabled = log.isDebugEnabled
@@ -34,17 +31,40 @@ private[lagom] final class PlayJsonSerializer(
   private def migrations: Map[String, JsonMigration] = registry.migrations
 
   override def manifest(o: AnyRef): String = {
-    val className = o.getClass.getName
-    migrations.get(className) match {
-      case Some(migration) => writerForClassName + "#" + className + "#" + migration.currentVersion
-      case None            => writerForClassName + "#" + className + "#1"
-    }
+
+    registry
+      .serializers
+      .find(_.entityClass.isAssignableFrom(o.getClass))
+      .map { serializer =>
+
+        val registeredClassName = serializer.entityClass.getName
+        val registeredClassNameManifest = migrations.get(registeredClassName) match {
+          case Some(migration) => registeredClassName + "#" + migration.currentVersion
+          case None            => registeredClassName + "#1"
+        }
+
+        val actualClassName = o.getClass.getName
+        val actualClassNameManifest = migrations.get(actualClassName) match {
+          case Some(migration) => actualClassName + "#" + migration.currentVersion
+          case None            => actualClassName + "#1"
+        }
+
+        registeredClassNameManifest + "#" + actualClassNameManifest
+      }
+      .getOrElse(throw new RuntimeException(s"Could not create manifest string: Missing play-json serializer for [${o.getClass.getName}], " +
+        s"defined are [${registry.registry.keys.mkString(", ")}]"))
   }
 
   override def toBinary(o: AnyRef): Array[Byte] = {
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
 
-    val json = writes.writes(o)
+    val (registeredClassName, _, _, _) = parseManifest(manifest(o))
+
+    // safe because the call to manifest already confirms that this serializer exists with
+    // the returned registered class name
+    val format = registry.formatFor(registeredClassName)
+
+    val json = format.writes(o)
     val result = Json.stringify(json).getBytes(charset)
 
     if (isDebugEnabled) {
@@ -62,29 +82,29 @@ private[lagom] final class PlayJsonSerializer(
 
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
 
-    val (fromVersion, originalWriterForClassName, manifestClassName) = parseManifest(manifest)
+    val (registeredClassName, registeredClassNameFromVersion, actualClassName, actualClassNameFromVersion) = parseManifest(manifest)
 
-    val migratedManifest = {
-      val renameMigration = migrations.get(manifestClassName)
+    val migratedActualClassName = {
+      val renameMigration = migrations.get(actualClassName)
       renameMigration match {
-        case Some(migration) if migration.currentVersion > fromVersion =>
-          migration.transformClassName(fromVersion, manifestClassName)
-        case Some(migration) if migration.currentVersion < fromVersion =>
+        case Some(migration) if migration.currentVersion > actualClassNameFromVersion =>
+          migration.transformClassName(actualClassNameFromVersion, actualClassName)
+        case Some(migration) if migration.currentVersion < actualClassNameFromVersion =>
           throw new IllegalStateException(s"Migration version ${migration.currentVersion} is " +
-            s"behind version $fromVersion of deserialized type [$manifestClassName]")
-        case _ => manifestClassName
+            s"behind version $actualClassNameFromVersion of deserialized type [$actualClassName]")
+        case _ => actualClassName
       }
     }
 
-    val migratedOriginalWriterFor = {
-      val writerForClassNameMigration = migrations.get(originalWriterForClassName)
+    val migratedRegisteredClassName = {
+      val writerForClassNameMigration = migrations.get(registeredClassName)
       writerForClassNameMigration match {
-        case Some(m) if m.currentVersion > fromVersion =>
-          m.transformClassName(fromVersion, originalWriterForClassName)
-        case Some(m) if m.currentVersion < fromVersion =>
+        case Some(m) if m.currentVersion > registeredClassNameFromVersion =>
+          m.transformClassName(registeredClassNameFromVersion, registeredClassName)
+        case Some(m) if m.currentVersion < registeredClassNameFromVersion =>
           throw new IllegalStateException(s"Migration version ${m.currentVersion} is " +
-            s"behind version $fromVersion of deserialized type [$originalWriterForClassName]")
-        case _ => originalWriterForClassName
+            s"behind version $registeredClassNameFromVersion of deserialized type [$registeredClassNameFromVersion]")
+        case _ => registeredClassName
       }
     }
 
@@ -95,17 +115,17 @@ private[lagom] final class PlayJsonSerializer(
           s"Expected a JSON object, but was [${other.getClass.getName}]")
     }
 
-    val transformMigration = migrations.get(migratedManifest)
+    val transformMigration = migrations.get(migratedActualClassName)
 
     val migratedJson = transformMigration match {
-      case Some(m) if m.currentVersion > fromVersion =>
-        m.transform(fromVersion, json)
+      case Some(m) if m.currentVersion > actualClassNameFromVersion =>
+        m.transform(actualClassNameFromVersion, json)
       case _ => json
     }
 
-    val reads = registry.readsFor(migratedOriginalWriterFor)
+    val format = registry.formatFor(migratedRegisteredClassName)
 
-    val result = reads.reads(migratedJson) match {
+    val result = format.reads(migratedJson) match {
       case JsSuccess(obj, _) => obj
       case JsError(errors) =>
         throw new JsonSerializationFailed(
@@ -126,23 +146,24 @@ private[lagom] final class PlayJsonSerializer(
     result
   }
 
-  private def parseManifest(manifest: String): (Int, String, String) = {
+  private def parseManifest(manifest: String): (String, Int, String, Int) = {
     val parts = manifest.split("#")
 
     parts.size match {
-      case 3 => // updated format for supporting serialization of subclasses
-        val originalWriterForClassName = parts(0)
-        val manifestClassName = parts(1)
-        val fromVersion = parts(2)
-        (fromVersion.toInt, originalWriterForClassName, manifestClassName)
+      case 4 => // updated format for supporting serialization of subclasses
+        val registeredClassName = parts(0)
+        val registeredClassNameFromVersion = parts(1)
+        val actualClassName = parts(2)
+        val actualClassNameFromVersion = parts(3)
+        (registeredClassName, registeredClassNameFromVersion.toInt, actualClassName, actualClassNameFromVersion.toInt)
 
       case 2 => // for backwards compatibility when version was specified
-        val manifestClassName = parts(0)
+        val actualClassName = parts(0)
         val fromVersion = parts(1)
-        (fromVersion.toInt, manifestClassName, manifestClassName)
+        (actualClassName, fromVersion.toInt, actualClassName, fromVersion.toInt)
 
       case 1 => // for backwards compatibility when no version was specified
-        (1, manifest, manifest)
+        (manifest, 1, manifest, 1)
     }
   }
 }

@@ -16,27 +16,20 @@ import scala.collection.immutable
  */
 abstract class JsonSerializerRegistry {
 
-  private lazy val registry: Map[String, Format[AnyRef]] = {
-    upcastSerializers.map { entry =>
+  lazy val registry: Map[String, Format[AnyRef]] = {
+    serializers.map { entry =>
       (entry.entityClass.getName, entry.format.asInstanceOf[Format[AnyRef]])
     }.toMap
   }
 
-  protected def serializers[T <: Jsonable]: immutable.Seq[JsonSerializer[T]]
-
-  private[playjson] def upcastSerializers: immutable.Seq[JsonSerializer[_]] = serializers
+  def serializers: immutable.Seq[JsonSerializer[_]]
 
   /**
    * A set of migrations keyed by the fully classified class name that the migration should be triggered for
    */
   def migrations: Map[String, JsonMigration] = Map.empty
 
-  def writesFor(clazz: Class[_]): Writes[AnyRef] = upcastSerializers
-    .collectFirst { case serializer if clazz.isAssignableFrom(serializer.entityClass) => serializer.format.asInstanceOf[Writes[AnyRef]] }
-    .getOrElse(throw new RuntimeException(s"Missing play-json serializer for [${clazz.getName}], " +
-      s"defined are [${registry.keys.mkString(", ")}]"))
-
-  def readsFor(manifest: String): Reads[AnyRef] = {
+  def formatFor(manifest: String): Format[AnyRef] = {
     registry.getOrElse(
       manifest,
       throw new RuntimeException(s"Missing play-json serializer for [$manifest], " +
@@ -60,14 +53,12 @@ object JsonSerializerRegistry {
   /**
    * Create the serializer details for the given serializer registry.
    */
-  def serializerDetailsFor(system: ExtendedActorSystem, registry: JsonSerializerRegistry): immutable.Seq[SerializerDetails] = {
-    registry.upcastSerializers.map { serializer =>
-      SerializerDetails(
-        s"lagom-play-json.serialization.bindings.${serializer.entityClass.getName}",
-        new PlayJsonSerializer(system, writerFor = serializer.entityClass, registry),
-        Vector(serializer.entityClass)
-      )
-    }
+  def serializerDetailsFor(system: ExtendedActorSystem, registry: JsonSerializerRegistry): SerializerDetails = {
+    SerializerDetails(
+      "lagom-play-json",
+      new PlayJsonSerializer(system, registry),
+      registry.serializers.map(_.entityClass)
+    )
   }
 
   /**
@@ -78,7 +69,7 @@ object JsonSerializerRegistry {
    */
   def serializationSetupFor(registry: JsonSerializerRegistry): SerializationSetup = {
     SerializationSetup { system =>
-      serializerDetailsFor(system, registry)
+      Vector(serializerDetailsFor(system, registry))
     }
   }
 
