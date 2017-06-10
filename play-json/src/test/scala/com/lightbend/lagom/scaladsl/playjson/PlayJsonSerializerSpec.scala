@@ -361,7 +361,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       deserialized should be(expectedEvent)
     }
 
-    "find PlayJsonSerializer for all registered types" in withActorSystem(TestRegistry4) { system =>
+    "find the PlayJsonSerializer for all registered types" in withActorSystem(TestRegistry4) { system =>
 
       val serializeExt = SerializationExtension(system)
       val specificEvent1 = SpecificEvent1(x = 1)
@@ -369,10 +369,12 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val migratedSpecificEvent = MigratedSpecificEvent(5, "test")
       val unrelatedEvent = UnrelatedEvent(true)
 
-      val s1 = serializeExt.findSerializerFor(specificEvent1).asInstanceOf[PlayJsonSerializer]
-      val s2 = serializeExt.findSerializerFor(specificEvent2).asInstanceOf[PlayJsonSerializer]
-      val s3 = serializeExt.findSerializerFor(migratedSpecificEvent).asInstanceOf[PlayJsonSerializer]
-      val s4 = serializeExt.findSerializerFor(unrelatedEvent).asInstanceOf[PlayJsonSerializer]
+      val s1 = serializeExt.findSerializerFor(specificEvent1)
+      val s2 = serializeExt.findSerializerFor(specificEvent2)
+      val s3 = serializeExt.findSerializerFor(migratedSpecificEvent)
+      val s4 = serializeExt.findSerializerFor(unrelatedEvent)
+
+      s1 should be(a[PlayJsonSerializer])
       s1 should be(s2)
       s1 should be(s3)
       s1 should be(s4)

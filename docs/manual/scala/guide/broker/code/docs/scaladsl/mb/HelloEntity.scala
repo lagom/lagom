@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import akka.Done
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, AggregateEventTagger, PersistentEntity}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
-import com.lightbend.lagom.scaladsl.playjson.{JsonSerializerRegistry, JsonSerializer}
+import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry, Jsonable}
 import play.api.libs.json.{Format, Json}
 
 import scala.collection.immutable.Seq
@@ -50,7 +50,7 @@ class HelloEntity extends PersistentEntity {
   }
 }
 
-case class HelloState(message: String, timestamp: String)
+case class HelloState(message: String, timestamp: String) extends Jsonable
 
 object HelloState {
   implicit val format: Format[HelloState] = Json.format
@@ -60,7 +60,7 @@ object HelloEventTag {
   val INSTANCE: AggregateEventTag[HelloEvent] = AggregateEventTag[HelloEvent]()
 }
 
-sealed trait HelloEvent extends AggregateEvent[HelloEvent]{
+sealed trait HelloEvent extends AggregateEvent[HelloEvent] with Jsonable{
   override def aggregateTag: AggregateEventTagger[HelloEvent] = HelloEventTag.INSTANCE
 }
 
@@ -69,7 +69,7 @@ case class GreetingMessageChanged(message: String) extends HelloEvent
 object GreetingMessageChanged {
   implicit val format: Format[GreetingMessageChanged] = Json.format
 }
-sealed trait HelloCommand[R] extends ReplyType[R]
+sealed trait HelloCommand[R] extends ReplyType[R] with Jsonable
 
 case class UseGreetingMessage(message: String) extends HelloCommand[Done]
 

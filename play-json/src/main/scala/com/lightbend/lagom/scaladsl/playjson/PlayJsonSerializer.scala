@@ -10,8 +10,6 @@ import akka.event.Logging
 import akka.serialization.{ BaseSerializer, SerializerWithStringManifest }
 import play.api.libs.json._
 
-import scala.collection.immutable
-
 /**
  * Internal API
  *
@@ -151,7 +149,7 @@ private[lagom] final class PlayJsonSerializer(
 
         (registeredClassName, registeredClassVersion, actualClassName, actualClassNameVersion)
       }
-      .getOrElse(throw new RuntimeException(s"Could not create manifest string: Missing play-json serializer for [${o.getClass.getName}], " +
+      .getOrElse(throw new RuntimeException(s"Could not create manifest: Missing play-json serializer for [${o.getClass.getName}], " +
         s"defined are [${registry.registry.keys.mkString(", ")}]"))
   }
 
