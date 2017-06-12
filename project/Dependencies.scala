@@ -107,8 +107,8 @@ object Dependencies {
       "commons-cli" % "commons-cli" % "1.1",
       "commons-codec" % "commons-codec" % "1.10",
       "commons-logging" % "commons-logging" % "1.2",
-      "io.aeron" % "aeron-client" % "1.1.0",
-      "io.aeron" % "aeron-driver" % "1.1.0",
+      "io.aeron" % "aeron-client" % "1.2.5",
+      "io.aeron" % "aeron-driver" % "1.2.5",
       "io.dropwizard.metrics" % "metrics-core" % "3.1.2",
       "io.dropwizard.metrics" % "metrics-jvm" % "3.1.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
@@ -125,7 +125,7 @@ object Dependencies {
       "net.jpountz.lz4" % "lz4" % "1.3.0",
       "oauth.signpost" % "signpost-commonshttp4" % "1.2.1.2",
       "oauth.signpost" % "signpost-core" % "1.2.1.2",
-      "org.agrona" % "agrona" % "0.9.2",
+      "org.agrona" % "agrona" % "0.9.5",
       "org.antlr" % "ST4" % "4.0.8",
       "org.antlr" % "antlr" % "3.5.2",
       "org.antlr" % "antlr-runtime" % "3.5.2",
@@ -464,10 +464,15 @@ object Dependencies {
     "com.fasterxml" % "classmate" % "1.3.0" % Test
   )
 
-  val `persistence-javadsl` = libraryDependencies ++= Nil
+  val `persistence-javadsl` = libraryDependencies ++= Seq(
+    // this mean we have production code depending on testkit
+    akkaTestkit
+  )
 
-  val `persistence-scaladsl` = libraryDependencies ++= Nil
-
+  val `persistence-scaladsl` = libraryDependencies ++= Seq(
+    // this mean we have production code depending on testkit
+    akkaTestkit
+  )
   val `persistence-cassandra-core` = libraryDependencies ++= Seq(
     akkaPersistenceCassandra,
 
