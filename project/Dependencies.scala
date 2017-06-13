@@ -636,6 +636,10 @@ object Dependencies {
     akkaPersistenceCassandra
       exclude("io.netty", "netty-all") exclude("io.netty", "netty-handler") exclude("io.netty", "netty-buffer")
       exclude("io.netty", "netty-common") exclude("io.netty", "netty-transport") exclude("io.netty", "netty-codec"),
+    // Explicitly override the jboss-logging transitive dependency from cassandra-all.
+    // By default, it uses jboss-logging 3.1.0.CR2, which is under LGPL.
+    // This forces it to a newer version that is licensed under Apache v2.
+    jbossLogging,
     "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion
   )
 
