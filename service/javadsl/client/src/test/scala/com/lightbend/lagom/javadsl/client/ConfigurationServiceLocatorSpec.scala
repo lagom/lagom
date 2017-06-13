@@ -23,9 +23,7 @@ class ConfigurationServiceLocatorSpec extends WordSpec with Matchers {
       |  bar = "http://localhost:10002"
       |}
     """.stripMargin
-  )), new CircuitBreakers {
-    override def withCircuitBreaker[T](id: String)(body: => Future[T]): Future[T] = body
-  })
+  )), new CircuitBreakers(null, null, null))
 
   def locate(serviceName: String) =
     serviceLocator.locate(serviceName).toCompletableFuture.get(10, TimeUnit.SECONDS).asScala
