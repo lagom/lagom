@@ -7,13 +7,13 @@ object Dependencies {
   val PlayVersion = "2.5.13"
   val AkkaVersion = "2.4.19"
   val ScalaVersion = "2.11.11"
-  val AkkaPersistenceCassandraVersion = "0.26"
+  val AkkaPersistenceCassandraVersion = "0.29"
   val ScalaTestVersion = "3.0.1"
   val JacksonVersion = "2.7.8"
   val CassandraAllVersion = "3.0.9"
   val GuavaVersion = "19.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.0.42.Final"
+  val NettyVersion = "4.0.44.Final"
   val KafkaVersion = "0.10.0.1"
   val AkkaStreamKafkaVersion = "0.13"
   val Log4jVersion = "1.2.17"
@@ -70,7 +70,7 @@ object Dependencies {
       "com.addthis.metrics" % "reporter-config3" % "3.0.0",
       "com.boundary" % "high-scale-lib" % "1.0.6",
       "com.clearspring.analytics" % "stream" % "2.5.2",
-      "com.datastax.cassandra" % "cassandra-driver-core" % "3.1.4",
+      "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0",
       "com.fasterxml" % "classmate" % "1.3.0",
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
       "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.4.17.1",
