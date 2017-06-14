@@ -26,9 +26,9 @@ object CircuitBreakers {
 class CircuitBreakers @Inject() (system: ActorSystem, circuitBreakerConfig: CircuitBreakerConfig,
                                  metricsProvider: CircuitBreakerMetricsProvider) {
   import CircuitBreakers._
-  val config = circuitBreakerConfig.config
-  private val defaultBreakerConfig = circuitBreakerConfig.default
-  private val breakers = new ConcurrentHashMap[String, Option[CircuitBreakerHolder]]
+  lazy val config = circuitBreakerConfig.config
+  private lazy val defaultBreakerConfig = circuitBreakerConfig.default
+  private lazy val breakers = new ConcurrentHashMap[String, Option[CircuitBreakerHolder]]
 
   def withCircuitBreaker[T](id: String)(body: => Future[T]): Future[T] = {
     breaker(id) match {

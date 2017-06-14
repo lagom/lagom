@@ -19,9 +19,10 @@ import org.scalatest.WordSpecLike
 import org.scalatest.concurrent.ScalaFutures
 import com.google.inject.AbstractModule
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer
-import com.lightbend.lagom.javadsl.api._
+import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceLocator, ServiceInfo }
 import com.lightbend.lagom.javadsl.api.ScalaService._
 import com.lightbend.lagom.javadsl.api.broker.{ Topic => ApiTopic }
+import com.lightbend.lagom.javadsl.client.ConfigurationServiceLocator
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import akka.Done
