@@ -5,7 +5,8 @@ jdk:
 env:
   matrix:
     - SCRIPT=test
-    - SCRIPT=test-sbt
+    - SCRIPT=test-scripted-wiring
+    - SCRIPT=test-scripted-commands
     - SCRIPT=test-maven
     - SCRIPT=test-documentation
     - SCRIPT=test-code-style
