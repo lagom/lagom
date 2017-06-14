@@ -20,6 +20,7 @@ import com.google.inject.AbstractModule
 import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec.{ InMemoryOffsetStore, NullPersistentEntityRegistry }
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer
+import com.lightbend.lagom.internal.kafka.KafkaLocalServer.ZooKeeperLocalServer
 import com.lightbend.lagom.javadsl.api.ScalaService._
 import com.lightbend.lagom.javadsl.api.broker.{ Topic => ApiTopic }
 import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceInfo, ServiceLocator }

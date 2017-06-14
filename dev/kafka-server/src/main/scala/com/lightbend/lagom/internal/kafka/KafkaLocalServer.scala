@@ -146,7 +146,7 @@ object KafkaLocalServer {
     dataDirectory
   }
 
-  private class ZooKeperLocalServer(port: Int, cleanOnStart: Boolean, targetDir: Option[String]) {
+  private class ZooKeeperLocalServer(port: Int, cleanOnStart: Boolean, targetDir: Option[String]) {
     private val zooKeeperServerRef = new AtomicReference[TestingServer](null)
 
     def start(): Unit = {
