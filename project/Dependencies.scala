@@ -7,10 +7,11 @@ object Dependencies {
   val PlayVersion = "2.5.13"
   val AkkaVersion = "2.4.19"
   val ScalaVersion = "2.11.11"
-  val AkkaPersistenceCassandraVersion = "0.26"
+  val AkkaPersistenceCassandraVersion = "0.29"
   val ScalaTestVersion = "3.0.1"
   val JacksonVersion = "2.7.8"
   val CassandraAllVersion = "3.0.9"
+  val CassandraDriverVersion = "3.1.4"
   val GuavaVersion = "19.0"
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.0.41.Final"
@@ -41,7 +42,10 @@ object Dependencies {
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
 
-  private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion
+  // latest version of APC depend on a Cassandra driver core that's not compatible with Lagom (newer netty/guava/etc... under the covers)
+  private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion exclude ("com.datastax.cassandra" , "cassandra-driver-core")
+  private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % CassandraDriverVersion
+
   private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafkaVersion
 
   private val play = "com.typesafe.play" %% "play" % PlayVersion
@@ -69,7 +73,7 @@ object Dependencies {
       "com.addthis.metrics" % "reporter-config3" % "3.0.0",
       "com.boundary" % "high-scale-lib" % "1.0.6",
       "com.clearspring.analytics" % "stream" % "2.5.2",
-      "com.datastax.cassandra" % "cassandra-driver-core" % "3.1.4",
+      cassandraDriverCore,
       "com.fasterxml" % "classmate" % "1.3.0",
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
       "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.8",
@@ -474,7 +478,7 @@ object Dependencies {
   )
   val `persistence-cassandra-core` = libraryDependencies ++= Seq(
     akkaPersistenceCassandra,
-
+    cassandraDriverCore,
     // cassandra-driver-core pulls in an older version of all these
     "io.netty" % "netty-buffer" % NettyVersion,
     "io.netty" % "netty-codec" % NettyVersion,
@@ -489,9 +493,13 @@ object Dependencies {
     "org.apache.httpcomponents" % "httpclient" % "4.5.2" % Test
   )
 
-  val `persistence-cassandra-javadsl` = libraryDependencies ++= Nil
+  val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
+    cassandraDriverCore
+  )
 
-  val `persistence-cassandra-scaladsl` = libraryDependencies ++= Nil
+  val `persistence-cassandra-scaladsl` = libraryDependencies ++= Seq(
+    cassandraDriverCore
+  )
 
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
     "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.8",

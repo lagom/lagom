@@ -8,37 +8,38 @@ import java.util.Optional
 import java.util.concurrent.{ CompletableFuture, CompletionStage, CountDownLatch, TimeUnit }
 import java.util.function.{ Function => JFunction }
 
-import scala.collection.concurrent.TrieMap
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.concurrent.Promise
-import scala.concurrent.duration._
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
-import org.scalatest.concurrent.ScalaFutures
-import com.google.inject.AbstractModule
-import com.lightbend.lagom.internal.kafka.KafkaLocalServer
-import com.lightbend.lagom.javadsl.api._
-import com.lightbend.lagom.javadsl.api.ScalaService._
-import com.lightbend.lagom.javadsl.api.broker.{ Topic => ApiTopic }
-import com.lightbend.lagom.javadsl.persistence._
-import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
-import akka.Done
-import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.japi.{ Pair => JPair }
-import akka.stream.{ Materializer, OverflowStrategy }
 import akka.stream.javadsl.{ Source => JSource }
 import akka.stream.scaladsl.{ Flow, Sink, Source, SourceQueueWithComplete }
+import akka.stream.{ Materializer, OverflowStrategy }
 import akka.testkit.EventFilter
-import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec.{ InMemoryOffsetStore, NoServiceLocator, NullPersistentEntityRegistry }
+import akka.{ Done, NotUsed }
+import com.google.inject.AbstractModule
+import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec.{ InMemoryOffsetStore, NullPersistentEntityRegistry }
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
+import com.lightbend.lagom.internal.kafka.KafkaLocalServer
+import com.lightbend.lagom.javadsl.api.ScalaService._
+import com.lightbend.lagom.javadsl.api._
+import com.lightbend.lagom.javadsl.api.broker.{ Topic => ApiTopic }
 import com.lightbend.lagom.javadsl.broker.TopicProducer
+import com.lightbend.lagom.javadsl.persistence._
+import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
-import play.api.inject.guice.GuiceApplicationBuilder
+import kafka.admin.AdminUtils
+import kafka.utils.ZkUtils
+import org.I0Itec.zkclient.ZkClient
+import org.I0Itec.zkclient.exception.ZkMarshallingError
+import org.I0Itec.zkclient.serialize.ZkSerializer
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
 import play.api.inject._
+import play.api.inject.guice.GuiceApplicationBuilder
+
+import scala.collection.concurrent.TrieMap
+import scala.concurrent.duration._
+import scala.concurrent.{ ExecutionContext, Future, Promise }
 
 class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures {
 
@@ -64,6 +65,9 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
     super.beforeAll()
 
     kafkaServer.start()
+
+    KafkaSpecTools.createTopics((1 to JavadslKafkaApiSpec.topicCount).map(i => s"test$i"))
+
     val system = application.injector.instanceOf(classOf[ActorSystem])
     Cluster(system).join(Cluster(system).selfAddress)
   }
@@ -86,7 +90,7 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
       val testTopic = testService.test1Topic()
 
       val messageReceived = Promise[String]()
-      testTopic.subscribe().atLeastOnce(Flow.fromFunction { (message: String) =>
+      testTopic.subscribe().withGroupId("testservice1").atLeastOnce(Flow.fromFunction { (message: String) =>
         messageReceived.trySuccess(message)
         Done
       }.asJava)
@@ -106,7 +110,7 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
       val secondTimeReceived = Promise[String]()
       val messageCommitFailureInjected = new CountDownLatch(1)
 
-      testTopic.subscribe().atLeastOnce(Flow.fromFunction { (message: String) =>
+      testTopic.subscribe().withGroupId("testservice2").atLeastOnce(Flow.fromFunction { (message: String) =>
         if (!firstTimeReceived.isCompleted) {
           firstTimeReceived.trySuccess(message)
           messageCommitFailureInjected.await()
@@ -154,7 +158,7 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
       trackedOffset shouldBe Offset.NONE
 
       val messageReceived = Promise[String]()
-      testTopic.subscribe().atLeastOnce(Flow.fromFunction { (message: String) =>
+      testTopic.subscribe().withGroupId("testservice3").atLeastOnce(Flow.fromFunction { (message: String) =>
         messageReceived.trySuccess(message)
         Done
       }.asJava)
@@ -175,7 +179,7 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
       val materialized = new CountDownLatch(2)
 
       @volatile var failOnMessageReceived = true
-      testTopic.subscribe().atLeastOnce(Flow.fromFunction { (message: String) =>
+      testTopic.subscribe().withGroupId("testservice4").atLeastOnce(Flow.fromFunction { (message: String) =>
         if (failOnMessageReceived) {
           failOnMessageReceived = false
           throw new IllegalStateException("Simulate consumer failure")
@@ -204,7 +208,7 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
       // Now we register a consumer that will fail while processing a message. Because we are using at-most-once
       // delivery, the message that caused the failure won't be re-processed.
       @volatile var countProcessedMessages = 0
-      val expectFailure = testTopic.subscribe().atMostOnceSource().asScala
+      val expectFailure = testTopic.subscribe().withGroupId("testservice5").atMostOnceSource().asScala
         .via(Flow.fromFunction { (message: String) =>
           countProcessedMessages += 1
           throw SimulateFailure
@@ -218,7 +222,37 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
 
 }
 
+object KafkaSpecTools {
+
+  // copy pasted from Kafka sources to make it visible (in Kafka that is pakage private
+  private[this] object StringSerializer extends ZkSerializer {
+
+    @throws(classOf[ZkMarshallingError])
+    def serialize(data: Object): Array[Byte] = data.asInstanceOf[String].getBytes("UTF-8")
+
+    @throws(classOf[ZkMarshallingError])
+    def deserialize(bytes: Array[Byte]): Object = {
+      if (bytes == null)
+        null
+      else
+        new String(bytes, "UTF-8")
+    }
+  }
+
+  def createTopics(topics: Seq[String]): Any = {
+    // based on https://stackoverflow.com/a/23360100/103190
+    val zkClient = new ZkClient(s"localhost:${ZooKeeperLocalServer.DefaultPort}", 1000, 1000, StringSerializer)
+    val zkUtils: kafka.utils.ZkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
+    topics.foreach(t =>
+      AdminUtils.createTopic(zkUtils, t, 1, 1))
+    zkClient.close()
+  }
+
+}
+
 object JavadslKafkaApiSpec {
+
+  val topicCount = 5 // this value is used in beforeAll to ensure all topics exist in Kafka.
 
   private val (test1Source, test1Queue) = publisher
   private val (test2Source, test2Queue) = publisher

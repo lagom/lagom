@@ -3,26 +3,19 @@
  */
 package com.lightbend.lagom.internal.kafka
 
-import java.io.File
-import java.io.IOException
-import java.nio.file.FileVisitOption
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.util.Properties
+import java.io.{ File, IOException }
+import java.nio.file.{ FileVisitOption, Files, Paths }
+import java.util.{ Comparator, Properties }
 import java.util.concurrent.atomic.AtomicReference
-
+import javax.management.InstanceNotFoundException
+import com.lightbend.lagom.internal.util.PropertiesLoader
+import kafka.server.KafkaServerStartable
 import org.apache.curator.test.TestingServer
 import org.slf4j.LoggerFactory
 
-import com.lightbend.lagom.internal.util.PropertiesLoader
-
-import javax.management.InstanceNotFoundException
-import kafka.server.KafkaServerStartable
-
 import scala.collection.JavaConverters._
-import java.util.Comparator
 
-class KafkaLocalServer private (kafkaProperties: Properties, zooKeeperServer: KafkaLocalServer.ZooKeperLocalServer) {
+class KafkaLocalServer private(kafkaProperties: Properties, zooKeeperServer: KafkaLocalServer.ZooKeperLocalServer) {
 
   private val kafkaServerRef = new AtomicReference[KafkaServerStartable](null)
 
@@ -78,7 +71,7 @@ object KafkaLocalServer {
 
   private lazy val tempDir = System.getProperty("java.io.tmpdir")
 
-  def apply(cleanOnStart: Boolean): KafkaLocalServer = this(DefaultPort, ZooKeperLocalServer.DefaultPort, DefaultPropertiesFile, Some(tempDir), cleanOnStart)
+  def apply(cleanOnStart: Boolean): KafkaLocalServer = this (DefaultPort, ZooKeperLocalServer.DefaultPort, DefaultPropertiesFile, Some(tempDir), cleanOnStart)
 
   def apply(kafkaPort: Int, zooKeperServerPort: Int, kafkaPropertiesFile: String, targetDir: Option[String], cleanOnStart: Boolean): KafkaLocalServer = {
     val kafkaDataDir = dataDirectory(targetDir, KafkaDataFolderName)
@@ -92,8 +85,8 @@ object KafkaLocalServer {
   }
 
   /**
-   * Creates a Properties instance for Kafka customized with values passed in argument.
-   */
+    * Creates a Properties instance for Kafka customized with values passed in argument.
+    */
   private def createKafkaProperties(kafkaPropertiesFile: String, kafkaPort: Int, zooKeperServerPort: Int, dataDir: File): Properties = {
     val kafkaProperties = PropertiesLoader.from(kafkaPropertiesFile)
     kafkaProperties.setProperty("log.dirs", dataDir.getAbsolutePath)
@@ -115,16 +108,16 @@ object KafkaLocalServer {
   }
 
   /**
-   * If the passed `baseDirPath` points to an existing directory for which the application has write access,
-   * return a File instance that points to `baseDirPath/directoryName`. Otherwise, return a File instance that
-   * points to `tempDir/directoryName` where `tempDir` is the system temporary folder returned by the system
-   * property "java.io.tmpdir".
-   *
-   * @param baseDirPath The path to the base directory.
-   * @param directoryName The name to use for the child folder in the base directory.
-   * @throws IllegalArgumentException If the passed `directoryName` is not a valid directory name.
-   * @return A file directory that points to either `baseDirPath/directoryName` or `tempDir/directoryName`.
-   */
+    * If the passed `baseDirPath` points to an existing directory for which the application has write access,
+    * return a File instance that points to `baseDirPath/directoryName`. Otherwise, return a File instance that
+    * points to `tempDir/directoryName` where `tempDir` is the system temporary folder returned by the system
+    * property "java.io.tmpdir".
+    *
+    * @param baseDirPath   The path to the base directory.
+    * @param directoryName The name to use for the child folder in the base directory.
+    * @throws IllegalArgumentException If the passed `directoryName` is not a valid directory name.
+    * @return A file directory that points to either `baseDirPath/directoryName` or `tempDir/directoryName`.
+    */
   private def dataDirectory(baseDirPath: Option[String], directoryName: String): File = {
     lazy val tempDirMessage = s"Will attempt to create folder $directoryName in the system temporary directory: $tempDir"
 
@@ -157,7 +150,7 @@ object KafkaLocalServer {
     private val zooKeeperServerRef = new AtomicReference[TestingServer](null)
 
     def start(): Unit = {
-      val zookeeperDataDir = dataDirectory(targetDir, ZooKeperLocalServer.ZookeeperDataFolderName)
+      val zookeeperDataDir = dataDirectory(targetDir, ZooKeeperLocalServer.ZookeeperDataFolderName)
       if (zooKeeperServerRef.compareAndSet(null, new TestingServer(port, zookeeperDataDir, /*start=*/ false))) {
         Log.info(s"Zookeeper data directory is $zookeeperDataDir.")
 
@@ -180,8 +173,9 @@ object KafkaLocalServer {
     }
   }
 
-  object ZooKeperLocalServer {
-    private[kafka] final val DefaultPort = 2181
-    private final val ZookeeperDataFolderName = "zookeeper_data"
+  object ZooKeeperLocalServer {
+    final val DefaultPort = 2181
+    final val ZookeeperDataFolderName = "zookeeper_data"
   }
+
 }
