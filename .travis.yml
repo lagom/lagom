@@ -1,11 +1,13 @@
 language: scala
-sudo: false
+dist: trusty
+sudo: required
 jdk:
   - oraclejdk8
 env:
   matrix:
     - SCRIPT=test
-    - SCRIPT=test-sbt
+    - SCRIPT=test-scripted-wiring
+    - SCRIPT=test-scripted-commands
     - SCRIPT=test-maven
     - SCRIPT=test-documentation
     - SCRIPT=test-code-style

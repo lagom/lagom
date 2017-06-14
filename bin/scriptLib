@@ -6,10 +6,10 @@ set -e
 set -o pipefail
 
 runSbt() {
-  sbt --warn -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)' $@
+  sbt --warn -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
 }
 
 runSbtNoisy() {
-  sbt -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)' $@
+  sbt -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
 }
 

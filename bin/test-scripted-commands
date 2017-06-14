@@ -3,4 +3,4 @@
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
 runSbt publishLocal
-runSbtNoisy scripted
+runSbtNoisy "scripted sbt-plugin-commands/*"
