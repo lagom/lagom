@@ -8,8 +8,6 @@ import java.util.Optional
 import java.util.concurrent.{ CompletableFuture, CompletionStage, CountDownLatch, TimeUnit }
 import java.util.function.{ Function => JFunction }
 
-
-import akka.{ Done, NotUsed }
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.japi.{ Pair => JPair }
@@ -17,6 +15,7 @@ import akka.stream.javadsl.{ Source => JSource }
 import akka.stream.scaladsl.{ Flow, Sink, Source, SourceQueueWithComplete }
 import akka.stream.{ Materializer, OverflowStrategy }
 import akka.testkit.EventFilter
+import akka.{ Done, NotUsed }
 import com.google.inject.AbstractModule
 import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec.{ InMemoryOffsetStore, NullPersistentEntityRegistry }
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
@@ -34,14 +33,14 @@ import kafka.utils.ZkUtils
 import org.I0Itec.zkclient.ZkClient
 import org.I0Itec.zkclient.exception.ZkMarshallingError
 import org.I0Itec.zkclient.serialize.ZkSerializer
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
 import play.api.inject._
 import play.api.inject.guice.GuiceApplicationBuilder
 
 import scala.collection.concurrent.TrieMap
-import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.concurrent.duration._
+import scala.concurrent.{ ExecutionContext, Future, Promise }
 
 class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures {
 
