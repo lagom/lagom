@@ -2,8 +2,8 @@ package docs.production;
 
 //#content
 import com.google.inject.AbstractModule;
-import com.lightbend.lagom.javadsl.api.ConfigurationServiceLocator;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
+import com.lightbend.lagom.javadsl.client.ConfigurationServiceLocator;
 import play.Configuration;
 import play.Environment;
 

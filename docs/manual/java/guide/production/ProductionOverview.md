@@ -30,7 +30,7 @@ Running a package requires the provision of a service locator implementation i.e
 
 While we would never advise using static service locations in any production situation, as a means to demonstrating a working Lagom system in the absence of a managed runtime, you may decide to deploy Lagom systems to static locations with a static configuration saying where the systems live.
 
-To aid in achieving this, a [`ConfigurationServiceLocator`](api/index.html?com/lightbend/lagom/javadsl/api/ConfigurationServiceLocator.html) is provided that reads the service locator configuration out of Lagom's `application.conf` file.  Here is an example of the configuration for it:
+To aid in achieving this, a [`ConfigurationServiceLocator`](api/index.html?com/lightbend/lagom/javadsl/client/ConfigurationServiceLocator.html) is provided that reads the service locator configuration out of Lagom's `application.conf` file.  Here is an example of the configuration for it:
 
 ```
 lagom.services {

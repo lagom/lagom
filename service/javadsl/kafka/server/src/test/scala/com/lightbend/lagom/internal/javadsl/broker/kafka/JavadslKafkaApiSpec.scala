@@ -21,9 +21,10 @@ import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec.{ I
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer
 import com.lightbend.lagom.javadsl.api.ScalaService._
-import com.lightbend.lagom.javadsl.api._
 import com.lightbend.lagom.javadsl.api.broker.{ Topic => ApiTopic }
+import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.javadsl.broker.TopicProducer
+import com.lightbend.lagom.javadsl.client.ConfigurationServiceLocator
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
