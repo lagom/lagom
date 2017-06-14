@@ -4,5 +4,3 @@
 -Xmx1024M
 -Xss2M
 -XX:MaxMetaspaceSize=512M
--XX:+UseConcMarkSweepGC
--XX:+CMSClassUnloadingEnabled

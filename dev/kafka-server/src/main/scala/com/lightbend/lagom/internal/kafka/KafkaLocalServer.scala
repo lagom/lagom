@@ -181,7 +181,7 @@ object KafkaLocalServer {
   }
 
   object ZooKeeperLocalServer {
-    private[kafka] final val DefaultPort = 2181
+    final val DefaultPort = 2181
     private final val ZookeeperDataFolderName = "zookeeper_data"
   }
 }
