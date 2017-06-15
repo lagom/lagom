@@ -28,6 +28,7 @@ object Dependencies {
   private val log4J = "log4j" % "log4j" % Log4jVersion
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
+  private val jbossLogging = "org.jboss.logging" % "jboss-logging" % "3.3.0.Final"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.1"
   private val h2 = "com.h2database" % "h2" % "1.4.192"
@@ -154,6 +155,7 @@ object Dependencies {
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final",
       "org.immutables" % "value" % "2.3.2",
       "org.javassist" % "javassist" % "3.21.0-GA",
+      jbossLogging,
       "org.joda" % "joda-convert" % "1.7",
       "org.hamcrest" % "hamcrest-core" % "1.3",
       "org.lmdbjava" % "lmdbjava" % "0.0.5",
@@ -266,6 +268,7 @@ object Dependencies {
     playJava,
     playGuice,
     "org.pcollections" % "pcollections" % "2.1.2",
+    jbossLogging,
     scalaTest % Test,
     "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion % Test
   )
@@ -310,7 +313,11 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     akkaStream,
-    akkaSlf4j
+    akkaSlf4j,
+    akkaStream,
+    scalaXml,
+    guava,
+    jbossLogging
   )
 
   val client = libraryDependencies ++= Seq(
@@ -369,7 +376,18 @@ object Dependencies {
     "junit" % "junit" % "4.11",
 
     // Upgrades needed to mtach whitelist
-    "io.netty" % "netty-codec-http" % NettyVersion
+    "io.netty" % "netty-codec-http" % NettyVersion,
+
+    // These deps are depended on by cassandra-all, and need to be upgraded in order to be consistent with transitive
+    // dependencies from our other libraries
+    "com.lmax" % "disruptor" % "3.3.6",
+    "javax.validation" % "validation-api" % "1.1.0.Final",
+    "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
+    jbossLogging,
+    "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
+    "org.xerial.snappy" % "snappy-java" % "1.1.2.6",
+    "org.yaml" % "snakeyaml" % "1.16",
+    "com.fasterxml" % "classmate" % "1.3.0"
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
@@ -448,7 +466,18 @@ object Dependencies {
     akkaMultiNodeTestkit % Test,
     akkaStreamTestkit % Test,
     scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test
+    "com.novocode" % "junit-interface" % "0.11" % Test,
+
+    // These dependencies get upgraded in Test so that we can ensure that our tests are using the same dependencies
+    // as the users will have in their tests
+    "com.lmax" % "disruptor" % "3.3.6" % Test,
+    "javax.validation" % "validation-api" % "1.1.0.Final" % Test,
+    "org.hibernate" % "hibernate-validator" % "5.2.4.Final" % Test,
+    jbossLogging % Test,
+    "org.slf4j" % "log4j-over-slf4j" % "1.7.21" % Test,
+    "org.xerial.snappy" % "snappy-java" % "1.1.2.6" % Test,
+    "org.yaml" % "snakeyaml" % "1.16" % Test,
+    "com.fasterxml" % "classmate" % "1.3.0" % Test
   )
 
   val `persistence-javadsl` = libraryDependencies ++= Seq(
@@ -620,6 +649,8 @@ object Dependencies {
   val `cassandra-server` = libraryDependencies ++= Seq(
 
     akkaPersistenceCassandraLauncher
+      exclude("io.netty", "netty-all") exclude("io.netty", "netty-handler") exclude("io.netty", "netty-buffer")
+      exclude("io.netty", "netty-common") exclude("io.netty", "netty-transport") exclude("io.netty", "netty-codec"),
 
     // Cassandra goes into 100% CPU spin when starting with netty jars of different versions. Hence,
     // we are making sure that the only netty dependency comes from cassandra-all, and manually excludes
@@ -629,6 +660,7 @@ object Dependencies {
     akkaPersistenceCassandra
       exclude("io.netty", "netty-all") exclude("io.netty", "netty-handler") exclude("io.netty", "netty-buffer")
       exclude("io.netty", "netty-common") exclude("io.netty", "netty-transport") exclude("io.netty", "netty-codec"),
+
     // Explicitly override the jboss-logging transitive dependency from cassandra-all.
     // By default, it uses jboss-logging 3.1.0.CR2, which is under LGPL.
     // This forces it to a newer version that is licensed under Apache v2.

@@ -8,7 +8,6 @@ import java.util.Optional
 import java.util.concurrent.{ CompletableFuture, CompletionStage, CountDownLatch, TimeUnit }
 import java.util.function.{ Function => JFunction }
 
-
 import akka.{ Done, NotUsed }
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
@@ -42,7 +41,6 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import scala.collection.concurrent.TrieMap
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future, Promise }
-
 
 class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures {
 
