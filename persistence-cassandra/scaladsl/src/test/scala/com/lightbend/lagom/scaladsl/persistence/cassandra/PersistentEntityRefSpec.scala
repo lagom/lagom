@@ -63,7 +63,7 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
     override type State = String
 
     def initialState: String = ""
-    override def behavior = Actions()
+    override def behavior = Actions.empty
   }
 
   val components = new CassandraPersistenceComponents {

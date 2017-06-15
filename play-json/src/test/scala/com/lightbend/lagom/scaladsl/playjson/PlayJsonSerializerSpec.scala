@@ -58,7 +58,8 @@ object TestRegistry2 extends JsonSerializerRegistry {
           (__ \ "addedField").json.update(Format.of[JsString].map { case JsString(value) => JsNumber(value.toInt) })
       )
     ),
-    JsonMigrations.renamed("event1.old.ClassName", inVersion = 2, toClass = classOf[Event1])
+    JsonMigrations.renamed("event1.old.ClassName", inVersion = 2, toClass = classOf[Event1]),
+    JsonMigrations.renamed("MigratedEvent.old.ClassName", inVersion = 2, toClass = classOf[MigratedEvent])
   )
 }
 
@@ -214,6 +215,22 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
       deserialized should be(event)
 
+    }
+
+    "apply rename migration and then use new name to apply migration transformations" in withActorSystem(TestRegistry2) { system =>
+
+      val expectedEvent = MigratedEvent(addedField = 2, newName = "some value")
+      val oldJsonBytes = Json.stringify(JsObject(Seq(
+        "removedField" -> JsString("doesn't matter"),
+        "oldName" -> JsString("some value")
+      ))).getBytes(StandardCharsets.UTF_8)
+
+      val serializeExt = SerializationExtension(system)
+      val serializer = serializeExt.findSerializerFor(expectedEvent).asInstanceOf[SerializerWithStringManifest]
+
+      val deserialized = serializer.fromBinary(oldJsonBytes, "MigratedEvent.old.ClassName")
+
+      deserialized should be(expectedEvent)
     }
 
     def expectedVersionedManifest[T](clazz: Class[T], migrationVersion: Int) = {

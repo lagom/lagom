@@ -11,6 +11,7 @@ object Dependencies {
   val ScalaTestVersion = "3.0.3"
   val JacksonVersion = "2.8.7"
   val CassandraAllVersion = "3.8"
+  val CassandraDriverVersion = "3.1.4"
   val GuavaVersion = "21.0"
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.1.8.Final"
@@ -43,8 +44,11 @@ object Dependencies {
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
 
-  private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion
-  private val akkaPersistenceCassandraLauncher = "com.typesafe.akka" %% "akka-persistence-cassandra-launcher" % AkkaPersistenceCassandraVersion
+
+  // latest version of APC depend on a Cassandra driver core that's not compatible with Lagom (newer netty/guava/etc... under the covers)
+  private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion exclude ("com.datastax.cassandra" , "cassandra-driver-core")
+  private val akkaPersistenceCassandraLauncher = "com.typesafe.akka" %% "akka-persistence-cassandra-launcher" % AkkaPersistenceCassandraVersion exclude ("com.datastax.cassandra" , "cassandra-driver-core")
+  private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % CassandraDriverVersion
   private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafkaVersion
 
   private val play = "com.typesafe.play" %% "play" % PlayVersion
@@ -71,7 +75,12 @@ object Dependencies {
 
     Seq(
       "aopalliance" % "aopalliance" % "1.0",
-      "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0",
+      "com.addthis.metrics" % "reporter-config-base" % "3.0.0",
+      "com.addthis.metrics" % "reporter-config3" % "3.0.0",
+      "com.boundary" % "high-scale-lib" % "1.0.6",
+      "com.clearspring.analytics" % "stream" % "2.5.2",
+      cassandraDriverCore,
+      "com.fasterxml" % "classmate" % "1.3.0",
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
       "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.0.0",
       "com.github.jnr" % "jffi" % "1.2.14",
@@ -106,9 +115,11 @@ object Dependencies {
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.6.1",
       "commons-codec" % "commons-codec" % "1.10",
+      "commons-logging" % "commons-logging" % "1.2",
       "io.aeron" % "aeron-client" % "1.2.5",
       "io.aeron" % "aeron-driver" % "1.2.5",
       "io.dropwizard.metrics" % "metrics-core" % "3.2.2",
+      "io.dropwizard.metrics" % "metrics-jvm" % "3.1.0",
       "io.jsonwebtoken" % "jjwt" % "0.7.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
       "io.netty" % "netty" % "3.10.6.Final",
@@ -119,9 +130,27 @@ object Dependencies {
       "junit" % "junit" % "4.11",
       "net.jodah" % "typetools" % "0.4.9",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
+      "oauth.signpost" % "signpost-commonshttp4" % "1.2.1.2",
+      "oauth.signpost" % "signpost-core" % "1.2.1.2",
       "org.agrona" % "agrona" % "0.9.5",
+      "org.antlr" % "ST4" % "4.0.8",
+      "org.antlr" % "antlr" % "3.5.2",
+      "org.antlr" % "antlr-runtime" % "3.5.2",
+      "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion,
+      "org.apache.cassandra" % "cassandra-thrift" % CassandraAllVersion,
       "org.apache.commons" % "commons-lang3" % "3.5",
+      "org.apache.commons" % "commons-math3" % "3.2",
+      "org.apache.httpcomponents" % "httpclient" % "4.5.2",
+      "org.apache.httpcomponents" % "httpcore" % "4.4.4",
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
+      "org.apache.thrift" % "libthrift" % "0.9.2",
+      "org.apache.tomcat" % "tomcat-servlet-api" % "8.0.33",
+      "org.caffinitas.ohc" % "ohc-core" % "0.4.3",
+      "org.codehaus.jackson" % "jackson-core-asl" % "1.9.2",
+      "org.codehaus.jackson" % "jackson-mapper-asl" % "1.9.2",
+      "org.eclipse.jdt.core.compiler" % "ecj" % "4.4.2",
+      "org.fusesource" % "sigar" % "1.6.4",
+      "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final",
       "org.immutables" % "value" % "2.3.2",
       "org.javassist" % "javassist" % "3.21.0-GA",
@@ -294,7 +323,9 @@ object Dependencies {
     "io.netty" % "netty-handler" % NettyVersion
   )
 
-  val `client-javadsl` = libraryDependencies ++= Nil
+  val `client-javadsl` = libraryDependencies ++= Seq(
+    scalaTest % Test
+  )
 
   val `client-scaladsl` = libraryDependencies ++= Seq(
     scalaTest % Test
@@ -421,21 +452,21 @@ object Dependencies {
   )
 
   val `persistence-javadsl` = libraryDependencies ++= Seq(
+    // this mean we have production code depending on testkit
     akkaTestkit
   )
 
   val `persistence-scaladsl` = libraryDependencies ++= Seq(
+    // this mean we have production code depending on testkit
     akkaTestkit
   )
-
   val `persistence-cassandra-core` = libraryDependencies ++= Seq(
     akkaPersistenceCassandra,
-    "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0",
-
     akkaPersistenceCassandraLauncher % Test,
-
     // Upgrades needed to match whitelist
     "io.dropwizard.metrics" % "metrics-core" % "3.2.2",
+    cassandraDriverCore,
+    // cassandra-driver-core pulls in an older version of all these
     "io.netty" % "netty-buffer" % NettyVersion,
     "io.netty" % "netty-codec" % NettyVersion,
     "io.netty" % "netty-common" % NettyVersion,
@@ -443,9 +474,13 @@ object Dependencies {
     "io.netty" % "netty-transport" % NettyVersion
   )
 
-  val `persistence-cassandra-javadsl` = libraryDependencies ++= Nil
+  val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
+    cassandraDriverCore
+  )
 
-  val `persistence-cassandra-scaladsl` = libraryDependencies ++= Nil
+  val `persistence-cassandra-scaladsl` = libraryDependencies ++= Seq(
+    cassandraDriverCore
+  )
 
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
     "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.0.0",
@@ -583,7 +618,23 @@ object Dependencies {
   val `play-integration-javadsl` = libraryDependencies ++= Nil
 
   val `cassandra-server` = libraryDependencies ++= Seq(
+
     akkaPersistenceCassandraLauncher
+
+    // Cassandra goes into 100% CPU spin when starting with netty jars of different versions. Hence,
+    // we are making sure that the only netty dependency comes from cassandra-all, and manually excludes
+    // all netty transitive dependencies of akka-persistence-cassandra. Mind that dependencies are
+    // excluded one-by-one because exclusion rules do not work with maven dependency resolution - see
+    // https://github.com/lagom/lagom/issues/26#issuecomment-196718818
+    akkaPersistenceCassandra
+      exclude("io.netty", "netty-all") exclude("io.netty", "netty-handler") exclude("io.netty", "netty-buffer")
+      exclude("io.netty", "netty-common") exclude("io.netty", "netty-transport") exclude("io.netty", "netty-codec"),
+    // Explicitly override the jboss-logging transitive dependency from cassandra-all.
+    // By default, it uses jboss-logging 3.1.0.CR2, which is under LGPL.
+    // This forces it to a newer version that is licensed under Apache v2.
+    jbossLogging,
+    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion
+
   )
 
   val `kafka-server` = libraryDependencies ++= Seq(

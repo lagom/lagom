@@ -64,6 +64,11 @@ object PathParamSerializer {
   implicit val IntPathParamSerializer: PathParamSerializer[Int] = required("Int")(_.toInt)(_.toString)
 
   /**
+   * An Double path parameter serializer
+   */
+  implicit val DoublePathParamSerializer: PathParamSerializer[Double] = required("Double")(_.toDouble)(_.toString)
+
+  /**
    * A Boolean path parameter serializer
    */
   implicit val BooleanPathParamSerializer: PathParamSerializer[Boolean] = required("Boolean")(_.toBoolean)(_.toString)
