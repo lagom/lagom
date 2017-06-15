@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 
-class KafkaLocalServer private(kafkaProperties: Properties, zooKeeperServer: KafkaLocalServer.ZooKeperLocalServer) {
+class KafkaLocalServer private (kafkaProperties: Properties, zooKeeperServer: KafkaLocalServer.ZooKeeperLocalServer) {
 
   private val kafkaServerRef = new AtomicReference[KafkaServerStartable](null)
 
@@ -71,7 +71,7 @@ object KafkaLocalServer {
 
   private lazy val tempDir = System.getProperty("java.io.tmpdir")
 
-  def apply(cleanOnStart: Boolean): KafkaLocalServer = this (DefaultPort, ZooKeperLocalServer.DefaultPort, DefaultPropertiesFile, Some(tempDir), cleanOnStart)
+  def apply(cleanOnStart: Boolean): KafkaLocalServer = this(DefaultPort, ZooKeeperLocalServer.DefaultPort, DefaultPropertiesFile, Some(tempDir), cleanOnStart)
 
   def apply(kafkaPort: Int, zooKeperServerPort: Int, kafkaPropertiesFile: String, targetDir: Option[String], cleanOnStart: Boolean): KafkaLocalServer = {
     val kafkaDataDir = dataDirectory(targetDir, KafkaDataFolderName)
@@ -81,12 +81,12 @@ object KafkaLocalServer {
 
     if (cleanOnStart) deleteDirectory(kafkaDataDir)
 
-    new KafkaLocalServer(kafkaProperties, new ZooKeperLocalServer(zooKeperServerPort, cleanOnStart, targetDir))
+    new KafkaLocalServer(kafkaProperties, new ZooKeeperLocalServer(zooKeperServerPort, cleanOnStart, targetDir))
   }
 
   /**
-    * Creates a Properties instance for Kafka customized with values passed in argument.
-    */
+   * Creates a Properties instance for Kafka customized with values passed in argument.
+   */
   private def createKafkaProperties(kafkaPropertiesFile: String, kafkaPort: Int, zooKeperServerPort: Int, dataDir: File): Properties = {
     val kafkaProperties = PropertiesLoader.from(kafkaPropertiesFile)
     kafkaProperties.setProperty("log.dirs", dataDir.getAbsolutePath)
@@ -108,16 +108,16 @@ object KafkaLocalServer {
   }
 
   /**
-    * If the passed `baseDirPath` points to an existing directory for which the application has write access,
-    * return a File instance that points to `baseDirPath/directoryName`. Otherwise, return a File instance that
-    * points to `tempDir/directoryName` where `tempDir` is the system temporary folder returned by the system
-    * property "java.io.tmpdir".
-    *
-    * @param baseDirPath   The path to the base directory.
-    * @param directoryName The name to use for the child folder in the base directory.
-    * @throws IllegalArgumentException If the passed `directoryName` is not a valid directory name.
-    * @return A file directory that points to either `baseDirPath/directoryName` or `tempDir/directoryName`.
-    */
+   * If the passed `baseDirPath` points to an existing directory for which the application has write access,
+   * return a File instance that points to `baseDirPath/directoryName`. Otherwise, return a File instance that
+   * points to `tempDir/directoryName` where `tempDir` is the system temporary folder returned by the system
+   * property "java.io.tmpdir".
+   *
+   * @param baseDirPath   The path to the base directory.
+   * @param directoryName The name to use for the child folder in the base directory.
+   * @throws IllegalArgumentException If the passed `directoryName` is not a valid directory name.
+   * @return A file directory that points to either `baseDirPath/directoryName` or `tempDir/directoryName`.
+   */
   private def dataDirectory(baseDirPath: Option[String], directoryName: String): File = {
     lazy val tempDirMessage = s"Will attempt to create folder $directoryName in the system temporary directory: $tempDir"
 

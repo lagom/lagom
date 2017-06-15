@@ -11,7 +11,7 @@ object KafkaLauncher {
 
     val zookeperServerPort: Int =
       if (args.length > 1) args(1).toInt
-      else Integer.getInteger("ZooKeeperServer.port", KafkaLocalServer.ZooKeperLocalServer.DefaultPort)
+      else Integer.getInteger("ZooKeeperServer.port", KafkaLocalServer.ZooKeeperLocalServer.DefaultPort)
 
     val targetDir: Option[String] =
       if (args.length > 2) Some(args(2))

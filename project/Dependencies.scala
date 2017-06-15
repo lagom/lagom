@@ -14,7 +14,7 @@ object Dependencies {
   val CassandraDriverVersion = "3.1.4"
   val GuavaVersion = "19.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.0.41.Final"
+  val NettyVersion = "4.0.42.Final"
   val KafkaVersion = "0.10.0.1"
   val AkkaStreamKafkaVersion = "0.13"
   val Log4jVersion = "1.2.17"
@@ -27,8 +27,9 @@ object Dependencies {
   private val log4J = "log4j" % "log4j" % Log4jVersion
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
+  private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
   private val jbossLogging = "org.jboss.logging" % "jboss-logging" % "3.3.0.Final"
-  private val typesafeConfig = "com.typesafe" % "config" % "1.3.0"
+  private val typesafeConfig = "com.typesafe" % "config" % "1.3.1"
 
   private val akkaActor = "com.typesafe.akka" %% "akka-actor" % AkkaVersion
   private val akkaCluster = "com.typesafe.akka" %% "akka-cluster" % AkkaVersion
@@ -149,7 +150,7 @@ object Dependencies {
       "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final",
       "org.immutables" % "value" % "2.3.2",
-      "org.javassist" % "javassist" % "3.20.0-GA",
+      javassist,
       jbossLogging,
       "org.joda" % "joda-convert" % "1.8.1",
       "org.hamcrest" % "hamcrest-core" % "1.3",
@@ -202,7 +203,7 @@ object Dependencies {
     ) ++ libraryFamily("org.apache.logging.log4j", "2.7")(
       "log4j-api", "log4j-core", "log4j-slf4j-impl"
 
-    ) ++ libraryFamily("org.asynchttpclient", "2.0.11")(
+    ) ++ libraryFamily("org.asynchttpclient", "2.0.24")(
       "async-http-client", "async-http-client-netty-utils", "netty-codec-dns", "netty-resolver", "netty-resolver-dns"
 
     ) ++ libraryFamily("org.ow2.asm", "5.0.3")(
@@ -270,7 +271,7 @@ object Dependencies {
     playJava,
     "org.pcollections" % "pcollections" % "2.1.2",
     // Needed to upgrade from 3.18 to ensure everything is on 3.20
-    "org.javassist" % "javassist" % "3.20.0-GA",
+    javassist,
     "com.fasterxml" % "classmate" % "1.3.0",
     jbossLogging,
     scalaTest % Test,
@@ -346,7 +347,8 @@ object Dependencies {
 
   val `testkit-core` = libraryDependencies ++= Seq(
     akkaActor,
-    akkaStream
+    akkaStream,
+    typesafeConfig // ensures we use the whitelisted version of config everywhere
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
@@ -402,6 +404,7 @@ object Dependencies {
 
   val `cluster-core` = libraryDependencies ++= Seq(
     akkaCluster,
+    typesafeConfig, // ensures we use the whitelisted version of config everywhere
     akkaTestkit % Test,
     scalaTest % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test
