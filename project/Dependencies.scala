@@ -706,9 +706,9 @@ object Dependencies {
 
         whitelist.get((moduleId.organization, moduleId.name)) match {
           case None =>
-            Some(moduleId -> s"$scope dependency not in whitelist: $moduleId")
+            Some(moduleId -> s"[${name.value}] $scope dependency not in whitelist: $moduleId")
           case Some(unmatched) if moduleId.revision != unmatched =>
-            Some(moduleId -> s"$scope dependency ${moduleId.organization}:${moduleId.name} version ${moduleId.revision} doesn't match whitelist version $unmatched")
+            Some(moduleId -> s"[${name.value}] $scope dependency ${moduleId.organization}:${moduleId.name} version ${moduleId.revision} doesn't match whitelist version $unmatched")
           case _ => None
         }
       })
