@@ -33,3 +33,7 @@ notifications:
         - https://webhooks.gitter.im/e/773aba95141768c32dae
     on_success: always
     on_failure: always
+branches:
+  only:
+  - master
+  - 1.3.x
