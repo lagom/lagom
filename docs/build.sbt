@@ -1,6 +1,6 @@
 
-val PlayVersion = "2.5.4"
-val AkkaVersion = "2.4.12"
+val PlayVersion = "2.5.13"
+val AkkaVersion = "2.4.19"
 
 val branch = {
   val rev = "git rev-parse --abbrev-ref HEAD".!!.trim
@@ -9,6 +9,7 @@ val branch = {
     "git rev-parse HEAD".!!.trim
   } else rev
 }
+
 
 lazy val docs = project
   .in(file("."))
@@ -19,7 +20,7 @@ lazy val docs = project
     scalaVersion := "2.11.7",
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
-      "org.apache.cassandra" % "cassandra-all" % "3.0.2" % "test",
+      "org.apache.cassandra" % "cassandra-all" % "3.0.9" % "test",
       "junit" % "junit" % "4.12" % "test",
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "org.scalatest" %% "scalatest" % "3.0.1" % Test,
