@@ -13,7 +13,7 @@ While similar in principle, inter- and intra-service communication have very dif
 
 * [[Service calls|ServiceDescriptors]], either synchronous or asynchronous (streaming), allow services to communicate with each other using published APIs and standard protocols (HTTP and WebSockets).
 
-* Publishing messages to a [[broker|MessageBroker]], such as Apache Kafka, decouples communication even further. Lagom's [[Message Broker API|MessageBrokerAPI]] provides at-least-once semantics. If a new instance starts publishing information, its messages are added to events previously emitted. If a new instance subscribes to a topic, they will receive all events, past, present, and future (as long as they are subscribed).
+* Publishing messages to a [[broker|MessageBroker]], such as Apache Kafka, decouples communication even further. Lagom's [[Message Broker API|MessageBrokerApi]] provides at-least-once semantics. If a new instance starts publishing information, its messages are added to events previously emitted. If a new instance subscribes to a topic, they will receive all events, past, present, and future (as long as they are subscribed).
 
 Nodes of a single service (collectively called a cluster) require less decoupling. They share the same code and are managed together, as a set, by a single team or individual. For this reason, intra-service communication can take advantage of mechanisms that have less overhead and better performance. For example:
 
