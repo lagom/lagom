@@ -61,6 +61,7 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers with BeforeAndAfter
       val resultStream = Await.result(client.unitStreamResponse.invoke(), 10.seconds)
       consume(resultStream) should ===((1 to 3).map(i => MockResponseEntity(i, new MockRequestEntity("entity", i))))
     }
+
     "work with streamed requests" in {
       val requests = (1 to 3).map(i => new MockRequestEntity("request", i))
       val gotResponse = Promise[None.type]()
@@ -69,6 +70,13 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers with BeforeAndAfter
       gotResponse.success(None)
       result should ===(MockResponseEntity(1, requests(0)))
     }
+
+    "work with streamed requests and strict response after last" in {
+      val requests = (1 to 3).map(i => new MockRequestEntity("request", i))
+      val result = Await.result(client.streamRequestRespondAfterLast.invoke(Source(requests)), 10.seconds)
+      result should ===(MockResponseEntity(1, requests(0)))
+    }
+
     "work with streamed requests and unit responses" when {
       "an empty message is sent for unit" in {
         // In this case, we wait for a response from the server before closing the connection. The response will be an

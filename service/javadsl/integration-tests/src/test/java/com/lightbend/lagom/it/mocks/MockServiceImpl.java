@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -30,7 +31,7 @@ import java.util.stream.IntStream;
 public class MockServiceImpl implements MockService {
 
     private final Materializer materializer;
-  
+
     @Inject
     public MockServiceImpl(Materializer materializer) {
       this.materializer = materializer;
@@ -48,7 +49,7 @@ public class MockServiceImpl implements MockService {
             return CompletableFuture.completedFuture(NotUsed.getInstance());
         };
     }
-    
+
     @Override
     public ServiceCall<NotUsed, NotUsed> alwaysFail() {
         return request -> {
@@ -56,7 +57,7 @@ public class MockServiceImpl implements MockService {
             throw new RuntimeException("Simulated error");
         };
     }
-    
+
     @Override
     public ServiceCall<Done, Done> doneCall(){
       return done -> CompletableFuture.completedFuture(done);
@@ -86,6 +87,12 @@ public class MockServiceImpl implements MockService {
         return request ->
                 request.runWith(Sink.head(), materializer)
                         .thenApply(head -> new MockResponseEntity(1, head));
+    }
+    @Override
+    public ServiceCall<Source<MockRequestEntity, ?>, MockResponseEntity> streamRequestRespondAfterLast() {
+        return request ->
+                request.runWith(Sink.last(), materializer)
+                        .thenApply(item -> new MockResponseEntity(23, item));
     }
 
     public static AtomicReference<MockRequestEntity> firstReceived = new AtomicReference<>();
