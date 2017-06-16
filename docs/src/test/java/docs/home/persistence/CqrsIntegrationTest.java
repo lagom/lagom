@@ -119,7 +119,7 @@ public class CqrsIntegrationTest {
   @Test
   public void testAddBlogPostsAndUpdateReadSide() throws Exception {
 
-    // At system starup event processor is started.
+    // At system startup event processor is started.
     // It consumes the stream of persistent events, here BlogEvent subclasses.
     // It will update the blogsummary table.
     readSide().register(CassandraBlogEventProcessor.BlogEventProcessor.class);
@@ -136,7 +136,7 @@ public class CqrsIntegrationTest {
     final Materializer mat = ActorMaterializer.create(system);
 
 
-    // Eventually (when the BlogEventProcessor is ready), we can crate a PreparedStatement to query the
+    // Eventually (when the BlogEventProcessor is ready), we can create a PreparedStatement to query the
     // blogsummary table via the CassandraSession,
     // e.g. a Service API request
     eventually(() -> {
@@ -144,11 +144,10 @@ public class CqrsIntegrationTest {
       cassandraSession.prepare("SELECT id, title FROM blogsummary").toCompletableFuture().get(5, SECONDS);
     });
 
+
     final PreparedStatement selectStmt = cassandraSession.prepare("SELECT id, title FROM blogsummary")
             .toCompletableFuture().get(15, SECONDS);
     final BoundStatement boundSelectStmt = selectStmt.bind();
-
-
 
     eventually(() -> {
       // stream from a Cassandra select result set, e.g. response to a Service API request
@@ -159,11 +158,13 @@ public class CqrsIntegrationTest {
       probe.expectComplete();
     });
 
+
+
     // persist something more, the processor will consume the event
     // and update the blogsummary table
     final PersistentEntityRef<BlogCommand> ref3 = registry().refFor(Post.class, "3");
     final AddPost cmd3 = new AddPost(new PostContent("Title 3", "Body"));
-    ref3.ask(cmd3);
+    ref3.ask(cmd3).toCompletableFuture().get(5, SECONDS);
 
     eventually(() -> {
       final Source<String, ?> queryResult = cassandraSession.select(boundSelectStmt).map(row -> row.getString("title"));
@@ -172,6 +173,8 @@ public class CqrsIntegrationTest {
       probe.expectNextUnordered("Title 1", "Title 2", "Title 3");
       probe.expectComplete();
     });
+
+
 
     // For other use cases than updating a read-side table in Cassandra it is possible
     // to consume the events directly.
@@ -189,7 +192,7 @@ public class CqrsIntegrationTest {
 
     final PersistentEntityRef<BlogCommand> ref4 = registry().refFor(Post.class, "4");
     final AddPost cmd4 = new AddPost(new PostContent("Title 4", "Body"));
-    ref4.ask(cmd4);
+    ref4.ask(cmd4).toCompletableFuture().get(5, SECONDS);
 
     eventProbe.expectNext(new PostAdded("4", new PostContent("Title 4", "Body")));
 
