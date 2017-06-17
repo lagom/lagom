@@ -794,23 +794,13 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
-  .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
+  .aggregate(`reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
     `service-registration-javadsl`, `cassandra-server`, `play-integration-javadsl`, `devmode-scaladsl`,
     `service-registry-client-javadsl`, 
     `maven-java-archetype`, `maven-dependencies`, `kafka-server`)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}
-  )
-
-lazy val `build-link` = (project in file("dev") / "build-link")
-  .settings(common: _*)
-  .enablePlugins(RuntimeLibPlugins)
-  .settings(
-    crossPaths := false,
-    autoScalaLibrary := false,
-    EclipseKeys.projectFlavor := EclipseProjectFlavor.Java,
-    Dependencies.`build-link`
   )
 
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
@@ -820,7 +810,6 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
     name := "lagom-reloadable-server",
     Dependencies.`reloadable-server`
   )
-  .dependsOn(`build-link`)
 
 lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
   .settings(common: _*)
@@ -831,8 +820,9 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     sourceGenerators in Compile += Def.task {
       Generators.version(version.value, (sourceManaged in Compile).value)
     }.taskValue,
+    Dependencies.`build-link`,
     Dependencies.`build-tool-support`
-  ).dependsOn(`build-link`)
+  )
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(common: _*)

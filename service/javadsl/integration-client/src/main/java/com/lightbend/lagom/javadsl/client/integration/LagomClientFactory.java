@@ -172,7 +172,7 @@ public class LagomClientFactory implements Closeable {
      */
     public static LagomClientFactory create(String serviceName, ClassLoader classLoader) {
         // Environment and config
-        Environment environment = Environment.apply(new File("."), classLoader, Mode.Prod());
+        Environment environment = Environment.apply(new File("."), classLoader, Mode.Prod$.MODULE$);
         Configuration configuration = Configuration.load(environment);
 
         // Akka
@@ -196,6 +196,14 @@ public class LagomClientFactory implements Closeable {
             }
             @Override
             public void addStopHook(Callable<? extends CompletionStage<?>> hook) {
+            }
+            @Override
+            public play.inject.ApplicationLifecycle asJava() {
+                return new play.inject.DelegateApplicationLifecycle(this);
+            }
+            @Override
+            public Future<?> stop() {
+                return null;
             }
         }, actorSystem.dispatcher());
 
