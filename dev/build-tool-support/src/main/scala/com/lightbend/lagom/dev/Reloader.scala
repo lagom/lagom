@@ -11,10 +11,9 @@ import java.util
 import java.util.{ Timer, TimerTask }
 import java.util.concurrent.atomic.AtomicReference
 
-import com.lightbend.lagom.sbt.core.Build
-import com.lightbend.lagom.sbt.server.ReloadableServer
 import play.api.PlayException
-import play.core.BuildLink
+import play.core.{ Build, BuildLink }
+import play.core.server.ReloadableServer
 import play.dev.filewatch.{ FileWatchService, SourceModificationWatch, WatchState }
 
 import scala.collection.JavaConverters._
