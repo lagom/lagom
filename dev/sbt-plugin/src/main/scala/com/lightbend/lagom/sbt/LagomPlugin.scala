@@ -309,7 +309,9 @@ object LagomPlugin extends AutoPlugin {
     val lagomKafkaEnabled = settingKey[Boolean]("Enable/Disable the kafka server")
     val lagomKafkaCleanOnStart = settingKey[Boolean]("Wipe the kafka log before starting")
     val lagomKafkaJvmOptions = settingKey[Seq[String]]("JVM options used by the forked kafka process")
-    val lagomKafkaZookeperPort = settingKey[Int]("Port used by the local zookeper server (kafka requires zookeeper)")
+    @deprecated("Use lagomKafkaZookeeperPort instead", "1.3.6")
+    val lagomKafkaZookeperPort = settingKey[Int]("Port used by the local zookeeper server (kafka requires zookeeper)")
+    val lagomKafkaZookeeperPort = settingKey[Int]("Port used by the local zookeeper server (kafka requires zookeeper)")
     val lagomKafkaPort = settingKey[Int]("Port used by the local kafka broker")
     val lagomKafkaAddress = settingKey[String]("Address of the kafka brokers (comma-separated list)")
 
@@ -413,6 +415,7 @@ object LagomPlugin extends AutoPlugin {
     lagomKafkaEnabled := true,
     lagomKafkaPropertiesFile := None,
     lagomKafkaZookeperPort := 2181,
+    lagomKafkaZookeeperPort := lagomKafkaZookeperPort.value,
     lagomKafkaPort := 9092,
     lagomKafkaCleanOnStart := false,
     lagomKafkaAddress := s"localhost:${lagomKafkaPort.value}",
@@ -476,7 +479,7 @@ object LagomPlugin extends AutoPlugin {
 
   private lazy val startKafkaServerTask = Def.task {
     val log = new SbtLoggerProxy(state.value.log)
-    val zooKeeperPort = lagomKafkaZookeperPort.value
+    val zooKeeperPort = lagomKafkaZookeeperPort.value
     val kafkaPort = lagomKafkaPort.value
     val kafkaPropertiesFile = lagomKafkaPropertiesFile.value
     val classpath = (managedClasspath in Compile).value.map(_.data)

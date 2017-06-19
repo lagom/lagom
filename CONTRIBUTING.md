@@ -36,7 +36,6 @@ Before making a contribution, it is important to make sure that the change you w
     6. New files must:
         * Have a Lightbend copyright header in the style of ``Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>``. Running `sbt compile` will automatically add missing copyright headers.
         * Not use ``@author`` tags since it does not encourage [Collective Code Ownership](http://www.extremeprogramming.org/rules/collective.html).
-3. Ensure that your commits are squashed.  See the [working with git guide](WorkingWithGit.md) for more information.
-4. Submit a pull request.
+3. Submit a pull request.
 
 If the pull request does not meet the above requirements then the code should **not** be merged into master, or even reviewed - regardless of how good or important it is. No exceptions.
