@@ -5,13 +5,12 @@ object Dependencies {
 
   // Version numbers
   val PlayVersion = "2.6.0-M3"
-  val AkkaVersion = "2.5.1"
+  val AkkaVersion = "2.5.3"
   val ScalaVersion = "2.11.11"
-  val AkkaPersistenceCassandraVersion = "0.52"
+  val AkkaPersistenceCassandraVersion = "0.54"
   val ScalaTestVersion = "3.0.3"
   val JacksonVersion = "2.8.7"
   val CassandraAllVersion = "3.8"
-  val CassandraDriverVersion = "3.1.4"
   val GuavaVersion = "21.0"
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.1.8.Final"
@@ -47,9 +46,8 @@ object Dependencies {
 
 
   // latest version of APC depend on a Cassandra driver core that's not compatible with Lagom (newer netty/guava/etc... under the covers)
-  private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion exclude ("com.datastax.cassandra" , "cassandra-driver-core")
-  private val akkaPersistenceCassandraLauncher = "com.typesafe.akka" %% "akka-persistence-cassandra-launcher" % AkkaPersistenceCassandraVersion exclude ("com.datastax.cassandra" , "cassandra-driver-core")
-  private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % CassandraDriverVersion
+  private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion
+  private val akkaPersistenceCassandraLauncher = "com.typesafe.akka" %% "akka-persistence-cassandra-launcher" % AkkaPersistenceCassandraVersion
   private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafkaVersion
 
   private val play = "com.typesafe.play" %% "play" % PlayVersion
@@ -80,7 +78,6 @@ object Dependencies {
       "com.addthis.metrics" % "reporter-config3" % "3.0.0",
       "com.boundary" % "high-scale-lib" % "1.0.6",
       "com.clearspring.analytics" % "stream" % "2.5.2",
-      cassandraDriverCore,
       "com.fasterxml" % "classmate" % "1.3.0",
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
       "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.0.0",
@@ -471,23 +468,12 @@ object Dependencies {
     akkaPersistenceCassandra,
     akkaPersistenceCassandraLauncher % Test,
     // Upgrades needed to match whitelist
-    "io.dropwizard.metrics" % "metrics-core" % "3.2.2",
-    cassandraDriverCore,
-    // cassandra-driver-core pulls in an older version of all these
-    "io.netty" % "netty-buffer" % NettyVersion,
-    "io.netty" % "netty-codec" % NettyVersion,
-    "io.netty" % "netty-common" % NettyVersion,
-    "io.netty" % "netty-handler" % NettyVersion,
-    "io.netty" % "netty-transport" % NettyVersion
+    "io.dropwizard.metrics" % "metrics-core" % "3.2.2"
   )
 
-  val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
-    cassandraDriverCore
-  )
+  val `persistence-cassandra-javadsl` = libraryDependencies ++= Nil
 
-  val `persistence-cassandra-scaladsl` = libraryDependencies ++= Seq(
-    cassandraDriverCore
-  )
+  val `persistence-cassandra-scaladsl` = libraryDependencies ++= Nil
 
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
     "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.0.0",
@@ -626,9 +612,7 @@ object Dependencies {
 
   val `cassandra-server` = libraryDependencies ++= Seq(
 
-    akkaPersistenceCassandraLauncher
-      exclude("io.netty", "netty-all") exclude("io.netty", "netty-handler") exclude("io.netty", "netty-buffer")
-      exclude("io.netty", "netty-common") exclude("io.netty", "netty-transport") exclude("io.netty", "netty-codec"),
+    akkaPersistenceCassandraLauncher,
 
     // Cassandra goes into 100% CPU spin when starting with netty jars of different versions. Hence,
     // we are making sure that the only netty dependency comes from cassandra-all, and manually excludes
