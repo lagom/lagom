@@ -376,18 +376,7 @@ object Dependencies {
     "junit" % "junit" % "4.11",
 
     // Upgrades needed to mtach whitelist
-    "io.netty" % "netty-codec-http" % NettyVersion,
-
-    // These deps are depended on by cassandra-all, and need to be upgraded in order to be consistent with transitive
-    // dependencies from our other libraries
-    "com.lmax" % "disruptor" % "3.3.6",
-    "javax.validation" % "validation-api" % "1.1.0.Final",
-    "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
-    jbossLogging,
-    "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
-    "org.xerial.snappy" % "snappy-java" % "1.1.2.6",
-    "org.yaml" % "snakeyaml" % "1.16",
-    "com.fasterxml" % "classmate" % "1.3.0"
+    "io.netty" % "netty-codec-http" % NettyVersion
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
@@ -466,18 +455,7 @@ object Dependencies {
     akkaMultiNodeTestkit % Test,
     akkaStreamTestkit % Test,
     scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test,
-
-    // These dependencies get upgraded in Test so that we can ensure that our tests are using the same dependencies
-    // as the users will have in their tests
-    "com.lmax" % "disruptor" % "3.3.6" % Test,
-    "javax.validation" % "validation-api" % "1.1.0.Final" % Test,
-    "org.hibernate" % "hibernate-validator" % "5.2.4.Final" % Test,
-    jbossLogging % Test,
-    "org.slf4j" % "log4j-over-slf4j" % "1.7.21" % Test,
-    "org.xerial.snappy" % "snappy-java" % "1.1.2.6" % Test,
-    "org.yaml" % "snakeyaml" % "1.16" % Test,
-    "com.fasterxml" % "classmate" % "1.3.0" % Test
+    "com.novocode" % "junit-interface" % "0.11" % Test
   )
 
   val `persistence-javadsl` = libraryDependencies ++= Seq(
