@@ -17,7 +17,7 @@ public interface BetaUpstreamService extends Service {
     @Override
     default Descriptor descriptor() {
         return Service.named("upstream-b")
-                .publishing(
+                .withTopics(
                         Service.topic(TOPIC_ID, this::messageTopic)
                 );
     }

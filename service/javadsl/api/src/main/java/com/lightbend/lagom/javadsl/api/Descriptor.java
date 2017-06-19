@@ -852,9 +852,22 @@ public final class Descriptor {
      *
      * @param topicCalls The topic calls to add.
      * @return A copy of this descriptor with the new calls added.
+     *
+     * @deprecated use {@link Descriptor#withTopics(TopicCall[])} instead.
      */
+    @Deprecated
     public Descriptor publishing(TopicCall<?>... topicCalls) {
-      return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker,
-          this.topicCalls.plusAll(Arrays.asList(topicCalls)));
+      return withTopics(topicCalls);
+    }
+
+    /**
+     * Add the given topic calls to this service.
+     *
+     * @param topicCalls The topic calls to add.
+     * @return A copy of this descriptor with the new calls added.
+     */
+    public Descriptor withTopics(TopicCall<?>... topicCalls) {
+        return new Descriptor(name, calls, pathParamSerializers, messageSerializers, serializerFactory, exceptionSerializer, autoAcl, acls, headerFilter, locatableService, circuitBreaker,
+                this.topicCalls.plusAll(Arrays.asList(topicCalls)));
     }
 }
