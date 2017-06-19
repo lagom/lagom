@@ -508,7 +508,6 @@ object LagomPlugin extends AutoPlugin {
         val jvmOptions = lagomKafkaJvmOptions.value
         val targetDir = target.value
         val cleanOnStart = lagomKafkaCleanOnStart.value
-
         Servers.KafkaServer.start(log, classpath, kafkaPort, zooKeeperPort, kafkaPropertiesFile, jvmOptions, targetDir, cleanOnStart)
       }
     } else {
@@ -642,12 +641,13 @@ object NonBlockingInteractionMode extends PlayNonBlockingInteractionMode {
    *
    * @param server A callback to start the server, that returns a closeable to stop it
    */
-  override def start(server: => Closeable): Unit = synchronized {
-    val theServer = server
+  override def start(server: => Closeable): Unit =
+    synchronized {
+      val theServer = server
 
-    if (runningServers(theServer)) println("Noop: This server was already started")
-    else runningServers += theServer
-  }
+      if (runningServers(theServer)) println("Noop: This server was already started")
+      else runningServers += theServer
+    }
 
   /**
    * Stop all running servers.
