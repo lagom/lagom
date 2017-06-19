@@ -47,7 +47,7 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
     </developers>
   },
   pomIncludeRepository := { _ => false },
- 
+
   concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
 
   // Setting javac options in common allows IntelliJ IDEA to import them automatically
@@ -127,7 +127,7 @@ def formattingPreferences = {
 val defaultMultiJvmOptions: List[String] = {
   import scala.collection.JavaConverters._
   // multinode.D= and multinode.X= makes it possible to pass arbitrary
-  // -D or -X arguments to the forked jvm, e.g. 
+  // -D or -X arguments to the forked jvm, e.g.
   // -Djava.net.preferIPv4Stack=true or -Dmultinode.Xmx512m
   val MultinodeJvmArgs = "multinode\\.(D|X)(.*)".r
   val knownPrefix = Set("akka.", "lagom.")
@@ -156,7 +156,7 @@ def multiJvmTestSettings: Seq[Setting[_]] = SbtMultiJvm.multiJvmSettings ++ Seq(
   compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test),
   // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
   executeTests in MultiJvm := ((executeTests in MultiJvm) tag Tags.Test).value,
-  // make sure that MultiJvm tests are executed by the default test target, 
+  // make sure that MultiJvm tests are executed by the default test target,
   // and combine the results from ordinary test and multi-jvm tests
   executeTests in Test := {
     val testResults = (executeTests in Test).value
@@ -269,15 +269,20 @@ lazy val root = (project in file("."))
   .settings(UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*)
   .settings(
     whitesourceProduct in ThisBuild               := "Lightbend Reactive Platform",
-    whitesourceAggregateProjectName in ThisBuild  := "lagom-stable",
-    whitesourceAggregateProjectToken in ThisBuild := "7b9d48bc-bcde-4c0f-87fb-5831312f24ad"
+    whitesourceAggregateProjectName in ThisBuild  := sys.props.getOrElse("WHITESOURCE_PROJECT_NAME", default = "invalid"),
+    whitesourceAggregateProjectToken in ThisBuild := sys.props.getOrElse("WHITESOURCE_PROJECT_TOKEN", default = "invalid")
   ).aggregate(javadslProjects.map(Project.projectToRef): _*)
   .aggregate(scaladslProjects.map(Project.projectToRef): _*)
   .aggregate(coreProjects.map(Project.projectToRef): _*)
   .aggregate(otherProjects.map(Project.projectToRef): _*)
 
-def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) 
-def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype) 
+  credentials += Credentials(realm = "whitesource",
+      host = "whitesourcesoftware.com",
+      userName = "",
+      passwd = sys.props.getOrElse("WHITESOURCE_PASSWORD", default = "invalid"))
+
+def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin)
+def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
 
 lazy val api = (project in file("service/core/api"))
   .settings(runtimeLibCommon: _*)
@@ -786,7 +791,7 @@ lazy val `dev-environment` = (project in file("dev"))
   .enablePlugins(AutomateHeaderPlugin)
   .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
     `service-registration-javadsl`, `cassandra-server`, `play-integration-javadsl`, `devmode-scaladsl`,
-    `service-registry-client-javadsl`, 
+    `service-registry-client-javadsl`,
     `maven-java-archetype`, `maven-dependencies`, `kafka-server`)
   .settings(
     publish := {},
@@ -880,7 +885,7 @@ lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
       Dependencies.`maven-launcher`
     )
 
-def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++ 
+def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++
   Seq(scriptedLaunchOpts += s"-Dproject.version=${version.value}") ++
   Seq(
     scripted := scripted.tag(Tags.Test).evaluated,
