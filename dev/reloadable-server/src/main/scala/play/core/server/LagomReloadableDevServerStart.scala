@@ -7,9 +7,9 @@ import java.io.File
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.lightbend.lagom.sbt.server.ReloadableServer
 import play.api._
 import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
+import play.core.server.ReloadableServer
 import play.utils.Threads
 
 import scala.collection.JavaConverters._
@@ -221,11 +221,7 @@ object LagomReloadableDevServerStart {
         val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem, ActorMaterializer()(actorSystem),
           () => actorSystem.terminate())
         val serverProvider = ServerProvider.fromConfiguration(classLoader, serverConfig.configuration)
-        val server = serverProvider.createServer(serverContext)
-        val reloadableServer = new ReloadableServer(server) {
-          def reload(): Unit = appProvider.get
-        }
-        reloadableServer
+        serverProvider.createServer(serverContext)
       } catch {
         case e: ExceptionInInitializerError => throw e.getCause
       }
