@@ -44,6 +44,7 @@ object Dependencies {
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
 
+  private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.2.0"
 
   // latest version of APC depend on a Cassandra driver core that's not compatible with Lagom (newer netty/guava/etc... under the covers)
   private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion
@@ -80,7 +81,7 @@ object Dependencies {
       "com.clearspring.analytics" % "stream" % "2.5.2",
       "com.fasterxml" % "classmate" % "1.3.0",
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
-      "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.0.0",
+      akkaPersistenceJdbc,
       "com.github.jnr" % "jffi" % "1.2.14",
       "com.github.jnr" % "jnr-constants" % "0.9.6",
       "com.github.jnr" % "jnr-ffi" % "2.1.2",
@@ -476,7 +477,7 @@ object Dependencies {
   val `persistence-cassandra-scaladsl` = libraryDependencies ++= Nil
 
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
-    "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.0.0",
+    akkaPersistenceJdbc,
     playJdbc
   )
 
