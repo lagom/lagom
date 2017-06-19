@@ -671,7 +671,7 @@ object Dependencies {
     // http://stackoverflow.com/questions/4908651/the-following-artifacts-could-not-be-resolved-javax-jmsjmsjar1-1
     // for more context.
     log4J,
-    // Note that curator 3.x is only compatible with zookeper 3.5.x. Kafka currently uses zookeeper 3.4, hence we have
+    // Note that curator 3.x is only compatible with zookeeper 3.5.x. Kafka currently uses zookeeper 3.4, hence we have
     // to use curator 2.x, which is compatible with zookeeper 3.4 (see the notice in
     // http://curator.apache.org/index.html - make sure to scroll to the bottom)
     "org.apache.curator" % "curator-framework" % "2.10.0",

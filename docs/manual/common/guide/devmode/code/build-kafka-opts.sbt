@@ -1,7 +1,7 @@
 
 //#kafka-port
 lagomKafkaPort in ThisBuild := 10000
-lagomKafkaZookeperPort in ThisBuild := 9999
+lagomKafkaZookeeperPort in ThisBuild := 9999
 //#kafka-port
 
 //#kafka-properties
