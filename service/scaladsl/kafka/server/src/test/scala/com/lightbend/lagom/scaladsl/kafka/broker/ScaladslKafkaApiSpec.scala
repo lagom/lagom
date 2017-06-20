@@ -247,7 +247,7 @@ object KafkaSpecTools {
 
   def createTopics(topics: Seq[String]): Any = {
     // based on https://stackoverflow.com/a/23360100/103190
-    val zkClient = new ZkClient(s"localhost:${ZooKeeperLocalServer.DefaultPort}", 1000, 1000, StringSerializer)
+    val zkClient = new ZkClient(s"localhost:${ZooKeeperLocalServer.DefaultPort}", 5000, 5000, StringSerializer)
     val zkUtils: kafka.utils.ZkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
     topics.foreach(t =>
       AdminUtils.createTopic(zkUtils, t, 1, 1))
