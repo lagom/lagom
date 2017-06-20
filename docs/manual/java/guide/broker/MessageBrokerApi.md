@@ -8,7 +8,7 @@ To publish data to a topic a service needs to declare the topic in its [[service
 
 @[hello-service](code/docs/javadsl/mb/HelloService.java)
 
-The syntax for declaring a topic is similar to the one used already to define services' endpoints. The [`Descriptor.publishing`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html#publishing-com.lightbend.lagom.javadsl.api.Descriptor.TopicCall...-) method accepts a sequence of topic calls, each topic call can be defined via the [`Service.topic`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#topic-java.lang.String-java.lang.reflect.Method-) static method. The latter takes a topic name (i.e., the topic identifier), and a reference to a method that returns a [`Topic`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Topic.html) instance.
+The syntax for declaring a topic is similar to the one used already to define services' endpoints. The [`Descriptor.withTopics`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html#withTopics-com.lightbend.lagom.javadsl.api.Descriptor.TopicCall...-) method accepts a sequence of topic calls, each topic call can be defined via the [`Service.topic`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#topic-java.lang.String-java.lang.reflect.Method-) static method. The latter takes a topic name (i.e., the topic identifier), and a reference to a method that returns a [`Topic`](api/index.html?com/lightbend/lagom/javadsl/api/broker/Topic.html) instance.
 
 Data flowing through a topic is serialized to JSON by default. Of course, it is possible to use a different serialization format, and you can do so by passing a different message serializer for each topic defined in a service descriptor. For instance, using the above service definition, here is how you could have passed a custom serializer: `topic("greetings", this::greetingsTopic).withMessageSerializer(<your-custom-serializer>)`.
 
@@ -18,7 +18,7 @@ Kafka will distribute messages for a particular topic across many partitions, so
 
 Lagom allows this by allowing you to configure a partition key strategy, which extracts the partition key out of a message. Kafka will then use this key to help decide what partition to send each message to. The partition can be selected using the [`partitionKeyStrategy`](api/index.html?com/lightbend/lagom/javadsl/api/broker/kafka/KafkaProperties.html#partitionKeyStrategy--) property, by passing a [`PartitionKeyStrategy`](api/index.html?com/lightbend/lagom/javadsl/api/broker/kafka/PartitionKeyStrategy.html) to it: 
 
-@[publishing](code/docs/javadsl/mb/BlogPostService.java)
+@[withTopics](code/docs/javadsl/mb/BlogPostService.java)
 
 ## Implementing a topic
 
