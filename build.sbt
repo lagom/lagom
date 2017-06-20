@@ -69,7 +69,8 @@ def bintraySettings: Seq[Setting[_]] = Seq(
   bintrayOrganization := Some("lagom"),
   bintrayRepository := "sbt-plugin-releases",
   bintrayPackage := "lagom-sbt-plugin",
-  bintrayReleaseOnPublish := false
+  bintrayReleaseOnPublish := false,
+  credentials := List(Path.userHome / ".bintray").filter(_.exists).map(Credentials(_))
 )
 
 def releaseSettings: Seq[Setting[_]] = Seq(
