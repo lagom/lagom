@@ -1,6 +1,7 @@
 language: scala
 dist: trusty
 sudo: required
+group: edge
 jdk:
   - oraclejdk8
 env:
