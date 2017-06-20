@@ -9,11 +9,11 @@ object Dependencies {
   val ScalaVersion = "2.11.11"
   val AkkaPersistenceCassandraVersion = "0.54"
   val ScalaTestVersion = "3.0.3"
-  val JacksonVersion = "2.8.7"
+  val JacksonVersion = "2.8.8"
   val CassandraAllVersion = "3.8"
-  val GuavaVersion = "21.0"
+  val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.8.Final"
+  val NettyVersion = "4.1.11.Final"
   val KafkaVersion = "0.10.2.0"
   val AkkaStreamKafkaVersion = "0.15"
   val Log4jVersion = "1.2.17"
@@ -27,10 +27,13 @@ object Dependencies {
   private val log4J = "log4j" % "log4j" % Log4jVersion
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
+  private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
   private val jbossLogging = "org.jboss.logging" % "jboss-logging" % "3.3.0.Final"
-  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5"
+  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.1"
+  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.2"
   private val h2 = "com.h2database" % "h2" % "1.4.192"
+  private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0"
 
   private val akkaActor = "com.typesafe.akka" %% "akka-actor" % AkkaVersion
   private val akkaCluster = "com.typesafe.akka" %% "akka-cluster" % AkkaVersion
@@ -61,8 +64,8 @@ object Dependencies {
   private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion
   private val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % PlayVersion
 
-  private val playFunctional = "com.typesafe.play" %% "play-functional" % "2.6.0-M6"
-  private val playJson = "com.typesafe.play" %% "play-json" % "2.6.0-M6"
+  private val playFunctional = "com.typesafe.play" %% "play-functional" % PlayVersion
+  private val playJson = "com.typesafe.play" %% "play-json" % PlayVersion
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.
@@ -79,6 +82,7 @@ object Dependencies {
       "com.addthis.metrics" % "reporter-config3" % "3.0.0",
       "com.boundary" % "high-scale-lib" % "1.0.6",
       "com.clearspring.analytics" % "stream" % "2.5.2",
+      cassandraDriverCore,
       "com.fasterxml" % "classmate" % "1.3.0",
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
       akkaPersistenceJdbc,
@@ -87,7 +91,10 @@ object Dependencies {
       "com.github.jnr" % "jnr-ffi" % "2.1.2",
       "com.github.jnr" % "jnr-posix" % "3.0.27",
       "com.github.jnr" % "jnr-x86asm" % "1.0.2",
+      "com.google.code.findbugs" % "jsr305" % "1.3.9",
+      "com.google.errorprone" % "error_prone_annotations" % "2.0.18",
       "com.google.guava" % "guava" % GuavaVersion,
+      "com.google.j2objc" % "j2objc-annotations" % "1.1",
       "com.google.inject" % "guice" % "4.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "4.1.0",
       "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
@@ -96,7 +103,7 @@ object Dependencies {
       "com.lmax" % "disruptor" % "3.3.6",
       "com.novocode" % "junit-interface" % "0.11",
       typesafeConfig,
-      "com.typesafe" %% "ssl-config-core" % "0.2.1",
+      sslConfig,
       akkaStreamKafka,
       akkaPersistenceCassandra,
       akkaPersistenceCassandraLauncher,
@@ -105,14 +112,14 @@ object Dependencies {
       "com.typesafe.play" %% "cachecontrol" % "1.1.2",
       playJson,
       playFunctional,
-      "com.typesafe.play" %% "play-ws-standalone" % "1.0.0-M6",
-      "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.0.0-M6",
-      "com.typesafe.play" % "shaded-asynchttpclient" % "1.0.0-M6",
-      "com.typesafe.play" % "shaded-oauth" % "1.0.0-M6",
+      "com.typesafe.play" %% "play-ws-standalone" % "1.0.0-RC1",
+      "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.0.0-RC1",
+      "com.typesafe.play" % "shaded-asynchttpclient" % "1.0.0-RC1",
+      "com.typesafe.play" % "shaded-oauth" % "1.0.0-RC1",
       "com.typesafe.play" %% "twirl-api" % "1.3.0",
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-      "com.zaxxer" % "HikariCP" % "2.6.1",
+      "com.zaxxer" % "HikariCP" % "2.6.2",
       "commons-codec" % "commons-codec" % "1.10",
       "commons-logging" % "commons-logging" % "1.2",
       "io.aeron" % "aeron-client" % "1.2.5",
@@ -125,9 +132,9 @@ object Dependencies {
       "javax.cache" % "cache-api" % "1.0.0",
       "javax.inject" % "javax.inject" % "1",
       "javax.transaction" % "jta" % "1.1",
-      "joda-time" % "joda-time" % "2.9.6",
+      "joda-time" % "joda-time" % "2.9.9",
       "junit" % "junit" % "4.11",
-      "net.jodah" % "typetools" % "0.4.9",
+      "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
       "oauth.signpost" % "signpost-commonshttp4" % "1.2.1.2",
       "oauth.signpost" % "signpost-core" % "1.2.1.2",
@@ -147,12 +154,13 @@ object Dependencies {
       "org.caffinitas.ohc" % "ohc-core" % "0.4.3",
       "org.codehaus.jackson" % "jackson-core-asl" % "1.9.2",
       "org.codehaus.jackson" % "jackson-mapper-asl" % "1.9.2",
+      "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
       "org.eclipse.jdt.core.compiler" % "ecj" % "4.4.2",
       "org.fusesource" % "sigar" % "1.6.4",
       "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final",
       "org.immutables" % "value" % "2.3.2",
-      "org.javassist" % "javassist" % "3.21.0-GA",
+      javassist,
       jbossLogging,
       "org.joda" % "joda-convert" % "1.7",
       "org.hamcrest" % "hamcrest-core" % "1.3",
@@ -194,7 +202,7 @@ object Dependencies {
 
     ) ++ libraryFamily("io.netty", NettyVersion)(
       "netty-buffer", "netty-codec", "netty-codec-http", "netty-common", "netty-handler", "netty-resolver",
-      "netty-transport", "netty-transport-native-epoll"
+      "netty-transport", "netty-transport-native-epoll", "netty-transport-native-unix-common"
 
     ) ++ libraryFamily("org.apache.logging.log4j", "2.7")(
       "log4j-api", "log4j-core", "log4j-slf4j-impl"
@@ -259,7 +267,10 @@ object Dependencies {
     akkaSlf4j,
     akkaStream,
     play,
-    guava
+    guava,
+
+    // Upgrades needed to match whitelist
+    sslConfig
   )
 
   val `api-javadsl` = libraryDependencies ++= Seq(
@@ -310,12 +321,12 @@ object Dependencies {
     scalaTest % Test,
 
     // Upgrades needed to match whitelist versions
-    akkaStream,
     akkaSlf4j,
     akkaStream,
     scalaXml,
     guava,
-    jbossLogging
+    jbossLogging,
+    sslConfig
   )
 
   val client = libraryDependencies ++= Seq(
@@ -352,7 +363,8 @@ object Dependencies {
 
     // Upgrades needed to match whitelist
     scalaJava8Compat,
-    scalaParserCombinators
+    scalaParserCombinators,
+    sslConfig
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
@@ -398,6 +410,7 @@ object Dependencies {
     // Upgrades needed to match whitelist
     scalaJava8Compat,
     scalaParserCombinators,
+    sslConfig,
     scalaXml % Test
   )
 
@@ -469,7 +482,8 @@ object Dependencies {
     akkaPersistenceCassandra,
     akkaPersistenceCassandraLauncher % Test,
     // Upgrades needed to match whitelist
-    "io.dropwizard.metrics" % "metrics-core" % "3.2.2"
+    "io.dropwizard.metrics" % "metrics-core" % "3.2.2",
+    "io.netty" % "netty-handler" % NettyVersion
   )
 
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Nil
@@ -531,7 +545,8 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     akkaStream,
-    akkaSlf4j
+    akkaSlf4j,
+    sslConfig
   ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % "1.1.3")
 
   val log4j2 = libraryDependencies ++= Seq(
@@ -544,7 +559,8 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     akkaStream,
-    akkaSlf4j
+    akkaSlf4j,
+    sslConfig
   )
 
   val `build-link` = libraryDependencies ++= Seq(
@@ -557,13 +573,14 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     akkaStream,
-    akkaSlf4j
+    akkaSlf4j,
+    sslConfig
   )
 
   val `build-tool-support` = libraryDependencies ++= Seq(
     "com.lightbend.play" %% "play-file-watch" % "1.0.0",
     // This is used in the code to check if the embedded cassandra server is started
-    "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0",
+    cassandraDriverCore,
     scalaTest % Test
   )
 
@@ -647,6 +664,7 @@ object Dependencies {
     // http://curator.apache.org/index.html - make sure to scroll to the bottom)
     "org.apache.curator" % "curator-framework" % "2.10.0",
     "org.apache.curator" % "curator-test" % "2.10.0",
+    javassist,
     scalaJava8Compat,
     scalaTest % Test
   )
