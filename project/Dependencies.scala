@@ -312,7 +312,12 @@ object Dependencies {
 
   val `api-tools` = libraryDependencies ++= Seq(
     play,
-    scalaTest % Test
+    scalaTest % Test,
+
+    // Upgrades needed to match whitelist
+    akkaSlf4j,
+    akkaStream,
+    sslConfig
   )
 
   val client = libraryDependencies ++= Seq(
