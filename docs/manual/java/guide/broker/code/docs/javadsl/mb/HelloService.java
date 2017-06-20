@@ -18,7 +18,7 @@ public interface HelloService extends Service {
         pathCall("/api/hello/:id", this::useGreeting)
       )
       // here we declare the topic(s) this service will publish to
-      .publishing(
+      .withTopics(
         topic(GREETINGS_TOPIC, this::greetingsTopic)
       )
       .withAutoAcl(true);

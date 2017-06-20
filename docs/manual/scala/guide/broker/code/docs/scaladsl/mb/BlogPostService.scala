@@ -16,7 +16,7 @@ trait BlogPostService extends Service {
   override final def descriptor: Descriptor = {
     import Service._
 
-    //#publishing
+    //#withTopics
     named("blogpostservice")
       .withTopics(
         topic("blogposts", blogPostEvents)
@@ -25,7 +25,7 @@ trait BlogPostService extends Service {
             PartitionKeyStrategy[BlogPostEvent](_.postId)
           )
       )
-    //#publishing
+    //#withTopics
   }
 
   def blogPostEvents: Topic[BlogPostEvent]
