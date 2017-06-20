@@ -820,7 +820,6 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     sourceGenerators in Compile += Def.task {
       Generators.version(version.value, (sourceManaged in Compile).value)
     }.taskValue,
-    Dependencies.`build-link`,
     Dependencies.`build-tool-support`
   )
 

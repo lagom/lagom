@@ -563,11 +563,6 @@ object Dependencies {
     sslConfig
   )
 
-  val `build-link` = libraryDependencies ++= Seq(
-    playExceptions,
-    playBuildLink
-  )
-
   val `reloadable-server` = libraryDependencies ++= Seq(
     playServer,
 
@@ -579,6 +574,8 @@ object Dependencies {
 
   val `build-tool-support` = libraryDependencies ++= Seq(
     "com.lightbend.play" %% "play-file-watch" % "1.0.0",
+    playExceptions,
+    playBuildLink,
     // This is used in the code to check if the embedded cassandra server is started
     cassandraDriverCore,
     scalaTest % Test
