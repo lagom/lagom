@@ -279,7 +279,7 @@ object JavadslKafkaApiSpec {
 
     override def descriptor(): Descriptor =
       named("testservice")
-        .publishing(
+        .withTopics(
           topic("test1", test1Topic _),
           topic("test2", test2Topic _),
           topic("test3", test3Topic _),

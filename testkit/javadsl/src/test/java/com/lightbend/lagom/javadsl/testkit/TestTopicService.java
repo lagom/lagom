@@ -21,7 +21,7 @@ public interface TestTopicService extends Service {
     @Override
     default Descriptor descriptor() {
         return named("testtopicservice")
-                .publishing(topic("testtopic", this::testTopic));
+                .withTopics(topic("testtopic", this::testTopic));
     }
 
     class Impl implements TestTopicService {

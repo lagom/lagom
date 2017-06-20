@@ -18,7 +18,7 @@ Kafka will distribute messages for a particular topic across many partitions, so
 
 Lagom allows this by allowing you to configure a partition key strategy, which extracts the partition key out of a message. Kafka will then use this key to help decide what partition to send each message to. The partition can be selected using the [`partitionKeyStrategy`](api/com/lightbend/lagom/scaladsl/api/broker/kafka/KafkaProperties$.html#partitionKeyStrategy[Message]:com.lightbend.lagom.scaladsl.api.Descriptor.Property[Message,com.lightbend.lagom.scaladsl.api.broker.kafka.PartitionKeyStrategy[Message]]) property, by passing a [`PartitionKeyStrategy`](api/com/lightbend/lagom/scaladsl/api/broker/kafka/PartitionKeyStrategy.html) to it: 
 
-@[publishing](code/docs/scaladsl/mb/BlogPostService.scala)
+@[withTopics](code/docs/scaladsl/mb/BlogPostService.scala)
 
 ## Implementing a topic
 

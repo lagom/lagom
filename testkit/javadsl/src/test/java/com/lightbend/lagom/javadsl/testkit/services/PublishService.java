@@ -16,7 +16,7 @@ public interface PublishService extends Service {
     @Override
     default Descriptor descriptor() {
         return Service.named("publish-service")
-                .publishing(
+                .withTopics(
                         Service.topic(TOPIC_ID, this::messageTopic)
                 );
     }
