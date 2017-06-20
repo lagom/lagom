@@ -603,24 +603,8 @@ object Dependencies {
   val `play-integration-javadsl` = libraryDependencies ++= Nil
 
   val `cassandra-server` = libraryDependencies ++= Seq(
-
     akkaPersistenceCassandraLauncher,
-
-    // Cassandra goes into 100% CPU spin when starting with netty jars of different versions. Hence,
-    // we are making sure that the only netty dependency comes from cassandra-all, and manually excludes
-    // all netty transitive dependencies of akka-persistence-cassandra. Mind that dependencies are
-    // excluded one-by-one because exclusion rules do not work with maven dependency resolution - see
-    // https://github.com/lagom/lagom/issues/26#issuecomment-196718818
     akkaPersistenceCassandra
-      exclude("io.netty", "netty-all") exclude("io.netty", "netty-handler") exclude("io.netty", "netty-buffer")
-      exclude("io.netty", "netty-common") exclude("io.netty", "netty-transport") exclude("io.netty", "netty-codec"),
-
-    // Explicitly override the jboss-logging transitive dependency from cassandra-all.
-    // By default, it uses jboss-logging 3.1.0.CR2, which is under LGPL.
-    // This forces it to a newer version that is licensed under Apache v2.
-    jbossLogging,
-    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion
-
   )
 
   val `kafka-server` = libraryDependencies ++= Seq(
