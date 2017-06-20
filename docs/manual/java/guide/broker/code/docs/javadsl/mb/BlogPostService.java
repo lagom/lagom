@@ -10,14 +10,14 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 public interface BlogPostService extends Service {
   @Override
   default Descriptor descriptor() {
+    //#withTopics
     return named("blogpostservice")
-            //#publishing
-            .publishing(
+            .withTopics(
                     topic("blogposts", this::blogPostEvents)
                         .withProperty(KafkaProperties.partitionKeyStrategy(),
                                 BlogPostEvent::getPostId)
             );
-            //#publishing
+    //#withTopics
   }
   Topic<BlogPostEvent> blogPostEvents();
 }

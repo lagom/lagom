@@ -17,7 +17,7 @@ public interface AlphaUpstreamService extends Service {
     @Override
     default Descriptor descriptor() {
         return Service.named("upstream-a")
-                .publishing(
+                .withTopics(
                         Service.topic(TOPIC_ID, this::messageTopic)
                 );
     }

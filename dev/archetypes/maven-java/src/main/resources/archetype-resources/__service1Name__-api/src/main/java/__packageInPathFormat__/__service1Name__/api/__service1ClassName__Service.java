@@ -47,7 +47,7 @@ public interface ${service1ClassName}Service extends Service {
     return named("${service1Name}").withCalls(
         pathCall("/api/${service1Name}/:id",  this::hello),
         pathCall("/api/${service1Name}/:id", this::useGreeting)
-      ).publishing(
+      ).withTopics(
           topic("hello-events", this::helloEvents)
           // Kafka partitions messages, messages within the same partition will
           // be delivered in order, to ensure that all messages for the same user

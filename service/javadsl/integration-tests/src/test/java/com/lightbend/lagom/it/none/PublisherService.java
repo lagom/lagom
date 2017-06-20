@@ -16,7 +16,7 @@ public interface PublisherService extends Service {
     String TOPIC = "the-topic";
 
     default Descriptor descriptor() {
-        return named("/publisher").publishing(
+        return named("/publisher").withTopics(
                 Service.topic(TOPIC, this::messages)
         );
     }
