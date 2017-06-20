@@ -277,7 +277,6 @@ object Dependencies {
     playJava,
     playGuice,
     "org.pcollections" % "pcollections" % "2.1.2",
-    jbossLogging,
     scalaTest % Test,
     "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion % Test
   )
@@ -306,11 +305,6 @@ object Dependencies {
     scalaTest % Test,
 
     // Upgrades needed to match whitelist
-    "com.fasterxml.jackson.core" % "jackson-core" % JacksonVersion,
-    "com.fasterxml.jackson.core" % "jackson-annotations" % JacksonVersion,
-    "com.fasterxml.jackson.core" % "jackson-databind" % JacksonVersion,
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % JacksonVersion,
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % JacksonVersion,
     scalaJava8Compat,
     scalaXml % Test,
     scalaParserCombinators % Test
@@ -318,15 +312,7 @@ object Dependencies {
 
   val `api-tools` = libraryDependencies ++= Seq(
     play,
-    scalaTest % Test,
-
-    // Upgrades needed to match whitelist versions
-    akkaSlf4j,
-    akkaStream,
-    scalaXml,
-    guava,
-    jbossLogging,
-    sslConfig
+    scalaTest % Test
   )
 
   val client = libraryDependencies ++= Seq(
@@ -372,10 +358,7 @@ object Dependencies {
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
-    "junit" % "junit" % "4.11",
-
-    // Upgrades needed to mtach whitelist
-    "io.netty" % "netty-codec-http" % NettyVersion
+    "junit" % "junit" % "4.11"
   )
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
@@ -383,10 +366,7 @@ object Dependencies {
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
-    "junit" % "junit" % "4.11",
-
-    // Upgrades needed to mtach whitelist
-    "io.netty" % "netty-codec-http" % NettyVersion
+    "junit" % "junit" % "4.11"
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
@@ -428,12 +408,7 @@ object Dependencies {
     "com.novocode" % "junit-interface" % "0.11" % Test,
 
     // Upgrades needed to match whitelist
-    scalaXml % Test,
-    "com.fasterxml.jackson.core" % "jackson-core" % JacksonVersion,
-    "com.fasterxml.jackson.core" % "jackson-annotations" % JacksonVersion,
-    "com.fasterxml.jackson.core" % "jackson-databind" % JacksonVersion,
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % JacksonVersion,
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % JacksonVersion
+    scalaXml % Test
   )
 
   val `pubsub-javadsl` = libraryDependencies ++= Seq(
@@ -611,9 +586,6 @@ object Dependencies {
 
   val `service-locator` = libraryDependencies ++= Seq(
     playNettyServer,
-    // Need to upgrade Netty due to encountering this deadlock in the service gateway
-    // https://github.com/netty/netty/pull/5110
-    "io.netty" % "netty-codec-http" % NettyVersion,
     scalaTest % Test
   )
 
