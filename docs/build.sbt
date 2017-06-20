@@ -1,5 +1,5 @@
 
-val PlayVersion = "2.6.0-M3"
+val PlayVersion = "2.6.0-RC2"
 val AkkaVersion = "2.5.3"
 
 val branch = {
