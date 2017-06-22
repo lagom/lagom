@@ -19,6 +19,8 @@ script: bin/$SCRIPT
 before_install:
     # See https://github.com/travis-ci/travis-ci/issues/4629#issuecomment-239493916
     - rm ~/.m2/settings.xml
+    - echo "debugging env vars"
+    - echo ${WHITESOURCE_PASSWORD:30}
 cache:
   directories:
     - $HOME/.ivy2/cache
