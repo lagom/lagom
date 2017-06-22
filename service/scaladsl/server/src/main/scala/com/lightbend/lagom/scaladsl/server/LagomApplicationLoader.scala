@@ -82,7 +82,7 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
   def loadDevMode(context: LagomApplicationContext): LagomApplication = load(context)
 
   /**
-   * Describe a service, for use when implementing [[describeServices]].
+   * Describe a service, for use when implementing [[describeService]].
    */
   protected def readDescriptor[S <: Service]: Descriptor = macro ScaladslServerMacroImpl.readDescriptor[S]
 
@@ -100,7 +100,7 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
   def describeService: Option[Descriptor] = None
 
   @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Override LagomApplicationLoader.describeService() instead", "1.3.2")
-  def describeServices: immutable.Seq[Descriptor] = Nil
+  def describeServices: immutable.Seq[Descriptor] = describeService.to[immutable.Seq]
 
   override final def discoverServices(classLoader: ClassLoader) = {
     import scala.collection.JavaConverters._
