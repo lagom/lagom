@@ -18,6 +18,20 @@ class AclServiceLoader extends LagomApplicationLoader {
       override def serviceLocator: ServiceLocator = NoServiceLocator
     }
 
+  override def describeService = Some(readDescriptor[AclService])
+}
+
+// Just like AclServiceLoader but overriding the deprecated describeServices method instead of describeService
+class LegacyAclServiceLoader extends LagomApplicationLoader {
+  override def load(context: LagomApplicationContext): LagomApplication =
+    new AclServiceApplication(context) {
+      override def serviceLocator: ServiceLocator = NoServiceLocator
+    }
+  override def loadDevMode(context: LagomApplicationContext): LagomApplication =
+    new AclServiceApplication(context) {
+      override def serviceLocator: ServiceLocator = NoServiceLocator
+    }
+
   override def describeServices = List(readDescriptor[AclService])
 }
 
@@ -40,7 +54,7 @@ class NoAclServiceLoader extends LagomApplicationLoader {
       override def serviceLocator: ServiceLocator = NoServiceLocator
     }
 
-  override def describeServices = List(readDescriptor[NoAclService])
+  override def describeService = Some(readDescriptor[NoAclService])
 }
 
 abstract class NoAclServiceApplication(context: LagomApplicationContext)
@@ -51,6 +65,19 @@ abstract class NoAclServiceApplication(context: LagomApplicationContext)
 }
 // ---------------------------------------
 class UndescribedServiceLoader extends LagomApplicationLoader {
+  override def load(context: LagomApplicationContext): LagomApplication =
+    new NoAclServiceApplication(context) {
+      override def serviceLocator: ServiceLocator = NoServiceLocator
+    }
+  override def loadDevMode(context: LagomApplicationContext): LagomApplication =
+    new NoAclServiceApplication(context) {
+      override def serviceLocator: ServiceLocator = NoServiceLocator
+    }
+  override def describeService = None
+}
+
+// Just like AclServiceLoader but overriding the deprecated describeServices method instead of describeService
+class LegacyUndescribedServiceLoader extends LagomApplicationLoader {
   override def load(context: LagomApplicationContext): LagomApplication =
     new NoAclServiceApplication(context) {
       override def serviceLocator: ServiceLocator = NoServiceLocator
