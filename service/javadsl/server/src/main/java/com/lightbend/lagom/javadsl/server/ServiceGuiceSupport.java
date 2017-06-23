@@ -146,7 +146,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      *
      * @return a {@link ServiceGuiceSupport.ServiceBinding} to be used as argument in {@link ServiceGuiceSupport#bindServices(ServiceBinding[])}.
      */
-    default <T> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, Class<? extends T> serviceImplementation) {
+    default <T extends Service> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, Class<? extends T> serviceImplementation) {
         return new ClassServiceBinding<>(serviceInterface, serviceImplementation);
     }
 
@@ -158,18 +158,18 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * @param <T>              type constraint ensuring <code>service</code> implements <code>serviceInterface</code>
      * @return a {@link ServiceGuiceSupport.ServiceBinding} to be used as argument in {@link ServiceGuiceSupport#bindServices(ServiceBinding[])}.
      */
-    default <T> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, T service) {
+    default <T extends Service> ServiceBinding<T> serviceBinding(Class<T> serviceInterface, T service) {
         return new InstanceServiceBinding<>(serviceInterface, service);
     }
 
-    abstract class ServiceBinding<T> {
+    abstract class ServiceBinding<T extends Service> {
         private ServiceBinding() {
         }
 
         public abstract Class<T> serviceInterface();
     }
 
-    final class ClassServiceBinding<T> extends ServiceBinding<T> {
+    final class ClassServiceBinding<T extends Service> extends ServiceBinding<T> {
         private final Class<T> serviceInterface;
         private final Class<? extends T> serviceImplementation;
 
@@ -188,7 +188,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
         }
     }
 
-    final class InstanceServiceBinding<T> extends ServiceBinding<T> {
+    final class InstanceServiceBinding<T extends Service> extends ServiceBinding<T> {
         private final Class<T> serviceInterface;
         private final T service;
 
