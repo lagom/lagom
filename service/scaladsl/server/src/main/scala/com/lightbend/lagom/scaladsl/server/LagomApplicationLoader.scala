@@ -325,17 +325,18 @@ trait LocalServiceLocator extends RequiresLagomServicePort with CircuitBreakerCo
   def configuration: Configuration
   def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
 
-  lazy val serviceLocator: ServiceLocator = new CircuitBreakingServiceLocator(circuitBreakers)(executionContext) {
-    val services = lagomServer.serviceBindings.map(_.descriptor.name).toSet
+  lazy val serviceLocator: ServiceLocator =
+    new CircuitBreakingServiceLocator(circuitBreakersPanel)(executionContext) {
+      val services = lagomServer.serviceBindings.map(_.descriptor.name).toSet
 
-    def getUri(name: String): Future[Option[URI]] = lagomServicePort.map {
-      case port if services(name) => Some(URI.create(s"http://localhost:$port"))
-      case _                      => None
-    }(executionContext)
+      def getUri(name: String): Future[Option[URI]] = lagomServicePort.map {
+        case port if services(name) => Some(URI.create(s"http://localhost:$port"))
+        case _                      => None
+      }(executionContext)
 
-    override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] =
-      getUri(name)
-  }
+      override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] =
+        getUri(name)
+    }
 }
 
 /**
