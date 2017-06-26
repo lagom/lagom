@@ -4,16 +4,16 @@ import sbt.Keys._
 object Dependencies {
 
   // Version numbers
-  val PlayVersion = "2.6.0-RC2"
+  val PlayVersion = "2.6.0"
   val AkkaVersion = "2.5.3"
   val ScalaVersion = "2.11.11"
   val AkkaPersistenceCassandraVersion = "0.54"
   val ScalaTestVersion = "3.0.3"
-  val JacksonVersion = "2.8.8"
+  val JacksonVersion = "2.8.9"
   val CassandraAllVersion = "3.8"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.11.Final"
+  val NettyVersion = "4.1.12.Final"
   val KafkaVersion = "0.10.2.0"
   val AkkaStreamKafkaVersion = "0.15"
   val Log4jVersion = "1.2.17"
@@ -56,7 +56,7 @@ object Dependencies {
 
   private val play = "com.typesafe.play" %% "play" % PlayVersion
   private val playBuildLink = "com.typesafe.play" % "build-link" % PlayVersion
-  private val playExceptions =  "com.typesafe.play" % "play-exceptions" % PlayVersion
+  private val playExceptions = "com.typesafe.play" % "play-exceptions" % PlayVersion
   private val playGuice = "com.typesafe.play" %% "play-guice" % PlayVersion
   private val playJava = "com.typesafe.play" %% "play-java" % PlayVersion
   private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion
@@ -112,14 +112,16 @@ object Dependencies {
       "com.typesafe.play" %% "cachecontrol" % "1.1.2",
       playJson,
       playFunctional,
-      "com.typesafe.play" %% "play-ws-standalone" % "1.0.0-RC1",
-      "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.0.0-RC1",
-      "com.typesafe.play" % "shaded-asynchttpclient" % "1.0.0-RC1",
-      "com.typesafe.play" % "shaded-oauth" % "1.0.0-RC1",
-      "com.typesafe.play" %% "twirl-api" % "1.3.0",
+      "com.typesafe.play" %% "play-ws-standalone" % "1.0.0",
+      "com.typesafe.play" %% "play-ws-standalone-xml" % "1.0.0",
+      "com.typesafe.play" %% "play-ws-standalone-json" % "1.0.0",
+      "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.0.0",
+      "com.typesafe.play" % "shaded-asynchttpclient" % "1.0.0",
+      "com.typesafe.play" % "shaded-oauth" % "1.0.0",
+      "com.typesafe.play" %% "twirl-api" % "1.3.2",
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-      "com.zaxxer" % "HikariCP" % "2.6.2",
+      "com.zaxxer" % "HikariCP" % "2.6.3",
       "commons-codec" % "commons-codec" % "1.10",
       "commons-logging" % "commons-logging" % "1.2",
       "io.aeron" % "aeron-client" % "1.2.5",
@@ -144,7 +146,7 @@ object Dependencies {
       "org.antlr" % "antlr-runtime" % "3.5.2",
       "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion,
       "org.apache.cassandra" % "cassandra-thrift" % CassandraAllVersion,
-      "org.apache.commons" % "commons-lang3" % "3.5",
+      "org.apache.commons" % "commons-lang3" % "3.6",
       "org.apache.commons" % "commons-math3" % "3.2",
       "org.apache.httpcomponents" % "httpclient" % "4.5.2",
       "org.apache.httpcomponents" % "httpcore" % "4.4.4",
@@ -179,13 +181,7 @@ object Dependencies {
       "tyrex" % "tyrex" % "1.0.1",
       "xml-apis" % "xml-apis" % "1.4.01"
 
-    ) ++ libraryFamily("com.fasterxml.jackson.core", JacksonVersion)(
-      "jackson-annotations", "jackson-core", "jackson-databind"
-
-    ) ++ libraryFamily("com.fasterxml.jackson.datatype", JacksonVersion)(
-      "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
-
-    ) ++ crossLibraryFamily("com.typesafe.akka", AkkaVersion)(
+    ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", AkkaVersion)(
       "akka-actor", "akka-cluster", "akka-cluster-sharding", "akka-cluster-tools", "akka-distributed-data",
       "akka-multi-node-testkit", "akka-persistence", "akka-persistence-query", "akka-protobuf", "akka-remote",
       "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit"
@@ -217,6 +213,15 @@ object Dependencies {
       "jcl-over-slf4j", "jul-to-slf4j", "log4j-over-slf4j", "slf4j-api"
     )
   }
+
+
+  private val jacksonFamily =
+    libraryFamily("com.fasterxml.jackson.core", JacksonVersion)(
+      "jackson-annotations", "jackson-core", "jackson-databind"
+    ) ++ libraryFamily("com.fasterxml.jackson.datatype", JacksonVersion)(
+      "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
+    )
+
 
   // These dependencies are used by JPA to test, but we don't want to export them as part of our regular whitelist,
   // so we maintain it separately.
@@ -308,6 +313,10 @@ object Dependencies {
     scalaJava8Compat,
     scalaXml % Test,
     scalaParserCombinators % Test
+    // explicitly depend on particular versions of jackson
+  ) ++ jacksonFamily ++ Seq(
+    // explicitly depend on particular versions of guava
+    guava
   )
 
   val `api-tools` = libraryDependencies ++= Seq(
@@ -414,6 +423,10 @@ object Dependencies {
 
     // Upgrades needed to match whitelist
     scalaXml % Test
+    // explicitly depend on particular versions of jackson
+  ) ++ jacksonFamily ++ Seq(
+    // explicitly depend on particular versions of guava
+    guava
   )
 
   val `pubsub-javadsl` = libraryDependencies ++= Seq(
@@ -423,6 +436,10 @@ object Dependencies {
     akkaStreamTestkit % Test,
     scalaTest % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test
+    // explicitly depend on particular versions of jackson
+  ) ++ jacksonFamily ++ Seq(
+    // explicitly depend on particular versions of guava
+    guava
   )
 
   val `pubsub-scaladsl` = libraryDependencies ++= Seq(
@@ -690,4 +707,5 @@ object Dependencies {
   private class DependencyWhitelistValidationFailed extends RuntimeException with FeedbackProvidedException {
     override def toString = "Dependency whitelist validation failed!"
   }
+
 }
