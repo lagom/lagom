@@ -118,6 +118,12 @@ object Dependencies {
       // play client libs
       playWs,
       playAhcWs,
+      "com.typesafe.play" %% "play-ws-standalone" % PlayStandaloneWsVersion,
+      "com.typesafe.play" %% "play-ws-standalone-xml" % PlayStandaloneWsVersion,
+      "com.typesafe.play" %% "play-ws-standalone-json" % PlayStandaloneWsVersion,
+      "com.typesafe.play" %% "play-ahc-ws-standalone" % PlayStandaloneWsVersion,
+      "com.typesafe.play" % "shaded-asynchttpclient" % PlayStandaloneWsVersion,
+      "com.typesafe.play" % "shaded-oauth" % PlayStandaloneWsVersion,
 
       "com.typesafe.play" %% "twirl-api" % "1.3.2",
       "com.typesafe.slick" %% "slick" % SlickVersion,
