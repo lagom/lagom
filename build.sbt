@@ -269,8 +269,8 @@ lazy val root = (project in file("."))
   .settings(UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*)
   .settings(
     whitesourceProduct in ThisBuild               := "Lightbend Reactive Platform",
-    whitesourceAggregateProjectName in ThisBuild  := sys.props.getOrElse("WHITESOURCE_PROJECT_NAME", default = "invalid"),
-    whitesourceAggregateProjectToken in ThisBuild := sys.props.getOrElse("WHITESOURCE_PROJECT_TOKEN", default = "invalid")
+    whitesourceAggregateProjectName in ThisBuild  := sys.env.getOrElse("WHITESOURCE_PROJECT_NAME", default = "invalid"),
+    whitesourceAggregateProjectToken in ThisBuild := sys.env.getOrElse("WHITESOURCE_PROJECT_TOKEN", default = "invalid")
   ).aggregate(javadslProjects.map(Project.projectToRef): _*)
   .aggregate(scaladslProjects.map(Project.projectToRef): _*)
   .aggregate(coreProjects.map(Project.projectToRef): _*)
@@ -279,7 +279,7 @@ lazy val root = (project in file("."))
   credentials += Credentials(realm = "whitesource",
       host = "whitesourcesoftware.com",
       userName = "",
-      passwd = sys.props.getOrElse("WHITESOURCE_PASSWORD", default = "invalid"))
+      passwd = sys.env.getOrElse("WHITESOURCE_PASSWORD", default = "invalid"))
 
 def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin)
 def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
