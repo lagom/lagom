@@ -3,14 +3,12 @@
  */
 package com.lightbend.lagom.javadsl.persistence.cassandra.testkit
 
+import com.lightbend.lagom.internal.javadsl.persistence.testkit.CassandraTestConfig
 import com.lightbend.lagom.javadsl.persistence.testkit.AbstractTestUtil
 import com.typesafe.config.Config
 
 object TestUtil extends AbstractTestUtil {
 
-  def persistenceConfig(testName: String, cassandraPort: Int): Config = {
-    com.lightbend.lagom.javadsl.persistence.testkit.TestUtil.persistenceConfig(testName, cassandraPort,
-      useServiceLocator = false)
-  }
+  def persistenceConfig(testName: String, cassandraPort: Int): Config = CassandraTestConfig.persistenceConfig(testName, cassandraPort)
 
 }

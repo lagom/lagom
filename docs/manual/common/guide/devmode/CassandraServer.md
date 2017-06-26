@@ -60,7 +60,6 @@ In the Maven root project pom:
              <opt>-Xms256m</opt>
              <opt>-Xmx1024m</opt>
              <opt>-Dcassandra.jmx.local.port=4099</opt>
-             <opt>-DCassandraLauncher.configResource=dev-embedded-cassandra.yaml</opt>
          </cassandraJvmOptions>
     </configuration>
 </plugin>
@@ -69,10 +68,6 @@ In the Maven root project pom:
 In sbt:
 
 @[cassandra-jvm-options](code/build-cassandra-opts.sbt)
-
-## Yaml configuration
-
-As shown above, the YAML configuration file can be configured by modifying the Cassandra JVM options to include a `-DCassandraLauncher.configResource` system property that points to a resource in your `src/main/resources` directory.
 
 ## Logging
 

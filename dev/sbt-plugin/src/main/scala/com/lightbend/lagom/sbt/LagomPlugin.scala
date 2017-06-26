@@ -410,7 +410,7 @@ object LagomPlugin extends AutoPlugin {
     lagomCassandraEnabled := true,
     lagomCassandraPort := 4000, // If you change the default make sure to also update the play/reference-overrides.conf in the persistence project
     lagomCassandraCleanOnStart := false,
-    lagomCassandraJvmOptions := Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099", "-DCassandraLauncher.configResource=dev-embedded-cassandra.yaml"),
+    lagomCassandraJvmOptions := Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099"),
     lagomCassandraMaxBootWaitingTime := 20.seconds,
     lagomKafkaEnabled := true,
     lagomKafkaPropertiesFile := None,
@@ -469,11 +469,12 @@ object LagomPlugin extends AutoPlugin {
   private lazy val startCassandraServerTask = Def.task {
     val port = lagomCassandraPort.value
     val cleanOnStart = lagomCassandraCleanOnStart.value
-    val classpath = (managedClasspath in Compile).value.map(_.data)
+    val classpath = (managedClasspath in Compile).value.files
     val jvmOptions = lagomCassandraJvmOptions.value
     val maxWaiting = lagomCassandraMaxBootWaitingTime.value
+    val scala211 = scalaInstance.value
     val log = new SbtLoggerProxy(state.value.log)
-    Servers.CassandraServer.start(log, classpath, port, cleanOnStart, jvmOptions, maxWaiting)
+    Servers.CassandraServer.start(log, scala211.loader, classpath, port, cleanOnStart, jvmOptions, maxWaiting)
   }
 
   private lazy val startKafkaServerTask = Def.task {

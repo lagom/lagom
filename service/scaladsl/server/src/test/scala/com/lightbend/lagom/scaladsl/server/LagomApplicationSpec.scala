@@ -53,7 +53,8 @@ class LagomApplicationSpec extends WordSpec with Matchers {
       val contextConfig = Configuration(ConfigFactory.parseString(configKey + "=\"via context\""))
       val expected = Configuration(ConfigFactory.parseString(configKey + "=\"via additional\""))
 
-      val context = LagomApplicationContext(Context(Environment.simple(), None, new DefaultWebCommands, contextConfig))
+      val context = LagomApplicationContext(Context(Environment.simple(), None, new DefaultWebCommands, contextConfig,
+        new DefaultApplicationLifecycle))
       new LagomApplication(context) with AhcWSComponents with FakeComponent {
         configuration.getString(configKey) shouldBe expected.getString(configKey)
 

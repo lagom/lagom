@@ -12,7 +12,7 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntity.InvalidCommandEx
 import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule;
 import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver;
 import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver.Outcome;
-import com.lightbend.lagom.javadsl.persistence.testkit.TestUtil;
+import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil;
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule;
 import com.lightbend.lagom.javadsl.pubsub.PubSubRegistry;
 import java.util.Collections;

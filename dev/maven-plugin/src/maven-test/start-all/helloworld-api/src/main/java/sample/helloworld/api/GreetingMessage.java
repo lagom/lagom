@@ -1,14 +1,10 @@
 package sample.helloworld.api;
 
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
-@Immutable
 @JsonDeserialize
 public final class GreetingMessage {
 
@@ -20,7 +16,7 @@ public final class GreetingMessage {
   }
 
   @Override
-  public boolean equals(@Nullable Object another) {
+  public boolean equals(Object another) {
     return this == another || another instanceof GreetingMessage && equalTo((GreetingMessage) another);
   }
 

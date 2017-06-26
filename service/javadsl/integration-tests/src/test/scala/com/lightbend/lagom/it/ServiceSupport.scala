@@ -5,15 +5,11 @@ package com.lightbend.lagom.it
 
 import java.util.function.{ Function => JFunction }
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Flow, Source }
-import akka.stream.stage.{ SyncDirective, Context, PushStage }
-import com.lightbend.lagom.javadsl.api.ServiceLocator
+import akka.stream.scaladsl.Source
 import org.scalatest.{ Inside, Matchers, WordSpecLike }
 import play.api.Application
-import play.api.inject._
 import play.inject.guice.GuiceApplicationBuilder
-import play.core.server.Server
-import scala.concurrent.{ Await, Promise }
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import akka.japi.function.Procedure
@@ -49,17 +45,4 @@ trait ServiceSupport extends WordSpecLike with Matchers with Inside {
   def consume[T](source: Source[T, _])(implicit mat: Materializer): List[T] = {
     Await.result(source.runFold(List.empty[T])((list, t) => t :: list), 10.seconds).reverse
   }
-
-  def takeUpTo[T](n: Int): Flow[T, T, _] = Flow[T].transform(() => new PushStage[T, T] {
-    var count = 0
-    override def onPush(elem: T, ctx: Context[T]): SyncDirective = {
-      count += 1
-      if (count >= n) {
-        ctx.pushAndFinish(elem)
-      } else {
-        ctx.push(elem)
-      }
-    }
-  })
-
 }

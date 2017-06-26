@@ -3,9 +3,6 @@
  */
 package sample.helloworld.impl;
 
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.MoreObjects;
@@ -33,7 +30,6 @@ public interface HelloEvent extends Jsonable, AggregateEvent<HelloEvent> {
    * An event that represents a change in greeting message.
    */
   @SuppressWarnings("serial")
-  @Immutable
   @JsonDeserialize
   public final class GreetingMessageChanged implements HelloEvent {
     public final String message;
@@ -49,7 +45,7 @@ public interface HelloEvent extends Jsonable, AggregateEvent<HelloEvent> {
     }
 
     @Override
-    public boolean equals(@Nullable Object another) {
+    public boolean equals(Object another) {
       return this == another || another instanceof GreetingMessageChanged && equalTo((GreetingMessageChanged) another);
     }
 

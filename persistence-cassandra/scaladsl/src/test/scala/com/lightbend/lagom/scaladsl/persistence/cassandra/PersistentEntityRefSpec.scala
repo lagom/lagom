@@ -34,6 +34,7 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
       akka.remote.netty.tcp.port = 0
       akka.remote.netty.tcp.hostname = 127.0.0.1
       akka.loglevel = INFO
+      akka.cluster.sharding.distributed-data.durable.keys = []
   """).withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
   private val system: ActorSystem = ActorSystem("PersistentEntityRefSpec", ActorSystemSetup(
     BootstrapSetup(config),

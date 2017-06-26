@@ -7,7 +7,6 @@ import com.lightbend.lagom.javadsl.pubsub.PubSubRef;
 import com.lightbend.lagom.javadsl.pubsub.PubSubRegistry;
 
 import akka.actor.AbstractActor;
-import akka.japi.pf.ReceiveBuilder;
 
 //#actor
 public class Worker2 extends AbstractActor {
@@ -17,12 +16,15 @@ public class Worker2 extends AbstractActor {
   @Inject
   public Worker2(PubSubRegistry pubSub) {
     topic = pubSub.refFor(TopicId.of(JobStatus.class, "jobs-status"));
-
-    receive(ReceiveBuilder.
-        match(Job.class, this::perform)
-        .build()
-      );
   }
+
+  @Override
+  public Receive createReceive() {
+    return receiveBuilder()
+            .match(Job.class, this::perform)
+            .build();
+  }
+
 
   private void perform(Job job) {
     sender().tell(JobAccepted.of(job.getJobId()), self());

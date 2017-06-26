@@ -3,15 +3,14 @@
  */
 package com.lightbend.lagom.scaladsl.playjson
 
-import play.api.data.validation.ValidationError
-import play.api.libs.json.{ JsPath, JsValue, Json }
+import play.api.libs.json.{ JsPath, JsValue, Json, JsonValidationError }
 
-class JsonSerializationFailed private[lagom] (message: String, errors: Seq[(JsPath, Seq[ValidationError])], json: JsValue) extends RuntimeException {
+class JsonSerializationFailed private[lagom] (message: String, errors: Seq[(JsPath, Seq[JsonValidationError])], json: JsValue) extends RuntimeException {
 
   override def getMessage: String =
     s"$message\nerrors:\n${errors.map(errorToString).mkString("\t", "\n\t", "\n")}}\n${Json.prettyPrint(json)}"
 
-  private def errorToString(t: (JsPath, Seq[ValidationError])) = t match {
+  private def errorToString(t: (JsPath, Seq[JsonValidationError])) = t match {
     case (path, pathErrors) => s"$path: " + pathErrors.mkString(", ")
   }
 }

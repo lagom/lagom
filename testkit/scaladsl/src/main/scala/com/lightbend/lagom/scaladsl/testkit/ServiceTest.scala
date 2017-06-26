@@ -11,9 +11,9 @@ import java.util.concurrent.TimeUnit
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, RequiresLagomServicePort }
-import org.apache.cassandra.io.util.FileUtils
 import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
+import play.api.inject.DefaultApplicationLifecycle
 import play.api.{ Configuration, Environment, Play }
 import play.core.DefaultWebCommands
 import play.core.server.{ Server, ServerConfig, ServerProvider }
@@ -189,9 +189,9 @@ object ServiceTest {
       if (setup.cassandra) {
         val cassandraPort = CassandraLauncher.randomPort
         val cassandraDirectory = Files.createTempDirectory(testName).toFile
-        FileUtils.deleteRecursiveOnExit(cassandraDirectory)
         val t0 = System.nanoTime()
-        CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort)
+        CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort,
+          CassandraLauncher.classpathForResources(LagomTestConfigResource))
         log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
         Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = false)) ++
           Configuration("lagom.cluster.join-self" -> "on")
@@ -201,7 +201,8 @@ object ServiceTest {
         Configuration.empty
       }
 
-    val lagomApplication = applicationConstructor(LagomApplicationContext(Context(Environment.simple(), None, new DefaultWebCommands, config)))
+    val lagomApplication = applicationConstructor(LagomApplicationContext(Context(Environment.simple(), None,
+      new DefaultWebCommands, config, new DefaultApplicationLifecycle)))
 
     Play.start(lagomApplication.application)
     val serverConfig = ServerConfig(port = Some(0), mode = lagomApplication.environment.mode)

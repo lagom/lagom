@@ -151,6 +151,7 @@ def databasePortSetting: String = {
 
 def multiJvmTestSettings: Seq[Setting[_]] =
   SbtMultiJvm.multiJvmSettings ++
+    forkedTests ++
     // enabling HeaderPlugin in MultiJvm requires two sets of settings.
     // see https://github.com/sbt/sbt-header/issues/37
     HeaderPlugin.settingsFor(MultiJvm) ++
@@ -587,7 +588,12 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
       ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$Persist"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistOne"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistAll"),
-      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistNone")
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistNone"),
+
+      // Deprecated in 1.2.0, deleted due to other binary incompatibility introduced when Akka 2.5.0 was upgraded.
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil$AwaitPersistenceInit")
     ),
     Dependencies.`persistence-javadsl`
   )
@@ -797,23 +803,13 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
-  .aggregate(`build-link`, `reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
+  .aggregate(`reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
     `service-registration-javadsl`, `cassandra-server`, `play-integration-javadsl`, `devmode-scaladsl`,
     `service-registry-client-javadsl`, 
     `maven-java-archetype`, `maven-dependencies`, `kafka-server`)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}
-  )
-
-lazy val `build-link` = (project in file("dev") / "build-link")
-  .settings(common: _*)
-  .enablePlugins(RuntimeLibPlugins)
-  .settings(
-    crossPaths := false,
-    autoScalaLibrary := false,
-    EclipseKeys.projectFlavor := EclipseProjectFlavor.Java,
-    Dependencies.`build-link`
   )
 
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
@@ -823,7 +819,6 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
     name := "lagom-reloadable-server",
     Dependencies.`reloadable-server`
   )
-  .dependsOn(`build-link`)
 
 lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
   .settings(common: _*)
@@ -835,7 +830,7 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
       Generators.version(version.value, (sourceManaged in Compile).value)
     }.taskValue,
     Dependencies.`build-tool-support`
-  ).dependsOn(`build-link`)
+  )
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(common: _*)
@@ -1002,7 +997,21 @@ lazy val `service-locator` = (project in file("dev") / "service-registry"/ "serv
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-service-locator",
-    Dependencies.`service-locator`
+    Dependencies.`service-locator`,
+    // Need to ensure that the service locator uses the Lagom dependency management
+    pomExtra := pomExtra.value :+ {
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>{organization.value}</groupId>
+            <artifactId>lagom-maven-dependencies</artifactId>
+            <version>{version.value}</version>
+            <scope>import</scope>
+            <type>pom</type>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+    }
   )
   .dependsOn(`server-javadsl`, logback, `service-registry-client-javadsl`)
 

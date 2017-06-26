@@ -1,4 +1,4 @@
-import play.api._
+import play.api.{ Application, ApplicationLoader, BuiltInComponentsFromContext }
 import play.api.libs.ws.ahc.AhcWSComponents
 import com.softwaremill.macwire._
 import router.Routes
@@ -13,8 +13,8 @@ class Loader extends ApplicationLoader {
       with LagomServiceClientComponents
       with AhcWSComponents
       with LagomDevModeComponents
+      with controllers.AssetsComponents
     {
-      lazy val executionContext = actorSystem.dispatcher
       override lazy val serviceInfo = ServiceInfo("p", Map("p" -> immutable.Seq(
         ServiceAcl.forPathRegex("/p"),
         ServiceAcl.forPathRegex("/assets/.*")
@@ -23,8 +23,8 @@ class Loader extends ApplicationLoader {
         val prefix = "/"
         wire[Routes]
       }
+      override lazy val httpFilters = Nil
       lazy val applicationController = wire[controllers.Application]
-      lazy val assets = wire[controllers.Assets]
     }.application
   }
 }
