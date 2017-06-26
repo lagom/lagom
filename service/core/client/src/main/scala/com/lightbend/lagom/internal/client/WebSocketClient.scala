@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 import java.util.Locale
 
 import akka.stream.scaladsl._
-import akka.stream.stage.{ Context, PushStage, SyncDirective, TerminationDirective }
+import akka.stream.stage._
 import akka.util.ByteString
 import com.typesafe.netty.{ HandlerPublisher, HandlerSubscriber }
 import com.lightbend.lagom.internal.NettyFutureConverters._
@@ -31,6 +31,7 @@ import scala.collection.JavaConverters._
 import java.util.concurrent.atomic.AtomicReference
 
 import akka.NotUsed
+import akka.stream.{ Attributes, FlowShape, Inlet, Outlet }
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
 import io.netty.channel.group.DefaultChannelGroup
 import io.netty.util.concurrent.GlobalEventExecutor
@@ -183,24 +184,37 @@ private[lagom] abstract class WebSocketClient(environment: Environment, eventLoo
                 // Note that when outgoingStreamError is set, the client will immediately send a close to the server. In
                 // the normal case, this will result in the server then closing the connection, which will eventually
                 // close this stream, which is what will trigger that error to be published.
-                val injectOutgoingStreamError = Flow[ByteString].transform(() => new PushStage[ByteString, ByteString] {
-                  def errorOr[T >: TerminationDirective](ctx: Context[ByteString])(block: => T): T = {
-                    val error = outgoingStreamError.get()
-                    if (error != null) {
-                      ctx.fail(error)
-                    } else {
-                      block
+                val injectOutgoingStreamError = Flow[ByteString].via(new GraphStage[FlowShape[ByteString, ByteString]] {
+
+                  val in: Inlet[ByteString] = Inlet("BytesIn")
+                  val out: Outlet[ByteString] = Outlet("BytesOut")
+                  override val shape = FlowShape(in, out)
+
+                  override def createLogic(inheritedAttributes: Attributes): GraphStageLogic =
+                    new GraphStageLogic(shape) {
+                      def errorOr(block: => Unit): Unit = {
+                        val error = outgoingStreamError.get()
+                        if (error != null) {
+                          fail(out, error)
+                        } else {
+                          block
+                        }
+                      }
+
+                      setHandler(out, new OutHandler {
+                        override def onPull(): Unit = {
+                          pull(in)
+                        }
+                      })
+                      setHandler(in, new InHandler {
+                        override def onPush(): Unit = errorOr {
+                          push(out, grab(in))
+                        }
+                        override def onUpstreamFinish(): Unit = errorOr {
+                          complete(out)
+                        }
+                      })
                     }
-                  }
-                  override def onPush(elem: ByteString, ctx: Context[ByteString]): SyncDirective = errorOr[SyncDirective](ctx) {
-                    ctx.push(elem)
-                  }
-                  override def onUpstreamFinish(ctx: Context[ByteString]): TerminationDirective = errorOr(ctx) {
-                    ctx.finish()
-                  }
-                  override def onUpstreamFailure(cause: Throwable, ctx: Context[ByteString]): TerminationDirective = {
-                    ctx.fail(cause)
-                  }
                 })
                 val responseHeader = newResponseHeader(resp.getStatus.code, rp, headers)
                 incomingPromise.success((responseHeader, incoming via injectOutgoingStreamError))

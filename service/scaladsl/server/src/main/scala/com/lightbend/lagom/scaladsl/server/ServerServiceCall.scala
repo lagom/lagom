@@ -3,12 +3,11 @@
  */
 package com.lightbend.lagom.scaladsl.server
 
+import com.lightbend.lagom.internal.api.Execution
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.transport.{ RequestHeader, ResponseHeader }
 
 import scala.concurrent.Future
-
-import play.api.libs.iteratee.Execution.Implicits.trampoline
 
 /**
  * A server implementation of a service call.
@@ -34,7 +33,7 @@ trait ServerServiceCall[Request, Response] extends ServiceCall[Request, Response
    * @return A future of the response header and response message.
    */
   def invokeWithHeaders(requestHeader: RequestHeader, request: Request): Future[(ResponseHeader, Response)] =
-    invoke(request).map(response => (ResponseHeader.Ok, response))
+    invoke(request).map(response => (ResponseHeader.Ok, response))(Execution.trampoline)
 
   override def handleResponseHeader[T](handler: (ResponseHeader, Response) => T): ServerServiceCall[Request, T] = {
     val self: ServerServiceCall[Request, Response] = this
@@ -42,7 +41,7 @@ trait ServerServiceCall[Request, Response] extends ServiceCall[Request, Response
       override def invokeWithHeaders(requestHeader: RequestHeader, request: Request): Future[(ResponseHeader, T)] =
         self.invokeWithHeaders(requestHeader, request).map {
           case (responseHeader, response) => responseHeader -> handler(responseHeader, response)
-        }
+        }(Execution.trampoline)
 
       def invoke(request: Request): Future[T] = {
         // Typically, the transport will attach a response header handler after it attaches a request header
@@ -50,7 +49,7 @@ trait ServerServiceCall[Request, Response] extends ServiceCall[Request, Response
         // will call, and self will be the service call returned by handleRequestHeader.
         self.invokeWithHeaders(RequestHeader.Default, request).map {
           case (responseHeader, response) => handler(responseHeader, response)
-        }
+        }(Execution.trampoline)
       }
     }
   }
@@ -67,7 +66,7 @@ trait ServerServiceCall[Request, Response] extends ServiceCall[Request, Response
 
       def invoke(request: Request): Future[Response] = {
         val requestHeader: RequestHeader = handler.apply(RequestHeader.Default)
-        self.invokeWithHeaders(requestHeader, request).map(_._2)
+        self.invokeWithHeaders(requestHeader, request).map(_._2)(Execution.trampoline)
       }
     }
   }
@@ -162,7 +161,7 @@ object ServerServiceCall {
    */
   def composeAsync[Request, Response](block: RequestHeader => Future[ServerServiceCall[Request, Response]]): ServerServiceCall[Request, Response] = {
     ServerServiceCall { (requestHeader, request) =>
-      block(requestHeader).flatMap(_.invokeWithHeaders(requestHeader, request))
+      block(requestHeader).flatMap(_.invokeWithHeaders(requestHeader, request))(Execution.trampoline)
     }
   }
 }

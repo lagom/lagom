@@ -4,8 +4,8 @@
 package com.lightbend.lagom.scaladsl.api
 
 import akka.NotUsed
+import com.lightbend.lagom.internal.api.Execution
 import com.lightbend.lagom.scaladsl.api.transport.{ RequestHeader, ResponseHeader }
-import play.api.libs.iteratee.Execution
 
 import scala.concurrent.Future
 

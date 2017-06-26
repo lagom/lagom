@@ -14,10 +14,6 @@ import com.google.common.primitives.Longs;
 import java.time.Instant;
 import java.util.List;
 import javax.annotation.Generated;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
-import javax.annotation.concurrent.NotThreadSafe;
 
 /**
  * Immutable implementation of {@link AbstractCircuitBreakerStatus}.
@@ -26,9 +22,7 @@ import javax.annotation.concurrent.NotThreadSafe;
  * {@code CircuitBreakerStatus.builder()}.
  */
 @SuppressWarnings("all")
-@ParametersAreNonnullByDefault
 @Generated({"Immutables.generator", "AbstractCircuitBreakerStatus"})
-@Immutable
 public final class CircuitBreakerStatus
     implements AbstractCircuitBreakerStatus {
   private final String id;
@@ -306,7 +300,7 @@ public final class CircuitBreakerStatus
    * @return {@code true} if {@code this} is equal to {@code another} instance
    */
   @Override
-  public boolean equals(@Nullable Object another) {
+  public boolean equals(Object another) {
     return this == another || another instanceof CircuitBreakerStatus
         && equalTo((CircuitBreakerStatus) another);
   }
@@ -366,14 +360,14 @@ public final class CircuitBreakerStatus
   @Deprecated
   @JsonDeserialize
   static final class Json implements AbstractCircuitBreakerStatus {
-    @Nullable String id;
-    @Nullable Instant timestamp;
-    @Nullable String state;
-    @Nullable Long totalSuccessCount;
-    @Nullable Long totalFailureCount;
-    @Nullable Latency latencyMicros;
-    @Nullable java.lang.Double throughputOneMinute;
-    @Nullable java.lang.Double failedThroughputOneMinute;
+    String id;
+    Instant timestamp;
+    String state;
+    Long totalSuccessCount;
+    Long totalFailureCount;
+    Latency latencyMicros;
+    java.lang.Double throughputOneMinute;
+    java.lang.Double failedThroughputOneMinute;
 
     public void setId(String id) {
       this.id = id;
@@ -489,8 +483,7 @@ public final class CircuitBreakerStatus
    * <p><em>{@code Builder} is not thread-safe and generally should not be stored in a field or collection,
    * but instead used immediately to create instances.</em>
    */
-  @NotThreadSafe
-  public static final class Builder {
+    public static final class Builder {
     private static final long INIT_BIT_ID = 0x1L;
     private static final long INIT_BIT_STATE = 0x2L;
     private static final long INIT_BIT_TOTAL_SUCCESS_COUNT = 0x4L;
@@ -500,12 +493,12 @@ public final class CircuitBreakerStatus
     private static final long INIT_BIT_FAILED_THROUGHPUT_ONE_MINUTE = 0x40L;
     private long initBits = 0x7f;
 
-    private @Nullable String id;
-    private @Nullable Instant timestamp;
-    private @Nullable String state;
+    private String id;
+    private Instant timestamp;
+    private String state;
     private long totalSuccessCount;
     private long totalFailureCount;
-    private @Nullable Latency latencyMicros;
+    private Latency latencyMicros;
     private double throughputOneMinute;
     private double failedThroughputOneMinute;
 

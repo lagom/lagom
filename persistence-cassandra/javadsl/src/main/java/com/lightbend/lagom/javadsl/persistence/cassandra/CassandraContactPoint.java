@@ -6,12 +6,7 @@ package com.lightbend.lagom.javadsl.persistence.cassandra;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import java.net.URI;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
- 
-@ParametersAreNonnullByDefault
-@Immutable
+
 public final class CassandraContactPoint {
   private final String name;
   private final URI uri;
@@ -40,7 +35,7 @@ public final class CassandraContactPoint {
    * @return {@code true} if {@code this} is equal to {@code another} instance
    */
   @Override
-  public boolean equals(@Nullable Object another) {
+  public boolean equals(Object another) {
     return this == another || another instanceof CassandraContactPoint
         && equalTo((CassandraContactPoint) another);
   }

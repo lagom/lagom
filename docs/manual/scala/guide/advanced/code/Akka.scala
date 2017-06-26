@@ -86,14 +86,14 @@ package worker {
   import dataobjects.{Job, JobAccepted}
 
   //#actor
-  import akka.actor.{AbstractActor, Props}
+  import akka.actor.{Actor, Props}
   import akka.event.Logging
 
   object Worker {
     def props = Props[Worker]
   }
 
-  class Worker extends AbstractActor {
+  class Worker extends Actor {
     private val log = Logging.getLogger(context.system, this)
 
     override def receive = {

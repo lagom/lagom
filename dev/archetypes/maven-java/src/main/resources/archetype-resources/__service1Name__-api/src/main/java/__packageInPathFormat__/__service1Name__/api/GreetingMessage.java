@@ -3,7 +3,6 @@
  */
 package ${package}.${service1Name}.api;
 
-import javax.annotation.Nullable;
 import lombok.Value;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

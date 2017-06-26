@@ -6,7 +6,8 @@ package com.lightbend.lagom.internal.logback
 import java.io.File
 import java.net.URL
 
-import org.slf4j.LoggerFactory
+import org.slf4j.impl.StaticLoggerBinder
+import org.slf4j.{ ILoggerFactory, LoggerFactory }
 import play.api._
 
 import scala.util.control.NonFatal
@@ -19,6 +20,10 @@ object LogbackLoggerConfigurator {
 class LogbackLoggerConfigurator extends LoggerConfigurator {
   import LogbackLoggerConfigurator._
 
+  override def loggerFactory: ILoggerFactory = {
+    StaticLoggerBinder.getSingleton.getLoggerFactory
+  }
+
   /**
    * Initialize the Logger when there's no application ClassLoader available.
    */
@@ -29,12 +34,14 @@ class LogbackLoggerConfigurator extends LoggerConfigurator {
     configure(properties, resourceUrl)
   }
 
+  override def configure(env: Environment): Unit = {
+    configure(env, Configuration.empty, Map.empty)
+  }
+
   /**
    * Reconfigures the underlying logback infrastructure.
    */
-  def configure(env: Environment): Unit = {
-    val properties = Map("application.home" -> env.rootPath.getAbsolutePath)
-
+  override def configure(env: Environment, configuration: Configuration, optionalProperties: Map[String, String]): Unit = {
     // Get an explicitly configured resource URL
     // Fallback to a file in the conf directory if the resource wasn't found on the classpath
     def explicitResourceUrl = sys.props.get("logger.resource").flatMap { r =>
@@ -52,6 +59,8 @@ class LogbackLoggerConfigurator extends LoggerConfigurator {
       ))
 
     val configUrl = explicitResourceUrl orElse explicitFileUrl orElse resourceUrl
+
+    val properties = LoggerConfigurator.generateProperties(env, configuration, optionalProperties)
 
     configure(properties, configUrl)
   }
