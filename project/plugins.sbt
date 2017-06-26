@@ -19,4 +19,3 @@ addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.6.0")
 addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm" % "0.3.8")
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.1.0")
 addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "0.1.13")
-
