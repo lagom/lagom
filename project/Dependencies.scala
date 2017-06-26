@@ -5,6 +5,8 @@ object Dependencies {
 
   // Version numbers
   val PlayVersion = "2.6.0"
+  val PlayStandaloneWsVersion = "1.0.0"
+  val PlayJsonVersion = "2.6.0"
   val AkkaVersion = "2.5.3"
   val ScalaVersion = "2.11.11"
   val AkkaPersistenceCassandraVersion = "0.54"
@@ -62,10 +64,11 @@ object Dependencies {
   private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion
   private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion
   private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion
-  private val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % PlayVersion
-
   private val playFunctional = "com.typesafe.play" %% "play-functional" % PlayVersion
-  private val playJson = "com.typesafe.play" %% "play-json" % PlayVersion
+
+  private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion
+  private val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % PlayVersion
+  private val playJson = "com.typesafe.play" %% "play-json" % PlayJsonVersion
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.
@@ -112,12 +115,10 @@ object Dependencies {
       "com.typesafe.play" %% "cachecontrol" % "1.1.2",
       playJson,
       playFunctional,
-      "com.typesafe.play" %% "play-ws-standalone" % "1.0.0",
-      "com.typesafe.play" %% "play-ws-standalone-xml" % "1.0.0",
-      "com.typesafe.play" %% "play-ws-standalone-json" % "1.0.0",
-      "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.0.0",
-      "com.typesafe.play" % "shaded-asynchttpclient" % "1.0.0",
-      "com.typesafe.play" % "shaded-oauth" % "1.0.0",
+      // play client libs
+      playWs,
+      playAhcWs,
+
       "com.typesafe.play" %% "twirl-api" % "1.3.2",
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
@@ -190,8 +191,12 @@ object Dependencies {
       "build-link", "play-exceptions", "play-netty-utils"
 
     ) ++ crossLibraryFamily("com.typesafe.play", PlayVersion)(
-      "play", "play-ahc-ws", "play-datacommons", "play-guice", "play-iteratees", "play-java", "play-jdbc", "play-jdbc-api",
-      "play-netty-server", "play-server", "play-streams", "play-ws"
+      "play", "play-datacommons", "play-guice", "play-iteratees", "play-java", "play-jdbc", "play-jdbc-api",
+      "play-netty-server", "play-server", "play-streams"
+
+    ) ++ crossLibraryFamily("com.typesafe.play", PlayStandaloneWsVersion)(
+      "play-ws-standalone", "play-ws-standalone-xml", "play-ws-standalone-json", "play-ahc-ws-standalone",
+      "shaded-asynchttpclient", "shaded-oauth"
 
     ) ++ libraryFamily("ch.qos.logback", "1.1.3")(
       "logback-classic", "logback-core"
@@ -330,6 +335,7 @@ object Dependencies {
   )
 
   val client = libraryDependencies ++= Seq(
+    playWs,
     playAhcWs,
     "io.dropwizard.metrics" % "metrics-core" % "3.2.2",
     "com.typesafe.netty" % "netty-reactive-streams" % "2.0.0-M1",
@@ -347,7 +353,9 @@ object Dependencies {
     scalaTest % Test
   )
 
-  val `integration-client-javadsl` = libraryDependencies ++= Nil
+  val `integration-client-javadsl` = libraryDependencies ++= Seq(
+    playAhcWs
+  )
 
   val server = libraryDependencies ++= Nil
 
