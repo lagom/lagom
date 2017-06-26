@@ -53,7 +53,8 @@ InputKey[Unit]("absence") := {
 }
 
 lazy val checkDevRuntimeClasspath = inputKey[Unit]("Checks presence of a jar in the DevRuntime classpath")
-checkDevRuntimeClasspath <<= checkDevClasspathTask(Internal.Configs.DevRuntime)
+
+checkDevRuntimeClasspath := checkDevClasspathTask(Internal.Configs.DevRuntime).evaluated
 
 def checkDevClasspathTask(config: Configuration): Def.Initialize[InputTask[Unit]] = Def.inputTaskDyn {
   val parsed = Def.spaceDelimited().parsed
