@@ -176,7 +176,14 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
    */
   private def makeStrictCall(requestHeader: RequestHeader, requestSerializer: MessageSerializer[Request, ByteString],
                              responseSerializer: MessageSerializer[Response, ByteString], request: Request): Future[(ResponseHeader, Response)] = {
+
+    val headerFilter = descriptorHeaderFilter(descriptor)
+    val transportRequestHeader = headerFilterTransformClientRequest(headerFilter, requestHeader)
+    val contentTypeHeader =
+      messageProtocolToContentTypeHeader(messageHeaderProtocol(transportRequestHeader)).toSeq.map(HeaderNames.CONTENT_TYPE -> _)
+
     val requestHolder = ws.url(requestHeaderUri(requestHeader).toString)
+      .withHttpHeaders(contentTypeHeader: _*)
       .withMethod(requestHeaderMethod(requestHeader))
 
     val requestWithBody =
@@ -187,15 +194,9 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
         requestHolder.withBody(InMemoryBody(body))
       } else requestHolder
 
-    val headerFilter = descriptorHeaderFilter(descriptor)
-    val transportRequestHeader = headerFilterTransformClientRequest(headerFilter, requestHeader)
-
     val requestHeaders = messageHeaderHeaders(transportRequestHeader).toSeq.collect {
       case (_, values) if values.nonEmpty => values.head._1 -> values.map(_._2).mkString(", ")
     }
-
-    val contentTypeHeader =
-      messageProtocolToContentTypeHeader(messageHeaderProtocol(transportRequestHeader)).toSeq.map(HeaderNames.CONTENT_TYPE -> _)
 
     val acceptHeader = {
       val accept = requestHeaderAcceptedResponseProtocols(transportRequestHeader).flatMap { accept =>
@@ -205,7 +206,7 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       else Nil
     }
 
-    requestWithBody.withHeaders(requestHeaders ++ contentTypeHeader ++ acceptHeader: _*).execute().map { response =>
+    requestWithBody.withHttpHeaders(requestHeaders ++ acceptHeader: _*).execute().map { response =>
 
       // Create the message header
       val protocol = messageProtocolFromContentTypeHeader(response.header(HeaderNames.CONTENT_TYPE))
