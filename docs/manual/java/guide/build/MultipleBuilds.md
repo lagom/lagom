@@ -71,7 +71,7 @@ Now when you run `lagom:runAll`, the `hello-impl` service will also be started. 
 
 ### Using sbt
 
-The `hellowold` Lagom service can be imported by adding the following declaration to your build:
+The `helloworld` Lagom service can be imported by adding the following declaration to your build:
 
 @[hello-external](code/multiple-builds.sbt)
 
