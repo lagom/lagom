@@ -5,7 +5,6 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import akka.japi.pf.ReceiveBuilder;
 
 public class Worker extends AbstractActor {
 
@@ -15,11 +14,11 @@ public class Worker extends AbstractActor {
 
   private final LoggingAdapter log = Logging.getLogger(context().system(), this);
 
-  public Worker() {
-    receive(ReceiveBuilder.
-      match(Job.class, this::perform)
-      .build()
-    );
+  @Override
+  public Receive createReceive() {
+    return receiveBuilder()
+        .match(Job.class, this::perform)
+        .build();
   }
 
   private void perform(Job job) {

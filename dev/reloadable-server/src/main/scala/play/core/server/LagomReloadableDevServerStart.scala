@@ -7,9 +7,9 @@ import java.io.File
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.lightbend.lagom.sbt.server.ReloadableServer
 import play.api._
 import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
+import play.core.server.ReloadableServer
 import play.utils.Threads
 
 import scala.collection.JavaConverters._
@@ -156,7 +156,8 @@ object LagomReloadableDevServerStart {
 
                       Success(newApplication)
                     } catch {
-                      case e: com.google.inject.CreationException =>
+                      // No binary dependency on play-guice
+                      case e if e.getClass.getName == "com.google.inject.CreationException" =>
                         lastState = Failure(e)
                         val hint = "Hint: Maybe you have forgot to enable your service Module class via `play.modules.enabled`? (check in your project's application.conf)"
                         logExceptionAndGetResult(path, e, hint)
@@ -220,11 +221,7 @@ object LagomReloadableDevServerStart {
         val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem, ActorMaterializer()(actorSystem),
           () => actorSystem.terminate())
         val serverProvider = ServerProvider.fromConfiguration(classLoader, serverConfig.configuration)
-        val server = serverProvider.createServer(serverContext)
-        val reloadableServer = new ReloadableServer(server) {
-          def reload(): Unit = appProvider.get
-        }
-        reloadableServer
+        serverProvider.createServer(serverContext)
       } catch {
         case e: ExceptionInInitializerError => throw e.getCause
       }

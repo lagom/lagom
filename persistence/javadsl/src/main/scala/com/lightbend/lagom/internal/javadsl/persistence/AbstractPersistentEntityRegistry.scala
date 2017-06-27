@@ -12,7 +12,7 @@ import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRe
 import akka.event.Logging
 import akka.japi.Pair
 import akka.pattern.ask
-import akka.persistence.query.scaladsl.EventsByTagQuery2
+import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.javadsl
 import akka.util.Timeout
@@ -39,7 +39,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
   /**
    * The events by tag query. Necessary for implementing read sides and the eventStream query.
    */
-  protected val eventsByTagQuery: Option[EventsByTagQuery2] = None
+  protected val eventsByTagQuery: Option[EventsByTagQuery] = None
 
   private val sharding = ClusterSharding(system)
   private val conf = system.settings.config.getConfig("lagom.persistence")

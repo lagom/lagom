@@ -11,10 +11,9 @@ import java.util
 import java.util.{ Timer, TimerTask }
 import java.util.concurrent.atomic.AtomicReference
 
-import com.lightbend.lagom.sbt.core.Build
-import com.lightbend.lagom.sbt.server.ReloadableServer
 import play.api.PlayException
-import play.core.BuildLink
+import play.core.{ Build, BuildLink }
+import play.core.server.ReloadableServer
 import play.dev.filewatch.{ FileWatchService, SourceModificationWatch, WatchState }
 
 import scala.collection.JavaConverters._
@@ -155,7 +154,6 @@ object Reloader {
 
     val _buildLink = new BuildLink {
       private val initialized = new java.util.concurrent.atomic.AtomicBoolean(false)
-      override def runTask(task: String): AnyRef = throw new UnsupportedOperationException("Run task not supported in Lagom")
       override def reload(): AnyRef = {
         if (initialized.compareAndSet(false, true)) applicationLoader
         else null // this means nothing to reload

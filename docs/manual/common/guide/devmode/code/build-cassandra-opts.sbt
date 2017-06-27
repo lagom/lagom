@@ -9,8 +9,7 @@ lagomCassandraCleanOnStart in ThisBuild := false
 
 //#cassandra-jvm-options
 lagomCassandraJvmOptions in ThisBuild :=
-  Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099",
-    "-DCassandraLauncher.configResource=dev-embedded-cassandra.yaml") // these are actually the default jvm options
+  Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099") // these are actually the default jvm options
 //#cassandra-jvm-options
 
 //#cassandra-boot-waiting-time

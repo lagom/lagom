@@ -6,6 +6,8 @@ package com.lightbend.lagom.internal.log4j2
 import java.io.File
 import java.net.URL
 
+import org.slf4j.ILoggerFactory
+import org.slf4j.impl.StaticLoggerBinder
 import play.api._
 
 object Log4j2LoggerConfigurator {
@@ -17,6 +19,10 @@ class Log4j2LoggerConfigurator extends LoggerConfigurator {
 
   import Log4j2LoggerConfigurator._
 
+  override def loggerFactory: ILoggerFactory = {
+    StaticLoggerBinder.getSingleton.getLoggerFactory
+  }
+
   override def init(rootPath: File, mode: Mode.Mode): Unit = {
     val properties = Map("application.home" -> rootPath.getAbsolutePath)
     val resourceName = if (mode == Mode.Dev) DevLog4j2Config else DefaultLog4j2Config
@@ -25,8 +31,10 @@ class Log4j2LoggerConfigurator extends LoggerConfigurator {
   }
 
   override def configure(env: Environment): Unit = {
-    val properties = Map("application.home" -> env.rootPath.getAbsolutePath)
+    configure(env, Configuration.empty, Map.empty)
+  }
 
+  override def configure(env: Environment, configuration: Configuration, optionalProperties: Map[String, String]): Unit = {
     // Get an explicitly configured resource URL
     // Fallback to a file in the conf directory if the resource wasn't found on the classpath
     def explicitResourceUrl = sys.props.get("logger.resource").flatMap { r =>
@@ -44,6 +52,8 @@ class Log4j2LoggerConfigurator extends LoggerConfigurator {
       ))
 
     val configUrl = explicitResourceUrl orElse explicitFileUrl orElse resourceUrl
+
+    val properties = LoggerConfigurator.generateProperties(env, configuration, optionalProperties)
 
     configure(properties, configUrl)
   }

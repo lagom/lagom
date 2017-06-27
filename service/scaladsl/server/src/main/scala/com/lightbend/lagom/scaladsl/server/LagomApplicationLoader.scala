@@ -20,6 +20,8 @@ import com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents
 import com.typesafe.config.Config
 import play.api.ApplicationLoader.Context
 import play.api._
+import play.api.inject.DefaultApplicationLifecycle
+import play.api.mvc.EssentialFilter
 import play.core.DefaultWebCommands
 
 import scala.collection.immutable
@@ -82,7 +84,7 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
   def loadDevMode(context: LagomApplicationContext): LagomApplication = load(context)
 
   /**
-   * Describe a service, for use when implementing [[describeServices]].
+   * Describe a service, for use when implementing [[describeService]].
    */
   protected def readDescriptor[S <: Service]: Descriptor = macro ScaladslServerMacroImpl.readDescriptor[S]
 
@@ -100,7 +102,7 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
   def describeService: Option[Descriptor] = None
 
   @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Override LagomApplicationLoader.describeService() instead", "1.3.2")
-  def describeServices: immutable.Seq[Descriptor] = Nil
+  def describeServices: immutable.Seq[Descriptor] = describeService.to[immutable.Seq]
 
   override final def discoverServices(classLoader: ClassLoader) = {
     import scala.collection.JavaConverters._
@@ -161,7 +163,7 @@ object LagomApplicationContext {
   /**
    * A test application loader context, useful when loading the application in unit or integration tests.
    */
-  val Test = apply(Context(Environment.simple(), None, new DefaultWebCommands, Configuration.empty))
+  val Test = apply(Context(Environment.simple(), None, new DefaultWebCommands, Configuration.empty, new DefaultApplicationLifecycle))
 }
 
 /**
@@ -188,7 +190,8 @@ abstract class LagomApplication(context: LagomApplicationContext)
   with LagomServerComponents
   with LagomServiceClientComponents {
 
-  override implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
+  override val httpFilters: Seq[EssentialFilter] = Nil
+
   override lazy val configuration: Configuration = Configuration.load(environment) ++
     context.playContext.initialConfiguration ++ additionalConfiguration.configuration
 

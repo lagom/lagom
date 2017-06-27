@@ -15,16 +15,16 @@ import play.api.Mode
 import play.api.Play
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.guice.GuiceableModule.fromGuiceModule
+import play.core.server.ReloadableServer
 import play.core.server.ServerConfig
 import play.core.server.ServerProvider
-import play.core.server.ServerWithStop
 
 import scala.util.control.NonFatal
 
 class ServiceLocatorServer extends Closeable {
   private val logger: Logger = Logger(this.getClass())
 
-  @volatile private var server: ServerWithStop = _
+  @volatile private var server: ReloadableServer = _
   @volatile private var gateway: ServiceGateway = _
 
   def start(serviceLocatorPort: Int, serviceGatewayPort: Int, unmanagedServices: JMap[String, String]): Unit = synchronized {
@@ -54,7 +54,7 @@ class ServiceLocatorServer extends Closeable {
       .build()
   }
 
-  private def createServer(application: Application, port: Int): ServerWithStop = {
+  private def createServer(application: Application, port: Int): ReloadableServer = {
     val config = ServerConfig(port = Some(port), mode = Mode.Test)
     val provider = implicitly[ServerProvider]
     provider.createServer(config, application)
