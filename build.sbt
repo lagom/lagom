@@ -162,7 +162,7 @@ def multiJvmTestSettings: Seq[Setting[_]] =
       parallelExecution in Test := false,
       MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting :: defaultMultiJvmOptions,
       // make sure that MultiJvm test are compiled by the default test compilation
-      compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test),
+      compile in MultiJvm := ((compile in MultiJvm) triggeredBy (compile in Test)).value,
       // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
       executeTests in MultiJvm := ((executeTests in MultiJvm) tag Tags.Test).value,
       // make sure that MultiJvm tests are executed by the default test target,

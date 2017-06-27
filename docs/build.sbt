@@ -105,7 +105,7 @@ def forkedTests: Seq[Setting[_]] = Seq(
   fork in Test := true,
   concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
   javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M"),
-  testGrouping in Test <<= definedTests in Test map singleTestsGrouping
+  testGrouping in Test := (definedTests in Test map singleTestsGrouping).value
 )
 
 // group tests, a single test per group
