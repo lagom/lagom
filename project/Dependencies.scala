@@ -198,11 +198,7 @@ object Dependencies {
 
     ) ++ crossLibraryFamily("com.typesafe.play", PlayVersion)(
       "play", "play-datacommons", "play-guice", "play-iteratees", "play-java", "play-jdbc", "play-jdbc-api",
-      "play-netty-server", "play-server", "play-streams"
-
-    ) ++ crossLibraryFamily("com.typesafe.play", PlayStandaloneWsVersion)(
-      "play-ws-standalone", "play-ws-standalone-xml", "play-ws-standalone-json", "play-ahc-ws-standalone",
-      "shaded-asynchttpclient", "shaded-oauth"
+      "play-netty-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
 
     ) ++ libraryFamily("ch.qos.logback", "1.1.3")(
       "logback-classic", "logback-core"
@@ -360,6 +356,7 @@ object Dependencies {
   )
 
   val `integration-client-javadsl` = libraryDependencies ++= Seq(
+    playWs,
     playAhcWs
   )
 
