@@ -8,6 +8,7 @@ import java.util.concurrent.{ TimeUnit, TimeoutException }
 
 import akka.actor.setup.ActorSystemSetup
 import akka.actor.{ ActorSystem, BootstrapSetup }
+import akka.event.Logging
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServerMacroImpl
 import com.lightbend.lagom.internal.spi.{ CircuitBreakerMetricsProvider, ServiceAcl, ServiceDescription, ServiceDiscovery }
@@ -16,7 +17,6 @@ import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.client.{ CircuitBreakerComponents, CircuitBreakingServiceLocator, LagomServiceClientComponents }
 import com.lightbend.lagom.scaladsl.playjson.{ EmptyJsonSerializerRegistry, JsonSerializerRegistry, ProvidesJsonSerializerRegistry }
-import com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents
 import com.typesafe.config.Config
 import play.api.ApplicationLoader.Context
 import play.api._
@@ -42,6 +42,22 @@ import scala.language.experimental.macros
 abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDiscovery {
 
   val logger = Logger(classOf[LagomApplicationLoader])
+
+  if (logger.isWarnEnabled && describeService.isEmpty) {
+    describeServices match {
+      case Seq(_) => logger.warn(
+        s"${Logging.simpleName(this)}: overriding LagomApplicationLoader.describeServices is deprecated: " +
+          "override LagomApplicationLoader.describeService instead"
+      )
+      case Seq(_, _*) => logger.warn(
+        s"${Logging.simpleName(this)}: overriding LagomApplicationLoader.describeServices is deprecated: " +
+          "combine your Service interfaces or split them into multiple projects, " +
+          "and override LagomApplicationLoader.describeService instead"
+      )
+      // otherwise there are no services defined at all, which is OK
+      case _ => ()
+    }
+  }
 
   /**
    * Implementation of Play's load method.
@@ -99,7 +115,11 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
    */
   def describeService: Option[Descriptor] = None
 
-  @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Override LagomApplicationLoader.describeService() instead", "1.3.2")
+  /**
+   * Deprecated: implement describeService instead. Multiple service interfaces should either be combined into a single
+   * service, or split into multiple service projects.
+   */
+  @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Override LagomApplicationLoader.describeService() instead", "1.3.3")
   def describeServices: immutable.Seq[Descriptor] = describeService.to[immutable.Seq]
 
   override final def discoverServices(classLoader: ClassLoader) = {
