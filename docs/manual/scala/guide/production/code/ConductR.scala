@@ -30,9 +30,7 @@ package docs.scaladsl.production.conductr {
       override def loadDevMode(context: LagomApplicationContext) =
         new HelloApplication(context) with LagomDevModeComponents
 
-      override def describeServices = List(
-        readDescriptor[HelloService]
-      )
+      override def describeService = Some(readDescriptor[HelloService])
     }
     //#conductr-application
   }
