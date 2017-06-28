@@ -57,6 +57,7 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
           "and override LagomApplicationLoader.describeService instead"
       )
       // otherwise there are no services defined at all, which is OK
+      case _ => ()
     }
   }
 
