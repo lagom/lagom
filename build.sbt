@@ -141,6 +141,14 @@ val defaultMultiJvmOptions: List[String] = {
   "-Xmx128m" :: properties
 }
 
+// for forked tests, necessary for Cassandra
+def forkedTests: Seq[Setting[_]] = Seq(
+  fork in Test := true,
+  concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
+  javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M"),
+  testGrouping in Test := (definedTests in Test map singleTestsGrouping).value
+)
+
 def databasePortSetting: String = {
   val serverSocket = ServerSocketChannel.open().socket()
   serverSocket.bind(new InetSocketAddress("127.0.0.1", 0))
@@ -496,13 +504,6 @@ lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integ
   )
   .dependsOn(`server-scaladsl`, logback, `testkit-scaladsl`)
 
-// for forked tests
-def forkedTests: Seq[Setting[_]] = Seq(
-  fork in Test := true,
-  concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
-  javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M"),
-  testGrouping in Test := singleTestsGrouping((definedTests in Test).value)
-)
 
 // group tests, a single test per group
 def singleTestsGrouping(tests: Seq[TestDefinition]) = {
@@ -1075,6 +1076,98 @@ lazy val `macro-testkit` = (project in file("macro-testkit"))
   .settings(libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-reflect" % scalaVersion.value
   ))
+
+val branch = {
+  val rev = "git rev-parse --abbrev-ref HEAD".!!.trim
+  if (rev == "HEAD") {
+    // not on a branch, get the hash
+    "git rev-parse HEAD".!!.trim
+  } else rev
+}
+
+
+lazy val docs = project
+  .in(file("."))
+  .enablePlugins(LightbendMarkdown)
+  .settings(forkedTests: _*)
+  .settings(
+    resolvers += Resolver.typesafeIvyRepo("releases"),
+    scalaVersion := "2.11.7",
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-stream-testkit" % Dependencies.AkkaVersion % "test",
+      "org.apache.cassandra" % "cassandra-all" % Dependencies.CassandraAllVersion % "test",
+      "junit" % "junit" % "4.12" % "test",
+      "com.novocode" % "junit-interface" % "0.11" % "test",
+      "org.scalatest" %% "scalatest" % Dependencies.ScalaTestVersion % Test,
+      "com.typesafe.play" %% "play-netty-server" % Dependencies.PlayVersion % Test,
+      "com.typesafe.play" %% "play-logback" % Dependencies.PlayVersion % Test,
+      "org.apache.logging.log4j" % "log4j-api" % "2.7" % "test",
+      "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided",
+      "org.projectlombok" % "lombok" % "1.16.10",
+      "org.hibernate" % "hibernate-core" % "5.2.5.Final"
+    ),
+    javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
+    testOptions in Test += Tests.Argument("-oDF"),
+    testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
+    // This is needed so that Java APIs that use immutables will typecheck by the Scala compiler
+    compileOrder in Test := CompileOrder.JavaThenScala,
+
+    markdownDocumentation := {
+      val javaUnidocTarget = baseDirectory.value / "target" / "javaunidoc"
+      val unidocTarget = baseDirectory.value / "target" / "unidoc"
+      streams.value.log.info(s"Serving javadocs from $javaUnidocTarget and scaladocs from $unidocTarget. Rerun unidoc in root project to refresh")
+      Seq(
+        Documentation("java", Seq(
+          DocPath(baseDirectory.value / "docs" / "manual" / "common", "."),
+          DocPath(baseDirectory.value / "docs" / "manual" / "java", "."),
+          DocPath(javaUnidocTarget, "api")
+        ), "Home.html", "Java Home", Map("api/index.html" -> "API Documentation")),
+        Documentation("scala", Seq(
+          DocPath(baseDirectory.value / "docs" / "manual" / "common", "."),
+          DocPath(baseDirectory.value / "docs" / "manual" / "scala", "."),
+          DocPath(unidocTarget, "api")
+        ), "Home.html", "Scala Home", Map("api/index.html" -> "API Documentation"))
+      )
+    },
+    markdownUseBuiltinTheme := false,
+    markdownTheme := Some("lagom.LagomMarkdownTheme"),
+    markdownGenerateTheme := Some("bare"),
+    markdownGenerateIndex := true,
+    markdownStageIncludeWebJars := false,
+    markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/"))
+
+  )
+  .dependsOn(
+    `integration-tests-javadsl`,
+    `persistence-jdbc-javadsl`,
+    `persistence-jpa-javadsl`,
+    `integration-tests-scaladsl`,
+    `persistence-cassandra-scaladsl`,
+    `persistence-jdbc-scaladsl`,
+    `testkit-javadsl`,
+    `testkit-scaladsl`,
+    `broker-scaladsl`,
+    `play-json`,
+    `kafka-broker-javadsl`,
+    `kafka-broker-scaladsl`,
+    `pubsub-scaladsl`,
+    immutables % "test->compile",
+    theme % "run-markdown",
+    `devmode-scaladsl`
+  )
+
+lazy val theme = project
+  .in(file("theme"))
+  .enablePlugins(SbtWeb, SbtTwirl)
+  .settings(
+    name := "lagom-docs-theme",
+    scalaVersion := "2.11.7",
+    resolvers += Resolver.typesafeIvyRepo("releases"),
+    libraryDependencies ++= Seq(
+      "com.lightbend.markdown" %% "lightbend-markdown-server" % LightbendMarkdownVersion
+    )
+  )
+
 
 // We can't just run a big aggregated mimaReportBinaryIssues due to
 // https://github.com/typesafehub/migration-manager/issues/163
