@@ -51,9 +51,7 @@ package lagomloader {
         override def serviceLocator = ServiceLocator.NoServiceLocator
       }
 
-    override def describeServices = List(
-      readDescriptor[HelloService]
-    )
+    override def describeService = Some(readDescriptor[HelloService])
   }
   //#lagom-loader
 }
