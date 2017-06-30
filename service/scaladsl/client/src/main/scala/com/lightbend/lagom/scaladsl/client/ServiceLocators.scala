@@ -83,19 +83,11 @@ trait CircuitBreakerComponents {
   // for backward compatibility we still need to provide it for wiring
   lazy val circuitBreakers: CircuitBreakers = {
 
-    // only in case some 3rd part lib are still wiring the old one.
+    // only in case some 3rd party lib are still wiring the old one.
     actorSystem.log.warning(
-      """
-        | +----------------------------------------------------------------------------------------+
-        | | com.lightbend.lagom.internal.client.CircuitBreakers is deprecated                      |
-        | | use com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel instead.                  |
-        | |                                                                                        |
-        | | If you don't understand why you are getting this warning, it's probably because        |
-        | | you are using a 3rd party library that is still wiring this deprecated CircuitBreakers.|
-        | | Make sure to upgrade the libraries providing your service locators.                    |
-        | +----------------------------------------------------------------------------------------+
-      """.stripMargin
-    )
+      "CircuitBreakers is deprecated, use CircuitBreakersPanel instead. This warning is probably caused by your " +
+        "service locator. If you are using a 3rd party service locator, upgrade your dependencies, otherwise this " +
+        "service locator could become incompatible with Lagom in future versions.")
 
     new CircuitBreakers(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
   }
