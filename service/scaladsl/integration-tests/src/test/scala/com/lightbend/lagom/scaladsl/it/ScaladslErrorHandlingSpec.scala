@@ -214,10 +214,17 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
         })(materializer, executionContext)
 
         // Custom service client to inject our changeClient callback
-        override lazy val serviceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
-          serviceLocator, new ServiceResolver {
-          override def resolve(descriptor: Descriptor): Descriptor = changeClient(serviceResolver.resolve(descriptor))
-        }, None)(executionContext, materializer)
+        override lazy val serviceClient = new ScaladslServiceClient(
+          wsClient,
+          scaladslWebSocketClient,
+          grpcChannelPool,
+          serviceInfo,
+          serviceLocator,
+          new ServiceResolver {
+            override def resolve(descriptor: Descriptor): Descriptor = changeClient(serviceResolver.resolve(descriptor))
+          },
+          None
+        )(executionContext, materializer)
       }
     } { server =>
       val client = server.serviceClient.implement[MockService]
@@ -255,10 +262,13 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
     val failedSerializer = new NegotiatedSerializer[Any, ByteString] {
       override def serialize(messageEntity: Any): ByteString = throw SerializationException("failed serialize")
     }
+
     override def deserializer(messageHeader: MessageProtocol) = new NegotiatedDeserializer[Any, ByteString] {
       override def deserialize(wire: ByteString): AnyRef = throw DeserializationException("failed deserialize")
     }
+
     override def serializerForResponse(acceptedMessageHeaders: immutable.Seq[MessageProtocol]) = failedSerializer
+
     override def serializerForRequest = failedSerializer
   }
 

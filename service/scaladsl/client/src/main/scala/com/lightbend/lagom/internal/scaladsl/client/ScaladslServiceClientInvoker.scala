@@ -25,9 +25,15 @@ import play.api.libs.ws.WSClient
 import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
 
-private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: ScaladslWebSocketClient, grpcChannelPool: GrpcChannelPool, serviceInfo: ServiceInfo,
-                                           serviceLocator: ServiceLocator, serviceResolver: ServiceResolver,
-                                           topicFactory: Option[TopicFactory])(implicit ec: ExecutionContext, mat: Materializer) extends ServiceClientConstructor {
+private[lagom] class ScaladslServiceClient(
+  ws:              WSClient,
+  webSocketClient: ScaladslWebSocketClient,
+  grpcChannelPool: GrpcChannelPool,
+  serviceInfo:     ServiceInfo,
+  serviceLocator:  ServiceLocator,
+  serviceResolver: ServiceResolver,
+  topicFactory:    Option[TopicFactory]
+)(implicit ec: ExecutionContext, mat: Materializer) extends ServiceClientConstructor {
 
   private val ctx: ServiceClientImplementationContext = new ServiceClientImplementationContext {
     override def resolve(unresolvedDescriptor: Descriptor): ServiceClientContext = {

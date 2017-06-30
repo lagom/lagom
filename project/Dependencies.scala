@@ -357,7 +357,7 @@ object Dependencies {
   )
 
   val `client-scaladsl` = libraryDependencies ++= Seq(
-    "io.grpc" % "grpc-netty" % "1.2.0",
+    "io.grpc" % "grpc-netty" % "1.4.0",
     scalaTest % Test
   )
 
