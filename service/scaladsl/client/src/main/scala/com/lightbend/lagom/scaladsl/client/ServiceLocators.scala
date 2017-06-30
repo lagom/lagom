@@ -95,7 +95,6 @@ trait CircuitBreakerComponents {
         | | Make sure to upgrade the libraries providing your service locators.                    |
         | +----------------------------------------------------------------------------------------+
       """.stripMargin
-
     )
 
     new CircuitBreakers(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)

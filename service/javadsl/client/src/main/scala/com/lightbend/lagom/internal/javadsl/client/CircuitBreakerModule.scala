@@ -44,6 +44,7 @@ class CircuitBreakersProvider @Inject() (
         | | Make sure to upgrade the libraries providing your service locators.                    |
         | +----------------------------------------------------------------------------------------+
       """.stripMargin
+    )
 
     new CircuitBreakers(system, circuitBreakerConfig, metricsProvider)
   }
