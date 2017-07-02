@@ -1,6 +1,4 @@
-
-val PlayVersion = "2.6.0"
-val AkkaVersion = "2.5.3"
+import Dependencies._
 
 val branch = {
   val rev = "git rev-parse --abbrev-ref HEAD".!!.trim
@@ -20,16 +18,16 @@ lazy val docs = project
     scalaVersion := "2.11.7",
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
-      "org.apache.cassandra" % "cassandra-all" % "3.0.9" % "test",
-      "junit" % "junit" % "4.12" % "test",
-      "com.novocode" % "junit-interface" % "0.11" % "test",
-      "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+      "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion % "test",
+      "junit" % "junit" % JunitVersion % "test",
+      "com.novocode" % "junit-interface" % JunitInterfaceVersion % "test",
+      "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
       "com.typesafe.play" %% "play-netty-server" % PlayVersion % Test,
       "com.typesafe.play" %% "play-logback" % PlayVersion % Test,
-      "org.apache.logging.log4j" % "log4j-api" % "2.7" % "test",
+      "org.apache.logging.log4j" % "log4j-api" % Log4JApiVersion % "test",
       "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided",
       "org.projectlombok" % "lombok" % "1.16.10",
-      "org.hibernate" % "hibernate-core" % "5.2.5.Final"
+      "org.hibernate" % "hibernate-core" % HibernateCoreVersion
     ),
     javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
     testOptions in Test += Tests.Argument("-oDF"),
