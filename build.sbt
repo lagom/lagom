@@ -92,6 +92,17 @@ def releaseSettings: Seq[Setting[_]] = Seq(
   }
 )
 
+
+def latestScalafmt = "1.0.0-RC4"
+commands += Command.args("scalafmt", "Run scalafmt cli.") {
+  case (state, args) =>
+    val Right(scalafmt) =
+      org.scalafmt.bootstrap.ScalafmtBootstrap.fromVersion(latestScalafmt)
+    scalafmt.main("--non-interactive" +: args.toArray)
+    state
+}
+
+
 def runtimeLibCommon: Seq[Setting[_]] = common ++ Seq(
   crossScalaVersions := Seq(Dependencies.ScalaVersion),
   scalaVersion := crossScalaVersions.value.head,
