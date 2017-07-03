@@ -298,7 +298,7 @@ object Dependencies {
   )
 
   val `api-scaladsl` = libraryDependencies ++= Seq(
-    "com.trueaccord.scalapb" %% "scalapb-runtime" % "0.5.47",
+    "com.trueaccord.scalapb" %% "scalapb-runtime" % "0.6.0",
     scalaTest % Test
   )
 
