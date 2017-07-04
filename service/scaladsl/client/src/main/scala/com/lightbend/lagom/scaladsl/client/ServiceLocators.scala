@@ -87,7 +87,8 @@ trait CircuitBreakerComponents {
     actorSystem.log.warning(
       "CircuitBreakers is deprecated, use CircuitBreakersPanel instead. This warning is probably caused by your " +
         "service locator. If you are using a 3rd party service locator, upgrade your dependencies, otherwise this " +
-        "service locator could become incompatible with Lagom in future versions.")
+        "service locator could become incompatible with Lagom in future versions."
+    )
 
     new CircuitBreakers(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
   }
