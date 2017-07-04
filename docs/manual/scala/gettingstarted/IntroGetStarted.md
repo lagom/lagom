@@ -18,9 +18,8 @@ To create your project, follow these steps:
 
 1. Enter the following command:
    ```
-   sbt -Dsbt.version=0.13.15 new https://github.com/lagom/lagom-scala.g8
+   sbt "-Dsbt.version=0.13.15" new https://github.com/lagom/lagom-scala.g8
    ```
-
 1. The template prompts for the following parameters. Press `Enter` to accept the defaults or specify your own values:
 
    * `name` - Becomes the name of the top-level project directory.
