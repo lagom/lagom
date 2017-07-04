@@ -3,7 +3,8 @@
  */
 package com.lightbend.lagom.javadsl.client;
 
-import com.lightbend.lagom.internal.javadsl.client.CircuitBreakersConverter;
+import com.lightbend.lagom.internal.client.CircuitBreakers;
+import com.lightbend.lagom.internal.javadsl.client.CircuitBreakersPanelImpl;
 import com.lightbend.lagom.javadsl.api.CircuitBreaker;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
@@ -29,16 +30,14 @@ public abstract class CircuitBreakingServiceLocator implements ServiceLocator {
         this.circuitBreakersPanel = circuitBreakersPanel;
     }
 
-
-
     /**
      * @deprecated Use constructor accepting {@link CircuitBreakersPanel} instead
      * @param circuitBreakers
      */
     @Deprecated
-    public CircuitBreakingServiceLocator(com.lightbend.lagom.internal.client.CircuitBreakers circuitBreakers) {
+    public CircuitBreakingServiceLocator(CircuitBreakers circuitBreakers) {
         // convert passed Scala CircuitBreaker to a Java one
-        this.circuitBreakersPanel = CircuitBreakersConverter.toJavadslCircuitBreakerInvoker(circuitBreakers);
+        this.circuitBreakersPanel = new CircuitBreakersPanelImpl(circuitBreakers);
     }
 
     /**

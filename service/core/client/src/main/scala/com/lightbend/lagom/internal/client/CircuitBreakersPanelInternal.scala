@@ -22,7 +22,7 @@ import scala.util.{ Failure, Success }
  * This is the internal CircuitBreakersPanel implementation.
  * Javadsl and Scaladsl delegates to this one.
  */
-class CircuitBreakersPanelInternal(
+private[lagom] class CircuitBreakersPanelInternal(
   system:               ActorSystem,
   circuitBreakerConfig: CircuitBreakerConfig,
   metricsProvider:      CircuitBreakerMetricsProvider

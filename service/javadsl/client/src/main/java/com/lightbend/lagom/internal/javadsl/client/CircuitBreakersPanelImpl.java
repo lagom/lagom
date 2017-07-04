@@ -32,7 +32,7 @@ public class CircuitBreakersPanelImpl implements CircuitBreakersPanel {
     this(new CircuitBreakersPanelInternal(system, config, metricsProvider));
   }
 
-  CircuitBreakersPanelImpl(CircuitBreakersPanelInternal circuitBreakersPanelInternal) {
+  public CircuitBreakersPanelImpl(CircuitBreakersPanelInternal circuitBreakersPanelInternal) {
     this.circuitBreakersPanelInternal = circuitBreakersPanelInternal;
   }
 

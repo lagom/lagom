@@ -3,7 +3,8 @@
  */
 package com.lightbend.lagom.javadsl.client;
 
-import com.lightbend.lagom.internal.javadsl.client.CircuitBreakersConverter;
+import com.lightbend.lagom.internal.client.CircuitBreakers;
+import com.lightbend.lagom.internal.javadsl.client.CircuitBreakersPanelImpl;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
@@ -36,8 +37,8 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
    * @param circuitBreakers
    */
   @Deprecated
-  public ConfigurationServiceLocator(Configuration configuration, com.lightbend.lagom.internal.client.CircuitBreakers circuitBreakers) {
-    this(configuration.underlying(), CircuitBreakersConverter.toJavadslCircuitBreakerInvoker(circuitBreakers));
+  public ConfigurationServiceLocator(Configuration configuration, CircuitBreakers circuitBreakers) {
+      this(configuration.underlying(), new CircuitBreakersPanelImpl(circuitBreakers));
   }
 
   @Inject

@@ -10,7 +10,7 @@ import com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel
 
 import scala.concurrent.Future
 
-class CircuitBreakersPanelImpl(circuitBreakersInternal: CircuitBreakersPanelInternal)
+private[lagom] class CircuitBreakersPanelImpl(circuitBreakersInternal: CircuitBreakersPanelInternal)
   extends CircuitBreakersPanel {
 
   def this(system: ActorSystem, config: CircuitBreakerConfig, metricsProvider: CircuitBreakerMetricsProvider) =
@@ -18,11 +18,4 @@ class CircuitBreakersPanelImpl(circuitBreakersInternal: CircuitBreakersPanelInte
 
   override def withCircuitBreaker[T](id: String)(body: => Future[T]): Future[T] =
     circuitBreakersInternal.withCircuitBreaker(id)(body)
-}
-
-object CircuitBreakersConverter {
-  /** */
-  def toScaladslCircuitBreakersPanel(circuitBreakers: com.lightbend.lagom.internal.client.CircuitBreakers): CircuitBreakersPanel = {
-    new CircuitBreakersPanelImpl(circuitBreakers)
-  }
 }
