@@ -690,7 +690,6 @@ object Dependencies {
 
   val validateDependencies = taskKey[Unit]("Validate Lagom dependencies to ensure they are whitelisted")
   val dependencyWhitelist = settingKey[Seq[ModuleID]]("The whitelist of dependencies")
-  val pruneWhitelist = taskKey[Unit]("List items that can be pruned from the whitelist ")
 
   val validateDependenciesTask: Def.Initialize[Task[Unit]] = Def.task {
     // We validate compile dependencies to ensure that whatever we are exporting, we are exporting the right
@@ -746,33 +745,6 @@ object Dependencies {
       throw new DependencyWhitelistValidationFailed
     }
   }
-
-  val pruneWhitelistTask: Def.Initialize[Task[Unit]] = Def.task {
-    val compileClasspath = (managedClasspath in Compile).value
-    val testClasspath = (managedClasspath in Test).value
-    val cross = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
-    val log = streams.value.log
-    val svb = scalaBinaryVersion.value
-
-    val whitelist: Map[(String, String), String] = dependencyWhitelist.value.map { moduleId =>
-      val crossModuleId = cross(moduleId)
-      (crossModuleId.organization, crossModuleId.name) -> crossModuleId.revision
-    }.toMap
-
-    def collectProblems(scope: String, classpath: Classpath): Set[(String, String)] = {
-      val modules: Set[(String, String)] = classpath.toSet[Attributed[File]].flatMap(_.get(moduleID.key)).map(mod=> (mod.organization, mod.name))
-      whitelist.keySet -- modules
-    }
-    val problems = collectProblems("Compile", compileClasspath) ++ collectProblems("Test", testClasspath)
-
-    if (problems.nonEmpty) {
-      problems.foreach(p => log.error(s"${name.value} - Found unnecessary whitelisted item: ${p._1}:${p._2}"))
-    } else {
-      log.error(s"${name.value} needs a complete whitelist.")
-    }
-
-  }
-  val pruneWhitelistSetting = pruneWhitelist := pruneWhitelistTask.value
 
   val validateDependenciesSetting = validateDependencies := validateDependenciesTask.value
   val dependencyWhitelistSetting = dependencyWhitelist := DependencyWhitelist.value

@@ -101,7 +101,6 @@ def runtimeLibCommon: Seq[Setting[_]] = common ++ Seq(
   crossPaths := false,
 
   Dependencies.validateDependenciesSetting,
-  Dependencies.pruneWhitelistSetting,
   Dependencies.dependencyWhitelistSetting,
 
   // compile options
