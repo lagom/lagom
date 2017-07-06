@@ -7,7 +7,7 @@ This guide explains how to migrate from Lagom 1.3 to Lagom 1.4. If you are upgra
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin. For example:
 
 ```scala
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0-M1")
 ```
 
 ## Binding services

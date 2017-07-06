@@ -13,7 +13,7 @@ If you're using a `lagom.version` property in the `properties` section of your r
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin. For example:
 
 ```scala
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0-M1")
 ```
 
 ## Binding services
