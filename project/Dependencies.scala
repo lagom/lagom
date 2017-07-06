@@ -95,8 +95,8 @@ object Dependencies {
       "com.github.jnr" % "jnr-ffi" % "2.1.2",
       "com.github.jnr" % "jnr-posix" % "3.0.27",
       "com.github.jnr" % "jnr-x86asm" % "1.0.2",
-      "com.google.code.findbugs" % "jsr305" % "1.3.9",
-      "com.google.errorprone" % "error_prone_annotations" % "2.0.18",
+      "com.google.code.findbugs" % "jsr305" % "3.0.0",
+      "com.google.errorprone" % "error_prone_annotations" % "2.0.19",
       "com.google.guava" % "guava" % GuavaVersion,
       "com.google.j2objc" % "j2objc-annotations" % "1.1",
       "com.google.inject" % "guice" % "4.1.0",
@@ -190,19 +190,23 @@ object Dependencies {
       "tyrex" % "tyrex" % "1.0.1",
       "xml-apis" % "xml-apis" % "1.4.01"
 
-    ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", AkkaVersion)(
-      "akka-actor", "akka-cluster", "akka-cluster-sharding", "akka-cluster-tools", "akka-distributed-data",
-      "akka-multi-node-testkit", "akka-persistence", "akka-persistence-query", "akka-protobuf", "akka-remote",
-      "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit"
+    ) ++
+      jacksonFamily ++
+      scalaPbFamily ++
+      grpcFamily ++
+      crossLibraryFamily("com.typesafe.akka", AkkaVersion)(
+        "akka-actor", "akka-cluster", "akka-cluster-sharding", "akka-cluster-tools", "akka-distributed-data",
+        "akka-multi-node-testkit", "akka-persistence", "akka-persistence-query", "akka-protobuf", "akka-remote",
+        "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit"
 
-    ) ++ libraryFamily("com.typesafe.play", PlayVersion)(
+      ) ++ libraryFamily("com.typesafe.play", PlayVersion)(
       "build-link", "play-exceptions", "play-netty-utils"
 
     ) ++ crossLibraryFamily("com.typesafe.play", PlayVersion)(
       "play", "play-datacommons", "play-guice", "play-iteratees", "play-java", "play-jdbc", "play-jdbc-api",
       "play-netty-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
-//      "play", "play-ahc-ws", "play-datacommons", "play-functional", "play-guice", "play-iteratees", "play-java", "play-jdbc", "play-jdbc-api",  // ??
-//      "play-json", "play-netty-server", "play-server", "play-streams", "play-ws"  // ??
+      //      "play", "play-ahc-ws", "play-datacommons", "play-functional", "play-guice", "play-iteratees", "play-java", "play-jdbc", "play-jdbc-api",  // ??
+      //      "play-json", "play-netty-server", "play-server", "play-streams", "play-ws"  // ??
 
     ) ++ libraryFamily("ch.qos.logback", "1.1.3")(
       "logback-classic", "logback-core"
@@ -232,6 +236,27 @@ object Dependencies {
     ) ++ libraryFamily("com.fasterxml.jackson.datatype", JacksonVersion)(
       "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
     )
+
+
+  // Not a family by organization but they go hand in hand
+  private val scalaPbFamily = Seq(
+    "com.trueaccord.scalapb" %% "scalapb-runtime" % "0.6.0",
+    "com.trueaccord.lenses" %% "lenses" % "0.4.12",
+    "com.lihaoyi" %% "fastparse" % "0.4.2",
+    "com.lihaoyi" %% "fastparse-utils" % "0.4.2",
+    "com.lihaoyi" %% "sourcecode" % "0.1.3",
+    "com.google.protobuf" % "protobuf-java" % "3.3.1"
+  )
+
+  private val grpcFamily = Seq(
+    "io.grpc" % "grpc-netty" % "1.4.0",
+    "io.grpc" % "grpc-core" % "1.4.0",
+    "io.grpc" % "grpc-context" % "1.4.0",
+    "com.google.instrumentation" % " instrumentation-api" % "0.4.2",
+    "io.netty" % "netty-codec-http2" % "4.1.11.Final",
+    "io.netty" % "netty-handler-proxy" % "4.1.11.Final",
+    "io.netty" % "netty-codec-socks" % "4.1.11.Final"
+  )
 
 
   // These dependencies are used by JPA to test, but we don't want to export them as part of our regular whitelist,
@@ -665,10 +690,12 @@ object Dependencies {
 
   val validateDependencies = taskKey[Unit]("Validate Lagom dependencies to ensure they are whitelisted")
   val dependencyWhitelist = settingKey[Seq[ModuleID]]("The whitelist of dependencies")
+  val pruneWhitelist = taskKey[Unit]("List items that can be pruned from the whitelist ")
 
   val validateDependenciesTask: Def.Initialize[Task[Unit]] = Def.task {
     // We validate compile dependencies to ensure that whatever we are exporting, we are exporting the right
-    // versions. We validate test dependencies to ensure that our tests run against the same versions that we are
+    // versions.
+    // We validate test dependencies to ensure that our tests run against the same versions that we are
     // exporting
     val compileClasspath = (managedClasspath in Compile).value
     val testClasspath = (managedClasspath in Test).value
@@ -719,6 +746,33 @@ object Dependencies {
       throw new DependencyWhitelistValidationFailed
     }
   }
+
+  val pruneWhitelistTask: Def.Initialize[Task[Unit]] = Def.task {
+    val compileClasspath = (managedClasspath in Compile).value
+    val testClasspath = (managedClasspath in Test).value
+    val cross = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
+    val log = streams.value.log
+    val svb = scalaBinaryVersion.value
+
+    val whitelist: Map[(String, String), String] = dependencyWhitelist.value.map { moduleId =>
+      val crossModuleId = cross(moduleId)
+      (crossModuleId.organization, crossModuleId.name) -> crossModuleId.revision
+    }.toMap
+
+    def collectProblems(scope: String, classpath: Classpath): Set[(String, String)] = {
+      val modules: Set[(String, String)] = classpath.toSet[Attributed[File]].flatMap(_.get(moduleID.key)).map(mod=> (mod.organization, mod.name))
+      whitelist.keySet -- modules
+    }
+    val problems = collectProblems("Compile", compileClasspath) ++ collectProblems("Test", testClasspath)
+
+    if (problems.nonEmpty) {
+      problems.foreach(p => log.error(s"${name.value} - Found unnecessary whitelisted item: ${p._1}:${p._2}"))
+    } else {
+      log.error(s"${name.value} needs a complete whitelist.")
+    }
+
+  }
+  val pruneWhitelistSetting = pruneWhitelist := pruneWhitelistTask.value
 
   val validateDependenciesSetting = validateDependencies := validateDependenciesTask.value
   val dependencyWhitelistSetting = dependencyWhitelist := DependencyWhitelist.value
