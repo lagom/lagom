@@ -108,6 +108,13 @@ public interface CassandraReadSide {
     }
 
     /**
+     * Convenience method to create an already completed <code>CompletionStage</code> with several <code>BoundStatement</code>.
+     */
+    static CompletionStage<List<BoundStatement>> completedStatements(BoundStatement... statements) {
+        return completedStatements(Arrays.asList(statements));
+    }
+
+    /**
      * Convenience method to create an already completed <code>CompletionStage</code> with no <code>BoundStatement</code>.
      */
     static CompletionStage<List<BoundStatement>> completedStatements() {
