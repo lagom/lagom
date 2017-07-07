@@ -11,6 +11,7 @@ import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler;
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
