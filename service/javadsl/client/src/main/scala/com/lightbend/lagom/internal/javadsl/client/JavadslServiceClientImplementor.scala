@@ -42,10 +42,10 @@ class JavadslServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: 
   private val log = LoggerFactory.getLogger(classOf[JavadslServiceClientImplementor])
 
   def implement[T](interface: Class[T], descriptor: Descriptor): T = {
-    java.lang.reflect.Proxy.newProxyInstance(environment.classLoader, Array(interface), new ServiceClientInvocationHandler(descriptor)).asInstanceOf[T]
+    java.lang.reflect.Proxy.newProxyInstance(environment.classLoader, Array(interface), new ServiceClientInvocationHandler(descriptor, interface)).asInstanceOf[T]
   }
 
-  class ServiceClientInvocationHandler(descriptor: Descriptor) extends InvocationHandler {
+  class ServiceClientInvocationHandler[T](descriptor: Descriptor, interface: Class[T]) extends InvocationHandler {
     private def serviceCallMethods: Map[Method, JavadslServiceCallInvocationHandler[Any, Any]] = descriptor.calls().asScala.map { call =>
       call.serviceCallHolder() match {
         case holder: MethodServiceCallHolder =>
@@ -67,13 +67,18 @@ class JavadslServiceClientImplementor @Inject() (ws: WSClient, webSocketClient: 
       }.toMap
     }
 
-    private val methods: Map[Method, _] = serviceCallMethods ++ topicMethods
+    private def descriptorMethod: Map[Method, _] = {
+      interface.getMethods.filter(_.getReturnType.equals(classOf[Descriptor])).map(m => m -> descriptor).toMap
+    }
+
+    private val methods: Map[Method, _] = serviceCallMethods ++ topicMethods ++ descriptorMethod
 
     override def invoke(proxy: scala.Any, method: Method, args: Array[AnyRef]): AnyRef = {
       methods.get(method) match {
         case Some(serviceCallInvocationHandler: JavadslServiceCallInvocationHandler[_, _]) => serviceCallInvocationHandler.invoke(args)
         case Some(topic: Topic[_]) => topic
         case Some(NoTopicFactory) => throw new IllegalStateException("Attempt to get a topic, but there is no TopicFactory provided to implement it. You may need to add a dependency on lagom-javadsl-kafka-broker to your projects dependencies.")
+        case Some(descriptor: Descriptor) => descriptor
         case _ => throw new IllegalStateException("Method " + method + " is not described by the service client descriptor")
       }
     }
