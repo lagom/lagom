@@ -101,6 +101,8 @@ private[lagom] object Producer {
     def generalHandler: Receive = {
       case Failure(e) =>
         throw e
+      case t: Throwable =>
+        throw t
 
       case EnsureActive(tagName) =>
     }
