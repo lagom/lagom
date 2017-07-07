@@ -25,7 +25,7 @@ object Dependencies {
 
   // Specific libraries that get reused
   private val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
-  private val guava = "com.google.guava" % "guava" % GuavaVersion
+  private val guavaLib = "com.google.guava" % "guava" % GuavaVersion
   private val log4J = "log4j" % "log4j" % Log4jVersion
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
@@ -97,7 +97,8 @@ object Dependencies {
       "com.github.jnr" % "jnr-x86asm" % "1.0.2",
       "com.google.code.findbugs" % "jsr305" % "3.0.0",
       "com.google.errorprone" % "error_prone_annotations" % "2.0.19",
-      "com.google.guava" % "guava" % GuavaVersion,
+      guavaLib,
+      "com.google.instrumentation" % "instrumentation-api" % "0.4.2",
       "com.google.j2objc" % "j2objc-annotations" % "1.1",
       "com.google.inject" % "guice" % "4.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "4.1.0",
@@ -300,6 +301,14 @@ object Dependencies {
     artifactIds.map(aid => groupId % aid % version)
   }
 
+
+  // depending on guava requires an explicit upgrade of errorprone.
+  private val guavaDependency = Seq(
+    guavaLib,
+    "com.google.code.findbugs" % "jsr305" % "3.0.0",
+    "com.google.errorprone" % "error_prone_annotations" % "2.0.19")
+
+
   // Dependencies for each module
   val api = libraryDependencies ++= Seq(
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
@@ -308,11 +317,10 @@ object Dependencies {
     akkaSlf4j,
     akkaStream,
     play,
-    guava,
-
-    // Upgrades needed to match whitelist
     sslConfig
-  )
+  ) ++
+    // Upgrades needed to match whitelist
+    guavaDependency
 
   val `api-javadsl` = libraryDependencies ++= Seq(
     playJava,
@@ -320,12 +328,18 @@ object Dependencies {
     "org.pcollections" % "pcollections" % "2.1.2",
     scalaTest % Test,
     "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion % Test
-  )
+  ) ++
+    // Upgrades needed to match whitelist
+    guavaDependency
+
 
   val `api-scaladsl` = libraryDependencies ++= Seq(
     "com.trueaccord.scalapb" %% "scalapb-runtime" % "0.6.0",
     scalaTest % Test
-  )
+  ) ++
+    // Upgrades needed to match whitelist
+    guavaDependency
+
 
   val immutables = libraryDependencies += "org.immutables" % "value" % "2.3.2"
 
@@ -351,10 +365,10 @@ object Dependencies {
     scalaXml % Test,
     scalaParserCombinators % Test
     // explicitly depend on particular versions of jackson
-  ) ++ jacksonFamily ++ Seq(
+  ) ++ jacksonFamily ++
     // explicitly depend on particular versions of guava
-    guava
-  )
+    guavaDependency
+
 
   val `api-tools` = libraryDependencies ++= Seq(
     play,
@@ -364,7 +378,10 @@ object Dependencies {
     akkaSlf4j,
     akkaStream,
     sslConfig
-  )
+  ) ++
+    // explicitly depend on particular versions of guava
+    guavaDependency
+
 
   val client = libraryDependencies ++= Seq(
     playWs,
@@ -384,7 +401,7 @@ object Dependencies {
   val `client-scaladsl` = libraryDependencies ++= Seq(
     "io.grpc" % "grpc-netty" % "1.4.0",
     scalaTest % Test
-  )
+  ) ++ guavaDependency
 
   val `integration-client-javadsl` = libraryDependencies ++= Seq(
     playWs,
@@ -425,7 +442,7 @@ object Dependencies {
 
     // Upgrades needed to mtach whitelist
     "io.netty" % "netty-codec-http" % NettyVersion
-  )
+  ) ++ guavaDependency
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
@@ -468,10 +485,10 @@ object Dependencies {
     // Upgrades needed to match whitelist
     scalaXml % Test
     // explicitly depend on particular versions of jackson
-  ) ++ jacksonFamily ++ Seq(
+  ) ++ jacksonFamily ++
     // explicitly depend on particular versions of guava
-    guava
-  )
+    guavaDependency
+
 
   val `pubsub-javadsl` = libraryDependencies ++= Seq(
     akkaClusterTools,
@@ -481,10 +498,10 @@ object Dependencies {
     scalaTest % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test
     // explicitly depend on particular versions of jackson
-  ) ++ jacksonFamily ++ Seq(
+  ) ++ jacksonFamily ++
     // explicitly depend on particular versions of guava
-    guava
-  )
+    guavaDependency
+
 
   val `pubsub-scaladsl` = libraryDependencies ++= Seq(
     akkaClusterTools,
@@ -508,7 +525,7 @@ object Dependencies {
     akkaStreamTestkit % Test,
     scalaTest % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test
-  )
+  ) ++ guavaDependency
 
   val `persistence-javadsl` = libraryDependencies ++= Seq(
     // this mean we have production code depending on testkit
@@ -525,7 +542,7 @@ object Dependencies {
     // Upgrades needed to match whitelist
     "io.dropwizard.metrics" % "metrics-core" % "3.2.2",
     "io.netty" % "netty-handler" % NettyVersion
-  )
+  ) ++ guavaDependency
 
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Nil
 
@@ -534,7 +551,7 @@ object Dependencies {
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
     akkaPersistenceJdbc,
     playJdbc
-  )
+  ) ++ guavaDependency
 
   val `persistence-jdbc-javadsl` = libraryDependencies ++= Seq(
     h2 % Test
@@ -581,14 +598,17 @@ object Dependencies {
   )
 
   val logback = libraryDependencies ++= Seq(
-    // needed only because we use play.utils.Colors
+    // needed because we use play.utils.Colors
+    // and play.api.LoggerConfigurator
     play,
 
     // Upgrades needed to match whitelist versions
     akkaStream,
     akkaSlf4j,
     sslConfig
-  ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % "1.1.3")
+  ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % "1.1.3") ++
+    // explicitly depend on particular versions of guava
+    guavaDependency
 
   val log4j2 = libraryDependencies ++= Seq(
     "log4j-api",
@@ -596,13 +616,15 @@ object Dependencies {
     "log4j-slf4j-impl"
   ).map("org.apache.logging.log4j" % _ % "2.7") ++ Seq(
     "com.lmax" % "disruptor" % "3.3.6",
+    // needed because we use play.api.LoggerConfigurator
     play,
-
     // Upgrades needed to match whitelist versions
     akkaStream,
     akkaSlf4j,
     sslConfig
-  )
+  ) ++
+    // explicitly depend on particular versions of guava
+    guavaDependency
 
   val `reloadable-server` = libraryDependencies ++= Seq(
     playServer,
@@ -611,7 +633,10 @@ object Dependencies {
     akkaStream,
     akkaSlf4j,
     sslConfig
-  )
+  ) ++
+    // explicitly depend on particular versions of guava
+    guavaDependency
+
 
   val `build-tool-support` = libraryDependencies ++= Seq(
     "com.lightbend.play" %% "play-file-watch" % "1.0.0",
