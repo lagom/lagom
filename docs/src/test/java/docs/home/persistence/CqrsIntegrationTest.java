@@ -27,7 +27,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import play.Application;
-import play.Configuration;
 import play.inject.Injector;
 import play.inject.guice.GuiceApplicationBuilder;
 import scala.collection.JavaConversions;
@@ -62,7 +61,7 @@ public class CqrsIntegrationTest {
     CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", true, 0);
 
     application = new GuiceApplicationBuilder()
-            .configure(new Configuration(config))
+            .configure(config)
             .bindings(bind(ServiceLocator.class).to(NoServiceLocator.class))
             .build();
 
