@@ -52,10 +52,10 @@ import play.inject.guice.GuiceApplicationBuilder
  * enabled. Cassandra is also disabled by default. If your service require either of these features you
  * can enable them in the `Setup`.
  *
- * There are two different styles that can be used. It is most convenient to use [[#withServer withServer]],
+ * There are two different styles that can be used. It is most convenient to use [[ServiceTest.withServer() withServer]],
  * since it automatically starts and stops the server before and after the given lambda.
  * When your test have several test methods, and especially when using persistence, it is
- * faster to only [[#startServer start]] the server once in a static method annotated with `@BeforeClass`
+ * faster to only [[ServiceTest.startServer() startServer]] the server once in a static method annotated with `@BeforeClass`
  * and stop it in a method annotated with `@AfterClass`.
  */
 object ServiceTest {
@@ -205,11 +205,11 @@ object ServiceTest {
 
   /**
    * Start the test server with the given `setup` and run the `block` (lambda). When
-   * the `block returns or throws the test server will automatically be stopped.
+   * the `block` returns or throws the test server will automatically be stopped.
    *
    * This method should be used when the server can be started and stopped for each test
    * method. When your test have several test methods, and especially when using persistence, it is
-   * faster to only start the server once with [[#startServer]].
+   * faster to only start the server once with [[startServer()]].
    *
    * You can get the service client from the `TestServer` that is passed as parameter
    * to the `block`.
@@ -233,7 +233,7 @@ object ServiceTest {
    *
    * When your test have several test methods, and especially when using persistence, it is
    * faster to only start the server once in a static method annotated with `@BeforeClass`
-   * and stop it in a method annotated with `@AfterClass`. Otherwise [[#withServer withServer]] is
+   * and stop it in a method annotated with `@AfterClass`. Otherwise [[withServer() withServer]] is
    * more convenient.
    *
    * You can get the service client from the returned `TestServer`.
