@@ -23,6 +23,7 @@ object Dependencies {
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
   val SlickVersion = "3.2.0"
+  val JUnitVersion = "4.11"
 
   // Specific libraries that get reused
   private val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
@@ -140,7 +141,7 @@ object Dependencies {
       "javax.inject" % "javax.inject" % "1",
       "javax.transaction" % "jta" % "1.1",
       "joda-time" % "joda-time" % "2.9.9",
-      "junit" % "junit" % "4.11",
+      "junit" % "junit" % JUnitVersion,
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
       "org.agrona" % "agrona" % "0.9.5",
@@ -362,7 +363,7 @@ object Dependencies {
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
-    "junit" % "junit" % "4.11"
+    "junit" % "junit" % JUnitVersion
   )
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
@@ -370,7 +371,7 @@ object Dependencies {
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
-    "junit" % "junit" % "4.11"
+    "junit" % "junit" % JUnitVersion
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
@@ -518,12 +519,12 @@ object Dependencies {
 
   val `kafka-broker-javadsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
-    "junit" % "junit" % "4.11" % Test
+    "junit" % "junit" % JUnitVersion % Test
   )
 
   val `kafka-broker-scaladsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
-    "junit" % "junit" % "4.11" % Test
+    "junit" % "junit" % JUnitVersion % Test
   )
 
   val logback = libraryDependencies ++= Seq(
