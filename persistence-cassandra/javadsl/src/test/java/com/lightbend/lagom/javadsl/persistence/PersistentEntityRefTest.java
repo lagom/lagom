@@ -52,7 +52,7 @@ public class PersistentEntityRefTest {
         .withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort()));
 
     application = new GuiceApplicationBuilder()
-            .configure(new Configuration(config))
+            .configure(config)
             .build();
     injector = application.injector();
 

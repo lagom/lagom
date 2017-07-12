@@ -18,7 +18,7 @@ class ServiceRegistration(serviceInfo: ServiceInfo, lifecycle: ApplicationLifecy
   private val logger: Logger = Logger(this.getClass)
   private val uri = {
     val httpAddress = config.underlying.getString("play.server.http.address")
-    val httpPort = config.getString("play.server.http.port").get
+    val httpPort = config.get[String]("play.server.http.port")
     URI.create(s"http://$httpAddress:$httpPort")
   }
 

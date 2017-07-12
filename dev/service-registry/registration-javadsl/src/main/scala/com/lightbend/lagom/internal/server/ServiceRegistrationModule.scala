@@ -35,7 +35,7 @@ object ServiceRegistrationModule {
   class ServiceConfigProvider @Inject() (config: Configuration) extends Provider[ServiceConfig] {
     override lazy val get = {
       val httpAddress = config.underlying.getString("play.server.http.address")
-      val httpPort = config.getString("play.server.http.port").get
+      val httpPort = config.get[String]("play.server.http.port")
       val url = new URI(s"http://$httpAddress:$httpPort")
 
       ServiceConfig(url)
