@@ -67,11 +67,11 @@ object Dependencies {
   private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion
   private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion
   private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion
-  private val playFunctional = "com.typesafe.play" %% "play-functional" % PlayVersion
 
   private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion
   private val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % PlayVersion
   private val playJson = "com.typesafe.play" %% "play-json" % PlayJsonVersion
+  private val playFunctional = "com.typesafe.play" %% "play-functional" % PlayJsonVersion
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.
@@ -125,7 +125,7 @@ object Dependencies {
       "com.typesafe.play" % "shaded-asynchttpclient" % PlayStandaloneWsVersion,
       "com.typesafe.play" % "shaded-oauth" % PlayStandaloneWsVersion,
 
-      "com.typesafe.play" %% "twirl-api" % "1.3.2",
+      "com.typesafe.play" %% "twirl-api" % "1.3.3",
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.6.3",
