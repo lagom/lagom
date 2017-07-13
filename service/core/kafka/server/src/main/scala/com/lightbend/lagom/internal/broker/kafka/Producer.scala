@@ -6,12 +6,11 @@ package com.lightbend.lagom.internal.broker.kafka
 import java.net.URI
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.Failure
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{ Serializer, StringSerializer }
 import akka.Done
 import akka.NotUsed
-import akka.actor.{ Actor, ActorLogging, ActorSystem, Props, SupervisorStrategy }
+import akka.actor.{ Actor, ActorLogging, ActorSystem, Props, Status, SupervisorStrategy }
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.kafka.ProducerMessage
 import akka.kafka.ProducerSettings
@@ -99,7 +98,7 @@ private[lagom] object Producer {
     }
 
     def generalHandler: Receive = {
-      case Failure(e) =>
+      case Status.Failure(e) =>
         throw e
 
       case EnsureActive(tagName) =>
