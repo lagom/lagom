@@ -93,7 +93,7 @@ Lagom uses Play and Akka under the covers and in occasions Lagom exposes the API
 
 When running a rolling upgrade the nodes composing your Akka cluster must keep the ability to connect to each other and must use the same serialization formats.
 
-If you are running Lagom 1.2.x and must do a rolling upgrade, you must first migrate to Lagom  1.3.5. Lagom 1.2.x nodes can't forma cluster with Lagom 1.4.x nodes.
+If you are running Lagom 1.2.x and must do a rolling upgrade, you must first migrate to Lagom  1.3.5. Lagom 1.2.x nodes can't form a cluster with Lagom 1.4.x nodes.
 
 One relevant change Akka 2.5 introduced involves a new method (DData) [internally handle the sharding](http://doc.akka.io/docs/akka/current/java/project/migration-guide-2.4.x-2.5.x.html#cluster-sharding-state-store-mode) of your Persistent Entities in Lagom. We have decided to not enable that new method so your migration from Lagom 1.3.x to 1.4.x should be fine. You may opt in and use DData instead of the default persistence-based one but keep in mind that switching from persistence-based to DData requires a complete-cluster shutdown.
 
