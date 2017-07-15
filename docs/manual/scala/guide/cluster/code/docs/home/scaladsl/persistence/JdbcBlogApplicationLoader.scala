@@ -19,9 +19,7 @@ class JdbcBlogApplicationLoader extends LagomApplicationLoader {
   override def loadDevMode(context: LagomApplicationContext): LagomApplication =
     new BlogApplication(context) with LagomDevModeComponents
 
-  override def describeServices = List(
-    readDescriptor[BlogService]
-  )
+  override def describeService = Some(readDescriptor[BlogService])
 }
 
 //#load-components

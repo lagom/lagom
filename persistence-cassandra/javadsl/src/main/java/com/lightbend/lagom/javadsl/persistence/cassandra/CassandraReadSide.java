@@ -11,6 +11,7 @@ import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler;
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -105,6 +106,13 @@ public interface CassandraReadSide {
      */
     static CompletionStage<List<BoundStatement>> completedStatements(List<BoundStatement> statements) {
         return CompletableFuture.completedFuture(statements);
+    }
+
+    /**
+     * Convenience method to create an already completed <code>CompletionStage</code> with several <code>BoundStatement</code>.
+     */
+    static CompletionStage<List<BoundStatement>> completedStatements(BoundStatement... statements) {
+        return completedStatements(Arrays.asList(statements));
     }
 
     /**
