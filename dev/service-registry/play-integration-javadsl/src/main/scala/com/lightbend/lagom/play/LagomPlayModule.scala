@@ -32,9 +32,9 @@ class LagomPlayModule extends Module {
 
   }
 
-  private def prepareServiceInfoBinding(config: Configuration) = {
-    val triedServiceName = Try(config.underlying.getString("lagom.play.service-name"))
-    val triedAcls: Try[JList[_ <: Config]] = Try(config.underlying.getConfigList("lagom.play.acls"))
+  private def prepareServiceInfoBinding(config: Config) = {
+    val triedServiceName = Try(config.getString("lagom.play.service-name"))
+    val triedAcls: Try[JList[_ <: Config]] = Try(config.getConfigList("lagom.play.acls"))
 
     val warning = "Service setup via 'application.conf' is deprecated. Remove 'lagom.play.service-name' and/or " +
       "'lagom.play.acls' and use 'bindServiceInfo' on your Guice's Module class."
@@ -74,9 +74,15 @@ class LagomPlayModule extends Module {
   }
 }
 
-class PlayRegisterWithServiceRegistry @Inject() (config: Configuration, serviceInfo: ServiceInfo, serviceRegistry: ServiceRegistry, applicationLifecycle: ApplicationLifecycle) {
-  private val httpAddress = config.underlying.getString("play.server.http.address")
-  private val httpPort = config.underlying.getString("play.server.http.port")
+class PlayRegisterWithServiceRegistry @Inject() (config: Config, serviceInfo: ServiceInfo, serviceRegistry: ServiceRegistry, applicationLifecycle: ApplicationLifecycle) {
+
+  @deprecated(message = "prefer constructor using typesafe Config instead", since = "1.4.0")
+  def this(config: Configuration, serviceInfo: ServiceInfo, serviceRegistry: ServiceRegistry,
+           applicationLifecycle: ApplicationLifecycle) =
+    this(config.underlying, serviceInfo, serviceRegistry, applicationLifecycle)
+
+  private val httpAddress = config.getString("play.server.http.address")
+  private val httpPort = config.getString("play.server.http.port")
   private val serviceUrl = new URI(s"http://$httpAddress:$httpPort")
 
   // TODO: ServiceRegistryService should not flatmap the ACL lists (locatableService's names are lost)

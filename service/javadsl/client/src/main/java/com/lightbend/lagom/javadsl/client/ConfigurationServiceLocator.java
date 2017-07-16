@@ -31,11 +31,11 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
   private final PMap<String, URI> services;
 
   @Inject
-  public ConfigurationServiceLocator(Configuration configuration, CircuitBreakers circuitBreakers) {
+  public ConfigurationServiceLocator(Config configuration, CircuitBreakers circuitBreakers) {
       super(circuitBreakers);
       Map<String, URI> services = new HashMap<>();
-      if (configuration.underlying().hasPath(LAGOM_SERVICES_KEY)) {
-          Config config = configuration.underlying().getConfig(LAGOM_SERVICES_KEY);
+      if (configuration.hasPath(LAGOM_SERVICES_KEY)) {
+          Config config = configuration.getConfig(LAGOM_SERVICES_KEY);
           for (String key: config.root().keySet()) {
               try {
                   String value = config.getString(key);
@@ -49,6 +49,15 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
           }
       }
       this.services = HashTreePMap.from(services);
+  }
+
+
+  /**
+   * @deprecated use {@link ConfigurationServiceLocator(Config, CircuitBreakers)} instead.
+   */
+  @Deprecated
+  public ConfigurationServiceLocator(Configuration configuration, CircuitBreakers circuitBreakers) {
+      this(configuration.underlying(), circuitBreakers);
   }
 
   @Override

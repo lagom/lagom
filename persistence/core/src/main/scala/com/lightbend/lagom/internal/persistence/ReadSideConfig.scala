@@ -19,8 +19,6 @@ case class ReadSideConfig(
 )
 
 object ReadSideConfig {
-  def apply(configuration: Configuration): ReadSideConfig =
-    apply(configuration.underlying.getConfig("lagom.persistence.read-side"))
 
   def apply(conf: Config): ReadSideConfig = {
     ReadSideConfig(

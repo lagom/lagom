@@ -22,15 +22,17 @@ import com.lightbend.lagom.javadsl.broker.kafka.KafkaTopicFactory;
 import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator;
 import com.lightbend.lagom.javadsl.jackson.JacksonExceptionSerializer;
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory;
+import com.typesafe.config.Config;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.pcollections.PVector;
 import org.pcollections.TreePVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import play.api.Configuration;
+
 import play.api.Environment;
 import play.api.Mode;
+import play.api.Configuration;
 import play.api.inject.ApplicationLifecycle;
 import play.api.libs.ws.WSClient;
 import play.api.libs.ws.WSClientConfig;
@@ -173,10 +175,10 @@ public class LagomClientFactory implements Closeable {
     public static LagomClientFactory create(String serviceName, ClassLoader classLoader) {
         // Environment and config
         Environment environment = Environment.apply(new File("."), classLoader, Mode.Prod$.MODULE$);
-        Configuration configuration = Configuration.load(environment);
+        Config configuration = Configuration.load(environment).underlying();
 
         // Akka
-        ActorSystem actorSystem = ActorSystem.create("lagom-client", configuration.underlying().getConfig("akka"),
+        ActorSystem actorSystem = ActorSystem.create("lagom-client", configuration.getConfig("akka"),
                 classLoader);
         Materializer materializer = ActorMaterializer.create(actorSystem);
 
@@ -184,8 +186,8 @@ public class LagomClientFactory implements Closeable {
         EventLoopGroup eventLoop = new NioEventLoopGroup();
 
         // WS
-        WSClientConfig wsClientConfig = new WSConfigParser(configuration.underlying(), environment.classLoader()).parse();
-        AhcWSClientConfig ahcWSClientConfig = new AhcWSClientConfigParser(wsClientConfig, configuration.underlying(), environment.classLoader()).parse();
+        WSClientConfig wsClientConfig = new WSConfigParser(configuration, environment.classLoader()).parse();
+        AhcWSClientConfig ahcWSClientConfig = new AhcWSClientConfigParser(wsClientConfig, configuration, environment.classLoader()).parse();
         WSClient wsClient = AhcWSClient.apply(ahcWSClientConfig, scala.Option.empty(), materializer);
 
         // WebSocketClient

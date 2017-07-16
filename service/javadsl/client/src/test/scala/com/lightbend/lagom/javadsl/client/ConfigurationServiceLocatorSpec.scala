@@ -9,21 +9,20 @@ import java.util.concurrent.TimeUnit
 import com.lightbend.lagom.internal.client.CircuitBreakers
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{ Matchers, WordSpec }
-import play.Configuration
 
 import scala.compat.java8.OptionConverters._
 import scala.concurrent.Future
 
 class ConfigurationServiceLocatorSpec extends WordSpec with Matchers {
 
-  val serviceLocator = new ConfigurationServiceLocator(new Configuration(ConfigFactory.parseString(
+  val serviceLocator = new ConfigurationServiceLocator(ConfigFactory.parseString(
     """
       |lagom.services {
       |  foo = "http://localhost:10001"
       |  bar = "http://localhost:10002"
       |}
     """.stripMargin
-  )), new CircuitBreakers(null, null, null))
+  ), new CircuitBreakers(null, null, null))
 
   def locate(serviceName: String) =
     serviceLocator.locate(serviceName).toCompletableFuture.get(10, TimeUnit.SECONDS).asScala

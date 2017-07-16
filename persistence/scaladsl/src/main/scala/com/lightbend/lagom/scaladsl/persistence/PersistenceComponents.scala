@@ -4,12 +4,12 @@
 package com.lightbend.lagom.scaladsl.persistence
 
 import scala.concurrent.ExecutionContext
-
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.scaladsl.persistence.ReadSideImpl
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
+import com.typesafe.config.Config
 import play.api.Configuration
 
 /**
@@ -31,9 +31,13 @@ trait ReadSidePersistenceComponents extends WriteSidePersistenceComponents {
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext
   def materializer: Materializer
+
+  def config: Config = configuration.underlying
+
+  @deprecated(message = "prefer `config` using typesafe Config instead", since = "1.4.0")
   def configuration: Configuration
 
-  lazy val readSideConfig: ReadSideConfig = ReadSideConfig(configuration)
+  lazy val readSideConfig: ReadSideConfig = ReadSideConfig(config.getConfig("lagom.persistence.read-side"))
   lazy val readSide: ReadSide = new ReadSideImpl(actorSystem, readSideConfig, persistentEntityRegistry)(
     executionContext, materializer
   )

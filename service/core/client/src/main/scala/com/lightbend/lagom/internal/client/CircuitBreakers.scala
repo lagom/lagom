@@ -72,7 +72,11 @@ class CircuitBreakers @Inject() (system: ActorSystem, circuitBreakerConfig: Circ
 }
 
 @Singleton
-class CircuitBreakerConfig @Inject() (configuration: Configuration) {
-  val config: Config = configuration.underlying.getConfig("lagom.circuit-breaker")
+class CircuitBreakerConfig @Inject() (configuration: Config) {
+
+  @deprecated(message = "prefer constructor using typesafe Config instead", since = "1.4.0")
+  def this(configuration: Configuration) = this(configuration.underlying)
+
+  val config: Config = configuration.getConfig("lagom.circuit-breaker")
   val default: Config = config.getConfig("default")
 }

@@ -7,10 +7,11 @@ import java.util.UUID
 
 import akka.Done
 import akka.actor.ActorSystem
-import akka.persistence.query.{ NoOffset, Offset, Sequence => AkkaSequence, TimeBasedUUID }
+import akka.persistence.query.{ NoOffset, Offset, TimeBasedUUID, Sequence => AkkaSequence }
 import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
+import com.typesafe.config.Config
 import play.api.Configuration
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -38,8 +39,9 @@ private[lagom] trait SlickOffsetStoreConfiguration {
 /**
  * INTERNAL API
  */
-private[lagom] abstract class AbstractSlickOffsetStoreConfiguration(config: Configuration) extends SlickOffsetStoreConfiguration {
-  private val cfg = config.underlying.getConfig("lagom.persistence.read-side.jdbc.tables.offset")
+private[lagom] abstract class AbstractSlickOffsetStoreConfiguration(config: Config) extends SlickOffsetStoreConfiguration {
+
+  private val cfg = config.getConfig("lagom.persistence.read-side.jdbc.tables.offset")
   val tableName: String = cfg.getString("tableName")
   val schemaName: Option[String] = Option(cfg.getString("schemaName")).filter(_.trim != "")
   private val columnsCfg = cfg.getConfig("columnNames")

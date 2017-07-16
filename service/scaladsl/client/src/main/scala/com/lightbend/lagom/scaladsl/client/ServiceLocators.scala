@@ -11,7 +11,7 @@ import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreake
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.api.{ CircuitBreaker, Descriptor, ServiceLocator }
-import com.typesafe.config.ConfigException
+import com.typesafe.config.{ Config, ConfigException }
 import play.api.Configuration
 
 import scala.collection.immutable
@@ -69,6 +69,8 @@ abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakers)(i
 trait CircuitBreakerComponents {
   def actorSystem: ActorSystem
   def configuration: Configuration
+
+  def config: Config = configuration.underlying
   def executionContext: ExecutionContext
   def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
 
@@ -86,14 +88,18 @@ trait ConfigurationServiceLocatorComponents extends CircuitBreakerComponents {
 /**
  * A service locator that uses static configuration.
  */
-class ConfigurationServiceLocator(configuration: Configuration, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext)
+class ConfigurationServiceLocator(configuration: Config, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext)
   extends CircuitBreakingServiceLocator(circuitBreakers) {
+
+  @deprecated(message = "prefer constructor using typesafe Config instead", since = "1.4.0")
+  def this(configuration: Configuration, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
+    this(configuration.underlying, circuitBreakers)(ec)
 
   private val LagomServicesKey: String = "lagom.services"
 
   private val services = {
-    if (configuration.underlying.hasPath(LagomServicesKey)) {
-      val config = configuration.underlying.getConfig(LagomServicesKey)
+    if (configuration.hasPath(LagomServicesKey)) {
+      val config = configuration.getConfig(LagomServicesKey)
       import scala.collection.JavaConverters._
       (for {
         key <- config.root.keySet.asScala
