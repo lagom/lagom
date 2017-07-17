@@ -10,7 +10,6 @@ import com.lightbend.lagom.dev.{ Colors, ConsoleHelper, LagomConfig }
 import com.lightbend.lagom.dev.PortAssigner.ProjectName
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.model.Dependency
-import play.dev.filewatch.LoggerProxy
 
 import scala.beans.BeanProperty
 import java.util.{ Collections, List => JList }
@@ -22,7 +21,7 @@ import scala.collection.JavaConverters._
 /**
  * Run a service, blocking until the user hits enter before stopping it again.
  */
-class RunMojo @Inject() (mavenFacade: MavenFacade, logger: LoggerProxy, session: MavenSession) extends LagomAbstractMojo {
+class RunMojo @Inject() (mavenFacade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends LagomAbstractMojo {
 
   private val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
 
