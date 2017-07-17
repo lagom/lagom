@@ -54,8 +54,8 @@ public class JacksonSerializerFactory implements SerializerFactory {
 
     private class JacksonMessageSerializer<MessageEntity> implements StrictMessageSerializer<MessageEntity> {
 
-        private final NegotiatedSerializer<MessageEntity, ByteString> serializer;
-        private final NegotiatedDeserializer<MessageEntity, ByteString> deserializer;
+        private final MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> serializer;
+        private final MessageSerializer.NegotiatedDeserializer<MessageEntity, ByteString> deserializer;
 
         public JacksonMessageSerializer(Type type) {
             JavaType javaType = objectMapper.constructType(type);
@@ -70,17 +70,17 @@ public class JacksonSerializerFactory implements SerializerFactory {
         }
 
         @Override
-        public NegotiatedSerializer<MessageEntity, ByteString> serializerForRequest() {
+        public MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> serializerForRequest() {
             return serializer;
         }
 
         @Override
-        public NegotiatedDeserializer<MessageEntity, ByteString> deserializer(MessageProtocol messageProtocol) throws SerializationException {
+        public MessageSerializer.NegotiatedDeserializer<MessageEntity, ByteString> deserializer(MessageProtocol messageProtocol) throws SerializationException {
             return deserializer;
         }
 
         @Override
-        public NegotiatedSerializer<MessageEntity, ByteString> serializerForResponse(java.util.List<MessageProtocol> acceptedMessageProtocols) {
+        public MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> serializerForResponse(java.util.List<MessageProtocol> acceptedMessageProtocols) {
             return serializer;
         }
 
@@ -128,8 +128,8 @@ public class JacksonSerializerFactory implements SerializerFactory {
 
   private class DoneMessageSerializer<MessageEntity> implements StrictMessageSerializer<MessageEntity> {
 
-    private final NegotiatedSerializer<MessageEntity, ByteString> serializer = new DoneSerializer();
-    private final NegotiatedDeserializer<MessageEntity, ByteString> deserializer = new DoneDeserializer();
+    private final MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> serializer = new DoneSerializer();
+    private final MessageSerializer.NegotiatedDeserializer<MessageEntity, ByteString> deserializer = new DoneDeserializer();
 
     @Override
     public PSequence<MessageProtocol> acceptResponseProtocols() {
@@ -138,18 +138,18 @@ public class JacksonSerializerFactory implements SerializerFactory {
     }
 
     @Override
-    public NegotiatedSerializer<MessageEntity, ByteString> serializerForRequest() {
+    public MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> serializerForRequest() {
       return serializer;
     }
 
     @Override
-    public NegotiatedDeserializer<MessageEntity, ByteString> deserializer(MessageProtocol messageProtocol)
+    public MessageSerializer.NegotiatedDeserializer<MessageEntity, ByteString> deserializer(MessageProtocol messageProtocol)
         throws SerializationException {
       return deserializer;
     }
 
     @Override
-    public NegotiatedSerializer<MessageEntity, ByteString> serializerForResponse(
+    public MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> serializerForResponse(
         java.util.List<MessageProtocol> acceptedMessageProtocols) {
       return serializer;
     }
