@@ -8,7 +8,7 @@ object Dependencies {
   val PlayStandaloneWsVersion = "1.0.0"
   val PlayJsonVersion = "2.6.0"
   val AkkaVersion = "2.5.3"
-  val ScalaVersion = "2.11.11"
+  val ScalaVersion = "2.12.2"
   val AkkaPersistenceCassandraVersion = "0.54"
   val ScalaTestVersion = "3.0.3"
   val JacksonVersion = "2.8.9"
