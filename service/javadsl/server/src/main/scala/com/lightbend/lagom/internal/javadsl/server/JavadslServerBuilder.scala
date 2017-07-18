@@ -4,7 +4,6 @@
 package com.lightbend.lagom.internal.javadsl.server
 
 import java.util.function.{ BiFunction, Function => JFunction }
-import java.util.stream.Collectors
 import javax.inject.{ Inject, Provider, Singleton }
 
 import akka.stream.Materializer
@@ -19,8 +18,8 @@ import com.lightbend.lagom.javadsl.api.transport.{ RequestHeader => _, _ }
 import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceInfo }
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.{ ClassServiceBinding, InstanceServiceBinding }
-import com.lightbend.lagom.javadsl.server.{ PlayServiceCall, ServiceGuiceSupport }
-import org.pcollections.{ HashTreePMap, TreePVector }
+import com.lightbend.lagom.javadsl.server.{ LagomServiceRouter, PlayServiceCall, ServiceGuiceSupport }
+import org.pcollections.HashTreePMap
 import play.api.http.HttpConfiguration
 import play.api.inject.Injector
 import play.api.mvc.{ RequestHeader => PlayRequestHeader, ResponseHeader => _, _ }
@@ -118,9 +117,7 @@ class ResolvedServicesProvider(bindings: Seq[ServiceGuiceSupport.ServiceBinding[
 }
 
 @Singleton
-class JavadslServicesRouter @Inject() (resolvedServices: ResolvedServices, httpConfiguration: HttpConfiguration)(implicit
-  ec: ExecutionContext,
-                                                                                                                 mat: Materializer) extends SimpleRouter {
+class JavadslServicesRouter @Inject() (resolvedServices: ResolvedServices, httpConfiguration: HttpConfiguration)(implicit ec: ExecutionContext, mat: Materializer) extends SimpleRouter with LagomServiceRouter {
 
   private val serviceRouters = resolvedServices.services.map { service =>
     new JavadslServiceRouter(service.descriptor, service.service, httpConfiguration)
@@ -133,7 +130,7 @@ class JavadslServicesRouter @Inject() (resolvedServices: ResolvedServices, httpC
 }
 
 class JavadslServiceRouter(override protected val descriptor: Descriptor, service: Any, httpConfiguration: HttpConfiguration)(implicit ec: ExecutionContext, mat: Materializer)
-  extends ServiceRouter(httpConfiguration) with JavadslServiceApiBridge {
+  extends ServiceRouter(httpConfiguration) with JavadslServiceApiBridge with LagomServiceRouter {
 
   private class JavadslServiceRoute(override val call: Call[Any, Any]) extends ServiceRoute {
     override val path: Path = JavadslPath.fromCallId(call.callId)
