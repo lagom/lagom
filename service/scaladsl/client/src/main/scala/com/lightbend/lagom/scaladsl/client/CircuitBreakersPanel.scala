@@ -17,7 +17,7 @@ trait CircuitBreakersPanel {
    *
    * @param id the unique identifier for the circuit breaker to use (often a service name)
    * @param body effect to (optionally) execute within the context of the circuit breaker. May throw a
-   *             [[scala.util.control.NonFatal]] error to signal failure.
+   *             [[RuntimeException]] to signal failure.
    * @tparam T the result type
    * @return a future yielding either the same result as `body`, or failing with an implementation-dependent exception
    */
