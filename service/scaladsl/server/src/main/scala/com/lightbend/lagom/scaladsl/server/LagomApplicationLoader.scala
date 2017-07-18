@@ -70,9 +70,13 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
    *
    * It also wraps the Play specific types in Lagom types.
    */
-  override final def load(context: Context): Application = context.environment.mode match {
-    case Mode.Dev => loadDevMode(LagomApplicationContext(context)).application
-    case _        => load(LagomApplicationContext(context)).application
+  override final def load(context: Context): Application = {
+    val environment = context.environment
+    loadCustomLoggerConfiguration(environment)
+    environment.mode match {
+      case Mode.Dev => loadDevMode(LagomApplicationContext(context)).application
+      case _        => load(LagomApplicationContext(context)).application
+    }
   }
 
   /**
@@ -154,6 +158,19 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
       }.asInstanceOf[ServiceDescription]
     }
   }
+
+  /**
+    * Fix for https://github.com/lagom/lagom/issues/534
+    *
+    * @param environment
+    */
+  private def loadCustomLoggerConfiguration(environment: Environment) = {
+    LoggerConfigurator(environment.classLoader).foreach {
+      _.configure(environment)
+    }
+  }
+
+
 }
 
 /**
