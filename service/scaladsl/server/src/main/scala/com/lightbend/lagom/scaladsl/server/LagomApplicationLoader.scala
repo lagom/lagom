@@ -158,16 +158,15 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
   }
 
   /**
-    * Fix for https://github.com/lagom/lagom/issues/534
-    *
-    * @param environment
-    */
+   * Fix for https://github.com/lagom/lagom/issues/534
+   *
+   * @param environment
+   */
   private def loadCustomLoggerConfiguration(environment: Environment) = {
     LoggerConfigurator(environment.classLoader).foreach {
       _.configure(environment)
     }
   }
-
 
 }
 
