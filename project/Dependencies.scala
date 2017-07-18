@@ -30,7 +30,6 @@ object Dependencies {
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
   private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
-  private val jbossLogging = "org.jboss.logging" % "jboss-logging" % "3.3.0.Final"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.1"
   private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.2"
@@ -81,12 +80,7 @@ object Dependencies {
 
     Seq(
       "aopalliance" % "aopalliance" % "1.0",
-      "com.addthis.metrics" % "reporter-config-base" % "3.0.0",
-      "com.addthis.metrics" % "reporter-config3" % "3.0.0",
-      "com.boundary" % "high-scale-lib" % "1.0.6",
-      "com.clearspring.analytics" % "stream" % "2.5.2",
       cassandraDriverCore,
-      "com.fasterxml" % "classmate" % "1.3.0",
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
       akkaPersistenceJdbc,
       "com.github.jnr" % "jffi" % "1.2.14",
@@ -130,11 +124,9 @@ object Dependencies {
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.6.3",
       "commons-codec" % "commons-codec" % "1.10",
-      "commons-logging" % "commons-logging" % "1.2",
       "io.aeron" % "aeron-client" % "1.2.5",
       "io.aeron" % "aeron-driver" % "1.2.5",
       "io.dropwizard.metrics" % "metrics-core" % "3.2.2",
-      "io.dropwizard.metrics" % "metrics-jvm" % "3.1.0",
       "io.jsonwebtoken" % "jjwt" % "0.7.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
       "io.netty" % "netty" % "3.10.6.Final",
@@ -145,32 +137,14 @@ object Dependencies {
       "junit" % "junit" % "4.11",
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
-      "oauth.signpost" % "signpost-commonshttp4" % "1.2.1.2",
-      "oauth.signpost" % "signpost-core" % "1.2.1.2",
       "org.agrona" % "agrona" % "0.9.5",
-      "org.antlr" % "ST4" % "4.0.8",
-      "org.antlr" % "antlr" % "3.5.2",
-      "org.antlr" % "antlr-runtime" % "3.5.2",
-      "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion,
-      "org.apache.cassandra" % "cassandra-thrift" % CassandraAllVersion,
       "org.apache.commons" % "commons-lang3" % "3.6",
-      "org.apache.commons" % "commons-math3" % "3.2",
-      "org.apache.httpcomponents" % "httpclient" % "4.5.2",
-      "org.apache.httpcomponents" % "httpcore" % "4.4.4",
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
-      "org.apache.thrift" % "libthrift" % "0.9.2",
-      "org.apache.tomcat" % "tomcat-servlet-api" % "8.0.33",
-      "org.caffinitas.ohc" % "ohc-core" % "0.4.3",
-      "org.codehaus.jackson" % "jackson-core-asl" % "1.9.2",
-      "org.codehaus.jackson" % "jackson-mapper-asl" % "1.9.2",
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
-      "org.eclipse.jdt.core.compiler" % "ecj" % "4.4.2",
-      "org.fusesource" % "sigar" % "1.6.4",
       "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final",
       "org.immutables" % "value" % "2.3.2",
       javassist,
-      jbossLogging,
       "org.joda" % "joda-convert" % "1.7",
       "org.hamcrest" % "hamcrest-core" % "1.3",
       "org.lmdbjava" % "lmdbjava" % "0.0.5",
@@ -185,8 +159,7 @@ object Dependencies {
       "org.scala-sbt" % "test-interface" % "1.0",
       "org.typelevel" %% "macro-compat" % "1.1.1",
       "org.xerial.snappy" % "snappy-java" % "1.1.2.6",
-      "tyrex" % "tyrex" % "1.0.1",
-      "xml-apis" % "xml-apis" % "1.4.01"
+      "tyrex" % "tyrex" % "1.0.1"
 
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", AkkaVersion)(
       "akka-actor", "akka-cluster", "akka-cluster-sharding", "akka-cluster-tools", "akka-distributed-data",
@@ -197,7 +170,7 @@ object Dependencies {
       "build-link", "play-exceptions", "play-netty-utils"
 
     ) ++ crossLibraryFamily("com.typesafe.play", PlayVersion)(
-      "play", "play-datacommons", "play-guice", "play-iteratees", "play-java", "play-jdbc", "play-jdbc-api",
+      "play", "play-guice",  "play-java", "play-jdbc", "play-jdbc-api",
       "play-netty-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
 
     ) ++ libraryFamily("ch.qos.logback", "1.1.3")(
@@ -657,6 +630,7 @@ object Dependencies {
 
   val validateDependencies = taskKey[Unit]("Validate Lagom dependencies to ensure they are whitelisted")
   val dependencyWhitelist = settingKey[Seq[ModuleID]]("The whitelist of dependencies")
+  val pruneWhitelist = taskKey[Unit]("List items that can be pruned from the whitelist ")
 
   val validateDependenciesTask: Def.Initialize[Task[Unit]] = Def.task {
     // We validate compile dependencies to ensure that whatever we are exporting, we are exporting the right
@@ -711,6 +685,34 @@ object Dependencies {
       throw new DependencyWhitelistValidationFailed
     }
   }
+
+  val pruneWhitelistTask: Def.Initialize[Task[Unit]] = Def.task {
+    val compileClasspath = (managedClasspath in Compile).value
+    val testClasspath = (managedClasspath in Test).value
+    val cross = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
+    val log = streams.value.log
+    val svb = scalaBinaryVersion.value
+
+    val whitelist: Map[(String, String), String] = dependencyWhitelist.value.map { moduleId =>
+      val crossModuleId = cross(moduleId)
+      (crossModuleId.organization, crossModuleId.name) -> crossModuleId.revision
+    }.toMap
+
+    def collectProblems(scope: String, classpath: Classpath): Set[(String, String)] = {
+      val modules: Set[(String, String)] = classpath.toSet[Attributed[File]].flatMap(_.get(moduleID.key)).map(mod=> (mod.organization, mod.name))
+      whitelist.keySet -- modules
+    }
+    val problems = collectProblems("Compile", compileClasspath) ++ collectProblems("Test", testClasspath)
+
+    if (problems.nonEmpty) {
+      problems.foreach(p => log.error(s"${name.value} - Found unnecessary whitelisted item: ${p._1}:${p._2}"))
+    } else {
+      log.error(s"${name.value} needs a complete whitelist.")
+    }
+
+  }
+  val pruneWhitelistSetting = pruneWhitelist := pruneWhitelistTask.value
+
 
   val validateDependenciesSetting = validateDependencies := validateDependenciesTask.value
   val dependencyWhitelistSetting = dependencyWhitelist := DependencyWhitelist.value
