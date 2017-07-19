@@ -93,5 +93,5 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
     serviceClient.implement[ServiceRegistry]
   }
 
-  lazy val serviceLocator: ServiceLocator = new ServiceRegistryServiceLocator(circuitBreakers, serviceRegistry, executionContext)
+  lazy val serviceLocator: ServiceLocator = new ServiceRegistryServiceLocator(circuitBreakersPanel, serviceRegistry, executionContext)
 }
