@@ -86,9 +86,9 @@ private[lagom] class CircuitBreakersPanelInternal(
 }
 
 @Singleton
-class CircuitBreakerConfig @Inject() (val configuration: Configuration) {
+class CircuitBreakerConfig @Inject() (val configuration: Config) {
 
-  val config: Config = configuration.underlying.getConfig("lagom.circuit-breaker")
+  val config: Config = configuration.getConfig("lagom.circuit-breaker")
   val default: Config = config.getConfig("default")
 
 }

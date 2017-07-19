@@ -69,13 +69,36 @@ abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakers)(i
 trait CircuitBreakerComponents {
   def actorSystem: ActorSystem
   def configuration: Configuration
+<<<<<<< HEAD
 
+=======
+>>>>>>> 811d78dc... fixes compilation
   def config: Config = configuration.underlying
   def executionContext: ExecutionContext
   def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
 
+<<<<<<< HEAD
   lazy val circuitBreakerConfig: CircuitBreakerConfig = new CircuitBreakerConfig(configuration)
   lazy val circuitBreakers = new CircuitBreakers(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
+=======
+  lazy val circuitBreakerConfig: CircuitBreakerConfig = new CircuitBreakerConfig(config)
+
+  // for backward compatibility we still need to provide it for wiring
+  lazy val circuitBreakers: CircuitBreakers = {
+
+    // only in case some 3rd party lib are still wiring the old one.
+    actorSystem.log.warning(
+      "CircuitBreakers is deprecated, use CircuitBreakersPanel instead. This warning is probably caused by your " +
+        "service locator. If you are using a 3rd party service locator, upgrade your dependencies, otherwise this " +
+        "service locator could become incompatible with Lagom in future versions."
+    )
+
+    new CircuitBreakers(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
+  }
+
+  lazy val circuitBreakersPanel: CircuitBreakersPanel =
+    new CircuitBreakersPanelImpl(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
+>>>>>>> 811d78dc... fixes compilation
 }
 
 /**
