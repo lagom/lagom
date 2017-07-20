@@ -4,6 +4,7 @@
 package com.lightbend.lagom.javadsl.server;
 
 import com.google.inject.Binder;
+import com.google.inject.Key;
 import com.lightbend.lagom.internal.javadsl.BinderAccessor;
 import com.lightbend.lagom.internal.javadsl.server.JavadslServicesRouter;
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices;
@@ -44,7 +45,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
         binder.bind(ResolvedServices.class).toProvider(new ResolvedServicesProvider(allServiceBindings));
 
         // And bind the router
-        binder.bind(JavadslServicesRouter.class);
+        binder.bind(LagomServiceRouter.class).to(JavadslServicesRouter.class);
     }
 
     /**
@@ -99,7 +100,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
         binder.bind(ResolvedServices.class).toProvider(new ResolvedServicesProvider(allServiceBindings));
 
         // And bind the router
-        binder.bind(JavadslServicesRouter.class);
+        binder.bind(LagomServiceRouter.class).to(JavadslServicesRouter.class);
     }
 
     /**
