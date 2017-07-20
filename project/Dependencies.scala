@@ -8,6 +8,7 @@ object Dependencies {
   val PlayStandaloneWsVersion = "1.0.0"
   val PlayJsonVersion = "2.6.0"
   val AkkaVersion = "2.5.3"
+  val AkkaHttpVersion = "10.0.9"
   val ScalaVersion = "2.11.11"
   val AkkaPersistenceCassandraVersion = "0.54"
   val ScalaTestVersion = "3.0.3"
@@ -55,6 +56,9 @@ object Dependencies {
   private val akkaPersistenceCassandraLauncher = "com.typesafe.akka" %% "akka-persistence-cassandra-launcher" % AkkaPersistenceCassandraVersion
   private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafkaVersion
 
+  private val akkaHttpCore = "com.typesafe.akka" %% "akka-http-core" % AkkaHttpVersion
+  private val akkaParsing = "com.typesafe.akka" %% "akka-parsing" % AkkaHttpVersion
+
   private val play = "com.typesafe.play" %% "play" % PlayVersion
   private val playBuildLink = "com.typesafe.play" % "build-link" % PlayVersion
   private val playExceptions = "com.typesafe.play" % "play-exceptions" % PlayVersion
@@ -101,7 +105,9 @@ object Dependencies {
       "com.novocode" % "junit-interface" % "0.11",
       typesafeConfig,
       sslConfig,
+      akkaHttpCore,
       akkaStreamKafka,
+      akkaParsing,
       akkaPersistenceCassandra,
       akkaPersistenceCassandraLauncher,
       "com.typesafe.netty" % "netty-reactive-streams" % "2.0.0-M1",
@@ -592,6 +598,7 @@ object Dependencies {
 
   val `service-locator` = libraryDependencies ++= Seq(
     playNettyServer,
+    akkaHttpCore,
     scalaTest % Test
   )
 
