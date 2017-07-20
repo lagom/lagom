@@ -4,6 +4,7 @@
 package com.lightbend.lagom.javadsl.client;
 
 import com.lightbend.lagom.internal.client.CircuitBreakers;
+import com.lightbend.lagom.internal.javadsl.client.CircuitBreakersPanelImpl;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
@@ -38,11 +39,11 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
           Config config = configuration.getConfig(LAGOM_SERVICES_KEY);
           for (String key: config.root().keySet()) {
               try {
-                  String value = config.getString(key);
+                  String value = configServices.getString(key);
                   URI uri = new URI(value);
                   services.put(key, uri);
               } catch (ConfigException.WrongType e) {
-                  throw new IllegalStateException("Error loading configuration for " + getClass().getSimpleName() + ". Expected lagom.services." + key + " to be a String, but was " + config.getValue(key).valueType(), e);
+                  throw new IllegalStateException("Error loading configuration for " + getClass().getSimpleName() + ". Expected lagom.services." + key + " to be a String, but was " + configServices.getValue(key).valueType(), e);
               } catch (URISyntaxException e) {
                   throw new IllegalStateException("Error loading configuration for  " + getClass().getSimpleName() + ". Expected lagom.services." + key + " to be a URI, but it failed to parse", e);
               }

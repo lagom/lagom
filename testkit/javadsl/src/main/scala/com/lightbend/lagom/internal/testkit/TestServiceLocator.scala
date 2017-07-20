@@ -14,12 +14,11 @@ import com.lightbend.lagom.javadsl.api.Descriptor
 import javax.inject.Inject
 import javax.inject.Singleton
 
-import com.lightbend.lagom.internal.client.CircuitBreakers
-import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator
+import com.lightbend.lagom.javadsl.client.{ CircuitBreakersPanel, CircuitBreakingServiceLocator }
 
 @Singleton
 private[lagom] class TestServiceLocator @Inject() (
-  circuitBreakers: CircuitBreakers,
+  circuitBreakers: CircuitBreakersPanel,
   port:            TestServiceLocatorPort,
   implicit val ec: ExecutionContext
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {

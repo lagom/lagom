@@ -14,7 +14,7 @@ import com.lightbend.lagom.scaladsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodServiceCall
 import com.lightbend.lagom.scaladsl.api.deser.StreamedMessageSerializer
 import com.lightbend.lagom.scaladsl.api.transport._
-import com.lightbend.lagom.scaladsl.server.PlayServiceCall
+import com.lightbend.lagom.scaladsl.server.{ LagomServiceRouter, PlayServiceCall }
 import play.api.Logger
 import play.api.http.HttpConfiguration
 import play.api.mvc.EssentialAction
@@ -23,7 +23,7 @@ import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
 
 class ScaladslServiceRouter(override protected val descriptor: Descriptor, service: Any, httpConfiguration: HttpConfiguration)(implicit ec: ExecutionContext, mat: Materializer)
-  extends ServiceRouter(httpConfiguration) with ScaladslServiceApiBridge {
+  extends ServiceRouter(httpConfiguration) with LagomServiceRouter with ScaladslServiceApiBridge {
 
   private class ScaladslServiceRoute(override val call: Call[Any, Any]) extends ServiceRoute {
     override val path: Path = ScaladslPath.fromCallId(call.callId)
