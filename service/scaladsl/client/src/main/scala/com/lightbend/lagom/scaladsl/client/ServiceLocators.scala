@@ -69,18 +69,10 @@ abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakers)(i
 trait CircuitBreakerComponents {
   def actorSystem: ActorSystem
   def configuration: Configuration
-<<<<<<< HEAD
-
-=======
->>>>>>> 811d78dc... fixes compilation
   def config: Config = configuration.underlying
   def executionContext: ExecutionContext
   def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
 
-<<<<<<< HEAD
-  lazy val circuitBreakerConfig: CircuitBreakerConfig = new CircuitBreakerConfig(configuration)
-  lazy val circuitBreakers = new CircuitBreakers(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
-=======
   lazy val circuitBreakerConfig: CircuitBreakerConfig = new CircuitBreakerConfig(config)
 
   // for backward compatibility we still need to provide it for wiring
@@ -98,7 +90,6 @@ trait CircuitBreakerComponents {
 
   lazy val circuitBreakersPanel: CircuitBreakersPanel =
     new CircuitBreakersPanelImpl(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
->>>>>>> 811d78dc... fixes compilation
 }
 
 /**
