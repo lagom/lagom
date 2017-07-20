@@ -73,6 +73,7 @@ abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPan
  * Components required for circuit breakers.
  */
 trait CircuitBreakerComponents {
+
   def actorSystem: ActorSystem
   def configuration: Configuration
   def executionContext: ExecutionContext

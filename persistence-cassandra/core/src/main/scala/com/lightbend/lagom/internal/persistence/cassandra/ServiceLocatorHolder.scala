@@ -56,6 +56,6 @@ private[lagom] final class NoServiceLocatorException(msg: String) extends Runtim
  * scaladsl and javadsl specific implementations
  */
 private[lagom] trait ServiceLocatorAdapter {
-  def locate(name: String): Future[Option[URI]]
+  def locate(name: String): Future[List[URI]]
 }
 

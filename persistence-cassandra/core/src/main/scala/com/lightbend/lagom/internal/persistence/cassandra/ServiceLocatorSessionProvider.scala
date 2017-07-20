@@ -25,14 +25,23 @@ private[lagom] final class ServiceLocatorSessionProvider(system: ActorSystem, co
   private val log = Logger(getClass)
 
   override def lookupContactPoints(clusterId: String)(implicit ec: ExecutionContext): Future[immutable.Seq[InetSocketAddress]] = {
+
     ServiceLocatorHolder(system).serviceLocatorEventually flatMap { serviceLocator =>
+
       serviceLocator.locate(clusterId).map {
-        case Some(uri) =>
-          log.debug(s"Found Cassandra contact points: $uri")
-          require(uri.getHost != null, s"missing host in $uri for Cassandra contact points $clusterId")
-          require(uri.getPort != -1, s"missing port in $uri for Cassandra contact points $clusterId")
-          List(new InetSocketAddress(uri.getHost, uri.getPort))
-        case _ => throw new NoContactPointsException(s"No contact points for [$clusterId]")
+        case Nil => throw new NoContactPointsException(s"No contact points for [$clusterId]")
+        case uris =>
+          log.debug(s"Found Cassandra contact points: $uris")
+
+          // URIs must be all valid
+          uris.foreach { uri =>
+            require(uri.getHost != null, s"missing host in $uri for Cassandra contact points $clusterId")
+            require(uri.getPort != -1, s"missing port in $uri for Cassandra contact points $clusterId")
+          }
+
+          uris.map { uri =>
+            new InetSocketAddress(uri.getHost, uri.getPort)
+          }
       }
     }
   }
