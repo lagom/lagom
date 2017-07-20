@@ -42,7 +42,7 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
   private implicit val timeout = Timeout(5.seconds)
   val http = Http()
 
-  private val handler = Flow[HttpRequest].mapAsync(4) { request =>
+  private val handler = Flow[HttpRequest].mapAsync(1) { request =>
     log.debug("Routing request {}", request)
     val path = request.uri.path.toString()
 
