@@ -289,7 +289,7 @@ object LagomPlugin extends AutoPlugin {
     val lagomServiceLocatorUrl = settingKey[String]("URL of the service locator")
     val lagomServiceLocatorPort = settingKey[Int]("Port used by the service locator")
     val lagomServiceGatewayPort = settingKey[Int]("Port used by the service gateway")
-    val lagomServiceGatewayImpl = settingKey[String]("Implementation of the service gateway")
+    val lagomServiceGatewayImpl = settingKey[String]("Implementation of the service gateway: \"netty\" (default) or \"akka-http\" (experimental)")
     val lagomServiceLocatorEnabled = settingKey[Boolean]("Enable/Disable the service locator")
     val lagomServiceLocatorStart = taskKey[Closeable]("Start the service locator")
     val lagomServiceLocatorStop = taskKey[Unit]("Stop the service locator")

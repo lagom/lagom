@@ -189,7 +189,7 @@
             <type>java.lang.String</type>
             <required>false</required>
             <editable>true</editable>
-            <description>The implementation of the service gateway.</description>
+            <description>The implementation of the service gateway: "netty" (default) or "akka-http" (experimental).</description>
             <configuration>
                 <serviceGatewayImpl implementation="java.lang.String" default-value="netty">${service.gateway.impl}</serviceGatewayImpl>
             </configuration>
