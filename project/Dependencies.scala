@@ -6,6 +6,7 @@ object Dependencies {
   // Version numbers
   val PlayVersion = "2.5.13"
   val AkkaVersion = "2.4.19"
+  val AkkaHttpVersion = "10.0.9"
   val ScalaVersion = "2.11.11"
   val AkkaPersistenceCassandraVersion = "0.29"
   val ScalaTestVersion = "3.0.1"
@@ -30,6 +31,7 @@ object Dependencies {
   private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
   private val jbossLogging = "org.jboss.logging" % "jboss-logging" % "3.3.0.Final"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.1"
+  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.1"
 
   private val akkaActor = "com.typesafe.akka" %% "akka-actor" % AkkaVersion
   private val akkaCluster = "com.typesafe.akka" %% "akka-cluster" % AkkaVersion
@@ -48,6 +50,9 @@ object Dependencies {
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % CassandraDriverVersion
 
   private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafkaVersion
+
+  private val akkaHttpCore = "com.typesafe.akka" %% "akka-http-core" % AkkaHttpVersion
+  private val akkaParsing = "com.typesafe.akka" %% "akka-parsing" % AkkaHttpVersion
 
   private val play = "com.typesafe.play" %% "play" % PlayVersion
   private val playBuildLink = "com.typesafe.play" % "build-link" % PlayVersion
@@ -99,8 +104,10 @@ object Dependencies {
       "com.novocode" % "junit-interface" % "0.11",
       "com.thinkaurelius.thrift" % "thrift-server" % "0.3.7",
       typesafeConfig,
-      "com.typesafe" %% "ssl-config-core" % "0.2.1",
+      sslConfig,
+      akkaHttpCore,
       akkaStreamKafka,
+      akkaParsing,
       akkaPersistenceCassandra,
       "com.typesafe.netty" % "netty-reactive-streams" % "1.0.8",
       "com.typesafe.netty" % "netty-reactive-streams-http" % "1.0.8",
@@ -631,6 +638,7 @@ object Dependencies {
 
   val `service-locator` = libraryDependencies ++= Seq(
     playNettyServer,
+    akkaHttpCore,
     // Need to upgrade Netty due to encountering this deadlock in the service gateway
     // https://github.com/netty/netty/pull/5110
     "io.netty" % "netty-codec-http" % NettyVersion,

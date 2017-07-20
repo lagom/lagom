@@ -137,6 +137,8 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
   @BeanProperty
   var serviceGatewayPort: Int = _
   @BeanProperty
+  var serviceGatewayImpl: String = _
+  @BeanProperty
   var unmanagedServices: JMap[String, String] = Collections.emptyMap[String, String]
 
   @BeanProperty
@@ -164,7 +166,7 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
         unmanagedServices.asScala.toMap
 
       Servers.ServiceLocator.start(logger, scalaClassLoader, cp.map(_.getFile.toURI.toURL).toArray,
-        serviceLocatorPort, serviceGatewayPort, scalaUnmanagedServices)
+        serviceLocatorPort, serviceGatewayPort, scalaUnmanagedServices, serviceGatewayImpl)
     }
   }
 }

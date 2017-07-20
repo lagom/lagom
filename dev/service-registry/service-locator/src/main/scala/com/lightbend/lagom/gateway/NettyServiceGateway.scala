@@ -45,17 +45,20 @@ case class ServiceGatewayConfig(
 )
 
 @Singleton
-class ServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
-                                       @Named("serviceRegistryActor") registry: ActorRef) {
-  def start(): ServiceGateway = {
-    new ServiceGateway(lifecycle, config, registry)
+class NettyServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
+                                            @Named("serviceRegistryActor") registry: ActorRef) {
+  def start(): NettyServiceGateway = {
+    new NettyServiceGateway(lifecycle, config, registry)
   }
 }
 
-class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef) {
+/**
+ * Netty implementation of the service gateway.
+ */
+class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef) {
 
   private implicit val timeout = Timeout(5.seconds)
-  private val log = LoggerFactory.getLogger(classOf[ServiceGateway])
+  private val log = LoggerFactory.getLogger(classOf[NettyServiceGateway])
   private val eventLoop = new NioEventLoopGroup
 
   private val server = new ServerBootstrap()

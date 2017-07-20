@@ -4,20 +4,15 @@
 package com.lightbend.lagom.discovery
 
 import java.io.Closeable
-import java.net.URI
+import java.net.{ InetSocketAddress, URI }
 import java.util.{ Map => JMap }
 
 import com.lightbend.lagom.discovery.impl.ServiceRegistryModule
-import com.lightbend.lagom.gateway.{ ServiceGateway, ServiceGatewayConfig, ServiceGatewayFactory }
-import play.api.Application
-import play.api.Logger
-import play.api.Mode
-import play.api.Play
+import com.lightbend.lagom.gateway._
+import play.api.{ Application, Logger, Mode, Play }
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.guice.GuiceableModule.fromGuiceModule
-import play.core.server.ServerConfig
-import play.core.server.ServerProvider
-import play.core.server.ServerWithStop
+import play.core.server.{ ServerWithStop, ServerConfig, ServerProvider }
 
 import scala.util.control.NonFatal
 
@@ -25,9 +20,9 @@ class ServiceLocatorServer extends Closeable {
   private val logger: Logger = Logger(this.getClass())
 
   @volatile private var server: ServerWithStop = _
-  @volatile private var gateway: ServiceGateway = _
+  @volatile private var gatewayAddress: InetSocketAddress = _
 
-  def start(serviceLocatorPort: Int, serviceGatewayPort: Int, unmanagedServices: JMap[String, String]): Unit = synchronized {
+  def start(serviceLocatorPort: Int, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit = synchronized {
     require(server == null, "Service locator is already running on " + server.mainAddress)
 
     val application = createApplication(ServiceGatewayConfig(serviceGatewayPort), unmanagedServices)
@@ -39,7 +34,11 @@ class ServiceLocatorServer extends Closeable {
         throw new RuntimeException(s"Unable to start service locator on port $serviceLocatorPort", e)
     }
     try {
-      gateway = application.injector.instanceOf[ServiceGatewayFactory].start()
+      gatewayAddress = gatewayImpl match {
+        case "netty"     => application.injector.instanceOf[NettyServiceGatewayFactory].start().address
+        case "akka-http" => application.injector.instanceOf[AkkaHttpServiceGatewayFactory].start()
+        case other       => sys.error("Unknown gateway implementation: " + other)
+      }
     } catch {
       case NonFatal(e) =>
         throw new RuntimeException(s"Unable to start service gateway on port $serviceGatewayPort", e)
@@ -77,6 +76,6 @@ class ServiceLocatorServer extends Closeable {
   }
 
   def serviceGatewayAddress: URI = {
-    new URI(s"http://localhost:${gateway.address.getPort}")
+    new URI(s"http://localhost:${gatewayAddress.getPort}")
   }
 }

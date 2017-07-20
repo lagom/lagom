@@ -284,6 +284,7 @@ object LagomPlugin extends AutoPlugin {
     val lagomServiceLocatorUrl = settingKey[String]("URL of the service locator")
     val lagomServiceLocatorPort = settingKey[Int]("Port used by the service locator")
     val lagomServiceGatewayPort = settingKey[Int]("Port used by the service gateway")
+    val lagomServiceGatewayImpl = settingKey[String]("Implementation of the service gateway: \"netty\" (default) or \"akka-http\" (experimental)")
     val lagomServiceLocatorEnabled = settingKey[Boolean]("Enable/Disable the service locator")
     val lagomServiceLocatorStart = taskKey[Unit]("Start the service locator")
     val lagomServiceLocatorStop = taskKey[Unit]("Stop the service locator")
@@ -407,6 +408,7 @@ object LagomPlugin extends AutoPlugin {
     lagomServiceLocatorEnabled := true,
     lagomServiceLocatorPort := 8000,
     lagomServiceGatewayPort := 9000,
+    lagomServiceGatewayImpl := "netty",
     lagomServiceLocatorUrl := s"http://localhost:${lagomServiceLocatorPort.value}",
     lagomCassandraEnabled := true,
     lagomCassandraPort := 4000, // If you change the default make sure to also update the play/reference-overrides.conf in the persistence project
@@ -458,17 +460,19 @@ object LagomPlugin extends AutoPlugin {
 
   private lazy val startServiceLocatorTask = Def.taskDyn {
     if ((lagomServiceLocatorEnabled in ThisBuild).value) {
-
       Def.task {
         val unmanagedServices: Map[String, String] =
           StaticServiceLocations.staticServiceLocations(lagomCassandraPort.value, lagomKafkaAddress.value) ++ lagomUnmanagedServices.value
 
         val serviceLocatorPort = lagomServiceLocatorPort.value
         val serviceGatewayPort = lagomServiceGatewayPort.value
+        val serivceGatewayImpl = lagomServiceGatewayImpl.value
         val urls = (managedClasspath in Compile).value.files.map(_.toURI.toURL).toArray
         val scala211 = scalaInstance.value
         val log = new SbtLoggerProxy(state.value.log)
-        Servers.ServiceLocator.start(log, scala211.loader, urls, serviceLocatorPort, serviceGatewayPort, unmanagedServices)
+        Servers.ServiceLocator.start(log, scala211.loader, urls, serviceLocatorPort, serviceGatewayPort, unmanagedServices, serivceGatewayImpl)
+        () // need to return Unit
+
       }
     } else {
       Def.task {

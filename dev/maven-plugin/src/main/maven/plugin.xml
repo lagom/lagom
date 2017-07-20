@@ -193,6 +193,16 @@
             </configuration>
         </parameter>
         <parameter>
+            <name>serviceGatewayImpl</name>
+            <type>java.lang.String</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The implementation of the service gateway: "netty" (default) or "akka-http" (experimental).</description>
+            <configuration>
+                <serviceGatewayImpl implementation="java.lang.String" default-value="netty">${service.gateway.impl}</serviceGatewayImpl>
+            </configuration>
+        </parameter>
+        <parameter>
             <name>serviceLocatorEnabled</name>
             <type>boolean</type>
             <required>false</required>
@@ -397,6 +407,9 @@
                 </parameter>
                 <parameter>
                     <name>serviceGatewayPort</name>
+                </parameter>
+                <parameter>
+                    <name>serviceGatewayImpl</name>
                 </parameter>
                 <parameter>
                     <name>serviceLocatorEnabled</name>

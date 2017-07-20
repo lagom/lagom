@@ -80,19 +80,19 @@ private[lagom] object Servers {
 
   object ServiceLocator extends ServerContainer {
     protected type Server = Closeable {
-      def start(serviceLocatorPort: Int, serviceGatewayPort: Int, unmanagedServices: JMap[String, String]): Unit
+      def start(serviceLocatorPort: Int, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit
       def serviceLocatorAddress: URI
       def serviceGatewayAddress: URI
     }
 
     def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Array[URL], serviceLocatorPort: Int,
-              serviceGatewayPort: Int, unmanagedServices: Map[String, String]): Unit = synchronized {
+              serviceGatewayPort: Int, unmanagedServices: Map[String, String], gatewayImpl: String): Closeable = synchronized {
       if (server == null) {
         withContextClassloader(new java.net.URLClassLoader(classpath, parentClassLoader)) { loader =>
           val serverClass = loader.loadClass("com.lightbend.lagom.discovery.ServiceLocatorServer")
           server = serverClass.newInstance().asInstanceOf[Server]
           try {
-            server.start(serviceLocatorPort, serviceGatewayPort, unmanagedServices.asJava)
+            server.start(serviceLocatorPort, serviceGatewayPort, unmanagedServices.asJava, gatewayImpl)
           } catch {
             case e: Exception =>
               val msg = "Failed to start embedded Service Locator or Service Gateway. " +
@@ -105,6 +105,9 @@ private[lagom] object Servers {
       if (server != null) {
         log.info("Service locator is running at " + server.serviceLocatorAddress)
         log.info("Service gateway is running at " + server.serviceGatewayAddress)
+      }
+      return new Closeable {
+        override def close(): Unit = stop(log)
       }
     }
 
@@ -165,10 +168,10 @@ private[lagom] object Servers {
 
       @annotation.tailrec
       def tryConnect(deadline: Deadline): Unit = {
-        print(".") // each attempts prints a dot (informing the user of progress) 
+        print(".") // each attempts prints a dot (informing the user of progress)
         try {
           val session = clusterBuilder.build().connect()
-          println() // we don't want to print the message on the same line of the dots... 
+          println() // we don't want to print the message on the same line of the dots...
           log.info("Cassandra server running at " + server.address)
           session.closeAsync()
           session.getCluster.closeAsync()
@@ -182,7 +185,7 @@ private[lagom] object Servers {
               val msg = s"""Cassandra server is not yet started.\n
                            |The value assigned to
                            |`lagomCassandraMaxBootWaitingTime`
-                           |is either too short, or this may indicate another 
+                           |is either too short, or this may indicate another
                            |process is already running on port ${server.port}""".stripMargin
               println() // we don't want to print the message on the same line of the dots...
               log.info(msg)
