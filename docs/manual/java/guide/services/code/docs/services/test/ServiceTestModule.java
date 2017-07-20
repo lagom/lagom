@@ -9,6 +9,7 @@ import com.lightbend.lagom.internal.javadsl.server.ResolvedServicesProvider;
 import com.lightbend.lagom.internal.javadsl.server.ServiceInfoProvider;
 import com.lightbend.lagom.internal.server.status.MetricsServiceImpl;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
+import com.lightbend.lagom.javadsl.server.LagomServiceRouter;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 import com.lightbend.lagom.javadsl.server.status.MetricsService;
 import docs.services.HelloService;
@@ -74,7 +75,7 @@ public class ServiceTestModule extends AbstractModule implements ServiceGuiceSup
     binder.bind(ResolvedServices.class).toProvider(new ResolvedServicesProvider(allServiceBindings));
 
     // And bind the router
-    binder.bind(JavadslServicesRouter.class);
+    binder.bind(LagomServiceRouter.class).to(JavadslServicesRouter.class);
   }
 
 

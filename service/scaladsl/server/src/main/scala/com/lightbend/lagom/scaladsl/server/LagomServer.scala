@@ -25,8 +25,24 @@ sealed trait LagomServer {
   val name: String
   // TODO: replace with LagomServiceBinding[_] when removing LagomServer.forServices
   val serviceBindings: immutable.Seq[LagomServiceBinding[_]]
-  def router: Router
+  def router: LagomServiceRouter
 }
+
+/**
+ * A Lagom service router.
+ *
+ * This trait doesn't add anything, except that it makes the router created by the LagomServer
+ * strongly typed. This allows it to be dependency injected by type, making it simple to use it
+ * in combination with the Play routes file.
+ *
+ * For example, if using a custom router, the Lagom router could be routed to from the routes file
+ * like this:
+ *
+ * ```
+ * ->   /     com.lightbend.lagom.scaladsl.server.LagomServiceRouter
+ * ```
+ */
+trait LagomServiceRouter extends Router
 
 object LagomServer {
   @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Use LagomServerComponents.serverFor instead", "1.3.3")
@@ -37,7 +53,7 @@ object LagomServer {
         case Some(binding) => binding.descriptor.name
         case None          => throw new IllegalArgumentException
       }
-      override lazy val router = new SimpleRouter {
+      override lazy val router = new SimpleRouter with LagomServiceRouter {
         override val routes: Routes =
           serviceBindings.foldLeft(PartialFunction.empty[RequestHeader, Handler]) { (routes, serviceBinding) =>
             routes.orElse(serviceBinding.router.routes)
@@ -90,7 +106,7 @@ trait LagomServerComponents extends MetricsServiceComponents {
 }
 
 final class LagomServerBuilder(httpConfiguration: HttpConfiguration, serviceResolver: ServiceResolver)(implicit materializer: Materializer, executionContext: ExecutionContext) {
-  def buildRouter(service: Service): Router = {
+  def buildRouter(service: Service): LagomServiceRouter = {
     new ScaladslServiceRouter(serviceResolver.resolve(service.descriptor), service, httpConfiguration)(executionContext, materializer)
   }
 }
@@ -111,7 +127,7 @@ object LagomServiceBinder {
     new LagomServiceBinder[T] {
       override def to(serviceFactory: => T): LagomServiceBinding[T] = {
         new LagomServiceBinding[T] {
-          override lazy val router: Router = lagomServerBuilder.buildRouter(service)
+          override lazy val router: LagomServiceRouter = lagomServerBuilder.buildRouter(service)
           override lazy val service: T = serviceFactory
           override val descriptor: Descriptor = _descriptor
         }
@@ -126,5 +142,5 @@ object LagomServiceBinder {
 sealed trait LagomServiceBinding[T <: Service] {
   val descriptor: Descriptor
   def service: T
-  def router: Router
+  def router: LagomServiceRouter
 }
