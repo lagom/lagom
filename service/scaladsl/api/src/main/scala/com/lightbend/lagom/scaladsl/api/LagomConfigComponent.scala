@@ -6,7 +6,7 @@ package com.lightbend.lagom.scaladsl.api
 import com.typesafe.config.Config
 import play.api.{ BuiltInComponents, Configuration }
 
-trait LagomConfigComponent { //extends BuiltInComponents {
+trait LagomConfigComponent { 
   def configuration: Configuration
   def config: Config = configuration.underlying
 }
