@@ -147,6 +147,33 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
       expectTerminated(entity)
     }
 
+    "invoke afterPersist" in {
+      val probe = TestProbe()
+      val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("6"),
+        () => new TestEntity(system, probe.ref), Optional.empty(), 10.seconds))
+      probe.expectMsgType[TestEntity.AfterRecovery]
+      p ! new TestEntity.Add("a", 1)
+      probe.expectMsgType[TestEntity.CallbackCalled]
+    }
+
+    "invoke afterPersist with several events from one command" in {
+      val probe = TestProbe()
+      val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("7"),
+        () => new TestEntity(system, probe.ref), Optional.empty(), 10.seconds))
+      probe.expectMsgType[TestEntity.AfterRecovery]
+      p ! new TestEntity.Add("a", 2)
+      probe.expectMsgType[TestEntity.CallbackCalled]
+    }
+
+    "invoke afterPersist with zero events from one command" in {
+      val probe = TestProbe()
+      val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("8"),
+        () => new TestEntity(system, probe.ref), Optional.empty(), 10.seconds))
+      probe.expectMsgType[TestEntity.AfterRecovery]
+      p ! new TestEntity.Add("a", 0)
+      probe.expectMsgType[TestEntity.CallbackCalled]
+    }
+
   }
 
 }
