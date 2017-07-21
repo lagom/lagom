@@ -16,7 +16,7 @@ object Dependencies {
   val CassandraAllVersion = "3.8"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.12.Final"
+  val NettyVersion = "4.1.13.Final"
   val KafkaVersion = "0.10.2.0"
   val AkkaStreamKafkaVersion = "0.15"
   val Log4jVersion = "1.2.17"
@@ -111,8 +111,8 @@ object Dependencies {
       akkaParsing,
       akkaPersistenceCassandra,
       akkaPersistenceCassandraLauncher,
-      "com.typesafe.netty" % "netty-reactive-streams" % "2.0.0-M1",
-      "com.typesafe.netty" % "netty-reactive-streams-http" % "2.0.0-M1",
+      "com.typesafe.netty" % "netty-reactive-streams" % "2.0.0",
+      "com.typesafe.netty" % "netty-reactive-streams-http" % "2.0.0",
       "com.typesafe.play" %% "cachecontrol" % "1.1.2",
       playJson,
       playFunctional,
