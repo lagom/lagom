@@ -23,7 +23,7 @@ class LagomPlayModule extends Module {
   private val logger = Logger(this.getClass)
 
   override def bindings(environment: Environment, config: Configuration): Seq[Binding[_]] = {
-    val maybeServiceInfoBinding: Option[Binding[ServiceInfo]] = prepareServiceInfoBinding(config)
+    val maybeServiceInfoBinding: Option[Binding[ServiceInfo]] = prepareServiceInfoBinding(config.underlying)
     val playRegistry = bind[PlayRegisterWithServiceRegistry].toSelf.eagerly()
 
     Seq(

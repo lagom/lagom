@@ -102,33 +102,33 @@ trait CircuitBreakerComponents {
  * Components for using the configuration service locator.
  */
 trait ConfigurationServiceLocatorComponents extends CircuitBreakerComponents {
-  lazy val serviceLocator: ServiceLocator = new ConfigurationServiceLocator(configuration, circuitBreakersPanel)(executionContext)
+  lazy val serviceLocator: ServiceLocator = new ConfigurationServiceLocator(config, circuitBreakersPanel)(executionContext)
 }
 
 /**
  * A service locator that uses static configuration.
  */
-class ConfigurationServiceLocator(configuration: Config, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext)
+class ConfigurationServiceLocator(config: Config, circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext)
   extends CircuitBreakingServiceLocator(circuitBreakers) {
 
-  @deprecated(message = "prefer constructor using typesafe Config instead", since = "1.4.0")
+  @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel} instead", since = "1.4.0")
   def this(configuration: Configuration, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
-    this(configuration.underlying, circuitBreakers)(ec)
+    this(configuration.underlying, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
   private val LagomServicesKey: String = "lagom.services"
 
   private val services = {
-    if (configuration.hasPath(LagomServicesKey)) {
-      val config = configuration.getConfig(LagomServicesKey)
+    if (config.hasPath(LagomServicesKey)) {
+      val lagomServicesConfig = config.getConfig(LagomServicesKey)
       import scala.collection.JavaConverters._
       (for {
-        key <- config.root.keySet.asScala
+        key <- lagomServicesConfig.root.keySet.asScala
       } yield {
         try {
-          key -> URI.create(config.getString(key))
+          key -> URI.create(lagomServicesConfig.getString(key))
         } catch {
           case e: ConfigException.WrongType =>
-            throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a String, but was ${config.getValue(key).valueType}", e)
+            throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a String, but was ${lagomServicesConfig.getValue(key).valueType}", e)
           case e: URISyntaxException =>
             throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a URI, but it failed to parse", e)
         }

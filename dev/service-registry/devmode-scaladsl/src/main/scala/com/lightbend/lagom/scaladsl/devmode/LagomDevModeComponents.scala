@@ -39,7 +39,7 @@ trait LagomDevModeComponents extends LagomDevModeServiceLocatorComponents {
   def applicationLifecycle: ApplicationLifecycle
 
   // Eagerly register services
-  new ServiceRegistration(serviceInfo, applicationLifecycle, configuration, serviceRegistry)(executionContext)
+  new ServiceRegistration(serviceInfo, applicationLifecycle, config, serviceRegistry)(executionContext)
 }
 
 /**

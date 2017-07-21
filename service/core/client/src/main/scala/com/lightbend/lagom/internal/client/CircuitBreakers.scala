@@ -19,16 +19,3 @@ class CircuitBreakers @Inject() (
   circuitBreakerConfig: CircuitBreakerConfig,
   metricsProvider:      CircuitBreakerMetricsProvider
 ) extends CircuitBreakersPanelInternal(system, circuitBreakerConfig, metricsProvider)
-
-  private def breaker(id: String): Option[CircuitBreakerHolder] =
-    breakers.computeIfAbsent(id, createCircuitBreaker)
-
-}
-
-@Singleton
-class CircuitBreakerConfig @Inject() (configuration: Config) {
-
-  val config: Config = configuration.getConfig("lagom.circuit-breaker")
-  val default: Config = config.getConfig("default")
-}
-

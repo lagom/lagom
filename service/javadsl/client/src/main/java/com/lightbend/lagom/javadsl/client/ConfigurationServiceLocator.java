@@ -31,35 +31,40 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
   private static final String LAGOM_SERVICES_KEY = "lagom.services";
   private final PMap<String, URI> services;
 
-  @Inject
-  public ConfigurationServiceLocator(Config configuration, CircuitBreakers circuitBreakers) {
-      super(circuitBreakers);
-      Map<String, URI> services = new HashMap<>();
-      if (configuration.hasPath(LAGOM_SERVICES_KEY)) {
-          Config config = configuration.getConfig(LAGOM_SERVICES_KEY);
-          for (String key: config.root().keySet()) {
-              try {
-                  String value = configServices.getString(key);
-                  URI uri = new URI(value);
-                  services.put(key, uri);
-              } catch (ConfigException.WrongType e) {
-                  throw new IllegalStateException("Error loading configuration for " + getClass().getSimpleName() + ". Expected lagom.services." + key + " to be a String, but was " + configServices.getValue(key).valueType(), e);
-              } catch (URISyntaxException e) {
-                  throw new IllegalStateException("Error loading configuration for  " + getClass().getSimpleName() + ". Expected lagom.services." + key + " to be a URI, but it failed to parse", e);
-              }
-          }
-      }
-      this.services = HashTreePMap.from(services);
-  }
-
 
   /**
-   * @deprecated use {@link ConfigurationServiceLocator(Config, CircuitBreakers)} instead.
+   * @deprecated Use constructor accepting {@link CircuitBreakersPanel} instead
+   * @param circuitBreakers
    */
   @Deprecated
   public ConfigurationServiceLocator(Configuration configuration, CircuitBreakers circuitBreakers) {
-      this(configuration.underlying(), circuitBreakers);
+    this(configuration.underlying(), new CircuitBreakersPanelImpl(circuitBreakers));
   }
+
+  @Inject
+  public ConfigurationServiceLocator(Config config, CircuitBreakersPanel circuitBreakersPanel) {
+    super(circuitBreakersPanel);
+
+    Map<String, URI> services = new HashMap<>();
+
+    if (config.hasPath(LAGOM_SERVICES_KEY)) {
+      Config configServices = config.getConfig(LAGOM_SERVICES_KEY);
+      for (String key: configServices.root().keySet()) {
+        try {
+          String value = configServices.getString(key);
+          URI uri = new URI(value);
+          services.put(key, uri);
+        } catch (ConfigException.WrongType e) {
+          throw new IllegalStateException("Error loading configuration for " + getClass().getSimpleName() + ". Expected lagom.services." + key + " to be a String, but was " + configServices.getValue(key).valueType(), e);
+        } catch (URISyntaxException e) {
+          throw new IllegalStateException("Error loading configuration for  " + getClass().getSimpleName() + ". Expected lagom.services." + key + " to be a URI, but it failed to parse", e);
+        }
+      }
+    }
+    this.services = HashTreePMap.from(services);
+  }
+
+
 
   @Override
   public CompletionStage<Optional<URI>> locate(String name, Descriptor.Call<?, ?> serviceCall) {
