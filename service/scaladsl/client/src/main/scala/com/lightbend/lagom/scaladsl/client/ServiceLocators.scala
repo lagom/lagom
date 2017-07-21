@@ -11,7 +11,7 @@ import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreake
 import com.lightbend.lagom.internal.scaladsl.client.CircuitBreakersPanelImpl
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
-import com.lightbend.lagom.scaladsl.api.{ CircuitBreaker, Descriptor, ServiceLocator }
+import com.lightbend.lagom.scaladsl.api.{ CircuitBreaker, Descriptor, LagomConfigComponent, ServiceLocator }
 import com.typesafe.config.{ Config, ConfigException }
 import play.api.Configuration
 
@@ -72,10 +72,8 @@ abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPan
 /**
  * Components required for circuit breakers.
  */
-trait CircuitBreakerComponents {
+trait CircuitBreakerComponents extends LagomConfigComponent {
   def actorSystem: ActorSystem
-  def configuration: Configuration
-  def config: Config = configuration.underlying
   def executionContext: ExecutionContext
   def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
 

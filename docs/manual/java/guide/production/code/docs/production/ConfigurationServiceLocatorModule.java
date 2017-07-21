@@ -16,7 +16,7 @@ public class ConfigurationServiceLocatorModule extends AbstractModule {
 
     public ConfigurationServiceLocatorModule(Environment environment, Config config) {
         this.environment = environment;
-        this.configuration = config;
+        this.config = config;
     }
 
     @Override

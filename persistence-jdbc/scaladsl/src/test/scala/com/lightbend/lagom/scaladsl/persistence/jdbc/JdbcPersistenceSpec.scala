@@ -54,7 +54,7 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
     new SlickOffsetStore(
       system,
       slick,
-      new OffsetTableConfiguration(Configuration(system.settings.config), ReadSideConfig())
+      new OffsetTableConfiguration(system.settings.config, ReadSideConfig())
     )
   )
 

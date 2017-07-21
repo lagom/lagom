@@ -224,7 +224,8 @@ abstract class LagomApplication(context: LagomApplicationContext)
   with ProvidesAdditionalConfiguration
   with ProvidesJsonSerializerRegistry
   with LagomServerComponents
-  with LagomServiceClientComponents {
+  with LagomServiceClientComponents
+  with LagomConfigComponent {
 
   override val httpFilters: Seq[EssentialFilter] = Nil
 
@@ -233,8 +234,6 @@ abstract class LagomApplication(context: LagomApplicationContext)
     val additionalConfig = new Configuration(additionalConfiguration.configuration)
     Configuration.load(environment) ++ context.playContext.initialConfiguration ++ additionalConfig
   }
-
-  lazy val config: Config = configuration.underlying
 
   override lazy val actorSystem: ActorSystem = {
     val (system, stopHook) = ActorSystemProvider.start(config, environment, optionalJsonSerializerRegistry)
