@@ -4,9 +4,9 @@
 package com.lightbend.lagom.scaladsl.api
 
 import com.typesafe.config.Config
-import play.api.{ BuiltInComponents, Configuration }
+import play.api.Configuration
 
-trait LagomConfigComponent { 
+trait LagomConfigComponent {
   def configuration: Configuration
   def config: Config = configuration.underlying
 }
