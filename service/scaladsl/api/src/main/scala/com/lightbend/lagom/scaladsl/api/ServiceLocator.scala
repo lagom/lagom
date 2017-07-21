@@ -22,7 +22,7 @@ import scala.concurrent.{ ExecutionContext, Future }
  */
 trait ServiceLocator {
   /**
-   * Locate service's URI with the given name.
+   * Locate a service's URI for the given name.
    *
    * @param name The name of the service.
    * @return The URI for that service, if it exists.
@@ -30,7 +30,7 @@ trait ServiceLocator {
   def locate(name: String): Future[Option[URI]] = locate(name, Descriptor.NoCall)
 
   /**
-   * Locate service's URIs with the given name.
+   * Locate the service's URIs for the given name.
    *
    * @param name The name of the service.
    * @return One or more URIs for that service, otherwise an empty List ([[Nil]]) if none is found.
@@ -38,7 +38,7 @@ trait ServiceLocator {
   def locateAll(name: String): Future[List[URI]] = locateAll(name, Descriptor.NoCall)
 
   /**
-   * Locate service's URI with the given name.
+   * Locate a service's URI for the given name.
    *
    * @param name        The name of the service.
    * @param serviceCall The service call descriptor that this lookup is for.
@@ -47,7 +47,7 @@ trait ServiceLocator {
   def locate(name: String, serviceCall: Descriptor.Call[_, _]): Future[Option[URI]]
 
   /**
-   * Locate service's URIs with the given name.
+   * Locate the service's URIs for the given name.
    *
    * @param name        The name of the service.
    * @param serviceCall The service call descriptor that this lookup is for.
