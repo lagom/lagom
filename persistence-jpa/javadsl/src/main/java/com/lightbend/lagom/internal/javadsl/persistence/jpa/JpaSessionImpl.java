@@ -12,7 +12,6 @@ import com.lightbend.lagom.javadsl.persistence.jpa.JpaSession;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import play.Configuration;
 import play.inject.ApplicationLifecycle;
 import scala.compat.java8.FutureConverters;
 import scala.compat.java8.JFunction0;
@@ -53,11 +52,6 @@ public class JpaSessionImpl implements JpaSession {
         this.slickDb = slick.db();
         this.factoryCompletionStage = createEntityManagerFactory(actorSystem);
         lifecycle.addStopHook(this::close);
-    }
-
-    @Deprecated
-    public JpaSessionImpl(Configuration config, SlickProvider slick, ActorSystem actorSystem, ApplicationLifecycle lifecycle) {
-        this(config.underlying(), slick, actorSystem, lifecycle);
     }
 
     @Override
