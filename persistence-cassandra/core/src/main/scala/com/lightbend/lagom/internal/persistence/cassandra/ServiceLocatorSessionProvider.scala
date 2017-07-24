@@ -26,9 +26,9 @@ private[lagom] final class ServiceLocatorSessionProvider(system: ActorSystem, co
 
   override def lookupContactPoints(clusterId: String)(implicit ec: ExecutionContext): Future[immutable.Seq[InetSocketAddress]] = {
 
-    ServiceLocatorHolder(system).serviceLocatorEventually flatMap { serviceLocator =>
+    ServiceLocatorHolder(system).serviceLocatorEventually flatMap { serviceLocatorAdapter =>
 
-      serviceLocator.locate(clusterId).map {
+      serviceLocatorAdapter.locate(clusterId).map {
         case Nil => throw new NoContactPointsException(s"No contact points for [$clusterId]")
         case uris =>
           log.debug(s"Found Cassandra contact points: $uris")

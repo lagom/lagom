@@ -4,7 +4,7 @@
 package com.lightbend.lagom.javadsl.api;
 
 import java.net.URI;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
@@ -22,7 +22,7 @@ import java.util.function.Function;
 public interface ServiceLocator {
 
     /**
-     * Locate a service with the given name.
+     * Locate a service's URI for the given name.
      *
      * @param name The name of the service.
      * @return The URI for that service, if it exists.
@@ -32,13 +32,39 @@ public interface ServiceLocator {
     }
 
     /**
-     * Locate a service with the given name.
+     * Locate the service's URIs for the given name.
+     *
+     * @param name The name of the service.
+     * @return One or more URIs for that service, otherwise an empty List if none is found.
+     */
+    default CompletionStage<List<URI>> locateAll(String name) {
+        return locateAll(name, Descriptor.Call.NONE);
+    }
+
+
+    /**
+     * Locate a service's URI for the given name.
      *
      * @param name The name of the service.
      * @param serviceCall The service call descriptor that this lookup is for.
      * @return The URI for that service, if it exists.
      */
     CompletionStage<Optional<URI>> locate(String name, Descriptor.Call<?, ?> serviceCall);
+
+
+    /**
+     * Locate the service's URIs for the given name.
+     *
+     * @param name The name of the service.
+     * @param serviceCall The service call descriptor that this lookup is for.
+     * @return One or more URIs for that service, otherwise an empty List if none is found.
+     */
+    default CompletionStage<List<URI>> locateAll(String name, Descriptor.Call<?, ?> serviceCall) {
+        return locate(name, serviceCall)
+                .thenApply( opt -> opt.map(Collections::singletonList).orElseGet(Collections::emptyList)
+        );
+    }
+
 
     /**
      * Do the given action with the given service.

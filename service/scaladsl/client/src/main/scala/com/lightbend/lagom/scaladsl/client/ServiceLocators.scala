@@ -7,7 +7,7 @@ import java.net.{ URI, URISyntaxException }
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakers }
+import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakers, ConfigExtensions }
 import com.lightbend.lagom.internal.scaladsl.client.CircuitBreakersPanelImpl
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
@@ -122,11 +122,13 @@ class ConfigurationServiceLocator(configuration: Configuration, circuitBreakers:
     if (configuration.underlying.hasPath(LagomServicesKey)) {
       val config = configuration.underlying.getConfig(LagomServicesKey)
       import scala.collection.JavaConverters._
+
       (for {
         key <- config.root.keySet.asScala
       } yield {
         try {
-          key -> URI.create(config.getString(key))
+          val uris = ConfigExtensions.getStringList(config, key).asScala
+          key -> uris.map(URI.create).toList
         } catch {
           case e: ConfigException.WrongType =>
             throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a String, but was ${config.getValue(key).valueType}", e)
@@ -135,13 +137,15 @@ class ConfigurationServiceLocator(configuration: Configuration, circuitBreakers:
         }
       }).toMap
     } else {
-      Map.empty[String, URI]
+      Map.empty[String, List[URI]]
     }
   }
 
-  override def locate(name: String, serviceCall: Call[_, _]) = {
-    Future.successful(services.get(name))
-  }
+  override def locate(name: String, serviceCall: Call[_, _]) =
+    locateAll(name, serviceCall).map(_.headOption)
+
+  override def locateAll(name: String, serviceCall: Call[_, _]): Future[List[URI]] =
+    Future.successful(services.getOrElse(name, Nil))
 }
 
 /**

@@ -62,11 +62,13 @@ private object CassandraPersistenceModule {
     @volatile private var serviceLocator: Option[ServiceLocator] = None
     @volatile private var env: Option[play.Environment] = None
 
-    @Inject(optional = true) def setServiceLocator(_serviceLocator: ServiceLocator): Unit = {
+    @Inject(optional = true)
+    def setServiceLocator(_serviceLocator: ServiceLocator): Unit = {
       serviceLocator = Some(_serviceLocator)
     }
 
-    @Inject(optional = true) def setEnvironment(_env: play.Environment): Unit = {
+    @Inject(optional = true)
+    def setEnvironment(_env: play.Environment): Unit = {
       env = Some(_env)
     }
 
