@@ -81,6 +81,7 @@ public interface ServiceLocator {
      *              service. This will only be executed if the service was found.
      * @return The result of the executed block, if the service was found.
      */
-    <T> CompletionStage<Optional<T>> doWithService(String name, Descriptor.Call<?, ?> serviceCall,
-            Function<URI, CompletionStage<T>> block);
+    <T> CompletionStage<Optional<T>> doWithService(String name,
+                                                   Descriptor.Call<?, ?> serviceCall,
+                                                   Function<URI, CompletionStage<T>> block);
 }

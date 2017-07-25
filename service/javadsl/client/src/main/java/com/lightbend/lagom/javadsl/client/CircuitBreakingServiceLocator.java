@@ -63,7 +63,7 @@ public abstract class CircuitBreakingServiceLocator implements ServiceLocator {
         });
     }
 
-  @Override
+    @Override
     public final <T> CompletionStage<Optional<T>> doWithService(String serviceName, Descriptor.Call<?, ?> serviceCall, Function<URI, CompletionStage<T>> block) {
 
         return serviceCall.circuitBreaker()

@@ -76,9 +76,8 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
   public CompletionStage<Optional<URI>> locate(String name, Descriptor.Call<?, ?> serviceCall) {
       return locateAll(name, serviceCall)
               .thenApply(uris ->
-                      services
-                              // lookup and fallback to empty list if needed
-                              .getOrDefault(name, Collections.emptyList())
+                      // lookup and fallback to empty list if needed
+                      services.getOrDefault(name, Collections.emptyList())
                               // pick first as Optional (need to convert to stream)
                               .stream().findFirst()
       );

@@ -12,13 +12,14 @@ object ConfigExtensions {
   /**
    * INTERNAL API
    *
-   * Utility method to support automatic wrapping of a String value into a [[java.util.List[String]]]
-   * This method will return a [[java.util.List[String]]] if the passed key is a [[java.util.List[String]]] or if it's  [[String]], in which
+   * Utility method to support automatic wrapping of a String value in a [[java.util.List[String]]]
+    *
+   * This method will return a [[java.util.List[String]]] if the passed key is a [[java.util.List[String]]] or if it's [[String]], in which
    * case it returns a single element [[java.util.List[String]]].
    *
    * @param config - a [[Config]] instance
    * @param key    - the key to lookup
-   * @return a [[java.util.List[String]]] containing one or more values for the passed key if key is found, empty list otherwise.
+   * @return a [[java.util.List[String]]] containing one or more values for the passed key if key it is found, empty list otherwise.
    */
   def getStringList(config: Config, key: String): util.List[String] = {
     config.getAnyRef(key) match {

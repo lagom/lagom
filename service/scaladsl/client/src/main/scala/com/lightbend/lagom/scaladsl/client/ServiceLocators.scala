@@ -29,7 +29,6 @@ abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPan
 
   @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel} instead", since = "1.4.0")
   def this(circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
-    // note we need a convert it so we can hit the new default constructor
     this(new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
   /**
@@ -54,18 +53,20 @@ abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPan
   }
 
   override final def doWithService[T](name: String, serviceCall: Call[_, _])(block: (URI) => Future[T])(implicit ec: ExecutionContext): Future[Option[T]] = {
-    serviceCall.circuitBreaker.filter(_ != CircuitBreaker.None).map { cb =>
-      val circuitBreakerId = cb match {
-        case cbid: CircuitBreaker.CircuitBreakerId => cbid.id
-        case _                                     => name
-      }
+    serviceCall.circuitBreaker
+      .filter(_ != CircuitBreaker.None)
+      .map { cb =>
+        val circuitBreakerId = cb match {
+          case cbid: CircuitBreaker.CircuitBreakerId => cbid.id
+          case _                                     => name
+        }
 
-      doWithServiceImpl(name, serviceCall) { uri =>
-        circuitBreakers.withCircuitBreaker(circuitBreakerId)(block(uri))
+        doWithServiceImpl(name, serviceCall) { uri =>
+          circuitBreakers.withCircuitBreaker(circuitBreakerId)(block(uri))
+        }
+      }.getOrElse {
+        doWithServiceImpl(name, serviceCall)(block)
       }
-    }.getOrElse {
-      doWithServiceImpl(name, serviceCall)(block)
-    }
   }
 }
 
@@ -111,9 +112,8 @@ trait ConfigurationServiceLocatorComponents extends CircuitBreakerComponents {
 class ConfigurationServiceLocator(configuration: Configuration, circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext)
   extends CircuitBreakingServiceLocator(circuitBreakers) {
 
-  @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel} instead", since = "1.4.0")
+  @deprecated(message = "Use constructor accepting {@link CircuitBreakersPanel} instead", since = "1.4.0")
   def this(configuration: Configuration, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
-    // note we need a convert it so we can hit the new default constructor
     this(configuration, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
   private val LagomServicesKey: String = "lagom.services"
@@ -162,9 +162,8 @@ trait StaticServiceLocatorComponents extends CircuitBreakerComponents {
  */
 class StaticServiceLocator(uri: URI, circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext) extends CircuitBreakingServiceLocator(circuitBreakers) {
 
-  @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.CircuitBreakersPanel} instead", since = "1.4.0")
+  @deprecated(message = "Use constructor accepting {@link CircuitBreakersPanel} instead", since = "1.4.0")
   def this(uri: URI, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
-    // note we need a cast so we can hit the new default constructor
     this(uri, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
   override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = Future.successful(Some(uri))
@@ -184,15 +183,18 @@ trait RoundRobinServiceLocatorComponents extends CircuitBreakerComponents {
  */
 class RoundRobinServiceLocator(uris: immutable.Seq[URI], circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext) extends CircuitBreakingServiceLocator(circuitBreakers) {
 
-  @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel} instead", since = "1.4.0")
+  @deprecated(message = "Use constructor accepting {@link CircuitBreakersPanel} instead", since = "1.4.0")
   def this(uris: immutable.Seq[URI], circuitBreakers: com.lightbend.lagom.internal.client.CircuitBreakers)(implicit ec: ExecutionContext) =
-    // note we need a convert it so we can hit the new default constructor
     this(uris, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
   private val counter = new AtomicInteger(0)
+
   override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = {
     val index = Math.abs(counter.getAndIncrement() % uris.size)
     val uri = uris(index)
     Future.successful(Some(uri))
   }
+
+  override def locateAll(name: String, serviceCall: Call[_, _]): Future[List[URI]] =
+    Future.successful(uris.toList)
 }
