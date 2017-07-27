@@ -16,6 +16,7 @@ import javax.inject.Singleton
 
 import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistry, ServiceRegistryService }
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
+import com.typesafe.config.Config
 import play.api.Configuration
 import play.api.Environment
 import play.api.Logger
@@ -32,10 +33,11 @@ class ServiceRegistrationModule extends Module {
 
 object ServiceRegistrationModule {
 
-  class ServiceConfigProvider @Inject() (config: Configuration) extends Provider[ServiceConfig] {
+  class ServiceConfigProvider @Inject() (config: Config) extends Provider[ServiceConfig] {
+
     override lazy val get = {
-      val httpAddress = config.underlying.getString("play.server.http.address")
-      val httpPort = config.getString("play.server.http.port").get
+      val httpAddress = config.getString("play.server.http.address")
+      val httpPort = config.getString("play.server.http.port")
       val url = new URI(s"http://$httpAddress:$httpPort")
 
       ServiceConfig(url)

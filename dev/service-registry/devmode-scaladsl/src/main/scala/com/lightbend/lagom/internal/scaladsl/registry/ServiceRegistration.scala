@@ -6,19 +6,20 @@ package com.lightbend.lagom.internal.scaladsl.registry
 import java.net.URI
 
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
+import com.typesafe.config.Config
 import play.api.inject.ApplicationLifecycle
-import play.api.{ Configuration, Logger }
+import play.api.Logger
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success }
 
-class ServiceRegistration(serviceInfo: ServiceInfo, lifecycle: ApplicationLifecycle, config: Configuration,
+class ServiceRegistration(serviceInfo: ServiceInfo, lifecycle: ApplicationLifecycle, config: Config,
                           registry: ServiceRegistry)(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(this.getClass)
   private val uri = {
-    val httpAddress = config.underlying.getString("play.server.http.address")
-    val httpPort = config.getString("play.server.http.port").get
+    val httpAddress = config.getString("play.server.http.address")
+    val httpPort = config.getString("play.server.http.port")
     URI.create(s"http://$httpAddress:$httpPort")
   }
 

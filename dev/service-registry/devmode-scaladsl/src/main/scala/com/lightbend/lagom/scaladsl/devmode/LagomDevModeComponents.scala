@@ -13,9 +13,9 @@ import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents
+import play.api.Environment
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.WSClient
-import play.api.{ Configuration, Environment }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -38,7 +38,7 @@ trait LagomDevModeComponents extends LagomDevModeServiceLocatorComponents {
   def applicationLifecycle: ApplicationLifecycle
 
   // Eagerly register services
-  new ServiceRegistration(serviceInfo, applicationLifecycle, configuration, serviceRegistry)(executionContext)
+  new ServiceRegistration(serviceInfo, applicationLifecycle, config, serviceRegistry)(executionContext)
 }
 
 /**
@@ -61,12 +61,11 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
   def wsClient: WSClient
   def scaladslWebSocketClient: ScaladslWebSocketClient
   def environment: Environment
-  def configuration: Configuration
   def executionContext: ExecutionContext
   def materializer: Materializer
   def actorSystem: ActorSystem
 
-  lazy val devModeServiceLocatorUrl: URI = URI.create(configuration.underlying.getString("lagom.service-locator.url"))
+  lazy val devModeServiceLocatorUrl: URI = URI.create(config.getString("lagom.service-locator.url"))
   lazy val serviceRegistry: ServiceRegistry = {
 
     // We need to create our own static service locator since the service locator will depend on this service registry.
