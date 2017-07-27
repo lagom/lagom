@@ -17,6 +17,7 @@ object Dependencies {
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.1.13.Final"
+  val NettyReactiveStreamsVersion = "2.0.0"
   val KafkaVersion = "0.10.2.0"
   val AkkaStreamKafkaVersion = "0.15"
   val Log4jVersion = "1.2.17"
@@ -111,8 +112,8 @@ object Dependencies {
       akkaParsing,
       akkaPersistenceCassandra,
       akkaPersistenceCassandraLauncher,
-      "com.typesafe.netty" % "netty-reactive-streams" % "2.0.0",
-      "com.typesafe.netty" % "netty-reactive-streams-http" % "2.0.0",
+      "com.typesafe.netty" % "netty-reactive-streams" % NettyReactiveStreamsVersion,
+      "com.typesafe.netty" % "netty-reactive-streams-http" % NettyReactiveStreamsVersion,
       "com.typesafe.play" %% "cachecontrol" % "1.1.2",
       playJson,
       playFunctional,
@@ -320,7 +321,7 @@ object Dependencies {
     playWs,
     playAhcWs,
     "io.dropwizard.metrics" % "metrics-core" % "3.2.2",
-    "com.typesafe.netty" % "netty-reactive-streams" % "2.0.0-M1",
+    "com.typesafe.netty" % "netty-reactive-streams" % NettyReactiveStreamsVersion,
     "io.netty" % "netty-codec-http" % NettyVersion,
 
     // Upgrades needed to match whitelist versions
@@ -363,7 +364,11 @@ object Dependencies {
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
-    "junit" % "junit" % JUnitVersion
+    "junit" % "junit" % JUnitVersion,
+
+
+    // Upgrades needed to match whitelist
+    "io.netty" % "netty-transport-native-epoll" % NettyVersion
   )
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
@@ -371,19 +376,28 @@ object Dependencies {
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
-    "junit" % "junit" % JUnitVersion
+    "junit" % "junit" % JUnitVersion,
+
+    // Upgrades needed to match whitelist
+    "io.netty" % "netty-transport-native-epoll" % NettyVersion
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
-    scalaTest
+    scalaTest,
+
+    // Upgrades needed to match whitelist
+    "io.netty" % "netty-transport-native-epoll" % NettyVersion
   )
 
   val `integration-tests-scaladsl` = libraryDependencies ++= Seq(
     playNettyServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
-    scalaTest
+    scalaTest,
+
+    // Upgrades needed to match whitelist
+    "io.netty" % "netty-transport-native-epoll" % NettyVersion
   )
 
   val `cluster-core` = libraryDependencies ++= Seq(
@@ -600,7 +614,10 @@ object Dependencies {
   val `service-locator` = libraryDependencies ++= Seq(
     playNettyServer,
     akkaHttpCore,
-    scalaTest % Test
+    scalaTest % Test,
+
+    // Upgrades needed to match whitelist
+    "io.netty" % "netty-transport-native-epoll" % NettyVersion
   )
 
   val `service-registry-client-javadsl` = libraryDependencies ++= Nil
