@@ -33,14 +33,14 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
   private final PMap<String, List<URI>> services;
 
 
-  /**
-   * @deprecated Use constructor accepting {@link CircuitBreakersPanel} instead
-   * @param circuitBreakers
-   */
-  @Deprecated
-  public ConfigurationServiceLocator(Configuration configuration, CircuitBreakers circuitBreakers) {
-      this(configuration.underlying(), new CircuitBreakersPanelImpl(circuitBreakers));
-  }
+    /**
+     * @deprecated Use constructor accepting {@link CircuitBreakersPanel} instead
+     * @param circuitBreakers
+     */
+    @Deprecated
+    public ConfigurationServiceLocator(Configuration configuration, CircuitBreakers circuitBreakers) {
+        this(configuration.underlying(), new CircuitBreakersPanelImpl(circuitBreakers));
+    }
 
   @Inject
   public ConfigurationServiceLocator(Config config, CircuitBreakersPanel circuitBreakersPanel) {

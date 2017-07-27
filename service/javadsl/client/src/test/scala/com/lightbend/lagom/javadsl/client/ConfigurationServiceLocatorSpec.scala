@@ -8,7 +8,7 @@ import java.util.concurrent.{ CompletionStage, TimeUnit }
 import java.util.function.Supplier
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{ Matchers, WordSpec }
-import play.Configuration
+
 import scala.compat.java8.OptionConverters._
 
 class ConfigurationServiceLocatorSpec extends WordSpec with Matchers {
