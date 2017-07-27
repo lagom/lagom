@@ -23,7 +23,7 @@ object Dependencies {
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
   val SlickVersion = "3.2.0"
-  val JUnitVersion = "4.12"
+  val JUnitVersion = "4.11"
 
   // Specific libraries that get reused
   private val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
