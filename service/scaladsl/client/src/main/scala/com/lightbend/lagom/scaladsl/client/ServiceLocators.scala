@@ -27,7 +27,7 @@ import scala.concurrent.{ ExecutionContext, Future }
  */
 abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext) extends ServiceLocator {
 
-  @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel} instead", since = "1.4.0")
+  @deprecated(message = "Use constructor accepting CircuitBreakersPanel instead", since = "1.4.0")
   def this(circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
     // note we need a convert it so we can hit the new default constructor
     this(new CircuitBreakersPanelImpl(circuitBreakers))(ec)
@@ -109,7 +109,7 @@ trait ConfigurationServiceLocatorComponents extends CircuitBreakerComponents {
 class ConfigurationServiceLocator(config: Config, circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext)
   extends CircuitBreakingServiceLocator(circuitBreakers) {
 
-  @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel} instead", since = "1.4.0")
+  @deprecated(message = "Use constructor accepting Config and CircuitBreakersPanel instead", since = "1.4.0")
   def this(configuration: Configuration, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
     this(configuration.underlying, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
@@ -155,7 +155,7 @@ trait StaticServiceLocatorComponents extends CircuitBreakerComponents {
  */
 class StaticServiceLocator(uri: URI, circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext) extends CircuitBreakingServiceLocator(circuitBreakers) {
 
-  @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.CircuitBreakersPanel} instead", since = "1.4.0")
+  @deprecated(message = "Use constructor accepting CircuitBreakersPanel instead", since = "1.4.0")
   def this(uri: URI, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
     // note we need a cast so we can hit the new default constructor
     this(uri, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
@@ -177,7 +177,7 @@ trait RoundRobinServiceLocatorComponents extends CircuitBreakerComponents {
  */
 class RoundRobinServiceLocator(uris: immutable.Seq[URI], circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext) extends CircuitBreakingServiceLocator(circuitBreakers) {
 
-  @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel} instead", since = "1.4.0")
+  @deprecated(message = "Use constructor accepting CircuitBreakersPanel instead", since = "1.4.0")
   def this(uris: immutable.Seq[URI], circuitBreakers: com.lightbend.lagom.internal.client.CircuitBreakers)(implicit ec: ExecutionContext) =
     // note we need a convert it so we can hit the new default constructor
     this(uris, new CircuitBreakersPanelImpl(circuitBreakers))(ec)

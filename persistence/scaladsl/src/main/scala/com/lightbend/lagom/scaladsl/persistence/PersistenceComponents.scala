@@ -32,7 +32,6 @@ trait ReadSidePersistenceComponents extends WriteSidePersistenceComponents {
   def executionContext: ExecutionContext
   def materializer: Materializer
 
-  @deprecated(message = "prefer `config` using typesafe Config instead", since = "1.4.0")
   def configuration: Configuration
 
   lazy val readSideConfig: ReadSideConfig = ReadSideConfig(configuration.underlying.getConfig("lagom.persistence.read-side"))
