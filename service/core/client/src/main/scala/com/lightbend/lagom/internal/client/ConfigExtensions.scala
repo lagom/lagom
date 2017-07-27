@@ -13,7 +13,7 @@ object ConfigExtensions {
    * INTERNAL API
    *
    * Utility method to support automatic wrapping of a String value in a [[java.util.List[String]]]
-    *
+   *
    * This method will return a [[java.util.List[String]]] if the passed key is a [[java.util.List[String]]] or if it's [[String]], in which
    * case it returns a single element [[java.util.List[String]]].
    *
