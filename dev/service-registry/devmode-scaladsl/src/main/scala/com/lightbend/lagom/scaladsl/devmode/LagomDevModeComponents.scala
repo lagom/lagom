@@ -13,10 +13,9 @@ import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents
-import com.typesafe.config.Config
+import play.api.Environment
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.WSClient
-import play.api.{ Configuration, Environment }
 
 import scala.concurrent.{ ExecutionContext, Future }
 

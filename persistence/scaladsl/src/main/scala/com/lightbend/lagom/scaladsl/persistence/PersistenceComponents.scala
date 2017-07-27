@@ -3,14 +3,14 @@
  */
 package com.lightbend.lagom.scaladsl.persistence
 
-import scala.concurrent.ExecutionContext
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.scaladsl.persistence.ReadSideImpl
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
-import com.typesafe.config.Config
 import play.api.Configuration
+
+import scala.concurrent.ExecutionContext
 
 /**
  * Persistence components (for compile-time injection).
