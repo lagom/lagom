@@ -215,7 +215,7 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
    * This sets up the server and the client, but allows them to be modified before actually creating them.
    */
   def withClient(changeClient: Descriptor => Descriptor = identity, changeServer: Descriptor => Descriptor = identity,
-                 mode: Mode.Mode = Mode.Prod)(block: Application => MockService => Unit): Unit = {
+                 mode: Mode = Mode.Prod)(block: Application => MockService => Unit): Unit = {
 
     val environment = Environment.simple(mode = mode)
     val jacksonSerializerFactory = new JacksonSerializerFactory(new JacksonObjectMapperProvider(

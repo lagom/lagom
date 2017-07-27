@@ -126,7 +126,7 @@ class ConfigurationServiceLocator(config: Config, circuitBreakers: CircuitBreake
         key <- lagomServicesConfig.root.keySet.asScala
       } yield {
         try {
-          val uris = ConfigExtensions.getStringList(config, key).asScala
+          val uris = ConfigExtensions.getStringList(lagomServicesConfig, key).asScala
           key -> uris.map(URI.create).toList
         } catch {
           case e: ConfigException.WrongType =>

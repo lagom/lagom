@@ -136,10 +136,10 @@ private[lagom] abstract class WebSocketClient(environment: Environment, eventLoo
             }
 
             // See if the response is an error response
-            if (resp.getStatus.code >= 400 && resp.getStatus.code < 599) {
+            if (resp.status.code >= 400 && resp.status.code < 599) {
               incomingPromise.failure(exceptionSerializerDeserializeHttpException(
                 exceptionSerializer,
-                resp.getStatus.code, rp, toByteString(resp)
+                resp.status.code, rp, toByteString(resp)
               ))
               ctx.close()
 
@@ -216,7 +216,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, eventLoo
                       })
                     }
                 })
-                val responseHeader = newResponseHeader(resp.getStatus.code, rp, headers)
+                val responseHeader = newResponseHeader(resp.status.code, rp, headers)
                 incomingPromise.success((responseHeader, incoming via injectOutgoingStreamError))
               } catch {
                 case NonFatal(e) =>

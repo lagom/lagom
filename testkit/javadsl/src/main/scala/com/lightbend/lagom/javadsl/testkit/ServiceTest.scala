@@ -28,7 +28,6 @@ import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.persistence.testkit.CassandraTestConfig
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
-
 import play.Application
 import play.api.Logger
 import play.api.Mode
@@ -206,7 +205,7 @@ object ServiceTest {
 
   /**
    * Start the test server with the given `setup` and run the `block` (lambda). When
-   * the `block returns or throws the test server will automatically be stopped.
+   * the `block` returns or throws the test server will automatically be stopped.
    *
    * This method should be used when the server can be started and stopped for each test
    * method. When your test have several test methods, and especially when using persistence, it is
@@ -234,7 +233,7 @@ object ServiceTest {
    *
    * When your test have several test methods, and especially when using persistence, it is
    * faster to only start the server once in a static method annotated with `@BeforeClass`
-   * and stop it in a method annotated with `@AfterClass`. Otherwise [[#withServer withServer]] is
+   * and stop it in a method annotated with `@AfterClass`. Otherwise [[#withServer]] is
    * more convenient.
    *
    * You can get the service client from the returned `TestServer`.
