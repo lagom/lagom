@@ -1,5 +1,5 @@
 
-val PlayVersion = "2.6.1"
+val PlayVersion = "2.6.2"
 val AkkaVersion = "2.5.3"
 val JUnitVersion = "4.12"
 
