@@ -12,7 +12,6 @@ import com.lightbend.lagom.javadsl.persistence.jpa.JpaSession;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import play.Configuration;
 import play.inject.ApplicationLifecycle;
 import scala.compat.java8.FutureConverters;
 import scala.compat.java8.JFunction0;

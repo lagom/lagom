@@ -4,9 +4,9 @@ import sbt.Keys._
 object Dependencies {
 
   // Version numbers
-  val PlayVersion = "2.6.0"
-  val PlayStandaloneWsVersion = "1.0.0"
-  val PlayJsonVersion = "2.6.0"
+  val PlayVersion = "2.6.2"
+  val PlayStandaloneWsVersion = "1.0.1"
+  val PlayJsonVersion = "2.6.2"
   val AkkaVersion = "2.5.3"
   val AkkaHttpVersion = "10.0.9"
   val ScalaVersion = "2.11.11"
@@ -16,13 +16,15 @@ object Dependencies {
   val CassandraAllVersion = "3.8"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.12.Final"
+  val NettyVersion = "4.1.13.Final"
+  val NettyReactiveStreamsVersion = "2.0.0"
   val KafkaVersion = "0.10.2.0"
   val AkkaStreamKafkaVersion = "0.15"
   val Log4jVersion = "1.2.17"
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
   val SlickVersion = "3.2.0"
+  val JUnitVersion = "4.11"
 
   // Specific libraries that get reused
   private val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
@@ -67,11 +69,11 @@ object Dependencies {
   private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion
   private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion
   private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion
-  private val playFunctional = "com.typesafe.play" %% "play-functional" % PlayVersion
 
   private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion
   private val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % PlayVersion
   private val playJson = "com.typesafe.play" %% "play-json" % PlayJsonVersion
+  private val playFunctional = "com.typesafe.play" %% "play-functional" % PlayJsonVersion
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.
@@ -110,8 +112,8 @@ object Dependencies {
       akkaParsing,
       akkaPersistenceCassandra,
       akkaPersistenceCassandraLauncher,
-      "com.typesafe.netty" % "netty-reactive-streams" % "2.0.0-M1",
-      "com.typesafe.netty" % "netty-reactive-streams-http" % "2.0.0-M1",
+      "com.typesafe.netty" % "netty-reactive-streams" % NettyReactiveStreamsVersion,
+      "com.typesafe.netty" % "netty-reactive-streams-http" % NettyReactiveStreamsVersion,
       "com.typesafe.play" %% "cachecontrol" % "1.1.2",
       playJson,
       playFunctional,
@@ -125,7 +127,7 @@ object Dependencies {
       "com.typesafe.play" % "shaded-asynchttpclient" % PlayStandaloneWsVersion,
       "com.typesafe.play" % "shaded-oauth" % PlayStandaloneWsVersion,
 
-      "com.typesafe.play" %% "twirl-api" % "1.3.2",
+      "com.typesafe.play" %% "twirl-api" % "1.3.3",
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.6.3",
@@ -140,7 +142,7 @@ object Dependencies {
       "javax.inject" % "javax.inject" % "1",
       "javax.transaction" % "jta" % "1.1",
       "joda-time" % "joda-time" % "2.9.9",
-      "junit" % "junit" % "4.11",
+      "junit" % "junit" % JUnitVersion,
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
       "org.agrona" % "agrona" % "0.9.5",
@@ -319,7 +321,7 @@ object Dependencies {
     playWs,
     playAhcWs,
     "io.dropwizard.metrics" % "metrics-core" % "3.2.2",
-    "com.typesafe.netty" % "netty-reactive-streams" % "2.0.0-M1",
+    "com.typesafe.netty" % "netty-reactive-streams" % NettyReactiveStreamsVersion,
     "io.netty" % "netty-codec-http" % NettyVersion,
 
     // Upgrades needed to match whitelist versions
@@ -362,7 +364,11 @@ object Dependencies {
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
-    "junit" % "junit" % "4.11"
+    "junit" % "junit" % JUnitVersion,
+
+
+    // Upgrades needed to match whitelist
+    "io.netty" % "netty-transport-native-epoll" % NettyVersion
   )
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
@@ -370,19 +376,28 @@ object Dependencies {
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
-    "junit" % "junit" % "4.11"
+    "junit" % "junit" % JUnitVersion,
+
+    // Upgrades needed to match whitelist
+    "io.netty" % "netty-transport-native-epoll" % NettyVersion
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
-    scalaTest
+    scalaTest,
+
+    // Upgrades needed to match whitelist
+    "io.netty" % "netty-transport-native-epoll" % NettyVersion
   )
 
   val `integration-tests-scaladsl` = libraryDependencies ++= Seq(
     playNettyServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
-    scalaTest
+    scalaTest,
+
+    // Upgrades needed to match whitelist
+    "io.netty" % "netty-transport-native-epoll" % NettyVersion
   )
 
   val `cluster-core` = libraryDependencies ++= Seq(
@@ -518,12 +533,12 @@ object Dependencies {
 
   val `kafka-broker-javadsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
-    "junit" % "junit" % "4.11" % Test
+    "junit" % "junit" % JUnitVersion % Test
   )
 
   val `kafka-broker-scaladsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
-    "junit" % "junit" % "4.11" % Test
+    "junit" % "junit" % JUnitVersion % Test
   )
 
   val logback = libraryDependencies ++= Seq(
@@ -599,7 +614,10 @@ object Dependencies {
   val `service-locator` = libraryDependencies ++= Seq(
     playNettyServer,
     akkaHttpCore,
-    scalaTest % Test
+    scalaTest % Test,
+
+    // Upgrades needed to match whitelist
+    "io.netty" % "netty-transport-native-epoll" % NettyVersion
   )
 
   val `service-registry-client-javadsl` = libraryDependencies ++= Nil

@@ -25,7 +25,7 @@ public class MockServiceTest {
   @BeforeClass
   public static void setUp() {
     server = startServer(defaultSetup().withCluster(false)
-        .withConfigureBuilder(b -> b.bindings(new MockServiceModule())));
+        .configureBuilder(b -> b.bindings(new MockServiceModule())));
     client = server.client(MockService.class);
   }
   

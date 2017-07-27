@@ -36,8 +36,8 @@ This is a list of available Components you may use to build your application cak
 You can mix in `Components` from other frameworks or libraries, for example:
 
  * [ConductRApplicationComponents](https://github.com/typesafehub/conductr-lib/blob/master/lagom1-scala-conductr-bundle-lib/src/main/scala/com/typesafe/conductr/bundlelib/lagom/scaladsl/ConductRApplicationComponents.scala): provides a Service Locator provided by ConductR, reads any ConductR provided configuration and makes the service register into ConductR's Service Registry. See [[ConductR]]
- * [AhcWSComponents](https://www.playframework.com/documentation/2.5.x/api/scala/index.html#play.api.libs.ws.ahc.AhcWSComponents): provides a `WSClient` based on an Async HTTP Client.
- * [DBComponents](https://www.playframework.com/documentation/2.5.x/api/scala/play/api/db/DBComponents.html)
- * [HikariCPComponents](https://www.playframework.com/documentation/2.5.x/api/scala/play/api/db/HikariCPComponents.html)
+ * [AhcWSComponents](https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.libs.ws.ahc.AhcWSComponents): provides a `WSClient` based on an Async HTTP Client.
+ * [DBComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/DBComponents.html)
+ * [HikariCPComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/HikariCPComponents.html)
 
-Lagom inherits all Components provided by Play. You can find the complete list of inherited `Components` by searching for _components_ in [Play docs](https://www.playframework.com/documentation/2.5.x/api/scala/index.html).
+Lagom inherits all Components provided by Play. You can find the complete list of inherited `Components` by searching for _components_ in [Play docs](https://www.playframework.com/documentation/2.6.x/api/scala/index.html).

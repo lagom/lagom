@@ -23,7 +23,7 @@ public class PersistenceServiceTest {
   public static void setUp() {
     server = startServer(defaultSetup()
                     .withCassandra(true)
-                    .withConfigureBuilder(b -> b.bindings(new PersistenceServiceModule()))
+                    .configureBuilder(b -> b.bindings(new PersistenceServiceModule()))
     );
     client = server.client(PersistenceService.class);
   }
