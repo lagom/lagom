@@ -23,6 +23,11 @@ object Dependencies {
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
   val SlickVersion = "3.2.0"
+  val JunitVersion = "4.12"
+  val JunitInterfaceVersion = "0.11"
+  val Log4JApiVersion = "2.7"
+  val HibernateCoreVersion = "5.2.5.Final"
+
 
   // Specific libraries that get reused
   private val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
@@ -102,7 +107,7 @@ object Dependencies {
       h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
       "com.lmax" % "disruptor" % "3.3.6",
-      "com.novocode" % "junit-interface" % "0.11",
+      "com.novocode" % "junit-interface" % JunitInterfaceVersion,
       typesafeConfig,
       sslConfig,
       akkaHttpCore,
@@ -140,7 +145,7 @@ object Dependencies {
       "javax.inject" % "javax.inject" % "1",
       "javax.transaction" % "jta" % "1.1",
       "joda-time" % "joda-time" % "2.9.9",
-      "junit" % "junit" % "4.11",
+      "junit" % "junit" % JunitVersion,
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
       "org.agrona" % "agrona" % "0.9.5",
@@ -186,7 +191,7 @@ object Dependencies {
       "netty-buffer", "netty-codec", "netty-codec-http", "netty-common", "netty-handler", "netty-resolver",
       "netty-transport", "netty-transport-native-epoll", "netty-transport-native-unix-common"
 
-    ) ++ libraryFamily("org.apache.logging.log4j", "2.7")(
+    ) ++ libraryFamily("org.apache.logging.log4j", Log4JApiVersion)(
       "log4j-api", "log4j-core", "log4j-slf4j-impl"
 
     ) ++ libraryFamily("org.ow2.asm", "5.0.3")(
@@ -219,7 +224,7 @@ object Dependencies {
     "javax.el" % "el-api" % "2.2",
     "javax.enterprise" % "cdi-api" % "1.1",
     "org.apache.geronimo.specs" % "geronimo-jta_1.1_spec" % "1.1.1",
-    "org.hibernate" % "hibernate-core" % "5.2.5.Final",
+    "org.hibernate" % "hibernate-core" % HibernateCoreVersion,
     "org.hibernate.common" % "hibernate-commons-annotations" % "5.0.1.Final",
     "org.jboss" % "jandex" % "2.0.3.Final",
     "org.jboss.logging" % "jboss-logging" % "3.3.0.Final",
@@ -286,7 +291,7 @@ object Dependencies {
     "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % JacksonVersion,
     akkaTestkit % Test,
     scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test
+    "com.novocode" % "junit-interface" % JunitInterfaceVersion % Test
   )
 
   val `play-json` = libraryDependencies ++= Seq(
@@ -362,7 +367,7 @@ object Dependencies {
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
-    "junit" % "junit" % "4.11"
+    "junit" % "junit" % JunitVersion
   )
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
@@ -370,18 +375,18 @@ object Dependencies {
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
-    "junit" % "junit" % "4.11"
+    "junit" % "junit" % JunitVersion
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
-    "com.novocode" % "junit-interface" % "0.11" % Test,
+    "com.novocode" % "junit-interface" % JunitInterfaceVersion % Test,
     scalaTest
   )
 
   val `integration-tests-scaladsl` = libraryDependencies ++= Seq(
     playNettyServer,
-    "com.novocode" % "junit-interface" % "0.11" % Test,
+    "com.novocode" % "junit-interface" % JunitInterfaceVersion % Test,
     scalaTest
   )
 
@@ -389,7 +394,7 @@ object Dependencies {
     akkaCluster,
     akkaTestkit % Test,
     scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test,
+    "com.novocode" % "junit-interface" % JunitInterfaceVersion % Test,
 
     // Upgrades needed to match whitelist
     scalaJava8Compat,
@@ -402,14 +407,14 @@ object Dependencies {
     akkaTestkit % Test,
     akkaMultiNodeTestkit % Test,
     scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test
+    "com.novocode" % "junit-interface" % JunitInterfaceVersion % Test
   )
 
   val `cluster-scaladsl` = libraryDependencies ++= Seq(
     akkaTestkit % Test,
     akkaMultiNodeTestkit % Test,
     scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test,
+    "com.novocode" % "junit-interface" % JunitInterfaceVersion % Test,
 
     // Upgrades needed to match whitelist
     scalaXml % Test
@@ -425,7 +430,7 @@ object Dependencies {
     akkaMultiNodeTestkit % Test,
     akkaStreamTestkit % Test,
     scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test
+    "com.novocode" % "junit-interface" % JunitInterfaceVersion % Test
     // explicitly depend on particular versions of jackson
   ) ++ jacksonFamily ++ Seq(
     // explicitly depend on particular versions of guava
@@ -453,7 +458,7 @@ object Dependencies {
     akkaMultiNodeTestkit % Test,
     akkaStreamTestkit % Test,
     scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test
+    "com.novocode" % "junit-interface" % JunitInterfaceVersion % Test
   )
 
   val `persistence-javadsl` = libraryDependencies ++= Seq(
@@ -492,7 +497,7 @@ object Dependencies {
 
   val `persistence-jpa-javadsl` = libraryDependencies ++= Seq(
     "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final" % Provided,
-    "org.hibernate" % "hibernate-core" % "5.2.5.Final" % Test,
+    "org.hibernate" % "hibernate-core" % HibernateCoreVersion % Test,
     h2 % Test
   )
 
@@ -518,12 +523,12 @@ object Dependencies {
 
   val `kafka-broker-javadsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
-    "junit" % "junit" % "4.11" % Test
+    "junit" % "junit" % JunitVersion % Test
   )
 
   val `kafka-broker-scaladsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
-    "junit" % "junit" % "4.11" % Test
+    "junit" % "junit" % JunitVersion % Test
   )
 
   val logback = libraryDependencies ++= Seq(
@@ -540,7 +545,7 @@ object Dependencies {
     "log4j-api",
     "log4j-core",
     "log4j-slf4j-impl"
-  ).map("org.apache.logging.log4j" % _ % "2.7") ++ Seq(
+  ).map("org.apache.logging.log4j" % _ % Log4JApiVersion) ++ Seq(
     "com.lmax" % "disruptor" % "3.3.6",
     play,
 
