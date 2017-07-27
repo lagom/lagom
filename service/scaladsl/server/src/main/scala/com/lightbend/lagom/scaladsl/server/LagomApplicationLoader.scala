@@ -224,15 +224,19 @@ abstract class LagomApplication(context: LagomApplicationContext)
   with ProvidesAdditionalConfiguration
   with ProvidesJsonSerializerRegistry
   with LagomServerComponents
-  with LagomServiceClientComponents {
+  with LagomServiceClientComponents
+  with LagomConfigComponent {
 
   override val httpFilters: Seq[EssentialFilter] = Nil
 
-  override lazy val configuration: Configuration = Configuration.load(environment) ++
-    context.playContext.initialConfiguration ++ additionalConfiguration.configuration
+  @deprecated(message = "prefer `config` using typesafe Config instead", since = "1.4.0")
+  override lazy val configuration: Configuration = {
+    val additionalConfig = new Configuration(additionalConfiguration.configuration)
+    Configuration.load(environment) ++ context.playContext.initialConfiguration ++ additionalConfig
+  }
 
   override lazy val actorSystem: ActorSystem = {
-    val (system, stopHook) = ActorSystemProvider.start(configuration, environment, optionalJsonSerializerRegistry)
+    val (system, stopHook) = ActorSystemProvider.start(config, environment, optionalJsonSerializerRegistry)
     applicationLifecycle.addStopHook(stopHook)
     system
   }
@@ -247,9 +251,8 @@ private[server] object ActorSystemProvider {
   /**
    * This is copied from Play's ActorSystemProvider, modified so we can inject json serializers
    */
-  def start(configuration: Configuration, environment: Environment,
+  def start(config: Config, environment: Environment,
             serializerRegistry: Option[JsonSerializerRegistry]): (ActorSystem, () => Future[Unit]) = {
-    val config = configuration.underlying
     val akkaConfig: Config = {
       val akkaConfigRoot = config.getString("play.akka.config")
       // Need to fallback to root config so we can lookup dispatchers defined outside the main namespace
@@ -297,6 +300,12 @@ private[server] object ActorSystemProvider {
     }
 
     (system, stopHook)
+  }
+
+  @deprecated(message = "prefer method using typesafe Config instead", since = "1.4.0")
+  def start(configuration: Configuration, environment: Environment,
+            serializerRegistry: Option[JsonSerializerRegistry]): (ActorSystem, () => Future[Unit]) = {
+    start(configuration.underlying, environment, serializerRegistry)
   }
 }
 

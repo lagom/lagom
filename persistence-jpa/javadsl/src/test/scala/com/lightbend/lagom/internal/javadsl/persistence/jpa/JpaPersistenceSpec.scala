@@ -5,7 +5,7 @@ package com.lightbend.lagom.internal.javadsl.persistence.jpa
 
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcPersistenceSpec
 import com.lightbend.lagom.javadsl.persistence.jpa.JpaSession
-import play.Configuration
+
 import play.api.inject.DefaultApplicationLifecycle
 import play.inject.DelegateApplicationLifecycle
 

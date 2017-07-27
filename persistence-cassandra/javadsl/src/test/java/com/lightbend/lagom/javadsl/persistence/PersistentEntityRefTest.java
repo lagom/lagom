@@ -25,8 +25,8 @@ import java.util.concurrent.ExecutionException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import play.Application;
-import play.Configuration;
 import play.inject.Injector;
 import play.inject.guice.GuiceApplicationBuilder;
 import scala.concurrent.duration.FiniteDuration;

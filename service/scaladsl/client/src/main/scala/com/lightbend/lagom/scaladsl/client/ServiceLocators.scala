@@ -11,8 +11,8 @@ import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreake
 import com.lightbend.lagom.internal.scaladsl.client.CircuitBreakersPanelImpl
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
-import com.lightbend.lagom.scaladsl.api.{ CircuitBreaker, Descriptor, ServiceLocator }
-import com.typesafe.config.ConfigException
+import com.lightbend.lagom.scaladsl.api.{ CircuitBreaker, Descriptor, LagomConfigComponent, ServiceLocator }
+import com.typesafe.config.{ Config, ConfigException }
 import play.api.Configuration
 
 import scala.collection.immutable
@@ -27,7 +27,7 @@ import scala.concurrent.{ ExecutionContext, Future }
  */
 abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext) extends ServiceLocator {
 
-  @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel} instead", since = "1.4.0")
+  @deprecated(message = "Use constructor accepting CircuitBreakersPanel instead", since = "1.4.0")
   def this(circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
     // note we need a convert it so we can hit the new default constructor
     this(new CircuitBreakersPanelImpl(circuitBreakers))(ec)
@@ -72,13 +72,12 @@ abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPan
 /**
  * Components required for circuit breakers.
  */
-trait CircuitBreakerComponents {
+trait CircuitBreakerComponents extends LagomConfigComponent {
   def actorSystem: ActorSystem
-  def configuration: Configuration
   def executionContext: ExecutionContext
   def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
 
-  lazy val circuitBreakerConfig: CircuitBreakerConfig = new CircuitBreakerConfig(configuration)
+  lazy val circuitBreakerConfig: CircuitBreakerConfig = new CircuitBreakerConfig(config)
 
   // for backward compatibility we still need to provide it for wiring
   lazy val circuitBreakers: CircuitBreakers = {
@@ -101,34 +100,33 @@ trait CircuitBreakerComponents {
  * Components for using the configuration service locator.
  */
 trait ConfigurationServiceLocatorComponents extends CircuitBreakerComponents {
-  lazy val serviceLocator: ServiceLocator = new ConfigurationServiceLocator(configuration, circuitBreakersPanel)(executionContext)
+  lazy val serviceLocator: ServiceLocator = new ConfigurationServiceLocator(config, circuitBreakersPanel)(executionContext)
 }
 
 /**
  * A service locator that uses static configuration.
  */
-class ConfigurationServiceLocator(configuration: Configuration, circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext)
+class ConfigurationServiceLocator(config: Config, circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext)
   extends CircuitBreakingServiceLocator(circuitBreakers) {
 
-  @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel} instead", since = "1.4.0")
+  @deprecated(message = "Use constructor accepting Config and CircuitBreakersPanel instead", since = "1.4.0")
   def this(configuration: Configuration, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
-    // note we need a convert it so we can hit the new default constructor
-    this(configuration, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
+    this(configuration.underlying, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
   private val LagomServicesKey: String = "lagom.services"
 
   private val services = {
-    if (configuration.underlying.hasPath(LagomServicesKey)) {
-      val config = configuration.underlying.getConfig(LagomServicesKey)
+    if (config.hasPath(LagomServicesKey)) {
+      val lagomServicesConfig = config.getConfig(LagomServicesKey)
       import scala.collection.JavaConverters._
       (for {
-        key <- config.root.keySet.asScala
+        key <- lagomServicesConfig.root.keySet.asScala
       } yield {
         try {
-          key -> URI.create(config.getString(key))
+          key -> URI.create(lagomServicesConfig.getString(key))
         } catch {
           case e: ConfigException.WrongType =>
-            throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a String, but was ${config.getValue(key).valueType}", e)
+            throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a String, but was ${lagomServicesConfig.getValue(key).valueType}", e)
           case e: URISyntaxException =>
             throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a URI, but it failed to parse", e)
         }
@@ -157,7 +155,7 @@ trait StaticServiceLocatorComponents extends CircuitBreakerComponents {
  */
 class StaticServiceLocator(uri: URI, circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext) extends CircuitBreakingServiceLocator(circuitBreakers) {
 
-  @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.CircuitBreakersPanel} instead", since = "1.4.0")
+  @deprecated(message = "Use constructor accepting CircuitBreakersPanel instead", since = "1.4.0")
   def this(uri: URI, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
     // note we need a cast so we can hit the new default constructor
     this(uri, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
@@ -179,7 +177,7 @@ trait RoundRobinServiceLocatorComponents extends CircuitBreakerComponents {
  */
 class RoundRobinServiceLocator(uris: immutable.Seq[URI], circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext) extends CircuitBreakingServiceLocator(circuitBreakers) {
 
-  @deprecated(message = "Use constructor accepting {@link com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel} instead", since = "1.4.0")
+  @deprecated(message = "Use constructor accepting CircuitBreakersPanel instead", since = "1.4.0")
   def this(uris: immutable.Seq[URI], circuitBreakers: com.lightbend.lagom.internal.client.CircuitBreakers)(implicit ec: ExecutionContext) =
     // note we need a convert it so we can hit the new default constructor
     this(uris, new CircuitBreakersPanelImpl(circuitBreakers))(ec)

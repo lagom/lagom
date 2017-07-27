@@ -52,10 +52,10 @@ import play.inject.guice.GuiceApplicationBuilder
  * enabled. Cassandra is also disabled by default. If your service require either of these features you
  * can enable them in the `Setup`.
  *
- * There are two different styles that can be used. It is most convenient to use [[#withServer]],
+ * There are two different styles that can be used. It is most convenient to use [[#withServer withServer]],
  * since it automatically starts and stops the server before and after the given lambda.
  * When your test have several test methods, and especially when using persistence, it is
- * faster to only [[#startServer]] the server once in a static method annotated with `@BeforeClass`
+ * faster to only [[#startServer start]] the server once in a static method annotated with `@BeforeClass`
  * and stop it in a method annotated with `@AfterClass`.
  */
 object ServiceTest {
@@ -265,7 +265,7 @@ object ServiceTest {
           .configure("lagom.cluster.join-self", "on")
         disableModules(b2, KafkaClientModule, KafkaBrokerModule)
       } else if (setup.cluster) {
-        val b2 = b1.configure(CassandraTestConfig.clusterConfig())
+        val b2 = b1.configure(CassandraTestConfig.clusterConfig)
           .configure("lagom.cluster.join-self", "on")
           .disable(classOf[PersistenceModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])

@@ -44,7 +44,9 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
     @Inject
     public ConfigurationServiceLocator(Config config, CircuitBreakersPanel circuitBreakersPanel) {
         super(circuitBreakersPanel);
+
         Map<String, URI> services = new HashMap<>();
+
         if (config.hasPath(LAGOM_SERVICES_KEY)) {
             Config configServices = config.getConfig(LAGOM_SERVICES_KEY);
             for (String key: configServices.root().keySet()) {
@@ -61,6 +63,8 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
         }
         this.services = HashTreePMap.from(services);
     }
+
+
 
     @Override
     public CompletionStage<Optional<URI>> locate(String name, Descriptor.Call<?, ?> serviceCall) {
