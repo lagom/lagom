@@ -23,7 +23,7 @@ class Log4j2LoggerConfigurator extends LoggerConfigurator {
     StaticLoggerBinder.getSingleton.getLoggerFactory
   }
 
-  override def init(rootPath: File, mode: Mode.Mode): Unit = {
+  override def init(rootPath: File, mode: Mode): Unit = {
     val properties = Map("application.home" -> rootPath.getAbsolutePath)
     val resourceName = if (mode == Mode.Dev) DevLog4j2Config else DefaultLog4j2Config
     val resourceUrl = Option(this.getClass.getClassLoader.getResource(resourceName))

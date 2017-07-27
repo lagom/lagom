@@ -20,7 +20,7 @@ public class NoServiceTest {
     public void testAModuleWithBrokerConsumptionButWithoutServiceCanBeRun() throws Exception {
         Setup setup = defaultSetup()
                 .withCluster(false)
-                .withConfigureBuilder(b ->
+                .configureBuilder(b ->
                         b.bindings(new NoServiceModule()).overrides(
                                 bind(PublisherService.class).to(PublisherServiceStub.class))
                 );
