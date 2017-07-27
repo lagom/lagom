@@ -33,10 +33,10 @@ public class ConfigurationServiceLocator implements ServiceLocator {
     private final PMap<String, URI> services;
 
     @Inject
-    public ConfigurationServiceLocator(Configuration configuration) {
+    public ConfigurationServiceLocator(Config configuration) {
         Map<String, URI> services = new HashMap<>();
-        if (configuration.underlying().hasPath(LAGOM_SERVICES_KEY)) {
-            Config config = configuration.underlying().getConfig(LAGOM_SERVICES_KEY);
+        if (configuration.hasPath(LAGOM_SERVICES_KEY)) {
+            Config config = configuration.getConfig(LAGOM_SERVICES_KEY);
             for (String key: config.root().keySet()) {
                 try {
                     String value = config.getString(key);
@@ -50,6 +50,14 @@ public class ConfigurationServiceLocator implements ServiceLocator {
             }
         }
         this.services = HashTreePMap.from(services);
+    }
+
+    /**
+     * @deprecated use {@link ConfigurationServiceLocator(Config)} instead.
+     */
+    @Deprecated
+    public ConfigurationServiceLocator(Configuration configuration) {
+        this(configuration.underlying());
     }
 
     @Override

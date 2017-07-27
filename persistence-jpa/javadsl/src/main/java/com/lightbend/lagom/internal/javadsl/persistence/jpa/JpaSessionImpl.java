@@ -43,8 +43,8 @@ public class JpaSessionImpl implements JpaSession {
     private final CompletionStage<EntityManagerFactory> factoryCompletionStage;
 
     @Inject
-    public JpaSessionImpl(Configuration config, SlickProvider slick, ActorSystem actorSystem, ApplicationLifecycle lifecycle) {
-        Config jpaConfig = config.underlying().getConfig("lagom.persistence.jpa");
+    public JpaSessionImpl(Config config, SlickProvider slick, ActorSystem actorSystem, ApplicationLifecycle lifecycle) {
+        Config jpaConfig = config.getConfig("lagom.persistence.jpa");
         this.persistenceUnitName = jpaConfig.getString("persistence-unit");
         this.initRetryIntervalMin = toFiniteDuration(jpaConfig.getDuration("initialization-retry.interval.min"));
         this.initRetryIntervalFactor = jpaConfig.getDouble("initialization-retry.interval.factor");

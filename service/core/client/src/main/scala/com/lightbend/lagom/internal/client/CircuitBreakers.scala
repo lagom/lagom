@@ -19,4 +19,3 @@ class CircuitBreakers @Inject() (
   circuitBreakerConfig: CircuitBreakerConfig,
   metricsProvider:      CircuitBreakerMetricsProvider
 ) extends CircuitBreakersPanelInternal(system, circuitBreakerConfig, metricsProvider)
-
