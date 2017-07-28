@@ -29,7 +29,6 @@ import com.lightbend.lagom.internal.javadsl.persistence.testkit.CassandraTestCon
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
 import play.Application
-import play.Configuration
 import play.api.Logger
 import play.api.Mode
 import play.api.Play
@@ -206,7 +205,7 @@ object ServiceTest {
 
   /**
    * Start the test server with the given `setup` and run the `block` (lambda). When
-   * the `block returns or throws the test server will automatically be stopped.
+   * the `block` returns or throws the test server will automatically be stopped.
    *
    * This method should be used when the server can be started and stopped for each test
    * method. When your test have several test methods, and especially when using persistence, it is
@@ -234,7 +233,7 @@ object ServiceTest {
    *
    * When your test have several test methods, and especially when using persistence, it is
    * faster to only start the server once in a static method annotated with `@BeforeClass`
-   * and stop it in a method annotated with `@AfterClass`. Otherwise [[#withServer withServer]] is
+   * and stop it in a method annotated with `@AfterClass`. Otherwise [[#withServer]] is
    * more convenient.
    *
    * You can get the service client from the returned `TestServer`.
@@ -262,11 +261,11 @@ object ServiceTest {
         CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort,
           CassandraLauncher.classpathForResources(LagomTestConfigResource))
         log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
-        val b2 = b1.configure(new Configuration(CassandraTestConfig.persistenceConfig(testName, cassandraPort)))
+        val b2 = b1.configure(CassandraTestConfig.persistenceConfig(testName, cassandraPort))
           .configure("lagom.cluster.join-self", "on")
         disableModules(b2, KafkaClientModule, KafkaBrokerModule)
       } else if (setup.cluster) {
-        val b2 = b1.configure(new Configuration(CassandraTestConfig.clusterConfig))
+        val b2 = b1.configure(CassandraTestConfig.clusterConfig)
           .configure("lagom.cluster.join-self", "on")
           .disable(classOf[PersistenceModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])

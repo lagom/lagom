@@ -11,20 +11,19 @@ import javax.inject.{ Inject, Provider, Singleton }
 
 import akka.stream.Materializer
 import com.google.inject.AbstractModule
-import com.lightbend.lagom.internal.client._
 import com.lightbend.lagom.internal.javadsl.api.broker.NoTopicFactoryProvider
 import com.lightbend.lagom.internal.javadsl.client.{ JavadslServiceClientImplementor, JavadslWebSocketClient, ServiceClientLoader }
 import com.lightbend.lagom.javadsl.api.Descriptor.Call
 import com.lightbend.lagom.javadsl.api.transport.NotFound
 import com.lightbend.lagom.javadsl.api.{ ServiceInfo, ServiceLocator }
-import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator
+import com.lightbend.lagom.javadsl.client.{ CircuitBreakersPanel, CircuitBreakingServiceLocator }
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
-import play.api.{ Configuration, Environment, Logger, Mode }
 import play.api.libs.ws.WSClient
+import play.api.{ Configuration, Environment, Logger, Mode }
 
+import scala.compat.java8.FutureConverters._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success }
-import scala.compat.java8.FutureConverters._
 
 class ServiceRegistryModule(environment: Environment, configuration: Configuration) extends AbstractModule {
   private val logger = Logger(this.getClass)
@@ -92,7 +91,7 @@ class ServiceRegistryClientProvider extends Provider[ServiceRegistry] {
 
 @Singleton
 class ServiceRegistryServiceLocator @Inject() (
-  circuitBreakers: CircuitBreakers,
+  circuitBreakers: CircuitBreakersPanel,
   registry:        ServiceRegistry,
   config:          ServiceRegistryServiceLocator.ServiceLocatorConfig,
   implicit val ec: ExecutionContext

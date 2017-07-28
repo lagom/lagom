@@ -46,17 +46,20 @@ case class ServiceGatewayConfig(
 )
 
 @Singleton
-class ServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
-                                       @Named("serviceRegistryActor") registry: ActorRef) {
-  def start(): ServiceGateway = {
-    new ServiceGateway(lifecycle, config, registry)
+class NettyServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
+                                            @Named("serviceRegistryActor") registry: ActorRef) {
+  def start(): NettyServiceGateway = {
+    new NettyServiceGateway(lifecycle, config, registry)
   }
 }
 
-class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef) {
+/**
+ * Netty implementation of the service gateway.
+ */
+class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef) {
 
   private implicit val timeout = Timeout(5.seconds)
-  private val log = LoggerFactory.getLogger(classOf[ServiceGateway])
+  private val log = LoggerFactory.getLogger(classOf[NettyServiceGateway])
   private val eventLoop = new NioEventLoopGroup
 
   private val server = new ServerBootstrap()
@@ -110,10 +113,10 @@ class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConf
           if (currentRequest == null) {
             log.debug("Routing request {}", request)
             currentRequest = request
-            val path = URI.create(request.getUri).getPath
+            val path = URI.create(request.uri).getPath
 
             implicit val ec = ctx.executor
-            (registry ? Route(request.getMethod.name, path)).mapTo[RouteResult].map {
+            (registry ? Route(request.method.name, path)).mapTo[RouteResult].map {
               case Found(serviceAddress) =>
                 log.debug("Request is to be routed to {}, getting connection from pool", serviceAddress)
                 val pool = poolMap.get(serviceAddress)
@@ -155,8 +158,8 @@ class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConf
                 ReferenceCountUtil.release(currentRequest)
                 currentRequest = null
                 log.error("Error routing request", t)
-                val response = new DefaultFullHttpResponse(request.getProtocolVersion, HttpResponseStatus.INTERNAL_SERVER_ERROR)
-                HttpHeaders.setContentLength(response, 0)
+                val response = new DefaultFullHttpResponse(request.protocolVersion, HttpResponseStatus.INTERNAL_SERVER_ERROR)
+                HttpUtil.setContentLength(response, 0)
                 ctx.writeAndFlush(response)
             }
 
@@ -204,9 +207,9 @@ class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConf
     private def prepareProxyRequest(request: HttpRequest): HttpRequest = {
       val newRequest = request match {
         case full: FullHttpRequest =>
-          new DefaultFullHttpRequest(request.getProtocolVersion, request.getMethod, request.getUri, full.content())
+          new DefaultFullHttpRequest(request.protocolVersion, request.method, request.uri, full.content())
         case _ =>
-          new DefaultHttpRequest(request.getProtocolVersion, request.getMethod, request.getUri)
+          new DefaultHttpRequest(request.protocolVersion, request.method, request.uri)
       }
       for (header <- request.headers.asScala) {
         // Ignore connection headers
@@ -217,7 +220,7 @@ class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConf
       // todo - add Forwarded and other headers
 
       // Ensure the correct connection header is added to keep the connection alive
-      HttpHeaders.setKeepAlive(newRequest, true)
+      HttpUtil.setKeepAlive(newRequest, true)
 
       newRequest
     }
@@ -262,8 +265,8 @@ class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConf
       private def handleResponse(ctx: ChannelHandlerContext, response: HttpResponse) = {
         log.debug("Handling response {}", response)
         // First check if it's a WebSocket response
-        if (response.getStatus == HttpResponseStatus.SWITCHING_PROTOCOLS) {
-          if (response.headers().get(HttpHeaders.Names.UPGRADE) == "websocket") {
+        if (response.status == HttpResponseStatus.SWITCHING_PROTOCOLS) {
+          if (response.headers().get(HttpHeaderNames.UPGRADE) == "websocket") {
             log.debug("Switching to WebSocket protocol")
             websocket = true
             // Remove the HTTP decoder from the server channel and the encoder from the client channel
@@ -276,7 +279,7 @@ class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConf
           }
         } else {
           val proxyResponse = prepareProxyResponse(response)
-          if (!HttpHeaders.isKeepAlive(response)) {
+          if (!HttpUtil.isKeepAlive(response)) {
             closeClientChannel = true
           }
           serverChannel.writeAndFlush(proxyResponse)
@@ -293,7 +296,7 @@ class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConf
           context.pipeline.remove(classOf[HttpResponseEncoder])
         } else {
           // First handle server channel close if necessary
-          if (!HttpHeaders.isKeepAlive(currentRequest)) {
+          if (!HttpUtil.isKeepAlive(currentRequest)) {
             serverChannel.close()
           }
 
@@ -336,9 +339,9 @@ class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConf
     private def prepareProxyResponse(response: HttpResponse): HttpResponse = {
       val newResponse = response match {
         case full: FullHttpResponse =>
-          new DefaultFullHttpResponse(full.getProtocolVersion, full.getStatus, full.content())
+          new DefaultFullHttpResponse(full.protocolVersion, full.status, full.content())
         case _ =>
-          new DefaultHttpResponse(response.getProtocolVersion, response.getStatus)
+          new DefaultHttpResponse(response.protocolVersion, response.status)
       }
 
       for (header <- response.headers.asScala) {
@@ -348,7 +351,7 @@ class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConf
         }
       }
 
-      HttpHeaders.setKeepAlive(newResponse, HttpHeaders.isKeepAlive(currentRequest))
+      HttpUtil.setKeepAlive(newResponse, HttpUtil.isKeepAlive(currentRequest))
 
       newResponse
     }
@@ -387,22 +390,23 @@ class ServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConf
       }
     }
 
-    val html = views.html.defaultpages.devNotFound(request.getMethod.name, path, Some(router)).body.getBytes("utf-8")
-    val response = new DefaultFullHttpResponse(request.getProtocolVersion, HttpResponseStatus.NOT_FOUND,
+    val html = views.html.defaultpages.devNotFound(request.method.name, path, Some(router)).body.getBytes("utf-8")
+    val response = new DefaultFullHttpResponse(request.protocolVersion, HttpResponseStatus.NOT_FOUND,
       Unpooled.wrappedBuffer(html))
-    response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=utf8")
-    HttpHeaders.setContentLength(response, html.length)
-    HttpHeaders.setDate(response, new Date())
+    response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=utf8")
+    response.headers().set(HttpHeaderNames.DATE, new Date())
+    HttpUtil.setContentLength(response, html.length)
+
     response
   }
 
   private def renderError(request: HttpRequest, exception: UsefulException, status: HttpResponseStatus): HttpResponse = {
     val html = views.html.defaultpages.devError(None, exception).body.getBytes("utf-8")
-    val response = new DefaultFullHttpResponse(request.getProtocolVersion, status,
+    val response = new DefaultFullHttpResponse(request.protocolVersion, status,
       Unpooled.wrappedBuffer(html))
-    response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=utf8")
-    HttpHeaders.setContentLength(response, html.length)
-    HttpHeaders.setDate(response, new Date())
+    response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=utf8")
+    response.headers().set(HttpHeaderNames.DATE, new Date())
+    HttpUtil.setContentLength(response, html.length)
     response
   }
 

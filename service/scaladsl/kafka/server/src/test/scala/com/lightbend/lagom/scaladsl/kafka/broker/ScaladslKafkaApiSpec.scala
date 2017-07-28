@@ -22,6 +22,7 @@ import com.lightbend.lagom.scaladsl.kafka.broker.ScaladslKafkaApiSpec.{ InMemory
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
+import com.typesafe.config.Config
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
 import org.I0Itec.zkclient.ZkClient

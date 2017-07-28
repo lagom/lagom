@@ -1,6 +1,7 @@
 
-val PlayVersion = "2.6.0"
+val PlayVersion = "2.6.2"
 val AkkaVersion = "2.5.3"
+val JUnitVersion = "4.11"
 
 val branch = {
   val rev = "git rev-parse --abbrev-ref HEAD".!!.trim
@@ -17,13 +18,13 @@ lazy val docs = project
   .settings(forkedTests: _*)
   .settings(
     resolvers += Resolver.typesafeIvyRepo("releases"),
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.11.11",
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
       "org.apache.cassandra" % "cassandra-all" % "3.0.9" % "test",
-      "junit" % "junit" % "4.12" % "test",
+      "junit" % "junit" % JUnitVersion % "test",
       "com.novocode" % "junit-interface" % "0.11" % "test",
-      "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+      "org.scalatest" %% "scalatest" % "3.0.3" % Test,
       "com.typesafe.play" %% "play-netty-server" % PlayVersion % Test,
       "com.typesafe.play" %% "play-logback" % PlayVersion % Test,
       "org.apache.logging.log4j" % "log4j-api" % "2.7" % "test",
@@ -126,7 +127,7 @@ lazy val theme = project
   .enablePlugins(SbtWeb, SbtTwirl)
   .settings(
     name := "lagom-docs-theme",
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.11.11",
     resolvers += Resolver.typesafeIvyRepo("releases"),
     libraryDependencies ++= Seq(
       "com.lightbend.markdown" %% "lightbend-markdown-server" % LightbendMarkdownVersion

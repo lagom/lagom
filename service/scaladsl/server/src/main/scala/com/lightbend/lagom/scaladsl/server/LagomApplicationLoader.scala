@@ -70,9 +70,13 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
    *
    * It also wraps the Play specific types in Lagom types.
    */
-  override final def load(context: Context): Application = context.environment.mode match {
-    case Mode.Dev => loadDevMode(LagomApplicationContext(context)).application
-    case _        => load(LagomApplicationContext(context)).application
+  override final def load(context: Context): Application = {
+    val environment = context.environment
+    loadCustomLoggerConfiguration(environment)
+    environment.mode match {
+      case Mode.Dev => loadDevMode(LagomApplicationContext(context)).application
+      case _        => load(LagomApplicationContext(context)).application
+    }
   }
 
   /**
@@ -154,6 +158,18 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
       }.asInstanceOf[ServiceDescription]
     }
   }
+
+  /**
+   * Fix for https://github.com/lagom/lagom/issues/534
+   *
+   * @param environment
+   */
+  private def loadCustomLoggerConfiguration(environment: Environment) = {
+    LoggerConfigurator(environment.classLoader).foreach {
+      _.configure(environment)
+    }
+  }
+
 }
 
 /**
@@ -208,15 +224,19 @@ abstract class LagomApplication(context: LagomApplicationContext)
   with ProvidesAdditionalConfiguration
   with ProvidesJsonSerializerRegistry
   with LagomServerComponents
-  with LagomServiceClientComponents {
+  with LagomServiceClientComponents
+  with LagomConfigComponent {
 
   override val httpFilters: Seq[EssentialFilter] = Nil
 
-  override lazy val configuration: Configuration = Configuration.load(environment) ++
-    context.playContext.initialConfiguration ++ additionalConfiguration.configuration
+  @deprecated(message = "prefer `config` using typesafe Config instead", since = "1.4.0")
+  override lazy val configuration: Configuration = {
+    val additionalConfig = new Configuration(additionalConfiguration.configuration)
+    Configuration.load(environment) ++ context.playContext.initialConfiguration ++ additionalConfig
+  }
 
   override lazy val actorSystem: ActorSystem = {
-    val (system, stopHook) = ActorSystemProvider.start(configuration, environment, optionalJsonSerializerRegistry)
+    val (system, stopHook) = ActorSystemProvider.start(config, environment, optionalJsonSerializerRegistry)
     applicationLifecycle.addStopHook(stopHook)
     system
   }
@@ -231,9 +251,8 @@ private[server] object ActorSystemProvider {
   /**
    * This is copied from Play's ActorSystemProvider, modified so we can inject json serializers
    */
-  def start(configuration: Configuration, environment: Environment,
+  def start(config: Config, environment: Environment,
             serializerRegistry: Option[JsonSerializerRegistry]): (ActorSystem, () => Future[Unit]) = {
-    val config = configuration.underlying
     val akkaConfig: Config = {
       val akkaConfigRoot = config.getString("play.akka.config")
       // Need to fallback to root config so we can lookup dispatchers defined outside the main namespace
@@ -282,6 +301,12 @@ private[server] object ActorSystemProvider {
 
     (system, stopHook)
   }
+
+  @deprecated(message = "prefer method using typesafe Config instead", since = "1.4.0")
+  def start(configuration: Configuration, environment: Environment,
+            serializerRegistry: Option[JsonSerializerRegistry]): (ActorSystem, () => Future[Unit]) = {
+    start(configuration.underlying, environment, serializerRegistry)
+  }
 }
 
 /**
@@ -325,17 +350,18 @@ trait LocalServiceLocator extends RequiresLagomServicePort with CircuitBreakerCo
   def configuration: Configuration
   def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
 
-  lazy val serviceLocator: ServiceLocator = new CircuitBreakingServiceLocator(circuitBreakers)(executionContext) {
-    val services = lagomServer.serviceBindings.map(_.descriptor.name).toSet
+  lazy val serviceLocator: ServiceLocator =
+    new CircuitBreakingServiceLocator(circuitBreakersPanel)(executionContext) {
+      val services = lagomServer.serviceBindings.map(_.descriptor.name).toSet
 
-    def getUri(name: String): Future[Option[URI]] = lagomServicePort.map {
-      case port if services(name) => Some(URI.create(s"http://localhost:$port"))
-      case _                      => None
-    }(executionContext)
+      def getUri(name: String): Future[Option[URI]] = lagomServicePort.map {
+        case port if services(name) => Some(URI.create(s"http://localhost:$port"))
+        case _                      => None
+      }(executionContext)
 
-    override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] =
-      getUri(name)
-  }
+      override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] =
+        getUri(name)
+    }
 }
 
 /**

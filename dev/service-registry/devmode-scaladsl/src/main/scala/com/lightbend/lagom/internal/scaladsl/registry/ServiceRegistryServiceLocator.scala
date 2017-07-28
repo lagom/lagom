@@ -5,7 +5,7 @@ package com.lightbend.lagom.internal.scaladsl.registry
 
 import java.net.URI
 
-import com.lightbend.lagom.internal.client.CircuitBreakers
+import com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.api.transport.NotFound
 import com.lightbend.lagom.scaladsl.client.CircuitBreakingServiceLocator
@@ -15,7 +15,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success }
 
 class ServiceRegistryServiceLocator(
-  circuitBreakers: CircuitBreakers,
+  circuitBreakers: CircuitBreakersPanel,
   registry:        ServiceRegistry,
   implicit val ec: ExecutionContext
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {
