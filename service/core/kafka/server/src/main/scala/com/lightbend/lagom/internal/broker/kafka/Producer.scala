@@ -23,6 +23,7 @@ import akka.stream.KillSwitch
 import akka.stream.KillSwitches
 import akka.stream.Materializer
 import akka.stream.scaladsl._
+import com.lightbend.lagom.internal.api.UriUtils
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings }
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
@@ -38,7 +39,7 @@ private[lagom] object Producer {
     system:               ActorSystem,
     tags:                 immutable.Seq[String],
     kafkaConfig:          KafkaConfig,
-    locateService:        String => Future[Option[URI]],
+    locateService:        String => Future[Seq[URI]],
     topicId:              String,
     eventStreamFactory:   (String, Offset) => Source[(Message, Offset), _],
     partitionKeyStrategy: Option[Message => String],
@@ -66,7 +67,7 @@ private[lagom] object Producer {
 
   private class TaggedOffsetProducerActor[Message](
     kafkaConfig:          KafkaConfig,
-    locateService:        String => Future[Option[URI]],
+    locateService:        String => Future[Seq[URI]],
     topicId:              String,
     eventStreamFactory:   (String, Offset) => Source[(Message, Offset), _],
     partitionKeyStrategy: Option[Message => String],
@@ -84,15 +85,18 @@ private[lagom] object Producer {
     override def receive = {
       case EnsureActive(tag) =>
         val daoFuture = offsetStore.prepare(s"topicProducer-$topicId", tag)
-        // Left means no service lookup was attempted, Right means a service lookup was done - this allows us to
-        // distinguish between no service lookup, and a not found service lookup.
-        val serviceUriFuture: Future[Either[Unit, Option[URI]]] = kafkaConfig.serviceName match {
-          case None =>
-            Future.successful(Left(()))
-          case Some(name) =>
-            locateService(name).map(Right.apply)
-        }
-        serviceUriFuture.zip(daoFuture) pipeTo self
+
+        val serviceLookupFuture: Future[ServiceLookup] =
+          kafkaConfig.serviceName match {
+            case Some(name) =>
+              locateService(name).map { uris =>
+                ServiceLookup(UriUtils.hostAndPorts(uris))
+              }
+
+            case None => Future.successful(NoServiceLookup)
+          }
+
+        serviceLookupFuture.zip(daoFuture) pipeTo self
 
         context.become(initializing(tag))
     }
@@ -105,12 +109,15 @@ private[lagom] object Producer {
     }
 
     private def initializing(tag: String): Receive = generalHandler.orElse {
-      case (Left(()), dao: OffsetDao) =>
-        run(tag, None, dao)
-      case (Right(Some(uri: URI)), dao: OffsetDao) =>
-        log.debug("Kafka service [{}] located at URI [{}] for producer of [{}]", kafkaConfig.serviceName.getOrElse(""), uri, topicId)
-        run(tag, Some(uri), dao)
-      case (Right(None), _) =>
+
+      case (NoServiceLookup, dao: OffsetDao) =>
+        run(tag, kafkaConfig.brokers, dao)
+
+      case (ServiceFound(endpoints: String), dao: OffsetDao) =>
+        log.debug("Kafka service [{}] located at URIs [{}] for producer of [{}]", kafkaConfig.serviceName.getOrElse(""), endpoints, topicId)
+        run(tag, endpoints, dao)
+
+      case (NoServiceFound, _) =>
         log.error("Unable to locate Kafka service named [{}]", kafkaConfig.serviceName.getOrElse(""))
         context.stop(self)
     }
@@ -121,12 +128,12 @@ private[lagom] object Producer {
         context.stop(self)
     }
 
-    private def run(tag: String, serviceLocatorUri: Option[URI], dao: OffsetDao) = {
+    private def run(tag: String, endpoints: String, dao: OffsetDao) = {
       val readSideSource = eventStreamFactory(tag, dao.loadedOffset)
 
       val (killSwitch, streamDone) = readSideSource
         .viaMat(KillSwitches.single)(Keep.right)
-        .via(eventsPublisherFlow(serviceLocatorUri, dao))
+        .via(eventsPublisherFlow(endpoints, dao))
         .toMat(Sink.ignore)(Keep.both)
         .run()
 
@@ -135,8 +142,8 @@ private[lagom] object Producer {
       context.become(active)
     }
 
-    private def eventsPublisherFlow(serviceLocatorUri: Option[URI], offsetDao: OffsetDao) =
-      Flow.fromGraph(GraphDSL.create(kafkaFlowPublisher(serviceLocatorUri)) { implicit builder => publishFlow =>
+    private def eventsPublisherFlow(endpoints: String, offsetDao: OffsetDao) =
+      Flow.fromGraph(GraphDSL.create(kafkaFlowPublisher(endpoints)) { implicit builder => publishFlow =>
         import GraphDSL.Implicits._
         val unzip = builder.add(Unzip[Message, Offset])
         val zip = builder.add(Zip[Any, Offset])
@@ -150,7 +157,7 @@ private[lagom] object Producer {
         FlowShape(unzip.in, offsetCommitter.out)
       })
 
-    private def kafkaFlowPublisher(serviceLocatorUri: Option[URI]): Flow[Message, _, _] = {
+    private def kafkaFlowPublisher(endpoints: String): Flow[Message, _, _] = {
       def keyOf(message: Message): String = {
         partitionKeyStrategy match {
           case Some(strategy) => strategy(message)
@@ -161,29 +168,25 @@ private[lagom] object Producer {
       Flow[Message].map { message =>
         ProducerMessage.Message(new ProducerRecord[String, Message](topicId, keyOf(message), message), NotUsed)
       } via {
-        ReactiveProducer.flow(producerSettings(serviceLocatorUri))
+        ReactiveProducer.flow(producerSettings(endpoints))
       }
     }
 
-    private def producerSettings(serviceLocatorUri: Option[URI]): ProducerSettings[String, Message] = {
+    private def producerSettings(endpoints: String): ProducerSettings[String, Message] = {
       val keySerializer = new StringSerializer
 
-      val baseSettings = ProducerSettings(context.system, keySerializer, serializer)
-        .withProperty("client.id", self.path.toStringWithoutAddress)
+      val baseSettings =
+        ProducerSettings(context.system, keySerializer, serializer)
+          .withProperty("client.id", self.path.toStringWithoutAddress)
 
-      serviceLocatorUri match {
-        case Some(uri) =>
-          baseSettings.withBootstrapServers(s"${uri.getHost}:${uri.getPort}")
-        case None =>
-          baseSettings.withBootstrapServers(kafkaConfig.brokers)
-      }
+      baseSettings.withBootstrapServers(endpoints)
     }
   }
 
   private object TaggedOffsetProducerActor {
     def props[Message](
       kafkaConfig:          KafkaConfig,
-      locateService:        String => Future[Option[URI]],
+      locateService:        String => Future[Seq[URI]],
       topicId:              String,
       eventStreamFactory:   (String, Offset) => Source[(Message, Offset), _],
       partitionKeyStrategy: Option[Message => String],
@@ -193,4 +196,33 @@ private[lagom] object Producer {
       Props(new TaggedOffsetProducerActor[Message](kafkaConfig, locateService, topicId, eventStreamFactory,
         partitionKeyStrategy, serializer, offsetStore))
   }
+
+  /**
+   * Represents the three possible states for service endpoints lookup.
+   * i.e.: NoServiceLookup, NoServiceFound and ServiceFound
+   */
+  private sealed trait ServiceLookup
+
+  private object ServiceLookup {
+    def apply(endpoints: String): ServiceLookup = {
+      if (endpoints.trim.isEmpty) NoServiceFound
+      else ServiceFound(endpoints)
+    }
+  }
+
+  /**
+   * No service endpoint lookup is required and
+   * values from kafkaConfig.brokers (lagom.broker.kafka.brokers) will be used
+   */
+  private object NoServiceLookup extends ServiceLookup
+
+  /**
+   * A service lookup was done for the configured name and
+   * a comma separated list of endpoints were found.
+   */
+  private final case class ServiceFound(endpoints: String) extends ServiceLookup
+
+  /** A service lookup was done for the configured name, but nothing was found. */
+  private object NoServiceFound extends ServiceLookup
+
 }

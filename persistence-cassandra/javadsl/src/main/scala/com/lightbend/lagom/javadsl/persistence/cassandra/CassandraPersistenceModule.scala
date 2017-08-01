@@ -75,11 +75,11 @@ private object CassandraPersistenceModule {
     private[CassandraPersistenceModule] def init(): Unit = {
       serviceLocator.foreach { locator =>
         ServiceLocatorHolder(system).setServiceLocator(new ServiceLocatorAdapter {
-          override def locate(name: String): Future[List[URI]] = {
+          override def locateAll(name: String): Future[List[URI]] = {
             import system.dispatcher
             import scala.compat.java8.FutureConverters._
-            import scala.compat.java8.OptionConverters._
-            locator.locate(name).toScala.map(_.asScala.toList)
+            import scala.collection.JavaConversions._
+            locator.locateAll(name).toScala.map(_.toList)
           }
         })
       }

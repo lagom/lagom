@@ -32,8 +32,8 @@ trait WriteSideCassandraPersistenceComponents extends WriteSidePersistenceCompon
   private[lagom] val serviceLocatorHolder: ServiceLocatorHolder = {
     val holder = ServiceLocatorHolder(actorSystem)
     holder.setServiceLocator(new ServiceLocatorAdapter {
-      override def locate(name: String): Future[List[URI]] =
-        serviceLocator.locate(name).map(_.toList)
+      override def locateAll(name: String): Future[List[URI]] =
+        serviceLocator.locateAll(name)
     })
     holder
   }

@@ -28,7 +28,7 @@ private[lagom] final class ServiceLocatorSessionProvider(system: ActorSystem, co
 
     ServiceLocatorHolder(system).serviceLocatorEventually flatMap { serviceLocatorAdapter =>
 
-      serviceLocatorAdapter.locate(clusterId).map {
+      serviceLocatorAdapter.locateAll(clusterId).map {
         case Nil => throw new NoContactPointsException(s"No contact points for [$clusterId]")
         case uris =>
           log.debug(s"Found Cassandra contact points: $uris")

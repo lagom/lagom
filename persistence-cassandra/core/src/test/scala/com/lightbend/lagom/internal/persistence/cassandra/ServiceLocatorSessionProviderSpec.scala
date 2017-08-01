@@ -20,7 +20,7 @@ class ServiceLocatorSessionProviderSpec extends WordSpec with MustMatchers {
   val uri = new URI("http://localhost:8080")
 
   val locator = new ServiceLocatorAdapter {
-    override def locate(name: String): Future[List[URI]] = {
+    override def locateAll(name: String): Future[List[URI]] = {
       name match {
         case "existing" => Future.successful(List(uri))
         case "absent"   => Future.successful(Nil)
