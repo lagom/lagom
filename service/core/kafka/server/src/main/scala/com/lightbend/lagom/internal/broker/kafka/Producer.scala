@@ -86,14 +86,18 @@ private[lagom] object Producer {
       case EnsureActive(tag) =>
         val daoFuture = offsetStore.prepare(s"topicProducer-$topicId", tag)
 
-        val serviceLookupFuture: Future[ServiceLookup] =
+        // null or empty strings become None, otherwise Some[String]
+        def strToOpt(str: String) =
+          Option(str).filter(_.trim.nonEmpty)
+
+        val serviceLookupFuture: Future[Option[String]] =
           kafkaConfig.serviceName match {
             case Some(name) =>
-              locateService(name).map { uris =>
-                ServiceLookup(UriUtils.hostAndPorts(uris))
-              }
+              locateService(name)
+                .map { uris => strToOpt(UriUtils.hostAndPorts(uris)) }
 
-            case None => Future.successful(NoServiceLookup)
+            case None =>
+              Future.successful(strToOpt(kafkaConfig.brokers))
           }
 
         serviceLookupFuture.zip(daoFuture) pipeTo self
@@ -102,23 +106,25 @@ private[lagom] object Producer {
     }
 
     def generalHandler: Receive = {
-      case Status.Failure(e) =>
-        throw e
-
-      case EnsureActive(tagName) =>
+      case Status.Failure(e) => throw e
+      case EnsureActive(_)   =>
     }
 
     private def initializing(tag: String): Receive = generalHandler.orElse {
 
-      case (NoServiceLookup, dao: OffsetDao) =>
-        run(tag, kafkaConfig.brokers, dao)
-
-      case (ServiceFound(endpoints: String), dao: OffsetDao) =>
-        log.debug("Kafka service [{}] located at URIs [{}] for producer of [{}]", kafkaConfig.serviceName.getOrElse(""), endpoints, topicId)
+      case (Some(endpoints: String), dao: OffsetDao) =>
+        // log is impacted by kafkaConfig.serviceName
+        val serviceName = kafkaConfig.serviceName.map(name => s"[$name]").getOrElse("")
+        log.debug("Kafka service {} located at URIs [{}] for producer of [{}]", serviceName, endpoints, topicId)
         run(tag, endpoints, dao)
 
-      case (NoServiceFound, _) =>
-        log.error("Unable to locate Kafka service named [{}]", kafkaConfig.serviceName.getOrElse(""))
+      case (None, _) =>
+        // log is impacted by kafkaConfig.serviceName
+        kafkaConfig.serviceName match {
+          case Some(serviceName) => log.error("Unable to locate Kafka service named [{}]", serviceName)
+          case None              => log.error("Unable to locate Kafka brokers URIs")
+        }
+
         context.stop(self)
     }
 
@@ -196,33 +202,4 @@ private[lagom] object Producer {
       Props(new TaggedOffsetProducerActor[Message](kafkaConfig, locateService, topicId, eventStreamFactory,
         partitionKeyStrategy, serializer, offsetStore))
   }
-
-  /**
-   * Represents the three possible states for service endpoints lookup.
-   * i.e.: NoServiceLookup, NoServiceFound and ServiceFound
-   */
-  private sealed trait ServiceLookup
-
-  private object ServiceLookup {
-    def apply(endpoints: String): ServiceLookup = {
-      if (endpoints.trim.isEmpty) NoServiceFound
-      else ServiceFound(endpoints)
-    }
-  }
-
-  /**
-   * No service endpoint lookup is required and
-   * values from kafkaConfig.brokers (lagom.broker.kafka.brokers) will be used
-   */
-  private object NoServiceLookup extends ServiceLookup
-
-  /**
-   * A service lookup was done for the configured name and
-   * a comma separated list of endpoints were found.
-   */
-  private final case class ServiceFound(endpoints: String) extends ServiceLookup
-
-  /** A service lookup was done for the configured name, but nothing was found. */
-  private object NoServiceFound extends ServiceLookup
-
 }
