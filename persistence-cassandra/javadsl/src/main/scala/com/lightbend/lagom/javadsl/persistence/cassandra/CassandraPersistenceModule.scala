@@ -30,6 +30,7 @@ class CassandraPersistenceModule extends AbstractModule {
     binder.bind(classOf[PersistentEntityRegistry]).to(classOf[CassandraPersistentEntityRegistry])
     binder.bind(classOf[CassandraSession])
     binder.bind(classOf[CassandraReadSide]).to(classOf[CassandraReadSideImpl])
+    binder.bind(classOf[CassandraConfig]).toProvider(classOf[CassandraConfigProvider])
     binder.bind(classOf[CassandraOffsetStore]).to(classOf[JavadslCassandraOffsetStore])
     binder.bind(classOf[OffsetStore]).to(Key.get(classOf[CassandraOffsetStore]))
     initServiceLocatorHolder()
