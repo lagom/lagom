@@ -5,7 +5,7 @@ package com.lightbend.lagom.internal.client
 
 import java.util
 
-import com.typesafe.config.Config
+import com.typesafe.config.{ Config, ConfigException }
 
 object ConfigExtensions {
 
@@ -19,6 +19,7 @@ object ConfigExtensions {
    *
    * @param config - a [[Config]] instance
    * @param key    - the key to lookup
+   * @throws ConfigException.WrongType in case value is neither a [[String]] nor a [[java.util.List[String]]]
    * @return a [[java.util.List[String]]] containing one or more values for the passed key if key it is found, empty list otherwise.
    */
   def getStringList(config: Config, key: String): util.List[String] = {

@@ -36,6 +36,7 @@ public interface ServiceLocator {
      *
      * @param name The name of the service.
      * @return One or more URIs for that service, otherwise an empty List if none is found.
+     * @since 1.4
      */
     default CompletionStage<List<URI>> locateAll(String name) {
         return locateAll(name, Descriptor.Call.NONE);
@@ -58,6 +59,7 @@ public interface ServiceLocator {
      * @param name The name of the service.
      * @param serviceCall The service call descriptor that this lookup is for.
      * @return One or more URIs for that service, otherwise an empty List if none is found.
+     * @since 1.4
      */
     default CompletionStage<List<URI>> locateAll(String name, Descriptor.Call<?, ?> serviceCall) {
         return locate(name, serviceCall)

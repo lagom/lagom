@@ -34,6 +34,7 @@ trait ServiceLocator {
    *
    * @param name The name of the service.
    * @return One or more URIs for that service, otherwise an empty List ([[Nil]]) if none is found.
+   * @since 1.4
    */
   def locateAll(name: String): Future[List[URI]] = locateAll(name, Descriptor.NoCall)
 
@@ -52,6 +53,7 @@ trait ServiceLocator {
    * @param name        The name of the service.
    * @param serviceCall The service call descriptor that this lookup is for.
    * @return One or more URIs for that service, otherwise an empty List ([[Nil]]) if none is found.
+   * @since 1.4
    */
   def locateAll(name: String, serviceCall: Descriptor.Call[_, _]): Future[List[URI]] =
     locate(name, serviceCall).map(_.toList)(ExecutionContext.global)

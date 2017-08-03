@@ -126,10 +126,11 @@ private[lagom] class KafkaSubscriberActor[Message](
 
 object KafkaSubscriberActor {
   def props[Message](
-    kafkaConfig:    KafkaConfig,
-    consumerConfig: ConsumerConfig,
-    locateService:  String => Future[Seq[URI]],
-    topicId:        String, flow: Flow[Message, Done, _],
+    kafkaConfig:      KafkaConfig,
+    consumerConfig:   ConsumerConfig,
+    locateService:    String => Future[Seq[URI]],
+    topicId:          String,
+    flow:             Flow[Message, Done, _],
     consumerSettings: ConsumerSettings[String, Message],
     subscription:     AutoSubscription,
     streamCompleted:  Promise[Done]

@@ -29,64 +29,65 @@ import java.util.stream.Collectors;
 @Singleton
 public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
 
-  private static final String LAGOM_SERVICES_KEY = "lagom.services";
-  private final PMap<String, List<URI>> services;
+    private static final String LAGOM_SERVICES_KEY = "lagom.services";
+    private final PMap<String, List<URI>> services;
 
 
     /**
-     * @deprecated Use constructor accepting {@link CircuitBreakersPanel} instead
      * @param circuitBreakers
+     * @deprecated Use constructor accepting {@link CircuitBreakersPanel} instead
      */
     @Deprecated
     public ConfigurationServiceLocator(Configuration configuration, CircuitBreakers circuitBreakers) {
         this(configuration.underlying(), new CircuitBreakersPanelImpl(circuitBreakers));
     }
 
-  @Inject
-  public ConfigurationServiceLocator(Config config, CircuitBreakersPanel circuitBreakersPanel) {
-      super(circuitBreakersPanel);
+    @Inject
+    public ConfigurationServiceLocator(Config config, CircuitBreakersPanel circuitBreakersPanel) {
+        super(circuitBreakersPanel);
 
-      Map<String, List<URI>> services = new HashMap<>();
+        Map<String, List<URI>> services = new HashMap<>();
 
-      if (config.hasPath(LAGOM_SERVICES_KEY)) {
-          Config configServices = config.getConfig(LAGOM_SERVICES_KEY);
+        if (config.hasPath(LAGOM_SERVICES_KEY)) {
+            Config configServices = config.getConfig(LAGOM_SERVICES_KEY);
 
-          for (String key: configServices.root().keySet()) {
-            List<String> endpoints = ConfigExtensions.getStringList(configServices, key);
-            List<URI> uris = endpoints
-                    .stream()
-                    .map(uri -> {
-                      try {
-                        return new URI(uri);
-                      } catch (ConfigException.WrongType e) {
-                        throw new IllegalStateException("Error loading configuration for " + getClass().getSimpleName() + ". Expected lagom.services." + key + " to be a String, but was " + configServices.getValue(key).valueType(), e);
-                      } catch (URISyntaxException e) {
-                        throw new IllegalStateException("Error loading configuration for  " + getClass().getSimpleName() + ". Expected lagom.services." + key + " to be a URI, but it failed to parse", e);
-                      }
-                    })
-                    .collect(Collectors.toList());
+            for (String key : configServices.root().keySet()) {
+                try {
 
-            services.put(key, uris);
-          }
-      }
-      this.services = HashTreePMap.from(services);
-  }
+                    List<URI> uris =
+                        ConfigExtensions.getStringList(configServices, key)
+                            .stream()
+                            .map(uri -> {
+                                try {
+                                    return new URI(uri);
+                                } catch (URISyntaxException e) {
+                                    throw new IllegalStateException(
+                                        "Error loading configuration for  " + getClass().getSimpleName() + ". " +
+                                            "Expected lagom.services." + key + " to be a URI, but it failed to parse", e);
+                                }
+                            })
+                            .collect(Collectors.toList());
 
-  @Override
-  public CompletionStage<Optional<URI>> locate(String name, Descriptor.Call<?, ?> serviceCall) {
-      return locateAll(name, serviceCall)
-              .thenApply(uris ->
-                      // lookup and fallback to empty list if needed
-                      services.getOrDefault(name, Collections.emptyList())
-                              // pick first as Optional (need to convert to stream)
-                              .stream().findFirst()
-      );
-  }
+                    services.put(key, uris);
 
-  @Override
-  public CompletionStage<List<URI>> locateAll(String name, Descriptor.Call<?, ?> serviceCall) {
-    return CompletableFuture.completedFuture(
-            // lookup and fallback to empty list if needed
-            services.getOrDefault(name, Collections.emptyList()));
-  }
+                } catch (ConfigException.WrongType e) {
+                    throw new IllegalStateException(
+                        "Error loading configuration for " + getClass().getSimpleName() + ". " +
+                            "Expected lagom.services." + key + " to be a String or a List of Strings, but was " + configServices.getValue(key).valueType(), e);
+                }
+            }
+        }
+        this.services = HashTreePMap.from(services);
+    }
+
+    @Override
+    public CompletionStage<Optional<URI>> locate(String name, Descriptor.Call<?, ?> serviceCall) {
+        return locateAll(name, serviceCall)
+            .thenApply(uris -> uris.stream().findFirst());
+    }
+
+    @Override
+    public CompletionStage<List<URI>> locateAll(String name, Descriptor.Call<?, ?> serviceCall) {
+        return CompletableFuture.completedFuture(services.getOrDefault(name, Collections.emptyList()));
+    }
 }

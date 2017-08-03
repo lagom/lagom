@@ -127,12 +127,20 @@ class ConfigurationServiceLocator(config: Config, circuitBreakers: CircuitBreake
       } yield {
         try {
           val uris = ConfigExtensions.getStringList(lagomServicesConfig, key).asScala
-          key -> uris.map(URI.create).toList
+          key -> uris.map(uri => new URI(uri)).toList
         } catch {
+
           case e: ConfigException.WrongType =>
-            throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a String, but was ${lagomServicesConfig.getValue(key).valueType}", e)
+            throw new IllegalStateException(
+              "Error loading configuration for ConfigurationServiceLocator. " +
+                s"Expected lagom.services.$key to be a String or a List of Strings, but was ${lagomServicesConfig.getValue(key).valueType}", e
+            )
+
           case e: URISyntaxException =>
-            throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a URI, but it failed to parse", e)
+            throw new IllegalStateException(
+              "Error loading configuration for ConfigurationServiceLocator. " +
+                s"Expected lagom.services.$key to be a URI, but it failed to parse", e
+            )
         }
       }).toMap
     } else {
