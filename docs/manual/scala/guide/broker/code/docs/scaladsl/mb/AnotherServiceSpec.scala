@@ -1,14 +1,14 @@
 package docs.scaladsl.mb
 
+import akka.{Done, NotUsed}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomApplicationContext, LagomServer, LocalServiceLocator}
+import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomApplicationContext, LocalServiceLocator}
 import com.lightbend.lagom.scaladsl.testkit.{ProducerStubFactory, ServiceTest, _}
+import org.scalatest.concurrent.{Eventually, ScalaFutures}
+import org.scalatest.time.{Seconds, Span}
+import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.ws.ahc.AhcWSComponents
-import org.scalatest.{AsyncWordSpec, Matchers}
-import akka.{NotUsed, Done}
-import org.scalatest.concurrent.Eventually
-import org.scalatest.time.{ Seconds, Span }
 
 abstract class AnotherApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
@@ -21,7 +21,7 @@ abstract class AnotherApplication(context: LagomApplicationContext)
 }
 
 //#topic-test-consuming-from-a-topic
-class AnotherServiceSpec extends AsyncWordSpec with Matchers with Eventually {
+class AnotherServiceSpec extends WordSpec with Matchers with Eventually with ScalaFutures {
   var producerStub: ProducerStub[GreetingMessage] = _
 
   "The AnotherService" should {
@@ -45,11 +45,13 @@ class AnotherServiceSpec extends AsyncWordSpec with Matchers with Eventually {
 
         // create a service client to assert the message was consumed
         eventually(timeout(Span(5, Seconds))) {
-          server.serviceClient.implement[AnotherService].foo.invoke().map { resp =>
+          // cannot use async specs here because eventually only detects raised exceptions to retry.
+          // if a future fail at the first time, eventually won't retry though future will succeed later.
+          // see https://github.com/lagom/lagom/issues/876 for detail info.
+          val futureResp = server.serviceClient.implement[AnotherService].foo.invoke()
+          whenReady(futureResp) { resp =>
             resp should ===("Hi there!")
           }
-        }.recover {
-          case t: Throwable => fail(t)
         }
       }
   }
