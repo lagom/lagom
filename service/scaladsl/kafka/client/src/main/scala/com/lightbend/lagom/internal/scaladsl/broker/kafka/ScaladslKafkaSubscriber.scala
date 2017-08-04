@@ -15,9 +15,8 @@ import akka.stream.scaladsl.{ Flow, Source }
 import com.lightbend.lagom.internal.api.UriUtils
 import com.lightbend.lagom.internal.broker.kafka.{ ConsumerConfig, KafkaConfig, KafkaSubscriberActor, NoKafkaBrokersException }
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
-import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.scaladsl.api.broker.Subscriber
-import jdk.nashorn.internal.runtime.URIUtils
+import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
 
