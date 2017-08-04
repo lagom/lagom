@@ -108,7 +108,8 @@ private[lagom] object Servers {
         log.info("Service locator is running at " + server.serviceLocatorAddress)
         log.info("Service gateway is running at " + server.serviceGatewayAddress)
       }
-      return new Closeable {
+
+      new Closeable {
         override def close(): Unit = stop(log)
       }
     }

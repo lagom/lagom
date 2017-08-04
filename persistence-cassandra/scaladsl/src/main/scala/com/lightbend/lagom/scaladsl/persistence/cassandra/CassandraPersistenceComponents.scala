@@ -11,7 +11,6 @@ import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.persistence.{ PersistenceComponents, PersistentEntityRegistry, ReadSidePersistenceComponents, WriteSidePersistenceComponents }
 import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraReadSideSettings, CassandraOffsetStore, ServiceLocatorAdapter, ServiceLocatorHolder }
 import com.lightbend.lagom.spi.persistence.OffsetStore
-
 /**
  * Persistence Cassandra components (for compile-time injection).
  */
@@ -32,7 +31,8 @@ trait WriteSideCassandraPersistenceComponents extends WriteSidePersistenceCompon
   private[lagom] val serviceLocatorHolder: ServiceLocatorHolder = {
     val holder = ServiceLocatorHolder(actorSystem)
     holder.setServiceLocator(new ServiceLocatorAdapter {
-      override def locate(name: String): Future[Option[URI]] = serviceLocator.locate(name)
+      override def locateAll(name: String): Future[List[URI]] =
+        serviceLocator.locateAll(name)
     })
     holder
   }
