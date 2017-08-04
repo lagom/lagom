@@ -3,6 +3,8 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence.cassandra
 
+import java.util
+
 import akka.persistence.query.Offset
 import akka.stream.ActorAttributes
 import akka.stream.scaladsl.Flow
@@ -32,31 +34,32 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
 
   override def handle(): Flow[EventStreamElement[Event], Done, NotUsed] = {
 
-    def invokeHandler(handler: Handler, elem: EventStreamElement[Event]): Future[Done] = {
-      for {
-        statements <- invoke(handler, elem)
-        done <- statements.size match {
-          case 0 => Future.successful(Done)
-          case 1 => session.executeWrite(statements.head)
-          case _ =>
-            val batch = new BatchStatement
-            val iter = statements.iterator
-            while (iter.hasNext)
-              batch.add(iter.next)
-            session.executeWriteBatch(batch)
-        }
-      } yield done
-    }
-
-    Flow[EventStreamElement[Event]].mapAsync(parallelism = 1) { elem =>
-      handlers.get(elem.event.getClass.asInstanceOf[Class[Event]]) match {
-        case Some(handler) => invokeHandler(handler, elem)
-        case None =>
-          if (log.isDebugEnabled)
-            log.debug("Unhandled event [{}]", elem.event.getClass.getName)
-          Future.successful(Done)
+    def executeStatements(statements: Seq[BoundStatement]): Future[Done] =
+      statements.size match {
+        case 0 => Future.successful(Done)
+        case 1 => session.executeWrite(statements.head)
+        case _ =>
+          val batch = new BatchStatement
+          val iter = statements.iterator
+          while (iter.hasNext)
+            batch.add(iter.next)
+          session.executeWriteBatch(batch)
       }
-    }.withAttributes(ActorAttributes.dispatcher(dispatcher))
+
+    Flow[EventStreamElement[Event]]
+      .mapAsync(parallelism = 1) { elem =>
+
+        val handler =
+          handlers.getOrElse(
+            // lookup handler
+            elem.event.getClass.asInstanceOf[Class[Event]],
+            // fallback to empty handle if none
+            CassandraAutoReadSideHandler.emptyHandler.asInstanceOf[Handler]
+          )
+
+        invoke(handler, elem).flatMap(executeStatements)
+
+      }.withAttributes(ActorAttributes.dispatcher(dispatcher))
   }
 }
 
@@ -64,7 +67,11 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
  * Internal API
  */
 private[cassandra] object CassandraAutoReadSideHandler {
+
   type Handler[Event] = (EventStreamElement[_ <: Event]) => Future[immutable.Seq[BoundStatement]]
+
+  def emptyHandler[Event]: Handler[Event] =
+    (_) => Future.successful(immutable.Seq.empty[BoundStatement])
 }
 
 /**
@@ -95,6 +102,9 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
         .apply(element)
     } yield statements :+ offsetDao.bindSaveOffset(element.offset)
   }
+
+  protected def offsetStatement(offset: Offset): immutable.Seq[BoundStatement] =
+    immutable.Seq(offsetDao.bindSaveOffset(offset))
 
   override def globalPrepare(): Future[Done] = {
     globalPrepareCallback.apply()
