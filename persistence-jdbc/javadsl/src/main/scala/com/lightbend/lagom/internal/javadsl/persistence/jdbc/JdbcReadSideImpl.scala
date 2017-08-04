@@ -103,9 +103,7 @@ private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetSto
             .map { handler =>
               // apply handler if found
               val castedHandler = handler.asInstanceOf[(Connection, Event, Offset) => Unit]
-              SimpleDBIO { ctx =>
-                castedHandler(ctx.connection, pair.first, pair.second)
-              }
+              SimpleDBIO { ctx => castedHandler(ctx.connection, pair.first, pair.second) }
             }
             .getOrElse {
               // fallback to empty action if no handler is found
