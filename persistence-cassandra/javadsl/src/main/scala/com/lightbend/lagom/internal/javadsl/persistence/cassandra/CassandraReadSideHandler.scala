@@ -60,7 +60,10 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
             // lookup handler
             pair.first.getClass.asInstanceOf[Class[Event]],
             // fallback to empty handle if none
-            CassandraAutoReadSideHandler.emptyHandler[Event, Event].asInstanceOf[Handler]
+            {
+              log.debug("Unhandled event [{}]", pair.first.getClass.getName)
+              CassandraAutoReadSideHandler.emptyHandler[Event, Event].asInstanceOf[Handler]
+            }
           )
 
         invoke(handler, pair.first, pair.second).toScala.flatMap(executeStatements)
