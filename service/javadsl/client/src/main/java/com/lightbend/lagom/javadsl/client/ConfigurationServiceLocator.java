@@ -16,11 +16,9 @@ import play.Configuration;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -57,15 +55,7 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
                     List<URI> uris =
                         ConfigExtensions.getStringList(configServices, key)
                             .stream()
-                            .map(uri -> {
-                                try {
-                                    return new URI(uri);
-                                } catch (URISyntaxException e) {
-                                    throw new IllegalStateException(
-                                        "Error loading configuration for  " + getClass().getSimpleName() + ". " +
-                                            "Expected lagom.services." + key + " to be a URI, but it failed to parse", e);
-                                }
-                            })
+                            .map(URI::create)
                             .collect(Collectors.toList());
 
                     services.put(key, uris);
@@ -74,6 +64,10 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
                     throw new IllegalStateException(
                         "Error loading configuration for " + getClass().getSimpleName() + ". " +
                             "Expected lagom.services." + key + " to be a String or a List of Strings, but was " + configServices.getValue(key).valueType(), e);
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalStateException(
+                        "Error loading configuration for  " + getClass().getSimpleName() + ". " +
+                            "Expected lagom.services." + key + " to be a URI, but it failed to parse", e);
                 }
             }
         }
