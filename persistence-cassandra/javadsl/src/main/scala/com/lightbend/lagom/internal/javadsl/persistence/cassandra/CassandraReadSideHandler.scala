@@ -61,7 +61,7 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
             pair.first.getClass.asInstanceOf[Class[Event]],
             // fallback to empty handle if none
             {
-              log.debug("Unhandled event [{}]", pair.first.getClass.getName)
+              if (log.isDebugEnabled()) log.debug("Unhandled event [{}]", pair.first.getClass.getName)
               CassandraAutoReadSideHandler.emptyHandler[Event, Event].asInstanceOf[Handler]
             }
           )

@@ -149,7 +149,11 @@ public class JpaReadSideImpl implements JpaReadSide {
                     if (log.isDebugEnabled())
                         log.debug("Unhandled event {} at offset {} in JpaReadSideHandler: {}",
                                 eventClass.getName(), offset, readSideId);
-                    return CompletableFuture.completedFuture(Done.getInstance());
+                    return jpa.withTransaction(entityManager -> {
+
+                        updateOffset(entityManager, offset);
+                        return Done.getInstance();
+                    });
                 }
             });
         }
