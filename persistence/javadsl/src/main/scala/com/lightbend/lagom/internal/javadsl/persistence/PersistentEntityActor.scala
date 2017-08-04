@@ -175,6 +175,9 @@ private[lagom] class PersistentEntityActor[C, E, S](
                     throw e
                 }
               }
+              if (events.size == 0) {
+                afterPersist.apply();
+              }
           } catch { // exception thrown from handler.apply
             case NonFatal(e) =>
               ctx.commandFailed(e) // reply with failure

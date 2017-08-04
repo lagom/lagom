@@ -464,6 +464,15 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
     }
   }
 
+  //TestProbe message
+  public static class CallbackCalled {
+    public final State state;
+
+    CallbackCalled(State state) {
+            this.state = state;
+        }
+  }
+
   private final ActorSystem system;
   private final Optional<ActorRef> probe;
 
@@ -509,9 +518,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
         if (state().getMode() == cmd.getMode()) {
           return ctx.done();
         } else if (cmd.getMode() == Mode.APPEND) {
-          return ctx.thenPersist(new InAppendMode(entityId()), evt -> ctx.reply(evt));
+          return ctx.thenPersist(new InAppendMode(entityId()), evt -> { callbackCalled(); ctx.reply(evt);});
         } else if (cmd.getMode() == Mode.PREPEND) {
-          return ctx.thenPersist(new InPrependMode(entityId()), evt -> ctx.reply(evt));
+          return ctx.thenPersist(new InPrependMode(entityId()), evt -> { callbackCalled(); ctx.reply(evt);});
         } else {
           throw new IllegalStateException();
         }
@@ -538,9 +547,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
       }
       Appended a = new Appended(entityId(), cmd.element.toUpperCase());
       if (cmd.getTimes() == 1)
-        return ctx.thenPersist(a, evt -> ctx.reply(evt));
+        return ctx.thenPersist(a, evt -> { callbackCalled(); ctx.reply(evt);});
       else
-        return ctx.thenPersistAll(fill(a, cmd.getTimes()), () -> ctx.reply(a));
+        return ctx.thenPersistAll(fill(a, cmd.getTimes()), () -> { callbackCalled(); ctx.reply(a); });
     });
     return b.build();
   }
@@ -555,9 +564,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
       }
       Prepended a = new Prepended(entityId(), cmd.element.toLowerCase());
       if (cmd.getTimes() == 1)
-        return ctx.thenPersist(a, evt -> ctx.reply(evt));
+        return ctx.thenPersist(a, evt -> { callbackCalled(); ctx.reply(evt); });
       else
-        return ctx.thenPersistAll(fill(a, cmd.getTimes()), () -> ctx.reply(a));
+        return ctx.thenPersistAll(fill(a, cmd.getTimes()), () -> { callbackCalled(); ctx.reply(a); });
     });
     return b.build();
   }
@@ -574,6 +583,10 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
   public Behavior recoveryCompleted() {
     probe.ifPresent(p -> p.tell(new AfterRecovery(state()), ActorRef.noSender()));
     return behavior();
+  }
+
+  private void callbackCalled() {
+      probe.ifPresent(p -> p.tell(new CallbackCalled(state()), ActorRef.noSender()));
   }
 
 }
