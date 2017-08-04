@@ -7,7 +7,7 @@ import java.net.{ URI, URISyntaxException }
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakers }
+import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakers, ConfigExtensions }
 import com.lightbend.lagom.internal.scaladsl.client.CircuitBreakersPanelImpl
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
@@ -29,7 +29,6 @@ abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPan
 
   @deprecated(message = "Use constructor accepting CircuitBreakersPanel instead", since = "1.4.0")
   def this(circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
-    // note we need a convert it so we can hit the new default constructor
     this(new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
   /**
@@ -54,18 +53,20 @@ abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPan
   }
 
   override final def doWithService[T](name: String, serviceCall: Call[_, _])(block: (URI) => Future[T])(implicit ec: ExecutionContext): Future[Option[T]] = {
-    serviceCall.circuitBreaker.filter(_ != CircuitBreaker.None).map { cb =>
-      val circuitBreakerId = cb match {
-        case cbid: CircuitBreaker.CircuitBreakerId => cbid.id
-        case _                                     => name
-      }
+    serviceCall.circuitBreaker
+      .filter(_ != CircuitBreaker.None)
+      .map { cb =>
+        val circuitBreakerId = cb match {
+          case cbid: CircuitBreaker.CircuitBreakerId => cbid.id
+          case _                                     => name
+        }
 
-      doWithServiceImpl(name, serviceCall) { uri =>
-        circuitBreakers.withCircuitBreaker(circuitBreakerId)(block(uri))
+        doWithServiceImpl(name, serviceCall) { uri =>
+          circuitBreakers.withCircuitBreaker(circuitBreakerId)(block(uri))
+        }
+      }.getOrElse {
+        doWithServiceImpl(name, serviceCall)(block)
       }
-    }.getOrElse {
-      doWithServiceImpl(name, serviceCall)(block)
-    }
   }
 }
 
@@ -73,6 +74,7 @@ abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPan
  * Components required for circuit breakers.
  */
 trait CircuitBreakerComponents extends LagomConfigComponent {
+
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext
   def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
@@ -119,26 +121,38 @@ class ConfigurationServiceLocator(config: Config, circuitBreakers: CircuitBreake
     if (config.hasPath(LagomServicesKey)) {
       val lagomServicesConfig = config.getConfig(LagomServicesKey)
       import scala.collection.JavaConverters._
+
       (for {
         key <- lagomServicesConfig.root.keySet.asScala
       } yield {
         try {
-          key -> URI.create(lagomServicesConfig.getString(key))
+          val uris = ConfigExtensions.getStringList(lagomServicesConfig, key).asScala
+          key -> uris.map(URI.create).toList
         } catch {
+
           case e: ConfigException.WrongType =>
-            throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a String, but was ${lagomServicesConfig.getValue(key).valueType}", e)
-          case e: URISyntaxException =>
-            throw new IllegalStateException(s"Error loading configuration for ConfigurationServiceLocator. Expected lagom.services.$key to be a URI, but it failed to parse", e)
+            throw new IllegalStateException(
+              "Error loading configuration for ConfigurationServiceLocator. " +
+                s"Expected lagom.services.$key to be a String or a List of Strings, but was ${lagomServicesConfig.getValue(key).valueType}", e
+            )
+
+          case e: IllegalArgumentException =>
+            throw new IllegalStateException(
+              "Error loading configuration for ConfigurationServiceLocator. " +
+                s"Expected lagom.services.$key to be a URI, but it failed to parse", e
+            )
         }
       }).toMap
     } else {
-      Map.empty[String, URI]
+      Map.empty[String, List[URI]]
     }
   }
 
-  override def locate(name: String, serviceCall: Call[_, _]) = {
-    Future.successful(services.get(name))
-  }
+  override def locate(name: String, serviceCall: Call[_, _]) =
+    locateAll(name, serviceCall).map(_.headOption)
+
+  override def locateAll(name: String, serviceCall: Call[_, _]): Future[List[URI]] =
+    Future.successful(services.getOrElse(name, Nil))
 }
 
 /**
@@ -157,7 +171,6 @@ class StaticServiceLocator(uri: URI, circuitBreakers: CircuitBreakersPanel)(impl
 
   @deprecated(message = "Use constructor accepting CircuitBreakersPanel instead", since = "1.4.0")
   def this(uri: URI, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
-    // note we need a cast so we can hit the new default constructor
     this(uri, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
   override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = Future.successful(Some(uri))
@@ -179,13 +192,16 @@ class RoundRobinServiceLocator(uris: immutable.Seq[URI], circuitBreakers: Circui
 
   @deprecated(message = "Use constructor accepting CircuitBreakersPanel instead", since = "1.4.0")
   def this(uris: immutable.Seq[URI], circuitBreakers: com.lightbend.lagom.internal.client.CircuitBreakers)(implicit ec: ExecutionContext) =
-    // note we need a convert it so we can hit the new default constructor
     this(uris, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
   private val counter = new AtomicInteger(0)
+
   override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = {
     val index = Math.abs(counter.getAndIncrement() % uris.size)
     val uri = uris(index)
     Future.successful(Some(uri))
   }
+
+  override def locateAll(name: String, serviceCall: Call[_, _]): Future[List[URI]] =
+    Future.successful(uris.toList)
 }

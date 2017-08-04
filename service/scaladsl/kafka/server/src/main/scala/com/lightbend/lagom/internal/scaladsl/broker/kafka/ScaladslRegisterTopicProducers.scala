@@ -60,10 +60,18 @@ class ScaladslRegisterTopicProducers(lagomServer: LagomServer, topicFactory: Top
                   }
                 }
 
-                Producer.startTaggedOffsetProducer(actorSystem, tags.map(_.tag), kafkaConfig, serviceLocator.locate,
-                  topicId.name, eventStreamFactory, partitionKeyStrategy,
+                Producer.startTaggedOffsetProducer(
+                  actorSystem,
+                  tags.map(_.tag),
+                  kafkaConfig,
+                  serviceLocator.locateAll,
+                  topicId.name,
+                  eventStreamFactory,
+                  partitionKeyStrategy,
                   new ScaladslKafkaSerializer(topicCall.messageSerializer.serializerForRequest),
-                  offsetStore)
+                  offsetStore
+                )
+
               case other => log.warn {
                 s"Unknown topic producer ${other.getClass.getName}. " +
                   s"This will likely result in no events published to topic ${topicId.name} by service ${info.serviceName}."

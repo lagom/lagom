@@ -10,6 +10,7 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -56,11 +57,9 @@ public abstract class CircuitBreakingServiceLocator implements ServiceLocator {
      */
     protected <T> CompletionStage<Optional<T>> doWithServiceImpl(String name, Descriptor.Call<?, ?> serviceCall, Function<URI, CompletionStage<T>> block) {
         return locate(name, serviceCall).thenCompose(uri -> {
-            if (uri.isPresent()) {
-                return block.apply(uri.get()).thenApply(Optional::of);
-            } else {
-                return CompletableFuture.completedFuture(Optional.empty());
-            }
+          return uri
+                  .map(u -> block.apply(u).thenApply(Optional::of))
+                  .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
         });
     }
 
