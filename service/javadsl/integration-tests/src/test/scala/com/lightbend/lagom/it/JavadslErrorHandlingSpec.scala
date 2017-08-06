@@ -36,7 +36,8 @@ import akka.actor.ReflectiveDynamicAccess
 import com.lightbend.lagom.internal.jackson.JacksonObjectMapperProvider
 import com.lightbend.lagom.internal.javadsl.api._
 import com.lightbend.lagom.internal.javadsl.client.JavadslServiceClientImplementor
-import com.lightbend.lagom.internal.javadsl.server.{ JavadslServerBuilder, ResolvedService, ResolvedServices, ServiceInfoProvider }
+import com.lightbend.lagom.internal.javadsl.server._
+import com.lightbend.lagom.javadsl.server.LagomServiceRouter
 
 /**
  * A brief explanation of this spec.
@@ -214,7 +215,7 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
    * This sets up the server and the client, but allows them to be modified before actually creating them.
    */
   def withClient(changeClient: Descriptor => Descriptor = identity, changeServer: Descriptor => Descriptor = identity,
-                 mode: Mode.Mode = Mode.Prod)(block: Application => MockService => Unit): Unit = {
+                 mode: Mode = Mode.Prod)(block: Application => MockService => Unit): Unit = {
 
     val environment = Environment.simple(mode = mode)
     val jacksonSerializerFactory = new JacksonSerializerFactory(new JacksonObjectMapperProvider(
@@ -228,7 +229,8 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
 
     withServer(
       _.bindings(
-        bind[ServiceInfo].to(new ServiceInfoProvider(classOf[MockService], Array.empty))
+        bind[ServiceInfo].to(new ServiceInfoProvider(classOf[MockService], Array.empty)),
+        bind[LagomServiceRouter].to[JavadslServicesRouter]
       )
         .overrides(bind[ResolvedServices].to(new MockResolvedServicesProvider(resolved, changeServer)))
     ) { app =>

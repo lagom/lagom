@@ -7,9 +7,11 @@ import akka.actor.ActorSystem;
 import akka.japi.Effect;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
+import com.lightbend.lagom.internal.client.CircuitBreakerConfig;
+import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl;
+import com.lightbend.lagom.internal.client.WebSocketClient;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactoryProvider;
-import com.lightbend.lagom.internal.client.*;
 import com.lightbend.lagom.internal.javadsl.client.JavadslServiceClientImplementor;
 import com.lightbend.lagom.internal.javadsl.client.JavadslWebSocketClient;
 import com.lightbend.lagom.internal.javadsl.client.ServiceClientLoader;
@@ -19,18 +21,22 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
 import com.lightbend.lagom.javadsl.broker.kafka.KafkaTopicFactory;
+import com.lightbend.lagom.javadsl.client.CircuitBreakersPanel;
+import com.lightbend.lagom.internal.javadsl.client.CircuitBreakersPanelImpl;
 import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator;
 import com.lightbend.lagom.javadsl.jackson.JacksonExceptionSerializer;
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory;
+import com.typesafe.config.Config;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.pcollections.PVector;
 import org.pcollections.TreePVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import play.api.Configuration;
+
 import play.api.Environment;
 import play.api.Mode;
+import play.api.Configuration;
 import play.api.inject.ApplicationLifecycle;
 import play.api.libs.ws.WSClient;
 import play.api.libs.ws.WSClientConfig;
@@ -70,16 +76,16 @@ public class LagomClientFactory implements Closeable {
     private final WSClient wsClient;
     private final WebSocketClient webSocketClient;
     private final ActorSystem actorSystem;
-    private final CircuitBreakers circuitBreakers;
+    private final CircuitBreakersPanel circuitBreakersPanel;
     private final Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator;
 
     private LagomClientFactory(EventLoopGroup eventLoop, WSClient wsClient, WebSocketClient webSocketClient, ActorSystem actorSystem,
-            CircuitBreakers circuitBreakers, Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator) {
+                               CircuitBreakersPanel circuitBreakersPanel, Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator) {
         this.eventLoop = eventLoop;
         this.wsClient = wsClient;
         this.webSocketClient = webSocketClient;
         this.actorSystem = actorSystem;
-        this.circuitBreakers = circuitBreakers;
+        this.circuitBreakersPanel = circuitBreakersPanel;
         this.serviceClientLoaderCreator = serviceClientLoaderCreator;
     }
 
@@ -102,7 +108,7 @@ public class LagomClientFactory implements Closeable {
      * @return An implementation of the client interface.
      */
     public <T> T createClient(Class<T> clientInterface, URI serviceUri) {
-        return serviceClientLoaderCreator.apply(new StaticServiceLocator(circuitBreakers, serviceUri))
+        return serviceClientLoaderCreator.apply(new StaticServiceLocator(circuitBreakersPanel, serviceUri))
                 .loadServiceClient(clientInterface);
     }
 
@@ -118,7 +124,7 @@ public class LagomClientFactory implements Closeable {
      * @return An implementation of the client interface.
      */
     public <T> T createClient(Class<T> clientInterface, Collection<URI> serviceUris) {
-        return serviceClientLoaderCreator.apply(new RoundRobinServiceLocator(circuitBreakers,
+        return serviceClientLoaderCreator.apply(new RoundRobinServiceLocator(circuitBreakersPanel,
                 TreePVector.from(serviceUris))).loadServiceClient(clientInterface);
     }
 
@@ -142,10 +148,10 @@ public class LagomClientFactory implements Closeable {
      * @return An implementation of the client interface.
      */
     public <T> T createDevClient(Class<T> clientInterface, URI serviceLocatorUri) {
-        ServiceRegistry serviceRegistry = serviceClientLoaderCreator.apply(new StaticServiceLocator(circuitBreakers,
+        ServiceRegistry serviceRegistry = serviceClientLoaderCreator.apply(new StaticServiceLocator(circuitBreakersPanel,
                 serviceLocatorUri)).loadServiceClient(ServiceRegistry.class);
 
-        ServiceLocator serviceLocator = new ServiceRegistryServiceLocator(circuitBreakers, serviceRegistry,
+        ServiceLocator serviceLocator = new ServiceRegistryServiceLocator(circuitBreakersPanel, serviceRegistry,
                 new ServiceRegistryServiceLocator.ServiceLocatorConfig(serviceLocatorUri), actorSystem.dispatcher());
 
         return serviceClientLoaderCreator.apply(serviceLocator).loadServiceClient(clientInterface);
@@ -173,10 +179,10 @@ public class LagomClientFactory implements Closeable {
     public static LagomClientFactory create(String serviceName, ClassLoader classLoader) {
         // Environment and config
         Environment environment = Environment.apply(new File("."), classLoader, Mode.Prod$.MODULE$);
-        Configuration configuration = Configuration.load(environment);
+        Config configuration = Configuration.load(environment).underlying();
 
         // Akka
-        ActorSystem actorSystem = ActorSystem.create("lagom-client", configuration.underlying().getConfig("akka"),
+        ActorSystem actorSystem = ActorSystem.create("lagom-client", configuration.getConfig("akka"),
                 classLoader);
         Materializer materializer = ActorMaterializer.create(actorSystem);
 
@@ -184,8 +190,8 @@ public class LagomClientFactory implements Closeable {
         EventLoopGroup eventLoop = new NioEventLoopGroup();
 
         // WS
-        WSClientConfig wsClientConfig = new WSConfigParser(configuration.underlying(), environment.classLoader()).parse();
-        AhcWSClientConfig ahcWSClientConfig = new AhcWSClientConfigParser(wsClientConfig, configuration.underlying(), environment.classLoader()).parse();
+        WSClientConfig wsClientConfig = new WSConfigParser(configuration, environment.classLoader()).parse();
+        AhcWSClientConfig ahcWSClientConfig = new AhcWSClientConfigParser(wsClientConfig, configuration, environment.classLoader()).parse();
         WSClient wsClient = AhcWSClient.apply(ahcWSClientConfig, scala.Option.empty(), materializer);
 
         // WebSocketClient
@@ -211,8 +217,13 @@ public class LagomClientFactory implements Closeable {
         ServiceInfo serviceInfo = ServiceInfo.of(serviceName);
 
         // ServiceClientLoader
-        CircuitBreakers circuitBreakers = new CircuitBreakers(actorSystem, new CircuitBreakerConfig(configuration),
-                new CircuitBreakerMetricsProviderImpl(actorSystem));
+        CircuitBreakersPanel circuitBreakersPanel =
+                new CircuitBreakersPanelImpl(
+                        actorSystem,
+                        new CircuitBreakerConfig(configuration),
+                        new CircuitBreakerMetricsProviderImpl(actorSystem)
+                );
+
 
         JacksonSerializerFactory serializerFactory = new JacksonSerializerFactory(actorSystem);
         JacksonExceptionSerializer exceptionSerializer = new JacksonExceptionSerializer(new play.Environment(environment));
@@ -228,7 +239,7 @@ public class LagomClientFactory implements Closeable {
             return new ServiceClientLoader(serializerFactory, exceptionSerializer, environment, implementor);
 
         };
-        return new LagomClientFactory(eventLoop, wsClient, webSocketClient, actorSystem, circuitBreakers,
+        return new LagomClientFactory(eventLoop, wsClient, webSocketClient, actorSystem, circuitBreakersPanel,
                 serviceClientLoaderCreator);
     }
 
@@ -243,8 +254,8 @@ public class LagomClientFactory implements Closeable {
     private static class StaticServiceLocator extends CircuitBreakingServiceLocator {
         private final URI uri;
 
-        StaticServiceLocator(CircuitBreakers circuitBreakers, URI uri) {
-            super(circuitBreakers);
+        StaticServiceLocator(CircuitBreakersPanel circuitBreakersPanel, URI uri) {
+            super(circuitBreakersPanel);
             this.uri = uri;
         }
 
@@ -258,8 +269,8 @@ public class LagomClientFactory implements Closeable {
         private final PVector<URI> uris;
         private final AtomicInteger counter = new AtomicInteger(0);
 
-        RoundRobinServiceLocator(CircuitBreakers circuitBreakers, PVector<URI> uris) {
-            super(circuitBreakers);
+        RoundRobinServiceLocator(CircuitBreakersPanel circuitBreakersPanel, PVector<URI> uris) {
+            super(circuitBreakersPanel);
             this.uris = uris;
         }
 

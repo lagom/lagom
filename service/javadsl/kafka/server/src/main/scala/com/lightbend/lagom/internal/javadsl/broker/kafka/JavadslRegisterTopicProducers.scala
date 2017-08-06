@@ -75,10 +75,18 @@ class JavadslRegisterTopicProducers @Inject() (resolvedServices: ResolvedService
                   } else None
                 }
 
-                Producer.startTaggedOffsetProducer(actorSystem, tags.map(_.tag), kafkaConfig, locateService,
-                  topicId.value(), eventStreamFactory, partitionKeyStrategy,
+                Producer.startTaggedOffsetProducer(
+                  actorSystem,
+                  tags.map(_.tag),
+                  kafkaConfig,
+                  locateService,
+                  topicId.value(),
+                  eventStreamFactory,
+                  partitionKeyStrategy,
                   new JavadslKafkaSerializer(topicCall.messageSerializer().serializerForRequest()),
-                  offsetStore)
+                  offsetStore
+                )
+
               case other => log.warn {
                 s"Unknown topic producer ${other.getClass.getName}. " +
                   s"This will likely result in no events published to topic ${topicId.value} by service ${info.serviceName}."
@@ -100,7 +108,7 @@ class JavadslRegisterTopicProducers @Inject() (resolvedServices: ResolvedService
     }
   }
 
-  private def locateService(name: String): Future[Option[URI]] =
-    serviceLocator.locate(name).toScala.map(_.asScala)
+  private def locateService(name: String): Future[Seq[URI]] =
+    serviceLocator.locateAll(name).toScala.map(_.asScala)
 
 }

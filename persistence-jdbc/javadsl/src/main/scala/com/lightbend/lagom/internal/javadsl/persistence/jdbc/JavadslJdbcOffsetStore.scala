@@ -8,16 +8,16 @@ import javax.inject.{ Inject, Singleton }
 import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.jdbc.{ AbstractSlickOffsetStoreConfiguration, SlickOffsetStore }
-import play.api.Configuration
+import com.typesafe.config.Config
 
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.FiniteDuration
 
 /**
  * INTERNAL API
  */
 @Singleton
-private[lagom] class OffsetTableConfiguration @Inject() (config: Configuration, readSideConfig: ReadSideConfig)
+private[lagom] class OffsetTableConfiguration @Inject() (config: Config, readSideConfig: ReadSideConfig)
   extends AbstractSlickOffsetStoreConfiguration(config) {
   override def minBackoff: FiniteDuration = readSideConfig.minBackoff
   override def maxBackoff: FiniteDuration = readSideConfig.maxBackoff

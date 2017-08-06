@@ -201,7 +201,7 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
    * This sets up the server and the client, but allows them to be modified before actually creating them.
    */
   def withClient(changeClient: Descriptor => Descriptor = identity, changeServer: Descriptor => Descriptor = identity,
-                 mode: Mode.Mode = Mode.Prod)(block: Materializer => MockService => Unit): Unit = {
+                 mode: Mode = Mode.Prod)(block: Materializer => MockService => Unit): Unit = {
 
     ServiceTest.withServer(ServiceTest.defaultSetup) { ctx =>
       new LagomApplication(ctx) with AhcWSComponents with LocalServiceLocator {

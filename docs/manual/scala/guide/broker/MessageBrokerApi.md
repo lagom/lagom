@@ -79,7 +79,7 @@ While the JSON for the `BlogPostPublished` event will look like this:
 }
 ```
 
-You can do that using [Play JSON transformers](https://www.playframework.com/documentation/2.5.x/ScalaJsonTransformers#Case-5:-Put-a-given-value-in-a-new-branch):
+You can do that using [Play JSON transformers](https://www.playframework.com/documentation/2.6.x/ScalaJsonTransformers#Case-5:-Put-a-given-value-in-a-new-branch):
 
 @[polymorphic-play-json](code/docs/scaladsl/mb/BlogPostService.scala)
 

@@ -14,15 +14,16 @@ import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 
 class ServiceLocatorSessionProviderSpec extends WordSpec with MustMatchers {
+
   val system = ActorSystem("test")
   val config: Config = ConfigFactory.load()
   val uri = new URI("http://localhost:8080")
 
   val locator = new ServiceLocatorAdapter {
-    override def locate(name: String): Future[Option[URI]] = {
+    override def locateAll(name: String): Future[List[URI]] = {
       name match {
-        case "existing" => Future.successful(Some(uri))
-        case "absent"   => Future.successful(None)
+        case "existing" => Future.successful(List(uri))
+        case "absent"   => Future.successful(Nil)
       }
     }
 

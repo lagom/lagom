@@ -14,6 +14,7 @@ import scala.collection.immutable
 /**
  * Internal API
  */
+@deprecated(message = "This class became obsolete and will be removed on next release", since = "1.4.0")
 private[lagom] object CassandraConfigImpl {
 
   private def apply(config: Config): CassandraConfigImpl = {
@@ -29,5 +30,5 @@ private[lagom] object CassandraConfigImpl {
     new CassandraConfigImpl(contactPoints)
   }
 }
-
+@deprecated(message = "This class became obsolete and will be removed on next release", since = "1.4.0")
 private[lagom] final case class CassandraConfigImpl(uris: immutable.Seq[CassandraContactPoint]) extends CassandraConfig
