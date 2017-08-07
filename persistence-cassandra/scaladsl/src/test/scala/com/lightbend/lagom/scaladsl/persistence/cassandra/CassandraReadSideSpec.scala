@@ -3,9 +3,10 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.cassandra
 
+import akka.persistence.query.TimeBasedUUID
+
 import scala.concurrent.Future
 import scala.concurrent.duration._
-
 import com.typesafe.config.ConfigFactory
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
@@ -19,7 +20,7 @@ object CassandraReadSideSpec {
   val noAutoCreateConfig = ConfigFactory.parseString("lagom.persistence.read-side.cassandra.tables-autocreate = false")
 }
 
-class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.defaultConfig, TestEntitySerializerRegistry) with AbstractReadSideSpec {
+class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.defaultConfig, TestEntitySerializerRegistry) with AbstractReadSideSpec[TimeBasedUUID] {
   import system.dispatcher
 
   override protected lazy val persistentEntityRegistry = new CassandraPersistentEntityRegistry(system)

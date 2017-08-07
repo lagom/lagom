@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.jdbc
 
+import akka.persistence.query.Sequence
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcPersistentEntityRegistry
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence._
@@ -10,7 +11,7 @@ import com.lightbend.lagom.scaladsl.persistence._
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class JdbcReadSideSpec extends JdbcPersistenceSpec(TestEntitySerializerRegistry) with AbstractReadSideSpec {
+class JdbcReadSideSpec extends JdbcPersistenceSpec(TestEntitySerializerRegistry) with AbstractReadSideSpec[Sequence] {
   override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, slick)
 
   override def processorFactory(): ReadSideProcessor[Evt] =

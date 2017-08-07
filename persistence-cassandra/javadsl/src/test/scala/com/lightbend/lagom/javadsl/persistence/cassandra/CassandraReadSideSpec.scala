@@ -9,6 +9,7 @@ import com.google.inject.Guice
 import com.lightbend.lagom.internal.javadsl.persistence.cassandra.{ CassandraPersistentEntityRegistry, CassandraReadSideImpl, JavadslCassandraOffsetStore }
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
+import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
 import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.ConfigFactory
 
@@ -20,7 +21,7 @@ object CassandraReadSideSpec {
   val noAutoCreateConfig = ConfigFactory.parseString("lagom.persistence.read-side.cassandra.tables-autocreate = false")
 }
 
-class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.defaultConfig) with AbstractReadSideSpec {
+class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.defaultConfig) with AbstractReadSideSpec[TimeBasedUUID] {
   import system.dispatcher
 
   private lazy val injector = Guice.createInjector()

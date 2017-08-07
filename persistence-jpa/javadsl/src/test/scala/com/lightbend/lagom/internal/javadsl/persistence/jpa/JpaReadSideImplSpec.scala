@@ -8,13 +8,14 @@ import java.util.concurrent.CompletionStage
 
 import com.google.inject.Guice
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc.JdbcPersistentEntityRegistry
+import com.lightbend.lagom.javadsl.persistence.Offset.Sequence
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.jpa.{ JpaReadSide, TestEntityJpaReadSide }
 
 import scala.concurrent.duration._
 
-class JpaReadSideImplSpec extends JpaPersistenceSpec with AbstractReadSideSpec {
+class JpaReadSideImplSpec extends JpaPersistenceSpec with AbstractReadSideSpec[Sequence] {
   private lazy val injector = Guice.createInjector()
   override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, injector, slick)
 
