@@ -152,12 +152,11 @@ trait AbstractReadSideSpec[O <: Offset] extends ImplicitSender with ScalaFutures
 
       // count = 5 from previous test steps
       assertSelectCount("1", 5L)
+      // this is the last know offset (after processing all 5 events)
+      val offsetBefore = fetchLastOffset()
 
       val readSide = createReadSideProcessor()
-
       val p = createTestEntityRef()
-
-      val offsetBefore = fetchLastOffset()
 
       p ! new TestEntity.ChangeMode(Mode.PREPEND)
       expectMsg(new TestEntity.InPrependMode("1"))
