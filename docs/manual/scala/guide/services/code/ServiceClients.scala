@@ -89,7 +89,6 @@ package metricsservice {
   import com.softwaremill.macwire._
 
   //#metrics-service
-  import com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents
 
   abstract class MyApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
