@@ -153,7 +153,6 @@ trait AbstractReadSideSpec[O <: Offset] extends ImplicitSender with ScalaFutures
       val readSide = createReadSideProcessor()
       val p = createTestEntityRef()
 
-
       p ! TestEntity.ChangeMode(Mode.Prepend)
       expectMsg(TestEntity.InPrependMode)
       p ! TestEntity.Add("f")
