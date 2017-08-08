@@ -207,7 +207,7 @@ object Dependencies {
       "netty-buffer", "netty-codec", "netty-codec-http", "netty-common", "netty-handler", "netty-transport",
       "netty-transport-native-epoll"
 
-    ) ++ libraryFamily("org.apache.logging.log4j", "2.8.2")(
+    ) ++ libraryFamily("org.apache.logging.log4j", "2.7")(
       "log4j-api", "log4j-core", "log4j-slf4j-impl"
 
     ) ++ libraryFamily("org.asynchttpclient", "2.0.24")(
@@ -573,7 +573,7 @@ object Dependencies {
     "log4j-api",
     "log4j-core",
     "log4j-slf4j-impl"
-  ).map("org.apache.logging.log4j" % _ % "2.8.2") ++ Seq(
+  ).map("org.apache.logging.log4j" % _ % "2.7") ++ Seq(
     "com.lmax" % "disruptor" % "3.3.6",
     play,
 
