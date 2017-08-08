@@ -24,9 +24,10 @@ lazy val orderImpl = (project in file("orderImpl"))
   .disablePlugins(LagomLogback)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.7",
-      "org.apache.logging.log4j" % "log4j-api" % "2.7",
-      "org.apache.logging.log4j" % "log4j-core" % "2.7"
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.8.2",
+      "org.apache.logging.log4j" % "log4j-api" % "2.8.2",
+      "org.apache.logging.log4j" % "log4j-core" % "2.8.2",
+      "com.lmax" % "disruptor" % "3.3.6"
     )
   )
 //#lagom-logback-plugin-disabled-log4j
