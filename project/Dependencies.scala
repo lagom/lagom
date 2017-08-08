@@ -188,7 +188,7 @@ object Dependencies {
       "netty-buffer", "netty-codec", "netty-codec-http", "netty-common", "netty-handler", "netty-resolver",
       "netty-transport", "netty-transport-native-epoll", "netty-transport-native-unix-common"
 
-    ) ++ libraryFamily("org.apache.logging.log4j", "2.7")(
+    ) ++ libraryFamily("org.apache.logging.log4j", "2.8.2")(
       "log4j-api", "log4j-core", "log4j-slf4j-impl"
 
     ) ++ libraryFamily("org.ow2.asm", "5.0.3")(
@@ -555,7 +555,7 @@ object Dependencies {
     "log4j-api",
     "log4j-core",
     "log4j-slf4j-impl"
-  ).map("org.apache.logging.log4j" % _ % "2.7") ++ Seq(
+  ).map("org.apache.logging.log4j" % _ % "2.8.2") ++ Seq(
     "com.lmax" % "disruptor" % "3.3.6",
     play,
 
