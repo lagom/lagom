@@ -19,6 +19,7 @@ import com.lightbend.lagom.javadsl.persistence.Offset.{ Sequence, TimeBasedUUID 
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Mode
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.spi.persistence.OffsetStore
+import org.scalatest.BeforeAndAfter
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
 import org.scalatest.time.{ Millis, Seconds, Span }
 
@@ -26,7 +27,7 @@ import scala.compat.java8.FutureConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventually { spec: ActorSystemSpec =>
+trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventually with BeforeAndAfter { spec: ActorSystemSpec =>
 
   import system.dispatcher
 
@@ -49,6 +50,8 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   def getAppendCount(id: String): CompletionStage[java.lang.Long]
 
   private val tag = TestEntity.Evt.AGGREGATE_EVENT_SHARDS.forEntityId("1")
+
+  private var readSideActor: Option[ActorRef] = None
 
   private def createTestEntityRef() = {
     system.actorOf(
@@ -85,7 +88,15 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
         readSide ! Done
       }
 
-    readSide
+    readSideActor = Some(readSide)
+  }
+
+  after {
+    readSideActor.foreach { readSide =>
+      watch(readSide)
+      system.stop(readSide)
+      expectTerminated(readSide)
+    }
   }
 
   private def assertSelectCount(id: String, expected: Long): Unit = {
@@ -116,7 +127,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       p ! TestEntity.Add.of("c")
       expectMsg(new TestEntity.Appended("1", "C"))
 
-      val readSide = createReadSideProcessor()
+      createReadSideProcessor()
 
       assertSelectCount("1", 3L)
 
@@ -125,16 +136,13 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
       assertSelectCount("1", 4L)
 
-      watch(readSide)
-      system.stop(readSide)
-      expectTerminated(readSide)
     }
 
     "resume from stored offset" in {
       // count = 4 from previous test step
       assertSelectCount("1", 4L)
 
-      val readSide = createReadSideProcessor()
+      createReadSideProcessor()
 
       val p = createTestEntityRef()
 
@@ -143,9 +151,6 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
       assertSelectCount("1", 5L)
 
-      watch(readSide)
-      system.stop(readSide)
-      expectTerminated(readSide)
     }
 
     "persisted offsets unhandled events" in {
@@ -155,7 +160,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       // this is the last known offset (after processing all 5 events)
       val offsetBefore = fetchLastOffset()
 
-      val readSide = createReadSideProcessor()
+      createReadSideProcessor()
       val p = createTestEntityRef()
 
       p ! new TestEntity.ChangeMode(Mode.PREPEND)
@@ -167,18 +172,12 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       // InPrependMode and Prepended events are ignored
       assertSelectCount("1", 5L)
 
-      // however, offset gets updated
+      // however, persisted offset gets updated
       eventually {
         val offsetAfter = fetchLastOffset()
         offsetBefore should not be offsetAfter
       }
-
-      // persisted offset must have change tough
-      watch(readSide)
-      system.stop(readSide)
-      expectTerminated(readSide)
     }
-
   }
 
 }
