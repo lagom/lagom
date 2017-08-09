@@ -46,27 +46,28 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
         case 1 => session.executeWrite(statements.get(0)).toScala
         case _ =>
           val batch = new BatchStatement
-          val iter = statements.iterator()
-          while (iter.hasNext)
-            batch.add(iter.next)
+          batch.addAll(statements)
           session.executeWriteBatch(batch).toScala
       }
 
     akka.stream.scaladsl.Flow[Pair[Event, Offset]]
       .mapAsync(parallelism = 1) { pair =>
 
+        val Pair(event, offset) = pair
+        val eventClass = event.getClass
+
         val handler =
           handlers.getOrElse(
             // lookup handler
-            pair.first.getClass.asInstanceOf[Class[Event]],
-            // fallback to empty handle if none
+            eventClass,
+            // fallback to empty handler if none
             {
-              if (log.isDebugEnabled()) log.debug("Unhandled event [{}]", pair.first.getClass.getName)
+              if (log.isDebugEnabled()) log.debug("Unhandled event [{}]", eventClass.getName)
               CassandraAutoReadSideHandler.emptyHandler[Event, Event].asInstanceOf[Handler]
             }
           )
 
-        invoke(handler, pair.first, pair.second).toScala.flatMap(executeStatements)
+        invoke(handler, event, offset).toScala.flatMap(executeStatements)
 
       }.withAttributes(ActorAttributes.dispatcher(dispatcher)).asJava
   }
@@ -107,7 +108,7 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
   override protected def invoke(handler: Handler[Event], event: Event, offset: Offset): CompletionStage[JList[BoundStatement]] = {
     val boundStatements = {
       for {
-        statements <- (handler.asInstanceOf[(Event, Offset) => CompletionStage[JList[BoundStatement]]].apply(event, offset).toScala)
+        statements <- handler.asInstanceOf[(Event, Offset) => CompletionStage[JList[BoundStatement]]].apply(event, offset).toScala
       } yield {
         val akkaOffset = OffsetAdapter.dslOffsetToOffset(offset)
         TreePVector

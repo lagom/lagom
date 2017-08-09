@@ -3,8 +3,6 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence.cassandra
 
-import java.util
-
 import akka.persistence.query.Offset
 import akka.stream.ActorAttributes
 import akka.stream.scaladsl.Flow
@@ -18,6 +16,7 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.collection.JavaConverters._
 
 /**
  * Internal API
@@ -40,22 +39,22 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
         case 1 => session.executeWrite(statements.head)
         case _ =>
           val batch = new BatchStatement
-          val iter = statements.iterator
-          while (iter.hasNext)
-            batch.add(iter.next)
+          batch.addAll(statements.asJava)
           session.executeWriteBatch(batch)
       }
 
     Flow[EventStreamElement[Event]]
       .mapAsync(parallelism = 1) { elem =>
 
+        val eventClass = elem.event.getClass
+
         val handler =
           handlers.getOrElse(
             // lookup handler
-            elem.event.getClass.asInstanceOf[Class[Event]],
-            // fallback to empty handle if none
+            eventClass,
+            // fallback to empty handler if none
             {
-              if (log.isDebugEnabled()) log.debug("Unhandled event [{}]", elem.event.getClass.getName)
+              if (log.isDebugEnabled()) log.debug("Unhandled event [{}]", eventClass.getName)
               CassandraAutoReadSideHandler.emptyHandler.asInstanceOf[Handler]
             }
           )
