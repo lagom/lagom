@@ -3,29 +3,25 @@
  */
 package com.lightbend.lagom.javadsl.jackson;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.lightbend.lagom.internal.jackson.JacksonObjectMapperProvider;
-import com.lightbend.lagom.javadsl.api.deser.DeserializationException;
-import com.lightbend.lagom.javadsl.api.deser.SerializationException;
-import com.lightbend.lagom.javadsl.api.deser.SerializerFactory;
-import com.lightbend.lagom.javadsl.api.deser.StrictMessageSerializer;
-import com.lightbend.lagom.javadsl.api.transport.MessageProtocol;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Optional;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import org.pcollections.PSequence;
-import org.pcollections.TreePVector;
-
 import akka.Done;
 import akka.actor.ActorSystem;
 import akka.util.ByteString;
 import akka.util.ByteString$;
 import akka.util.ByteStringBuilder;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.lightbend.lagom.internal.jackson.JacksonObjectMapperProvider;
+import com.lightbend.lagom.javadsl.api.deser.*;
+import com.lightbend.lagom.javadsl.api.transport.MessageProtocol;
+import org.pcollections.PSequence;
+import org.pcollections.TreePVector;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.lang.reflect.Type;
+import java.util.Optional;
 
 /**
  * A Jackson Serializer Factory
@@ -58,8 +54,8 @@ public class JacksonSerializerFactory implements SerializerFactory {
 
     private class JacksonMessageSerializer<MessageEntity> implements StrictMessageSerializer<MessageEntity> {
 
-        private final NegotiatedSerializer<MessageEntity, ByteString> serializer;
-        private final NegotiatedDeserializer<MessageEntity, ByteString> deserializer;
+        private final MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> serializer;
+        private final MessageSerializer.NegotiatedDeserializer<MessageEntity, ByteString> deserializer;
 
         public JacksonMessageSerializer(Type type) {
             JavaType javaType = objectMapper.constructType(type);
@@ -74,21 +70,21 @@ public class JacksonSerializerFactory implements SerializerFactory {
         }
 
         @Override
-        public NegotiatedSerializer<MessageEntity, ByteString> serializerForRequest() {
+        public MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> serializerForRequest() {
             return serializer;
         }
 
         @Override
-        public NegotiatedDeserializer<MessageEntity, ByteString> deserializer(MessageProtocol messageProtocol) throws SerializationException {
+        public MessageSerializer.NegotiatedDeserializer<MessageEntity, ByteString> deserializer(MessageProtocol messageProtocol) throws SerializationException {
             return deserializer;
         }
 
         @Override
-        public NegotiatedSerializer<MessageEntity, ByteString> serializerForResponse(List<MessageProtocol> acceptedMessageProtocols) {
+        public MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> serializerForResponse(java.util.List<MessageProtocol> acceptedMessageProtocols) {
             return serializer;
         }
 
-        private class JacksonSerializer implements NegotiatedSerializer<MessageEntity, ByteString> {
+        private class JacksonSerializer implements MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> {
             private final ObjectWriter writer;
 
             public JacksonSerializer(ObjectWriter writer) {
@@ -112,7 +108,7 @@ public class JacksonSerializerFactory implements SerializerFactory {
             }
         }
 
-        private class JacksonDeserializer implements NegotiatedDeserializer<MessageEntity, ByteString> {
+        private class JacksonDeserializer implements MessageSerializer.NegotiatedDeserializer<MessageEntity, ByteString> {
             private final ObjectReader reader;
 
             public JacksonDeserializer(ObjectReader reader) {
@@ -132,8 +128,8 @@ public class JacksonSerializerFactory implements SerializerFactory {
 
   private class DoneMessageSerializer<MessageEntity> implements StrictMessageSerializer<MessageEntity> {
 
-    private final NegotiatedSerializer<MessageEntity, ByteString> serializer = new DoneSerializer();
-    private final NegotiatedDeserializer<MessageEntity, ByteString> deserializer = new DoneDeserializer();
+    private final MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> serializer = new DoneSerializer();
+    private final MessageSerializer.NegotiatedDeserializer<MessageEntity, ByteString> deserializer = new DoneDeserializer();
 
     @Override
     public PSequence<MessageProtocol> acceptResponseProtocols() {
@@ -142,23 +138,23 @@ public class JacksonSerializerFactory implements SerializerFactory {
     }
 
     @Override
-    public NegotiatedSerializer<MessageEntity, ByteString> serializerForRequest() {
+    public MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> serializerForRequest() {
       return serializer;
     }
 
     @Override
-    public NegotiatedDeserializer<MessageEntity, ByteString> deserializer(MessageProtocol messageProtocol)
+    public MessageSerializer.NegotiatedDeserializer<MessageEntity, ByteString> deserializer(MessageProtocol messageProtocol)
         throws SerializationException {
       return deserializer;
     }
 
     @Override
-    public NegotiatedSerializer<MessageEntity, ByteString> serializerForResponse(
-        List<MessageProtocol> acceptedMessageProtocols) {
+    public MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> serializerForResponse(
+        java.util.List<MessageProtocol> acceptedMessageProtocols) {
       return serializer;
     }
 
-    private class DoneSerializer implements NegotiatedSerializer<MessageEntity, ByteString> {
+    private class DoneSerializer implements MessageSerializer.NegotiatedSerializer<MessageEntity, ByteString> {
 
       private final ByteString doneJson = ByteString.fromString("{ \"done\" : true }");
 
@@ -173,7 +169,7 @@ public class JacksonSerializerFactory implements SerializerFactory {
       }
     }
 
-    private class DoneDeserializer implements NegotiatedDeserializer<MessageEntity, ByteString> {
+    private class DoneDeserializer implements MessageSerializer.NegotiatedDeserializer<MessageEntity, ByteString> {
       @SuppressWarnings("unchecked")
       @Override
       public MessageEntity deserialize(ByteString bytes) {
