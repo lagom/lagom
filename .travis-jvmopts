@@ -1,6 +1,6 @@
 # This is used to configure the sbt instance that Travis launches
 
--Xms1024M
--Xmx1024M
+-Xms2G
+-Xmx2G
 -Xss2M
 -XX:MaxMetaspaceSize=512M

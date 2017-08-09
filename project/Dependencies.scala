@@ -9,7 +9,8 @@ object Dependencies {
   val PlayJsonVersion = "2.6.2"
   val AkkaVersion = "2.5.3"
   val AkkaHttpVersion = "10.0.9"
-  val ScalaVersion = "2.11.11"
+  val ScalaVersions = Seq("2.12.3", "2.11.11")
+  val SbtScalaVersions = Seq("2.10.6")
   val AkkaPersistenceCassandraVersion = "0.54"
   val ScalaTestVersion = "3.0.3"
   val JacksonVersion = "2.8.9"
@@ -575,7 +576,7 @@ object Dependencies {
   )
 
   val `build-tool-support` = libraryDependencies ++= Seq(
-    "com.lightbend.play" %% "play-file-watch" % "1.0.0",
+    "com.lightbend.play" %% "play-file-watch" % "1.0.1",
     playExceptions,
     playBuildLink,
     // This is used in the code to check if the embedded cassandra server is started

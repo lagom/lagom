@@ -50,6 +50,11 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
 
   concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
 
+  scalacOptions in (Compile, doc) ++= (scalaBinaryVersion.value match {
+    case "2.12" => Seq("-no-java-comments")
+    case _ => Seq.empty
+  }),
+
   // Setting javac options in common allows IntelliJ IDEA to import them automatically
   javacOptions in compile ++= Seq(
     "-encoding", "UTF-8",
@@ -84,7 +89,7 @@ def releaseSettings: Seq[Setting[_]] = Seq(
       setReleaseVersion,
       commitReleaseVersion,
       tagRelease,
-      publishArtifacts,
+      releaseStepCommandAndRemaining("+publishSigned"),
       releaseStepTask(bintrayRelease in thisProjectRef.value),
       releaseStepCommand("sonatypeRelease"),
       setNextVersion,
@@ -94,18 +99,42 @@ def releaseSettings: Seq[Setting[_]] = Seq(
   }
 )
 
-def runtimeLibCommon: Seq[Setting[_]] = common ++ Seq(
-  crossScalaVersions := Seq(Dependencies.ScalaVersion),
-  scalaVersion := crossScalaVersions.value.head,
-  crossVersion := CrossVersion.binary,
-  crossPaths := false,
+/**
+ * sbt release's releaseStepCommand does not execute remaining commands, which sbt-doge relies on
+ */
+def releaseStepCommandAndRemaining(command: String): State => State = { originalState =>
+  import sbt.complete.Parser
 
+  // Capture current remaining commands
+  val originalRemaining = originalState.remainingCommands
+
+  def runCommand(command: String, state: State): State = {
+    val newState = Parser.parse(command, state.combinedParser) match {
+      case Right(cmd) => cmd()
+      case Left(msg) => throw sys.error(s"Invalid programmatic input:\n$msg")
+    }
+    if (newState.remainingCommands.isEmpty) {
+      newState
+    } else {
+      runCommand(newState.remainingCommands.head, newState.copy(remainingCommands = newState.remainingCommands.tail))
+    }
+  }
+
+  runCommand(command, originalState.copy(remainingCommands = Nil)).copy(remainingCommands = originalRemaining)
+}
+
+def runtimeScalaSettings: Seq[Setting[_]] = Seq(
+  crossScalaVersions := Dependencies.ScalaVersions,
+  scalaVersion := Dependencies.ScalaVersions.head
+)
+
+def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
   Dependencies.validateDependenciesSetting,
   Dependencies.pruneWhitelistSetting,
   Dependencies.dependencyWhitelistSetting,
 
   // compile options
-  scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.8", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint", "-deprecation"),
+  scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.8", "-feature", "-unchecked", "-Xlog-reflective-calls", "-deprecation"),
 
   incOptions := incOptions.value.withNameHashing(true),
 
@@ -195,13 +224,28 @@ def macroCompileSettings: Seq[Setting[_]] = Seq(
 def mimaSettings(versions: Seq[String]): Seq[Setting[_]] = {
   Seq(
     mimaPreviousArtifacts := {
-      versions.map { version =>
+      scalaVersionFilter(scalaBinaryVersion.value, versions).map { version =>
         organization.value % s"${moduleName.value}_${scalaBinaryVersion.value}" % version
       }.toSet
     },
     mimaBinaryIssueFilters += ProblemFilters.excludePackage("com.lightbend.lagom.internal")
   )
 }
+
+def scalaVersionFilter(scalaBinaryVersion: String, versions: Seq[String]): Seq[String] = {
+  // parse version into (major, minor, patch) for comparison
+  def Version(version: String): (String, String, String) = version.split(".", 3).toSeq match {
+    case Seq(major, minor, patch) => (major, minor, patch)
+    case _ => throw new IllegalArgumentException("version does not match major.minor.patch format")
+  }
+  import scala.math.Ordering.Implicits._
+  val sinceVersion = Version(scalaVersionSince.getOrElse(scalaBinaryVersion, "1.0.0"))
+  versions.filter(Version(_) >= sinceVersion)
+}
+
+def scalaVersionSince = Map(
+  "2.12" -> "1.4.0"
+)
 
 def since10 = Seq("1.0.0") ++ since11
 def since11 = Seq("1.1.0") ++ since12
@@ -260,16 +304,19 @@ val coreProjects = Seq[Project](
   log4j2
 )
 
-val otherProjects = Seq[Project](
-  `dev-environment`,
+val otherProjects = devEnvironmentProjects ++ Seq[Project](
   `integration-tests-javadsl`,
-  `integration-tests-scaladsl`
+  `integration-tests-scaladsl`,
+  `macro-testkit`
 )
 
 lazy val root = (project in file("."))
   .settings(name := "lagom")
   .settings(runtimeLibCommon: _*)
+  .enablePlugins(CrossPerProjectPlugin)
   .settings(
+    crossScalaVersions := Dependencies.ScalaVersions,
+    scalaVersion := Dependencies.ScalaVersions.head,
     PgpKeys.publishSigned := {},
     publishLocal := {},
     publishArtifact in Compile := false,
@@ -281,10 +328,8 @@ lazy val root = (project in file("."))
     whitesourceProduct in ThisBuild               := "Lightbend Reactive Platform",
     whitesourceAggregateProjectName in ThisBuild  := sys.env.getOrElse("WHITESOURCE_PROJECT_NAME", default = "invalid"),
     whitesourceAggregateProjectToken in ThisBuild := sys.env.getOrElse("WHITESOURCE_PROJECT_TOKEN", default = "invalid")
-  ).aggregate(javadslProjects.map(Project.projectToRef): _*)
-  .aggregate(scaladslProjects.map(Project.projectToRef): _*)
-  .aggregate(coreProjects.map(Project.projectToRef): _*)
-  .aggregate(otherProjects.map(Project.projectToRef): _*)
+  )
+  .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects).map(Project.projectToRef): _*)
 
   credentials += Credentials(realm = "whitesource",
       host = "whitesourcesoftware.com",
@@ -594,7 +639,10 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
       // Deprecated in 1.2.0, deleted due to other binary incompatibility introduced when Akka 2.5.0 was upgraded.
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil$"),
-      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil$AwaitPersistenceInit")
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil$AwaitPersistenceInit"),
+
+      // package private
+      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistNone")
     ),
     Dependencies.`persistence-javadsl`
   )
@@ -800,14 +848,27 @@ lazy val log4j2 = (project in file("log4j2"))
     Dependencies.log4j2
   )
 
+lazy val devEnvironmentProjects = Seq[Project](
+  `reloadable-server`,
+  `build-tool-support`,
+  `sbt-plugin`,
+  `maven-plugin`,
+  `service-locator`,
+  `service-registration-javadsl`,
+  `cassandra-server`,
+  `play-integration-javadsl`,
+  `devmode-scaladsl`,
+  `service-registry-client-javadsl`,
+  `maven-java-archetype`,
+  `maven-dependencies`,
+  `kafka-server`
+)
+
 lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
-  .aggregate(`reloadable-server`, `build-tool-support`, `sbt-plugin`, `maven-plugin`, `service-locator`,
-    `service-registration-javadsl`, `cassandra-server`, `play-integration-javadsl`, `devmode-scaladsl`,
-    `service-registry-client-javadsl`,
-    `maven-java-archetype`, `maven-dependencies`, `kafka-server`)
+  .aggregate(devEnvironmentProjects.map(Project.projectToRef): _*)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}
@@ -826,6 +887,8 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
   .settings(
     name := "lagom-build-tool-support",
     publishMavenStyle := true,
+    crossScalaVersions := Dependencies.SbtScalaVersions,
+    scalaVersion := Dependencies.SbtScalaVersions.head,
     crossPaths := false,
     sourceGenerators in Compile += Def.task {
       Generators.version(version.value, (sourceManaged in Compile).value)
@@ -840,6 +903,8 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(
     name := "lagom-sbt-plugin",
     sbtPlugin := true,
+    crossScalaVersions := Dependencies.SbtScalaVersions,
+    scalaVersion := Dependencies.SbtScalaVersions.head,
     Dependencies.`sbt-plugin`,
     addSbtPlugin(("com.typesafe.play" % "sbt-plugin" % Dependencies.PlayVersion).exclude("org.slf4j","slf4j-simple")),
     scriptedDependencies := {
@@ -939,9 +1004,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
       name := "lagom-maven-dependencies",
       crossPaths := false,
       autoScalaLibrary := false,
-      scalaVersion := Dependencies.ScalaVersion,
       pomExtra := pomExtra.value :+ {
-
         val lagomDeps = Def.settingDyn {
           val sv = scalaVersion.value
           val sbv = scalaBinaryVersion.value
@@ -984,7 +1047,9 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
   .settings(name := "lagom-sbt-scripted-tools")
   .settings(common: _*)
   .settings(
-    sbtPlugin := true
+    sbtPlugin := true,
+    crossScalaVersions := Dependencies.SbtScalaVersions,
+    scalaVersion := Dependencies.SbtScalaVersions.head
   ).dependsOn(`sbt-plugin`)
 
 // This project also get aggregated, it is only executed by the sbt-plugin scripted dependencies
@@ -1054,28 +1119,32 @@ lazy val `play-integration-javadsl` = (project in file("dev") / "service-registr
 
 lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
   .settings(common: _*)
+  .settings(runtimeScalaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-cassandra-server",
-    Dependencies.`cassandra-server`,
-    scalaVersion := Dependencies.ScalaVersion
+    Dependencies.`cassandra-server`
   )
 
 lazy val `kafka-server` = (project in file("dev") / "kafka-server")
   .settings(common: _*)
+  .settings(runtimeScalaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-kafka-server",
-    Dependencies.`kafka-server`,
-    scalaVersion := Dependencies.ScalaVersion
+    Dependencies.`kafka-server`
   )
 
-// Provides macros for testing macros. Is not aggregated or published.
+// Provides macros for testing macros. Is not published.
 lazy val `macro-testkit` = (project in file("macro-testkit"))
   .settings(runtimeLibCommon)
-  .settings(libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value
-  ))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value
+    ),
+    PgpKeys.publishSigned := {},
+    publish := {}
+  )
 
 // We can't just run a big aggregated mimaReportBinaryIssues due to
 // https://github.com/typesafehub/migration-manager/issues/163

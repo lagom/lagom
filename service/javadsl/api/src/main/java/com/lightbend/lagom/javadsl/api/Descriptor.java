@@ -118,7 +118,7 @@ public final class Descriptor {
         public Optional<CircuitBreaker> circuitBreaker() {
           return circuitBreaker;
         }
-    
+
         /**
          * Whether this service call should automatically define an ACL for the router to route external calls to it.
          *
@@ -152,7 +152,7 @@ public final class Descriptor {
             return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer, circuitBreaker,
                     autoAcl);
         }
-    
+
         /**
          * Return a copy of this call descriptor with the given request message
          * serializer configured.
@@ -165,7 +165,7 @@ public final class Descriptor {
             return new Call<>(callId, serviceCallHolder, requestSerializer, responseSerializer, circuitBreaker,
                     autoAcl);
         }
-    
+
         /**
          * Return a copy of this call descriptor with the given response message
          * serializer configured.
@@ -569,7 +569,7 @@ public final class Descriptor {
 
     Descriptor(String name, PSequence<Call<?, ?>> calls, PMap<Type, PathParamSerializer<?>> pathParamSerializers,
             PMap<Type, MessageSerializer<?, ?>> messageSerializers, SerializerFactory serializerFactory,
-            ExceptionSerializer exceptionSerializer, boolean autoAcl, PSequence<ServiceAcl> acls, 
+            ExceptionSerializer exceptionSerializer, boolean autoAcl, PSequence<ServiceAcl> acls,
             HeaderFilter headerFilter, boolean locatableService, CircuitBreaker circuitBreaker, PSequence<TopicCall<?>> topicCalls) {
         this.name = name;
         this.calls = calls;
@@ -629,7 +629,7 @@ public final class Descriptor {
     public HeaderFilter headerFilter() {
         return headerFilter;
     }
-    
+
     /**
      * Whether this is a locatable service.
      *
