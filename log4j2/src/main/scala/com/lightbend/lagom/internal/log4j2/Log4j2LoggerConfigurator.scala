@@ -6,6 +6,11 @@ package com.lightbend.lagom.internal.log4j2
 import java.io.File
 import java.net.URL
 
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.core.LoggerContext
+import org.apache.logging.log4j.core.config.Configurator
+import org.slf4j.ILoggerFactory
+import org.slf4j.impl.StaticLoggerBinder
 import play.api._
 
 object Log4j2LoggerConfigurator {
@@ -26,7 +31,21 @@ class Log4j2LoggerConfigurator extends LoggerConfigurator {
 
   override def configure(env: Environment): Unit = {
     val properties = Map("application.home" -> env.rootPath.getAbsolutePath)
+    configure(properties, configUrl(env))
+  }
 
+  override def configure(properties: Map[String, String], config: Option[URL]): Unit = {
+    if (config.isEmpty) {
+      System.err.println("Could not detect a log4j2 configuration file, not configuring log4j2")
+    }
+
+    config.foreach { url =>
+      val context = LogManager.getContext(false).asInstanceOf[LoggerContext]
+      context.setConfigLocation(url.toURI)
+    }
+  }
+
+  private def configUrl(env: Environment) = {
     // Get an explicitly configured resource URL
     // Fallback to a file in the conf directory if the resource wasn't found on the classpath
     def explicitResourceUrl = sys.props.get("logger.resource").flatMap { r =>
@@ -43,32 +62,9 @@ class Log4j2LoggerConfigurator extends LoggerConfigurator {
         if (env.mode == Mode.Dev) DevLog4j2Config else DefaultLog4j2Config
       ))
 
-    val configUrl = explicitResourceUrl orElse explicitFileUrl orElse resourceUrl
-
-    configure(properties, configUrl)
+    explicitResourceUrl orElse explicitFileUrl orElse resourceUrl
   }
 
-  override def configure(properties: Map[String, String], config: Option[URL]): Unit = {
-    import org.apache.logging.log4j.core.config.Configurator
-    import scala.util.control.NonFatal
+  override def shutdown(): Unit = LogManager.shutdown()
 
-    if (config.isEmpty) {
-      System.err.println("Could not detect a log4j2 configuration file, not configuring log4j2")
-      return
-    }
-
-    try {
-      val ctx = Configurator.initialize("Lagom", this.getClass.getClassLoader, config.get.toURI)
-    } catch {
-      case NonFatal(e) =>
-        System.err.println("Error encountered while configuring log4j2")
-        e.printStackTrace()
-    }
-  }
-
-  override def shutdown(): Unit = {
-    import org.apache.logging.log4j.LogManager
-
-    LogManager.shutdown()
-  }
 }
