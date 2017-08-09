@@ -42,6 +42,8 @@ public interface MockService extends Service {
 
     ServiceCall<Source<MockRequestEntity, ?>, MockResponseEntity> streamRequest();
 
+    ServiceCall<Source<MockRequestEntity, ?>, MockResponseEntity> streamRequestRespondAfterLast();
+
     ServiceCall<Source<MockRequestEntity, ?>, NotUsed> streamRequestUnit();
 
     ServiceCall<Source<MockRequestEntity, ?>, Source<MockResponseEntity, ?>> bidiStream();
@@ -71,6 +73,7 @@ public interface MockService extends Service {
                 call(this::streamResponse),
                 call(this::unitStreamResponse),
                 call(this::streamRequest),
+                call(this::streamRequestRespondAfterLast),
                 call(this::streamRequestUnit),
                 call(this::bidiStream),
                 call(this::customHeaders),

@@ -64,6 +64,7 @@ trait MockService extends Service {
   def streamResponse: ServiceCall[MockRequestEntity, Source[MockResponseEntity, NotUsed]]
   def unitStreamResponse: ServiceCall[NotUsed, Source[MockResponseEntity, NotUsed]]
   def streamRequest: ServiceCall[Source[MockRequestEntity, NotUsed], MockResponseEntity]
+  def streamRequestRespondAfterLast: ServiceCall[Source[MockRequestEntity, NotUsed], MockResponseEntity]
   def streamRequestUnit: ServiceCall[Source[MockRequestEntity, NotUsed], NotUsed]
   def bidiStream: ServiceCall[Source[MockRequestEntity, NotUsed], Source[MockResponseEntity, NotUsed]]
   def customHeaders: ServiceCall[String, String]
@@ -84,6 +85,7 @@ trait MockService extends Service {
       call(streamResponse _),
       call(unitStreamResponse _),
       call(streamRequest _),
+      call(streamRequestRespondAfterLast _),
       call(streamRequestUnit _),
       call(bidiStream _),
       call(customHeaders _),
@@ -133,6 +135,10 @@ class MockServiceImpl(implicit mat: Materializer, ec: ExecutionContext) extends 
 
   override def streamRequest = ServiceCall { stream =>
     stream.runWith(Sink.head).map(head => MockResponseEntity(1, head))
+  }
+
+  override def streamRequestRespondAfterLast = ServiceCall { stream =>
+    stream.runWith(Sink.last).map(item => MockResponseEntity(23, item))
   }
 
   override def streamRequestUnit = ServiceCall { stream =>

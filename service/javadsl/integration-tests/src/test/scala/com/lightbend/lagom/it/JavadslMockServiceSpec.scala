@@ -64,6 +64,18 @@ class JavadslMockServiceSpec extends ServiceSupport {
       gotResponse.success(None)
       result should ===(new MockResponseEntity(1, requests(0)))
     }
+
+    "work with streamed requests and strict response after last" in withMockServiceClient { implicit app => client =>
+      val requests = (1 to 3).map(i => new MockRequestEntity("request", i))
+      val gotResponse = Promise[None.type]()
+      val closeWhenGotResponse = Source.maybe[MockRequestEntity].mapMaterializedValue(_.completeWith(gotResponse.future))
+      val result = client.streamRequestRespondAfterLast().invoke(
+        Source(requests).concat(closeWhenGotResponse).asJava
+      ).toCompletableFuture.get(10, TimeUnit.SECONDS)
+      gotResponse.success(None)
+      result should ===(new MockResponseEntity(23, requests.last))
+    }
+
     "work with streamed requests and unit responses" when {
       "an empty message is sent for unit" in withMockServiceClient { implicit app => client =>
         // In this case, we wait for a response from the server before closing the connection. The response will be an
