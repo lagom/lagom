@@ -20,7 +20,7 @@ object CassandraReadSideSpec {
   val noAutoCreateConfig = ConfigFactory.parseString("lagom.persistence.read-side.cassandra.tables-autocreate = false")
 }
 
-class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.defaultConfig, TestEntitySerializerRegistry) with AbstractReadSideSpec[TimeBasedUUID] {
+class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.defaultConfig, TestEntitySerializerRegistry) with AbstractReadSideSpec {
   import system.dispatcher
 
   override protected lazy val persistentEntityRegistry = new CassandraPersistentEntityRegistry(system)

@@ -14,7 +14,7 @@ import com.lightbend.lagom.javadsl.persistence._
 
 import scala.concurrent.duration._
 
-class JdbcReadSideSpec extends JdbcPersistenceSpec with AbstractReadSideSpec[Sequence] {
+class JdbcReadSideSpec extends JdbcPersistenceSpec with AbstractReadSideSpec {
   private lazy val injector = Guice.createInjector()
   override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, injector, slick)
 

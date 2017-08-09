@@ -21,7 +21,7 @@ object CassandraReadSideSpec {
   val noAutoCreateConfig = ConfigFactory.parseString("lagom.persistence.read-side.cassandra.tables-autocreate = false")
 }
 
-class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.defaultConfig) with AbstractReadSideSpec[TimeBasedUUID] {
+class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.defaultConfig) with AbstractReadSideSpec {
   import system.dispatcher
 
   private lazy val injector = Guice.createInjector()

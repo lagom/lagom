@@ -26,7 +26,7 @@ import scala.compat.java8.FutureConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-trait AbstractReadSideSpec[O <: Offset] extends ImplicitSender with ScalaFutures with Eventually { spec: ActorSystemSpec =>
+trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventually { spec: ActorSystemSpec =>
 
   import system.dispatcher
 
@@ -95,12 +95,12 @@ trait AbstractReadSideSpec[O <: Offset] extends ImplicitSender with ScalaFutures
     }
   }
 
-  private def fetchLastOffset(): O =
+  private def fetchLastOffset(): Offset =
     processorFactory()
       .buildHandler()
       .prepare(tag)
       .toScala
-      .map(_.asInstanceOf[O]) // no ClassTag, no mapTo :-(
+      .mapTo[Offset]
       .futureValue
 
   "ReadSide" must {

@@ -13,7 +13,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class SlickReadSideSpec(implicit ec: ExecutionContext)
   extends SlickPersistenceSpec(TestEntitySerializerRegistry)
-  with AbstractReadSideSpec[Sequence] {
+  with AbstractReadSideSpec {
 
   override protected val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, slick)
 

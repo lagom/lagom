@@ -22,7 +22,7 @@ import org.scalatest.time.{ Millis, Seconds, Span }
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 
-trait AbstractReadSideSpec[O <: Offset] extends ImplicitSender with ScalaFutures with Eventually { spec: ActorSystemSpec =>
+trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventually { spec: ActorSystemSpec =>
 
   import system.dispatcher
 
@@ -93,11 +93,11 @@ trait AbstractReadSideSpec[O <: Offset] extends ImplicitSender with ScalaFutures
     }
   }
 
-  private def fetchLastOffset(): O =
+  private def fetchLastOffset(): Offset =
     processorFactory()
       .buildHandler()
       .prepare(tag)
-      .map(_.asInstanceOf[O]) // no ClassTag, no mapTo :-(
+      .mapTo[Offset]
       .futureValue
 
   "ReadSide" must {
