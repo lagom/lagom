@@ -153,7 +153,7 @@ object ServiceTest {
         case asyncResult: Future[_] =>
           import testServer.executionContext
           asyncResult.map { theResult =>
-            testServer.pstop()
+            testServer.stop()
             theResult
           }.asInstanceOf[R]
         case syncResult =>
