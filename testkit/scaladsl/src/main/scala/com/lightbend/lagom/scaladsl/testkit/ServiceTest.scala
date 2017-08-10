@@ -153,16 +153,12 @@ object ServiceTest {
         case asyncResult: Future[_] =>
           import testServer.executionContext
           // whether the future `asyncResult` was successful or failed, stop the server.
-          asyncResult.transform(
-            theResult => {
+          asyncResult.andThen {
+            case theResult => {
               testServer.stop()
               theResult
-            },
-            theException => {
-              testServer.stop()
-              theException
             }
-          ).asInstanceOf[R]
+          }.asInstanceOf[R]
         case syncResult =>
           testServer.stop()
           syncResult
