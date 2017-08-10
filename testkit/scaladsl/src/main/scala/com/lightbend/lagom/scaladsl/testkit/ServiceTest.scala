@@ -152,10 +152,17 @@ object ServiceTest {
       result match {
         case asyncResult: Future[_] =>
           import testServer.executionContext
-          asyncResult.map { theResult =>
-            testServer.stop()
-            theResult
-          }.asInstanceOf[R]
+          // whether the future `asyncResult` was successful or failed, stop the server.
+          asyncResult.transform(
+            theResult => {
+              testServer.stop()
+              theResult
+            },
+            theException => {
+              testServer.stop()
+              theException
+            }
+          ).asInstanceOf[R]
         case syncResult =>
           testServer.stop()
           syncResult
@@ -192,7 +199,9 @@ object ServiceTest {
         val t0 = System.nanoTime()
         CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort,
           CassandraLauncher.classpathForResources(LagomTestConfigResource))
-        log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
+        log.debug(s"Cassandra started in ${
+          TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)
+        } ms")
         Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = false)) ++
           Configuration("lagom.cluster.join-self" -> "on")
       } else if (setup.cluster) {
