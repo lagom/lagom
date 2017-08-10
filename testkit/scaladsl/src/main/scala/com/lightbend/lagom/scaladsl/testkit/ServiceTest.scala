@@ -19,7 +19,7 @@ import play.core.DefaultWebCommands
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 
 import scala.concurrent.Future
-import scala.util.{ Random, Try }
+import scala.util.Try
 import scala.util.control.NonFatal
 
 /**
