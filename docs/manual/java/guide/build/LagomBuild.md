@@ -27,7 +27,7 @@ This system has two services, one called `hello`, and one called `hello-stream`.
 
 ### Configuring the root project
 
-In Lagom, it is typical to use a multi module build. The Lagom maven plugin will generally be configured in the root project, which can be done by adding it to the `\<plugins\>` section of your `pom.xml`:
+In Lagom, it is typical to use a multi module build. The Lagom maven plugin will generally be configured in the root project, which can be done by adding it to the `<plugins>` section of your `pom.xml`:
 
 ```xml
 <plugin>
