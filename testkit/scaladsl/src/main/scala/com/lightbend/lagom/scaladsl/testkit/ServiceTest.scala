@@ -19,7 +19,7 @@ import play.core.DefaultWebCommands
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 
 import scala.concurrent.Future
-import scala.util.Try
+import scala.util.{ Random, Try }
 import scala.util.control.NonFatal
 
 /**
@@ -152,14 +152,14 @@ object ServiceTest {
       result match {
         case asyncResult: Future[_] =>
           import testServer.executionContext
-          asyncResult.onComplete { _ =>
-            testServer.stop()
-          }
+          asyncResult.map { theResult =>
+            testServer.pstop()
+            theResult
+          }.asInstanceOf[R]
         case syncResult =>
           testServer.stop()
+          syncResult
       }
-
-      result
     } catch {
       case NonFatal(e) =>
         testServer.stop()
