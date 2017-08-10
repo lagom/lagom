@@ -33,15 +33,13 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
 
   override def handle(): Flow[EventStreamElement[Event], Done, NotUsed] = {
 
-    def executeStatements(statements: Seq[BoundStatement]): Future[Done] =
-      statements.size match {
-        case 0 => Future.successful(Done)
-        case 1 => session.executeWrite(statements.head)
-        case _ =>
-          val batch = new BatchStatement
-          batch.addAll(statements.asJava)
-          session.executeWriteBatch(batch)
-      }
+    def executeStatements(statements: Seq[BoundStatement]): Future[Done] = {
+      val batch = new BatchStatement
+      // statements is never empty, there is at least the store offset statement
+      // for simplicity we just use batch api (even if there is only one)
+      batch.addAll(statements.asJava)
+      session.executeWriteBatch(batch)
+    }
 
     Flow[EventStreamElement[Event]]
       .mapAsync(parallelism = 1) { elem =>
