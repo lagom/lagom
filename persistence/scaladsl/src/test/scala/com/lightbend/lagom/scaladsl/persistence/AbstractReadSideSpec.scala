@@ -20,8 +20,6 @@ import com.lightbend.lagom.scaladsl.persistence.TestEntity.Mode
 import org.scalactic.source.Position
 import org.scalatest.BeforeAndAfter
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
-import org.scalatest.time.{ Millis, Seconds, Span }
-
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 
@@ -31,8 +29,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   import system.dispatcher
 
   // patience config for all async code
-  override implicit def patienceConfig =
-    PatienceConfig(timeout = scaled(Span(20, Seconds)), interval = scaled(Span(15, Millis)))
+  override implicit val patienceConfig = PatienceConfig(20.seconds, 150.millis)
 
   implicit val mat = ActorMaterializer()
 
