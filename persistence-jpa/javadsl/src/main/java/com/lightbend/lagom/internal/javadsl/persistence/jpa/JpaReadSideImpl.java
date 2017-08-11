@@ -133,24 +133,24 @@ public class JpaReadSideImpl implements JpaReadSide {
                 @SuppressWarnings("unchecked") Class<Event> eventClass = (Class<Event>) event.getClass();
                 @SuppressWarnings("unchecked") BiConsumer<EntityManager, Event> eventHandler =
                         (BiConsumer<EntityManager, Event>) eventHandlers.get(eventClass);
-                if (eventHandler != null) {
-                    return jpa.withTransaction(entityManager -> {
-                        if (log.isDebugEnabled())
-                            log.debug("Starting handler for event {} at offset {} in JpaReadSideHandler: {}",
-                                    eventClass.getName(), offset, readSideId);
-                        eventHandler.accept(entityManager, event);
-                        updateOffset(entityManager, offset);
-                        if (log.isDebugEnabled())
-                            log.debug("Completed handler for event {} at offset {} in JpaReadSideHandler: {}",
-                                    eventClass.getName(), offset, readSideId);
-                        return Done.getInstance();
-                    });
-                } else {
+
+                return jpa.withTransaction(entityManager -> {
                     if (log.isDebugEnabled())
-                        log.debug("Unhandled event {} at offset {} in JpaReadSideHandler: {}",
+                        log.debug("Starting handler for event {} at offset {} in JpaReadSideHandler: {}",
+                            eventClass.getName(), offset, readSideId);
+                    if (eventHandler != null) {
+                        eventHandler.accept(entityManager, event);
+                    } else {
+                        if (log.isDebugEnabled())
+                            log.debug("Unhandled event {} at offset {} in JpaReadSideHandler: {}",
                                 eventClass.getName(), offset, readSideId);
-                    return CompletableFuture.completedFuture(Done.getInstance());
-                }
+                    }
+                    updateOffset(entityManager, offset);
+                    if (log.isDebugEnabled())
+                        log.debug("Completed handler for event {} at offset {} in JpaReadSideHandler: {}",
+                            eventClass.getName(), offset, readSideId);
+                    return Done.getInstance();
+                });
             });
         }
 

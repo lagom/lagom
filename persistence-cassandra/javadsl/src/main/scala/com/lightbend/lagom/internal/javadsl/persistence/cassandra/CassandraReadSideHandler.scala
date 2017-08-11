@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.internal.javadsl.persistence.cassandra
 
+import java.util
 import java.util.concurrent.CompletionStage
 import java.util.function.BiFunction
 import java.util.{ UUID, List => JList }
@@ -28,7 +29,9 @@ import scala.concurrent.{ ExecutionContext, Future }
  * Internal API
  */
 private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEvent[Event], Handler](
-  session: CassandraSession, handlers: Map[Class[_ <: Event], Handler], dispatcher: String
+  session:    CassandraSession,
+  handlers:   Map[Class[_ <: Event], Handler],
+  dispatcher: String
 )(implicit ec: ExecutionContext) extends ReadSideHandler[Event] {
 
   private val log = LoggerFactory.getLogger(this.getClass)
@@ -36,28 +39,37 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
   protected def invoke(handler: Handler, event: Event, offset: Offset): CompletionStage[JList[BoundStatement]]
 
   override def handle(): Flow[Pair[Event, Offset], Done, _] = {
-    akka.stream.scaladsl.Flow[Pair[Event, Offset]].mapAsync(parallelism = 1) { pair =>
-      handlers.get(pair.first.getClass.asInstanceOf[Class[Event]]) match {
-        case Some(handler) =>
-          for {
-            statements <- invoke(handler, pair.first, pair.second).toScala
-            done <- statements.size match {
-              case 0 => Future.successful(Done.getInstance())
-              case 1 => session.executeWrite(statements.get(0)).toScala
-              case _ =>
-                val batch = new BatchStatement
-                val iter = statements.iterator()
-                while (iter.hasNext)
-                  batch.add(iter.next)
-                session.executeWriteBatch(batch).toScala
-            }
-          } yield done
-        case None =>
-          if (log.isDebugEnabled)
-            log.debug("Unhandled event [{}]", pair.first.getClass.getName)
-          Future.successful(Done.getInstance())
+
+    def executeStatements(statements: JList[BoundStatement]): Future[Done] = {
+      if (statements.isEmpty) {
+        Future.successful(Done.getInstance())
+      } else {
+        val batch = new BatchStatement
+        batch.addAll(statements)
+        session.executeWriteBatch(batch).toScala
       }
-    }.withAttributes(ActorAttributes.dispatcher(dispatcher)).asJava
+    }
+
+    akka.stream.scaladsl.Flow[Pair[Event, Offset]]
+      .mapAsync(parallelism = 1) { pair =>
+
+        val Pair(event, offset) = pair
+        val eventClass = event.getClass
+
+        val handler =
+          handlers.getOrElse(
+            // lookup handler
+            eventClass,
+            // fallback to empty handler if none
+            {
+              if (log.isDebugEnabled()) log.debug("Unhandled event [{}]", eventClass.getName)
+              CassandraAutoReadSideHandler.emptyHandler[Event, Event].asInstanceOf[Handler]
+            }
+          )
+
+        invoke(handler, event, offset).toScala.flatMap(executeStatements)
+
+      }.withAttributes(ActorAttributes.dispatcher(dispatcher)).asJava
   }
 }
 
@@ -65,7 +77,11 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
  * Internal API
  */
 private[cassandra] object CassandraAutoReadSideHandler {
+
   type Handler[Event] = (_ <: Event, Offset) => CompletionStage[JList[BoundStatement]]
+
+  def emptyHandler[Event, E <: Event]: Handler[Event] =
+    (_: E, _: Offset) => Future.successful(util.Collections.emptyList[BoundStatement]()).toJava
 }
 
 /**
@@ -92,10 +108,13 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
   override protected def invoke(handler: Handler[Event], event: Event, offset: Offset): CompletionStage[JList[BoundStatement]] = {
     val boundStatements = {
       for {
-        statements <- (handler.asInstanceOf[(Event, Offset) => CompletionStage[JList[BoundStatement]]].apply(event, offset).toScala)
+        statements <- handler.asInstanceOf[(Event, Offset) => CompletionStage[JList[BoundStatement]]].apply(event, offset).toScala
       } yield {
         val akkaOffset = OffsetAdapter.dslOffsetToOffset(offset)
-        TreePVector.from(statements).plus(offsetDao.bindSaveOffset(akkaOffset)).asInstanceOf[JList[BoundStatement]]
+        TreePVector
+          .from(statements)
+          .plus(offsetDao.bindSaveOffset(akkaOffset))
+          .asInstanceOf[JList[BoundStatement]]
       }
     }
 
@@ -115,6 +134,7 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
       OffsetAdapter.offsetToDslOffset(dao.loadedOffset)
     }).toJava
   }
+
 }
 
 /**

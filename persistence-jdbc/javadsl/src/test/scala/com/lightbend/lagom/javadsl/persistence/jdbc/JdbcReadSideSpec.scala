@@ -8,6 +8,7 @@ import java.util.concurrent.CompletionStage
 
 import com.google.inject.Guice
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc.JdbcPersistentEntityRegistry
+import com.lightbend.lagom.javadsl.persistence.Offset.Sequence
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.javadsl.persistence._
 
