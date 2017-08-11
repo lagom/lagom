@@ -84,25 +84,27 @@ private[lagom] class JdbcReadSideImpl(slick: SlickProvider, offsetStore: SlickOf
       }
 
     override def handle(): Flow[EventStreamElement[Event], Done, NotUsed] =
-      akka.stream.scaladsl.Flow[EventStreamElement[Event]].mapAsync(parallelism = 1) { element =>
-        eventHandlers.get(element.event.getClass) match {
-          case Some(handler) =>
-            slick.db.run {
-              (for {
-                _ <- SimpleDBIO { ctx =>
-                  handler.asInstanceOf[(Connection, EventStreamElement[Event]) => Unit](ctx.connection, element)
-                }
-                _ <- offsetDao.updateOffsetQuery(element.offset)
-              } yield {
-                Done.getInstance()
-              }).transactionally
+      Flow[EventStreamElement[Event]]
+        .mapAsync(parallelism = 1) { element =>
+
+          val dbAction = eventHandlers.get(element.event.getClass)
+            .map { handler =>
+              val castedHandler = handler.asInstanceOf[(Connection, EventStreamElement[Event]) => Unit]
+              SimpleDBIO { ctx => castedHandler(ctx.connection, element) }
             }
-          case None =>
-            if (log.isDebugEnabled)
-              log.debug("Unhandled event [{}]", element.event.getClass.getName)
-            Future.successful(Done.getInstance())
+            .getOrElse {
+              // fallback to empty action if no handler is found
+              if (log.isDebugEnabled) log.debug("Unhandled event [{}]", element.event.getClass.getName)
+              DBIO.successful(())
+            }
+            .flatMap { _ =>
+              offsetDao.updateOffsetQuery(element.offset)
+            }
+            .map(_ => Done)
+
+          slick.db.run(dbAction.transactionally)
+
         }
-      }
 
   }
 }
