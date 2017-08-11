@@ -95,25 +95,30 @@ private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetSto
     }
 
     override def handle(): Flow[Pair[Event, Offset], Done, Any] = {
-      akka.stream.scaladsl.Flow[Pair[Event, Offset]].mapAsync(parallelism = 1) { pair =>
-        eventHandlers.get(pair.first.getClass) match {
-          case Some(handler) =>
-            slick.db.run {
-              (for {
-                _ <- SimpleDBIO { ctx =>
-                  handler.asInstanceOf[(Connection, Event, Offset) => Unit](ctx.connection, pair.first, pair.second)
-                }
-                _ <- offsetDao.updateOffsetQuery(OffsetAdapter.dslOffsetToOffset(pair.second))
-              } yield {
-                Done.getInstance()
-              }).transactionally
+
+      akka.stream.scaladsl.Flow[Pair[Event, Offset]]
+        .mapAsync(parallelism = 1) { pair =>
+
+          val dbAction = eventHandlers.get(pair.first.getClass)
+            .map { handler =>
+              // apply handler if found
+              val castedHandler = handler.asInstanceOf[(Connection, Event, Offset) => Unit]
+              SimpleDBIO { ctx => castedHandler(ctx.connection, pair.first, pair.second) }
             }
-          case None =>
-            if (log.isDebugEnabled)
-              log.debug("Unhandled event [{}]", pair.first.getClass.getName)
-            Future.successful(Done.getInstance())
-        }
-      }.asJava
+            .getOrElse {
+              // fallback to empty action if no handler is found
+              if (log.isDebugEnabled) log.debug("Unhandled event [{}]", pair.first.getClass.getName)
+              DBIO.successful(())
+            }
+            .flatMap { _ =>
+              // whatever it happens we save the offset
+              offsetDao.updateOffsetQuery(OffsetAdapter.dslOffsetToOffset(pair.second))
+            }
+            .map(_ => Done)
+
+          slick.db.run(dbAction.transactionally)
+
+        }.asJava
     }
   }
 }
