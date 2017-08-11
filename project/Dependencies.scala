@@ -5,7 +5,7 @@ object Dependencies {
 
   // Version numbers
   val PlayVersion = "2.5.13"
-  val AkkaVersion = "2.4.19"
+  val AkkaVersion = "2.4.20"
   val AkkaHttpVersion = "10.0.9"
   val ScalaVersion = "2.11.11"
   val AkkaPersistenceCassandraVersion = "0.29"
