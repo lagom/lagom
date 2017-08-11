@@ -73,7 +73,7 @@ private[lagom] class TestTopic[Message, Event <: AggregateEvent[Event]](
   override def subscribe: Subscriber[Message] = new Subscriber[Message] {
     override def withGroupId(groupId: String): Subscriber[Message] = this
 
-    override def atMostOnceSource(): Source[Message, _] = atMostOnceSourceWithKey.map(_._2)
+    override def atMostOnceSource: Source[Message, _] = atMostOnceSourceWithKey.map(_._2)
 
     override def atMostOnceSourceWithKey: Source[(String, Message), _] = {
       val serializer = topicCall.messageSerializer

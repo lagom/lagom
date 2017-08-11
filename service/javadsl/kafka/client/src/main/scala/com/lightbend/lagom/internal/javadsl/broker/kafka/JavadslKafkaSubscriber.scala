@@ -115,7 +115,7 @@ private[lagom] class JavadslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, t
   }
 
   override def atLeastOnceWithKey(flow: Flow[Pair[String, Message], Done, _]): CompletionStage[Done] = {
-    val sflow = ScalaFlow[(String, Message)].map(tup => Pair[String, Message](tup._1, tup._2)).via(flow)
+    val sflow = ScalaFlow[(String, Message)].map(tup => Pair(tup._1, tup._2)).via(flow)
     atLeastOnceWithKeyImpl(sflow)
   }
 
