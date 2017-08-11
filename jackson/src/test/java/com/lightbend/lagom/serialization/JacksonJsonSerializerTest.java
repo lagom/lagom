@@ -11,6 +11,8 @@ import org.pcollections.PVector;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.lightbend.lagom.internal.jackson.JacksonJsonSerializer;
+
+import java.io.NotSerializableException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -47,7 +49,7 @@ public class JacksonJsonSerializerTest {
 
   private final JacksonJsonSerializer serializer = new JacksonJsonSerializer((ExtendedActorSystem) system);
 
-  private void checkSerialization(Object obj, boolean expectedCompression) {
+  private void checkSerialization(Object obj, boolean expectedCompression) throws NotSerializableException {
       // check that it is configured
     assertEquals(JacksonJsonSerializer.class, SerializationExtension.get(system).serializerFor(obj.getClass())
         .getClass());
