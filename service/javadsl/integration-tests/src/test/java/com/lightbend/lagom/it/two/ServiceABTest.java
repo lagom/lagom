@@ -13,7 +13,7 @@ public class ServiceABTest{
   
   @Test
   public void testInvoke() throws Exception {
-    withServer(defaultSetup().withCluster(false).withConfigureBuilder(b ->  
+    withServer(defaultSetup().withCluster(false).configureBuilder(b ->
       b.bindings(new ServiceAModule())
       .overrides(bind(ServiceB.class).to(ServiceBTestStub.class))), server -> {
     

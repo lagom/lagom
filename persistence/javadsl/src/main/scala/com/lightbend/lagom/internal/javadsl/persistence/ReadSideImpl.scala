@@ -16,6 +16,7 @@ import com.google.inject.Injector
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings, ClusterStartupTask }
 import com.lightbend.lagom.javadsl.persistence._
+import com.typesafe.config.Config
 import play.api.Configuration
 
 import scala.collection.JavaConverters._
@@ -25,9 +26,10 @@ import scala.concurrent.duration._
 import scala.util.control.NonFatal
 
 @Singleton
-class ReadSideConfigProvider @Inject() (configuration: Configuration) extends Provider[ReadSideConfig] {
+class ReadSideConfigProvider @Inject() (configuration: Config) extends Provider[ReadSideConfig] {
+
   lazy val get = {
-    val conf = configuration.underlying.getConfig("lagom.persistence.read-side")
+    val conf = configuration.getConfig("lagom.persistence.read-side")
     ReadSideConfig(
       conf.getDuration("failure-exponential-backoff.min", TimeUnit.MILLISECONDS).millis,
       conf.getDuration("failure-exponential-backoff.max", TimeUnit.MILLISECONDS).millis,

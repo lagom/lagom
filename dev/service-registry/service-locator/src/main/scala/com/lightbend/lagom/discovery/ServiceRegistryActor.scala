@@ -39,6 +39,10 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
   private var router = PartialFunction.empty[Route, InetSocketAddress]
   private var routerFunctions = Seq.empty[PartialFunction[Route, InetSocketAddress]]
 
+  override def preStart(): Unit = {
+    rebuildRouter()
+  }
+
   override def receive: Receive = {
     case Lookup(name) => sender() ! registry.get(name).map(_.uri())
     case Remove(name) =>

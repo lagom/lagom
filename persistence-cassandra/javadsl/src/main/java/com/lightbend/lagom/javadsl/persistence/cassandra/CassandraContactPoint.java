@@ -7,6 +7,10 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import java.net.URI;
 
+/**
+ * @deprecated since 1.4.0 - This class became obsolete and will be removed on next release.
+ */
+@Deprecated
 public final class CassandraContactPoint {
   private final String name;
   private final URI uri;

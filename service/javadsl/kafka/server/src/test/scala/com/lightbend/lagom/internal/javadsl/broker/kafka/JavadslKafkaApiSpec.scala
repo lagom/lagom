@@ -3,74 +3,78 @@
  */
 package com.lightbend.lagom.internal.javadsl.broker.kafka
 
-import java.net.URI
-import java.util.Optional
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{ CompletableFuture, CompletionStage, CountDownLatch, TimeUnit }
-import java.util.function.{ Function => JFunction }
 
-import akka.{ Done, NotUsed }
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.japi.{ Pair => JPair }
+import akka.persistence.query.{ NoOffset, Offset, Sequence }
 import akka.stream.javadsl.{ Source => JSource }
-import akka.stream.scaladsl.{ Flow, Sink, Source, SourceQueueWithComplete }
+import akka.stream.scaladsl.{ Flow, Sink, Source, SourceQueue }
 import akka.stream.{ Materializer, OverflowStrategy }
-import akka.testkit.EventFilter
+import akka.{ Done, NotUsed }
 import com.google.inject.AbstractModule
-import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec.{ InMemoryOffsetStore, NullPersistentEntityRegistry }
-import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
+import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec._
+import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter.{ dslOffsetToOffset, offsetToDslOffset }
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer
-import com.lightbend.lagom.internal.kafka.KafkaLocalServer.ZooKeeperLocalServer
 import com.lightbend.lagom.javadsl.api.ScalaService._
 import com.lightbend.lagom.javadsl.api._
-import com.lightbend.lagom.javadsl.api.broker.{ Topic => ApiTopic }
+import com.lightbend.lagom.javadsl.api.broker.Topic
 import com.lightbend.lagom.javadsl.broker.TopicProducer
-import com.lightbend.lagom.javadsl.persistence._
+import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, PersistentEntityRef, PersistentEntityRegistry, Offset => JOffset }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
-import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
-import kafka.admin.AdminUtils
-import kafka.utils.ZkUtils
-import org.I0Itec.zkclient.ZkClient
-import org.I0Itec.zkclient.exception.ZkMarshallingError
-import org.I0Itec.zkclient.serialize.ZkSerializer
+import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
+import org.scalatest.{ BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike }
 import play.api.inject._
 import play.api.inject.guice.GuiceApplicationBuilder
 
-import scala.collection.concurrent.TrieMap
+import scala.collection.mutable
+import scala.compat.java8.FunctionConverters._
 import scala.concurrent.duration._
-import scala.concurrent.{ ExecutionContext, Future, Promise }
+import scala.concurrent.{ ExecutionContext, Promise }
 
-class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures {
+class JavadslKafkaApiSpec extends WordSpecLike
+  with Matchers
+  with BeforeAndAfter
+  with BeforeAndAfterAll
+  with ScalaFutures {
+
+  private lazy val offsetStore = new InMemoryOffsetStore
 
   private val application = {
     new GuiceApplicationBuilder()
       .bindings(
-        bind[OffsetStore].toInstance(InMemoryOffsetStore),
+        bind[OffsetStore].toInstance(offsetStore),
         bind[PersistentEntityRegistry].toInstance(NullPersistentEntityRegistry),
         JavadslKafkaApiSpec.testModule,
         bind[ServiceLocator].to[ConfigurationServiceLocator]
-      ).configure(
-          "akka.remote.netty.tcp.port" -> "0",
-          "akka.remote.netty.tcp.hostname" -> "127.0.0.1",
-          "akka.persistence.journal.plugin" -> "akka.persistence.journal.inmem",
-          "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local",
-          "lagom.services.kafka_native" -> s"tcp://localhost:${KafkaLocalServer.DefaultPort}"
-        ).build()
+      )
+      .configure(
+        "akka.remote.netty.tcp.port" -> "0",
+        "akka.remote.netty.tcp.hostname" -> "127.0.0.1",
+        "akka.persistence.journal.plugin" -> "akka.persistence.journal.inmem",
+        "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local",
+        "lagom.services.kafka_native" -> s"tcp://localhost:${KafkaLocalServer.DefaultPort}"
+      )
+      .build()
   }
 
-  @volatile private var kafkaServer = KafkaLocalServer(cleanOnStart = true)
+  private val kafkaServer = KafkaLocalServer(cleanOnStart = true)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
 
     kafkaServer.start()
 
-    KafkaSpecTools.createTopics((1 to JavadslKafkaApiSpec.topicCount).map(i => s"test$i"))
-
     val system = application.injector.instanceOf(classOf[ActorSystem])
     Cluster(system).join(Cluster(system).selfAddress)
+  }
+
+  before {
+    // Reset the messageTransformer in case a previous test failed after setting it
+    messageTransformer = identity
   }
 
   override def afterAll(): Unit = {
@@ -87,194 +91,217 @@ class JavadslKafkaApiSpec extends WordSpecLike with Matchers with BeforeAndAfter
     val testService = application.injector.instanceOf(classOf[JavadslKafkaApiSpec.TestService])
 
     "eagerly publish event stream registered in the service topic implementation" in {
-      val queue = JavadslKafkaApiSpec.test1Queue.futureValue
-      val testTopic = testService.test1Topic()
-
       val messageReceived = Promise[String]()
-      testTopic.subscribe().withGroupId("testservice1").atLeastOnce(Flow.fromFunction { (message: String) =>
-        messageReceived.trySuccess(message)
-        Done
-      }.asJava)
+      testService.test1Topic()
+        .subscribe()
+        .withGroupId("testservice1")
+        .atLeastOnce {
+          Flow[String].map { message =>
+            messageReceived.trySuccess(message)
+            Done
+          }.asJava
+        }
 
       val messageToPublish = "msg"
-      queue.offer(new JPair(messageToPublish, Offset.NONE))
+      test1EventJournal.append(messageToPublish)
 
-      messageToPublish shouldBe messageReceived.future.futureValue
+      messageReceived.future.futureValue shouldBe messageToPublish
     }
 
     "self-heal if failure occurs while running the publishing stream" in {
-      implicit val system = application.injector.instanceOf(classOf[ActorSystem])
-      val queue = JavadslKafkaApiSpec.test2Queue.futureValue
-      val testTopic = testService.test2Topic()
-
+      // Create a subscriber that tracks the first two messages it receives
       val firstTimeReceived = Promise[String]()
       val secondTimeReceived = Promise[String]()
-      val messageCommitFailureInjected = new CountDownLatch(1)
+      testService.test2Topic()
+        .subscribe()
+        .withGroupId("testservice2")
+        .atLeastOnce {
+          Flow[String].map { message =>
+            if (!firstTimeReceived.isCompleted) {
+              firstTimeReceived.trySuccess(message)
+            } else if (!secondTimeReceived.isCompleted)
+              secondTimeReceived.trySuccess(message)
+            else ()
+            Done
+          }.asJava
+        }
 
-      testTopic.subscribe().withGroupId("testservice2").atLeastOnce(Flow.fromFunction { (message: String) =>
-        if (!firstTimeReceived.isCompleted) {
-          firstTimeReceived.trySuccess(message)
-          messageCommitFailureInjected.await()
-        } else if (!secondTimeReceived.isCompleted)
-          secondTimeReceived.trySuccess(message)
-        else ()
-        Done
-      }.asJava)
-
-      val firstMessageToPublish = "firstMessage"
-      queue.offer(new JPair(firstMessageToPublish, Offset.NONE))
-
-      // wait until first message is received
-      firstMessageToPublish shouldBe firstTimeReceived.future.futureValue
-
-      // now simulate a failure: this will results in an exception being thrown when committing
-      // the offset of the first processed message.
-      EventFilter[JavadslKafkaApiSpec.InMemoryOffsetStore.FakeCassandraException]() intercept {
-        JavadslKafkaApiSpec.InMemoryOffsetStore.injectFailure = true
-        // Let the flow processing continue. A failure is expected to occur when publishing the next message.
-        messageCommitFailureInjected.countDown()
+      // Insert a mapping function into the producer flow that transforms each message
+      val firstMessagePublishedSuccessfully = new CountDownLatch(1)
+      messageTransformer = { message =>
+        firstMessagePublishedSuccessfully.countDown()
+        s"$message-transformed"
       }
 
-      // After the exception was logged, let's remove the cause of the failure and check the stream computation resumes.
-      JavadslKafkaApiSpec.InMemoryOffsetStore.injectFailure = false
+      val firstMessageToPublish = "firstMessage"
+      test2EventJournal.append(firstMessageToPublish)
 
-      // publish a second message.
+      // Wait until first message is seen by the publisher
+      assert(firstMessagePublishedSuccessfully.await(10, TimeUnit.SECONDS))
+      // Ensure the transformed message is visible to the subscriber
+      firstTimeReceived.future.futureValue shouldBe s"$firstMessageToPublish-transformed"
+
+      // Now simulate a failure: this will result in an exception being
+      // thrown before committing the offset of the next processed message.
+      // It should retry automatically, which means it should throw the error
+      // continuously until successful.
+      val secondMessageTriggeredErrorTwice = new CountDownLatch(2)
+      messageTransformer = { message =>
+        secondMessageTriggeredErrorTwice.countDown()
+        println(s"Expect to see an error below: Error processing message: [$message]")
+        throw new RuntimeException(s"Error processing message: [$message]")
+      }
+
+      // Publish a second message.
       val secondMessageToPublish = "secondMessage"
-      queue.offer(new JPair(secondMessageToPublish, Offset.NONE))
+      test2EventJournal.append(secondMessageToPublish)
 
-      // The subscriber flow should have self-healed and hence it will process the second message (this time, succeeding)
-      secondMessageToPublish shouldBe secondTimeReceived.future.futureValue
+      // Since the count-down happens before the error is thrown, trying
+      // twice ensures that the first error was handled completely.
+      assert(secondMessageTriggeredErrorTwice.await(30, TimeUnit.SECONDS))
+
+      // After the exception was handled, remove the cause
+      // of the failure and check that production resumes.
+      val secondMessagePublishedSuccessfully = new CountDownLatch(1)
+      messageTransformer = { message =>
+        secondMessagePublishedSuccessfully.countDown()
+        s"$message-transformed"
+      }
+      assert(secondMessagePublishedSuccessfully.await(60, TimeUnit.SECONDS))
+
+      // The subscriber flow should be unaffected,
+      // hence it will process the second message
+      secondTimeReceived.future.futureValue shouldBe s"$secondMessageToPublish-transformed"
     }
 
     "keep track of the read-side offset when publishing events" in {
       implicit val ec = application.injector.instanceOf(classOf[ExecutionContext])
-      val info = application.injector.instanceOf(classOf[ServiceInfo])
-      val queue = JavadslKafkaApiSpec.test3Queue.futureValue
-      val testTopic = testService.test3Topic()
+      def reloadOffset() =
+        offsetStore.prepare("topicProducer-" + testService.test3Topic().topicId().value(), "singleton").futureValue
 
-      def trackedOffset = JavadslKafkaApiSpec.InMemoryOffsetStore.prepare("topicProducer-" + testTopic.topicId().value(), "singleton")
-        .map(dao => OffsetAdapter.offsetToDslOffset(dao.loadedOffset)).futureValue
+      // No message was consumed from this topic, hence we expect the last stored offset to be NoOffset
+      val offsetDao = reloadOffset()
+      val initialOffset = offsetDao.loadedOffset
+      initialOffset shouldBe NoOffset
 
-      // No message was consumed from this topic, hence we expect the last stored offset to be NONE
-      trackedOffset shouldBe Offset.NONE
+      // Fake setting an offset to simulate a topic that has been restarted
+      offsetDao.saveOffset(Sequence(1))
 
-      val messageReceived = Promise[String]()
-      testTopic.subscribe().withGroupId("testservice3").atLeastOnce(Flow.fromFunction { (message: String) =>
-        messageReceived.trySuccess(message)
-        Done
-      }.asJava)
+      // Put some messages in the stream
+      test3EventJournal.append("firstMessage")
+      test3EventJournal.append("secondMessage")
+      test3EventJournal.append("thirdMessage")
 
-      val messageToPublish = "msg"
-      val messageOffset = Offset.sequence(1)
-      queue.offer(new JPair(messageToPublish, messageOffset))
-      messageReceived.future.futureValue shouldBe messageToPublish
+      // Wait for a subscriber to consume them all (which ensures they've all been published)
+      val allMessagesReceived = new CountDownLatch(3)
+      testService.test3Topic()
+        .subscribe()
+        .withGroupId("testservice3")
+        .atLeastOnce {
+          Flow[String].map { _ =>
+            allMessagesReceived.countDown()
+            Done
+          }.asJava
+        }
+      assert(allMessagesReceived.await(10, TimeUnit.SECONDS))
 
-      // After consuming a message we expect the offset store to have been updated with the offset of
-      // the consumed message
-      trackedOffset shouldBe messageOffset
+      // After publishing all of the messages we expect the offset store
+      // to have been updated with the offset of the last consumed message
+      val updatedOffset = reloadOffset().loadedOffset
+      updatedOffset shouldBe Sequence(2)
     }
 
     "self-heal at-least-once consumer stream if a failure occurs" in {
-      val queue = JavadslKafkaApiSpec.test4Queue.futureValue
-      val testTopic = testService.test4Topic()
       val materialized = new CountDownLatch(2)
 
       @volatile var failOnMessageReceived = true
-      testTopic.subscribe().withGroupId("testservice4").atLeastOnce(Flow.fromFunction { (message: String) =>
-        if (failOnMessageReceived) {
-          failOnMessageReceived = false
-          throw new IllegalStateException("Simulate consumer failure")
-        } else Done
-      }.mapMaterializedValue(_ => materialized.countDown()).asJava)
+      testService.test4Topic()
+        .subscribe()
+        .withGroupId("testservice4")
+        .atLeastOnce {
+          Flow[String].map { _ =>
+            if (failOnMessageReceived) {
+              failOnMessageReceived = false
+              println("Expect to see an error below: Simulate consumer failure")
+              throw new IllegalStateException("Simulate consumer failure")
+            } else Done
+          }.mapMaterializedValue { _ =>
+            materialized.countDown()
+          }.asJava
+        }
 
-      val messageSent = "msg"
-      queue.offer(new JPair(messageSent, Offset.NONE))
+      test4EventJournal.append("message")
 
       // After throwing the error, the flow should be rematerialized, so consumption resumes
-      materialized.await(10, TimeUnit.SECONDS)
+      assert(materialized.await(10, TimeUnit.SECONDS))
     }
 
     "self-heal at-most-once consumer stream if a failure occurs" in {
       implicit val mat = application.injector.instanceOf(classOf[Materializer])
-      implicit val ec = application.injector.instanceOf(classOf[ExecutionContext])
       case object SimulateFailure extends RuntimeException
 
-      val queue = JavadslKafkaApiSpec.test5Queue.futureValue
-      val testTopic = testService.test5Topic()
-
-      // Let's publish a messages to the topic
-      val message = "message"
-      queue.offer(new JPair(message, Offset.NONE))
+      // Let's publish a message to the topic
+      test5EventJournal.append("message")
 
       // Now we register a consumer that will fail while processing a message. Because we are using at-most-once
       // delivery, the message that caused the failure won't be re-processed.
       @volatile var countProcessedMessages = 0
-      val expectFailure = testTopic.subscribe().withGroupId("testservice5").atMostOnceSource().asScala
-        .via(Flow.fromFunction { (message: String) =>
-          countProcessedMessages += 1
-          throw SimulateFailure
-        })
+      val expectFailure = testService.test5Topic()
+        .subscribe()
+        .withGroupId("testservice5")
+        .atMostOnceSource()
+        .asScala
+        .via {
+          Flow[String].map { _ =>
+            countProcessedMessages += 1
+            throw SimulateFailure
+          }
+        }
         .runWith(Sink.ignore)
 
       expectFailure.failed.futureValue shouldBe an[SimulateFailure.type]
       countProcessedMessages shouldBe 1
     }
-  }
 
-}
-
-object KafkaSpecTools {
-
-  // copy pasted from Kafka sources to make it visible (in Kafka that is pakage private
-  private[this] object StringSerializer extends ZkSerializer {
-
-    @throws(classOf[ZkMarshallingError])
-    def serialize(data: Object): Array[Byte] = data.asInstanceOf[String].getBytes("UTF-8")
-
-    @throws(classOf[ZkMarshallingError])
-    def deserialize(bytes: Array[Byte]): Object = {
-      if (bytes == null)
-        null
-      else
-        new String(bytes, "UTF-8")
+    "allow the consumer to batch" in {
+      val batchSize = 4
+      val latch = new CountDownLatch(batchSize)
+      testService.test6Topic()
+        .subscribe()
+        .atLeastOnce {
+          Flow[String].grouped(batchSize).mapConcat { messages =>
+            messages.map { _ =>
+              latch.countDown()
+              Done
+            }
+          }.asJava
+        }
+      for (i <- 1 to batchSize) test6EventJournal.append(i.toString)
+      assert(latch.await(10, TimeUnit.SECONDS))
     }
-  }
-
-  def createTopics(topics: Seq[String]): Any = {
-    // based on https://stackoverflow.com/a/23360100/103190
-    val zkClient = new ZkClient(s"localhost:${ZooKeeperLocalServer.DefaultPort}", 1000, 1000, StringSerializer)
-    val zkUtils: kafka.utils.ZkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
-    topics.foreach(t =>
-      AdminUtils.createTopic(zkUtils, t, 1, 1))
-    zkClient.close()
   }
 
 }
 
 object JavadslKafkaApiSpec {
 
-  val topicCount = 5 // this value is used in beforeAll to ensure all topics exist in Kafka.
+  private val test1EventJournal = new EventJournal[String]
+  private val test2EventJournal = new EventJournal[String]
+  private val test3EventJournal = new EventJournal[String]
+  private val test4EventJournal = new EventJournal[String]
+  private val test5EventJournal = new EventJournal[String]
+  private val test6EventJournal = new EventJournal[String]
 
-  private val (test1Source, test1Queue) = publisher
-  private val (test2Source, test2Queue) = publisher
-  private val (test3Source, test3Queue) = publisher
-  private val (test4Source, test4Queue) = publisher
-  private val (test5Source, test5Queue) = publisher
-
-  private def publisher = {
-    val promise = Promise[SourceQueueWithComplete[JPair[String, Offset]]]()
-    val source = Source.queue[JPair[String, Offset]](8, OverflowStrategy.fail)
-      .mapMaterializedValue(queue => promise.trySuccess(queue))
-
-    (source, promise.future)
-  }
+  // Allows tests to insert logic into the producer stream
+  @volatile var messageTransformer: String => String = identity
 
   trait TestService extends Service {
-    def test1Topic(): ApiTopic[String]
-    def test2Topic(): ApiTopic[String]
-    def test3Topic(): ApiTopic[String]
-    def test4Topic(): ApiTopic[String]
-    def test5Topic(): ApiTopic[String]
+    def test1Topic(): Topic[String]
+    def test2Topic(): Topic[String]
+    def test3Topic(): Topic[String]
+    def test4Topic(): Topic[String]
+    def test5Topic(): Topic[String]
+    def test6Topic(): Topic[String]
 
     override def descriptor(): Descriptor =
       named("testservice")
@@ -283,24 +310,28 @@ object JavadslKafkaApiSpec {
           topic("test2", test2Topic _),
           topic("test3", test3Topic _),
           topic("test4", test4Topic _),
-          topic("test5", test5Topic _)
+          topic("test5", test5Topic _),
+          topic("test6", test6Topic _)
         )
   }
 
   trait TestEvent extends AggregateEvent[TestEvent]
 
   class TestServiceImpl extends TestService {
-    override def test1Topic(): ApiTopic[String] = createTopicProducer(test1Source)
-    override def test2Topic(): ApiTopic[String] = createTopicProducer(test2Source)
-    override def test3Topic(): ApiTopic[String] = createTopicProducer(test3Source)
-    override def test4Topic(): ApiTopic[String] = createTopicProducer(test4Source)
-    override def test5Topic(): ApiTopic[String] = createTopicProducer(test5Source)
+    override def test1Topic(): Topic[String] = createTopicProducer(test1EventJournal)
+    override def test2Topic(): Topic[String] = createTopicProducer(test2EventJournal)
+    override def test3Topic(): Topic[String] = createTopicProducer(test3EventJournal)
+    override def test4Topic(): Topic[String] = createTopicProducer(test4EventJournal)
+    override def test5Topic(): Topic[String] = createTopicProducer(test5EventJournal)
+    override def test6Topic(): Topic[String] = createTopicProducer(test6EventJournal)
 
-    private def createTopicProducer(publisher: Source[JPair[String, Offset], _]): ApiTopic[String] = {
-      TopicProducer.singleStreamWithOffset(new JFunction[Offset, JSource[JPair[String, Offset], Any]] {
-        def apply(offset: Offset) = publisher.asJava
-      })
-    }
+    private def createTopicProducer(eventJournal: EventJournal[String]): Topic[String] =
+      TopicProducer.singleStreamWithOffset[String]({ fromOffset: JOffset =>
+        eventJournal
+          .eventStream(dslOffsetToOffset(fromOffset))
+          .map(element => new JPair(messageTransformer(element._1), offsetToDslOffset(element._2)))
+          .asJava
+      }.asJava)
   }
 
   val testModule = new AbstractModule with ServiceGuiceSupport {
@@ -309,44 +340,42 @@ object JavadslKafkaApiSpec {
     }
   }
 
-  /**
-   * An implementation of the service locator that always fails to locate the passed service's `name`.
-   */
-  class NoServiceLocator extends ServiceLocator {
+  class EventJournal[Event] {
+    private type Element = (Event, Sequence)
+    private val offset = new AtomicLong()
+    private val storedEvents = mutable.MutableList.empty[Element]
+    private val subscribers = mutable.MutableList.empty[SourceQueue[Element]]
 
-    override def locate(name: String, serviceCall: Descriptor.Call[_, _]): CompletionStage[Optional[URI]] =
-      CompletableFuture.completedFuture(Optional.empty())
+    def eventStream(fromOffset: Offset): Source[(Event, Offset), _] = {
+      val minOffset: Long = fromOffset match {
+        case Sequence(value) => value
+        case NoOffset        => -1
+        case _               => throw new IllegalArgumentException(s"Sequence offset required, but got $fromOffset")
+      }
 
-    override def doWithService[T](name: String, serviceCall: Descriptor.Call[_, _], block: JFunction[URI, CompletionStage[T]]): CompletionStage[Optional[T]] =
-      CompletableFuture.completedFuture(Optional.empty())
-  }
-
-  object InMemoryOffsetStore extends OffsetStore {
-    private val offsets = TrieMap.empty[String, Offset]
-
-    override def prepare(eventProcessorId: String, tag: String): Future[OffsetDao] = {
-      val key = s"$eventProcessorId-$tag"
-      val offset = offsets.getOrElseUpdate(key, Offset.NONE)
-      Future.successful(new InMemoryOffsetDao(key, OffsetAdapter.dslOffsetToOffset(offset)))
+      Source.queue[Element](8, OverflowStrategy.fail)
+        .mapMaterializedValue { queue =>
+          synchronized {
+            storedEvents.foreach(queue.offer)
+            subscribers += queue
+          }
+          NotUsed
+        }
+        // Skip everything up and including the fromOffset provided
+        .dropWhile(_._2.value <= minOffset)
     }
 
-    @volatile var injectFailure = false
-    class InMemoryOffsetDao(key: String, override val loadedOffset: akka.persistence.query.Offset) extends OffsetDao {
-      override def saveOffset(offset: akka.persistence.query.Offset): Future[Done] = {
-        if (injectFailure) throw new FakeCassandraException
-        else {
-          offsets.put(key, OffsetAdapter.offsetToDslOffset(offset))
-          Future.successful(Done)
-        }
+    def append(event: Event): Unit = {
+      val element = (event, Sequence(offset.getAndIncrement()))
+      synchronized {
+        storedEvents += element
+        subscribers.foreach(_.offer(element))
       }
     }
-
-    /** Exception to simulate a cassandra failure. */
-    class FakeCassandraException extends RuntimeException
   }
 
   object NullPersistentEntityRegistry extends PersistentEntityRegistry {
-    override def eventStream[Event <: AggregateEvent[Event]](aggregateTag: AggregateEventTag[Event], fromOffset: Offset): JSource[JPair[Event, Offset], NotUsed] =
+    override def eventStream[Event <: AggregateEvent[Event]](aggregateTag: AggregateEventTag[Event], fromOffset: JOffset): JSource[JPair[Event, JOffset], NotUsed] =
       JSource.empty()
 
     override def gracefulShutdown(timeout: FiniteDuration): CompletionStage[Done] = CompletableFuture.completedFuture(Done.getInstance())

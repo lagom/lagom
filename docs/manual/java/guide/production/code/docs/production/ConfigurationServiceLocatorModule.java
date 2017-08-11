@@ -4,17 +4,17 @@ package docs.production;
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
 import com.lightbend.lagom.javadsl.client.ConfigurationServiceLocator;
-import play.Configuration;
 import play.Environment;
+import com.typesafe.config.Config;
 
 public class ConfigurationServiceLocatorModule extends AbstractModule {
 
     private final Environment environment;
-    private final Configuration configuration;
+    private final Config config;
 
-    public ConfigurationServiceLocatorModule(Environment environment, Configuration configuration) {
+    public ConfigurationServiceLocatorModule(Environment environment, Config config) {
         this.environment = environment;
-        this.configuration = configuration;
+        this.config = config;
     }
 
     @Override

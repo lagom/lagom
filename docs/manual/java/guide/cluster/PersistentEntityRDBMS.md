@@ -33,7 +33,7 @@ Lagom uses the [`akka-persistence-jdbc`](https://github.com/dnvriend/akka-persis
 
 We advise against using H2 in production, however, it is suitable for use in development and testing.
 
-In Lagom's default configuration, Lagom will use Play's JDBC support to configure and create a connection pool. Details on how to configure it can be found [here](https://www.playframework.com/documentation/2.5.x/JavaDatabase). Play should be configured to provide a JNDI binding for the datasource, by default Lagom binds it to `DefaultDS`.
+In Lagom's default configuration, Lagom will use Play's JDBC support to configure and create a connection pool. Details on how to configure it can be found [here](https://www.playframework.com/documentation/2.6.x/JavaDatabase). Play should be configured to provide a JNDI binding for the datasource, by default Lagom binds it to `DefaultDS`.
 
 Lagom then configures `akka-persistence-jdbc` to use that `DefaultDS` JNDI binding. `akka-persistence-jdbc` uses [Slick](http://slick.lightbend.com/) to map tables and manage asynchronous execution of JDBC calls. This means we need to configure it to use the right Slick profile for your database, by default Lagom will use the H2 profile.
 

@@ -13,15 +13,6 @@ import com.lightbend.lagom.internal.spi.{ CircuitBreakerMetrics, CircuitBreakerM
 import play.api.inject.{ Binding, Injector, Module }
 import play.api.{ Configuration, Environment, Logger }
 
-class CircuitBreakerModule extends Module {
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
-    Seq(
-      bind[CircuitBreakers].toSelf,
-      bind[CircuitBreakerMetricsProvider].toProvider[CircuitBreakerMetricsProviderProvider]
-    )
-  }
-}
-
 @Singleton
 class CircuitBreakerMetricsProviderProvider @Inject() (system: ActorSystem, injector: Injector) extends Provider[CircuitBreakerMetricsProvider] {
   lazy val get = {

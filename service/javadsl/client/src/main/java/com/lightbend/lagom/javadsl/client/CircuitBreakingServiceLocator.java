@@ -4,14 +4,13 @@
 package com.lightbend.lagom.javadsl.client;
 
 import com.lightbend.lagom.internal.client.CircuitBreakers;
+import com.lightbend.lagom.internal.javadsl.client.CircuitBreakersPanelImpl;
 import com.lightbend.lagom.javadsl.api.CircuitBreaker;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
-import scala.concurrent.Future;
-import scala.runtime.AbstractFunction0;
-import scala.compat.java8.FutureConverters;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -26,10 +25,20 @@ import java.util.function.Function;
  */
 public abstract class CircuitBreakingServiceLocator implements ServiceLocator {
 
-    private final CircuitBreakers circuitBreakers;
+    private final CircuitBreakersPanel circuitBreakersPanel;
 
+    public CircuitBreakingServiceLocator(CircuitBreakersPanel circuitBreakersPanel) {
+        this.circuitBreakersPanel = circuitBreakersPanel;
+    }
+
+    /**
+     * @deprecated Use constructor accepting {@link CircuitBreakersPanel} instead
+     * @param circuitBreakers
+     */
+    @Deprecated
     public CircuitBreakingServiceLocator(CircuitBreakers circuitBreakers) {
-        this.circuitBreakers = circuitBreakers;
+        // convert passed Scala CircuitBreaker to a Java one
+        this.circuitBreakersPanel = new CircuitBreakersPanelImpl(circuitBreakers);
     }
 
     /**
@@ -48,37 +57,36 @@ public abstract class CircuitBreakingServiceLocator implements ServiceLocator {
      */
     protected <T> CompletionStage<Optional<T>> doWithServiceImpl(String name, Descriptor.Call<?, ?> serviceCall, Function<URI, CompletionStage<T>> block) {
         return locate(name, serviceCall).thenCompose(uri -> {
-            if (uri.isPresent()) {
-                return block.apply(uri.get()).thenApply(Optional::of);
-            } else {
-                return CompletableFuture.completedFuture(Optional.empty());
-            }
+          return uri
+                  .map(u -> block.apply(u).thenApply(Optional::of))
+                  .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
         });
     }
 
     @Override
     public final <T> CompletionStage<Optional<T>> doWithService(String serviceName, Descriptor.Call<?, ?> serviceCall, Function<URI, CompletionStage<T>> block) {
-        return serviceCall.circuitBreaker().filter(cb -> !cb.equals(CircuitBreaker.none())).map(cb -> {
 
-            String circuitBreakerId;
+        return serviceCall.circuitBreaker()
+                .filter(cb -> !cb.equals(CircuitBreaker.none()))
+                .map(cb -> {
 
-            if (cb instanceof CircuitBreaker.CircuitBreakerId) {
-                circuitBreakerId = ((CircuitBreaker.CircuitBreakerId) cb).id();
-            } else {
-                circuitBreakerId = serviceName;
-            }
+                    String circuitBreakerId;
 
-            return doWithServiceImpl(serviceName, serviceCall, uri -> {
-                Future<T> future = circuitBreakers.withCircuitBreaker(circuitBreakerId, new AbstractFunction0<Future<T>>() {
-                    @Override
-                    public Future<T> apply() {
-                        return FutureConverters.toScala(block.apply(uri));
+                    if (cb instanceof CircuitBreaker.CircuitBreakerId) {
+                        circuitBreakerId = ((CircuitBreaker.CircuitBreakerId) cb).id();
+                    } else {
+                        circuitBreakerId = serviceName;
                     }
-                });
-                return FutureConverters.toJava(future);
-            });
-        }).orElseGet(() ->
-                doWithServiceImpl(serviceName, serviceCall, block)
-        );
+
+                    return doWithServiceImpl(
+                            serviceName,
+                            serviceCall,
+                            uri -> circuitBreakersPanel.withCircuitBreaker(circuitBreakerId, () -> block.apply(uri))
+                          );
+
+                })
+                .orElseGet(
+                  () -> doWithServiceImpl(serviceName, serviceCall, block)
+                );
     }
 }

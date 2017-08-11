@@ -56,7 +56,7 @@ class LagomApplicationSpec extends WordSpec with Matchers {
       val context = LagomApplicationContext(Context(Environment.simple(), None, new DefaultWebCommands, contextConfig,
         new DefaultApplicationLifecycle))
       new LagomApplication(context) with AhcWSComponents with FakeComponent {
-        configuration.getString(configKey) shouldBe expected.getString(configKey)
+        configuration.get[String](configKey) shouldBe expected.get[String](configKey)
 
         // following is required to complete the cake. Irrelevant for the test.
         override def lagomServer = serverFor[AppWithNoTopics](AppWithNoTopics)

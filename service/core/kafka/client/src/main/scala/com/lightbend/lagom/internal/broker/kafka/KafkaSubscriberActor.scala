@@ -13,12 +13,13 @@ import akka.kafka.{ AutoSubscription, ConsumerSettings }
 import akka.pattern.pipe
 import akka.stream.scaladsl.{ Flow, GraphDSL, Keep, Sink, Source, Unzip, Zip }
 import akka.stream._
+import com.lightbend.lagom.internal.api.UriUtils
 
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 
 private[lagom] class KafkaSubscriberActor[Message](
   kafkaConfig: KafkaConfig, consumerConfig: ConsumerConfig,
-  locateService: String => Future[Option[URI]], topicId: String, flow: Flow[Message, Done, _],
+  locateService: String => Future[Seq[URI]], topicId: String, flow: Flow[Message, Done, _],
   consumerSettings: ConsumerSettings[String, Message], subscription: AutoSubscription,
   streamCompleted: Promise[Done]
 )(implicit mat: Materializer, ec: ExecutionContext) extends Actor with ActorLogging {
@@ -30,7 +31,10 @@ private[lagom] class KafkaSubscriberActor[Message](
     kafkaConfig.serviceName match {
       case Some(name) =>
         log.debug("Looking up Kafka service from service locator with name [{}] for at least once source", name)
-        locateService(name) pipeTo self
+        locateService(name).map {
+          case Nil  => None
+          case uris => Some(UriUtils.hostAndPorts(uris))
+        } pipeTo self
         context.become(locatingService(name))
       case None =>
         run(None)
@@ -50,9 +54,9 @@ private[lagom] class KafkaSubscriberActor[Message](
       log.error("Unable to locate Kafka service named [{}]", name)
       context.stop(self)
 
-    case Some(uri: URI) =>
-      log.debug("Kafka service [{}] located at URI [{}] for subscriber of [{}]", name, uri, topicId)
-      run(Some(uri))
+    case Some(uris: String) =>
+      log.debug("Kafka service [{}] located at URI [{}] for subscriber of [{}]", name, uris, topicId)
+      run(Some(uris))
   }
 
   private def running: Receive = {
@@ -68,7 +72,7 @@ private[lagom] class KafkaSubscriberActor[Message](
 
   override def receive = PartialFunction.empty
 
-  private def run(uri: Option[URI]) = {
+  private def run(uri: Option[String]) = {
     val (killSwitch, streamDone) =
       atLeastOnce(flow, uri)
         .viaMat(KillSwitches.single)(Keep.right)
@@ -80,15 +84,15 @@ private[lagom] class KafkaSubscriberActor[Message](
     context.become(running)
   }
 
-  private def atLeastOnce(flow: Flow[Message, Done, _], serviceLocatorUri: Option[URI]): Source[Done, _] = {
+  private def atLeastOnce(flow: Flow[Message, Done, _], serviceLocatorUris: Option[String]): Source[Done, _] = {
     // Creating a Source of pair where the first element is a reactive-kafka committable offset,
     // and the second it's the actual message. Then, the source of pair is splitted into
     // two streams, so that the `flow` passed in argument can be applied to the underlying message.
     // After having applied the `flow`, the two streams are combined back and the processed message's
     // offset is committed to Kafka.
-    val consumerSettingsWithUri = serviceLocatorUri match {
-      case Some(uri) => consumerSettings.withBootstrapServers(s"${uri.getHost}:${uri.getPort}")
-      case None      => consumerSettings
+    val consumerSettingsWithUri = serviceLocatorUris match {
+      case Some(uris) => consumerSettings.withBootstrapServers(uris)
+      case None       => consumerSettings
     }
     val pairedCommittableSource = ReactiveConsumer.committableSource(consumerSettingsWithUri, subscription)
       .map(committableMessage => (committableMessage.committableOffset, committableMessage.record.value))
@@ -122,11 +126,25 @@ private[lagom] class KafkaSubscriberActor[Message](
 
 object KafkaSubscriberActor {
   def props[Message](
-    kafkaConfig: KafkaConfig, consumerConfig: ConsumerConfig, locateService: String => Future[Option[URI]],
-    topicId: String, flow: Flow[Message, Done, _],
-    consumerSettings: ConsumerSettings[String, Message], subscription: AutoSubscription,
-    streamCompleted: Promise[Done]
+    kafkaConfig:      KafkaConfig,
+    consumerConfig:   ConsumerConfig,
+    locateService:    String => Future[Seq[URI]],
+    topicId:          String,
+    flow:             Flow[Message, Done, _],
+    consumerSettings: ConsumerSettings[String, Message],
+    subscription:     AutoSubscription,
+    streamCompleted:  Promise[Done]
   )(implicit mat: Materializer, ec: ExecutionContext) =
-    Props(new KafkaSubscriberActor[Message](kafkaConfig, consumerConfig, locateService, topicId, flow, consumerSettings,
-      subscription, streamCompleted))
+    Props(
+      new KafkaSubscriberActor[Message](
+        kafkaConfig,
+        consumerConfig,
+        locateService,
+        topicId,
+        flow,
+        consumerSettings,
+        subscription,
+        streamCompleted
+      )
+    )
 }

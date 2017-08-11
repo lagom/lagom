@@ -42,7 +42,7 @@ trait WriteSideJdbcPersistenceComponents extends WriteSidePersistenceComponents 
 trait ReadSideJdbcPersistenceComponents extends ReadSidePersistenceComponents with WriteSideJdbcPersistenceComponents {
 
   lazy val offsetTableConfiguration: OffsetTableConfiguration = new OffsetTableConfiguration(
-    configuration, readSideConfig
+    configuration.underlying, readSideConfig
   )
   private[lagom] lazy val slickOffsetStore: SlickOffsetStore = new SlickOffsetStore(actorSystem, slickProvider,
     offsetTableConfiguration)
