@@ -6,6 +6,7 @@ package com.lightbend.lagom.javadsl.api.broker;
 import java.util.concurrent.CompletionStage;
 
 import akka.Done;
+import akka.japi.Pair;
 import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Source;
 
@@ -45,9 +46,17 @@ public interface Subscriber<Message> {
    * Returns a stream of messages with at most once delivery semantic.
    *
    * If a failure occurs (e.g., an exception is thrown), the user is responsible
-   * of deciding how to recover from it (e.g., restarting the stream, aborting, ...).  
+   * of deciding how to recover from it (e.g., restarting the stream, aborting, ...).
    */
   Source<Message, ?> atMostOnceSource();
+
+  /**
+   * Returns a stream of key -> message pairs with at most once delivery semantic.
+   *
+   * If a failure occurs (e.g., an exception is thrown), the user is responsible
+   * of deciding how to recover from it (e.g., restarting the stream, aborting, ...).
+   */
+  Source<Pair<String, Message>, ?> atMostOnceSourceWithKey();
 
   /**
    * Applies the passed <code>flow</code> to the messages processed by this
@@ -60,19 +69,45 @@ public interface Subscriber<Message> {
    * Whether the stream is automatically restarted depends on the Lagom message
    * broker implementation in use. If the Kafka Lagom message broker module is
    * being used, then by default the stream is automatically restarted when a
-   * failure occurs.  
-   * 
+   * failure occurs.
+   *
    * @param flow The flow to apply to each received message.
    * @return A <code>CompletionStage</code> that may never complete if messages
    *         go through the passed <code>flow</code> flawlessly. However, the
    *         returned <code>CompletionStage</code> may complete with success if
    *         the passed <code>flow</code> signals cancellation upstream.
-   * 
+   *
    *         If the returned <code>CompletionStage</code> is completed with a
    *         failure, user-code is responsible of deciding what to do (e.g., it
    *         could retry to process the message that caused the failure, or it
    *         could report an application error).
    */
   CompletionStage<Done> atLeastOnce(Flow<Message, Done, ?> flow);
+
+  /**
+   * Applies the passed <code>flow</code> to the key -> message pairs processed by this
+   * subscriber. Messages are delivered to the passed <code>flow</code> at least
+   * once.
+   *
+   * If a failure occurs (e.g., an exception is thrown), the stream may be
+   * automatically restarted starting with the message that caused the failure.
+   *
+   * Whether the stream is automatically restarted depends on the Lagom message
+   * broker implementation in use. If the Kafka Lagom message broker module is
+   * being used, then by default the stream is automatically restarted when a
+   * failure occurs.
+   *
+   * @param flow The flow to apply to each received message.
+   * @return A <code>CompletionStage</code> that may never complete if messages
+   *         go through the passed <code>flow</code> flawlessly. However, the
+   *         returned <code>CompletionStage</code> may complete with success if
+   *         the passed <code>flow</code> signals cancellation upstream.
+   *
+   *         If the returned <code>CompletionStage</code> is completed with a
+   *         failure, user-code is responsible of deciding what to do (e.g., it
+   *         could retry to process the message that caused the failure, or it
+   *         could report an application error).
+   */
+  CompletionStage<Done> atLeastOnceWithKey(Flow<Pair<String,Message>, Done, ?> flow);
 
 }

@@ -73,20 +73,26 @@ private[lagom] class TestTopic[Message, Event <: AggregateEvent[Event]](
   override def subscribe: Subscriber[Message] = new Subscriber[Message] {
     override def withGroupId(groupId: String): Subscriber[Message] = this
 
-    override def atMostOnceSource: Source[Message, _] = {
+    override def atMostOnceSource(): Source[Message, _] = atMostOnceSourceWithKey.map(_._2)
 
+    override def atMostOnceSourceWithKey: Source[(String, Message), _] = {
       val serializer = topicCall.messageSerializer
       Source(topicProducer.tags).flatMapMerge(topicProducer.tags.size, { tag =>
-        topicProducer.readSideStream.apply(tag, Offset.noOffset).map(_._1)
-      }).map { evt =>
-        serializer.serializerForRequest.serialize(evt)
-      }.map { bytes =>
-        serializer.deserializer(serializer.acceptResponseProtocols.head).deserialize(bytes)
+        topicProducer.readSideStream.apply(tag, Offset.noOffset).map(msgOffset => tag.tag -> msgOffset._1)
+      }).map {
+        case (tag, evt) =>
+          tag -> serializer.serializerForRequest.serialize(evt)
+      }.map {
+        case (tag, bytes) =>
+          tag -> serializer.deserializer(serializer.acceptResponseProtocols.head).deserialize(bytes)
       }
     }
 
     override def atLeastOnce(flow: Flow[Message, Done, _]): Future[Done] =
       atMostOnceSource.via(flow).runWith(Sink.ignore)
+
+    override def atLeastOnceWithKey(flow: Flow[(String, Message), Done, _]): Future[Done] =
+      atMostOnceSourceWithKey.via(flow).runWith(Sink.ignore)
   }
 
 }

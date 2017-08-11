@@ -19,7 +19,7 @@ import scala.concurrent.{ ExecutionContext, Future, Promise }
 
 private[lagom] class KafkaSubscriberActor[Message](
   kafkaConfig: KafkaConfig, consumerConfig: ConsumerConfig,
-  locateService: String => Future[Seq[URI]], topicId: String, flow: Flow[Message, Done, _],
+  locateService: String => Future[Seq[URI]], topicId: String, flow: Flow[(String, Message), Done, _],
   consumerSettings: ConsumerSettings[String, Message], subscription: AutoSubscription,
   streamCompleted: Promise[Done]
 )(implicit mat: Materializer, ec: ExecutionContext) extends Actor with ActorLogging {
@@ -84,7 +84,7 @@ private[lagom] class KafkaSubscriberActor[Message](
     context.become(running)
   }
 
-  private def atLeastOnce(flow: Flow[Message, Done, _], serviceLocatorUris: Option[String]): Source[Done, _] = {
+  private def atLeastOnce(flow: Flow[(String, Message), Done, _], serviceLocatorUris: Option[String]): Source[Done, _] = {
     // Creating a Source of pair where the first element is a reactive-kafka committable offset,
     // and the second it's the actual message. Then, the source of pair is splitted into
     // two streams, so that the `flow` passed in argument can be applied to the underlying message.
@@ -95,11 +95,11 @@ private[lagom] class KafkaSubscriberActor[Message](
       case None       => consumerSettings
     }
     val pairedCommittableSource = ReactiveConsumer.committableSource(consumerSettingsWithUri, subscription)
-      .map(committableMessage => (committableMessage.committableOffset, committableMessage.record.value))
+      .map(committableMessage => (committableMessage.committableOffset, (committableMessage.record.key, committableMessage.record.value)))
 
     val committOffsetFlow = Flow.fromGraph(GraphDSL.create(flow) { implicit builder => flow =>
       import GraphDSL.Implicits._
-      val unzip = builder.add(Unzip[CommittableOffset, Message])
+      val unzip = builder.add(Unzip[CommittableOffset, (String, Message)])
       val zip = builder.add(Zip[CommittableOffset, Done])
       val committer = {
         val commitFlow = Flow[(CommittableOffset, Done)]
@@ -130,7 +130,7 @@ object KafkaSubscriberActor {
     consumerConfig:   ConsumerConfig,
     locateService:    String => Future[Seq[URI]],
     topicId:          String,
-    flow:             Flow[Message, Done, _],
+    flow:             Flow[(String, Message), Done, _],
     consumerSettings: ConsumerSettings[String, Message],
     subscription:     AutoSubscription,
     streamCompleted:  Promise[Done]

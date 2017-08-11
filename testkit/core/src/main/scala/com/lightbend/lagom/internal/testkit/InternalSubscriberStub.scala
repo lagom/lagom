@@ -15,14 +15,24 @@ private[lagom] class InternalSubscriberStub[Message](
   topicBuffer: ActorRef
 )(implicit materializer: Materializer) {
 
-  def mostOnceSource: Source[Message, _] = {
+  def mostOnceSource: Source[Message, _] = mostOnceSourceWithKey.map(_._2)
+
+  def mostOnceSourceWithKey: Source[(String, Message), _] = {
     Source
-      .actorRef[Message](1024, OverflowStrategy.fail)
+      .actorRef[(String, Message)](1024, OverflowStrategy.fail)
       .prependMat(Source.empty)(subscribeToBuffer)
   }
 
   def leastOnce(flow: Flow[Message, Done, _]): Future[Done] = {
-    mostOnceSource
+    mostOnceSourceWithKey
+      .map(_._2)
+      .via(flow)
+      .toMat(Sink.ignore)(Keep.right[Any, Future[Done]])
+      .run()
+  }
+
+  def leastOnceWithKey(flow: Flow[(String, Message), Done, _]): Future[Done] = {
+    mostOnceSourceWithKey
       .via(flow)
       .toMat(Sink.ignore)(Keep.right[Any, Future[Done]])
       .run()
