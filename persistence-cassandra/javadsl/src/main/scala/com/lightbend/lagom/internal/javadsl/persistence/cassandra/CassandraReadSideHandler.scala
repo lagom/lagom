@@ -41,11 +41,13 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
   override def handle(): Flow[Pair[Event, Offset], Done, _] = {
 
     def executeStatements(statements: JList[BoundStatement]): Future[Done] = {
-      val batch = new BatchStatement
-      // statements is never empty, there is at least the store offset statement
-      // for simplicity we just use batch api (even if there is only one)
-      batch.addAll(statements)
-      session.executeWriteBatch(batch).toScala
+      if (statements.isEmpty) {
+        Future.successful(Done.getInstance())
+      } else {
+        val batch = new BatchStatement
+        batch.addAll(statements)
+        session.executeWriteBatch(batch).toScala
+      }
     }
 
     akka.stream.scaladsl.Flow[Pair[Event, Offset]]
