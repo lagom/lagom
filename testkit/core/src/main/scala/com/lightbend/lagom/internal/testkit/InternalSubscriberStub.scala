@@ -15,12 +15,15 @@ private[lagom] class InternalSubscriberStub[Message](
   topicBuffer: ActorRef
 )(implicit materializer: Materializer) {
 
-  def mostOnceSource: Source[Message, _] = mostOnceSourceWithKey.map(_._2)
+  def mostOnceSource: Source[Message, _] = {
+    Source
+      .actorRef[Message](1024, OverflowStrategy.fail)
+      .prependMat(Source.empty)(subscribeToBuffer)
+  }
 
   def mostOnceSourceWithKey: Source[(String, Message), _] = {
-    Source
-      .actorRef[(String, Message)](1024, OverflowStrategy.fail)
-      .prependMat(Source.empty)(subscribeToBuffer)
+    // TopicBufferActor currently only passes through messages, not tags/keys, so provide empty string for key
+    mostOnceSource.map("" -> _)
   }
 
   def leastOnce(flow: Flow[Message, Done, _]): Future[Done] = {
