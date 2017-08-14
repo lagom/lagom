@@ -5,6 +5,7 @@ package com.lightbend.lagom.serialization;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Assert;
 import org.pcollections.TreePVector;
 
 import org.pcollections.PVector;
@@ -49,24 +50,30 @@ public class JacksonJsonSerializerTest {
 
   private final JacksonJsonSerializer serializer = new JacksonJsonSerializer((ExtendedActorSystem) system);
 
-  private void checkSerialization(Object obj, boolean expectedCompression) throws NotSerializableException {
-      // check that it is configured
-    assertEquals(JacksonJsonSerializer.class, SerializationExtension.get(system).serializerFor(obj.getClass())
-        .getClass());
-
-      // verify serialization-deserialization round trip
-    byte[] blob = serializer.toBinary(obj);
-
-    boolean printJson = false; // for debugging
+  private void checkSerialization(Object obj, boolean expectedCompression) {
     try {
-      if (printJson && !serializer.isGZipped(blob))
-        System.out.println(obj + " -> " + new String(blob, "utf-8"));
-    } catch (UnsupportedEncodingException e) {
-    }
 
-    assertEquals(expectedCompression, serializer.isGZipped(blob));
-    Object obj2 = serializer.fromBinary(blob, serializer.manifest(obj));
-    assertEquals(obj, obj2);
+        // check that it is configured
+        assertEquals(JacksonJsonSerializer.class,
+            SerializationExtension.get(system).serializerFor(obj.getClass()).getClass()
+        );
+
+        // verify serialization-deserialization round trip
+        byte[] blob = serializer.toBinary(obj);
+
+
+        if (!serializer.isGZipped(blob))
+            System.out.println(obj + " -> " + new String(blob, "utf-8"));
+
+        assertEquals(expectedCompression, serializer.isGZipped(blob));
+        Object obj2 = serializer.fromBinary(blob, serializer.manifest(obj));
+        assertEquals(obj, obj2);
+
+    } catch (UnsupportedEncodingException | NotSerializableException e) {
+        // that should not happen in testing,
+        // but we need to make the compiler happy
+        throw new RuntimeException(e);
+    }
   }
 
   private <T> T deserialize(Class<T> clazz, String json) {
