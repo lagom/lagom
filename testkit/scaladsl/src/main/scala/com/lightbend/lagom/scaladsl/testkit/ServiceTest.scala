@@ -152,14 +152,17 @@ object ServiceTest {
       result match {
         case asyncResult: Future[_] =>
           import testServer.executionContext
-          asyncResult.onComplete { _ =>
-            testServer.stop()
-          }
+          // whether the future `asyncResult` was successful or failed, stop the server.
+          asyncResult.andThen {
+            case theResult => {
+              testServer.stop()
+              theResult
+            }
+          }.asInstanceOf[R]
         case syncResult =>
           testServer.stop()
+          syncResult
       }
-
-      result
     } catch {
       case NonFatal(e) =>
         testServer.stop()
@@ -192,7 +195,9 @@ object ServiceTest {
         FileUtils.deleteRecursiveOnExit(cassandraDirectory)
         val t0 = System.nanoTime()
         CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort)
-        log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
+        log.debug(s"Cassandra started in ${
+          TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)
+        } ms")
         Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = false)) ++
           Configuration("lagom.cluster.join-self" -> "on")
       } else if (setup.cluster) {
