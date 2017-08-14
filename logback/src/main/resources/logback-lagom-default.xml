@@ -15,13 +15,13 @@
       <totalSizeCap>300MB</totalSizeCap>
     </rollingPolicy>
     <encoder>
-      <pattern>%date [%level] from %logger in %thread - %message%n%xException</pattern>
+      <pattern>%date{"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",UTC} ${HOSTNAME} %-5level %logger{0} [%mdc] - %msg%n</pattern>
     </encoder>
   </appender>
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%coloredLevel %logger{15} - %message%n%xException{10}</pattern>
+      <pattern>%date{"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",UTC} %coloredLevel %logger{0} [%mdc] - %msg%n</pattern>
     </encoder>
   </appender>
 
