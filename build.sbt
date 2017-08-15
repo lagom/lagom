@@ -10,6 +10,9 @@ import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import de.heikoseeberger.sbtheader.HeaderPattern
 import com.typesafe.tools.mima.core._
 
+// Turn off "Resolving" log messages that clutter build logs
+ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
+
 def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   organization := "com.lightbend.lagom",
   // Must be "Apache-2.0", because bintray requires that it is a license that it knows about
