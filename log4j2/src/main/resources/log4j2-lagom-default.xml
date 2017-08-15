@@ -12,7 +12,7 @@
 
     <Console name="STDOUT">
       <PatternLayout>
-        <Pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}{GMT+0} %highlight{%level} %logger{0} [%mdc] - %msg%n</Pattern>
+        <Pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}{GMT+0} %highlight{%level} %logger{10} [%mdc] - %msg%n</Pattern>
       </PatternLayout>
     </Console>
   </Appenders>
