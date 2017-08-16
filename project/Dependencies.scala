@@ -4,7 +4,6 @@ import sbt.Keys._
 object Dependencies {
 
   // Version numbers
-  val PlayVersion = "2.6.2"
   val PlayVersion = "2.6.3"
   val PlayJsonVersion = "2.6.3"
   val PlayStandaloneWsVersion = "1.0.1"
