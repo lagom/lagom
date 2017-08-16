@@ -7,7 +7,7 @@ object Dependencies {
   val PlayVersion = "2.6.2"
   val PlayStandaloneWsVersion = "1.0.1"
   val PlayJsonVersion = "2.6.2"
-  val AkkaVersion = "2.5.3"
+  val AkkaVersion = "2.5.4"
   val AkkaHttpVersion = "10.0.9"
   val ScalaVersion = "2.11.11"
   val AkkaPersistenceCassandraVersion = "0.54"
@@ -50,6 +50,7 @@ object Dependencies {
   private val akkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
+  private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.1"
 
   private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.2.0"
 
@@ -157,7 +158,7 @@ object Dependencies {
       "org.hamcrest" % "hamcrest-core" % "1.3",
       "org.lmdbjava" % "lmdbjava" % "0.0.5",
       "org.pcollections" % "pcollections" % "2.1.2",
-      "org.reactivestreams" % "reactive-streams" % "1.0.0",
+      reactiveStreams,
       "org.reflections" % "reflections" % "0.9.11",
       "org.scalactic" %% "scalactic" % ScalaTestVersion,
       "org.scalatest" %% "scalatest" % ScalaTestVersion,
@@ -314,6 +315,7 @@ object Dependencies {
     // Upgrades needed to match whitelist
     akkaSlf4j,
     akkaStream,
+    reactiveStreams,
     sslConfig
   )
 
@@ -547,6 +549,7 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     akkaStream,
+    reactiveStreams,
     akkaSlf4j,
     sslConfig
   ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % "1.1.3")
@@ -561,6 +564,7 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     akkaStream,
+    reactiveStreams,
     akkaSlf4j,
     sslConfig
   )
@@ -570,6 +574,7 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     akkaStream,
+    reactiveStreams,
     akkaSlf4j,
     sslConfig
   )
