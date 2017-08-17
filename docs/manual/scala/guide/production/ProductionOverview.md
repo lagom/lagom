@@ -1,6 +1,6 @@
 # Production
 
-Lagom doesn't prescribe any particular production environment, however out of the box support is provided for [Lightbend ConductR](https://www.lightbend.com/products/conductr).
+Lagom doesn't prescribe any particular production environment, however out of the box support is provided for [Lightbend ConductR](https://www.lightbend.com/products/conductr). If you are interested in deploying on [Kubernetes](https://kubernetes.io/), see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/k8s-microservices/).
 
 ## Deploying Lagom services to ConductR
 
@@ -18,48 +18,21 @@ Lightbend ConductR is a perfect match for Lagom, as it provides the following fe
 
 To deploy your Lagom services using ConductR, see [[ConductR]].
 
-## Deploying to other platforms
+## Considerations for deploying to other platforms
 
-Lagom sbt support leverages the [sbt-native-packager](http://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default zip archives can be produced, but you can also produce tar.gz, MSI, debian, RPM, Docker and more.
+The deployment platform determines the type of archive you will need to use for packaging your microservices and the way you provide service location, including that for Cassandra: 
 
-If using Maven, there are many plugins for Maven to produce artifacts for various platforms.
+* Lagom leverages the [sbt-native-packager](http://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default, sbt produces zip archives, but you can easily produce tar.gz, MSI, debian, RPM, Docker and more.
 
-Running a package requires the provision of a service locator implementation i.e. something that provides the ability for your service to be able to lookup the location of another dynamically at runtime. At a technical level, you provide an implementation of a [ServiceLocator](api/com/lightbend/lagom/scaladsl/api/ServiceLocator.html).
+* At runtime, services need to locate each other. This requires you to provide an implementation of a  [ServiceLocator](api/com/lightbend/lagom/scaladsl/api/ServiceLocator.html). And, the deployment platform you choose might impose its own requirements on configuration. 
 
-### Deploying using static service locations
-
-While we would never advise using static service locations in any production situation, as a means to demonstrating a working Lagom system in the absence of a managed runtime, you may decide to deploy Lagom systems to static locations with a static configuration saying where the systems live.
-
-To aid in achieving this, a [`ConfigurationServiceLocator`](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocator.html) is provided that reads the service locator configuration out of Lagom's `application.conf` file.  Here is an example of the configuration for it:
-
-```
-lagom.services {
-  serviceA = "http://10.1.2.3:8080"
-  serviceB = "http://10.1.2.4:8080"
-}
-```
-
-To instruct Lagom to use the `ConfigurationServiceLocator`, you can mix in the [`ConfigurationServiceLocatorComponents`](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocatorComponents.html) trait into your application:
-
-@[configuration-service-locator](code/ProductionOverview.scala)
-
-This shows the configuration service locator being used only in prod mode, while the dev mode service locator is used in dev mode by mixing in the `LagomDevModeComponents` trait.
+* The Cassandra module provided by `akka-persistence-cassandra` uses static lookup by default. Lagom overrides that behavior by implementing a Session provider based on service location. That allows all services to continue to operate without the need to redeploy if/when the Cassandra `contact-points` are updated or fail. Using this approach provides higher resiliency. However, it is possible to hardcode the list of `contact-points` where Cassandra may be located even when the server is stared with a dynamic service locator as described in the section below.
 
 ### Deploying using static Cassandra contact-points
 
-Static lookup is the default behavior in `akka-persistence-cassandra` but Lagom overrides that behavior implementing a Session provider based on service location. That allows all services to continue to operate without the need to redeploy if/when the Cassandra `contact-points` are updated or fail. Using a Service Location based approach provides higher resiliency. It is possible to hardcode the list of `contact-points` where Cassandra may be located even when the server is stared with a dynamic service locator.
+If you want to use dynamic service location for your services but need to statically locate Cassandra, modify the `application.conf` for your service. You will need to disable Lagom's `ConfigSessionProvider` and fall back to the one provided in `akka-persistence-cassandra`, which uses the list of endpoints listed in `contact-points`. The `application.conf` settings will be applied in all environments (development and production) unless overridden. See developer mode settings on [[overriding Cassandra setup in Dev Mode|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]] for more information on settings up Cassandra in dev mode. 
 
-You can decide to hardcode the Cassandra contact points when using a static service locator as described above using:
-
-```
-lagom.services {
-  cas_native = "tcp://10.1.2.3:9042"
-}
-```
-
-But that is only possible if all your service uses a static service locator.
-
-If you want to use dynamic service location for your services but need to statically locate Cassandra you may use the following setup in the `application.conf` of your service:
+To set up static Cassandra `contact-points` and disable `ConfigSessionProvider`, modify the following sections of the `application-conf` file:
 
 ```
 cassandra.default {
@@ -85,6 +58,31 @@ lagom.persistence.read-side.cassandra {
 }
 ```
 
-This setup disables Lagom's `ConfigSessionProvider` and falls back to that provided in `akka-persistence-cassandra` which uses the list of endpoints listed in `contact-points`.
+### Using static values for services and Cassandra to simulate a managed runtime
 
-This configuration is part of `application.conf` and therefore it will be applied in all environments (development and production) unless overridden. See developer mode settings on [[overriding Cassandra setup in Dev Mode|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]] for more information on settings up Cassandra in dev mode.
+While we would never advise using static service locations in production, to simulate a working Lagom system in the absence of a managed runtime, you can deploy Lagom systems to static locations by using static configuration. When using static service location, you can also hardcode Cassandra locations. To achieve this, follow these steps:
+
+1. Specify service locations in `application.conf`.
+    The [`ConfigurationServiceLocator`](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocator.html reads service locator configuration out of Lagom's `application.conf` file.  This example specifies static locations for two Lagom services:
+
+    ```
+    lagom.services {
+      serviceA = "http://10.1.2.3:8080"
+      serviceB = "http://10.1.2.4:8080"
+    }
+```
+
+1. In production mode, add the [`ConfigurationServiceLocatorComponents`](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocatorComponents.html) trait in your application, as shown in the following example. Use the `LagomDevModeComponents` trait in a development environment.
+
+    @[configuration-service-locator](code/ProductionOverview.scala)
+
+1. Optionally, to hard code Cassandra locations, add them in `application.conf`as values for `cas_native`, as illustrated below:
+
+    ```
+    lagom.services {
+      cas_native = "tcp://10.1.2.3:9042"
+    }
+    ```
+
+
+
