@@ -4,9 +4,11 @@ import sbt.Keys._
 object Dependencies {
 
   // Version numbers
-  val PlayVersion = "2.6.2"
-  val PlayStandaloneWsVersion = "1.0.1"
-  val PlayJsonVersion = "2.6.2"
+
+  val PlayVersion = "2.6.3" // if you update this, you probably need to update the following two
+  val PlayJsonVersion = "2.6.3"
+  val PlayStandaloneWsVersion = "1.0.4"
+
   val AkkaVersion = "2.5.4"
   val AkkaHttpVersion = "10.0.9"
   val ScalaVersion = "2.11.11"
@@ -128,7 +130,7 @@ object Dependencies {
       "com.typesafe.play" % "shaded-asynchttpclient" % PlayStandaloneWsVersion,
       "com.typesafe.play" % "shaded-oauth" % PlayStandaloneWsVersion,
 
-      "com.typesafe.play" %% "twirl-api" % "1.3.3",
+      "com.typesafe.play" %% "twirl-api" % "1.3.4",
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.6.3",
