@@ -15,7 +15,7 @@
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%date{"HH:mm:ss.SSS"} %coloredLevel %logger{0} [%mdc] - %msg%n</pattern>
+      <pattern>%date{"HH:mm:ss.SSS"} %coloredLevel %logger{10} [%mdc] - %msg%n</pattern>
     </encoder>
   </appender>
 
