@@ -6,27 +6,10 @@
 
   <conversionRule conversionWord="coloredLevel" converterClass="com.lightbend.lagom.internal.logback.ColoredLevel" />
 
-  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>${application.home:-.}/logs/application.log</file>
-    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-      <fileNamePattern>${application.home:-.}/logs/application-%d{yyyy-MM-dd}.%i.log.gz}</fileNamePattern>
-      <maxFileSize>10MB</maxFileSize>
-      <maxHistory>30</maxHistory>
-      <totalSizeCap>300MB</totalSizeCap>
-    </rollingPolicy>
-    <encoder>
-      <pattern>%date{"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",UTC} ${HOSTNAME} %-5level %logger{0} [%mdc] - %msg%n</pattern>
-    </encoder>
-  </appender>
-
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%date{"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",UTC} %coloredLevel %logger{0} [%mdc] - %msg%n</pattern>
+      <pattern>%date{"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",UTC} %coloredLevel %logger [%mdc] - %msg%n</pattern>
     </encoder>
-  </appender>
-
-  <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
-    <appender-ref ref="FILE" />
   </appender>
 
   <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
@@ -47,7 +30,6 @@
   <logger name="org.apache.kafka" level="WARN" />
 
   <root level="INFO">
-    <appender-ref ref="ASYNCFILE" />
     <appender-ref ref="ASYNCSTDOUT" />
   </root>
 

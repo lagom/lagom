@@ -27,6 +27,7 @@ object Dependencies {
   val ScalaXmlVersion = "1.0.6"
   val SlickVersion = "3.2.0"
   val JUnitVersion = "4.11"
+  val LogbackVersion = "1.2.3"
 
   // Specific libraries that get reused
   private val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
@@ -184,7 +185,7 @@ object Dependencies {
       "play", "play-guice",  "play-java", "play-jdbc", "play-jdbc-api",
       "play-netty-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
 
-    ) ++ libraryFamily("ch.qos.logback", "1.1.3")(
+    ) ++ libraryFamily("ch.qos.logback", LogbackVersion)(
       "logback-classic", "logback-core"
 
     ) ++ libraryFamily("io.netty", NettyVersion)(
@@ -554,7 +555,7 @@ object Dependencies {
     reactiveStreams,
     akkaSlf4j,
     sslConfig
-  ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % "1.1.3")
+  ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % LogbackVersion)
 
   val log4j2 = libraryDependencies ++= Seq(
     "log4j-api",
