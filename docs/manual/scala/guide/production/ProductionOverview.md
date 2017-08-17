@@ -1,6 +1,6 @@
 # Production
 
-Lagom doesn't prescribe any particular production environment, however out of the box support is provided for [Lightbend ConductR](https://www.lightbend.com/products/conductr). If you are interested in deploying on Kubernetes, see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/k8s-microservices/).
+Lagom doesn't prescribe any particular production environment, however out of the box support is provided for [Lightbend ConductR](https://www.lightbend.com/products/conductr). If you are interested in deploying on [Kubernetes](https://kubernetes.io/), see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/k8s-microservices/).
 
 ## Deploying Lagom services to ConductR
 
