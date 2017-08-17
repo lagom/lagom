@@ -9,6 +9,7 @@ import lagom.Protobuf
 import de.heikoseeberger.sbtheader.HeaderPattern
 import com.typesafe.tools.mima.core._
 
+
 def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   organization := "com.lightbend.lagom",
   // Must be "Apache-2.0", because bintray requires that it is a license that it knows about
@@ -60,7 +61,9 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
     "-parameters",
     "-Xlint:unchecked",
     "-Xlint:deprecation"
-  )
+  ),
+    scalafmtOnCompile in Compile := true,
+    scalafmtOnCompile in Test := true
 )
 
 def bintraySettings: Seq[Setting[_]] = Seq(
@@ -152,10 +155,7 @@ def multiJvmTestSettings: Seq[Setting[_]] =
     // see https://github.com/sbt/sbt-header/issues/37
     HeaderPlugin.settingsFor(MultiJvm) ++
     AutomateHeaderPlugin.automateFor(MultiJvm) ++
-    inConfig(MultiJvm)(SbtScalariform.configScalariformSettings) ++
-    (compileInputs in (MultiJvm, compile) := {
-      (compileInputs in (MultiJvm, compile)) dependsOn (scalariformFormat in MultiJvm)
-    }.value) ++
+    inConfig(MultiJvm)(scalafmtSettings) ++
     Seq(
       parallelExecution in Test := false,
       MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting :: defaultMultiJvmOptions,
