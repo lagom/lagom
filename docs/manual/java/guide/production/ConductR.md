@@ -2,7 +2,7 @@
 
 ConductR is a container orchestration tool with the main goal of delivering operational productivity. ConductR is also designed to host your Lagom services with resilience.
 
-ConductR is free for development usage and comes with a "sandbox" so that you can run ConductR locally and test your services. For more information on ConductR go to:
+ConductR is free for using on up to 3 nodes and also comes with a "sandbox" so that you can run it locally to test your services. For more information on ConductR go to:
 
 * [ConductR product page](https://www.lightbend.com/products/conductr)
 * [ConductR documentation](https://conductr.lightbend.com)
@@ -19,23 +19,7 @@ If you'd like to know more about our commercial license then [please contact us]
 
 ## Installing ConductR sandbox
 
-The ConductR sandbox is a utility to easily create a ConductR cluster locally. To run ConductR on your development machine follow the instructions on the [ConductR developer page](https://www.lightbend.com/product/conductr/developer) up to the section **Configure address aliases**. We will run the sandbox later on in this guide. Note that in order to access this page you need to login with your Lightbend account. If you don't have an account yet, head out to the [Sign Up page](https://www.lightbend.com/account/register) and create a free account.
-
-Verify the successful installation of the `conductr-cli` by running the `conduct` command within the terminal:
-
-```console
-$ conduct
-usage: conduct [-h]
-               {version,info,services,acls,load,run,stop,unload,events,logs}
-               ...
-```
-
-You can also verify the successful installation of the ConductR sandbox by running `sandbox` within the terminal:
-
-```console
-$ sandbox
-usage: sandbox [-h] {run,debug,stop,init} ...
-```
+We have made it super easy to get started with ConductR as part of the Lightbend Enterprise Suite getting started experience. Please [visit the Lightbend Enterprise Suite getting started page](https://www.lightbend.com/platform/enterprise-suite) and then return here.
 
 ## Using ConductR with your build
 
