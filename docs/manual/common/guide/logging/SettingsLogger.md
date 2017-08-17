@@ -14,10 +14,9 @@ While it uses the following one in production:
 
 A few things to note:
 
-* A file appender that writes to `logs/application.log` is declared.
-* The file logger logs full exception stack traces, while the console logger only logs 10 lines of an exception stack trace.
+* The logger logs full exception stack traces and full-qualified logger names.
 * Lagom uses ANSI color codes by default in level messages.
-* In production, Lagom puts both the console and the file logger behind the logback [AsyncAppender](https://logback.qos.ch/manual/appenders.html#AsyncAppender).  For details on the performance implications on this, see this [blog post](http://blog.takipi.com/how-to-instantly-improve-your-java-logging-with-7-logback-tweaks/).
+* In production, Lagom puts the logger behind the logback [AsyncAppender](https://logback.qos.ch/manual/appenders.html#AsyncAppender).  For details on the performance implications on this, see this [blog post](http://blog.takipi.com/how-to-instantly-improve-your-java-logging-with-7-logback-tweaks/).
 
 ## Custom configuration
 

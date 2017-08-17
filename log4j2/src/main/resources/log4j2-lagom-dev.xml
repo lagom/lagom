@@ -4,15 +4,9 @@
 <!-- The default log4j2 configuration that Lagom uses in dev mode if no other configuration is provided -->
 <Configuration name="DevelopmentLagomConfig">
   <Appenders>
-    <File name="FILE" fileName="logs/application.log">
-      <PatternLayout>
-        <Pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSS} ${HOSTNAME} %-5level %logger{0} [%mdc] - %msg%n</Pattern>
-      </PatternLayout>
-    </File>
-
     <Console name="STDOUT">
       <PatternLayout>
-        <Pattern>%d{HH:mm:ss.SSS} %highlight{%level} %logger{0} [%mdc] - %msg%n</Pattern>
+        <Pattern>%d{HH:mm:ss.SSS} %highlight{%level} %logger [%mdc] - %msg%n</Pattern>
       </PatternLayout>
     </Console>
   </Appenders>
@@ -34,7 +28,6 @@
     <Logger name="org.apache.kafka" level="WARN"/>
 
     <AsyncRoot level="INFO">
-      <AppenderRef ref="FILE"/>
       <AppenderRef ref="STDOUT"/>
     </AsyncRoot>
   </Loggers>
