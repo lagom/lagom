@@ -3,7 +3,7 @@
 
 ## Prerequisites
 
-Before making a contribution, it is important to make sure that the change you wish to make and the approach you wish to take will likely be accepted, otherwise you may end up doing a lot of work for nothing.  If the change is only small, for example, if it's a documentation change or a simple bug fix, then it's likely to be accepted with no prior discussion.  However, new features, or bigger refactorings should first be discussed in the [contributors chat](https://gitter.im/lagom/contributors).  Additionally, any issues with the [community label](https://github.com/lagom/lagom/labels/community) have been agreed to be a change that will likely be accepted.
+Before making a contribution, it is important to make sure that the change you wish to make and the approach you wish to take will likely be accepted, otherwise you may end up doing a lot of work for nothing.  If the change is only small, for example, if it's a documentation change or a simple bug fix, then it's likely to be accepted with no prior discussion.  However, new features, or bigger refactorings should first be discussed in the [contributors chat](https://gitter.im/lagom/contributors).  Additionally, any issues with the [newbie label](https://github.com/lagom/lagom/labels/help%3Anewbie) and [community label](https://github.com/lagom/lagom/labels/help%3Acommunity) have been agreed to be a change that will likely be accepted.
 
 ## Development tips
 
