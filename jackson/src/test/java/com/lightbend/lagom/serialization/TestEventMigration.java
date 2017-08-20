@@ -12,7 +12,7 @@ public class TestEventMigration extends JacksonJsonMigration {
 
   @Override
   public int currentVersion() {
-    return 2;
+    return 3;
   }
 
   @Override

@@ -55,7 +55,6 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
       case Some(transformer) => className + "#" + transformer.currentVersion
       case None              => className
     }
-
   }
 
   override def toBinary(obj: AnyRef): Array[Byte] = {
@@ -87,14 +86,16 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
     val compressed = isGZipped(bytes)
 
-    val migration = migrations.get(manifest)
+    val (fromVersion, manifestClassName) = parseManifest(manifest)
 
-    val i = manifest.lastIndexOf('#')
-    val fromVersion = if (i == -1) 1 else manifest.substring(i + 1).toInt
-    val manifestClassName = if (i == -1) manifest else manifest.substring(0, i)
+    val migration = migrations.get(manifestClassName)
+
     val className = migration match {
       case Some(transformer) if fromVersion < transformer.currentVersion =>
         transformer.transformClassName(fromVersion, manifestClassName)
+      case Some(transformer) if fromVersion > transformer.currentVersion =>
+        throw new IllegalStateException(s"Migration version ${transformer.currentVersion} is " +
+          s"behind version $fromVersion of deserialized type [$manifestClassName]")
       case _ => manifestClassName
     }
 
@@ -130,6 +131,13 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
       case _ =>
         objectMapper.readValue(decompressBytes, clazz)
     }
+  }
+
+  private def parseManifest(manifest: String) = {
+    val i = manifest.lastIndexOf('#')
+    val fromVersion = if (i == -1) 1 else manifest.substring(i + 1).toInt
+    val manifestClassName = if (i == -1) manifest else manifest.substring(0, i)
+    (fromVersion, manifestClassName)
   }
 
   def compress(bytes: Array[Byte]): Array[Byte] = {
