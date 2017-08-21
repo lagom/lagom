@@ -32,7 +32,24 @@ object JsonSerializer {
   def apply[T: ClassTag](format: Format[T]): JsonSerializer[T] =
     JsonSerializerImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], format)
 
-  private case class JsonSerializerImpl[T](entityClass: Class[T], format: Format[T]) extends JsonSerializer[T]
+  /**
+   * Create a serializer for the PlayJsonSerializationRegistry that will apply a GZIP compression when the generated
+   * JSON content is larger than <code>compress-larger-than</code> bytes, describes how a specific class can be read
+   * and written as json using separate play-json [[Reads]] and [[Writes]].
+   */
+  def compressed[T: ClassTag: Format]: JsonSerializer[T] =
+    CompressedJsonSerializerImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], implicitly[Format[T]])
+
+  /**
+   * Create a serializer for the PlayJsonSerializationRegistry that will apply a GZIP compression when the generated
+   * JSON content is larger than <code>compress-larger-than</code> bytes, describes how a specific class can be read
+   * and written as json using separate play-json [[Reads]] and [[Writes]].
+   */
+  def compressed[T: ClassTag](format: Format[T]): JsonSerializer[T] =
+    CompressedJsonSerializerImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], format)
+
+  private[lagom] case class JsonSerializerImpl[T](entityClass: Class[T], format: Format[T]) extends JsonSerializer[T]
+  private[lagom] case class CompressedJsonSerializerImpl[T](entityClass: Class[T], format: Format[T]) extends JsonSerializer[T]
 }
 
 /**
