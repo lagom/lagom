@@ -34,7 +34,7 @@ object JsonSerializer {
 
   /**
    * Create a serializer for the PlayJsonSerializationRegistry that will apply a GZIP compression when the generated
-   * JSON content is longer than <code>compress-larger-than</code> bytes, describes how a specific class can be read
+   * JSON content is larger than <code>compress-larger-than</code> bytes, describes how a specific class can be read
    * and written as json using separate play-json [[Reads]] and [[Writes]].
    */
   def compressed[T: ClassTag: Format]: JsonSerializer[T] =
@@ -42,7 +42,7 @@ object JsonSerializer {
 
   /**
    * Create a serializer for the PlayJsonSerializationRegistry that will apply a GZIP compression when the generated
-   * JSON content is longer than <code>compress-larger-than</code> bytes, describes how a specific class can be read
+   * JSON content is larger than <code>compress-larger-than</code> bytes, describes how a specific class can be read
    * and written as json using separate play-json [[Reads]] and [[Writes]].
    */
   def compressed[T: ClassTag](format: Format[T]): JsonSerializer[T] =
