@@ -12,6 +12,10 @@ val branch = {
 }
 
 
+lazy val plugins = (project in file(".")).dependsOn(dev)
+
+lazy val dev = ProjectRef(Path.fileProperty("user.dir").getParentFile, "sbt-plugin")
+
 lazy val docs = project
   .in(file("."))
   .enablePlugins(LightbendMarkdown)
