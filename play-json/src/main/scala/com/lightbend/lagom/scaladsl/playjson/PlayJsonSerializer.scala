@@ -3,13 +3,16 @@
  */
 package com.lightbend.lagom.scaladsl.playjson
 
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
 import java.nio.charset.StandardCharsets
+import java.util.zip.{ GZIPInputStream, GZIPOutputStream }
 
 import akka.actor.ExtendedActorSystem
 import akka.event.Logging
 import akka.serialization.{ BaseSerializer, SerializerWithStringManifest }
 import play.api.libs.json._
 
+import scala.annotation.tailrec
 import scala.collection.immutable
 
 /**
@@ -21,13 +24,26 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
   extends SerializerWithStringManifest
   with BaseSerializer {
 
+  import Compression._
+
   private val charset = StandardCharsets.UTF_8
   private val log = Logging.getLogger(system, getClass)
+  private val conf = system.settings.config.getConfig("lagom.serialization.json")
   private val isDebugEnabled = log.isDebugEnabled
 
-  private val serializers: Map[String, Format[AnyRef]] = {
-    registry.serializers.map(entry =>
+  private val compressLargerThan: Long = conf.getBytes("compress-larger-than")
+
+  /** maps a manifestClassName to a suitable play-json Format */
+  private val formatters: Map[String, Format[AnyRef]] = {
+    registry.serializers.map((entry: JsonSerializer[_]) =>
       (entry.entityClass.getName, entry.format.asInstanceOf[Format[AnyRef]])).toMap
+  }
+
+  /** maps a manifestClassName to the serializer provided by the user */
+  private val serializers: Map[String, JsonSerializer[_]] = {
+    registry.serializers.map {
+      entry => entry.entityClass.getName -> entry
+    }.toMap
   }
 
   private def migrations: Map[String, JsonMigration] = registry.migrations
@@ -45,13 +61,18 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
 
     val (_, manifestClassName: String) = parseManifest(manifest(o))
 
-    val format = serializers.getOrElse(
+    val format = formatters.getOrElse(
       manifestClassName,
       throw new RuntimeException(s"Missing play-json serializer for [$manifestClassName]")
     )
 
     val json = format.writes(o)
-    val result = Json.stringify(json).getBytes(charset)
+    val bytes: Array[Byte] = Json.stringify(json).getBytes(charset)
+
+    val result = serializers(manifestClassName) match {
+      case JsonSerializer.CompressedJsonSerializerImpl(_, _) if bytes.length > compressLargerThan => compress(bytes)
+      case _ => bytes
+    }
 
     if (isDebugEnabled) {
       val durationMicros = (System.nanoTime - startTime) / 1000
@@ -64,7 +85,7 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
     result
   }
 
-  override def fromBinary(bytes: Array[Byte], manifest: String): AnyRef = {
+  override def fromBinary(storedBytes: Array[Byte], manifest: String): AnyRef = {
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
 
     val (fromVersion: Int, manifestClassName: String) = parseManifest(manifest)
@@ -82,11 +103,17 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
 
     val transformMigration = migrations.get(migratedManifest)
 
-    val format = serializers.getOrElse(
+    val format = formatters.getOrElse(
       migratedManifest,
       throw new RuntimeException(s"Missing play-json serializer for [$migratedManifest], " +
-        s"defined are [${serializers.keys.mkString(", ")}]")
+        s"defined are [${formatters.keys.mkString(", ")}]")
     )
+
+    val bytes =
+      if (isGZipped(storedBytes))
+        decompress(storedBytes)
+      else
+        storedBytes
 
     val json = Json.parse(bytes) match {
       case jsObject: JsObject => jsObject
@@ -127,5 +154,42 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
     val fromVersion = if (i == -1) 1 else manifest.substring(i + 1).toInt
     val manifestClassName = if (i == -1) manifest else manifest.substring(0, i)
     (fromVersion, manifestClassName)
+  }
+
+}
+
+// This code is copied from JacksonJsonSerializer
+private[lagom] final object Compression {
+  private final val BufferSize = 1024 * 4
+
+  def compress(bytes: Array[Byte]): Array[Byte] = {
+    val bos = new ByteArrayOutputStream(BufferSize)
+    val zip = new GZIPOutputStream(bos)
+    try zip.write(bytes)
+    finally zip.close()
+    bos.toByteArray
+  }
+
+  def decompress(bytes: Array[Byte]): Array[Byte] = {
+    val in = new GZIPInputStream(new ByteArrayInputStream(bytes))
+    val out = new ByteArrayOutputStream()
+    val buffer = new Array[Byte](BufferSize)
+
+    @tailrec def readChunk(): Unit = in.read(buffer) match {
+      case -1 ⇒ ()
+      case n ⇒
+        out.write(buffer, 0, n)
+        readChunk()
+    }
+
+    try readChunk()
+    finally in.close()
+    out.toByteArray
+  }
+
+  def isGZipped(bytes: Array[Byte]): Boolean = {
+    (bytes != null) && (bytes.length >= 2) &&
+      (bytes(0) == GZIPInputStream.GZIP_MAGIC.toByte) &&
+      (bytes(1) == (GZIPInputStream.GZIP_MAGIC >> 8).toByte)
   }
 }
