@@ -13,7 +13,7 @@ object Dependencies {
   val AkkaHttpVersion = "10.0.9"
   val ScalaVersion = "2.11.11"
   val AkkaPersistenceCassandraVersion = "0.54"
-  val ScalaTestVersion = "3.0.3"
+  val ScalaTestVersion = "3.0.4"
   val JacksonVersion = "2.8.9"
   val CassandraAllVersion = "3.8"
   val GuavaVersion = "22.0"
