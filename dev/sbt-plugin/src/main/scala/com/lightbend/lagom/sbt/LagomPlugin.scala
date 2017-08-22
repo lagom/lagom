@@ -289,7 +289,7 @@ object LagomPlugin extends AutoPlugin {
     val lagomServiceLocatorUrl = settingKey[String]("URL of the service locator")
     val lagomServiceLocatorPort = settingKey[Int]("Port used by the service locator")
     val lagomServiceGatewayPort = settingKey[Int]("Port used by the service gateway")
-    val lagomServiceGatewayImpl = settingKey[String]("Implementation of the service gateway: \"netty\" (default) or \"akka-http\" (experimental)")
+    val lagomServiceGatewayImpl = settingKey[String]("Implementation of the service gateway: \"akka-http\" (default) or \"netty\"")
     val lagomServiceLocatorEnabled = settingKey[Boolean]("Enable/Disable the service locator")
     val lagomServiceLocatorStart = taskKey[Closeable]("Start the service locator")
     val lagomServiceLocatorStop = taskKey[Unit]("Stop the service locator")
@@ -407,7 +407,7 @@ object LagomPlugin extends AutoPlugin {
     lagomServiceLocatorEnabled := true,
     lagomServiceLocatorPort := 8000,
     lagomServiceGatewayPort := 9000,
-    lagomServiceGatewayImpl := "netty",
+    lagomServiceGatewayImpl := "akka-http",
     lagomServiceLocatorUrl := s"http://localhost:${lagomServiceLocatorPort.value}",
     lagomCassandraEnabled := true,
     lagomCassandraPort := 4000, // If you change the default make sure to also update the play/reference-overrides.conf in the persistence project
