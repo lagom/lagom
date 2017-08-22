@@ -3,16 +3,22 @@
  */
 package docs.home.scaladsl.serialization
 
-//#registry
+//#registry-compressed
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object MyRegistry extends JsonSerializerRegistry {
   override val serializers = Vector(
+
+    // 'AddComment' uses the default JsonSerializer.
     JsonSerializer[AddComment],
-    JsonSerializer[AddPost]
+
+    // The AddPost message is usually rather big, so we want it compressed
+    // when it's too large.
+    JsonSerializer.compressed[AddPost]
+
   )
 }
-//#registry
+//#registry-compressed
 
 //#application-cake
 import com.lightbend.lagom.scaladsl.server._

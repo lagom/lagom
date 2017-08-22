@@ -21,7 +21,12 @@ Best practice is to define the `Format` as an implicit in the classes companion 
  
 The second step is to implement [JsonSerializerRegistry](api/com/lightbend/lagom/scaladsl/playjson/JsonSerializerRegistry.html) and have all the service formats returned from its `serializers` method.
    
-@[registry](code/docs/home/scaladsl/serialization/Registry.scala)
+@[registry-compressed](code/docs/home/scaladsl/serialization/Registry.scala)
+
+Use the `compressed` serializers so the output is compressed if the resulting JSON is larger than `compress-larger-than`. Configure the `compress-larger-than` threshold in `application.conf`:
+
+@[compress-larger-than](../../../../../play-json/src/main/resources/reference.conf)
+
 
 Having done that, you can provide the serializer registry by overriding the `jsonSerializerRegistry` component method in your application cake, for example:
 
