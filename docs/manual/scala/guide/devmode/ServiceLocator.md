@@ -79,11 +79,11 @@ You may opt in to use the old `netty` implementation with this setting in sbt:
 
 ## Start and stop
 
-The Service Locator is automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Service Locator via the `lagom:startServiceLocator` Maven task or the `lagomServiceLocatorStart` sbt task, and stopping it with the `lagom:stopServiceLocator` Maven task or the`lagomServiceLocatorStop` sbt task.
+The Service Locator and the Service Gateway are automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Service Locator and Service Gateway pair via the `lagom:startServiceLocator` Maven task or the `lagomServiceLocatorStart` sbt task, and stopping it with the `lagom:stopServiceLocator` Maven task or the`lagomServiceLocatorStop` sbt task.
 
 ## Disable it
 
-You can disable the embedded Service Locator by adding the following in your build.
+You can disable the embedded Service Locator and Service Gateway by adding the following in your build.
 
 In the Maven root project pom:
 
@@ -102,4 +102,4 @@ In sbt:
 
 @[service-locator-disabled](code/build-service-locator.sbt)
 
-Be aware that by disabling the Service Locator your services will not be able to communicate. To restore communication, you will have to provide an implementation of [`ServiceLocator`](api/com/lightbend/lagom/scaladsl/api/ServiceLocator.html) in your service.
+Be aware that by disabling the Service Locator your services will not be able to communicate.You will also be unable to access to your services from the outside unless you access the exact host:port. To restore communication, you will have to provide an implementation of [`ServiceLocator`](api/com/lightbend/lagom/scaladsl/api/ServiceLocator.html) in your service.
