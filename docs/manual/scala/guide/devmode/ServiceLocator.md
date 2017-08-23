@@ -52,6 +52,31 @@ The above ensures that the Service Locator knows about the `weather` service. Th
 
 Note that if the service you want to communicate with is actually a Lagom service, you may want to read the documentation for [[integrating with an external Lagom projects|MultipleBuilds]].
 
+
+
+# Service Gateway
+
+Some clients that want to connect to your services will not have access to your Service Locator. External clients need a stable address to communicate to and here's where the Service Gateway comes in. The Service Gateway will expose and reverse proxy all public endpoints registered by your services. A Service Gateway is embedded in Lagom's development environment, allowing clients from the outside (e.g. a browser) to connect to your Lagom services. 
+
+## Default port
+
+By default the Service Gateway is listening for connections on port `9000` in `localhost`. It is possible to change that port by adding this to your build.
+
+In sbt:
+
+@[service-gateway-port](code/build-service-locator.sbt)
+
+
+## Default gateway implementation
+
+The Lagom development environment provides an implementation of a Service Gateway based on [Akka HTTP](https://github.com/akka/akka-http) and the (now legacy) implementation based on [Netty](https://netty.io/). 
+
+You may opt in to use the old `netty` implementation with this setting in sbt:
+
+@[service-gateway-impl](code/build-service-locator.sbt)
+
+
+
 ## Start and stop
 
 The Service Locator is automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Service Locator via the `lagom:startServiceLocator` Maven task or the `lagomServiceLocatorStart` sbt task, and stopping it with the `lagom:stopServiceLocator` Maven task or the`lagomServiceLocatorStop` sbt task.
