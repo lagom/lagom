@@ -181,6 +181,16 @@ public class JacksonJsonSerializerTest {
     assertEquals(event1.getField1(), event2.getField1V2());
     assertEquals(17, event2.getField2());
   }
+  
+  @Test
+  public void testDeserializeWithMigrationFromV2() {
+    Event1 event1 = Event1.of("a");
+    byte[] blob = serializer.toBinary(event1);
+
+    Event2 event2 = (Event2) serializer.fromBinary(blob, Event1.class.getName() + "#2");
+    assertEquals(event1.getField1(), event2.getField1V2());
+    assertEquals(17, event2.getField2());
+  }
 
   @Test
   public void testSerializeDone() {
