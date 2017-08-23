@@ -422,7 +422,7 @@ object LagomPlugin extends AutoPlugin {
     lagomKafkaCleanOnStart := false,
     lagomKafkaAddress := s"localhost:${lagomKafkaPort.value}",
     lagomKafkaJvmOptions := Seq("-Xms256m", "-Xmx1024m"),
-    runAll := runServiceLocatorAndMicroservicesTask.value,
+    runAll := runAllMicroservicesTask.value,
     Internal.Keys.interactionMode := PlayConsoleInteractionMode,
     lagomDevSettings := Nil
   ) ++
@@ -503,14 +503,6 @@ object LagomPlugin extends AutoPlugin {
         }
     }
 
-  private lazy val runServiceLocatorAndMicroservicesTask: Initialize[Task[Unit]] = Def.taskDyn {
-    val startInfrastructure = Def.taskDyn {
-      lagomKafkaStart.value
-      Def.sequential(lagomCassandraStart, lagomServiceLocatorStart)
-    }
-    Def.sequential(startInfrastructure, runAllMicroservicesTask)
-  }
-
   // The reason this is a dynamic task is that the tasks below don't get defined until their dynamically added
   // projects are added to the build, which happens after everything is first loaded. Consequently, we don't want
   // these dependencies to be eagerly resolved when the project loads, so we make it dynamic.
@@ -526,7 +518,7 @@ object LagomPlugin extends AutoPlugin {
     }
   }
 
-  private def runAllMicroservicesTask: Initialize[Task[Unit]] = Def.taskDyn {
+  private lazy val runAllMicroservicesTask: Initialize[Task[Unit]] = Def.taskDyn {
     val infrastructureServiceTasks = sequential(lagomInfrastructureServices.value)
     Def.taskDyn {
       // First start the infrastructure services
