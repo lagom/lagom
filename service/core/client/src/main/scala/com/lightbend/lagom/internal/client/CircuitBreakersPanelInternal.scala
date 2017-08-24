@@ -35,11 +35,6 @@ private[lagom] class CircuitBreakersPanelInternal(
 
   private val breakers = new ConcurrentHashMap[String, Option[CircuitBreakerHolder]]
 
-  private val exceptionAsFailure: Try[_] => Boolean = {
-    case _: Success[_] ⇒ false
-    case _             ⇒ true
-  }
-
   def withCircuitBreaker[T](id: String)(body: => Future[T]): Future[T] = {
     breaker(id) match {
       case Some(CircuitBreakerHolder(b, metrics, failedCallDefinition)) =>
@@ -68,13 +63,10 @@ private[lagom] class CircuitBreakersPanelInternal(
 
     private def failureDefinition(whitelist: Set[String]): Try[_] => Boolean = {
       case _: Success[_] ⇒ false
-      case Failure(t) if exceptionWhitelist.contains(t.getClass.getName) ⇒ false
+      case Failure(t) if whitelist.contains(t.getClass.getName) ⇒ false
       case _ ⇒ true
     }
 
-    private val exceptionWhitelist = Set(
-      "com.lightbend.lagom.javadsl.api.transport.NotFound"
-    )
 
     override def apply(id: String): Option[CircuitBreakerHolder] = {
 
