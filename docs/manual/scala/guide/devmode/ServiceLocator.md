@@ -102,4 +102,10 @@ In sbt:
 
 @[service-locator-disabled](code/build-service-locator.sbt)
 
-Be aware that by disabling the Service Locator your services will not be able to communicate.You will also be unable to access to your services from the outside unless you access the exact host:port. To restore communication, you will have to provide an implementation of [`ServiceLocator`](api/com/lightbend/lagom/scaladsl/api/ServiceLocator.html) in your service.
+Be aware that by disabling the Service Locator your services will not be able to communicate with each other. To restore communication, you will have to provide an implementation of [`ServiceLocator`](api/com/lightbend/lagom/scaladsl/api/ServiceLocator.html) in your service. You will also be unable to access to your services via the Service Gateway running on http://localhost:9000 (by default). Instead, you will need to access each service directly on its own port. Each service port is logged to the console when starting in development mode, for example:
+
+```
+[info] Service hello-impl listening for HTTP on 0:0:0:0:0:0:0:0:57797
+```
+
+For more information, see [[How are ports assigned to services?|ServicePort]].
