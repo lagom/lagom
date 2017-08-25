@@ -20,8 +20,8 @@ object Dependencies {
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.1.13.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
-  val KafkaVersion = "0.10.2.1"
-  val AkkaStreamKafkaVersion = "0.16"
+  val KafkaVersion = "0.11.0.0"
+  val AkkaStreamKafkaVersion = "0.17"
   val Log4jVersion = "1.2.17"
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
@@ -245,7 +245,7 @@ object Dependencies {
     "org.apache.curator" % "curator-framework" % "2.10.0",
     "org.apache.curator" % "curator-test" % "2.10.0",
     "org.apache.kafka" %% "kafka" % KafkaVersion,
-    "org.apache.zookeeper" % "zookeeper" % "3.4.9"
+    "org.apache.zookeeper" % "zookeeper" % "3.4.10"
   )
 
   private def crossLibraryFamily(groupId: String, version: String)(artifactIds: String*) = {
