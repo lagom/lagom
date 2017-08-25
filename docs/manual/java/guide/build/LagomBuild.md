@@ -18,7 +18,7 @@ Consider the sample system below:
 
 ![Lagom project structure](resources/guide/build/lagom-project-structure.png)
 
-This system has two services, one called `hello`, and one called `hello-stream`.  Each service has two sbt projects defined, an API project, `hello-api` and `hello-stream-api`, and an implementation project, `hello-impl` and `hello-stream-impl`.  Additionally, `hello-stream-impl` depends on `hello-api`, and uses that to invoke calls on `hello-stream`.
+This system has two services, one called `hello`, and one called `hello-stream`.  Each service has two sbt projects defined, an API project, `hello-api` and `hello-stream-api`, and an implementation project, `hello-impl` and `hello-stream-impl`.  Additionally, `hello-stream-impl` depends on `hello-api`, and uses that to invoke calls on `hello`.
 
 * [Defining a build in Maven](#Defining-a-build-in-Maven)
 * [Defining a build in sbt](#Defining-a-build-in-sbt)
