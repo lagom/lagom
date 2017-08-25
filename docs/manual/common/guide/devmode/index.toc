@@ -1,6 +1,6 @@
 DevEnvironment:Development Environment
 RunningServices:Running Services
 ServicePort:How are ports assigned to services?
-ServiceLocator:Service Locator
+ServiceLocator:Service Locator and Service Gateway
 CassandraServer:Cassandra Server
 KafkaServer:Kafka Server
