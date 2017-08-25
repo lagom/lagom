@@ -67,7 +67,6 @@ private[lagom] class CircuitBreakersPanelInternal(
       case _ ⇒ true
     }
 
-
     override def apply(id: String): Option[CircuitBreakerHolder] = {
 
       val breakerConfig =
