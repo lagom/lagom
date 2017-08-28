@@ -47,7 +47,7 @@ private[lagom] object JoinClusterImpl {
           val t = new Thread(new Runnable {
             override def run(): Unit = {
               if (Try(Await.ready(system.whenTerminated, 10.seconds)).isFailure)
-                System.exit(-1)
+                sys.runtime.halt(-1)
             }
           })
           t.setDaemon(true)
