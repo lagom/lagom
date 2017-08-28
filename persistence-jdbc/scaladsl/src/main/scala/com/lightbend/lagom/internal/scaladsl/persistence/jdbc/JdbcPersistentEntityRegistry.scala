@@ -30,7 +30,7 @@ private[lagom] final class JdbcPersistentEntityRegistry(system: ActorSystem, sli
 
   override protected def mapStartingOffset(storedOffset: Offset): Offset = storedOffset match {
     case NoOffset        => NoOffset
-    case Sequence(value) => Sequence(value + 1)
+    case Sequence(value) => Sequence(value)
     case other =>
       throw new IllegalArgumentException(s"JDBC does not support ${other.getClass.getSimpleName} offsets")
   }

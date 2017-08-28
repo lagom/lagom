@@ -33,7 +33,7 @@ private[lagom] final class JdbcPersistentEntityRegistry @Inject() (system: Actor
 
   override protected def mapStartingOffset(storedOffset: Offset): AkkaOffset = storedOffset match {
     case Offset.NONE          => NoOffset
-    case seq: Offset.Sequence => Sequence(seq.value() + 1)
+    case seq: Offset.Sequence => Sequence(seq.value())
     case other =>
       throw new IllegalArgumentException(s"JDBC does not support ${other.getClass.getSimpleName} offsets")
   }
