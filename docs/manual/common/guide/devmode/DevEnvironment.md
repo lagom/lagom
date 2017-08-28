@@ -71,11 +71,13 @@ Now we're able to start Elastic Search, we need to add this task to Lagom's list
 <!-- copied this section to concepts, perhaps it can be removed later -->
 What's happening behind the scenes when you `runAll`?
 
-* an embedded Service Locator is started
-* a Cassandra server is started
-* a Kafka server is started
+* an embedded [[Service Locator|ServiceLocator]] is started
+* an embedded [[Service Gateway|ServiceLocator#Service-Gateway]] is started
+* a [[Cassandra server|CassandraServer]] is started
+* a [[Kafka server|KafkaServer]] is started
 * your services start
     * ...and register with the Service Locator
+    * ...and register the publicly accessible paths in the Service Gateway
 
 This all happens automatically without special code or additional configuration.
 
