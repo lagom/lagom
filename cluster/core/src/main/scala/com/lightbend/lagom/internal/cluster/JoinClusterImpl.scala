@@ -57,7 +57,6 @@ private[lagom] object JoinClusterImpl {
       // The delay is to give ClusterSingleton actors some time to stop gracefully.
       system.scheduler.scheduleOnce(terminateSystemAfter) {
         val CLUSTER_MEMBERSHIP_REMOVED = -128
-        val EXIT_TIMEOUT = -1
         val EXIT_TIMEOUT_WITH_HALT = -2
         exitStatus.compareAndSet(SUCCESSFUL_EXIT, CLUSTER_MEMBERSHIP_REMOVED)
 
@@ -73,12 +72,13 @@ private[lagom] object JoinClusterImpl {
           val t = new Thread(new Runnable {
             override def run(): Unit = {
               if (Try(Await.ready(system.whenTerminated, 10.seconds)).isFailure) {
-                println("Halting JVM.")
+                System.err.println("Halting JVM.")
                 Runtime.getRuntime.halt(EXIT_TIMEOUT_WITH_HALT)
               }
+              // this is reached only when `system.whenTerminated` completes successfully.
               if (needsExiting) {
                 println("Proceed to JVM shutdown with exit status: " + exitStatus.get())
-                System.exit(EXIT_TIMEOUT)
+                System.exit(exitStatus.get())
               }
             }
           })
