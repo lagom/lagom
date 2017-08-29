@@ -18,9 +18,12 @@ object Dependencies {
   val NettyVersion = "4.0.42.Final"
   val KafkaVersion = "0.10.0.1"
   val AkkaStreamKafkaVersion = "0.13"
-  val Log4jVersion = "1.2.17"
   val ScalaJava8CompatVersion = "0.7.0"
   val ScalaXmlVersion = "1.0.5"
+
+  val Log4jVersion = "1.2.17"
+  val logbackVersion = "1.1.7"
+
 
   // Specific libraries that get reused
   private val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
@@ -46,7 +49,7 @@ object Dependencies {
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
 
   // latest version of APC depend on a Cassandra driver core that's not compatible with Lagom (newer netty/guava/etc... under the covers)
-  private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion exclude ("com.datastax.cassandra" , "cassandra-driver-core")
+  private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion exclude("com.datastax.cassandra", "cassandra-driver-core")
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % CassandraDriverVersion
 
   private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafkaVersion
@@ -56,7 +59,7 @@ object Dependencies {
 
   private val play = "com.typesafe.play" %% "play" % PlayVersion
   private val playBuildLink = "com.typesafe.play" % "build-link" % PlayVersion
-  private val playExceptions =  "com.typesafe.play" % "play-exceptions" % PlayVersion
+  private val playExceptions = "com.typesafe.play" % "play-exceptions" % PlayVersion
   private val playJava = "com.typesafe.play" %% "play-java" % PlayVersion
   private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion
   private val playJson = "com.typesafe.play" %% "play-json" % PlayVersion
@@ -200,7 +203,7 @@ object Dependencies {
       "play", "play-datacommons", "play-functional", "play-iteratees", "play-java", "play-jdbc", "play-jdbc-api",
       "play-json", "play-netty-server", "play-server", "play-streams", "play-ws"
 
-    ) ++ libraryFamily("ch.qos.logback", "1.1.3")(
+    ) ++ libraryFamily("ch.qos.logback", logbackVersion)(
       "logback-classic", "logback-core"
 
     ) ++ libraryFamily("io.netty", NettyVersion)(
@@ -360,7 +363,11 @@ object Dependencies {
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
-    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion exclude("io.netty", "netty-all"),
+    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion excludeAll(
+      ExclusionRule("io.netty", "netty-all"),
+      ExclusionRule("ch.qos.logback", "logback-core"),
+      ExclusionRule("ch.qos.logback", "logback-classic")
+    ),
     akkaStreamTestkit,
     akkaPersistenceCassandra,
     scalaTest % Test,
@@ -379,7 +386,11 @@ object Dependencies {
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
     playNettyServer,
-    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion exclude("io.netty", "netty-all"),
+    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion excludeAll(
+      ExclusionRule("io.netty", "netty-all"),
+      ExclusionRule("ch.qos.logback", "logback-core"),
+      ExclusionRule("ch.qos.logback", "logback-classic")
+    ),
     akkaStreamTestkit,
     akkaPersistenceCassandra,
     scalaTest % Test,
@@ -488,6 +499,7 @@ object Dependencies {
     // this mean we have production code depending on testkit
     akkaTestkit
   )
+
   val `persistence-cassandra-core` = libraryDependencies ++= Seq(
     akkaPersistenceCassandra,
     cassandraDriverCore,
@@ -498,12 +510,34 @@ object Dependencies {
     "io.netty" % "netty-handler" % NettyVersion,
     "io.netty" % "netty-transport" % NettyVersion,
 
-    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion % Test exclude("io.netty", "netty-all"),
+    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion excludeAll(
+      ExclusionRule("io.netty", "netty-all"),
+      ExclusionRule("ch.qos.logback", "logback-core"),
+      ExclusionRule("ch.qos.logback", "logback-classic")
+    ),
+
     "io.netty" % "netty-codec-http" % NettyVersion % Test,
     "io.netty" % "netty-transport-native-epoll" % NettyVersion % Test classifier "linux-x86_64",
     "com.fasterxml" % "classmate" % "1.3.0" % Test,
-    "org.apache.httpcomponents" % "httpclient" % "4.5.2" % Test
+    "org.apache.httpcomponents" % "httpclient" % "4.5.2",
+
+
+    // These deps are depended on by cassandra-all, and need to be upgraded in order to be consistent with transitive
+    // dependencies from our other libraries
+    "com.lmax" % "disruptor" % "3.3.6",
+    "javax.validation" % "validation-api" % "1.1.0.Final",
+    "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
+    jbossLogging,
+    "com.fasterxml" % "classmate" % "1.3.0",
+    "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
+    "org.xerial.snappy" % "snappy-java" % "1.1.2.6",
+    "org.yaml" % "snakeyaml" % "1.16",
+
+    "org.apache.httpcomponents" % "httpcore" % "4.4.4",
+    "commons-logging" % "commons-logging" % "1.2",
+    "junit" % "junit" % "4.11"
   )
+
 
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
     cassandraDriverCore
@@ -567,7 +601,7 @@ object Dependencies {
     akkaStream,
     scalaXml,
     guava
-  ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % "1.1.3")
+  ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % logbackVersion)
 
   val log4j2 = libraryDependencies ++= Seq(
     "log4j-api",
@@ -751,4 +785,5 @@ object Dependencies {
   private class DependencyWhitelistValidationFailed extends RuntimeException with FeedbackProvidedException {
     override def toString = "Dependency whitelist validation failed!"
   }
+
 }
