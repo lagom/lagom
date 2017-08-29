@@ -57,14 +57,14 @@ private[lagom] class CircuitBreakersPanelInternal(
   private val createCircuitBreaker = new JFunction[String, Option[CircuitBreakerHolder]] {
 
     private val allExceptionAsFailure: Try[_] => Boolean = {
-      case _: Success[_] ⇒ false
-      case _             ⇒ true
+      case _: Success[_] => false
+      case _             => true
     }
 
     private def failureDefinition(whitelist: Set[String]): Try[_] => Boolean = {
-      case _: Success[_] ⇒ false
-      case Failure(t) if whitelist.contains(t.getClass.getName) ⇒ false
-      case _ ⇒ true
+      case _: Success[_] => false
+      case Failure(t) if whitelist.contains(t.getClass.getName) => false
+      case _ => true
     }
 
     override def apply(id: String): Option[CircuitBreakerHolder] = {
