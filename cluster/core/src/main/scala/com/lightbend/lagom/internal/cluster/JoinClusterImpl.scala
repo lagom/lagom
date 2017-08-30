@@ -24,6 +24,8 @@ private[lagom] object JoinClusterImpl {
       "lagom.cluster.terminate-system-after-member-removed", TimeUnit.MILLISECONDS
     ).millis
 
+    def exitJvm = config.getBoolean("lagom.cluster.exit-jvm-when-system-terminated")
+
     // join self if seed-nodes are not configured in dev-mode,
     // otherwise it will join the seed-nodes automatically
     val cluster = Cluster(system)
@@ -36,25 +38,27 @@ private[lagom] object JoinClusterImpl {
 
         system.terminate()
 
-        // In case ActorSystem shutdown takes longer than 10 seconds,
-        // exit the JVM forcefully anyway.
-        // We must spawn a separate thread to not block current thread,
-        // since that would have blocked the shutdown of the ActorSystem.
-        new Thread(new Runnable {
-          override def run(): Unit = {
-            if (Try(Await.ready(system.whenTerminated, 10.seconds)).isFailure) {
-              System.err.println("Halting JVM.")
-              Runtime.getRuntime.halt(-2)
+        if (exitJvm) {
+
+          // In case ActorSystem shutdown takes longer than 10 seconds,
+          // exit the JVM forcefully anyway.
+          // We must spawn a separate thread to not block current thread,
+          // since that would have blocked the shutdown of the ActorSystem.
+          new Thread(new Runnable {
+            override def run(): Unit = {
+              if (Try(Await.ready(system.whenTerminated, 10.seconds)).isFailure) {
+                System.err.println("Halting JVM.")
+                Runtime.getRuntime.halt(-2)
+              }
+
+              val CLUSTER_MEMBERSHIP_REMOVED = -128
+              // this is reached only when `system.whenTerminated` completes successfully.
+              println("Proceed to JVM shutdown with exit status: " + CLUSTER_MEMBERSHIP_REMOVED)
+              System.exit(CLUSTER_MEMBERSHIP_REMOVED)
+
             }
-
-            val CLUSTER_MEMBERSHIP_REMOVED = -128
-            // this is reached only when `system.whenTerminated` completes successfully.
-            println("Proceed to JVM shutdown with exit status: " + CLUSTER_MEMBERSHIP_REMOVED)
-            System.exit(CLUSTER_MEMBERSHIP_REMOVED)
-
-          }
-        }).start()
-
+          }).start()
+        }
 
       }(system.dispatcher)
 
