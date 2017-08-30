@@ -25,7 +25,7 @@ object Dependencies {
   val Log4jVersion = "1.2.17"
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
-  val SlickVersion = "3.2.0"
+  val SlickVersion = "3.2.1"
   val JUnitVersion = "4.11"
   val LogbackVersion = "1.2.3"
 
