@@ -255,7 +255,7 @@ object Dependencies {
     "org.apache.curator" % "curator-framework" % "2.10.0",
     "org.apache.curator" % "curator-test" % "2.10.0",
     "org.apache.kafka" %% "kafka" % "0.10.0.1",
-    "org.apache.zookeeper" % "zookeeper" % "3.4.6"
+    "org.apache.zookeeper" % "zookeeper" % "3.4.10"
   )
 
   private def crossLibraryFamily(groupId: String, version: String)(artifactIds: String*) = {
@@ -718,6 +718,10 @@ object Dependencies {
     // http://curator.apache.org/index.html - make sure to scroll to the bottom)
     "org.apache.curator" % "curator-framework" % "2.10.0",
     "org.apache.curator" % "curator-test" % "2.10.0",
+
+    // Update ZooKeeper to 3.4.10 to pick up a security fix
+    "org.apache.zookeeper" % "zookeeper" % "3.4.10"  exclude("org.slf4j", "slf4j-log4j12"),
+
     scalaJava8Compat,
     scalaTest % Test
   )
