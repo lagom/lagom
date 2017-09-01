@@ -63,9 +63,15 @@ object LagomReloadableDevServerStart {
         val process = new RealServerProcess(args = Seq.empty)
         val path: File = buildLink.projectPath
 
-        val dirAndDevSettings: Map[String, String] = ServerConfig.rootDirConfig(path) ++ buildLink.settings.asScala.toMap ++
-          (httpPort.toList.map("play.server.http.port" -> _.toString).toMap) +
-          ("play.server.http.address" -> httpAddress)
+        val dirAndDevSettings: Map[String, String] =
+          ServerConfig.rootDirConfig(path) ++
+            buildLink.settings.asScala.toMap ++
+            httpPort.toList.map("play.server.http.port" -> _.toString).toMap +
+            ("play.server.http.address" -> httpAddress) +
+            {
+              // on dev-mode, we often have more than one cluster on the same jvm
+              "akka.cluster.jmx.multi-mbeans-in-same-jvm" -> "on"
+            }
 
         // Use plain Java call here in case of scala classloader mess
         {

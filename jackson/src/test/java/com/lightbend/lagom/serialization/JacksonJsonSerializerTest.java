@@ -5,12 +5,15 @@ package com.lightbend.lagom.serialization;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Assert;
 import org.pcollections.TreePVector;
 
 import org.pcollections.PVector;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.lightbend.lagom.internal.jackson.JacksonJsonSerializer;
+
+import java.io.NotSerializableException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -48,23 +51,29 @@ public class JacksonJsonSerializerTest {
   private final JacksonJsonSerializer serializer = new JacksonJsonSerializer((ExtendedActorSystem) system);
 
   private void checkSerialization(Object obj, boolean expectedCompression) {
-      // check that it is configured
-    assertEquals(JacksonJsonSerializer.class, SerializationExtension.get(system).serializerFor(obj.getClass())
-        .getClass());
-
-      // verify serialization-deserialization round trip
-    byte[] blob = serializer.toBinary(obj);
-
-    boolean printJson = false; // for debugging
     try {
-      if (printJson && !serializer.isGZipped(blob))
-        System.out.println(obj + " -> " + new String(blob, "utf-8"));
-    } catch (UnsupportedEncodingException e) {
-    }
 
-    assertEquals(expectedCompression, serializer.isGZipped(blob));
-    Object obj2 = serializer.fromBinary(blob, serializer.manifest(obj));
-    assertEquals(obj, obj2);
+        // check that it is configured
+        assertEquals(JacksonJsonSerializer.class,
+            SerializationExtension.get(system).serializerFor(obj.getClass()).getClass()
+        );
+
+        // verify serialization-deserialization round trip
+        byte[] blob = serializer.toBinary(obj);
+
+
+        if (!serializer.isGZipped(blob))
+            System.out.println(obj + " -> " + new String(blob, "utf-8"));
+
+        assertEquals(expectedCompression, serializer.isGZipped(blob));
+        Object obj2 = serializer.fromBinary(blob, serializer.manifest(obj));
+        assertEquals(obj, obj2);
+
+    } catch (UnsupportedEncodingException | NotSerializableException e) {
+        // that should not happen in testing,
+        // but we need to make the compiler happy
+        throw new RuntimeException(e);
+    }
   }
 
   private <T> T deserialize(Class<T> clazz, String json) {
@@ -178,6 +187,16 @@ public class JacksonJsonSerializerTest {
     byte[] blob = serializer.toBinary(event1);
 
     Event2 event2 = (Event2) serializer.fromBinary(blob, Event1.class.getName());
+    assertEquals(event1.getField1(), event2.getField1V2());
+    assertEquals(17, event2.getField2());
+  }
+  
+  @Test
+  public void testDeserializeWithMigrationFromV2() {
+    Event1 event1 = Event1.of("a");
+    byte[] blob = serializer.toBinary(event1);
+
+    Event2 event2 = (Event2) serializer.fromBinary(blob, Event1.class.getName() + "#2");
     assertEquals(event1.getField1(), event2.getField1V2());
     assertEquals(17, event2.getField2());
   }

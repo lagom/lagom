@@ -99,6 +99,18 @@ object TestRegistry3 extends JsonSerializerRegistry {
   )
 }
 
+object TestRegistryWithCompression extends JsonSerializerRegistry {
+
+  implicit val innerFormat = Json.format[Inner]
+
+  override def serializers: Seq[JsonSerializer[_]] =
+    Seq(
+      JsonSerializer.compressed[Event1],
+      JsonSerializer.compressed(Json.format[Event2])
+    )
+
+}
+
 case class Box(surprise: Option[String])
 
 class PlayJsonSerializerSpec extends WordSpec with Matchers {
@@ -231,6 +243,42 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val deserialized = serializer.fromBinary(oldJsonBytes, "MigratedEvent.old.ClassName")
 
       deserialized should be(expectedEvent)
+    }
+
+    "use compression when enabled and payload is bigger than threshold" in withActorSystem(TestRegistryWithCompression) { system =>
+
+      val serializeExt = SerializationExtension(system)
+      val longContent = "test" * 1024
+      val bigEvent1 = Event1(longContent, 1)
+      val bigEvent2 = Event2(longContent, Inner(on = true))
+      val shortContent = "clearText-short"
+      val smallEvent1 = Event1(shortContent, 1)
+      val smallEvent2 = Event2(shortContent, Inner(on = true))
+      List(bigEvent1, bigEvent2).foreach { event =>
+        val serializer = serializeExt.findSerializerFor(event).asInstanceOf[SerializerWithStringManifest]
+
+        val bytes = serializer.toBinary(event)
+        bytes.length should be < 1024 // this is a magic number. I know longContent will compress well under this 1024.
+        Compression.isGZipped(bytes) should be(true)
+        val manifest = serializer.manifest(event)
+
+        bytes.isEmpty should be(false)
+
+        val deserialized = serializer.fromBinary(bytes, manifest)
+        deserialized should be(event)
+      }
+      List(smallEvent1, smallEvent2).foreach { event =>
+        val serializer = serializeExt.findSerializerFor(event).asInstanceOf[SerializerWithStringManifest]
+
+        val bytes = serializer.toBinary(event)
+        new String(bytes) should include(shortContent)
+        val manifest = serializer.manifest(event)
+
+        bytes.isEmpty should be(false)
+
+        val deserialized = serializer.fromBinary(bytes, manifest)
+        deserialized should be(event)
+      }
     }
 
     def expectedVersionedManifest[T](clazz: Class[T], migrationVersion: Int) = {

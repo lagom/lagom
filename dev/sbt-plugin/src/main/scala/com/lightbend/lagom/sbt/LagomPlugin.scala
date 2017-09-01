@@ -289,7 +289,7 @@ object LagomPlugin extends AutoPlugin {
     val lagomServiceLocatorUrl = settingKey[String]("URL of the service locator")
     val lagomServiceLocatorPort = settingKey[Int]("Port used by the service locator")
     val lagomServiceGatewayPort = settingKey[Int]("Port used by the service gateway")
-    val lagomServiceGatewayImpl = settingKey[String]("Implementation of the service gateway: \"netty\" (default) or \"akka-http\" (experimental)")
+    val lagomServiceGatewayImpl = settingKey[String]("Implementation of the service gateway: \"akka-http\" (default) or \"netty\"")
     val lagomServiceLocatorEnabled = settingKey[Boolean]("Enable/Disable the service locator")
     val lagomServiceLocatorStart = taskKey[Closeable]("Start the service locator")
     val lagomServiceLocatorStop = taskKey[Unit]("Stop the service locator")
@@ -407,7 +407,7 @@ object LagomPlugin extends AutoPlugin {
     lagomServiceLocatorEnabled := true,
     lagomServiceLocatorPort := 8000,
     lagomServiceGatewayPort := 9000,
-    lagomServiceGatewayImpl := "netty",
+    lagomServiceGatewayImpl := "akka-http",
     lagomServiceLocatorUrl := s"http://localhost:${lagomServiceLocatorPort.value}",
     lagomCassandraEnabled := true,
     lagomCassandraPort := 4000, // If you change the default make sure to also update the play/reference-overrides.conf in the persistence project
@@ -422,7 +422,7 @@ object LagomPlugin extends AutoPlugin {
     lagomKafkaCleanOnStart := false,
     lagomKafkaAddress := s"localhost:${lagomKafkaPort.value}",
     lagomKafkaJvmOptions := Seq("-Xms256m", "-Xmx1024m"),
-    runAll := runServiceLocatorAndMicroservicesTask.value,
+    runAll := runAllMicroservicesTask.value,
     Internal.Keys.interactionMode := PlayConsoleInteractionMode,
     lagomDevSettings := Nil
   ) ++
@@ -503,14 +503,6 @@ object LagomPlugin extends AutoPlugin {
         }
     }
 
-  private lazy val runServiceLocatorAndMicroservicesTask: Initialize[Task[Unit]] = Def.taskDyn {
-    val startInfrastructure = Def.taskDyn {
-      lagomKafkaStart.value
-      Def.sequential(lagomCassandraStart, lagomServiceLocatorStart)
-    }
-    Def.sequential(startInfrastructure, runAllMicroservicesTask)
-  }
-
   // The reason this is a dynamic task is that the tasks below don't get defined until their dynamically added
   // projects are added to the build, which happens after everything is first loaded. Consequently, we don't want
   // these dependencies to be eagerly resolved when the project loads, so we make it dynamic.
@@ -526,7 +518,7 @@ object LagomPlugin extends AutoPlugin {
     }
   }
 
-  private def runAllMicroservicesTask: Initialize[Task[Unit]] = Def.taskDyn {
+  private lazy val runAllMicroservicesTask: Initialize[Task[Unit]] = Def.taskDyn {
     val infrastructureServiceTasks = sequential(lagomInfrastructureServices.value)
     Def.taskDyn {
       // First start the infrastructure services

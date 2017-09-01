@@ -1,7 +1,7 @@
 # Structure of this test:
 # =======================
 
-# We test that the service locator can be started and stopped on demand, and that services are automatically 
+# We test that the service locator can be started and stopped on demand, and that services are automatically
 # registered to the service locator.
 
 # Service locator tests
@@ -31,16 +31,16 @@
 # Disabled service locator
 # ---------------
 
-> set lagomServiceLocatorEnabled := false
+> set lagomServiceLocatorEnabled in ThisBuild := false
 # Part 1
 > runAll
 $ sleep 1000
-> validateRequest http://localhost:8000 should-be-down
+> validateRequest http://localhost:8000/services should-be-down
 > validateFile retry-until-success target/reload.log line-count 1
 
 # Cleanup
 > stop
-> set lagomServiceLocatorEnabled := true
+> set lagomServiceLocatorEnabled in ThisBuild := true
 
 # runAll runs both service locator and cassandra
 # ---------------
@@ -64,3 +64,28 @@ $ sleep 1000
 
 # Cleanup
 > stop
+
+# Test cassandra service's availability
+> set lagomCassandraEnabled in ThisBuild := false
+
+# Preconditions - ensure everything is down
+> validateRequest http://localhost:8000 should-be-down
+> validateRequest http://localhost:9000 should-be-down
+> validateRequest http://localhost:9000/foo/cassandra should-be-down
+
+> runAll
+
+# Locator and gateway should be up
+> validateRequest retry-until-success http://localhost:8000
+> validateRequest retry-until-success http://localhost:9000
+
+# Ensure the foo service is reachable
+> validateRequest retry-until-success http://localhost:8000/services/fooservice status 200
+> validateRequest http://localhost:9000/foo status 200
+
+# Request to cassandra should have a status code of 500
+> validateRequest http://localhost:9000/foo/cassandra status 500
+
+# Cleanup
+> stop
+

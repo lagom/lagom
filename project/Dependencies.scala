@@ -4,10 +4,12 @@ import sbt.Keys._
 object Dependencies {
 
   // Version numbers
-  val PlayVersion = "2.6.2"
-  val PlayStandaloneWsVersion = "1.0.1"
-  val PlayJsonVersion = "2.6.2"
-  val AkkaVersion = "2.5.3"
+
+  val PlayVersion = "2.6.3" // if you update this, you probably need to update the following two
+  val PlayJsonVersion = "2.6.3"
+  val PlayStandaloneWsVersion = "1.0.4"
+
+  val AkkaVersion = "2.5.4"
   val AkkaHttpVersion = "10.0.9"
   val ScalaVersions = Seq("2.12.3", "2.11.11")
   val SbtScalaVersions = Seq("2.10.6")
@@ -19,13 +21,14 @@ object Dependencies {
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.1.13.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
-  val KafkaVersion = "0.10.2.0"
-  val AkkaStreamKafkaVersion = "0.15"
+  val KafkaVersion = "0.11.0.0"
+  val AkkaStreamKafkaVersion = "0.17"
   val Log4jVersion = "1.2.17"
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
   val SlickVersion = "3.2.0"
   val JUnitVersion = "4.11"
+  val LogbackVersion = "1.2.3"
 
   // Specific libraries that get reused
   private val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
@@ -51,6 +54,7 @@ object Dependencies {
   private val akkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
+  private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.1"
 
   private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.2.0"
 
@@ -128,7 +132,7 @@ object Dependencies {
       "com.typesafe.play" % "shaded-asynchttpclient" % PlayStandaloneWsVersion,
       "com.typesafe.play" % "shaded-oauth" % PlayStandaloneWsVersion,
 
-      "com.typesafe.play" %% "twirl-api" % "1.3.3",
+      "com.typesafe.play" %% "twirl-api" % "1.3.4",
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.6.3",
@@ -158,7 +162,7 @@ object Dependencies {
       "org.hamcrest" % "hamcrest-core" % "1.3",
       "org.lmdbjava" % "lmdbjava" % "0.0.5",
       "org.pcollections" % "pcollections" % "2.1.2",
-      "org.reactivestreams" % "reactive-streams" % "1.0.0",
+      reactiveStreams,
       "org.reflections" % "reflections" % "0.9.11",
       "org.scalactic" %% "scalactic" % ScalaTestVersion,
       "org.scalatest" %% "scalatest" % ScalaTestVersion,
@@ -182,7 +186,7 @@ object Dependencies {
       "play", "play-guice",  "play-java", "play-jdbc", "play-jdbc-api",
       "play-netty-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
 
-    ) ++ libraryFamily("ch.qos.logback", "1.1.3")(
+    ) ++ libraryFamily("ch.qos.logback", LogbackVersion)(
       "logback-classic", "logback-core"
 
     ) ++ libraryFamily("io.netty", NettyVersion)(
@@ -242,7 +246,7 @@ object Dependencies {
     "org.apache.curator" % "curator-framework" % "2.10.0",
     "org.apache.curator" % "curator-test" % "2.10.0",
     "org.apache.kafka" %% "kafka" % KafkaVersion,
-    "org.apache.zookeeper" % "zookeeper" % "3.4.9"
+    "org.apache.zookeeper" % "zookeeper" % "3.4.10"
   )
 
   private def crossLibraryFamily(groupId: String, version: String)(artifactIds: String*) = {
@@ -315,6 +319,7 @@ object Dependencies {
     // Upgrades needed to match whitelist
     akkaSlf4j,
     akkaStream,
+    reactiveStreams,
     sslConfig
   )
 
@@ -548,9 +553,10 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     akkaStream,
+    reactiveStreams,
     akkaSlf4j,
     sslConfig
-  ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % "1.1.3")
+  ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % LogbackVersion)
 
   val log4j2 = libraryDependencies ++= Seq(
     "log4j-api",
@@ -562,6 +568,7 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     akkaStream,
+    reactiveStreams,
     akkaSlf4j,
     sslConfig
   )
@@ -571,6 +578,7 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     akkaStream,
+    reactiveStreams,
     akkaSlf4j,
     sslConfig
   )
