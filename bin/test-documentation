@@ -6,4 +6,4 @@ runSbt unidoc
 
 cd docs
 
-runSbt markdownValidateDocs test markdownEvaluateSbtFiles
+runSbt markdownValidateDocs ++2.11.11 test clean ++2.12.3 test markdownEvaluateSbtFiles
