@@ -28,11 +28,4 @@ private[lagom] final class JdbcPersistentEntityRegistry(system: ActorSystem, sli
   private val jdbcReadJournal = PersistenceQuery(system).readJournalFor[JdbcReadJournal](journalId)
   override protected val eventsByTagQuery: Option[EventsByTagQuery] = Some(jdbcReadJournal)
 
-  override protected def mapStartingOffset(storedOffset: Offset): Offset = storedOffset match {
-    case NoOffset        => NoOffset
-    case Sequence(value) => Sequence(value)
-    case other =>
-      throw new IllegalArgumentException(s"JDBC does not support ${other.getClass.getSimpleName} offsets")
-  }
-
 }
