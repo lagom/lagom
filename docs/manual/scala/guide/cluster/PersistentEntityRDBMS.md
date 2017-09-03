@@ -23,7 +23,7 @@ In sbt:
 You will also need to add the jar for your JDBC database driver.
 
 To enable the RDBMS Persistence on your Application you will have to mix in | [JdbcPersistenceComponents](api/com/lightbend/lagom/scaladsl/persistence/jdbc/JdbcPersistenceComponents.html) and [HikariCPComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/HikariCPComponents.html) as described in [[Dependency Injection|DependencyInjection#Wiring-together-a-Lagom-application]].
- 
+
 
 ## Configuration
 
@@ -48,7 +48,7 @@ db.default {
   url = "jdbc:postgresql://database.example.com/playdb"
 }
 
-jdbc-defaults.slick.driver = "slick.jdbc.PostgresProfile$"
+jdbc-defaults.slick.profile = "slick.jdbc.PostgresProfile$"
 ```
 
 ## Table creation
