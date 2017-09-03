@@ -145,7 +145,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       assertSelectCount("1", 5L)
     }
 
-    "persisted offsets unhandled events" in {
+    "persisted offsets for unhandled events" in {
 
       createReadSideProcessor()
 

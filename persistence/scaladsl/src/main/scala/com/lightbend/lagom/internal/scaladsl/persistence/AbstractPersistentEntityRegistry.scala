@@ -112,9 +112,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
       case Some(queries) =>
         val tag = aggregateTag.tag
 
-        val startingOffset = mapStartingOffset(fromOffset)
-
-        queries.eventsByTag(tag, startingOffset)
+        queries.eventsByTag(tag, fromOffset)
           .map(env =>
             new EventStreamElement[Event](
               PersistentEntityActor.extractEntityId(env.persistenceId),
@@ -125,24 +123,6 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
         throw new UnsupportedOperationException(s"The $journalId Lagom persistence plugin does not support streaming events by tag")
     }
   }
-
-  /**
-   * Converts a stored event journal offset into the argument to an
-   * `eventsByTag` query.
-   *
-   * Different Akka Persistence back ends interpret the `offset` parameter to
-   * `eventsByTag` differently. Some return events starting ''after'' the given
-   * `offset`, others start with the event ''at'' that offset. In Lagom, we
-   * shield end users from this difference, and always want to return
-   * unprocessed events. Subclasses can override this method as necessary to
-   * convert a stored offset into a starting offset that ensures no stored
-   * values will be repeated in the stream.
-   *
-   * @param storedOffset the most recently seen offset
-   * @return an offset that can be provided to the `eventsByTag` query to
-   *         retrieve only unseen events
-   */
-  protected def mapStartingOffset(storedOffset: Offset): Offset = storedOffset
 
   override def gracefulShutdown(timeout: FiniteDuration): Future[Done] = {
     import scala.collection.JavaConverters._
