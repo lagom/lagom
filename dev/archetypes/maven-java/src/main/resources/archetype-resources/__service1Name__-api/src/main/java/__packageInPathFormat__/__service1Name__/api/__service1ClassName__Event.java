@@ -1,6 +1,3 @@
-/*
- * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
- */
 package ${package}.${service1Name}.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

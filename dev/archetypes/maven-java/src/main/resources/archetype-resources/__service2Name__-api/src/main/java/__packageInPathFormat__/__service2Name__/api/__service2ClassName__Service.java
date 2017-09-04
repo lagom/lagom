@@ -1,6 +1,3 @@
-/*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
- */
 package ${package}.${service2Name}.api;
 
 import static com.lightbend.lagom.javadsl.api.Service.named;
