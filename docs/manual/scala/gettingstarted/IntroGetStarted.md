@@ -10,7 +10,7 @@ Follow these steps to create and run Hello World:
 
 ## Create the build
 
-Choose a location on your file system for your Lagom projects. The template will prompt you for a project name and will create a directory with that name that contains the build structure and Lagom example services. 
+Choose a location on your file system for your Lagom projects. The template will prompt you for a project name and will create a directory with that name that contains the build structure and Lagom example services. Note that it can take from a few seconds to a few minutes for sbt to download dependencies.
 
 To create your project, follow these steps:
 
@@ -18,8 +18,9 @@ To create your project, follow these steps:
 
 1. Enter the following command:
    ```
-   sbt "-Dsbt.version=0.13.15" new https://github.com/lagom/lagom-scala.g8
+   sbt -Dsbt.version=0.13.16 new https://github.com/lagom/lagom-scala.g8
    ```
+
 1. The template prompts for the following parameters. Press `Enter` to accept the defaults or specify your own values:
 
    * `name` - Becomes the name of the top-level project directory.
@@ -45,7 +46,7 @@ hello                   → Project root
 
 * Notice how each service is broken up into two projects: api and implementation. The `api` project contains a service interface through which consumers may interact with the service. The `impl` project contains the actual service implementation.
 * The `project` folder contains sbt-specific files.
-* The `build.sbt` file contains all information necessary to build, run, and deploy your services.   
+* The `build.sbt` file contains all information necessary to build, run, and deploy your services.
 
 
 ## Run Hello World
@@ -58,7 +59,7 @@ sbt
 ... (booting up)
 > runAll
 ```
-Among other messages, you should see the following:
+It will take a bit of time to build the project and start the services. Among other messages, you should see the following:
 ```
 [info] Starting embedded Cassandra server
 ..........
@@ -70,11 +71,12 @@ Among other messages, you should see the following:
 (Services started, press enter to stop and go back to the console...)
 ```
 
-Verify that the services are indeed up and running by invoking one of its endpoints from any HTTP client, such as a browser. The following request returns the message `Hello, World!`:
+Verify that the services are indeed up and running by invoking one of its endpoints from any HTTP client, such as a browser:
 
 ```
 http://localhost:9000/api/hello/World
 ```
 
+The service returns the message, `Hello, World!`. Congratulations, you've built your first Lagom project!
 
 
