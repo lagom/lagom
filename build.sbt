@@ -4,6 +4,7 @@ import java.nio.channels.ServerSocketChannel
 import sbt.ScriptedPlugin
 import com.typesafe.sbt.SbtMultiJvm
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys
+import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys._
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
 import lagom.Protobuf
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
@@ -182,7 +183,20 @@ def databasePortSetting: String = {
   s"-Ddatabase.port=$port"
 }
 
-def multiJvmTestSettings: Seq[Setting[_]] =
+
+def multiJvmTestSettings: Seq[Setting[_]] = {
+
+  // change multi-jvm lib folder to reflect the scala version used during crossbuild
+  // must be done using a dynamic setting because we must read crossTarget.value
+  def crossbuildMultiJvm = Def.settingDyn {
+    val path = crossTarget.value.getName
+    Def.setting {
+      target.apply { targetFile =>
+        new File(targetFile, path + "/multi-run-copied-libraries")
+      }.value
+    }
+  }
+
   SbtMultiJvm.multiJvmSettings ++
     forkedTests ++
     // enabling HeaderPlugin in MultiJvm requires two sets of settings.
@@ -211,8 +225,11 @@ def multiJvmTestSettings: Seq[Setting[_]] =
         Tests.Output(overall,
           testResults.events ++ multiNodeResults.events,
           testResults.summaries ++ multiNodeResults.summaries)
-      }
+      },
+      // change multi-jvm lib folder to reflect the scala version used during crossbuild
+      multiRunCopiedClassLocation in MultiJvm := crossbuildMultiJvm.value
     )
+}
 
 def macroCompileSettings: Seq[Setting[_]] = Seq(
   compile in Test ~= { a =>

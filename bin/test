@@ -2,4 +2,4 @@
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-runSbtNoisy ++2.11.11 test clean ++2.12.3 test
+runSbtNoisy +test
