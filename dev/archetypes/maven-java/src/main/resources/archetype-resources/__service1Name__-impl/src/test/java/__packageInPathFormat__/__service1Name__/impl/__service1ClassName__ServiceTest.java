@@ -1,6 +1,3 @@
-/*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
- */
 package ${package}.${service1Name}.impl;
 
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.defaultSetup;
