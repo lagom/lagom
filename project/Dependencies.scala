@@ -14,6 +14,7 @@ object Dependencies {
   val ScalaVersions = Seq("2.12.3", "2.11.11")
   val SbtScalaVersions = Seq("2.10.6")
   val AkkaPersistenceCassandraVersion = "0.54"
+  val AkkaPersistenceJdbcVersion = "3.0.0"
   val ScalaTestVersion = "3.0.3"
   val JacksonVersion = "2.8.9"
   val CassandraAllVersion = "3.8"
@@ -26,7 +27,7 @@ object Dependencies {
   val Log4jVersion = "1.2.17"
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
-  val SlickVersion = "3.2.0"
+  val SlickVersion = "3.2.1"
   val JUnitVersion = "4.11"
   val LogbackVersion = "1.2.3"
 
@@ -56,7 +57,7 @@ object Dependencies {
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
   private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.1"
 
-  private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.5.2.0"
+  private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % AkkaPersistenceJdbcVersion
 
   // latest version of APC depend on a Cassandra driver core that's not compatible with Lagom (newer netty/guava/etc... under the covers)
   private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion
