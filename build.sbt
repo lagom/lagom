@@ -7,7 +7,7 @@ import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
 import lagom.Protobuf
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
-import de.heikoseeberger.sbtheader.HeaderPattern
+import de.heikoseeberger.sbtheader.{ HeaderKey, HeaderPattern }
 import com.typesafe.tools.mima.core._
 
 def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
@@ -924,7 +924,9 @@ def archetypeProject(archetypeName: String) =
           IO.write(pomFile, newPomXml)
         }
         (copyResources in Compile).value
-      }
+      },
+      // Don't force copyright headers in Maven archetypes
+      HeaderKey.excludes := Seq("*")
     ).disablePlugins(EclipsePlugin)
 
 lazy val `maven-java-archetype` = archetypeProject("java")
