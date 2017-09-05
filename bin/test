@@ -2,4 +2,4 @@
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-runSbtNoisy persistence-jdbc-scaladsl/test:test persistence-jdbc-javaadsl/test:test
+runSbtNoisy persistence-jdbc-scaladsl/test:test persistence-jdbc-javadsl/test:test
