@@ -2,7 +2,7 @@
 val PlayVersion = "2.6.3"
 val AkkaVersion = "2.5.3"
 val JUnitVersion = "4.11"
-val ScalaVersion = "2.12.3"
+val ScalaVersion = "2.11.11"
 
 val branch = {
   val rev = "git rev-parse --abbrev-ref HEAD".!!.trim
