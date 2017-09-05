@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
-            <artifactId>lagom-javadsl-api_2.11</artifactId>
+            <artifactId>lagom-javadsl-api_${scala.binary.version}</artifactId>
         </dependency>
     </dependencies>
 </project>
