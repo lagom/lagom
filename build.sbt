@@ -668,7 +668,12 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
     name := "lagom-javadsl-persistence-jdbc",
     Dependencies.`persistence-jdbc-javadsl`
   )
-  .dependsOn(`persistence-jdbc-core`, `persistence-core` % "compile;test->test", `persistence-javadsl` % "compile;test->test")
+  .dependsOn(
+    `persistence-jdbc-core`,
+    `persistence-core` % "compile;test->test",
+    `persistence-javadsl` % "compile;test->test",
+    logback % Test
+  )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since12): _*)
   .settings(multiJvmTestSettings: _*)
@@ -680,7 +685,12 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
     name := "lagom-scaladsl-persistence-jdbc",
     Dependencies.`persistence-jdbc-scaladsl`
   )
-  .dependsOn(`persistence-jdbc-core`, `persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test")
+  .dependsOn(
+    `persistence-jdbc-core`,
+    `persistence-core` % "compile;test->test",
+    `persistence-scaladsl` % "compile;test->test",
+    logback % Test
+  )
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
