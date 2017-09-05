@@ -11,10 +11,10 @@ env:
   - secure: "qr/+kdqj2bdXRlsDR+akjsKTq8WJe0bBX+TKWaYCGcaGrqarOdCZcLteRxrE/uXmYD3rWJKhXkasUmUwEF45nTNX7X780nllFVA/AKUk3REDkLCpDkiwryMwdu/owx1xlK8dGyzPwrQhVulYotaK2tzv5r1bttemqBWcBOAgY7+HrnVhFNwS9tSrWp9CuDZotGANGd9JZBX+nITY2Ud59DcK5UFhfB4FJlqnIeCe201hD3Z9e6yWevPmu1vvV5qGlJ7h46jQvpXdvcNIlDDZ8e0oFqULjaUx6CPGUX5h9dQ9ZHvQgJJb2ALpTfR/Dxv/iM2dx3imGdjzklvJ8jcHX44jOQNucEwOxQk7dCGs+ie0L4KXrBqRxu0OwSC9U87CtliaC25Y35isfvOfNRgzL8mvzzZ+jSTy5s9wqBQZa9C04WIml4Azq8vL5ur26F1nxyZgHJBdQFJIBtR5m4av3oQLFEjCWwsVwYLR3JOP3wzrliT4BzNpeqppXzEJR2jt7MNgNmHH4am6suB8VS+7oxkn0R3GyRqMVEwqivj3ciisYBZZYGVn/SxmdSS3IhVgUivcLaCOA3gUh6Ww7bdTik7zB2AfCFYK5Lis0+STGXt9xaCf7Tp2+RxAGVFBP5K4QeFzzREG0aIlEgF5v2pn7wewve/p59NucPdxQE4c7x0="
   matrix:
     - SCRIPT=test
-    - SCRIPT=test-sbt
-    - SCRIPT=test-maven
-    - SCRIPT=test-documentation
-    - SCRIPT=test-code-style
+#    - SCRIPT=test-sbt
+#    - SCRIPT=test-maven
+#    - SCRIPT=test-documentation
+#    - SCRIPT=test-code-style
 # important to use eval, otherwise "&&" is passed as an argument to sbt rather than being processed by bash
 script: bin/$SCRIPT
 before_install:
