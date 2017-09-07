@@ -13,16 +13,17 @@ import akka.testkit.ImplicitSender
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.testkit.pipe
 import com.typesafe.config.{ Config, ConfigFactory }
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.{ Application, Configuration, Environment }
 
+import scala.collection.JavaConverters._
+import scala.compat.java8.FutureConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.compat.java8.FutureConverters._
-import scala.collection.JavaConverters._
-import play.api.inject.bind
 
 abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
+
   val node1 = role("node1")
   val node2 = role("node2")
   val node3 = role("node3")
@@ -48,15 +49,19 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
   def additionalCommonConfig(databasePort: Int): Config
 
   nodeConfig(node1) {
-    ConfigFactory.parseString(s"""
+    ConfigFactory.parseString(
+      s"""
       akka.cluster.roles = ["backend", "read-side"]
-      """)
+      """
+    )
   }
 
   nodeConfig(node2) {
-    ConfigFactory.parseString(s"""
+    ConfigFactory.parseString(
+      s"""
       akka.cluster.roles = ["backend"]
-      """)
+      """
+    )
   }
 
   nodeConfig(node3) {
