@@ -170,6 +170,20 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
         }
     }
 
+    public static class Clear implements Cmd, ReplyType<State> {
+        private static final long serialVersionUID = 1L;
+
+        private static Clear instance = new Clear();
+
+        @JsonCreator
+        public static Clear instance() {
+            return Clear.instance;
+        }
+
+        private Clear() {
+        }
+    }
+
     public static abstract class Evt implements AggregateEvent<Evt>, Jsonable {
 
         private static final long serialVersionUID = 1L;
@@ -361,6 +375,43 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
         }
     }
 
+    public static class Cleared extends Evt {
+        private static final long serialVersionUID = 1L;
+
+        private final String entityId;
+
+        @JsonCreator
+        public Cleared(String entityId) {
+            this.entityId = entityId;
+        }
+
+        public String getEntityId() {
+            return entityId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Cleared that = (Cleared) o;
+
+            return entityId.equals(that.entityId);
+        }
+
+        @Override
+        public int hashCode() {
+            return entityId.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "Cleared{" +
+                "entityId='" + entityId + '\'' +
+                '}';
+        }
+    }
+
     public static class State implements Jsonable {
 
         private static final long serialVersionUID = 1L;
@@ -496,6 +547,8 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
         b.setEventHandlerChangingBehavior(InAppendMode.class, evt -> becomeAppending(behavior()));
         b.setEventHandlerChangingBehavior(InPrependMode.class, evt -> becomePrepending(behavior()));
 
+        b.setEventHandler(Cleared.class, evt -> null);
+
         b.setReadOnlyCommandHandler(Get.class, (cmd, ctx) -> {
             ctx.reply(state());
         });
@@ -517,6 +570,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
                 }
             });
 
+        b.setCommandHandler(Clear.class, (cmd, ctx) ->
+            ctx.thenPersist(new Cleared(entityId()), evt -> ctx.reply(state()))
+        );
 
         if (b.getState().getMode() == Mode.APPEND) {
             return becomeAppending(b.build());
