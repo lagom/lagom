@@ -147,7 +147,8 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
   }
   "A PersistentEntity in a Cluster" must {
 
-    "send commands to target entity" in within(10.seconds) {
+    "send commands to target entity" in within(11.seconds) {
+      enterBarrier("before-1")
 
       val ref1 = registry.refFor[TestEntity]("1").withAskTimeout(remaining)
 
@@ -176,16 +177,13 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       r5.pipeTo(testActor)
       expectMsgType[TestEntity.State].elements should ===(List("B", "B", "B", "C", "C", "C"))
 
-      try {
-        expectAppendCount("1", 3)
-        expectAppendCount("2", 6)
-      } finally {
-        enterBarrier("after-1")
-      }
+      expectAppendCount("1", 3)
+      expectAppendCount("2", 6)
 
     }
 
     "run entities on specific node roles" in {
+      enterBarrier("before-2")
       // node1 and node2 are configured with "backend" role
       // and lagom.persistence.run-entities-on-role = backend
       // i.e. no entities on node3
@@ -200,10 +198,11 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       }.toSet
 
       addresses should not contain (node(node3).address)
-      enterBarrier("after-2")
     }
 
     "have support for graceful leaving" in {
+      enterBarrier("before-3")
+
       runOn(node2) {
         Await.ready(registry.gracefulShutdown(20.seconds), 20.seconds)
       }
