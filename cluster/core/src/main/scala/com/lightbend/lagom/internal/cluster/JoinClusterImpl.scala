@@ -51,9 +51,8 @@ private[lagom] object JoinClusterImpl {
                 Runtime.getRuntime.halt(-2)
               }
 
-              val CLUSTER_MEMBERSHIP_REMOVED = -128
               // this is reached only when `system.whenTerminated` completes successfully.
-              println("Proceed to JVM shutdown with exit status: " + CLUSTER_MEMBERSHIP_REMOVED)
+              val CLUSTER_MEMBERSHIP_REMOVED = -128
               System.exit(CLUSTER_MEMBERSHIP_REMOVED)
 
             }
