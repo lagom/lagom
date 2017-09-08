@@ -100,8 +100,6 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
   // implicit EC needed for pipeTo
   import system.dispatcher
 
-  private val log = LoggerFactory.getLogger(this.getClass)
-
   override def initialParticipants = roles.size
 
   def join(from: RoleName, to: RoleName): Unit = {
