@@ -149,44 +149,39 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
     "send commands to target entity" in within(10.seconds) {
 
-      log.info(" 001 " + "*" * 30)
       val ref1 = registry.refFor[TestEntity]("1").withAskTimeout(remaining)
 
-      log.info(" 002 " + "*" * 30)
       // note that this is done on both node1 and node2
       val r1 = ref1.ask(TestEntity.Add("a"))
       r1.pipeTo(testActor)
       expectMsg(TestEntity.Appended("A"))
       enterBarrier("appended-A")
 
-      log.info(" 003 " + "*" * 30)
       val ref2 = registry.refFor[TestEntity]("2")
       val r2 = ref2.ask(TestEntity.Add("b"))
       r2.pipeTo(testActor)
       expectMsg(TestEntity.Appended("B"))
       enterBarrier("appended-B")
 
-      log.info(" 004 " + "*" * 30)
       val r3: Future[TestEntity.Evt] = ref2.ask(TestEntity.Add("c"))
       r3.pipeTo(testActor)
       expectMsg(TestEntity.Appended("C"))
       enterBarrier("appended-C")
 
-      log.info(" 005 " + "*" * 30)
       val r4: Future[TestEntity.State] = ref1.ask(TestEntity.Get)
       r4.pipeTo(testActor)
       expectMsgType[TestEntity.State].elements should ===(List("A", "A", "A"))
 
-      log.info(" 006 " + "*" * 30)
       val r5 = ref2.ask(TestEntity.Get)
       r5.pipeTo(testActor)
       expectMsgType[TestEntity.State].elements should ===(List("B", "B", "B", "C", "C", "C"))
 
-      expectAppendCount("1", 3)
-      expectAppendCount("2", 6)
-
-      log.info(" 007 " + "*" * 30)
-      enterBarrier("after-1")
+      try {
+        expectAppendCount("1", 3)
+        expectAppendCount("2", 6)
+      } finally {
+        enterBarrier("after-1")
+      }
 
     }
 
