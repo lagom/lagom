@@ -96,6 +96,14 @@ class PersistentEntityTestDriverSpec extends ActorSystemSpec {
       outcome2.issues.asScala.toList should be(Nil)
     }
 
+    "be able to handle null state" in {
+      val driver = newDriver()
+      val outcomeAfterClearing = driver.run(TestEntity.Clear.instance)
+
+      outcomeAfterClearing.state should be(null)
+      outcomeAfterClearing.events.asScala.toList should ===(List(new TestEntity.Cleared("1")))
+      outcomeAfterClearing.issues.asScala.toList should be(Nil)
+    }
   }
 
 }
