@@ -40,7 +40,8 @@ object TestEntity {
       JsonSerializer(Json.format[ChangeMode]),
       JsonSerializer(emptySingletonFormat(Get)),
       JsonSerializer(emptySingletonFormat(UndefinedCmd)),
-      JsonSerializer(emptySingletonFormat(GetAddress))
+      JsonSerializer(emptySingletonFormat(GetAddress)),
+      JsonSerializer(emptySingletonFormat(Clear))
     )
 
   }
@@ -63,6 +64,8 @@ object TestEntity {
 
   case object GetAddress extends Cmd with ReplyType[Address]
 
+  case object Clear extends Cmd with ReplyType[State]
+
   object Evt {
     val NumShards = 4
     // second param is optional, defaults to the class name
@@ -77,7 +80,8 @@ object TestEntity {
       JsonSerializer(Json.format[Appended]),
       JsonSerializer(Json.format[Prepended]),
       JsonSerializer(emptySingletonFormat(InPrependMode)),
-      JsonSerializer(emptySingletonFormat(InAppendMode))
+      JsonSerializer(emptySingletonFormat(InAppendMode)),
+      JsonSerializer(emptySingletonFormat(Cleared))
     )
   }
 
@@ -92,6 +96,8 @@ object TestEntity {
   case object InPrependMode extends Evt
 
   case object InAppendMode extends Evt
+
+  case object Cleared extends Evt
 
   object State {
     val empty: State = State(Mode.Append, Nil)
@@ -164,6 +170,12 @@ class TestEntity(system: ActorSystem)
       }
       .onReadOnlyCommand[GetAddress.type, Address] {
         case (GetAddress, ctx, state) => ctx.reply(Cluster.get(system).selfAddress)
+      }
+      .onCommand[Clear.type, State] {
+        case (Clear, ctx, state) => ctx.thenPersist(Cleared)(_ => ctx.reply(state))
+      }
+      .onEvent {
+        case (Cleared, _) => null
       }
       .orElse(changeMode)
   }
