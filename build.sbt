@@ -976,7 +976,11 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     crossScalaVersions := Dependencies.SbtScalaVersions,
     scalaVersion := Dependencies.SbtScalaVersions.head,
     Dependencies.`sbt-plugin`,
-    addSbtPlugin(("com.typesafe.play" % "sbt-plugin" % Dependencies.PlayVersion).exclude("org.slf4j","slf4j-simple")),
+    addSbtPlugin(
+      ("com.typesafe.play" % "sbt-plugin" % Dependencies.PlayVersion)
+        .exclude("org.slf4j", "slf4j-simple")
+        .exclude("com.lightbend.play", "play-file-watch")),
+    libraryDependencies += "com.lightbend.play" %% "play-file-watch" % Dependencies.PlayFileWatchVersion,
     scriptedDependencies := {
       val () = scriptedDependencies.value
       val () = publishLocal.value
