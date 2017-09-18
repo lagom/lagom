@@ -152,7 +152,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
       val ref1 = registry.refFor(classOf[TestEntity], "1").withAskTimeout(remaining)
 
-      // note that this is done on both node1 and node2
+      // note that this is done on node1, node2 and node 3 !!
       val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
       r1.pipeTo(testActor)
       expectMsg(new TestEntity.Appended("1", "A"))
@@ -171,6 +171,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
       val r4: CompletionStage[TestEntity.State] = ref1.ask(TestEntity.Get.instance)
       r4.pipeTo(testActor)
+      // There are three events of each because the Commands above are executed on all 3 nodes of the multi-jvm test
       expectMsgType[TestEntity.State].getElements.asScala.toList should ===(List("A", "A", "A"))
 
       val r5: CompletionStage[TestEntity.State] = ref2.ask(TestEntity.Get.instance)
