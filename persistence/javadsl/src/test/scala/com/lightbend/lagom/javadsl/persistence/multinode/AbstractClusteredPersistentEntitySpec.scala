@@ -13,16 +13,17 @@ import akka.testkit.ImplicitSender
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.testkit.pipe
 import com.typesafe.config.{ Config, ConfigFactory }
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.{ Application, Configuration, Environment }
 
+import scala.collection.JavaConverters._
+import scala.compat.java8.FutureConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.compat.java8.FutureConverters._
-import scala.collection.JavaConverters._
-import play.api.inject.bind
 
 abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
+
   val node1 = role("node1")
   val node2 = role("node2")
   val node3 = role("node3")
@@ -48,25 +49,16 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
   def additionalCommonConfig(databasePort: Int): Config
 
   nodeConfig(node1) {
-    ConfigFactory.parseString(s"""
-      akka.cluster.roles = ["backend", "read-side"]
-      """)
+    ConfigFactory.parseString("""akka.cluster.roles = ["backend", "read-side"]""")
   }
 
   nodeConfig(node2) {
-    ConfigFactory.parseString(s"""
-      akka.cluster.roles = ["backend"]
-      """)
+    ConfigFactory.parseString("""akka.cluster.roles = ["backend"]""")
   }
 
   nodeConfig(node3) {
-    ConfigFactory.parseString(
-      s"""
-       akka.cluster.roles = ["read-side"]
-      """
-    )
+    ConfigFactory.parseString("""akka.cluster.roles = ["read-side"]""")
   }
-
 }
 
 abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPersistentEntityConfig) extends MultiNodeSpec(config)
@@ -129,6 +121,10 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
   protected def getAppendCount(id: String): CompletionStage[java.lang.Long]
 
+  /**
+   * uses overridden {{getAppendCount}} to assert a given entity {{id}} emited the {{expected}} number of events. The
+   * implementation uses polling from only node1 so nodes 2 and 3 will skip this code.
+   */
   def expectAppendCount(id: String, expected: Long) = {
     runOn(node1) {
       within(20.seconds) {
@@ -143,16 +139,20 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
   "A PersistentEntity in a Cluster" must {
 
     "send commands to target entity" in within(20.seconds) {
+      // this barrier at the beginning of the test will be run on all nodes and should be at the
+      // beginning of the test to ensure it's run.
+      enterBarrier("before-1")
 
       val ref1 = registry.refFor(classOf[TestEntity], "1").withAskTimeout(remaining)
+      val ref2 = registry.refFor(classOf[TestEntity], "2")
 
-      // note that this is done on both node1 and node2
+      // STEP 1: send some commands from all nodes of the test to ref1 and ref2
+      // note that this is done on node1, node2 and node 3 !!
       val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
       r1.pipeTo(testActor)
       expectMsg(new TestEntity.Appended("1", "A"))
       enterBarrier("appended-A")
 
-      val ref2 = registry.refFor(classOf[TestEntity], "2")
       val r2: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("b"))
       r2.pipeTo(testActor)
       expectMsg(new TestEntity.Appended("2", "B"))
@@ -163,22 +163,27 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       expectMsg(new TestEntity.Appended("2", "C"))
       enterBarrier("appended-C")
 
+      // STEP 2: assert both ref's stored all the commands in their respective state.
       val r4: CompletionStage[TestEntity.State] = ref1.ask(TestEntity.Get.instance)
       r4.pipeTo(testActor)
+      // There are three events of each because the Commands above are executed on all 3 nodes of the multi-jvm test
       expectMsgType[TestEntity.State].getElements.asScala.toList should ===(List("A", "A", "A"))
 
       val r5: CompletionStage[TestEntity.State] = ref2.ask(TestEntity.Get.instance)
       r5.pipeTo(testActor)
       expectMsgType[TestEntity.State].getElements.asScala.toList should ===(List("B", "B", "B", "C", "C", "C"))
 
+      // STEP 3: assert the number of events consumed in the read-side processors equals the number of expected events.
+      // NOTE: in nodes node2 and node3 {{expectAppendCount}} is a noop
       expectAppendCount("1", 3)
       expectAppendCount("2", 6)
-
-      enterBarrier("after-1")
 
     }
 
     "run entities on specific node roles" in {
+      // this barrier at the beginning of the test will be run on all nodes and should be at the
+      // beginning of the test to ensure it's run.
+      enterBarrier("before-2")
       // node1 and node2 are configured with "backend" role
       // and lagom.persistence.run-entities-on-role = backend
       // i.e. no entities on node3
@@ -191,10 +196,13 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       }.toSet
 
       addresses should not contain (node(node3).address)
-      enterBarrier("after-2")
     }
 
     "have support for graceful leaving" in {
+      // this barrier at the beginning of the test will be run on all nodes and should be at the
+      // beginning of the test to ensure it's run.
+      enterBarrier("before-3")
+
       runOn(node2) {
         registry.gracefulShutdown(20.seconds).toCompletableFuture().get(20, SECONDS)
       }

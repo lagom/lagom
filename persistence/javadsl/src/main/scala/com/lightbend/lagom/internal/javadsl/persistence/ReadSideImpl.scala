@@ -29,17 +29,7 @@ import scala.util.control.NonFatal
 class ReadSideConfigProvider @Inject() (configuration: Config) extends Provider[ReadSideConfig] {
 
   lazy val get = {
-    val conf = configuration.getConfig("lagom.persistence.read-side")
-    ReadSideConfig(
-      conf.getDuration("failure-exponential-backoff.min", TimeUnit.MILLISECONDS).millis,
-      conf.getDuration("failure-exponential-backoff.max", TimeUnit.MILLISECONDS).millis,
-      conf.getDouble("failure-exponential-backoff.random-factor"),
-      conf.getDuration("global-prepare-timeout", TimeUnit.MILLISECONDS).millis,
-      conf.getString("run-on-role") match {
-        case "" => None
-        case r  => Some(r)
-      }
-    )
+    ReadSideConfig(configuration.getConfig("lagom.persistence.read-side"))
   }
 }
 

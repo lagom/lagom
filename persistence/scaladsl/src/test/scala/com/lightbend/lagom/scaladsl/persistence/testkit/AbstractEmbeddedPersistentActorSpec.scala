@@ -48,7 +48,7 @@ trait AbstractEmbeddedPersistentActorSpec { spec: ActorSystemSpec =>
   import AbstractEmbeddedPersistentActorSpec._
 
   "A persistent actor" must {
-    "store events in the embedded Cassandra journal" in within(15.seconds) {
+    "store events in the embedded journal" in within(15.seconds) {
       val p = system.actorOf(props("p1"))
       println(implicitly[ActorRef])
 
