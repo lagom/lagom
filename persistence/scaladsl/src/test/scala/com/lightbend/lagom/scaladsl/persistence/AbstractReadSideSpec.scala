@@ -3,9 +3,8 @@
  */
 package com.lightbend.lagom.scaladsl.persistence
 
-import java.util.Optional
-
-import akka.actor.ActorRef
+import akka.actor.{ Actor, ActorRef, Props, SupervisorStrategy }
+import akka.pattern.{ BackoffSupervisor, pipe }
 import akka.persistence.query.Offset
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
@@ -17,11 +16,11 @@ import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.
 import com.lightbend.lagom.internal.scaladsl.persistence.{ PersistentEntityActor, ReadSideActor }
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Mode
-import org.scalactic.source.Position
 import org.scalatest.BeforeAndAfter
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
+
+import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
 
 trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventually with BeforeAndAfter {
   spec: ActorSystemSpec =>
@@ -29,7 +28,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   import system.dispatcher
 
   // patience config for all async code
-  override implicit val patienceConfig = PatienceConfig(20.seconds, 150.millis)
+  override implicit val patienceConfig = PatienceConfig(8.seconds, 150.millis)
 
   implicit val mat = ActorMaterializer()
 
@@ -61,28 +60,37 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
     )
   }
 
+  class AlwaysReplyDone extends Actor {
+    def receive = {
+      case Execute =>
+
+        processorFactory()
+          .buildHandler
+          .globalPrepare()
+          .map { _ => Done } pipeTo sender()
+
+    }
+  }
+
   private def createReadSideProcessor() = {
     /* read side and injector only needed for deprecated register method */
-    val readSide = system.actorOf(
-      ReadSideActor.props[TestEntity.Evt](
-        processorFactory,
-        eventStream,
-        classOf[TestEntity.Evt],
-        new ClusterStartupTask(testActor),
-        20.seconds
-      )
+
+    val processorProps = ReadSideActor.props[TestEntity.Evt](
+      processorFactory,
+      eventStream,
+      classOf[TestEntity.Evt],
+      new ClusterStartupTask(system.actorOf(Props(new AlwaysReplyDone))),
+      3.seconds
     )
 
-    readSide ! EnsureActive(tag.tag)
+    val readSide: ActorRef =
+      system.actorOf(
+        BackoffSupervisor.propsWithSupervisorStrategy(
+          processorProps, "processor", 500.milliseconds, 1.second, 0.2, SupervisorStrategy.stoppingStrategy
+        )
+      )
 
-    expectMsg(Execute)
-
-    processorFactory()
-      .buildHandler
-      .globalPrepare()
-      .foreach { _ =>
-        readSide ! Done
-      }
+    system.scheduler.schedule(Duration.Zero, 1.second, readSide, EnsureActive(tag.tag))
 
     readSideActor = Some(readSide)
   }
