@@ -147,12 +147,12 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
   }
   "A PersistentEntity in a Cluster" must {
 
-    "send commands to target entity" in within(11.seconds) {
+    "send commands to target entity" in within(21.seconds) {
       enterBarrier("before-1")
 
       val ref1 = registry.refFor[TestEntity]("1").withAskTimeout(remaining)
 
-      // note that this is done on both node1 and node2
+      // note that this is done on node1, node2 and node 3 !!
       val r1 = ref1.ask(TestEntity.Add("a"))
       r1.pipeTo(testActor)
       expectMsg(TestEntity.Appended("A"))
@@ -171,6 +171,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
       val r4: Future[TestEntity.State] = ref1.ask(TestEntity.Get)
       r4.pipeTo(testActor)
+      // There are three events of each because the Commands above are executed on all 3 nodes of the multi-jvm test
       expectMsgType[TestEntity.State].elements should ===(List("A", "A", "A"))
 
       val r5 = ref2.ask(TestEntity.Get)
