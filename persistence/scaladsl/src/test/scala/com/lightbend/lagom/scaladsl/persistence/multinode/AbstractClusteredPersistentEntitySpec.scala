@@ -77,7 +77,7 @@ object AbstractClusteredPersistentEntitySpec {
     val s = Thread.currentThread.getStackTrace map (_.getClassName) drop 1 dropWhile (_ matches ".*MultiNodeSpec.?$")
     val reduced = s.lastIndexWhere(_ == clazz.getName) match {
       case -1 => s
-      case z => s drop (z + 1)
+      case z  => s drop (z + 1)
     }
     reduced.head.replaceFirst(""".*\.""", "").replaceAll("[^a-zA-Z_0-9]", "_")
   }
@@ -94,7 +94,7 @@ object AbstractClusteredPersistentEntitySpec {
 
 abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPersistentEntityConfig)
   extends MultiNodeSpec(config, AbstractClusteredPersistentEntitySpec.createActorSystem(TestEntitySerializerRegistry))
-    with STMultiNodeSpec with ImplicitSender {
+  with STMultiNodeSpec with ImplicitSender {
 
   import config._
   // implicit EC needed for pipeTo
