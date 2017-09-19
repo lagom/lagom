@@ -123,6 +123,10 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
   protected def getAppendCount(id: String): Future[Long]
 
+  /**
+    * uses overridden {{getAppendCount}} to assert a given entity {{id}} emited the {{expected}} number of events. The
+    * implementation uses polling from only node1 so nodes 2 and 3 will skip this code.
+    */
   def expectAppendCount(id: String, expected: Long) = {
     runOn(node1) {
       within(20.seconds) {
@@ -133,20 +137,24 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       }
     }
   }
+
   "A PersistentEntity in a Cluster" must {
 
     "send commands to target entity" in within(21.seconds) {
+      // this barrier at the beginning of the test will be run on all nodes and should be at the
+      // beginning of the test to ensure it's run.
       enterBarrier("before-1")
 
       val ref1 = registry.refFor[TestEntity]("1").withAskTimeout(remaining)
+      val ref2 = registry.refFor[TestEntity]("2")
 
+      // STEP 1: send some commands from all nodes of the test to ref1 and ref2
       // note that this is done on node1, node2 and node 3 !!
       val r1 = ref1.ask(TestEntity.Add("a"))
       r1.pipeTo(testActor)
       expectMsg(TestEntity.Appended("A"))
       enterBarrier("appended-A")
 
-      val ref2 = registry.refFor[TestEntity]("2")
       val r2 = ref2.ask(TestEntity.Add("b"))
       r2.pipeTo(testActor)
       expectMsg(TestEntity.Appended("B"))
@@ -157,6 +165,8 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       expectMsg(TestEntity.Appended("C"))
       enterBarrier("appended-C")
 
+
+      // STEP 2: assert both ref's stored all the commands in their respective state.
       val r4: Future[TestEntity.State] = ref1.ask(TestEntity.Get)
       r4.pipeTo(testActor)
       // There are three events of each because the Commands above are executed on all 3 nodes of the multi-jvm test
@@ -166,12 +176,17 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       r5.pipeTo(testActor)
       expectMsgType[TestEntity.State].elements should ===(List("B", "B", "B", "C", "C", "C"))
 
+
+      // STEP 3: assert the number of events consumed in the read-side processors equals the number of expected events.
+      // NOTE: in nodes node2 and node3 {{expectAppendCount}} is a noop
       expectAppendCount("1", 3)
       expectAppendCount("2", 6)
 
     }
 
     "run entities on specific node roles" in {
+      // this barrier at the beginning of the test will be run on all nodes and should be at the
+      // beginning of the test to ensure it's run.
       enterBarrier("before-2")
       // node1 and node2 are configured with "backend" role
       // and lagom.persistence.run-entities-on-role = backend
@@ -190,6 +205,8 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     }
 
     "have support for graceful leaving" in {
+      // this barrier at the beginning of the test will be run on all nodes and should be at the
+      // beginning of the test to ensure it's run.
       enterBarrier("before-3")
 
       runOn(node2) {
