@@ -765,7 +765,8 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
   .dependsOn(
     `persistence-jdbc-core`,
     `persistence-core` % "compile;test->test",
-    `persistence-javadsl` % "compile;test->test"
+    `persistence-javadsl` % "compile;test->test",
+    logback % Test
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since12): _*)
@@ -781,7 +782,8 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
   .dependsOn(
     `persistence-jdbc-core`,
     `persistence-core` % "compile;test->test",
-    `persistence-scaladsl` % "compile;test->test"
+    `persistence-scaladsl` % "compile;test->test",
+    logback % Test
   )
   .settings(runtimeLibCommon: _*)
   .settings(multiJvmTestSettings: _*)
