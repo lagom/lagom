@@ -48,30 +48,18 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
 
   def additionalCommonConfig(databasePort: Int): Config
 
+
   nodeConfig(node1) {
-    ConfigFactory.parseString(
-      s"""
-      akka.cluster.roles = ["backend", "read-side"]
-      """
-    )
+    ConfigFactory.parseString("""akka.cluster.roles = ["backend", "read-side"]""")
   }
 
   nodeConfig(node2) {
-    ConfigFactory.parseString(
-      s"""
-      akka.cluster.roles = ["backend"]
-      """
-    )
+    ConfigFactory.parseString("""akka.cluster.roles = ["backend"]""")
   }
 
   nodeConfig(node3) {
-    ConfigFactory.parseString(
-      s"""
-       akka.cluster.roles = ["read-side"]
-      """
-    )
+    ConfigFactory.parseString("""akka.cluster.roles = ["read-side"]""")
   }
-
 }
 
 abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPersistentEntityConfig) extends MultiNodeSpec(config)
