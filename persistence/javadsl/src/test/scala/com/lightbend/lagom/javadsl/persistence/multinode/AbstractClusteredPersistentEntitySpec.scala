@@ -48,7 +48,6 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
 
   def additionalCommonConfig(databasePort: Int): Config
 
-
   nodeConfig(node1) {
     ConfigFactory.parseString("""akka.cluster.roles = ["backend", "read-side"]""")
   }
@@ -123,9 +122,9 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
   protected def getAppendCount(id: String): CompletionStage[java.lang.Long]
 
   /**
-    * uses overridden {{getAppendCount}} to assert a given entity {{id}} emited the {{expected}} number of events. The
-    * implementation uses polling from only node1 so nodes 2 and 3 will skip this code.
-    */
+   * uses overridden {{getAppendCount}} to assert a given entity {{id}} emited the {{expected}} number of events. The
+   * implementation uses polling from only node1 so nodes 2 and 3 will skip this code.
+   */
   def expectAppendCount(id: String, expected: Long) = {
     runOn(node1) {
       within(20.seconds) {
@@ -147,7 +146,6 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       val ref1 = registry.refFor(classOf[TestEntity], "1").withAskTimeout(remaining)
       val ref2 = registry.refFor(classOf[TestEntity], "2")
 
-
       // STEP 1: send some commands from all nodes of the test to ref1 and ref2
       // note that this is done on node1, node2 and node 3 !!
       val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
@@ -165,7 +163,6 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       expectMsg(new TestEntity.Appended("2", "C"))
       enterBarrier("appended-C")
 
-
       // STEP 2: assert both ref's stored all the commands in their respective state.
       val r4: CompletionStage[TestEntity.State] = ref1.ask(TestEntity.Get.instance)
       r4.pipeTo(testActor)
@@ -175,7 +172,6 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       val r5: CompletionStage[TestEntity.State] = ref2.ask(TestEntity.Get.instance)
       r5.pipeTo(testActor)
       expectMsgType[TestEntity.State].getElements.asScala.toList should ===(List("B", "B", "B", "C", "C", "C"))
-
 
       // STEP 3: assert the number of events consumed in the read-side processors equals the number of expected events.
       // NOTE: in nodes node2 and node3 {{expectAppendCount}} is a noop

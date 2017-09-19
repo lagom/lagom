@@ -124,9 +124,9 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
   protected def getAppendCount(id: String): Future[Long]
 
   /**
-    * uses overridden {{getAppendCount}} to assert a given entity {{id}} emited the {{expected}} number of events. The
-    * implementation uses polling from only node1 so nodes 2 and 3 will skip this code.
-    */
+   * uses overridden {{getAppendCount}} to assert a given entity {{id}} emited the {{expected}} number of events. The
+   * implementation uses polling from only node1 so nodes 2 and 3 will skip this code.
+   */
   def expectAppendCount(id: String, expected: Long) = {
     runOn(node1) {
       within(20.seconds) {
@@ -165,7 +165,6 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       expectMsg(TestEntity.Appended("C"))
       enterBarrier("appended-C")
 
-
       // STEP 2: assert both ref's stored all the commands in their respective state.
       val r4: Future[TestEntity.State] = ref1.ask(TestEntity.Get)
       r4.pipeTo(testActor)
@@ -175,7 +174,6 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       val r5 = ref2.ask(TestEntity.Get)
       r5.pipeTo(testActor)
       expectMsgType[TestEntity.State].elements should ===(List("B", "B", "B", "C", "C", "C"))
-
 
       // STEP 3: assert the number of events consumed in the read-side processors equals the number of expected events.
       // NOTE: in nodes node2 and node3 {{expectAppendCount}} is a noop
