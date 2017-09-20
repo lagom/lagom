@@ -29,6 +29,8 @@ import org.scalatest.concurrent.ScalaFutures
 
 class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures with ConversionCheckedTripleEquals {
 
+  override implicit val patienceConfig = PatienceConfig(5.seconds, 150.millis)
+
   val config: Config = ConfigFactory.parseString("""
       akka.actor.provider = akka.cluster.ClusterActorRefProvider
       akka.remote.netty.tcp.port = 0
@@ -80,8 +82,6 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
     reg.register(new TestEntity(system))
     reg
   }
-
-  implicit val patience = PatienceConfig(5.seconds, 100.millis)
 
   "The Cassandra persistence backend" should {
 

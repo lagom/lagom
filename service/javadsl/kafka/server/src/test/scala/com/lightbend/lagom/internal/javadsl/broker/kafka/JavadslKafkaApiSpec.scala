@@ -84,7 +84,7 @@ class JavadslKafkaApiSpec extends WordSpecLike
     super.afterAll()
   }
 
-  implicit val patience = PatienceConfig(30.seconds, 150.millis)
+  override implicit val patienceConfig = PatienceConfig(30.seconds, 150.millis)
 
   "The Kafka message broker api" should {
 

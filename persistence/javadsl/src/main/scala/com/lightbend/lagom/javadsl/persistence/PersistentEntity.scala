@@ -402,10 +402,10 @@ abstract class PersistentEntity[Command, Event, State] {
   /**
    * INTERNAL API
    */
-  private[lagom] trait PersistNone[B <: Event] extends Persist[B] {
+  private[lagom] case class PersistNone[B <: Event]() extends Persist[B] {
     override def toString: String = "PersistNone"
   }
 
-  private val persistNone = new PersistNone[Nothing] {}
+  private val persistNone: PersistNone[Nothing] = PersistNone[Nothing]
 
 }
