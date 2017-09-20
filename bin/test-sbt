@@ -2,5 +2,5 @@
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-runSbt publishLocal
+runSbt +publishLocal
 runSbtNoisy scripted

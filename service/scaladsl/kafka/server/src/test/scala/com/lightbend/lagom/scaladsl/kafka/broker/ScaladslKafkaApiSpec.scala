@@ -36,6 +36,8 @@ class ScaladslKafkaApiSpec extends WordSpecLike
   with BeforeAndAfterAll
   with ScalaFutures {
 
+  override implicit val patienceConfig = PatienceConfig(30.seconds, 150.millis)
+
   private val application = {
     new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LagomKafkaComponents with ConfigurationServiceLocatorComponents {
       override lazy val offsetStore = new InMemoryOffsetStore
@@ -76,8 +78,6 @@ class ScaladslKafkaApiSpec extends WordSpecLike
 
     super.afterAll()
   }
-
-  implicit val patience = PatienceConfig(30.seconds, 150.millis)
 
   "The Kafka message broker api" should {
 

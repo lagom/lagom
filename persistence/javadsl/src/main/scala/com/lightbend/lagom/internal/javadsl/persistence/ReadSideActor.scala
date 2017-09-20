@@ -3,11 +3,11 @@
  */
 package com.lightbend.lagom.internal.javadsl.persistence
 
-import akka.{ Done, NotUsed, japi }
+import akka.{ Done, NotUsed }
 import akka.actor.{ Actor, ActorLogging, Props, Status }
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.{ Keep, Sink }
-import akka.stream.{ KillSwitch, KillSwitches, Materializer, scaladsl }
+import akka.stream.{ KillSwitch, KillSwitches, Materializer }
 import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
@@ -82,12 +82,9 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
     case Start(offset) =>
 
-      val source: scaladsl.Source[japi.Pair[Event, Offset], NotUsed] = eventStreamFactory(tag, offset).asScala
-      val flow = handler.handle()
-
-      val (killSwitch, streamDone) = source
+      val (killSwitch, streamDone) = eventStreamFactory(tag, offset).asScala
         .viaMat(KillSwitches.single)(Keep.right)
-        .via(flow)
+        .via(handler.handle())
         .toMat(Sink.ignore)(Keep.both)
         .run()
 

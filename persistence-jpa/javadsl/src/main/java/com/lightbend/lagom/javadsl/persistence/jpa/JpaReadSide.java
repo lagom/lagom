@@ -31,7 +31,7 @@ public interface JpaReadSide {
      * @param readSideId An identifier for this read side. This will be used to store offsets in the offset store.
      * @return The builder.
      */
-    <Event extends AggregateEvent<Event>> ReadSideHandlerBuilder<Event> builder(String readSideId);
+    <Event extends AggregateEvent<Event>> JpaReadSide.ReadSideHandlerBuilder<Event> builder(String readSideId);
 
     /**
      * Builder for the handler.

@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.lightbend.lagom.internal.jackson.JacksonObjectMapperProvider;
 import com.lightbend.lagom.javadsl.api.deser.DeserializationException;
+import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.NegotiatedDeserializer;
+import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.NegotiatedSerializer;
 import com.lightbend.lagom.javadsl.api.deser.SerializationException;
 import com.lightbend.lagom.javadsl.api.deser.SerializerFactory;
 import com.lightbend.lagom.javadsl.api.deser.StrictMessageSerializer;

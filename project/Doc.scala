@@ -94,6 +94,8 @@ object UnidocRoot extends AutoPlugin {
       (unidocAllSources in (JavaUnidoc, unidoc)).value
         .map(_.filterNot(f => excludeJavadoc.exists(f.getCanonicalPath.contains)))
       },
+    // Override the Scala unidoc target to *not* include the Scala version, since we don't cross-build docs
+    target in (ScalaUnidoc, unidoc) := target.value / "unidoc",
     scalacOptions in (ScalaUnidoc, unidoc) ++= Seq("-skip-packages", "com.lightbend.lagom.internal"),
     javacOptions in doc := Seq(
       "-windowtitle", "Lagom Services API",
