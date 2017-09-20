@@ -332,7 +332,9 @@ object Dependencies {
     "io.netty" % "netty-codec-http" % NettyVersion,
 
     // Upgrades needed to match whitelist versions
-    "io.netty" % "netty-handler" % NettyVersion
+    "io.netty" % "netty-handler" % NettyVersion,
+
+    scalaTest % Test
   )
 
   val `client-javadsl` = libraryDependencies ++= Seq(
