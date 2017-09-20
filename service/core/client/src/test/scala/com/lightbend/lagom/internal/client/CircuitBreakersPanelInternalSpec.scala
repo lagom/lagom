@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ */
 package com.lightbend.lagom.internal.client
 
 import akka.actor.ActorSystem
@@ -10,13 +13,13 @@ import org.scalatest.{ AsyncFlatSpec, BeforeAndAfterAll, Matchers }
 import scala.concurrent.Future
 
 /**
-  *
-  */
+ *
+ */
 class CircuitBreakersPanelInternalSpec
   extends AsyncFlatSpec
-    with Matchers
-    with BeforeAndAfterAll
-    with Futures {
+  with Matchers
+  with BeforeAndAfterAll
+  with Futures {
 
   val actorSystem = ActorSystem("CircuitBreakersPanelInternalSpec")
 
@@ -65,14 +68,13 @@ class CircuitBreakersPanelInternalSpec
     }
   }
 
-
   // ---------------------------------------------------------
 
-  private def successfulCall(panel: CircuitBreakersPanelInternal, mockedResponse:String) = {
+  private def successfulCall(panel: CircuitBreakersPanelInternal, mockedResponse: String) = {
     panel.withCircuitBreaker("cb")(Future.successful(mockedResponse))
   }
 
-  private def failedCall(panel: CircuitBreakersPanelInternal, failure:Exception) = {
+  private def failedCall(panel: CircuitBreakersPanelInternal, failure: Exception) = {
     panel
       .withCircuitBreaker("cb")(Future.failed(failure))
       .recover {
@@ -106,7 +108,8 @@ class CircuitBreakersPanelInternalSpec
        |  }
        |}
        |#//#circuit-breaker-default
-    """.stripMargin)
+    """.stripMargin
+  )
 
 }
 
