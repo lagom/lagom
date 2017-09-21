@@ -5,9 +5,9 @@ object Dependencies {
 
   // Version numbers
 
-  val PlayVersion = "2.6.3" // if you update this, you probably need to update the following two
-  val PlayJsonVersion = "2.6.3"
-  val PlayStandaloneWsVersion = "1.0.4"
+  val PlayVersion = "2.6.5" // if you update this, you probably need to update the following two
+  val PlayJsonVersion = "2.6.5"
+  val PlayStandaloneWsVersion = "1.1.0"
   val PlayFileWatchVersion = "1.1.0"
 
   val AkkaVersion = "2.5.4"
@@ -17,11 +17,11 @@ object Dependencies {
   val AkkaPersistenceCassandraVersion = "0.54"
   val AkkaPersistenceJdbcVersion = "3.0.0"
   val ScalaTestVersion = "3.0.3"
-  val JacksonVersion = "2.8.9"
+  val JacksonVersion = "2.8.10"
   val CassandraAllVersion = "3.8"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.13.Final"
+  val NettyVersion = "4.1.15.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
   val KafkaVersion = "0.11.0.0"
   val AkkaStreamKafkaVersion = "0.17"
@@ -137,7 +137,7 @@ object Dependencies {
       "com.typesafe.play" %% "twirl-api" % "1.3.4",
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-      "com.zaxxer" % "HikariCP" % "2.6.3",
+      "com.zaxxer" % "HikariCP" % "2.7.1",
       "commons-codec" % "commons-codec" % "1.10",
       "io.aeron" % "aeron-client" % "1.2.5",
       "io.aeron" % "aeron-driver" % "1.2.5",
