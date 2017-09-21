@@ -4,7 +4,7 @@
 package com.lightbend.lagom.internal.scaladsl.persistence
 
 import akka.{ Done, NotUsed }
-import akka.actor.{ Actor, ActorLogging, Props, Status }
+import akka.actor.{ Actor, ActorLogging, ActorRef, Props, Status }
 import akka.persistence.query.Offset
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.{ Keep, Sink }
@@ -12,9 +12,10 @@ import akka.stream.{ KillSwitch, KillSwitches, Materializer }
 import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.lightbend.lagom.internal.scaladsl.persistence.ReadSideTagHolderActor.{ CachedTag, GetTag }
 import com.lightbend.lagom.scaladsl.persistence._
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 private[lagom] object ReadSideActor {
 
@@ -23,9 +24,10 @@ private[lagom] object ReadSideActor {
     eventStreamFactory:   (AggregateEventTag[Event], Offset) => Source[EventStreamElement[Event], NotUsed],
     clazz:                Class[Event],
     globalPrepareTask:    ClusterStartupTask,
-    globalPrepareTimeout: FiniteDuration
+    globalPrepareTimeout: FiniteDuration,
+    tagHolder:            ActorRef
   )(implicit mat: Materializer) = {
-    Props(classOf[ReadSideActor[Event]], processor, eventStreamFactory, clazz, globalPrepareTask, globalPrepareTimeout, mat)
+    Props(classOf[ReadSideActor[Event]], processor, eventStreamFactory, clazz, globalPrepareTask, globalPrepareTimeout, tagHolder, mat)
   }
 
   /**
@@ -42,7 +44,8 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   eventStreamFactory:   (AggregateEventTag[Event], Offset) => Source[EventStreamElement[Event], NotUsed],
   clazz:                Class[Event],
   globalPrepareTask:    ClusterStartupTask,
-  globalPrepareTimeout: FiniteDuration
+  globalPrepareTimeout: FiniteDuration,
+  tagHolder:            ActorRef
 )(implicit mat: Materializer) extends Actor with ActorLogging {
   import ReadSideActor._
   import akka.pattern.pipe
@@ -51,12 +54,18 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
   private var shutdown: Option[KillSwitch] = None
 
+  override def preStart(): Unit = {
+    super.preStart()
+    implicit val timeout = Timeout(Duration(100, "millis"))
+    (tagHolder ? GetTag) pipeTo self
+  }
+
   override def postStop: Unit = {
     shutdown.foreach(_.shutdown())
   }
 
   def receive = {
-    case EnsureActive(tagName) =>
+    case CachedTag(tagName) =>
 
       val tag = new AggregateEventTag(clazz, tagName)
 

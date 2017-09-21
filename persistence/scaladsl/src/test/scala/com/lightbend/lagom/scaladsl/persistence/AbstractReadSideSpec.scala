@@ -4,6 +4,7 @@
 package com.lightbend.lagom.scaladsl.persistence
 
 import akka.actor.{ Actor, ActorRef, Props, SupervisorStrategy }
+import akka.cluster.sharding.ShardRegion.EntityId
 import akka.pattern.{ BackoffSupervisor, pipe }
 import akka.persistence.query.Offset
 import akka.stream.ActorMaterializer
@@ -13,6 +14,7 @@ import akka.{ Done, NotUsed }
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
+import com.lightbend.lagom.internal.scaladsl.persistence.ReadSideTagHolderActor.{ CachedTag, GetTag }
 import com.lightbend.lagom.internal.scaladsl.persistence.{ PersistentEntityActor, ReadSideActor }
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Mode
@@ -60,27 +62,29 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
     )
   }
 
-  class AlwaysReplyDone extends Actor {
+  class Mock(tagName: EntityId) extends Actor {
     def receive = {
       case Execute =>
-
         processorFactory()
           .buildHandler
           .globalPrepare()
           .map { _ => Done } pipeTo sender()
-
+      case GetTag =>
+        sender() ! CachedTag(tagName)
     }
   }
 
   private def createReadSideProcessor() = {
     /* read side and injector only needed for deprecated register method */
 
+    val mockRef = system.actorOf(Props(new Mock(tag.tag)))
     val processorProps = ReadSideActor.props[TestEntity.Evt](
       processorFactory,
       eventStream,
       classOf[TestEntity.Evt],
-      new ClusterStartupTask(system.actorOf(Props(new AlwaysReplyDone))),
-      3.seconds
+      new ClusterStartupTask(mockRef),
+      5.seconds,
+      mockRef
     )
 
     val readSide: ActorRef =
@@ -89,8 +93,6 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
           processorProps, "processor", 500.milliseconds, 1.second, 0.2, SupervisorStrategy.stoppingStrategy
         )
       )
-
-    system.scheduler.schedule(Duration.Zero, 1.second, readSide, EnsureActive(tag.tag))
 
     readSideActor = Some(readSide)
   }

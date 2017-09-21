@@ -6,26 +6,27 @@ package com.lightbend.lagom.javadsl.persistence
 import java.util.Optional
 import java.util.concurrent.CompletionStage
 
-import akka.actor.ActorRef
+import akka.actor.{ Actor, ActorRef, Props, SupervisorStrategy }
+import akka.cluster.sharding.ShardRegion.EntityId
+import akka.pattern.{ BackoffSupervisor, pipe }
 import akka.stream.ActorMaterializer
 import akka.stream.javadsl.Source
 import akka.testkit.ImplicitSender
 import akka.{ Done, NotUsed }
+import com.lightbend.lagom.internal.javadsl.persistence.ReadSideTagHolderActor.{ CachedTag, GetTag }
 import com.lightbend.lagom.internal.javadsl.persistence.{ PersistentEntityActor, ReadSideActor }
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
-import com.lightbend.lagom.javadsl.persistence.Offset.{ Sequence, TimeBasedUUID }
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Mode
 import com.lightbend.lagom.persistence.ActorSystemSpec
-import com.lightbend.lagom.spi.persistence.OffsetStore
 import org.scalatest.BeforeAndAfter
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
+
 import scala.compat.java8.FutureConverters._
-import scala.concurrent.Await
 import scala.concurrent.duration._
 
-trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventually with BeforeAndAfter { spec: ActorSystemSpec =>
+trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventually with BeforeAndAfter {
+  spec: ActorSystemSpec =>
 
   import system.dispatcher
 
@@ -62,28 +63,37 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
     )
   }
 
+  class Mock(tagName: EntityId) extends Actor {
+    def receive = {
+      case Execute =>
+        processorFactory()
+          .buildHandler
+          .globalPrepare()
+          .toScala
+          .map { _ => Done } pipeTo sender()
+
+      case GetTag =>
+        sender() ! CachedTag(tagName)
+    }
+  }
+
   private def createReadSideProcessor() = {
-    /* read side and injector only needed for deprecated register method */
-    val readSide = system.actorOf(
-      ReadSideActor.props[TestEntity.Evt](
-        processorFactory,
-        eventStream,
-        classOf[TestEntity.Evt],
-        new ClusterStartupTask(testActor),
-        20.seconds
-      )
+    val mockRef = system.actorOf(Props(new Mock(tag.tag)))
+    val processorProps = ReadSideActor.props[TestEntity.Evt](
+      processorFactory,
+      eventStream,
+      classOf[TestEntity.Evt],
+      new ClusterStartupTask(mockRef),
+      5.seconds,
+      mockRef
     )
 
-    readSide ! EnsureActive(tag.tag)
-
-    expectMsg(Execute)
-
-    processorFactory()
-      .buildHandler()
-      .globalPrepare().toScala
-      .foreach { _ =>
-        readSide ! Done
-      }
+    val readSide: ActorRef =
+      system.actorOf(
+        BackoffSupervisor.propsWithSupervisorStrategy(
+          processorProps, "processor", 500.milliseconds, 1.second, 0.2, SupervisorStrategy.stoppingStrategy
+        )
+      )
 
     readSideActor = Some(readSide)
   }
