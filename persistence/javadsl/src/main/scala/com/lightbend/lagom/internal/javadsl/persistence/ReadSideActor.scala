@@ -58,10 +58,6 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
   private var shutdown: Option[KillSwitch] = None
 
-  override def preStart(): Unit = {
-    super.preStart()
-  }
-
   override def postStop: Unit = {
     shutdown.foreach(_.shutdown())
   }
@@ -75,6 +71,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
   def start(tagName: EntityId): Receive = {
     case Start =>
+
       val tag = new AggregateEventTag(clazz, tagName)
       val backoffSource =
         RestartSource.withBackoff(
@@ -90,8 +87,8 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
               val userlandFlow = handler.handle()
               eventStreamSource.via(userlandFlow)
           }
-
         }
+
       val (killSwitch, streamDone) = backoffSource
         .viaMat(KillSwitches.single)(Keep.right)
         .toMat(Sink.ignore)(Keep.both)
@@ -100,10 +97,12 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
       shutdown = Some(killSwitch)
       streamDone pipeTo self
 
+    case EnsureActive(_) =>
+    // Yes, we are active
+
     case Done =>
       throw new IllegalStateException("Stream terminated when it shouldn't")
 
-    case EnsureActive(_) =>
 
   }
 
