@@ -6,15 +6,15 @@ package com.lightbend.lagom.javadsl.persistence
 import java.util.Optional
 import java.util.concurrent.CompletionStage
 
-import akka.actor.{ Actor, ActorRef, Props, SupervisorStrategy }
-import akka.cluster.sharding.ShardRegion.EntityId
-import akka.pattern.{ BackoffSupervisor, pipe }
+import akka.actor.{ Actor, ActorRef, Props }
+import akka.pattern.pipe
 import akka.stream.ActorMaterializer
 import akka.stream.javadsl.Source
 import akka.testkit.ImplicitSender
 import akka.{ Done, NotUsed }
-import com.lightbend.lagom.internal.javadsl.persistence.ReadSideTagHolderActor.{ CachedTag, GetTag }
 import com.lightbend.lagom.internal.javadsl.persistence.{ PersistentEntityActor, ReadSideActor }
+import com.lightbend.lagom.internal.persistence.ReadSideConfig
+import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Mode
@@ -63,7 +63,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
     )
   }
 
-  class Mock(tagName: EntityId) extends Actor {
+  class Mock() extends Actor {
     def receive = {
       case Execute =>
         processorFactory()
@@ -71,29 +71,22 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
           .globalPrepare()
           .toScala
           .map { _ => Done } pipeTo sender()
-
-      case GetTag =>
-        sender() ! CachedTag(tagName)
     }
   }
 
   private def createReadSideProcessor() = {
-    val mockRef = system.actorOf(Props(new Mock(tag.tag)))
+    val mockRef = system.actorOf(Props(new Mock()))
     val processorProps = ReadSideActor.props[TestEntity.Evt](
-      processorFactory,
-      eventStream,
+      ReadSideConfig(),
       classOf[TestEntity.Evt],
       new ClusterStartupTask(mockRef),
-      5.seconds,
-      mockRef
+      eventStream,
+      processorFactory
     )
 
-    val readSide: ActorRef =
-      system.actorOf(
-        BackoffSupervisor.propsWithSupervisorStrategy(
-          processorProps, "processor", 500.milliseconds, 1.second, 0.2, SupervisorStrategy.stoppingStrategy
-        )
-      )
+    val readSide: ActorRef = system.actorOf(processorProps)
+
+    readSide ! EnsureActive(tag.tag)
 
     readSideActor = Some(readSide)
   }
