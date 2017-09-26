@@ -1,3 +1,4 @@
+import Dependencies.libraryFamily
 import sbt._
 import sbt.Keys._
 
@@ -26,9 +27,16 @@ object Dependencies {
   val Log4jVersion = "1.2.17"
   val logbackVersion = "1.1.7"
 
+  // First let's create some exclusion rules to avoid too much transitive hell
+  private val slf4j: Seq[ModuleID] = Seq("jcl-over-slf4j", "jul-to-slf4j", "log4j-over-slf4j", "slf4j-api").map {
+    "org.slf4j" % _ % Slf4jVersion
+  }
+
+  private val excludeSlf4j = slf4j.map { moduleId => ExclusionRule(moduleId.organization, moduleId.name) }
+
 
   // Specific libraries that get reused
-  private val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
+  private val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion excludeAll (excludeSlf4j: _*)
   private val guava = "com.google.guava" % "guava" % GuavaVersion
   private val log4J = "log4j" % "log4j" % Log4jVersion
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
@@ -45,7 +53,7 @@ object Dependencies {
   private val akkaMultiNodeTestkit = "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion
   private val akkaPersistence = "com.typesafe.akka" %% "akka-persistence" % AkkaVersion
   private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query-experimental" % AkkaVersion
-  private val akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion
+  private val akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion excludeAll (excludeSlf4j: _*)
   private val akkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
@@ -54,20 +62,27 @@ object Dependencies {
   private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion exclude("com.datastax.cassandra", "cassandra-driver-core")
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % CassandraDriverVersion
 
+  private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.8" excludeAll (excludeSlf4j: _*)
+
   private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafkaVersion
 
   private val akkaHttpCore = "com.typesafe.akka" %% "akka-http-core" % AkkaHttpVersion
   private val akkaParsing = "com.typesafe.akka" %% "akka-parsing" % AkkaHttpVersion
 
-  private val play = "com.typesafe.play" %% "play" % PlayVersion
-  private val playBuildLink = "com.typesafe.play" % "build-link" % PlayVersion
-  private val playExceptions = "com.typesafe.play" % "play-exceptions" % PlayVersion
-  private val playJava = "com.typesafe.play" %% "play-java" % PlayVersion
-  private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion
-  private val playJson = "com.typesafe.play" %% "play-json" % PlayVersion
-  private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion
-  private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion
-  private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion
+
+  private val play = "com.typesafe.play" %% "play" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playBuildLink = "com.typesafe.play" % "build-link" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playExceptions = "com.typesafe.play" % "play-exceptions" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playJava = "com.typesafe.play" %% "play-java" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playJson = "com.typesafe.play" %% "play-json" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
+
+  private val dropwizardCore = "io.dropwizard.metrics" % "metrics-core" % "3.1.2" excludeAll (excludeSlf4j: _*)
+  private val dropwizardMetrics = "io.dropwizard.metrics" % "metrics-jvm" % "3.1.0"
+
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.
@@ -87,7 +102,7 @@ object Dependencies {
       cassandraDriverCore,
       "com.fasterxml" % "classmate" % "1.3.0",
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
-      "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.8",
+      akkaPersistenceJdbc,
       "com.github.jbellis" % "jamm" % "0.3.0",
       "com.github.jnr" % "jffi" % "1.2.10",
       "com.github.jnr" % "jffi" % "1.2.10",
@@ -125,8 +140,8 @@ object Dependencies {
       "commons-logging" % "commons-logging" % "1.2",
       "io.aeron" % "aeron-client" % "1.2.5",
       "io.aeron" % "aeron-driver" % "1.2.5",
-      "io.dropwizard.metrics" % "metrics-core" % "3.1.2",
-      "io.dropwizard.metrics" % "metrics-jvm" % "3.1.0",
+      dropwizardCore,
+      dropwizardMetrics,
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
       "io.netty" % "netty" % "3.10.6.Final",
       "it.unimi.dsi" % "fastutil" % "6.5.7",
@@ -329,7 +344,7 @@ object Dependencies {
 
   val client = libraryDependencies ++= Seq(
     playWs,
-    "io.dropwizard.metrics" % "metrics-core" % "3.1.2",
+    dropwizardCore,
 
     // Needed to match whitelist versions
     "org.apache.httpcomponents" % "httpclient" % "4.5.2",
@@ -339,7 +354,7 @@ object Dependencies {
     "com.typesafe.netty" % "netty-reactive-streams" % "1.0.8"
   )
 
-  val `client-javadsl` = libraryDependencies ++= Seq(
+  val `client-javadsl` = libraryDependencies ++= slf4j ++ Seq(
     scalaTest % Test
   )
 
@@ -363,13 +378,15 @@ object Dependencies {
     typesafeConfig // ensures we use the whitelisted version of config everywhere
   )
 
+  private val cassandraExclusions = excludeSlf4j ++
+    Seq(ExclusionRule("io.netty", "netty-all"),
+      ExclusionRule("ch.qos.logback", "logback-core"),
+      ExclusionRule("ch.qos.logback", "logback-classic"))
+  private val cassandraAll = "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion excludeAll (cassandraExclusions: _*)
+
   val `testkit-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
-    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion excludeAll(
-      ExclusionRule("io.netty", "netty-all"),
-      ExclusionRule("ch.qos.logback", "logback-core"),
-      ExclusionRule("ch.qos.logback", "logback-classic")
-    ),
+    cassandraAll,
     akkaStreamTestkit,
     akkaPersistenceCassandra,
     scalaTest % Test,
@@ -388,11 +405,7 @@ object Dependencies {
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
     playNettyServer,
-    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion excludeAll(
-      ExclusionRule("io.netty", "netty-all"),
-      ExclusionRule("ch.qos.logback", "logback-core"),
-      ExclusionRule("ch.qos.logback", "logback-classic")
-    ),
+    cassandraAll,
     akkaStreamTestkit,
     akkaPersistenceCassandra,
     scalaTest % Test,
@@ -492,15 +505,17 @@ object Dependencies {
     "org.yaml" % "snakeyaml" % "1.16" % Test
   )
 
-  val `persistence-javadsl` = libraryDependencies ++= Seq(
-    // this mean we have production code depending on testkit
-    akkaTestkit
-  )
+  val `persistence-javadsl` = libraryDependencies ++= slf4j ++
+    Seq(
+      // this mean we have production code depending on testkit
+      akkaTestkit
+    )
 
-  val `persistence-scaladsl` = libraryDependencies ++= Seq(
-    // this mean we have production code depending on testkit
-    akkaTestkit
-  )
+  val `persistence-scaladsl` = libraryDependencies ++= slf4j ++
+    Seq(
+      // this mean we have production code depending on testkit
+      akkaTestkit
+    )
 
   val `persistence-cassandra-core` = libraryDependencies ++= Seq(
     akkaPersistenceCassandra,
@@ -512,11 +527,7 @@ object Dependencies {
     "io.netty" % "netty-handler" % NettyVersion,
     "io.netty" % "netty-transport" % NettyVersion,
 
-    "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion excludeAll(
-      ExclusionRule("io.netty", "netty-all"),
-      ExclusionRule("ch.qos.logback", "logback-core"),
-      ExclusionRule("ch.qos.logback", "logback-classic")
-    ),
+    cassandraAll,
 
     "io.netty" % "netty-codec-http" % NettyVersion % Test,
     "io.netty" % "netty-transport-native-epoll" % NettyVersion % Test classifier "linux-x86_64",
@@ -549,8 +560,8 @@ object Dependencies {
     cassandraDriverCore
   )
 
-  val `persistence-jdbc-core` = libraryDependencies ++= Seq(
-    "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.8",
+  val `persistence-jdbc-core` = libraryDependencies ++= slf4j ++ Seq(
+    akkaPersistenceJdbc,
     playJdbc
   )
 
@@ -590,29 +601,35 @@ object Dependencies {
 
   val `kafka-broker-scaladsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
+    // depend on javassist explictly to avoid version collision.
+    javassist % Test,
     "junit" % "junit" % "4.11" % Test
   )
 
-  val logback = libraryDependencies ++= Seq(
-    // needed only because we use play.utils.Colors
-    play,
+  val logback = libraryDependencies ++=
+    Seq(
+      "org.slf4j" % "jul-to-slf4j" % Slf4jVersion
+    ) ++ Seq(
+      // needed only because we use play.utils.Colors
+      play,
 
-    // Upgrades for Play libraries
-    akkaActor,
-    akkaSlf4j,
-    akkaStream,
-    scalaXml,
-    guava
-  ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % logbackVersion)
+      // Upgrades for Play libraries
+      akkaActor,
+      akkaSlf4j,
+      akkaStream,
+      scalaXml,
+      guava
+    ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % logbackVersion)
 
-  val log4j2 = libraryDependencies ++= Seq(
+  val log4j2 = libraryDependencies ++= slf4j ++ Seq(
     "log4j-api",
     "log4j-core",
     "log4j-slf4j-impl"
-  ).map("org.apache.logging.log4j" % _ % "2.7") ++ Seq(
+  ).map(
+    "org.apache.logging.log4j" % _ % "2.7" excludeAll (excludeSlf4j: _*)
+  ) ++ Seq(
     "com.lmax" % "disruptor" % "3.3.6",
     play,
-
     // Upgrades for Play dependencies
     akkaActor,
     akkaSlf4j,
@@ -722,7 +739,7 @@ object Dependencies {
     "org.apache.curator" % "curator-test" % "2.10.0",
 
     // Update ZooKeeper to 3.4.10 to pick up a security fix
-    "org.apache.zookeeper" % "zookeeper" % "3.4.10"  exclude("org.slf4j", "slf4j-log4j12"),
+    "org.apache.zookeeper" % "zookeeper" % "3.4.10" exclude("org.slf4j", "slf4j-log4j12"),
 
     scalaJava8Compat,
     scalaTest % Test
