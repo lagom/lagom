@@ -103,7 +103,6 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
     case Done =>
       throw new IllegalStateException("Stream terminated when it shouldn't")
 
-
   }
 
 }
