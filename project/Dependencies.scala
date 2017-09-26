@@ -366,9 +366,9 @@ object Dependencies {
 
   val server = libraryDependencies ++= Nil
 
-  val `server-javadsl` = libraryDependencies ++= Nil
+  val `server-javadsl` = libraryDependencies ++= slf4j
 
-  val `server-scaladsl` = libraryDependencies ++= Seq(
+  val `server-scaladsl` = libraryDependencies ++= slf4j ++ Seq(
     scalaTest % Test
   )
 
