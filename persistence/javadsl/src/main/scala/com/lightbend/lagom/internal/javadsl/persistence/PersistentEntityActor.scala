@@ -14,7 +14,7 @@ import akka.persistence.RecoveryCompleted
 import akka.persistence.SnapshotOffer
 import akka.util.ByteString
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.Duration
 import akka.actor.ReceiveTimeout
 import akka.cluster.sharding.ShardRegion
 import akka.actor.actorRef2Scala
@@ -31,7 +31,7 @@ private[lagom] object PersistentEntityActor {
     entityId:                  Optional[String],
     entityFactory:             () => PersistentEntity[C, E, S],
     snapshotAfter:             Optional[Int],
-    passivateAfterIdleTimeout: FiniteDuration
+    passivateAfterIdleTimeout: Duration
   ): Props =
     Props(new PersistentEntityActor(persistenceIdPrefix, entityId, entityFactory(), snapshotAfter.orElse(0),
       passivateAfterIdleTimeout))
@@ -51,7 +51,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
   id:                        Optional[String],
   entity:                    PersistentEntity[C, E, S],
   snapshotAfter:             Int,
-  passivateAfterIdleTimeout: FiniteDuration
+  passivateAfterIdleTimeout: Duration
 ) extends PersistentActor {
   private val log = Logger(this.getClass)
 
