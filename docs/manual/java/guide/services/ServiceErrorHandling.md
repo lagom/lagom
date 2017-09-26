@@ -10,7 +10,7 @@ There are a number of principles behind the design of Lagom's built in error han
 * If possible, exceptions should be mapped to idiomatic protocol response codes, such as HTTP 4xx and 5xx status codes and WebSocket error close codes.
 
 
-If you are using Lagom to consume a service (either implemented in Lagom or a third-party stack) the client Lagom provides will map 4xx and 5xx to exceptions in all cases. That has an impact on the [[Circuit Breakers|ServiceClients#Circuit-Breakers]] the client is using to connect to that endpoint. By default Lagom Circuit Breakers will account any exception as an error but that behavior is [[configurable|ServiceClients#Circuit-Breaker-Configuration]]. So 4xx and 5xx will be mapped to exceptions but you can whitelist what exceptions should not trip the circuit breaker.
+If you are using Lagom to consume a service (either implemented in Lagom or a third-party stack) the client Lagom provides will map responses with status code values in the ranges 4xx and 5xx to exceptions. That has an impact on the [[Circuit Breakers|ServiceClients#Circuit-Breakers]] the client is using to connect to that endpoint. By default Lagom Circuit Breakers will account any exception as an error but that behavior is [[configurable|ServiceClients#Circuit-Breaker-Configuration]]. So 4xx and 5xx will be mapped to exceptions but you can whitelist what exceptions should not trip the circuit breaker.
 
 ## Exception serializers
 
