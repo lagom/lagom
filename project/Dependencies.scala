@@ -4,7 +4,7 @@ import sbt.Keys._
 object Dependencies {
 
   // Version numbers
-  val PlayVersion = "2.5.13"
+  val PlayVersion = "2.5.17"
   val AkkaVersion = "2.4.20"
   val AkkaHttpVersion = "10.0.9"
   val ScalaVersion = "2.11.11"
@@ -15,12 +15,14 @@ object Dependencies {
   val CassandraDriverVersion = "3.1.4"
   val GuavaVersion = "19.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.0.42.Final"
+  val NettyVersion = "4.0.51.Final"
+  val AsyncHttpClientVersion = "2.0.36"
   val KafkaVersion = "0.10.0.1"
   val AkkaStreamKafkaVersion = "0.13"
   val ScalaJava8CompatVersion = "0.7.0"
   val ScalaXmlVersion = "1.0.5"
 
+  val Slf4jVersion = "1.7.25"
   val Log4jVersion = "1.2.17"
   val logbackVersion = "1.1.7"
 
@@ -213,7 +215,7 @@ object Dependencies {
     ) ++ libraryFamily("org.apache.logging.log4j", "2.7")(
       "log4j-api", "log4j-core", "log4j-slf4j-impl"
 
-    ) ++ libraryFamily("org.asynchttpclient", "2.0.24")(
+    ) ++ libraryFamily("org.asynchttpclient", AsyncHttpClientVersion)(
       "async-http-client", "async-http-client-netty-utils", "netty-codec-dns", "netty-resolver", "netty-resolver-dns"
 
     ) ++ libraryFamily("org.ow2.asm", "5.0.3")(
@@ -222,7 +224,7 @@ object Dependencies {
     ) ++ libraryFamily("org.scala-lang", scalaVersion)(
       "scala-library", "scala-reflect"
 
-    ) ++ libraryFamily("org.slf4j", "1.7.21")(
+    ) ++ libraryFamily("org.slf4j", Slf4jVersion)(
       "jcl-over-slf4j", "jul-to-slf4j", "log4j-over-slf4j", "slf4j-api"
     )
   }
@@ -379,7 +381,7 @@ object Dependencies {
     "com.lmax" % "disruptor" % "3.3.6",
     "javax.validation" % "validation-api" % "1.1.0.Final",
     "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
-    "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
+    "org.slf4j" % "log4j-over-slf4j" % Slf4jVersion,
     "org.xerial.snappy" % "snappy-java" % "1.1.2.6",
     "org.yaml" % "snakeyaml" % "1.16"
   )
@@ -403,7 +405,7 @@ object Dependencies {
     "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
     jbossLogging,
     "com.fasterxml" % "classmate" % "1.3.0",
-    "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
+    "org.slf4j" % "log4j-over-slf4j" % Slf4jVersion,
     "org.xerial.snappy" % "snappy-java" % "1.1.2.6",
     "org.yaml" % "snakeyaml" % "1.16"
   )
@@ -485,7 +487,7 @@ object Dependencies {
     "org.hibernate" % "hibernate-validator" % "5.2.4.Final" % Test,
     jbossLogging % Test,
     "com.fasterxml" % "classmate" % "1.3.0" % Test,
-    "org.slf4j" % "log4j-over-slf4j" % "1.7.21" % Test,
+    "org.slf4j" % "log4j-over-slf4j" % Slf4jVersion % Test,
     "org.xerial.snappy" % "snappy-java" % "1.1.2.6" % Test,
     "org.yaml" % "snakeyaml" % "1.16" % Test
   )
@@ -529,7 +531,7 @@ object Dependencies {
     "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
     jbossLogging,
     "com.fasterxml" % "classmate" % "1.3.0",
-    "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
+    "org.slf4j" % "log4j-over-slf4j" % Slf4jVersion,
     "org.xerial.snappy" % "snappy-java" % "1.1.2.6",
     "org.yaml" % "snakeyaml" % "1.16",
 
@@ -566,7 +568,7 @@ object Dependencies {
   val `broker-scaladsl` = libraryDependencies ++= Nil
 
   val `kafka-client` = libraryDependencies ++= Seq(
-    "org.slf4j" % "log4j-over-slf4j" % "1.7.21",
+    "org.slf4j" % "log4j-over-slf4j" % Slf4jVersion,
     akkaStreamKafka exclude("org.slf4j", "slf4j-log4j12"),
     scalaTest % Test
   )
@@ -667,7 +669,7 @@ object Dependencies {
     "org.apache.maven.wagon" % "wagon-file" % "2.10",
     "org.eclipse.aether" % "aether-connector-basic" % "1.0.2.v20150114",
     "org.eclipse.aether" % "aether-transport-wagon" % "1.0.2.v20150114",
-    "org.slf4j" % "slf4j-simple" % "1.7.21"
+    "org.slf4j" % "slf4j-simple" % Slf4jVersion
   )
 
   val `service-locator` = libraryDependencies ++= Seq(
