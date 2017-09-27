@@ -5,10 +5,9 @@ package com.lightbend.lagom.internal.scaladsl.persistence
 
 import java.net.URLEncoder
 
-import akka.actor.{ ActorSystem, SupervisorStrategy }
+import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterShardingSettings
-import akka.pattern.BackoffSupervisor
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings, ClusterStartupTask }
@@ -40,24 +39,33 @@ private[lagom] class ReadSideImpl(
         case None      => throw new IllegalArgumentException(s"ReadSideProcessor ${proto.getClass.getName} returned 0 tags")
       }
 
-      val globalPrepareTask = ClusterStartupTask(
-        system, s"readSideGlobalPrepare-$encodedReadSideName",
-        () => processorFactory().buildHandler.globalPrepare(),
-        config.globalPrepareTimeout, config.role, config.minBackoff, config.maxBackoff, config.randomBackoffFactor
-      )
+      val globalPrepareTask: ClusterStartupTask =
+        ClusterStartupTask(
+          system,
+          s"readSideGlobalPrepare-$encodedReadSideName",
+          () => processorFactory().buildHandler().globalPrepare(),
+          config.globalPrepareTimeout,
+          config.role,
+          config.minBackoff,
+          config.maxBackoff,
+          config.randomBackoffFactor
+        )
 
-      val processorProps = ReadSideActor.props(processorFactory, registry.eventStream[Event], eventClass, globalPrepareTask, config.globalPrepareTimeout)
-
-      val backoffProps = BackoffSupervisor.propsWithSupervisorStrategy(
-        processorProps, "processor", config.minBackoff, config.maxBackoff, config.randomBackoffFactor, SupervisorStrategy.stoppingStrategy
-      )
+      val readSideProps =
+        ReadSideActor.props(
+          config,
+          eventClass,
+          globalPrepareTask,
+          registry.eventStream[Event],
+          processorFactory
+        )
 
       val shardingSettings = ClusterShardingSettings(system).withRole(config.role)
 
       ClusterDistribution(system).start(
         readSideName,
-        backoffProps,
-        entityIds.toSet,
+        readSideProps,
+        entityIds,
         ClusterDistributionSettings(system).copy(clusterShardingSettings = shardingSettings)
       )
     }
