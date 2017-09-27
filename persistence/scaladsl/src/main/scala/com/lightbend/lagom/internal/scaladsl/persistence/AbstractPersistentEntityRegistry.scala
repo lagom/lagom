@@ -50,8 +50,16 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
     case "" => None
     case r  => Some(r)
   }
-  private val passivateAfterIdleTimeout: FiniteDuration =
-    conf.getDuration("passivate-after-idle-timeout", TimeUnit.MILLISECONDS).millis
+  private val passivateAfterIdleTimeout: Duration = {
+    val durationMs = conf.getDuration("passivate-after-idle-timeout", TimeUnit.MILLISECONDS)
+    if (durationMs == 0) {
+      // Scaladoc of setReceiveTimeout says "Pass in `Duration.Undefined` to switch off this feature."
+      Duration.Undefined
+    } else {
+      durationMs.millis
+    }
+  }
+
   private val askTimeout: FiniteDuration = conf.getDuration("ask-timeout", TimeUnit.MILLISECONDS).millis
   private val shardingSettings = ClusterShardingSettings(system).withRole(role)
 

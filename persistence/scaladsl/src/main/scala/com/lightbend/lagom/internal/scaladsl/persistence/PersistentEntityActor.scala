@@ -13,7 +13,7 @@ import akka.util.ByteString
 import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, AggregateEventShards, AggregateEventTag, PersistentEntity }
 import play.api.Logger
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.Duration
 import scala.util.control.Exception.Catcher
 import scala.util.control.NonFatal
 
@@ -23,7 +23,7 @@ private[lagom] object PersistentEntityActor {
     entityId:                  Option[String],
     entityFactory:             () => PersistentEntity,
     snapshotAfter:             Option[Int],
-    passivateAfterIdleTimeout: FiniteDuration
+    passivateAfterIdleTimeout: Duration
   ): Props =
     Props(new PersistentEntityActor(persistenceIdPrefix, entityId,
       entityFactory(),
@@ -60,7 +60,7 @@ private[lagom] class PersistentEntityActor(
   id:                        Option[String],
   entity:                    PersistentEntity,
   snapshotAfter:             Int,
-  passivateAfterIdleTimeout: FiniteDuration
+  passivateAfterIdleTimeout: Duration
 ) extends PersistentActor {
 
   import PersistentEntityActor.EntityIdSeparator
