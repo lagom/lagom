@@ -91,14 +91,10 @@ class ClusterDistribution(system: ExtendedActorSystem) extends Extension {
     val extractEntityId: ShardRegion.ExtractEntityId = {
       case msg @ EnsureActive(entityId) => (entityId, msg)
     }
-    val extractShardId: ShardRegion.ExtractShardId = if (entityIds.size > MaxShards) {
-      {
-        case EnsureActive(entityId) => Math.abs(entityId.hashCode % 1000).toString
-      }
-    } else {
-      {
-        case EnsureActive(entityId) => entityId
-      }
+
+    val extractShardId: ShardRegion.ExtractShardId = {
+      case EnsureActive(entityId) if entityIds.size > MaxShards => Math.abs(entityId.hashCode % 1000).toString
+      case EnsureActive(entityId)                               => entityId
     }
 
     val sharding = ClusterSharding(system)
