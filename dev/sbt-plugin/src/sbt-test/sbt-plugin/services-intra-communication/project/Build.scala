@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 import sbt._
@@ -12,7 +12,7 @@ object DevModeBuild {
   val ConnectTimeout = 10000
   val ReadTimeout = 10000
 
-  def callFoo(): String = makeRequest("http://localhost:8000/services/%2Ffooservice") { conn =>
+  def callFoo(): String = makeRequest("http://localhost:9008/services/%2Ffooservice") { conn =>
     val br = new BufferedReader(new InputStreamReader((conn.getInputStream())))
     val fooAddress = Stream.continually(br.readLine()).takeWhile(_ != null).mkString("\n").trim()
     makeRequest(fooAddress+"/foo") { conn =>

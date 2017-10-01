@@ -4,7 +4,7 @@ A Service Locator is embedded in Lagom's development environment, allowing servi
 
 ## Default port
 
-By default, the service locator runs on port `8000`, but it is possible to use a different port. For instance, you can tell the service locator to run on port 10000 by adding the following to your build.
+By default, the service locator runs on port `9008`, but it is possible to use a different port. For instance, you can tell the service locator to run on port `10000` by adding the following to your build.
 
 In the Maven root project pom:
 
@@ -56,7 +56,7 @@ Note that if the service you want to communicate with is actually a Lagom servic
 
 # Service Gateway
 
-Some clients that want to connect to your services will not have access to your Service Locator. External clients need a stable address to communicate to and here's where the Service Gateway comes in. The Service Gateway will expose and reverse proxy all public endpoints registered by your services. A Service Gateway is embedded in Lagom's development environment, allowing clients from the outside (e.g. a browser) to connect to your Lagom services. 
+Some clients that want to connect to your services will not have access to your Service Locator. External clients need a stable address to communicate to and here's where the Service Gateway comes in. The Service Gateway will expose and reverse proxy all public endpoints registered by your services. A Service Gateway is embedded in Lagom's development environment, allowing clients from the outside (e.g. a browser) to connect to your Lagom services.
 
 ## Default port
 
@@ -69,7 +69,7 @@ In sbt:
 
 ## Default gateway implementation
 
-The Lagom development environment provides an implementation of a Service Gateway based on [Akka HTTP](https://github.com/akka/akka-http) and the (now legacy) implementation based on [Netty](https://netty.io/). 
+The Lagom development environment provides an implementation of a Service Gateway based on [Akka HTTP](https://github.com/akka/akka-http) and the (now legacy) implementation based on [Netty](https://netty.io/).
 
 You may opt in to use the old `netty` implementation with this setting in sbt:
 

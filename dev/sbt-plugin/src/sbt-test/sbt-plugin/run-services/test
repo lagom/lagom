@@ -8,22 +8,22 @@
 # --------------
 
 # Precondition
-> validateRequest http://localhost:8000 should-be-down
+> validateRequest http://localhost:9008 should-be-down
 
 > lagomServiceLocatorStart
-> validateRequest retry-until-success http://localhost:8000
-> validateRequest http://localhost:8000/services/fooservice status 404
+> validateRequest retry-until-success http://localhost:9008
+> validateRequest http://localhost:9008/services/fooservice status 404
 
 # Check that the external service is started
-> validateRequest http://localhost:8000/services/externalservice status 200
+> validateRequest http://localhost:9008/services/externalservice status 200
 
 # Run the service and check that it eventually gets registered
 > run
-> validateRequest retry-until-success http://localhost:8000/services/fooservice status 200
+> validateRequest retry-until-success http://localhost:9008/services/fooservice status 200
 
 # Stop the service locator and check that it does stop
 > lagomServiceLocatorStop
-> validateRequest retry-until-success http://localhost:8000 should-be-down
+> validateRequest retry-until-success http://localhost:9008 should-be-down
 
 # Stop the service
 > stop
@@ -35,7 +35,7 @@
 # Part 1
 > runAll
 $ sleep 1000
-> validateRequest http://localhost:8000/services should-be-down
+> validateRequest http://localhost:9008/services should-be-down
 > validateFile retry-until-success target/reload.log line-count 1
 
 # Cleanup
@@ -46,17 +46,17 @@ $ sleep 1000
 # ---------------
 
 # Preconditions - ensure everything is down
-> validateRequest http://localhost:8000 should-be-down
+> validateRequest http://localhost:9008 should-be-down
 > validateRequest http://localhost:9000 should-be-down
 
 > runAll
 
 # Ensure everything is up
-> validateRequest retry-until-success http://localhost:8000
+> validateRequest retry-until-success http://localhost:9008
 > validateRequest retry-until-success http://localhost:9000
 
 # Ensure the foo service is reachable
-> validateRequest retry-until-success http://localhost:8000/services/fooservice status 200
+> validateRequest retry-until-success http://localhost:9008/services/fooservice status 200
 > validateRequest http://localhost:9000/foo status 200
 
 # Ensure the foo service can access cassandra
@@ -69,18 +69,18 @@ $ sleep 1000
 > set lagomCassandraEnabled in ThisBuild := false
 
 # Preconditions - ensure everything is down
-> validateRequest http://localhost:8000 should-be-down
+> validateRequest http://localhost:9008 should-be-down
 > validateRequest http://localhost:9000 should-be-down
 > validateRequest http://localhost:9000/foo/cassandra should-be-down
 
 > runAll
 
 # Locator and gateway should be up
-> validateRequest retry-until-success http://localhost:8000
+> validateRequest retry-until-success http://localhost:9008
 > validateRequest retry-until-success http://localhost:9000
 
 # Ensure the foo service is reachable
-> validateRequest retry-until-success http://localhost:8000/services/fooservice status 200
+> validateRequest retry-until-success http://localhost:9008/services/fooservice status 200
 > validateRequest http://localhost:9000/foo status 200
 
 # Request to cassandra should have a status code of 500
@@ -88,4 +88,3 @@ $ sleep 1000
 
 # Cleanup
 > stop
-

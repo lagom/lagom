@@ -131,20 +131,20 @@ public class LagomClientFactory implements Closeable {
     /**
      * Create a Lagom service client that uses the Lagom dev mode service locator to locate the service.
      *
-     * This uses the default Lagom service locator port, that is, localhost:8000.
+     * This uses the default Lagom service locator port, that is, localhost:9008.
      *
      * @param clientInterface The client interface for the service.
      * @return An implementation of the client interface.
      */
     public <T> T createDevClient(Class<T> clientInterface) {
-        return createDevClient(clientInterface, URI.create("http://localhost:8000"));
+        return createDevClient(clientInterface, URI.create("http://localhost:9008"));
     }
 
     /**
      * Create a Lagom service client that uses the Lagom dev mode service locator to locate the service.
      *
      * @param clientInterface The client interface for the service.
-     * @param serviceLocatorUri The URI of the Lagom dev mode service locator - usually http://localhost:8000.
+     * @param serviceLocatorUri The URI of the Lagom dev mode service locator - usually http://localhost:9008.
      * @return An implementation of the client interface.
      */
     public <T> T createDevClient(Class<T> clientInterface, URI serviceLocatorUri) {

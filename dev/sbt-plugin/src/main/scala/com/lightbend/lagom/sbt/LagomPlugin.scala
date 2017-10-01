@@ -405,7 +405,7 @@ object LagomPlugin extends AutoPlugin {
     lagomInfrastructureServices := lagomInfrastructureServicesTask.value,
     lagomServicesPortRange := defaultPortRange,
     lagomServiceLocatorEnabled := true,
-    lagomServiceLocatorPort := 8000,
+    lagomServiceLocatorPort := 9008,
     lagomServiceGatewayPort := 9000,
     lagomServiceGatewayImpl := "akka-http",
     lagomServiceLocatorUrl := s"http://localhost:${lagomServiceLocatorPort.value}",
