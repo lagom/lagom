@@ -83,7 +83,7 @@ This all happens automatically without special code or additional configuration.
 
 <!--end copied section -->
 
-You can verify that your services are running by viewing `http://localhost:8000/services` in a web browser (or with a command line tool such as `curl`).  The Service Locator, running on port 8000, will return JSON such as:
+You can verify that your services are running by viewing `http://localhost:9008/services` in a web browser (or with a command line tool such as `curl`). The Service Locator, running on port `9008`, will return JSON such as:
 
 ```
 [{"name":"hello-stream","url":"http://0.0.0.0:26230"},

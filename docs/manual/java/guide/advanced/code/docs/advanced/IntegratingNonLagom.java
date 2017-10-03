@@ -36,7 +36,7 @@ public class IntegratingNonLagom {
 
     private void devMode(LagomClientFactory clientFactory) {
         boolean isDevelopment = false;
-        URI helloServiceUri = URI.create("http://localhost:8000");
+        URI helloServiceUri = URI.create("http://localhost:9008");
 
         //#dev-mode
         HelloService helloService;
