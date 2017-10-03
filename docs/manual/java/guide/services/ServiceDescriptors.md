@@ -18,7 +18,7 @@ An important thing to note here is that invoking the `sayHello()` method does no
 
 While the `sayHello()` method describes how the call will be programmatically invoked or implemented, it does not describe how this call gets mapped down onto the transport.  This is done by providing a `default` implementation of the [`descriptor()`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#descriptor--) call, whose interface is described by [`Service`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html).
 
-You can see that we're returning a service named `hello`, and we're describing one call, the `sayHello` call.  Because this service is so simple, in this case we don't need to do anything more than simply pass the call as a method reference to the [`call`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#call-java.util.function.Supplier-) method. 
+You can see that we're returning a service named `hello`, and we're describing one call, the `sayHello` call.  Because this service is so simple, in this case we don't need to do anything more than simply passing the Service call `sayHello` defined above in the example as a method reference to the [`call`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#call-java.util.function.Supplier-) method.
 
 ## Call identifiers
 
