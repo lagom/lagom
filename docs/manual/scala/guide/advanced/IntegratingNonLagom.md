@@ -45,9 +45,9 @@ Here we've created a client for the `HelloService` the same way we would in a re
 #### Working with dev mode
 
 When running your service in development, you can tell the service to use Lagom's dev mode service locator, by adding a dependency on Lagom's dev mode support:
- 
+
 @[dev-mode-dependency](code/integrating-non-lagom.sbt)
- 
+
 Then, when you instantiate your application, rather than mixing in your production service locator, you can mix in the [`LagomDevModeServiceLocatorComponents`](api/com/lightbend/lagom/scaladsl/devmode/LagomDevModeServiceLocatorComponents.html) trait to get the dev mode service locator:
 
 @[dev-mode](code/IntegratingNonLagom.scala)
@@ -55,7 +55,7 @@ Then, when you instantiate your application, rather than mixing in your producti
 You'll also need to configure your application to tell it where the service locator is running, this can be done by passing a system property to your application when it starts up, for example:
 
 ```
--Dlagom.service-locator-url=http://localhost:8000
+-Dlagom.service-locator-url=http://localhost:9008
 ```
 
 Alternatively, you can configure it programmatically by overriding the `devModeServiceLocatorUrl` value on the `LagomDevModeServiceLocatorComponents` trait:

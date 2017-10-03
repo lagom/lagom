@@ -171,7 +171,7 @@
             <editable>true</editable>
             <description>The port to run the service locator on.</description>
             <configuration>
-                <serviceLocatorPort implementation="int" default-value="8000">${service.locator.port}</serviceLocatorPort>
+                <serviceLocatorPort implementation="int" default-value="9008">${service.locator.port}</serviceLocatorPort>
             </configuration>
         </parameter>
         <parameter>

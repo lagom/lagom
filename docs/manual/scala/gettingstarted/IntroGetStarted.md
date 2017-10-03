@@ -64,7 +64,7 @@ It will take a bit of time to build the project and start the services. Among ot
 [info] Starting embedded Cassandra server
 ..........
 [info] Cassandra server running at 127.0.0.1:4000
-[info] Service locator is running at http://localhost:8000
+[info] Service locator is running at http://localhost:9008
 [info] Service gateway is running at http://localhost:9000
 [info] Service hello-impl listening for HTTP on 0:0:0:0:0:0:0:0:24266
 [info] Service hello-stream-impl listening for HTTP on 0:0:0:0:0:0:0:0:26230
@@ -78,5 +78,3 @@ http://localhost:9000/api/hello/World
 ```
 
 The service returns the message, `Hello, World!`. Congratulations, you've built your first Lagom project!
-
-
