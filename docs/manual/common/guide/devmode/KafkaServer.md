@@ -1,6 +1,6 @@
 # Kafka Server
 
-By default, Lagom services needing to share information between each others use Kafka as a message broker. In a microservice architecture, using a message broker is paramount to avoid coupling services too strongly. Therefore, for conveniency, we have embedded a Kafka server in the development environment, so that you don't have to worry about installing it. There are a number of settings and tasks available to tune the Kafka server to your liking, let's explore them:
+By default, Lagom services that need to share information between each others use Kafka as a message broker. In a microservice architecture, usage of a message broker ensures that the services are not strongly coupled with each other. Therefore, for convenience, we have embedded a Kafka server in the development environment, so that you don't have to worry about installing it. There are a number of settings and tasks available to tune the Kafka server to your liking, let's explore them:
 
 ## Default port
 
