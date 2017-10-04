@@ -149,7 +149,7 @@ private[lagom] class SlickProvider(
           val stmt = ctx.connection.createStatement()
           try {
             stmt.executeUpdate(s)
-          } finally  {
+          } finally {
             stmt.close()
           }
         }
