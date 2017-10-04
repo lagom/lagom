@@ -75,9 +75,9 @@ class LogbackLoggerConfigurator extends LoggerConfigurator {
 
       import org.slf4j.bridge._
 
-      Option(java.util.logging.Logger.getLogger("")).map { root =>
+      Option(java.util.logging.Logger.getLogger("")).foreach { root =>
         root.setLevel(Level.FINEST)
-        root.getHandlers.foreach(root.removeHandler(_))
+        root.getHandlers.foreach(root.removeHandler)
       }
 
       SLF4JBridgeHandler.install()
