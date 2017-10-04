@@ -50,11 +50,15 @@ All service calls with Lagom service clients are by default using circuit breake
 
 In the above example the default identifier is used for the `sayHi` method, since no specific identifier is given. The default identifier is the same as the service name, i.e. `"hello"` in this example. The `hiAgain` method will use another circuit breaker instance, since `"hello2"` is specified as circuit breaker identifier.
 
+### Circuit Breaker Configuration
+
 On the client side you can configure the circuit breakers. The default configuration is:
 
 @[circuit-breaker-default](../../../../../service/core/client/src/main/resources/reference.conf)
 
-That configuration will be used if you don't define any configuration yourself.
+That configuration will be used if you don't define any configuration yourself. The settings to configure a circuit breaker include the general settings you'd expect in a circuit breaker like the number of failures or the request timeout that should open the circuit as well as the timeout that must lapse to close the circuit again. In lagom there's an extra setting to control what is considered a failure.
+
+Lagom's client [[maps all 4xx and 5xx responses to Exceptions|ServiceErrorHandling]] and Lagom's Circuit Breaker defaults to considering all Exceptions as failures. You can change the default behavior by whitelisting particular exceptions so they do not count as failures. Sometimes you want to configure the circuit breaker for a given endpoint so it ignores a certain exception. This is particularly useful when connecting to services where 4xx HTTP status codes are used to model business valid cases. For example, it may be a non-failure case to respond a 404 Not Found to a particular request. In that case you can add `"com.lightbend.lagom.scaladsl.api.transport.NotFound"` to the circuit breaker whitelist so that it is not considered a failure. Even if the `NotFound` exception is not counted as a failure, the client will still throw a `NotFound` exception as a result of invoking the service.
 
 With the above "hello" example we could adjust the configuration by defining properties in `application.conf` such as:
 
