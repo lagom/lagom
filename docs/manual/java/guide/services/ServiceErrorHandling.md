@@ -9,6 +9,9 @@ There are a number of principles behind the design of Lagom's built in error han
 * If possible, Lagom will try to reconstruct errors on the client side when thrown on the service side.  So, if the server side throws an exception saying it couldn't serialize something, the client code should receive that same exception.
 * If possible, exceptions should be mapped to idiomatic protocol response codes, such as HTTP 4xx and 5xx status codes and WebSocket error close codes.
 
+
+If you are using Lagom to consume a service (either implemented in Lagom or a third-party stack) the client Lagom provides will map responses with status code values in the ranges 4xx and 5xx to exceptions. That has an impact on the [[Circuit Breakers|ServiceClients#Circuit-Breakers]] the client is using to connect to that endpoint. By default Lagom Circuit Breakers will account any exception as a failure but that behavior is [[configurable|ServiceClients#Circuit-Breaker-Configuration]]. So 4xx and 5xx will be mapped to exceptions but you can whitelist what exceptions should not trip the circuit breaker.
+
 ## Exception serializers
 
 Lagom provides an [`ExceptionSerializer`](api/index.html?com/lightbend/lagom/javadsl/api/deser/ExceptionSerializer.html) interface that allows exceptions to be serialized into some form, such as JSON, and an error code to be selected.  It also allows an exception to be recreated from an error code and their serialized form.
