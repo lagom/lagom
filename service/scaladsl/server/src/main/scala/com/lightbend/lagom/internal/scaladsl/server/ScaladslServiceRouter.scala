@@ -57,18 +57,21 @@ class ScaladslServiceRouter(override protected val descriptor: Descriptor, servi
   /**
    * Create the action.
    */
-  override protected def action[Request, Response](call: Call[Request, Response], descriptor: Descriptor,
-                                                   requestSerializer:  MessageSerializer[Request, ByteString],
-                                                   responseSerializer: MessageSerializer[Response, ByteString], requestHeader: RequestHeader,
-                                                   serviceCall: ServiceCall[Request, Response]): EssentialAction = {
+  override protected def action[Request, Response](
+    call:               Call[Request, Response],
+    descriptor:         Descriptor,
+    requestSerializer:  MessageSerializer[Request, ByteString],
+    responseSerializer: MessageSerializer[Response, ByteString],
+    serviceCall:        ServiceCall[Request, Response]
+  ): EssentialAction = {
 
     serviceCall match {
       // If it's a Play service call, then rather than creating the action directly, we let it create the action, and
       // pass it a callback that allows it to convert a service call into an action.
       case playServiceCall: PlayServiceCall[Request, Response] =>
-        playServiceCall.invoke(serviceCall => createAction(serviceCall, call, descriptor, requestSerializer, responseSerializer, requestHeader))
+        playServiceCall.invoke(serviceCall => createAction(serviceCall, call, descriptor, requestSerializer, responseSerializer))
       case _ =>
-        createAction(serviceCall, call, descriptor, requestSerializer, responseSerializer, requestHeader)
+        createAction(serviceCall, call, descriptor, requestSerializer, responseSerializer)
     }
   }
 

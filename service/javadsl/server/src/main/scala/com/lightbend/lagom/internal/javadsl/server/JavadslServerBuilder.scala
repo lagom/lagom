@@ -160,10 +160,13 @@ class JavadslServiceRouter(override protected val descriptor: Descriptor, servic
   /**
    * Create the action.
    */
-  override protected def action[Request, Response](call: Call[Request, Response], descriptor: Descriptor,
-                                                   requestSerializer:  MessageSerializer[Request, ByteString],
-                                                   responseSerializer: MessageSerializer[Response, ByteString], requestHeader: RequestHeader,
-                                                   serviceCall: ServiceCall[Request, Response]): EssentialAction = {
+  override protected def action[Request, Response](
+    call:               Call[Request, Response],
+    descriptor:         Descriptor,
+    requestSerializer:  MessageSerializer[Request, ByteString],
+    responseSerializer: MessageSerializer[Response, ByteString],
+    serviceCall:        ServiceCall[Request, Response]
+  ): EssentialAction = {
 
     serviceCall match {
       // If it's a Play service call, then rather than creating the action directly, we let it create the action, and
@@ -172,12 +175,12 @@ class JavadslServiceRouter(override protected val descriptor: Descriptor, servic
         playServiceCall.invoke(
           new java.util.function.Function[ServiceCall[Request, Response], play.mvc.EssentialAction] {
             override def apply(serviceCall: ServiceCall[Request, Response]): play.mvc.EssentialAction = {
-              createAction(serviceCall, call, descriptor, requestSerializer, responseSerializer, requestHeader).asJava
+              createAction(serviceCall, call, descriptor, requestSerializer, responseSerializer).asJava
             }
           }
         )
       case _ =>
-        createAction(serviceCall, call, descriptor, requestSerializer, responseSerializer, requestHeader)
+        createAction(serviceCall, call, descriptor, requestSerializer, responseSerializer)
     }
   }
 

@@ -69,13 +69,22 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
 
           // If both request and response are strict, handle it using an action, otherwise handle it using a websocket
           if (messageSerializerIsStreamed(requestSerializer) || messageSerializerIsStreamed(responseSerializer)) {
-            websocket(route.call.asInstanceOf[Call[Any, Any]], descriptor, requestHeader, serviceCall,
-              requestSerializer, responseSerializer)
+            websocket(
+              route.call.asInstanceOf[Call[Any, Any]],
+              descriptor,
+              requestHeader,
+              serviceCall,
+              requestSerializer,
+              responseSerializer
+            )
           } else {
-            action(route.call.asInstanceOf[Call[Any, Any]], descriptor,
+            action(
+              route.call.asInstanceOf[Call[Any, Any]],
+              descriptor,
               requestSerializer.asInstanceOf[MessageSerializer[Any, ByteString]],
               responseSerializer.asInstanceOf[MessageSerializer[Any, ByteString]],
-              requestHeader, serviceCall)
+              serviceCall
+            )
           }
         }
       } else None
@@ -98,29 +107,34 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
    * Create the action.
    */
   protected def action[Request, Response](
-    call: Call[Request, Response], descriptor: Descriptor,
-    requestSerializer: MessageSerializer[Request, ByteString], responseSerializer: MessageSerializer[Response, ByteString],
-    requestHeader: RequestHeader, serviceCall: ServiceCall[Request, Response]
+    call:               Call[Request, Response],
+    descriptor:         Descriptor,
+    requestSerializer:  MessageSerializer[Request, ByteString],
+    responseSerializer: MessageSerializer[Response, ByteString],
+    serviceCall:        ServiceCall[Request, Response]
   ): EssentialAction
 
   /**
    * Create an action to handle the given service call. All error handling is done here.
    */
   protected final def createAction[Request, Response](
-    serviceCall: ServiceCall[Request, Response], call: Call[Request, Response], descriptor: Descriptor,
-    requestSerializer: MessageSerializer[Request, ByteString], responseSerializer: MessageSerializer[Response, ByteString],
-    requestHeader: RequestHeader
+    serviceCall:        ServiceCall[Request, Response],
+    call:               Call[Request, Response],
+    descriptor:         Descriptor,
+    requestSerializer:  MessageSerializer[Request, ByteString],
+    responseSerializer: MessageSerializer[Response, ByteString]
   ): EssentialAction = EssentialAction { request =>
+    val filteredHeaders = toRequestHeader(request)
     try {
-      handleServiceCall(serviceCall, descriptor, requestSerializer, responseSerializer, requestHeader, request).recover {
+      handleServiceCall(serviceCall, descriptor, requestSerializer, responseSerializer, filteredHeaders, request).recover {
         case NonFatal(e) =>
           logException(e, descriptor, call)
-          exceptionToResult(descriptor, requestHeader, e)
+          exceptionToResult(descriptor, filteredHeaders, e)
       }
     } catch {
       case NonFatal(e) =>
         logException(e, descriptor, call)
-        Accumulator.done(exceptionToResult(descriptor, requestHeader, e))
+        Accumulator.done(exceptionToResult(descriptor, filteredHeaders, e))
     }
   }
 
@@ -177,6 +191,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
 
   private def logException(exc: Throwable, descriptor: Descriptor, call: Call[_, _]) = {
     def log = Logger(descriptorName(descriptor))
+
     val cause = exc match {
       case c: CompletionException => c.getCause
       case e                      => e
@@ -273,12 +288,14 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
           val out = Outlet[ByteString]("CaptureCancelOut")
 
           override def shape = FlowShape(in, out)
+
           override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
             setHandler(in, new InHandler {
               override def onPush(): Unit = push(out, grab(in))
             })
             setHandler(out, new OutHandler {
               override def onPull(): Unit = pull(in)
+
               override def onDownstreamFinish(): Unit = {
                 incomingCancelled.success(None)
                 cancel(in)
