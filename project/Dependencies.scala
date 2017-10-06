@@ -5,21 +5,25 @@ object Dependencies {
 
   // Version numbers
 
-  val PlayVersion = "2.6.6" // if you update this, you probably need to update the following two
+  // If you update PlayVersion, you probably need to update the other Play*Version variables.
+  // Also be sure to update PlayVersion in docs/build.sbt.
+  val PlayVersion = "2.6.6"
   val PlayJsonVersion = "2.6.6"
   val PlayStandaloneWsVersion = "1.1.2"
   val TwirlVersion = "1.3.12"
   val PlayFileWatchVersion = "1.0.0"
 
+  // Also be sure to update AkkaVersion in docs/build.sbt.
   val AkkaVersion = "2.5.6"
   val AkkaHttpVersion = "10.0.9"
+  // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.11.11", "2.12.3")
   val SbtScalaVersions = Seq("2.10.6")
   val AkkaPersistenceCassandraVersion = "0.57"
   val AkkaPersistenceJdbcVersion = "3.0.0"
+  // Also be sure to update ScalaTestVersion in docs/build.sbt.
   val ScalaTestVersion = "3.0.3"
   val JacksonVersion = "2.8.10"
-  val CassandraAllVersion = "3.8"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.1.15.Final"
@@ -30,10 +34,12 @@ object Dependencies {
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
   val SlickVersion = "3.2.1"
+  // Also be sure to update JUnitVersion in docs/build.sbt.
   val JUnitVersion = "4.11"
 
   val Slf4jVersion = "1.7.25"
   val LogbackVersion = "1.2.3"
+  // Also be sure to update Log4jVersion in docs/build.sbt.
   val Log4jVersion = "2.8.2"
 
 
@@ -131,7 +137,7 @@ object Dependencies {
       h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
       "com.lmax" % "disruptor" % "3.3.6",
-      "com.novocode" % "junit-interface" % "0.11",
+      "com.novocode" % "junit-interface" % "0.11", // also in docs/build.sbt
       typesafeConfig,
       sslConfig,
       akkaHttpCore,
