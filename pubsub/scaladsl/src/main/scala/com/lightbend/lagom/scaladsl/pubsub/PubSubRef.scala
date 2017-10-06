@@ -95,7 +95,7 @@ final class PubSubRef[T] private[lagom] (val topic: TopicId[T], mediator: ActorR
    * This method is especially useful when writing tests that require that a subscriber
    * is known before sending messages to a topic.
    */
-  def hasAnySubscribers(): Future[Boolean] = {
+  def hasAnySubscribers: Future[Boolean] = {
     import system.dispatcher
 
     import scala.compat.java8.FutureConverters._

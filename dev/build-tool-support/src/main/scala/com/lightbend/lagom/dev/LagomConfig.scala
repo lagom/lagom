@@ -15,7 +15,7 @@ object LagomConfig {
     s"lagom.defaults.persistence.read-side.cassandra.$key" -> value
   )
 
-  def cassandraPort(port: Int) = cassandraConfig("port", port.toString)
+  def cassandraPort(port: Int): Map[String, String] = cassandraConfig("port", port.toString)
 
   def actorSystemConfig(name: String) = Map(
     "lagom.akka.dev-mode.actor-system.name" -> s"$name-internal-dev-mode",
