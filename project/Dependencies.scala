@@ -22,7 +22,7 @@ object Dependencies {
   val AkkaPersistenceCassandraVersion = "0.57"
   val AkkaPersistenceJdbcVersion = "3.0.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
-  val ScalaTestVersion = "3.0.3"
+  val ScalaTestVersion = "3.0.4"
   val JacksonVersion = "2.8.10"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
