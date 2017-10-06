@@ -15,7 +15,7 @@ object Dependencies {
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
   val AkkaVersion = "2.5.6"
-  val AkkaHttpVersion = "10.0.9"
+  val AkkaHttpVersion = "10.0.10"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.11.11", "2.12.3")
   val SbtScalaVersions = Seq("2.10.6")
