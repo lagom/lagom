@@ -5,12 +5,13 @@ object Dependencies {
 
   // Version numbers
 
-  val PlayVersion = "2.6.5" // if you update this, you probably need to update the following two
-  val PlayJsonVersion = "2.6.5"
-  val PlayStandaloneWsVersion = "1.1.0"
-  val PlayFileWatchVersion = "1.1.0"
+  val PlayVersion = "2.6.6" // if you update this, you probably need to update the following two
+  val PlayJsonVersion = "2.6.6"
+  val PlayStandaloneWsVersion = "1.1.2"
+  val TwirlVersion = "1.3.12"
+  val PlayFileWatchVersion = "1.0.0"
 
-  val AkkaVersion = "2.5.4"
+  val AkkaVersion = "2.5.6"
   val AkkaHttpVersion = "10.0.9"
   val ScalaVersions = Seq("2.11.11", "2.12.3")
   val SbtScalaVersions = Seq("2.10.6")
@@ -115,9 +116,9 @@ object Dependencies {
       cassandraDriverCore,
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
       akkaPersistenceJdbc,
-      "com.github.jnr" % "jffi" % "1.2.14",
-      "com.github.jnr" % "jnr-constants" % "0.9.6",
-      "com.github.jnr" % "jnr-ffi" % "2.1.2",
+      "com.github.jnr" % "jffi" % "1.2.16",
+      "com.github.jnr" % "jnr-constants" % "0.9.9",
+      "com.github.jnr" % "jnr-ffi" % "2.1.6",
       "com.github.jnr" % "jnr-posix" % "3.0.27",
       "com.github.jnr" % "jnr-x86asm" % "1.0.2",
       "com.google.code.findbugs" % "jsr305" % "1.3.9",
@@ -153,13 +154,13 @@ object Dependencies {
       "com.typesafe.play" % "shaded-asynchttpclient" % PlayStandaloneWsVersion,
       "com.typesafe.play" % "shaded-oauth" % PlayStandaloneWsVersion,
 
-      "com.typesafe.play" %% "twirl-api" % "1.3.4",
+      "com.typesafe.play" %% "twirl-api" % TwirlVersion,
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.7.1",
       "commons-codec" % "commons-codec" % "1.10",
-      "io.aeron" % "aeron-client" % "1.2.5",
-      "io.aeron" % "aeron-driver" % "1.2.5",
+      "io.aeron" % "aeron-client" % "1.3.0",
+      "io.aeron" % "aeron-driver" % "1.3.0",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.7.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
@@ -171,7 +172,7 @@ object Dependencies {
       "junit" % "junit" % JUnitVersion,
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
-      "org.agrona" % "agrona" % "0.9.5",
+      "org.agrona" % "agrona" % "0.9.6",
       "org.apache.commons" % "commons-lang3" % "3.6",
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
@@ -181,7 +182,7 @@ object Dependencies {
       javassist,
       "org.joda" % "joda-convert" % "1.7",
       "org.hamcrest" % "hamcrest-core" % "1.3",
-      "org.lmdbjava" % "lmdbjava" % "0.0.5",
+      "org.lmdbjava" % "lmdbjava" % "0.6.0",
       "org.pcollections" % "pcollections" % "2.1.2",
       reactiveStreams,
       "org.reflections" % "reflections" % "0.9.11",
