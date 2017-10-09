@@ -10,8 +10,8 @@ import akka.actor.ActorSystem
 import akka.stream.{ ActorMaterializer, Materializer }
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServiceRouter
 import com.lightbend.lagom.scaladsl.api.Service._
-import com.lightbend.lagom.scaladsl.api.transport.{ Method, NotFound, ResponseHeader }
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall }
+import com.lightbend.lagom.scaladsl.api.transport.{ HeaderFilter, Method, NotFound, ResponseHeader }
+import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall, transport }
 import org.scalatest.{ AsyncFlatSpec, BeforeAndAfterAll, Matchers }
 import play.api.http.HttpConfiguration
 import play.api.mvc
@@ -37,6 +37,7 @@ class ScaladslServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeA
   behavior of "ScaladslServiceRouter"
 
   it should "serve a basic request" in {
+    // this test is canary
     val hardcodedResponse = "a response"
     val service = new AlphaService {
       override def simpleGet(): ServiceCall[NotUsed, String] = ServiceCall { _ =>
@@ -51,18 +52,17 @@ class ScaladslServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeA
     }
   }
 
-  it should "serve a request wit a Play Filter." in {
+  it should "serve a request with a Play Filter." in {
+    // this test makes sure headers in request and response are added and they are added in the appropriate order.
+    // This test only uses Play filters.
     val atomicInt = new AtomicInteger(0)
     val hardcodedResponse = "a response"
     val service = new AlphaService {
       override def simpleGet(): ServerServiceCall[NotUsed, String] = ServerServiceCall { (reqHeader, _) =>
         reqHeader
-          .getHeader(AdderFilter.addedOnRequest)
-          .map {
-            value =>
-              Future.successful(value should be("1"))
-          }
-          .getOrElse(Future.failed(NotFound(s"Missing header ${AdderFilter.addedOnRequest}")))
+          .getHeader(PlayFilter.addedOnRequest)
+          .map { value => Future.successful(value should be("1")) }
+          .getOrElse(Future.failed(NotFound(s"Missing header ${PlayFilter.addedOnRequest}")))
           .map { _ =>
             (ResponseHeader.Ok.withHeader("in-service", atomicInt.incrementAndGet().toString), hardcodedResponse)
           }
@@ -70,7 +70,7 @@ class ScaladslServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeA
     }
 
     val x: mvc.EssentialAction => mvc.RequestHeader => Future[mvc.Result] = {
-      (action) => new AdderFilter(atomicInt, mat).apply(rh => action(rh).run())
+      (action) => new PlayFilter(atomicInt, mat).apply(rh => action(rh).run())
     }
 
     runRequest(service)(x) {
@@ -78,7 +78,42 @@ class ScaladslServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeA
         mvc.Results.Ok(hardcodedResponse)
           .withHeaders(
             ("in-service", "2"),
-            (AdderFilter.addedOnResponse, "3")
+            (PlayFilter.addedOnResponse, "3")
+          )
+      )
+    }
+  }
+
+  it should "serve a request with a Play Filter and a Lagom HeaderFilter invoking play first." in {
+    // this test makes sure headers in request and response are added and they are added in the appropriate order.
+    val atomicInt = new AtomicInteger(0)
+    val hardcodedResponse = "a response"
+    val service = new BetaService(atomicInt) {
+      override def simpleGet(): ServerServiceCall[NotUsed, String] = ServerServiceCall { (reqHeader, _) =>
+        reqHeader
+          .getHeader(PlayFilter.addedOnRequest)
+          .flatMap { p =>
+            reqHeader.getHeader(LagomFilter.addedOnRequest).map { l => (p, l) }
+          }
+          .map { value => Future.successful(value should be(("1", "2"))) }
+          .getOrElse(Future.failed(NotFound(s"Missing header ${PlayFilter.addedOnRequest}")))
+          .map { _ =>
+            (ResponseHeader.Ok.withHeader("in-service", atomicInt.incrementAndGet().toString), hardcodedResponse)
+          }
+      }
+    }
+
+    val x: mvc.EssentialAction => mvc.RequestHeader => Future[mvc.Result] = {
+      (action) => new PlayFilter(atomicInt, mat).apply(rh => action(rh).run())
+    }
+
+    runRequest(service)(x) {
+      _ should be(
+        mvc.Results.Ok(hardcodedResponse)
+          .withHeaders(
+            ("in-service", "3"),
+            (LagomFilter.addedOnResponse, "4"),
+            (PlayFilter.addedOnResponse, "5")
           )
       )
     }
@@ -103,9 +138,9 @@ class ScaladslServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeA
 // ------------------------------------------------------------------------------------------------------------
 // This is a play filter that adds a header on the request and the adds a header on the response. Headers may only
 // be added once so invoking this Filter twice breaks the test.
-class AdderFilter(atomicInt: AtomicInteger, mt: Materializer)(implicit ctx: ExecutionContext) extends Filter {
+class PlayFilter(atomicInt: AtomicInteger, mt: Materializer)(implicit ctx: ExecutionContext) extends Filter {
 
-  import AdderFilter._
+  import PlayFilter._
 
   override implicit def mat: Materializer = mt
 
@@ -124,9 +159,9 @@ class AdderFilter(atomicInt: AtomicInteger, mt: Materializer)(implicit ctx: Exec
     if (headers.get(key).isDefined) throw NotFound(s"Header $key already exists.")
 }
 
-object AdderFilter {
-  val addedOnRequest = "addedOnRequest"
-  val addedOnResponse = "addedOnResponse"
+object PlayFilter {
+  val addedOnRequest = "addedOnRequest-play"
+  val addedOnResponse = "addedOnResponse-play"
 }
 
 // --------------------------------------------------------------------------------------------------
@@ -142,3 +177,29 @@ object AlphaService {
   val PATH = "/alpha"
 }
 
+// --------------------------------------------------------------------------------------------------
+// Extends Alpha adding HeaderFilters
+abstract class BetaService(atomicInteger: AtomicInteger) extends AlphaService {
+  override def descriptor: Descriptor =
+    super.descriptor.withHeaderFilter(new LagomFilter)
+
+  class LagomFilter extends HeaderFilter {
+    override def transformServerRequest(request: transport.RequestHeader): transport.RequestHeader = {
+      request.addHeader(LagomFilter.addedOnRequest, atomicInteger.incrementAndGet().toString)
+    }
+
+    override def transformServerResponse(response: ResponseHeader, request: transport.RequestHeader): ResponseHeader = {
+      response.addHeader(LagomFilter.addedOnResponse, atomicInteger.incrementAndGet().toString)
+    }
+
+    override def transformClientResponse(response: ResponseHeader, request: transport.RequestHeader): ResponseHeader = ???
+
+    override def transformClientRequest(request: transport.RequestHeader): transport.RequestHeader = ???
+  }
+
+}
+
+object LagomFilter {
+  val addedOnRequest = "addedOnRequest-Lagom"
+  val addedOnResponse = "addedOnResponse-Lagom"
+}
