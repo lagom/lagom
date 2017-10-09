@@ -35,8 +35,10 @@ class ScaladslServiceRouter(override protected val descriptor: Descriptor, servi
         Method.GET
       }
     }
-    override val isWebSocket: Boolean = call.requestSerializer.isInstanceOf[StreamedMessageSerializer[_]] ||
-      call.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]
+    override val isWebSocket: Boolean =
+
+      messageSerializerIsStreamed(call.requestSerializer) ||
+        messageSerializerIsStreamed(call.responseSerializer)
 
     private val holder: ScalaMethodServiceCall[Any, Any] = call.serviceCallHolder match {
       case holder: ScalaMethodServiceCall[Any, Any] => holder
@@ -60,18 +62,18 @@ class ScaladslServiceRouter(override protected val descriptor: Descriptor, servi
   override protected def action[Request, Response](
     call:               Call[Request, Response],
     descriptor:         Descriptor,
+    serviceCall:        ServiceCall[Request, Response],
     requestSerializer:  MessageSerializer[Request, ByteString],
-    responseSerializer: MessageSerializer[Response, ByteString],
-    serviceCall:        ServiceCall[Request, Response]
+    responseSerializer: MessageSerializer[Response, ByteString]
   ): EssentialAction = {
 
     serviceCall match {
       // If it's a Play service call, then rather than creating the action directly, we let it create the action, and
       // pass it a callback that allows it to convert a service call into an action.
       case playServiceCall: PlayServiceCall[Request, Response] =>
-        playServiceCall.invoke(serviceCall => createAction(serviceCall, call, descriptor, requestSerializer, responseSerializer))
+        playServiceCall.invoke(serviceCall => createAction(call, descriptor, serviceCall, requestSerializer, responseSerializer))
       case _ =>
-        createAction(serviceCall, call, descriptor, requestSerializer, responseSerializer)
+        createAction(call, descriptor, serviceCall, requestSerializer, responseSerializer)
     }
   }
 

@@ -163,9 +163,9 @@ class JavadslServiceRouter(override protected val descriptor: Descriptor, servic
   override protected def action[Request, Response](
     call:               Call[Request, Response],
     descriptor:         Descriptor,
+    serviceCall:        ServiceCall[Request, Response],
     requestSerializer:  MessageSerializer[Request, ByteString],
-    responseSerializer: MessageSerializer[Response, ByteString],
-    serviceCall:        ServiceCall[Request, Response]
+    responseSerializer: MessageSerializer[Response, ByteString]
   ): EssentialAction = {
 
     serviceCall match {
@@ -175,12 +175,12 @@ class JavadslServiceRouter(override protected val descriptor: Descriptor, servic
         playServiceCall.invoke(
           new java.util.function.Function[ServiceCall[Request, Response], play.mvc.EssentialAction] {
             override def apply(serviceCall: ServiceCall[Request, Response]): play.mvc.EssentialAction = {
-              createAction(serviceCall, call, descriptor, requestSerializer, responseSerializer).asJava
+              createAction(call, descriptor, serviceCall, requestSerializer, responseSerializer).asJava
             }
           }
         )
       case _ =>
-        createAction(serviceCall, call, descriptor, requestSerializer, responseSerializer)
+        createAction(call, descriptor, serviceCall, requestSerializer, responseSerializer)
     }
   }
 

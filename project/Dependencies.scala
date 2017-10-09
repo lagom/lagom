@@ -93,6 +93,7 @@ object Dependencies {
   private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playTest = "com.typesafe.play" %% "play-test" % PlayVersion % "test" excludeAll (excludeSlf4j: _*)
 
   private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
@@ -379,6 +380,7 @@ object Dependencies {
 
   val `server-scaladsl` = libraryDependencies ++= Seq(
     slf4jApi,
+    playTest,
     scalaTest % Test
   )
 
