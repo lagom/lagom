@@ -22,7 +22,7 @@ import play.api.test.FakeRequest
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
- * This test relies on DefaultExceptionSerialozer so in case of failure some information is lost on de/ser. Check the
+ * This test relies on DefaultExceptionSerializer so in case of failure some information is lost on de/ser. Check the
  * status code of the response (won't be 200) and locate the suspect line of code where that status code is launched.
  */
 class ScaladslServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeAndAfterAll {
