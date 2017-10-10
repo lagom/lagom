@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.scaladsl.server
 
+import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.{ Done, NotUsed }
@@ -15,9 +16,11 @@ import com.lightbend.lagom.scaladsl.api.transport._
 import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall }
 import org.scalatest.{ AsyncFlatSpec, BeforeAndAfterAll, Matchers }
 import play.api.http.HttpConfiguration
+import play.api.libs.typedmap.TypedMap
+import play.api.mvc.request.{ RemoteConnection, RequestTarget }
 import play.api.{ Environment, Mode, mvc }
 import play.api.mvc.{ RequestHeader => PlayRequestHeader, ResponseHeader => PlayResponseHeader, _ }
-import play.api.test.FakeRequest
+import play.core.parsers.FormUrlEncodedParser
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -65,7 +68,9 @@ class ScaladslServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeA
           .getHeader(PlayFilter.addedOnRequest)
           .map { value =>
             // When this assertion fails, the AssertionException is mapped to a BadRequest
-            Future { value should be("1") }
+            Future {
+              value should be("1")
+            }
               .map { _ => Done }
               .recoverWith {
                 case t => Future.failed(BadRequest(s"Assertion failed: ${t.getMessage}"))
@@ -113,7 +118,9 @@ class ScaladslServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeA
           // When this assertion fails, the AssertionException is mapped to a BadRequest but the matcher
           // looses the exception message. Use the status code to locate the cause of failure.
           .map { value =>
-            Future { value should be(("1", "2")) } // "1" and "2" are set on play filter and lagom filter respectively
+            Future {
+              value should be(("1", "2"))
+            } // "1" and "2" are set on play filter and lagom filter respectively
               .map { _ => Done }
               .recoverWith {
                 case t => Future.failed(BadRequest(s"Assertion failed: ${t.getMessage}"))
@@ -153,7 +160,7 @@ class ScaladslServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeA
   private def runRequest[T](service: Service)(x: mvc.EssentialAction => mvc.RequestHeader => Future[mvc.Result])(block: mvc.Result => T): Future[T] = {
     val httpConfig = HttpConfiguration.createWithDefaults()
     val router = new ScaladslServiceRouter(service.descriptor, service, httpConfig)
-    val req: mvc.Request[NotUsed] = FakeRequest(method = "GET", path = AlphaService.PATH).withBody[NotUsed](null)
+    val req: mvc.Request[NotUsed] = new FakeRequest(method = "GET", path = AlphaService.PATH)
     val reqHeader: mvc.RequestHeader = req
     val handler = router.routes(reqHeader)
     val futureResult: Future[mvc.Result] = handler match {
@@ -162,6 +169,32 @@ class ScaladslServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeA
     }
     futureResult map block
   }
+}
+
+// ---------------------------------------------------------------------------------------------------
+// This is a simplified FakeRequest inspired on Play-Test's FakeRequest. Creating this simple copy here
+// avoids adding a dependency to play-test that brings in too much transitive baggage
+class FakeRequest(override val method: String, path: String) extends Request[NotUsed] {
+  override def body: NotUsed = NotUsed
+
+  override def connection: RemoteConnection = RemoteConnection(remoteAddressString = "127.0.0.1", secure = false, clientCertificateChain = None)
+
+  private val _path = path
+
+  override def target: RequestTarget = new RequestTarget {
+    override lazy val uri: URI = new URI(uriString)
+
+    override def uriString: String = _path
+
+    override lazy val path: String = uriString.split('?').take(1).mkString
+    override lazy val queryMap: Map[String, Seq[String]] = FormUrlEncodedParser.parse(queryString)
+  }
+
+  override def version: String = "HTTP/1.1"
+
+  override def headers: Headers = new Headers(Seq("Host" -> "localhost"))
+
+  override def attrs: TypedMap = TypedMap.empty
 }
 
 // ------------------------------------------------------------------------------------------------------------
