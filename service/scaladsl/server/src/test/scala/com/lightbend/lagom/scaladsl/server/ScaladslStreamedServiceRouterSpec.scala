@@ -23,9 +23,9 @@ import play.api.mvc.Handler
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
-  * This test relies on DefaultExceptionSerializer so in case of failure some information is lost on de/ser. Check the
-  * status code of the response (won't be 200) and locate the suspect line of code where that status code is launched.
-  */
+ * This test relies on DefaultExceptionSerializer so in case of failure some information is lost on de/ser. Check the
+ * status code of the response (won't be 200) and locate the suspect line of code where that status code is launched.
+ */
 class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeAndAfterAll {
 
   private val system = ActorSystem("ScaladslServiceRouterSpec")
@@ -57,7 +57,6 @@ class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with
     }
   }
 
-
   // this test can only assert that play filters and lagom filters were invoked and request headers made its way into
   // the service implementation layer but since this test is not running a fully fledged HTTP server
   // we can't run assertions over the response headers. The expected behavior is that both play and lagom filters
@@ -82,7 +81,7 @@ class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with
     val handler = router.routes(reqHeader)
     val futureResult: Future[WSFlow] = handler match {
       case action: mvc.WebSocket => x(action)(reqHeader)
-      case _ => Future.failed(PayloadTooLarge("Not a WebSocket."))
+      case _                     => Future.failed(PayloadTooLarge("Not a WebSocket."))
     }
     futureResult flatMap {
       _.runWith(Source.single(TextMessage("41")), Sink.ignore)._2.map {
