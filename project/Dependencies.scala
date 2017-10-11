@@ -5,7 +5,7 @@ import sbt.Keys._
 object Dependencies {
 
   // Version numbers
-  val PlayVersion = "2.5.17"
+  val PlayVersion = "2.5.18"
   val AkkaVersion = "2.4.20"
   val AkkaHttpVersion = "10.0.9"
   val ScalaVersion = "2.11.11"
