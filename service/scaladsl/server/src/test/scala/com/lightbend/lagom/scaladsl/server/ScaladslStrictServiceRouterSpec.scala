@@ -54,7 +54,7 @@ class ScaladslStrictServiceRouterSpec extends AsyncFlatSpec with Matchers with B
     }
   }
 
-  it should "serve a Strict request with a Play Filter." in {
+  it should "propagate headers altered by a Play Filter down to the ServiceImpl. [String message]" in {
     // this test makes sure headers in request and response are added and they are added in the appropriate order.
     // This test only uses Play filters.
     val atomicInt = new AtomicInteger(0)
@@ -86,7 +86,7 @@ class ScaladslStrictServiceRouterSpec extends AsyncFlatSpec with Matchers with B
     }
   }
 
-  it should "serve a Strict request with a Play Filter and a Lagom HeaderFilter invoking play first." in {
+  it should "propagate headers altered by a Play Filter and a Lagom HeaderFilter down to the ServiceImpl (invoking Play Filter first). [String message]" in {
     // this test makes sure headers in request and response are added and they are added in the appropriate order.
     val atomicInt = new AtomicInteger(0)
     val hardcodedResponse = "a response"

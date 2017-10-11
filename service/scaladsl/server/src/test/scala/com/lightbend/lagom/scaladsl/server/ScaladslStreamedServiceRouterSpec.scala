@@ -23,9 +23,9 @@ import play.api.mvc.Handler
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
- * This test relies on DefaultExceptionSerializer so in case of failure some information is lost on de/ser. Check the
- * status code of the response (won't be 200) and locate the suspect line of code where that status code is launched.
- */
+  * This test relies on DefaultExceptionSerializer so in case of failure some information is lost on de/ser. Check the
+  * status code of the response (won't be 200) and locate the suspect line of code where that status code is launched.
+  */
 class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeAndAfterAll {
 
   private val system = ActorSystem("ScaladslServiceRouterSpec")
@@ -43,10 +43,9 @@ class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with
     val atomicBoolean = new AtomicBoolean(false)
     // this test is canary
     val service = new SimpleStreamedService {
-      override def streamed(): ServerServiceCall[Source[String, NotUsed], Source[String, NotUsed]] = ServerServiceCall { (headers, req) =>
-        val responseHeader = ResponseHeader.Ok.withHeader("in-service", "value")
+      override def streamed(): ServerServiceCall[Source[String, NotUsed], Source[String, NotUsed]] = ServerServiceCall { (headers, _) =>
         atomicBoolean.compareAndSet(false, true)
-        Future.successful((responseHeader, Source.single("23")))
+        Future.successful((ResponseHeader.Ok, Source.single("unused")))
       }
     }
 
@@ -57,6 +56,19 @@ class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with
       atomicBoolean.get() should be(true)
     }
   }
+
+
+  // this test can only assert that play filters and lagom filters were invoked and request headers made its way into
+  // the service implementation layer but since this test is not running a fully fledged HTTP server
+  // we can't run assertions over the response headers. The expected behavior is that both play and lagom filters
+  // are invoked while processing the response but Play doesn't support adding custom headers on a websocket handshake.
+  ignore should "propagate headers added by a Play Filter down to the ServiceImpl. [Streamed message]"
+
+  // this test can only assert that play filters and lagom filters were invoked and request headers made its way into
+  // the service implementation layer but since this test is not running a fully fledged HTTP server
+  // we can't run assertions over the response headers. The expected behavior is that both play and lagom filters
+  // are invoked while processing the response but Play doesn't support adding custom headers on a websocket handshake.
+  ignore should "propagate headers added by a Play Filter and a Lagom HeaderFilter down to the ServiceImpl (invoking Play Filter first). [String message]"
 
   type WSFlow = Flow[Message, Message, _]
 
@@ -70,7 +82,7 @@ class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with
     val handler = router.routes(reqHeader)
     val futureResult: Future[WSFlow] = handler match {
       case action: mvc.WebSocket => x(action)(reqHeader)
-      case _                     => Future.failed(PayloadTooLarge("Not a WebSocket."))
+      case _ => Future.failed(PayloadTooLarge("Not a WebSocket."))
     }
     futureResult flatMap {
       _.runWith(Source.single(TextMessage("41")), Sink.ignore)._2.map {
