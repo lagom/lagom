@@ -114,7 +114,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
   override def refFor[C](entityClass: Class[_ <: PersistentEntity[C, _, _]], entityId: String): PersistentEntityRef[C] = {
     val entityName = reverseRegister.get(entityClass)
     if (entityName == null) throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
-    new PersistentEntityRef(entityId, sharding.shardRegion(entityName), system, askTimeout)
+    new PersistentEntityRef(entityId, sharding.shardRegion(entityName), askTimeout)
   }
 
   private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)

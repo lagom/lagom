@@ -24,14 +24,20 @@ import java.util.concurrent.CompletionStage;
 public final class PersistentEntityRef<Command> implements NoSerializationVerificationNeeded {
   private final String entityId;
   private final ActorRef region;
-  private final ActorSystem system;
   private final Timeout timeout;
 
-  public PersistentEntityRef(String entityId, ActorRef region, ActorSystem system, FiniteDuration askTimeout) {
+  public PersistentEntityRef(String entityId, ActorRef region, FiniteDuration askTimeout) {
     this.entityId = entityId;
     this.region = region;
-    this.system = system;
     this.timeout = Timeout.apply(askTimeout);
+  }
+
+  /**
+   * @deprecated Use the other constructor.
+   */
+  @Deprecated
+  public PersistentEntityRef(String entityId, ActorRef region, ActorSystem system, FiniteDuration askTimeout) {
+    this(entityId, region, askTimeout);
   }
 
   public String entityId() {
@@ -73,7 +79,7 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
    * (<code>PersistentEntityRef</code> is immutable).
    */
   public PersistentEntityRef<Command> withAskTimeout(FiniteDuration timeout) {
-    return new PersistentEntityRef<>(entityId, region, system, timeout);
+    return new PersistentEntityRef<>(entityId, region, timeout);
   }
 
   //  Reasons for why we don't not support serialization of the PersistentEntityRef:
