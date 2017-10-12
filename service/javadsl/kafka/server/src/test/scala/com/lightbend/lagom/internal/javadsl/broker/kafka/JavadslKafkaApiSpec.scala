@@ -23,6 +23,7 @@ import com.lightbend.lagom.javadsl.api._
 import com.lightbend.lagom.javadsl.api.broker.kafka.{ KafkaProperties, PartitionKeyStrategy }
 import com.lightbend.lagom.javadsl.api.broker.{ Message, Topic }
 import com.lightbend.lagom.javadsl.broker.TopicProducer
+import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys
 import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, PersistentEntityRef, PersistentEntityRegistry, Offset => JOffset }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }

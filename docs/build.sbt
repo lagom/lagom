@@ -73,9 +73,8 @@ lazy val docs = project
     persistenceJdbcScaladsl,
     testkitJavadsl,
     testkitScaladsl,
-    brokerScaladsl,
+    kafkaBrokerScaladsl,
     playJson,
-    kafkaBroker,
     pubsubScaladsl,
     immutables % "test->compile",
     theme % "run-markdown",
@@ -94,8 +93,7 @@ lazy val persistenceCassandraScaladsl = ProjectRef(parentDir, "persistence-cassa
 lazy val testkitJavadsl = ProjectRef(parentDir, "testkit-javadsl")
 lazy val testkitScaladsl = ProjectRef(parentDir, "testkit-scaladsl")
 lazy val playJson = ProjectRef(parentDir, "play-json")
-lazy val kafkaBroker = ProjectRef(parentDir, "kafka-broker")
-lazy val brokerScaladsl = ProjectRef(parentDir, "broker-scaladsl")
+lazy val kafkaBrokerScaladsl = ProjectRef(parentDir, "kafka-broker-scaladsl")
 lazy val devmodeScaladsl = ProjectRef(parentDir, "devmode-scaladsl")
 lazy val pubsubScaladsl = ProjectRef(parentDir, "pubsub-scaladsl")
 

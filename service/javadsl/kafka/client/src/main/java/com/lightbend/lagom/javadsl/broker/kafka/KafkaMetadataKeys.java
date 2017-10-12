@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
  */
-package com.lightbend.lagom.internal.javadsl.broker.kafka;
+package com.lightbend.lagom.javadsl.broker.kafka;
 
 import com.lightbend.lagom.javadsl.api.broker.MetadataKey;
 import org.apache.kafka.common.header.Headers;

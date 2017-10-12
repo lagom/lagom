@@ -19,6 +19,7 @@ import com.lightbend.lagom.internal.broker.kafka.{ ConsumerConfig, KafkaConfig, 
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.javadsl.api.broker.{ Message, MetadataKey, Subscriber }
+import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
