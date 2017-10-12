@@ -11,7 +11,7 @@ import scala.concurrent.Future
 /**
  * A Subscriber for consuming messages from a message broker.
  */
-trait Subscriber[Message] {
+trait Subscriber[Payload] {
 
   /**
    * Returns a copy of this subscriber with the passed group id.
@@ -19,7 +19,16 @@ trait Subscriber[Message] {
    * @param groupId The group id to assign to this subscriber.
    * @return A copy of this subscriber with the passed group id.
    */
-  def withGroupId(groupId: String): Subscriber[Message]
+  def withGroupId(groupId: String): Subscriber[Payload]
+
+  /**
+   * Returns this subscriber, but message payloads are wrapped
+   * in [[Message]] instances to allow accessing any metadata
+   * associated with the message.
+   *
+   * @return A copy of this subscriber.
+   */
+  def withMetadata: Subscriber[Message[Payload]]
 
   /**
    * Returns a stream of messages with at most once delivery semantic.
@@ -27,7 +36,7 @@ trait Subscriber[Message] {
    * If a failure occurs (e.g., an exception is thrown), the user is responsible
    * of deciding how to recover from it (e.g., restarting the stream, aborting, ...).
    */
-  def atMostOnceSource: Source[Message, _]
+  def atMostOnceSource: Source[Payload, _]
 
   /**
    * Applies the passed `flow` to the messages processed by this subscriber. Messages are delivered to the passed
@@ -43,7 +52,7 @@ trait Subscriber[Message] {
    * @param flow The flow to apply to each received message.
    * @return A `Future` that will be completed if the `flow` completes.
    */
-  def atLeastOnce(flow: Flow[Message, Done, _]): Future[Done]
+  def atLeastOnce(flow: Flow[Payload, Done, _]): Future[Done]
 }
 
 object Subscriber {

@@ -12,11 +12,11 @@ import akka.stream.javadsl.Source;
 /**
  * A Subscriber for consuming messages from a message broker.
  *
- * @param <Message> The message type.
+ * @param <Payload> The message type.
  *
  * Note: This class is not meant to be extended by client code.
  */
-public interface Subscriber<Message> {
+public interface Subscriber<Payload> {
 
   /**
    * Subscribers with the same group id belong to the same subscriber group.
@@ -39,7 +39,33 @@ public interface Subscriber<Message> {
    * @return A copy of this subscriber with the passed group id.
    * @throws IllegalArgumentException If the passed group id is illegal.
    */
-  Subscriber<Message> withGroupId(String groupId) throws IllegalArgumentException;
+  Subscriber<Payload> withGroupId(String groupId) throws IllegalArgumentException;
+
+  /**
+   * Returns this subscriber, but message payloads are wrapped
+   * in {@link Message} instances to allow accessing any metadata
+   * associated with the message.
+   *
+   * @return A copy of this subscriber.
+   */
+  default Subscriber<Message<Payload>> withMetadata() {
+    // default implementation for binary compatibility
+    Subscriber<Payload> self = this;
+    return new Subscriber<Message<Payload>>() {
+      @Override
+      public Subscriber<Message<Payload>> withGroupId(String groupId) throws IllegalArgumentException {
+        return self.withGroupId(groupId).withMetadata();
+      }
+      @Override
+      public Source<Message<Payload>, ?> atMostOnceSource() {
+        return self.atMostOnceSource().map(Message::create);
+      }
+      @Override
+      public CompletionStage<Done> atLeastOnce(Flow<Message<Payload>, Done, ?> flow) {
+        return self.atLeastOnce(Flow.<Payload>create().map(Message::create).via(flow));
+      }
+    };
+  }
 
   /**
    * Returns a stream of messages with at most once delivery semantic.
@@ -47,7 +73,7 @@ public interface Subscriber<Message> {
    * If a failure occurs (e.g., an exception is thrown), the user is responsible
    * of deciding how to recover from it (e.g., restarting the stream, aborting, ...).  
    */
-  Source<Message, ?> atMostOnceSource();
+  Source<Payload, ?> atMostOnceSource();
 
   /**
    * Applies the passed <code>flow</code> to the messages processed by this
@@ -73,6 +99,6 @@ public interface Subscriber<Message> {
    *         could retry to process the message that caused the failure, or it
    *         could report an application error).
    */
-  CompletionStage<Done> atLeastOnce(Flow<Message, Done, ?> flow);
+  CompletionStage<Done> atLeastOnce(Flow<Payload, Done, ?> flow);
 
 }

@@ -18,7 +18,8 @@ import com.lightbend.lagom.internal.api.UriUtils
 import com.lightbend.lagom.internal.broker.kafka.{ ConsumerConfig, KafkaConfig, KafkaSubscriberActor, NoKafkaBrokersException }
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.{ ServiceInfo, ServiceLocator }
-import com.lightbend.lagom.javadsl.api.broker.Subscriber
+import com.lightbend.lagom.javadsl.api.broker.{ Message, MetadataKey, Subscriber }
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
 
@@ -28,10 +29,11 @@ import scala.collection.JavaConverters._
 /**
  * A Consumer for consuming messages from Kafka using the akka-stream-kafka API.
  */
-private[lagom] class JavadslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, topicCall: TopicCall[Message],
-                                                     groupId: Subscriber.GroupId, info: ServiceInfo, system: ActorSystem,
-                                                     serviceLocator: ServiceLocator)(implicit mat: Materializer, ec: ExecutionContext) extends Subscriber[Message] {
-  private val log = LoggerFactory.getLogger(classOf[JavadslKafkaSubscriber[_]])
+private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](kafkaConfig: KafkaConfig, topicCall: TopicCall[Payload],
+                                                                        groupId: Subscriber.GroupId, info: ServiceInfo, system: ActorSystem,
+                                                                        serviceLocator: ServiceLocator, transform: ConsumerRecord[String, Payload] => SubscriberPayload)(implicit mat: Materializer, ec: ExecutionContext) extends Subscriber[SubscriberPayload] {
+
+  private val log = LoggerFactory.getLogger(classOf[JavadslKafkaSubscriber[_, _]])
 
   import JavadslKafkaSubscriber._
 
@@ -40,7 +42,7 @@ private[lagom] class JavadslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, t
   private def consumerConfig = ConsumerConfig(system.settings.config)
 
   @throws(classOf[IllegalArgumentException])
-  override def withGroupId(groupIdName: String): Subscriber[Message] = {
+  override def withGroupId(groupIdName: String): Subscriber[SubscriberPayload] = {
     val newGroupId = {
       if (groupIdName == null) {
         // An empty group id is not allowed by Kafka (see https://issues.apache.org/jira/browse/KAFKA-2648
@@ -55,7 +57,20 @@ private[lagom] class JavadslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, t
     }
 
     if (newGroupId == groupId) this
-    else new JavadslKafkaSubscriber(kafkaConfig, topicCall, newGroupId, info, system, serviceLocator)
+    else new JavadslKafkaSubscriber(kafkaConfig, topicCall, newGroupId, info, system, serviceLocator, transform)
+  }
+
+  override def withMetadata() = new JavadslKafkaSubscriber(
+    kafkaConfig, topicCall, groupId, info, system, serviceLocator, wrapPayload
+  )
+
+  private def wrapPayload(record: ConsumerRecord[String, Payload]): Message[SubscriberPayload] = {
+    Message.create(transform(record))
+      .add(MetadataKey.messageKey[String], record.key())
+      .add(KafkaMetadataKeys.OFFSET, record.offset().asInstanceOf[java.lang.Long])
+      .add(KafkaMetadataKeys.PARTITION, record.partition().asInstanceOf[java.lang.Integer])
+      .add(KafkaMetadataKeys.TOPIC, record.topic())
+      .add(KafkaMetadataKeys.HEADERS, record.headers())
   }
 
   private def consumerSettings = {
@@ -76,7 +91,7 @@ private[lagom] class JavadslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, t
 
   private def subscription = Subscriptions.topics(topicCall.topicId().value)
 
-  override def atMostOnceSource: Source[Message, _] = {
+  override def atMostOnceSource: Source[SubscriberPayload, _] = {
     kafkaConfig.serviceName match {
       case Some(name) =>
         log.debug("Creating at most once source using service locator to look up Kafka services at {}", name)
@@ -93,21 +108,21 @@ private[lagom] class JavadslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, t
               Consumer.atMostOnceSource(
                 consumerSettings.withBootstrapServers(endpoints),
                 subscription
-              ).map(_.value)
+              ).map(transform)
 
           }.asJava
 
       case None =>
         log.debug("Creating at most once source with configured brokers: {}", kafkaConfig.brokers)
         Consumer.atMostOnceSource(consumerSettings, subscription)
-          .map(_.value).asJava
+          .map(transform).asJava
     }
   }
 
   private def locateService(name: String): Future[Seq[URI]] =
     serviceLocator.locateAll(name).toScala.map(_.asScala)
 
-  override def atLeastOnce(flow: Flow[Message, Done, _]): CompletionStage[Done] = {
+  override def atLeastOnce(flow: Flow[SubscriberPayload, Done, _]): CompletionStage[Done] = {
 
     val streamCompleted = Promise[Done]
     val consumerProps =
@@ -119,7 +134,8 @@ private[lagom] class JavadslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, t
         flow.asScala,
         consumerSettings,
         subscription,
-        streamCompleted
+        streamCompleted,
+        transform
       )
 
     val backoffConsumerProps =
