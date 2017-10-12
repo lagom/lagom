@@ -76,6 +76,12 @@ And then to register them:
 
 @[register-prepare](code/docs/home/scaladsl/persistence/CassandraBlogEventProcessor.scala)
 
+### Registering your read-side processor
+
+Once you've created your read-side processor, you need to register it with Lagom. This is done using the [`ReadSide`](api/index.html#com/lightbend/lagom/scaladsl/persistence/ReadSide) component:
+
+@[register-event-processor](code/docs/home/scaladsl/persistence/BlogServiceImpl3.scala)
+
 ### Event handlers
 
 The event handlers take an event, and return a list of bound statements.  Rather than executing updates in the handler itself, it is recommended that you return the statements that you want to execute to Lagom.  This allows Lagom to batch those statements with the offset table update statement, which Lagom will then executed as a logged batch, which Cassandra executes atomically.  By doing this you can ensure exactly once processing of all events, otherwise processing may be at least once.
