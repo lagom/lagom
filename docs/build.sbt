@@ -1,6 +1,6 @@
 
-val PlayVersion = "2.6.3"
-val AkkaVersion = "2.5.3"
+val PlayVersion = "2.6.6"
+val AkkaVersion = "2.5.6"
 val JUnitVersion = "4.11"
 val ScalaVersion = "2.11.11"
 
