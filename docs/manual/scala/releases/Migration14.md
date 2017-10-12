@@ -99,3 +99,13 @@ When running a rolling upgrade the nodes composing your Akka cluster must keep t
 One relevant change Akka 2.5 introduced involves a new method (DData) to [internally handle the sharding](http://doc.akka.io/docs/akka/current/scala/project/migration-guide-2.4.x-2.5.x.html#cluster-sharding-state-store-mode) of your Persistent Entities in Lagom. We have decided to not enable that new method so your migration from Lagom 1.3.x to 1.4.x should be fine. You may opt in and use DData instead of the default persistence-based one. Switching from persistence-based to DData requires a complete-cluster shutdown.
 
 The Java serialization was already discouraged and since Lagom 1.4.0 it is not the default anymore. This is a setting we inherit from Akka and which we are propagating transparently. If your code was dependant on the Java serialization you will need to review your serializers. This change in the defaults will also affect your ability to do a rolling upgrade. If you must support rolling upgrades and you depended on the default serializations you may override the new defaults using the [additional-serialization-bindings](http://doc.akka.io/docs/akka/current/scala/project/migration-guide-2.4.x-2.5.x.html#additional-serialization-bindings) settings.
+
+Lagom 1.4.x has switched to a new serialization format for one of its internal messages. This new format was added in Lagom 1.3.10, but not enabled. If you are doing a rolling upgrading from 1.3.10 or later to 1.4.x, then the change over will work with no problems. However, if you're doing a rolling upgrading from 1.3.9 or earlier to 1.4.x, then you will need to add the following configuration to your application to disable the new serializer until all nodes are upgraded to a version of Lagom that has the serializer:
+
+```
+akka.actor.serialization-bindings {
+  "com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor$Execute$" = java
+}
+```
+
+Once all nodes are upgraded to 1.4.x, you should then remove the above configuration for the next rolling upgrade. For more details on this process and why it's needed, see [here](https://github.com/lagom/lagom/issues/933#issuecomment-327738303).
