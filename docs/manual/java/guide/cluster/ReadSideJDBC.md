@@ -68,6 +68,12 @@ If you read the [[Cassandra read-side support|ReadSideCassandra]] guide, you may
 
 Again this callback is optional, and in our example we have no need for a prepare callback, so none is specified.
 
+### Registering your read-side processor
+
+Once you've created your read-side processor, you need to register it with Lagom. This is done using the [`ReadSide`](api/index.html?com/lightbend/lagom/javadsl/persistence/ReadSide.html) component:
+
+@[register-event-processor](code/docs/home/persistence/BlogServiceImpl3.java)
+
 ### Event handlers
 
 The event handlers take an event and a connection, and update the read-side accordingly.
