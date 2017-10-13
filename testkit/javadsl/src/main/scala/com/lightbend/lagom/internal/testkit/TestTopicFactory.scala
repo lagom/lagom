@@ -7,6 +7,7 @@ import java.util.concurrent.CompletionStage
 import javax.inject.Inject
 
 import akka.Done
+import akka.japi.Pair
 import akka.stream.Materializer
 import akka.stream.javadsl.{ Flow, Sink, Source }
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
@@ -58,7 +59,9 @@ class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializ
 
       override def withGroupId(groupId: String): Subscriber[Message] = this
 
-      override def atMostOnceSource(): Source[Message, _] = {
+      override def atMostOnceSource(): Source[Message, _] = atMostOnceSourceWithKey.asScala.map(_.second).asJava
+
+      override def atMostOnceSourceWithKey(): Source[Pair[String, Message], _] = {
 
         val serializer = topicCall.messageSerializer().serializerForRequest()
         val deserializer = topicCall.messageSerializer().deserializer(serializer.protocol())
@@ -66,16 +69,22 @@ class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializ
         // Create a source for all the tags, and merge them all together.
         // Then, send the flow through a serializer and deserializer, to simulate sending it over the wire.
         Source.from(topicProducer.tags).asScala.flatMapMerge(topicProducer.tags.size(), { tag =>
-          topicProducer.readSideStream.apply(tag, Offset.NONE).asScala.map(_.first)
-        }).map { message =>
-          serializer.serialize(message)
-        }.map { bytes =>
-          deserializer.deserialize(bytes)
+          topicProducer.readSideStream.apply(tag, Offset.NONE).asScala.map(msgOffset => Pair(tag.tag, msgOffset.first))
+        }).map {
+          case Pair(tag, message) =>
+            Pair(tag, serializer.serialize(message))
+        }.map {
+          case Pair(tag, bytes) =>
+            Pair(tag, deserializer.deserialize(bytes))
         }.asJava
       }
 
       override def atLeastOnce(flow: Flow[Message, Done, _]): CompletionStage[Done] = {
         atMostOnceSource().via(flow).runWith(Sink.ignore(), materializer)
+      }
+
+      override def atLeastOnceWithKey(flow: Flow[Pair[String, Message], Done, _]): CompletionStage[Done] = {
+        atMostOnceSourceWithKey().via(flow).runWith(Sink.ignore(), materializer)
       }
     }
   }

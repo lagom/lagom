@@ -73,7 +73,10 @@ private[lagom] class ScaladslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, 
 
   private def subscription = Subscriptions.topics(topicCall.topicId.name)
 
-  override def atMostOnceSource: Source[Message, _] = {
+  override def atMostOnceSource: Source[Message, _] =
+    atMostOnceSourceWithKey.map(_._2)
+
+  override def atMostOnceSourceWithKey: Source[(String, Message), _] = {
     kafkaConfig.serviceName match {
       case Some(name) =>
         log.debug("Creating at most once source using service locator to look up Kafka services at {}", name)
@@ -90,18 +93,23 @@ private[lagom] class ScaladslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, 
               Consumer.atMostOnceSource(
                 consumerSettings.withBootstrapServers(endpoints),
                 subscription
-              ).map(_.value)
+              ).map(record => record.key -> record.value)
           }
 
       case None =>
         log.debug("Creating at most once source with configured brokers: {}", kafkaConfig.brokers)
         Consumer.atMostOnceSource(consumerSettings, subscription)
-          .map(_.value)
+          .map(record => record.key -> record.value)
     }
 
   }
 
   override def atLeastOnce(flow: Flow[Message, Done, _]): Future[Done] = {
+    val flowWithKey = Flow[(String, Message)].map(_._2).via(flow)
+    atLeastOnceWithKey(flowWithKey)
+  }
+
+  override def atLeastOnceWithKey(flow: Flow[(String, Message), Done, _]): Future[Done] = {
 
     val streamCompleted = Promise[Done]
     val consumerProps =

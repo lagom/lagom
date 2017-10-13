@@ -7,8 +7,10 @@ import java.util.concurrent.CompletionStage
 
 import akka.Done
 import akka.actor.ActorRef
+import akka.japi.Pair
 import akka.stream.Materializer
 import akka.stream.javadsl.{ Flow, Source }
+import akka.stream.scaladsl.{ Flow => ScalaFlow }
 import com.lightbend.lagom.internal.testkit.InternalSubscriberStub
 import com.lightbend.lagom.javadsl.api.broker.{ Subscriber, Topic }
 
@@ -24,6 +26,13 @@ private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: Actor
 
     override def withGroupId(groupId: String): Subscriber[T] = new SubscriberStub(groupId, topicBuffer)
     override def atMostOnceSource(): Source[T, _] = super.mostOnceSource.asJava
+    override def atMostOnceSourceWithKey(): Source[Pair[String, T], _] =
+      super.mostOnceSourceWithKey.map(tup => Pair(tup._1, tup._2)).asJava
+
     override def atLeastOnce(flow: Flow[T, Done, _]): CompletionStage[Done] = toJava(super.leastOnce(flow.asScala))
+    override def atLeastOnceWithKey(flow: Flow[Pair[String, T], Done, _]): CompletionStage[Done] = {
+      val sflow = ScalaFlow[(String, T)].map(tup => Pair(tup._1, tup._2)).via(flow)
+      toJava(super.leastOnceWithKey(sflow))
+    }
   }
 }

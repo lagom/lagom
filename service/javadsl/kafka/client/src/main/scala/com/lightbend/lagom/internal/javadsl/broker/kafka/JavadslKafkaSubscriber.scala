@@ -9,11 +9,13 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.Done
 import akka.actor.{ ActorSystem, SupervisorStrategy }
+import akka.japi.Pair
 import akka.kafka.{ ConsumerSettings, Subscriptions }
 import akka.kafka.scaladsl.Consumer
 import akka.pattern.BackoffSupervisor
 import akka.stream.Materializer
 import akka.stream.javadsl.{ Flow, Source }
+import akka.stream.scaladsl.{ Flow => ScalaFlow }
 import com.lightbend.lagom.internal.api.UriUtils
 import com.lightbend.lagom.internal.broker.kafka.{ ConsumerConfig, KafkaConfig, KafkaSubscriberActor, NoKafkaBrokersException }
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
@@ -76,7 +78,10 @@ private[lagom] class JavadslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, t
 
   private def subscription = Subscriptions.topics(topicCall.topicId().value)
 
-  override def atMostOnceSource: Source[Message, _] = {
+  override def atMostOnceSource: Source[Message, _] =
+    atMostOnceSourceWithKey.asScala.map(_.second).asJava
+
+  override def atMostOnceSourceWithKey: Source[Pair[String, Message], _] = {
     kafkaConfig.serviceName match {
       case Some(name) =>
         log.debug("Creating at most once source using service locator to look up Kafka services at {}", name)
@@ -93,22 +98,31 @@ private[lagom] class JavadslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, t
               Consumer.atMostOnceSource(
                 consumerSettings.withBootstrapServers(endpoints),
                 subscription
-              ).map(_.value)
+              ).map(record => Pair(record.key, record.value))
 
           }.asJava
 
       case None =>
         log.debug("Creating at most once source with configured brokers: {}", kafkaConfig.brokers)
         Consumer.atMostOnceSource(consumerSettings, subscription)
-          .map(_.value).asJava
+          .map(record => Pair(record.key, record.value)).asJava
     }
+  }
+
+  override def atLeastOnce(flow: Flow[Message, Done, _]): CompletionStage[Done] = {
+    val sflow = ScalaFlow[(String, Message)].map(_._2).via(flow)
+    atLeastOnceWithKeyImpl(sflow)
+  }
+
+  override def atLeastOnceWithKey(flow: Flow[Pair[String, Message], Done, _]): CompletionStage[Done] = {
+    val sflow = ScalaFlow[(String, Message)].map(tup => Pair(tup._1, tup._2)).via(flow)
+    atLeastOnceWithKeyImpl(sflow)
   }
 
   private def locateService(name: String): Future[Seq[URI]] =
     serviceLocator.locateAll(name).toScala.map(_.asScala)
 
-  override def atLeastOnce(flow: Flow[Message, Done, _]): CompletionStage[Done] = {
-
+  private def atLeastOnceWithKeyImpl(sflow: ScalaFlow[(String, Message), Done, _]): CompletionStage[Done] = {
     val streamCompleted = Promise[Done]
     val consumerProps =
       KafkaSubscriberActor.props(
@@ -116,7 +130,7 @@ private[lagom] class JavadslKafkaSubscriber[Message](kafkaConfig: KafkaConfig, t
         consumerConfig,
         locateService,
         topicCall.topicId().value(),
-        flow.asScala,
+        sflow,
         consumerSettings,
         subscription,
         streamCompleted

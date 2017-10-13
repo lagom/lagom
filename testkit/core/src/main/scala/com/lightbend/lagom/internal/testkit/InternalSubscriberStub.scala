@@ -21,8 +21,21 @@ private[lagom] class InternalSubscriberStub[Message](
       .prependMat(Source.empty)(subscribeToBuffer)
   }
 
+  def mostOnceSourceWithKey: Source[(String, Message), _] = {
+    // TopicBufferActor currently only passes through messages, not tags/keys, so provide empty string for key
+    mostOnceSource.map("" -> _)
+  }
+
   def leastOnce(flow: Flow[Message, Done, _]): Future[Done] = {
-    mostOnceSource
+    mostOnceSourceWithKey
+      .map(_._2)
+      .via(flow)
+      .toMat(Sink.ignore)(Keep.right[Any, Future[Done]])
+      .run()
+  }
+
+  def leastOnceWithKey(flow: Flow[(String, Message), Done, _]): Future[Done] = {
+    mostOnceSourceWithKey
       .via(flow)
       .toMat(Sink.ignore)(Keep.right[Any, Future[Done]])
       .run()

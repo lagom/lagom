@@ -54,7 +54,9 @@ private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: Actor
 
     override def withGroupId(groupId: String): Subscriber[Message] = new SubscriberStub[Message](groupId, topicBuffer)
     override def atMostOnceSource: Source[Message, _] = super.mostOnceSource
+    override def atMostOnceSourceWithKey: Source[(String, Message), _] = super.mostOnceSourceWithKey
     override def atLeastOnce(flow: Flow[Message, Done, _]): Future[Done] = super.leastOnce(flow)
+    override def atLeastOnceWithKey(flow: Flow[(String, Message), Done, _]): Future[Done] = super.leastOnceWithKey(flow)
   }
 
 }

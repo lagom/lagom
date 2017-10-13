@@ -30,6 +30,14 @@ trait Subscriber[Message] {
   def atMostOnceSource: Source[Message, _]
 
   /**
+   * Returns a stream of key -> message pairs with at most once delivery semantic.
+   *
+   * If a failure occurs (e.g., an exception is thrown), the user is responsible
+   * of deciding how to recover from it (e.g., restarting the stream, aborting, ...).
+   */
+  def atMostOnceSourceWithKey: Source[(String, Message), _]
+
+  /**
    * Applies the passed `flow` to the messages processed by this subscriber. Messages are delivered to the passed
    * `flow` at least once.
    *
@@ -44,6 +52,22 @@ trait Subscriber[Message] {
    * @return A `Future` that will be completed if the `flow` completes.
    */
   def atLeastOnce(flow: Flow[Message, Done, _]): Future[Done]
+
+  /**
+   * Applies the passed `flow` to the key -> message pairs processed by this subscriber. Messages are delivered to the passed
+   * `flow` at least once.
+   *
+   * If a failure occurs (e.g., an exception is thrown), the stream may be automatically restarted starting with the
+   * message that caused the failure.
+   *
+   * Whether the stream is automatically restarted depends on the Lagom message broker implementation in use. If the
+   * Kafka Lagom message broker module is being used, then by default the stream is automatically restarted when a
+   * failure occurs.
+   *
+   * @param flow The flow to apply to each received message.
+   * @return A `Future` that will be completed if the `flow` completes.
+   */
+  def atLeastOnceWithKey(flow: Flow[(String, Message), Done, _]): Future[Done]
 }
 
 object Subscriber {
