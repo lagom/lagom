@@ -51,7 +51,7 @@ sealed trait MessageProtocol {
    *
    * @return true if this message protocol is text based.
    */
-  def isText: Boolean = charset.isDefined || contentType.contains("application/json")
+  def isText: Boolean = charset.isDefined || contentType.contains("application/json") || contentType.contains("text/plain")
 
   /**
    * Whether the protocol uses UTF-8.

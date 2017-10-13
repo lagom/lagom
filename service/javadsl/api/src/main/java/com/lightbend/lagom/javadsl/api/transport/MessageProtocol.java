@@ -127,7 +127,10 @@ public final class MessageProtocol {
      * @return true if this message protocol is text based.
      */
     public boolean isText() {
-        return charset.isPresent();
+        boolean isJson = contentType.map(contentType -> "application/json".equals(contentType)).orElse(false);
+        boolean isPlainText = contentType.map(contentType -> "text/plain".equals(contentType)).orElse(false);
+
+        return charset.isPresent() || isJson || isPlainText;
     }
 
     private static final Charset utf8Charset = Charset.forName("utf-8");
