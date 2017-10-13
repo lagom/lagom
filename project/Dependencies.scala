@@ -101,6 +101,7 @@ object Dependencies {
   private val playJava = "com.typesafe.play" %% "play-java" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playAkkaHttpServer = "com.typesafe.play" %% "play-akka-http-server" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion excludeAll (excludeSlf4j: _*)
 
   private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
@@ -214,7 +215,7 @@ object Dependencies {
 
     ) ++ crossLibraryFamily("com.typesafe.play", PlayVersion)(
       "play", "play-guice", "play-java", "play-jdbc", "play-jdbc-api",
-      "play-netty-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
+      "play-netty-server", "play-akka-http-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
 
     ) ++ libraryFamily("ch.qos.logback", LogbackVersion)(
       "logback-classic", "logback-core"
@@ -402,7 +403,7 @@ object Dependencies {
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
@@ -414,7 +415,7 @@ object Dependencies {
   )
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
@@ -425,7 +426,7 @@ object Dependencies {
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest,
 
@@ -434,7 +435,7 @@ object Dependencies {
   )
 
   val `integration-tests-scaladsl` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest,
 
@@ -660,7 +661,7 @@ object Dependencies {
   )
 
   val `service-locator` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     akkaHttpCore,
     scalaTest % Test,
 
