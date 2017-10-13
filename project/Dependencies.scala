@@ -15,7 +15,7 @@ object Dependencies {
   val AkkaHttpVersion = "10.0.9"
   val ScalaVersions = Seq("2.11.11", "2.12.3")
   val SbtScalaVersions = Seq("2.10.6")
-  val AkkaPersistenceCassandraVersion = "0.54"
+  val AkkaPersistenceCassandraVersion = "0.57"
   val AkkaPersistenceJdbcVersion = "3.0.0"
   val ScalaTestVersion = "3.0.3"
   val JacksonVersion = "2.8.10"
