@@ -54,13 +54,14 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
    * The routes partial function.
    */
   override val routes: Routes = Function.unlift { request =>
-    val requestHeader = toRequestHeader(request)
     serviceRoutes.collectFirst(Function.unlift { route =>
       // We match by method, but since we ignore the method if it's a WebSocket (because WebSockets require that GET
       // is used) we also match if it's a WebSocket request and this can be handled as a WebSocket.
       if (methodName(route.method) == request.method || (request.method == "GET" && route.isWebSocket)) {
 
-        route.path.extract(requestHeaderUri(requestHeader).getRawPath, request.queryString).map { params =>
+        val path = URI.create(request.uri).getRawPath
+        val queryString = request.queryString
+        route.path.extract(path, queryString).map { (params: Seq[Seq[String]]) =>
           val serviceCall = route.createServiceCall(params)
 
           // These casts are necessary due to an apparent scalac bug
@@ -69,13 +70,21 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
 
           // If both request and response are strict, handle it using an action, otherwise handle it using a websocket
           if (messageSerializerIsStreamed(requestSerializer) || messageSerializerIsStreamed(responseSerializer)) {
-            websocket(route.call.asInstanceOf[Call[Any, Any]], descriptor, requestHeader, serviceCall,
-              requestSerializer, responseSerializer)
+            websocket(
+              route.call.asInstanceOf[Call[Any, Any]],
+              descriptor,
+              serviceCall,
+              requestSerializer,
+              responseSerializer
+            )
           } else {
-            action(route.call.asInstanceOf[Call[Any, Any]], descriptor,
+            action(
+              route.call.asInstanceOf[Call[Any, Any]],
+              descriptor,
+              serviceCall,
               requestSerializer.asInstanceOf[MessageSerializer[Any, ByteString]],
-              responseSerializer.asInstanceOf[MessageSerializer[Any, ByteString]],
-              requestHeader, serviceCall)
+              responseSerializer.asInstanceOf[MessageSerializer[Any, ByteString]]
+            )
           }
         }
       } else None
@@ -98,29 +107,35 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
    * Create the action.
    */
   protected def action[Request, Response](
-    call: Call[Request, Response], descriptor: Descriptor,
-    requestSerializer: MessageSerializer[Request, ByteString], responseSerializer: MessageSerializer[Response, ByteString],
-    requestHeader: RequestHeader, serviceCall: ServiceCall[Request, Response]
+    call:               Call[Request, Response],
+    descriptor:         Descriptor,
+    serviceCall:        ServiceCall[Request, Response],
+    requestSerializer:  MessageSerializer[Request, ByteString],
+    responseSerializer: MessageSerializer[Response, ByteString]
   ): EssentialAction
 
   /**
    * Create an action to handle the given service call. All error handling is done here.
    */
   protected final def createAction[Request, Response](
-    serviceCall: ServiceCall[Request, Response], call: Call[Request, Response], descriptor: Descriptor,
-    requestSerializer: MessageSerializer[Request, ByteString], responseSerializer: MessageSerializer[Response, ByteString],
-    requestHeader: RequestHeader
+    call:               Call[Request, Response],
+    descriptor:         Descriptor,
+    serviceCall:        ServiceCall[Request, Response],
+    requestSerializer:  MessageSerializer[Request, ByteString],
+    responseSerializer: MessageSerializer[Response, ByteString]
   ): EssentialAction = EssentialAction { request =>
+    val unfilteredHeader = toLagomRequestHeader(request)
+    val filteredHeaders = headerFilterTransformServerRequest(descriptorHeaderFilter(descriptor), unfilteredHeader)
     try {
-      handleServiceCall(serviceCall, descriptor, requestSerializer, responseSerializer, requestHeader, request).recover {
+      handleServiceCall(serviceCall, descriptor, requestSerializer, responseSerializer, filteredHeaders, request).recover {
         case NonFatal(e) =>
           logException(e, descriptor, call)
-          exceptionToResult(descriptor, requestHeader, e)
+          exceptionToResult(descriptor, filteredHeaders, e)
       }
     } catch {
       case NonFatal(e) =>
         logException(e, descriptor, call)
-        Accumulator.done(exceptionToResult(descriptor, requestHeader, e))
+        Accumulator.done(exceptionToResult(descriptor, filteredHeaders, e))
     }
   }
 
@@ -177,6 +192,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
 
   private def logException(exc: Throwable, descriptor: Descriptor, call: Call[_, _]) = {
     def log = Logger(descriptorName(descriptor))
+
     val cause = exc match {
       case c: CompletionException => c.getCause
       case e                      => e
@@ -204,10 +220,13 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
   }
 
   /**
-   * Convert a Play (Scala) request header to a Lagom request header.
+   * Convert a Play (Scala) request header to a Lagom request header without invoking Lagom HeaderFilters.
    */
-  private def toRequestHeader(rh: PlayRequestHeader): RequestHeader = {
-    val requestHeader = newRequestHeader(
+  private def toLagomRequestHeader(rh: PlayRequestHeader): RequestHeader = {
+    val stringToTuples: Map[String, immutable.Seq[(String, String)]] = rh.headers.toMap.map {
+      case (key, values) => key.toLowerCase(Locale.ENGLISH) -> values.map(key -> _).to[immutable.Seq]
+    }
+    newRequestHeader(
       newMethod(rh.method),
       URI.create(rh.uri),
       messageProtocolFromContentTypeHeader(rh.headers.get(HeaderNames.CONTENT_TYPE)),
@@ -218,11 +237,8 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
         )
       }.to[immutable.Seq],
       None,
-      rh.headers.toMap.map {
-        case (key, values) => key.toLowerCase(Locale.ENGLISH) -> values.map(key -> _).to[immutable.Seq]
-      }
+      stringToTuples
     )
-    headerFilterTransformServerRequest(descriptorHeaderFilter(descriptor), requestHeader)
   }
 
   /**
@@ -237,9 +253,16 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
   /**
    * Handle a service call as a WebSocket.
    */
-  private def websocket[Request, Response](call: Call[Request, Response], descriptor: Descriptor,
-                                           requestHeader: RequestHeader, serviceCall: ServiceCall[Request, Response],
-                                           requestSerializer: MessageSerializer[Request, _], responseSerializer: MessageSerializer[Response, _]): WebSocket = WebSocket.acceptOrResult[Message, Message] { rh =>
+  private def websocket[Request, Response](
+    call:               Call[Request, Response],
+    descriptor:         Descriptor,
+    serviceCall:        ServiceCall[Request, Response],
+    requestSerializer:  MessageSerializer[Request, _],
+    responseSerializer: MessageSerializer[Response, _]
+  ): WebSocket = WebSocket.acceptOrResult[Message, Message] { rh =>
+
+    val unfilteredHeader: RequestHeader = toLagomRequestHeader(rh)
+    val requestHeader = headerFilterTransformServerRequest(descriptorHeaderFilter(descriptor), unfilteredHeader)
 
     val requestProtocol = messageHeaderProtocol(requestHeader)
     val acceptHeaders = requestHeaderAcceptedResponseProtocols(requestHeader)
