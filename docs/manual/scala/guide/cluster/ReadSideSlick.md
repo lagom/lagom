@@ -80,6 +80,12 @@ If you read the [[Cassandra read-side support|ReadSideCassandra]] guide, you may
 
 Again this callback is optional, and in our example we have no need for a prepare callback, so none is specified.
 
+### Registering your read-side processor
+
+Once you've created your read-side processor, you need to register it with Lagom. This is done using the [`ReadSide`](api/index.html#com/lightbend/lagom/scaladsl/persistence/ReadSide) component:
+
+@[register-event-processor](code/docs/home/scaladsl/persistence/BlogServiceImpl3.scala)
+
 ### Event handlers
 
 The event handlers take an event and returns a Slick `DBIOAction`.
