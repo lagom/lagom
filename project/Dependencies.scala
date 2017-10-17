@@ -36,6 +36,8 @@ object Dependencies {
   val SlickVersion = "3.2.1"
   // Also be sure to update JUnitVersion in docs/build.sbt.
   val JUnitVersion = "4.11"
+  // Also be sure to update JUnitInterfaceVersion in docs/build.sbt.
+  val JUnitInterfaceVersion = "0.11"
 
   val Slf4jVersion = "1.7.25"
   val LogbackVersion = "1.2.3"
@@ -137,7 +139,7 @@ object Dependencies {
       h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
       "com.lmax" % "disruptor" % "3.3.6",
-      "com.novocode" % "junit-interface" % "0.11", // also in docs/build.sbt
+      "com.novocode" % "junit-interface" % JUnitInterfaceVersion,
       typesafeConfig,
       sslConfig,
       akkaHttpCore,
