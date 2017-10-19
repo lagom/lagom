@@ -1,7 +1,6 @@
 val ScalaVersion = "2.11.11"
 
 val AkkaVersion = "2.5.6"
-val CassandraAllVersion = "3.0.9"
 val JUnitVersion = "4.11"
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion = "3.0.4"
@@ -29,7 +28,6 @@ lazy val docs = project
     scalaVersion := ScalaVersion,
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
-      "org.apache.cassandra" % "cassandra-all" % CassandraAllVersion % "test",
       "junit" % "junit" % JUnitVersion % "test",
       "com.novocode" % "junit-interface" % JUnitInterfaceVersion % "test",
       "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
