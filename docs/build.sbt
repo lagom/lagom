@@ -36,7 +36,8 @@ lazy val docs = project
       "org.apache.logging.log4j" % "log4j-api" % Log4jVersion % "test",
       "com.softwaremill.macwire" %% "macros" % MacWireVersion % "provided",
       "org.projectlombok" % "lombok" % LombokVersion,
-      "org.hibernate" % "hibernate-core" % HibernateVersion
+      "org.hibernate" % "hibernate-core" % HibernateVersion,
+      "org.hibernate" % "hibernate-validator" % HibernateVersion
     ),
     javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
     testOptions in Test += Tests.Argument("-oDF"),
