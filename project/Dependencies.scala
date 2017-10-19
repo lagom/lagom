@@ -18,8 +18,8 @@ object Dependencies {
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.0.51.Final"
   val AsyncHttpClientVersion = "2.0.36"
-  val KafkaVersion = "0.10.0.1"
-  val AkkaStreamKafkaVersion = "0.13"
+  val KafkaVersion = "0.11.0.0"
+  val AkkaStreamKafkaVersion = "0.17"
   val ScalaJava8CompatVersion = "0.7.0"
   val ScalaXmlVersion = "1.0.5"
 
@@ -166,7 +166,7 @@ object Dependencies {
       "org.apache.commons" % "commons-math3" % "3.2",
       "org.apache.httpcomponents" % "httpclient" % "4.5.2",
       "org.apache.httpcomponents" % "httpcore" % "4.4.4",
-      "org.apache.kafka" % "kafka-clients" % "0.10.0.1",
+      "org.apache.kafka" % "kafka-clients" % "0.11.0.0",
       "org.apache.thrift" % "libthrift" % "0.9.2",
       "org.apache.tomcat" % "tomcat-servlet-api" % "8.0.33",
       "org.caffinitas.ohc" % "ohc-core" % "0.4.3",
@@ -262,16 +262,16 @@ object Dependencies {
   // These dependencies are used by the Kafka tests, but we don't want to export them as part of our regular
   // whitelist, so we maintain it separately.
   val KafkaTestWhitelist = Seq(
-    "com.101tec" % "zkclient" % "0.8",
+    "com.101tec" % "zkclient" % "0.10",
     "com.yammer.metrics" % "metrics-core" % "2.2.0",
     "jline" % "jline" % "0.9.94",
     "log4j" % "log4j" % "1.2.17",
-    "net.sf.jopt-simple" % "jopt-simple" % "4.9",
+    "net.sf.jopt-simple" % "jopt-simple" % "5.0.3",
     "org.apache.commons" % "commons-math" % "2.2",
     "org.apache.curator" % "curator-client" % "2.10.0",
     "org.apache.curator" % "curator-framework" % "2.10.0",
     "org.apache.curator" % "curator-test" % "2.10.0",
-    "org.apache.kafka" %% "kafka" % "0.10.0.1",
+    "org.apache.kafka" %% "kafka" % "0.11.0.0",
     "org.apache.zookeeper" % "zookeeper" % "3.4.10"
   )
 
