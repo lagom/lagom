@@ -25,7 +25,7 @@ object Dependencies {
 
   val Slf4jVersion = "1.7.25"
   val Log4jVersion = "1.2.17"
-  val logbackVersion = "1.1.7"
+  val logbackVersion = "1.2.3"
 
   // First let's create some exclusion rules to avoid too much transitive hell
   private val slf4j: Seq[ModuleID] = Seq("jcl-over-slf4j", "jul-to-slf4j", "log4j-over-slf4j", "slf4j-api").map {
