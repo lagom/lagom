@@ -73,7 +73,7 @@ private[lagom] object ScaladslClientMacroImpl {
     // Extract the target that "implement" was invoked on, so we can invoke "doImplement" on it instead
     val serviceClient = c.macroApplication match {
       case TypeApply(Select(clientTarget, TermName("implement")), _) => clientTarget
-      case other => c.abort(c.enclosingPosition, "Don't know how to find the service client from tree: " + c.macroApplication)
+      case _ => c.abort(c.enclosingPosition, "Don't know how to find the service client from tree: " + c.macroApplication)
     }
 
     val implementationContext = TermName(c.freshName("implementationContext"))

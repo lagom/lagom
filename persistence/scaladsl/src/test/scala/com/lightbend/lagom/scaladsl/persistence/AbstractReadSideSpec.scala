@@ -3,25 +3,25 @@
  */
 package com.lightbend.lagom.scaladsl.persistence
 
-import java.util.Optional
-
-import akka.actor.ActorRef
+import akka.actor.{ Actor, ActorRef, Props }
+import akka.pattern.pipe
 import akka.persistence.query.Offset
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.testkit.ImplicitSender
 import akka.{ Done, NotUsed }
+import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
 import com.lightbend.lagom.internal.scaladsl.persistence.{ PersistentEntityActor, ReadSideActor }
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Mode
-import org.scalactic.source.Position
 import org.scalatest.BeforeAndAfter
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
+
+import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
 
 trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventually with BeforeAndAfter {
   spec: ActorSystemSpec =>
@@ -29,7 +29,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   import system.dispatcher
 
   // patience config for all async code
-  override implicit val patienceConfig = PatienceConfig(20.seconds, 150.millis)
+  override implicit val patienceConfig = PatienceConfig(8.seconds, 150.millis)
 
   implicit val mat = ActorMaterializer()
 
@@ -61,30 +61,32 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
     )
   }
 
+  class Mock() extends Actor {
+    def receive = {
+      case Execute =>
+        processorFactory()
+          .buildHandler
+          .globalPrepare()
+          .map { _ => Done } pipeTo sender()
+    }
+  }
+
   private def createReadSideProcessor() = {
-    /* read side and injector only needed for deprecated register method */
-    val readSide = system.actorOf(
-      ReadSideActor.props[TestEntity.Evt](
-        processorFactory,
-        eventStream,
-        classOf[TestEntity.Evt],
-        new ClusterStartupTask(testActor),
-        20.seconds
-      )
+    val mockRef = system.actorOf(Props(new Mock()))
+    val processorProps = ReadSideActor.props[TestEntity.Evt](
+      ReadSideConfig(),
+      classOf[TestEntity.Evt],
+      new ClusterStartupTask(mockRef),
+      eventStream,
+      processorFactory
     )
+
+    val readSide: ActorRef = system.actorOf(processorProps)
 
     readSide ! EnsureActive(tag.tag)
 
-    expectMsg(Execute)
-
-    processorFactory()
-      .buildHandler
-      .globalPrepare()
-      .foreach { _ =>
-        readSide ! Done
-      }
-
     readSideActor = Some(readSide)
+
   }
 
   after {
@@ -145,7 +147,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       assertSelectCount("1", 5L)
     }
 
-    "persisted offsets unhandled events" in {
+    "persisted offsets for unhandled events" in {
 
       createReadSideProcessor()
 

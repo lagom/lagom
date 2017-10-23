@@ -86,7 +86,9 @@ class ClusterStartupTask(actorRef: ActorRef) {
 }
 
 private[lagom] object ClusterStartupTaskActor {
+
   case object Execute
+
 }
 
 private[lagom] class ClusterStartupTaskActor(task: () => Future[Done], timeout: FiniteDuration) extends Actor with ActorLogging {

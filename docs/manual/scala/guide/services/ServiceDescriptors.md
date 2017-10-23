@@ -14,7 +14,7 @@ An important thing to note here is that invoking the `sayHello` method does not 
 
 While the `sayHello` method describes how the call will be programmatically invoked or implemented, it does not describe how this call gets mapped down onto the transport.  This is done by providing an implementation of the [`descriptor`](api/com/lightbend/lagom/scaladsl/api/Service.html#descriptor:Descriptor) call, whose interface is described by [`Service`](api/com/lightbend/lagom/scaladsl/api/Service.html).
 
-You can see that we're returning a service named `hello`, and we're describing one call, the `sayHello` call.  Because this service is so simple, in this case we don't need to do anything more than simply pass the call the [`call`](api/com/lightbend/lagom/scaladsl/api/Service$.html#call[Request,Response]\(ScalaMethodServiceCall[Request,Response]\)\(MessageSerializer[Request,_],MessageSerializer[Response,_]\):Call[Request,Response]) method. 
+You can see that we're returning a service named `hello`, and we're describing one call, the `sayHello` call.  Because this service is so simple, in this case we don't need to do anything more than simply passing the Service call `sayHello` defined above in the example as a method reference to the [`call`](api/com/lightbend/lagom/scaladsl/api/Service$.html#call[Request,Response]\(ScalaMethodServiceCall[Request,Response]\)\(MessageSerializer[Request,_],MessageSerializer[Response,_]\):Call[Request,Response]) method.
 
 ## Call identifiers
 

@@ -23,12 +23,12 @@ To create your project, follow these steps:
     Choose archetype:
     1: remote -> com.lightbend.lagom:maven-archetype-lagom-java (maven-archetype-lagom-java)
     Choose a number or apply filter (format: [groupId:]artifactId, case sensitive contains): :
-    ``` 
-    
+    ```
+
 1. Enter the number that corresponds with `com.lightbend.lagom:maven-archetype-lagom-java` (at time of writing, the number `1`, and the only one available).
     Maven prompts you for the version.
 1. Enter the number corresponding with the version of Lagom you want to use. We recommend using the [current stable release](https://www.lagomframework.com/documentation/)).
-    The template prompts you for POM values. 
+    The template prompts you for POM values.
 1. Specify values for:
     * `groupId`  - Usually a reversed domain name, such as `com.example.hello`.
     * `artifactId` - Maven also uses this value as the name for the top-level project folder. You might want to use a value such as `my-first-system`
@@ -37,7 +37,7 @@ To create your project, follow these steps:
     Maven prompts you to confirm POM values.    
 1. Enter `Y` to accept the values.
    When finished, Maven creates the project, and completes with a message similar to the following:
-   
+
 ```
    [INFO] ------------------------------------------------------------------------
    [INFO] BUILD SUCCESS
@@ -46,7 +46,7 @@ To create your project, follow these steps:
    [INFO] Finished at: 2017-02-24T11:58:08-06:00
    [INFO] Final Memory: 17M/252M
    [INFO] ------------------------------------------------------------------------
-   
+
 ```
 
 
@@ -55,18 +55,18 @@ To create your project, follow these steps:
 The structure for a project created with the Maven archetype generate command will look similar to the following (assuming `my-first-system` as an `artifactId`):
 
 ```
-my-first-system 
+my-first-system
  └ hello-api/             → hello world api project dir
- └ hello-impl/            → hello world implementation dir 
+ └ hello-impl/            → hello world implementation dir
  └ integration-tests/
  └ stream-api/            → stream api project dir
  └ stream-impl/           → stream implementation project dir
  └ pom.xml                → Project group build file
 ```
 
-Note that the `hello` and `stream` services each have: 
+Note that the `hello` and `stream` services each have:
 
-* An `api` project that contains a service interface through which consumers can interact with the service. 
+* An `api` project that contains a service interface through which consumers can interact with the service.
 * An `impl` project that contains the service implementation.
 
 ## Run Hello World
@@ -86,7 +86,7 @@ It will take a bit of time for the services to start. The `Services started` mes
 [info] Starting embedded Cassandra server
 ..........
 [info] Cassandra server running at 127.0.0.1:4000
-[info] Service locator is running at http://localhost:8000
+[info] Service locator is running at http://localhost:9008
 [info] Service gateway is running at http://localhost:9000
 ...
 [info] Service hello-impl listening for HTTP on 0:0:0:0:0:0:0:0:24266
@@ -94,11 +94,11 @@ It will take a bit of time for the services to start. The `Services started` mes
 (Services started, press enter to stop and go back to the console...)
 ```
 
-Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser: 
+Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser:
 
 ```
 http://localhost:9000/api/hello/World
 ```
 The request returns the message `Hello, World!`.
 
-Congratulations! You've created and run your first Lagom system. 
+Congratulations! You've created and run your first Lagom system.

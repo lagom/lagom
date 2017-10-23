@@ -1,6 +1,3 @@
-/*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
- */
 package ${package}.it;
 
 import akka.actor.ActorSystem;
@@ -26,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 
 public class ${service2ClassName}IT {
 
-    private static final String SERVICE_LOCATOR_URI = "http://localhost:8000";
+    private static final String SERVICE_LOCATOR_URI = "http://localhost:9008";
 
     private static LagomClientFactory clientFactory;
     private static ${service1ClassName}Service ${service1Name}Service;

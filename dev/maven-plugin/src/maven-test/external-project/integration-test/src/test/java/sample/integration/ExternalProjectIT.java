@@ -20,7 +20,7 @@ public class ExternalProjectIT {
     @BeforeClass
     public static void setup() {
         clientFactory = LagomClientFactory.create("integration-test", ExternalProjectIT.class.getClassLoader());
-        helloService = clientFactory.createDevClient(HelloService.class, URI.create("http://localhost:8000"));
+        helloService = clientFactory.createDevClient(HelloService.class, URI.create("http://localhost:9008"));
     }
 
     @Test

@@ -235,7 +235,7 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
   private def checkSerialization(obj: Any): Option[Issue] = {
     val obj1 = obj.asInstanceOf[AnyRef]
     // check that it is configured
-    Try(serialization.serializerFor(obj.getClass)) match {
+    Try(serialization.findSerializerFor(obj1)) match {
       case Failure(e) => Some(NoSerializer(obj, e))
       case Success(serializer) =>
         // verify serialization-deserialization round trip

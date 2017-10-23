@@ -10,7 +10,7 @@ Another way to implement Lagom services, if the client is running in a JVM, is t
 
 #### Configuring dependencies
 
-To use the Lagom service interface, you will need to add a dependency on the Lagom integration client to your build.  If using maven, this can be done by adding the following dependency:
+To use the Lagom service interface, you will need to add a dependency of the Lagom integration client to your build.  If using maven, this can be done by adding the following dependency in your pom:
 
 ```xml
     <dependency>

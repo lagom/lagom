@@ -1,14 +1,15 @@
 package com.lightbend.lagom.sbt.scripted
 
-import java.io.{ InputStreamReader, BufferedReader }
+import java.io.{ BufferedReader, InputStreamReader }
 import java.net.HttpURLConnection
 
-import com.lightbend.lagom.sbt.{ LagomPlugin, NonBlockingInteractionMode, Internal }
+import com.lightbend.lagom.sbt.{ Internal, LagomPlugin, NonBlockingInteractionMode }
 import com.lightbend.lagom.core.LagomVersion
 import sbt.Keys._
 import sbt._
 import sbt.complete.Parser
 
+import scala.util.Try
 import scala.util.control.NonFatal
 
 object ScriptedTools extends AutoPlugin {
@@ -16,6 +17,7 @@ object ScriptedTools extends AutoPlugin {
   private val ReadTimeout = 10000
 
   override def trigger = allRequirements
+
   override def requires = LagomPlugin
 
   object autoImport {
@@ -41,23 +43,35 @@ object ScriptedTools extends AutoPlugin {
           val status = conn.getResponseCode
 
           if (validateRequest.shouldBeDown) {
-            sys.error(s"Expected request to fail, but returned status $status")
+            throw ShouldBeDownException(status)
           }
 
           validateRequest.statusAssertion(status)
 
           // HttpURLConnection throws FileNotFoundException on getInputStream when the status is 404
-          val body = if (status == 404) "" else {
-            val br = new BufferedReader(new InputStreamReader(conn.getInputStream))
-            Stream.continually(br.readLine()).takeWhile(_ != null).mkString("\n")
-          }
+          // HttpURLConnection throws IOException on getInputStream when the status is 500
+          val body =
+            Try {
+              val br = new BufferedReader(new InputStreamReader(conn.getInputStream))
+              Stream.continually(br.readLine()).takeWhile(_ != null).mkString("\n")
+            }.recover {
+              case _ => ""
+            }.get
 
           validateRequest.bodyAssertion(body)
 
           Response(status, body)
         } catch {
+          case NonFatal(ShouldBeDownException(status)) =>
+            val msg = s"Expected server to be down but request completed with status $status."
+            log.error(msg)
+            sys.error(msg)
           case NonFatal(t) if validateRequest.shouldBeDown =>
             Response(0, "")
+          case NonFatal(t) =>
+            val msg = t.getStackTrace.map(_.toString).mkString("\n  ")
+            log.error(msg)
+            sys.error(msg)
         } finally {
           conn.disconnect()
         }
@@ -111,12 +125,17 @@ object ScriptedTools extends AutoPlugin {
     }
   }
 
+  case class ShouldBeDownException(actualStatus: Int) extends RuntimeException
+
   case class Response(status: Int, body: String)
 
-  private case class ValidateRequest(uri: Option[URI] = None, retry: Boolean = false,
-                                     shouldBeDown:    Boolean        = false,
-                                     statusAssertion: Int => Unit    = _ => (),
-                                     bodyAssertion:   String => Unit = _ => ())
+  private case class ValidateRequest(
+    uri:             Option[URI]    = None,
+    retry:           Boolean        = false,
+    shouldBeDown:    Boolean        = false,
+    statusAssertion: Int => Unit    = _ => (),
+    bodyAssertion:   String => Unit = _ => ()
+  )
 
   private val validateRequestParser: Parser[ValidateRequest] = {
     import complete.DefaultParsers._

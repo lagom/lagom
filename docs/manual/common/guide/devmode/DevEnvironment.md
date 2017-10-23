@@ -71,17 +71,19 @@ Now we're able to start Elastic Search, we need to add this task to Lagom's list
 <!-- copied this section to concepts, perhaps it can be removed later -->
 What's happening behind the scenes when you `runAll`?
 
-* an embedded Service Locator is started
-* a Cassandra server is started
-* a Kafka server is started
+* an embedded [[Service Locator|ServiceLocator]] is started
+* an embedded [[Service Gateway|ServiceLocator#Service-Gateway]] is started
+* a [[Cassandra server|CassandraServer]] is started
+* a [[Kafka server|KafkaServer]] is started
 * your services start
     * ...and register with the Service Locator
+    * ...and register the publicly accessible paths in the Service Gateway
 
 This all happens automatically without special code or additional configuration.
 
 <!--end copied section -->
 
-You can verify that your services are running by viewing `http://localhost:8000/services` in a web browser (or with a command line tool such as `curl`).  The Service Locator, running on port 8000, will return JSON such as:
+You can verify that your services are running by viewing `http://localhost:9008/services` in a web browser (or with a command line tool such as `curl`). The Service Locator, running on port `9008`, will return JSON such as:
 
 ```
 [{"name":"hello-stream","url":"http://0.0.0.0:26230"},

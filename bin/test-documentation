@@ -5,5 +5,4 @@
 runSbt unidoc
 
 cd docs
-
 runSbt markdownValidateDocs test markdownEvaluateSbtFiles

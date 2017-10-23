@@ -30,6 +30,18 @@ Having done that, you can provide the serializer registry by overriding the `jso
 If you need to use the registry outside of a Lagom application, for example, in tests, this can be done by customising the creation of the actor system, for example:
 
 @[create-actor-system](code/docs/home/scaladsl/serialization/Registry.scala)
+
+## Compression
+
+Compression, as described here, is only used for persistent events, persistent snapshots and remote messages with the service cluster. It is not used for messages that are serialized in the external API of the service.
+
+JSON can be rather verbose and for large messages it can be beneficial to enable compression. That is done by using the [`JsonSerializer.compressed[T]`](api/com/lightbend/lagom/scaladsl/playjson/JsonSerializer$.html) builder method instead of the `JsonSerializer.apply[T]` (as shown in the example snippet above):
+
+@[registry-compressed](code/docs/home/scaladsl/serialization/RegistryWithCompression.scala)
+
+The serializer will by default only compress messages that are larger than 1024 bytes. This threshold can be changed with configuration property:
+
+@[compress-larger-than](../../../../../play-json/src/main/resources/reference.conf)
    
 ## Automated mapping
 

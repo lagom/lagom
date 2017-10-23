@@ -16,7 +16,7 @@ import play.api.Configuration
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.{ Failure, Success }
+import scala.util.{ Failure, Success, Try }
 
 /**
  * This is the internal CircuitBreakersPanel implementation.
@@ -28,7 +28,7 @@ private[lagom] class CircuitBreakersPanelInternal(
   metricsProvider:      CircuitBreakerMetricsProvider
 ) {
 
-  private final case class CircuitBreakerHolder(breaker: AkkaCircuitBreaker, metrics: CircuitBreakerMetrics)
+  private final case class CircuitBreakerHolder(breaker: AkkaCircuitBreaker, metrics: CircuitBreakerMetrics, failedCallDefinition: Try[_] => Boolean)
 
   private lazy val config = circuitBreakerConfig.config
   private lazy val defaultBreakerConfig = circuitBreakerConfig.default
@@ -37,12 +37,12 @@ private[lagom] class CircuitBreakersPanelInternal(
 
   def withCircuitBreaker[T](id: String)(body: => Future[T]): Future[T] = {
     breaker(id) match {
-      case Some(CircuitBreakerHolder(b, metrics)) =>
+      case Some(CircuitBreakerHolder(b, metrics, failedCallDefinition)) =>
         val startTime = System.nanoTime()
 
         def elapsed: Long = System.nanoTime() - startTime
 
-        val result = b.withCircuitBreaker(body)
+        val result: Future[T] = b.withCircuitBreaker(body, failedCallDefinition)
         result.onComplete {
           case Success(_)                              => metrics.onCallSuccess(elapsed)
           case Failure(_: CircuitBreakerOpenException) => metrics.onCallBreakerOpenFailure()
@@ -56,6 +56,17 @@ private[lagom] class CircuitBreakersPanelInternal(
 
   private val createCircuitBreaker = new JFunction[String, Option[CircuitBreakerHolder]] {
 
+    private val allExceptionAsFailure: Try[_] => Boolean = {
+      case _: Success[_] => false
+      case _             => true
+    }
+
+    private def failureDefinition(whitelist: Set[String]): Try[_] => Boolean = {
+      case _: Success[_] => false
+      case Failure(t) if whitelist.contains(t.getClass.getName) => false
+      case _ => true
+    }
+
     override def apply(id: String): Option[CircuitBreakerHolder] = {
 
       val breakerConfig =
@@ -68,6 +79,11 @@ private[lagom] class CircuitBreakersPanelInternal(
         val callTimeout = breakerConfig.getDuration("call-timeout", MILLISECONDS).millis
         val resetTimeout = breakerConfig.getDuration("reset-timeout", MILLISECONDS).millis
 
+        import scala.collection.JavaConverters.asScalaBufferConverter
+        val exceptionWhitelist: Set[String] = breakerConfig.getStringList("exception-whitelist").asScala.toSet
+
+        val definitionOfFailure = if (exceptionWhitelist.isEmpty) allExceptionAsFailure else failureDefinition(exceptionWhitelist)
+
         val breaker = new AkkaCircuitBreaker(system.scheduler, maxFailures, callTimeout, resetTimeout)(system.dispatcher)
         val metrics = metricsProvider.start(id)
 
@@ -75,7 +91,7 @@ private[lagom] class CircuitBreakersPanelInternal(
         breaker.onOpen(metrics.onOpen())
         breaker.onHalfOpen(metrics.onHalfOpen())
 
-        Some(CircuitBreakerHolder(breaker, metrics))
+        Some(CircuitBreakerHolder(breaker, metrics, definitionOfFailure))
       } else None
     }
   }

@@ -146,7 +146,12 @@ private[lagom] class SlickProvider(
 
       DBIO.sequence(schemaStatements.map { s =>
         SimpleDBIO { ctx =>
-          ctx.connection.prepareCall(s).execute()
+          val stmt = ctx.connection.createStatement()
+          try {
+            stmt.executeUpdate(s)
+          } finally {
+            stmt.close()
+          }
         }
       }).asTry.flatMap {
         case Success(_) => DBIO.successful(())
