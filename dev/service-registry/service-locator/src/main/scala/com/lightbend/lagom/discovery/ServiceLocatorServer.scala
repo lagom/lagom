@@ -25,7 +25,7 @@ class ServiceLocatorServer extends Closeable {
   private val logger: Logger = Logger(this.getClass())
 
   @volatile private var server: ReloadableServer = _
-  @volatile private var gatewayAddress: InetSocketAddress = _
+  @volatile private var gatewayAddresses: Seq[InetSocketAddress] = _
 
   def start(serviceLocatorPort: Int, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit = synchronized {
     require(server == null, "Service locator is already running on " + server.mainAddress)
@@ -39,8 +39,8 @@ class ServiceLocatorServer extends Closeable {
         throw new RuntimeException(s"Unable to start service locator on port $serviceLocatorPort", e)
     }
     try {
-      gatewayAddress = gatewayImpl match {
-        case "netty"     => application.injector.instanceOf[NettyServiceGatewayFactory].start().address
+      gatewayAddresses = gatewayImpl match {
+        case "netty"     => application.injector.instanceOf[NettyServiceGatewayFactory].start().address :: Nil
         case "akka-http" => application.injector.instanceOf[AkkaHttpServiceGatewayFactory].start()
         case other       => sys.error("Unknown gateway implementation: " + other)
       }
@@ -81,6 +81,6 @@ class ServiceLocatorServer extends Closeable {
   }
 
   def serviceGatewayAddress: URI = {
-    new URI(s"http://localhost:${gatewayAddress.getPort}")
+    new URI(s"http://localhost:${gatewayAddresses.head.getPort}")
   }
 }

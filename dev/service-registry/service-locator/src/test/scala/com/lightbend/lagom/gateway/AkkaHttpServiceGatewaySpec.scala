@@ -53,8 +53,8 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
     gateway = new AkkaHttpServiceGateway(new DefaultApplicationLifecycle, ServiceGatewayConfig(0), serviceRegistry)
   }
 
-  def gatewayUri = "http://localhost:" + gateway.address.getPort
-  def gatewayWsUri = "ws://localhost:" + gateway.address.getPort
+  def gatewayUri = "http://localhost:" + gateway.addresses.head.getPort
+  def gatewayWsUri = "ws://localhost:" + gateway.addresses.head.getPort
 
   "The Akka HTTP service gateway" should {
 

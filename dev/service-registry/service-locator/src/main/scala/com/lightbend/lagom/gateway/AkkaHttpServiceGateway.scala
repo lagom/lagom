@@ -29,8 +29,8 @@ import scala.concurrent.duration._
 class AkkaHttpServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
                                                @Named("serviceRegistryActor") registry: ActorRef)(implicit actorSystem: ActorSystem, mat: Materializer) {
 
-  def start(): InetSocketAddress = {
-    new AkkaHttpServiceGateway(lifecycle, config, registry).address
+  def start(): Seq[InetSocketAddress] = {
+    new AkkaHttpServiceGateway(lifecycle, config, registry).addresses
   }
 }
 
@@ -130,13 +130,16 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
     headers.filterNot(header => HeadersToFilter(header.lowercaseName()))
   }
 
-  private val bindingFuture = Http().bindAndHandle(handler, "0.0.0.0", config.port)
+  private val localhost = Seq("0.0.0.0", "127.0.0.1", "::1")
+
+  private def bindingFuture(host: String) = Http().bindAndHandle(handler, host, config.port)
+
   lifecycle.addStopHook(() => {
     for {
-      binding <- bindingFuture
-      unbind <- binding.unbind()
+      bindings <- Future.traverse(localhost)(host => bindingFuture(host))
+      unbind <- Future.traverse(bindings)(binding => binding.unbind())
     } yield unbind
   })
 
-  val address: InetSocketAddress = Await.result(bindingFuture, 10.seconds).localAddress
+  val addresses: Seq[InetSocketAddress] = localhost.map(host => Await.result(bindingFuture(host), 10.seconds).localAddress)
 }
