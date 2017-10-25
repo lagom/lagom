@@ -151,9 +151,12 @@ Once all nodes are upgraded to 1.4.x, you should then remove the above configura
 
 ### HTTP Backend
 
-Play 2.6 introduces a new HTTP backend implemented using Akka HTTP instead of Netty. Lagom now defaults to using the Akka HTTP backend when serving HTTP. This switch on the HTTP backend is part of an ongoing effort to replace all building blocks in Lagom for an Akka-based equivalent. Note that when consuming HTTP services, Lagom's Client Factory still relies on the original, Netty-based Play-WS for the client end or remote calls.
 
-You may still opt-out of Akka HTTP to use Netty instead. In `sbt` you can explicitly disable the `LagomAkkaHttpServer` plugin and enable the `LagomNettyServer` plugin. Note that the `LagomAkkaHttpServer` plugin is added by default on any `LagomJava` or `LagomScala` project.
+Play 2.6 introduces a new HTTP backend implemented using Akka HTTP instead of Netty. This switch on the HTTP backend is part of an ongoing effort to replace all building blocks in Lagom for an Akka-based equivalent. Note that when consuming HTTP services, Lagom's Client Factory still relies on a Netty-based Play-WS instance.
+
+If you want to use the new Akka HTTP you won't need to change anything. Once you upgrade the version of the Lagom sbt plugin in `project/plugins.sbt` any new build will use Akka HTTP.
+
+You can opt-out of Akka HTTP to use Netty: in `sbt` you have to explicitly disable the `LagomAkkaHttpServer` plugin and enable the `LagomNettyServer` plugin. Note that the `LagomAkkaHttpServer` plugin is added by default on any `LagomJava` or `LagomScala` project.
 
 ```scala
 lazy val `inventory-service-impl` = (project in file("inventory-impl"))
