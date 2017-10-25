@@ -155,10 +155,13 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
 
       val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
 
-      val theKafkaAddress = if (kafkaAddress == null) s"127.0.0.1:$kafkaPort" else kafkaAddress
+      val localHost = Seq("0.0.0.0", "127.0.0.1", "::1")
 
-      val scalaUnmanagedServices = StaticServiceLocations.staticServiceLocations(cassandraPort, theKafkaAddress) ++
-        unmanagedServices.asScala.toMap
+      val kafkaAddresses = if (kafkaAddress == null) localHost.map(host => s"$host:$kafkaPort") else kafkaAddress :: Nil
+
+      val scalaUnmanagedServices = kafkaAddresses.map(
+        addr => StaticServiceLocations.staticServiceLocations(cassandraPort, addr)
+      ) ++ unmanagedServices.asScala.toMap
 
       Servers.ServiceLocator.start(logger, scalaClassLoader, cp.map(_.getFile.toURI.toURL).toArray,
         serviceLocatorPort, serviceGatewayPort, scalaUnmanagedServices, serviceGatewayImpl)
