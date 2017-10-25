@@ -32,11 +32,9 @@ trait PathParamSerializer[Param] {
   def deserialize(parameters: immutable.Seq[String]): Param
 }
 
-object PathParamSerializer {
+object PathParamSerializer extends DefaultPathParamSerializers
 
-  abstract private class NamedPathParamSerializer[Param](val name: String) extends PathParamSerializer[Param] {
-    override def toString: String = "PathParamSerializer(" + name + ")"
-  }
+trait DefaultPathParamSerializers extends LowPriorityPathParamSerializers {
 
   /**
    * Create a PathParamSerializer for required parameters.
@@ -83,11 +81,11 @@ object PathParamSerializer {
   /**
    * An option path param serializer
    */
-  implicit def optionPathParamSerializer[Param: PathParamSerializer]: PathParamSerializer[Option[Param]] = {
-    val delegate = implicitly[PathParamSerializer[Param]]
+  implicit def optionPathParamSerializer[Param](implicit delegate: PathParamSerializer[Param]): PathParamSerializer[Option[Param]] = {
+
     val name = delegate match {
-      case named: NamedPathParamSerializer[Param] => s"Option[${named.name}]"
-      case other                                  => s"Option($other)"
+      case named: NamedPathParamSerializer[_] => s"Option[${named.name}]"
+      case other                              => s"Option($other)"
     }
 
     new NamedPathParamSerializer[Option[Param]](name) {
@@ -95,21 +93,29 @@ object PathParamSerializer {
         case Some(param) => delegate.serialize(param)
         case None        => Nil
       }
+
       override def deserialize(parameters: Seq[String]): Option[Param] = parameters match {
         case Nil    => None
         case nonNil => Some(delegate.deserialize(parameters))
       }
     }
   }
+}
+
+trait LowPriorityPathParamSerializers {
+
+  sealed abstract class NamedPathParamSerializer[Param](val name: String) extends PathParamSerializer[Param] {
+    override def toString: String = "PathParamSerializer(" + name + ")"
+  }
 
   /**
    * A traversable path param serializer
    */
-  implicit def traversablePathParamSerializer[CC[X] <: Traversable[X], Param: PathParamSerializer](implicit bf: CanBuildFrom[CC[_], Param, CC[Param]]): PathParamSerializer[CC[Param]] = {
-    val delegate = implicitly[PathParamSerializer[Param]]
+  implicit def traversablePathParamSerializer[CC[X] <: Traversable[X], Param: PathParamSerializer](implicit delegate: PathParamSerializer[Param], bf: CanBuildFrom[CC[_], Param, CC[Param]]): PathParamSerializer[CC[Param]] = {
+
     val name = delegate match {
-      case named: NamedPathParamSerializer[Param] => s"Traversable[${named.name}]"
-      case other                                  => s"Traversable($other)"
+      case named: NamedPathParamSerializer[_] => s"Traversable[${named.name}]"
+      case other                              => s"Traversable($other)"
     }
 
     new NamedPathParamSerializer[CC[Param]](name) {

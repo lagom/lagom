@@ -138,7 +138,15 @@ def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
   Dependencies.dependencyWhitelistSetting,
 
   // compile options
-  scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.8", "-feature", "-unchecked", "-Xlog-reflective-calls", "-deprecation"),
+  scalacOptions in Compile ++= Seq(
+    "-encoding",
+    "UTF-8",
+    "-target:jvm-1.8",
+    "-feature",
+    "-unchecked",
+    "-Xlog-reflective-calls",
+    "-deprecation"
+  ),
 
   incOptions := incOptions.value.withNameHashing(true),
 
