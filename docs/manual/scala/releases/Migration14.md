@@ -148,6 +148,21 @@ akka.actor.serialization-bindings {
 
 Once all nodes are upgraded to 1.4.x, you should then remove the above configuration for the next rolling upgrade. For more details on this process and why it's needed, see [here](https://github.com/lagom/lagom/issues/933#issuecomment-327738303).
 
+
+### HTTP Backend
+
+Play 2.6 introduces a new HTTP backend implemented using Akka HTTP instead of Netty. Lagom now defaults to using the Akka HTTP backend when serving HTTP. This switch on the HTTP backend is part of an ongoing effort to replace all building blocks in Lagom for an Akka-based equivalent. Note that when consuming HTTP services, Lagom's Client Factory still relies on the original, Netty-based Play-WS for the client end or remote calls.
+
+You may still opt-out of Akka HTTP to use Netty instead. In `sbt` you can explicitly disable the `LagomAkkaHttpServer` plugin and enable the `LagomNettyServer` plugin. Note that the `LagomAkkaHttpServer` plugin is added by default on any `LagomJava` or `LagomScala` project.
+
+```scala
+lazy val `inventory-service-impl` = (project in file("inventory-impl"))
+  .enablePlugins(LagomScala, LagomNettyServer) // Adds LagomNettyServer
+  .disablePlugins(LagomAkkaHttpServer)         // Removes LagomAkkaHttpServer
+  .settings( /* ... */ )
+  .dependsOn(`inventory-api`)
+```
+
 ## Breaking Changes
 
 The return types of the method below were changed, which could result in deprecation warnings:
