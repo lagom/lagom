@@ -16,11 +16,11 @@ import scala.concurrent.ExecutionContext
 /**
  * Represents a Kafka topic and allows publishing/consuming messages to/from the topic.
  */
-private[lagom] class JavadslKafkaTopic[Message](kafkaConfig: KafkaConfig, topicCall: TopicCall[Message],
-                                                info: ServiceInfo, system: ActorSystem, serviceLocator: ServiceLocator)(implicit mat: Materializer, ec: ExecutionContext) extends Topic[Message] {
+private[lagom] class JavadslKafkaTopic[Payload](kafkaConfig: KafkaConfig, topicCall: TopicCall[Payload],
+                                                info: ServiceInfo, system: ActorSystem, serviceLocator: ServiceLocator)(implicit mat: Materializer, ec: ExecutionContext) extends Topic[Payload] {
 
   override def topicId: TopicId = topicCall.topicId
 
-  override def subscribe(): Subscriber[Message] = new JavadslKafkaSubscriber(kafkaConfig, topicCall,
-    JavadslKafkaSubscriber.GroupId.default(info), info, system, serviceLocator)
+  override def subscribe(): Subscriber[Payload] = new JavadslKafkaSubscriber[Payload, Payload](kafkaConfig, topicCall,
+    JavadslKafkaSubscriber.GroupId.default(info), info, system, serviceLocator, _.value())
 }

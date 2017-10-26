@@ -20,26 +20,30 @@ import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter.{ dslOffse
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer
 import com.lightbend.lagom.javadsl.api.ScalaService._
 import com.lightbend.lagom.javadsl.api._
-import com.lightbend.lagom.javadsl.api.broker.Topic
+import com.lightbend.lagom.javadsl.api.broker.kafka.{ KafkaProperties, PartitionKeyStrategy }
+import com.lightbend.lagom.javadsl.api.broker.{ Message, Topic }
 import com.lightbend.lagom.javadsl.broker.TopicProducer
+import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys
 import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, PersistentEntityRef, PersistentEntityRegistry, Offset => JOffset }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{ BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike }
+import org.scalatest._
 import play.api.inject._
 import play.api.inject.guice.GuiceApplicationBuilder
 
 import scala.collection.mutable
 import scala.compat.java8.FunctionConverters._
+import scala.compat.java8.OptionConverters._
 import scala.concurrent.duration._
-import scala.concurrent.{ ExecutionContext, Promise }
+import scala.concurrent.{ Await, ExecutionContext, Promise }
 
 class JavadslKafkaApiSpec extends WordSpecLike
   with Matchers
   with BeforeAndAfter
   with BeforeAndAfterAll
-  with ScalaFutures {
+  with ScalaFutures
+  with OptionValues {
 
   private lazy val offsetStore = new InMemoryOffsetStore
 
@@ -85,6 +89,7 @@ class JavadslKafkaApiSpec extends WordSpecLike
   }
 
   override implicit val patienceConfig = PatienceConfig(30.seconds, 150.millis)
+  import application.materializer
 
   "The Kafka message broker api" should {
 
@@ -237,7 +242,6 @@ class JavadslKafkaApiSpec extends WordSpecLike
     }
 
     "self-heal at-most-once consumer stream if a failure occurs" in {
-      implicit val mat = application.injector.instanceOf(classOf[Materializer])
       case object SimulateFailure extends RuntimeException
 
       // Let's publish a message to the topic
@@ -279,6 +283,34 @@ class JavadslKafkaApiSpec extends WordSpecLike
       for (i <- 1 to batchSize) test6EventJournal.append(i.toString)
       assert(latch.await(10, TimeUnit.SECONDS))
     }
+
+    "attach metadata to the message" in {
+      test7EventJournal.append("A1")
+      test7EventJournal.append("A2")
+      test7EventJournal.append("A3")
+
+      val messages = Await.result(
+        testService.test7Topic().subscribe.withMetadata.atMostOnceSource.asScala.take(3).runWith(Sink.seq),
+        10.seconds
+      )
+
+      messages.size shouldBe 3
+      def runAssertions(msg: Message[String]): Unit = {
+        msg.messageKeyAsString shouldBe "A"
+        msg.get(KafkaMetadataKeys.TOPIC).asScala.value shouldBe "test7"
+        msg.get(KafkaMetadataKeys.HEADERS) should not be None
+        msg.get(KafkaMetadataKeys.PARTITION).asScala.value shouldBe
+          messages.head.get(KafkaMetadataKeys.PARTITION).asScala.value
+      }
+      messages.foreach(runAssertions)
+      messages.head.getPayload shouldBe "A1"
+      val offset = messages.head.get(KafkaMetadataKeys.OFFSET).asScala.value
+      messages(1).getPayload shouldBe "A2"
+      messages(1).get(KafkaMetadataKeys.OFFSET).asScala.value shouldBe (offset + 1)
+      messages(2).getPayload shouldBe "A3"
+      messages(2).get(KafkaMetadataKeys.OFFSET).asScala.value shouldBe (offset + 2)
+    }
+
   }
 
 }
@@ -291,6 +323,7 @@ object JavadslKafkaApiSpec {
   private val test4EventJournal = new EventJournal[String]
   private val test5EventJournal = new EventJournal[String]
   private val test6EventJournal = new EventJournal[String]
+  private val test7EventJournal = new EventJournal[String]
 
   // Allows tests to insert logic into the producer stream
   @volatile var messageTransformer: String => String = identity
@@ -302,6 +335,7 @@ object JavadslKafkaApiSpec {
     def test4Topic(): Topic[String]
     def test5Topic(): Topic[String]
     def test6Topic(): Topic[String]
+    def test7Topic(): Topic[String]
 
     override def descriptor(): Descriptor =
       named("testservice")
@@ -311,7 +345,11 @@ object JavadslKafkaApiSpec {
           topic("test3", test3Topic _),
           topic("test4", test4Topic _),
           topic("test5", test5Topic _),
-          topic("test6", test6Topic _)
+          topic("test6", test6Topic _),
+          topic("test7", test7Topic _)
+            .withProperty(KafkaProperties.partitionKeyStrategy(), new PartitionKeyStrategy[String] {
+              override def computePartitionKey(message: String) = message.take(1)
+            })
         )
   }
 
@@ -324,6 +362,7 @@ object JavadslKafkaApiSpec {
     override def test4Topic(): Topic[String] = createTopicProducer(test4EventJournal)
     override def test5Topic(): Topic[String] = createTopicProducer(test5EventJournal)
     override def test6Topic(): Topic[String] = createTopicProducer(test6EventJournal)
+    override def test7Topic(): Topic[String] = createTopicProducer(test7EventJournal)
 
     private def createTopicProducer(eventJournal: EventJournal[String]): Topic[String] =
       TopicProducer.singleStreamWithOffset[String]({ fromOffset: JOffset =>
