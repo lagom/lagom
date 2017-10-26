@@ -127,6 +127,7 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
           set.asInstanceOf[util.HashSet[String]].asScala.toSeq.sorted === Seq("10", "20", "30")
       }
 
+      val ser = serializeArgs(commentRepeatSetCall, Seq("some name", new util.HashSet(util.Arrays.asList("10", "20", "30"))))
       ser.head === Seq("some name")
       ser(1) match {
         case seq => seq.sorted === Seq("10", "20", "30")
