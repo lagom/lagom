@@ -84,6 +84,8 @@ public final class PathParamSerializers {
             .stream()
             .map(s -> deserialize.apply(TreePVector.singleton(s)));
     }
+
+
     /**
      * Create a PathParamSerializer for List parameters.
      */
@@ -94,11 +96,9 @@ public final class PathParamSerializers {
         return new NamedPathParamSerializer<List<Param>>("List(" + name + ")") {
             @Override
             public PSequence<String> serialize(List<Param> parameter) {
-
                 List<String> serializedParams =
                     serializeCollection(parameter, serialize)
                         .collect(Collectors.toList());
-
                 return TreePVector.from(serializedParams);
             }
 
@@ -120,11 +120,9 @@ public final class PathParamSerializers {
         return new NamedPathParamSerializer<Set<Param>>("Set(" + name + ")") {
             @Override
             public PSequence<String> serialize(Set<Param> parameter) {
-
                 Set<String> serializedParams =
                     serializeCollection(parameter, serialize)
                         .collect(Collectors.toSet());
-
                 return TreePVector.from(serializedParams);
             }
 
@@ -145,12 +143,9 @@ public final class PathParamSerializers {
         return new NamedPathParamSerializer<Collection<Param>>("Collection(" + name + ")") {
             @Override
             public PSequence<String> serialize(Collection<Param> parameter) {
-
-
                 Collection<String> serializedParams =
                     serializeCollection(parameter, serialize)
                         .collect(Collectors.toList());
-
                 return TreePVector.from(serializedParams);
             }
 
@@ -199,6 +194,7 @@ public final class PathParamSerializers {
      */
     public static final PathParamSerializer<Optional<Object>> OPTIONAL = new UnresolvedOptionalPathParamSerializer<>();
 
+
     /**
      * A generic (unresolved) List serializer.
      */
@@ -210,10 +206,12 @@ public final class PathParamSerializers {
      */
     public static final PathParamSerializer<java.util.Set<Object>> SET = new UnresolvedSetPathParamSerializer<>();
 
+
     /**
      * A generic (unresolved) Collection serializer.
      */
     public static final PathParamSerializer<java.util.Collection<Object>> COLLECTION = new UnresolvedCollectionPathParamSerializer<>();
+
 
     private static abstract class NamedPathParamSerializer<Param> implements PathParamSerializer<Param> {
         private final String name;
