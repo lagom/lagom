@@ -116,6 +116,9 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
         case e: SerializationException =>
           e.errorCode should ===(TransportErrorCode.InternalServerError)
           e.exceptionMessage.detail should ===("failed serialize")
+        case ioe: java.io.IOException =>
+          ioe.printStackTrace()
+          throw ioe
       }
     }
     "handle errors in request deserialization negotiation" in withClient(changeServer = change(callId)(failingRequestNegotiation)) { implicit app => client =>
@@ -124,6 +127,9 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
           e.errorCode should ===(TransportErrorCode.UnsupportedMediaType)
           e.exceptionMessage.detail should include("application/json")
           e.exceptionMessage.detail should include("unsupported")
+        case ioe: java.io.IOException =>
+          ioe.printStackTrace()
+          throw ioe
       }
     }
     "handle errors in request deserialization" in withClient(changeServer = change(callId)(failingRequestSerializer)) { implicit app => client =>
@@ -131,6 +137,9 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
         case e: DeserializationException =>
           e.errorCode should ===(TransportErrorCode.UnsupportedData)
           e.exceptionMessage.detail should ===("failed deserialize")
+        case ioe: java.io.IOException =>
+          ioe.printStackTrace()
+          throw ioe
       }
     }
     "handle errors in service call invocation" in withClient(changeServer = change(callId)(failingServiceCall)) { implicit app => client =>
@@ -140,6 +149,9 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
           e.exceptionMessage.name should ===("Exception")
           e.exceptionMessage.detail should ===("")
           e.errorCode should ===(TransportErrorCode.InternalServerError)
+        case ioe: java.io.IOException =>
+          ioe.printStackTrace()
+          throw ioe
       }
     }
     "handle asynchronous errors in service call invocation" in withClient(changeServer = change(callId)(asyncFailingServiceCall)) { implicit app => client =>
@@ -148,6 +160,9 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
           e.exceptionMessage.name should ===("Exception")
           e.exceptionMessage.detail should ===("")
           e.errorCode should ===(TransportErrorCode.InternalServerError)
+        case ioe: java.io.IOException =>
+          ioe.printStackTrace()
+          throw ioe
       }
     }
     "handle stream errors in service call invocation" when {
@@ -157,6 +172,9 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
             e.exceptionMessage.name should ===("Exception")
             e.exceptionMessage.detail should ===("")
             e.errorCode should ===(TransportErrorCode.InternalServerError)
+          case ioe: java.io.IOException =>
+            ioe.printStackTrace()
+            throw ioe
         }
       }
       "in dev mode will give out detailed exception information" in withClient(changeServer = change(callId)(failingStreamedServiceCall), mode = Mode.Dev) { implicit app => client =>
@@ -181,6 +199,9 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
           e.errorCode should ===(TransportErrorCode.NotAcceptable)
           e.exceptionMessage.detail should include("application/json")
           e.exceptionMessage.detail should include("not accepted")
+        case ioe: java.io.IOException =>
+          ioe.printStackTrace()
+          throw ioe
       }
     }
     "handle errors in response serialization" in withClient(changeServer = change(callId)(failingResponseSerializer)) { implicit app => client =>
@@ -188,6 +209,9 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
         case e: SerializationException =>
           e.errorCode should ===(TransportErrorCode.InternalServerError)
           e.exceptionMessage.detail should ===("failed serialize")
+        case ioe: java.io.IOException =>
+          ioe.printStackTrace()
+          throw ioe
       }
     }
     "handle errors in response deserialization negotiation" in withClient(changeClient = change(callId)(failingResponseNegotation)) { implicit app => client =>
@@ -200,6 +224,9 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
           } catch {
             case e: Throwable => println("SKIPPED - Requires https://github.com/playframework/playframework/issues/5322")
           }
+        case ioe: java.io.IOException =>
+          ioe.printStackTrace()
+          throw ioe
       }
     }
     "handle errors in response deserialization" in withClient(changeClient = change(callId)(failingResponseSerializer)) { implicit app => client =>
@@ -212,8 +239,8 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
   }
 
   /**
-   * This sets up the server and the client, but allows them to be modified before actually creating them.
-   */
+    * This sets up the server and the client, but allows them to be modified before actually creating them.
+    */
   def withClient(changeClient: Descriptor => Descriptor = identity, changeServer: Descriptor => Descriptor = identity,
                  mode: Mode = Mode.Prod)(block: Application => MockService => Unit): Unit = {
 
@@ -234,11 +261,11 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
       )
         .overrides(bind[ResolvedServices].to(new MockResolvedServicesProvider(resolved, changeServer)))
     ) { app =>
-        val clientImplementor = app.injector.instanceOf[JavadslServiceClientImplementor]
-        val clientDescriptor = changeClient(resolved)
-        val client = clientImplementor.implement(classOf[MockService], clientDescriptor)
-        block(app)(client)
-      }
+      val clientImplementor = app.injector.instanceOf[JavadslServiceClientImplementor]
+      val clientDescriptor = changeClient(resolved)
+      val client = clientImplementor.implement(classOf[MockService], clientDescriptor)
+      block(app)(client)
+    }
   }
 
   @Singleton
