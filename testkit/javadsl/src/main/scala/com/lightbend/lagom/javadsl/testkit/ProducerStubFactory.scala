@@ -11,7 +11,7 @@ import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.testkit.TopicStub
 import com.lightbend.lagom.internal.testkit.TopicBufferActor
-import com.lightbend.lagom.javadsl.api.broker.Topic
+import com.lightbend.lagom.javadsl.api.broker.{ Message, Topic }
 
 /**
  * Factors [[com.lightbend.lagom.javadsl.testkit.ProducerStub]]'s. This is a singleton that should be [[javax.inject.Inject]]ed
@@ -50,6 +50,12 @@ final class ProducerStub[T] private[lagom] (topicName: String, actorSystem: Acto
    *
    * @param message
    */
-  def send(message: T): Unit = bufferActor.tell(message, ActorRef.noSender)
+  def send(message: T): Unit = send(Message.create(message))
 
+  /**
+   * Send a message wrapped with metadata to the topic.
+   *
+   * @param message The message to send.
+   */
+  def send(message: Message[T]): Unit = bufferActor.tell(message, ActorRef.noSender)
 }

@@ -15,7 +15,7 @@ import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.broker.Topic.TopicId
-import com.lightbend.lagom.javadsl.api.broker.{ Subscriber, Topic }
+import com.lightbend.lagom.javadsl.api.broker.{ Message, Subscriber, Topic }
 import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, Offset }
 
 import scala.collection.JavaConverters._
@@ -47,18 +47,22 @@ class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializ
     }
   }
 
-  private class TestTopic[Message, Event <: AggregateEvent[Event]](
-    topicCall:     TopicCall[Message],
-    topicProducer: TaggedOffsetTopicProducer[Message, Event]
-  ) extends Topic[Message] {
+  private class TestTopic[Payload, Event <: AggregateEvent[Event]](
+    topicCall:     TopicCall[Payload],
+    topicProducer: TaggedOffsetTopicProducer[Payload, Event]
+  ) extends Topic[Payload] {
 
     override def topicId = topicCall.topicId
 
-    override def subscribe(): Subscriber[Message] = new Subscriber[Message] {
+    override def subscribe(): Subscriber[Payload] = new TestSubscriber[Payload](identity)
 
-      override def withGroupId(groupId: String): Subscriber[Message] = this
+    private class TestSubscriber[SubscriberPayload](transform: Payload => SubscriberPayload) extends Subscriber[SubscriberPayload] {
+      override def withGroupId(groupId: String): Subscriber[SubscriberPayload] = this
 
-      override def atMostOnceSource(): Source[Message, _] = {
+      override def withMetadata(): Subscriber[Message[SubscriberPayload]] =
+        new TestSubscriber(msg => Message.create(transform(msg)))
+
+      override def atMostOnceSource(): Source[SubscriberPayload, _] = {
 
         val serializer = topicCall.messageSerializer().serializerForRequest()
         val deserializer = topicCall.messageSerializer().deserializer(serializer.protocol())
@@ -71,10 +75,10 @@ class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializ
           serializer.serialize(message)
         }.map { bytes =>
           deserializer.deserialize(bytes)
-        }.asJava
+        }.map(transform).asJava
       }
 
-      override def atLeastOnce(flow: Flow[Message, Done, _]): CompletionStage[Done] = {
+      override def atLeastOnce(flow: Flow[SubscriberPayload, Done, _]): CompletionStage[Done] = {
         atMostOnceSource().via(flow).runWith(Sink.ignore(), materializer)
       }
     }
