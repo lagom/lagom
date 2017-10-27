@@ -57,7 +57,10 @@ object ServiceReader {
       classOf[java.lang.Integer] -> PathParamSerializers.INTEGER,
       classOf[java.lang.Double] -> PathParamSerializers.DOUBLE,
       classOf[java.lang.Boolean] -> PathParamSerializers.BOOLEAN,
-      classOf[java.util.Optional[_]] -> PathParamSerializers.OPTIONAL
+      classOf[java.util.Optional[_]] -> PathParamSerializers.OPTIONAL,
+      classOf[java.util.List[_]] -> PathParamSerializers.LIST,
+      classOf[java.util.Set[_]] -> PathParamSerializers.SET,
+      classOf[java.util.Collection[_]] -> PathParamSerializers.COLLECTION
     )
 
     val builtInMessageSerializers: Map[Type, MessageSerializer[_, _]] = Map(
