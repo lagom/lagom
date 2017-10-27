@@ -120,6 +120,8 @@ CREATE UNIQUE INDEX "journal_ordering_idx" ON "journal"("ordering")
 CREATE UNIQUE INDEX "journal_ordering_idx" ON PUBLIC."journal"("ordering");
 ```
 
+Moreover, in `akka-persistence-jdbc` 3.0.x series, the `Events` query treats the offset as exclusive instead of inclusive. In general, this should not be a problem. Previous versions of Lagom had a workaround for it and this change in behavior should be transparent. This will only impact you if you were using the `Akka Persistence Query` directly.
+
 ## Upgrading to Play 2.6 and Akka 2.5
 
 The internal upgrade to latest major versions of Play and Akka may need some changes in your code if you are using either of them directly. Please refer to the [Play 2.6 migration guide](https://www.playframework.com/documentation/2.6.x/Migration26) and the [Akka 2.5 migration guide](http://doc.akka.io/docs/akka/current/scala/project/migration-guide-2.4.x-2.5.x.html) for more details.
