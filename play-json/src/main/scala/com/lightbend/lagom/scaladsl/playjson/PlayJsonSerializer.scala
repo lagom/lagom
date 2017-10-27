@@ -116,15 +116,17 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
         storedBytes
 
     val json = Json.parse(bytes) match {
-      case jsObject: JsObject => jsObject
+      case jsValue: JsValue => jsValue
       case other =>
         throw new RuntimeException("Unexpected serialized json data. " +
           s"Expected a JSON object, but was [${other.getClass.getName}]")
     }
 
-    val migratedJson = transformMigration match {
-      case Some(migration) if migration.currentVersion > fromVersion =>
-        migration.transform(fromVersion, json)
+    val migratedJson = (transformMigration, json) match {
+      case (Some(migration), js: JsObject) if migration.currentVersion > fromVersion =>
+        migration.transform(fromVersion, js)
+      case (Some(migration), js: JsValue) if migration.currentVersion > fromVersion =>
+        migration.transformValue(fromVersion, js)
       case _ => json
     }
 
