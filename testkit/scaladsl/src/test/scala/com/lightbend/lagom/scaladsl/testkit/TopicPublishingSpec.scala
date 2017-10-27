@@ -9,8 +9,7 @@ import akka.stream.testkit.scaladsl.TestSink
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
-import com.lightbend.lagom.scaladsl.playjson.EmptyJsonSerializerRegistry
-import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LagomServer, LocalServiceLocator }
+import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LocalServiceLocator }
 import com.lightbend.lagom.scaladsl.testkit.services.{ AlphaEvent, AlphaService }
 import org.scalatest.{ AsyncWordSpec, Matchers }
 import play.api.libs.ws.ahc.AhcWSComponents
@@ -22,8 +21,6 @@ abstract class AlphaApplication(context: LagomApplicationContext)
   with AhcWSComponents {
 
   override lazy val lagomServer = serverFor[AlphaService](new AlphaServiceImpl())
-
-  override lazy val jsonSerializerRegistry = EmptyJsonSerializerRegistry
 }
 
 class AlphaServiceImpl extends AlphaService {

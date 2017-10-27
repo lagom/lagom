@@ -5,10 +5,9 @@ package com.lightbend.lagom.scaladsl.persistence.jdbc
 
 import akka.actor.ActorSystem
 import akka.stream.{ ActorMaterializer, Materializer }
+import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence.multinode.{ AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec }
-import com.lightbend.lagom.scaladsl.persistence.{ ReadSideProcessor, TestEntitySerializerRegistry }
-import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.h2.tools.Server
 import play.api.{ Configuration, Environment }
@@ -63,7 +62,6 @@ class JdbcClusteredPersistentEntitySpec extends AbstractClusteredPersistentEntit
       override lazy val configuration: Configuration = Configuration(system.settings.config)
       override def environment: Environment = JdbcClusteredPersistentEntityConfig.environment
       override lazy val applicationLifecycle: ApplicationLifecycle = defaultApplicationLifecycle
-      override def jsonSerializerRegistry: JsonSerializerRegistry = TestEntitySerializerRegistry
     }
 
   lazy val jdbcTestEntityReadSide: JdbcTestEntityReadSide =
