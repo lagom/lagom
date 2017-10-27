@@ -81,6 +81,38 @@ In Lagom 1.4, services that use Cassandra persistence will fail on startup when 
 See [[Storing Persistent Entities in Cassandra|PersistentEntityCassandra#Configuration]] for more details.
 
 
+## Relational Databases - Akka Persistence JDBC
+
+If you are using Lagom's `Persistent Entity` API with a relational database, you will need to add an index to your journal table.
+
+The relational database support is based on `akka-persistence-jdbc` plugin. The plugin was updated to version 3.0.1, which include an important [bug fix](https://github.com/dnvriend/akka-persistence-jdbc/issues/96) that requires a new column index. Failing in updating your database schema will result in degraded performance when querying events.
+
+Bellow you will find the index creation statement for each supported database.
+
+### Postgres
+
+```sql
+CREATE UNIQUE INDEX journal_ordering_idx ON public.journal(ordering);
+```
+
+### MySQL
+
+```sql
+CREATE UNIQUE INDEX journal_ordering_idx ON journal(ordering);
+```
+
+### Oracle
+
+```sql
+CREATE UNIQUE INDEX "journal_ordering_idx" ON "journal"("ordering")
+```
+
+### H2 Database (for use in development only)
+
+```sql
+CREATE UNIQUE INDEX "journal_ordering_idx" ON PUBLIC."journal"("ordering");
+```
+
 ## Upgrading to Play 2.6 and Akka 2.5
 
 The internal upgrade to latest major versions of Play and Akka may need some changes in your code if you are using either of them directly. Please refer to the [Play 2.6 migration guide](https://www.playframework.com/documentation/2.6.x/Migration26) and the [Akka 2.5 migration guide](http://doc.akka.io/docs/akka/current/scala/project/migration-guide-2.4.x-2.5.x.html) for more details.
