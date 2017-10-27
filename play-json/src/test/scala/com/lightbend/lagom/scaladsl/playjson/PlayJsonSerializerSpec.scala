@@ -21,6 +21,16 @@ case class Event2(name: String, inner: Inner)
 case class Inner(on: Boolean)
 case class MigratedEvent(addedField: Int, newName: String)
 
+case class Name(name: String)
+
+object Name {
+  implicit val format: Format[Name] = new Format[Name] {
+    override def writes(o: Name): JsValue = JsString(o.toString)
+
+    override def reads(js: JsValue): JsResult[Name] = js.validate[String].map(Name.apply)
+  }
+}
+
 object TestRegistry1 extends JsonSerializerRegistry {
 
   implicit val innerFormat = Json.format[Inner]
@@ -109,6 +119,12 @@ object TestRegistryWithCompression extends JsonSerializerRegistry {
       JsonSerializer.compressed(Json.format[Event2])
     )
 
+}
+
+object TestRegistryWithJson extends JsonSerializerRegistry {
+  override def serializers: Seq[JsonSerializer[_]] = Seq(
+    JsonSerializer(Json.format[Name])
+  )
 }
 
 case class Box(surprise: Option[String])
@@ -297,6 +313,18 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val result = serializer.reads(serializer.writes(Singleton))
       result.isSuccess shouldBe true
       result.get shouldBe Singleton
+    }
+
+    "serialize and deserialize JsValues" in withActorSystem(TestRegistryWithJson) { system =>
+      val event = Name("hello, world")
+
+      val serializeExt = SerializationExtension(system)
+      val serializer = serializeExt.findSerializerFor(event).asInstanceOf[SerializerWithStringManifest]
+      val manifest = serializer.manifest(event)
+      val bytes = serializer.toBinary(event)
+
+      val res = serializer.fromBinary(bytes, manifest)
+      assert(res == event)
     }
 
   }
