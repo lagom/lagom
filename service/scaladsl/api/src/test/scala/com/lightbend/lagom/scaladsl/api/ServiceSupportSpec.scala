@@ -10,46 +10,73 @@ import org.scalatest.{ Matchers, OptionValues, WordSpec }
 
 class ServiceSupportSpec extends WordSpec with Matchers with OptionValues {
 
-  "ServiceSupport macro" should {
+  "ServiceSupport macro" when {
 
-    val holder = new MockService {
-      override def foo(bar: String): ServiceCall[String, String] = null
-    }.descriptor.calls.collect {
-      case CallImpl(PathCallIdImpl("/foo/:bar"), holder: ServiceSupport.ScalaMethodServiceCall[_, _], _, _, _, _) => holder
-    }.headOption
+    "using String path params support service" should {
+      val holder = new StringMockService {
+        override def foo(bar: String): ServiceCall[String, String] = null
+      }.descriptor.calls.collect {
+        case CallImpl(PathCallIdImpl("/foo/:bar"), holder: ServiceSupport.ScalaMethodServiceCall[_, _], _, _, _, _) => holder
+      }.headOption
 
-    "resolve the method name" in {
-      holder.value.method.getDeclaringClass should ===(classOf[MockService])
-      holder.value.method.getName should ===("foo")
+      "resolve the method name" in {
+        holder.value.method.getDeclaringClass should ===(classOf[StringMockService])
+        holder.value.method.getName should ===("foo")
+      }
+      "pass the path param serializers" in {
+        holder.value.pathParamSerializers should have size 1
+        holder.value.pathParamSerializers.head should ===(PathParamSerializer.StringPathParamSerializer)
+      }
     }
-    "pass the path param serializers " in {
-      holder.value.pathParamSerializers should have size 1
-      holder.value.pathParamSerializers.head should ===(PathParamSerializer.StringPathParamSerializer)
-    }
 
-    "Double path params support" should {
+    "using Double path params support service" should {
       val holder = new DoubleMockService {
         override def foo(bar: Double): ServiceCall[String, String] = null
       }.descriptor.calls.collect {
         case CallImpl(PathCallIdImpl("/foo/:bar"), holder: ServiceSupport.ScalaMethodServiceCall[_, _], _, _, _, _) => holder
       }.headOption
 
-      "pass the path param serializers " in {
+      "pass the path param serializers" in {
         holder.value.pathParamSerializers should have size 1
         holder.value.pathParamSerializers.head should ===(PathParamSerializer.DoublePathParamSerializer)
+      }
+    }
+
+    "using Vector[String] path params support service" should {
+      val holder = new VectorStringMockService {
+        override def foo(bar: Vector[String]): ServiceCall[String, String] = null
+      }.descriptor.calls.collect {
+        case CallImpl(PathCallIdImpl("/foo?bar"), holder: ServiceSupport.ScalaMethodServiceCall[_, _], _, _, _, _) => holder
+      }.headOption
+
+      "pass the path param serializers" in {
+        holder.value.pathParamSerializers should have size 1
+        holder.value.pathParamSerializers.head should be(a[PathParamSerializer[Vector[String]]])
+      }
+    }
+
+    "using List[Double] path params support service" should {
+      val holder = new ListDoubleMockService {
+        override def foo(bar: List[Double]): ServiceCall[String, String] = null
+      }.descriptor.calls.collect {
+        case CallImpl(PathCallIdImpl("/foo?bar"), holder: ServiceSupport.ScalaMethodServiceCall[_, _], _, _, _, _) => holder
+      }.headOption
+
+      "pass the path param serializers" in {
+        holder.value.pathParamSerializers should have size 1
+        holder.value.pathParamSerializers.head should be(a[PathParamSerializer[List[Double]]])
       }
     }
   }
 }
 
-trait MockService extends Service {
+trait StringMockService extends Service {
 
   def foo(bar: String): ServiceCall[String, String]
 
   override def descriptor = named("mock").withCalls(
     pathCall("/foo/:bar", foo _)
   )
-
 }
 
 trait DoubleMockService extends Service {
@@ -58,5 +85,23 @@ trait DoubleMockService extends Service {
 
   override def descriptor = named("mock").withCalls(
     pathCall("/foo/:bar", foo _)
+  )
+}
+
+trait VectorStringMockService extends Service {
+
+  def foo(bar: Vector[String]): ServiceCall[String, String]
+
+  override def descriptor = named("mock").withCalls(
+    pathCall("/foo?bar", foo _)
+  )
+}
+
+trait ListDoubleMockService extends Service {
+
+  def foo(bar: List[Double]): ServiceCall[String, String]
+
+  override def descriptor = named("mock").withCalls(
+    pathCall("/foo?bar", foo _)
   )
 }
