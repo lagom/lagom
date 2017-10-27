@@ -69,8 +69,8 @@ private[lagom] class SlickProvider(
       override val profile: JdbcProfile = SlickProvider.this.profile
     }
 
-    val journalStatements = {
-      val s = profile match {
+    val journalStatements =
+      profile match {
         case H2Profile =>
           // Work around https://github.com/slick/slick/issues/763
           journalTables.JournalTable.schema.createStatements
@@ -84,15 +84,8 @@ private[lagom] class SlickProvider(
         case _ => journalTables.JournalTable.schema.createStatements.toSeq
       }
 
-      // Work around https://github.com/dnvriend/akka-persistence-jdbc/issues/73
-      // The work around below is very specific to how Slick generates the schema, and so is very fragile, but it
-      // will do for now.
-      s.map(_.replace(" NOT NULL)", ")"))
-    }
-
     // Work around https://github.com/dnvriend/akka-persistence-jdbc/issues/71
-    val snapshotStatements = snapshotTables.SnapshotTable.schema.createStatements
-      .map(_.replace(" PRIMARY KEY,", ",")).toSeq
+    val snapshotStatements = snapshotTables.SnapshotTable.schema.createStatements.toSeq
 
     snapshotTables.SnapshotTable.schema.create
 
