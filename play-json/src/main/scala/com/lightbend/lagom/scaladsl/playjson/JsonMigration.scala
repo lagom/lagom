@@ -15,11 +15,12 @@ object JsonMigrations {
 
   def apply(
     currentVersion:          Int,
-    transformation:          (Int, JsObject) => JsObject,
+    transformation:          (Int, JsValue) => JsValue,
     classNameTransformation: (Int, String) => String
   ): JsonMigration =
     new JsonMigration(currentVersion) {
-      override def transform(fromVersion: Int, json: JsObject): JsObject = transformation(fromVersion, json)
+      override def transform(fromVersion: Int, json: JsObject): JsValue = transformation(fromVersion, json)
+      override def transformValue(fromVersion: Int, json: JsValue): JsValue = transformation(fromVersion, json)
       override def transformClassName(fromVersion: Int, className: String): String = classNameTransformation(fromVersion, className)
     }
 
@@ -81,7 +82,16 @@ abstract class JsonMigration(val currentVersion: Int) {
    * @param fromVersion the version of the old data
    * @param json the old JSON data
    */
-  def transform(fromVersion: Int, json: JsObject): JsObject = json
+  def transform(fromVersion: Int, json: JsObject): JsValue = json
+
+  /**
+   * Override to provide transformation of the old JSON value to the new
+   * JSON value
+   *
+   * @param fromVersion the version of the old data
+   * @param json the old JSON data
+   */
+  def transformValue(fromVersion: Int, json: JsValue): JsValue = json
 
   /**
    * Override this method if you have changed the class name. Return
