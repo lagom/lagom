@@ -925,6 +925,12 @@ def archetypeProject(archetypeName: String) =
         }
         (copyResources in Compile).value
       },
+      unmanagedResources in Compile := {
+        val gitIgnoreFiles = (unmanagedResourceDirectories in Compile).value flatMap { dirs =>
+          ( dirs ** (".gitignore") ).get
+        }
+        (unmanagedResources in Compile).value ++ gitIgnoreFiles
+      },
       // Don't force copyright headers in Maven archetypes
       HeaderKey.excludes := Seq("*")
     ).disablePlugins(EclipsePlugin)
