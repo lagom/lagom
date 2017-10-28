@@ -74,7 +74,6 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
     override def configuration: play.api.Configuration = play.api.Configuration(config)
     override def materializer: Materializer = ActorMaterializer()(system)
     override def serviceLocator: ServiceLocator = NoServiceLocator
-    override def jsonSerializerRegistry: JsonSerializerRegistry = TestEntitySerializerRegistry
   }
 
   private def registry: PersistentEntityRegistry = {
