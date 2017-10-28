@@ -232,7 +232,7 @@ class PersistentEntityTestDriver[C, E, S](
   def getAllIssues: immutable.Seq[Issue] = allIssues
 
   private val unhandledEvent: PartialFunction[(E, S), S] = {
-    case event =>
+    case (event, _) =>
       issues :+= UnhandledEvent(event)
       state
   }
