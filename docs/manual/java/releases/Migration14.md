@@ -80,6 +80,9 @@ In Lagom 1.4, services that use Cassandra persistence will fail on startup when 
 
 See [[Storing Persistent Entities in Cassandra|PersistentEntityCassandra#Configuration]] for more details.
 
+### Default Service Locator port
+
+Historically, Lagom's service locator has listened on port 8000. Because port 8000 is a common port on which apps listen, its default value has been changed to 9008.
 
 ## Upgrading to Play 2.6 and Akka 2.5
 
