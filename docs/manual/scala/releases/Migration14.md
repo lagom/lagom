@@ -92,6 +92,10 @@ See [[Storing Persistent Entities in Cassandra|PersistentEntityCassandra#Configu
 
 The internal upgrade to latest major versions of Play and Akka may need some changes in your code if you are using either of them directly. Please refer to the [Play 2.6 migration guide](https://www.playframework.com/documentation/2.6.x/Migration26) and the [Akka 2.5 migration guide](http://doc.akka.io/docs/akka/current/scala/project/migration-guide-2.4.x-2.5.x.html) for more details.
 
+### Default Service Locator port
+
+Historically, Lagom's service locator has listened on port 8000. Because port 8000 is a common port on which apps listen, its default value has been changed to 9008.
+
 ### Rolling upgrade
 
 When running a rolling upgrade the nodes composing your Akka cluster must keep the ability to connect to each other and must use the same serialization formats. 
@@ -109,3 +113,4 @@ akka.actor.serialization-bindings {
 ```
 
 Once all nodes are upgraded to 1.4.x, you should then remove the above configuration for the next rolling upgrade. For more details on this process and why it's needed, see [here](https://github.com/lagom/lagom/issues/933#issuecomment-327738303).
+
