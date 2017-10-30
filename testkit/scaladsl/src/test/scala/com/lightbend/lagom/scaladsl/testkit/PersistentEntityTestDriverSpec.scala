@@ -75,6 +75,13 @@ class PersistentEntityTestDriverSpec extends ActorSystemSpec(JsonSerializerRegis
       outcome1.issues should be(List(PersistentEntityTestDriver.UnhandledCommand(undefined)))
     }
 
+    "record unhandled events" in {
+      val driver = newDriver()
+      val unhandledEvent = TestEntity.UnhandledEvtCmd
+      val outcome1 = driver.run(unhandledEvent)
+      outcome1.issues should be(List(PersistentEntityTestDriver.UnhandledEvent(TestEntity.Unhandled)))
+    }
+
     "be able to handle snapshot state" in {
       val driver = newDriver()
       val outcome1 = driver.initialize(Some(
