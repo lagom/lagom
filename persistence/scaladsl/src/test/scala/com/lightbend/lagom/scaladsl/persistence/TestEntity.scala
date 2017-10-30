@@ -40,6 +40,7 @@ object TestEntity {
       JsonSerializer(Json.format[ChangeMode]),
       JsonSerializer(emptySingletonFormat(Get)),
       JsonSerializer(emptySingletonFormat(UndefinedCmd)),
+      JsonSerializer(emptySingletonFormat(UnhandledEvtCmd)),
       JsonSerializer(emptySingletonFormat(GetAddress)),
       JsonSerializer(emptySingletonFormat(Clear))
     )
@@ -62,6 +63,8 @@ object TestEntity {
 
   case object UndefinedCmd extends Cmd with ReplyType[Evt]
 
+  case object UnhandledEvtCmd extends Cmd with ReplyType[State]
+
   case object GetAddress extends Cmd with ReplyType[Address]
 
   case object Clear extends Cmd with ReplyType[State]
@@ -81,6 +84,7 @@ object TestEntity {
       JsonSerializer(Json.format[Prepended]),
       JsonSerializer(emptySingletonFormat(InPrependMode)),
       JsonSerializer(emptySingletonFormat(InAppendMode)),
+      JsonSerializer(emptySingletonFormat(Unhandled)),
       JsonSerializer(emptySingletonFormat(Cleared))
     )
   }
@@ -96,6 +100,8 @@ object TestEntity {
   case object InPrependMode extends Evt
 
   case object InAppendMode extends Evt
+
+  case object Unhandled extends Evt
 
   case object Cleared extends Evt
 
@@ -173,6 +179,9 @@ class TestEntity(system: ActorSystem)
       }
       .onCommand[Clear.type, State] {
         case (Clear, ctx, state) => ctx.thenPersist(Cleared)(_ => ctx.reply(state))
+      }
+      .onCommand[UnhandledEvtCmd.type, State] {
+        case (_, ctx, state) => ctx.thenPersist(Unhandled)(_ => ctx.reply(state))
       }
       .onEvent {
         case (Cleared, _) => null
