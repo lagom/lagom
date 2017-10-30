@@ -137,8 +137,6 @@ class PersistentEntityTestDriver[C, E, S](
       entity.PersistNone
   }
 
-  def runOne[CC <: entity.Command](command: C): Outcome[E, S] = ???
-
   /**
    * The entity will process the commands and the emitted events and side effects
    * are recorded and provided in the returned `Outcome`. Current state is also
