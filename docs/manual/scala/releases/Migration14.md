@@ -7,7 +7,7 @@ This guide explains how to migrate from Lagom 1.3 to Lagom 1.4. If you are upgra
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin. For example:
 
 ```scala
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0-M1")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0-M2")
 ```
 
 ## Binding services
@@ -88,6 +88,40 @@ In Lagom 1.4, services that use Cassandra persistence will fail on startup when 
 
 See [[Storing Persistent Entities in Cassandra|PersistentEntityCassandra#Configuration]] for more details.
 
+## Relational Databases - Akka Persistence JDBC
+
+If you are using Lagom's `Persistent Entity` API with a relational database, you will need to add an index to your journal table.
+
+The relational database support is based on `akka-persistence-jdbc` plugin. The plugin was updated to version 3.0.1, which include an important [bug fix](https://github.com/dnvriend/akka-persistence-jdbc/issues/96) that requires a new column index. Failing in updating your database schema will result in degraded performance when querying events.
+
+Bellow you will find the index creation statement for each supported database.
+
+### Postgres
+
+```sql
+CREATE UNIQUE INDEX journal_ordering_idx ON public.journal(ordering);
+```
+
+### MySQL
+
+```sql
+CREATE UNIQUE INDEX journal_ordering_idx ON journal(ordering);
+```
+
+### Oracle
+
+```sql
+CREATE UNIQUE INDEX "journal_ordering_idx" ON "journal"("ordering")
+```
+
+### H2 Database (for use in development only)
+
+```sql
+CREATE UNIQUE INDEX "journal_ordering_idx" ON PUBLIC."journal"("ordering");
+```
+
+Moreover, in `akka-persistence-jdbc` 3.0.x series, the `Events` query treats the offset as exclusive instead of inclusive. In general, this should not be a problem. Previous versions of Lagom had a workaround for it and this change in behavior should be transparent. This will only impact you if you were using the `Akka Persistence Query` directly.
+
 ## Upgrading to Play 2.6 and Akka 2.5
 
 The internal upgrade to latest major versions of Play and Akka may need some changes in your code if you are using either of them directly. Please refer to the [Play 2.6 migration guide](https://www.playframework.com/documentation/2.6.x/Migration26) and the [Akka 2.5 migration guide](http://doc.akka.io/docs/akka/current/scala/project/migration-guide-2.4.x-2.5.x.html) for more details.
@@ -98,7 +132,7 @@ Historically, Lagom's service locator has listened on port 8000. Because port 80
 
 ### Rolling upgrade
 
-When running a rolling upgrade the nodes composing your Akka cluster must keep the ability to connect to each other and must use the same serialization formats. 
+When running a rolling upgrade the nodes composing your Akka cluster must keep the ability to connect to each other and must use the same serialization formats.
 
 One relevant change Akka 2.5 introduced involves a new method (DData) to [internally handle the sharding](http://doc.akka.io/docs/akka/current/scala/project/migration-guide-2.4.x-2.5.x.html#cluster-sharding-state-store-mode) of your Persistent Entities in Lagom. We have decided to not enable that new method so your migration from Lagom 1.3.x to 1.4.x should be fine. You may opt in and use DData instead of the default persistence-based one. Switching from persistence-based to DData requires a complete-cluster shutdown.
 
