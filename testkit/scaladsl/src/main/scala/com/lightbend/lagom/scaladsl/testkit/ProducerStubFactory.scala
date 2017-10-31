@@ -12,7 +12,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, Source }
 import com.lightbend.lagom.internal.testkit.{ InternalSubscriberStub, TopicBufferActor }
 import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId
-import com.lightbend.lagom.scaladsl.api.broker.{ Subscriber, Topic }
+import com.lightbend.lagom.scaladsl.api.broker.{ Message, Subscriber, Topic }
 
 import scala.concurrent.Future
 
@@ -43,18 +43,39 @@ final class ProducerStub[T] private[lagom] (topicName: String, actorSystem: Acto
   }
 
   val topic: Topic[T] = new TopicStub[T](TopicId(topicName), bufferActor)(materializer)
-  def send(message: T): Unit = bufferActor.tell(message, ActorRef.noSender)
+
+  /**
+   * Send a message payload to the topic.
+   *
+   * @param message The message to send.
+   */
+  def send(message: T): Unit = bufferActor.tell(Message(message), ActorRef.noSender)
+
+  /**
+   * Send a message wrapped with metadata to the topic.
+   *
+   * @param message The message to send.
+   */
+  def send(message: Message[T]): Unit = bufferActor.tell(message, ActorRef.noSender)
 }
 
 private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: ActorRef)(implicit materializer: Materializer) extends Topic[T] {
-  def subscribe = new SubscriberStub[T]("default", topicBuffer)
+  def subscribe = new SubscriberStub[T, T]("default", topicBuffer, _.payload)
 
-  class SubscriberStub[Message](groupId: String, topicBuffer: ActorRef)(implicit materializer: Materializer)
-    extends InternalSubscriberStub(groupId, topicBuffer) with Subscriber[Message] {
+  class SubscriberStub[Payload, SubscriberPayload](groupId: String, topicBuffer: ActorRef, transform: Message[Payload] => SubscriberPayload)(implicit materializer: Materializer)
+    extends InternalSubscriberStub[Payload, Message](groupId, topicBuffer) with Subscriber[SubscriberPayload] {
 
-    override def withGroupId(groupId: String): Subscriber[Message] = new SubscriberStub[Message](groupId, topicBuffer)
-    override def atMostOnceSource: Source[Message, _] = super.mostOnceSource
-    override def atLeastOnce(flow: Flow[Message, Done, _]): Future[Done] = super.leastOnce(flow)
+    override def withMetadata: Subscriber[Message[SubscriberPayload]] =
+      new SubscriberStub[Payload, Message[SubscriberPayload]](groupId, topicBuffer,
+        msg => msg.withPayload(transform(msg)))
+
+    override def withGroupId(groupId: String): Subscriber[SubscriberPayload] =
+      new SubscriberStub[Payload, SubscriberPayload](groupId, topicBuffer, transform)
+
+    override def atMostOnceSource: Source[SubscriberPayload, _] = super.mostOnceSource.map(transform)
+
+    override def atLeastOnce(flow: Flow[SubscriberPayload, Done, _]): Future[Done] =
+      super.leastOnce(Flow[Message[Payload]].map(transform).via(flow))
   }
 
 }

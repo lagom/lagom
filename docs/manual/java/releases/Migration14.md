@@ -80,6 +80,43 @@ In Lagom 1.4, services that use Cassandra persistence will fail on startup when 
 
 See [[Storing Persistent Entities in Cassandra|PersistentEntityCassandra#Configuration]] for more details.
 
+### Default Service Locator port
+
+Historically, Lagom's service locator has listened on port 8000. Because port 8000 is a common port on which apps listen, its default value has been changed to 9008.
+
+## Relational Databases - Akka Persistence JDBC
+
+If you are using Lagom's `Persistent Entity` API with a relational database, you will need to add an index to your journal table.
+
+The relational database support is based on `akka-persistence-jdbc` plugin. The plugin was updated to version 3.0.1, which include an important [bug fix](https://github.com/dnvriend/akka-persistence-jdbc/issues/96) that requires a new column index. Failing in updating your database schema will result in degraded performance when querying events.
+
+Bellow you will find the index creation statement for each supported database.
+
+### Postgres
+
+```sql
+CREATE UNIQUE INDEX journal_ordering_idx ON public.journal(ordering);
+```
+
+### MySQL
+
+```sql
+CREATE UNIQUE INDEX journal_ordering_idx ON journal(ordering);
+```
+
+### Oracle
+
+```sql
+CREATE UNIQUE INDEX "journal_ordering_idx" ON "journal"("ordering")
+```
+
+### H2 Database (for use in development only)
+
+```sql
+CREATE UNIQUE INDEX "journal_ordering_idx" ON PUBLIC."journal"("ordering");
+```
+
+Moreover, in `akka-persistence-jdbc` 3.0.x series, the `Events` query treats the offset as exclusive instead of inclusive. In general, this should not be a problem. Previous versions of Lagom had a workaround for it and this change in behavior should be transparent. This will only impact you if you were using the `Akka Persistence Query` directly.
 
 ## Upgrading to Play 2.6 and Akka 2.5
 
