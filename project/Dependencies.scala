@@ -426,6 +426,7 @@ object Dependencies {
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
+    playNettyServer,
     playAkkaHttpServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest,

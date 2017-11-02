@@ -239,8 +239,8 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
   }
 
   /**
-    * This sets up the server and the client, but allows them to be modified before actually creating them.
-    */
+   * This sets up the server and the client, but allows them to be modified before actually creating them.
+   */
   def withClient(changeClient: Descriptor => Descriptor = identity, changeServer: Descriptor => Descriptor = identity,
                  mode: Mode = Mode.Prod)(block: Application => MockService => Unit): Unit = {
 
@@ -261,11 +261,11 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
       )
         .overrides(bind[ResolvedServices].to(new MockResolvedServicesProvider(resolved, changeServer)))
     ) { app =>
-      val clientImplementor = app.injector.instanceOf[JavadslServiceClientImplementor]
-      val clientDescriptor = changeClient(resolved)
-      val client = clientImplementor.implement(classOf[MockService], clientDescriptor)
-      block(app)(client)
-    }
+        val clientImplementor = app.injector.instanceOf[JavadslServiceClientImplementor]
+        val clientDescriptor = changeClient(resolved)
+        val client = clientImplementor.implement(classOf[MockService], clientDescriptor)
+        block(app)(client)
+      }
   }
 
   @Singleton

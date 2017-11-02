@@ -150,6 +150,12 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
               // Setup the pipeline
               val channelPublisher = new HandlerPublisher(ctx.executor, classOf[ByteString]) {
                 override def cancelled() = clientInitiatedClose(ctx)
+
+                override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) = {
+                  println(s"exceptionCaught on Publisher. Cause: ${cause.getMessage}")
+                  super.exceptionCaught(ctx, cause)
+                }
+
               }
               val channelSubscriber = new HandlerSubscriber[ByteString](ctx.executor) {
                 override def error(error: Throwable) = {
