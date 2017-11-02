@@ -6,9 +6,8 @@ package com.lightbend.lagom.javadsl.persistence;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.NoSerializationVerificationNeeded;
-import akka.pattern.Patterns;
+import akka.pattern.PatternsCS;
 import akka.util.Timeout;
-import scala.compat.java8.FutureConverters;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.io.NotSerializableException;
@@ -55,9 +54,7 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
    */
   @SuppressWarnings("unchecked")
   public <Reply, Cmd extends Object & PersistentEntity.ReplyType<Reply>> CompletionStage<Reply> ask(Cmd command) {
-    CompletionStage<Object> future = FutureConverters.toJava(
-        Patterns.ask(region, new CommandEnvelope(entityId, command), timeout)
-    );
+    CompletionStage<Object> future = PatternsCS.ask(region, new CommandEnvelope(entityId, command), timeout);
 
     return future.thenCompose(result -> {
       if (result instanceof Throwable) {
@@ -70,7 +67,6 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
     });
 
   }
-
 
   /**
    * The timeout for {@link #ask(Object)}. The timeout is by default defined in configuration
