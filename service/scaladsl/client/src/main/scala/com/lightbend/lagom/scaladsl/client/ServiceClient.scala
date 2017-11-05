@@ -119,12 +119,15 @@ trait LagomServiceClientComponents extends TopicFactoryProvider {
   def environment: Environment
   def applicationLifecycle: ApplicationLifecycle
 
+  def configuration: Configuration
+
   lazy val circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider = new CircuitBreakerMetricsProviderImpl(actorSystem)
 
   lazy val serviceResolver: ServiceResolver = new ScaladslServiceResolver(defaultExceptionSerializer)
   lazy val defaultExceptionSerializer: ExceptionSerializer = new DefaultExceptionSerializer(environment)
   lazy val scaladslWebSocketClient: ScaladslWebSocketClient = new ScaladslWebSocketClient(
     environment,
+    configuration.underlying,
     applicationLifecycle
   )(executionContext)
   lazy val serviceClient: ServiceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,

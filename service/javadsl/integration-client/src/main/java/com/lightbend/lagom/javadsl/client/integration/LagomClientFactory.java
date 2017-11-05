@@ -196,7 +196,7 @@ public class LagomClientFactory implements Closeable {
 
         // WebSocketClient
         // Use dummy lifecycle, we manage the lifecycle manually
-        JavadslWebSocketClient webSocketClient = new JavadslWebSocketClient(environment, eventLoop, new ApplicationLifecycle() {
+        JavadslWebSocketClient webSocketClient = new JavadslWebSocketClient(environment, configuration, eventLoop, new ApplicationLifecycle() {
             @Override
             public void addStopHook(Function0<Future<?>> hook) {
             }

@@ -10,6 +10,7 @@ import java.util.Locale
 import akka.stream.scaladsl._
 import akka.stream.stage._
 import akka.util.ByteString
+import com.typesafe.config.Config
 import com.typesafe.netty.{ HandlerPublisher, HandlerSubscriber }
 import com.lightbend.lagom.internal.NettyFutureConverters._
 import io.netty.bootstrap.Bootstrap
@@ -41,10 +42,12 @@ import scala.collection.immutable
 /**
  * A WebSocket client
  */
-private[lagom] abstract class WebSocketClient(environment: Environment, eventLoop: EventLoopGroup,
+private[lagom] abstract class WebSocketClient(environment: Environment, config: Config, eventLoop: EventLoopGroup,
                                               lifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) extends LagomServiceApiBridge {
 
   lifecycle.addStopHook(() => shutdown())
+
+  val maxFrameLength = config.getBytes("lagom.client.websocket.frame.maxLength").toInt
 
   // Netty channel groups are used to track open channels (connections), they automatically clean themselves up when
   // the channels close, and can be used to force all channels to close.
@@ -92,7 +95,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, eventLoo
     for {
       _ <- channelFuture.toScala
       channel = channelFuture.channel()
-      handshaker = WebSocketClientHandshakerFactory.newHandshaker(tgt, version, null, false, headers)
+      handshaker = WebSocketClientHandshakerFactory.newHandshaker(tgt, version, null, false, headers, maxFrameLength)
       _ <- handshaker.handshake(channel).toScala
       incomingPromise = Promise[(ResponseHeader, Source[ByteString, NotUsed])]()
       _ = channel.pipeline().addLast("supervisor", new WebSocketSupervisor(exceptionSerializer, handshaker, outgoing,
