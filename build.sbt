@@ -280,7 +280,7 @@ def scalaVersionSince = Map(
 def since10 = Seq("1.0.0") ++ since11
 def since11 = Seq("1.1.0") ++ since12
 def since12 = Seq("1.2.2") ++ since13
-def since13 = Seq("1.3.0")
+def since13 = Seq("1.3.3")
 
 val javadslProjects = Seq[Project](
   `api-javadsl`,
@@ -399,7 +399,6 @@ lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.configuration"),
       ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.ServiceLocator.locateAll"),
       ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.broker.Subscriber.withMetadata"),
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.ServiceInfo.acls"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.api.deser.PathParamSerializer$NamedPathParamSerializer")
     )
   ).dependsOn(api)
@@ -479,9 +478,6 @@ lazy val `client-scaladsl` = (project in file("service/scaladsl/client"))
     name := "lagom-scaladsl-client",
     Dependencies.`client-scaladsl`,
     mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.LagomServiceClientComponents.actorSystem"),
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.LagomServiceClientComponents.circuitBreakerMetricsProvider"),
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents.circuitBreakerMetricsProvider"),
       ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents.circuitBreakersPanel"),
       ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("com.lightbend.lagom.scaladsl.api.LagomConfigComponent.config")
     )
@@ -526,21 +522,10 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
     Dependencies.`server-scaladsl`,
     mimaBinaryIssueFilters ++= Seq(
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.server.LagomServerBuilder.buildRouter"),
-      ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents.actorSystem"),
-      ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents.metricsServiceBinding"),
-      ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents.circuitBreakerMetricsProvider"),
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.server.LagomServiceBinding.router"),
       ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServiceBinding.router"),
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.router"),
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.router"),
-      ProblemFilters.exclude[UpdateForwarderBodyProblem]("com.lightbend.lagom.scaladsl.server.LocalServiceLocator.circuitBreakerConfig"),
-      ProblemFilters.exclude[UpdateForwarderBodyProblem]("com.lightbend.lagom.scaladsl.server.LocalServiceLocator.circuitBreakers"),
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LocalServiceLocator.circuitBreakerMetricsProvider"),
-      ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("com.lightbend.lagom.scaladsl.api.LagomConfigComponent.config"),
-      ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents.circuitBreakersPanel"),
-      ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents.circuitBreakerMetricsProvider"),
-      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents"),
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents.actorSystem")
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.router")
     )
   )
   .enablePlugins(RuntimeLibPlugins)
@@ -921,10 +906,7 @@ lazy val `kafka-client-scaladsl` = (project in file("service/scaladsl/kafka/clie
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-kafka-client",
-    Dependencies.`kafka-client-scaladsl`,
-    mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents.serviceLocator")
-    )
+    Dependencies.`kafka-client-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since13): _*)
@@ -1257,14 +1239,7 @@ lazy val `service-registration-javadsl` = (project in file("dev") / "service-reg
 lazy val `devmode-scaladsl` = (project in file("dev") / "service-registry" / "devmode-scaladsl")
   .settings(
     name := "lagom-scaladsl-dev-mode",
-    Dependencies.`devmode-scaladsl`,
-    mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[UpdateForwarderBodyProblem]("com.lightbend.lagom.scaladsl.devmode.LagomDevModeServiceLocatorComponents.circuitBreakerConfig"),
-      ProblemFilters.exclude[UpdateForwarderBodyProblem]("com.lightbend.lagom.scaladsl.devmode.LagomDevModeServiceLocatorComponents.circuitBreakers"),
-      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.devmode.LagomDevModeServiceLocatorComponents.circuitBreakerMetricsProvider"),
-      ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents.circuitBreakersPanel"),
-      ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("com.lightbend.lagom.scaladsl.api.LagomConfigComponent.config")
-    )
+    Dependencies.`devmode-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since13): _*)
