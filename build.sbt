@@ -396,9 +396,13 @@ lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
   .settings(
     Dependencies.`api-scaladsl`,
     mimaBinaryIssueFilters ++= Seq(
+      // see https://github.com/lagom/lagom/pull/881
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.configuration"),
+
       ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.ServiceLocator.locateAll"),
       ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.broker.Subscriber.withMetadata"),
+
+      // see https://github.com/lagom/lagom/pull/1021
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.api.deser.PathParamSerializer$NamedPathParamSerializer")
     )
   ).dependsOn(api)
@@ -434,6 +438,7 @@ lazy val `play-json` = (project in file("play-json"))
     name := "lagom-scaladsl-play-json",
     Dependencies.`play-json`,
     mimaBinaryIssueFilters ++= Seq(
+      // see https://github.com/lagom/lagom/pull/189
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.playjson.JsonMigration.transform")
     )
   )
@@ -521,6 +526,7 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
     name := "lagom-scaladsl-server",
     Dependencies.`server-scaladsl`,
     mimaBinaryIssueFilters ++= Seq(
+      // see https://github.com/lagom/lagom/pull/888 for justification for this breaking change
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.server.LagomServerBuilder.buildRouter"),
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.server.LagomServiceBinding.router"),
       ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServiceBinding.router"),
