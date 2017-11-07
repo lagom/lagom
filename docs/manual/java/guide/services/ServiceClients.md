@@ -29,6 +29,8 @@ When using a streaming service client, Lagom will use internally a WebSocket cli
 
 @[web-socket-client-default](../../../../../service/core/client/src/main/resources/reference.conf)
 
+This configuration will affect all streaming services that the service client consumes. It is not possible to provide different configurations when multiple streaming services are consumed.
+
 Note that the same parameter has to be configured on the server-side using [Play server configuration](https://www.playframework.com/documentation/2.6.x/JavaWebSockets#Configuring-WebSocket-Frame-Length)
 
 ## Circuit Breakers
