@@ -228,7 +228,7 @@ object ServiceReader {
       } catch {
         case ex: IllegalArgumentException =>
           throw new RuntimeException(s"Error encountered while resolving the ${method.getDeclaringClass + "." + method.getName}" +
-            "service call: No path parameter serializer was found for the com.example.Foo path parameter. This can be fixed " +
+            s"service call: No path parameter serializer was found for the $arg path parameter. This can be fixed " +
             "either by implementing and then explicitly registering a com.lightbend.lagom.javadsl.api.PathParamSerializer for " +
             s"$arg on the ${method.getDeclaringClass} service descriptor, or perhaps this parameter is meant to be the " +
             "request message declared in the ServiceCall, and not extracted out of the path?", ex)
