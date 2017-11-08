@@ -13,12 +13,11 @@ import com.lightbend.lagom.javadsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.{ NegotiatedDeserializer, NegotiatedSerializer }
 import com.lightbend.lagom.javadsl.api.deser._
 import com.lightbend.lagom.javadsl.api.transport.{ MessageProtocol, Method }
-import com.lightbend.lagom.api.mock.{ BlogService, MockService }
+import com.lightbend.lagom.api.mock._
 import org.scalatest._
-import com.lightbend.lagom.api.mock.ScalaMockService
-import com.lightbend.lagom.api.mock.ScalaMockServiceWrong
 import com.lightbend.lagom.internal.javadsl.api.{ JacksonPlaceholderExceptionSerializer, JacksonPlaceholderSerializerFactory, MethodServiceCallHolder, ServiceReader }
 import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceCall }
+
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
@@ -36,6 +35,17 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
         case simple: SimpleSerializer[_] => simple.`type` should ===(classOf[UUID])
       }
       endpoint.responseSerializer should ===(MessageSerializers.STRING)
+    }
+
+    "fail to read a Java service descriptor from a public interface because the path parameter could not be serialized" in {
+      val caught = intercept[RuntimeException] {
+        val descriptor = serviceDescriptor[InvalidPathParameterService]
+      }
+      caught.getMessage should ===("Error encountered while resolving the interface com.lightbend.lagom.api.mock.InvalidPathParameterService.helloservice" +
+        " call: No path parameter serializer was found for the class com.lightbend.lagom.api.mock.Data path parameter. This can be fixed either by implementing " +
+        "and then explicitly registering a com.lightbend.lagom.javadsl.api.PathParamSerializer for class com.lightbend.lagom.api.mock.Data on the interface " +
+        "com.lightbend.lagom.api.mock.InvalidPathParameterService service descriptor, or perhaps this parameter is meant to be the request message declared in the " +
+        "ServiceCall, and not extracted out of the path?")
     }
 
     "read a simple Scala service descriptor" in {
