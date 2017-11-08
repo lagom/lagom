@@ -438,7 +438,7 @@ lazy val `play-json` = (project in file("play-json"))
     name := "lagom-scaladsl-play-json",
     Dependencies.`play-json`,
     mimaBinaryIssueFilters ++= Seq(
-      // see https://github.com/lagom/lagom/pull/189
+      // see https://github.com/lagom/lagom/pull/1071
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.playjson.JsonMigration.transform")
     )
   )
