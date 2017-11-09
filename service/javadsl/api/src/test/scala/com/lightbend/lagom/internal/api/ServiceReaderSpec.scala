@@ -38,7 +38,7 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
     }
 
     "fail to read a Java service descriptor from a public interface because the path parameter could not be serialized" in {
-      val caught = intercept[RuntimeException] {
+      val caught = intercept[IllegalArgumentException] {
         val descriptor = serviceDescriptor[InvalidPathParameterService]
       }
       caught.getMessage should ===("Error encountered while resolving the interface com.lightbend.lagom.api.mock.InvalidPathParameterService.helloservice" +
