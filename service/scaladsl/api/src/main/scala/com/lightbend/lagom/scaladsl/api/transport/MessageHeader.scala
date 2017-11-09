@@ -211,25 +211,25 @@ object RequestHeader {
     principal:                 Option[Principal],
     headerMap:                 Map[String, immutable.Seq[(String, String)]]
   ) extends RequestHeader {
-    override def withMethod(method: Method) = copy(method = method)
-    override def withUri(uri: URI) = copy(uri = uri)
-    override def withAcceptedResponseProtocols(acceptedResponseProtocols: Seq[MessageProtocol]) =
+    override def withMethod(method: Method): RequestHeaderImpl = copy(method = method)
+    override def withUri(uri: URI): RequestHeaderImpl = copy(uri = uri)
+    override def withAcceptedResponseProtocols(acceptedResponseProtocols: Seq[MessageProtocol]): RequestHeaderImpl =
       copy(acceptedResponseProtocols = acceptedResponseProtocols)
-    override def withPrincipal(principal: Principal) = copy(principal = Some(principal))
-    override def clearPrincipal = copy(principal = None)
-    override def withProtocol(protocol: MessageProtocol) = copy(protocol = protocol)
-    override def withHeaders(headers: immutable.Seq[(String, String)]) =
+    override def withPrincipal(principal: Principal): RequestHeaderImpl = copy(principal = Some(principal))
+    override def clearPrincipal: RequestHeaderImpl = copy(principal = None)
+    override def withProtocol(protocol: MessageProtocol): RequestHeaderImpl = copy(protocol = protocol)
+    override def withHeaders(headers: immutable.Seq[(String, String)]): RequestHeaderImpl =
       copy(headerMap = headers.groupBy(_._1.toLowerCase(Locale.ENGLISH)))
-    override def withHeader(name: String, value: String) =
+    override def withHeader(name: String, value: String): RequestHeaderImpl =
       copy(headerMap = headerMap + (name.toLowerCase(Locale.ENGLISH) -> immutable.Seq(name -> value)))
-    override def addHeader(name: String, value: String) = {
+    override def addHeader(name: String, value: String): RequestHeaderImpl = {
       val lcName = name.toLowerCase(Locale.ENGLISH)
       headerMap.get(lcName) match {
         case None         => copy(headerMap = headerMap + (lcName -> immutable.Seq(name -> value)))
         case Some(values) => copy(headerMap = headerMap + (lcName -> (values :+ (name -> value))))
       }
     }
-    override def removeHeader(name: String) =
+    override def removeHeader(name: String): RequestHeaderImpl =
       copy(headerMap = headerMap - name.toLowerCase(Locale.ENGLISH))
   }
 }
@@ -283,18 +283,18 @@ object ResponseHeader {
   ) extends ResponseHeader {
     override def withStatus(status: Int): ResponseHeader = copy(status = status)
     override def withProtocol(protocol: MessageProtocol): ResponseHeader = copy(protocol = protocol)
-    override def withHeaders(headers: immutable.Seq[(String, String)]) =
+    override def withHeaders(headers: immutable.Seq[(String, String)]): ResponseHeaderImpl =
       copy(headerMap = headers.groupBy(_._1.toLowerCase(Locale.ENGLISH)))
-    override def withHeader(name: String, value: String) =
+    override def withHeader(name: String, value: String): ResponseHeaderImpl =
       copy(headerMap = headerMap + (name.toLowerCase(Locale.ENGLISH) -> immutable.Seq(name -> value)))
-    override def addHeader(name: String, value: String) = {
+    override def addHeader(name: String, value: String): ResponseHeaderImpl = {
       val lcName = name.toLowerCase(Locale.ENGLISH)
       headerMap.get(lcName) match {
         case None         => copy(headerMap = headerMap + (lcName -> immutable.Seq(name -> value)))
         case Some(values) => copy(headerMap = headerMap + (lcName -> (values :+ (name -> value))))
       }
     }
-    override def removeHeader(name: String) =
+    override def removeHeader(name: String): ResponseHeaderImpl =
       copy(headerMap = headerMap - name.toLowerCase(Locale.ENGLISH))
   }
 }

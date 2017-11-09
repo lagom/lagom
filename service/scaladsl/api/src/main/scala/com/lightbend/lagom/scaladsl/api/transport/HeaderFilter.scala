@@ -65,10 +65,10 @@ object HeaderFilter {
    * A noop header transformer, used to deconfigure specific transformers.
    */
   val NoHeaderFilter: HeaderFilter = new HeaderFilter() {
-    override def transformClientRequest(request: RequestHeader) = request
-    override def transformServerRequest(request: RequestHeader) = request
-    override def transformServerResponse(response: ResponseHeader, request: RequestHeader) = response
-    override def transformClientResponse(response: ResponseHeader, request: RequestHeader) = response
+    override def transformClientRequest(request: RequestHeader): RequestHeader = request
+    override def transformServerRequest(request: RequestHeader): RequestHeader = request
+    override def transformServerResponse(response: ResponseHeader, request: RequestHeader): ResponseHeader = response
+    override def transformClientResponse(response: ResponseHeader, request: RequestHeader): ResponseHeader = response
   }
 
   /**
@@ -121,7 +121,7 @@ object HeaderFilter {
  */
 //#user-agent-header-filter
 object UserAgentHeaderFilter extends HeaderFilter {
-  override def transformClientRequest(request: RequestHeader) = {
+  override def transformClientRequest(request: RequestHeader): RequestHeader = {
     request.principal match {
       case Some(principal: ServicePrincipal) =>
         request.withHeader(HeaderNames.USER_AGENT, principal.serviceName)
@@ -129,7 +129,7 @@ object UserAgentHeaderFilter extends HeaderFilter {
     }
   }
 
-  override def transformServerRequest(request: RequestHeader) = {
+  override def transformServerRequest(request: RequestHeader): RequestHeader = {
     request.getHeader(HeaderNames.USER_AGENT) match {
       case Some(userAgent) =>
         request.withPrincipal(ServicePrincipal.forServiceNamed(userAgent))
@@ -141,11 +141,11 @@ object UserAgentHeaderFilter extends HeaderFilter {
   override def transformServerResponse(
     response: ResponseHeader,
     request:  RequestHeader
-  ) = response
+  ): ResponseHeader = response
 
   override def transformClientResponse(
     response: ResponseHeader,
     request:  RequestHeader
-  ) = response
+  ): ResponseHeader = response
 }
 //#user-agent-header-filter
