@@ -6,7 +6,7 @@ package com.lightbend.lagom.macrotestkit
 import scala.language.experimental.macros
 import java.util.regex.Pattern
 
-import scala.reflect.macros.{TypecheckException, blackbox}
+import scala.reflect.macros.{ TypecheckException, blackbox }
 import scala.reflect.macros.blackbox.Context
 
 /**

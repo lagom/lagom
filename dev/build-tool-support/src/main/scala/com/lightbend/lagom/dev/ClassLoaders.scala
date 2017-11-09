@@ -4,7 +4,7 @@
 package com.lightbend.lagom.dev
 
 import java.lang.reflect.Method
-import java.net.{URL, URLClassLoader}
+import java.net.{ URL, URLClassLoader }
 import java.util
 
 /**
