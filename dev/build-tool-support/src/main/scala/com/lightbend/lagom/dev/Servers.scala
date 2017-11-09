@@ -238,7 +238,7 @@ private[lagom] object Servers {
       )
       server.enableKillOnExit()
       log.info("Starting Kafka")
-      log.debug(s"Kafka log output can be found under ${log4jOutput}.")
+      log.debug(s"Kafka log output can be found under $log4jOutput.")
 
       new Closeable {
         override def close(): Unit = stop(log)

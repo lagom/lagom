@@ -111,5 +111,5 @@ abstract class ReadSideProcessor[Event <: AggregateEvent[Event]] {
    * identify read sides throughout the cluster.
    */
   def readSideName: String =
-    Logging.simpleName(getClass())
+    Logging.simpleName(getClass)
 }
