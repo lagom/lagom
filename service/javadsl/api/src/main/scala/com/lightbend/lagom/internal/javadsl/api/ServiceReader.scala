@@ -227,7 +227,7 @@ object ServiceReader {
         serviceCallResolver.resolvePathParamSerializer(new UnresolvedTypePathParamSerializer[AnyRef], arg)
       } catch {
         case ex: IllegalArgumentException =>
-          throw new IllegalArgumentException(s"Error encountered while resolving the ${method.getDeclaringClass + "." + method.getName}" +
+          throw new IllegalPathParameterException(s"Error encountered while resolving the ${method.getDeclaringClass + "." + method.getName}" +
             s"service call: No path parameter serializer was found for the $arg path parameter. This can be fixed " +
             "either by implementing and then explicitly registering a com.lightbend.lagom.javadsl.api.PathParamSerializer for " +
             s"$arg on the ${method.getDeclaringClass} service descriptor, or perhaps this parameter is meant to be the " +
