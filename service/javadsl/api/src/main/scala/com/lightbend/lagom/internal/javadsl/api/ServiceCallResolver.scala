@@ -80,7 +80,7 @@ class ServiceCallResolver(
         case clazz: Class[_] if clazz.isPrimitive => pathParamSerializerFor(ServiceCallResolver.primitiveClassMap(clazz), typeInfo)
         case clazz: Class[_] =>
           // we've already looked up by class, so we're not going to get any further - fail
-          throw new IllegalArgumentException(s"Don't know how to serialize ID $clazz")
+          throw new IllegalArgumentException(s"Don't know how to serialize path parameter $clazz")
         case param: ParameterizedType  => pathParamSerializerFor(param.getRawType, typeInfo)
         case wild: WildcardType        => throw new IllegalArgumentException(s"Cannot serialize wildcard types: $wild")
         case variable: TypeVariable[_] => throw new IllegalArgumentException(s"Cannot serialize type variables: $variable")

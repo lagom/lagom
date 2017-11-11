@@ -221,8 +221,18 @@ object ServiceReader {
   }
 
   private def constructServiceCallHolder[Request, Response](serviceCallResolver: ServiceCallResolver, method: Method): ServiceCallHolder = {
+
     val serializers = method.getGenericParameterTypes.toSeq.map { arg =>
-      serviceCallResolver.resolvePathParamSerializer(new UnresolvedTypePathParamSerializer[AnyRef], arg)
+      try {
+        serviceCallResolver.resolvePathParamSerializer(new UnresolvedTypePathParamSerializer[AnyRef], arg)
+      } catch {
+        case ex: IllegalArgumentException =>
+          throw new IllegalPathParameterException(s"Error encountered while resolving the ${method.getDeclaringClass + "." + method.getName}" +
+            s"service call: No path parameter serializer was found for the $arg path parameter. This can be fixed " +
+            "either by implementing and then explicitly registering a com.lightbend.lagom.javadsl.api.PathParamSerializer for " +
+            s"$arg on the ${method.getDeclaringClass} service descriptor, or perhaps this parameter is meant to be the " +
+            "request message declared in the ServiceCall, and not extracted out of the path?", ex)
+      }
     }
 
     import scala.collection.JavaConverters._
