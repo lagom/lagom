@@ -663,7 +663,11 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
 lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scaladsl"))
   .settings(
     name := "lagom-scaladsl-persistence-jdbc",
-    Dependencies.`persistence-jdbc-scaladsl`
+    Dependencies.`persistence-jdbc-scaladsl`,
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters.exclude[UpdateForwarderBodyProblem]("com.lightbend.lagom.scaladsl.persistence.jdbc.WriteSideJdbcPersistenceComponents.slickProvider"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.scaladsl.persistence.jdbc.ReadSideJdbcPersistenceComponents")
+    )
   )
   .dependsOn(`persistence-jdbc-core`, `persistence-core` % "compile;test->test", `persistence-scaladsl` % "compile;test->test")
   .settings(runtimeLibCommon: _*)

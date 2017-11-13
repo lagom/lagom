@@ -20,17 +20,25 @@ import play.api.db.DBComponents
 /**
  * Persistence JDBC components (for compile-time injection).
  */
-trait JdbcPersistenceComponents extends PersistenceComponents with ReadSideJdbcPersistenceComponents
+trait JdbcPersistenceComponents
+  extends PersistenceComponents
+  with ReadSideJdbcPersistenceComponents
+  with WriteSideJdbcPersistenceComponents
+
+private[lagom] trait SlickProviderComponents extends DBComponents {
+  def actorSystem: ActorSystem
+  def executionContext: ExecutionContext
+  lazy val slickProvider: SlickProvider = new SlickProvider(actorSystem, dbApi)(executionContext)
+}
 
 /**
  * Write-side persistence JDBC components (for compile-time injection).
  */
-trait WriteSideJdbcPersistenceComponents extends WriteSidePersistenceComponents with DBComponents {
+trait WriteSideJdbcPersistenceComponents extends WriteSidePersistenceComponents with SlickProviderComponents {
 
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext
 
-  lazy val slickProvider: SlickProvider = new SlickProvider(actorSystem, dbApi)(executionContext)
   override lazy val persistentEntityRegistry: PersistentEntityRegistry =
     new JdbcPersistentEntityRegistry(actorSystem, slickProvider)
 
@@ -39,7 +47,7 @@ trait WriteSideJdbcPersistenceComponents extends WriteSidePersistenceComponents 
 /**
  * Read-side persistence JDBC components (for compile-time injection).
  */
-trait ReadSideJdbcPersistenceComponents extends ReadSidePersistenceComponents with WriteSideJdbcPersistenceComponents {
+trait ReadSideJdbcPersistenceComponents extends ReadSidePersistenceComponents with SlickProviderComponents {
 
   lazy val offsetTableConfiguration: OffsetTableConfiguration = new OffsetTableConfiguration(
     configuration, readSideConfig
