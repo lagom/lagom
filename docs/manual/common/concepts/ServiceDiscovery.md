@@ -18,7 +18,7 @@ When booting a Lagom microservice instance, a registrar will register the name o
  
 <!---The following diagram illustrates service registration. (TBA) --->
 
-Many available technologies provide Service Registry capabilities. You will need to choose and/or develop a Service Locator for your services to run in your deployment environment (see for example [Lagom ZooKeeper Service Locator](https://github.com/jboner/lagom-service-locator-zookeeper)). You may need to work out a way to plug your Lagom services with a registrar. Lagom's integration with [[ConductR|ConductR]] makes these two steps seamless.
+Many available technologies provide Service Registry capabilities. You will need to choose and/or develop a Service Locator for your services to run in your deployment environment (see for example [Lagom ZooKeeper Service Locator](https://github.com/jboner/lagom-service-locator-zookeeper)). You may need to work out a way to plug your Lagom services with a registrar. 
 
 
 ## Client-side service discovery

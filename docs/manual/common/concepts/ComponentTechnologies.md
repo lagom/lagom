@@ -10,8 +10,6 @@ As a complete microservices platform, Lagom assembles a collection of technologi
 
 * Lightbend customers can additionally use [Enterprise Suite](https://www.lightbend.com/platform/production) components to operationalize and production-harden their systems.
 
-    * [[Lightbend ConductR|ConductR]] greatly simplifies service orchestration.
-
     * Akka's [Split Brain Resolver](https://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) handles network failures and system crashes.
 
     * [Lightbend Application Monitoring](https://www.lightbend.com/products/monitoring) provides real time monitoring of system health, availability and performance.
