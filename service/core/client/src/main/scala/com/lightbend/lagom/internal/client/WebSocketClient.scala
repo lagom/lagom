@@ -6,6 +6,7 @@ package com.lightbend.lagom.internal.client
 import java.net.URI
 import java.util.concurrent.TimeUnit
 import java.util.Locale
+import javax.inject.{ Inject, Singleton }
 
 import akka.stream.scaladsl._
 import akka.stream.stage._
@@ -22,6 +23,7 @@ import io.netty.channel._
 import io.netty.handler.codec.http.websocketx._
 import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
+import play.api.Configuration
 import play.api.Environment
 import play.api.http.HeaderNames
 import play.api.inject.ApplicationLifecycle
@@ -42,12 +44,12 @@ import scala.collection.immutable
 /**
  * A WebSocket client
  */
-private[lagom] abstract class WebSocketClient(environment: Environment, config: Config, eventLoop: EventLoopGroup,
+private[lagom] abstract class WebSocketClient(environment: Environment, wsClientConfig: WebSocketClientConfig, eventLoop: EventLoopGroup,
                                               lifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) extends LagomServiceApiBridge {
 
   lifecycle.addStopHook(() => shutdown())
 
-  val maxFrameLength = config.getBytes("lagom.client.websocket.frame.maxLength").toInt
+  val maxFrameLength = math.min(Int.MaxValue.toLong, wsClientConfig.config.getBytes("frame.maxLength")).toInt
 
   // Netty channel groups are used to track open channels (connections), they automatically clean themselves up when
   // the channels close, and can be used to force all channels to close.
@@ -398,4 +400,13 @@ object WebSocketClient {
 
 class WebSocketException(s: String, th: Throwable) extends java.io.IOException(s, th) {
   def this(s: String) = this(s, null)
+}
+
+@Singleton
+class WebSocketClientConfig @Inject() (val configuration: Config) {
+
+  @deprecated(message = "prefer `config` using typesafe Config instead", since = "1.4.0")
+  def this(configuration: Configuration) = this(configuration.underlying)
+
+  val config: Config = configuration.getConfig("lagom.client.websocket")
 }
