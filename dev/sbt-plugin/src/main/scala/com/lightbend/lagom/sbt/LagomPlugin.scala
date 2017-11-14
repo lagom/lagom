@@ -339,7 +339,7 @@ object LagomPlugin extends AutoPlugin {
   private val serviceLocatorProject = Project("lagom-internal-meta-project-service-locator", file("."),
     configurations = Configurations.default,
     settings = CorePlugin.projectSettings ++ IvyPlugin.projectSettings ++ JvmPlugin.projectSettings ++ Seq(
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.11.11",
     libraryDependencies += LagomImport.component("lagom-service-locator"),
     lagomServiceLocatorStart in ThisBuild := startServiceLocatorTask.value,
     lagomServiceLocatorStop in ThisBuild := Servers.ServiceLocator.tryStop(new SbtLoggerProxy(state.value.log))
@@ -348,7 +348,7 @@ object LagomPlugin extends AutoPlugin {
   private val cassandraProject = Project("lagom-internal-meta-project-cassandra", file("."),
     configurations = Configurations.default,
     settings = CorePlugin.projectSettings ++ IvyPlugin.projectSettings ++ JvmPlugin.projectSettings ++ Seq(
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.11.11",
     libraryDependencies += LagomImport.component("lagom-cassandra-server"),
     lagomCassandraStart in ThisBuild := startCassandraServerTask.value,
     lagomCassandraStop in ThisBuild := Servers.CassandraServer.tryStop(new SbtLoggerProxy(state.value.log))
@@ -357,7 +357,7 @@ object LagomPlugin extends AutoPlugin {
   private val kafkaServerProject = Project("lagom-internal-meta-project-kafka", file("."),
     configurations = Configurations.default,
     settings = CorePlugin.projectSettings ++ IvyPlugin.projectSettings ++ JvmPlugin.projectSettings ++ Seq(
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.11.11",
     libraryDependencies += LagomImport.component("lagom-kafka-server"),
     lagomKafkaStart in ThisBuild := startKafkaServerTask.value,
     lagomKafkaStop in ThisBuild := Servers.KafkaServer.tryStop(new SbtLoggerProxy(state.value.log))
