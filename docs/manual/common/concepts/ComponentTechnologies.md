@@ -14,8 +14,6 @@ As a complete microservices platform, Lagom assembles a collection of technologi
 
     * [Lightbend Application Monitoring](https://www.lightbend.com/products/monitoring) provides real time monitoring of system health, availability and performance.
 
-    * See [[Cluster]] for more details.
-
 * Cassandra --- By default, Lagom microservices that need to persist data use the  [Cassandra](https://cassandra.apache.org) instance that runs as part of the development environment. You can also use an existing [[Cassandra Server|CassandraServer]] database or another type of database. See [[Managing data persistence|ES_CQRS]] for more information.
 
 * Guice --- Like Play, Lagom uses [Guice](https://github.com/google/guice) for dependency injection.

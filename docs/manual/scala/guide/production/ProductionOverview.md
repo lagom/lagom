@@ -2,6 +2,9 @@
 
 Lagom doesn't prescribe any particular production environment. If you are interested in deploying on [Kubernetes](https://kubernetes.io/), see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/k8s-microservices/).
 
+
+## Deployment considerations
+
 The deployment platform determines the type of archive you will need to use for packaging your microservices and the way you provide service location, including that for Cassandra: 
 
 * Lagom leverages the [sbt-native-packager](http://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default, sbt produces zip archives, but you can easily produce tar.gz, MSI, debian, RPM, Docker and more.

@@ -38,21 +38,22 @@ A service instance joins a cluster when the service starts up.
 
 ### Joining during development
 
-In development you are typically only running the service on one cluster node. No explicit joining is necessary; the [[Lagom Development Environment|DevEnvironment]] handles it automatically. In production, you need to implement the joining yourself.
+In development you are typically only running the service on one cluster node. No explicit joining is necessary; the [[Lagom Development Environment|DevEnvironment]] handles it automatically. For deployment, you need to implement the joining yourself as follows.
 
-To allow instances to join a cluster across nodes, define some initial contact points of the cluster, so-called seed nodes. The node that is configured first in the list of `seed-nodes` is special. That first node that will join itself and bootstrap the cluster. The reason for the special first seed node is to avoid forming separated islands when starting from an empty cluster. If the first seed node is restarted and there is an existing cluster it will try to join the other seed nodes, i.e. it will join the existing cluster. You can define seed nodes in `application.conf` or as Java system properties.
-
-To define the nodes in `application.conf`, use the following convention:
+First, define some initial contact points of the cluster, so-called seed nodes. You can define seed nodes in `application.conf`:
 
     akka.cluster.seed-nodes = [
       "akka.tcp://MyService@host1:2552",
       "akka.tcp://MyService@host2:2552"]
 
-Alternatively, pass in the following Java system properties when starting the JVM:
+Alternatively, this can be defined as Java system properties when starting the JVM:
 
     -Dakka.cluster.seed-nodes.0=akka.tcp://MyService@host1:2552
     -Dakka.cluster.seed-nodes.1=akka.tcp://MyService@host2:2552
 
+The node that is configured first in the list of `seed-nodes` is special. Only that node that will join itself. It is used for bootstrapping the cluster.
+
+The reason for the special first seed node is to avoid forming separated islands when starting from an empty cluster. If the first seed node is restarted and there is an existing cluster it will try to join the other seed nodes, i.e. it will join the existing cluster.
 
 You can read more about cluster joining in the [Akka documentation](http://doc.akka.io/docs/akka/2.4/scala/cluster-usage.html#Joining_to_Seed_Nodes).
 
