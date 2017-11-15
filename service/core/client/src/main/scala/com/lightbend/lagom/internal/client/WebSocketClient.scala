@@ -6,7 +6,6 @@ package com.lightbend.lagom.internal.client
 import java.net.URI
 import java.util.concurrent.TimeUnit
 import java.util.Locale
-import javax.inject.{ Inject, Singleton }
 
 import akka.stream.scaladsl._
 import akka.stream.stage._
@@ -44,12 +43,10 @@ import scala.collection.immutable
 /**
  * A WebSocket client
  */
-private[lagom] abstract class WebSocketClient(environment: Environment, wsClientConfig: WebSocketClientConfig, eventLoop: EventLoopGroup,
+private[lagom] abstract class WebSocketClient(environment: Environment, config: WebSocketClientConfig, eventLoop: EventLoopGroup,
                                               lifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) extends LagomServiceApiBridge {
 
   lifecycle.addStopHook(() => shutdown())
-
-  val maxFrameLength = math.min(Int.MaxValue.toLong, wsClientConfig.config.getBytes("frame.maxLength")).toInt
 
   // Netty channel groups are used to track open channels (connections), they automatically clean themselves up when
   // the channels close, and can be used to force all channels to close.
@@ -97,7 +94,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, wsClient
     for {
       _ <- channelFuture.toScala
       channel = channelFuture.channel()
-      handshaker = WebSocketClientHandshakerFactory.newHandshaker(tgt, version, null, false, headers, maxFrameLength)
+      handshaker = WebSocketClientHandshakerFactory.newHandshaker(tgt, version, null, false, headers, config.maxFrameLength)
       _ <- handshaker.handshake(channel).toScala
       incomingPromise = Promise[(ResponseHeader, Source[ByteString, NotUsed])]()
       _ = channel.pipeline().addLast("supervisor", new WebSocketSupervisor(exceptionSerializer, handshaker, outgoing,
@@ -402,11 +399,13 @@ class WebSocketException(s: String, th: Throwable) extends java.io.IOException(s
   def this(s: String) = this(s, null)
 }
 
-@Singleton
-class WebSocketClientConfig @Inject() (val configuration: Config) {
+case class WebSocketClientConfig(maxFrameLength: Int)
 
-  @deprecated(message = "prefer `config` using typesafe Config instead", since = "1.4.0")
-  def this(configuration: Configuration) = this(configuration.underlying)
+object WebSocketClientConfig {
 
-  val config: Config = configuration.getConfig("lagom.client.websocket")
+  private def applySubConfig(conf: Config) =
+    WebSocketClientConfig(math.min(Int.MaxValue.toLong, conf.getBytes("frame.maxLength")).toInt)
+
+  def apply(conf: Config): WebSocketClientConfig = applySubConfig(conf.getConfig("lagom.client.websocket"))
+
 }
