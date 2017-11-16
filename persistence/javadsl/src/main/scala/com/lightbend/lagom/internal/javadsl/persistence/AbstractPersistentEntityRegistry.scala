@@ -6,7 +6,7 @@ package com.lightbend.lagom.internal.javadsl.persistence
 import java.util.Optional
 import java.util.concurrent.{ CompletionStage, ConcurrentHashMap, TimeUnit }
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.cluster.Cluster
 import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
 import akka.event.Logging
@@ -18,7 +18,6 @@ import akka.stream.javadsl
 import akka.util.Timeout
 import akka.{ Done, NotUsed }
 import com.google.inject.Injector
-import com.lightbend.lagom.internal.persistence.cluster.GracefulLeave
 import com.lightbend.lagom.javadsl.persistence._
 
 import scala.concurrent.duration.{ FiniteDuration, _ }
@@ -159,9 +158,28 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
   override def gracefulShutdown(timeout: FiniteDuration): CompletionStage[Done] = {
     import scala.collection.JavaConverters._
     import scala.compat.java8.FutureConverters._
-    val ref = system.actorOf(GracefulLeave.props(registeredTypeNames.keySet.asScala.toSet))
-    implicit val t = Timeout(timeout)
-    (ref ? GracefulLeave.Leave).mapTo[Done].toJava
+
+    //
+    // TODO: When applying CoordinatedShutdown globally in Lagom and Play this should probably change and the
+    // method 'gracefulShutdown' removed from Lagom's API.
+    //
+    // More info at: https://doc.akka.io/docs/akka/2.5/scala/actors.html#coordinated-shutdown
+    //
+    // NOTE: the default is for CoordinatedShutdown to _not_ terminate the JVM (which is what we want in
+    // Lagom at the moment).
+    //
+    // NOTE: Because this uses CoordinatedShutdown, this method no longer stops PE ShardRegions alone, it now
+    // stops all ShardRegions (aka, Kafka subscribers, read-side processors, ...). The reason is Akka 2.5 registers
+    // all and every 'ShardRegion' instance into the ClusterShardingShutdownRegion phase of CoordinatedShutdown:
+    // https://github.com/akka/akka/blob/ad9de435a2b434b065ae0956e059a45960b9e9d3/akka-cluster-sharding/src/main/scala/akka/cluster/sharding/ShardRegion.scala#L407-L412
+    //
+    // WARNING: Using CoordinatedShutdown could interfere with JoinClusterImpl
+    // https://github.com/lagom/lagom/blob/e53bda5fd2f83aaa4cd639c9ad27d6053ede812f/cluster/core/src/main/scala/com/lightbend/lagom/internal/cluster/JoinClusterImpl.scala#L37-L58
+    //
+    // Uses Akka 2.5's CoordinatedShutdown but instead of invoking the complete sequence of stages
+    // invokes the shutdown starting at "before-cluster-shutdown".
+    //
+    CoordinatedShutdown(system).run(Some("before-cluster-shutdown")).toJava
   }
 
 }
