@@ -15,11 +15,14 @@ import akka.persistence.jdbc.snapshot.dao.SnapshotTables
 import akka.persistence.jdbc.util.{ SlickDatabase, SlickDriver }
 import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import play.api.db.DBApi
+import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.meta.MTable
 import slick.jdbc.{ H2Profile, JdbcProfile, MySQLProfile, PostgresProfile }
-
+import slick.util.AsyncExecutor
+import akka.persistence.jdbc.util.ConfigOps._
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
@@ -38,12 +41,33 @@ private[lagom] class SlickProvider(
 
   val autoCreateTables: Boolean = createTables.getBoolean("auto")
 
+  private val asyncExecConfig =
+    new AsyncExecutorConfig(system.settings.config.getConfig("jdbc-defaults.slick.async-executor"))
+
   if (dbApi != null) {
     // Work around https://github.com/playframework/playframework/issues/7262
     // Set the system property
     System.setProperty(Context.PROVIDER_URL, "/")
-    // Rebind the datasource
-    new InitialContext().rebind("DefaultDS", dbApi.database("default").dataSource)
+
+    // the data source as configured by Play
+    val dataSource = dbApi.database("default").dataSource
+
+    // Slick Database configured with Play DS + AsyncExecutor
+    val database =
+      Database.forDataSource(
+        ds = dbApi.database("default").dataSource,
+        maxConnections = Option(asyncExecConfig.maxConnections),
+        executor = AsyncExecutor(
+          name = "AsyncExecutor.default",
+          minThreads = asyncExecConfig.minConnections,
+          maxThreads = asyncExecConfig.numThreads,
+          queueSize = asyncExecConfig.queueSize,
+          maxConnections = asyncExecConfig.maxConnections
+        )
+      )
+
+    // bind the DB configured with an AsyncExecutor
+    new InitialContext().rebind("DefaultDB", database)
   }
 
   val db = SlickDatabase.forConfig(readSideConfig, slickConfig)
@@ -216,4 +240,15 @@ private[lagom] class SlickProvider(
         task.askExecute()
     }
   }
+
+  class AsyncExecutorConfig(config: Config) {
+
+    val numThreads: Int = config.getInt("numThreads")
+    val minConnections: Int = config.getInt("minConnections")
+    val maxConnections: Int = config.getInt("maxConnections")
+    val queueSize: Int = config.getInt("queueSize")
+
+    override def toString: String = s"AsyncExecutorConfig($numThreads, $minConnections, $maxConnections, $queueSize)"
+  }
+
 }
