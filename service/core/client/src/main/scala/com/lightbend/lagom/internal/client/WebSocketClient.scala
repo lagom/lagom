@@ -399,13 +399,15 @@ class WebSocketException(s: String, th: Throwable) extends java.io.IOException(s
   def this(s: String) = this(s, null)
 }
 
-case class WebSocketClientConfig(maxFrameLength: Int)
+sealed trait WebSocketClientConfig {
+  def maxFrameLength: Int
+}
 
 object WebSocketClientConfig {
 
-  private def applySubConfig(conf: Config) =
-    WebSocketClientConfig(math.min(Int.MaxValue.toLong, conf.getBytes("frame.maxLength")).toInt)
+  def apply(conf: Config): WebSocketClientConfig = new WebSocketClientConfigImpl(conf.getConfig("lagom.client.websocket"))
 
-  def apply(conf: Config): WebSocketClientConfig = applySubConfig(conf.getConfig("lagom.client.websocket"))
-
+  private[lagom] class WebSocketClientConfigImpl(conf: Config) extends WebSocketClientConfig {
+    val maxFrameLength = math.min(Int.MaxValue.toLong, conf.getBytes("frame.maxLength")).toInt
+  }
 }

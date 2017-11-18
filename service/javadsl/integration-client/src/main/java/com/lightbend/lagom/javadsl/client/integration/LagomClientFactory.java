@@ -11,6 +11,7 @@ import com.lightbend.lagom.internal.client.CircuitBreakerConfig;
 import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl;
 import com.lightbend.lagom.internal.client.WebSocketClient;
 import com.lightbend.lagom.internal.client.WebSocketClientConfig;
+import com.lightbend.lagom.internal.client.WebSocketClientConfig$;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactoryProvider;
 import com.lightbend.lagom.internal.javadsl.client.JavadslServiceClientImplementor;
@@ -197,7 +198,7 @@ public class LagomClientFactory implements Closeable {
 
 
         // WebSocketClient
-	WebSocketClientConfig webSocketClientConfig = WebSocketClientConfig.apply(configuration);
+	WebSocketClientConfig webSocketClientConfig = WebSocketClientConfig$.MODULE$.apply(configuration);
         // Use dummy lifecycle, we manage the lifecycle manually
         JavadslWebSocketClient webSocketClient = new JavadslWebSocketClient(environment, webSocketClientConfig, eventLoop, new ApplicationLifecycle() {
             @Override
