@@ -52,22 +52,19 @@ private[lagom] class SlickProvider(
     // the data source as configured by Play
     val dataSource = dbApi.database("default").dataSource
 
-    // Slick Database configured with Play DS + AsyncExecutor
-    val database =
-      Database.forDataSource(
-        ds = dbApi.database("default").dataSource,
-        maxConnections = Option(asyncExecConfig.maxConnections),
-        executor = AsyncExecutor(
-          name = "AsyncExecutor.default",
-          minThreads = asyncExecConfig.minConnections,
-          maxThreads = asyncExecConfig.numThreads,
-          queueSize = asyncExecConfig.queueSize,
-          maxConnections = asyncExecConfig.maxConnections
-        )
+    // the slick db configured with an async executor
+    val slickDb =
+      SlickDbProvider(
+        dataSource,
+        system.settings.config.getConfig("jdbc-defaults.slick.async-executor")
       )
 
+    val namingContext = new InitialContext()
     // bind the DB configured with an AsyncExecutor
-    new InitialContext().rebind("DefaultDB", database)
+    namingContext.rebind("DefaultDB", slickDb)
+
+    // for use with JPA only
+    namingContext.rebind("DefaultDS", dataSource)
   }
 
   val db = SlickDatabase.forConfig(readSideConfig, slickConfig)
@@ -239,16 +236,6 @@ private[lagom] class SlickProvider(
         implicit val timeout = Timeout(createTablesTimeout)
         task.askExecute()
     }
-  }
-
-  class AsyncExecutorConfig(config: Config) {
-
-    val numThreads: Int = config.getInt("numThreads")
-    val minConnections: Int = config.getInt("minConnections")
-    val maxConnections: Int = config.getInt("maxConnections")
-    val queueSize: Int = config.getInt("queueSize")
-
-    override def toString: String = s"AsyncExecutorConfig($numThreads, $minConnections, $maxConnections, $queueSize)"
   }
 
 }
