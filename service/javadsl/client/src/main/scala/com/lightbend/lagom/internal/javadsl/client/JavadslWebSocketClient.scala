@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.internal.javadsl.client
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{ Inject, Singleton, Provider }
 
 import com.lightbend.lagom.internal.client.{ WebSocketClient, WebSocketClientConfig }
 import com.typesafe.config.Config
@@ -12,6 +12,14 @@ import play.api.Environment
 import play.api.inject.ApplicationLifecycle
 
 import scala.concurrent.ExecutionContext
+
+@Singleton
+class WebSocketClientConfigProvider @Inject() (configuration: Config) extends Provider[WebSocketClientConfig] {
+
+  lazy val get = {
+    WebSocketClientConfig(configuration)
+  }
+}
 
 @Singleton
 class JavadslWebSocketClient(environment: Environment, config: WebSocketClientConfig, eventLoop: EventLoopGroup,
