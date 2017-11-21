@@ -11,7 +11,7 @@ import slick.jdbc.JdbcBackend
 import slick.jdbc.JdbcBackend.Database
 import slick.util.AsyncExecutor
 
-object SlickDbProvider {
+private[lagom] object SlickDbProvider {
 
   def apply(dataSource: DataSource, config: Config): JdbcBackend.DatabaseDef = {
 
@@ -31,7 +31,7 @@ object SlickDbProvider {
   }
 }
 
-class AsyncExecutorConfig(config: Config) {
+private[lagom] class AsyncExecutorConfig(config: Config) {
 
   val numThreads: Int = config.getInt("numThreads")
   val minConnections: Int = config.getInt("minConnections")
