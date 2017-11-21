@@ -51,7 +51,7 @@ The node that is configured first in the list of `seed-nodes` is special. Only t
 
 The reason for the special first seed node is to avoid forming separated islands when starting from an empty cluster. If the first seed node is restarted and there is an existing cluster it will try to join the other seed nodes, i.e. it will join the existing cluster.
 
-You can read more about cluster joining in the [Akka documentation](http://doc.akka.io/docs/akka/2.4/java/cluster-usage.html#Joining_to_Seed_Nodes).
+You can read more about cluster joining in the [Akka documentation](http://doc.akka.io/docs/akka/2.5/java/cluster-usage.html#Joining_to_Seed_Nodes).
 
 ## Downing
 
