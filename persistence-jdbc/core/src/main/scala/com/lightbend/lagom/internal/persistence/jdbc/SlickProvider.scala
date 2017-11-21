@@ -42,9 +42,6 @@ private[lagom] class SlickProvider(
   val autoCreateTables: Boolean = createTables.getBoolean("auto")
 
   if (dbApi != null) {
-    // Work around https://github.com/playframework/playframework/issues/7262
-    // Set the system property
-    System.setProperty(Context.PROVIDER_URL, "/")
 
     // the data source as configured by Play
     val dataSource = dbApi.database("default").dataSource
