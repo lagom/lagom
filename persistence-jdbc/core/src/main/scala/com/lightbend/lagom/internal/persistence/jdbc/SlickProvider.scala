@@ -41,9 +41,6 @@ private[lagom] class SlickProvider(
 
   val autoCreateTables: Boolean = createTables.getBoolean("auto")
 
-  private val asyncExecConfig =
-    new AsyncExecutorConfig(system.settings.config.getConfig("jdbc-defaults.slick.async-executor"))
-
   if (dbApi != null) {
     // Work around https://github.com/playframework/playframework/issues/7262
     // Set the system property
