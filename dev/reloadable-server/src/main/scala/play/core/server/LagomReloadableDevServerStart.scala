@@ -4,6 +4,7 @@
 package play.core.server
 
 import java.io.File
+import java.net.InetAddress
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
@@ -81,6 +82,14 @@ object LagomReloadableDevServerStart {
             System.out.println("\n---- The where is Scala? test ----\n")
             System.out.println(this.getClass.getClassLoader.getResource("scala/Predef$.class"))
           }
+        }
+
+        val before = System.currentTimeMillis()
+        val address = InetAddress.getLocalHost
+        val after = System.currentTimeMillis()
+        if (after - before > 100) {
+          System.out.println(s"WARNING: Retrieving local host name ${address} took more than 100ms, this can create problems at startup with Lagom. \r\n" +
+            "You are probably using MACOS Sierra with a wrongly configured /etc/host . See https://thoeni.io/post/macos-sierra-java/ for a solution")
         }
 
         // First delete the default log file for a fresh start (only in Dev Mode)
