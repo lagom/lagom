@@ -5,7 +5,7 @@ package com.lightbend.lagom.internal.persistence.jdbc
 
 import java.sql.Connection
 import java.util.concurrent.TimeUnit
-import javax.naming.{ Context, InitialContext }
+import javax.naming.{ Context, InitialContext, NameAlreadyBoundException }
 
 import akka.Done
 import akka.actor.ActorSystem
@@ -23,6 +23,7 @@ import slick.jdbc.meta.MTable
 import slick.jdbc.{ H2Profile, JdbcProfile, MySQLProfile, PostgresProfile }
 import slick.util.AsyncExecutor
 import akka.persistence.jdbc.util.ConfigOps._
+
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
@@ -43,22 +44,36 @@ private[lagom] class SlickProvider(
 
   if (dbApi != null) {
 
-    // the data source as configured by Play
-    val dataSource = dbApi.database("default").dataSource
-
-    // the slick db configured with an async executor
-    val slickDb =
-      SlickDbProvider(
-        dataSource,
-        system.settings.config.getConfig("jdbc-defaults.slick.async-executor")
-      )
-
     val namingContext = new InitialContext()
-    // bind the DB configured with an AsyncExecutor
-    namingContext.rebind("DefaultDB", slickDb)
 
-    // for use with JPA only
-    namingContext.rebind("DefaultDS", dataSource)
+    dbApi.databases().foreach { playDb =>
+
+      val dbName = playDb.name
+
+      // each configured DB having an async-executor section
+      // is entitled to for Slick DB configured and bounded to a JNDI name
+      for {
+        dbConfig <- Try(system.settings.config.getConfig(s"db.$dbName"))
+        asyncExecConfig <- Try(dbConfig.getConfig("async-executor"))
+      } yield {
+
+        // a DB config with an async-executor is expected to have an associated jndiDbName
+        // failing to do so will raise an exception
+        val jndiDbName = dbConfig.getString("jndiDbName")
+
+        val slickDb =
+          SlickDbProvider(
+            // the data source as configured by Play
+            playDb.dataSource,
+            asyncExecConfig
+          )
+
+        // we don't simply override a previously configure DB resource
+        // if name is already in use, bind() method throws NameAlreadyBoundException
+        namingContext.bind(jndiDbName, slickDb)
+      }
+    }
+
   }
 
   val db = SlickDatabase.forConfig(readSideConfig, slickConfig)
