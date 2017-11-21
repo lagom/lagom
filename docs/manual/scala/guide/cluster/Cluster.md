@@ -38,15 +38,7 @@ A service instance joins a cluster when the service starts up.
 
 ### Joining during development
 
-In development you are typically only running the service on one cluster node. No explicit joining is necessary; the [[Lagom Development Environment|DevEnvironment]] handles it automatically.
-
-### Joining via ConductR
-
-In production, [[Lightbend ConductR|ConductR]] automatically takes care of joining the nodes.
-
-### Joining without ConductR
-
-If you are not using ConductR, you need to implement the joining yourself as follows.
+In development you are typically only running the service on one cluster node. No explicit joining is necessary; the [[Lagom Development Environment|DevEnvironment]] handles it automatically. For deployment, you need to implement the joining yourself as follows.
 
 First, define some initial contact points of the cluster, so-called seed nodes. You can define seed nodes in `application.conf`:
 
