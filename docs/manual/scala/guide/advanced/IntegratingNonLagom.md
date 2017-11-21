@@ -20,7 +20,7 @@ Of course, you will also need to add a dependency to the API project that you ha
 
 Just as in a Lagom service, you create a `LagomApplication`, when creating a Lagom service client in a non Lagom application, you will create a [`LagomClientApplication`](api/com/lightbend/lagom/scaladsl/client/LagomClientApplication.html). This provides and manages the lifecycle of all components necessary to instantiate and use a Lagom service client.
 
-There is one component that you'll need to provide when creating a client application, that is a service locator. It is up to you what service locator you use, it could be a ConductR service locator, a third party service locator, or a service locator created from static configuration.
+There is one component that you'll need to provide when creating a client application, that is a service locator. It is up to you what service locator you use, it could be a third party service locator, or a service locator created from static configuration.
 
 Lagom provides a number of built-in service locators, including a [`StaticServiceLocator`](api/com/lightbend/lagom/scaladsl/client/StaticServiceLocator.html), a [`RoundRobinServiceLocator`](api/com/lightbend/lagom/scaladsl/client/RoundRobinServiceLocator.html) and a [`ConfigurationServiceLocator`](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocator.html). The easiest way to use these is to mix in their respective `Components` traits. For example, here's a client application built using the static service locator, which uses a static URI:
 

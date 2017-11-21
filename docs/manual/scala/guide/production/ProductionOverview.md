@@ -1,24 +1,9 @@
 # Production
 
-Lagom doesn't prescribe any particular production environment, however out of the box support is provided for [Lightbend ConductR](https://www.lightbend.com/products/conductr). If you are interested in deploying on [Kubernetes](https://kubernetes.io/), see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/k8s-microservices/).
+Lagom doesn't prescribe any particular production environment. If you are interested in deploying on [Kubernetes](https://kubernetes.io/), see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/k8s-microservices/).
 
-## Deploying Lagom services to ConductR
 
-Lightbend ConductR is a perfect match for Lagom, as it provides the following features:
-
-* a means to manage configuration distinctly from your packaged artifact;
-* consolidated logging across many nodes;
-* a supervisory system whereby if your service(s) terminate unexpectedly then they are automatically restarted;
-* the ability to scale up and down with ease and with speed;
-* handling of network failures, in particular those that can lead to a split brain scenario;
-* automated seed node discovery when requiring more than one instance of your service so that they may share a cluster;
-* the ability to perform rolling updates of your services;
-* support for your services being monitored across a cluster; and
-* the ability to test your services locally prior to them being deployed.
-
-To deploy your Lagom services using ConductR, see [[ConductR]].
-
-## Considerations for deploying to other platforms
+## Deployment considerations
 
 The deployment platform determines the type of archive you will need to use for packaging your microservices and the way you provide service location, including that for Cassandra: 
 
