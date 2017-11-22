@@ -1,21 +1,21 @@
 # Production
 
-Lagom doesn't prescribe any particular production environment. If you are interested in deploying on [Kubernetes](https://kubernetes.io/), see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/k8s-microservices/).
+Lagom doesn't prescribe any particular production environment. If you are interested in deploying on [Kubernetes](https://kubernetes.io/), see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/lagom-kubernetes-k8s-deploy-microservices/).
 
 
 ## Deployment considerations
 
-The deployment platform determines the type of archive you will need to use for packaging your microservices and the way you provide service location, including that for Cassandra: 
+The deployment platform determines the type of archive you will need to use for packaging your microservices and the way you provide service location, including that for Cassandra:
 
 * Lagom leverages the [sbt-native-packager](http://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default, sbt produces zip archives, but you can easily produce tar.gz, MSI, debian, RPM, Docker and more.
 
-* At runtime, services need to locate each other. This requires you to provide an implementation of a  [ServiceLocator](api/com/lightbend/lagom/scaladsl/api/ServiceLocator.html). And, the deployment platform you choose might impose its own requirements on configuration. 
+* At runtime, services need to locate each other. This requires you to provide an implementation of a  [ServiceLocator](api/com/lightbend/lagom/scaladsl/api/ServiceLocator.html). And, the deployment platform you choose might impose its own requirements on configuration.
 
 * The Cassandra module provided by `akka-persistence-cassandra` uses static lookup by default. Lagom overrides that behavior by implementing a Session provider based on service location. That allows all services to continue to operate without the need to redeploy if/when the Cassandra `contact-points` are updated or fail. Using this approach provides higher resiliency. However, it is possible to hardcode the list of `contact-points` where Cassandra may be located even when the server is stared with a dynamic service locator as described in the section below.
 
 ### Deploying using static Cassandra contact-points
 
-If you want to use dynamic service location for your services but need to statically locate Cassandra, modify the `application.conf` for your service. You will need to disable Lagom's `ConfigSessionProvider` and fall back to the one provided in `akka-persistence-cassandra`, which uses the list of endpoints listed in `contact-points`. The `application.conf` settings will be applied in all environments (development and production) unless overridden. See developer mode settings on [[overriding Cassandra setup in Dev Mode|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]] for more information on settings up Cassandra in dev mode. 
+If you want to use dynamic service location for your services but need to statically locate Cassandra, modify the `application.conf` for your service. You will need to disable Lagom's `ConfigSessionProvider` and fall back to the one provided in `akka-persistence-cassandra`, which uses the list of endpoints listed in `contact-points`. The `application.conf` settings will be applied in all environments (development and production) unless overridden. See developer mode settings on [[overriding Cassandra setup in Dev Mode|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]] for more information on settings up Cassandra in dev mode.
 
 To set up static Cassandra `contact-points` and disable `ConfigSessionProvider`, modify the following sections of the `application-conf` file:
 

@@ -2,7 +2,7 @@
 
 Instances of the same service may run on multiple nodes, for scalability and redundancy. Nodes may be physical or virtual machines, grouped in a cluster.
 
-The underlying clustering technology is [Akka Cluster](http://doc.akka.io/docs/akka/2.4/scala/cluster-usage.html).
+The underlying clustering technology is [Akka Cluster](https://doc.akka.io/docs/akka/2.5/cluster-usage.html?language=scala).
 
 If instances of a service need to know about each other, they must join the same cluster. Within a cluster, services may use the [[Persistence|PersistentEntity]] and [[Publish-Subscribe|PubSub]] modules of Lagom.
 
@@ -55,7 +55,7 @@ The node that is configured first in the list of `seed-nodes` is special. Only t
 
 The reason for the special first seed node is to avoid forming separated islands when starting from an empty cluster. If the first seed node is restarted and there is an existing cluster it will try to join the other seed nodes, i.e. it will join the existing cluster.
 
-You can read more about cluster joining in the [Akka documentation](http://doc.akka.io/docs/akka/2.4/scala/cluster-usage.html#Joining_to_Seed_Nodes).
+You can read more about cluster joining in the [Akka documentation](https://doc.akka.io/docs/akka/2.5/cluster-usage.html?language=scala#joining-to-seed-nodes).
 
 ## Downing
 
