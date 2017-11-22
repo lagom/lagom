@@ -11,7 +11,7 @@ import play.api.inject.ApplicationLifecycle
 
 import scala.concurrent.ExecutionContext
 
-class ScaladslWebSocketClient(environment: Environment, config: WebSocketClientConfig, eventLoop: EventLoopGroup, lifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) extends WebSocketClient(environment, config, eventLoop, lifecycle) with ScaladslServiceApiBridge {
+private[lagom] class ScaladslWebSocketClient(environment: Environment, config: WebSocketClientConfig, eventLoop: EventLoopGroup, lifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) extends WebSocketClient(environment, config, eventLoop, lifecycle) with ScaladslServiceApiBridge {
 
   // Constructor that manages its own event loop
   def this(environment: Environment, config: WebSocketClientConfig, applicationLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) = {

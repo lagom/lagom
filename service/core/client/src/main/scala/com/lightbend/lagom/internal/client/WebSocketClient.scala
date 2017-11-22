@@ -383,7 +383,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
 
 }
 
-object WebSocketClient {
+private[lagom] object WebSocketClient {
   private[lagom] def createEventLoopGroup(lifecycle: ApplicationLifecycle): EventLoopGroup = {
     val eventLoop = new NioEventLoopGroup()
     lifecycle.addStopHook { () =>
@@ -395,19 +395,19 @@ object WebSocketClient {
   }
 }
 
-class WebSocketException(s: String, th: Throwable) extends java.io.IOException(s, th) {
+private[lagom] class WebSocketException(s: String, th: Throwable) extends java.io.IOException(s, th) {
   def this(s: String) = this(s, null)
 }
 
-sealed trait WebSocketClientConfig {
+private[lagom] sealed trait WebSocketClientConfig {
   def maxFrameLength: Int
 }
 
-object WebSocketClientConfig {
+private[lagom] object WebSocketClientConfig {
 
   def apply(conf: Config): WebSocketClientConfig = new WebSocketClientConfigImpl(conf.getConfig("lagom.client.websocket"))
 
-  private[lagom] class WebSocketClientConfigImpl(conf: Config) extends WebSocketClientConfig {
+  class WebSocketClientConfigImpl(conf: Config) extends WebSocketClientConfig {
     val maxFrameLength = math.min(Int.MaxValue.toLong, conf.getBytes("frame.maxLength")).toInt
   }
 }
