@@ -31,18 +31,18 @@ private[lagom] object SlickDbProvider {
   }
 }
 
-private [lagom] trait AsyncExecutorConfig {
+private[lagom] trait AsyncExecutorConfig {
   def numThreads: Int
   def minConnections: Int
   def maxConnections: Int
   def queueSize: Int
 }
 
-private [lagom] object AsyncExecutorConfig {
+private[lagom] object AsyncExecutorConfig {
 
   def apply(config: Config): AsyncExecutorConfig = new AsyncExecutorConfigImpl(config)
 
-  private[lagom] class AsyncExecutorConfigImpl(config: Config) extends AsyncExecutorConfig {
+  private final class AsyncExecutorConfigImpl(config: Config) extends AsyncExecutorConfig {
 
     val numThreads: Int = config.getInt("numThreads")
     val minConnections: Int = config.getInt("minConnections")
