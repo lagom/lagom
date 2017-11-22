@@ -1,16 +1,16 @@
 # Production
 
-Lagom doesn't prescribe any particular production environment. If you are interested in deploying on [Kubernetes](https://kubernetes.io/), see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/k8s-microservices/).
+Lagom doesn't prescribe any particular production environment. If you are interested in deploying on [Kubernetes](https://kubernetes.io/), see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/lagom-kubernetes-k8s-deploy-microservices/).
 
 ## Deployment considerations
 
-The deployment platform determines the type of archive you will need to use for packaging your microservices as well as the way you set up service location. For packaging: 
+The deployment platform determines the type of archive you will need to use for packaging your microservices as well as the way you set up service location. For packaging:
 
 * Lagom sbt support leverages the [sbt-native-packager](http://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default zip archives can be produced, but you can also produce tar.gz, MSI, debian, RPM, Docker and more.
 
 * Maven has a variety of plugins to produce artifacts for various platforms.
 
-At runtime, services need to locate each other. This requires you to provide an implementation of a [ServiceLocator](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html). And, the deployment platform you choose might impose its own requirements on configuration. 
+At runtime, services need to locate each other. This requires you to provide an implementation of a [ServiceLocator](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html). And, the deployment platform you choose might impose its own requirements on configuration.
 
 The Cassandra module provided by `akka-persistence-cassandra` uses static lookup by default. Lagom overrides that behavior by implementing a Session provider based on service location. That allows all services to continue to operate without the need to redeploy if/when the Cassandra `contact-points` are updated or fail. Using this approach provides higher resiliency. However, it is possible to hardcode the list of `contact-points` where Cassandra may be located even when the server is stared with a dynamic service locator as described in the section below.
 
@@ -44,7 +44,7 @@ lagom.persistence.read-side.cassandra {
 }
 ```
 
-## Using static values for services and Cassandra to simulate a managed runtime 
+## Using static values for services and Cassandra to simulate a managed runtime
 
 While we would never advise using static service locations in production, to simulate a working Lagom system in the absence of a managed runtime, you can deploy Lagom systems to static locations by using static configuration. When using static service location, you can also hardcode Cassandra locations. To achieve this, you will need to:
 

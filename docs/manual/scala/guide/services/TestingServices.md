@@ -74,11 +74,11 @@ Let's say we have a service that has streaming request and/or response parameter
 
 @[echo-service](code/TestingServices.scala)
 
-When writing tests for that the [Akka Streams TestKit](http://doc.akka.io/docs/akka/2.4/java/stream/stream-testkit.html#Streams_TestKit) is very useful. We use the Streams TestKit together with the Lagom `ServiceTest` utilities:
+When writing tests for that the [Akka Streams TestKit](https://doc.akka.io/docs/akka/2.5/stream/stream-testkit.html?language=scala#streams-testkit) is very useful. We use the Streams TestKit together with the Lagom `ServiceTest` utilities:
 
 @[echo-service-spec](code/TestingServices.scala)
 
-Read more about it in the documentation of the [Akka Streams TestKit](http://doc.akka.io/docs/akka/2.4/java/stream/stream-testkit.html#Streams_TestKit).
+Read more about it in the documentation of the [Akka Streams TestKit](https://doc.akka.io/docs/akka/2.5/stream/stream-testkit.html?language=scala#streams-testkit).
 
 ## How to test a persistent entity
 

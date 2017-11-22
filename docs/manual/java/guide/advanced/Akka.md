@@ -12,7 +12,7 @@ Let's look at an example of a `WorkerService` that accepts job requests and dele
 
 @[service-impl](code/docs/home/actor/WorkerServiceImpl.java)
 
-Notice how the `ActorSystem` is injected through the constructor. We create worker actors on each node that has the "worker-node" role. We create a consistent hashing group router that delegates jobs to the workers. Details on these features are in the [Akka documentation](http://doc.akka.io/docs/akka/2.4/java.html).
+Notice how the `ActorSystem` is injected through the constructor. We create worker actors on each node that has the "worker-node" role. We create a consistent hashing group router that delegates jobs to the workers. Details on these features are in the [Akka documentation](https://doc.akka.io/docs/akka/2.5/?language=java).
 
 The worker actor looks like this:
 
@@ -41,7 +41,7 @@ In your Guice module you add `AkkaGuiceSupport` and use the `bindActor` method, 
 
 That allows the actor itself to receive injected objects. It also allows the actor ref for the actor to be injected into other components. This actor is named `worker` and is also qualified with the `worker` name for injection.
 
-You can read more about this and how to use dependency injection for child actors in the [Play documentation](https://playframework.com/documentation/2.5.x/JavaAkka#Dependency-injecting-actors).
+You can read more about this and how to use dependency injection for child actors in the [Play documentation](https://playframework.com/documentation/2.6.x/JavaAkka#Dependency-injecting-actors).
 
 Adjusting the `Worker` actor from the previous section to allow injection of the `PubSubRegistry`:
 
