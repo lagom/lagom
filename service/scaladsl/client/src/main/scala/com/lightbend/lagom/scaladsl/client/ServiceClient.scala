@@ -125,10 +125,9 @@ trait LagomServiceClientComponents extends TopicFactoryProvider with LagomConfig
   lazy val serviceResolver: ServiceResolver = new ScaladslServiceResolver(defaultExceptionSerializer)
   lazy val defaultExceptionSerializer: ExceptionSerializer = new DefaultExceptionSerializer(environment)
 
-  lazy val webSocketClientConfig: WebSocketClientConfig = WebSocketClientConfig(config)
   lazy val scaladslWebSocketClient: ScaladslWebSocketClient = new ScaladslWebSocketClient(
     environment,
-    webSocketClientConfig,
+    WebSocketClientConfig(config),
     applicationLifecycle
   )(executionContext)
   lazy val serviceClient: ServiceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
