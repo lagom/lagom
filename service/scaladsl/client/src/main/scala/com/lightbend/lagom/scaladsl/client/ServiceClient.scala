@@ -15,7 +15,6 @@ import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
-import com.typesafe.config.Config
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 import play.api.libs.concurrent.ActorSystemProvider
 import play.api.libs.ws.WSClient
@@ -120,7 +119,6 @@ trait LagomServiceClientComponents extends TopicFactoryProvider with LagomConfig
   def executionContext: ExecutionContext
   def environment: Environment
   def applicationLifecycle: ApplicationLifecycle
-  def config: Config
 
   lazy val circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider = new CircuitBreakerMetricsProviderImpl(actorSystem)
 
