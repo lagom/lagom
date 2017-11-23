@@ -4,7 +4,7 @@ A Service Locator is embedded in Lagom's development environment, allowing servi
 
 ## Default port
 
-By default, the service locator runs on port `9008`, but it is possible to use a different port. For instance, you can tell the service locator to run on port `10000` by adding the following to your build.
+By default, the service locator runs on port `8000`, but it is possible to use a different port. For instance, you can tell the service locator to run on port `10000` by adding the following to your build.
 
 In the Maven root project pom:
 
