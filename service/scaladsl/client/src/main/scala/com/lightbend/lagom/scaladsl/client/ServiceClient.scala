@@ -110,7 +110,7 @@ trait ServiceResolver {
 /**
  * The Lagom service client components.
  */
-trait LagomServiceClientComponents extends TopicFactoryProvider with LagomConfigComponent {
+trait LagomServiceClientComponents extends TopicFactoryProvider { //with LagomConfigComponent {
   def wsClient: WSClient
   def serviceInfo: ServiceInfo
   def serviceLocator: ServiceLocator
@@ -127,7 +127,7 @@ trait LagomServiceClientComponents extends TopicFactoryProvider with LagomConfig
 
   lazy val scaladslWebSocketClient: ScaladslWebSocketClient = new ScaladslWebSocketClient(
     environment,
-    WebSocketClientConfig(config),
+    WebSocketClientConfig(actorSystem.settings.config),
     applicationLifecycle
   )(executionContext)
   lazy val serviceClient: ServiceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
