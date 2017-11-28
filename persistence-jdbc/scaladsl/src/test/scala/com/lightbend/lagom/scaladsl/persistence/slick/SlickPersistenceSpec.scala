@@ -3,11 +3,13 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.slick
 
+import javax.naming.InitialContext
+
 import akka.actor.setup.ActorSystemSetup
 import akka.actor.{ ActorSystem, BootstrapSetup }
 import akka.cluster.Cluster
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.jdbc.{ SlickOffsetStore, SlickProvider }
+import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbProvider, SlickDbTestProvider, SlickOffsetStore, SlickProvider }
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.OffsetTableConfiguration
 import com.lightbend.lagom.internal.scaladsl.persistence.slick.SlickReadSideImpl
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
@@ -46,6 +48,7 @@ abstract class SlickPersistenceSpec private (_system: ActorSystem)(implicit ec: 
       val dbName = s"${system.name}_${Random.alphanumeric.take(8).mkString}"
 
       val db = Databases.inMemory(dbName, config = Map("jndiName" -> "DefaultDS"))
+      SlickDbTestProvider.buildAndBindSlickDb(db.dataSource)
       _database = Some(db)
       db
   }

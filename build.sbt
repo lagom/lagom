@@ -822,7 +822,7 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
     Dependencies.`persistence-jdbc-javadsl`
   )
   .dependsOn(
-    `persistence-jdbc-core`,
+    `persistence-jdbc-core` % "compile;test->test",
     `persistence-core` % "compile;test->test",
     `persistence-javadsl` % "compile;test->test",
     logback % Test
@@ -843,7 +843,7 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
     )
   )
   .dependsOn(
-    `persistence-jdbc-core`,
+    `persistence-jdbc-core` % "compile;test->test",
     `persistence-core` % "compile;test->test",
     `persistence-scaladsl` % "compile;test->test",
     logback % Test
