@@ -52,7 +52,7 @@ abstract class SlickPersistenceSpec private (_system: ActorSystem)(implicit ec: 
       _database = Some(db)
       db
   }
-  protected lazy val slick = new SlickProvider(system, null)
+  protected lazy val slick = new SlickProvider(system)
   protected lazy val slickReadSide: SlickReadSide = new SlickReadSideImpl(
     slick,
     new SlickOffsetStore(

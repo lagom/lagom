@@ -30,4 +30,5 @@ object SlickDbTestProvider {
 
     new InitialContext().rebind("DefaultDB", slickDb)
   }
+
 }
