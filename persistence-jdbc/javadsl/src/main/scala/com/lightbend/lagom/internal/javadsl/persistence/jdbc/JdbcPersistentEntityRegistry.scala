@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.internal.javadsl.persistence.jdbc
 
+import java.util.Optional
 import javax.inject.{ Inject, Singleton }
 
 import akka.actor.ActorSystem
@@ -27,8 +28,6 @@ private[lagom] final class JdbcPersistentEntityRegistry @Inject() (system: Actor
     super.register(entityClass)
   }
 
-  override protected val journalId: String = JdbcReadJournal.Identifier
-  private val jdbcReadJournal = PersistenceQuery(system).readJournalFor[JdbcReadJournal](journalId)
-  override protected val eventsByTagQuery: Option[EventsByTagQuery] = Some(jdbcReadJournal)
+  override protected val queryPluginId = Optional.of(JdbcReadJournal.Identifier)
 
 }
