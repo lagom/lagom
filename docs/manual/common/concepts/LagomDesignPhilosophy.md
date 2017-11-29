@@ -9,7 +9,7 @@ Consider some of the basic requirements of a Reactive Microservice as identified
 
 The following Lagom characteristics promote these best practices:
 
-* Lagom is asynchronous by default --- its APIs make inter-service communication via streaming a first-class concept. All Lagom APIs use the asynchronous IO capabilities of [Akka Stream](http://akka.io/) for asynchronous streaming; the Java API uses [JDK8 `CompletionStage`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletionStage.html)  for asynchronous computation; the Scala API uses [Futures](https://www.scala-lang.org/api/2.11.8/#scala.concurrent.Future).
+* Lagom is asynchronous by default --- its APIs make inter-service communication via streaming a first-class concept. All Lagom APIs use the asynchronous IO capabilities of [Akka Stream](https://akka.io/) for asynchronous streaming; the Java API uses [JDK8 `CompletionStage`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletionStage.html)  for asynchronous computation; the Scala API uses [Futures](https://www.scala-lang.org/api/2.11.8/#scala.concurrent.Future).
 
 * Lagom favors distributed persistent patterns in contrast with traditional centralized databases. We encourage --- but do not require --- an event-sourced architecture for data persistence. The default pattern for persisting entities takes advantage of Event Sourcing (ES) with Command Query Responsibility Segregation (CQRS). [[Managing data persistence|ES_CQRS]] explains at a high level what event sourcing is and why it is valuable. [[Persistent Entity|PersistentEntity]] introduces Lagom's implementation of event sourcing.
 

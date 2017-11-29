@@ -1,28 +1,16 @@
 # Production
 
-Lagom doesn't prescribe any particular production environment. Out-of-the-box support is provided for [Lightbend ConductR](https://www.lightbend.com/products/conductr). Lightbend ConductR is a perfect match for Lagom, as it provides the following features:
+Lagom doesn't prescribe any particular production environment. If you are interested in deploying on [Kubernetes](https://kubernetes.io/), see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/lagom-kubernetes-k8s-deploy-microservices/).
 
-* a means to manage configuration distinctly from your packaged artifact;
-* consolidated logging across many nodes;
-* a supervisory system whereby if your service(s) terminate unexpectedly then they are automatically restarted;
-* the ability to scale up and down with ease and with speed;
-* handling of network failures, in particular those that can lead to a split brain scenario;
-* automated seed node discovery when requiring more than one instance of your service so that they may share a cluster;
-* the ability to perform rolling updates of your services;
-* support for your services being monitored across a cluster; and
-* the ability to test your services locally prior to them being deployed.
+## Deployment considerations
 
-To deploy your Lagom services using ConductR, see [[ConductR]]. If you are interested in deploying on [Kubernetes](https://kubernetes.io/), see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/k8s-microservices/).
-
-## Considerations for deploying to other platforms
-
-The deployment platform determines the type of archive you will need to use for packaging your microservices as well as the way you set up service location. For packaging: 
+The deployment platform determines the type of archive you will need to use for packaging your microservices as well as the way you set up service location. For packaging:
 
 * Lagom sbt support leverages the [sbt-native-packager](http://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default zip archives can be produced, but you can also produce tar.gz, MSI, debian, RPM, Docker and more.
 
 * Maven has a variety of plugins to produce artifacts for various platforms.
 
-At runtime, services need to locate each other. This requires you to provide an implementation of a [ServiceLocator](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html). And, the deployment platform you choose might impose its own requirements on configuration. 
+At runtime, services need to locate each other. This requires you to provide an implementation of a [ServiceLocator](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html). And, the deployment platform you choose might impose its own requirements on configuration.
 
 The Cassandra module provided by `akka-persistence-cassandra` uses static lookup by default. Lagom overrides that behavior by implementing a Session provider based on service location. That allows all services to continue to operate without the need to redeploy if/when the Cassandra `contact-points` are updated or fail. Using this approach provides higher resiliency. However, it is possible to hardcode the list of `contact-points` where Cassandra may be located even when the server is stared with a dynamic service locator as described in the section below.
 
@@ -56,7 +44,7 @@ lagom.persistence.read-side.cassandra {
 }
 ```
 
-## Using static values for services and Cassandra to simulate a managed runtime 
+## Using static values for services and Cassandra to simulate a managed runtime
 
 While we would never advise using static service locations in production, to simulate a working Lagom system in the absence of a managed runtime, you can deploy Lagom systems to static locations by using static configuration. When using static service location, you can also hardcode Cassandra locations. To achieve this, you will need to:
 
