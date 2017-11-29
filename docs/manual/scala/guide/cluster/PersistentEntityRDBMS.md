@@ -40,14 +40,14 @@ In Lagom's default configuration, Lagom will use Play's JDBC support to configur
 
 Lagom then configures a [Slick](http://slick.lightbend.com/) Database to use that datasource in combination with a [AsyncExecutor](http://slick.lightbend.com/doc/3.2.1/api/index.html#slick.util.AsyncExecutor) that manages the thread pool for asynchronous execution of Database I/O Actions. Lagom will also take care that the connection pool is configured correctly according to the AsyncExecutor settings. The Slick Database is then bound to the JNDI name `DefaultDB` and it's used to configure the `akka-persistence-jdbc` plugin.
 
-The `akka-persistence-jdbc` plugin uses Slick to map tables and manage asynchronous execution of JDBC calls. This means we need to configure it to use the right Slick profile for your database.
+The `akka-persistence-jdbc` plugin uses Slick to map tables and manage asynchronous execution of JDBC calls. This means Lagom internally configures it to use the right Slick profile for your database.
 
 So for example, to configure a PostgreSQL database, you can add the following to your `application.conf`:
 
 ```
 db.default {
   driver = "org.postgresql.Driver"
-  url = "jdbc:postgresql://database.example.com/playdb"
+  url = "jdbc:postgresql://database.example.com/lagom-db"
 }
 
 jdbc-defaults.slick.profile = "slick.jdbc.PostgresProfile$"
