@@ -88,7 +88,7 @@ object LagomReloadableDevServerStart {
         val address = InetAddress.getLocalHost
         val after = System.currentTimeMillis()
         if (after - before > 100) {
-          System.out.println(s"WARNING: Retrieving local host name ${address} took more than 100ms, this can create problems at startup with Lagom. \r\n" +
+          System.out.println(s"WARNING: Retrieving local host name ${address} took more than 100ms, this can create problems at startup with Lagom.\n" +
             "You are probably using MACOS Sierra with a wrongly configured /etc/host . See https://thoeni.io/post/macos-sierra-java/ for a solution")
         }
 
