@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
  */
 package lagom
@@ -160,7 +160,7 @@ object Unidoc extends AutoPlugin {
   // down to two assuming https://github.com/typesafehub/genjavadoc/issues/66 is possible.
   override lazy val projectSettings = inConfig(Genjavadoc)(Defaults.configSettings) ++ Seq(
     ivyConfigurations += GenjavadocCompilerPlugin,
-    libraryDependencies += "com.typesafe.genjavadoc" %% "genjavadoc-plugin" % "0.10" % "genjavadocplugin->default(compile)" cross CrossVersion.full,
+    libraryDependencies += "com.typesafe.genjavadoc" % "genjavadoc-plugin" % "0.10" % "genjavadocplugin->default(compile)" cross CrossVersion.full,
     scalacOptions in Genjavadoc ++= Seq(
       "-P:genjavadoc:out=" + (target.value / "java"),
       "-P:genjavadoc:fabricateParams=false"
