@@ -10,13 +10,10 @@ import play.api.db.DBApi
 
 import scala.util.Try
 
-private[lagom] trait JndiConfigurator
 
 private[lagom] object JndiConfigurator {
 
-  def apply(dbApi: DBApi, config: Config): JndiConfigurator = new JndiConfiguratorImpl(dbApi, config)
-
-  private final class JndiConfiguratorImpl(dbApi: DBApi, config: Config) extends JndiConfigurator {
+  def apply(dbApi: DBApi, config: Config): Unit = {
 
     val namingContext = new InitialContext()
 
