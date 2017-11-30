@@ -10,6 +10,7 @@ import java.util.Locale
 import akka.stream.scaladsl._
 import akka.stream.stage._
 import akka.util.ByteString
+import com.typesafe.config.Config
 import com.typesafe.netty.{ HandlerPublisher, HandlerSubscriber }
 import com.lightbend.lagom.internal.NettyFutureConverters._
 import io.netty.bootstrap.Bootstrap
@@ -21,6 +22,7 @@ import io.netty.channel._
 import io.netty.handler.codec.http.websocketx._
 import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
+import play.api.Configuration
 import play.api.Environment
 import play.api.http.HeaderNames
 import play.api.inject.ApplicationLifecycle
@@ -41,7 +43,7 @@ import scala.collection.immutable
 /**
  * A WebSocket client
  */
-private[lagom] abstract class WebSocketClient(environment: Environment, eventLoop: EventLoopGroup,
+private[lagom] abstract class WebSocketClient(environment: Environment, config: WebSocketClientConfig, eventLoop: EventLoopGroup,
                                               lifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) extends LagomServiceApiBridge {
 
   lifecycle.addStopHook(() => shutdown())
@@ -92,7 +94,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, eventLoo
     for {
       _ <- channelFuture.toScala
       channel = channelFuture.channel()
-      handshaker = WebSocketClientHandshakerFactory.newHandshaker(tgt, version, null, false, headers)
+      handshaker = WebSocketClientHandshakerFactory.newHandshaker(tgt, version, null, false, headers, config.maxFrameLength)
       _ <- handshaker.handshake(channel).toScala
       incomingPromise = Promise[(ResponseHeader, Source[ByteString, NotUsed])]()
       _ = channel.pipeline().addLast("supervisor", new WebSocketSupervisor(exceptionSerializer, handshaker, outgoing,
@@ -381,7 +383,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, eventLoo
 
 }
 
-object WebSocketClient {
+private[lagom] object WebSocketClient {
   private[lagom] def createEventLoopGroup(lifecycle: ApplicationLifecycle): EventLoopGroup = {
     val eventLoop = new NioEventLoopGroup()
     lifecycle.addStopHook { () =>
@@ -393,6 +395,19 @@ object WebSocketClient {
   }
 }
 
-class WebSocketException(s: String, th: Throwable) extends java.io.IOException(s, th) {
+private[lagom] class WebSocketException(s: String, th: Throwable) extends java.io.IOException(s, th) {
   def this(s: String) = this(s, null)
+}
+
+private[lagom] sealed trait WebSocketClientConfig {
+  def maxFrameLength: Int
+}
+
+private[lagom] object WebSocketClientConfig {
+
+  def apply(conf: Config): WebSocketClientConfig = new WebSocketClientConfigImpl(conf.getConfig("lagom.client.websocket"))
+
+  class WebSocketClientConfigImpl(conf: Config) extends WebSocketClientConfig {
+    val maxFrameLength = math.min(Int.MaxValue.toLong, conf.getBytes("frame.maxLength")).toInt
+  }
 }
