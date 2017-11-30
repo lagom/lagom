@@ -15,6 +15,11 @@ import sbt.CrossVersion._
 // Turn off "Resolving" log messages that clutter build logs
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
 
+def defineSbtVersion(scalaBinVer: String): String = scalaBinVer match {
+  case "2.12" => "1.0.2"
+  case _ => "0.13.16"
+}
+
 def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   organization := "com.lightbend.lagom",
   // Must be "Apache-2.0", because bintray requires that it is a license that it knows about
@@ -644,10 +649,11 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // to avoid new JVM for each test, see http://www.scala-sbt.org/release/docs/Testing.html
   val javaOptions = Seq("-Xms256M", "-Xmx512M")
   tests map { test =>
-    new Tests.Group(
+    Tests.Group(
       name = test.name,
       tests = Seq(test),
-      runPolicy = Tests.SubProcess(ForkOptions(runJVMOptions = javaOptions)))
+      runPolicy = Tests.SubProcess(ForkOptions(runJVMOptions = javaOptions))
+    )
   }
 }
 
@@ -1034,6 +1040,7 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     publishMavenStyle := true,
     crossScalaVersions := Dependencies.SbtScalaVersions,
     scalaVersion := Dependencies.SbtScalaVersions.head,
+    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     crossPaths := false,
     sourceGenerators in Compile += Def.task {
       Generators.version(version.value, (sourceManaged in Compile).value)
@@ -1050,10 +1057,15 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     sbtPlugin := true,
     crossScalaVersions := Dependencies.SbtScalaVersions,
     scalaVersion := Dependencies.SbtScalaVersions.head,
+    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     Dependencies.`sbt-plugin`,
-    addSbtPlugin(
-      ("com.typesafe.play" % "sbt-plugin" % Dependencies.PlayVersion)
-        .exclude("org.slf4j", "slf4j-simple")),
+    libraryDependencies ++= Seq(
+      Defaults.sbtPluginExtra(
+        "com.typesafe.play" % "sbt-plugin" % Dependencies.PlayVersion,
+        CrossVersion.binarySbtVersion((sbtVersion in pluginCrossBuild).value),
+        CrossVersion.binaryScalaVersion(scalaVersion.value)
+      ).exclude("org.slf4j", "slf4j-simple")
+    ),
     scriptedDependencies := {
       val () = scriptedDependencies.value
       val () = publishLocal.value
@@ -1235,7 +1247,8 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
   .settings(
     sbtPlugin := true,
     crossScalaVersions := Dependencies.SbtScalaVersions,
-    scalaVersion := Dependencies.SbtScalaVersions.head
+    scalaVersion := Dependencies.SbtScalaVersions.head,
+    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value)
   ).dependsOn(`sbt-plugin`)
 
 // This project also get aggregated, it is only executed by the sbt-plugin scripted dependencies
