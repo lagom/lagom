@@ -10,7 +10,6 @@ import play.api.db.DBApi
 
 import scala.util.Try
 
-
 private[lagom] object JndiConfigurator {
 
   def apply(dbApi: DBApi, config: Config): Unit = {
