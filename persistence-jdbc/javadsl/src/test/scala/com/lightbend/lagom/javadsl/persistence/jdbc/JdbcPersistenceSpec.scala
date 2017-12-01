@@ -43,7 +43,7 @@ abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec
       db
   }
 
-  protected lazy val slick = new SlickProvider(system, null)
+  protected lazy val slick = new SlickProvider(system)
   protected lazy val session: JdbcSession = new JdbcSessionImpl(slick)
   protected lazy val offsetStore = new JavadslJdbcOffsetStore(
     slick,
