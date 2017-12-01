@@ -347,6 +347,11 @@ val otherProjects = devEnvironmentProjects ++ Seq[Project](
   `macro-testkit`
 )
 
+val sbtScriptedProjects = Seq[Project](
+  `sbt-scripted-tools`,
+  `sbt-scripted-library`
+)
+
 lazy val root = (project in file("."))
   .settings(name := "lagom")
   .settings(runtimeLibCommon: _*)
@@ -366,7 +371,7 @@ lazy val root = (project in file("."))
     whitesourceAggregateProjectName in ThisBuild  := sys.env.getOrElse("WHITESOURCE_PROJECT_NAME", default = "invalid"),
     whitesourceAggregateProjectToken in ThisBuild := sys.env.getOrElse("WHITESOURCE_PROJECT_TOKEN", default = "invalid")
   )
-  .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects).map(Project.projectToRef): _*)
+  .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects).map(Project.projectToRef): _*)
 
   credentials += Credentials(realm = "whitesource",
       host = "whitesourcesoftware.com",
@@ -1042,6 +1047,7 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     scalaVersion := Dependencies.SbtScalaVersions.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     crossPaths := false,
+    sbtPlugin := true,
     sourceGenerators in Compile += Def.task {
       Generators.version(version.value, (sourceManaged in Compile).value)
     }.taskValue,
@@ -1255,6 +1261,10 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
 lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-library")
   .settings(name := "lagom-sbt-scripted-library")
   .settings(runtimeLibCommon: _*)
+  .settings(
+    PgpKeys.publishSigned := {},
+    publish := {}
+  )
   .dependsOn(`server-javadsl`)
 
 lazy val `service-locator` = (project in file("dev") / "service-registry" / "service-locator")
