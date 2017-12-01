@@ -9,6 +9,7 @@ import akka.util.ByteString
 import com.lightbend.lagom.scaladsl.api.transport._
 import play.api.libs.json._
 
+import scala.xml.Elem
 import scala.collection.immutable
 import scala.util.control.NonFatal
 
@@ -188,6 +189,51 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
         } match {
           case Some(serializer) => serializer
           case None             => throw NotAcceptable(acceptedMessageProtocols, defaultProtocol)
+        }
+      }
+    }
+  }
+
+  implicit val XMLMessageSerializer: StrictMessageSerializer[Elem] = new StrictMessageSerializer[Elem] {
+    private val defaultProtocol = MessageProtocol(Some("text/xml"), Some("utf-8"), None)
+    override val acceptResponseProtocols: immutable.Seq[MessageProtocol] = immutable.Seq(defaultProtocol)
+
+    private class XmlSerializer(override val protocol: MessageProtocol) extends NegotiatedSerializer[Elem, ByteString] {
+
+      override def serialize(s: Elem) = {
+        ByteString.fromString(s.toString(), protocol.charset.getOrElse("utf-8"))
+      }
+    }
+
+    private class StringDeserializer(charset: String) extends NegotiatedDeserializer[Elem, ByteString] {
+      override def deserialize(wire: ByteString) = {
+        val elem = scala.xml.XML.loadString(wire.decodeString(charset))
+        elem
+      }
+    }
+
+    override val serializerForRequest: NegotiatedSerializer[Elem, ByteString] = new XmlSerializer(defaultProtocol)
+
+    override def deserializer(protocol: MessageProtocol): NegotiatedDeserializer[Elem, ByteString] = {
+      if (protocol.contentType.forall(_ == "text/xml")) {
+        new StringDeserializer(protocol.charset.getOrElse("utf-8"))
+      } else {
+        throw UnsupportedMediaType(protocol, defaultProtocol)
+      }
+    }
+
+    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]): NegotiatedSerializer[Elem, ByteString] = {
+      if (acceptedMessageProtocols.isEmpty) {
+        serializerForRequest
+      } else {
+        acceptedMessageProtocols.collectFirst {
+          case wildcardOrNone if wildcardOrNone.contentType.forall(ct => ct == "*" || ct == "*/*") =>
+            new XmlSerializer(wildcardOrNone.withContentType("text/xml"))
+          case textPlain if textPlain.contentType.contains("text/xml") =>
+            new XmlSerializer(textPlain)
+        } match {
+          case Some(serializer) => serializer
+          case None => throw NotAcceptable(acceptedMessageProtocols, defaultProtocol)
         }
       }
     }
