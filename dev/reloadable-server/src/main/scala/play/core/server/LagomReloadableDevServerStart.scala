@@ -26,6 +26,16 @@ import scala.util.{ Failure, Success, Try }
 object LagomReloadableDevServerStart {
 
   /**
+    * A threshold for retrieving the current hostname.
+    *
+    * If Lagom startup takes too long, it can cause a number of issues and we try to detect it using
+    * InetAddress.getLocalHost. If it takes longer than this threshold, it might be a signal
+    * of a well-known problem with MacOS that might cause issues with Lagom.
+    */
+  val startupWarningThreshold = 1000L
+
+
+  /**
    * Provides an HTTPS-only server for the dev environment.
    *
    * <p>This method uses simple Java types so that it can be used with reflection by code
@@ -87,9 +97,9 @@ object LagomReloadableDevServerStart {
         val before = System.currentTimeMillis()
         val address = InetAddress.getLocalHost
         val after = System.currentTimeMillis()
-        if (after - before > 100) {
-          System.out.println(s"WARNING: Retrieving local host name ${address} took more than 100ms, this can create problems at startup with Lagom.\n" +
-            "You are probably using MACOS Sierra with a wrongly configured /etc/host . See https://thoeni.io/post/macos-sierra-java/ for a solution")
+        if (after - before > startupWarningThreshold) {
+          println(play.utils.Colors.red("WARNING: Retrieving local host name ${address} took more than 100ms, this can create problems at startup with Lagom"))
+          println(play.utils.Colors.red("If you are using macOS, see https://thoeni.io/post/macos-sierra-java/ for a potential solution"))
         }
 
         // First delete the default log file for a fresh start (only in Dev Mode)
