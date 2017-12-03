@@ -32,7 +32,7 @@ object LagomReloadableDevServerStart {
     * InetAddress.getLocalHost. If it takes longer than this threshold, it might be a signal
     * of a well-known problem with MacOS that might cause issues with Lagom.
     */
-  val startupWarningThreshold = 1000L
+  private val startupWarningThreshold = 1000L
 
 
   /**
@@ -98,7 +98,7 @@ object LagomReloadableDevServerStart {
         val address = InetAddress.getLocalHost
         val after = System.currentTimeMillis()
         if (after - before > startupWarningThreshold) {
-          println(play.utils.Colors.red("WARNING: Retrieving local host name ${address} took more than 100ms, this can create problems at startup with Lagom"))
+          println(play.utils.Colors.red("WARNING: Retrieving local host name ${address} took more than ${startupWarningThreshold}ms, this can create problems at startup with Lagom"))
           println(play.utils.Colors.red("If you are using macOS, see https://thoeni.io/post/macos-sierra-java/ for a potential solution"))
         }
 
