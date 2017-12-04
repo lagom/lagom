@@ -233,7 +233,7 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
             new XmlSerializer(textPlain)
         } match {
           case Some(serializer) => serializer
-          case None => throw NotAcceptable(acceptedMessageProtocols, defaultProtocol)
+          case None             => throw NotAcceptable(acceptedMessageProtocols, defaultProtocol)
         }
       }
     }
