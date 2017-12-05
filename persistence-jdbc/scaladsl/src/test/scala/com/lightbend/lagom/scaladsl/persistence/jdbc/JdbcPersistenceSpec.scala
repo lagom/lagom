@@ -3,11 +3,13 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.jdbc
 
+import javax.naming.InitialContext
+
 import akka.actor.{ ActorSystem, BootstrapSetup }
 import akka.actor.setup.ActorSystemSetup
 import akka.cluster.Cluster
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.jdbc.{ SlickOffsetStore, SlickProvider }
+import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbProvider, SlickDbTestProvider, SlickOffsetStore, SlickProvider }
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.{ JdbcReadSideImpl, JdbcSessionImpl, OffsetTableConfiguration }
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
 import com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil
@@ -15,6 +17,7 @@ import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{ Config, ConfigFactory }
 import play.api.db.{ Database, Databases }
 import play.api.{ Configuration, Environment }
+import slick.util.AsyncExecutor
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -42,12 +45,13 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
       val dbName = s"${system.name}_${Random.alphanumeric.take(8).mkString}"
 
       val db = Databases.inMemory(dbName, config = Map("jndiName" -> "DefaultDS"))
+      SlickDbTestProvider.buildAndBindSlickDb(db.dataSource)
       _database = Some(db)
       db
   }
 
   import system.dispatcher
-  protected lazy val slick = new SlickProvider(system, null)
+  protected lazy val slick = new SlickProvider(system)
   protected lazy val session: JdbcSession = new JdbcSessionImpl(slick)
   protected lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(
     slick,

@@ -5,7 +5,7 @@ package com.lightbend.lagom.scaladsl.persistence.jdbc
 
 import scala.concurrent.ExecutionContext
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.persistence.jdbc.{ SlickOffsetStore, SlickProvider }
+import com.lightbend.lagom.internal.persistence.jdbc.{ JndiConfigurator, SlickOffsetStore, SlickProvider }
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcPersistentEntityRegistry
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcReadSideImpl
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcSessionImpl
@@ -26,9 +26,15 @@ trait JdbcPersistenceComponents
   with WriteSideJdbcPersistenceComponents
 
 private[lagom] trait SlickProviderComponents extends DBComponents {
+
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext
-  lazy val slickProvider: SlickProvider = new SlickProvider(actorSystem, dbApi)(executionContext)
+
+  lazy val slickProvider: SlickProvider = {
+    // Ensures JNDI bindings are made before we build the SlickProvider
+    JndiConfigurator(dbApi, actorSystem.settings.config)
+    new SlickProvider(actorSystem)(executionContext)
+  }
 }
 
 /**

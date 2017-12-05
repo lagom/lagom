@@ -17,6 +17,7 @@ import scala.concurrent.duration._
 import scala.util.Random
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc.SlickProvider
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
+import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbProvider, SlickDbTestProvider }
 
 abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec(_system) {
 
@@ -37,11 +38,12 @@ abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec
       val dbName = s"${system.name}_${Random.alphanumeric.take(8).mkString}"
 
       val db = Databases.inMemory(dbName, config = Map("jndiName" -> "DefaultDS"))
+      SlickDbTestProvider.buildAndBindSlickDb(db.dataSource)
       _database = Some(db)
       db
   }
 
-  protected lazy val slick = new SlickProvider(system, null)
+  protected lazy val slick = new SlickProvider(system)
   protected lazy val session: JdbcSession = new JdbcSessionImpl(slick)
   protected lazy val offsetStore = new JavadslJdbcOffsetStore(
     slick,

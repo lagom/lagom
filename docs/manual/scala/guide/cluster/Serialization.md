@@ -13,14 +13,14 @@ The Play JSON abstraction for serializing and deserializing a class into JSON is
 
 To enable JSON Serialization there are three steps you need to follow.
 
-The first step is to define your [Format](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/libs/json/Format.html) for each class that is to be serialized, this can be done using [automated mapping](#Automated-mapping) or [manual mapping](#Manual-mapping). 
+The first step is to define your [Format](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/libs/json/Format.html) for each class that is to be serialized, this can be done using [automated mapping](#Automated-mapping) or [manual mapping](#Manual-mapping).
 
 @[format](code/docs/home/scaladsl/serialization/AddPost.scala)
 
 Best practice is to define the `Format` as an implicit in the classes companion object, so that it can be found by implicit resolution.
- 
+
 The second step is to implement [JsonSerializerRegistry](api/com/lightbend/lagom/scaladsl/playjson/JsonSerializerRegistry.html) and have all the service formats returned from its `serializers` method.
-   
+
 @[registry](code/docs/home/scaladsl/serialization/Registry.scala)
 
 Having done that, you can provide the serializer registry by overriding the `jsonSerializerRegistry` component method in your application cake, for example:
@@ -42,7 +42,7 @@ JSON can be rather verbose and for large messages it can be beneficial to enable
 The serializer will by default only compress messages that are larger than 1024 bytes. This threshold can be changed with configuration property:
 
 @[compress-larger-than](../../../../../play-json/src/main/resources/reference.conf)
-   
+
 ## Automated mapping
 
 The [Json.format\[MyClass\]](https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.libs.json.Json$@format[A]:play.api.libs.json.OFormat[A]) macro will inspect a `case class` for what fields it contains and produce a `Format` that uses the field names and types of the class in the resulting JSON.
@@ -55,7 +55,7 @@ If the class contains fields of complex types, it pulls those in from `implicit`
 
 ## Manual mapping
 
-Defining a `Format` can be done in several ways using the Play JSON APIs, either using [JSON Combinators](https://playframework.com/documentation/2.5.x/ScalaJsonCombinators#Format) or by manually implementing functions that turn a `JsValue` into a `JsSuccess(T)` or a `JsFailure()`.
+Defining a `Format` can be done in several ways using the Play JSON APIs, either using [JSON Combinators](https://playframework.com/documentation/2.6.x/ScalaJsonCombinators#Format) or by manually implementing functions that turn a `JsValue` into a `JsSuccess(T)` or a `JsFailure()`.
 
 @[manualMapping](code/docs/home/scaladsl/serialization/AddOrder.scala)
 

@@ -36,16 +36,18 @@ Lagom uses the [`akka-persistence-jdbc`](https://github.com/dnvriend/akka-persis
 
 We advise against using H2 in production, however, it is suitable for use in development and testing.
 
-In Lagom's default configuration, Lagom will use Play's JDBC support to configure and create a connection pool. Details on how to configure it can be found [here](https://www.playframework.com/documentation/2.6.x/JavaDatabase). Play should be configured to provide a JNDI binding for the datasource, by default Lagom binds it to `DefaultDS`.
+In Lagom's default configuration, Lagom will use Play's JDBC support to configure and create a connection pool. Details on how to configure it can be found [here](https://www.playframework.com/documentation/2.6.x/ScalaDatabase). Play should be configured to provide a JNDI binding for the datasource, by default Lagom binds it to `DefaultDS`.
 
-Lagom then configures `akka-persistence-jdbc` to use that `DefaultDS` JNDI binding. `akka-persistence-jdbc` uses [Slick](http://slick.lightbend.com/) to map tables and manage asynchronous execution of JDBC calls. This means we need to configure it to use the right Slick profile for your database, by default Lagom will use the H2 profile.
+Lagom then configures a [Slick](http://slick.lightbend.com/) Database to use that datasource in combination with a [AsyncExecutor](http://slick.lightbend.com/doc/3.2.1/api/index.html#slick.util.AsyncExecutor) that manages the thread pool for asynchronous execution of Database I/O Actions. Lagom will also take care that the connection pool is configured correctly according to the AsyncExecutor settings. The Slick Database is then bound to the JNDI name `DefaultDB` and it's used to configure the `akka-persistence-jdbc` plugin.
+
+The `akka-persistence-jdbc` plugin uses Slick to map tables and manage asynchronous execution of JDBC calls. This means Lagom internally configures it to use the right Slick profile for your database.
 
 So for example, to configure a PostgreSQL database, you can add the following to your `application.conf`:
 
 ```
 db.default {
   driver = "org.postgresql.Driver"
-  url = "jdbc:postgresql://database.example.com/playdb"
+  url = "jdbc:postgresql://database.example.com/lagom-db"
 }
 
 jdbc-defaults.slick.profile = "slick.jdbc.PostgresProfile$"
@@ -70,4 +72,3 @@ The full configuration options that Lagom provides for managing the creation of 
 The Lagom Application Loader needs to load the correct persistence components based on whether you're working with Cassandra or JDBC. For an RDBMS not only the JDBC persistence components must be loaded but also a connection pool must be configured. By default the Hikari connection pool is available in Play and can be configured as follows:
 
 @[load-components](code/docs/home/scaladsl/persistence/JdbcBlogApplicationLoader.scala)
-
