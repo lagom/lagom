@@ -728,7 +728,11 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil$AwaitPersistenceInit"),
 
       // package private
-      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistNone")
+      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistNone"),
+
+      // writeReplace method should never have been public, and it only throws an exception, so nothing
+      // lost by hiding it.
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntityRef.writeReplace")
     ),
     Dependencies.`persistence-javadsl`
   )
