@@ -286,7 +286,7 @@ private[server] object ActorSystemProvider {
   @deprecated(message = "prefer method using typesafe Config instead", since = "1.4.0")
   def start(configuration: Configuration, environment: Environment,
             serializerRegistry: Option[JsonSerializerRegistry]): (ActorSystem, () => Future[Unit]) = {
-    start(configuration.underlying, environment, serializerRegistry)
+    start(configuration, environment, serializerRegistry)
   }
 }
 
