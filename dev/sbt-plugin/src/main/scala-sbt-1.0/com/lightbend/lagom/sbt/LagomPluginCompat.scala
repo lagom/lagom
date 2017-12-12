@@ -10,7 +10,7 @@ import scala.concurrent.duration.Duration
 
 object LagomReloadableServiceCompat {
   trait autoImport {
-    val lagomReload = taskKey[sbt.internal.inc.Analysis]("Executed when sources of changed, to recompile (and possibly reload) the app")
+    val lagomReload = taskKey[sbt.internal.inc.Analysis]("Task executed to recompile (and possibly reload) the app when there are changes in sources")
   }
 
   def joinAnalysis(analysisSeq: Seq[xsbti.compile.CompileAnalysis]) = analysisSeq.map(_.asInstanceOf[Analysis]).reduceLeft(_ ++ _)
