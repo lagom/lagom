@@ -7,15 +7,15 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.7"
-  val PlayJsonVersion = "2.6.7"
+  val PlayVersion = "2.6.9"
+  val PlayJsonVersion = "2.6.8"
   val PlayStandaloneWsVersion = "1.1.3"
   val TwirlVersion = "1.3.12"
   val PlayFileWatchVersion = "1.0.0"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.6"
-  val AkkaHttpVersion = "10.0.10"
+  val AkkaVersion = "2.5.8"
+  val AkkaHttpVersion = "10.0.11"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.11.11", "2.12.4")
   val SbtScalaVersions = Seq("2.10.6")
@@ -26,10 +26,10 @@ object Dependencies {
   val JacksonVersion = "2.8.10"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.16.Final"
+  val NettyVersion = "4.1.18.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
-  val KafkaVersion = "0.11.0.0"
-  val AkkaStreamKafkaVersion = "0.17"
+  val KafkaVersion = "0.11.0.1"
+  val AkkaStreamKafkaVersion = "0.18"
 
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
@@ -66,7 +66,7 @@ object Dependencies {
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
   private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6"
-  private val typesafeConfig = "com.typesafe" % "config" % "1.3.1"
+  private val typesafeConfig = "com.typesafe" % "config" % "1.3.2"
   private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.2"
   private val h2 = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0" excludeAll (excludeSlf4j: _*)
@@ -165,7 +165,7 @@ object Dependencies {
       "com.typesafe.play" %% "twirl-api" % TwirlVersion,
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-      "com.zaxxer" % "HikariCP" % "2.7.2",
+      "com.zaxxer" % "HikariCP" % "2.7.4",
       "commons-codec" % "commons-codec" % "1.10",
       "io.aeron" % "aeron-client" % "1.3.0",
       "io.aeron" % "aeron-driver" % "1.3.0",
