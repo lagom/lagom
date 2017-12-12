@@ -4,10 +4,9 @@
 package com.lightbend.lagom.scaladsl.server
 
 import java.net.URI
-import java.util.concurrent.{ TimeUnit, TimeoutException }
 
 import akka.actor.setup.ActorSystemSetup
-import akka.actor.{ ActorSystem, BootstrapSetup }
+import akka.actor.{ ActorSystem, BootstrapSetup, CoordinatedShutdown }
 import akka.event.Logging
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServerMacroImpl
@@ -25,8 +24,7 @@ import play.api.mvc.EssentialFilter
 import play.core.DefaultWebCommands
 
 import scala.collection.immutable
-import scala.concurrent.duration._
-import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
+import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.language.experimental.macros
 
 /**
@@ -252,7 +250,7 @@ private[server] object ActorSystemProvider {
    * This is copied from Play's ActorSystemProvider, modified so we can inject json serializers
    */
   def start(config: Config, environment: Environment,
-            serializerRegistry: Option[JsonSerializerRegistry]): (ActorSystem, () => Future[Unit]) = {
+            serializerRegistry: Option[JsonSerializerRegistry]): (ActorSystem, () => Future[_]) = {
     val akkaConfig: Config = {
       val akkaConfigRoot = config.getString("play.akka.config")
       // Need to fallback to root config so we can lookup dispatchers defined outside the main namespace
@@ -269,34 +267,17 @@ private[server] object ActorSystemProvider {
     logger.debug(s"Starting application default Akka system: $name")
 
     val stopHook = { () =>
-      logger.debug(s"Shutdown application default Akka system: $name")
-      system.terminate()
-
-      if (!config.getIsNull("play.akka.shutdown-timeout")) {
-        val timeout = config.getDuration("play.akka.shutdown-timeout", TimeUnit.MILLISECONDS)
-        try {
-          // We do a blocking timeout. It'd be nice to be able to do an asynchronous timeout,
-          // but what would we use to do that? The actor system is being shut down, we can't
-          // use its scheduler.
-          Await.result(system.whenTerminated, timeout.milliseconds)
-        } catch {
-          case te: TimeoutException =>
-            // oh well.  We tried to be nice.
-            logger.info(s"Could not shutdown the Akka system in $timeout milliseconds.  Giving up.")
-        }
-        Future.successful(())
-      } else {
-        // We just want to replace Terminated with Unit, we need an execution context to do that,
-        // and can't use Akka's since by the time it's needed it's shut down. So we use a calling
-        // thread execution context.
-        system.whenTerminated.map(_ => ())(new ExecutionContext {
-          override def reportFailure(cause: Throwable): Unit =
-            cause.printStackTrace()
-
-          override def execute(runnable: Runnable): Unit =
-            runnable.run()
-        })
-      }
+      val akkaRunCSFromPhase = config.getString("play.akka.run-cs-from-phase")
+      if (CoordinatedShutdown(system).shutdownReason().isEmpty)
+        logger.debug(s"Shutting down Application's default Akka system: $name")
+      // Play's "play.akka.shutdown-timeout" is used to configure the timeout of
+      // the 'actor-system-terminate' phase of Akka's CoordinatedShutdown
+      // in reference-overrides.conf.
+      //
+      // The phases that should be run is a configurable setting so Play users
+      // that embed an Akka Cluster node can opt-in to using Akka's CS or continue
+      // to use their own shutdown code.
+      CoordinatedShutdown(system).run(Some(akkaRunCSFromPhase))
     }
 
     (system, stopHook)
