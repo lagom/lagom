@@ -25,6 +25,8 @@ public class AkkaHttpServiceImpl implements AkkaHttpService {
         return request -> CompletableFuture.completedFuture( stackTrace() );
     }
 
+    // When https://github.com/lagom/lagom/issues/1136 is fixed, we can remove this hack and assert
+    // using HTTP headers
     private String stackTrace() {
         return Arrays.stream(new RuntimeException().getStackTrace())
                 .map(ste -> ste.getClassName() + "\n")
