@@ -1,7 +1,7 @@
 /*
  *
  */
-package com.example.hello.impl;
+package com.example.akka.impl;
 
 import akka.NotUsed;
 import com.example.hello.api.AkkaHttpService;
