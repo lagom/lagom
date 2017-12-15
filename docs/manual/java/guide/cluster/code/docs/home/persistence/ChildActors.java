@@ -7,8 +7,7 @@ import akka.actor.Props;
 import akka.cluster.sharding.ClusterSharding;
 import akka.cluster.sharding.ClusterShardingSettings;
 import akka.cluster.sharding.ShardRegion;
-import akka.testkit.TestKit;
-import akka.testkit.TestProbe;
+import akka.testkit.javadsl.TestKit;
 import akka.util.Timeout;
 import com.lightbend.lagom.javadsl.persistence.ChildPersistentEntity;
 import com.lightbend.lagom.javadsl.persistence.ChildPersistentEntityFactory;
@@ -147,17 +146,17 @@ public interface ChildActors {
                         // our test probe.
                         ChildPersistentEntityFactory.mocked(
                             MyProcessManagerEntity.class,
-                            probe.testActor()
+                            probe.getRef()
                         )
                     ))
                 );
 
                 // Send the process manager a start message
-                processManager.tell("start", testActor());
+                processManager.tell("start", getRef());
                 // Expect the entity to receive a start process message
                 probe.expectMsg(new StartProcess());
                 // Simulate the entity to reply with a started message
-                probe.lastSender().tell("started", probe.testActor());
+                probe.reply("started");
                 // Expect that message to be mapped forward back to us
                 expectMsg(new MappedReply("started"));
             }};

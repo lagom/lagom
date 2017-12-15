@@ -45,7 +45,7 @@ Similar to `tell`, `forward` can also be used to send a message, the difference 
 
 Finally `ask` can be used to get a future of the reply sent to the message:
 
-@[child-persistent-entity-forward](code/docs/home/persistence/ChildActors.java)
+@[child-persistent-entity-ask](code/docs/home/persistence/ChildActors.java)
 
 ### Shutting a child entity down
 

@@ -8,7 +8,15 @@ import akka.actor.ActorRef;
 import akka.actor.PoisonPill;
 import play.inject.Injector;
 
+/**
+ * Factory abstraction for creating child persistent entities.
+ *
+ * This can be used instead of directly invoking
+ * {@link ChildPersistentEntity#create(Class, Injector, String, String, ActorContext)} as a method of indirection to
+ * allow you to inject a mocked actor (eg an Akka TestKit probe) when testing.
+ */
 public interface ChildPersistentEntityFactory<Command> {
+
   /**
    * Create an entity.
    *
@@ -37,9 +45,9 @@ public interface ChildPersistentEntityFactory<Command> {
    * This is intended to be used with an Akka TestKit TestProbe, for example:
    *
    * <pre>
-   * TestProbe entityProbe = TestProbe.apply("persistent-entity");
+   * TestKit entityProbe = new TestKit(system, "persistent-entity");
    * ChildPersistentEntityFactory&lt;MyCommand&gt; childEntityFactory =
-   *   ChildPersistentEntityFactory.mocked(MyEntity.class, entityProbe.ref());
+   *   ChildPersistentEntityFactory.mocked(MyEntity.class, entityProbe.getRef());
    *
    * // Create actor and cause it to send a command to the entity
    * ...
