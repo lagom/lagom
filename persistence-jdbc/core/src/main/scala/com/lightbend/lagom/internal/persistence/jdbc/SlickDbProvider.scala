@@ -7,17 +7,51 @@ import javax.naming.InitialContext
 import javax.sql.DataSource
 
 import com.typesafe.config.Config
-import slick.jdbc.JdbcBackend
-import slick.jdbc.JdbcBackend.Database
+import play.api.db.{ DBApi, Database }
+import play.api.inject.ApplicationLifecycle
+import slick.jdbc.JdbcBackend.{ DatabaseDef, Database => SlickDatabase }
 import slick.util.AsyncExecutor
 
+import scala.util.Try
+
 private[lagom] object SlickDbProvider {
+  def buildAndBindSlickDatabases(dbApi: DBApi, config: Config, lifecycle: ApplicationLifecycle): Unit = {
+    dbApi.databases().foreach { playDb =>
+      val dbName = playDb.name
 
-  def apply(dataSource: DataSource, config: Config): JdbcBackend.DatabaseDef = {
+      // each configured DB having an async-executor section
+      // has a Slick DB configured and bound to a JNDI name
+      for {
+        dbConfig <- Try(config.getConfig(s"db.$dbName"))
+        asyncExecConfig <- Try(AsyncExecutorConfig(dbConfig.getConfig("async-executor")))
+      } yield {
+        // a DB config with an async-executor is expected to have an associated jndiDbName
+        // failing to do so will raise an exception
+        val jndiDbName = dbConfig.getString("jndiDbName")
 
-    val asyncExecConfig = AsyncExecutorConfig(config)
+        buildAndBindSlickDatabase(playDb, asyncExecConfig, jndiDbName, lifecycle)
+      }
+    }
+  }
 
-    Database.forDataSource(
+  def buildAndBindSlickDatabase(
+    playDb:          Database,
+    asyncExecConfig: AsyncExecutorConfig,
+    jndiDbName:      String,
+    lifecycle:       ApplicationLifecycle
+  ): Unit = {
+    val slickDb =
+      buildSlickDatabase(
+        // the data source as configured by Play
+        playDb.dataSource,
+        asyncExecConfig
+      )
+
+    bindSlickDatabase(jndiDbName, slickDb, lifecycle)
+  }
+
+  private def buildSlickDatabase(dataSource: DataSource, asyncExecConfig: AsyncExecutorConfig): DatabaseDef = {
+    SlickDatabase.forDataSource(
       ds = dataSource,
       maxConnections = Option(asyncExecConfig.maxConnections),
       executor = AsyncExecutor(
@@ -28,6 +62,19 @@ private[lagom] object SlickDbProvider {
         maxConnections = asyncExecConfig.maxConnections
       )
     )
+  }
+
+  private def bindSlickDatabase(jndiDbName: String, slickDb: DatabaseDef, lifecycle: ApplicationLifecycle): Unit = {
+    val namingContext = new InitialContext()
+
+    // we don't simply override a previously configured DB resource
+    // if name is already in use, bind() method throws NameAlreadyBoundException
+    namingContext.bind(jndiDbName, slickDb)
+
+    lifecycle.addStopHook { () =>
+      namingContext.unbind(jndiDbName)
+      slickDb.shutdown
+    }
   }
 }
 
