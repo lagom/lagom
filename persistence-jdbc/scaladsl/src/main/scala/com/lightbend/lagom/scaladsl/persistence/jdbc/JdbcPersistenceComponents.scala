@@ -32,7 +32,7 @@ private[lagom] trait SlickProviderComponents extends DBComponents {
 
   lazy val slickProvider: SlickProvider = {
     // Ensures JNDI bindings are made before we build the SlickProvider
-    JndiConfigurator(dbApi, actorSystem.settings.config)
+    JndiConfigurator(dbApi, actorSystem.settings.config, applicationLifecycle)
     new SlickProvider(actorSystem)(executionContext)
   }
 }

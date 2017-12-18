@@ -7,12 +7,13 @@ import javax.naming.InitialContext
 
 import com.typesafe.config.Config
 import play.api.db.DBApi
+import play.api.inject.ApplicationLifecycle
 
 import scala.util.Try
 
 private[lagom] object JndiConfigurator {
 
-  def apply(dbApi: DBApi, config: Config): Unit = {
+  def apply(dbApi: DBApi, config: Config, lifecycle: ApplicationLifecycle): Unit = {
 
     val namingContext = new InitialContext()
 
@@ -41,6 +42,11 @@ private[lagom] object JndiConfigurator {
         // we don't simply override a previously configure DB resource
         // if name is already in use, bind() method throws NameAlreadyBoundException
         namingContext.bind(jndiDbName, slickDb)
+
+        lifecycle.addStopHook { () =>
+          namingContext.unbind(jndiDbName)
+          slickDb.shutdown
+        }
       }
     }
   }
