@@ -1,0 +1,16 @@
+# Asserts we can switch HTTP backends in Lagom.
+# To make sure we are actually using one backend or the other this test uses two implementations with
+# similar code: each service has a single endpoint and the implementation for the endpoint will capture
+# the stacktrace and filter byt words "akka" or "server" and return the resulting package/class names
+# as strings in the response body. The scripted test asserts that the Akka HTTP service response contains
+# 'akka' and similarly the netty service doesn't.
+
+> runAll
+
+# Check that external service a is registered with the service locator
+> validateRequest retry-until-success http://localhost:9000/api/akka body-contains play.core.server.AkkaHttpServer
+
+# Check that external service a is accessible through the gateway
+> validateRequest retry-until-success http://localhost:9000/api/netty body-contains play.core.server.netty
+
+> stop

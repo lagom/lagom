@@ -145,3 +145,35 @@ akka.actor.serialization-bindings {
 ```
 
 Once all nodes are upgraded to 1.4.x, you should then remove the above configuration for the next rolling upgrade. For more details on this process and why it's needed, see [here](https://github.com/lagom/lagom/issues/933#issuecomment-327738303).
+
+### HTTP Backend
+
+Play 2.6 introduces a new HTTP backend implemented using Akka HTTP instead of Netty. This switch on the HTTP backend is part of an ongoing effort to replace all building blocks in Lagom for an Akka-based equivalent. Note that when consuming HTTP services, Lagom's Client Factory still relies on a Netty-based Play-WS instance.
+
+#### Backend selection for sbt users
+
+Lagom now defaults to using the Akka HTTP backend when serving HTTP.
+
+If you want to use the new Akka HTTP, you won't need to change anything on your `sbt` build. Once you upgrade the version of the Lagom sbt plugin in `project/plugins.sbt` any new binary you build will use Akka HTTP.
+
+You can opt-out of Akka HTTP to use Netty: in `sbt` you have to explicitly disable the `LagomAkkaHttpServer` plugin and enable the `LagomNettyServer` plugin. Note that the `LagomAkkaHttpServer` plugin is added by default on any `LagomJava` or `LagomScala` project.
+
+```scala
+lazy val `inventory-service-impl` = (project in file("inventory-impl"))
+  .enablePlugins(LagomJava, LagomNettyServer) // Adds LagomNettyServer
+  .disablePlugins(LagomAkkaHttpServer)        // Removes LagomAkkaHttpServer
+  .settings( /* ... */ )
+  .dependsOn(`inventory-api`)
+```
+
+#### Backend selection for Maven users
+
+Maven users will need to explicitly migrate to the new Akka HTTP backend. Lagom uses Play's mechanism to select HTTP backends which is based on classpath lookup. This means that depending on you dependencies one HTTP backend or the other is used. If you check your service's `pom.xml` you'll notice a dependency to `play-netty-server_2.11`. To replace the Netty HTTP backend with the new Akka HTTP backend remove the dependency to `play-netty-server_2.11` and add a dependency to `play-akka-http-server_2.11` like in the following example.
+
+```xml
+        <dependency>
+            <groupId>com.typesafe.play</groupId>
+            <!--<artifactId>play-netty-server_2.11</artifactId>-->
+            <artifactId>play-akka-http-server_2.11</artifactId>
+        </dependency>
+```

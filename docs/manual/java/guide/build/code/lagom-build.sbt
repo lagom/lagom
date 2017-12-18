@@ -37,3 +37,13 @@ lazy val `hello-stream-impl` = (project in file("hello-stream-impl"))
   )
   .dependsOn(`hello-stream-api`, `hello-api`)
 //#hello-stream
+
+//#hello-stream-netty
+lazy val `hello-stream-netty-impl` = (project in file("hello-stream-nettyimpl"))
+  .enablePlugins(LagomJava, LagomNettyServer) // Adds LagomNettyServer
+  .disablePlugins(LagomAkkaHttpServer)        // Removes LagomAkkaHttpServer
+  .settings(
+    version := "1.0-SNAPSHOT"
+  )
+  .dependsOn(`hello-stream-api`, `hello-api`)
+//#hello-stream-netty
