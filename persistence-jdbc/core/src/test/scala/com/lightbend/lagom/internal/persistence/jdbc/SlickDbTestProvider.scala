@@ -4,18 +4,28 @@
 package com.lightbend.lagom.internal.persistence.jdbc
 
 import javax.naming.InitialContext
-import javax.sql.DataSource
 
 import com.typesafe.config.ConfigFactory
+import play.api.db.Databases
+import play.api.inject.ApplicationLifecycle
+
+import scala.concurrent.Future
+import scala.util.Random
 
 object SlickDbTestProvider {
 
+  private val JNDIName = "DefaultDS"
+  private val JNDIDBName = "DefaultDB"
+
   /** Builds Slick Database (with AsyncExecutor) and bind it as JNDI resource for test purposes  */
-  def buildAndBindSlickDb(dataSource: DataSource) = {
+  def buildAndBindSlickDb(baseName: String, lifecycle: ApplicationLifecycle): Unit = {
+    val dbName = s"${baseName}_${Random.alphanumeric.take(8).mkString}"
+    val db = Databases.inMemory(dbName, config = Map("jndiName" -> JNDIName))
+    lifecycle.addStopHook(() => Future.successful(db.shutdown()))
 
     val slickDb =
       SlickDbProvider(
-        dataSource,
+        db.dataSource,
         ConfigFactory.parseString(
           """
             |{
@@ -28,7 +38,14 @@ object SlickDbTestProvider {
         )
       )
 
-    new InitialContext().rebind("DefaultDB", slickDb)
+    val context = new InitialContext()
+
+    context.bind(JNDIDBName, slickDb)
+    // Unbind it again when the test tears down
+    lifecycle.addStopHook { () =>
+      context.unbind(JNDIDBName)
+      slickDb.shutdown
+    }
   }
 
 }
