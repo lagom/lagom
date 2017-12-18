@@ -31,7 +31,7 @@ lazy val docs = project
       "junit" % "junit" % JUnitVersion % "test",
       "com.novocode" % "junit-interface" % JUnitInterfaceVersion % "test",
       "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
-      "com.typesafe.play" %% "play-netty-server" % PlayVersion % Test,
+      "com.typesafe.play" %% "play-akka-http-server" % PlayVersion % Test,
       "com.typesafe.play" %% "play-logback" % PlayVersion % Test,
       "org.apache.logging.log4j" % "log4j-api" % Log4jVersion % "test",
       "com.softwaremill.macwire" %% "macros" % MacWireVersion % "provided",
