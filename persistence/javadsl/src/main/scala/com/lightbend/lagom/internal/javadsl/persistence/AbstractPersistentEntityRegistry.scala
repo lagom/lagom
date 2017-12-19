@@ -4,7 +4,7 @@
 package com.lightbend.lagom.internal.javadsl.persistence
 
 import java.util.Optional
-import java.util.concurrent.{ CompletionStage, ConcurrentHashMap, TimeUnit }
+import java.util.concurrent.{ CompletableFuture, CompletionStage, ConcurrentHashMap, TimeUnit }
 
 import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.cluster.Cluster
@@ -179,7 +179,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
     // Uses Akka 2.5's CoordinatedShutdown but instead of invoking the complete sequence of stages
     // invokes the shutdown starting at "before-cluster-shutdown".
     //
-    CoordinatedShutdown(system).run(Some("before-cluster-shutdown")).toJava
+    CompletableFuture.completedFuture(Done.getInstance())
   }
 
 }

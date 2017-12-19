@@ -91,7 +91,10 @@ trait PersistentEntityRegistry {
    *
    * @return the `CompletionStage` is completed when the node has been
    *   removed from the cluster
+   * @deprecated Lagom's uses Akka's CoordinatedShutdown that will gracefully shutdown all sharded entities
+   *            including Persistent Entities.
    */
+  @deprecated("Lagom's uses Akka's CoordinatedShutdown that will gracefully shutdown all sharded entities including Persistent Entities", "1.4.0")
   def gracefulShutdown(timeout: FiniteDuration): CompletionStage[Done]
 
 }

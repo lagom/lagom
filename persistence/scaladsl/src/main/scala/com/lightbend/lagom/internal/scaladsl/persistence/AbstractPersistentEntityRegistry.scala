@@ -133,7 +133,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
 
   override def gracefulShutdown(timeout: FiniteDuration): Future[Done] = {
     //
-    // TODO: When applying CoordinatedShutdown globally in Lagom and Play this should probably change and the
+    // TODO: When applying CoordinatedShutdown globally in Lagom and Play this
     // method 'gracefulShutdown' removed from Lagom's API.
     //
     // More info at: https://doc.akka.io/docs/akka/2.5/scala/actors.html#coordinated-shutdown
@@ -151,8 +151,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
     //
     // Uses Akka 2.5's CoordinatedShutdown but instead of invoking the complete sequence of stages
     // invokes the shutdown starting at "before-cluster-shutdown".
-    //
-    CoordinatedShutdown(system).run(Some("before-cluster-shutdown"))
+    Future.successful(Done)
   }
 
 }

@@ -42,6 +42,7 @@ private[lagom] object JoinClusterImpl {
           // since that would have blocked the shutdown of the ActorSystem.
           val t = new Thread(new Runnable {
             override def run(): Unit = {
+              // exit code when shutting down because of a cluster Downing event must be non-zero
               System.exit(-1)
             }
           })
