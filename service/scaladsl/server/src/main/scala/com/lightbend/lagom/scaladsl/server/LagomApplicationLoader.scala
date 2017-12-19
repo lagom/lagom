@@ -5,6 +5,7 @@ package com.lightbend.lagom.scaladsl.server
 
 import java.net.URI
 
+import akka.actor.CoordinatedShutdown.JvmExitReason
 import akka.actor.setup.ActorSystemSetup
 import akka.actor.{ ActorSystem, BootstrapSetup, CoordinatedShutdown }
 import akka.event.Logging
@@ -246,11 +247,14 @@ private[server] object ActorSystemProvider {
 
   val logger = Logger(classOf[LagomApplication])
 
+  case object ApplicationShutdownReason extends CoordinatedShutdown.Reason
+
   /**
    * This is copied from Play's ActorSystemProvider, modified so we can inject json serializers
    */
   def start(config: Config, environment: Environment,
             serializerRegistry: Option[JsonSerializerRegistry]): (ActorSystem, () => Future[_]) = {
+
     val akkaConfig: Config = {
       val akkaConfigRoot = config.getString("play.akka.config")
       // Need to fallback to root config so we can lookup dispatchers defined outside the main namespace
@@ -277,7 +281,7 @@ private[server] object ActorSystemProvider {
       // The phases that should be run is a configurable setting so Play users
       // that embed an Akka Cluster node can opt-in to using Akka's CS or continue
       // to use their own shutdown code.
-      CoordinatedShutdown(system).run(Some(akkaRunCSFromPhase))
+      CoordinatedShutdown(system).run(ApplicationShutdownReason, Some(akkaRunCSFromPhase))
     }
 
     (system, stopHook)
