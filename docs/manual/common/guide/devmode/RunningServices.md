@@ -10,6 +10,11 @@ In Maven, you can execute the `run` task on a particular service by using the ma
 $ mvn -pl <your-project-name> lagom:run
 ```
 
-In sbt, you can specify the project to run on the sbt console by simply prefixing the service project's name, i.e., `<your-lagom-project-name>/run`.
+In sbt, you can specify the project to run on the sbt console by simply prefixing the service project's name, i.e.:
+
+```
+$ sbt
+> <your-project-name>/run
+```
 
 One thing you should remember is that `run` only starts the specific service, it doesn't start neither the Service Locator, nor the Cassandra server. Hence, prior to manually starting services, you may want to manually start both the [[Service Locator|ServiceLocator#Start-and-stop]], and the [[Cassandra server|CassandraServer#Start-and-stop]].
