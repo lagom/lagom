@@ -5,7 +5,6 @@ package com.lightbend.lagom.scaladsl.server
 
 import java.net.URI
 
-import akka.actor.CoordinatedShutdown.JvmExitReason
 import akka.actor.setup.ActorSystemSetup
 import akka.actor.{ ActorSystem, BootstrapSetup, CoordinatedShutdown }
 import akka.event.Logging
@@ -21,6 +20,7 @@ import com.typesafe.config.Config
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.inject.DefaultApplicationLifecycle
+import play.api.libs.concurrent.ActorSystemProvider.ApplicationShutdownReason
 import play.api.mvc.EssentialFilter
 import play.core.DefaultWebCommands
 
@@ -246,8 +246,6 @@ abstract class LagomApplication(context: LagomApplicationContext)
 private[server] object ActorSystemProvider {
 
   val logger = Logger(classOf[LagomApplication])
-
-  case object ApplicationShutdownReason extends CoordinatedShutdown.Reason
 
   /**
    * This is copied from Play's ActorSystemProvider, modified so we can inject json serializers
