@@ -11,7 +11,7 @@ object Dependencies {
   val PlayJsonVersion = "2.6.8"
   val PlayStandaloneWsVersion = "1.1.3"
   val TwirlVersion = "1.3.12"
-  val PlayFileWatchVersion = "1.0.0"
+  val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
   val AkkaVersion = "2.5.8"
