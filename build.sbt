@@ -11,6 +11,9 @@ import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import de.heikoseeberger.sbtheader.{ HeaderKey, HeaderPattern }
 import com.typesafe.tools.mima.core._
 
+// TODO: Remove this once Play 2.6.10 is released
+resolvers in ThisBuild += Resolver.sonatypeRepo("snapshots")
+
 // Turn off "Resolving" log messages that clutter build logs
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
 
