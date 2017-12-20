@@ -20,7 +20,7 @@ import com.typesafe.config.Config
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.inject.DefaultApplicationLifecycle
-import play.api.libs.concurrent.ActorSystemProvider.ApplicationShutdownReason
+import play.api.libs.concurrent.ActorSystemProvider.{ ApplicationShutdownReason, StopHook }
 import play.api.mvc.EssentialFilter
 import play.core.DefaultWebCommands
 
@@ -250,39 +250,19 @@ private object ActorSystemProvider {
   /**
    * This is copied from Play's ActorSystemProvider, modified so we can inject json serializers
    */
-  def start(config: Config, environment: Environment,
-            serializerRegistry: Option[JsonSerializerRegistry]): (ActorSystem, () => Future[_]) = {
-
-    val akkaConfig: Config = {
-      val akkaConfigRoot = config.getString("play.akka.config")
-      // Need to fallback to root config so we can lookup dispatchers defined outside the main namespace
-      config.getConfig(akkaConfigRoot).withFallback(config)
-    }
-
-    val name = config.getString("play.akka.actor-system")
-
-    val actorSystemSetup = ActorSystemSetup(
-      BootstrapSetup(Some(environment.classLoader), Some(akkaConfig), None),
+  def start(
+    config:             Config,
+    environment:        Environment,
+    serializerRegistry: Option[JsonSerializerRegistry]
+  ): (ActorSystem, StopHook) = {
+    val serializationSetup =
       JsonSerializerRegistry.serializationSetupFor(serializerRegistry.getOrElse(EmptyJsonSerializerRegistry))
+
+    play.api.libs.concurrent.ActorSystemProvider.start(
+      environment.classLoader,
+      Configuration(config),
+      serializationSetup
     )
-    val system = ActorSystem(name, actorSystemSetup)
-    logger.debug(s"Starting application default Akka system: $name")
-
-    val stopHook = { () =>
-      val akkaRunCSFromPhase = config.getString("play.akka.run-cs-from-phase")
-      if (CoordinatedShutdown(system).shutdownReason().isEmpty)
-        logger.debug(s"Shutting down Application's default Akka system: $name")
-      // Play's "play.akka.shutdown-timeout" is used to configure the timeout of
-      // the 'actor-system-terminate' phase of Akka's CoordinatedShutdown
-      // in reference-overrides.conf.
-      //
-      // The phases that should be run is a configurable setting so Play users
-      // that embed an Akka Cluster node can opt-in to using Akka's CS or continue
-      // to use their own shutdown code.
-      CoordinatedShutdown(system).run(ApplicationShutdownReason, Some(akkaRunCSFromPhase))
-    }
-
-    (system, stopHook)
   }
 
 }

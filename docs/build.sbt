@@ -26,7 +26,7 @@ lazy val docs = project
   .settings(
     // TODO: Remove this once Play 2.6.10 is released
     resolvers += Resolver.sonatypeRepo("snapshots"),
-    
+
     resolvers += Resolver.typesafeIvyRepo("releases"),
     scalaVersion := ScalaVersion,
     libraryDependencies ++= Seq(
