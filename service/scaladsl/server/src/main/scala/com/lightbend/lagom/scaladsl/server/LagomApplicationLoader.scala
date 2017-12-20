@@ -243,7 +243,7 @@ abstract class LagomApplication(context: LagomApplicationContext)
   LagomServerTopicFactoryVerifier.verify(lagomServer, topicPublisherName)
 }
 
-private[server] object ActorSystemProvider {
+private object ActorSystemProvider {
 
   val logger = Logger(classOf[LagomApplication])
 
@@ -285,11 +285,6 @@ private[server] object ActorSystemProvider {
     (system, stopHook)
   }
 
-  @deprecated(message = "prefer method using typesafe Config instead", since = "1.4.0")
-  def start(configuration: Configuration, environment: Environment,
-            serializerRegistry: Option[JsonSerializerRegistry]): (ActorSystem, () => Future[Unit]) = {
-    start(configuration, environment, serializerRegistry)
-  }
 }
 
 /**
