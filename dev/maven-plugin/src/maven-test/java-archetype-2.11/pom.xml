@@ -17,4 +17,5 @@
         </profile>
     </profiles>
 
+    <!-- Note: scala.binary.version is *not* defined here, because it should have a default value in the artifact. -->
 </project>

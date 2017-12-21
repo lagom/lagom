@@ -1084,9 +1084,6 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
       "-XX:MaxMetaspaceSize=384m",
       s"-Dlagom.version=${version.value}",
       s"-DarchetypeVersion=${version.value}",
-      s"-Dplay.version=${Dependencies.PlayVersion}",
-      s"-Dakka.version=${Dependencies.AkkaVersion}",
-      s"-Dscala.binary.version=${(scalaBinaryVersion in `api-javadsl`).value}",
       "-Dorg.slf4j.simpleLogger.showLogName=false",
       "-Dorg.slf4j.simpleLogger.showThreadName=false"
     )

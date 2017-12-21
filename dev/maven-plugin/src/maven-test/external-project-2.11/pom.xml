@@ -6,13 +6,21 @@
 
     <packaging>pom</packaging>
 
-    <modules>
-        <module>helloworld-api</module>
-        <module>helloworld-impl</module>
-        <module>hellostream-api</module>
-        <module>hellostream-impl</module>
-        <module>integration-test</module>
-    </modules>
+    <profiles>
+        <profile>
+            <id>external-project</id>
+            <modules>
+                <module>api</module>
+                <module>impl</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>integration-test</id>
+            <modules>
+                <module>integration-test</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>
@@ -21,12 +29,15 @@
                 <artifactId>lagom-maven-plugin</artifactId>
                 <version>${lagom.version}</version>
                 <configuration>
-                    <!-- use some custom ports, tests that the configuration works -->
-                    <serviceLocatorPort>16101</serviceLocatorPort>
-                    <serviceGatewayPort>16102</serviceGatewayPort>
-                    <cassandraPort>16103</cassandraPort>
-                    <kafkaPort>16104</kafkaPort>
-                    <zookeeperPort>16105</zookeeperPort>
+                    <externalProjects>
+                        <externalProject>
+                            <artifact>
+                                <groupId>${project.groupId}</groupId>
+                                <artifactId>impl</artifactId>
+                                <version>${project.version}</version>
+                            </artifact>
+                        </externalProject>
+                    </externalProjects>
                 </configuration>
             </plugin>
             <plugin>
@@ -58,5 +69,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <scala.binary.version>2.11</scala.binary.version>
     </properties>
 </project>
