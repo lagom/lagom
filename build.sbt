@@ -1186,17 +1186,17 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
             {lagomDeps}
             {
               // here we generate all non-Lagom dependencies
-              // some are cross compile, other are simply java deps.
+              // some are cross compiled, others are simply java deps.
               Dependencies.DependencyWhitelist.value
                 // remove any scala-lang deps, they must be included transitively
                 .filterNot(_.organization.startsWith("org.scala-lang"))
                 .map { dep =>
 
-                  // bloody hack! We first need to discovery if module is a scala deps or not
+                  // bloody hack! We first need to discovery if a module is a scala deps or not
                   val moduleCrossVersion = CrossVersion(dep.crossVersion, scalaVersion.value, scalaBinaryVersion.value)
 
                   if (moduleCrossVersion.isEmpty) {
-                      // if not a Scala dependency, add it as it
+                      // if not a Scala dependency, add it as is
                       <dependency>
                         <groupId>{dep.organization}</groupId>
                         <artifactId>{dep.name}</artifactId>
