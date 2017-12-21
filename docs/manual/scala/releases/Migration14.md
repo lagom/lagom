@@ -175,3 +175,17 @@ The return types of the method below were changed, which could result in depreca
 * Typesafe config is now used instead of Play config in `AdditionalConfiguration.configuration`, see [881](https://github.com/lagom/lagom/pull/881)
 * The return types of `LagomServerBuilder.buildRouter`, `LagomServerBuilder.router`, and `LagomServer.router` were changed to be strongly typed from `Router` to `LagomServiceRouter` in [888](https://github.com/lagom/lagom/pull/888)
 * `PlayJsonSerializer` serialization of Non-`JsObject`s was fixed in [1071](https://github.com/lagom/lagom/pull/1071), changing the return type of `JsonMigration.transfrorm` from `JsObject` to `JsValue`
+
+## ConductR
+
+ConductR users must update to `conductr-lib` 2.1.1 for full compatibility with Lagom 1.4.0.
+
+You can find more information in the [`conductr-lib` README file](https://github.com/typesafehub/conductr-lib/blob/master/README.md).
+
+Edit the `project/plugins.sbt` file to update `sbt-conductr` to version 2.5.1 or later:
+
+```scala
+addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.5.1")
+```
+
+This automatically includes the correct version of `conductr-lib`.
