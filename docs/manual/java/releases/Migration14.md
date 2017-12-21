@@ -179,3 +179,33 @@ Maven users will need to explicitly migrate to the new Akka HTTP backend. Lagom 
             <artifactId>play-akka-http-server_2.11</artifactId>
         </dependency>
 ```
+
+## ConductR
+
+ConductR users must update to `conductr-lib` 2.1.1 for full compatibility with Lagom 1.4.0.
+
+You can find more information in the [`conductr-lib` README file](https://github.com/typesafehub/conductr-lib/blob/master/README.md).
+
+### Updating ConductR with sbt
+
+Edit the `project/plugins.sbt` file to update `sbt-conductr` to version 2.5.1 or later:
+
+```scala
+addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.5.1")
+```
+
+This automatically includes the correct version of `conductr-lib`.
+
+### Updating ConductR with Maven
+
+Update each `pom.xml` that includes a dependency on `conductr-bundle-lib`:
+
+```xml
+<dependency>
+    <groupId>com.typesafe.conductr</groupId>
+    <artifactId>lagom14-java-conductr-bundle-lib_2.11</artifactId>
+    <version>2.1.1</version>
+</dependency>
+```
+
+Note that, in addition to updating the version, there is a new artifact ID for the Lagom 1.4 compatible module.
