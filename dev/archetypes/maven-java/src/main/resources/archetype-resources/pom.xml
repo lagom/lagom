@@ -74,11 +74,6 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>com.typesafe.conductr</groupId>
-                <artifactId>${conductr.lib.name}</artifactId>
-                <version>1.4.7</version>
-            </dependency>
-            <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>1.16.10</version>
@@ -89,7 +84,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <scala.binary.version>${scala-binary-version}</scala.binary.version>
+        ## Substitues in the scala-binary-version value entered when a project is created from the archetype
+
         <lagom.version>%LAGOM-VERSION%</lagom.version>
-        <conductr.lib.name>lagom10-conductr-bundle-lib_2.11</conductr.lib.name>
     </properties>
 </project>

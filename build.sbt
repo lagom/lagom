@@ -10,6 +10,7 @@ import lagom.Protobuf
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import de.heikoseeberger.sbtheader.{ HeaderKey, HeaderPattern }
 import com.typesafe.tools.mima.core._
+import sbt.CrossVersion._
 
 // Turn off "Resolving" log messages that clutter build logs
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
@@ -1081,9 +1082,6 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
       "-XX:MaxMetaspaceSize=384m",
       s"-Dlagom.version=${version.value}",
       s"-DarchetypeVersion=${version.value}",
-      s"-Dplay.version=${Dependencies.PlayVersion}",
-      s"-Dakka.version=${Dependencies.AkkaVersion}",
-      s"-Dscala.binary.version=${(scalaBinaryVersion in `api-javadsl`).value}",
       "-Dorg.slf4j.simpleLogger.showLogName=false",
       "-Dorg.slf4j.simpleLogger.showThreadName=false"
     )
@@ -1155,20 +1153,30 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
       crossPaths := false,
       autoScalaLibrary := false,
       scalaVersion := Dependencies.ScalaVersions.head,
-      pomExtra := pomExtra.value :+ {
+      pomExtra := pomExtra.value :+
+        {
+
         val lagomDeps = Def.settingDyn {
-          val sv = scalaVersion.value
-          val sbv = scalaBinaryVersion.value
+
+          // all Lagom artifacts are cross compiled
           (javadslProjects ++ coreProjects).map { project =>
             Def.setting {
-              val cross = CrossVersion((crossVersion in project).value, sv, sbv)
+
               val artifactName = (artifact in project).value.name
-              val artifactId = cross.fold(artifactName)(_(artifactName))
-              <dependency>
-                <groupId>{(organization in project).value}</groupId>
-                <artifactId>{artifactId}</artifactId>
-                <version>{(version in project).value}</version>
-              </dependency>
+
+              Dependencies.ScalaVersions.map { supportedVersion =>
+                // we are sure this won't be a None
+                val crossFunc =
+                  CrossVersion(new Binary(binaryScalaVersion), supportedVersion, binaryScalaVersion(supportedVersion)).get
+                // convert artifactName to match the desired scala version
+                val artifactId = crossFunc(artifactName)
+
+                <dependency>
+                  <groupId>{(organization in project).value}</groupId>
+                  <artifactId>{artifactId}</artifactId>
+                  <version>{(version in project).value}</version>
+                </dependency>
+              }
             }
           }.join
         }.value
@@ -1176,14 +1184,38 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
         <dependencyManagement>
           <dependencies>
             {lagomDeps}
-            {Dependencies.DependencyWhitelist.value.map { dep =>
-              val crossDep = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)(dep)
-              <dependency>
-                <groupId>{crossDep.organization}</groupId>
-                <artifactId>{crossDep.name}</artifactId>
-                <version>{crossDep.revision}</version>
-              </dependency>
-            }}
+            {
+              // here we generate all non-Lagom dependencies
+              // some are cross compiled, others are simply java deps.
+              Dependencies.DependencyWhitelist.value
+                // remove any scala-lang deps, they must be included transitively
+                .filterNot(_.organization.startsWith("org.scala-lang"))
+                .map { dep =>
+
+                  // bloody hack! We first need to discovery if a module is a scala deps or not
+                  val moduleCrossVersion = CrossVersion(dep.crossVersion, scalaVersion.value, scalaBinaryVersion.value)
+
+                  if (moduleCrossVersion.isEmpty) {
+                      // if not a Scala dependency, add it as is
+                      <dependency>
+                        <groupId>{dep.organization}</groupId>
+                        <artifactId>{dep.name}</artifactId>
+                        <version>{dep.revision}</version>
+                      </dependency>
+                  } else {
+                    // if it's a Scala dependency,
+                    // generate <dependency> block for each supported scala version
+                    Dependencies.ScalaVersions.map { supportedVersion =>
+                      val crossDep = CrossVersion(supportedVersion, binaryScalaVersion(supportedVersion))(dep)
+                        <dependency>
+                          <groupId>{crossDep.organization}</groupId>
+                          <artifactId>{crossDep.name}</artifactId>
+                          <version>{crossDep.revision}</version>
+                        </dependency>
+                    }
+                  }
+              }
+            }
           </dependencies>
         </dependencyManagement>
       }
