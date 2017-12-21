@@ -129,13 +129,7 @@ def releaseStepCommandAndRemaining(command: String): State => State = { original
 
 def runtimeScalaSettings: Seq[Setting[_]] = Seq(
   crossScalaVersions := Dependencies.ScalaVersions,
-  scalaVersion := Dependencies.ScalaVersions.head
-)
-
-def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
-  Dependencies.validateDependenciesSetting,
-  Dependencies.pruneWhitelistSetting,
-  Dependencies.dependencyWhitelistSetting,
+  scalaVersion := Dependencies.ScalaVersions.head,
 
   // compile options
   scalacOptions in Compile ++= Seq(
@@ -146,7 +140,13 @@ def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
     "-unchecked",
     "-Xlog-reflective-calls",
     "-deprecation"
-  ),
+  )
+)
+
+def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
+  Dependencies.validateDependenciesSetting,
+  Dependencies.pruneWhitelistSetting,
+  Dependencies.dependencyWhitelistSetting,
 
   incOptions := incOptions.value.withNameHashing(true),
 
