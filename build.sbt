@@ -1107,8 +1107,7 @@ def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++
   )
 
 def archetypeVariables(lagomVersion: String) = Map(
-  "LAGOM-VERSION" -> lagomVersion,
-  "SCALA-BINARY-VERSION" -> "2.12"
+  "LAGOM-VERSION" -> lagomVersion
 )
 
 val ArchetypeVariablePattern = "%([A-Z-]+)%".r
