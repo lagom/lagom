@@ -33,13 +33,6 @@ lazy val `inventory-service-impl` = (project in file("inventory-impl"))
 ```
 
 
-## Backward-incompatible API changes
-
-* Typesafe config is now used instead of Play config in `AdditionalConfiguration.configuration`, see [#881](https://github.com/lagom/lagom/pull/881)
-* The return types of `LagomServerBuilder.buildRouter`, `LagomServerBuilder.router`, and `LagomServer.router` were changed to be strongly typed from `Router` to `LagomServiceRouter` in [#888](https://github.com/lagom/lagom/pull/888)
-* `PlayJsonSerializer` deserialization of `JsValue` types other than `JsObject` was fixed in [#1071](https://github.com/lagom/lagom/pull/1071), changing the return type of `JsonMigration.transform` from `JsObject` to `JsValue`
-
-
 ## Deprecations
 
 ### Binding services
