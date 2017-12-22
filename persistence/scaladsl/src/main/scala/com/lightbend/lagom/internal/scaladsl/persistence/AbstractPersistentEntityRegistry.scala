@@ -3,9 +3,9 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence
 
-import java.util.concurrent.{ ConcurrentHashMap, TimeUnit }
+import java.util.concurrent.{ CompletionStage, ConcurrentHashMap, TimeUnit }
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.cluster.Cluster
 import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
 import akka.event.Logging
@@ -15,7 +15,6 @@ import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.stream.scaladsl
 import akka.util.Timeout
 import akka.{ Done, NotUsed }
-import com.lightbend.lagom.internal.persistence.cluster.GracefulLeave
 import com.lightbend.lagom.scaladsl.persistence._
 
 import scala.concurrent.Future
@@ -132,11 +131,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
     }
   }
 
-  override def gracefulShutdown(timeout: FiniteDuration): Future[Done] = {
-    import scala.collection.JavaConverters._
-    val ref = system.actorOf(GracefulLeave.props(registeredTypeNames.keySet.asScala.toSet))
-    implicit val t = Timeout(timeout)
-    (ref ? GracefulLeave.Leave).mapTo[Done]
-  }
+  override def gracefulShutdown(timeout: FiniteDuration): Future[Done] =
+    Future.successful(Done)
 
 }

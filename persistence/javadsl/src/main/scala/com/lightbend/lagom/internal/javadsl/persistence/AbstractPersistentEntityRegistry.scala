@@ -4,9 +4,9 @@
 package com.lightbend.lagom.internal.javadsl.persistence
 
 import java.util.Optional
-import java.util.concurrent.{ CompletionStage, ConcurrentHashMap, TimeUnit }
+import java.util.concurrent.{ CompletableFuture, CompletionStage, ConcurrentHashMap, TimeUnit }
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.cluster.Cluster
 import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
 import akka.event.Logging
@@ -18,7 +18,6 @@ import akka.stream.javadsl
 import akka.util.Timeout
 import akka.{ Done, NotUsed }
 import com.google.inject.Injector
-import com.lightbend.lagom.internal.persistence.cluster.GracefulLeave
 import com.lightbend.lagom.javadsl.persistence._
 
 import scala.concurrent.duration.{ FiniteDuration, _ }
@@ -156,12 +155,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
    */
   protected def mapStartingOffset(storedOffset: Offset): AkkaOffset = OffsetAdapter.dslOffsetToOffset(storedOffset)
 
-  override def gracefulShutdown(timeout: FiniteDuration): CompletionStage[Done] = {
-    import scala.collection.JavaConverters._
-    import scala.compat.java8.FutureConverters._
-    val ref = system.actorOf(GracefulLeave.props(registeredTypeNames.keySet.asScala.toSet))
-    implicit val t = Timeout(timeout)
-    (ref ? GracefulLeave.Leave).mapTo[Done].toJava
-  }
+  override def gracefulShutdown(timeout: FiniteDuration): CompletionStage[Done] =
+    CompletableFuture.completedFuture(Done.getInstance())
 
 }
