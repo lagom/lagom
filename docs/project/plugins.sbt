@@ -2,9 +2,6 @@ lazy val plugins = (project in file(".")).dependsOn(dev)
 
 lazy val dev = ProjectRef(Path.fileProperty("user.dir").getParentFile, "sbt-plugin")
 
-// TODO: Remove this once Play 2.6.10 is released
-resolvers += Resolver.sonatypeRepo("snapshots")
-
 resolvers += Resolver.typesafeIvyRepo("releases")
 addSbtPlugin("com.lightbend.markdown" %% "sbt-lightbend-markdown" % "1.6.0")
 
