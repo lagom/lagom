@@ -66,7 +66,3 @@ A pre-packaged solution for the downing problem is provided by [Split Brain Reso
 See [Split Brain Resolver documentation](https://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) and [[Reactive Platform instructions|ReactivePlatform]] for how to enable it in the build of your project.
 
 Even if you don't use the commercial Enterprise Suite, you should still read & understand the concepts behind [Split Brain Resolver](https://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) to ensure your solution handles the concerns described there.
-
-## Leaving
-
-When using [[Persistent Entities|PersistentEntity]] you can use [PersistentEntityRegistry.gracefulShutdown](api/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html#gracefulShutdown) to stop the persistent entities and leave the cluster in a graceful way. This is not mandatory but it can be good when you are doing a controlled shutdown of a service node. It will reduce the number of lost in-flight messages during the failover to another node.
