@@ -187,6 +187,8 @@ Rolling upgrades can be safely performed if, and only if, you migrate your clust
 
 As mentioned above, Lagom 1.4 is not using the new `ddata` mode for sharding data storage and some new messages serializers are disabled. This will allow you to perform rolling upgrades without any risk (assuming your current version is 1.3.10).
 
+Other than that difference, refer to the [Akka Rolling Update](https://doc.akka.io/docs/akka/current/project/migration-guide-2.4.x-2.5.x.html?language=java#rolling-update) documentation for more detailed information on important considerations when performing a rolling upgrade.
+
 ### Downtime upgrade
 
 If your application can tolerate downtime, we recommend you to enable `ddata` and the new serializer for `akka.Done`.
