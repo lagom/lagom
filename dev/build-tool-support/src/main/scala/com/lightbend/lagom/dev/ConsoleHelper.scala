@@ -67,7 +67,7 @@ class ConsoleHelper(colors: Colors) {
 class Colors(logNoFormat: String) {
   import scala.Console._
 
-  val isANSISupported = {
+  val isANSISupported: Boolean = {
     Option(System.getProperty(logNoFormat)).map(_ != "true").orElse {
       Option(System.getProperty("os.name"))
         .map(_.toLowerCase(java.util.Locale.ENGLISH))

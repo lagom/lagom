@@ -10,6 +10,7 @@ import lagom.Protobuf
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import de.heikoseeberger.sbtheader.{ HeaderKey, HeaderPattern }
 import com.typesafe.tools.mima.core._
+import sbt.CrossVersion._
 
 // Turn off "Resolving" log messages that clutter build logs
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
@@ -129,13 +130,7 @@ def releaseStepCommandAndRemaining(command: String): State => State = { original
 
 def runtimeScalaSettings: Seq[Setting[_]] = Seq(
   crossScalaVersions := Dependencies.ScalaVersions,
-  scalaVersion := Dependencies.ScalaVersions.head
-)
-
-def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
-  Dependencies.validateDependenciesSetting,
-  Dependencies.pruneWhitelistSetting,
-  Dependencies.dependencyWhitelistSetting,
+  scalaVersion := Dependencies.ScalaVersions.head,
 
   // compile options
   scalacOptions in Compile ++= Seq(
@@ -146,7 +141,13 @@ def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
     "-unchecked",
     "-Xlog-reflective-calls",
     "-deprecation"
-  ),
+  )
+)
+
+def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
+  Dependencies.validateDependenciesSetting,
+  Dependencies.pruneWhitelistSetting,
+  Dependencies.dependencyWhitelistSetting,
 
   incOptions := incOptions.value.withNameHashing(true),
 
@@ -279,7 +280,8 @@ def scalaVersionSince = Map(
 
 def since10 = Seq("1.0.0") ++ since11
 def since11 = Seq("1.1.0") ++ since12
-def since12 = Seq("1.2.2")
+def since12 = Seq("1.2.2") ++ since13
+def since13 = Seq("1.3.3")
 
 val javadslProjects = Seq[Project](
   `api-javadsl`,
@@ -390,9 +392,20 @@ lazy val `api-javadsl` = (project in file("service/javadsl/api"))
 lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
   .settings(name := "lagom-scaladsl-api")
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since13): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
-    Dependencies.`api-scaladsl`
+    Dependencies.`api-scaladsl`,
+    mimaBinaryIssueFilters ++= Seq(
+      // see https://github.com/lagom/lagom/pull/881
+      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.configuration"),
+
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.ServiceLocator.locateAll"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.broker.Subscriber.withMetadata"),
+
+      // see https://github.com/lagom/lagom/pull/1021
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.api.deser.PathParamSerializer$NamedPathParamSerializer")
+    )
   ).dependsOn(api)
 
 lazy val immutables = (project in file("immutables"))
@@ -420,10 +433,15 @@ lazy val jackson = (project in file("jackson"))
 
 lazy val `play-json` = (project in file("play-json"))
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since13): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-play-json",
-    Dependencies.`play-json`
+    Dependencies.`play-json`,
+    mimaBinaryIssueFilters ++= Seq(
+      // see https://github.com/lagom/lagom/pull/1071
+      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.playjson.JsonMigration.transform")
+    )
   )
 
 lazy val `api-tools` = (project in file("api-tools"))
@@ -460,10 +478,15 @@ lazy val `client-javadsl` = (project in file("service/javadsl/client"))
 lazy val `client-scaladsl` = (project in file("service/scaladsl/client"))
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
+  .settings(mimaSettings(since13): _*)
   .settings(macroCompileSettings: _*)
   .settings(
     name := "lagom-scaladsl-client",
-    Dependencies.`client-scaladsl`
+    Dependencies.`client-scaladsl`,
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents.circuitBreakersPanel"),
+      ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("com.lightbend.lagom.scaladsl.api.LagomConfigComponent.config")
+    )
   )
   .dependsOn(client, `api-scaladsl`, `macro-testkit` % Test)
 
@@ -502,9 +525,21 @@ lazy val `server-javadsl` = (project in file("service/javadsl/server"))
 lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
   .settings(
     name := "lagom-scaladsl-server",
-    Dependencies.`server-scaladsl`
+    Dependencies.`server-scaladsl`,
+    mimaBinaryIssueFilters ++= Seq(
+      // see https://github.com/lagom/lagom/pull/888 for justification for this breaking change
+      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.server.LagomServerBuilder.buildRouter"),
+      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.server.LagomServiceBinding.router"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServiceBinding.router"),
+      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.router"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.router"),
+
+      // changed signature of a method in a private class in https://github.com/lagom/lagom/pull/1109
+      ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.server.ActorSystemProvider.start")
+    )
   )
   .enablePlugins(RuntimeLibPlugins)
+  .settings(mimaSettings(since13): _*)
   .settings(runtimeLibCommon: _*)
   .dependsOn(server, `client-scaladsl`, `play-json`)
 
@@ -542,11 +577,18 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since13): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-scaladsl-testkit",
-    Dependencies.`testkit-scaladsl`
+    Dependencies.`testkit-scaladsl`,
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.TopicStub#SubscriberStub.this"),
+
+      // See https://github.com/lagom/lagom/pull/1081 for justification for this breaking change
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.PersistentEntityTestDriver.runOne")
+    )
   )
   .dependsOn(
     `testkit-core`,
@@ -631,6 +673,7 @@ lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
 lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
   .dependsOn(`cluster-core`, `play-json`)
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since13): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -652,6 +695,7 @@ lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
 lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
   .dependsOn(`cluster-scaladsl`)
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since13): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -688,7 +732,11 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil$AwaitPersistenceInit"),
 
       // package private
-      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistNone")
+      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistNone"),
+
+      // writeReplace method should never have been public, and it only throws an exception, so nothing
+      // lost by hiding it.
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntityRef.writeReplace")
     ),
     Dependencies.`persistence-javadsl`
   )
@@ -701,10 +749,15 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
 lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
   .settings(
     name := "lagom-scaladsl-persistence",
-    Dependencies.`persistence-scaladsl`
+    Dependencies.`persistence-scaladsl`,
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil#AwaitPersistenceInit.persist"),
+      ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil#AwaitPersistenceInit.persistAsync")
+    )
   )
   .dependsOn(`persistence-core` % "compile;test->test", `play-json`, `cluster-scaladsl`)
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since13): _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
 
@@ -741,7 +794,12 @@ lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassand
 lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassandra/scaladsl"))
   .settings(
     name := "lagom-scaladsl-persistence-cassandra",
-    Dependencies.`persistence-cassandra-scaladsl`
+    Dependencies.`persistence-cassandra-scaladsl`,
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.ReadSideCassandraPersistenceComponents.testCasReadSideSettings"),
+      ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil#AwaitPersistenceInit.persist"),
+      ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil#AwaitPersistenceInit.persistAsync")
+    )
   )
   .dependsOn(
     `persistence-core` % "compile;test->test",
@@ -750,6 +808,7 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
     `api-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since13): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings() configs (MultiJvm)
@@ -771,7 +830,7 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
     Dependencies.`persistence-jdbc-javadsl`
   )
   .dependsOn(
-    `persistence-jdbc-core`,
+    `persistence-jdbc-core` % "compile;test->test",
     `persistence-core` % "compile;test->test",
     `persistence-javadsl` % "compile;test->test",
     logback % Test
@@ -785,15 +844,20 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
 lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scaladsl"))
   .settings(
     name := "lagom-scaladsl-persistence-jdbc",
-    Dependencies.`persistence-jdbc-scaladsl`
+    Dependencies.`persistence-jdbc-scaladsl`,
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters.exclude[UpdateForwarderBodyProblem]("com.lightbend.lagom.scaladsl.persistence.jdbc.WriteSideJdbcPersistenceComponents.slickProvider"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.scaladsl.persistence.jdbc.ReadSideJdbcPersistenceComponents")
+    )
   )
   .dependsOn(
-    `persistence-jdbc-core`,
+    `persistence-jdbc-core` % "compile;test->test",
     `persistence-core` % "compile;test->test",
     `persistence-scaladsl` % "compile;test->test",
     logback % Test
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since13): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*) configs (MultiJvm)
@@ -826,6 +890,7 @@ lazy val `broker-scaladsl` = (project in file("service/scaladsl/broker"))
     Dependencies.`broker-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since13): _*)
   .dependsOn(`api-scaladsl`, `persistence-scaladsl`)
 
 lazy val `kafka-client` = (project in file("service/core/kafka/client"))
@@ -862,6 +927,7 @@ lazy val `kafka-client-scaladsl` = (project in file("service/scaladsl/kafka/clie
     Dependencies.`kafka-client-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since13): _*)
   .dependsOn(`api-scaladsl`, `kafka-client`)
 
 lazy val `kafka-broker` = (project in file("service/core/kafka/server"))
@@ -895,6 +961,7 @@ lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server
 lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since13): _*)
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-scaladsl-kafka-broker",
@@ -1018,9 +1085,6 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
       "-XX:MaxMetaspaceSize=384m",
       s"-Dlagom.version=${version.value}",
       s"-DarchetypeVersion=${version.value}",
-      s"-Dplay.version=${Dependencies.PlayVersion}",
-      s"-Dakka.version=${Dependencies.AkkaVersion}",
-      s"-Dscala.binary.version=${(scalaBinaryVersion in `api-javadsl`).value}",
       "-Dorg.slf4j.simpleLogger.showLogName=false",
       "-Dorg.slf4j.simpleLogger.showThreadName=false"
     )
@@ -1092,20 +1156,30 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
       crossPaths := false,
       autoScalaLibrary := false,
       scalaVersion := Dependencies.ScalaVersions.head,
-      pomExtra := pomExtra.value :+ {
+      pomExtra := pomExtra.value :+
+        {
+
         val lagomDeps = Def.settingDyn {
-          val sv = scalaVersion.value
-          val sbv = scalaBinaryVersion.value
+
+          // all Lagom artifacts are cross compiled
           (javadslProjects ++ coreProjects).map { project =>
             Def.setting {
-              val cross = CrossVersion((crossVersion in project).value, sv, sbv)
+
               val artifactName = (artifact in project).value.name
-              val artifactId = cross.fold(artifactName)(_(artifactName))
-              <dependency>
-                <groupId>{(organization in project).value}</groupId>
-                <artifactId>{artifactId}</artifactId>
-                <version>{(version in project).value}</version>
-              </dependency>
+
+              Dependencies.ScalaVersions.map { supportedVersion =>
+                // we are sure this won't be a None
+                val crossFunc =
+                  CrossVersion(new Binary(binaryScalaVersion), supportedVersion, binaryScalaVersion(supportedVersion)).get
+                // convert artifactName to match the desired scala version
+                val artifactId = crossFunc(artifactName)
+
+                <dependency>
+                  <groupId>{(organization in project).value}</groupId>
+                  <artifactId>{artifactId}</artifactId>
+                  <version>{(version in project).value}</version>
+                </dependency>
+              }
             }
           }.join
         }.value
@@ -1113,14 +1187,38 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
         <dependencyManagement>
           <dependencies>
             {lagomDeps}
-            {Dependencies.DependencyWhitelist.value.map { dep =>
-              val crossDep = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)(dep)
-              <dependency>
-                <groupId>{crossDep.organization}</groupId>
-                <artifactId>{crossDep.name}</artifactId>
-                <version>{crossDep.revision}</version>
-              </dependency>
-            }}
+            {
+              // here we generate all non-Lagom dependencies
+              // some are cross compiled, others are simply java deps.
+              Dependencies.DependencyWhitelist.value
+                // remove any scala-lang deps, they must be included transitively
+                .filterNot(_.organization.startsWith("org.scala-lang"))
+                .map { dep =>
+
+                  // bloody hack! We first need to discovery if a module is a scala deps or not
+                  val moduleCrossVersion = CrossVersion(dep.crossVersion, scalaVersion.value, scalaBinaryVersion.value)
+
+                  if (moduleCrossVersion.isEmpty) {
+                      // if not a Scala dependency, add it as is
+                      <dependency>
+                        <groupId>{dep.organization}</groupId>
+                        <artifactId>{dep.name}</artifactId>
+                        <version>{dep.revision}</version>
+                      </dependency>
+                  } else {
+                    // if it's a Scala dependency,
+                    // generate <dependency> block for each supported scala version
+                    Dependencies.ScalaVersions.map { supportedVersion =>
+                      val crossDep = CrossVersion(supportedVersion, binaryScalaVersion(supportedVersion))(dep)
+                        <dependency>
+                          <groupId>{crossDep.organization}</groupId>
+                          <artifactId>{crossDep.name}</artifactId>
+                          <version>{crossDep.revision}</version>
+                        </dependency>
+                    }
+                  }
+              }
+            }
           </dependencies>
         </dependencyManagement>
       }
@@ -1193,6 +1291,7 @@ lazy val `devmode-scaladsl` = (project in file("dev") / "service-registry" / "de
     Dependencies.`devmode-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since13): _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-scaladsl`)
 

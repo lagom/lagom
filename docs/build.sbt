@@ -1,10 +1,10 @@
-val ScalaVersion = "2.11.11"
+val ScalaVersion = "2.11.12"
 
-val AkkaVersion = "2.5.6"
+val AkkaVersion = "2.5.8"
 val JUnitVersion = "4.11"
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion = "3.0.4"
-val PlayVersion = "2.6.6"
+val PlayVersion = "2.6.9"
 val Log4jVersion = "2.8.2"
 val MacWireVersion = "2.3.0"
 val LombokVersion = "1.16.10"
@@ -31,7 +31,7 @@ lazy val docs = project
       "junit" % "junit" % JUnitVersion % "test",
       "com.novocode" % "junit-interface" % JUnitInterfaceVersion % "test",
       "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
-      "com.typesafe.play" %% "play-netty-server" % PlayVersion % Test,
+      "com.typesafe.play" %% "play-akka-http-server" % PlayVersion % Test,
       "com.typesafe.play" %% "play-logback" % PlayVersion % Test,
       "org.apache.logging.log4j" % "log4j-api" % Log4jVersion % "test",
       "com.softwaremill.macwire" %% "macros" % MacWireVersion % "provided",

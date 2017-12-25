@@ -68,7 +68,7 @@ We also recommend using Maven dependency management in your root project pom to 
         </dependency>
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <artifactId>play-netty-server_2.11</artifactId>
+            <artifactId>play-akka-http-server_2.11</artifactId>
             <version>${play.version}</version>
         </dependency>
         <dependency>
@@ -150,7 +150,7 @@ The implementation module for a service is also a simple maven project, but will
         </dependency>
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <artifactId>play-netty-server_2.11</artifactId>
+            <artifactId>play-akka-http-server_2.11</artifactId>
         </dependency>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
@@ -178,7 +178,7 @@ A few things to notice here are:
 * It also has a dependency on `lagom-javadsl-server`, this provides all server side code for the project.
 * This particular service uses the Lagom persistence API to persist data, and so has a dependency on `lagom-javadsl-persistence`.
 * A logging implementation needs to be configured, this uses the default `lagom-logback` logging implementation.
-* An implementation of the Play HTTP server needs to be configured - Play provides two server implementations, one in Netty, and one in Akka HTTP.  In this case, Netty has been selected.
+* An implementation of the Play HTTP server needs to be configured - Play provides two server implementations, one in Netty, and one in Akka HTTP.  In this case, Akka HTTP has been selected. Replace `play-akka-http-server_2.11` with `play-netty-server_2.11` if you wanted to switch.
 * The `lagom-maven-plugin` has been configured to say that `lagomService` is `true`, this tells Lagom that this is a lagom service that should be run when you run `lagom:runAll`.
 
 ## Defining a build in sbt
@@ -226,6 +226,20 @@ Now we need to define the implementation project:
 The API project didn't need any plugins enabled, but the implementation project does. Enabling the `LagomJava` plugin adds necessary settings and dependencies and allows us to run the project in development.
 
 The implementation project declares a dependency on the `hello-api` project, so it can implement the API's interfaces.
+
+### Selecting an HTTP backend
+
+
+Play 2.6 introduces a new HTTP backend implemented using Akka HTTP instead of Netty. This switch on the HTTP backend is part of an ongoing effort to replace all building blocks in Lagom for an Akka-based equivalent. Note that when consuming HTTP services, Lagom's Client Factory still relies on a Netty-based Play-WS instance.
+
+#### Backend selection for sbt users
+
+When using `sbt` as a build tool Lagom defaults to using the Akka HTTP backend to serve HTTP.
+
+You can opt-out of Akka HTTP to use a Netty-based HTTP backend: in `sbt` you have to explicitly disable the `LagomAkkaHttpServer` plugin and enable the `LagomNettyServer` plugin. Note that the `LagomAkkaHttpServer` plugin is added by default on any `LagomJava` or `LagomScala` project.
+
+@[hello-stream-netty](code/lagom-build.sbt)
+
 
 ### Adding a second service
 

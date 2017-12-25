@@ -311,7 +311,7 @@ class Reloader(
     }
   }
 
-  lazy val settings = {
+  lazy val settings: util.Map[String, String] = {
     import scala.collection.JavaConverters._
     devSettings.toMap.asJava
   }
@@ -332,12 +332,12 @@ class Reloader(
   def runTask(task: String): AnyRef =
     throw new UnsupportedOperationException("This BuildLink does not support running arbitrary tasks")
 
-  def close() = {
+  def close(): Unit = {
     currentApplicationClassLoader = None
     currentSourceMap = None
     watcher.stop()
     quietTimeTimer.cancel()
   }
 
-  def getClassLoader = currentApplicationClassLoader
+  def getClassLoader: Option[ClassLoader] = currentApplicationClassLoader
 }

@@ -7,29 +7,29 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.6"
-  val PlayJsonVersion = "2.6.6"
-  val PlayStandaloneWsVersion = "1.1.2"
+  val PlayVersion = "2.6.10"
+  val PlayJsonVersion = "2.6.8"
+  val PlayStandaloneWsVersion = "1.1.3"
   val TwirlVersion = "1.3.12"
-  val PlayFileWatchVersion = "1.0.0"
+  val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.6"
-  val AkkaHttpVersion = "10.0.10"
+  val AkkaVersion = "2.5.8"
+  val AkkaHttpVersion = "10.0.11"
   // Also be sure to update ScalaVersion in docs/build.sbt.
-  val ScalaVersions = Seq("2.11.11", "2.12.3")
+  val ScalaVersions = Seq("2.11.12", "2.12.4")
   val SbtScalaVersions = Seq("2.10.6")
-  val AkkaPersistenceCassandraVersion = "0.57"
-  val AkkaPersistenceJdbcVersion = "3.0.1"
+  val AkkaPersistenceCassandraVersion = "0.59"
+  val AkkaPersistenceJdbcVersion = "3.1.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
   val ScalaTestVersion = "3.0.4"
   val JacksonVersion = "2.8.10"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.15.Final"
+  val NettyVersion = "4.1.18.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
-  val KafkaVersion = "0.11.0.0"
-  val AkkaStreamKafkaVersion = "0.17"
+  val KafkaVersion = "0.11.0.1"
+  val AkkaStreamKafkaVersion = "0.18"
 
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
@@ -66,7 +66,7 @@ object Dependencies {
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
   private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6"
-  private val typesafeConfig = "com.typesafe" % "config" % "1.3.1"
+  private val typesafeConfig = "com.typesafe" % "config" % "1.3.2"
   private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.2"
   private val h2 = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0" excludeAll (excludeSlf4j: _*)
@@ -101,6 +101,7 @@ object Dependencies {
   private val playJava = "com.typesafe.play" %% "play-java" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playAkkaHttpServer = "com.typesafe.play" %% "play-akka-http-server" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion excludeAll (excludeSlf4j: _*)
 
   private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
@@ -165,7 +166,7 @@ object Dependencies {
       "com.typesafe.play" %% "twirl-api" % TwirlVersion,
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-      "com.zaxxer" % "HikariCP" % "2.7.1",
+      "com.zaxxer" % "HikariCP" % "2.7.4",
       "commons-codec" % "commons-codec" % "1.10",
       "io.aeron" % "aeron-client" % "1.3.0",
       "io.aeron" % "aeron-driver" % "1.3.0",
@@ -214,7 +215,7 @@ object Dependencies {
 
     ) ++ crossLibraryFamily("com.typesafe.play", PlayVersion)(
       "play", "play-guice", "play-java", "play-jdbc", "play-jdbc-api",
-      "play-netty-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
+      "play-netty-server", "play-akka-http-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
 
     ) ++ libraryFamily("ch.qos.logback", LogbackVersion)(
       "logback-classic", "logback-core"
@@ -402,7 +403,7 @@ object Dependencies {
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
@@ -414,7 +415,7 @@ object Dependencies {
   )
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
@@ -426,6 +427,7 @@ object Dependencies {
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
+    playAkkaHttpServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest,
 
@@ -434,7 +436,7 @@ object Dependencies {
   )
 
   val `integration-tests-scaladsl` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest,
 
@@ -660,7 +662,7 @@ object Dependencies {
   )
 
   val `service-locator` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     akkaHttpCore,
     scalaTest % Test,
 

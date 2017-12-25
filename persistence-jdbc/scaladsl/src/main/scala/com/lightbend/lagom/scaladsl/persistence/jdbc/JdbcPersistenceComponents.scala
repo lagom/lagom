@@ -3,34 +3,43 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.jdbc
 
-import scala.concurrent.ExecutionContext
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.persistence.jdbc.{ SlickOffsetStore, SlickProvider }
-import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcPersistentEntityRegistry
-import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcReadSideImpl
-import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcSessionImpl
-import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.OffsetTableConfiguration
-import com.lightbend.lagom.scaladsl.persistence.PersistenceComponents
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
-import com.lightbend.lagom.scaladsl.persistence.ReadSidePersistenceComponents
-import com.lightbend.lagom.scaladsl.persistence.WriteSidePersistenceComponents
+import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbProvider, SlickOffsetStore, SlickProvider }
+import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.{ JdbcPersistentEntityRegistry, JdbcReadSideImpl, JdbcSessionImpl, OffsetTableConfiguration }
+import com.lightbend.lagom.scaladsl.persistence.{ PersistenceComponents, PersistentEntityRegistry, ReadSidePersistenceComponents, WriteSidePersistenceComponents }
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import play.api.db.DBComponents
+
+import scala.concurrent.ExecutionContext
 
 /**
  * Persistence JDBC components (for compile-time injection).
  */
-trait JdbcPersistenceComponents extends PersistenceComponents with ReadSideJdbcPersistenceComponents
+trait JdbcPersistenceComponents
+  extends PersistenceComponents
+  with ReadSideJdbcPersistenceComponents
+  with WriteSideJdbcPersistenceComponents
 
-/**
- * Write-side persistence JDBC components (for compile-time injection).
- */
-trait WriteSideJdbcPersistenceComponents extends WriteSidePersistenceComponents with DBComponents {
+private[lagom] trait SlickProviderComponents extends DBComponents {
 
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext
 
-  lazy val slickProvider: SlickProvider = new SlickProvider(actorSystem, dbApi)(executionContext)
+  lazy val slickProvider: SlickProvider = {
+    // Ensures JNDI bindings are made before we build the SlickProvider
+    SlickDbProvider.buildAndBindSlickDatabases(dbApi, actorSystem.settings.config, applicationLifecycle)
+    new SlickProvider(actorSystem)(executionContext)
+  }
+}
+
+/**
+ * Write-side persistence JDBC components (for compile-time injection).
+ */
+trait WriteSideJdbcPersistenceComponents extends WriteSidePersistenceComponents with SlickProviderComponents {
+
+  def actorSystem: ActorSystem
+  def executionContext: ExecutionContext
+
   override lazy val persistentEntityRegistry: PersistentEntityRegistry =
     new JdbcPersistentEntityRegistry(actorSystem, slickProvider)
 
@@ -39,7 +48,7 @@ trait WriteSideJdbcPersistenceComponents extends WriteSidePersistenceComponents 
 /**
  * Read-side persistence JDBC components (for compile-time injection).
  */
-trait ReadSideJdbcPersistenceComponents extends ReadSidePersistenceComponents with WriteSideJdbcPersistenceComponents {
+trait ReadSideJdbcPersistenceComponents extends ReadSidePersistenceComponents with SlickProviderComponents {
 
   lazy val offsetTableConfiguration: OffsetTableConfiguration = new OffsetTableConfiguration(
     configuration.underlying, readSideConfig

@@ -13,12 +13,11 @@ import com.lightbend.lagom.javadsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.{ NegotiatedDeserializer, NegotiatedSerializer }
 import com.lightbend.lagom.javadsl.api.deser._
 import com.lightbend.lagom.javadsl.api.transport.{ MessageProtocol, Method }
-import com.lightbend.lagom.api.mock.{ BlogService, MockService }
+import com.lightbend.lagom.api.mock._
 import org.scalatest._
-import com.lightbend.lagom.api.mock.ScalaMockService
-import com.lightbend.lagom.api.mock.ScalaMockServiceWrong
 import com.lightbend.lagom.internal.javadsl.api.{ JacksonPlaceholderExceptionSerializer, JacksonPlaceholderSerializerFactory, MethodServiceCallHolder, ServiceReader }
-import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceCall }
+import com.lightbend.lagom.javadsl.api.{ Descriptor, IllegalPathParameterException, Service, ServiceCall }
+
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
@@ -36,6 +35,12 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
         case simple: SimpleSerializer[_] => simple.`type` should ===(classOf[UUID])
       }
       endpoint.responseSerializer should ===(MessageSerializers.STRING)
+    }
+
+    "fail to read a Java service descriptor from a public interface because the path parameter could not be serialized" in {
+      intercept[IllegalPathParameterException] {
+        val descriptor = serviceDescriptor[InvalidPathParameterService]
+      }
     }
 
     "read a simple Scala service descriptor" in {
