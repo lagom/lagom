@@ -16,7 +16,6 @@ import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
-
 import scala.language.reflectiveCalls
 
 private[lagom] object Servers {
@@ -148,6 +147,7 @@ private[lagom] object Servers {
     }
 
     def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Seq[File], port: Int, cleanOnStart: Boolean, jvmOptions: Seq[String], maxWaiting: FiniteDuration): Closeable = synchronized {
+
       if (server != null) {
         log.info(s"Cassandra is running at ${server.address}")
       } else {
@@ -201,9 +201,9 @@ private[lagom] object Servers {
 
     protected def stop(log: LoggerProxy): Unit = synchronized {
       if (server == null) {
-        log.info("Service locator was already stopped")
+        log.info("Cassandra was already stopped")
       } else {
-        log.info("Stopping service locator")
+        log.info("Stopping cassandra")
         stop()
       }
     }
