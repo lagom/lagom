@@ -22,7 +22,7 @@ Many available technologies provide Service Registry capabilities. You will need
 
 ## Client-side service discovery
 
-From Bonér's [Reactive Microservices Architecture: Design Principles for Distributed Systems](http://www.oreilly.com/programming/free/reactive-microservices-architecture.html) 
+From Bonér's [Reactive Microservices Architecture: Design Principles for Distributed Systems](https://info.lightbend.com/COLL-20XX-Reactive-Microservices-Architecture-RES-LP.html)
 
 > Once the information about each service has been stored it can be made available through a Service Registry that services can use to look the information up—using a pattern called Client-Side Service Discovery.
 
@@ -32,7 +32,7 @@ Lagom creates service clients for each Service Descriptor so that applications c
 
 ## Server-side service discovery
 
-From Bonér's [Reactive Microservices Architecture: Design Principles for Distributed Systems](http://www.oreilly.com/programming/free/reactive-microservices-architecture.html) 
+From Bonér's [Reactive Microservices Architecture: Design Principles for Distributed Systems](https://info.lightbend.com/COLL-20XX-Reactive-Microservices-Architecture-RES-LP.html)
 
 > Another strategy is to have the information stored and maintained in a load balancer [...] using a pattern called Server-Side Service Discovery.
 
