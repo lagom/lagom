@@ -1,7 +1,7 @@
 <!--- Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com> -->
 # Lagom design philosophy
 
-Consider some of the basic requirements of a Reactive Microservice as identified by Jonas Bonér (quotes extracted from [*Reactive Microservices Architecture: Design Principles for Distributed Systems*] (http://www.oreilly.com/programming/free/reactive-microservices-architecture.html)):
+Consider some of the basic requirements of a Reactive Microservice as identified by Jonas Bonér (quotes extracted from [*Reactive Microservices Architecture: Design Principles for Distributed Systems*] (https://info.lightbend.com/COLL-20XX-Reactive-Microservices-Architecture-RES-LP.html)):
 
 * "*Isolation* is a prerequisite for resilience and elasticity and requires asynchronous communication between service boundaries ..."
 * "An *autonomous service* can only *promise* its own behaviour by publishing its protocol/API." and "For a service to become location transparent, it needs to be addressable."
