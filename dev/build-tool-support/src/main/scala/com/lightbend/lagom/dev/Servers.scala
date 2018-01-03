@@ -139,14 +139,23 @@ private[lagom] object Servers {
 
   private[lagom] object CassandraServer extends ServerContainer {
     protected type Server = {
-      def start(cassandraDirectory: File, configResource: String, clean: Boolean, port: Int, jvmOptions: Array[String]): Unit
+      def start(cassandraDirectory: File, yamlConfig: File, clean: Boolean, port: Int, jvmOptions: Array[String]): Unit
       def stop(): Unit
       def address: String
       def hostname: String
       def port: Int
     }
 
-    def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Seq[File], port: Int, cleanOnStart: Boolean, jvmOptions: Seq[String], maxWaiting: FiniteDuration): Closeable = synchronized {
+    def start(
+      log:               LoggerProxy,
+      parentClassLoader: ClassLoader,
+      classpath:         Seq[File],
+      port:              Int,
+      cleanOnStart:      Boolean,
+      jvmOptions:        Seq[String],
+      yamlConfig:        Option[File],
+      maxWaiting:        FiniteDuration
+    ): Closeable = synchronized {
 
       if (server != null) {
         log.info(s"Cassandra is running at ${server.address}")
@@ -156,7 +165,7 @@ private[lagom] object Servers {
         val serverClass = loader.loadClass("com.lightbend.lagom.internal.cassandra.CassandraLauncher")
         server = serverClass.newInstance().asInstanceOf[Server]
 
-        server.start(directory, "dev-embedded-cassandra.yaml", cleanOnStart, port, jvmOptions.toArray)
+        server.start(directory, yamlConfig.orNull, cleanOnStart, port, jvmOptions.toArray)
 
         waitForRunningCassandra(log, server, maxWaiting)
       }
@@ -224,8 +233,23 @@ private[lagom] object Servers {
 
     protected type Server = KafkaProcess
 
-    def start(log: LoggerProxy, cp: Seq[File], kafkaPort: Int, zooKeeperPort: Int, kafkaPropertiesFile: Option[File], jvmOptions: Seq[String], targetDir: File, cleanOnStart: Boolean): Closeable = {
-      val args = kafkaPort.toString :: zooKeeperPort.toString :: targetDir.getAbsolutePath :: cleanOnStart.toString :: kafkaPropertiesFile.toList.map(_.getAbsolutePath)
+    def start(
+      log:                 LoggerProxy,
+      cp:                  Seq[File],
+      kafkaPort:           Int,
+      zooKeeperPort:       Int,
+      kafkaPropertiesFile: Option[File],
+      jvmOptions:          Seq[String],
+      targetDir:           File,
+      cleanOnStart:        Boolean
+    ): Closeable = {
+
+      val args =
+        kafkaPort.toString ::
+          zooKeeperPort.toString ::
+          targetDir.getAbsolutePath ::
+          cleanOnStart.toString ::
+          kafkaPropertiesFile.toList.map(_.getAbsolutePath)
 
       val log4jOutput = targetDir.getAbsolutePath + java.io.File.separator + "log4j_output"
       val sysProperties = List(s"-Dkafka.logs.dir=$log4jOutput")

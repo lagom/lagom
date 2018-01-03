@@ -23,24 +23,42 @@ class CassandraLauncher {
   private val ForcedShutdownTimeout = 20.seconds
   private var cassandraDaemon: Option[Closeable] = None
 
+  private val devEmbeddedYaml = "dev-embedded-cassandra.yaml"
+
   var port: Int = 0
+
   def address = s"$hostname:$port"
+
   def hostname = "127.0.0.1"
 
-  def start(cassandraDirectory: File, configResource: String, clean: Boolean, port: Int, jvmOptions: Array[String]): Unit = this.synchronized {
+  def start(
+    cassandraDirectory: File,
+    yamlConfig:         File,
+    clean:              Boolean,
+    port:               Int,
+    jvmOptions:         Array[String]
+  ): Unit = this.synchronized {
+
     if (cassandraDaemon.isEmpty) {
+
       prepareCassandraDirectory(cassandraDirectory, clean)
 
       val storagePort = AkkaCassandraLauncher.freePort()
-
+      val fileOrResource =
+        Option(yamlConfig)
+          // if Some, set it to Left (left is file)
+          // if None, use hard-coded default (right is resource)
+          .toLeft(devEmbeddedYaml)
       // http://wiki.apache.org/cassandra/StorageConfiguration
-      val conf = readResource(configResource)
+      val conf = readResource(fileOrResource)
       val amendedConf = conf
         .replace("$PORT", port.toString)
         .replace("$STORAGE_PORT", storagePort.toString)
         .replace("$DIR", cassandraDirectory.getAbsolutePath)
-      val configFile = new File(cassandraDirectory, configResource)
-      writeToFile(configFile, amendedConf)
+
+      // write yaml file in cassandra dir (target/embedded-cassandra)
+      val devConfigFile = new File(cassandraDirectory, devEmbeddedYaml)
+      writeToFile(devConfigFile, amendedConf)
 
       // Extract the cassandra bundle to the directory
       val cassandraBundleFile = new File(cassandraDirectory, "cassandra-bundle.jar")
@@ -53,7 +71,7 @@ class CassandraLauncher {
         }
       }
 
-      startForked(configFile, cassandraBundleFile, port, jvmOptions)
+      startForked(devConfigFile, cassandraBundleFile, port, jvmOptions)
 
       this.port = port
     }
@@ -127,10 +145,18 @@ class CassandraLauncher {
     cassandraDaemon = None
   }
 
-  private def readResource(resource: String): String = {
+  private def readResource(fileOrResource: Either[File, String]): String = {
     val sb = new StringBuilder
-    val is = getClass.getResourceAsStream("/" + resource)
-    require(is != null, s"resource [$resource] doesn't exist")
+
+    val is =
+      fileOrResource match {
+        case Left(file) => new FileInputStream(file)
+        case Right(resource) =>
+          val is = getClass.getResourceAsStream("/" + resource)
+          require(is != null, s"resource [$resource] doesn't exist")
+          is
+      }
+
     val reader = new BufferedReader(new InputStreamReader(is))
     try {
       var line = reader.readLine()
