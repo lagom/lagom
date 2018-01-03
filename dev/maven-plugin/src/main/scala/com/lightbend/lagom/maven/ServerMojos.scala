@@ -45,11 +45,6 @@ class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProx
 
       val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
       // yaml file doesn't need to be provided by users, in which case the default one included with Lagom will be used
-
-      println(s"""
-                  | YAML file: $cassandraYAMLFile
-                  | -----------------------------------------
-                """.stripMargin)
       val yamlConfig = Option(this.cassandraYAMLFile)
 
       Servers.CassandraServer.start(

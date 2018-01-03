@@ -153,7 +153,7 @@ class CassandraLauncher {
         case Left(file) =>
           require(file.isFile, s"file [$file] doesn't exist")
           new FileInputStream(file)
-          
+
         case Right(resource) =>
           val is = getClass.getResourceAsStream("/" + resource)
           require(is != null, s"resource [$resource] doesn't exist")
