@@ -32,6 +32,11 @@ private[lagom] object Servers {
   }
 
   abstract class ServerContainer {
+
+    /**
+     * Each ServerContainer implementation needs to define the Server type using structural typing.
+     * This is needed because the server classes are not available on the classloader used by the tooling.
+     */
     protected type Server
 
     protected class ServerProcess(process: Process) {

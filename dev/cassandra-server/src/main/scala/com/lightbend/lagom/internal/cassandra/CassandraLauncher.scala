@@ -6,11 +6,8 @@ package com.lightbend.lagom.internal.cassandra
 import java.io._
 import java.nio.file.Files
 import java.util.concurrent.TimeUnit
-
 import scala.util.control.NonFatal
-
 import scala.concurrent.duration._
-
 import akka.persistence.cassandra.testkit.{ CassandraLauncher => AkkaCassandraLauncher }
 
 /**
@@ -44,11 +41,9 @@ class CassandraLauncher {
       prepareCassandraDirectory(cassandraDirectory, clean)
 
       val storagePort = AkkaCassandraLauncher.freePort()
-      val fileOrResource =
-        Option(yamlConfig)
-          // if Some, set it to Left (left is file)
-          // if None, use hard-coded default (right is resource)
-          .toLeft(devEmbeddedYaml)
+      // if Some, set it to Left (left is file)
+      // if None, use hard-coded default (right is resource)
+      val fileOrResource = Option(yamlConfig).toLeft(devEmbeddedYaml)
       // http://wiki.apache.org/cassandra/StorageConfiguration
       val conf = readResource(fileOrResource)
       val amendedConf = conf
