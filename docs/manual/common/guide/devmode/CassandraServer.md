@@ -57,7 +57,7 @@ In the Maven root project pom:
     <artifactId>lagom-maven-plugin</artifactId>
     <version>${lagom.version}</version>
     <configuration>
-        <cassandraYAMLFile>${basedir}/cassandra.yaml</cassandraYAMLFile>
+        <cassandraYamlFile>${basedir}/cassandra.yaml</cassandraYamlFile>
     </configuration>
 </plugin>
 ```

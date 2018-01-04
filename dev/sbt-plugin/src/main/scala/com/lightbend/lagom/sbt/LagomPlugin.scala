@@ -334,7 +334,7 @@ object LagomPlugin extends AutoPlugin {
     val lagomCassandraEnabled = settingKey[Boolean]("Enable/Disable the cassandra server")
     val lagomCassandraCleanOnStart = settingKey[Boolean]("Wipe the cassandra database before starting")
     val lagomCassandraJvmOptions = settingKey[Seq[String]]("JVM options used by the forked cassandra process")
-    val lagomCassandraYAMLFile = settingKey[Option[File]]("YAML file used by the local cassandra server")
+    val lagomCassandraYamlFile = settingKey[Option[File]]("YAML file used by the local cassandra server")
     val lagomCassandraMaxBootWaitingTime = settingKey[FiniteDuration]("Max waiting time to start cassandra")
 
     // kafka tasks and settings
@@ -448,7 +448,7 @@ object LagomPlugin extends AutoPlugin {
     lagomCassandraCleanOnStart := false,
     lagomCassandraJvmOptions := Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099"),
     lagomCassandraMaxBootWaitingTime := 20.seconds,
-    lagomCassandraYAMLFile := None,
+    lagomCassandraYamlFile := None,
     lagomKafkaEnabled := true,
     lagomKafkaPropertiesFile := None,
     lagomKafkaZookeperPort := 2181,
@@ -511,7 +511,7 @@ object LagomPlugin extends AutoPlugin {
     val jvmOptions = lagomCassandraJvmOptions.value
     val maxWaiting = lagomCassandraMaxBootWaitingTime.value
     val scala211 = scalaInstance.value
-    val yamlConfig = lagomCassandraYAMLFile.value
+    val yamlConfig = lagomCassandraYamlFile.value
     val log = new SbtLoggerProxy(state.value.log)
     Servers.CassandraServer.start(log, scala211.loader, classpath, port, cleanOnStart, jvmOptions, yamlConfig, maxWaiting)
   }

@@ -33,7 +33,7 @@ class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProx
   @BeanProperty // I'm not sure if it's possible to specify a default value for a literal list in plugin.xml, so specify it here.
   var cassandraJvmOptions: JList[String] = Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099").asJava
   @BeanProperty
-  var cassandraYAMLFile: File = _
+  var cassandraYamlFile: File = _
 
   override def execute(): Unit = {
     if (cassandraEnabled) {
@@ -45,7 +45,7 @@ class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProx
 
       val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
       // yaml file doesn't need to be provided by users, in which case the default one included with Lagom will be used
-      val yamlConfig = Option(this.cassandraYAMLFile)
+      val yamlConfig = Option(this.cassandraYamlFile)
 
       Servers.CassandraServer.start(
         log = logger,

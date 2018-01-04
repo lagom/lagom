@@ -99,7 +99,7 @@
             <description>The JVM options to pass to Cassandra.</description>
         </parameter>
         <parameter>
-            <name>cassandraYAMLFile</name>
+            <name>cassandraYamlFile</name>
             <type>java.util.File</type>
             <required>false</required>
             <editable>true</editable>
@@ -336,7 +336,7 @@
                     <name>cassandraJvmOptions</name>
                 </parameter>
                 <parameter>
-                    <name>cassandraYAMLFile</name>
+                    <name>cassandraYamlFile</name>
                 </parameter>
             </parameters>
         </mojo>
