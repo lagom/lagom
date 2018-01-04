@@ -13,7 +13,7 @@ lagomCassandraJvmOptions in ThisBuild :=
 //#cassandra-jvm-options
 
 //#cassandra-yaml-config
-lagomCassandraYAMLFile in ThisBuild :=
+lagomCassandraYamlFile in ThisBuild :=
   Some((baseDirectory in ThisBuild).value / "project" / "cassandra.yaml")
 //#cassandra-yaml-config
 
