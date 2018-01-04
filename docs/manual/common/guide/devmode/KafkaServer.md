@@ -26,7 +26,7 @@ In sbt:
 
 ## Kafka properties file
 
-The Kafka server can be configured with an alternative property file. By default, Lagom development environment uses a stock [kafka-server.properties](https://github.com/lagom/lagom/blob/master/dev/kafka-server/src/main/resources/kafka-server.properties) file provided with Kafka 0.10, with only one change to allow auto creation of topics on the server. This is a good default to quickly get started, but if you find yourself needing to start Kafka with a different configuration, you can easily do so by adding your own Kafka `kafka-server.properties` file to you to your build.
+The Kafka server can be configured with an alternative property file. By default, Lagom development environment uses a stock [kafka-server.properties](https://github.com/lagom/lagom/blob/master/dev/kafka-server/src/main/resources/kafka-server.properties) file provided with Kafka, with only one change to allow auto creation of topics on the server. This is a good default to quickly get started, but if you find yourself needing to start Kafka with a different configuration, you can easily do so by adding your own Kafka `kafka-server.properties` file to you to your build.
 
 In the Maven root project pom:
 
