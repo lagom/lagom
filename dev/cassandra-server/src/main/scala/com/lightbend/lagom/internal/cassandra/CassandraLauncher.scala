@@ -77,12 +77,9 @@ class CassandraLauncher {
     val / = File.separator
     val javaBin = s"${System.getProperty("java.home")}${/}bin${/}java"
     val className = "org.apache.cassandra.service.CassandraDaemon"
-    // Ensure that the directory that logback.xml lives is first in the classpath
-    val classpathArgument = (AkkaCassandraLauncher.classpathForResources("logback.xml") :+ cassandraBundle.getAbsolutePath)
-      .mkString(File.pathSeparator)
 
     val args = Seq(javaBin) ++ jvmOptions ++ Seq(
-      "-cp", classpathArgument,
+      "-cp", cassandraBundle.getAbsolutePath,
       "-Dcassandra.config=file:" + configFile.getAbsoluteFile,
       "-Dcassandra-foreground=true",
       className
