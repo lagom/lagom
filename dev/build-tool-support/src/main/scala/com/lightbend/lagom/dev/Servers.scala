@@ -8,10 +8,8 @@ import java.net.{ URI, URL }
 import java.util.concurrent.{ CompletableFuture, CompletionStage, TimeUnit }
 import java.util.function.Consumer
 import java.util.{ Map => JMap }
-
 import com.datastax.driver.core.Cluster
 import play.dev.filewatch.LoggerProxy
-
 import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
@@ -144,7 +142,7 @@ private[lagom] object Servers {
 
   private[lagom] object CassandraServer extends ServerContainer {
     protected type Server = {
-      def start(cassandraDirectory: File, yamlConfig: File, clean: Boolean, port: Int, jvmOptions: Array[String]): Unit
+      def start(cassandraDirectory: File, yamlConfig: Option[File], clean: Boolean, port: Int, jvmOptions: Array[String]): Unit
       def stop(): Unit
       def address: String
       def hostname: String
@@ -152,25 +150,25 @@ private[lagom] object Servers {
     }
 
     def start(
-      log:               LoggerProxy,
-      parentClassLoader: ClassLoader,
-      classpath:         Seq[File],
-      port:              Int,
-      cleanOnStart:      Boolean,
-      jvmOptions:        Seq[String],
-      yamlConfig:        Option[File],
-      maxWaiting:        FiniteDuration
+      log:          LoggerProxy,
+      classpath:    Seq[File],
+      port:         Int,
+      cleanOnStart: Boolean,
+      jvmOptions:   Seq[String],
+      yamlConfig:   Option[File],
+      maxWaiting:   FiniteDuration
     ): Closeable = synchronized {
 
       if (server != null) {
         log.info(s"Cassandra is running at ${server.address}")
       } else {
-        val loader = new java.net.URLClassLoader(classpath.map(_.toURI.toURL).toArray, parentClassLoader)
+
+        val loader = new java.net.URLClassLoader(classpath.map(_.toURI.toURL).toArray, this.getClass.getClassLoader)
         val directory = new File("target/embedded-cassandra")
         val serverClass = loader.loadClass("com.lightbend.lagom.internal.cassandra.CassandraLauncher")
         server = serverClass.newInstance().asInstanceOf[Server]
 
-        server.start(directory, yamlConfig.orNull, cleanOnStart, port, jvmOptions.toArray)
+        server.start(directory, yamlConfig, cleanOnStart, port, jvmOptions.toArray)
 
         waitForRunningCassandra(log, server, maxWaiting)
       }

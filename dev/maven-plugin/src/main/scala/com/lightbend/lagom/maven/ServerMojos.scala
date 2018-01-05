@@ -40,16 +40,13 @@ class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProx
       // Configure logging to quieten the Cassandra driver
       mavenLoggerManager.getLoggerForComponent("com.datastax").setThreshold(Logger.LEVEL_DISABLED)
 
-      val cp = facade.resolveArtifact(new DefaultArtifact("com.lightbend.lagom", "lagom-cassandra-server_2.11",
-        "jar", LagomVersion.current))
+      val cp = facade.resolveArtifact(new DefaultArtifact("com.lightbend.lagom", "lagom-cassandra-server_2.11", "jar", LagomVersion.current))
 
-      val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
       // yaml file doesn't need to be provided by users, in which case the default one included with Lagom will be used
       val yamlConfig = Option(this.cassandraYamlFile)
 
       Servers.CassandraServer.start(
         log = logger,
-        parentClassLoader = scalaClassLoader,
         classpath = cp.map(_.getFile),
         port = cassandraPort,
         cleanOnStart = cassandraCleanOnStart,
@@ -171,8 +168,7 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
   override def execute(): Unit = {
 
     if (serviceLocatorEnabled) {
-      val cp = facade.resolveArtifact(new DefaultArtifact("com.lightbend.lagom", "lagom-service-locator_2.11",
-        "jar", LagomVersion.current))
+      val cp = facade.resolveArtifact(new DefaultArtifact("com.lightbend.lagom", "lagom-service-locator_2.11", "jar", LagomVersion.current))
 
       val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
 
