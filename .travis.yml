@@ -2,8 +2,11 @@ language: scala
 dist: trusty
 sudo: required
 group: edge
+
 jdk:
   - oraclejdk8
+  - oraclejdk9
+
 env:
   global:
   - WHITESOURCE_PROJECT_NAME: lagom-master
@@ -16,11 +19,19 @@ env:
     - SCRIPT=test-maven
     - SCRIPT=test-documentation
     - SCRIPT=test-code-style
+
 # important to use eval, otherwise "&&" is passed as an argument to sbt rather than being processed by bash
 script: bin/$SCRIPT
 before_install:
     # See https://github.com/travis-ci/travis-ci/issues/4629#issuecomment-239493916
     - rm ~/.m2/settings.xml
+    - if [[ "$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')" > "1.9" ]]; then
+        sudo apt-get update -qq;
+        sudo /bin/echo -e oracle-java9-installer shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections;
+        sudo apt-get -o Dpkg::Options::="--force-confnew" install -y oracle-java9-installer oracle-java9-set-default oracle-java9-unlimited-jce-policy;
+        sudo update-java-alternatives -s java-9-oracle;
+      fi
+
 cache:
   directories:
     - $HOME/.ivy2/cache
