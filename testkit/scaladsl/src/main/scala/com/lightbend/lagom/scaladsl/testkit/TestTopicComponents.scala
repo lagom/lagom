@@ -3,23 +3,28 @@
  */
 package com.lightbend.lagom.scaladsl.testkit
 
+import java.util.concurrent.TimeUnit
+
 import akka.Done
-import akka.persistence.query.Offset
+import akka.persistence.query.{NoOffset, Offset}
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Flow, Sink, Source }
+import akka.stream.scaladsl.{Flow, Sink, Source}
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
-import com.lightbend.lagom.internal.scaladsl.api.broker.{ TopicFactory, TopicFactoryProvider }
+import com.lightbend.lagom.internal.scaladsl.api.broker.{TopicFactory, TopicFactoryProvider}
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
-import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.{Descriptor, Service}
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodTopic
 import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId
-import com.lightbend.lagom.scaladsl.api.broker.{ Message, Subscriber, Topic }
+import com.lightbend.lagom.scaladsl.api.broker.{Message, Subscriber, Topic}
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
 import com.lightbend.lagom.scaladsl.server.LagomServer
+import com.lightbend.lagom.spi.persistence.{OffsetDao, OffsetStore}
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.FiniteDuration
 
-trait TestTopicComponents extends TopicFactoryProvider {
+
+private [lagom] trait BaseTestTopicComponents extends TopicFactoryProvider{
   def lagomServer: LagomServer
 
   def materializer: Materializer
@@ -32,11 +37,37 @@ trait TestTopicComponents extends TopicFactoryProvider {
     case None => Some("test")
   }
 
-  lazy val topicFactory: TopicFactory = new TestTopicFactory(lagomServer)(materializer)
+   def topicFactory: TopicFactory
+}
+
+trait OffsetAwareTestTopicComponents extends BaseTestTopicComponents {
+
+  def offsetStore: OffsetStore
+
+  val offsetStoreInitTimeout: FiniteDuration = new FiniteDuration(2, TimeUnit.SECONDS)
+
+  private def offsetDaoFactory(topic:Descriptor.TopicCall[_]):OffsetDao = {
+    val offsetDao = Await.result(offsetStore.prepare(s"topicProducer-${topic.topicId.name}", "test"), offsetStoreInitTimeout)
+  }
+
+  lazy val topicFactory: TopicFactory = new TestTopicFactory(lagomServer, offsetDaoFactory _)(materializer)
 
 }
 
-private[lagom] class TestTopicFactory(lagomServer: LagomServer)(implicit materializer: Materializer) extends TopicFactory {
+trait TestTopicComponents extends BaseTestTopicComponents {
+
+  private val offsetDao = new OffsetDao {
+
+    override def saveOffset(offset: Offset): Future[Done] = Future.successful(Done)
+
+    override val loadedOffset: Offset = NoOffset
+  }
+
+  lazy val topicFactory: TopicFactory = new TestTopicFactory(lagomServer, _ => offsetDao)(materializer)
+
+}
+
+private[lagom] class TestTopicFactory(lagomServer: LagomServer, offsetDaoFactory: Descriptor.TopicCall[_] => OffsetDao)(implicit materializer: Materializer) extends TopicFactory {
 
   private val topics: Map[TopicId, Service] =
     lagomServer.serviceBindings.flatMap { binding =>
@@ -51,7 +82,9 @@ private[lagom] class TestTopicFactory(lagomServer: LagomServer)(implicit materia
         topicCall.topicHolder match {
           case method: ScalaMethodTopic[Message] =>
             method.method.invoke(service) match {
-              case topicProducer: TaggedOffsetTopicProducer[Message, _] => new TestTopic(topicCall, topicProducer)(materializer)
+              case topicProducer: TaggedOffsetTopicProducer[Message, _] =>
+                val offsetDao = offsetDaoFactory(topicCall)
+                new TestTopic(topicCall, topicProducer,offsetDao)(materializer)
               case _ =>
                 throw new IllegalArgumentException(s"Testkit does not know how to handle the topic type for ${topicCall.topicId}")
             }
@@ -65,8 +98,11 @@ private[lagom] class TestTopicFactory(lagomServer: LagomServer)(implicit materia
 
 private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
   topicCall:     TopicCall[Payload],
-  topicProducer: TaggedOffsetTopicProducer[Payload, Event]
+  topicProducer: TaggedOffsetTopicProducer[Payload, Event],
+  offsetDao: OffsetDao
 )(implicit materializer: Materializer) extends Topic[Payload] {
+
+  import materializer.executionContext
 
   override def topicId: TopicId = topicCall.topicId
 
@@ -79,15 +115,20 @@ private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
     override def withMetadata = new TestSubscriber[Message[WrappedPayload]](transform.andThen(Message.apply))
 
     override def atMostOnceSource: Source[WrappedPayload, _] = {
-
       val serializer = topicCall.messageSerializer
       Source(topicProducer.tags).flatMapMerge(topicProducer.tags.size, { tag =>
-        topicProducer.readSideStream.apply(tag, Offset.noOffset).map(_._1)
-      }).map { evt =>
-        serializer.serializerForRequest.serialize(evt)
-      }.map { bytes =>
-        serializer.deserializer(serializer.acceptResponseProtocols.head).deserialize(bytes)
-      }.map(transform)
+        topicProducer.readSideStream.apply(tag, offsetDao.loadedOffset)
+      }).map {
+        case (evt, offset) =>
+          (serializer.serializerForRequest.serialize(evt), evt, offset)
+      }.map {
+        case (bytes, evt, offset) =>
+          (serializer.deserializer(serializer.acceptResponseProtocols.head).deserialize(bytes), evt, offset)
+      }.flatMapMerge(topicProducer.tags.size, r => {
+        r match {
+          case (deser, _, offset) => Source.fromFuture(offsetDao.saveOffset(offset).map(_ => deser))
+        }
+      })
     }
 
     override def atLeastOnce(flow: Flow[WrappedPayload, Done, _]): Future[Done] =
