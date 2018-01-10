@@ -217,8 +217,7 @@ object LagomReloadableService extends AutoPlugin {
   override def requires = LagomPlugin
   override def trigger = noTrigger
 
-  object autoImport {
-    val lagomReload = taskKey[sbt.inc.Analysis]("Executed when sources of changed, to recompile (and possibly reload) the app")
+  object autoImport extends LagomReloadableServiceCompat.autoImport {
     val lagomReloaderClasspath = taskKey[Classpath]("The classpath that gets used to create the reloaded classloader")
     val lagomClassLoaderDecorator = taskKey[ClassLoader => ClassLoader]("Function that decorates the Lagom classloader. Can be used to inject things into the classpath.")
     val lagomWatchDirectories = taskKey[Seq[File]]("The directories that Lagom should be watching")
@@ -241,7 +240,7 @@ object LagomReloadableService extends AutoPlugin {
         ScopeFilter(
           inDependencies(thisProjectRef.value)
         )
-      ).map(_.reduceLeft(_ ++ _))
+      ).map(LagomReloadableServiceCompat.joinAnalysis)
     }.value,
 
     lagomReloaderClasspath := Classpaths.concatDistinct(
@@ -292,7 +291,7 @@ object LagomReloadableService extends AutoPlugin {
 /**
  * Any service that can be run in Lagom should enable this plugin.
  */
-object LagomPlugin extends AutoPlugin {
+object LagomPlugin extends AutoPlugin with LagomPluginCompat {
   import scala.concurrent.duration._
 
   override def requires = JvmPlugin
@@ -369,32 +368,41 @@ object LagomPlugin extends AutoPlugin {
 
   import autoImport._
 
-  private val serviceLocatorProject = Project("lagom-internal-meta-project-service-locator", file("."),
-    configurations = Configurations.default,
-    settings = CorePlugin.projectSettings ++ IvyPlugin.projectSettings ++ JvmPlugin.projectSettings ++ Seq(
-    scalaVersion := "2.11.12",
-    libraryDependencies += LagomImport.component("lagom-service-locator"),
-    lagomServiceLocatorStart in ThisBuild := startServiceLocatorTask.value,
-    lagomServiceLocatorStop in ThisBuild := Servers.ServiceLocator.tryStop(new SbtLoggerProxy(state.value.log))
-  ))
+  private val serviceLocatorProject = Project("lagom-internal-meta-project-service-locator", file("."))
+    .configs(Configurations.default: _*)
+    .settings(CorePlugin.projectSettings: _*)
+    .settings(IvyPlugin.projectSettings: _*)
+    .settings(JvmPlugin.projectSettings: _*)
+    .settings(
+      scalaVersion := "2.11.12",
+      libraryDependencies += LagomImport.component("lagom-service-locator"),
+      lagomServiceLocatorStart in ThisBuild := startServiceLocatorTask.value,
+      lagomServiceLocatorStop in ThisBuild := Servers.ServiceLocator.tryStop(new SbtLoggerProxy(state.value.log))
+    )
 
-  private val cassandraProject = Project("lagom-internal-meta-project-cassandra", file("."),
-    configurations = Configurations.default,
-    settings = CorePlugin.projectSettings ++ IvyPlugin.projectSettings ++ JvmPlugin.projectSettings ++ Seq(
-    scalaVersion := "2.11.12",
-    libraryDependencies += LagomImport.component("lagom-cassandra-server"),
-    lagomCassandraStart in ThisBuild := startCassandraServerTask.value,
-    lagomCassandraStop in ThisBuild := Servers.CassandraServer.tryStop(new SbtLoggerProxy(state.value.log))
-  ))
+  private val cassandraProject = Project("lagom-internal-meta-project-cassandra", file("."))
+    .configs(Configurations.default: _*)
+    .settings(CorePlugin.projectSettings: _*)
+    .settings(IvyPlugin.projectSettings: _*)
+    .settings(JvmPlugin.projectSettings: _*)
+    .settings(
+      scalaVersion := "2.11.12",
+      libraryDependencies += LagomImport.component("lagom-cassandra-server"),
+      lagomCassandraStart in ThisBuild := startCassandraServerTask.value,
+      lagomCassandraStop in ThisBuild := Servers.CassandraServer.tryStop(new SbtLoggerProxy(state.value.log))
+    )
 
-  private val kafkaServerProject = Project("lagom-internal-meta-project-kafka", file("."),
-    configurations = Configurations.default,
-    settings = CorePlugin.projectSettings ++ IvyPlugin.projectSettings ++ JvmPlugin.projectSettings ++ Seq(
-    scalaVersion := "2.11.12",
-    libraryDependencies += LagomImport.component("lagom-kafka-server"),
-    lagomKafkaStart in ThisBuild := startKafkaServerTask.value,
-    lagomKafkaStop in ThisBuild := Servers.KafkaServer.tryStop(new SbtLoggerProxy(state.value.log))
-  ))
+  private val kafkaServerProject = Project("lagom-internal-meta-project-kafka", file("."))
+    .configs(Configurations.default: _*)
+    .settings(CorePlugin.projectSettings: _*)
+    .settings(IvyPlugin.projectSettings: _*)
+    .settings(JvmPlugin.projectSettings: _*)
+    .settings(
+      scalaVersion := "2.11.12",
+      libraryDependencies += LagomImport.component("lagom-kafka-server"),
+      lagomKafkaStart in ThisBuild := startKafkaServerTask.value,
+      lagomKafkaStop in ThisBuild := Servers.KafkaServer.tryStop(new SbtLoggerProxy(state.value.log))
+    )
 
   private val projectPortMap = AttributeKey[Map[ProjectName, Port]]("lagomProjectPortMap")
   private val defaultPortRange = PortRange(0xc000, 0xffff)
@@ -406,7 +414,7 @@ object LagomPlugin extends AutoPlugin {
   private def assignProjectsPort(state: State): State = {
     val extracted = Project.extract(state)
 
-    val scope = Scope(Select(ThisBuild), Global, Global, Global)
+    val scope = Scope(Select(ThisBuild), Zero, Zero, Zero)
     val portRange = extracted.structure.data.get(scope, lagomServicesPortRange.key)
       .getOrElse(defaultPortRange)
     val oldPortMap = state.get(projectPortMap).getOrElse(Map.empty)
@@ -473,7 +481,7 @@ object LagomPlugin extends AutoPlugin {
 
   override def projectSettings = Seq(
     lagomFileWatchService := {
-      FileWatchService.defaultWatchService(target.value, pollInterval.value, new SbtLoggerProxy(sLog.value))
+      FileWatchService.defaultWatchService(target.value, getPollInterval(pollInterval.value), new SbtLoggerProxy(sLog.value))
     },
     lagomServicePort := LagomPlugin.assignedPortFor(ProjectName(name.value), state.value).value,
     Internal.Keys.stop := {
