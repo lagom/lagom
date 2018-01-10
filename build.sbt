@@ -15,6 +15,11 @@ import sbt.CrossVersion._
 // Turn off "Resolving" log messages that clutter build logs
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
 
+def defineSbtVersion(scalaBinVer: String): String = scalaBinVer match {
+  case "2.12" => "1.0.2"
+  case _ => "0.13.16"
+}
+
 def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   organization := "com.lightbend.lagom",
   // Must be "Apache-2.0", because bintray requires that it is a license that it knows about
@@ -342,6 +347,11 @@ val otherProjects = devEnvironmentProjects ++ Seq[Project](
   `macro-testkit`
 )
 
+val sbtScriptedProjects = Seq[Project](
+  `sbt-scripted-tools`,
+  `sbt-scripted-library`
+)
+
 lazy val root = (project in file("."))
   .settings(name := "lagom")
   .settings(runtimeLibCommon: _*)
@@ -361,7 +371,7 @@ lazy val root = (project in file("."))
     whitesourceAggregateProjectName in ThisBuild  := sys.env.getOrElse("WHITESOURCE_PROJECT_NAME", default = "invalid"),
     whitesourceAggregateProjectToken in ThisBuild := sys.env.getOrElse("WHITESOURCE_PROJECT_TOKEN", default = "invalid")
   )
-  .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects).map(Project.projectToRef): _*)
+  .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects).map(Project.projectToRef): _*)
 
   credentials += Credentials(realm = "whitesource",
       host = "whitesourcesoftware.com",
@@ -644,10 +654,11 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // to avoid new JVM for each test, see http://www.scala-sbt.org/release/docs/Testing.html
   val javaOptions = Seq("-Xms256M", "-Xmx512M")
   tests map { test =>
-    new Tests.Group(
+    Tests.Group(
       name = test.name,
       tests = Seq(test),
-      runPolicy = Tests.SubProcess(ForkOptions(runJVMOptions = javaOptions)))
+      runPolicy = Tests.SubProcess(ForkOptions(runJVMOptions = javaOptions))
+    )
   }
 }
 
@@ -996,6 +1007,7 @@ lazy val log4j2 = (project in file("log4j2"))
 lazy val devEnvironmentProjects = Seq[Project](
   `reloadable-server`,
   `build-tool-support`,
+  `sbt-build-tool-support`,
   `sbt-plugin`,
   `maven-plugin`,
   `service-locator`,
@@ -1034,11 +1046,32 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     publishMavenStyle := true,
     crossScalaVersions := Dependencies.SbtScalaVersions,
     scalaVersion := Dependencies.SbtScalaVersions.head,
+    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     crossPaths := false,
     sourceGenerators in Compile += Def.task {
       Generators.version(version.value, (sourceManaged in Compile).value)
     }.taskValue,
     Dependencies.`build-tool-support`
+  )
+
+// This is almost the sabe as `build-tool-support`, but targeting sbt
+// while `build-tool-support` targets Maven and possibly other build
+// systems. We did something similar for routes compiler in Play:
+//
+// https://github.com/playframework/playframework/blob/2.6.7/framework/build.sbt#L27-L40 
+lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-support")
+  .settings(common: _*)
+  .settings(
+    name := "lagom-sbt-build-tool-support",
+    crossScalaVersions := Dependencies.SbtScalaVersions,
+    scalaVersion := Dependencies.SbtScalaVersions.head,
+    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
+    sbtPlugin := true,
+    sourceGenerators in Compile += Def.task {
+      Generators.version(version.value, (sourceManaged in Compile).value)
+    }.taskValue,
+    Dependencies.`build-tool-support`,
+    target := target.value / "lagom-sbt-build-tool-support"
   )
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
@@ -1050,10 +1083,15 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     sbtPlugin := true,
     crossScalaVersions := Dependencies.SbtScalaVersions,
     scalaVersion := Dependencies.SbtScalaVersions.head,
+    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     Dependencies.`sbt-plugin`,
-    addSbtPlugin(
-      ("com.typesafe.play" % "sbt-plugin" % Dependencies.PlayVersion)
-        .exclude("org.slf4j", "slf4j-simple")),
+    libraryDependencies ++= Seq(
+      Defaults.sbtPluginExtra(
+        "com.typesafe.play" % "sbt-plugin" % Dependencies.PlayVersion,
+        CrossVersion.binarySbtVersion((sbtVersion in pluginCrossBuild).value),
+        CrossVersion.binaryScalaVersion(scalaVersion.value)
+      ).exclude("org.slf4j", "slf4j-simple")
+    ),
     scriptedDependencies := {
       val () = scriptedDependencies.value
       val () = publishLocal.value
@@ -1068,7 +1106,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
       } else publishTo.value
     },
     publishMavenStyle := isSnapshot.value
-  ).dependsOn(`build-tool-support`)
+  ).dependsOn(`sbt-build-tool-support`)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .enablePlugins(lagom.SbtMavenPlugin)
@@ -1235,13 +1273,18 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
   .settings(
     sbtPlugin := true,
     crossScalaVersions := Dependencies.SbtScalaVersions,
-    scalaVersion := Dependencies.SbtScalaVersions.head
+    scalaVersion := Dependencies.SbtScalaVersions.head,
+    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value)
   ).dependsOn(`sbt-plugin`)
 
 // This project also get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-library")
   .settings(name := "lagom-sbt-scripted-library")
   .settings(runtimeLibCommon: _*)
+  .settings(
+    PgpKeys.publishSigned := {},
+    publish := {}
+  )
   .dependsOn(`server-javadsl`)
 
 lazy val `service-locator` = (project in file("dev") / "service-registry" / "service-locator")

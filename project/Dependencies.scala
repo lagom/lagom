@@ -18,7 +18,7 @@ object Dependencies {
   val AkkaHttpVersion = "10.0.11"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.11.12", "2.12.4")
-  val SbtScalaVersions = Seq("2.10.6")
+  val SbtScalaVersions = Seq("2.10.6", "2.12.4")
   val AkkaPersistenceCassandraVersion = "0.59"
   val AkkaPersistenceJdbcVersion = "3.1.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
@@ -108,6 +108,7 @@ object Dependencies {
   private val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playJson = "com.typesafe.play" %% "play-json" % PlayJsonVersion excludeAll (excludeSlf4j: _*)
   private val playFunctional = "com.typesafe.play" %% "play-functional" % PlayJsonVersion excludeAll (excludeSlf4j: _*)
+  private val playFileWatch = "com.lightbend.play" %% "play-file-watch" % PlayFileWatchVersion excludeAll (excludeSlf4j: _*)
 
   private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.2" excludeAll (excludeSlf4j: _*)
 
@@ -624,9 +625,9 @@ object Dependencies {
   )
 
   val `build-tool-support` = libraryDependencies ++= Seq(
-    "com.lightbend.play" %% "play-file-watch" % PlayFileWatchVersion,
     playExceptions,
     playBuildLink,
+    playFileWatch,
     // This is used in the code to check if the embedded cassandra server is started
     cassandraDriverCore,
     scalaTest % Test
