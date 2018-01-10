@@ -47,7 +47,7 @@ trait OffsetAwareTestTopicComponents extends BaseTestTopicComponents {
   val offsetStoreInitTimeout: FiniteDuration = new FiniteDuration(2, TimeUnit.SECONDS)
 
   private def offsetDaoFactory(topic:Descriptor.TopicCall[_]):OffsetDao = {
-    val offsetDao = Await.result(offsetStore.prepare(s"topicProducer-${topic.topicId.name}", "test"), offsetStoreInitTimeout)
+    Await.result(offsetStore.prepare(s"topicProducer-${topic.topicId.name}", "test"), offsetStoreInitTimeout)
   }
 
   lazy val topicFactory: TopicFactory = new TestTopicFactory(lagomServer, offsetDaoFactory _)(materializer)
@@ -126,7 +126,7 @@ private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
           (serializer.deserializer(serializer.acceptResponseProtocols.head).deserialize(bytes), evt, offset)
       }.flatMapMerge(topicProducer.tags.size, r => {
         r match {
-          case (deser, _, offset) => Source.fromFuture(offsetDao.saveOffset(offset).map(_ => deser))
+          case (deser, _, offset) => Source.fromFuture(offsetDao.saveOffset(offset).map(_ => transform(deser)))
         }
       })
     }
