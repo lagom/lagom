@@ -8,7 +8,7 @@ import com.lightbend.lagom.core.LagomVersion
 import sbt.Keys._
 import sbt._
 
-object LagomImport {
+object LagomImport extends LagomImportCompat {
   private val moduleOrganization = "com.lightbend.lagom"
   def component(id: String) = moduleOrganization %% id % LagomVersion.current
 
@@ -17,7 +17,7 @@ object LagomImport {
   val lagomJavadslApi = component("lagom-javadsl-api")
   val lagomJavadslClient = component("lagom-javadsl-client")
   val lagomJavadslCluster = component("lagom-javadsl-cluster")
-  // Scoped to `Provided` because it's needed only at compile-time. 
+  // Scoped to `Provided` because it's needed only at compile-time.
   val lagomJavadslImmutables = component("lagom-javadsl-immutables") % Provided
   val lagomJavadslJackson = component("lagom-javadsl-jackson")
   val lagomJavadslBroker = component("lagom-javadsl-broker")
@@ -64,9 +64,10 @@ object LagomImport {
   private def singleTestsGrouping(tests: Seq[TestDefinition]) = {
     // We could group non Cassandra tests into another group
     // to avoid new JVM for each test, see http://www.scala-sbt.org/release/docs/Testing.html
-    val forkOptions = ForkOptions(runJVMOptions = Seq("-Xms256M", "-Xmx512M"))
+    val forkVmOptions: Vector[String] = Vector("-Xms256M", "-Xmx512M")
+    val forkOptions = getForkOptions(forkVmOptions)
     tests map { test =>
-      new Tests.Group(
+      Tests.Group(
         name = test.name,
         tests = Seq(test),
         runPolicy = Tests.SubProcess(forkOptions)
