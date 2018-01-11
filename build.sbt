@@ -30,14 +30,14 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
      "scala" -> (
        HeaderPattern.cStyleBlockComment,
        """|/*
-          | * Copyright (C) 2017-2018 Lightbend Inc. <https://www.lightbend.com>
+          | * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
           | */
           |""".stripMargin
      ),
      "java" -> (
        HeaderPattern.cStyleBlockComment,
        """|/*
-          | * Copyright (C) 2017-2018 Lightbend Inc. <https://www.lightbend.com>
+          | * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
           | */
           |""".stripMargin
      )
