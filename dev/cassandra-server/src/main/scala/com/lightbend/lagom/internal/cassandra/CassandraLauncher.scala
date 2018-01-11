@@ -30,7 +30,7 @@ class CassandraLauncher {
 
   def start(
     cassandraDirectory: File,
-    yamlConfig:         Option[File],
+    yamlConfig:         File,
     clean:              Boolean,
     port:               Int,
     jvmOptions:         Array[String]
@@ -41,11 +41,9 @@ class CassandraLauncher {
       prepareCassandraDirectory(cassandraDirectory, clean)
 
       val storagePort = AkkaCassandraLauncher.freePort()
-
       // if Some, set it to Left (left is file)
       // if None, use hard-coded default (right is resource)
-      val fileOrResource = yamlConfig.toLeft(devEmbeddedYaml)
-
+      val fileOrResource = Option(yamlConfig).toLeft(devEmbeddedYaml)
       // http://wiki.apache.org/cassandra/StorageConfiguration
       val conf = readResource(fileOrResource)
       val amendedConf = conf

@@ -510,9 +510,10 @@ object LagomPlugin extends AutoPlugin {
     val classpath = (managedClasspath in Compile).value.files
     val jvmOptions = lagomCassandraJvmOptions.value
     val maxWaiting = lagomCassandraMaxBootWaitingTime.value
+    val scala211 = scalaInstance.value
     val yamlConfig = lagomCassandraYamlFile.value
     val log = new SbtLoggerProxy(state.value.log)
-    Servers.CassandraServer.start(log, classpath, port, cleanOnStart, jvmOptions, yamlConfig, maxWaiting)
+    Servers.CassandraServer.start(log, scala211.loader, classpath, port, cleanOnStart, jvmOptions, yamlConfig, maxWaiting)
   }
 
   private lazy val startKafkaServerTask = Def.task {
