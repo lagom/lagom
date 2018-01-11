@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Lightbend Inc. <https://www.lightbend.com>
+// Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
 
 buildInfoSettings
 sourceGenerators in Compile += buildInfo.taskValue
