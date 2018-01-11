@@ -84,7 +84,7 @@ Immutables generates for you:
 ```xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-immutables_2.11</artifactId>
+    <artifactId>lagom-javadsl-immutables_2.12</artifactId>
     <version>${lagom.version}</version>
 </dependency>
 ```

@@ -42,13 +42,13 @@ lazy val `inventory-service-impl` = (project in file("inventory-impl"))
 
 ### Selecting the server engine in Maven
 
-Maven users will need to explicitly migrate each service to the new Akka HTTP server. If you check each service's `pom.xml` you'll notice a dependency to `play-netty-server_2.11`. To replace the Netty HTTP backend with the new Akka HTTP backend remove the dependency to `play-netty-server_2.11` and add a dependency to `play-akka-http-server_2.11` like in the following example.
+Maven users will need to explicitly migrate each service to the new Akka HTTP server. If you check each service's `pom.xml` you'll notice a dependency to `play-netty-server_2.12`. To replace the Netty HTTP backend with the new Akka HTTP backend remove the dependency to `play-netty-server_2.12` and add a dependency to `play-akka-http-server_2.12` like in the following example.
 
 ```xml
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <!--<artifactId>play-netty-server_2.11</artifactId>-->
-            <artifactId>play-akka-http-server_2.11</artifactId>
+            <!--<artifactId>play-netty-server_2.12</artifactId>-->
+            <artifactId>play-akka-http-server_2.12</artifactId>
         </dependency>
 ```
 
@@ -229,7 +229,7 @@ Update each `pom.xml` that includes a dependency on `conductr-bundle-lib`:
 ```xml
 <dependency>
     <groupId>com.typesafe.conductr</groupId>
-    <artifactId>lagom14-java-conductr-bundle-lib_2.11</artifactId>
+    <artifactId>lagom14-java-conductr-bundle-lib_2.12</artifactId>
     <version>2.1.1</version>
 </dependency>
 ```

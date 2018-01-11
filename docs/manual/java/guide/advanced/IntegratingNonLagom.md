@@ -15,7 +15,7 @@ To use the Lagom service interface, you will need to add a dependency of the Lag
 ```xml
     <dependency>
         <groupId>com.lightbend.lagom</groupId>
-        <artifactId>lagom-javadsl-integration-client_2.11</artifactId>
+        <artifactId>lagom-javadsl-integration-client_2.12</artifactId>
         <version>${lagom.version}</version>
     </dependency>
 ```

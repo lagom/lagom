@@ -63,17 +63,17 @@ We also recommend using Maven dependency management in your root project pom to 
     <dependencies>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
-            <artifactId>lagom-javadsl-server_2.11</artifactId>
+            <artifactId>lagom-javadsl-server_2.12</artifactId>
             <version>${lagom.version}</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <artifactId>play-akka-http-server_2.11</artifactId>
+            <artifactId>play-akka-http-server_2.12</artifactId>
             <version>${play.version}</version>
         </dependency>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
-            <artifactId>lagom-javadsl-api_2.11</artifactId>
+            <artifactId>lagom-javadsl-api_2.12</artifactId>
             <version>${lagom.version}</version>
         </dependency>
         ...
@@ -83,7 +83,7 @@ We also recommend using Maven dependency management in your root project pom to 
 
 #### A note on Scala versions
 
-When adding dependencies to Lagom libraries, you need to ensure that you include the Scala major version in the artifact ID, for example, `lagom-javadsl-api_2.11`.
+When adding dependencies to Lagom libraries, you need to ensure that you include the Scala major version in the artifact ID, for example, `lagom-javadsl-api_2.12`.
 
 Lagom itself is implemented mostly in Scala. Unlike Java, where the Java maintainers control the virtual machine and so can build backwards compatibility into the virtual machine when new features are added, when new features are added in Scala, backwards compatibility is very difficult if not impossible to maintain. Therefore, libraries have to be compiled against a particular major version of Scala.
 
@@ -109,7 +109,7 @@ The API module for a service is a simple maven project.  It doesn't need to conf
     <dependencies>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
-            <artifactId>lagom-javadsl-api_2.11</artifactId>
+            <artifactId>lagom-javadsl-api_2.12</artifactId>
         </dependency>
     </dependencies>
 </project>
@@ -138,23 +138,23 @@ The implementation module for a service is also a simple maven project, but will
         </dependency>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
-            <artifactId>lagom-javadsl-server_2.11</artifactId>
+            <artifactId>lagom-javadsl-server_2.12</artifactId>
         </dependency>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
-            <artifactId>lagom-javadsl-persistence_2.11</artifactId>
+            <artifactId>lagom-javadsl-persistence_2.12</artifactId>
         </dependency>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
-            <artifactId>lagom-logback_2.11</artifactId>
+            <artifactId>lagom-logback_2.12</artifactId>
         </dependency>
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <artifactId>play-akka-http-server_2.11</artifactId>
+            <artifactId>play-akka-http-server_2.12</artifactId>
         </dependency>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
-            <artifactId>lagom-javadsl-testkit_2.11</artifactId>
+            <artifactId>lagom-javadsl-testkit_2.12</artifactId>
         </dependency>
     </dependencies>
 
@@ -178,7 +178,7 @@ A few things to notice here are:
 * It also has a dependency on `lagom-javadsl-server`, this provides all server side code for the project.
 * This particular service uses the Lagom persistence API to persist data, and so has a dependency on `lagom-javadsl-persistence`.
 * A logging implementation needs to be configured, this uses the default `lagom-logback` logging implementation.
-* An implementation of the Play HTTP server needs to be configured - Play provides two server implementations, one in Netty, and one in Akka HTTP.  In this case, Akka HTTP has been selected. Replace `play-akka-http-server_2.11` with `play-netty-server_2.11` if you wanted to switch.
+* An implementation of the Play HTTP server needs to be configured - Play provides two server implementations, one in Netty, and one in Akka HTTP.  In this case, Akka HTTP has been selected. Replace `play-akka-http-server_2.12` with `play-netty-server_2.12` if you wanted to switch.
 * The `lagom-maven-plugin` has been configured to say that `lagomService` is `true`, this tells Lagom that this is a lagom service that should be run when you run `lagom:runAll`.
 
 ## Defining a build in sbt
