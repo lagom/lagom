@@ -36,6 +36,10 @@ private[lagom] object Servers {
     /**
      * Each ServerContainer implementation needs to define the Server type using structural typing.
      * This is needed because the server classes are not available on the classloader used by the tooling.
+     *
+     * The alternative would be to use classical java reflection: find the method with args we plan to pass and invoke it.
+     * Using structural typing make it much more convenient for us, but maybe not obvious at first sight.
+     * Hence, this long explanation. ;-)
      */
     protected type Server
 
@@ -158,7 +162,7 @@ private[lagom] object Servers {
       port:              Int,
       cleanOnStart:      Boolean,
       jvmOptions:        Seq[String],
-      yamlConfig:        Option[File],
+      yamlConfig:        File,
       maxWaiting:        FiniteDuration
     ): Closeable = synchronized {
 
@@ -170,7 +174,7 @@ private[lagom] object Servers {
         val serverClass = loader.loadClass("com.lightbend.lagom.internal.cassandra.CassandraLauncher")
         server = serverClass.newInstance().asInstanceOf[Server]
 
-        server.start(directory, yamlConfig.orNull, cleanOnStart, port, jvmOptions.toArray)
+        server.start(directory, yamlConfig, cleanOnStart, port, jvmOptions.toArray)
 
         waitForRunningCassandra(log, server, maxWaiting)
       }

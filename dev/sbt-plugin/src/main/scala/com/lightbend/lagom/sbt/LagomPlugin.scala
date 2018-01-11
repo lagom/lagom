@@ -511,7 +511,10 @@ object LagomPlugin extends AutoPlugin {
     val jvmOptions = lagomCassandraJvmOptions.value
     val maxWaiting = lagomCassandraMaxBootWaitingTime.value
     val scala211 = scalaInstance.value
-    val yamlConfig = lagomCassandraYamlFile.value
+    // NOTE: lagomCassandraYamlFile will be None when not explicitly configured by user
+    // we don't use an Option for it because this class will be dynamically loaded
+    // and called using structural typing (reflection) by sbt thus on a classloader with scala 2.10
+    val yamlConfig = lagomCassandraYamlFile.value.orNull
     val log = new SbtLoggerProxy(state.value.log)
     Servers.CassandraServer.start(log, scala211.loader, classpath, port, cleanOnStart, jvmOptions, yamlConfig, maxWaiting)
   }

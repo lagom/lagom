@@ -41,9 +41,10 @@ class CassandraLauncher {
       prepareCassandraDirectory(cassandraDirectory, clean)
 
       val storagePort = AkkaCassandraLauncher.freePort()
-      // if Some, set it to Left (left is file)
-      // if None, use hard-coded default (right is resource)
-      val fileOrResource = Option(yamlConfig).toLeft(devEmbeddedYaml)
+      // NOTE: yamlConfig will be null when not explicitly configured by user
+      // we don't use an Option for it because this class will be dynamically loaded
+      // and called using structural typing (reflection) by sbt thus on a classloader with scala 2.10
+      val fileOrResource = Either.cond(yamlConfig == null, devEmbeddedYaml, yamlConfig)
       // http://wiki.apache.org/cassandra/StorageConfiguration
       val conf = readResource(fileOrResource)
       val amendedConf = conf
@@ -90,12 +91,9 @@ class CassandraLauncher {
     val / = File.separator
     val javaBin = s"${System.getProperty("java.home")}${/}bin${/}java"
     val className = "org.apache.cassandra.service.CassandraDaemon"
-    // Ensure that the directory that logback.xml lives is first in the classpath
-    val classpathArgument = (AkkaCassandraLauncher.classpathForResources("logback.xml") :+ cassandraBundle.getAbsolutePath)
-      .mkString(File.pathSeparator)
 
     val args = Seq(javaBin) ++ jvmOptions ++ Seq(
-      "-cp", classpathArgument,
+      "-cp", cassandraBundle.getAbsolutePath,
       "-Dcassandra.config=file:" + configFile.getAbsoluteFile,
       "-Dcassandra-foreground=true",
       className
