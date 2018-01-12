@@ -572,7 +572,17 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
     Dependencies.`testkit-javadsl`,
     mimaBinaryIssueFilters ++= Seq(
       ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest$Setup"),
-      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest$Setup$")
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest$Setup$"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest#SetupImpl.copy"),
+      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest#SetupImpl.copy$default$3"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest#SetupImpl.this"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest$SetupImpl$"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest#SetupImpl.apply"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest#Setup.withCluster"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest#Setup.withJdbc"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest#Setup.withCassandra"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest#Setup.jdbc"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest#Setup.withJdbc")
     )
   )
   .dependsOn(
@@ -597,7 +607,17 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
       ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.TopicStub#SubscriberStub.this"),
 
       // See https://github.com/lagom/lagom/pull/1081 for justification for this breaking change
-      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.PersistentEntityTestDriver.runOne")
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.PersistentEntityTestDriver.runOne"),
+
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.ServiceTest#Setup.withCluster"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.ServiceTest#Setup.withJdbc"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.ServiceTest#Setup.withCassandra"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.ServiceTest#Setup.jdbc"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.ServiceTest#Setup.withJdbc"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.scaladsl.testkit.ServiceTest$SetupImpl$"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.ServiceTest#SetupImpl.apply"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.ServiceTest#SetupImpl.copy"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.ServiceTest#SetupImpl.this")
     )
   )
   .dependsOn(
@@ -1058,7 +1078,7 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
 // while `build-tool-support` targets Maven and possibly other build
 // systems. We did something similar for routes compiler in Play:
 //
-// https://github.com/playframework/playframework/blob/2.6.7/framework/build.sbt#L27-L40 
+// https://github.com/playframework/playframework/blob/2.6.7/framework/build.sbt#L27-L40
 lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-support")
   .settings(common: _*)
   .settings(
