@@ -48,7 +48,7 @@ lagom.persistence.read-side.cassandra {
 While we would never advise using static service locations in production, to simulate a working Lagom system in the absence of a managed runtime, you can deploy Lagom systems to static locations by using static configuration. When using static service location, you can also hardcode Cassandra locations. To achieve this, follow these steps:
 
 1. Specify service locations in `application.conf`.
-    The [`ConfigurationServiceLocator`](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocator.html reads service locator configuration out of Lagom's `application.conf` file.  This example specifies static locations for two Lagom services:
+    The [`ConfigurationServiceLocator`](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocator.html) reads service locator configuration out of Lagom's `application.conf` file.  This example specifies static locations for two Lagom services:
 
     ```
     lagom.services {
