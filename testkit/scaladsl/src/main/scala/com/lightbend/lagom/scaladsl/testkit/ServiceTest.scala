@@ -42,13 +42,44 @@ object ServiceTest {
     /**
      * Enable or disable Cassandra.
      *
-     * @param enabled True if Cassandra should be enabled, or false if disabled.
+     * @param enabled True if Cassandra should be enabled, or false if disabled. Enabling Cassandra will also enable the
+     * cluster.
      * @return A copy of this setup.
      */
     def withCassandra(enabled: Boolean): Setup
 
     /**
-     * Enable clustering.
+     * Enable Cassandra.
+     *
+     * If enabled, this will start an embedded Cassandra server before the tests start, and shut it down afterwards.
+     * It will also configure Lagom to use the embedded Cassandra server. Enabling Cassandra will also enable the
+     * cluster.
+     *
+     * @return A copy of this setup.
+     */
+    def withCassandra(): Setup = withCassandra(true)
+
+    /**
+     * Enable or disable JDBC.
+     *
+     * Enabling JDBC will also enable the cluster.
+     *
+     * @param enabled True if JDBC should be enabled, or false if disabled.
+     * @return A copy of this setup.
+     */
+    def withJdbc(enabled: Boolean): Setup
+
+    /**
+     * Enable JDBC.
+     *
+     * Enabling JDBC will also enable the cluster.
+     *
+     * @return A copy of this setup.
+     */
+    def withJdbc(): Setup = withJdbc(true)
+
+    /**
+     * Enable or disable clustering.
      *
      * Disabling this will automatically disable any persistence plugins, since persistence requires clustering.
      *
@@ -58,9 +89,23 @@ object ServiceTest {
     def withCluster(enabled: Boolean): Setup
 
     /**
+     * Enable clustering.
+     *
+     * Disabling this will automatically disable any persistence plugins, since persistence requires clustering.
+     *
+     * @return A copy of this setup.
+     */
+    def withCluster(): Setup = withCluster(true)
+
+    /**
      * Whether Cassandra is enabled.
      */
     def cassandra: Boolean
+
+    /**
+     * Whether JDBC is enabled.
+     */
+    def jdbc: Boolean
 
     /**
      * Whether clustering is enabled.
@@ -69,7 +114,11 @@ object ServiceTest {
 
   }
 
-  private case class SetupImpl(cassandra: Boolean = false, cluster: Boolean = false) extends Setup {
+  private case class SetupImpl(
+    cassandra: Boolean = false,
+    jdbc:      Boolean = false,
+    cluster:   Boolean = false
+  ) extends Setup {
 
     override def withCassandra(enabled: Boolean): Setup = {
       if (enabled) {
@@ -78,6 +127,13 @@ object ServiceTest {
         copy(cassandra = false)
       }
     }
+
+    override def withJdbc(enabled: Boolean): Setup =
+      if (enabled) {
+        copy(jdbc = true, cluster = true)
+      } else {
+        copy(jdbc = false)
+      }
 
     override def withCluster(enabled: Boolean): Setup = {
       if (enabled) {
@@ -193,30 +249,51 @@ object ServiceTest {
         val cassandraPort = CassandraLauncher.randomPort
         val cassandraDirectory = Files.createTempDirectory(testName).toFile
         val t0 = System.nanoTime()
-        CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort,
-          CassandraLauncher.classpathForResources(LagomTestConfigResource))
+
+        CassandraLauncher.start(
+          cassandraDirectory,
+          LagomTestConfigResource,
+          clean = false,
+          port = cassandraPort,
+          CassandraLauncher.classpathForResources(LagomTestConfigResource)
+        )
+
         log.debug(s"Cassandra started in ${
           TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)
         } ms")
+
         Configuration(TestUtil.persistenceConfig(testName, cassandraPort, useServiceLocator = false)) ++
           Configuration("lagom.cluster.join-self" -> "on")
-      } else if (setup.cluster) {
+
+      } else if (setup.cluster || setup.jdbc) {
         Configuration("lagom.cluster.join-self" -> "on")
       } else {
         Configuration.empty
       }
 
-    val lagomApplication = applicationConstructor(LagomApplicationContext(Context(Environment.simple(), None,
-      new DefaultWebCommands, config, new DefaultApplicationLifecycle)))
+    val lagomApplication =
+      applicationConstructor(
+        LagomApplicationContext(
+          Context(
+            Environment.simple(),
+            None,
+            new DefaultWebCommands,
+            config,
+            new DefaultApplicationLifecycle
+          )
+        )
+      )
 
     Play.start(lagomApplication.application)
     val serverConfig = ServerConfig(port = Some(0), mode = lagomApplication.environment.mode)
     val server = ServerProvider.defaultServerProvider.createServer(serverConfig, lagomApplication.application)
+
     lagomApplication match {
       case requiresPort: RequiresLagomServicePort =>
         requiresPort.provideLagomServicePort(server.httpPort.orElse(server.httpsPort).get)
       case other => ()
     }
+
     if (setup.cassandra) {
       TestUtil.awaitPersistenceInit(lagomApplication.actorSystem)
     }

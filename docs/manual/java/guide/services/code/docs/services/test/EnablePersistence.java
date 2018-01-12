@@ -5,13 +5,22 @@ import static com.lightbend.lagom.javadsl.testkit.ServiceTest.defaultSetup;
 import com.lightbend.lagom.javadsl.testkit.ServiceTest.Setup;
 
 @SuppressWarnings("unused")
-public class EnablePersistence {
+public class EnablePersistenceCassandra {
+    //#enable-cassandra
+    private final Setup setup = defaultSetup().withCassandra();
+    //#enable-cassandra
+}
 
-  //#setup1
-  private final Setup setup1 = defaultSetup().withCassandra(true);
-  //#setup1
+@SuppressWarnings("unused")
+public class EnablePersistenceJdbc {
+    //#enable-jdbc
+    private final Setup setup = defaultSetup().withJdbc();
+    //#enable-jdbc
+}
 
-  //#setup2
-  private final Setup setup2 = defaultSetup().withCluster(true);
-  //#setup2
+@SuppressWarnings("unused")
+public class EnablePersistenceCluster {
+    //#enable-cluster
+    private final Setup setup = defaultSetup().withCluster();
+    //#enable-cluster
 }

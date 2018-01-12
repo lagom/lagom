@@ -15,19 +15,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class PersistenceServiceTest {
-  
+
   private static TestServer server;
   private static PersistenceService client;
-  
+
   @BeforeClass
   public static void setUp() {
     server = startServer(defaultSetup()
-                    .withCassandra(true)
+                    .withCassandra()
                     .configureBuilder(b -> b.bindings(new PersistenceServiceModule()))
     );
     client = server.client(PersistenceService.class);
   }
-  
+
   @AfterClass
   public static void tearDown() {
     if (server != null) {
@@ -36,17 +36,17 @@ public class PersistenceServiceTest {
       client = null;
     }
   }
-  
+
   @Test
   public void shouldProvidePersistenceComponentsForInjection() throws Exception {
     assertEquals("ok", client.checkInjected().invoke().toCompletableFuture().get(10, SECONDS));
   }
-  
+
   @Test
   public void shouldHaveAWorkingCassandraSession() throws Exception {
     assertEquals("ok", client.checkCassandraSession().invoke().toCompletableFuture().get(20, SECONDS));
   }
-  
-  
+
+
 
 }
