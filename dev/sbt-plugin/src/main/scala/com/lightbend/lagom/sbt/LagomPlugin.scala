@@ -333,6 +333,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val lagomCassandraEnabled = settingKey[Boolean]("Enable/Disable the cassandra server")
     val lagomCassandraCleanOnStart = settingKey[Boolean]("Wipe the cassandra database before starting")
     val lagomCassandraJvmOptions = settingKey[Seq[String]]("JVM options used by the forked cassandra process")
+    val lagomCassandraYamlFile = settingKey[Option[File]]("YAML file used by the local cassandra server")
     val lagomCassandraMaxBootWaitingTime = settingKey[FiniteDuration]("Max waiting time to start cassandra")
 
     // kafka tasks and settings
@@ -455,6 +456,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     lagomCassandraCleanOnStart := false,
     lagomCassandraJvmOptions := Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099"),
     lagomCassandraMaxBootWaitingTime := 20.seconds,
+    lagomCassandraYamlFile := None,
     lagomKafkaEnabled := true,
     lagomKafkaPropertiesFile := None,
     lagomKafkaZookeperPort := 2181,
@@ -517,8 +519,12 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val jvmOptions = lagomCassandraJvmOptions.value
     val maxWaiting = lagomCassandraMaxBootWaitingTime.value
     val scala211 = scalaInstance.value
+    // NOTE: lagomCassandraYamlFile will be None when not explicitly configured by user
+    // we don't use an Option for it because this class will be dynamically loaded
+    // and called using structural typing (reflection) by sbt thus on a classloader with scala 2.10
+    val yamlConfig = lagomCassandraYamlFile.value.orNull
     val log = new SbtLoggerProxy(state.value.log)
-    Servers.CassandraServer.start(log, scala211.loader, classpath, port, cleanOnStart, jvmOptions, maxWaiting)
+    Servers.CassandraServer.start(log, scala211.loader, classpath, port, cleanOnStart, jvmOptions, yamlConfig, maxWaiting)
   }
 
   private lazy val startKafkaServerTask = Def.task {

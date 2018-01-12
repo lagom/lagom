@@ -32,6 +32,8 @@ class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProx
   var cassandraCleanOnStart: Boolean = _
   @BeanProperty // I'm not sure if it's possible to specify a default value for a literal list in plugin.xml, so specify it here.
   var cassandraJvmOptions: JList[String] = Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099").asJava
+  @BeanProperty
+  var cassandraYamlFile: File = _
 
   override def execute(): Unit = {
     if (cassandraEnabled) {
@@ -43,8 +45,16 @@ class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProx
 
       val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
 
-      Servers.CassandraServer.start(logger, scalaClassLoader, cp.map(_.getFile), cassandraPort, cassandraCleanOnStart,
-        cassandraJvmOptions.asScala, cassandraMaxBootWaitingSeconds.seconds)
+      Servers.CassandraServer.start(
+        log = logger,
+        parentClassLoader = scalaClassLoader,
+        classpath = cp.map(_.getFile),
+        port = cassandraPort,
+        cleanOnStart = cassandraCleanOnStart,
+        jvmOptions = cassandraJvmOptions.asScala,
+        yamlConfig = this.cassandraYamlFile,
+        maxWaiting = cassandraMaxBootWaitingSeconds.seconds
+      )
     }
   }
 }
@@ -106,7 +116,16 @@ class StartKafkaMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, m
       // properties file doesn't need to be provided by users, in which case the default one included with Lagom will be used
       val kafkaPropertiesFile = Option(this.kafkaPropertiesFile)
 
-      Servers.KafkaServer.start(logger, cp.map(_.getFile), kafkaPort, zookeeperPort, kafkaPropertiesFile, kafkaJvmOptions.asScala, targetDir, kafkaCleanOnStart)
+      Servers.KafkaServer.start(
+        log = logger,
+        cp = cp.map(_.getFile),
+        kafkaPort = kafkaPort,
+        zooKeeperPort = zookeeperPort,
+        kafkaPropertiesFile = kafkaPropertiesFile,
+        jvmOptions = kafkaJvmOptions.asScala,
+        targetDir = targetDir,
+        cleanOnStart = kafkaCleanOnStart
+      )
     }
   }
 }

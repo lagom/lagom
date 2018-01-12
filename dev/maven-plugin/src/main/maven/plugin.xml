@@ -98,6 +98,13 @@
             <editable>true</editable>
             <description>The JVM options to pass to Cassandra.</description>
         </parameter>
+        <parameter>
+            <name>cassandraYamlFile</name>
+            <type>java.util.File</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The relative path to a cassandra yaml configuration to use to start Cassandra.</description>
+        </parameter>
 
         <parameter>
             <name>kafkaPort</name>
@@ -327,6 +334,9 @@
                 </parameter>
                 <parameter>
                     <name>cassandraJvmOptions</name>
+                </parameter>
+                <parameter>
+                    <name>cassandraYamlFile</name>
                 </parameter>
             </parameters>
         </mojo>
