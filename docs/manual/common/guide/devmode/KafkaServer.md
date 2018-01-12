@@ -26,7 +26,7 @@ In sbt:
 
 ## Kafka properties file
 
-The Kafka server can be configured with a property file. By default, we are using the stock `server.properties` file provided with Kafka 0.10, with only one change to allow auto creation of topics on the server. This is a good default to quickly get started, but if you find yourself needing to start Kafka with a different configuration, you can easily do so by adding the following in your build.   
+The Kafka server can be configured with an alternative property file. By default, Lagom development environment uses a stock [kafka-server.properties](https://github.com/lagom/lagom/blob/master/dev/kafka-server/src/main/resources/kafka-server.properties) file provided with Kafka, with only one change to allow auto creation of topics on the server. This is a good default to quickly get started, but if you find yourself needing to start Kafka with a different configuration, you can easily do so by adding your own Kafka `kafka-server.properties` file to you to your build.
 
 In the Maven root project pom:
 
@@ -71,7 +71,7 @@ In sbt:
 
 ## Logging
 
-Logging is configured such that it goes *only* to files. You can find the logs of Kafka in the folder `<your-project-root>/target/lagom-dynamic-projects/lagom-internal-meta-project-kafka/target/log4j_output`. 
+Logging is configured such that it goes *only* to files. You can find the logs of Kafka in the folder `<your-project-root>/target/lagom-dynamic-projects/lagom-internal-meta-project-kafka/target/log4j_output`.
 
 ## Commit Log
 
@@ -124,9 +124,9 @@ In the Maven root project pom:
 
 In sbt:
 
-@[external-instance](code/build-kafka-opts2.sbt)
+@[external-instance](code/build-kafka-opts.sbt)
 
-As you have probably noticed, the above configured Kafka server is actually running locally (mind the *localhost* in the provided address). In this case, it would have actually been enough to configure the port on which is running, without having to provide the full address.   
+As you have probably noticed, the above configured Kafka server is actually running locally (mind the *localhost* in the provided address). In this case, it would have actually been enough to configure the port on which is running, without having to provide the full address.
 
 ```xml
 <plugin>
@@ -142,6 +142,6 @@ As you have probably noticed, the above configured Kafka server is actually runn
 
 In sbt:
 
-@[local-instance](code/build-kafka-opts2.sbt)
+@[local-instance](code/build-kafka-opts.sbt)
 
 Assuming your local Kafka instance is running on port `10000`.
