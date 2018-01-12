@@ -10,17 +10,3 @@ public class EnablePersistenceCassandra {
     private final Setup setup = defaultSetup().withCassandra();
     //#enable-cassandra
 }
-
-@SuppressWarnings("unused")
-public class EnablePersistenceJdbc {
-    //#enable-jdbc
-    private final Setup setup = defaultSetup().withJdbc();
-    //#enable-jdbc
-}
-
-@SuppressWarnings("unused")
-public class EnablePersistenceCluster {
-    //#enable-cluster
-    private final Setup setup = defaultSetup().withCluster();
-    //#enable-cluster
-}
