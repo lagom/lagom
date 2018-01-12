@@ -16,3 +16,13 @@ lagomKafkaJvmOptions in ThisBuild := Seq("-Xms256m", "-Xmx1024m") // these are a
 //#kafka-enabled
 lagomKafkaEnabled in ThisBuild := false
 //#kafka-enabled
+
+//#external-instance
+lagomKafkaEnabled in ThisBuild := false
+lagomKafkaAddress in ThisBuild := "localhost:10000"
+//#external-instance
+
+//#local-instance
+lagomKafkaEnabled in ThisBuild := false
+lagomKafkaPort in ThisBuild := 10000
+//#local-instance
