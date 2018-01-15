@@ -1,14 +1,14 @@
 val ScalaVersion = "2.11.12"
 
-val AkkaVersion = "2.5.8"
+val AkkaVersion = "2.5.9"
 val JUnitVersion = "4.11"
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion = "3.0.4"
-val PlayVersion = "2.6.9"
-val Log4jVersion = "2.8.2"
+val PlayVersion = "2.6.11"
+val Log4jVersion = "2.10.0"
 val MacWireVersion = "2.3.0"
-val LombokVersion = "1.16.10"
-val HibernateVersion = "5.2.5.Final"
+val LombokVersion = "1.16.20"
+val HibernateVersion = "5.2.12.Final"
 
 val branch = {
   val rev = "git rev-parse --abbrev-ref HEAD".!!.trim
