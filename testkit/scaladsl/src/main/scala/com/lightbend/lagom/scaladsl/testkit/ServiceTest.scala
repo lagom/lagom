@@ -294,7 +294,7 @@ object ServiceTest {
       case other => ()
     }
 
-    if (setup.cassandra) {
+    if (setup.cassandra || setup.jdbc) {
       TestUtil.awaitPersistenceInit(lagomApplication.actorSystem)
     }
 

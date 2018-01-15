@@ -365,7 +365,7 @@ object ServiceTest {
     val assignedPort = srv.httpPort.orElse(srv.httpsPort).get
     port.success(assignedPort)
 
-    if (setup.cassandra) {
+    if (setup.cassandra || setup.jdbc) {
       val system = application.injector().instanceOf(classOf[ActorSystem])
       CassandraTestConfig.awaitPersistenceInit(system)
     }
