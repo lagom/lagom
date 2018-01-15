@@ -564,16 +564,11 @@ lazy val `testkit-core` = (project in file("testkit/core"))
 
 lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
   .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings(since10): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-javadsl-testkit",
-    Dependencies.`testkit-javadsl`,
-    mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest$Setup"),
-      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest$Setup$")
-    )
+    Dependencies.`testkit-javadsl`
   )
   .dependsOn(
     `testkit-core`,
@@ -587,18 +582,11 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
   .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings(since13): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-scaladsl-testkit",
-    Dependencies.`testkit-scaladsl`,
-    mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.TopicStub#SubscriberStub.this"),
-
-      // See https://github.com/lagom/lagom/pull/1081 for justification for this breaking change
-      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.PersistentEntityTestDriver.runOne")
-    )
+    Dependencies.`testkit-scaladsl`
   )
   .dependsOn(
     `testkit-core`,
@@ -1058,7 +1046,7 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
 // while `build-tool-support` targets Maven and possibly other build
 // systems. We did something similar for routes compiler in Play:
 //
-// https://github.com/playframework/playframework/blob/2.6.7/framework/build.sbt#L27-L40 
+// https://github.com/playframework/playframework/blob/2.6.7/framework/build.sbt#L27-L40
 lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-support")
   .settings(common: _*)
   .settings(
