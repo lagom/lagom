@@ -50,13 +50,19 @@ Note how the dependency is overridden when constructing the test `Setup` object,
 
 The server is by default running with [[pubsub|PubSub]], [[cluster|Cluster]] and [[persistence|PersistentEntity]] features disabled. You may want to enable cluster in the `Setup`:
 
-@[setup2](code/docs/services/test/EnablePersistence.java)
+@[enable-cluster](code/docs/services/test/EnablePersistenceCluster.java)
 
-If your service needs [[persistence|PersistentEntity]] you will need to enable it explicitly. Cassandra Persistence requires clustering, so when you enable Cassandra, cluster will also be enabled automatically. Enable Cassandra Persistence:
+If your service needs [[persistence|PersistentEntity]] you will need to enable it explicitly. This can be done by enabling Cassandra or JDBC, depending on which kind of persistence is used by your service. In any case, Lagom persistence requires clustering, so when when enabling one or another, cluster will also be enabled automatically.
 
-@[setup1](code/docs/services/test/EnablePersistence.java)
+To enable Cassandra Persistence:
 
-There's no way to explicitly enable or disable [[pubsub|PubSub]]. When cluster is enabled (either explicitly or transitively via enabling Cassandra), pubsub will be available.
+@[enable-cassandra](code/docs/services/test/EnablePersistenceCassandra.java)
+
+To enable JDBC Persistence:
+
+@[enable-jdbc](code/docs/services/test/EnablePersistenceJdbc.java)
+
+There's no way to explicitly enable or disable [[pubsub|PubSub]]. When cluster is enabled (either explicitly or transitively via enabling Cassandra or JDBC), pubsub will be available.
 
 There are two different styles that can be used when writing the tests. It is most convenient to use `withServer` as illustrated in the above `HelloServiceTest`. It automatically starts and stops the server before and after the given lambda.
 
