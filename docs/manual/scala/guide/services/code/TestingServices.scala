@@ -109,13 +109,33 @@ package enablecassandra {
 
     //#enable-cassandra
     lazy val server = ServiceTest.startServer(
-      ServiceTest.defaultSetup.withCassandra(true)
+      ServiceTest.defaultSetup.withCassandra()
     ) { ctx =>
       new HelloApplication(ctx) with LocalServiceLocator
     }
     //#enable-cassandra
   }
 }
+
+
+package enablejdbc {
+
+  import docs.scaladsl.services.lagomapplication.HelloApplication
+  import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
+  import com.lightbend.lagom.scaladsl.testkit.ServiceTest
+
+  class HelloServiceSpec {
+
+    //#enable-jdbc
+    lazy val server = ServiceTest.startServer(
+      ServiceTest.defaultSetup.withJdbc()
+    ) { ctx =>
+      new HelloApplication(ctx) with LocalServiceLocator
+    }
+    //#enable-jdbc
+  }
+}
+
 
 package enablecluster {
 
@@ -127,7 +147,7 @@ package enablecluster {
 
     //#enable-cluster
     lazy val server = ServiceTest.startServer(
-      ServiceTest.defaultSetup.withCluster(true)
+      ServiceTest.defaultSetup.withCluster()
     ) { ctx =>
       new HelloApplication(ctx) with LocalServiceLocator
     }
