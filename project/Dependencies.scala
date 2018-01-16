@@ -243,9 +243,8 @@ object Dependencies {
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", JacksonVersion)(
       "jackson-annotations", "jackson-core", "jackson-databind"
-    ) ++ Seq(
-      "com.fasterxml.jackson.module" % "jackson-modules-java8" % JacksonVersion,
-      "com.fasterxml.jackson.datatype" % "jackson-datatypes-collections" % JacksonVersion
+    ) ++ libraryFamily("com.fasterxml.jackson.datatype", JacksonVersion)(
+      "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
     )
 
 
