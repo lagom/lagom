@@ -7,14 +7,14 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.10"
+  val PlayVersion = "2.6.11"
   val PlayJsonVersion = "2.6.8"
   val PlayStandaloneWsVersion = "1.1.3"
   val TwirlVersion = "1.3.12"
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.8"
+  val AkkaVersion = "2.5.9"
   val AkkaHttpVersion = "10.0.11"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.11.12", "2.12.4")
@@ -23,10 +23,10 @@ object Dependencies {
   val AkkaPersistenceJdbcVersion = "3.1.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
   val ScalaTestVersion = "3.0.4"
-  val JacksonVersion = "2.8.10"
+  val JacksonVersion = "2.8.11"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.18.Final"
+  val NettyVersion = "4.1.19.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
   val KafkaVersion = "0.11.0.1"
   val AkkaStreamKafkaVersion = "0.18"
@@ -42,7 +42,7 @@ object Dependencies {
   val Slf4jVersion = "1.7.25"
   val LogbackVersion = "1.2.3"
   // Also be sure to update Log4jVersion in docs/build.sbt.
-  val Log4jVersion = "2.8.2"
+  val Log4jVersion = "2.10.0"
 
 
   // Some setup before we start creating ModuleID vals
@@ -82,7 +82,7 @@ object Dependencies {
   private val akkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
-  private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.1"
+  private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.2"
 
   private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % AkkaPersistenceJdbcVersion excludeAll (excludeSlf4j: _*)
 
@@ -167,10 +167,10 @@ object Dependencies {
       "com.typesafe.play" %% "twirl-api" % TwirlVersion,
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-      "com.zaxxer" % "HikariCP" % "2.7.4",
+      "com.zaxxer" % "HikariCP" % "2.7.5",
       "commons-codec" % "commons-codec" % "1.10",
-      "io.aeron" % "aeron-client" % "1.3.0",
-      "io.aeron" % "aeron-driver" % "1.3.0",
+      "io.aeron" % "aeron-client" % "1.7.0",
+      "io.aeron" % "aeron-driver" % "1.7.0",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.7.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
@@ -182,7 +182,7 @@ object Dependencies {
       "junit" % "junit" % JUnitVersion,
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
-      "org.agrona" % "agrona" % "0.9.6",
+      "org.agrona" % "agrona" % "0.9.12",
       "org.apache.commons" % "commons-lang3" % "3.6",
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
