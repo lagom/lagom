@@ -9,6 +9,7 @@ val Log4jVersion = "2.10.0"
 val MacWireVersion = "2.3.0"
 val LombokVersion = "1.16.20"
 val HibernateVersion = "5.2.12.Final"
+val ValidationApiVersion = "2.0.1.Final"
 
 val branch = {
   val rev = "git rev-parse --abbrev-ref HEAD".!!.trim
@@ -37,7 +38,7 @@ lazy val docs = project
       "com.softwaremill.macwire" %% "macros" % MacWireVersion % "provided",
       "org.projectlombok" % "lombok" % LombokVersion,
       "org.hibernate" % "hibernate-core" % HibernateVersion,
-      "org.hibernate" % "hibernate-validator" % HibernateVersion
+      "javax.validation" % "validation-api" % ValidationApiVersion
     ),
     javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
     testOptions in Test += Tests.Argument("-oDF"),
