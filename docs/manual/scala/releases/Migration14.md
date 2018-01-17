@@ -7,10 +7,20 @@ Lagom 1.4 also updates to the latest major versions of Play (2.6) and Akka (2.5)
 
 ## Build changes
 
-The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin. For example:
+The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin, for example:
 
 ```scala
 addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0-RC1")
+```
+
+## Scala 2.12 support
+
+Lagom is now cross compiled to Scala 2.11 and 2.12. It's recommended to upgrade to Scala 2.12 whenever possible. The Scala 2.12 version of Lagom benefits from the improved optimizer and use of Java 8 features in the new version of the Scala compiler, resulting in a leaner, faster Lagom for everyone.
+
+The Scala version can be updated by editing the `build.sbt` file, and updating the `scalaVersion` settings, for example:
+
+```scala
+scalaVersion in ThisBuild := "2.12.4"
 ```
 
 
@@ -59,7 +69,7 @@ The change to drop support for multiple services will require another code updat
   )
 ```
 
-That is now deprecated and will issue a warning on runtime (unfortunately Scala 2.11 will not cause a compilation warning because of the deprecation). The method replacing `describeServices` is `describeService` (in singular) and it will take an `Option[Descriptor]` instead of a list:
+That is now deprecated and will issue a warning on runtime (unfortunately Scala will not cause a compilation warning because of the deprecation). The method replacing `describeServices` is `describeService` (in singular) and it will take an `Option[Descriptor]` instead of a list:
 
 ```scala
   override def describeService = Some(readDescriptor[ItemService])

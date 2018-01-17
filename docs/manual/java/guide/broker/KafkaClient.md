@@ -11,7 +11,7 @@ In Maven:
 ```xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-kafka-broker_2.11</artifactId>
+    <artifactId>lagom-javadsl-kafka-broker_${scala.binary.version}</artifactId>
     <version>${lagom.version}</version>
 </dependency>
 ```
@@ -60,7 +60,7 @@ In Maven:
 ```xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-kafka-client_2.11</artifactId>
+    <artifactId>lagom-javadsl-kafka-client_${scala.binary.version}</artifactId>
     <version>${lagom.version}</version>
 </dependency>
 ```

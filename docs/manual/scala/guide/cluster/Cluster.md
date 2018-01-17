@@ -17,7 +17,7 @@ In Maven:
 ```xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-scaladsl-cluster_2.11</artifactId>
+    <artifactId>lagom-scaladsl-cluster_${scala.binary.version}</artifactId>
     <version>${lagom.version}</version>
 </dependency>
 ```
