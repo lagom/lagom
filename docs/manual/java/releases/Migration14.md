@@ -22,7 +22,7 @@ addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0-RC1")
 
 ## Scala 2.12 support
 
-Lagom is now cross compiled to Scala 2.11 and 2.12. It's recommended to upgrade to Scala 2.12 whenever possible.
+Lagom is now cross compiled to Scala 2.11 and 2.12. It's recommended to upgrade to Scala 2.12 whenever possible, even if you are writing your Lagom services only in Java. The Scala 2.12 version of Lagom benefits from the improved optimizer and use of Java 8 features in the new version of the Scala compiler, resulting in a leaner, faster Lagom for everyone.
 
 ### Maven
 
