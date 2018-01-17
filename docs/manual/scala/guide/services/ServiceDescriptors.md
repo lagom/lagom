@@ -34,7 +34,7 @@ Dynamic path parameters are extracted from the path by declaring dynamic parts i
 
 @[call-long-id](code/ServiceDescriptors.scala)
 
-Note that this time we're using an [eta-expanded](http://scala-lang.org/files/archive/spec/2.11/06-expressions.html#method-values) reference to the method. This is because the method takes a parameter.
+Note that this time we're using an [eta-expanded](http://scala-lang.org/files/archive/spec/2.12/06-expressions.html#method-values) reference to the method. This is because the method takes a parameter.
 
 Multiple parameters can of course be extracted out, these will be passed to your service call method in the order they are extracted from the URL:
 

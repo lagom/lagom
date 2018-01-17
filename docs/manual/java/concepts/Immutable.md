@@ -84,7 +84,7 @@ Immutables generates for you:
 ```xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-immutables_2.11</artifactId>
+    <artifactId>lagom-javadsl-immutables_${scala.binary.version}</artifactId>
     <version>${lagom.version}</version>
 </dependency>
 ```
@@ -95,7 +95,7 @@ Immutables generates for you:
 
 ### Integrating Immmutables with an IDE
 
-Immutables integrates with popular IDEs. Follow the instructions for [[Eclipse|ImmutablesInIDEs#Eclipse]] or [[IntelliJ IDEA|ImmutablesInIDEs#IntelliJ-IDEA]] to add the Immutables annotation processor to your IDE. 
+Immutables integrates with popular IDEs. Follow the instructions for [[Eclipse|ImmutablesInIDEs#Eclipse]] or [[IntelliJ IDEA|ImmutablesInIDEs#IntelliJ-IDEA]] to add the Immutables annotation processor to your IDE.
 
 
 ## Collections

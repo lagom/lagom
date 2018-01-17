@@ -11,7 +11,7 @@ If you're using maven, you'll need to add the Lagom logback dependency to your c
 ```xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-logback_2.11</artifactId>
+    <artifactId>lagom-logback_${scala.binary.version}</artifactId>
     <version>${lagom.version}</version>
 </dependency>
 ```
@@ -37,7 +37,7 @@ If you're using maven, you'll need to add the Lagom log4j2 dependency to your cl
 ```xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-log4j2_2.11</artifactId>
+    <artifactId>lagom-log4j2_${scala.binary.version}</artifactId>
     <version>${lagom.version}</version>
 </dependency>
 ```

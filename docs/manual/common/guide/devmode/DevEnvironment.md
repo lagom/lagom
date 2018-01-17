@@ -47,7 +47,7 @@ This may take a while if you have a lot of services or if dependencies are being
 Once the "Services started" message has appeared, if you make a change to your source code, you'll see output like this in the console:
 
 ```console
-[info] Compiling 1 Java source to /<project-path>/target/scala-2.11/classes...
+[info] Compiling 1 Java source to /<project-path>/target/scala-2.12/classes...
 
 --- (RELOAD) ---
 ```

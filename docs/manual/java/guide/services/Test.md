@@ -22,7 +22,7 @@ To use this feature add the following in your project's build.
 ```xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-testkit_2.11</artifactId>
+    <artifactId>lagom-javadsl-testkit_${scala.binary.version}</artifactId>
     <version>${lagom.version}</version>
     <scope>test</scope>
 </dependency>
