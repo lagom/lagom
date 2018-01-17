@@ -9,7 +9,7 @@ Lagom 1.4 also updates to the latest major versions of Play (2.6) and Akka (2.5)
 
 ### Maven
 
-If you're using a `lagom.version` property in the `properties` section of your root `pom.xml`, then simply update that to `1.4.0-M3`. Otherwise, you'll need to go through every place that a Lagom dependency, including plugins, is used, and set the version there.
+If you're using a `lagom.version` property in the `properties` section of your root `pom.xml`, then simply update that to `1.4.0-RC1`. Otherwise, you'll need to go through every place that a Lagom dependency, including plugins, is used, and set the version there.
 
 ### sbt
 
@@ -19,6 +19,41 @@ The version of Lagom can be updated by editing the `project/plugins.sbt` file, a
 addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0-RC1")
 ```
 
+
+## Scala 2.12 support
+
+Lagom is now cross compiled to Scala 2.11 and 2.12. It's recommended to upgrade to Scala 2.12 whenever possible, even if you are writing your Lagom services only in Java. The Scala 2.12 version of Lagom benefits from the improved optimizer and use of Java 8 features in the new version of the Scala compiler, resulting in a leaner, faster Lagom for everyone.
+
+### Maven
+
+Maven users will need to update all Scala libraries in the project. A Scala library has typically its Scala major version appended to the artifact ID, for example: `lagom-javadsl-api_2.12`; where `_2.12` indicates the major Scala version used to compile that library. Make sure to replace all references to `_2.11` by `_2.12`.
+
+Alternatively, you can consider adding a maven property to your parent pom file...
+
+```xml
+  <properties>
+      <scala.binary.version>2.12</scala.binary.version>
+      <lagom.version>1.4.0-RC1</lagom.version>
+  </properties>
+```
+
+and use it when declaring dependencies, for example:
+
+```xml
+  <dependency>
+      <groupId>com.lightbend.lagom</groupId>
+      <artifactId>lagom-javadsl-api_${scala.binary.version}</artifactId>
+      <version>${lagom.version}</version>
+  </dependency>
+```
+
+### sbt
+
+The Scala version can be updated by editing the `build.sbt` file, and updating the `scalaVersion` settings, for example:
+
+```scala
+scalaVersion in ThisBuild := "2.12.4"
+```
 
 ## Akka HTTP as the default server engine
 
@@ -42,13 +77,13 @@ lazy val `inventory-service-impl` = (project in file("inventory-impl"))
 
 ### Selecting the server engine in Maven
 
-Maven users will need to explicitly migrate each service to the new Akka HTTP server. If you check each service's `pom.xml` you'll notice a dependency to `play-netty-server_2.11`. To replace the Netty HTTP backend with the new Akka HTTP backend remove the dependency to `play-netty-server_2.11` and add a dependency to `play-akka-http-server_2.11` like in the following example.
+Maven users will need to explicitly migrate each service to the new Akka HTTP server. If you check each service's `pom.xml` you'll notice a dependency to `play-netty-server_2.12`. To replace the Netty HTTP backend with the new Akka HTTP backend remove the dependency to `play-netty-server_2.12` and add a dependency to `play-akka-http-server_2.12` like in the following example.
 
 ```xml
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <!--<artifactId>play-netty-server_2.11</artifactId>-->
-            <artifactId>play-akka-http-server_2.11</artifactId>
+            <!--<artifactId>play-netty-server_2.12</artifactId>-->
+            <artifactId>play-akka-http-server_2.12</artifactId>
         </dependency>
 ```
 
@@ -229,7 +264,7 @@ Update each `pom.xml` that includes a dependency on `conductr-bundle-lib`:
 ```xml
 <dependency>
     <groupId>com.typesafe.conductr</groupId>
-    <artifactId>lagom14-java-conductr-bundle-lib_2.11</artifactId>
+    <artifactId>lagom14-java-conductr-bundle-lib_2.12</artifactId>
     <version>2.1.1</version>
 </dependency>
 ```
