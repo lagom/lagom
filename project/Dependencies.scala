@@ -235,7 +235,7 @@ object Dependencies {
       "scala-library", "scala-reflect"
 
     ) ++ libraryFamily("org.slf4j", Slf4jVersion)(
-      "jcl-over-slf4j", "jul-to-slf4j", "log4j-over-slf4j", "slf4j-api"
+      "jcl-over-slf4j", "jul-to-slf4j", "log4j-over-slf4j", "slf4j-api", "slf4j-nop"
     )
   }
 
@@ -410,6 +410,8 @@ object Dependencies {
     scalaTest % Test,
     "junit" % "junit" % JUnitVersion,
 
+    // Without an binding, slf4j will print warnings when running tests
+    "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test,
 
     // Upgrades needed to match whitelist
     "io.netty" % "netty-transport-native-epoll" % NettyVersion
@@ -421,6 +423,9 @@ object Dependencies {
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
     "junit" % "junit" % JUnitVersion,
+
+    // Without an binding, slf4j will print warnings when running tests
+    "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test,
 
     // Upgrades needed to match whitelist
     "io.netty" % "netty-transport-native-epoll" % NettyVersion
