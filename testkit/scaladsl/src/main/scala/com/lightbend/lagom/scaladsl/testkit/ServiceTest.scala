@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
 import akka.persistence.cassandra.testkit.CassandraLauncher
+import com.google.common.io.{ MoreFiles, RecursiveDeleteOption }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, RequiresLagomServicePort }
 import org.slf4j.LoggerFactory
@@ -183,7 +184,6 @@ object ServiceTest {
     def stop(): Unit = {
       Try(Play.stop(application.application))
       Try(playServer.stop())
-      Try(CassandraLauncher.stop())
     }
   }
 
@@ -244,14 +244,26 @@ object ServiceTest {
 
     val log = LoggerFactory.getLogger(getClass)
 
+    val lifecycle = new DefaultApplicationLifecycle
+
     val config =
       if (setup.cassandra) {
         val cassandraPort = CassandraLauncher.randomPort
-        val cassandraDirectory = Files.createTempDirectory(testName).toFile
+        val cassandraDirectory = Files.createTempDirectory(testName)
+
+        // Shut down Cassandra and delete its temporary directory when the application shuts down
+        lifecycle.addStopHook { () =>
+          import scala.concurrent.ExecutionContext.Implicits.global
+          Try(CassandraLauncher.stop())
+          // The ALLOW_INSECURE option is required to remove the files on OSes that don't support SecureDirectoryStream
+          // See http://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/io/MoreFiles.html#deleteRecursively-java.nio.file.Path-com.google.common.io.RecursiveDeleteOption...-
+          Future(MoreFiles.deleteRecursively(cassandraDirectory, RecursiveDeleteOption.ALLOW_INSECURE))
+        }
+
         val t0 = System.nanoTime()
 
         CassandraLauncher.start(
-          cassandraDirectory,
+          cassandraDirectory.toFile,
           LagomTestConfigResource,
           clean = false,
           port = cassandraPort,
@@ -279,7 +291,7 @@ object ServiceTest {
             None,
             new DefaultWebCommands,
             config,
-            new DefaultApplicationLifecycle
+            lifecycle
           )
         )
       )
