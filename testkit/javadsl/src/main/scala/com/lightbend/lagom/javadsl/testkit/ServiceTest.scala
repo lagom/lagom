@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 import java.util.function.{ Function => JFunction }
 
 import scala.annotation.tailrec
-import scala.concurrent.Promise
+import scala.concurrent.{ Future, Promise }
 import scala.concurrent.duration._
 import scala.util.Try
 import scala.util.control.NonFatal
@@ -24,6 +24,7 @@ import akka.japi.function.Effect
 import akka.japi.function.Procedure
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.Materializer
+import com.google.common.io.{ MoreFiles, RecursiveDeleteOption }
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.persistence.testkit.CassandraTestConfig
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
@@ -32,8 +33,7 @@ import play.Application
 import play.api.Logger
 import play.api.Mode
 import play.api.Play
-import play.api.inject.BindingKey
-import play.api.inject.{ bind => sBind }
+import play.api.inject.{ ApplicationLifecycle, BindingKey, DefaultApplicationLifecycle, bind => sBind }
 import play.core.server.Server
 import play.core.server.ServerConfig
 import play.core.server.ServerProvider
@@ -255,7 +255,6 @@ object ServiceTest {
     def stop(): Unit = {
       Try(Play.stop(app.getWrappedApplication))
       Try(server.stop())
-      Try(CassandraLauncher.stop())
     }
   }
 
@@ -301,10 +300,13 @@ object ServiceTest {
     val now = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
     val testName = s"ServiceTest_$now"
 
+    val lifecycle = new DefaultApplicationLifecycle
+
     val initialBuilder = new GuiceApplicationBuilder()
       .bindings(sBind[TestServiceLocatorPort].to(testServiceLocatorPort))
       .bindings(sBind[ServiceLocator].to(classOf[TestServiceLocator]))
       .bindings(sBind[TopicFactory].to(classOf[TestTopicFactory]))
+      .overrides(sBind[ApplicationLifecycle].to(lifecycle))
       .configure("play.akka.actor-system", testName)
 
     val log = Logger(getClass)
@@ -313,11 +315,21 @@ object ServiceTest {
       if (setup.cassandra) {
 
         val cassandraPort = CassandraLauncher.randomPort
-        val cassandraDirectory = Files.createTempDirectory(testName).toFile
+        val cassandraDirectory = Files.createTempDirectory(testName)
+
+        // Shut down Cassandra and delete its temporary directory when the application shuts down
+        lifecycle.addStopHook { () =>
+          import scala.concurrent.ExecutionContext.Implicits.global
+          Try(CassandraLauncher.stop())
+          // The ALLOW_INSECURE option is required to remove the files on OSes that don't support SecureDirectoryStream
+          // See http://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/io/MoreFiles.html#deleteRecursively-java.nio.file.Path-com.google.common.io.RecursiveDeleteOption...-
+          Future(MoreFiles.deleteRecursively(cassandraDirectory, RecursiveDeleteOption.ALLOW_INSECURE))
+        }
+
         val t0 = System.nanoTime()
 
         CassandraLauncher.start(
-          cassandraDirectory,
+          cassandraDirectory.toFile,
           LagomTestConfigResource,
           clean = false,
           port = cassandraPort,
