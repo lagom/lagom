@@ -29,7 +29,7 @@ class ServiceTestSpec extends WordSpec with Matchers {
       }
     }
 
-    "stopped after starting should" should {
+    "stopped after starting" should {
       "remove its temporary directory" in {
         val temporaryFileCountBeforeRun = listTemporaryFiles().size
 
