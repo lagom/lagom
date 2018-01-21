@@ -16,14 +16,13 @@ A Service Registry collaborates with microservice instances to maintain an up-to
 
 When booting a Lagom microservice instance, a registrar will register the name of the microservice, the URL and the names of the locatable Service Descriptors on the Service Registry so that they can be located. When powering down an instance of a service, the registrar will have to update the Service Registry too. Lagom's [[Developer Environment|DevEnvironment]] provides an implementation of a Service Registry and a registrar so you can run your microservices locally.
  
-<!---The following diagram illustrates service registration. (TBA) --->
+<!---The following illustrates service registration. (TBA) --->
 
-Many available technologies provide Service Registry capabilities. You will need to choose and/or develop a Service Locator for your services to run in your deployment environment (see for example [Lagom ZooKeeper Service Locator](https://github.com/jboner/lagom-service-locator-zookeeper)). You may need to work out a way to plug your Lagom services with a registrar. Lagom's integration with [[ConductR|ConductR]] makes these two steps seamless.
-
+Many available technologies provide Service Registry capabilities. You will need to choose and/or develop a Service Locator for your services to run in your deployment environment (see for example [Lagom ZooKeeper Service Locator](https://github.com/jboner/lagom-service-locator-zookeeper)). You may need to work out a way to plug your Lagom services with a registrar. 
 
 ## Client-side service discovery
 
-From Bonér's [Reactive Microservices Architecture: Design Principles for Distributed Systems](http://www.oreilly.com/programming/free/reactive-microservices-architecture.html) 
+From Bonér's [Reactive Microservices Architecture: Design Principles for Distributed Systems](https://info.lightbend.com/COLL-20XX-Reactive-Microservices-Architecture-RES-LP.html)
 
 > Once the information about each service has been stored it can be made available through a Service Registry that services can use to look the information up—using a pattern called Client-Side Service Discovery.
 
@@ -33,7 +32,7 @@ Lagom creates service clients for each Service Descriptor so that applications c
 
 ## Server-side service discovery
 
-From Bonér's [Reactive Microservices Architecture: Design Principles for Distributed Systems](http://www.oreilly.com/programming/free/reactive-microservices-architecture.html) 
+From Bonér's [Reactive Microservices Architecture: Design Principles for Distributed Systems](https://info.lightbend.com/COLL-20XX-Reactive-Microservices-Architecture-RES-LP.html)
 
 > Another strategy is to have the information stored and maintained in a load balancer [...] using a pattern called Server-Side Service Discovery.
 

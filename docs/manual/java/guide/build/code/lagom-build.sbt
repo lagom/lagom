@@ -3,7 +3,7 @@ addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "X.Y.Z") // replace 'X
 //#add-sbt-plugin
 
 //#scala-version
-scalaVersion in ThisBuild := "2.11.7"
+scalaVersion in ThisBuild := "2.12.4"
 //#scala-version
 
 //#hello-api
@@ -37,3 +37,13 @@ lazy val `hello-stream-impl` = (project in file("hello-stream-impl"))
   )
   .dependsOn(`hello-stream-api`, `hello-api`)
 //#hello-stream
+
+//#hello-stream-netty
+lazy val `hello-stream-netty-impl` = (project in file("hello-stream-nettyimpl"))
+  .enablePlugins(LagomJava, LagomNettyServer) // Adds LagomNettyServer
+  .disablePlugins(LagomAkkaHttpServer)        // Removes LagomAkkaHttpServer
+  .settings(
+    version := "1.0-SNAPSHOT"
+  )
+  .dependsOn(`hello-stream-api`, `hello-api`)
+//#hello-stream-netty

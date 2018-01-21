@@ -215,4 +215,4 @@ The default configuration should be good starting point, and the following setti
 
 ## Underlying Implementation
 
-Each `PersistentEntity` instance is executed by a [PersistentActor](http://doc.akka.io/docs/akka/2.4/java/persistence.html) that is managed by [Akka Cluster Sharding](http://doc.akka.io/docs/akka/2.4/java/cluster-sharding.html).
+Each `PersistentEntity` instance is executed by a [PersistentActor](https://doc.akka.io/docs/akka/2.5/persistence.html?language=scala) that is managed by [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.5/cluster-sharding.html?language=scala).

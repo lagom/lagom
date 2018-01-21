@@ -1,21 +1,16 @@
 /*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.scaladsl.persistence.jdbc
 
-import scala.concurrent.ExecutionContext
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.persistence.jdbc.{ SlickOffsetStore, SlickProvider }
-import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcPersistentEntityRegistry
-import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcReadSideImpl
-import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcSessionImpl
-import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.OffsetTableConfiguration
-import com.lightbend.lagom.scaladsl.persistence.PersistenceComponents
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
-import com.lightbend.lagom.scaladsl.persistence.ReadSidePersistenceComponents
-import com.lightbend.lagom.scaladsl.persistence.WriteSidePersistenceComponents
+import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbProvider, SlickOffsetStore, SlickProvider }
+import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.{ JdbcPersistentEntityRegistry, JdbcReadSideImpl, JdbcSessionImpl, OffsetTableConfiguration }
+import com.lightbend.lagom.scaladsl.persistence.{ PersistenceComponents, PersistentEntityRegistry, ReadSidePersistenceComponents, WriteSidePersistenceComponents }
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import play.api.db.DBComponents
+
+import scala.concurrent.ExecutionContext
 
 /**
  * Persistence JDBC components (for compile-time injection).
@@ -26,9 +21,15 @@ trait JdbcPersistenceComponents
   with WriteSideJdbcPersistenceComponents
 
 private[lagom] trait SlickProviderComponents extends DBComponents {
+
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext
-  lazy val slickProvider: SlickProvider = new SlickProvider(actorSystem, dbApi)(executionContext)
+
+  lazy val slickProvider: SlickProvider = {
+    // Ensures JNDI bindings are made before we build the SlickProvider
+    SlickDbProvider.buildAndBindSlickDatabases(dbApi, actorSystem.settings.config, applicationLifecycle)
+    new SlickProvider(actorSystem)(executionContext)
+  }
 }
 
 /**

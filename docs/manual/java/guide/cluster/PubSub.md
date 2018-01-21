@@ -11,7 +11,7 @@ In Maven:
 ```xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-pubsub_2.11</artifactId>
+    <artifactId>lagom-javadsl-pubsub_${scala.binary.version}</artifactId>
     <version>${lagom.version}</version>
 </dependency>
 ```
@@ -74,4 +74,4 @@ The published messages must be serializable since they will be sent across the n
 
 ## Underlying Implementation
 
-It is implemented with [Akka Distributed Publish Subscribe](http://doc.akka.io/docs/akka/2.4/java/distributed-pub-sub.html).
+It is implemented with [Akka Distributed Publish Subscribe](https://doc.akka.io/docs/akka/2.5/distributed-pub-sub.html?language=java).

@@ -11,7 +11,7 @@ In Maven:
 ```xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-persistence-jpa_2.11</artifactId>
+    <artifactId>lagom-javadsl-persistence-jpa_${scala.binary.version}</artifactId>
     <version>${lagom.version}</version>
 </dependency>
 ```
@@ -84,7 +84,7 @@ The other method on the `ReadSideProcessor` is `buildHandler`.  This is responsi
 @[create-builder](code/docs/home/persistence/JpaBlogEventProcessor.java)
 
 The argument passed to this method is an identifier for the read-side processor that Lagom should use when it persists the offset. Lagom will store the offsets in a table that it will automatically create itself if it doesn't exist. If you would prefer that Lagom didn't automatically create this table for you, you can turn off this feature by setting `lagom.persistence.jdbc.create-tables.auto=false` in `application.conf`. The DDL for the schema for this table is as follows:
-   
+
 ```sql
 CREATE TABLE read_side_offsets (
   read_side_id VARCHAR(255), tag VARCHAR(255),

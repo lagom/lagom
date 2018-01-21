@@ -1,13 +1,10 @@
 /*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.internal.javadsl.cluster
 
-import scala.concurrent.duration._
-
 import akka.actor.ActorSystem
-import com.google.inject.AbstractModule
-import com.google.inject.Inject
+import com.google.inject.{ AbstractModule, Inject }
 import com.lightbend.lagom.internal.cluster.JoinClusterImpl
 
 class JoinClusterModule extends AbstractModule {

@@ -1,10 +1,10 @@
 //#add-sbt-plugin
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "X.Y.Z") 
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "X.Y.Z")
 // replace 'X.Y.Z' with your preferred version (e.g. '1.2.0-RC2').
 //#add-sbt-plugin
 
 //#scala-version
-scalaVersion in ThisBuild := "2.11.7"
+scalaVersion in ThisBuild := "2.12.4"
 //#scala-version
 
 //#hello-api

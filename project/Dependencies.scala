@@ -7,29 +7,29 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.7"
-  val PlayJsonVersion = "2.6.7"
+  val PlayVersion = "2.6.11"
+  val PlayJsonVersion = "2.6.8"
   val PlayStandaloneWsVersion = "1.1.3"
   val TwirlVersion = "1.3.12"
-  val PlayFileWatchVersion = "1.0.0"
+  val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.6"
-  val AkkaHttpVersion = "10.0.10"
+  val AkkaVersion = "2.5.9"
+  val AkkaHttpVersion = "10.0.11"
   // Also be sure to update ScalaVersion in docs/build.sbt.
-  val ScalaVersions = Seq("2.11.11", "2.12.4")
-  val SbtScalaVersions = Seq("2.10.6")
-  val AkkaPersistenceCassandraVersion = "0.57"
-  val AkkaPersistenceJdbcVersion = "3.0.1"
+  val ScalaVersions = Seq("2.12.4", "2.11.12")
+  val SbtScalaVersions = Seq("2.10.6", "2.12.4")
+  val AkkaPersistenceCassandraVersion = "0.59"
+  val AkkaPersistenceJdbcVersion = "3.1.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
   val ScalaTestVersion = "3.0.4"
-  val JacksonVersion = "2.8.10"
+  val JacksonVersion = "2.8.11"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.16.Final"
+  val NettyVersion = "4.1.19.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
-  val KafkaVersion = "0.11.0.0"
-  val AkkaStreamKafkaVersion = "0.17"
+  val KafkaVersion = "0.11.0.1"
+  val AkkaStreamKafkaVersion = "0.18"
 
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
@@ -42,7 +42,7 @@ object Dependencies {
   val Slf4jVersion = "1.7.25"
   val LogbackVersion = "1.2.3"
   // Also be sure to update Log4jVersion in docs/build.sbt.
-  val Log4jVersion = "2.8.2"
+  val Log4jVersion = "2.10.0"
 
 
   // Some setup before we start creating ModuleID vals
@@ -66,7 +66,7 @@ object Dependencies {
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
   private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6"
-  private val typesafeConfig = "com.typesafe" % "config" % "1.3.1"
+  private val typesafeConfig = "com.typesafe" % "config" % "1.3.2"
   private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.2"
   private val h2 = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0" excludeAll (excludeSlf4j: _*)
@@ -82,7 +82,7 @@ object Dependencies {
   private val akkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
-  private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.1"
+  private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.2"
 
   private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % AkkaPersistenceJdbcVersion excludeAll (excludeSlf4j: _*)
 
@@ -101,12 +101,14 @@ object Dependencies {
   private val playJava = "com.typesafe.play" %% "play-java" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playAkkaHttpServer = "com.typesafe.play" %% "play-akka-http-server" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion excludeAll (excludeSlf4j: _*)
 
   private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playJson = "com.typesafe.play" %% "play-json" % PlayJsonVersion excludeAll (excludeSlf4j: _*)
   private val playFunctional = "com.typesafe.play" %% "play-functional" % PlayJsonVersion excludeAll (excludeSlf4j: _*)
+  private val playFileWatch = "com.lightbend.play" %% "play-file-watch" % PlayFileWatchVersion excludeAll (excludeSlf4j: _*)
 
   private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.2" excludeAll (excludeSlf4j: _*)
 
@@ -165,10 +167,10 @@ object Dependencies {
       "com.typesafe.play" %% "twirl-api" % TwirlVersion,
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-      "com.zaxxer" % "HikariCP" % "2.7.2",
+      "com.zaxxer" % "HikariCP" % "2.7.5",
       "commons-codec" % "commons-codec" % "1.10",
-      "io.aeron" % "aeron-client" % "1.3.0",
-      "io.aeron" % "aeron-driver" % "1.3.0",
+      "io.aeron" % "aeron-client" % "1.7.0",
+      "io.aeron" % "aeron-driver" % "1.7.0",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.7.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
@@ -180,7 +182,7 @@ object Dependencies {
       "junit" % "junit" % JUnitVersion,
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
-      "org.agrona" % "agrona" % "0.9.6",
+      "org.agrona" % "agrona" % "0.9.12",
       "org.apache.commons" % "commons-lang3" % "3.6",
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
@@ -214,7 +216,7 @@ object Dependencies {
 
     ) ++ crossLibraryFamily("com.typesafe.play", PlayVersion)(
       "play", "play-guice", "play-java", "play-jdbc", "play-jdbc-api",
-      "play-netty-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
+      "play-netty-server", "play-akka-http-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
 
     ) ++ libraryFamily("ch.qos.logback", LogbackVersion)(
       "logback-classic", "logback-core"
@@ -233,7 +235,7 @@ object Dependencies {
       "scala-library", "scala-reflect"
 
     ) ++ libraryFamily("org.slf4j", Slf4jVersion)(
-      "jcl-over-slf4j", "jul-to-slf4j", "log4j-over-slf4j", "slf4j-api"
+      "jcl-over-slf4j", "jul-to-slf4j", "log4j-over-slf4j", "slf4j-api", "slf4j-nop"
     )
   }
 
@@ -402,23 +404,28 @@ object Dependencies {
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
     "junit" % "junit" % JUnitVersion,
 
+    // Without an binding, slf4j will print warnings when running tests
+    "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test,
 
     // Upgrades needed to match whitelist
     "io.netty" % "netty-transport-native-epoll" % NettyVersion
   )
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     akkaStreamTestkit,
     akkaPersistenceCassandraLauncher,
     scalaTest % Test,
     "junit" % "junit" % JUnitVersion,
+
+    // Without an binding, slf4j will print warnings when running tests
+    "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test,
 
     // Upgrades needed to match whitelist
     "io.netty" % "netty-transport-native-epoll" % NettyVersion
@@ -426,6 +433,7 @@ object Dependencies {
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
+    playAkkaHttpServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest,
 
@@ -434,7 +442,7 @@ object Dependencies {
   )
 
   val `integration-tests-scaladsl` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest,
 
@@ -622,9 +630,9 @@ object Dependencies {
   )
 
   val `build-tool-support` = libraryDependencies ++= Seq(
-    "com.lightbend.play" %% "play-file-watch" % PlayFileWatchVersion,
     playExceptions,
     playBuildLink,
+    playFileWatch,
     // This is used in the code to check if the embedded cassandra server is started
     cassandraDriverCore,
     scalaTest % Test
@@ -660,7 +668,7 @@ object Dependencies {
   )
 
   val `service-locator` = libraryDependencies ++= Seq(
-    playNettyServer,
+    playAkkaHttpServer,
     akkaHttpCore,
     scalaTest % Test,
 

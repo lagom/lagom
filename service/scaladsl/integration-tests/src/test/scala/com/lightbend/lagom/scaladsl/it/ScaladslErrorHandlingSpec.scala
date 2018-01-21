@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.scaladsl.it
 
@@ -8,7 +8,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{ Sink, Source }
 import akka.util.ByteString
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceClient
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, ServiceCall }
+import com.lightbend.lagom.scaladsl.api.{ AdditionalConfiguration, Descriptor, ServiceCall }
 import com.lightbend.lagom.scaladsl.api.Descriptor.{ Call, CallId, NamedCallId, RestCallId }
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodServiceCall
 import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.{ NegotiatedDeserializer, NegotiatedSerializer }
@@ -20,7 +20,7 @@ import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import org.scalatest.{ Matchers, WordSpec }
 import play.api.libs.streams.AkkaStreams
-import play.api.{ Environment, Mode }
+import play.api.{ Configuration, Environment, Mode }
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.immutable
@@ -42,61 +42,66 @@ import scala.util.control.NonFatal
  */
 class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
 
-  "Service error handling" when {
-    "handling errors with plain HTTP calls" should {
-      tests(RestCallId(Method.POST, "/mock/:id")) { implicit mat => client =>
-        val result = client.mockCall(1).invoke(new MockRequestEntity("b", 2))
-        try {
-          Await.result(result, 10.seconds)
-          throw sys.error("Did not fail")
-        } catch {
-          case NonFatal(other) => other
+  List(AkkaHttp, Netty).foreach { implicit backend =>
+
+    s"Service error handling (${backend.codeName})" when {
+      "handling errors with plain HTTP calls" should {
+        tests(RestCallId(Method.POST, "/mock/:id")) { implicit mat => client =>
+          val result = client.mockCall(1).invoke(new MockRequestEntity("b", 2))
+          try {
+            Await.result(result, 10.seconds)
+            throw sys.error("Did not fail")
+          } catch {
+            case NonFatal(other) => other
+          }
         }
       }
-    }
 
-    "handling errors with streamed response calls" should {
-      tests(NamedCallId("streamResponse")) { implicit mat => client =>
-        val result = client.streamResponse.invoke(new MockRequestEntity("b", 2))
-        try {
-          val resultSource = Await.result(result, 10.seconds)
-          Await.result(resultSource.runWith(Sink.ignore), 10.seconds)
-          throw sys.error("No error was thrown")
-        } catch {
-          case NonFatal(other) => other
+      "handling errors with streamed response calls" should {
+        tests(NamedCallId("streamResponse")) { implicit mat => client =>
+          val result = client.streamResponse.invoke(new MockRequestEntity("b", 2))
+          try {
+            val resultSource = Await.result(result, 10.seconds)
+            Await.result(resultSource.runWith(Sink.ignore), 10.seconds)
+            throw sys.error("No error was thrown")
+          } catch {
+            case NonFatal(other) => other
+          }
         }
       }
-    }
 
-    "handling errors with streamed request calls" should {
-      tests(NamedCallId("streamRequest")) { implicit mat => client =>
-        val result = client.streamRequest
-          .invoke(Source.single(new MockRequestEntity("b", 2)).concat(Source.maybe))
-        try {
-          Await.result(result, 10.seconds)
-          throw sys.error("No error was thrown")
-        } catch {
-          case NonFatal(other) => other
+      "handling errors with streamed request calls" should {
+        tests(NamedCallId("streamRequest")) { implicit mat => client =>
+          val result = client.streamRequest
+            .invoke(Source.single(new MockRequestEntity("b", 2)).concat(Source.maybe))
+          try {
+            Await.result(result, 10.seconds)
+            throw sys.error("No error was thrown")
+          } catch {
+            case NonFatal(other) => other
+          }
         }
       }
-    }
 
-    "handling errors with bidirectional streamed calls" should {
-      tests(NamedCallId("bidiStream")) { implicit mat => client =>
-        val result = client.bidiStream
-          .invoke(Source.single(new MockRequestEntity("b", 2)).concat(Source.maybe))
-        try {
-          val resultSource = Await.result(result, 10.seconds)
-          Await.result(resultSource.runWith(Sink.ignore), 10.seconds)
-          throw sys.error("No error was thrown")
-        } catch {
-          case NonFatal(other) => other
+      "handling errors with bidirectional streamed calls" should {
+        tests(NamedCallId("bidiStream")) { implicit mat => client =>
+          val result = client.bidiStream
+            .invoke(Source.single(new MockRequestEntity("b", 2)).concat(Source.maybe))
+          try {
+            val resultSource = Await.result(result, 10.seconds)
+            Await.result(resultSource.runWith(Sink.ignore), 10.seconds)
+            throw sys.error("No error was thrown")
+          } catch {
+            case NonFatal(other) => other
+          }
         }
       }
     }
   }
 
-  def tests(callId: CallId)(makeCall: Materializer => MockService => Throwable) = {
+  def tests(
+    callId: CallId
+  )(makeCall: Materializer => MockService => Throwable)(implicit httpBackend: HttpBackend) = {
     "handle errors in request serialization" in withClient(changeClient = change(callId)(failingRequestSerializer)) { implicit mat => client =>
       makeCall(mat)(client) match {
         case e: SerializationException =>
@@ -200,13 +205,21 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
   /**
    * This sets up the server and the client, but allows them to be modified before actually creating them.
    */
-  def withClient(changeClient: Descriptor => Descriptor = identity, changeServer: Descriptor => Descriptor = identity,
-                 mode: Mode = Mode.Prod)(block: Materializer => MockService => Unit): Unit = {
+  def withClient(
+    changeClient: Descriptor => Descriptor = identity,
+    changeServer: Descriptor => Descriptor = identity,
+    mode:         Mode                     = Mode.Prod
+  )(block: Materializer => MockService => Unit)(implicit httpBackend: HttpBackend): Unit = {
 
     ServiceTest.withServer(ServiceTest.defaultSetup) { ctx =>
       new LagomApplication(ctx) with AhcWSComponents with LocalServiceLocator {
         override lazy val lagomServer = serverFor[MockService](new MockServiceImpl)
         override lazy val environment = Environment.simple(mode = mode)
+
+        override def additionalConfiguration: AdditionalConfiguration =
+          super.additionalConfiguration ++ Configuration.from(Map(
+            "play.server.provider" -> httpBackend.provider
+          ))
 
         // Custom server builder to inject our changeServer callback
         override lazy val lagomServerBuilder = new LagomServerBuilder(httpConfiguration, new ServiceResolver {

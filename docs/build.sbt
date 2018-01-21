@@ -1,14 +1,15 @@
-val ScalaVersion = "2.11.11"
+val ScalaVersion = "2.12.4"
 
-val AkkaVersion = "2.5.6"
+val AkkaVersion = "2.5.9"
 val JUnitVersion = "4.11"
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion = "3.0.4"
-val PlayVersion = "2.6.7"
-val Log4jVersion = "2.8.2"
+val PlayVersion = "2.6.11"
+val Log4jVersion = "2.10.0"
 val MacWireVersion = "2.3.0"
-val LombokVersion = "1.16.10"
-val HibernateVersion = "5.2.5.Final"
+val LombokVersion = "1.16.20"
+val HibernateVersion = "5.2.12.Final"
+val ValidationApiVersion = "2.0.1.Final"
 
 val branch = {
   val rev = "git rev-parse --abbrev-ref HEAD".!!.trim
@@ -31,13 +32,13 @@ lazy val docs = project
       "junit" % "junit" % JUnitVersion % "test",
       "com.novocode" % "junit-interface" % JUnitInterfaceVersion % "test",
       "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
-      "com.typesafe.play" %% "play-netty-server" % PlayVersion % Test,
+      "com.typesafe.play" %% "play-akka-http-server" % PlayVersion % Test,
       "com.typesafe.play" %% "play-logback" % PlayVersion % Test,
       "org.apache.logging.log4j" % "log4j-api" % Log4jVersion % "test",
       "com.softwaremill.macwire" %% "macros" % MacWireVersion % "provided",
       "org.projectlombok" % "lombok" % LombokVersion,
       "org.hibernate" % "hibernate-core" % HibernateVersion,
-      "org.hibernate" % "hibernate-validator" % HibernateVersion
+      "javax.validation" % "validation-api" % ValidationApiVersion
     ),
     javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
     testOptions in Test += Tests.Argument("-oDF"),

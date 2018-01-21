@@ -10,9 +10,15 @@ import lagom.Protobuf
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import de.heikoseeberger.sbtheader.{ HeaderKey, HeaderPattern }
 import com.typesafe.tools.mima.core._
+import sbt.CrossVersion._
 
 // Turn off "Resolving" log messages that clutter build logs
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
+
+def defineSbtVersion(scalaBinVer: String): String = scalaBinVer match {
+  case "2.12" => "1.0.2"
+  case _ => "0.13.16"
+}
 
 def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   organization := "com.lightbend.lagom",
@@ -24,14 +30,14 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
      "scala" -> (
        HeaderPattern.cStyleBlockComment,
        """|/*
-          | * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+          | * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
           | */
           |""".stripMargin
      ),
      "java" -> (
        HeaderPattern.cStyleBlockComment,
        """|/*
-          | * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+          | * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
           | */
           |""".stripMargin
      )
@@ -129,13 +135,7 @@ def releaseStepCommandAndRemaining(command: String): State => State = { original
 
 def runtimeScalaSettings: Seq[Setting[_]] = Seq(
   crossScalaVersions := Dependencies.ScalaVersions,
-  scalaVersion := Dependencies.ScalaVersions.head
-)
-
-def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
-  Dependencies.validateDependenciesSetting,
-  Dependencies.pruneWhitelistSetting,
-  Dependencies.dependencyWhitelistSetting,
+  scalaVersion := Dependencies.ScalaVersions.head,
 
   // compile options
   scalacOptions in Compile ++= Seq(
@@ -146,7 +146,13 @@ def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
     "-unchecked",
     "-Xlog-reflective-calls",
     "-deprecation"
-  ),
+  )
+)
+
+def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
+  Dependencies.validateDependenciesSetting,
+  Dependencies.pruneWhitelistSetting,
+  Dependencies.dependencyWhitelistSetting,
 
   incOptions := incOptions.value.withNameHashing(true),
 
@@ -341,6 +347,11 @@ val otherProjects = devEnvironmentProjects ++ Seq[Project](
   `macro-testkit`
 )
 
+val sbtScriptedProjects = Seq[Project](
+  `sbt-scripted-tools`,
+  `sbt-scripted-library`
+)
+
 lazy val root = (project in file("."))
   .settings(name := "lagom")
   .settings(runtimeLibCommon: _*)
@@ -360,7 +371,7 @@ lazy val root = (project in file("."))
     whitesourceAggregateProjectName in ThisBuild  := sys.env.getOrElse("WHITESOURCE_PROJECT_NAME", default = "invalid"),
     whitesourceAggregateProjectToken in ThisBuild := sys.env.getOrElse("WHITESOURCE_PROJECT_TOKEN", default = "invalid")
   )
-  .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects).map(Project.projectToRef): _*)
+  .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects).map(Project.projectToRef): _*)
 
   credentials += Credentials(realm = "whitesource",
       host = "whitesourcesoftware.com",
@@ -531,7 +542,10 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.server.LagomServiceBinding.router"),
       ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServiceBinding.router"),
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.router"),
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.router")
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.router"),
+
+      // changed signature of a method in a private class in https://github.com/lagom/lagom/pull/1109
+      ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.server.ActorSystemProvider.start")
     )
   )
   .enablePlugins(RuntimeLibPlugins)
@@ -550,16 +564,11 @@ lazy val `testkit-core` = (project in file("testkit/core"))
 
 lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
   .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings(since10): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-javadsl-testkit",
-    Dependencies.`testkit-javadsl`,
-    mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest$Setup"),
-      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.testkit.ServiceTest$Setup$")
-    )
+    Dependencies.`testkit-javadsl`
   )
   .dependsOn(
     `testkit-core`,
@@ -573,18 +582,11 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
   .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings(since13): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-scaladsl-testkit",
-    Dependencies.`testkit-scaladsl`,
-    mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.TopicStub#SubscriberStub.this"),
-
-      // See https://github.com/lagom/lagom/pull/1081 for justification for this breaking change
-      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.testkit.PersistentEntityTestDriver.runOne")
-    )
+    Dependencies.`testkit-scaladsl`
   )
   .dependsOn(
     `testkit-core`,
@@ -640,10 +642,11 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // to avoid new JVM for each test, see http://www.scala-sbt.org/release/docs/Testing.html
   val javaOptions = Seq("-Xms256M", "-Xmx512M")
   tests map { test =>
-    new Tests.Group(
+    Tests.Group(
       name = test.name,
       tests = Seq(test),
-      runPolicy = Tests.SubProcess(ForkOptions(runJVMOptions = javaOptions)))
+      runPolicy = Tests.SubProcess(ForkOptions(runJVMOptions = javaOptions))
+    )
   }
 }
 
@@ -728,7 +731,11 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.TestUtil$AwaitPersistenceInit"),
 
       // package private
-      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistNone")
+      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$PersistNone"),
+
+      // writeReplace method should never have been public, and it only throws an exception, so nothing
+      // lost by hiding it.
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntityRef.writeReplace")
     ),
     Dependencies.`persistence-javadsl`
   )
@@ -822,7 +829,7 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
     Dependencies.`persistence-jdbc-javadsl`
   )
   .dependsOn(
-    `persistence-jdbc-core`,
+    `persistence-jdbc-core` % "compile;test->test",
     `persistence-core` % "compile;test->test",
     `persistence-javadsl` % "compile;test->test",
     logback % Test
@@ -843,7 +850,7 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
     )
   )
   .dependsOn(
-    `persistence-jdbc-core`,
+    `persistence-jdbc-core` % "compile;test->test",
     `persistence-core` % "compile;test->test",
     `persistence-scaladsl` % "compile;test->test",
     logback % Test
@@ -988,6 +995,7 @@ lazy val log4j2 = (project in file("log4j2"))
 lazy val devEnvironmentProjects = Seq[Project](
   `reloadable-server`,
   `build-tool-support`,
+  `sbt-build-tool-support`,
   `sbt-plugin`,
   `maven-plugin`,
   `service-locator`,
@@ -1026,11 +1034,32 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     publishMavenStyle := true,
     crossScalaVersions := Dependencies.SbtScalaVersions,
     scalaVersion := Dependencies.SbtScalaVersions.head,
+    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     crossPaths := false,
     sourceGenerators in Compile += Def.task {
       Generators.version(version.value, (sourceManaged in Compile).value)
     }.taskValue,
     Dependencies.`build-tool-support`
+  )
+
+// This is almost the sabe as `build-tool-support`, but targeting sbt
+// while `build-tool-support` targets Maven and possibly other build
+// systems. We did something similar for routes compiler in Play:
+//
+// https://github.com/playframework/playframework/blob/2.6.7/framework/build.sbt#L27-L40
+lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-support")
+  .settings(common: _*)
+  .settings(
+    name := "lagom-sbt-build-tool-support",
+    crossScalaVersions := Dependencies.SbtScalaVersions,
+    scalaVersion := Dependencies.SbtScalaVersions.head,
+    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
+    sbtPlugin := true,
+    sourceGenerators in Compile += Def.task {
+      Generators.version(version.value, (sourceManaged in Compile).value)
+    }.taskValue,
+    Dependencies.`build-tool-support`,
+    target := target.value / "lagom-sbt-build-tool-support"
   )
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
@@ -1042,10 +1071,15 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     sbtPlugin := true,
     crossScalaVersions := Dependencies.SbtScalaVersions,
     scalaVersion := Dependencies.SbtScalaVersions.head,
+    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     Dependencies.`sbt-plugin`,
-    addSbtPlugin(
-      ("com.typesafe.play" % "sbt-plugin" % Dependencies.PlayVersion)
-        .exclude("org.slf4j", "slf4j-simple")),
+    libraryDependencies ++= Seq(
+      Defaults.sbtPluginExtra(
+        "com.typesafe.play" % "sbt-plugin" % Dependencies.PlayVersion,
+        CrossVersion.binarySbtVersion((sbtVersion in pluginCrossBuild).value),
+        CrossVersion.binaryScalaVersion(scalaVersion.value)
+      ).exclude("org.slf4j", "slf4j-simple")
+    ),
     scriptedDependencies := {
       val () = scriptedDependencies.value
       val () = publishLocal.value
@@ -1060,7 +1094,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
       } else publishTo.value
     },
     publishMavenStyle := isSnapshot.value
-  ).dependsOn(`build-tool-support`)
+  ).dependsOn(`sbt-build-tool-support`)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .enablePlugins(lagom.SbtMavenPlugin)
@@ -1077,9 +1111,6 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
       "-XX:MaxMetaspaceSize=384m",
       s"-Dlagom.version=${version.value}",
       s"-DarchetypeVersion=${version.value}",
-      s"-Dplay.version=${Dependencies.PlayVersion}",
-      s"-Dakka.version=${Dependencies.AkkaVersion}",
-      s"-Dscala.binary.version=${(scalaBinaryVersion in `api-javadsl`).value}",
       "-Dorg.slf4j.simpleLogger.showLogName=false",
       "-Dorg.slf4j.simpleLogger.showThreadName=false"
     )
@@ -1151,20 +1182,30 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
       crossPaths := false,
       autoScalaLibrary := false,
       scalaVersion := Dependencies.ScalaVersions.head,
-      pomExtra := pomExtra.value :+ {
+      pomExtra := pomExtra.value :+
+        {
+
         val lagomDeps = Def.settingDyn {
-          val sv = scalaVersion.value
-          val sbv = scalaBinaryVersion.value
+
+          // all Lagom artifacts are cross compiled
           (javadslProjects ++ coreProjects).map { project =>
             Def.setting {
-              val cross = CrossVersion((crossVersion in project).value, sv, sbv)
+
               val artifactName = (artifact in project).value.name
-              val artifactId = cross.fold(artifactName)(_(artifactName))
-              <dependency>
-                <groupId>{(organization in project).value}</groupId>
-                <artifactId>{artifactId}</artifactId>
-                <version>{(version in project).value}</version>
-              </dependency>
+
+              Dependencies.ScalaVersions.map { supportedVersion =>
+                // we are sure this won't be a None
+                val crossFunc =
+                  CrossVersion(new Binary(binaryScalaVersion), supportedVersion, binaryScalaVersion(supportedVersion)).get
+                // convert artifactName to match the desired scala version
+                val artifactId = crossFunc(artifactName)
+
+                <dependency>
+                  <groupId>{(organization in project).value}</groupId>
+                  <artifactId>{artifactId}</artifactId>
+                  <version>{(version in project).value}</version>
+                </dependency>
+              }
             }
           }.join
         }.value
@@ -1172,14 +1213,38 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
         <dependencyManagement>
           <dependencies>
             {lagomDeps}
-            {Dependencies.DependencyWhitelist.value.map { dep =>
-              val crossDep = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)(dep)
-              <dependency>
-                <groupId>{crossDep.organization}</groupId>
-                <artifactId>{crossDep.name}</artifactId>
-                <version>{crossDep.revision}</version>
-              </dependency>
-            }}
+            {
+              // here we generate all non-Lagom dependencies
+              // some are cross compiled, others are simply java deps.
+              Dependencies.DependencyWhitelist.value
+                // remove any scala-lang deps, they must be included transitively
+                .filterNot(_.organization.startsWith("org.scala-lang"))
+                .map { dep =>
+
+                  // bloody hack! We first need to discovery if a module is a scala deps or not
+                  val moduleCrossVersion = CrossVersion(dep.crossVersion, scalaVersion.value, scalaBinaryVersion.value)
+
+                  if (moduleCrossVersion.isEmpty) {
+                      // if not a Scala dependency, add it as is
+                      <dependency>
+                        <groupId>{dep.organization}</groupId>
+                        <artifactId>{dep.name}</artifactId>
+                        <version>{dep.revision}</version>
+                      </dependency>
+                  } else {
+                    // if it's a Scala dependency,
+                    // generate <dependency> block for each supported scala version
+                    Dependencies.ScalaVersions.map { supportedVersion =>
+                      val crossDep = CrossVersion(supportedVersion, binaryScalaVersion(supportedVersion))(dep)
+                        <dependency>
+                          <groupId>{crossDep.organization}</groupId>
+                          <artifactId>{crossDep.name}</artifactId>
+                          <version>{crossDep.revision}</version>
+                        </dependency>
+                    }
+                  }
+              }
+            }
           </dependencies>
         </dependencyManagement>
       }
@@ -1196,13 +1261,18 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
   .settings(
     sbtPlugin := true,
     crossScalaVersions := Dependencies.SbtScalaVersions,
-    scalaVersion := Dependencies.SbtScalaVersions.head
+    scalaVersion := Dependencies.SbtScalaVersions.head,
+    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value)
   ).dependsOn(`sbt-plugin`)
 
 // This project also get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-library")
   .settings(name := "lagom-sbt-scripted-library")
   .settings(runtimeLibCommon: _*)
+  .settings(
+    PgpKeys.publishSigned := {},
+    publish := {}
+  )
   .dependsOn(`server-javadsl`)
 
 lazy val `service-locator` = (project in file("dev") / "service-registry" / "service-locator")

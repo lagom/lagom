@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.it
 
@@ -16,12 +16,28 @@ import akka.japi.function.Procedure
 import com.lightbend.lagom.javadsl.testkit.ServiceTest
 import com.lightbend.lagom.javadsl.testkit.ServiceTest.TestServer
 
+sealed trait HttpBackend {
+  final val provider: String = s"play.core.server.${codeName}ServerProvider"
+  val codeName: String
+}
+
+case object AkkaHttp extends HttpBackend {
+  val codeName = "AkkaHttp"
+}
+
+case object Netty extends HttpBackend {
+  val codeName = "Netty"
+}
+
 trait ServiceSupport extends WordSpecLike with Matchers with Inside {
 
-  def withServer(configureBuilder: GuiceApplicationBuilder => GuiceApplicationBuilder)(block: Application => Unit): Unit = {
+  def withServer(
+    configureBuilder: GuiceApplicationBuilder => GuiceApplicationBuilder
+  )(block: Application => Unit)(implicit httpBackend: HttpBackend): Unit = {
     val jConfigureBuilder = new JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder] {
       override def apply(b: GuiceApplicationBuilder): GuiceApplicationBuilder = {
         configureBuilder(b)
+          .configure("play.server.provider", httpBackend.provider)
       }
     }
     val jBlock = new Procedure[TestServer] {
@@ -33,7 +49,9 @@ trait ServiceSupport extends WordSpecLike with Matchers with Inside {
     ServiceTest.withServer(setup, jBlock)
   }
 
-  def withClient[T: ClassTag](configureBuilder: GuiceApplicationBuilder => GuiceApplicationBuilder)(block: Application => T => Unit): Unit = {
+  def withClient[T: ClassTag](
+    configureBuilder: GuiceApplicationBuilder => GuiceApplicationBuilder
+  )(block: Application => T => Unit)(implicit httpBackend: HttpBackend): Unit = {
     withServer(configureBuilder) { application =>
       val client = application.injector.instanceOf[T]
       block(application)(client)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.maven
 
@@ -32,19 +32,28 @@ class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProx
   var cassandraCleanOnStart: Boolean = _
   @BeanProperty // I'm not sure if it's possible to specify a default value for a literal list in plugin.xml, so specify it here.
   var cassandraJvmOptions: JList[String] = Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099").asJava
+  @BeanProperty
+  var cassandraYamlFile: File = _
 
   override def execute(): Unit = {
     if (cassandraEnabled) {
       // Configure logging to quieten the Cassandra driver
       mavenLoggerManager.getLoggerForComponent("com.datastax").setThreshold(Logger.LEVEL_DISABLED)
 
-      val cp = facade.resolveArtifact(new DefaultArtifact("com.lightbend.lagom", "lagom-cassandra-server_2.11",
-        "jar", LagomVersion.current))
+      val cp = facade.resolveArtifact(new DefaultArtifact("com.lightbend.lagom", "lagom-cassandra-server_2.12", "jar", LagomVersion.current))
 
       val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
 
-      Servers.CassandraServer.start(logger, scalaClassLoader, cp.map(_.getFile), cassandraPort, cassandraCleanOnStart,
-        cassandraJvmOptions.asScala, cassandraMaxBootWaitingSeconds.seconds)
+      Servers.CassandraServer.start(
+        log = logger,
+        parentClassLoader = scalaClassLoader,
+        classpath = cp.map(_.getFile),
+        port = cassandraPort,
+        cleanOnStart = cassandraCleanOnStart,
+        jvmOptions = cassandraJvmOptions.asScala,
+        yamlConfig = this.cassandraYamlFile,
+        maxWaiting = cassandraMaxBootWaitingSeconds.seconds
+      )
     }
   }
 }
@@ -80,8 +89,7 @@ class StartKafkaMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, m
     if (kafkaEnabled) {
 
       val dependency = {
-        val artifact = new DefaultArtifact("com.lightbend.lagom", "lagom-kafka-server_2.11",
-          "jar", LagomVersion.current)
+        val artifact = new DefaultArtifact("com.lightbend.lagom", "lagom-kafka-server_2.12", "jar", LagomVersion.current)
         new Dependency(artifact, "runtime")
       }
       val cp = facade.resolveArtifact(dependency.getArtifact)
@@ -106,7 +114,16 @@ class StartKafkaMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, m
       // properties file doesn't need to be provided by users, in which case the default one included with Lagom will be used
       val kafkaPropertiesFile = Option(this.kafkaPropertiesFile)
 
-      Servers.KafkaServer.start(logger, cp.map(_.getFile), kafkaPort, zookeeperPort, kafkaPropertiesFile, kafkaJvmOptions.asScala, targetDir, kafkaCleanOnStart)
+      Servers.KafkaServer.start(
+        log = logger,
+        cp = cp.map(_.getFile),
+        kafkaPort = kafkaPort,
+        zooKeeperPort = zookeeperPort,
+        kafkaPropertiesFile = kafkaPropertiesFile,
+        jvmOptions = kafkaJvmOptions.asScala,
+        targetDir = targetDir,
+        cleanOnStart = kafkaCleanOnStart
+      )
     }
   }
 }
@@ -150,8 +167,7 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
   override def execute(): Unit = {
 
     if (serviceLocatorEnabled) {
-      val cp = facade.resolveArtifact(new DefaultArtifact("com.lightbend.lagom", "lagom-service-locator_2.11",
-        "jar", LagomVersion.current))
+      val cp = facade.resolveArtifact(new DefaultArtifact("com.lightbend.lagom", "lagom-service-locator_2.12", "jar", LagomVersion.current))
 
       val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
 

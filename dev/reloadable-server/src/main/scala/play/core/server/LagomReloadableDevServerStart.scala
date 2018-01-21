@@ -1,9 +1,10 @@
 /*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 package play.core.server
 
 import java.io.File
+import java.net.InetAddress
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
@@ -23,6 +24,15 @@ import scala.util.{ Failure, Success, Try }
  * is reloaded whenever its source changes.
  */
 object LagomReloadableDevServerStart {
+
+  /**
+   * A threshold for retrieving the current hostname.
+   *
+   * If Lagom startup takes too long, it can cause a number of issues and we try to detect it using
+   * InetAddress.getLocalHost. If it takes longer than this threshold, it might be a signal
+   * of a well-known problem with MacOS that might cause issues with Lagom.
+   */
+  private val startupWarningThreshold = 1000L
 
   /**
    * Provides an HTTPS-only server for the dev environment.
@@ -81,6 +91,14 @@ object LagomReloadableDevServerStart {
             System.out.println("\n---- The where is Scala? test ----\n")
             System.out.println(this.getClass.getClassLoader.getResource("scala/Predef$.class"))
           }
+        }
+
+        val before = System.currentTimeMillis()
+        val address = InetAddress.getLocalHost
+        val after = System.currentTimeMillis()
+        if (after - before > startupWarningThreshold) {
+          println(play.utils.Colors.red("WARNING: Retrieving local host name ${address} took more than ${startupWarningThreshold}ms, this can create problems at startup with Lagom"))
+          println(play.utils.Colors.red("If you are using macOS, see https://thoeni.io/post/macos-sierra-java/ for a potential solution"))
         }
 
         // First delete the default log file for a fresh start (only in Dev Mode)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.javadsl.client.integration;
 
@@ -10,6 +10,8 @@ import akka.stream.Materializer;
 import com.lightbend.lagom.internal.client.CircuitBreakerConfig;
 import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl;
 import com.lightbend.lagom.internal.client.WebSocketClient;
+import com.lightbend.lagom.internal.client.WebSocketClientConfig;
+import com.lightbend.lagom.internal.client.WebSocketClientConfig$;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactoryProvider;
 import com.lightbend.lagom.internal.javadsl.client.JavadslServiceClientImplementor;
@@ -194,9 +196,11 @@ public class LagomClientFactory implements Closeable {
         AhcWSClientConfig ahcWSClientConfig = new AhcWSClientConfigParser(wsClientConfig, configuration, environment.classLoader()).parse();
         WSClient wsClient = AhcWSClient.apply(ahcWSClientConfig, scala.Option.empty(), materializer);
 
+
         // WebSocketClient
+	WebSocketClientConfig webSocketClientConfig = WebSocketClientConfig$.MODULE$.apply(configuration);
         // Use dummy lifecycle, we manage the lifecycle manually
-        JavadslWebSocketClient webSocketClient = new JavadslWebSocketClient(environment, eventLoop, new ApplicationLifecycle() {
+        JavadslWebSocketClient webSocketClient = new JavadslWebSocketClient(environment, webSocketClientConfig, eventLoop, new ApplicationLifecycle() {
             @Override
             public void addStopHook(Function0<Future<?>> hook) {
             }

@@ -1,7 +1,7 @@
 import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 import com.lightbend.lagom.sbt.Internal
 
-scalaVersion in ThisBuild := Option(System.getProperty("scala.version")).getOrElse("2.11.7")
+scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.4")
 
 interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 

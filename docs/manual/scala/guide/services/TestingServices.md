@@ -58,11 +58,17 @@ The server is by default running with [[pubsub|PubSub]], [[cluster|Cluster]] and
 
 @[enable-cluster](code/TestingServices.scala)
 
-If your service needs [[persistence|PersistentEntity]] you will need to enable it explicitly. Cassandra Persistence requires clustering, so when you enable Cassandra, cluster will also be enabled automatically. Enable Cassandra Persistence:
+If your service needs [[persistence|PersistentEntity]] you will need to enable it explicitly. This can be done by enabling Cassandra or JDBC, depending on which kind of persistence is used by your service. In any case, Lagom persistence requires clustering, so when when enabling one or another, cluster will also be enabled automatically.
+
+To enable Cassandra Persistence:
 
 @[enable-cassandra](code/TestingServices.scala)
 
-There's no way to explicitly enable or disable [[pubsub|PubSub]]. When cluster is enabled (either explicitly or transitively via enabling Cassandra), pubsub will be available.
+To enable JDBC Persistence:
+
+@[enable-jdbc](code/TestingServices.scala)
+
+There's no way to explicitly enable or disable [[pubsub|PubSub]]. When cluster is enabled (either explicitly or transitively via enabling Cassandra or JDBC), pubsub will be available.
 
 ## How to test several services
 
@@ -74,11 +80,11 @@ Let's say we have a service that has streaming request and/or response parameter
 
 @[echo-service](code/TestingServices.scala)
 
-When writing tests for that the [Akka Streams TestKit](http://doc.akka.io/docs/akka/2.4/java/stream/stream-testkit.html#Streams_TestKit) is very useful. We use the Streams TestKit together with the Lagom `ServiceTest` utilities:
+When writing tests for that the [Akka Streams TestKit](https://doc.akka.io/docs/akka/2.5/stream/stream-testkit.html?language=scala#streams-testkit) is very useful. We use the Streams TestKit together with the Lagom `ServiceTest` utilities:
 
 @[echo-service-spec](code/TestingServices.scala)
 
-Read more about it in the documentation of the [Akka Streams TestKit](http://doc.akka.io/docs/akka/2.4/java/stream/stream-testkit.html#Streams_TestKit).
+Read more about it in the documentation of the [Akka Streams TestKit](https://doc.akka.io/docs/akka/2.5/stream/stream-testkit.html?language=scala#streams-testkit).
 
 ## How to test a persistent entity
 

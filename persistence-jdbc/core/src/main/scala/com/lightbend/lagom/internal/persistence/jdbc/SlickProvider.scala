@@ -1,11 +1,10 @@
 /*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.internal.persistence.jdbc
 
 import java.sql.Connection
 import java.util.concurrent.TimeUnit
-import javax.naming.{ Context, InitialContext }
 
 import akka.Done
 import akka.actor.ActorSystem
@@ -16,7 +15,6 @@ import akka.persistence.jdbc.util.{ SlickDatabase, SlickDriver }
 import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import org.slf4j.LoggerFactory
-import play.api.db.DBApi
 import slick.jdbc.meta.MTable
 import slick.jdbc.{ H2Profile, JdbcProfile, MySQLProfile, PostgresProfile }
 
@@ -24,9 +22,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
 
-private[lagom] class SlickProvider(
-  system: ActorSystem,
-  dbApi:  DBApi /* Ensures database is initialised before we start anything that needs it */ )(implicit ec: ExecutionContext) {
+private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -37,14 +33,6 @@ private[lagom] class SlickProvider(
   private val slickConfig = new SlickConfiguration(readSideConfig)
 
   val autoCreateTables: Boolean = createTables.getBoolean("auto")
-
-  if (dbApi != null) {
-    // Work around https://github.com/playframework/playframework/issues/7262
-    // Set the system property
-    System.setProperty(Context.PROVIDER_URL, "/")
-    // Rebind the datasource
-    new InitialContext().rebind("DefaultDS", dbApi.database("default").dataSource)
-  }
 
   val db = SlickDatabase.forConfig(readSideConfig, slickConfig)
   val profile = SlickDriver.forDriverName(readSideConfig)
@@ -216,4 +204,5 @@ private[lagom] class SlickProvider(
         task.askExecute()
     }
   }
+
 }

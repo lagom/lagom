@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.javadsl.testkit
 
@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 import java.util.function.{ Function => JFunction }
 
 import scala.annotation.tailrec
-import scala.concurrent.Promise
+import scala.concurrent.{ Future, Promise }
 import scala.concurrent.duration._
 import scala.util.Try
 import scala.util.control.NonFatal
@@ -24,6 +24,7 @@ import akka.japi.function.Effect
 import akka.japi.function.Procedure
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.Materializer
+import com.google.common.io.{ MoreFiles, RecursiveDeleteOption }
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.persistence.testkit.CassandraTestConfig
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
@@ -32,8 +33,7 @@ import play.Application
 import play.api.Logger
 import play.api.Mode
 import play.api.Play
-import play.api.inject.BindingKey
-import play.api.inject.{ bind => sBind }
+import play.api.inject.{ ApplicationLifecycle, BindingKey, DefaultApplicationLifecycle, bind => sBind }
 import play.core.server.Server
 import play.core.server.ServerConfig
 import play.core.server.ServerProvider
@@ -84,6 +84,36 @@ object ServiceTest {
      */
     def withCassandra(enabled: Boolean): Setup
 
+    /**
+     * Enable Cassandra.
+     *
+     * If enabled, this will start an embedded Cassandra server before the tests start, and shut it down afterwards.
+     * It will also configure Lagom to use the embedded Cassandra server. Enabling Cassandra will also enable the
+     * cluster.
+     *
+     * @return A copy of this setup.
+     */
+    def withCassandra(): Setup = withCassandra(true)
+
+    /**
+     * Enable or disable JDBC.
+     *
+     * Enabling JDBC will also enable the cluster.
+     *
+     * @param enabled True if JDBC should be enabled, or false if disabled.
+     * @return A copy of this setup.
+     */
+    def withJdbc(enabled: Boolean): Setup
+
+    /**
+     * Enable JDBC.
+     *
+     * Enabling JDBC will also enable the cluster.
+     *
+     * @return A copy of this setup.
+     */
+    def withJdbc(): Setup = withJdbc(true)
+
     @deprecated(message = "Use configureBuilder instead", since = "1.2.0")
     def withConfigureBuilder(configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]) =
       this.configureBuilder(configureBuilder)
@@ -100,7 +130,7 @@ object ServiceTest {
     def configureBuilder(configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]): Setup
 
     /**
-     * Enable clustering.
+     * Enable or disable clustering.
      *
      * Disabling this will automatically disable any persistence plugins, since persistence requires clustering.
      *
@@ -110,9 +140,23 @@ object ServiceTest {
     def withCluster(enabled: Boolean): Setup
 
     /**
+     * Enable clustering.
+     *
+     * Disabling this will automatically disable any persistence plugins, since persistence requires clustering.
+     *
+     * @return A copy of this setup.
+     */
+    def withCluster(): Setup = withCluster(true)
+
+    /**
      * Whether Cassandra is enabled.
      */
     def cassandra: Boolean
+
+    /**
+     * Whether JDBC is enabled.
+     */
+    def jdbc: Boolean
 
     /**
      * Whether clustering is enabled.
@@ -126,11 +170,16 @@ object ServiceTest {
 
   }
 
-  private case class SetupImpl(cassandra: Boolean, cluster: Boolean,
-                               configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]) extends Setup {
+  private case class SetupImpl(
+    cassandra:        Boolean,
+    jdbc:             Boolean,
+    cluster:          Boolean,
+    configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]
+  ) extends Setup {
 
     def this() = this(
       cassandra = false,
+      jdbc = false,
       cluster = false,
       configureBuilder = new JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder] {
       override def apply(b: GuiceApplicationBuilder): GuiceApplicationBuilder = b
@@ -144,6 +193,13 @@ object ServiceTest {
         copy(cassandra = false)
       }
     }
+
+    override def withJdbc(enabled: Boolean): Setup =
+      if (enabled) {
+        copy(jdbc = true, cluster = true)
+      } else {
+        copy(jdbc = false)
+      }
 
     override def configureBuilder(configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]): Setup = {
       copy(configureBuilder = configureBuilder)
@@ -199,7 +255,6 @@ object ServiceTest {
     def stop(): Unit = {
       Try(Play.stop(app.getWrappedApplication))
       Try(server.stop())
-      Try(CassandraLauncher.stop())
     }
   }
 
@@ -245,47 +300,84 @@ object ServiceTest {
     val now = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
     val testName = s"ServiceTest_$now"
 
-    val b1 = new GuiceApplicationBuilder()
+    val lifecycle = new DefaultApplicationLifecycle
+
+    val initialBuilder = new GuiceApplicationBuilder()
       .bindings(sBind[TestServiceLocatorPort].to(testServiceLocatorPort))
       .bindings(sBind[ServiceLocator].to(classOf[TestServiceLocator]))
       .bindings(sBind[TopicFactory].to(classOf[TestTopicFactory]))
+      .overrides(sBind[ApplicationLifecycle].to(lifecycle))
       .configure("play.akka.actor-system", testName)
 
     val log = Logger(getClass)
 
-    val b3 =
+    val finalBuilder =
       if (setup.cassandra) {
+
         val cassandraPort = CassandraLauncher.randomPort
-        val cassandraDirectory = Files.createTempDirectory(testName).toFile
+        val cassandraDirectory = Files.createTempDirectory(testName)
+
+        // Shut down Cassandra and delete its temporary directory when the application shuts down
+        lifecycle.addStopHook { () =>
+          import scala.concurrent.ExecutionContext.Implicits.global
+          Try(CassandraLauncher.stop())
+          // The ALLOW_INSECURE option is required to remove the files on OSes that don't support SecureDirectoryStream
+          // See http://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/io/MoreFiles.html#deleteRecursively-java.nio.file.Path-com.google.common.io.RecursiveDeleteOption...-
+          Future(MoreFiles.deleteRecursively(cassandraDirectory, RecursiveDeleteOption.ALLOW_INSECURE))
+        }
+
         val t0 = System.nanoTime()
-        CassandraLauncher.start(cassandraDirectory, LagomTestConfigResource, clean = false, port = cassandraPort,
-          CassandraLauncher.classpathForResources(LagomTestConfigResource))
+
+        CassandraLauncher.start(
+          cassandraDirectory.toFile,
+          LagomTestConfigResource,
+          clean = false,
+          port = cassandraPort,
+          CassandraLauncher.classpathForResources(LagomTestConfigResource)
+        )
+
         log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
-        val b2 = b1.configure(CassandraTestConfig.persistenceConfig(testName, cassandraPort))
+
+        initialBuilder
+          .configure(CassandraTestConfig.persistenceConfig(testName, cassandraPort))
           .configure("lagom.cluster.join-self", "on")
-        disableModules(b2, KafkaClientModule, KafkaBrokerModule)
+          .disableModules(KafkaClientModule, KafkaBrokerModule)
+
+      } else if (setup.jdbc) {
+
+        initialBuilder
+          .configure(CassandraTestConfig.clusterConfig())
+          .configure("lagom.cluster.join-self", "on")
+          .disableModules(CassandraPersistenceModule, KafkaClientModule, KafkaBrokerModule)
+
       } else if (setup.cluster) {
-        val b2 = b1.configure(CassandraTestConfig.clusterConfig)
+
+        initialBuilder
+          .configure(CassandraTestConfig.clusterConfig())
           .configure("lagom.cluster.join-self", "on")
           .disable(classOf[PersistenceModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
-        disableModules(b2, CassandraPersistenceModule, KafkaClientModule, KafkaBrokerModule)
+          .disableModules(CassandraPersistenceModule, KafkaClientModule, KafkaBrokerModule)
+
       } else {
-        val b2 = b1.configure("akka.actor.provider", "akka.actor.LocalActorRefProvider")
+
+        initialBuilder
+          .configure("akka.actor.provider", "akka.actor.LocalActorRefProvider")
           .disable(classOf[PersistenceModule], classOf[PubSubModule], classOf[JoinClusterModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
-        disableModules(b2, CassandraPersistenceModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
+          .disableModules(CassandraPersistenceModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
       }
 
-    val application = setup.configureBuilder(b3).build()
+    val application = setup.configureBuilder(finalBuilder).build()
 
     Play.start(application.getWrappedApplication)
+
     val serverConfig = ServerConfig(port = Some(0), mode = Mode.Test)
     val srv = ServerProvider.defaultServerProvider.createServer(serverConfig, application.getWrappedApplication)
     val assignedPort = srv.httpPort.orElse(srv.httpsPort).get
     port.success(assignedPort)
 
-    if (setup.cassandra) {
+    if (setup.cassandra || setup.jdbc) {
       val system = application.injector().instanceOf(classOf[ActorSystem])
       CassandraTestConfig.awaitPersistenceInit(system)
     }
@@ -293,19 +385,24 @@ object ServiceTest {
     new TestServer(assignedPort, application, srv)
   }
 
-  private def disableModules(builder: GuiceApplicationBuilder, classes: String*): GuiceApplicationBuilder = {
-    val loadedClasses = classes.flatMap { className =>
-      try {
-        Seq(getClass.getClassLoader.loadClass(className))
-      } catch {
-        case cfne: ClassNotFoundException =>
-          Seq.empty[Class[_]]
+  /**
+   * Enriches [[GuiceApplicationBuilder]] with a `disableModules` method.
+   */
+  private implicit class GuiceBuilderOps(val builder: GuiceApplicationBuilder) extends AnyVal {
+    def disableModules(classes: String*): GuiceApplicationBuilder = {
+      val loadedClasses = classes.flatMap { className =>
+        try {
+          Seq(getClass.getClassLoader.loadClass(className))
+        } catch {
+          case cfne: ClassNotFoundException =>
+            Seq.empty[Class[_]]
+        }
       }
-    }
-    if (loadedClasses.nonEmpty) {
-      builder.disable(loadedClasses: _*)
-    } else {
-      builder
+      if (loadedClasses.nonEmpty) {
+        builder.disable(loadedClasses: _*)
+      } else {
+        builder
+      }
     }
   }
 

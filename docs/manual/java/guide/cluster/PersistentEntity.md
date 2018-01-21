@@ -181,7 +181,7 @@ In Maven:
 ```xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-javadsl-testkit_2.11</artifactId>
+    <artifactId>lagom-javadsl-testkit_${scala.binary.version}</artifactId>
     <version>${lagom.version}</version>
     <scope>test</scope>
 </dependency>
@@ -213,4 +213,4 @@ The default configuration should be good starting point, and the following setti
 
 ## Underlying Implementation
 
-Each `PersistentEntity` instance is executed by a [PersistentActor](http://doc.akka.io/docs/akka/2.4/java/persistence.html) that is managed by [Akka Cluster Sharding](http://doc.akka.io/docs/akka/2.4/java/cluster-sharding.html).
+Each `PersistentEntity` instance is executed by a [PersistentActor](https://doc.akka.io/docs/akka/2.5/persistence.html?language=java) that is managed by [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.5/cluster-sharding.html?language=java).

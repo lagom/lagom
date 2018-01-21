@@ -1,13 +1,12 @@
 /*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.scaladsl.server
 
 import java.net.URI
-import java.util.concurrent.{ TimeUnit, TimeoutException }
 
 import akka.actor.setup.ActorSystemSetup
-import akka.actor.{ ActorSystem, BootstrapSetup }
+import akka.actor.{ ActorSystem, BootstrapSetup, CoordinatedShutdown }
 import akka.event.Logging
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServerMacroImpl
@@ -21,12 +20,12 @@ import com.typesafe.config.Config
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.inject.DefaultApplicationLifecycle
+import play.api.libs.concurrent.ActorSystemProvider.{ ApplicationShutdownReason, StopHook }
 import play.api.mvc.EssentialFilter
 import play.core.DefaultWebCommands
 
 import scala.collection.immutable
-import scala.concurrent.duration._
-import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
+import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.language.experimental.macros
 
 /**
@@ -244,69 +243,28 @@ abstract class LagomApplication(context: LagomApplicationContext)
   LagomServerTopicFactoryVerifier.verify(lagomServer, topicPublisherName)
 }
 
-private[server] object ActorSystemProvider {
+private object ActorSystemProvider {
 
   val logger = Logger(classOf[LagomApplication])
 
   /**
    * This is copied from Play's ActorSystemProvider, modified so we can inject json serializers
    */
-  def start(config: Config, environment: Environment,
-            serializerRegistry: Option[JsonSerializerRegistry]): (ActorSystem, () => Future[Unit]) = {
-    val akkaConfig: Config = {
-      val akkaConfigRoot = config.getString("play.akka.config")
-      // Need to fallback to root config so we can lookup dispatchers defined outside the main namespace
-      config.getConfig(akkaConfigRoot).withFallback(config)
-    }
-
-    val name = config.getString("play.akka.actor-system")
-
-    val actorSystemSetup = ActorSystemSetup(
-      BootstrapSetup(Some(environment.classLoader), Some(akkaConfig), None),
+  def start(
+    config:             Config,
+    environment:        Environment,
+    serializerRegistry: Option[JsonSerializerRegistry]
+  ): (ActorSystem, StopHook) = {
+    val serializationSetup =
       JsonSerializerRegistry.serializationSetupFor(serializerRegistry.getOrElse(EmptyJsonSerializerRegistry))
+
+    play.api.libs.concurrent.ActorSystemProvider.start(
+      environment.classLoader,
+      Configuration(config),
+      serializationSetup
     )
-    val system = ActorSystem(name, actorSystemSetup)
-    logger.debug(s"Starting application default Akka system: $name")
-
-    val stopHook = { () =>
-      logger.debug(s"Shutdown application default Akka system: $name")
-      system.terminate()
-
-      if (!config.getIsNull("play.akka.shutdown-timeout")) {
-        val timeout = config.getDuration("play.akka.shutdown-timeout", TimeUnit.MILLISECONDS)
-        try {
-          // We do a blocking timeout. It'd be nice to be able to do an asynchronous timeout,
-          // but what would we use to do that? The actor system is being shut down, we can't
-          // use its scheduler.
-          Await.result(system.whenTerminated, timeout.milliseconds)
-        } catch {
-          case te: TimeoutException =>
-            // oh well.  We tried to be nice.
-            logger.info(s"Could not shutdown the Akka system in $timeout milliseconds.  Giving up.")
-        }
-        Future.successful(())
-      } else {
-        // We just want to replace Terminated with Unit, we need an execution context to do that,
-        // and can't use Akka's since by the time it's needed it's shut down. So we use a calling
-        // thread execution context.
-        system.whenTerminated.map(_ => ())(new ExecutionContext {
-          override def reportFailure(cause: Throwable): Unit =
-            cause.printStackTrace()
-
-          override def execute(runnable: Runnable): Unit =
-            runnable.run()
-        })
-      }
-    }
-
-    (system, stopHook)
   }
 
-  @deprecated(message = "prefer method using typesafe Config instead", since = "1.4.0")
-  def start(configuration: Configuration, environment: Environment,
-            serializerRegistry: Option[JsonSerializerRegistry]): (ActorSystem, () => Future[Unit]) = {
-    start(configuration.underlying, environment, serializerRegistry)
-  }
 }
 
 /**

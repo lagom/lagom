@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 package com.lightbend.lagom.scaladsl.persistence
 
@@ -62,13 +62,15 @@ trait PersistentEntityRegistry {
   ): scaladsl.Source[EventStreamElement[Event], NotUsed]
 
   /**
-   * Gracefully stop the persistent entities and leave the cluster.
-   * The persistent entities will be started on another node when
-   * new messages are sent to them.
+   * No-op method that exists only for backward-compatibility reasons.
+   * Lagom now uses Akka's CoordinatedShutdown to gracefully shut down all sharded entities,
+   * including Persistent Entities.
    *
-   * @return the `Future` is completed when the node has been
-   *   removed from the cluster
+   * @return a completed `Future`
+   * @deprecated As of Lagom 1.4, this method has no effect and no longer needs to be called
+   *
    */
+  @deprecated("This method has no effect and no longer needs to be called", "1.4.0")
   def gracefulShutdown(timeout: FiniteDuration): Future[Done]
 
 }
