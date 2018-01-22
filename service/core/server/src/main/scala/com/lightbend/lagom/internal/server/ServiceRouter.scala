@@ -19,9 +19,9 @@ import play.api.http.HttpEntity.Strict
 import play.api.http.websocket.{ BinaryMessage, CloseMessage, Message, TextMessage }
 import play.api.http.{ HeaderNames, HttpConfiguration }
 import play.api.libs.streams.{ Accumulator, AkkaStreams }
-import play.api.mvc.{ BodyParser, BodyParsers, EssentialAction, Result, Results, WebSocket, RequestHeader => PlayRequestHeader }
+import play.api.mvc.{ BodyParser, BodyParsers, EssentialAction, Handler, Result, Results, WebSocket, RequestHeader => PlayRequestHeader }
 import play.api.routing.Router.Routes
-import play.api.routing.SimpleRouter
+import play.api.routing.{ HandlerDef, Router, SimpleRouter }
 
 import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future, Promise }
@@ -48,6 +48,16 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
     val isWebSocket: Boolean
 
     def createServiceCall(params: Seq[Seq[String]]): ServiceCall[Any, Any]
+
+    lazy val handlerDef = HandlerDef(
+      classLoader = getClass.getClassLoader,
+      routerPackage = "",
+      controller = "",
+      method = "",
+      parameterTypes = Seq(),
+      verb = methodName(method),
+      path = path.pathSpec
+    )
   }
 
   /**
@@ -69,23 +79,29 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
           val responseSerializer = callResponseSerializer(route.call)
 
           // If both request and response are strict, handle it using an action, otherwise handle it using a websocket
-          if (messageSerializerIsStreamed(requestSerializer) || messageSerializerIsStreamed(responseSerializer)) {
-            websocket(
-              route.call.asInstanceOf[Call[Any, Any]],
-              descriptor,
-              serviceCall,
-              requestSerializer,
-              responseSerializer
-            )
-          } else {
-            action(
-              route.call.asInstanceOf[Call[Any, Any]],
-              descriptor,
-              serviceCall,
-              requestSerializer.asInstanceOf[MessageSerializer[Any, ByteString]],
-              responseSerializer.asInstanceOf[MessageSerializer[Any, ByteString]]
-            )
-          }
+          val handler =
+            if (messageSerializerIsStreamed(requestSerializer) || messageSerializerIsStreamed(responseSerializer)) {
+              websocket(
+                route.call.asInstanceOf[Call[Any, Any]],
+                descriptor,
+                serviceCall,
+                requestSerializer,
+                responseSerializer
+              )
+            } else {
+              action(
+                route.call.asInstanceOf[Call[Any, Any]],
+                descriptor,
+                serviceCall,
+                requestSerializer.asInstanceOf[MessageSerializer[Any, ByteString]],
+                responseSerializer.asInstanceOf[MessageSerializer[Any, ByteString]]
+              )
+            }
+
+          def addHandlerDef(requestHeader: PlayRequestHeader): PlayRequestHeader =
+            requestHeader.addAttr(Router.Attrs.HandlerDef, route.handlerDef)
+
+          Handler.Stage.modifyRequest(addHandlerDef, handler)
         }
       } else None
     })

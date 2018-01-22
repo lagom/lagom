@@ -7,7 +7,6 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.Source
 import akka.stream.{ ActorMaterializer, Materializer }
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServiceRouter
 import com.lightbend.lagom.scaladsl.api.transport._
@@ -17,7 +16,7 @@ import com.lightbend.lagom.scaladsl.server.testkit.FakeRequest
 import org.scalatest.{ AsyncFlatSpec, BeforeAndAfterAll, Matchers }
 import play.api.http.HttpConfiguration
 import play.api.mvc
-import play.api.mvc.{ EssentialAction, Handler, Results }
+import play.api.mvc.Handler
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -140,11 +139,10 @@ class ScaladslStrictServiceRouterSpec extends AsyncFlatSpec with Matchers with B
     val httpConfig = HttpConfiguration.createWithDefaults()
     val router = new ScaladslServiceRouter(service.descriptor, service, httpConfig)
     val req: mvc.Request[NotUsed] = new FakeRequest(method = "GET", path = PathProvider.PATH)
-    val reqHeader: mvc.RequestHeader = req
-    val handler = router.routes(reqHeader)
-    val futureResult: Future[mvc.Result] = handler match {
-      case action: mvc.EssentialAction => x(action)(reqHeader)
-      case _                           => Future.failed(PayloadTooLarge("Not an EssentialAction."))
+    val handler = router.routes(req)
+    val futureResult: Future[mvc.Result] = Handler.applyStages(req, handler) match {
+      case (_, action: mvc.EssentialAction) => x(action)(req)
+      case _                                => Future.failed(new AssertionError("Not an EssentialAction."))
     }
     futureResult map block
   }
