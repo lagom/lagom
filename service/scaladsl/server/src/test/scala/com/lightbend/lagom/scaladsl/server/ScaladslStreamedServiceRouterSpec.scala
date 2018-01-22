@@ -3,15 +3,15 @@
  */
 package com.lightbend.lagom.scaladsl.server
 
-import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
+import java.util.concurrent.atomic.AtomicBoolean
 
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.{ Flow, Sink, Source }
 import akka.stream.{ ActorMaterializer, Materializer }
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServiceRouter
+import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.transport._
-import com.lightbend.lagom.scaladsl.api.{ Service, ServiceCall }
 import com.lightbend.lagom.scaladsl.server.mocks._
 import com.lightbend.lagom.scaladsl.server.testkit.FakeRequest
 import org.scalatest.{ Assertion, AsyncFlatSpec, BeforeAndAfterAll, Matchers }
@@ -77,11 +77,10 @@ class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with
     val httpConfig = HttpConfiguration.createWithDefaults()
     val router = new ScaladslServiceRouter(service.descriptor, service, httpConfig)
     val req: mvc.Request[NotUsed] = new FakeRequest(method = "GET", path = PathProvider.PATH)
-    val reqHeader: mvc.RequestHeader = req
-    val handler = router.routes(reqHeader)
-    val futureResult: Future[WSFlow] = handler match {
-      case action: mvc.WebSocket => x(action)(reqHeader)
-      case _                     => Future.failed(PayloadTooLarge("Not a WebSocket."))
+    val handler = router.routes(req)
+    val futureResult: Future[WSFlow] = Handler.applyStages(req, handler) match {
+      case (_, action: mvc.WebSocket) => x(action)(req)
+      case _                          => Future.failed(new AssertionError("Not a WebSocket."))
     }
     futureResult flatMap {
       _.runWith(Source.single(TextMessage("41")), Sink.ignore)._2.map {
