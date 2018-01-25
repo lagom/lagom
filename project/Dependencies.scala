@@ -61,7 +61,6 @@ object Dependencies {
   // Specific libraries that get reused
   private val scalaTest: ModuleID = "org.scalatest" %% "scalatest" % ScalaTestVersion excludeAll (excludeSlf4j: _*)
   private val guava = "com.google.guava" % "guava" % GuavaVersion
-  private val log4J = "log4j" % "log4j" % Log4jVersion
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
   private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
@@ -235,7 +234,7 @@ object Dependencies {
       "scala-library", "scala-reflect"
 
     ) ++ libraryFamily("org.slf4j", Slf4jVersion)(
-      "jcl-over-slf4j", "jul-to-slf4j", "log4j-over-slf4j", "slf4j-api", "slf4j-nop"
+      "jcl-over-slf4j", "jul-to-slf4j", "log4j-over-slf4j", "slf4j-api", "slf4j-nop", "slf4j-log4j12"
     )
   }
 
@@ -689,17 +688,8 @@ object Dependencies {
     akkaPersistenceCassandra
   )
 
-  val `kafka-server` = libraryDependencies ++=
-    // log4j version prior to 1.2.17 required javax.jms, and that artifact could not properly resolved when using maven
-    // without adding a resolver. The problem doesn't appear with sbt because the log4j version brought by both zookeeper
-    // and curator dependencies are evicted to version 1.2.17. Unfortunately, because of how maven resolution works, we
-    // have to explicitly add the desired log4j version we want to use here.
-    // By the way, log4j 1.2.17 and later resolve the javax.jms dependency issue by using geronimo-jms. See
-    // http://stackoverflow.com/questions/4908651/the-following-artifacts-could-not-be-resolved-javax-jmsjmsjar1-1
-    // for more context.
-    log4jModules ++
-    Seq(
-    "org.apache.kafka" %% "kafka" % KafkaVersion exclude("org.slf4j", "slf4j-log4j12"),
+  val `kafka-server` = libraryDependencies ++= Seq(
+    "org.apache.kafka" %% "kafka" % KafkaVersion,
     // Note that curator 3.x is only compatible with zookeeper 3.5.x. Kafka currently uses zookeeper 3.4, hence we have
     // to use curator 2.x, which is compatible with zookeeper 3.4 (see the notice in
     // http://curator.apache.org/index.html - make sure to scroll to the bottom)
