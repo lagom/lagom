@@ -270,7 +270,7 @@ object Dependencies {
     "com.101tec" % "zkclient" % "0.10",
     "com.yammer.metrics" % "metrics-core" % "2.2.0",
     "jline" % "jline" % "0.9.94",
-    "log4j" % "log4j" % "1.2.17",
+    "log4j" % "log4j" % "1.2.16",
     "net.sf.jopt-simple" % "jopt-simple" % "5.0.3",
     "org.apache.commons" % "commons-math" % "2.2",
     "org.apache.curator" % "curator-client" % "2.10.0",
