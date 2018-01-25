@@ -43,6 +43,19 @@ lazy val `inventory-service-impl` = (project in file("inventory-impl"))
 ```
 
 
+## Play JSON changes
+
+Play JSON has been extracted from the main Play project into its own [repository](https://github.com/playframework/play-json). The version number has been decoupled from the Play framework version number, as the two are now released independently of each other. This change should be transparent to most Lagom Scala users, but there are some API changes that may require updates in your services:
+
+- Uses of `play.api.data.validation.ValidationError` have changed to a new class: `play.api.libs.json.JsonValidationError`. If you have defined a custom validation, you'll need to update them to use the new `JsonValidationError` class.
+- The syntax for array lookups in JSON path expressions has changed. See [the Play 2.6 migration guide](https://www.playframework.com/documentation/2.6.x/Migration26#JSON-array-index-lookup) for details.
+
+
+## Using `LagomServiceClientComponents` in Play applications
+
+If you have mixed [`LagomServiceClientComponents`](https://www.lagomframework.com/documentation/1.4.x/scala/api/com/lightbend/lagom/scaladsl/client/LagomServiceClientComponents.html) directly into a Play application that communicates with Lagom services, you will need to also mix in [`LagomConfigComponent`](https://www.lagomframework.com/documentation/1.4.x/scala/api/com/lightbend/lagom/scaladsl/api/LagomConfigComponent.html).
+
+
 ## Deprecations
 
 ### Binding services
