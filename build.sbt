@@ -943,6 +943,7 @@ lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since12): _*)
   .settings(forkedTests: _*)
+  .settings(excludeLog4jFromKafkaServer: _*)
   .settings(
     name := "lagom-javadsl-kafka-broker",
     Dependencies.`kafka-broker-javadsl`,
@@ -962,6 +963,7 @@ lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/serv
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since13): _*)
   .settings(forkedTests: _*)
+  .settings(excludeLog4jFromKafkaServer: _*)
   .settings(
     name := "lagom-scaladsl-kafka-broker",
     Dependencies.`kafka-broker-scaladsl`,
@@ -1352,6 +1354,14 @@ lazy val `kafka-server` = (project in file("dev") / "kafka-server")
     name := "lagom-kafka-server",
     Dependencies.`kafka-server`
   )
+
+// kafka-server has a transitive dependency on slf4j-log4j12.
+// This is required for running Kafka in development mode, where it runs in its own process and uses log4j 1.2.
+// When running broker tests, Kafka is started in process, and its logs need to be routed to logback, which requires
+// excluding slf4j-log4j12.
+def excludeLog4jFromKafkaServer: Seq[Setting[_]] = Seq(
+  libraryDependencies += (projectID in (`kafka-server`, Test)).value exclude("org.slf4j", "slf4j-log4j12")
+)
 
 // Provides macros for testing macros. Is not published.
 lazy val `macro-testkit` = (project in file("macro-testkit"))
