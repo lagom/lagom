@@ -10,8 +10,15 @@ Lagom 1.4 also updates to the latest major versions of Play (2.6) and Akka (2.5)
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin, for example:
 
 ```scala
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0-RC1")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0")
 ```
+
+Lagom 1.4.0 also requires Sbt 0.13.16 or later. If your existing project is using a previous version of Sbt, you will need to upgrade it by editing the `project/build.properties` file. For example:
+
+```
+sbt.version=0.13.16
+```
+
 
 ## Scala 2.12 support
 

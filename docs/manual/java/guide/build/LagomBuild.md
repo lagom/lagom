@@ -31,10 +31,10 @@ We recommend the usage of maven properties to define the Lagom Version and Scala
 
 ```xml
 <properties>
-    <scala.binary.version>2.12</scala.binary.version>      
-    <lagom.version>1.4.0-RC1</lagom.version>
+    <scala.binary.version>2.12</scala.binary.version>
+    <lagom.version>1.4.0</lagom.version>
 </properties>
-``` 
+```
 
 In Lagom, it is typical to use a multi module build. The Lagom maven plugin will generally be configured in the root project, which can be done by adding it to the `<plugins>` section of your `pom.xml`:
 
