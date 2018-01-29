@@ -93,7 +93,7 @@ object ScriptedTools extends AutoPlugin {
   )
 
   override def projectSettings: Seq[Setting[_]] = Seq(
-    scalaVersion := Option(System.getProperty("scala.version")).getOrElse("2.11.7")
+    scalaVersion := Option(System.getProperty("scala.version")).getOrElse("2.11.12")
   )
 
   private def repeatUntilSuccessful[T](log: Logger, operation: => T, times: Int = 10): T = {

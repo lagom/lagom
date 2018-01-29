@@ -5,7 +5,7 @@ lazy val `my-project` = (project in file(".")).enablePlugins(LagomJava)
     libraryDependencies ++= Seq(lagomJavadslPersistenceCassandra, lagomSbtScriptedLibrary)
   )
 
-scalaVersion := Option(System.getProperty("scala.version")).getOrElse("2.11.7")
+scalaVersion := Option(System.getProperty("scala.version")).getOrElse("2.11.12")
 
 interactionMode := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 
