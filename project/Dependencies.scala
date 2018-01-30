@@ -410,10 +410,7 @@ object Dependencies {
     "junit" % "junit" % JUnitVersion,
 
     // Without an binding, slf4j will print warnings when running tests
-    "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test,
-
-    // Upgrades needed to match whitelist
-    "io.netty" % "netty-transport-native-epoll" % NettyVersion
+    "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test
   )
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
@@ -424,29 +421,20 @@ object Dependencies {
     "junit" % "junit" % JUnitVersion,
 
     // Without an binding, slf4j will print warnings when running tests
-    "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test,
-
-    // Upgrades needed to match whitelist
-    "io.netty" % "netty-transport-native-epoll" % NettyVersion
+    "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
     playAkkaHttpServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
-    scalaTest,
-
-    // Upgrades needed to match whitelist
-    "io.netty" % "netty-transport-native-epoll" % NettyVersion
+    scalaTest
   )
 
   val `integration-tests-scaladsl` = libraryDependencies ++= Seq(
     playAkkaHttpServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
-    scalaTest,
-
-    // Upgrades needed to match whitelist
-    "io.netty" % "netty-transport-native-epoll" % NettyVersion
+    scalaTest
   )
 
   val `cluster-core` = libraryDependencies ++= Seq(
@@ -669,10 +657,7 @@ object Dependencies {
   val `service-locator` = libraryDependencies ++= Seq(
     playAkkaHttpServer,
     akkaHttpCore,
-    scalaTest % Test,
-
-    // Upgrades needed to match whitelist
-    "io.netty" % "netty-transport-native-epoll" % NettyVersion
+    scalaTest % Test
   )
 
   val `service-registry-client-javadsl` = libraryDependencies ++= Nil
