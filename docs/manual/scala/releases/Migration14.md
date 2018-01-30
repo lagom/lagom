@@ -227,14 +227,14 @@ akka.actor.serialization-bindings {
 
 ## ConductR
 
-ConductR users must update to `conductr-lib` 2.1.1 for full compatibility with Lagom 1.4.0.
+ConductR users must update to `conductr-lib` 2.1.1 or later (2.2.0 recommended) for full compatibility with Lagom 1.4.0.
 
 You can find more information in the [`conductr-lib` README file](https://github.com/typesafehub/conductr-lib/blob/master/README.md).
 
-Edit the `project/plugins.sbt` file to update `sbt-conductr` to version 2.5.1 or later:
+Edit the `project/plugins.sbt` file to update `sbt-conductr` to version 2.5.1 or later (2.6.0 recommended):
 
 ```scala
-addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.5.1")
+addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.6.0")
 ```
 
 This automatically includes the correct version of `conductr-lib`.
