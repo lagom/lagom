@@ -94,17 +94,29 @@ def releaseSettings: Seq[Setting[_]] = Seq(
   }
 )
 
-def runtimeLibCommon: Seq[Setting[_]] = common ++ Seq(
+def runtimeScalaSettings: Seq[Setting[_]] = Seq(
   crossScalaVersions := Seq(Dependencies.ScalaVersion),
   scalaVersion := crossScalaVersions.value.head,
   crossVersion := CrossVersion.binary,
   crossPaths := false,
 
+  // compile options
+  scalacOptions in Compile ++= Seq(
+    "-encoding",
+    "UTF-8",
+    "-target:jvm-1.8",
+    "-feature",
+    "-unchecked",
+    "-Xlog-reflective-calls",
+    "-Xlint",
+    "-deprecation"
+  )
+)
+
+
+def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
   Dependencies.validateDependenciesSetting,
   Dependencies.dependencyWhitelistSetting,
-
-  // compile options
-  scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.8", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint", "-deprecation"),
 
   incOptions := incOptions.value.withNameHashing(true),
 
@@ -1048,6 +1060,7 @@ lazy val `play-integration-javadsl` = (project in file("dev") / "service-registr
 
 lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
   .settings(common: _*)
+  .settings(runtimeScalaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-cassandra-server",
@@ -1057,6 +1070,7 @@ lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
 
 lazy val `kafka-server` = (project in file("dev") / "kafka-server")
   .settings(common: _*)
+  .settings(runtimeScalaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-kafka-server",
