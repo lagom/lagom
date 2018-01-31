@@ -17,7 +17,7 @@ lazy val docs = project
   .settings(forkedTests: _*)
   .settings(
     resolvers += Resolver.typesafeIvyRepo("releases"),
-    scalaVersion := "2.11.11",
+    scalaVersion := "2.11.12",
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
       "org.apache.cassandra" % "cassandra-all" % "3.0.9" % "test",
@@ -126,7 +126,7 @@ lazy val theme = project
   .enablePlugins(SbtWeb, SbtTwirl)
   .settings(
     name := "lagom-docs-theme",
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.11.12",
     resolvers += Resolver.typesafeIvyRepo("releases"),
     libraryDependencies ++= Seq(
       "com.lightbend.markdown" %% "lightbend-markdown-server" % LightbendMarkdownVersion
