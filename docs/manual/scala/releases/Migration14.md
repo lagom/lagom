@@ -10,8 +10,15 @@ Lagom 1.4 also updates to the latest major versions of Play (2.6) and Akka (2.5)
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin, for example:
 
 ```scala
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0-RC1")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0")
 ```
+
+Lagom 1.4.0 also requires Sbt 0.13.16 or later. If your existing project is using a previous version of Sbt, you will need to upgrade it by editing the `project/build.properties` file. For example:
+
+```
+sbt.version=0.13.16
+```
+
 
 ## Scala 2.12 support
 
@@ -41,6 +48,19 @@ lazy val `inventory-service-impl` = (project in file("inventory-impl"))
   .settings( /* ... */ )
   .dependsOn(`inventory-api`)
 ```
+
+
+## Play JSON changes
+
+Play JSON has been extracted from the main Play project into its own [repository](https://github.com/playframework/play-json). The version number has been decoupled from the Play framework version number, as the two are now released independently of each other. This change should be transparent to most Lagom Scala users, but there are some API changes that may require updates in your services:
+
+- Uses of `play.api.data.validation.ValidationError` have changed to a new class: `play.api.libs.json.JsonValidationError`. If you have defined a custom validation, you'll need to update them to use the new `JsonValidationError` class.
+- The syntax for array lookups in JSON path expressions has changed. See [the Play 2.6 migration guide](https://www.playframework.com/documentation/2.6.x/Migration26#JSON-array-index-lookup) for details.
+
+
+## Using `LagomServiceClientComponents` in Play applications
+
+If you have mixed [`LagomServiceClientComponents`](https://www.lagomframework.com/documentation/1.4.x/scala/api/com/lightbend/lagom/scaladsl/client/LagomServiceClientComponents.html) directly into a Play application that communicates with Lagom services, you will need to also mix in [`LagomConfigComponent`](https://www.lagomframework.com/documentation/1.4.x/scala/api/com/lightbend/lagom/scaladsl/api/LagomConfigComponent.html).
 
 
 ## Deprecations
@@ -207,14 +227,14 @@ akka.actor.serialization-bindings {
 
 ## ConductR
 
-ConductR users must update to `conductr-lib` 2.1.1 for full compatibility with Lagom 1.4.0.
+ConductR users must update to `conductr-lib` 2.1.1 or later (2.2.0 recommended) for full compatibility with Lagom 1.4.0.
 
 You can find more information in the [`conductr-lib` README file](https://github.com/typesafehub/conductr-lib/blob/master/README.md).
 
-Edit the `project/plugins.sbt` file to update `sbt-conductr` to version 2.5.1 or later:
+Edit the `project/plugins.sbt` file to update `sbt-conductr` to version 2.5.1 or later (2.6.0 recommended):
 
 ```scala
-addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.5.1")
+addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.6.0")
 ```
 
 This automatically includes the correct version of `conductr-lib`.

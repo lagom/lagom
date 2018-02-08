@@ -9,15 +9,22 @@ Lagom 1.4 also updates to the latest major versions of Play (2.6) and Akka (2.5)
 
 ### Maven
 
-If you're using a `lagom.version` property in the `properties` section of your root `pom.xml`, then simply update that to `1.4.0-RC1`. Otherwise, you'll need to go through every place that a Lagom dependency, including plugins, is used, and set the version there.
+If you're using a `lagom.version` property in the `properties` section of your root `pom.xml`, then simply update that to `1.4.0`. Otherwise, you'll need to go through every place that a Lagom dependency, including plugins, is used, and set the version there.
 
 ### sbt
 
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin. For example:
 
 ```scala
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0-RC1")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0")
 ```
+
+Lagom 1.4.0 also requires Sbt 0.13.16 or later. If your existing project is using a previous version of Sbt, you will need to upgrade it by editing the `project/build.properties` file. For example:
+
+```
+sbt.version=0.13.16
+```
+
 
 
 ## Scala 2.12 support
@@ -33,7 +40,7 @@ Alternatively, you can consider adding a maven property to your parent pom file.
 ```xml
   <properties>
       <scala.binary.version>2.12</scala.binary.version>
-      <lagom.version>1.4.0-RC1</lagom.version>
+      <lagom.version>1.4.0</lagom.version>
   </properties>
 ```
 
@@ -243,16 +250,16 @@ akka.actor.serialization-bindings {
 
 ## ConductR
 
-ConductR users must update to `conductr-lib` 2.1.1 for full compatibility with Lagom 1.4.0.
+ConductR users must update to `conductr-lib` 2.1.1 or later (2.2.0 recommended) for full compatibility with Lagom 1.4.0.
 
 You can find more information in the [`conductr-lib` README file](https://github.com/typesafehub/conductr-lib/blob/master/README.md).
 
 ### Updating ConductR with sbt
 
-Edit the `project/plugins.sbt` file to update `sbt-conductr` to version 2.5.1 or later:
+Edit the `project/plugins.sbt` file to update `sbt-conductr` to version 2.5.1 or later (2.6.0 recommended):
 
 ```scala
-addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.5.1")
+addSbtPlugin("com.lightbend.conductr" % "sbt-conductr" % "2.6.0")
 ```
 
 This automatically includes the correct version of `conductr-lib`.
@@ -265,7 +272,7 @@ Update each `pom.xml` that includes a dependency on `conductr-bundle-lib`:
 <dependency>
     <groupId>com.typesafe.conductr</groupId>
     <artifactId>lagom14-java-conductr-bundle-lib_2.12</artifactId>
-    <version>2.1.1</version>
+    <version>2.2.0</version>
 </dependency>
 ```
 
