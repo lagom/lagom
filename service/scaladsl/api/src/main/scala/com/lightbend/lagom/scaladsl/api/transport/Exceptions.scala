@@ -222,9 +222,9 @@ object TransportException {
    * @return A built in TransportException that best matches the given error code and exception message.
    */
   def fromCodeAndMessage(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage): TransportException = {
-    ByNameTransportExceptions.get(exceptionMessage.name).orElse {
-      ByCodeTransportExceptions.get(errorCode)
-    }.fold(new TransportException(errorCode, exceptionMessage))(_.apply(errorCode, exceptionMessage))
+    ByNameTransportExceptions.get(exceptionMessage.name)
+      .orElse(ByCodeTransportExceptions.get(errorCode))
+      .fold(new TransportException(errorCode, exceptionMessage))(_.apply(errorCode, exceptionMessage))
   }
 
   private val ByNameTransportExceptions: Map[String, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
@@ -240,14 +240,14 @@ object TransportException {
   )
 
   private val ByCodeTransportExceptions: Map[TransportErrorCode, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
-    DeserializationException.ErrorCode -> ((tec, em) => new DeserializationException(tec, em)),
-    UnsupportedMediaType.ErrorCode -> ((tec, em) => new UnsupportedMediaType(tec, em)),
-    NotAcceptable.ErrorCode -> ((tec, em) => new NotAcceptable(tec, em)),
-    PolicyViolation.ErrorCode -> ((tec, em) => new PolicyViolation(tec, em)),
-    PayloadTooLarge.ErrorCode -> ((tec, em) => new PayloadTooLarge(tec, em)),
-    BadRequest.ErrorCode -> ((tec, em) => new BadRequest(tec, em)),
-    Forbidden.ErrorCode -> ((tec, em) => new Forbidden(tec, em)),
-    Unauthorized.ErrorCode -> ((tec, em) => new Unauthorized(tec, em))
+    DeserializationException.errorCode -> ((tec, em) => new DeserializationException(tec, em)),
+    UnsupportedMediaType.errorCode -> ((tec, em) => new UnsupportedMediaType(tec, em)),
+    NotAcceptable.errorCode -> ((tec, em) => new NotAcceptable(tec, em)),
+    PolicyViolation.errorCode -> ((tec, em) => new PolicyViolation(tec, em)),
+    PayloadTooLarge.errorCode -> ((tec, em) => new PayloadTooLarge(tec, em)),
+    BadRequest.errorCode -> ((tec, em) => new BadRequest(tec, em)),
+    Forbidden.errorCode -> ((tec, em) => new Forbidden(tec, em)),
+    Unauthorized.errorCode -> ((tec, em) => new Unauthorized(tec, em))
   )
 
 }
@@ -255,11 +255,18 @@ object TransportException {
 final class UnsupportedMediaType(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) extends TransportException(errorCode, exceptionMessage)
 
 object UnsupportedMediaType {
-  val ErrorCode = TransportErrorCode.UnsupportedMediaType
+  final val errorCode: TransportErrorCode = TransportErrorCode.UnsupportedMediaType
+
+  private final val defaultInstance = new UnsupportedMediaType(
+    errorCode,
+    new ExceptionMessage(classOf[UnsupportedMediaType].getSimpleName, errorCode.description)
+  )
+
+  def apply: UnsupportedMediaType = defaultInstance
 
   def apply(received: MessageProtocol, supported: MessageProtocol): UnsupportedMediaType =
     new UnsupportedMediaType(
-      ErrorCode,
+      errorCode,
       new ExceptionMessage(
         classOf[UnsupportedMediaType].getSimpleName,
         s"Could not negotiate a deserializer for type $received, the default media type supported is $supported"
@@ -270,10 +277,17 @@ object UnsupportedMediaType {
 final class NotAcceptable(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) extends TransportException(errorCode, exceptionMessage)
 
 object NotAcceptable {
-  val ErrorCode = TransportErrorCode.NotAcceptable
+  final val errorCode: TransportErrorCode = TransportErrorCode.NotAcceptable
+
+  private final val defaultInstance = new NotAcceptable(
+    errorCode,
+    new ExceptionMessage(classOf[NotAcceptable].getSimpleName, errorCode.description)
+  )
+
+  def apply: NotAcceptable = defaultInstance
 
   def apply(requested: immutable.Seq[MessageProtocol], supported: MessageProtocol) =
-    new NotAcceptable(ErrorCode, new ExceptionMessage(
+    new NotAcceptable(errorCode, new ExceptionMessage(
       classOf[NotAcceptable].getSimpleName,
       s"The requested protocol type/versions: (${requested.mkString(", ")}) could not be satisfied by the server, the default that the server uses is: $supported"
     ))
@@ -284,15 +298,22 @@ final class SerializationException(errorCode: TransportErrorCode, exceptionMessa
 }
 
 object SerializationException {
-  val ErrorCode = TransportErrorCode.InternalServerError
+  final val errorCode: TransportErrorCode = TransportErrorCode.InternalServerError
+
+  private final val defaultInstance = new SerializationException(
+    errorCode,
+    new ExceptionMessage(classOf[SerializationException].getSimpleName, errorCode.description),
+  )
+
+  def apply: SerializationException = defaultInstance
 
   def apply(message: String) = new SerializationException(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[SerializationException].getSimpleName, message), null
   )
 
   def apply(cause: Throwable) = new SerializationException(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[SerializationException].getSimpleName, cause.getMessage), cause
   )
 }
@@ -302,15 +323,22 @@ final class DeserializationException(errorCode: TransportErrorCode, exceptionMes
 }
 
 object DeserializationException {
-  val ErrorCode = TransportErrorCode.UnsupportedData
+  final val errorCode: TransportErrorCode = TransportErrorCode.UnsupportedData
+
+  private final val defaultInstance = new DeserializationException(
+    errorCode,
+    new ExceptionMessage(classOf[DeserializationException].getSimpleName, errorCode.description),
+  )
+
+  def apply: DeserializationException = defaultInstance
 
   def apply(message: String) = new DeserializationException(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[DeserializationException].getSimpleName, message), null
   )
 
   def apply(cause: Throwable) = new DeserializationException(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[DeserializationException].getSimpleName, cause.getMessage), cause
   )
 }
@@ -320,15 +348,22 @@ final class PolicyViolation(errorCode: TransportErrorCode, exceptionMessage: Exc
 }
 
 object PolicyViolation {
-  val ErrorCode = TransportErrorCode.PolicyViolation
+  final val errorCode: TransportErrorCode = TransportErrorCode.PolicyViolation
+
+  private final val defaultInstance = new PolicyViolation(
+    errorCode,
+    new ExceptionMessage(classOf[PolicyViolation].getSimpleName, errorCode.description),
+  )
+
+  def apply: PolicyViolation = defaultInstance
 
   def apply(message: String) = new PolicyViolation(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[PolicyViolation].getSimpleName, message), null
   )
 
   def apply(cause: Throwable) = new PolicyViolation(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[PolicyViolation].getSimpleName, cause.getMessage), cause
   )
 }
@@ -338,15 +373,22 @@ final class NotFound(errorCode: TransportErrorCode, exceptionMessage: ExceptionM
 }
 
 object NotFound {
-  val ErrorCode = TransportErrorCode.NotFound
+  final val errorCode: TransportErrorCode = TransportErrorCode.NotFound
+
+  private final val defaultInstance = new NotFound(
+    errorCode,
+    new ExceptionMessage(classOf[NotFound].getSimpleName, errorCode.description),
+  )
+
+  def apply: NotFound = defaultInstance
 
   def apply(message: String) = new NotFound(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[NotFound].getSimpleName, message), null
   )
 
   def apply(cause: Throwable) = new NotFound(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[NotFound].getSimpleName, cause.getMessage), cause
   )
 }
@@ -356,15 +398,22 @@ final class Unauthorized(errorCode: TransportErrorCode, exceptionMessage: Except
 }
 
 object Unauthorized {
-  val ErrorCode = TransportErrorCode.Unauthorized
+  final val errorCode: TransportErrorCode = TransportErrorCode.Unauthorized
+
+  private final val defaultInstance = new Unauthorized(
+    errorCode,
+    new ExceptionMessage(classOf[Unauthorized].getSimpleName, errorCode.description),
+  )
+
+  def apply: Unauthorized = defaultInstance
 
   def apply(message: String) = new Unauthorized(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[Unauthorized].getSimpleName, message), null
   )
 
   def apply(cause: Throwable) = new Unauthorized(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[Unauthorized].getSimpleName, cause.getMessage), cause
   )
 }
@@ -374,15 +423,22 @@ final class Forbidden(errorCode: TransportErrorCode, exceptionMessage: Exception
 }
 
 object Forbidden {
-  val ErrorCode = TransportErrorCode.Forbidden
+  final val errorCode: TransportErrorCode = TransportErrorCode.Forbidden
+
+  private final val defaultInstance = new Forbidden(
+    errorCode,
+    new ExceptionMessage(classOf[Forbidden].getSimpleName, errorCode.description),
+  )
+
+  def apply: Forbidden = defaultInstance
 
   def apply(message: String) = new Forbidden(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[Forbidden].getSimpleName, message), null
   )
 
   def apply(cause: Throwable) = new Forbidden(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[Forbidden].getSimpleName, cause.getMessage), cause
   )
 }
@@ -392,15 +448,22 @@ final class PayloadTooLarge(errorCode: TransportErrorCode, exceptionMessage: Exc
 }
 
 object PayloadTooLarge {
-  val ErrorCode = TransportErrorCode.PayloadTooLarge
+  final val errorCode: TransportErrorCode = TransportErrorCode.PayloadTooLarge
+
+  private final val defaultInstance = new PayloadTooLarge(
+    errorCode,
+    new ExceptionMessage(classOf[PayloadTooLarge].getSimpleName, errorCode.description),
+  )
+
+  def apply: PayloadTooLarge = defaultInstance
 
   def apply(message: String) = new PayloadTooLarge(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[PayloadTooLarge].getSimpleName, message), null
   )
 
   def apply(cause: Throwable) = new PayloadTooLarge(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[PayloadTooLarge].getSimpleName, cause.getMessage), cause
   )
 }
@@ -410,15 +473,22 @@ final class BadRequest(errorCode: TransportErrorCode, exceptionMessage: Exceptio
 }
 
 object BadRequest {
-  val ErrorCode = TransportErrorCode.BadRequest
+  final val errorCode: TransportErrorCode = TransportErrorCode.BadRequest
+
+  private final val defaultInstance = new BadRequest(
+    errorCode,
+    new ExceptionMessage(classOf[BadRequest].getSimpleName, errorCode.description)
+  )
+
+  def apply: BadRequest = defaultInstance
 
   def apply(message: String) = new BadRequest(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[BadRequest].getSimpleName, message), null
   )
 
   def apply(cause: Throwable) = new BadRequest(
-    ErrorCode,
+    errorCode,
     new ExceptionMessage(classOf[BadRequest].getSimpleName, cause.getMessage), cause
   )
 }
