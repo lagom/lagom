@@ -31,7 +31,7 @@ public class TransportException extends RuntimeException {
     protected TransportException(TransportErrorCode errorCode, Throwable cause) {
         super(cause.getMessage(), cause);
         this.errorCode = errorCode;
-        this.exceptionMessage = new ExceptionMessage(this.getClass().getSimpleName(), cause.getMessage());
+        this.exceptionMessage = new ExceptionMessage(this.getClass().getSimpleName(), errorCode.description());
     }
 
     public TransportException(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {

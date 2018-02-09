@@ -57,24 +57,33 @@ trait ExceptionSerializer {
 class DefaultExceptionSerializer(environment: Environment) extends ExceptionSerializer {
 
   override def serialize(exception: Throwable, accept: Seq[MessageProtocol]): RawExceptionMessage = {
-    val (errorCode, message) = exception match {
+    val (errorCode, message, cause) = exception match {
       case te: TransportException =>
-        (te.errorCode, te.exceptionMessage)
+        (te.errorCode, te.exceptionMessage, if (te.cause == null) "" else te.cause.getMessage)
       case e if environment.mode == Mode.Prod =>
         // By default, don't give out information about generic exceptions.
-        (TransportErrorCode.InternalServerError, new ExceptionMessage("Exception", ""))
+        (TransportErrorCode.InternalServerError, new ExceptionMessage("Exception", ""), null)
       case e =>
         // Ok to give out exception information in dev and test
         val writer = new CharArrayWriter
         e.printStackTrace(new PrintWriter(writer))
         val detail = writer.toString
-        (TransportErrorCode.InternalServerError, new ExceptionMessage(s"${exception.getClass.getName}: ${exception.getMessage}", detail))
+        (TransportErrorCode.InternalServerError, new ExceptionMessage(s"${exception.getClass.getName}: ${exception.getMessage}", detail), e.getMessage)
     }
 
-    val messageBytes = ByteString.fromString(Json.stringify(Json.obj(
-      "name" -> message.name,
-      "detail" -> message.detail
-    )))
+    val messageBytes =
+      if (environment.mode == Mode.Prod) {
+        ByteString.fromString(Json.stringify(Json.obj(
+          "name" -> message.name,
+          "detail" -> message.detail
+        )))
+      } else {
+        ByteString.fromString(Json.stringify(Json.obj(
+          "name" -> message.name,
+          "detail" -> message.detail,
+          "cause" -> cause
+        )))
+      }
 
     RawExceptionMessage(errorCode, MessageProtocol(Some("application/json"), None, None), messageBytes)
   }
