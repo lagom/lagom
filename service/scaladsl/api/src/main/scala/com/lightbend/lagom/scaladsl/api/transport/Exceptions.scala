@@ -262,7 +262,7 @@ object UnsupportedMediaType {
     new ExceptionMessage(classOf[UnsupportedMediaType].getSimpleName, errorCode.description)
   )
 
-  def apply: UnsupportedMediaType = defaultInstance
+  def apply(): UnsupportedMediaType = defaultInstance
 
   def apply(received: MessageProtocol, supported: MessageProtocol): UnsupportedMediaType =
     new UnsupportedMediaType(
@@ -284,7 +284,7 @@ object NotAcceptable {
     new ExceptionMessage(classOf[NotAcceptable].getSimpleName, errorCode.description)
   )
 
-  def apply: NotAcceptable = defaultInstance
+  def apply(): NotAcceptable = defaultInstance
 
   def apply(requested: immutable.Seq[MessageProtocol], supported: MessageProtocol) =
     new NotAcceptable(errorCode, new ExceptionMessage(
@@ -305,7 +305,7 @@ object SerializationException {
     new ExceptionMessage(classOf[SerializationException].getSimpleName, errorCode.description),
   )
 
-  def apply: SerializationException = defaultInstance
+  def apply(): SerializationException = defaultInstance
 
   def apply(message: String) = new SerializationException(
     errorCode,
@@ -330,7 +330,7 @@ object DeserializationException {
     new ExceptionMessage(classOf[DeserializationException].getSimpleName, errorCode.description),
   )
 
-  def apply: DeserializationException = defaultInstance
+  def apply(): DeserializationException = defaultInstance
 
   def apply(message: String) = new DeserializationException(
     errorCode,
@@ -355,7 +355,7 @@ object PolicyViolation {
     new ExceptionMessage(classOf[PolicyViolation].getSimpleName, errorCode.description),
   )
 
-  def apply: PolicyViolation = defaultInstance
+  def apply(): PolicyViolation = defaultInstance
 
   def apply(message: String) = new PolicyViolation(
     errorCode,
@@ -380,7 +380,7 @@ object NotFound {
     new ExceptionMessage(classOf[NotFound].getSimpleName, errorCode.description),
   )
 
-  def apply: NotFound = defaultInstance
+  def apply(): NotFound = defaultInstance
 
   def apply(message: String) = new NotFound(
     errorCode,
@@ -405,7 +405,7 @@ object Unauthorized {
     new ExceptionMessage(classOf[Unauthorized].getSimpleName, errorCode.description),
   )
 
-  def apply: Unauthorized = defaultInstance
+  def apply(): Unauthorized = defaultInstance
 
   def apply(message: String) = new Unauthorized(
     errorCode,
@@ -430,7 +430,7 @@ object Forbidden {
     new ExceptionMessage(classOf[Forbidden].getSimpleName, errorCode.description),
   )
 
-  def apply: Forbidden = defaultInstance
+  def apply(): Forbidden = defaultInstance
 
   def apply(message: String) = new Forbidden(
     errorCode,
@@ -455,7 +455,7 @@ object PayloadTooLarge {
     new ExceptionMessage(classOf[PayloadTooLarge].getSimpleName, errorCode.description),
   )
 
-  def apply: PayloadTooLarge = defaultInstance
+  def apply(): PayloadTooLarge = defaultInstance
 
   def apply(message: String) = new PayloadTooLarge(
     errorCode,
@@ -480,7 +480,7 @@ object BadRequest {
     new ExceptionMessage(classOf[BadRequest].getSimpleName, errorCode.description)
   )
 
-  def apply: BadRequest = defaultInstance
+  def apply(): BadRequest = defaultInstance
 
   def apply(message: String) = new BadRequest(
     errorCode,
