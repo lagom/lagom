@@ -2,7 +2,7 @@
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-runSbt scalariformFormat test:scalariformFormat multi-jvm:scalariformFormat validateDependencies mimaCheckOneAtATime whitesourceUpdate
+runSbt scalariformFormat test:scalariformFormat multi-jvm:scalariformFormat validateDependencies mimaCheckOneAtATime
 
 git diff --exit-code || (
   echo "ERROR: Scalariform check failed, see differences above."
@@ -11,3 +11,8 @@ git diff --exit-code || (
   false
 )
 
+# Only update Whitesource if WHITESOURCE_PASSWORD is defined
+# Encrypted environment variables are not available to pull requests for security reasons
+if [[ -n "${WHITESOURCE_PASSWORD}" ]]; then
+  runSbtNoisy whitesourceUpdate
+fi
