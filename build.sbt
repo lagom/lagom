@@ -44,10 +44,7 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   ),
 
   pomExtra := {
-    <scm>
-      <url>https://github.com/lagom/lagom</url>
-      <connection>scm:git:git@github.com:lagom/lagom.git</connection>
-    </scm>
+    // scm metadata is added by the sbt-git plugin
     <developers>
       <developer>
         <id>lagom</id>
