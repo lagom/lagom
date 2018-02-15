@@ -9,9 +9,7 @@ import java.util.Optional
 import scala.util.control.NonFatal
 import akka.actor.ActorRef
 import akka.actor.Props
-import akka.persistence.PersistentActor
-import akka.persistence.RecoveryCompleted
-import akka.persistence.SnapshotOffer
+import akka.persistence.{ PersistentActor, RecoveryCompleted, SaveSnapshotSuccess, SnapshotOffer }
 import akka.util.ByteString
 
 import scala.concurrent.duration.Duration
@@ -194,6 +192,13 @@ private[lagom] class PersistentEntityActor[C, E, S](
 
     case PersistentEntityActor.Stop =>
       context.stop(self)
+
+    // The actor will receive a SaveSnapshotSuccess message when a snapshot
+    // was successfully saved. There's no need to do anything, but if we don't
+    // handle it, it will pollute the event stream with UnhandledMessage
+    // notifications
+    case SaveSnapshotSuccess(_) => () // nothing to do
+
   }
 
   private def tag(event: Any): Any = {
