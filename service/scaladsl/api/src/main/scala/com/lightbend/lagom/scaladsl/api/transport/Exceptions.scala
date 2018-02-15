@@ -68,6 +68,10 @@ object TransportErrorCode {
    */
   val BadRequest: TransportErrorCode = UnsupportedData
   /**
+   * Similar to 403 Forbidden, but specifically for use when authentication is required and has failed or has not yet been provided.
+   */
+  val Unauthorized: TransportErrorCode = TransportErrorCode(401, 4401, "Unauthorized")
+  /**
    * A particular operation was forbidden.
    */
   val Forbidden: TransportErrorCode = TransportErrorCode(403, 4403, "Forbidden")
@@ -113,8 +117,8 @@ object TransportErrorCode {
    */
   val GoingAway: TransportErrorCode = ServiceUnavailable
 
-  private val allErrorCodes = Seq(ProtocolError, UnsupportedData, Forbidden, PolicyViolation, MethodNotAllowed, NotAcceptable,
-    PayloadTooLarge, UnsupportedMediaType, UnexpectedCondition, ServiceUnavailable)
+  private val allErrorCodes = Seq(ProtocolError, UnsupportedData, Unauthorized, Forbidden, PolicyViolation,
+    MethodNotAllowed, NotAcceptable, PayloadTooLarge, UnsupportedMediaType, UnexpectedCondition, ServiceUnavailable)
   private val HttpErrorCodeMap = allErrorCodes.map(code => code.http -> code).toMap
   private val WebSocketErrorCodeMap = allErrorCodes.map(code => code.webSocket -> code).toMap
 
@@ -231,7 +235,8 @@ object TransportException {
     classOf[PolicyViolation].getSimpleName -> ((tec, em) => new PolicyViolation(tec, em)),
     classOf[NotFound].getSimpleName -> ((tec, em) => new NotFound(tec, em)),
     classOf[PayloadTooLarge].getSimpleName -> ((tec, em) => new PayloadTooLarge(tec, em)),
-    classOf[Forbidden].getSimpleName -> ((tec, em) => new Forbidden(tec, em))
+    classOf[Forbidden].getSimpleName -> ((tec, em) => new Forbidden(tec, em)),
+    classOf[Unauthorized].getSimpleName -> ((tec, em) => new Unauthorized(tec, em))
   )
 
   private val ByCodeTransportExceptions: Map[TransportErrorCode, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
@@ -241,7 +246,8 @@ object TransportException {
     PolicyViolation.ErrorCode -> ((tec, em) => new PolicyViolation(tec, em)),
     PayloadTooLarge.ErrorCode -> ((tec, em) => new PayloadTooLarge(tec, em)),
     BadRequest.ErrorCode -> ((tec, em) => new BadRequest(tec, em)),
-    Forbidden.ErrorCode -> ((tec, em) => new Forbidden(tec, em))
+    Forbidden.ErrorCode -> ((tec, em) => new Forbidden(tec, em)),
+    Unauthorized.ErrorCode -> ((tec, em) => new Unauthorized(tec, em))
   )
 
 }
@@ -342,6 +348,24 @@ object NotFound {
   def apply(cause: Throwable) = new NotFound(
     ErrorCode,
     new ExceptionMessage(classOf[NotFound].getSimpleName, cause.getMessage), cause
+  )
+}
+
+final class Unauthorized(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable) extends TransportException(errorCode, exceptionMessage, cause) {
+  def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
+}
+
+object Unauthorized {
+  val ErrorCode = TransportErrorCode.Unauthorized
+
+  def apply(message: String) = new Unauthorized(
+    ErrorCode,
+    new ExceptionMessage(classOf[Unauthorized].getSimpleName, message), null
+  )
+
+  def apply(cause: Throwable) = new Unauthorized(
+    ErrorCode,
+    new ExceptionMessage(classOf[Unauthorized].getSimpleName, cause.getMessage), cause
   )
 }
 
