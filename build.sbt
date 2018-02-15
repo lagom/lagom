@@ -34,10 +34,7 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
   ),
 
   pomExtra := {
-    <scm>
-      <url>https://github.com/lagom/lagom</url>
-      <connection>scm:git:git@github.com:lagom/lagom.git</connection>
-    </scm>
+    // scm metadata is added by the sbt-git plugin
     <developers>
       <developer>
         <id>lagom</id>
@@ -268,6 +265,12 @@ val otherProjects = Seq[Project](
   `integration-tests-scaladsl`
 )
 
+
+val sbtScriptedProjects = Seq[Project](
+  `sbt-scripted-tools`,
+  `sbt-scripted-library`
+)
+
 lazy val root = (project in file("."))
   .settings(name := "lagom")
   .settings(runtimeLibCommon: _*)
@@ -279,19 +282,7 @@ lazy val root = (project in file("."))
   )
   .enablePlugins(lagom.UnidocRoot)
   .settings(UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*)
-  .settings(
-    whitesourceProduct in ThisBuild               := "Lightbend Reactive Platform",
-    whitesourceAggregateProjectName in ThisBuild  := sys.env.getOrElse("WHITESOURCE_PROJECT_NAME", default = "invalid"),
-    whitesourceAggregateProjectToken in ThisBuild := sys.env.getOrElse("WHITESOURCE_PROJECT_TOKEN", default = "invalid")
-  ).aggregate(javadslProjects.map(Project.projectToRef): _*)
-  .aggregate(scaladslProjects.map(Project.projectToRef): _*)
-  .aggregate(coreProjects.map(Project.projectToRef): _*)
-  .aggregate(otherProjects.map(Project.projectToRef): _*)
-
-  credentials += Credentials(realm = "whitesource",
-      host = "whitesourcesoftware.com",
-      userName = "",
-      passwd = sys.env.getOrElse("WHITESOURCE_PASSWORD", default = "invalid"))
+  .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects).map(Project.projectToRef): _*)
 
 def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin)
 def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
