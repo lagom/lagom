@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.scaladsl.persistence
 
-import akka.actor.{ Actor, Props }
+import akka.actor.{ Actor, Props, UnhandledMessage }
 import akka.cluster.sharding.ShardRegion
 import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.scaladsl.persistence.PersistentEntityActor
@@ -103,10 +103,17 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
     "save snapshots" in {
       val p = system.actorOf(PersistentEntityActor.props("test", Some("4"),
         () => new TestEntity(system), Some(3), 10.seconds))
+
+      val unhandledProbe = TestProbe()
+      system.eventStream.subscribe(unhandledProbe.ref, classOf[UnhandledMessage])
+
       for (n <- 1 to 10) {
         p ! TestEntity.Add(n.toString)
         expectMsg(TestEntity.Appended(n.toString))
       }
+
+      unhandledProbe.expectNoMessage(300.milliseconds)
+      system.eventStream.unsubscribe(unhandledProbe.ref)
 
       // start another with same persistenceId should recover state
       // awaitAssert because it is not guaranteed that we will see the snapshot immediately
