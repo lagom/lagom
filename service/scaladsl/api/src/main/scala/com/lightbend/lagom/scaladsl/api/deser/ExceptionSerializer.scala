@@ -3,13 +3,13 @@
  */
 package com.lightbend.lagom.scaladsl.api.deser
 
-import java.io.{ CharArrayWriter, PrintWriter }
+import java.io.{CharArrayWriter, PrintWriter}
 import java.util.Base64
 
 import akka.util.ByteString
-import com.lightbend.lagom.scaladsl.api.transport.{ ExceptionMessage, MessageProtocol, TransportErrorCode, TransportException }
-import play.api.libs.json.{ JsError, JsSuccess, Json }
-import play.api.{ Environment, Mode }
+import com.lightbend.lagom.scaladsl.api.transport.{ExceptionMessage, MessageProtocol, TransportErrorCode, TransportException}
+import play.api.libs.json._
+import play.api.{Environment, Mode}
 
 import scala.collection.immutable
 import scala.collection.immutable.Seq
@@ -57,33 +57,28 @@ trait ExceptionSerializer {
 class DefaultExceptionSerializer(environment: Environment) extends ExceptionSerializer {
 
   override def serialize(exception: Throwable, accept: Seq[MessageProtocol]): RawExceptionMessage = {
-    val (errorCode, message, cause) = exception match {
-      case te: TransportException =>
-        (te.errorCode, te.exceptionMessage, if (te.cause == null) "" else te.cause.getMessage)
-      case e if environment.mode == Mode.Prod =>
-        // By default, don't give out information about generic exceptions.
-        (TransportErrorCode.InternalServerError, new ExceptionMessage("Exception", ""), null)
-      case e =>
-        // Ok to give out exception information in dev and test
-        val writer = new CharArrayWriter
-        e.printStackTrace(new PrintWriter(writer))
-        val detail = writer.toString
-        (TransportErrorCode.InternalServerError, new ExceptionMessage(s"${exception.getClass.getName}: ${exception.getMessage}", detail), e.getMessage)
-    }
+    val isProdMode: Boolean = environment.mode == Mode.Prod
 
-    val messageBytes =
-      if (environment.mode == Mode.Prod) {
-        ByteString.fromString(Json.stringify(Json.obj(
-          "name" -> message.name,
-          "detail" -> message.detail
-        )))
-      } else {
-        ByteString.fromString(Json.stringify(Json.obj(
-          "name" -> message.name,
-          "detail" -> message.detail,
-          "cause" -> cause
-        )))
+    val (errorCode, name, detail, cause) =
+      exception match {
+        case te: TransportException =>
+          (te.errorCode, te.exceptionMessage.name, te.exceptionMessage.detail, if (te.getCause == null) "" else te.getCause.getMessage)
+        case e if isProdMode =>
+          // By default, don't give out information about generic exceptions.
+          (TransportErrorCode.InternalServerError, "Exception", "", null)
+        case e =>
+          // Ok to give out exception information in dev and test
+          val writer = new CharArrayWriter
+          e.printStackTrace(new PrintWriter(writer))
+          val detail = writer.toString
+          (TransportErrorCode.InternalServerError, s"${exception.getClass.getName}: ${exception.getMessage}", detail, e.getMessage)
       }
+
+    val minimalMessage: JsObject = Json.obj("name" -> name, "detail" -> detail)
+    val messageBytes = ByteString.fromString(Json.stringify(
+      if (isProdMode) minimalMessage
+      else minimalMessage ++ Json.obj("cause" -> cause)
+    ))
 
     RawExceptionMessage(errorCode, MessageProtocol(Some("application/json"), None, None), messageBytes)
   }
