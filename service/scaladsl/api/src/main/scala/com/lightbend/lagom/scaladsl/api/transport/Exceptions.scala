@@ -190,7 +190,7 @@ final class ExceptionMessage(val name: String, val detail: String) extends Seria
  * details, as well as to identify the exception, so that the right type of exception can be deserialized at the other
  * end.
  */
-class TransportException(val errorCode: TransportErrorCode, val exceptionMessage: ExceptionMessage, val cause: Throwable) extends RuntimeException(exceptionMessage.detail, cause) {
+class TransportException(val errorCode: TransportErrorCode, val exceptionMessage: ExceptionMessage, cause: Throwable) extends RuntimeException(exceptionMessage.detail, cause) {
 
   def this(errorCode: TransportErrorCode, message: String) =
     this(errorCode, new ExceptionMessage(getClass.getSimpleName, message), null)
