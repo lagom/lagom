@@ -1,4 +1,3 @@
-import com.typesafe.sbt.SbtGit.GitKeys._
 import sbt.Keys._
 import sbt._
 import sbtwhitesource.WhiteSourcePlugin
@@ -20,7 +19,7 @@ object Whitesource extends AutoPlugin {
   )
 
   private lazy val currentBranch = Def.setting {
-    sys.env.getOrElse("CURRENT_BRANCH", gitCurrentBranch.value)
+    sys.env.getOrElse("CURRENT_BRANCH", "")
   }
 
   private val StableBranch = """(\d+)\.(\d+)\.x""".r
