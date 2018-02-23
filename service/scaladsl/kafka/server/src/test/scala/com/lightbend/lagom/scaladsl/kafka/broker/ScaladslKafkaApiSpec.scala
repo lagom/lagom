@@ -12,29 +12,31 @@ import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{ Flow, Sink, Source, SourceQueue }
 import akka.{ Done, NotUsed }
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer
-import com.lightbend.lagom.scaladsl.api.broker.Topic
+import com.lightbend.lagom.scaladsl.api.broker.{ Message, MetadataKey, Topic }
+import com.lightbend.lagom.scaladsl.api.broker.kafka.{ KafkaProperties, PartitionKeyStrategy }
 import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service }
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
-import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
+import com.lightbend.lagom.scaladsl.broker.kafka.{ KafkaMetadataKeys, LagomKafkaComponents }
 import com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocatorComponents
 import com.lightbend.lagom.scaladsl.kafka.broker.ScaladslKafkaApiSpec._
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.spi.persistence.InMemoryOffsetStore
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{ BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike }
+import org.scalatest._
 import play.api.Configuration
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.mutable
-import scala.concurrent.Promise
+import scala.concurrent.{ Await, Promise }
 import scala.concurrent.duration._
 
 class ScaladslKafkaApiSpec extends WordSpecLike
   with Matchers
   with BeforeAndAfter
   with BeforeAndAfterAll
-  with ScalaFutures {
+  with ScalaFutures
+  with OptionValues {
 
   override implicit val patienceConfig = PatienceConfig(30.seconds, 150.millis)
 
@@ -270,6 +272,33 @@ class ScaladslKafkaApiSpec extends WordSpecLike
       for (i <- 1 to batchSize) test6EventJournal.append(i.toString)
       assert(latch.await(10, TimeUnit.SECONDS))
     }
+
+    "attach metadata to the message" in {
+      test7EventJournal.append("A1")
+      test7EventJournal.append("A2")
+      test7EventJournal.append("A3")
+
+      val messages = Await.result(
+        testService.test7Topic.subscribe.withMetadata.atMostOnceSource.take(3).runWith(Sink.seq),
+        10.seconds
+      )
+
+      messages.size shouldBe 3
+      def runAssertions(msg: Message[String]): Unit = {
+        msg.messageKeyAsString shouldBe "A"
+        msg.get(KafkaMetadataKeys.Topic).value shouldBe "test7"
+        msg.get(KafkaMetadataKeys.Headers) should not be None
+        msg.get(KafkaMetadataKeys.Partition).value shouldBe messages.head.get(KafkaMetadataKeys.Partition).value
+      }
+      messages.foreach(runAssertions)
+      messages.head.payload shouldBe "A1"
+      val offset = messages.head.get(KafkaMetadataKeys.Offset).value
+      messages(1).payload shouldBe "A2"
+      messages(1).get(KafkaMetadataKeys.Offset).value shouldBe (offset + 1)
+      messages(2).payload shouldBe "A3"
+      messages(2).get(KafkaMetadataKeys.Offset).value shouldBe (offset + 2)
+    }
+
   }
 
 }
@@ -282,6 +311,7 @@ object ScaladslKafkaApiSpec {
   private val test4EventJournal = new EventJournal[String]
   private val test5EventJournal = new EventJournal[String]
   private val test6EventJournal = new EventJournal[String]
+  private val test7EventJournal = new EventJournal[String]
 
   // Allows tests to insert logic into the producer stream
   @volatile var messageTransformer: String => String = identity
@@ -293,6 +323,7 @@ object ScaladslKafkaApiSpec {
     def test4Topic: Topic[String]
     def test5Topic: Topic[String]
     def test6Topic: Topic[String]
+    def test7Topic: Topic[String]
 
     import Service._
 
@@ -304,7 +335,12 @@ object ScaladslKafkaApiSpec {
           topic("test3", test3Topic),
           topic("test4", test4Topic),
           topic("test5", test5Topic),
-          topic("test6", test6Topic)
+          topic("test6", test6Topic),
+          topic("test7", test7Topic)
+            .addProperty(
+              KafkaProperties.partitionKeyStrategy,
+              PartitionKeyStrategy[String](_.take(1))
+            )
         )
     }
   }
@@ -318,6 +354,7 @@ object ScaladslKafkaApiSpec {
     override def test4Topic: Topic[String] = createTopicProducer(test4EventJournal)
     override def test5Topic: Topic[String] = createTopicProducer(test5EventJournal)
     override def test6Topic: Topic[String] = createTopicProducer(test6EventJournal)
+    override def test7Topic: Topic[String] = createTopicProducer(test7EventJournal)
 
     private def createTopicProducer(eventJournal: EventJournal[String]): Topic[String] = {
       TopicProducer.singleStreamWithOffset { fromOffset =>

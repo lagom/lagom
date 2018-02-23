@@ -4,6 +4,10 @@ import akka.Done;
 import akka.NotUsed;
 import akka.stream.javadsl.Flow;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
+import com.lightbend.lagom.javadsl.api.broker.Message;
+import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys;
+import org.apache.kafka.common.header.Headers;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -33,5 +37,22 @@ public class AnotherServiceImpl implements AnotherService {
 
     private Done doSomethingWithTheMessage(GreetingMessage message) {
         throw new UnsupportedOperationException("Missing implementation");
+    }
+
+    private void subscribeWithMetadata() {
+        //#subscribe-to-topic-with-metadata
+        helloService.greetingsTopic()
+            .subscribe().withMetadata()
+            .atLeastOnce(Flow.fromFunction((Message<GreetingMessage> msg) -> {
+                GreetingMessage payload = msg.getPayload();
+                String messageKey = msg.messageKeyAsString();
+                Optional<Headers> kafkaHeaders = msg.get(KafkaMetadataKeys.HEADERS);
+                System.out.println("Message: " + payload +
+                    " Key: " + messageKey +
+                    " Headers: " + kafkaHeaders);
+                return Done.getInstance();
+            }));
+        //#subscribe-to-topic-with-metadata
+
     }
 }

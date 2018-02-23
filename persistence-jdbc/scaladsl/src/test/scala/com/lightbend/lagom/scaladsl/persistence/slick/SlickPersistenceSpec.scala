@@ -7,19 +7,18 @@ import akka.actor.setup.ActorSystemSetup
 import akka.actor.{ ActorSystem, BootstrapSetup }
 import akka.cluster.Cluster
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.jdbc.{ SlickOffsetStore, SlickProvider }
+import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbTestProvider, SlickOffsetStore, SlickProvider }
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.OffsetTableConfiguration
 import com.lightbend.lagom.internal.scaladsl.persistence.slick.SlickReadSideImpl
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
 import com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{ Config, ConfigFactory }
-import play.api.db.{ Database, Databases }
+import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 import play.api.{ Configuration, Environment }
 
-import scala.concurrent.{ Await, ExecutionContext }
 import scala.concurrent.duration._
-import scala.util.Random
+import scala.concurrent.{ Await, ExecutionContext }
 
 abstract class SlickPersistenceSpec private (_system: ActorSystem)(implicit ec: ExecutionContext)
   extends ActorSystemSpec(_system) {
@@ -38,18 +37,7 @@ abstract class SlickPersistenceSpec private (_system: ActorSystem)(implicit ec: 
   def this(registry: JsonSerializerRegistry)(implicit ec: ExecutionContext) =
     this(ConfigFactory.empty(), registry)
 
-  // late initialization of database
-  private var _database: Option[Database] = None
-  protected def database = _database match {
-    case Some(db) => db
-    case None =>
-      val dbName = s"${system.name}_${Random.alphanumeric.take(8).mkString}"
-
-      val db = Databases.inMemory(dbName, config = Map("jndiName" -> "DefaultDS"))
-      _database = Some(db)
-      db
-  }
-  protected lazy val slick = new SlickProvider(system, null)
+  protected lazy val slick = new SlickProvider(system)
   protected lazy val slickReadSide: SlickReadSide = new SlickReadSideImpl(
     slick,
     new SlickOffsetStore(
@@ -59,6 +47,8 @@ abstract class SlickPersistenceSpec private (_system: ActorSystem)(implicit ec: 
     )
   )
 
+  private lazy val applicationLifecycle: ApplicationLifecycle = new DefaultApplicationLifecycle
+
   override def beforeAll(): Unit = {
     super.beforeAll()
 
@@ -67,7 +57,7 @@ abstract class SlickPersistenceSpec private (_system: ActorSystem)(implicit ec: 
     cluster.join(cluster.selfAddress)
 
     // Trigger database to be loaded and registered to JNDI
-    database.dataSource
+    SlickDbTestProvider.buildAndBindSlickDb(system.name, applicationLifecycle)
 
     // Trigger tables to be created
     Await.ready(slick.ensureTablesCreated(), 20.seconds)
@@ -76,7 +66,7 @@ abstract class SlickPersistenceSpec private (_system: ActorSystem)(implicit ec: 
   }
 
   override def afterAll(): Unit = {
-    _database.foreach(_.shutdown())
+    applicationLifecycle.stop()
     super.afterAll()
   }
 }

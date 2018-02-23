@@ -3,17 +3,12 @@
  */
 package com.lightbend.lagom.internal.javadsl.persistence.jdbc
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
+import javax.inject.{ Inject, Singleton }
 
 import akka.actor.ActorSystem
 
-import javax.inject.{ Inject, Singleton }
-import play.api.db.DBApi
-import slick.ast._
+import scala.concurrent.ExecutionContext
 
 @Singleton
-class SlickProvider @Inject() (
-  system: ActorSystem,
-  dbApi:  DBApi /* Ensures database is initialised before we start anything that needs it */ )(implicit ec: ExecutionContext)
-  extends com.lightbend.lagom.internal.persistence.jdbc.SlickProvider(system, dbApi)(ec)
+class SlickProvider @Inject() (system: ActorSystem)(implicit ec: ExecutionContext)
+  extends com.lightbend.lagom.internal.persistence.jdbc.SlickProvider(system)(ec)

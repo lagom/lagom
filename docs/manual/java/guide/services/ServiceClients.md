@@ -23,6 +23,16 @@ Having bound the client, you can now have it injected into any Lagom component u
 
 @[hello-consumer](code/docs/services/ServiceClients.java)
 
+## Streaming service client configuration
+
+When using a streaming service client, Lagom will use internally a WebSocket client which has a max frame length parameter. This parameter limits the allowed maximum size for the messages flowing through the WebSocket. This can be configured in `application.conf` on the client-side and the default configuration is:
+
+@[web-socket-client-default](../../../../../service/core/client/src/main/resources/reference.conf)
+
+This configuration will affect all streaming services that the service client consumes. It is not possible to provide different configurations when multiple streaming services are consumed.
+
+Note that the same parameter has to be configured on the server-side using [Play server configuration](https://www.playframework.com/documentation/2.6.x/JavaWebSockets#Configuring-WebSocket-Frame-Length)
+
 ## Circuit Breakers
 
 A [circuit breaker](https://martinfowler.com/bliki/CircuitBreaker.html) is used to provide stability and prevent cascading failures in distributed systems. These should be used in conjunction with judicious timeouts at the interfaces between services to prevent the failure of a single service from bringing down other services.

@@ -74,11 +74,11 @@ Let's say we have a service that have streaming request and/or response paramete
 
 @[echo-service](code/docs/services/test/EchoService.java)
 
-When writing tests for that the [Akka Streams TestKit](http://doc.akka.io/docs/akka/2.4/java/stream/stream-testkit.html#Streams_TestKit) is very useful. We use the Streams TestKit together with the Lagom `ServiceTest` utilities:
+When writing tests for that the [Akka Streams TestKit](https://doc.akka.io/docs/akka/2.5/stream/stream-testkit.html?language=java#streams-testkit) is very useful. We use the Streams TestKit together with the Lagom `ServiceTest` utilities:
 
 @[test](code/docs/services/test/EchoServiceTest.java)
 
-Read more about it in the documentation of the [Akka Streams TestKit](http://doc.akka.io/docs/akka/2.4/java/stream/stream-testkit.html#Streams_TestKit).
+Read more about it in the documentation of the [Akka Streams TestKit](https://doc.akka.io/docs/akka/2.5/stream/stream-testkit.html?language=java#streams-testkit).
 
 ## How to test broker publishing and consuming
 

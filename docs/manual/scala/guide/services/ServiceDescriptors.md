@@ -64,12 +64,12 @@ So far, all of the service call examples we've seen have used strict messages, f
 
 ### Streamed messages
 
-A streamed message is a message of type [`Source`](http://doc.akka.io/api/akka/2.4.4/akka/stream/scaladsl/Source.html). `Source` is an [Akka streams](http://doc.akka.io/docs/akka/2.4/scala.html) API that allows asynchronous streaming and handling of messages.  Here's an example streamed service call:
+A streamed message is a message of type [`Source`](https://doc.akka.io/api/akka/2.5/akka/stream/scaladsl/Source.html). `Source` is an [Akka streams](https://doc.akka.io/docs/akka/2.5/stream/?language=scala) API that allows asynchronous streaming and handling of messages.  Here's an example streamed service call:
 
 @[call-stream](code/ServiceDescriptors.scala)
 
 This service call has a strict request type and a streamed response type.  An implementation of this might return a `Source` that sends the input tick message `String` at the specified interval.
-    
+
 A bidirectional streamed call might look like this:
 
 @[hello-stream](code/ServiceDescriptors.scala)
