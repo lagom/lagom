@@ -47,7 +47,7 @@ You may opt in to use the old `netty` implementation with this setting in sbt:
 
 ## Start and stop
 
-The Service Locator and the Service Gateway are automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Service Locator and Service Gateway pair via the the `lagomServiceLocatorStart` sbt task, and stopping it with the `lagomServiceLocatorStop` sbt task.
+The Service Locator and the Service Gateway are automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Service Locator and Service Gateway pair via the `lagomServiceLocatorStart` sbt task, and stopping it with the `lagomServiceLocatorStop` sbt task.
 
 ## Disable it
 
