@@ -10,7 +10,7 @@ The algorithm used for assigning a port to each service works as follows:
 
 In general, you don't need to worry about these details, as in most cases the port range is wide enough to make collisions unlikely. However, there are times when you may still prefer to assign a specific port to a service (for instance, if the automatically assigned port is already is use in your system). You can do so by manually providing a port number for the project's service port setting.
 
-@[service-port-scala](code/build-services-ports.sbt)
+@[service-port](code/build-services-ports.sbt)
 
 Above, in the algorithm's description, it was mentioned that by default ports are assigned within the range `[49152,65535]`. This is also known as the ephemeral port range, a range of port numbers set aside by IANA for dynamic port selection use. If the default range doesn't suit you, you can change it by adding the following in your build.
 

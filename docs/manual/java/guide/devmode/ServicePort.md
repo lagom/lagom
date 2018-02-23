@@ -24,7 +24,7 @@ In Maven, you can do this by modifying the service implementations pom configura
 
 In sbt:
 
-@[service-port-java](code/build-services-ports.sbt)
+@[service-port](code/build-services-ports.sbt)
 
 Above, in the algorithm's description, it was mentioned that by default ports are assigned within the range `[49152,65535]`. This is also known as the ephemeral port range, a range of port numbers set aside by IANA for dynamic port selection use. If the default range doesn't suit you, you can change it by adding the following in your build.
 
