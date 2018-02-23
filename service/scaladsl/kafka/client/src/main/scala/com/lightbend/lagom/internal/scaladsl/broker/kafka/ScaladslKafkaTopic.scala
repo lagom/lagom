@@ -18,6 +18,6 @@ private[lagom] class ScaladslKafkaTopic[Message](kafkaConfig: KafkaConfig, topic
 
   override def topicId: TopicId = topicCall.topicId
 
-  override def subscribe: Subscriber[Message] = new ScaladslKafkaSubscriber(kafkaConfig, topicCall,
-    ScaladslKafkaSubscriber.GroupId.default(info), info, system, serviceLocator)
+  override def subscribe: Subscriber[Message] = new ScaladslKafkaSubscriber[Message, Message](kafkaConfig, topicCall,
+    ScaladslKafkaSubscriber.GroupId.default(info), info, system, serviceLocator, _.value)
 }

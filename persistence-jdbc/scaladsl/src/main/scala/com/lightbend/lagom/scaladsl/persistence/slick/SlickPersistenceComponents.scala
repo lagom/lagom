@@ -15,6 +15,7 @@ import slick.jdbc.JdbcProfile
 trait SlickPersistenceComponents
   extends PersistenceComponents
   with ReadSideSlickPersistenceComponents
+  with WriteSideSlickPersistenceComponents
 
 /**
  * Write-side persistence Slick components (for compile-time injection).

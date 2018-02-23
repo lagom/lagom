@@ -14,14 +14,15 @@ import akka.pattern.pipe
 import akka.stream.scaladsl.{ Flow, GraphDSL, Keep, Sink, Source, Unzip, Zip }
 import akka.stream._
 import com.lightbend.lagom.internal.api.UriUtils
+import org.apache.kafka.clients.consumer.ConsumerRecord
 
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 
-private[lagom] class KafkaSubscriberActor[Message](
+private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
   kafkaConfig: KafkaConfig, consumerConfig: ConsumerConfig,
-  locateService: String => Future[Seq[URI]], topicId: String, flow: Flow[Message, Done, _],
-  consumerSettings: ConsumerSettings[String, Message], subscription: AutoSubscription,
-  streamCompleted: Promise[Done]
+  locateService: String => Future[Seq[URI]], topicId: String, flow: Flow[SubscriberPayload, Done, _],
+  consumerSettings: ConsumerSettings[String, Payload], subscription: AutoSubscription,
+  streamCompleted: Promise[Done], transform: ConsumerRecord[String, Payload] => SubscriberPayload
 )(implicit mat: Materializer, ec: ExecutionContext) extends Actor with ActorLogging {
 
   /** Switch used to terminate the on-going Kafka publishing stream when this actor fails.*/
@@ -74,7 +75,7 @@ private[lagom] class KafkaSubscriberActor[Message](
 
   private def run(uri: Option[String]) = {
     val (killSwitch, streamDone) =
-      atLeastOnce(flow, uri)
+      atLeastOnce(uri)
         .viaMat(KillSwitches.single)(Keep.right)
         .toMat(Sink.ignore)(Keep.both)
         .run()
@@ -84,7 +85,7 @@ private[lagom] class KafkaSubscriberActor[Message](
     context.become(running)
   }
 
-  private def atLeastOnce(flow: Flow[Message, Done, _], serviceLocatorUris: Option[String]): Source[Done, _] = {
+  private def atLeastOnce(serviceLocatorUris: Option[String]): Source[Done, _] = {
     // Creating a Source of pair where the first element is a reactive-kafka committable offset,
     // and the second it's the actual message. Then, the source of pair is splitted into
     // two streams, so that the `flow` passed in argument can be applied to the underlying message.
@@ -95,11 +96,11 @@ private[lagom] class KafkaSubscriberActor[Message](
       case None       => consumerSettings
     }
     val pairedCommittableSource = ReactiveConsumer.committableSource(consumerSettingsWithUri, subscription)
-      .map(committableMessage => (committableMessage.committableOffset, committableMessage.record.value))
+      .map(committableMessage => (committableMessage.committableOffset, transform(committableMessage.record)))
 
     val committOffsetFlow = Flow.fromGraph(GraphDSL.create(flow) { implicit builder => flow =>
       import GraphDSL.Implicits._
-      val unzip = builder.add(Unzip[CommittableOffset, Message])
+      val unzip = builder.add(Unzip[CommittableOffset, SubscriberPayload])
       val zip = builder.add(Zip[CommittableOffset, Done])
       val committer = {
         val commitFlow = Flow[(CommittableOffset, Done)]
@@ -125,18 +126,19 @@ private[lagom] class KafkaSubscriberActor[Message](
 }
 
 object KafkaSubscriberActor {
-  def props[Message](
+  def props[Payload, SubscriberPayload](
     kafkaConfig:      KafkaConfig,
     consumerConfig:   ConsumerConfig,
     locateService:    String => Future[Seq[URI]],
     topicId:          String,
-    flow:             Flow[Message, Done, _],
-    consumerSettings: ConsumerSettings[String, Message],
+    flow:             Flow[SubscriberPayload, Done, _],
+    consumerSettings: ConsumerSettings[String, Payload],
     subscription:     AutoSubscription,
-    streamCompleted:  Promise[Done]
+    streamCompleted:  Promise[Done],
+    transform:        ConsumerRecord[String, Payload] => SubscriberPayload
   )(implicit mat: Materializer, ec: ExecutionContext) =
     Props(
-      new KafkaSubscriberActor[Message](
+      new KafkaSubscriberActor[Payload, SubscriberPayload](
         kafkaConfig,
         consumerConfig,
         locateService,
@@ -144,7 +146,8 @@ object KafkaSubscriberActor {
         flow,
         consumerSettings,
         subscription,
-        streamCompleted
+        streamCompleted,
+        transform
       )
     )
 }

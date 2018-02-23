@@ -25,7 +25,7 @@ That said, if you use Lagom's built in Cassandra or relational database read-sid
 
 How you query the read-side database depends on your database, but there are two things to be aware of:
 
-* Ensure that any connection pools are started once, and then shut down when Lagom shuts down. Lagom is built on Play, and uses Play's lifecycle support to register callbacks to execute on shutdown. For information on how to hook into this, see the [Play documentation](https://playframework.com/documentation/2.5.x/ScalaDependencyInjection#Stopping/cleaning-up).
+* Ensure that any connection pools are started once, and then shut down when Lagom shuts down. Lagom is built on Play, and uses Play's lifecycle support to register callbacks to execute on shutdown. For information on how to hook into this, see the [Play documentation](https://playframework.com/documentation/2.6.x/ScalaDependencyInjection#Stopping/cleaning-up).
 * Ensure that any blocking actions are done in an appropriate execution context. Lagom assumes that all actions are asynchronous, and has thread pools tuned for asynchronous tasks. The use of unmanaged blocking can cause your application to stop responding at very low loads. For details on how to correctly manage thread pools for blocking database calls, see Play's documentation on [thread pools](https://www.playframework.com/documentation/2.6.x/ThreadPools).
 
 ## Update the Read-Side
@@ -68,7 +68,7 @@ Now we need to implement the `buildHandler` method.  Let's assume that you have 
 
 The `createTables` method will create the tables used by the read side processor if they don't already exist - this is completely optional, but may be useful in development and test environments as it alleviates the need for developers to manually set up their environments.
 
-The `loadOffset` method reads the last `Offset` that was processed by this read side processor for the particular tag.  Typically this will be stored in a table that has the tag name as a primary key. Offsets come in two varieties, a `akka.persistence.query.Sequence` offset represented using a `long`, and a `akka.persistence.query.TimeBasedUUID` offset represented using a `UUID`. Your database will need to be able to persist both of these types. If there is no offset stored for a particular tag, such as when the processor runs for the very first time, then you can return `akka.persistence.query.NoOffset`.
+The `loadOffset` method reads the last `Offset` that was processed by this read side processor for the particular tag.  Typically this will be stored in a table that has the tag name and the eventProcessorId as a compound primary key. Offsets come in two varieties, a `akka.persistence.query.Sequence` offset represented using a `long`, and a `akka.persistence.query.TimeBasedUUID` offset represented using a `UUID`. Your database will need to be able to persist both of these types. If there is no offset stored for a particular tag, such as when the processor runs for the very first time, then you can return `akka.persistence.query.NoOffset`.
 
 Finally, the `handleEvent` method is responsible for handling the actual events. It gets passed both the event and the offset, and should persist the offset once the event handling is successful.
 

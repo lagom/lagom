@@ -137,8 +137,6 @@ class PersistentEntityTestDriver[C, E, S](
       entity.PersistNone
   }
 
-  def runOne[CC <: entity.Command](command: C): Outcome[E, S] = ???
-
   /**
    * The entity will process the commands and the emitted events and side effects
    * are recorded and provided in the returned `Outcome`. Current state is also
@@ -232,7 +230,7 @@ class PersistentEntityTestDriver[C, E, S](
   def getAllIssues: immutable.Seq[Issue] = allIssues
 
   private val unhandledEvent: PartialFunction[(E, S), S] = {
-    case event =>
+    case (event, _) =>
       issues :+= UnhandledEvent(event)
       state
   }

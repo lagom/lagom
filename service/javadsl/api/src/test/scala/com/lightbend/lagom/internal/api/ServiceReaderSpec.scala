@@ -13,13 +13,12 @@ import com.lightbend.lagom.javadsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.{ NegotiatedDeserializer, NegotiatedSerializer }
 import com.lightbend.lagom.javadsl.api.deser._
 import com.lightbend.lagom.javadsl.api.transport.{ MessageProtocol, Method }
-import com.lightbend.lagom.api.mock.{ BlogService, MockService }
+import com.lightbend.lagom.api.mock._
 import org.scalatest._
-import com.lightbend.lagom.api.mock.ScalaMockService
-import com.lightbend.lagom.api.mock.ScalaMockServiceWrong
 import com.lightbend.lagom.internal.javadsl.api.{ JacksonPlaceholderExceptionSerializer, JacksonPlaceholderSerializerFactory, MethodServiceCallHolder, ServiceReader }
-import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceCall }
+import com.lightbend.lagom.javadsl.api.{ Descriptor, IllegalPathParameterException, Service, ServiceCall }
 
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 class ServiceReaderSpec extends WordSpec with Matchers with Inside {
@@ -36,6 +35,12 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
         case simple: SimpleSerializer[_] => simple.`type` should ===(classOf[UUID])
       }
       endpoint.responseSerializer should ===(MessageSerializers.STRING)
+    }
+
+    "fail to read a Java service descriptor from a public interface because the path parameter could not be serialized" in {
+      intercept[IllegalPathParameterException] {
+        val descriptor = serviceDescriptor[InvalidPathParameterService]
+      }
     }
 
     "read a simple Scala service descriptor" in {
@@ -108,6 +113,31 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
       val commentCall = descriptor.calls().get(3)
       deserializeParams(commentCall, Seq(Seq("some name"), Seq("10"), Seq("20"))) should ===(Seq("some name", 10L, 20L))
       serializeArgs(commentCall, Seq("some name", 10L, 20L)) should ===(Seq(Seq("some name"), Seq("10"), Seq("20")))
+
+      val commentRepeatColCall = descriptor.calls().get(4)
+      deserializeParams(commentRepeatColCall, Seq(Seq("some name"), Seq("10", "20", "30"))) should ===(Seq("some name", util.Arrays.asList("10", "20", "30")))
+      serializeArgs(commentRepeatColCall, Seq("some name", util.Arrays.asList("10", "20", "30"))) should ===(Seq(Seq("some name"), Seq("10", "20", "30")))
+
+      val commentRepeatListCall = descriptor.calls().get(5)
+      deserializeParams(commentRepeatListCall, Seq(Seq("some name"), Seq("10", "20", "30"))) should ===(Seq("some name", util.Arrays.asList("10", "20", "30")))
+      serializeArgs(commentRepeatListCall, Seq("some name", util.Arrays.asList("10", "20", "30"))) should ===(Seq(Seq("some name"), Seq("10", "20", "30")))
+
+      val commentRepeatSetCall = descriptor.calls().get(6)
+      // test for Set is trickier must first sort elements
+      val deser = deserializeParams(commentRepeatSetCall, Seq(Seq("some name"), Seq("10", "20", "30")))
+
+      deser.head === "some name"
+      deser(1) match {
+        case set: util.HashSet[_] =>
+          set.asInstanceOf[util.HashSet[String]].asScala.toSeq.sorted === Seq("10", "20", "30")
+      }
+
+      val ser = serializeArgs(commentRepeatSetCall, Seq("some name", new util.HashSet(util.Arrays.asList("10", "20", "30"))))
+      ser.head === Seq("some name")
+      ser(1) match {
+        case seq => seq.sorted === Seq("10", "20", "30")
+      }
+
     }
 
   }
@@ -131,6 +161,7 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
       override def serialize(messageEntity: MessageEntity): ByteString = {
         ByteString.fromString(messageEntity.toString)
       }
+
       override def protocol() = new MessageProtocol(Optional.of("text/plain"), Optional.of("utf-8"), Optional.empty())
     }
 
@@ -139,12 +170,15 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
     }
 
     override def deserializer(messageHeader: MessageProtocol) = deser
+
     override def serializerForResponse(acceptedMessageHeaders: util.List[MessageProtocol]) = serializer
+
     override def serializerForRequest() = serializer
   }
 
   private class SimpleExceptionSerializer extends ExceptionSerializer {
     override def serialize(exception: Throwable, accept: util.Collection[MessageProtocol]): RawExceptionMessage = ???
+
     override def deserialize(message: RawExceptionMessage): Throwable = ???
   }
 

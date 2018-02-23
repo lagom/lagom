@@ -19,7 +19,7 @@ object PortAssigner {
     require(max < Integer.MAX_VALUE, "Upper port range must be smaller than " + Integer.MAX_VALUE)
     require(min <= max, "Bottom port range must be smaller than the upper port range")
 
-    val delta = max - min + 1
+    val delta: Int = max - min + 1
     def includes(value: Int): Boolean = value >= min && value <= max
   }
 

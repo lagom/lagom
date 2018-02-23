@@ -9,19 +9,20 @@ import akka.stream.{ Materializer, OverflowStrategy }
 import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
 
 import scala.concurrent.Future
+import scala.language.higherKinds
 
-private[lagom] class InternalSubscriberStub[Message](
+private[lagom] class InternalSubscriberStub[Payload, Message[_]](
   groupId:     String,
   topicBuffer: ActorRef
 )(implicit materializer: Materializer) {
 
-  def mostOnceSource: Source[Message, _] = {
+  def mostOnceSource: Source[Message[Payload], _] = {
     Source
-      .actorRef[Message](1024, OverflowStrategy.fail)
+      .actorRef[Message[Payload]](1024, OverflowStrategy.fail)
       .prependMat(Source.empty)(subscribeToBuffer)
   }
 
-  def leastOnce(flow: Flow[Message, Done, _]): Future[Done] = {
+  def leastOnce(flow: Flow[Message[Payload], Done, _]): Future[Done] = {
     mostOnceSource
       .via(flow)
       .toMat(Sink.ignore)(Keep.right[Any, Future[Done]])

@@ -3,7 +3,7 @@ import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 lazy val `my-project` = (project in file(".")).enablePlugins(LagomJava)
   .settings(libraryDependencies ++= Seq(lagomJavadslPersistenceCassandra, lagomSbtScriptedLibrary))
 
-scalaVersion := Option(System.getProperty("scala.version")).getOrElse("2.11.7")
+scalaVersion := Option(System.getProperty("scala.version")).getOrElse("2.11.12")
 
 interactionMode := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 
@@ -25,7 +25,7 @@ def validate(configFile: java.io.File, key: String, expected: String) = {
     println(s"Expected and got $expected")
   } else {
     throw new RuntimeException(s"Expected value of key $key to be $expected but got $actual")
-  }	
+  }
 }
 
 InputKey[Unit]("journalPort") := {

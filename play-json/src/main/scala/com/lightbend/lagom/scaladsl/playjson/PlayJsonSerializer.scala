@@ -93,9 +93,9 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
     val renameMigration = migrations.get(manifestClassName)
 
     val migratedManifest = renameMigration match {
-      case Some(migration) if (migration.currentVersion > fromVersion) =>
+      case Some(migration) if migration.currentVersion > fromVersion =>
         migration.transformClassName(fromVersion, manifestClassName)
-      case Some(migration) if (migration.currentVersion < fromVersion) =>
+      case Some(migration) if migration.currentVersion < fromVersion =>
         throw new IllegalStateException(s"Migration version ${migration.currentVersion} is " +
           s"behind version $fromVersion of deserialized type [$manifestClassName]")
       case _ => manifestClassName
@@ -116,15 +116,17 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
         storedBytes
 
     val json = Json.parse(bytes) match {
-      case jsObject: JsObject => jsObject
+      case jsValue: JsValue => jsValue
       case other =>
         throw new RuntimeException("Unexpected serialized json data. " +
           s"Expected a JSON object, but was [${other.getClass.getName}]")
     }
 
-    val migratedJson = transformMigration match {
-      case Some(migration) if migration.currentVersion > fromVersion =>
-        migration.transform(fromVersion, json)
+    val migratedJson = (transformMigration, json) match {
+      case (Some(migration), js: JsObject) if migration.currentVersion > fromVersion =>
+        migration.transform(fromVersion, js)
+      case (Some(migration), js: JsValue) if migration.currentVersion > fromVersion =>
+        migration.transformValue(fromVersion, js)
       case _ => json
     }
 
@@ -159,7 +161,7 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
 }
 
 // This code is copied from JacksonJsonSerializer
-private[lagom] final object Compression {
+private[lagom] object Compression {
   private final val BufferSize = 1024 * 4
 
   def compress(bytes: Array[Byte]): Array[Byte] = {

@@ -48,6 +48,14 @@ When calling [`Topic.subscribe`](api/com/lightbend/lagom/scaladsl/api/broker/Top
 
 Finally, subscribers are grouped together via [`Subscriber.withGroupId`](api/com/lightbend/lagom/scaladsl/api/broker/Subscriber.html#withGroupId\(groupId:String\):com.lightbend.lagom.scaladsl.api.broker.Subscriber[Message]). A subscriber group allows many nodes in your cluster to consume a message stream while ensuring that each message is only handled once by each node in your cluster.  Without subscriber groups, all of your nodes for a particular service would get every message in the stream, leading to their processing being duplicated.  By default, Lagom will use a group id that has the same name as the service consuming the topic.
 
+### Consuming message metadata
+
+Your broker implementation may provide additional metadata with messages which you can consume. This can be accessed by invoking the [`Subscriber.withMetadata`](api/com/lightbend/lagom/scaladsl/api/broker/Subscriber.html#withMetadata:com.lightbend.lagom.scaladsl.api.broker.Subscriber[com.lightbend.lagom.scaladsl.api.broker.Message[Payload]]) method, which returns a subscriber that wraps the messages in a [`Message`](api/com/lightbend/lagom/scaladsl/api/broker/Message.html).
+
+@[subscribe-to-topic-with-metadata](code/docs/scaladsl/mb/AnotherServiceImpl.scala)
+
+The [`messageKeyAsString`](api/com/lightbend/lagom/scaladsl/api/broker/Message.html#messageKeyAsString:String) method is provided as a convenience for accessing the message key. Other properties can be accessed using the [`get`](api/com/lightbend/lagom/scaladsl/api/broker/Message.html#get\(com.lightbend.lagom.scaladsl.api.broker.MetadataKey[Metadata]\):Metadata) method. A full list of the metadata keys available for Kafka can be found [here](api/com/lightbend/lagom/scaladsl/broker/kafka/KafkaMetadataKeys$.html).
+
 ## Polymorphic event streams
 
 Typically you will want to publish more than one type of event to a particular topic. This can be done by creating an interface that each event implements. In order to successfully serialize these events to and from JSON, you will have to include some extra information on your JSON representation of the data.

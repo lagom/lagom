@@ -15,6 +15,11 @@
         <requiredProperty key="service2ClassName">
             <defaultValue>Stream</defaultValue>
         </requiredProperty>
+        <!-- These properties must be valid Velocity identifiers, so cannot contain dots. -->
+        <requiredProperty key="scala-binary-version">
+            <defaultValue>2.12</defaultValue>
+            <validationRegex>\d+\.\d+</validationRegex>
+        </requiredProperty>
     </requiredProperties>
 
     <!-- If you read up on the documentation and various blog posts and question/answers out on the internet, you'll

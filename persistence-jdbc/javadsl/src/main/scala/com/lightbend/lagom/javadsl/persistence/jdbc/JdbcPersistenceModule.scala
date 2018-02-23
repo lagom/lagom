@@ -3,18 +3,38 @@
  */
 package com.lightbend.lagom.javadsl.persistence.jdbc
 
-import com.google.inject.{ AbstractModule, Key }
-import com.lightbend.lagom.internal.javadsl.persistence.jdbc.{ JavadslJdbcOffsetStore, JdbcPersistentEntityRegistry, JdbcReadSideImpl, JdbcSessionImpl }
-import com.lightbend.lagom.internal.persistence.jdbc.SlickOffsetStore
+import javax.inject.{ Inject, Singleton }
+
+import akka.actor.ActorSystem
+import com.google.inject.{ AbstractModule, Key, Provider }
+import com.lightbend.lagom.internal.javadsl.persistence.jdbc._
+import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbProvider, SlickOffsetStore }
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
 import com.lightbend.lagom.spi.persistence.OffsetStore
+import play.api.db.DBApi
+import play.api.inject.ApplicationLifecycle
+
+import scala.concurrent.ExecutionContext
 
 class JdbcPersistenceModule extends AbstractModule {
   override def configure(): Unit = {
+
+    bind(classOf[SlickProvider]).toProvider(classOf[GuiceSlickProvider])
     bind(classOf[JdbcReadSide]).to(classOf[JdbcReadSideImpl])
     bind(classOf[PersistentEntityRegistry]).to(classOf[JdbcPersistentEntityRegistry])
     bind(classOf[JdbcSession]).to(classOf[JdbcSessionImpl])
     bind(classOf[SlickOffsetStore]).to(classOf[JavadslJdbcOffsetStore])
     bind(classOf[OffsetStore]).to(Key.get(classOf[SlickOffsetStore]))
+  }
+}
+
+@Singleton
+class GuiceSlickProvider @Inject() (dbApi: DBApi, actorSystem: ActorSystem, applicationLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext)
+  extends Provider[SlickProvider] {
+
+  lazy val get = {
+    // Ensures JNDI bindings are made before we build the SlickProvider
+    SlickDbProvider.buildAndBindSlickDatabases(dbApi, actorSystem.settings.config, applicationLifecycle)
+    new SlickProvider(actorSystem)
   }
 }
