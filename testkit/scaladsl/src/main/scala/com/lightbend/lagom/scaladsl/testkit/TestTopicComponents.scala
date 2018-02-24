@@ -6,25 +6,24 @@ package com.lightbend.lagom.scaladsl.testkit
 import java.util.concurrent.TimeUnit
 
 import akka.Done
-import akka.persistence.query.{NoOffset, Offset}
+import akka.persistence.query.{ NoOffset, Offset }
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.stream.scaladsl.{ Flow, Sink, Source }
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
-import com.lightbend.lagom.internal.scaladsl.api.broker.{TopicFactory, TopicFactoryProvider}
+import com.lightbend.lagom.internal.scaladsl.api.broker.{ TopicFactory, TopicFactoryProvider }
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
-import com.lightbend.lagom.scaladsl.api.{Descriptor, Service}
+import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service }
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodTopic
 import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId
-import com.lightbend.lagom.scaladsl.api.broker.{Message, Subscriber, Topic}
+import com.lightbend.lagom.scaladsl.api.broker.{ Message, Subscriber, Topic }
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
 import com.lightbend.lagom.scaladsl.server.LagomServer
-import com.lightbend.lagom.spi.persistence.{OffsetDao, OffsetStore}
+import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.FiniteDuration
 
-
-private [lagom] trait BaseTestTopicComponents extends TopicFactoryProvider{
+private[lagom] trait BaseTestTopicComponents extends TopicFactoryProvider {
   def lagomServer: LagomServer
 
   def materializer: Materializer
@@ -37,7 +36,7 @@ private [lagom] trait BaseTestTopicComponents extends TopicFactoryProvider{
     case None => Some("test")
   }
 
-   def topicFactory: TopicFactory
+  def topicFactory: TopicFactory
 }
 
 trait OffsetAwareTestTopicComponents extends BaseTestTopicComponents {
@@ -46,7 +45,7 @@ trait OffsetAwareTestTopicComponents extends BaseTestTopicComponents {
 
   val offsetStoreInitTimeout: FiniteDuration = new FiniteDuration(2, TimeUnit.SECONDS)
 
-  private def offsetDaoFactory(topic:Descriptor.TopicCall[_]):OffsetDao = {
+  private def offsetDaoFactory(topic: Descriptor.TopicCall[_]): OffsetDao = {
     Await.result(offsetStore.prepare(s"topicProducer-${topic.topicId.name}", "test"), offsetStoreInitTimeout)
   }
 
@@ -84,7 +83,7 @@ private[lagom] class TestTopicFactory(lagomServer: LagomServer, offsetDaoFactory
             method.method.invoke(service) match {
               case topicProducer: TaggedOffsetTopicProducer[Message, _] =>
                 val offsetDao = offsetDaoFactory(topicCall)
-                new TestTopic(topicCall, topicProducer,offsetDao)(materializer)
+                new TestTopic(topicCall, topicProducer, offsetDao)(materializer)
               case _ =>
                 throw new IllegalArgumentException(s"Testkit does not know how to handle the topic type for ${topicCall.topicId}")
             }
@@ -99,7 +98,7 @@ private[lagom] class TestTopicFactory(lagomServer: LagomServer, offsetDaoFactory
 private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
   topicCall:     TopicCall[Payload],
   topicProducer: TaggedOffsetTopicProducer[Payload, Event],
-  offsetDao: OffsetDao
+  offsetDao:     OffsetDao
 )(implicit materializer: Materializer) extends Topic[Payload] {
 
   import materializer.executionContext
