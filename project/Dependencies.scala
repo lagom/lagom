@@ -7,14 +7,14 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.11"
-  val PlayJsonVersion = "2.6.8"
-  val PlayStandaloneWsVersion = "1.1.3"
-  val TwirlVersion = "1.3.12"
+  val PlayVersion = "2.6.12"
+  val PlayJsonVersion = "2.6.9"
+  val PlayStandaloneWsVersion = "1.1.6"
+  val TwirlVersion = "1.3.14"
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.9"
+  val AkkaVersion = "2.5.11"
   val AkkaHttpVersion = "10.0.11"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.4", "2.11.12")
@@ -26,7 +26,7 @@ object Dependencies {
   val JacksonVersion = "2.8.11"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.19.Final"
+  val NettyVersion = "4.1.22.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
   val KafkaVersion = "0.11.0.1"
   val AkkaStreamKafkaVersion = "0.18"
@@ -111,6 +111,14 @@ object Dependencies {
 
   private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.2" excludeAll (excludeSlf4j: _*)
 
+  private val jacksonFamily =
+    libraryFamily("com.fasterxml.jackson.core", JacksonVersion)(
+      "jackson-annotations", "jackson-core", "jackson-databind"
+    ) ++ libraryFamily("com.fasterxml.jackson.datatype", JacksonVersion)(
+      "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
+    )
+
+
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.
   // By maintaining this whitelist, we can be absolutely sure of what we depend on, that we consistently depend on the
@@ -166,7 +174,7 @@ object Dependencies {
       "com.typesafe.play" %% "twirl-api" % TwirlVersion,
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-      "com.zaxxer" % "HikariCP" % "2.7.5",
+      "com.zaxxer" % "HikariCP" % "2.7.8",
       "commons-codec" % "commons-codec" % "1.10",
       "io.aeron" % "aeron-client" % "1.7.0",
       "io.aeron" % "aeron-driver" % "1.7.0",
@@ -239,14 +247,6 @@ object Dependencies {
   }
 
 
-  private val jacksonFamily =
-    libraryFamily("com.fasterxml.jackson.core", JacksonVersion)(
-      "jackson-annotations", "jackson-core", "jackson-databind"
-    ) ++ libraryFamily("com.fasterxml.jackson.datatype", JacksonVersion)(
-      "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
-    )
-
-
   // These dependencies are used by JPA to test, but we don't want to export them as part of our regular whitelist,
   // so we maintain it separately.
   val JpaTestWhitelist = Seq(
@@ -299,7 +299,7 @@ object Dependencies {
     guava,
 
     // Upgrades needed to match whitelist
-    sslConfig
+    playJson
   )
 
   val `api-javadsl` = libraryDependencies ++= Seq(
@@ -348,10 +348,8 @@ object Dependencies {
     scalaTest % Test,
 
     // Upgrades needed to match whitelist
-    akkaSlf4j,
-    akkaStream,
     reactiveStreams,
-    sslConfig
+    playJson
   )
 
   val client = libraryDependencies ++= Seq(
@@ -361,11 +359,10 @@ object Dependencies {
     dropwizardMetricsCore,
     "com.typesafe.netty" % "netty-reactive-streams" % NettyReactiveStreamsVersion,
     "io.netty" % "netty-codec-http" % NettyVersion,
+    scalaTest % Test,
 
     // Upgrades needed to match whitelist versions
-    "io.netty" % "netty-handler" % NettyVersion,
-
-    scalaTest % Test
+    "io.netty" % "netty-handler" % NettyVersion
   )
 
   val `client-javadsl` = libraryDependencies ++= Seq(
@@ -398,8 +395,7 @@ object Dependencies {
 
     // Upgrades needed to match whitelist
     scalaJava8Compat,
-    scalaParserCombinators,
-    sslConfig
+    scalaParserCombinators
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
@@ -446,7 +442,6 @@ object Dependencies {
     // Upgrades needed to match whitelist
     scalaJava8Compat,
     scalaParserCombinators,
-    sslConfig,
     scalaXml % Test
   )
 
@@ -505,7 +500,10 @@ object Dependencies {
     akkaMultiNodeTestkit % Test,
     akkaStreamTestkit % Test,
     scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test
+    "com.novocode" % "junit-interface" % "0.11" % Test,
+
+    // Upgrades needed to match whitelist
+    playJson
   )
 
   val `persistence-javadsl` = libraryDependencies ++= Seq(
@@ -523,6 +521,7 @@ object Dependencies {
     slf4jApi,
     akkaPersistenceCassandra,
     akkaPersistenceCassandraLauncher % Test,
+
     // Upgrades needed to match whitelist
     dropwizardMetricsCore,
     "io.netty" % "netty-handler" % NettyVersion
@@ -588,10 +587,8 @@ object Dependencies {
     play,
 
     // Upgrades needed to match whitelist versions
-    akkaStream,
     reactiveStreams,
-    akkaSlf4j,
-    sslConfig
+    playJson
   ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % LogbackVersion)
 
   val log4j2 = libraryDependencies ++= Seq(slf4jApi) ++
@@ -599,21 +596,18 @@ object Dependencies {
     Seq(
       "com.lmax" % "disruptor" % "3.3.6",
       play,
+
       // Upgrades needed to match whitelist versions
-      akkaStream,
       reactiveStreams,
-      akkaSlf4j,
-      sslConfig
+      playJson
     )
 
   val `reloadable-server` = libraryDependencies ++= Seq(
     playServer,
 
     // Upgrades needed to match whitelist versions
-    akkaStream,
     reactiveStreams,
-    akkaSlf4j,
-    sslConfig
+    playJson
   )
 
   val `build-tool-support` = libraryDependencies ++= Seq(
