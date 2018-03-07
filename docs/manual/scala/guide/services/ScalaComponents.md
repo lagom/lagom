@@ -7,7 +7,6 @@ This is a list of available Components you may use to build your application cak
 | -------------------- | ----------- |
 | [LagomServerComponents](api/com/lightbend/lagom/scaladsl/server/LagomServerComponents.html) | a main Component for any Lagom Service. See [[Defining your own components|DependencyInjection#Defining-your-own-components]].|
 | [LagomServiceClientComponents](api/com/lightbend/lagom/scaladsl/client/LagomServiceClientComponents.html) | a main Component for any Lagom Service or application consuming Lagom Services. See [[Dependency Injection in Lagom|DependencyInjection]] and  [[Binding a service client|ServiceClients#Binding-a-service-client]].|
-| [MetricsServiceComponents](api/com/lightbend/lagom/scaladsl/server/status/MetricsServiceComponents.html) | adds a `MetricsService` to your service so you can remotely track the status of the CircuitBreakers on your service. Using this only makes sense when you Application is consuming other services (hence using remote calls protected with Circuit Breakers). See [[Circuit Breaker Metrics|ServiceClients#Circuit-breaker-metrics]] |
 
 ##### Persistence and Cluster Components
 | -------------------- | ----------- |
