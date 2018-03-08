@@ -232,7 +232,7 @@ object TransportException {
     classOf[NotAcceptable].getSimpleName -> ((tec, em) => new NotAcceptable(tec, em)),
     classOf[PayloadTooLarge].getSimpleName -> ((tec, em) => new PayloadTooLarge(tec, em)),
     classOf[SerializationException].getSimpleName -> ((tec, em) => new SerializationException(tec, em)),
-    classOf[UnsupportedMediaType].getSimpleName -> ((tec, em) => new UnsupportedMediaType(tec, em)),
+    classOf[UnsupportedMediaType].getSimpleName -> ((tec, em) => new UnsupportedMediaType(tec, em))
   )
 
   private val ByCodeTransportExceptions: Map[TransportErrorCode, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
@@ -241,7 +241,7 @@ object TransportException {
     PolicyViolation.ErrorCode -> ((tec, em) => new PolicyViolation(tec, em)),
     NotAcceptable.ErrorCode -> ((tec, em) => new NotAcceptable(tec, em)),
     PayloadTooLarge.ErrorCode -> ((tec, em) => new PayloadTooLarge(tec, em)),
-    UnsupportedMediaType.ErrorCode -> ((tec, em) => new UnsupportedMediaType(tec, em)),
+    UnsupportedMediaType.ErrorCode -> ((tec, em) => new UnsupportedMediaType(tec, em))
   )
 
 }
