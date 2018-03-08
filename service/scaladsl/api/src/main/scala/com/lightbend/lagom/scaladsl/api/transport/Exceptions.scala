@@ -225,23 +225,23 @@ object TransportException {
 
   private val ByNameTransportExceptions: Map[String, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
     classOf[DeserializationException].getSimpleName -> ((tec, em) => new DeserializationException(tec, em)),
-    classOf[SerializationException].getSimpleName -> ((tec, em) => new SerializationException(tec, em)),
-    classOf[UnsupportedMediaType].getSimpleName -> ((tec, em) => new UnsupportedMediaType(tec, em)),
-    classOf[NotAcceptable].getSimpleName -> ((tec, em) => new NotAcceptable(tec, em)),
+    classOf[BadRequest].getSimpleName -> ((tec, em) => new BadRequest(tec, em)),
+    classOf[Forbidden].getSimpleName -> ((tec, em) => new Forbidden(tec, em)),
     classOf[PolicyViolation].getSimpleName -> ((tec, em) => new PolicyViolation(tec, em)),
     classOf[NotFound].getSimpleName -> ((tec, em) => new NotFound(tec, em)),
+    classOf[NotAcceptable].getSimpleName -> ((tec, em) => new NotAcceptable(tec, em)),
     classOf[PayloadTooLarge].getSimpleName -> ((tec, em) => new PayloadTooLarge(tec, em)),
-    classOf[Forbidden].getSimpleName -> ((tec, em) => new Forbidden(tec, em))
+    classOf[SerializationException].getSimpleName -> ((tec, em) => new SerializationException(tec, em)),
+    classOf[UnsupportedMediaType].getSimpleName -> ((tec, em) => new UnsupportedMediaType(tec, em)),
   )
 
   private val ByCodeTransportExceptions: Map[TransportErrorCode, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
     DeserializationException.ErrorCode -> ((tec, em) => new DeserializationException(tec, em)),
-    UnsupportedMediaType.ErrorCode -> ((tec, em) => new UnsupportedMediaType(tec, em)),
-    NotAcceptable.ErrorCode -> ((tec, em) => new NotAcceptable(tec, em)),
+    Forbidden.ErrorCode -> ((tec, em) => new Forbidden(tec, em)),
     PolicyViolation.ErrorCode -> ((tec, em) => new PolicyViolation(tec, em)),
+    NotAcceptable.ErrorCode -> ((tec, em) => new NotAcceptable(tec, em)),
     PayloadTooLarge.ErrorCode -> ((tec, em) => new PayloadTooLarge(tec, em)),
-    BadRequest.ErrorCode -> ((tec, em) => new BadRequest(tec, em)),
-    Forbidden.ErrorCode -> ((tec, em) => new Forbidden(tec, em))
+    UnsupportedMediaType.ErrorCode -> ((tec, em) => new UnsupportedMediaType(tec, em)),
   )
 
 }
