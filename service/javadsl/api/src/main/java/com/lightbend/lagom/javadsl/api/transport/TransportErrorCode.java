@@ -54,7 +54,7 @@ public final class TransportErrorCode implements Serializable {
     /**
      * A generic error to used to indicate that the end receiving the error message violated the remote ends policy.
      */
-    public static final TransportErrorCode PolicyViolation = new TransportErrorCode(404, 1008, "Policy Violation/Not Found");
+    public static final TransportErrorCode PolicyViolation = new TransportErrorCode(404, 1008, "Policy Violation");
 
     /**
      * A resource was not found, equivalent to policy violation.
@@ -86,7 +86,7 @@ public final class TransportErrorCode implements Serializable {
      * A generic error used to indicate that the end sending the error message because it encountered an unexpected
      * condition.
      */
-    public static final TransportErrorCode UnexpectedCondition = new TransportErrorCode(500, 1011, "Unexpected Condition/Internal Server Error");
+    public static final TransportErrorCode UnexpectedCondition = new TransportErrorCode(500, 1011, "Unexpected Condition");
 
     /**
      * An internal server error, equivalent to Unexpected Condition.
@@ -107,9 +107,6 @@ public final class TransportErrorCode implements Serializable {
     private static final Map<Integer, TransportErrorCode> WEBSOCKET_ERROR_CODE_MAP;
 
     static {
-        // This is a manually maintained list that keeps all possible numerical pairs. Some HTTP status codes may
-        // be duplicate in this list but that's because their websocket counterparts are different. Note how
-        // both ProtocolError and UnsupportedData are included but BadRequest isn't. That's correct.
         List<TransportErrorCode> allErrorCodes = Arrays.asList(
                 ProtocolError,
                 UnsupportedData,
@@ -125,7 +122,6 @@ public final class TransportErrorCode implements Serializable {
         Map<Integer, TransportErrorCode> http = new HashMap<>();
         allErrorCodes.forEach(code -> http.put(code.http, code));
         HTTP_ERROR_CODE_MAP = Collections.unmodifiableMap(http);
-
         Map<Integer, TransportErrorCode> websocket = new HashMap<>();
         allErrorCodes.forEach(code -> websocket.put(code.webSocket, code));
         WEBSOCKET_ERROR_CODE_MAP = Collections.unmodifiableMap(websocket);
