@@ -32,7 +32,7 @@ class TransportExceptionSpec extends WordSpec with Matchers {
     new SerializationException("some msg - SerializationException")
   )
 
-  "TransportExceptions" should {
+  "Lagom-provided TransportExceptions" should {
 
     supportedExceptions.foreach { ex =>
       s"be buildable from code and message (${ex.getClass.getName})" in {
@@ -41,6 +41,8 @@ class TransportExceptionSpec extends WordSpec with Matchers {
         reconstructed.exceptionMessage() should ===(ex.exceptionMessage())
       }
     }
+
+    // TODO: implement roundtrip de/ser tests like in com.lightbend.lagom.scaladsl.api.ExceptionsSpec
 
   }
 
