@@ -56,9 +56,9 @@ trait ExceptionSerializer {
  */
 class DefaultExceptionSerializer(environment: Environment) extends ExceptionSerializer {
 
-  override def serialize(exception: Throwable, accept: Seq[MessageProtocol]): RawExceptionMessage = {
-    val isProdMode: Boolean = environment.mode == Mode.Prod
+  private final val isProdMode: Boolean = environment.mode == Mode.Prod
 
+  override def serialize(exception: Throwable, accept: Seq[MessageProtocol]): RawExceptionMessage = {
     val (errorCode, name, detail, cause) =
       exception match {
         case te: TransportException =>
