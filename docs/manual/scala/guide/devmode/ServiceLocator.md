@@ -6,43 +6,11 @@ A Service Locator is embedded in Lagom's development environment, allowing servi
 
 By default, the service locator runs on port `9008`, but it is possible to use a different port. For instance, you can tell the service locator to run on port `10000` by adding the following to your build.
 
-In the Maven root project pom:
-
-```xml
-<plugin>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-maven-plugin</artifactId>
-    <version>${lagom.version}</version>
-    <configuration>
-        <serviceLocatorPort>10000</serviceLocatorPort>
-    </configuration>
-</plugin>
-```
-
-In sbt:
-
 @[service-locator-port](code/build-service-locator.sbt)
 
 ## Communicating with external services
 
 It is possible to enable communication between the Lagom services defined in your build, and an unbounded number of external services (which could either be running locally or on a different machine). The first thing you will have to do is to register each external service in the Service Locator. Assume we want to register an external service named `weather` that is running on `http://localhost:3333`, here is what we would add to the build.
-
-In the Maven root project pom:
-
-```xml
-<plugin>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-maven-plugin</artifactId>
-    <version>${lagom.version}</version>
-    <configuration>
-        <unmanagedServices>
-            <weather>http://localhost:3333</weather>
-        </unmanagedServices>
-    </configuration>
-</plugin>
-```
-
-In sbt:
 
 @[service-locator-unmanaged-services](code/build-service-locator.sbt)
 
@@ -79,26 +47,11 @@ You may opt in to use the old `netty` implementation with this setting in sbt:
 
 ## Start and stop
 
-The Service Locator and the Service Gateway are automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Service Locator and Service Gateway pair via the `lagom:startServiceLocator` Maven task or the `lagomServiceLocatorStart` sbt task, and stopping it with the `lagom:stopServiceLocator` Maven task or the`lagomServiceLocatorStop` sbt task.
+The Service Locator and the Service Gateway are automatically started when executing the `runAll` task. However, there are times when you might want to manually start only a few services, and hence you won't use the `runAll` task. In this case, you can manually start the Service Locator and Service Gateway pair via the `lagomServiceLocatorStart` sbt task, and stopping it with the `lagomServiceLocatorStop` sbt task.
 
 ## Disable it
 
 You can disable the embedded Service Locator and Service Gateway by adding the following in your build.
-
-In the Maven root project pom:
-
-```xml
-<plugin>
-    <groupId>com.lightbend.lagom</groupId>
-    <artifactId>lagom-maven-plugin</artifactId>
-    <version>${lagom.version}</version>
-    <configuration>
-        <serviceLocatorEnabled>false</serviceLocatorEnabled>
-    </configuration>
-</plugin>
-```
-
-In sbt:
 
 @[service-locator-disabled](code/build-service-locator.sbt)
 
