@@ -1,6 +1,6 @@
 ### Are you looking for help?
 
-This is an issue tracker, used to manage and track the development of Lagom. It is not a support system and so it is not a place to ask questions or get help. If you're not sure if you have found a bug, the best place to start is with either the [users mailing list](https://groups.google.com/forum/#!forum/lagom-framework) or [Stack Overflow](http://stackoverflow.com/questions/ask?tags=lagom). If you have a feature request, the [contributors channel](https://gitter.im/lagom/contributors) is a better forum than an issue tracker to discuss it.
+This is an issue tracker, used to manage and track the development of Lagom. It is not a support system and so it is not a place to ask questions or get help. If you're not sure if you have found a bug, the best place to start is with either the [discussion forum](https://discuss.lagomframework.com) or [Stack Overflow](http://stackoverflow.com/questions/ask?tags=lagom). If you have a feature request, the [contributors channel](https://gitter.im/lagom/contributors) is a better forum than an issue tracker to discuss it.
 
 ### Lagom Version (1.2.x / 1.3.x / etc)
 
@@ -42,6 +42,6 @@ Be descriptive: "it doesn't work" does not describe what the behavior actually i
 
 ### Reproducible Test Case
 
-Please provide a PR with a failing test.  
+Please provide a PR with a failing test.
 
 If the issue is more complex or requires configuration, please provide a link to a project on Github that reproduces the issue.

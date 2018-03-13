@@ -11,10 +11,10 @@ Lagom focuses on ensuring that your application realises the full potential of t
 * [Website](https://www.lagomframework.com)
 * [Download](https://www.lagomframework.com/download.html)
 * [Documentation](https://www.lagomframework.com/documentation)
-* [Community Chat](https://gitter.im/lagom/lagom)
-* [Mailing list](https://groups.google.com/forum/#!forum/lagom-framework)
-* [Get help](https://stackoverflow.com/questions/ask?tags=lagom)
-* [Contributors Chat](https://gitter.im/lagom/contributors)
+* [Discuss Lagom Forum](https://discuss.lagomframework.com)
+* [Get help on Stack Overflow](https://stackoverflow.com/questions/ask?tags=lagom)
+* [Community Gitter Chat](https://gitter.im/lagom/lagom)
+* [Contributors Gitter Chat](https://gitter.im/lagom/contributors)
 * [Contribution Guide](CONTRIBUTING.md)
 
 ## License
