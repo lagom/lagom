@@ -138,6 +138,11 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
         case seq => seq.sorted === Seq("10", "20", "30")
       }
 
+      val uuidCall = descriptor.calls().get(7)
+      val uuid = UUID.randomUUID()
+      deserializeParams(uuidCall, Seq(Seq(uuid.toString))) should ===(Seq(uuid))
+      serializeArgs(uuidCall, Seq(uuid)) should ===(Seq(Seq(uuid.toString)))
+
     }
 
   }
