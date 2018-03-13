@@ -9,10 +9,7 @@ import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
@@ -53,6 +50,7 @@ public interface BlogService extends Service {
     ServiceCall<NotUsed, NotUsed> getCommentRepeatList(String blogId, List<String> repeat);
     ServiceCall<NotUsed, NotUsed> getCommentRepeatCollection(String blogId, Collection<String> repeat);
     ServiceCall<NotUsed, NotUsed> getCommentRepeatSet(String blogId, Set<String> repeat);
+    ServiceCall<NotUsed, Blog> getPostUsingUUIDIdentifier(UUID blogId);
 
     @Override
     default Descriptor descriptor() {
@@ -63,7 +61,8 @@ public interface BlogService extends Service {
                 restCall(Method.GET, "/blogs/:blogId/posts/:postId/comments/:commentId", this::getComment),
                 restCall(Method.GET, "/blogs/:blogId/posts/repeatCol?repeat", this::getCommentRepeatCollection),
                 restCall(Method.GET, "/blogs/:blogId/posts/repeatList?repeat", this::getCommentRepeatList),
-                restCall(Method.GET, "/blogs/:blogId/posts/repeatSet?repeat", this::getCommentRepeatSet)
+                restCall(Method.GET, "/blogs/:blogId/posts/repeatSet?repeat", this::getCommentRepeatSet),
+                restCall(Method.GET, "/blogs/uuid/:blogUuid", this::getPostUsingUUIDIdentifier)
         );
     }
 }
