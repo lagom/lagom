@@ -76,21 +76,27 @@ public class TransportException extends RuntimeException {
     private static final Map<TransportErrorCode, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> BY_CODE_TRANSPORT_EXCEPTIONS;
 
     static {
+        // this map keeps a more strict relation between exception message and exception instances.
+        // Some exceptions reuse the same status code on certain transports so deserialization should
+        // try to reconstruct the exception by name first and fallback to reconstructing by code.
         Map<String, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> byName = new HashMap<>();
         byName.put(DeserializationException.class.getSimpleName(), DeserializationException::new);
-        byName.put(SerializationException.class.getSimpleName(), SerializationException::new);
-        byName.put(UnsupportedMediaType.class.getSimpleName(), UnsupportedMediaType::new);
-        byName.put(NotAcceptable.class.getSimpleName(), NotAcceptable::new);
+        byName.put(BadRequest.class.getSimpleName(), BadRequest::new);
+        byName.put(Forbidden.class.getSimpleName(), Forbidden::new);
         byName.put(PolicyViolation.class.getSimpleName(), PolicyViolation::new);
         byName.put(NotFound.class.getSimpleName(), NotFound::new);
-        byName.put(Forbidden.class.getSimpleName(), Forbidden::new);
+        byName.put(NotAcceptable.class.getSimpleName(), NotAcceptable::new);
+        byName.put(PayloadTooLarge.class.getSimpleName(), PayloadTooLarge::new);
+        byName.put(SerializationException.class.getSimpleName(), SerializationException::new);
+        byName.put(UnsupportedMediaType.class.getSimpleName(), UnsupportedMediaType::new);
 
         Map<TransportErrorCode, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> byCode = new HashMap<>();
         byCode.put(DeserializationException.ERROR_CODE, DeserializationException::new);
-        byCode.put(UnsupportedMediaType.ERROR_CODE, UnsupportedMediaType::new);
-        byCode.put(NotAcceptable.ERROR_CODE, NotAcceptable::new);
-        byCode.put(PolicyViolation.ERROR_CODE, PolicyViolation::new);
         byCode.put(Forbidden.ERROR_CODE, Forbidden::new);
+        byCode.put(PolicyViolation.ERROR_CODE, PolicyViolation::new);
+        byCode.put(NotAcceptable.ERROR_CODE, NotAcceptable::new);
+        byCode.put(PayloadTooLarge.ERROR_CODE, PayloadTooLarge::new);
+        byCode.put(UnsupportedMediaType.ERROR_CODE, UnsupportedMediaType::new);
 
         BY_NAME_TRANSPORT_EXCEPTIONS = Collections.unmodifiableMap(byName);
         BY_CODE_TRANSPORT_EXCEPTIONS = Collections.unmodifiableMap(byCode);
