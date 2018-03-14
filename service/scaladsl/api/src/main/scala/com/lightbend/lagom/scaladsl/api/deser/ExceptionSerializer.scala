@@ -8,7 +8,7 @@ import java.util.Base64
 
 import akka.util.ByteString
 import com.lightbend.lagom.scaladsl.api.transport.{ ExceptionMessage, MessageProtocol, TransportErrorCode, TransportException }
-import play.api.libs.json.{ JsError, JsSuccess, Json }
+import play.api.libs.json._
 import play.api.{ Environment, Mode }
 
 import scala.collection.immutable
