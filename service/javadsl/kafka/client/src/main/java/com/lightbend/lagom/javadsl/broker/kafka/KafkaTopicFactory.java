@@ -35,6 +35,8 @@ public class KafkaTopicFactory implements TopicFactory {
         this.system = system;
         this.materializer = materializer;
         this.executionContext = executionContext;
+        // TODO: expose KafkaConfig as a constructor argument instead of building one from system.settings().config()
+        // https://github.com/lagom/lagom/issues/1255
         this.config = KafkaConfig$.MODULE$.apply(system.settings().config());
         this.serviceLocator = serviceLocator;
     }
