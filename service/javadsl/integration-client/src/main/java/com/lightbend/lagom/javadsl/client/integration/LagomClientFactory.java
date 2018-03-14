@@ -184,7 +184,7 @@ public class LagomClientFactory implements Closeable {
         Config configuration = Configuration.load(environment).underlying();
 
         // Akka
-        ActorSystem actorSystem = ActorSystem.create("lagom-client", configuration.getConfig("akka"),
+        ActorSystem actorSystem = ActorSystem.create("lagom-client", configuration,
                 classLoader);
         Materializer materializer = ActorMaterializer.create(actorSystem);
 
