@@ -4,6 +4,7 @@
 package com.lightbend.lagom.javadsl.api.deser;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * A high level exception message.
@@ -36,5 +37,20 @@ public class ExceptionMessage implements Serializable {
                 "name='" + name + '\'' +
                 ", detail='" + detail + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ExceptionMessage that = (ExceptionMessage) o;
+        return Objects.equals(name, that.name) &&
+            Objects.equals(detail, that.detail);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(name, detail);
     }
 }
