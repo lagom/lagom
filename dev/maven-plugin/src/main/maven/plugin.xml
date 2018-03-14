@@ -163,7 +163,7 @@
         </parameter>
          <parameter>
             <name>kafkaAddress</name>
-            <type>boolean</type>
+            <type>java.lang.String</type>
             <required>false</required>
             <editable>true</editable>
             <description>The Kafka address.</description>
@@ -221,7 +221,7 @@
         </parameter>
         <parameter>
             <name>serviceLocatorUrl</name>
-            <type>boolean</type>
+            <type>java.lang.String</type>
             <required>false</required>
             <editable>true</editable>
             <description>The service locator URL.</description>
