@@ -52,7 +52,7 @@ private[lagom] object ScaladslServerMacroImpl {
 
     val extracted = ScaladslClientMacroImpl.validateServiceInterface[T](c)
 
-    val serviceMethodImpls = (extracted.serviceCalls ++ extracted.topics).map { serviceMethod =>
+    val serviceMethodImpls: Seq[c.universe.Tree] = (extracted.serviceCalls ++ extracted.topics).map { serviceMethod =>
       val methodParams = serviceMethod.paramLists.map { paramList =>
         paramList.map(param => q"${param.name.toTermName}: ${param.typeSignature}")
       }
@@ -62,6 +62,9 @@ private[lagom] object ScaladslServerMacroImpl {
           throw new _root_.scala.NotImplementedError("Service methods and topics must not be invoked from service trait")
         }
       """
+    } match {
+      case Seq() => Seq(EmptyTree)
+      case s     => s
     }
 
     c.Expr[Descriptor](q"""
