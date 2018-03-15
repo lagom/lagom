@@ -55,16 +55,11 @@ trait TestService extends Service {
 
   import Service._
 
-  // Requires at least one method due to https://github.com/lagom/lagom/issues/1185
-  def noop: ServiceCall[NotUsed, Done]
-
   override final def descriptor: Descriptor = named("test")
 
 }
 
-class TestServiceImpl extends TestService {
-  override def noop: ServiceCall[NotUsed, Done] = ServiceCall { _ => Future.successful(Done) }
-}
+class TestServiceImpl extends TestService
 
 class TestApplication(context: LagomApplicationContext) extends LagomApplication(context)
   with LocalServiceLocator
