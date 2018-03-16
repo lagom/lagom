@@ -15,7 +15,7 @@ import scala.concurrent.duration._
 import scala.util.Try
 import scala.util.control.NonFatal
 import com.lightbend.lagom.internal.javadsl.cluster.JoinClusterModule
-import com.lightbend.lagom.internal.testkit.{ TestServiceLocator, TestServiceLocatorPort, TestTopicFactory }
+import com.lightbend.lagom.internal.testkit.{ TestConfig, TestServiceLocator, TestServiceLocatorPort, TestTopicFactory }
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
@@ -61,6 +61,7 @@ import play.inject.guice.GuiceApplicationBuilder
 object ServiceTest {
 
   // These are all specified as strings so that we can say they are disabled without having a dependency on them.
+  private val DBModule = "play.api.db.DBModule"
   private val JdbcPersistenceModule = "com.lightbend.lagom.javadsl.persistence.jdbc.JdbcPersistenceModule"
   private val CassandraPersistenceModule = "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule"
   private val KafkaBrokerModule = "com.lightbend.lagom.internal.javadsl.broker.kafka.KafkaBrokerModule"
@@ -341,11 +342,12 @@ object ServiceTest {
         initialBuilder
           .configure(CassandraTestConfig.persistenceConfig(testName, cassandraPort))
           .configure("lagom.cluster.join-self", "on")
-          .disableModules(KafkaClientModule, KafkaBrokerModule)
+          .disableModules(DBModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
 
       } else if (setup.jdbc) {
 
         initialBuilder
+          .configure(TestConfig.JdbcConfig)
           .configure(CassandraTestConfig.clusterConfig())
           .configure("lagom.cluster.join-self", "on")
           .disableModules(CassandraPersistenceModule, KafkaClientModule, KafkaBrokerModule)
@@ -357,7 +359,7 @@ object ServiceTest {
           .configure("lagom.cluster.join-self", "on")
           .disable(classOf[PersistenceModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
-          .disableModules(CassandraPersistenceModule, KafkaClientModule, KafkaBrokerModule)
+          .disableModules(CassandraPersistenceModule, DBModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
 
       } else {
 
@@ -365,7 +367,7 @@ object ServiceTest {
           .configure("akka.actor.provider", "akka.actor.LocalActorRefProvider")
           .disable(classOf[PersistenceModule], classOf[PubSubModule], classOf[JoinClusterModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
-          .disableModules(CassandraPersistenceModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
+          .disableModules(CassandraPersistenceModule, DBModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
       }
 
     val application = setup.configureBuilder(finalBuilder).build()
