@@ -22,7 +22,7 @@ public class BadRequest extends TransportException {
         super(ERROR_CODE, cause);
     }
 
-    public BadRequest(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
-        super(errorCode, exceptionMessage);
+    public BadRequest(ExceptionMessage exceptionMessage) {
+        super(ERROR_CODE, exceptionMessage);
     }
 }

@@ -23,7 +23,7 @@ public class DeserializationException extends TransportException {
         super(ERROR_CODE, cause);
     }
 
-    public DeserializationException(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
-        super(errorCode, exceptionMessage);
+    public DeserializationException(ExceptionMessage exceptionMessage) {
+        super(ERROR_CODE, exceptionMessage);
     }
 }

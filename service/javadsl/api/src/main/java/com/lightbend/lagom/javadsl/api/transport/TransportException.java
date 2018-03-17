@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * An exception that can be translated down to a specific error in the transport.
@@ -41,13 +42,13 @@ public class TransportException extends RuntimeException {
     }
 
     public static TransportException fromCodeAndMessage(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
-        BiFunction<TransportErrorCode, ExceptionMessage, TransportException> creator = BY_NAME_TRANSPORT_EXCEPTIONS.get(exceptionMessage.name());
+        Function<ExceptionMessage, TransportException> creator = BY_NAME_TRANSPORT_EXCEPTIONS.get(exceptionMessage.name());
         if (creator != null) {
-            return creator.apply(errorCode, exceptionMessage);
+            return creator.apply(exceptionMessage);
         } else {
             creator = BY_CODE_TRANSPORT_EXCEPTIONS.get(errorCode);
             if (creator != null) {
-                return creator.apply(errorCode, exceptionMessage);
+                return creator.apply(exceptionMessage);
             } else {
                 return new TransportException(errorCode, exceptionMessage);
             }
@@ -72,14 +73,14 @@ public class TransportException extends RuntimeException {
         return exceptionMessage;
     }
 
-    private static final Map<String, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> BY_NAME_TRANSPORT_EXCEPTIONS;
-    private static final Map<TransportErrorCode, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> BY_CODE_TRANSPORT_EXCEPTIONS;
+    private static final Map<String, Function<ExceptionMessage, TransportException>> BY_NAME_TRANSPORT_EXCEPTIONS;
+    private static final Map<TransportErrorCode, Function<ExceptionMessage, TransportException>> BY_CODE_TRANSPORT_EXCEPTIONS;
 
     static {
         // this map keeps a more strict relation between exception message and exception instances.
         // Some exceptions reuse the same status code on certain transports so deserialization should
         // try to reconstruct the exception by name first and fallback to reconstructing by code.
-        Map<String, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> byName = new HashMap<>();
+        Map<String, Function<ExceptionMessage, TransportException>> byName = new HashMap<>();
         byName.put(DeserializationException.class.getSimpleName(), DeserializationException::new);
         byName.put(BadRequest.class.getSimpleName(), BadRequest::new);
         byName.put(Forbidden.class.getSimpleName(), Forbidden::new);
@@ -90,7 +91,7 @@ public class TransportException extends RuntimeException {
         byName.put(SerializationException.class.getSimpleName(), SerializationException::new);
         byName.put(UnsupportedMediaType.class.getSimpleName(), UnsupportedMediaType::new);
 
-        Map<TransportErrorCode, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> byCode = new HashMap<>();
+        Map<TransportErrorCode, Function<ExceptionMessage, TransportException>> byCode = new HashMap<>();
         byCode.put(DeserializationException.ERROR_CODE, DeserializationException::new);
         byCode.put(Forbidden.ERROR_CODE, Forbidden::new);
         byCode.put(PolicyViolation.ERROR_CODE, PolicyViolation::new);

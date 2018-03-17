@@ -18,7 +18,7 @@ public class UnsupportedMediaType extends TransportException {
         super(ERROR_CODE, "Could not negotiate a deserializer for type " + received + ", the default media type supported is " + supported);
     }
 
-    public UnsupportedMediaType(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
-        super(errorCode, exceptionMessage);
+    public UnsupportedMediaType(ExceptionMessage exceptionMessage) {
+        super(ERROR_CODE, exceptionMessage);
     }
 }
