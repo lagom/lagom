@@ -3,12 +3,9 @@
  */
 package com.lightbend.lagom.scaladsl.api
 
-import java.util
-import java.util.Optional
-
 import akka.util.ByteString
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer, RawExceptionMessage }
-import com.lightbend.lagom.scaladsl.api.transport.{ ExceptionMessage, _ }
+import com.lightbend.lagom.scaladsl.api.transport._
 import org.scalatest.{ Matchers, WordSpec }
 import play.api.{ Environment, Mode }
 

@@ -3,13 +3,13 @@
  */
 package com.lightbend.lagom.scaladsl.api.deser
 
-import java.io.{CharArrayWriter, PrintWriter}
+import java.io.{ CharArrayWriter, PrintWriter }
 import java.util.Base64
 
 import akka.util.ByteString
-import com.lightbend.lagom.scaladsl.api.transport.{ExceptionMessage, MessageProtocol, TransportErrorCode, TransportException}
+import com.lightbend.lagom.scaladsl.api.transport.{ ExceptionMessage, MessageProtocol, TransportErrorCode, TransportException }
 import play.api.libs.json._
-import play.api.{Environment, Mode}
+import play.api.{ Environment, Mode }
 
 import scala.collection.immutable
 import scala.collection.immutable.Seq
