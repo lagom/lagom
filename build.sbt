@@ -1024,9 +1024,8 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
   .settings(
     name := "lagom-build-tool-support",
     publishMavenStyle := true,
-    crossScalaVersions := Dependencies.SbtScalaVersions,
-    scalaVersion := Dependencies.SbtScalaVersions.head,
-    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
+    crossScalaVersions := Seq(Dependencies.ScalaVersions.head),
+    scalaVersion := Dependencies.ScalaVersions.head,
     crossPaths := false,
     sourceGenerators in Compile += Def.task {
       Generators.version(version.value, (sourceManaged in Compile).value)
@@ -1034,7 +1033,7 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     Dependencies.`build-tool-support`
   )
 
-// This is almost the sabe as `build-tool-support`, but targeting sbt
+// This is almost the same as `build-tool-support`, but targeting sbt
 // while `build-tool-support` targets Maven and possibly other build
 // systems. We did something similar for routes compiler in Play:
 //
@@ -1096,6 +1095,8 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
     description := "Provides Lagom development environment support to maven.",
     Dependencies.`maven-plugin`,
     publishMavenStyle := true,
+    crossScalaVersions := Seq(Dependencies.ScalaVersions.head),
+    scalaVersion := Dependencies.ScalaVersions.head,
     crossPaths := false,
     mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
     mavenTestArgs := Seq(
