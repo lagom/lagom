@@ -164,7 +164,7 @@ public class CqrsIntegrationTest {
     // and update the blogsummary table
     final PersistentEntityRef<BlogCommand> ref3 = registry().refFor(Post.class, "3");
     final AddPost cmd3 = new AddPost(new PostContent("Title 3", "Body"));
-    ref3.ask(cmd3).toCompletableFuture().get(5, SECONDS);
+    ref3.ask(cmd3).toCompletableFuture().get(15, SECONDS);
 
     eventually(() -> {
       final Source<String, ?> queryResult = cassandraSession.select(boundSelectStmt).map(row -> row.getString("title"));
@@ -192,7 +192,7 @@ public class CqrsIntegrationTest {
 
     final PersistentEntityRef<BlogCommand> ref4 = registry().refFor(Post.class, "4");
     final AddPost cmd4 = new AddPost(new PostContent("Title 4", "Body"));
-    ref4.ask(cmd4).toCompletableFuture().get(5, SECONDS);
+    ref4.ask(cmd4).toCompletableFuture().get(15, SECONDS);
 
     eventProbe.expectNext(new PostAdded("4", new PostContent("Title 4", "Body")));
 
