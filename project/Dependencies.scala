@@ -392,18 +392,19 @@ object Dependencies {
   val `testkit-core` = libraryDependencies ++= Seq(
     akkaActor,
     akkaStream,
+    play,
+    akkaPersistenceCassandraLauncher,
 
     // Upgrades needed to match whitelist
-    scalaJava8Compat,
-    scalaParserCombinators
+    playJson
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
     playAkkaHttpServer,
     akkaStreamTestkit,
-    akkaPersistenceCassandraLauncher,
     scalaTest % Test,
     "junit" % "junit" % JUnitVersion,
+    h2 % Test,
 
     // Without an binding, slf4j will print warnings when running tests
     "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test
@@ -412,9 +413,9 @@ object Dependencies {
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
     playAkkaHttpServer,
     akkaStreamTestkit,
-    akkaPersistenceCassandraLauncher,
     scalaTest % Test,
     "junit" % "junit" % JUnitVersion,
+    h2 % Test,
 
     // Without an binding, slf4j will print warnings when running tests
     "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test

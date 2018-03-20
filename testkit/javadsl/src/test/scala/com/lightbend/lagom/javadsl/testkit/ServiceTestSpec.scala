@@ -4,11 +4,12 @@
 package com.lightbend.lagom.javadsl.testkit
 
 import java.nio.file.{ Files, Path, Paths }
-import javax.inject.Inject
 
+import javax.inject.Inject
 import akka.japi.function.Procedure
 import com.google.inject.AbstractModule
 import com.lightbend.lagom.javadsl.api.{ Descriptor, Service }
+import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.javadsl.testkit.ServiceTest.{ Setup, TestServer }
 import org.scalatest.{ Matchers, WordSpec }
@@ -20,7 +21,7 @@ import scala.util.Properties
 
 class ServiceTestSpec extends WordSpec with Matchers {
   "ServiceTest" when {
-    "started" should {
+    "started with Cassandra" should {
       "create a temporary directory" in {
         val temporaryFileCountBeforeRun = listTemporaryFiles().size
 
@@ -43,11 +44,18 @@ class ServiceTestSpec extends WordSpec with Matchers {
         temporaryFilesAfterRun should have size temporaryFileCountBeforeRun
       }
     }
+
+    "started with JDBC" should {
+      "start successfully" in {
+        withServer(ServiceTest.defaultSetup.withJdbc()) { _ => () }
+      }
+    }
   }
 
   def withServer(setup: Setup)(block: TestServer => Unit): Unit = {
     ServiceTest.withServer(
       setup.configureBuilder((registerService _).asJava),
+      // We can't use a Single Abstract Method lambda until we drop Scala 2.11 support
       new Procedure[TestServer] {
         override def apply(server: TestServer): Unit = block(server)
       }
@@ -74,7 +82,7 @@ trait TestService extends Service {
 
 }
 
-class TestServiceImpl @Inject() extends TestService
+class TestServiceImpl @Inject() (persistentEntityRegistry: PersistentEntityRegistry) extends TestService
 
 class TestServiceModule extends AbstractModule with ServiceGuiceSupport {
   override def configure(): Unit = bindService(classOf[TestService], classOf[TestServiceImpl])
