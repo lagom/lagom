@@ -567,7 +567,8 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
     `broker-javadsl`,
     `persistence-core` % "compile;test->test",
     `persistence-cassandra-javadsl` % "test->test",
-    `jackson` % "test->test"
+    `jackson` % "test->test",
+    `persistence-jdbc-javadsl` % Test
   )
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
@@ -584,7 +585,8 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
     `broker-scaladsl`,
     `persistence-core` % "compile;test->test",
     `persistence-scaladsl` % "compile;test->test",
-    `persistence-cassandra-scaladsl` % "compile;test->test"
+    `persistence-cassandra-scaladsl` % "compile;test->test",
+    `persistence-jdbc-scaladsl` % Test
   )
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
