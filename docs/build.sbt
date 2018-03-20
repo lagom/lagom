@@ -111,7 +111,7 @@ lazy val immutables = ProjectRef(parentDir, "immutables")
 def forkedTests: Seq[Setting[_]] = Seq(
   fork in Test := true,
   concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
-  javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M"),
+  javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M", "-Dakka.test.single-expect-default=15s"),
   testGrouping in Test := (definedTests in Test map singleTestsGrouping).value
 )
 
