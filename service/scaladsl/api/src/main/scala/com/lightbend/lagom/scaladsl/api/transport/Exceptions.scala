@@ -74,7 +74,7 @@ object TransportErrorCode {
   /**
    * A generic error to used to indicate that the end receiving the error message violated the remote ends policy.
    */
-  val PolicyViolation: TransportErrorCode = TransportErrorCode(404, 1008, "Policy Violation")
+  val PolicyViolation: TransportErrorCode = TransportErrorCode(404, 1008, "Policy Violation/Not Found")
   /**
    * A resource was not found, equivalent to policy violation.
    */
@@ -99,7 +99,7 @@ object TransportErrorCode {
    * A generic error used to indicate that the end sending the error message because it encountered an unexpected
    * condition.
    */
-  val UnexpectedCondition: TransportErrorCode = TransportErrorCode(500, 1011, "Unexpected Condition")
+  val UnexpectedCondition: TransportErrorCode = TransportErrorCode(500, 1011, "Unexpected Condition/Internal Server Error")
   /**
    * An internal server error, equivalent to Unexpected Condition.
    */
