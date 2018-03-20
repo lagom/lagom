@@ -3,42 +3,33 @@
  */
 package com.lightbend.lagom.javadsl.testkit
 
-import java.nio.file.Files
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.TimeUnit
 import java.util.function.{ Function => JFunction }
 
-import scala.annotation.tailrec
-import scala.concurrent.{ Future, Promise }
-import scala.concurrent.duration._
-import scala.util.Try
-import scala.util.control.NonFatal
-import com.lightbend.lagom.internal.javadsl.cluster.JoinClusterModule
-import com.lightbend.lagom.internal.testkit.{ TestConfig, TestServiceLocator, TestServiceLocatorPort, TestTopicFactory }
-import com.lightbend.lagom.javadsl.api.Service
-import com.lightbend.lagom.javadsl.api.ServiceLocator
-import com.lightbend.lagom.javadsl.persistence.PersistenceModule
 import akka.actor.ActorSystem
-import akka.japi.function.Effect
-import akka.japi.function.Procedure
-import akka.persistence.cassandra.testkit.CassandraLauncher
+import akka.japi.function.{ Effect, Procedure }
 import akka.stream.Materializer
-import com.google.common.io.{ MoreFiles, RecursiveDeleteOption }
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
+import com.lightbend.lagom.internal.javadsl.cluster.JoinClusterModule
 import com.lightbend.lagom.internal.javadsl.persistence.testkit.CassandraTestConfig
+import com.lightbend.lagom.internal.testkit._
+import com.lightbend.lagom.javadsl.api.{ Service, ServiceLocator }
+import com.lightbend.lagom.javadsl.persistence.PersistenceModule
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
 import play.Application
-import play.api.Logger
-import play.api.Mode
-import play.api.Play
+import play.api.{ Mode, Play }
 import play.api.inject.{ ApplicationLifecycle, BindingKey, DefaultApplicationLifecycle, bind => sBind }
-import play.core.server.Server
-import play.core.server.ServerConfig
-import play.core.server.ServerProvider
+import play.core.server.{ Server, ServerConfig, ServerProvider }
 import play.inject.Injector
 import play.inject.guice.GuiceApplicationBuilder
+
+import scala.annotation.tailrec
+import scala.concurrent.Promise
+import scala.concurrent.duration._
+import scala.util.Try
+import scala.util.control.NonFatal
 
 /**
  * Support for writing functional tests for one service. The service is running
@@ -66,8 +57,6 @@ object ServiceTest {
   private val CassandraPersistenceModule = "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule"
   private val KafkaBrokerModule = "com.lightbend.lagom.internal.javadsl.broker.kafka.KafkaBrokerModule"
   private val KafkaClientModule = "com.lightbend.lagom.javadsl.broker.kafka.KafkaClientModule"
-
-  private val LagomTestConfigResource: String = "lagom-test-embedded-cassandra.yaml"
 
   sealed trait Setup {
     @deprecated(message = "Use withCassandra instead", since = "1.2.0")
@@ -310,34 +299,9 @@ object ServiceTest {
       .overrides(sBind[ApplicationLifecycle].to(lifecycle))
       .configure("play.akka.actor-system", testName)
 
-    val log = Logger(getClass)
-
     val finalBuilder =
       if (setup.cassandra) {
-
-        val cassandraPort = CassandraLauncher.randomPort
-        val cassandraDirectory = Files.createTempDirectory(testName)
-
-        // Shut down Cassandra and delete its temporary directory when the application shuts down
-        lifecycle.addStopHook { () =>
-          import scala.concurrent.ExecutionContext.Implicits.global
-          Try(CassandraLauncher.stop())
-          // The ALLOW_INSECURE option is required to remove the files on OSes that don't support SecureDirectoryStream
-          // See http://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/io/MoreFiles.html#deleteRecursively-java.nio.file.Path-com.google.common.io.RecursiveDeleteOption...-
-          Future(MoreFiles.deleteRecursively(cassandraDirectory, RecursiveDeleteOption.ALLOW_INSECURE))
-        }
-
-        val t0 = System.nanoTime()
-
-        CassandraLauncher.start(
-          cassandraDirectory.toFile,
-          LagomTestConfigResource,
-          clean = false,
-          port = cassandraPort,
-          CassandraLauncher.classpathForResources(LagomTestConfigResource)
-        )
-
-        log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
+        val cassandraPort = CassandraTestServer.run(testName, lifecycle)
 
         initialBuilder
           .configure(CassandraTestConfig.persistenceConfig(testName, cassandraPort))

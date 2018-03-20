@@ -392,16 +392,16 @@ object Dependencies {
   val `testkit-core` = libraryDependencies ++= Seq(
     akkaActor,
     akkaStream,
+    play,
+    akkaPersistenceCassandraLauncher,
 
     // Upgrades needed to match whitelist
-    scalaJava8Compat,
-    scalaParserCombinators
+    playJson
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
     playAkkaHttpServer,
     akkaStreamTestkit,
-    akkaPersistenceCassandraLauncher,
     scalaTest % Test,
     "junit" % "junit" % JUnitVersion,
     h2 % Test,
@@ -413,7 +413,6 @@ object Dependencies {
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
     playAkkaHttpServer,
     akkaStreamTestkit,
-    akkaPersistenceCassandraLauncher,
     scalaTest % Test,
     "junit" % "junit" % JUnitVersion,
     h2 % Test,
