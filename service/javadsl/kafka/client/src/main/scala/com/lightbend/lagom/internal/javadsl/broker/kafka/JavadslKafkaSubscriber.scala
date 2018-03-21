@@ -72,6 +72,8 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](kafkaCon
       .add(KafkaMetadataKeys.PARTITION, record.partition().asInstanceOf[java.lang.Integer])
       .add(KafkaMetadataKeys.TOPIC, record.topic())
       .add(KafkaMetadataKeys.HEADERS, record.headers())
+      .add(KafkaMetadataKeys.TIMESTAMP, record.timestamp().asInstanceOf[java.lang.Long])
+      .add(KafkaMetadataKeys.TIMESTAMP_TYPE, record.timestampType())
   }
 
   private def consumerSettings = {

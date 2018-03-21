@@ -5,6 +5,7 @@ package com.lightbend.lagom.scaladsl.broker.kafka
 
 import com.lightbend.lagom.scaladsl.api.broker.MetadataKey
 import org.apache.kafka.common.header.Headers
+import org.apache.kafka.common.record.TimestampType
 
 /**
  * Metadata keys specific to the Kafka broker implementation.
@@ -30,4 +31,15 @@ object KafkaMetadataKeys {
    * The Kafka message headers.
    */
   val Headers: MetadataKey[Headers] = MetadataKey("kafkaHeaders")
+
+  /**
+   * The timestamp of the Kafka message. This could have a different meaning depending on TimestampType.
+   */
+  val Timestamp: MetadataKey[Long] = MetadataKey("kafkaTimestamp")
+
+  /**
+   * The timestamp type of the Kafka message.
+   */
+  val TimestampType: MetadataKey[TimestampType] = MetadataKey("kafkaTimestampType")
+
 }

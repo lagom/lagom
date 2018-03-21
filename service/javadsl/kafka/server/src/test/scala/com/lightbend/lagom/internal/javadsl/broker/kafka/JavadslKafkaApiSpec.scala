@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.internal.javadsl.broker.kafka
 
+import java.util.Optional
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{ CompletableFuture, CompletionStage, CountDownLatch, TimeUnit }
 
@@ -295,13 +296,17 @@ class JavadslKafkaApiSpec extends WordSpecLike
       )
 
       messages.size shouldBe 3
+
       def runAssertions(msg: Message[String]): Unit = {
         msg.messageKeyAsString shouldBe "A"
         msg.get(KafkaMetadataKeys.TOPIC).asScala.value shouldBe "test7"
-        msg.get(KafkaMetadataKeys.HEADERS) should not be None
+        msg.get(KafkaMetadataKeys.HEADERS).asScala should not be None
+        msg.get(KafkaMetadataKeys.TIMESTAMP).asScala should not be None
+        msg.get(KafkaMetadataKeys.TIMESTAMP_TYPE).asScala should not be None
         msg.get(KafkaMetadataKeys.PARTITION).asScala.value shouldBe
           messages.head.get(KafkaMetadataKeys.PARTITION).asScala.value
       }
+
       messages.foreach(runAssertions)
       messages.head.getPayload shouldBe "A1"
       val offset = messages.head.get(KafkaMetadataKeys.OFFSET).asScala.value
