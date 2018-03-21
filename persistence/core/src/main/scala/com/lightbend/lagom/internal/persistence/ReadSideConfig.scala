@@ -11,6 +11,7 @@ import play.api.Configuration
 import scala.concurrent.duration._
 
 case class ReadSideConfig(
+  offsetTimeout:        FiniteDuration = 5.seconds,
   minBackoff:           FiniteDuration = 3.seconds,
   maxBackoff:           FiniteDuration = 30.seconds,
   randomBackoffFactor:  Double         = 0.2,
@@ -22,6 +23,7 @@ object ReadSideConfig {
 
   def apply(conf: Config): ReadSideConfig = {
     ReadSideConfig(
+      conf.getDuration("offset-timeout", TimeUnit.MILLISECONDS).millis,
       conf.getDuration("failure-exponential-backoff.min", TimeUnit.MILLISECONDS).millis,
       conf.getDuration("failure-exponential-backoff.max", TimeUnit.MILLISECONDS).millis,
       conf.getDouble("failure-exponential-backoff.random-factor"),

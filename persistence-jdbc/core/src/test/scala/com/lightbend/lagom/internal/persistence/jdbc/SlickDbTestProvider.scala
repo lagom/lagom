@@ -19,6 +19,7 @@ object SlickDbTestProvider {
     override val minConnections: Int = 20
     override val maxConnections: Int = 100
     override val queueSize: Int = 100
+    override def registerMbeans: Boolean = false
   }
 
   /** Builds Slick Database (with AsyncExecutor) and bind it as JNDI resource for test purposes  */
