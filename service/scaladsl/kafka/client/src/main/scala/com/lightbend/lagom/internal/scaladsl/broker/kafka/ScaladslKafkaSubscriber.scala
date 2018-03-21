@@ -67,7 +67,9 @@ private[lagom] class ScaladslKafkaSubscriber[Payload, SubscriberPayload](kafkaCo
       (KafkaMetadataKeys.Offset -> record.offset()) +
       (KafkaMetadataKeys.Partition -> record.partition()) +
       (KafkaMetadataKeys.Topic -> record.topic()) +
-      (KafkaMetadataKeys.Headers -> record.headers())
+      (KafkaMetadataKeys.Headers -> record.headers()) +
+      (KafkaMetadataKeys.Timestamp -> record.timestamp()) +
+      (KafkaMetadataKeys.TimestampType -> record.timestampType())
   }
 
   private def consumerSettings = {
