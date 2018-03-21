@@ -86,8 +86,15 @@ public interface Subscriber<Payload> {
    * Whether the stream is automatically restarted depends on the Lagom message
    * broker implementation in use. If the Kafka Lagom message broker module is
    * being used, then by default the stream is automatically restarted when a
-   * failure occurs.  
-   * 
+   * failure occurs.
+   *
+   * The <code>flow</code> may pull more elements from upstream but it must emit
+   * exactly one <code>Done</code> message for each message that it receives. It
+   * must also emit them in the same order that the messages were received. This
+   * means that the <code>flow</code> must not filter or collect a subset of the
+   * messages, instead it must split the messages into separate streams and map
+   * those that would have been dropped to <code>Done</code>.
+   *
    * @param flow The flow to apply to each received message.
    * @return A <code>CompletionStage</code> that may never complete if messages
    *         go through the passed <code>flow</code> flawlessly. However, the
