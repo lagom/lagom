@@ -76,14 +76,17 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
         config.maxBackoff,
         config.randomBackoffFactor
       ) { () =>
-        val handler = processor().buildHandler
+        val handler = processor().buildHandler()
         val futureOffset = handler.prepare(tag)
-        Source.fromFuture(futureOffset).flatMapConcat {
-          offset =>
-            val eventStreamSource = eventStreamFactory(tag, offset)
-            val userlandFlow = handler.handle()
-            eventStreamSource.via(userlandFlow)
-        }
+        Source
+          .fromFuture(futureOffset)
+          .initialTimeout(config.offsetTimeout)
+          .flatMapConcat {
+            offset =>
+              val eventStreamSource = eventStreamFactory(tag, offset)
+              val userlandFlow = handler.handle()
+              eventStreamSource.via(userlandFlow)
+          }
       }
 
       val (killSwitch, streamDone) = backoffSource

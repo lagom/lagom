@@ -59,7 +59,8 @@ private[lagom] object SlickDbProvider {
         minThreads = asyncExecConfig.minConnections,
         maxThreads = asyncExecConfig.numThreads,
         queueSize = asyncExecConfig.queueSize,
-        maxConnections = asyncExecConfig.maxConnections
+        maxConnections = asyncExecConfig.maxConnections,
+        registerMbeans = asyncExecConfig.registerMbeans
       )
     )
   }
@@ -83,6 +84,7 @@ private[lagom] trait AsyncExecutorConfig {
   def minConnections: Int
   def maxConnections: Int
   def queueSize: Int
+  def registerMbeans: Boolean
 }
 
 private[lagom] object AsyncExecutorConfig {
@@ -95,7 +97,8 @@ private[lagom] object AsyncExecutorConfig {
     val minConnections: Int = config.getInt("minConnections")
     val maxConnections: Int = config.getInt("maxConnections")
     val queueSize: Int = config.getInt("queueSize")
+    val registerMbeans: Boolean = config.getBoolean("registerMbeans")
 
-    override def toString: String = s"AsyncExecutorConfig($numThreads, $minConnections, $maxConnections, $queueSize)"
+    override def toString: String = s"AsyncExecutorConfig($numThreads, $minConnections, $maxConnections, $queueSize, $registerMbeans)"
   }
 }
