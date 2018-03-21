@@ -81,12 +81,15 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
         ) { () =>
           val handler: ReadSideProcessor.ReadSideHandler[Event] = processorFactory().buildHandler()
           val futureOffset = handler.prepare(tag).toScala
-          scaladsl.Source.fromFuture(futureOffset).flatMapConcat {
-            offset =>
-              val eventStreamSource = eventStreamFactory(tag, offset).asScala
-              val userlandFlow = handler.handle()
-              eventStreamSource.via(userlandFlow)
-          }
+          scaladsl.Source
+            .fromFuture(futureOffset)
+            .initialTimeout(config.offsetTimeout)
+            .flatMapConcat {
+              offset =>
+                val eventStreamSource = eventStreamFactory(tag, offset).asScala
+                val userlandFlow = handler.handle()
+                eventStreamSource.via(userlandFlow)
+            }
         }
 
       val (killSwitch, streamDone) = backoffSource
