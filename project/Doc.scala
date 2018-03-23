@@ -99,6 +99,8 @@ object UnidocRoot extends AutoPlugin {
     scalacOptions in (ScalaUnidoc, unidoc) ++= Seq("-skip-packages", "com.lightbend.lagom.internal"),
     javacOptions in doc := Seq(
       "-windowtitle", "Lagom Services API",
+      "-link", "https://doc.akka.io/japi/akka/current/",
+      "-link", "https://docs.oracle.com/javase/8/docs/api/",
       "-public",
       "-group", "Services API", packageList(
         "com.lightbend.lagom.javadsl",
