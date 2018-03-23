@@ -88,6 +88,12 @@ object UnidocRoot extends AutoPlugin {
     case _ => Seq("--allow-script-in-comments")
   }
 
+
+  private def packageListLocation(baseDir:File, name:String) = {
+    baseDir / "docs"/"src"/"main"/"resources"/"package-list"/ name
+  }
+
+
   override lazy val projectSettings = scalaJavaUnidocSettings ++ Seq(
     unidocAllSources in (JavaUnidoc, unidoc) ++= allGenjavadocSources.value,
     unidocAllSources in (JavaUnidoc, unidoc) := {
@@ -99,8 +105,9 @@ object UnidocRoot extends AutoPlugin {
     scalacOptions in (ScalaUnidoc, unidoc) ++= Seq("-skip-packages", "com.lightbend.lagom.internal"),
     javacOptions in doc := Seq(
       "-windowtitle", "Lagom Services API",
-      "-link", "https://doc.akka.io/japi/akka/current/",
       "-link", "https://docs.oracle.com/javase/8/docs/api/",
+      "-linkoffline", "https://doc.akka.io/japi/akka/current/", packageListLocation(baseDirectory.value, "akka").getAbsolutePath,
+      "-linkoffline", "https://www.playframework.com/documentation/latest/api/java/", packageListLocation(baseDirectory.value, "play").getAbsolutePath,
       "-public",
       "-group", "Services API", packageList(
         "com.lightbend.lagom.javadsl",
