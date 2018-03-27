@@ -50,7 +50,7 @@ object UnidocRoot extends AutoPlugin {
     inTask(unidoc)(Seq(
       unidocProjectFilter in ScalaUnidoc := projectsAndDependencies(scaladslProjects),
       unidocProjectFilter in JavaUnidoc := projectsAndDependencies(javadslProjects),
-      apiMappings in ScalaUnidoc := (apiMappings in (Compile, doc)).value
+      autoAPIMappings in ScalaUnidoc := true
     ))
   }
 
