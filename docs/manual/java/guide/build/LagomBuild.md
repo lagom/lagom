@@ -32,7 +32,7 @@ We recommend the usage of maven properties to define the Lagom Version and Scala
 ```xml
 <properties>
     <scala.binary.version>2.12</scala.binary.version>
-    <lagom.version>1.4.0</lagom.version>
+    <lagom.version>1.4.3</lagom.version>
 </properties>
 ```
 

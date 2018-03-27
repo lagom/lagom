@@ -20,7 +20,7 @@ object Dependencies {
   val ScalaVersions = Seq("2.12.4", "2.11.12")
   val SbtScalaVersions = Seq("2.10.6", "2.12.4")
   val AkkaPersistenceCassandraVersion = "0.60"
-  val AkkaPersistenceJdbcVersion = "3.1.0"
+  val AkkaPersistenceJdbcVersion = "3.3.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
   val ScalaTestVersion = "3.0.4"
   val JacksonVersion = "2.8.11"
@@ -33,7 +33,7 @@ object Dependencies {
 
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.0.6"
-  val SlickVersion = "3.2.1"
+  val SlickVersion = "3.2.3"
   // Also be sure to update JUnitVersion in docs/build.sbt.
   val JUnitVersion = "4.11"
   // Also be sure to update JUnitInterfaceVersion in docs/build.sbt.
