@@ -107,6 +107,7 @@ object UnidocRoot extends AutoPlugin {
       "-windowtitle", "Lagom Services API",
       "-link", "https://docs.oracle.com/javase/8/docs/api/",
       "-linkoffline", "https://doc.akka.io/japi/akka/current/", packageListLocation(baseDirectory.value, "akka").getAbsolutePath,
+      "-linkoffline", "https://doc.akka.io/japi/akka-http/current/", packageListLocation(baseDirectory.value, "akka-http").getAbsolutePath,
       "-linkoffline", "https://www.playframework.com/documentation/latest/api/java/", packageListLocation(baseDirectory.value, "play").getAbsolutePath,
       "-public",
       "-group", "Services API", packageList(
