@@ -74,7 +74,7 @@ object TransportErrorCode {
   /**
    * A generic error to used to indicate that the end receiving the error message violated the remote ends policy.
    */
-  val PolicyViolation: TransportErrorCode = TransportErrorCode(404, 1008, "Policy Violation")
+  val PolicyViolation: TransportErrorCode = TransportErrorCode(404, 1008, "Policy Violation/Not Found")
   /**
    * A resource was not found, equivalent to policy violation.
    */
@@ -99,7 +99,7 @@ object TransportErrorCode {
    * A generic error used to indicate that the end sending the error message because it encountered an unexpected
    * condition.
    */
-  val UnexpectedCondition: TransportErrorCode = TransportErrorCode(500, 1011, "Unexpected Condition")
+  val UnexpectedCondition: TransportErrorCode = TransportErrorCode(500, 1011, "Unexpected Condition/Internal Server Error")
   /**
    * An internal server error, equivalent to Unexpected Condition.
    */
@@ -193,10 +193,10 @@ final class ExceptionMessage(val name: String, val detail: String) extends Seria
 class TransportException(val errorCode: TransportErrorCode, val exceptionMessage: ExceptionMessage, cause: Throwable) extends RuntimeException(exceptionMessage.detail, cause) {
 
   def this(errorCode: TransportErrorCode, message: String) =
-    this(errorCode, new ExceptionMessage(getClass.getSimpleName, message), null)
+    this(errorCode, new ExceptionMessage(classOf[TransportException].getSimpleName, message), null)
 
   def this(errorCode: TransportErrorCode, cause: Throwable) =
-    this(errorCode, new ExceptionMessage(getClass.getSimpleName, cause.getMessage), cause)
+    this(errorCode, new ExceptionMessage(classOf[TransportException].getSimpleName, cause.getMessage), cause)
 
   def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) =
     this(errorCode, exceptionMessage, null)
@@ -225,23 +225,23 @@ object TransportException {
 
   private val ByNameTransportExceptions: Map[String, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
     classOf[DeserializationException].getSimpleName -> ((tec, em) => new DeserializationException(tec, em)),
-    classOf[SerializationException].getSimpleName -> ((tec, em) => new SerializationException(tec, em)),
-    classOf[UnsupportedMediaType].getSimpleName -> ((tec, em) => new UnsupportedMediaType(tec, em)),
-    classOf[NotAcceptable].getSimpleName -> ((tec, em) => new NotAcceptable(tec, em)),
+    classOf[BadRequest].getSimpleName -> ((tec, em) => new BadRequest(tec, em)),
+    classOf[Forbidden].getSimpleName -> ((tec, em) => new Forbidden(tec, em)),
     classOf[PolicyViolation].getSimpleName -> ((tec, em) => new PolicyViolation(tec, em)),
     classOf[NotFound].getSimpleName -> ((tec, em) => new NotFound(tec, em)),
+    classOf[NotAcceptable].getSimpleName -> ((tec, em) => new NotAcceptable(tec, em)),
     classOf[PayloadTooLarge].getSimpleName -> ((tec, em) => new PayloadTooLarge(tec, em)),
-    classOf[Forbidden].getSimpleName -> ((tec, em) => new Forbidden(tec, em))
+    classOf[SerializationException].getSimpleName -> ((tec, em) => new SerializationException(tec, em)),
+    classOf[UnsupportedMediaType].getSimpleName -> ((tec, em) => new UnsupportedMediaType(tec, em))
   )
 
   private val ByCodeTransportExceptions: Map[TransportErrorCode, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
     DeserializationException.ErrorCode -> ((tec, em) => new DeserializationException(tec, em)),
-    UnsupportedMediaType.ErrorCode -> ((tec, em) => new UnsupportedMediaType(tec, em)),
-    NotAcceptable.ErrorCode -> ((tec, em) => new NotAcceptable(tec, em)),
+    Forbidden.ErrorCode -> ((tec, em) => new Forbidden(tec, em)),
     PolicyViolation.ErrorCode -> ((tec, em) => new PolicyViolation(tec, em)),
+    NotAcceptable.ErrorCode -> ((tec, em) => new NotAcceptable(tec, em)),
     PayloadTooLarge.ErrorCode -> ((tec, em) => new PayloadTooLarge(tec, em)),
-    BadRequest.ErrorCode -> ((tec, em) => new BadRequest(tec, em)),
-    Forbidden.ErrorCode -> ((tec, em) => new Forbidden(tec, em))
+    UnsupportedMediaType.ErrorCode -> ((tec, em) => new UnsupportedMediaType(tec, em))
   )
 
 }

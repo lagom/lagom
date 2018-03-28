@@ -12,7 +12,7 @@ As a complete microservices platform, Lagom assembles a collection of technologi
 
     * Akka's [Split Brain Resolver](https://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) handles network failures and system crashes.
 
-    * [Lightbend Application Monitoring](https://www.lightbend.com/products/monitoring) provides real time monitoring of system health, availability and performance.
+    * [Lightbend's Telemetry (Cinnamon) product](https://developer.lightbend.com/docs/cinnamon/latest/home.html) provides real time monitoring of system health, availability and performance.
 
     * See [[Cluster]] for more details.
 

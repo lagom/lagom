@@ -233,7 +233,7 @@ Other than that difference, refer to the [Akka Rolling Update](https://doc.akka.
 
 ### Downtime upgrade
 
-If your application can tolerate downtime, we recommend you to enable `ddata` and the new serializer for `akka.Done`.
+If your application can tolerate downtime, we recommend you to enable `ddata` and the new serializers for `akka.Done`, `akka.actor.Address` and `akka.remote.UniqueAddress`.
 
 In order to achieve this, make sure you have added the following properties to your `application.conf` file.
 
@@ -241,9 +241,11 @@ In order to achieve this, make sure you have added the following properties to y
 # Enable new sharding state store mode by overriding Lagom's default
 akka.cluster.sharding.state-store-mode = ddata
 
-# Enable the serializer for akka.Done provided in Akka 2.5.8+ to avoid the use of Java serialization.
+# Enable serializers provided in Akka 2.5.8+ to avoid the use of Java serialization.
 akka.actor.serialization-bindings {
-  "akka.Done" = akka-misc
+    "akka.Done"                 = akka-misc
+    "akka.actor.Address"        = akka-misc
+    "akka.remote.UniqueAddress" = akka-misc
 }
 ```
 

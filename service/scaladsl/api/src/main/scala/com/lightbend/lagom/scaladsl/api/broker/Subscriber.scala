@@ -49,6 +49,11 @@ trait Subscriber[Payload] {
    * Kafka Lagom message broker module is being used, then by default the stream is automatically restarted when a
    * failure occurs.
    *
+   * The `flow` may pull more elements from upstream but it must emit exactly one `Done` message for each message that
+   * it receives. It must also emit them in the same order that the messages were received. This means that the `flow`
+   * must not filter or collect a subset of the messages, instead it must split the messages into separate streams and
+   * map those that would have been dropped to `Done`.
+   *
    * @param flow The flow to apply to each received message.
    * @return A `Future` that will be completed if the `flow` completes.
    */

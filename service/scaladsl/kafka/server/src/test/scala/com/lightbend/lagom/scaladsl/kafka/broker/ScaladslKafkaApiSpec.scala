@@ -288,6 +288,8 @@ class ScaladslKafkaApiSpec extends WordSpecLike
         msg.messageKeyAsString shouldBe "A"
         msg.get(KafkaMetadataKeys.Topic).value shouldBe "test7"
         msg.get(KafkaMetadataKeys.Headers) should not be None
+        msg.get(KafkaMetadataKeys.Timestamp) should not be None
+        msg.get(KafkaMetadataKeys.TimestampType) should not be None
         msg.get(KafkaMetadataKeys.Partition).value shouldBe messages.head.get(KafkaMetadataKeys.Partition).value
       }
       messages.foreach(runAssertions)

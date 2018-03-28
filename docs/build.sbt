@@ -1,10 +1,10 @@
 val ScalaVersion = "2.12.4"
 
-val AkkaVersion = "2.5.9"
+val AkkaVersion = "2.5.11"
 val JUnitVersion = "4.11"
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion = "3.0.4"
-val PlayVersion = "2.6.11"
+val PlayVersion = "2.6.12"
 val Log4jVersion = "2.10.0"
 val MacWireVersion = "2.3.0"
 val LombokVersion = "1.16.20"
@@ -111,7 +111,7 @@ lazy val immutables = ProjectRef(parentDir, "immutables")
 def forkedTests: Seq[Setting[_]] = Seq(
   fork in Test := true,
   concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
-  javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M"),
+  javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M", "-Dakka.test.single-expect-default=15s"),
   testGrouping in Test := (definedTests in Test map singleTestsGrouping).value
 )
 

@@ -366,17 +366,7 @@ lazy val root = (project in file("."))
   )
   .enablePlugins(lagom.UnidocRoot)
   .settings(UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*)
-  .settings(
-    whitesourceProduct in ThisBuild               := "Lightbend Reactive Platform",
-    whitesourceAggregateProjectName in ThisBuild  := sys.env.getOrElse("WHITESOURCE_PROJECT_NAME", default = "invalid"),
-    whitesourceAggregateProjectToken in ThisBuild := sys.env.getOrElse("WHITESOURCE_PROJECT_TOKEN", default = "invalid")
-  )
   .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects).map(Project.projectToRef): _*)
-
-  credentials += Credentials(realm = "whitesource",
-      host = "whitesourcesoftware.com",
-      userName = "",
-      passwd = sys.env.getOrElse("WHITESOURCE_PASSWORD", default = "invalid"))
 
 def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin)
 def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
@@ -577,7 +567,8 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
     `broker-javadsl`,
     `persistence-core` % "compile;test->test",
     `persistence-cassandra-javadsl` % "test->test",
-    `jackson` % "test->test"
+    `jackson` % "test->test",
+    `persistence-jdbc-javadsl` % Test
   )
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
@@ -594,7 +585,8 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
     `broker-scaladsl`,
     `persistence-core` % "compile;test->test",
     `persistence-scaladsl` % "compile;test->test",
-    `persistence-cassandra-scaladsl` % "compile;test->test"
+    `persistence-cassandra-scaladsl` % "compile;test->test",
+    `persistence-jdbc-scaladsl` % Test
   )
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
@@ -1034,9 +1026,8 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
   .settings(
     name := "lagom-build-tool-support",
     publishMavenStyle := true,
-    crossScalaVersions := Dependencies.SbtScalaVersions,
-    scalaVersion := Dependencies.SbtScalaVersions.head,
-    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
+    crossScalaVersions := Seq(Dependencies.ScalaVersions.head),
+    scalaVersion := Dependencies.ScalaVersions.head,
     crossPaths := false,
     sourceGenerators in Compile += Def.task {
       Generators.version(version.value, (sourceManaged in Compile).value)
@@ -1044,7 +1035,7 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     Dependencies.`build-tool-support`
   )
 
-// This is almost the sabe as `build-tool-support`, but targeting sbt
+// This is almost the same as `build-tool-support`, but targeting sbt
 // while `build-tool-support` targets Maven and possibly other build
 // systems. We did something similar for routes compiler in Play:
 //
@@ -1106,6 +1097,8 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
     description := "Provides Lagom development environment support to maven.",
     Dependencies.`maven-plugin`,
     publishMavenStyle := true,
+    crossScalaVersions := Seq(Dependencies.ScalaVersions.head),
+    scalaVersion := Dependencies.ScalaVersions.head,
     crossPaths := false,
     mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
     mavenTestArgs := Seq(
