@@ -7,20 +7,24 @@ import scala.concurrent.duration._
 import scala.concurrent.Future
 import akka.actor.ActorRef
 import java.io.NotSerializableException
+
 import akka.actor.NoSerializationVerificationNeeded
 import akka.actor.ActorSystem
 import akka.util.Timeout
-import akka.pattern.{ ask => akkaAsk }
+import akka.pattern.{ AskTimeoutException, ask => akkaAsk }
+
+import scala.util.Failure
 
 /**
  * Commands are sent to a [[PersistentEntity]] using a
  * `PersistentEntityRef`. It is retrieved with [[PersistentEntityRegistry#refFor]].
  */
 final class PersistentEntityRef[Command](
-  val entityId: String,
-  region:       ActorRef,
-  system:       ActorSystem,
-  askTimeout:   FiniteDuration
+  val entityId:  String,
+  region:        ActorRef,
+  system:        ActorSystem,
+  askTimeout:    FiniteDuration,
+  resultHandler: PersistentEntityResultHandler
 )
   extends NoSerializationVerificationNeeded {
 
@@ -38,12 +42,8 @@ final class PersistentEntityRef[Command](
   def ask[Cmd <: Command with PersistentEntity.ReplyType[_]](command: Cmd): Future[command.ReplyType] = {
     import scala.compat.java8.FutureConverters._
     import system.dispatcher
-    (region ? CommandEnvelope(entityId, command)).flatMap {
-      case exc: Throwable =>
-        // not using akka.actor.Status.Failure because it is using Java serialization
-        Future.failed(exc)
-      case result => Future.successful(result)
-    }.asInstanceOf[Future[command.ReplyType]]
+    val result = (region ? CommandEnvelope(entityId, command))
+    resultHandler.mapResult(result, command)
   }
 
   /**
@@ -53,7 +53,7 @@ final class PersistentEntityRef[Command](
    * (`PersistentEntityRef` is immutable).
    */
   def withAskTimeout(timeout: FiniteDuration): PersistentEntityRef[Command] =
-    new PersistentEntityRef(entityId, region, system, askTimeout = timeout)
+    new PersistentEntityRef(entityId, region, system, askTimeout = timeout, resultHandler)
 
   //  Reasons for why we don't not support serialization of the PersistentEntityRef:
   //  - it will rarely be sent as a message itself, so providing a serializer will not help

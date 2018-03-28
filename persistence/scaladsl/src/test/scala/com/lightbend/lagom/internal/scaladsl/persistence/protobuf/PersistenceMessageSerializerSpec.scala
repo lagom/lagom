@@ -10,12 +10,10 @@ import akka.actor.ExtendedActorSystem
 import akka.serialization.SerializationExtension
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.persistence.ActorSystemSpec
-import com.lightbend.lagom.scaladsl.persistence.CommandEnvelope
+import com.lightbend.lagom.scaladsl.persistence.{ CommandEnvelope, DefaultPersistentEntityResultHandler, PersistentEntityRef, TestEntity }
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.InvalidCommandException
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.PersistException
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.UnhandledCommandException
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRef
-import com.lightbend.lagom.scaladsl.persistence.TestEntity
 import com.typesafe.config.ConfigFactory
 
 class PersistenceMessageSerializerSpec extends ActorSystemSpec {
@@ -56,7 +54,7 @@ class PersistenceMessageSerializerSpec extends ActorSystemSpec {
 
     "not serialize PersistentEntityRef" in {
       intercept[NotSerializableException] {
-        SerializationExtension(system).serialize(new PersistentEntityRef[String]("abc", system.deadLetters, system, 5.seconds)).get
+        SerializationExtension(system).serialize(new PersistentEntityRef[String]("abc", system.deadLetters, system, 5.seconds, DefaultPersistentEntityResultHandler)).get
       }
     }
   }

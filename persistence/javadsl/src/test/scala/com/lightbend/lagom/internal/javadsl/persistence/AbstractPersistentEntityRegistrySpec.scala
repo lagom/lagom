@@ -7,7 +7,7 @@ import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import com.google.inject.Guice
 import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule
-import com.lightbend.lagom.javadsl.persistence.{ NamedEntity, TestEntity }
+import com.lightbend.lagom.javadsl.persistence.{ NamedEntity, TestEntity, TracingPersistentEntityErrorHandler }
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{ BeforeAndAfterAll, FlatSpec, Matchers }
@@ -26,7 +26,9 @@ class AbstractPersistentEntityRegistrySpec
       "akka.actor.provider = akka.cluster.ClusterActorRefProvider \n" +
         "akka.remote.netty.tcp.port = 0 \n" +
         "akka.remote.netty.tcp.hostname = 127.0.0.1 \n" +
-        "akka.loglevel = INFO \n"
+        "akka.loglevel = INFO \n" +
+        "lagom.persistence.error-tracing.log-cluster-state-on-timeout = true \n" +
+        "lagom.persistence.error-tracing.log-command-payload-on-failure = true \n"
     )
     system = ActorSystem.create("PubSubTest", config)
     Cluster(system).join(Cluster(system).selfAddress)
@@ -67,6 +69,12 @@ class AbstractPersistentEntityRegistrySpec
     val entityClass = classOf[TestEntity]
     assertThrows[IllegalArgumentException] {
       registry.refFor(entityClass, uselessId)
+    }
+  }
+
+  it should "correctly create the right error handler " in withRegistry { registry =>
+    assert {
+      registry.errorHandlerFor(uselessId).isInstanceOf[TracingPersistentEntityErrorHandler]
     }
   }
 
