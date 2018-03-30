@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
+ */
 package com.lightbend.lagom.scaladsl.testkit
 
 import akka.Done
@@ -8,7 +11,6 @@ import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandle
 import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, EventStreamElement, ReadSide, ReadSideProcessor }
 
 import scala.concurrent.{ ExecutionContext, Future }
-
 
 class ReadSideTestDriver(implicit val materializer: Materializer, ec: ExecutionContext) extends ReadSide {
   private var processors = Map.empty[Class[_], Seq[Future[(ReadSideHandler[_], Offset)]]]
