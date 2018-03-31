@@ -8,7 +8,7 @@ import com.typesafe.config.{ Config, ConfigFactory }
 import scala.util.Try
 
 private[lagom] object TestConfig {
-  private lazy val defaults = ConfigFactory.defaultApplication().resolve()
+  private lazy val defaults = ConfigFactory.load()
 
   private def getConfig(key: String, fallbackValue: String): String =
     s"""$key = "${Try(defaults.getString(key)).getOrElse(fallbackValue)}""""
