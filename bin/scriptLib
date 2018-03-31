@@ -10,10 +10,10 @@ set -o pipefail
 export CURRENT_BRANCH=${TRAVIS_BRANCH}
 
 runSbt() {
-  sbt --warn -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
+  sbt --warn 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
 }
 
 runSbtNoisy() {
-  sbt -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
+  sbt 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
 }
 
