@@ -233,13 +233,13 @@ object ServiceTest {
    */
   def startServer[T <: LagomApplication](setup: Setup)(applicationConstructor: LagomApplicationContext => T): TestServer[T] = {
 
-    val now = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
-    val testName = s"ServiceTest_$now"
-
     val lifecycle = new DefaultApplicationLifecycle
 
     val config =
       if (setup.cassandra) {
+        val now = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
+        val testName = s"ServiceTest_$now"
+
         val cassandraPort = CassandraTestServer.run(testName, lifecycle)
 
         ClusterConfiguration ++ Configuration(TestUtil.persistenceConfig(testName, cassandraPort))
