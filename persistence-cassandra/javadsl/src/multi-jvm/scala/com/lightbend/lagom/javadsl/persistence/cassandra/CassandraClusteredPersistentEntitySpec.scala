@@ -8,10 +8,10 @@ import java.util.concurrent.CompletionStage
 
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
-import com.lightbend.lagom.javadsl.persistence.{ ReadSideProcessor, TestEntityReadSide }
 import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.javadsl.persistence.multinode.{ AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec }
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.lightbend.lagom.javadsl.persistence.{ ReadSideProcessor, TestEntityReadSide }
+import com.typesafe.config.Config
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
   override def additionalCommonConfig(databasePort: Int): Config =
