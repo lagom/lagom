@@ -406,7 +406,7 @@ object Dependencies {
     "junit" % "junit" % JUnitVersion,
     h2 % Test,
 
-    // Without an binding, slf4j will print warnings when running tests
+    // Without any binding, slf4j will print warnings when running tests
     "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test
   )
 
@@ -417,7 +417,7 @@ object Dependencies {
     "junit" % "junit" % JUnitVersion,
     h2 % Test,
 
-    // Without an binding, slf4j will print warnings when running tests
+    // Without any binding, slf4j will print warnings when running tests
     "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test
   )
 
