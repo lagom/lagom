@@ -225,12 +225,12 @@ If you've read all the sections above you are familiar with all the pieces confo
 This needs a deeper explanation to understand the guarantees provided by Lagom. When a command is received, the following occurs:
 
 1. a command handler is selected, if none is found an `UnhandledCommandException` is thrown
-2. the command handler is invoked for the command, if no event is emitted processing completes
-3. events are applied to the appropriate event Handler (this can cause `Behavior` changes)
+2. the command handler is invoked for the command, one or more events may be emitted (to process a command that emits no events, `setReadOnlyCommandHandler` must be used)
+3. events are applied to the appropriate event Handler (this can cause `Behavior` changes so defining the command handler on a behavior doesn't require all event handlers to be supported on that behavior)
 4. if applying the events didn't cause any exception, events are persisted atomically
 5. if there's an `afterPersist`, then it is invoked (only once)
-6. if the snapshotting threshold is exceeded a snapshot is generated and stored.
-7. the command processing completes and a new command processing may start.
+6. if the snapshotting threshold is exceeded, a snapshot is generated and stored
+7. finally, the command processing completes and a new command may be processed.
 
 If you are familiar with [Akka Persistence](https://doc.akka.io/docs/akka/2.5/persistence.html) this process is slightly different in few places:
 
