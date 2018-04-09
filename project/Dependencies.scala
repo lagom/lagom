@@ -7,15 +7,15 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.12"
+  val PlayVersion = "2.6.13"
   val PlayJsonVersion = "2.6.9"
-  val PlayStandaloneWsVersion = "1.1.6"
+  val PlayStandaloneWsVersion = "1.1.7"
   val TwirlVersion = "1.3.14"
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
   val AkkaVersion = "2.5.11"
-  val AkkaHttpVersion = "10.0.11"
+  val AkkaHttpVersion = "10.0.13"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.4", "2.11.12")
   val SbtScalaVersions = Seq("2.10.6", "2.12.4")
@@ -26,7 +26,7 @@ object Dependencies {
   val JacksonVersion = "2.8.11"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.22.Final"
+  val NettyVersion = "4.1.23.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
   val KafkaVersion = "0.11.0.1"
   val AkkaStreamKafkaVersion = "0.18"
@@ -174,7 +174,7 @@ object Dependencies {
       "com.typesafe.play" %% "twirl-api" % TwirlVersion,
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-      "com.zaxxer" % "HikariCP" % "2.7.8",
+      "com.zaxxer" % "HikariCP" % "2.7.9",
       "commons-codec" % "commons-codec" % "1.10",
       "io.aeron" % "aeron-client" % "1.7.0",
       "io.aeron" % "aeron-driver" % "1.7.0",
