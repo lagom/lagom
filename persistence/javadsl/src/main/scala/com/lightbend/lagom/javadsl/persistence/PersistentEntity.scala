@@ -259,7 +259,7 @@ abstract class PersistentEntity[Command, Event, State] {
 
   /**
    * Mutable builder that is used for defining the event and command handlers.
-   * Use [#build] to create the immutable [[Behavior]].
+   * Use [#build] to create the immutable [[PersistentEntity.Behavior]].
    */
   // In order to provide javadoc preventing isntantiantiation or extension this sealed trait is added
   // to hold docs and BehaviorBuilderImpl is made private to hold implementation
