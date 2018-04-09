@@ -286,7 +286,8 @@ def scalaVersionSince = Map(
 def since10 = Seq("1.0.0") ++ since11
 def since11 = Seq("1.1.0") ++ since12
 def since12 = Seq("1.2.2") ++ since13
-def since13 = Seq("1.3.3")
+def since13 = Seq("1.3.3") ++ since14
+def since14 = Seq("1.4.0")
 
 val javadslProjects = Seq[Project](
   `api-javadsl`,
