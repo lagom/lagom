@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.javadsl.persistence.jpa;
 
+import com.lightbend.lagom.internal.javadsl.persistence.jpa.JpaEventLogImpl;
 import com.lightbend.lagom.internal.javadsl.persistence.jpa.JpaReadSideImpl;
 import com.lightbend.lagom.internal.javadsl.persistence.jpa.JpaSessionImpl;
 import play.api.Configuration;
@@ -16,7 +17,8 @@ public class JpaPersistenceModule extends Module {
     public Seq<Binding<?>> bindings(Environment environment, Configuration configuration) {
         return seq(
                 bind(JpaSession.class).to(JpaSessionImpl.class),
-                bind(JpaReadSide.class).to(JpaReadSideImpl.class)
+                bind(JpaReadSide.class).to(JpaReadSideImpl.class),
+                bind(JpaEventLog.class).to(JpaEventLogImpl.class)
         );
     }
 }

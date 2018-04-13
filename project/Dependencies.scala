@@ -20,7 +20,7 @@ object Dependencies {
   val ScalaVersions = Seq("2.12.4", "2.11.12")
   val SbtScalaVersions = Seq("2.10.6", "2.12.4")
   val AkkaPersistenceCassandraVersion = "0.60"
-  val AkkaPersistenceJdbcVersion = "3.3.0"
+  val AkkaPersistenceJdbcVersion = "4.0.0-beta-jroper-1"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
   val ScalaTestVersion = "3.0.4"
   val JacksonVersion = "2.8.11"

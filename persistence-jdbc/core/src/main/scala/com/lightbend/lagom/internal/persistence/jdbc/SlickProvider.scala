@@ -41,16 +41,22 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
 
   private val createTablesTimeout = createTables.getDuration("timeout", TimeUnit.MILLISECONDS).millis
 
-  // This feature is somewhat limited, it assumes that the read side database is the same database as the journals and
-  // snapshots
-  private val createTablesTask: Option[ClusterStartupTask] = if (autoCreateTables) {
-    val journalCfg = new JournalTableConfiguration(system.settings.config.getConfig("jdbc-read-journal"))
-    val snapshotCfg = new SnapshotTableConfiguration(system.settings.config.getConfig("jdbc-snapshot-store"))
+  private val journalCfg = new JournalTableConfiguration(system.settings.config.getConfig("jdbc-read-journal"))
 
-    val journalTables = new JournalTables {
+  /**
+   * Public to allow complementary event log support to access.
+   */
+  val journalTables: JournalTables = {
+    new JournalTables {
       override val journalTableCfg: JournalTableConfiguration = journalCfg
       override val profile: JdbcProfile = SlickProvider.this.profile
     }
+  }
+
+  // This feature is somewhat limited, it assumes that the read side database is the same database as the journals and
+  // snapshots
+  private val createTablesTask: Option[ClusterStartupTask] = if (autoCreateTables) {
+    val snapshotCfg = new SnapshotTableConfiguration(system.settings.config.getConfig("jdbc-snapshot-store"))
 
     val snapshotTables = new SnapshotTables {
       override val snapshotTableCfg: SnapshotTableConfiguration = snapshotCfg
