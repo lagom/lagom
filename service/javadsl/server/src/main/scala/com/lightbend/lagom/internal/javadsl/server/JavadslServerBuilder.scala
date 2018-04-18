@@ -185,12 +185,18 @@ class JavadslServiceRouter(override protected val descriptor: Descriptor, servic
   }
 
   override protected def maybeLogException(exc: Throwable, log: => Logger, call: Call[_, _]) = {
-    exc match {
-      case _: NotFound | _: Forbidden | _: BadRequest => // no logging
-      case e @ (_: UnsupportedMediaType | _: PayloadTooLarge | _: NotAcceptable) =>
-        log.warn(e.getMessage)
-      case e =>
-        log.error(s"Exception in ${call.callId()}", e)
+    var logAsError = true
+    if (exc.isInstanceOf[TransportException]) {
+      val httpCode = exc.asInstanceOf[TransportException].errorCode().http()
+      if (httpCode >= 400 && httpCode < 500) {
+        logAsError = false
+      }
+    }
+
+    if (logAsError) {
+      log.error(s"Exception in ${call.callId()}", exc)
+    } else {
+      log.info(exc.getMessage)
     }
   }
 
