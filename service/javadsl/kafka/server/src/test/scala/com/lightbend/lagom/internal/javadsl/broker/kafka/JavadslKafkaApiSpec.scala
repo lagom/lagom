@@ -190,9 +190,6 @@ class JavadslKafkaApiSpec extends WordSpecLike
       val initialOffset = offsetDao.loadedOffset
       initialOffset shouldBe NoOffset
 
-      // Fake setting an offset to simulate a topic that has been restarted
-      offsetDao.saveOffset(Sequence(1))
-
       // Put some messages in the stream
       test3EventJournal.append("firstMessage")
       test3EventJournal.append("secondMessage")
