@@ -270,6 +270,7 @@ class JavadslKafkaApiSpec extends WordSpecLike
       val latch = new CountDownLatch(batchSize)
       testService.test6Topic()
         .subscribe()
+        .withGroupId("testservice6")
         .atLeastOnce {
           Flow[String].grouped(batchSize).mapConcat { messages =>
             messages.map { _ =>
