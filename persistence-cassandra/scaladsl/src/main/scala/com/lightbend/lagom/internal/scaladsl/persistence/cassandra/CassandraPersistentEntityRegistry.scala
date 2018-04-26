@@ -22,10 +22,5 @@ private[lagom] final class CassandraPersistentEntityRegistry(system: ActorSystem
   CassandraKeyspaceConfig.validateKeyspace("cassandra-journal", system.settings.config, log)
   CassandraKeyspaceConfig.validateKeyspace("cassandra-snapshot-store", system.settings.config, log)
 
-  override protected val journalId = CassandraReadJournal.Identifier
-
-  private val cassandraReadJournal = PersistenceQuery(system).readJournalFor[CassandraReadJournal](journalId)
-
-  override protected val eventsByTagQuery: Option[EventsByTagQuery] = Some(cassandraReadJournal)
-
+  override protected val queryPluginId = Some(CassandraReadJournal.Identifier)
 }

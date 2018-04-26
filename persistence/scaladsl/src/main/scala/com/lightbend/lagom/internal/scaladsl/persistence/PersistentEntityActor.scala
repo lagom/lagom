@@ -23,11 +23,14 @@ private[lagom] object PersistentEntityActor {
     entityId:                  Option[String],
     entityFactory:             () => PersistentEntity,
     snapshotAfter:             Option[Int],
-    passivateAfterIdleTimeout: Duration
+    passivateAfterIdleTimeout: Duration,
+    journalPluginId:           String,
+    snapshotPluginId:          String
   ): Props =
     Props(new PersistentEntityActor(persistenceIdPrefix, entityId,
       entityFactory(),
-      snapshotAfter.getOrElse(0), passivateAfterIdleTimeout))
+      snapshotAfter.getOrElse(0), passivateAfterIdleTimeout,
+      journalPluginId, snapshotPluginId))
 
   /**
    * Stop the actor for passivation. `PoisonPill` does not work well
@@ -56,11 +59,13 @@ private[lagom] object PersistentEntityActor {
  * The `PersistentActor` that runs a [[com.lightbend.lagom.scaladsl.persistence.PersistentEntity]].
  */
 private[lagom] class PersistentEntityActor(
-  persistenceIdPrefix:       String,
-  id:                        Option[String],
-  entity:                    PersistentEntity,
-  snapshotAfter:             Int,
-  passivateAfterIdleTimeout: Duration
+  persistenceIdPrefix:           String,
+  id:                            Option[String],
+  entity:                        PersistentEntity,
+  snapshotAfter:                 Int,
+  passivateAfterIdleTimeout:     Duration,
+  override val journalPluginId:  String,
+  override val snapshotPluginId: String
 ) extends PersistentActor {
 
   import PersistentEntityActor.EntityIdSeparator
