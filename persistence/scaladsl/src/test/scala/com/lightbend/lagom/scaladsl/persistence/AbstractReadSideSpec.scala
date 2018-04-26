@@ -56,7 +56,9 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
         Some("1"),
         () => new TestEntity(system),
         None,
-        10.seconds
+        10.seconds,
+        "",
+        ""
       )
     )
   }

@@ -4,6 +4,7 @@
 package com.lightbend.lagom.internal.javadsl.persistence
 
 import java.net.URLEncoder
+import java.util.Optional
 import javax.inject.{ Inject, Provider, Singleton }
 
 import akka.actor.ActorSystem
@@ -15,9 +16,9 @@ import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings, ClusterStartupTask }
 import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.Config
-
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
+import scala.compat.java8.OptionConverters._
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
 
@@ -33,6 +34,8 @@ class ReadSideConfigProvider @Inject() (configuration: Config) extends Provider[
 private[lagom] class ReadSideImpl @Inject() (
   system: ActorSystem, config: ReadSideConfig, injector: Injector, registry: PersistentEntityRegistry
 )(implicit ec: ExecutionContext, mat: Materializer) extends ReadSide {
+
+  protected val name: Optional[String] = Optional.empty()
 
   override def register[Event <: AggregateEvent[Event]](
     processorClass: Class[_ <: ReadSideProcessor[Event]]
@@ -59,7 +62,7 @@ private[lagom] class ReadSideImpl @Inject() (
           s"[${clazz.getName}]", e)
       }
 
-      val readSideName = dummyProcessor.readSideName()
+      val readSideName = name.asScala.fold("")(_ + "-") + dummyProcessor.readSideName()
       val encodedReadSideName = URLEncoder.encode(readSideName, "utf-8")
       val tags = dummyProcessor.aggregateTags().asScala
       val entityIds = tags.map(_.tag)

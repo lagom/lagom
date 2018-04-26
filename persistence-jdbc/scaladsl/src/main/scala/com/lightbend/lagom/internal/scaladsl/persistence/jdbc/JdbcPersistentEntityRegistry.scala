@@ -24,8 +24,6 @@ private[lagom] final class JdbcPersistentEntityRegistry(system: ActorSystem, sli
     super.register(entityFactory)
   }
 
-  override protected val journalId: String = JdbcReadJournal.Identifier
-  private val jdbcReadJournal = PersistenceQuery(system).readJournalFor[JdbcReadJournal](journalId)
-  override protected val eventsByTagQuery: Option[EventsByTagQuery] = Some(jdbcReadJournal)
+  override protected val queryPluginId = Some(JdbcReadJournal.Identifier)
 
 }

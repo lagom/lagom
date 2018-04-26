@@ -16,7 +16,7 @@ import com.lightbend.lagom.scaladsl.persistence._
 import scala.concurrent.ExecutionContext
 
 private[lagom] class ReadSideImpl(
-  system: ActorSystem, config: ReadSideConfig, registry: PersistentEntityRegistry
+  system: ActorSystem, config: ReadSideConfig, registry: PersistentEntityRegistry, name: Option[String]
 )(implicit ec: ExecutionContext, mat: Materializer) extends ReadSide {
 
   override def register[Event <: AggregateEvent[Event]](processorFactory: => ReadSideProcessor[Event]): Unit =
@@ -30,7 +30,7 @@ private[lagom] class ReadSideImpl(
     if (config.role.forall(Cluster(system).selfRoles.contains)) {
       // try to create one instance to fail fast
       val proto = processorFactory()
-      val readSideName = proto.readSideName
+      val readSideName = name.fold("")(_ + "-") + proto.readSideName
       val encodedReadSideName = URLEncoder.encode(readSideName, "utf-8")
       val tags = proto.aggregateTags
       val entityIds = tags.map(_.tag)
