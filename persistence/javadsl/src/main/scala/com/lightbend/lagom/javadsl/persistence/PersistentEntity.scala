@@ -270,6 +270,8 @@ abstract class PersistentEntity[Command, Event, State] {
      * Register an event handler for a given event class. The `handler` function
      * is supposed to return the new state after applying the event to the current state.
      * Current state can be accessed with the `state` method of the `PersistentEntity`.
+     *
+     * Invoking this method a second time for the same `eventClass` will override the existing `handler`.
      */
     def setEventHandler[A <: Event](eventClass: Class[A], handler: JFunction[A, State]): Unit
 
@@ -278,6 +280,8 @@ abstract class PersistentEntity[Command, Event, State] {
      * The `handler` function  is supposed to return the new behavior after applying the
      * event to the current state. Current behavior can be accessed with the `behavior`
      * method of the `PersistentEntity`.
+     *
+     * Invoking this method a second time for the same `eventClass` will override the existing `handler`.
      */
     def setEventHandlerChangingBehavior[A <: Event](eventClass: Class[A], handler: JFunction[A, Behavior]): Unit
 
@@ -302,6 +306,8 @@ abstract class PersistentEntity[Command, Event, State] {
      *
      * The `handler` function may validate the incoming command and reject it by
      * sending a `reply` and returning `ctx.done()`.
+     *
+     * Invoking this method a second time for the same `commandClass` will override the existing `handler`.
      */
     def setCommandHandler[R, A <: Command with ReplyType[R]](
       commandClass: Class[A],
@@ -318,6 +324,8 @@ abstract class PersistentEntity[Command, Event, State] {
      *  handler does not persist events (i.e. it does not change state) but it may perform side
      *  effects, such as replying to the request. Replies are sent with the `reply` method of the
      *  context that is passed to the command handler function.
+     *
+     * Invoking this method a second time for the same `commandClass` will override the existing `handler`.
      */
     def setReadOnlyCommandHandler[R, A <: Command with ReplyType[R]](
       commandClass: Class[A],
