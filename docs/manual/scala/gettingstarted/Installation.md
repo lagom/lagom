@@ -15,7 +15,7 @@ We also suggest that you start from the command line. After using the template t
 Before trying the template, make sure that your environment conforms to Lagom prerequisites:
 
 * Java Development Kit (JDK), version 8 or higher. 
-* sbt 1.0 or higher 
+* sbt 1 
 * Internet access (If using a proxy, verify that an HTTP_PROXY environment variable points to the correct location)
 
 For more details on verifying or installing prerequisites see the following sections:
@@ -56,7 +56,7 @@ If you don't have the correct version, you can get it from the [Oracle Java down
 
 ## sbt
 
-Lagom requires recommends sbt 1.0 or higher.
+Lagom requires recommends sbt 1.
 
 sbt can be downloaded from [here](http://www.scala-sbt.org/download.html), while instructions for installing it can be found [here](http://www.scala-sbt.org/release/docs/Setup.html)
 
