@@ -19,13 +19,19 @@ The version of Lagom can be updated by editing the `project/plugins.sbt` file, a
 addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0")
 ```
 
-Lagom 1.4.0 also requires Sbt 0.13.16 or later. If your existing project is using a previous version of Sbt, you will need to upgrade it by editing the `project/build.properties` file. For example:
+Lagom 1.4.0 also requires Sbt 0.13.16 or later (recommended 1.0+). If your existing project is using a previous version of Sbt, you will need to upgrade it by editing the `project/build.properties` file. For example:
 
 ```
 sbt.version=0.13.16
 ```
 
+We recommend you migrate your projects to Sbt 1.x by editing the `project/build.properties` file. For example:
 
+```
+sbt.version=1.1.4
+```
+
+We also recommend you [upgrade](https://www.scala-sbt.org/download.html) your `sbt` launcher.
 
 ## Scala 2.12 support
 
