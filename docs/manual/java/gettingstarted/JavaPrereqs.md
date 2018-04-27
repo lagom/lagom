@@ -55,7 +55,7 @@ To install Maven, see the official [Maven installation page](https://maven.apach
 
 ## sbt
 
-[sbt](http://www.scala-sbt.org) is a build tool for Java and Scala. Lagom recommends using sbt 1.
+[sbt](http://www.scala-sbt.org) is a build tool for Java and Scala. Lagom recommends using sbt 1.x.
 
 In a console, check your version using the `sbt sbtVersion` command:
 
@@ -65,8 +65,8 @@ sbt sbtVersion
 The system should respond with something like the following:
 
 ```
-[info] Set current project to example (in build file:/home/example/)
-[info] sbt server started at local:///home/alice/
+[info] Set current project to example (in build file:/home/alice/)
+[info] 1.1.4
 ```
 If you do not have the right version of sbt, download it from [the scala-sbt website](http://www.scala-sbt.org/download.html). The [documentation](http://www.scala-sbt.org/release/docs/Setup.html) contains installation instructions.
 
