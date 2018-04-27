@@ -50,7 +50,7 @@ object UnidocRoot extends AutoPlugin {
     inTask(unidoc)(Seq(
       unidocProjectFilter in ScalaUnidoc := projectsAndDependencies(scaladslProjects),
       unidocProjectFilter in JavaUnidoc := projectsAndDependencies(javadslProjects),
-      apiMappings in ScalaUnidoc := (apiMappings in (Compile, doc)).value
+      autoAPIMappings in ScalaUnidoc := true
     ))
   }
 
@@ -99,6 +99,14 @@ object UnidocRoot extends AutoPlugin {
     scalacOptions in (ScalaUnidoc, unidoc) ++= Seq("-skip-packages", "com.lightbend.lagom.internal"),
     javacOptions in doc := Seq(
       "-windowtitle", "Lagom Services API",
+      // Adding a user agent when we run `javadoc` is necessary to create link docs
+      // with Akka (at least, maybe play too) because doc.akka.io is served by Cloudflare
+      // which blocks requests without a User-Agent header.
+      "-J-Dhttp.agent=Lagom-Unidoc-Javadoc",
+      "-link", "https://docs.oracle.com/javase/8/docs/api/",
+      "-link", "https://doc.akka.io/japi/akka/current/",
+      "-link", "https://doc.akka.io/japi/akka-http/current/",
+      "-link", "https://www.playframework.com/documentation/latest/api/java/",
       "-public",
       "-group", "Services API", packageList(
         "com.lightbend.lagom.javadsl",
