@@ -197,7 +197,7 @@ abstract class PersistentEntity[Command, Event, State] {
 
   // in order to keep all the constructors protected but still generate javadocs this class
   // extends a public sealed trait where documentation is provided.
-  private[lagom] final class BehaviorBuilderImpl(
+  private final class BehaviorBuilderImpl(
     state:       State,
     evtHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
     cmdHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]]
