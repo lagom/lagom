@@ -34,7 +34,7 @@ See the [akka-stream-kafka reference.conf](https://github.com/akka/reactive-kafk
 
 ### Apache Java Kafka Client
 
-See the [Producer Configs](https://kafka.apache.org/documentation.html#producerconfigs) documentation to learn about the exposed configuration for the publisher. While, for the subscriber, see the [New Consumer Configs](https://kafka.apache.org/documentation.html#newconsumerconfigs). The only caveat is that if you need to change the value of any of the configuration provided by the Java Kafka Client, you must prepend the desired configuration key you want to change with `akka.kafka.consumer.kafka-clients`, for the consumer, or `akka.kafka.producer.kafka-clients`. For instance, let's assume you'd like to change the consumer's `request.timeout.ms`, you should add the following in the service's application.conf:
+See the [Producer Configs](https://kafka.apache.org/documentation.html#producerconfigs) documentation to learn about the exposed configuration for the publisher. Meanwhile, for the subscriber, see the [New Consumer Configs](https://kafka.apache.org/documentation.html#newconsumerconfigs). The only caveat is that if you need to change the value of any of the configuration provided by the Java Kafka Client, you must prepend the desired configuration key you want to change with `akka.kafka.consumer.kafka-clients`, for the consumer, or `akka.kafka.producer.kafka-clients`. For instance, let's assume you'd like to change the consumer's `request.timeout.ms`, you should add the following in the service's application.conf:
 
 ```conf
 akka.kafka.producer.kafka-clients {
