@@ -197,7 +197,7 @@ abstract class PersistentEntity[Command, Event, State] {
 
   // in order to keep all the constructors protected but still generate javadocs this class
   // extends a public sealed trait where documentation is provided.
-  private[lagom] final class BehaviorBuilderImpl(
+  private final class BehaviorBuilderImpl(
     state:       State,
     evtHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
     cmdHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]]
@@ -259,9 +259,9 @@ abstract class PersistentEntity[Command, Event, State] {
 
   /**
    * Mutable builder that is used for defining the event and command handlers.
-   * Use [#build] to create the immutable [[PersistentEntity.Behavior]].
+   * Use [[BehaviorBuilder#build]] to create the immutable [[PersistentEntity.Behavior]].
    */
-  // In order to provide javadoc preventing isntantiantiation or extension this sealed trait is added
+  // In order to provide javadoc preventing instantiation or extension this sealed trait is added
   // to hold docs and BehaviorBuilderImpl is made private to hold implementation
   sealed trait BehaviorBuilder {
     def getState(): State
