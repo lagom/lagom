@@ -109,6 +109,6 @@ Once you have finished registering all your event handlers, you can invoke the `
 
 ## Application Loader
 
-The Lagom Application loader needs to to be configured for Slick persistence. This can be done by extending the `SlickPersistentComponents` class like so:
+The Lagom Application loader needs to to be configured for Slick persistence. This can be done by mixing in the `SlickPersistentComponents` class like so:
 
 @[load-components](code/docs/home/scaladsl/persistence/SlickBlogApplicationLoader.scala)
