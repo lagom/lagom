@@ -16,7 +16,7 @@ It is not required, but is recommended, that you upgrade to sbt 0.13.13.  To upg
 sbt.version=0.13.13
 ```
 
-When creating new projects, the use of Activator is now deprecated. Instead, you should use sbt 0.13.13's `new` support. This requires upgrading your sbt launcher to 0.13.13. This can be done by downloading and installing it from [the sbt website](http://www.scala-sbt.org/download.html).
+When creating new projects, the use of Activator is now deprecated. Instead, you should use sbt 0.13.13's `new` support. This requires upgrading your sbt launcher to 0.13.13. This can be done by downloading and installing it from [the sbt website](https://www.scala-sbt.org/download.html).
 
 Once you have upgraded sbt, you then need to upgrade Lagom. This can be done by editing the Lagom plugin version in `project/plugins.sbt`, for example:
 

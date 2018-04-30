@@ -30,7 +30,7 @@ A Lagom build must tell sbt to use the Lagom plugin.  This is done by creating a
 
 The plugin provides all the necessary support for building, running, and deploying your Lagom application.
 
-For more information on sbt plugins, see the sbt documentation on [Using Plugins](http://www.scala-sbt.org/0.13/docs/Using-Plugins.html).
+For more information on sbt plugins, see the sbt documentation on [Using Plugins](https://www.scala-sbt.org/0.13/docs/Using-Plugins.html).
 
 ### Defining a build
 
@@ -56,7 +56,7 @@ The first line defines the project itself, by declaring a `lazy val` of type `Pr
 
 The project is defined to be the `hello-api` directory, as indicated by `project in file("hello-api")`.  This means all the source code for this project will be under that directory, laid out according to the usual Maven structure (which sbt adopts as well).  So our main Scala sources go in `hello-api/src/main/scala`.
 
-More settings follow, in which we set the project version and add a library dependency.  The Lagom plugin provides some predefined values to make the Lagom libraries easy to add. In this case, we're using `lagomScaladslApi`. (You can add other dependencies using the usual sbt shorthand for specifying the library's `groupId`, `artifactId` and `version`; see [Library dependencies](http://www.scala-sbt.org/0.13/docs/Library-Dependencies.html) in the sbt documentation.)
+More settings follow, in which we set the project version and add a library dependency.  The Lagom plugin provides some predefined values to make the Lagom libraries easy to add. In this case, we're using `lagomScaladslApi`. (You can add other dependencies using the usual sbt shorthand for specifying the library's `groupId`, `artifactId` and `version`; see [Library dependencies](https://www.scala-sbt.org/0.13/docs/Library-Dependencies.html) in the sbt documentation.)
 
 Now we need to define the implementation project:
 
