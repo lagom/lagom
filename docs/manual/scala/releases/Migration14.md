@@ -33,7 +33,7 @@ scalaVersion in ThisBuild := "2.12.4"
 
 ## Akka HTTP as the default server engine
 
-Play 2.6 introduces a new default server engine implemented using [Akka HTTP](https://doc.akka.io/docs/akka-http/current/scala.html) instead of Netty.
+Play 2.6 introduces a new default server engine implemented using [Akka HTTP](https://doc.akka.io/docs/akka-http/current/?language=scala) instead of Netty.
 
 You can read more in the Play documentation at [Akka HTTP Server Backend](https://www.playframework.com/documentation/2.6.x/AkkaHttpServer).
 
