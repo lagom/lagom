@@ -118,7 +118,7 @@ def forkedTests: Seq[Setting[_]] = Seq(
 // group tests, a single test per group
 def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // We could group non Cassandra tests into another group
-  // to avoid new JVM for each test, see http://www.scala-sbt.org/release/docs/Testing.html
+  // to avoid new JVM for each test, see https://www.scala-sbt.org/release/docs/Testing.html
   val javaOptions = Seq("-Xms256M", "-Xmx512M")
   tests map { test =>
     new Tests.Group(

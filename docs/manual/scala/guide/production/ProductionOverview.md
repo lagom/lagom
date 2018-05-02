@@ -7,7 +7,7 @@ Lagom doesn't prescribe any particular production environment. If you are intere
 
 The deployment platform determines the type of archive you will need to use for packaging your microservices and the way you provide service location, including that for Cassandra:
 
-* Lagom leverages the [sbt-native-packager](http://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default, sbt produces zip archives, but you can easily produce tar.gz, MSI, debian, RPM, Docker and more.
+* Lagom leverages the [sbt-native-packager](https://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default, sbt produces zip archives, but you can easily produce tar.gz, MSI, debian, RPM, Docker and more.
 
 * At runtime, services need to locate each other. This requires you to provide an implementation of a  [ServiceLocator](api/com/lightbend/lagom/scaladsl/api/ServiceLocator.html). And, the deployment platform you choose might impose its own requirements on configuration.
 
