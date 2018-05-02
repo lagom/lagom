@@ -11,7 +11,7 @@ You can run tests from the sbt console.
 
 ## JUnit
 
-The recommended test framework for Lagom is [JUnit](http://junit.org/)
+The recommended test framework for Lagom is [JUnit 4](https://junit.org/junit4/)
 
 @[test](code/docs/services/test/SimpleTest.java)
 

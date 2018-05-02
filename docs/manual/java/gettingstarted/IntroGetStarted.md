@@ -10,7 +10,7 @@ The Lagom team is committed to providing full support for both sbt and Maven. Ch
 
 * If you are a Java developer with existing knowledge of [Maven](https://maven.apache.org/), this familiarity can help you get started faster with Lagom. If your organization has existing infrastructure, plugins and best practices built around Maven, that might also make Maven the more practical choice.
 
-* [sbt](http://www.scala-sbt.org) is a very powerful build tool that allows Lagom's features to be very easily supported and implemented - there are many aspects of the Lagom development environment that work a little smoother and faster in sbt than Maven due to sbt's power and flexibility. For this reason, sbt is the build tool of choice for the maintainers of Lagom.
+* [sbt](https://www.scala-sbt.org/) is a very powerful build tool that allows Lagom's features to be very easily supported and implemented - there are many aspects of the Lagom development environment that work a little smoother and faster in sbt than Maven due to sbt's power and flexibility. For this reason, sbt is the build tool of choice for the maintainers of Lagom.
 
 ## Start with a template
  A Lagom system typically includes one or more groups of services. To ([quote](https://twitter.com/jboner/status/699536472442011648) Jonas Bonér):

@@ -10,7 +10,7 @@ As a complete microservices platform, Lagom assembles a collection of technologi
 
 * Lightbend customers can additionally use [Enterprise Suite](https://www.lightbend.com/platform/production) components to operationalize and production-harden their systems.
 
-    * Akka's [Split Brain Resolver](https://tech-hub.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) handles network failures and system crashes.
+    * Akka's [Split Brain Resolver](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) handles network failures and system crashes.
 
     * [Lightbend's Telemetry (Cinnamon) product](https://developer.lightbend.com/docs/cinnamon/latest/home.html) provides real time monitoring of system health, availability and performance.
 
