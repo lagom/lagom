@@ -2,7 +2,7 @@
 
 Lagom exposes two APIs, Java and Scala, and provides a framework and development environment as a set of libraries and build tool plugins. While the libraries can be consumed from any build tool, you can only take advantage of Lagom's high productivity development environment by using one of the supported build tools, Maven or sbt. 
 
-We recommend using [sbt](http://www.scala-sbt.org) as the build tool for the Lagom Scala API. The sbt build tool provides dependency management, which downloads the Lagom libraries and plugins for you. When you create an sbt build, Lagom tool plugins will run your services and the associated Lagom infrastructure with a single command and hot reload when the tool detects code changes.
+We recommend using [sbt](https://www.scala-sbt.org/) as the build tool for the Lagom Scala API. The sbt build tool provides dependency management, which downloads the Lagom libraries and plugins for you. When you create an sbt build, Lagom tool plugins will run your services and the associated Lagom infrastructure with a single command and hot reload when the tool detects code changes.
 
 Factoring or re-factoring functionality into right-sized services will be critical to the success of your project. And Lagom's opinionated framework will steer you in the right direction. But, it is a good idea to start small. For this reason, Lagom provides a Giter8 template that sets up a build structure for a Hello World application. The template contains two services to demonstrate intra-service communication, because, ([to quote](https://twitter.com/jboner/status/699536472442011648) Jonas Bonér):
 
@@ -55,7 +55,7 @@ If you don't have the correct version, you can get it from the [Oracle Java down
 
 Lagom requires at least sbt 0.13.5, but if you want to create new projects using Lagom's supplied templates, you'll need at least sbt 0.13.13, which contains the sbt `new` command. (You'll need 0.13.13 to follow the steps in this getting started documentation.)
 
-sbt can be downloaded from [here](http://www.scala-sbt.org/download.html), while instructions for installing it can be found [here](http://www.scala-sbt.org/release/docs/Setup.html)
+sbt can be downloaded from [here](https://www.scala-sbt.org/download.html), while instructions for installing it can be found [here](https://www.scala-sbt.org/release/docs/Setup.html)
 
 To check which version of sbt you are using, run `sbt sbt-version` from the command line. The console messages should look similar to the following :
 

@@ -52,7 +52,7 @@ To install Maven, see the official [Maven installation page](https://maven.apach
 
 ## sbt
 
-[sbt](http://www.scala-sbt.org) is a build tool for Java and Scala. Lagom requires sbt 0.13.5 or higher. To create new projects using Lagom-supplied templates, use sbt 0.13.13 or higher, which contains the sbt new command.
+[sbt](https://www.scala-sbt.org/) is a build tool for Java and Scala. Lagom requires sbt 0.13.5 or higher. To create new projects using Lagom-supplied templates, use sbt 0.13.13 or higher, which contains the sbt new command.
 
 In a console, check your version using the `sbt sbt-version`command:
 
@@ -64,7 +64,7 @@ The system should respond with something like the following:
 [info] Set current project to example (in build file:/home/example/)
 [info] 0.13.13
 ```
-If you do not have the right version of sbt, download it from [the scala-sbt website](http://www.scala-sbt.org/download.html). The [documentation](http://www.scala-sbt.org/release/docs/Setup.html) contains installation instructions.
+If you do not have the right version of sbt, download it from [the scala-sbt website](https://www.scala-sbt.org/download.html). The [documentation](https://www.scala-sbt.org/release/docs/Setup.html) contains installation instructions.
 
 ## Internet access through a proxy
 If you access the internet through a proxy, make sure that your build tool can connect to the proxy:
