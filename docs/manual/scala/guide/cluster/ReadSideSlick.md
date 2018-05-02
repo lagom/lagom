@@ -86,6 +86,10 @@ Once you've created your read-side processor, you need to register it with Lagom
 
 @[register-event-processor](code/docs/home/scaladsl/persistence/BlogServiceImpl3.scala)
 
+Note that if you are utilizing [[Macwire for dependency injection|DependencyInjection#Wiring-together-a-Lagom-application]], you can simply add the following to your Application Loader:
+
+@[register-event-processor](code/docs/home/scaladsl/persistence/SlickBlogApplicationLoader.scala)
+
 ### Event handlers
 
 The event handlers take an event and returns a Slick `DBIOAction`.
@@ -102,3 +106,9 @@ This can then be registered with the builder using `setEventHandler`:
 Once you have finished registering all your event handlers, you can invoke the `build` method and return the built handler:
 
 @[build](code/docs/home/scaladsl/persistence/SlickBlogEventProcessor.scala)
+
+## Application Loader
+
+The Lagom Application loader needs to to be configured for Slick persistence. This can be done by mixing in the `SlickPersistentComponents` class like so:
+
+@[load-components](code/docs/home/scaladsl/persistence/SlickBlogApplicationLoader.scala)

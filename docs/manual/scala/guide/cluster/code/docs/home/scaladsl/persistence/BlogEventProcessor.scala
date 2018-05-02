@@ -4,7 +4,7 @@ import scala.concurrent.Future
 
 import akka.Done
 import akka.NotUsed
-import akka.persistence.query.Offset
+import akka.persistence.query._
 import akka.stream.scaladsl.Flow
 import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
 import com.lightbend.lagom.scaladsl.persistence.EventStreamElement
@@ -29,6 +29,12 @@ trait MyDatabase {
   def handleEvent(event: BlogEvent, offset: Offset): Future[Done]
 }
 //#my-database
+
+object MyDatabase extends MyDatabase {
+  def createTables(): Future[Done] = Future.successful(Done)
+  def loadOffset(tag: AggregateEventTag[BlogEvent]): Future[Offset] = Future.successful(NoOffset)
+  def handleEvent(event: BlogEvent, offset: Offset): Future[Done] = Future.successful(Done)
+}
 
 class BlogEventProcessor(myDatabase: MyDatabase) extends ReadSideProcessor[BlogEvent] {
 
