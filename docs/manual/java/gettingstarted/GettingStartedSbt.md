@@ -21,7 +21,7 @@ To create your project, follow these steps:
 
 1. Enter the following command to invoke `sbt new` using the Lagom Giter8 template:
    ```
-   sbt -Dsbt.version=0.13.16 new https://github.com/lagom/lagom-java.g8
+   sbt new lagom/lagom-java.g8
    ```
 1. The sbt Lagom template prompts for the following parameters. Press `Enter` to accept the defaults or specify your own values:
 
