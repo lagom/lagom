@@ -26,7 +26,7 @@ Lagom provides a number of serializers out of the box at this level, including s
 
 If neither a per service call nor per type message serializer has been found, Lagom will finally request its serializer factory for a serializer for a type.  When using the defaults, this is the way Lagom will usually locate serializers for your types.
 
-Lagom provides a [`SerializerFactory`](api/index.html?com/lightbend/lagom/javadsl/api/deser/SerializerFactory.html) interface for dynamically looking up and creating serializers for types.  The default implementation provided by Lagom is a Jackson serializer factory, which serializes to/from JSON.  You can customize which `SerializerFactory` is used by supplying it to the [`Descriptor.with`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html#with-com.lightbend.lagom.javadsl.api.deser.SerializerFactory-) method when declaring the signature:
+Lagom provides a [`SerializerFactory`](api/index.html?com/lightbend/lagom/javadsl/api/deser/SerializerFactory.html) interface for dynamically looking up and creating serializers for types.  The default implementation provided by Lagom is a Jackson serializer factory, which serializes to/from JSON.  You can customize which `SerializerFactory` is used by supplying it to the [`Descriptor.withMessageSerializer`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html#withMessageSerializer-java.lang.Class-com.lightbend.lagom.javadsl.api.deser.MessageSerializer-) method when declaring the signature:
 
 @[with-serializer-factory](code/docs/services/MessageSerializers.java)
 
