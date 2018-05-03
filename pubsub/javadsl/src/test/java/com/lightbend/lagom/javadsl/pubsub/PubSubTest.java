@@ -27,7 +27,7 @@ import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import akka.stream.testkit.TestSubscriber;
 import akka.stream.testkit.javadsl.TestSink;
-import akka.testkit.JavaTestKit;
+import akka.testkit.javadsl.TestKit;
 
 public class PubSubTest {
 
@@ -46,20 +46,16 @@ public class PubSubTest {
     Cluster.get(system).join(Cluster.get(system).selfAddress());
   }
 
-  // yeah, the Akka testkit is in need of some Java 8 love
   private void awaitHasSubscribers(PubSubRef<?> ref, boolean expected) {
-    new JavaTestKit(system) {
+    new TestKit(system) {
       {
-        new AwaitCond(Duration.create(10, TimeUnit.SECONDS)) {
-          @Override
-          protected boolean cond() {
-            try {
-              return expected == ref.hasAnySubscribers().toCompletableFuture().get();
-            } catch (Exception e) {
-              return false;
-            }
+        awaitCond(java.time.Duration.ofSeconds(10), () -> {
+          try {
+            return expected == ref.hasAnySubscribers().toCompletableFuture().get();
+          } catch (Exception e) {
+            return false;
           }
-        };
+        });
       }
     };
   }
@@ -67,7 +63,7 @@ public class PubSubTest {
 
   @AfterClass
   public static void teardown() {
-    JavaTestKit.shutdownActorSystem(system);
+    TestKit.shutdownActorSystem(system);
     system = null;
   }
 
