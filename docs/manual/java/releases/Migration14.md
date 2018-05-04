@@ -233,7 +233,7 @@ Other than that difference, refer to the [Akka Rolling Update](https://doc.akka.
 
 ### Downtime upgrade
 
-If your application can tolerate downtime, we recommend you to enable `ddata` and the new serializers for `akka.Done`, `akka.actor.Address` and `akka.remote.UniqueAddress`.
+If your application can tolerate a *one time only* downtime upgrade, we recommend you to enable `ddata` and the new serializers for `akka.Done`, `akka.actor.Address` and `akka.remote.UniqueAddress`. Once this upgrade is complete, further downtime is not required.
 
 In order to achieve this, make sure you have added the following properties to your `application.conf` file.
 
