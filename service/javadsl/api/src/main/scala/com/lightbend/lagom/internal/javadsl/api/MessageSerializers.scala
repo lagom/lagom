@@ -94,7 +94,7 @@ class DelegatingStreamedMessageSerializer[MessageEntity](delegate: StrictMessage
     new DelegatingStreamedDeserializer(delegate.deserializer(messageHeader))
   }
 
-  override def serializerForResponse(acceptedMessageHeaders: util.List[MessageProtocol]): NegotiatedSerializer[Source[MessageEntity, Any], Source[ByteString, Any]] = {
+  override def serializerForResponse(acceptedMessageHeaders: util.List[MessageProtocol]): NegotiatedSerializer[Source[MessageEntity, _], Source[ByteString, _]] = {
     new DelegatingStreamedSerializer(delegate.serializerForResponse(acceptedMessageHeaders))
   }
 }
