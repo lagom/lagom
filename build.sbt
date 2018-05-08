@@ -1017,6 +1017,7 @@ lazy val `dev-environment` = (project in file("dev"))
     publish := {},
     PgpKeys.publishSigned := {}
   )
+  .disablePlugins(Unidoc)
 
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   .settings(runtimeLibCommon: _*)
@@ -1039,6 +1040,7 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     }.taskValue,
     Dependencies.`build-tool-support`
   )
+  .disablePlugins(Unidoc)
 
 // This is almost the same as `build-tool-support`, but targeting sbt
 // while `build-tool-support` targets Maven and possibly other build
@@ -1059,6 +1061,7 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
     Dependencies.`build-tool-support`,
     target := target.value / "lagom-sbt-build-tool-support"
   )
+  .disablePlugins(Unidoc)
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(common: _*)
@@ -1093,6 +1096,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     },
     publishMavenStyle := isSnapshot.value
   ).dependsOn(`sbt-build-tool-support`)
+  .disablePlugins(Unidoc)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .enablePlugins(lagom.SbtMavenPlugin)
@@ -1172,7 +1176,7 @@ def archetypeProject(archetypeName: String) =
       },
       // Don't force copyright headers in Maven archetypes
       HeaderKey.excludes := Seq("*")
-    ).disablePlugins(EclipsePlugin)
+    ).disablePlugins(EclipsePlugin, Unidoc)
 
 lazy val `maven-java-archetype` = archetypeProject("java")
 lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
@@ -1264,6 +1268,7 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
     scalaVersion := Dependencies.SbtScalaVersions.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value)
   ).dependsOn(`sbt-plugin`)
+  .disablePlugins(Unidoc)
 
 // This project also get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-library")
