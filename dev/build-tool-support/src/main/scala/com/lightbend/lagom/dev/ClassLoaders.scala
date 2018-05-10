@@ -64,12 +64,12 @@ class DelegatingClassLoader(commonLoader: ClassLoader, sharedClasses: Set[String
 }
 
 /**
-  * A ClassLoader that only uses resources from its parent.
-  *
-  * The reason we only pull resources from our parent classloader is that the Delegating ClassLoader already uses
-  * this classloaders findResources method to locate the resources provided by this ClassLoader, and so our parent
-  * will already be returning our resources. Only pulling from the parent ensures we don't duplicate this.
-  */
+ * A ClassLoader that only uses resources from its parent.
+ *
+ * The reason we only pull resources from our parent classloader is that the Delegating ClassLoader already uses
+ * this classloaders findResources method to locate the resources provided by this ClassLoader, and so our parent
+ * will already be returning our resources. Only pulling from the parent ensures we don't duplicate this.
+ */
 class DelegatedResourcesClassLoader(name: String, urls: Array[URL], parent: ClassLoader) extends NamedURLClassLoader(name, urls, parent) {
   require(parent ne null)
   override def getResources(name: String): java.util.Enumeration[java.net.URL] = getParent.getResources(name)
