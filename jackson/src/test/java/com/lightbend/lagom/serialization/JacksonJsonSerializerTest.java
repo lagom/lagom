@@ -24,7 +24,7 @@ import org.junit.Test;
 import akka.actor.ActorSystem;
 import akka.actor.ExtendedActorSystem;
 import akka.serialization.SerializationExtension;
-import akka.testkit.JavaTestKit;
+import akka.testkit.javadsl.TestKit;
 
 public class JacksonJsonSerializerTest {
 
@@ -44,7 +44,7 @@ public class JacksonJsonSerializerTest {
 
   @AfterClass
   public static void teardown() {
-    JavaTestKit.shutdownActorSystem(system);
+    TestKit.shutdownActorSystem(system);
     system = null;
   }
 
@@ -190,7 +190,7 @@ public class JacksonJsonSerializerTest {
     assertEquals(event1.getField1(), event2.getField1V2());
     assertEquals(17, event2.getField2());
   }
-  
+
   @Test
   public void testDeserializeWithMigrationFromV2() {
     Event1 event1 = Event1.of("a");
