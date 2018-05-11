@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import akka.actor.ActorSystem;
 import akka.actor.ExtendedActorSystem;
-import akka.testkit.JavaTestKit;
+import akka.testkit.javadsl.TestKit;
 
 public class EventMigrationTest {
 
@@ -39,7 +39,7 @@ public class EventMigrationTest {
 
   @AfterClass
   public static void teardown() {
-    JavaTestKit.shutdownActorSystem(system);
+    TestKit.shutdownActorSystem(system);
     system = null;
   }
 

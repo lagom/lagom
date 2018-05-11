@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import akka.Done;
 import akka.actor.ActorSystem;
-import akka.testkit.JavaTestKit;
+import akka.testkit.javadsl.TestKit;
 
 public class PostTest {
 
@@ -30,7 +30,7 @@ public class PostTest {
 
   @AfterClass
   public static void teardown() {
-    JavaTestKit.shutdownActorSystem(system);
+    TestKit.shutdownActorSystem(system);
     system = null;
   }
 
