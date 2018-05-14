@@ -3,15 +3,16 @@
  */
 package com.lightbend.lagom.javadsl.persistence.testkit
 
-import scala.concurrent.duration._
-import akka.actor.ActorSystem
-import akka.actor.Props
+import java.util.concurrent.TimeUnit
+
+import akka.actor.{ ActorSystem, Props }
 import akka.persistence.PersistentActor
 import akka.testkit.TestProbe
+import com.lightbend.lagom.internal.persistence.testkit
 import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
-import java.util.concurrent.TimeUnit
+
+import scala.concurrent.duration._
 
 private class AwaitPersistenceInit extends PersistentActor {
   def persistenceId: String = self.path.name
@@ -31,11 +32,7 @@ private class AwaitPersistenceInit extends PersistentActor {
 
 trait AbstractTestUtil {
 
-  def clusterConfig(): Config = ConfigFactory.parseString(s"""
-    akka.actor.provider = akka.cluster.ClusterActorRefProvider
-    akka.remote.netty.tcp.port = 0
-    akka.remote.netty.tcp.hostname = 127.0.0.1
-    """)
+  def clusterConfig(): Config = testkit.clusterConfig
 
   def awaitPersistenceInit(system: ActorSystem): Unit = {
     val probe = TestProbe()(system)
