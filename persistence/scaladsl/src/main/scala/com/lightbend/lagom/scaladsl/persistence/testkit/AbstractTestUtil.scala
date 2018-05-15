@@ -8,8 +8,7 @@ import java.util.concurrent.TimeUnit
 import akka.actor.{ ActorSystem, Props }
 import akka.persistence.PersistentActor
 import akka.testkit.TestProbe
-import com.lightbend.lagom.internal.persistence.testkit
-import com.typesafe.config.Config
+import com.typesafe.config.{ Config, ConfigFactory }
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
@@ -33,7 +32,12 @@ object AbstractTestUtil {
 }
 
 trait AbstractTestUtil {
-  def clusterConfig(): Config = testkit.clusterConfig
+
+  def clusterConfig(): Config = ConfigFactory.parseString(s"""
+    akka.actor.provider = akka.cluster.ClusterActorRefProvider
+    akka.remote.netty.tcp.port = 0
+    akka.remote.netty.tcp.hostname = 127.0.0.1
+  """)
 
   def awaitPersistenceInit(system: ActorSystem): Unit = {
     val probe = TestProbe()(system)

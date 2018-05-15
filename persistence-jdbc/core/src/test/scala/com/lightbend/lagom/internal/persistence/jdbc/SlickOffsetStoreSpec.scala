@@ -5,15 +5,15 @@ package com.lightbend.lagom.internal.persistence.jdbc
 
 import akka.cluster.Cluster
 import akka.pattern.AskTimeoutException
-import com.lightbend.lagom.internal.persistence.testkit
 import com.lightbend.lagom.persistence.ActorSystemSpec
+import play.api.{ Configuration, Environment }
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 import slick.jdbc.meta.MTable
 
 import scala.concurrent.Await
 import scala.concurrent.duration.{ FiniteDuration, _ }
 
-class SlickOffsetStoreSpec extends ActorSystemSpec(testkit.clusterConfig.withFallback(testkit.loadTestConfig())) {
+class SlickOffsetStoreSpec extends ActorSystemSpec(Configuration.load(Environment.simple()).underlying) {
 
   import system.dispatcher
 
