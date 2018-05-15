@@ -82,22 +82,24 @@ private[lagom] class SlickOffsetStore(system: ActorSystem, val slick: SlickProvi
   private val offsets = TableQuery[OffsetStore]
 
   private val startupTask = if (slick.autoCreateTables) {
-    implicit val timeout = Timeout(config.globalPrepareTimeout)
-    ClusterStartupTask(
-      system,
-      "slickOffsetStorePrepare",
-      createTables,
-      config.globalPrepareTimeout,
-      config.role,
-      config.minBackoff,
-      config.maxBackoff,
-      config.randomBackoffFactor
-    ).askExecute()
-  } else Future.successful(Done)
+    Some(
+      ClusterStartupTask(
+        system,
+        "slickOffsetStorePrepare",
+        createTables,
+        config.globalPrepareTimeout,
+        config.role,
+        config.minBackoff,
+        config.maxBackoff,
+        config.randomBackoffFactor
+      )
+    )
+  } else None
 
   def runPreparations(eventProcessorId: String, tag: String): Future[Offset] = {
+    implicit val timeout = Timeout(config.globalPrepareTimeout)
     for {
-      _ <- startupTask
+      _ <- startupTask.fold(Future.successful[Done](Done))(_.askExecute())
       offset <- slick.db.run(getOffsetQuery(eventProcessorId, tag))
     } yield offset
   }

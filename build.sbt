@@ -810,7 +810,10 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
 
 
 lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
-  .dependsOn(`persistence-core` % "compile;test->test")
+  .dependsOn(
+    `persistence-core` % "compile;test->test",
+    logback % Test
+  )
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
@@ -827,8 +830,7 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
   .dependsOn(
     `persistence-jdbc-core` % "compile;test->test",
     `persistence-core` % "compile;test->test",
-    `persistence-javadsl` % "compile;test->test",
-    logback % Test
+    `persistence-javadsl` % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since12): _*)
@@ -848,8 +850,7 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
   .dependsOn(
     `persistence-jdbc-core` % "compile;test->test",
     `persistence-core` % "compile;test->test",
-    `persistence-scaladsl` % "compile;test->test",
-    logback % Test
+    `persistence-scaladsl` % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since13): _*)
