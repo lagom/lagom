@@ -297,7 +297,7 @@ class Reloader(
                 val version = classLoaderVersion.incrementAndGet
                 val name = "ReloadableClassLoader(v" + version + ")"
                 val urls = Reloader.urls(classpath)
-                val loader = new NamedURLClassLoader(name, urls, baseLoader)
+                val loader = new DelegatedResourcesClassLoader(name, urls, baseLoader)
                 currentApplicationClassLoader = Some(loader)
                 loader
               } else {
