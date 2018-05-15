@@ -546,9 +546,13 @@ object Dependencies {
     h2 % Test
   )
 
-  val `persistence-jdbc-javadsl` = libraryDependencies ++= Nil
+  val `persistence-jdbc-javadsl` = libraryDependencies ++= Seq(
+    h2 % Test
+  )
 
-  val `persistence-jdbc-scaladsl` = libraryDependencies ++= Nil
+  val `persistence-jdbc-scaladsl` = libraryDependencies ++= Seq(
+    h2 % Test
+  )
 
   val `persistence-jpa-javadsl` = libraryDependencies ++= Seq(
     "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final" % Provided,
