@@ -541,7 +541,9 @@ object Dependencies {
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
     slf4jApi,
     akkaPersistenceJdbc,
-    playJdbc
+    playJdbc,
+
+    h2 % Test
   )
 
   val `persistence-jdbc-javadsl` = libraryDependencies ++= Seq(

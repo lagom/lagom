@@ -14,10 +14,10 @@ object SlickDbTestProvider {
   private val JNDIName = "DefaultDS"
   private val JNDIDBName = "DefaultDB"
 
-  private val AsyncExecConfig = new AsyncExecutorConfig {
+  private val AsyncExecConfig: AsyncExecutorConfig = new AsyncExecutorConfig {
     override val numThreads: Int = 20
     override val minConnections: Int = 20
-    override val maxConnections: Int = 100
+    override val maxConnections: Int = 20
     override val queueSize: Int = 100
     override def registerMbeans: Boolean = false
   }
