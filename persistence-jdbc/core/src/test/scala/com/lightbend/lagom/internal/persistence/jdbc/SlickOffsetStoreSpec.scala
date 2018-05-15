@@ -40,7 +40,10 @@ class SlickOffsetStoreSpec extends ActorSystemSpec(testkit.clusterConfig.withFal
   }
 
   "SlickOffsetStoreSpec" when {
+
     "auto-creating tables is enabled" should {
+
+      // Regression test for https://github.com/lagom/lagom/issues/1336
       "allow prepare to be retried after a failure" in {
         val exception = Await.result(offsetStore.prepare("test_read_side", "TestTag").failed, 10.seconds)
         exception shouldBe a[AskTimeoutException]
@@ -54,7 +57,26 @@ class SlickOffsetStoreSpec extends ActorSystemSpec(testkit.clusterConfig.withFal
         val tables = Await.result(slick.db.run(MTable.getTables("test_read_side_offsets_tbl")), 5.seconds)
         tables should have length 1
       }
+
+      /*
+       * TODO this should include more test cases, including "happy path" and idempotency cases:
+       * Currently only one instance of SlickOffsetStore can be created per actor system, because of the cluster startup
+       * task it creates, which must have a unique name. There is no way to cleanly shut down the offset store,
+       * including the cluster startup task, and there is no way to namespace the cluster startup task to allow for more
+       * than one in the lifetime of the actor system.
+       *
+       * Note that this also implies that there is no way to create multiple SlickOffsetStore instances for different
+       * databases/schemas. This would be a good improvement. See https://github.com/lagom/lagom/issues/1353
+       *
+       * Some suggested tests are pending below:
+       */
+      "creates the read-side offset table when preparing" in pending
+      "allows prepare to be called multiple times" in pending
+      "uses configured column names" in pending
+      "returns an offset DAO with the last stored offset" in pending
     }
+
+    "auto-creating tables is disabled" in pending
 
   }
 
