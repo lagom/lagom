@@ -6,6 +6,7 @@ package com.lightbend.lagom.dev
 import java.lang.reflect.Method
 import java.net.{ URL, URLClassLoader }
 import java.util
+import java.util.Collections
 
 /**
  * A ClassLoader with a toString() that prints name/urls.
@@ -53,10 +54,10 @@ class DelegatingClassLoader(commonLoader: ClassLoader, sharedClasses: Set[String
     } else if (!appResources.hasMoreElements) {
       superResources
     } else {
-      val resources = new util.HashSet[URL]
+      val resources = new util.LinkedHashSet[URL]
       while (appResources.hasMoreElements) resources.add(appResources.nextElement())
       while (superResources.hasMoreElements) resources.add(superResources.nextElement())
-      new util.Vector(resources).elements()
+      Collections.enumeration(resources)
     }
   }
 
