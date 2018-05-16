@@ -146,6 +146,7 @@ The state must be immutable to avoid concurrency issues that may occur from chan
 
 The section [[Immutable Objects|Immutable]] describes how to define immutable state classes.
 
+
 ## Usage from Service Implementation
 
 To access an entity from a service implementation you first need to inject the [PersistentEntityRegistry](api/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html) and at startup (in the constructor) register the class that implements the `PersistentEntity`.
@@ -214,3 +215,25 @@ The default configuration should be good starting point, and the following setti
 ## Underlying Implementation
 
 Each `PersistentEntity` instance is executed by a [PersistentActor](https://doc.akka.io/docs/akka/2.5/persistence.html?language=java) that is managed by [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.5/cluster-sharding.html?language=java).
+
+## Execution details (advanced)
+
+If you've read all the sections above you are familiar with all the pieces conforming a Persistent Entity but there are few details worth explaining more extensively. As stated above:
+
+> Commands are processed sequentially, one at a time, for a specific entity instance.
+
+This needs a deeper explanation to understand the guarantees provided by Lagom. When a command is received, the following occurs:
+
+1. a command handler is selected, if none is found an `UnhandledCommandException` is thrown
+2. the command handler is invoked for the command, one or more events may be emitted (to process a command that emits no events, `setReadOnlyCommandHandler` must be used)
+3. events are applied to the appropriate event Handler (this can cause `Behavior` changes so defining the command handler on a behavior doesn't require all event handlers to be supported on that behavior)
+4. if applying the events didn't cause any exception, events are persisted atomically
+5. if there's an `afterPersist`, then it is invoked (only once)
+6. if the snapshotting threshold is exceeded, a snapshot is generated and stored
+7. finally, the command processing completes and a new command may be processed.
+
+If you are familiar with [Akka Persistence](https://doc.akka.io/docs/akka/2.5/persistence.html) this process is slightly different in few places:
+
+* new commands are not processed until events are stored, the `Effect` completed and the snapshot updated (if necessary). Akka provides the same behavior and also `async` alternatives that cause new commands to be processed even before all event handlers have completed.
+* saving snapshots is an operation run under the covers _at least_ every `lagom.persistence. snapshot-after` events (see [Configuration](#Configuration) above) but "storing events atomically" takes precedence. Imagine we want a snapshot every 100 events and we already have 99 events, if the next command emits 3 events the snapshot will only be stored after event number 102 because events `[100, 101, 102]` will be stored atomically and only after it'll be possible to create a snapshot.
+

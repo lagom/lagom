@@ -7,11 +7,11 @@ Lagom doesn't prescribe any particular production environment. If you are intere
 
 The deployment platform determines the type of archive you will need to use for packaging your microservices and the way you provide service location, including that for Cassandra:
 
-* Lagom leverages the [sbt-native-packager](http://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default, sbt produces zip archives, but you can easily produce tar.gz, MSI, debian, RPM, Docker and more.
+* Lagom leverages the [sbt-native-packager](https://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default, sbt produces zip archives, but you can easily produce tar.gz, MSI, debian, RPM, Docker and more.
 
 * At runtime, services need to locate each other. This requires you to provide an implementation of a  [ServiceLocator](api/com/lightbend/lagom/scaladsl/api/ServiceLocator.html). And, the deployment platform you choose might impose its own requirements on configuration.
 
-* The Cassandra module provided by `akka-persistence-cassandra` uses static lookup by default. Lagom overrides that behavior by implementing a Session provider based on service location. That allows all services to continue to operate without the need to redeploy if/when the Cassandra `contact-points` are updated or fail. Using this approach provides higher resiliency. However, it is possible to hardcode the list of `contact-points` where Cassandra may be located even when the server is stared with a dynamic service locator as described in the section below.
+* The Cassandra module provided by `akka-persistence-cassandra` uses static lookup by default. Lagom overrides that behavior by implementing a Session provider based on service location. That allows all services to continue to operate without the need to redeploy if/when the Cassandra `contact-points` are updated or fail. Using this approach provides higher resiliency. However, it is possible to hardcode the list of `contact-points` where Cassandra may be located even when the server is started with a dynamic service locator as described in the section below.
 
 ### Deploying using static Cassandra contact-points
 

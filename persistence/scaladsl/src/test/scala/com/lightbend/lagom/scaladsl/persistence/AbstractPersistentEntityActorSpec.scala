@@ -15,7 +15,7 @@ object AbstractPersistentEntityActorSpec {
   class TestPassivationParent extends Actor {
 
     val child = context.actorOf(PersistentEntityActor.props("test", Some("1"),
-      () => new TestEntity(context.system), None, 1.second))
+      () => new TestEntity(context.system), None, 1.second, "", ""))
 
     def receive = {
       case ShardRegion.Passivate(stopMsg) =>
@@ -31,7 +31,7 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
   "PersistentEntityActor" must {
     "persist events" in {
       val p = system.actorOf(PersistentEntityActor.props("test", Some("1"),
-        () => new TestEntity(system), None, 10.seconds))
+        () => new TestEntity(system), None, 10.seconds, "", ""))
       p ! TestEntity.Get
       val state = expectMsgType[TestEntity.State]
       state.elements.size should ===(0)
@@ -47,7 +47,7 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
 
       // start another with same persistenceId should recover state
       val p2 = system.actorOf(PersistentEntityActor.props("test", Some("1"),
-        () => new TestEntity(system), None, 10.seconds))
+        () => new TestEntity(system), None, 10.seconds, "", ""))
       p2 ! TestEntity.Get
       val state3 = expectMsgType[TestEntity.State]
       state3.elements should ===(List("A", "B", "C"))
@@ -55,7 +55,7 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
 
     "be able to change behavior" in {
       val p = system.actorOf(PersistentEntityActor.props("test", Some("2"),
-        () => new TestEntity(system), None, 10.seconds))
+        () => new TestEntity(system), None, 10.seconds, "", ""))
       p ! TestEntity.Get
       val state = expectMsgType[TestEntity.State]
       state.mode should ===(TestEntity.Mode.Append)
@@ -73,7 +73,7 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
 
       // start another with same persistenceId should recover state
       val p2 = system.actorOf(PersistentEntityActor.props("test", Some("2"),
-        () => new TestEntity(system), None, 10.seconds))
+        () => new TestEntity(system), None, 10.seconds, "", ""))
       p2 ! TestEntity.Get
       val state3 = expectMsgType[TestEntity.State]
       state3.mode should ===(TestEntity.Mode.Prepend)
@@ -96,13 +96,13 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
     "notify when recovery is completed" in {
       val probe = TestProbe()
       val p = system.actorOf(PersistentEntityActor.props("test", Some("3"),
-        () => new TestEntity(system, Some(probe.ref)), None, 10.seconds))
+        () => new TestEntity(system, Some(probe.ref)), None, 10.seconds, "", ""))
       probe.expectMsgType[TestEntity.AfterRecovery]
     }
 
     "save snapshots" in {
       val p = system.actorOf(PersistentEntityActor.props("test", Some("4"),
-        () => new TestEntity(system), Some(3), 10.seconds))
+        () => new TestEntity(system), Some(3), 10.seconds, "", ""))
 
       val unhandledProbe = TestProbe()
       system.eventStream.subscribe(unhandledProbe.ref, classOf[UnhandledMessage])
@@ -121,7 +121,7 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
         awaitAssert {
           val probe2 = TestProbe()
           val p2 = system.actorOf(PersistentEntityActor.props("test", Some("4"),
-            () => new TestEntity(system, Some(probe2.ref)), Some(3), 10.seconds))
+            () => new TestEntity(system, Some(probe2.ref)), Some(3), 10.seconds, "", ""))
           val state2 = probe2.expectMsgType[TestEntity.AfterRecovery].state
           state2.elements should ===((1 to 10).toList.map(_.toString))
         }
@@ -130,7 +130,7 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
 
     "persist several events from one command" in {
       val p = system.actorOf(PersistentEntityActor.props("test", Some("5"),
-        () => new TestEntity(system), None, 10.seconds))
+        () => new TestEntity(system), None, 10.seconds, "", ""))
       p ! TestEntity.Add("a", 3)
       expectMsg(TestEntity.Appended("A"))
       p ! TestEntity.Get

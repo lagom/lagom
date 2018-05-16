@@ -1,10 +1,10 @@
 val ScalaVersion = "2.12.4"
 
-val AkkaVersion = "2.5.11"
+val AkkaVersion = "2.5.12"
 val JUnitVersion = "4.11"
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion = "3.0.4"
-val PlayVersion = "2.6.12"
+val PlayVersion = "2.6.13"
 val Log4jVersion = "2.10.0"
 val MacWireVersion = "2.3.0"
 val LombokVersion = "1.16.20"
@@ -118,7 +118,7 @@ def forkedTests: Seq[Setting[_]] = Seq(
 // group tests, a single test per group
 def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // We could group non Cassandra tests into another group
-  // to avoid new JVM for each test, see http://www.scala-sbt.org/release/docs/Testing.html
+  // to avoid new JVM for each test, see https://www.scala-sbt.org/release/docs/Testing.html
   val javaOptions = Seq("-Xms256M", "-Xmx512M")
   tests map { test =>
     new Tests.Group(

@@ -38,9 +38,7 @@ class AbstractPersistentEntityRegistrySpec
   }
 
   def withRegistry[T](block: (AbstractPersistentEntityRegistry) => T): T = {
-    val registry = new AbstractPersistentEntityRegistry(system) {
-      override protected val journalId = "testing-journal"
-    }
+    val registry = new AbstractPersistentEntityRegistry(system)
     block(registry)
   }
 

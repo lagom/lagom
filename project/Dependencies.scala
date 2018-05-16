@@ -7,15 +7,15 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.12"
+  val PlayVersion = "2.6.13"
   val PlayJsonVersion = "2.6.9"
-  val PlayStandaloneWsVersion = "1.1.6"
+  val PlayStandaloneWsVersion = "1.1.7"
   val TwirlVersion = "1.3.14"
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.11"
-  val AkkaHttpVersion = "10.0.11"
+  val AkkaVersion = "2.5.12"
+  val AkkaHttpVersion = "10.0.13"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.4", "2.11.12")
   val SbtScalaVersions = Seq("2.10.6", "2.12.4")
@@ -26,7 +26,7 @@ object Dependencies {
   val JacksonVersion = "2.8.11"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.22.Final"
+  val NettyVersion = "4.1.23.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
   val KafkaVersion = "0.11.0.1"
   val AkkaStreamKafkaVersion = "0.18"
@@ -64,9 +64,9 @@ object Dependencies {
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
   private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
-  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6"
+  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.2"
-  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.2"
+  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.3"
   private val h2 = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0" excludeAll (excludeSlf4j: _*)
 
@@ -174,7 +174,7 @@ object Dependencies {
       "com.typesafe.play" %% "twirl-api" % TwirlVersion,
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-      "com.zaxxer" % "HikariCP" % "2.7.8",
+      "com.zaxxer" % "HikariCP" % "2.7.9",
       "commons-codec" % "commons-codec" % "1.10",
       "io.aeron" % "aeron-client" % "1.7.0",
       "io.aeron" % "aeron-driver" % "1.7.0",
@@ -270,7 +270,7 @@ object Dependencies {
     "com.101tec" % "zkclient" % "0.10",
     "com.yammer.metrics" % "metrics-core" % "2.2.0",
     "jline" % "jline" % "0.9.94",
-    "log4j" % "log4j" % "1.2.16",
+    "log4j" % "log4j" % "1.2.17",
     "net.sf.jopt-simple" % "jopt-simple" % "5.0.3",
     "org.apache.commons" % "commons-math" % "2.2",
     "org.apache.curator" % "curator-client" % "2.10.0",
@@ -349,7 +349,12 @@ object Dependencies {
 
     // Upgrades needed to match whitelist
     reactiveStreams,
-    playJson
+    playJson,
+    scalaParserCombinators,
+    akkaStream,
+    akkaActor,
+    akkaSlf4j,
+    "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
   )
 
   val client = libraryDependencies ++= Seq(
@@ -396,7 +401,8 @@ object Dependencies {
     akkaPersistenceCassandraLauncher,
 
     // Upgrades needed to match whitelist
-    playJson
+    playJson,
+    akkaSlf4j
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
@@ -406,7 +412,7 @@ object Dependencies {
     "junit" % "junit" % JUnitVersion,
     h2 % Test,
 
-    // Without an binding, slf4j will print warnings when running tests
+    // Without any binding, slf4j will print warnings when running tests
     "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test
   )
 
@@ -417,7 +423,7 @@ object Dependencies {
     "junit" % "junit" % JUnitVersion,
     h2 % Test,
 
-    // Without an binding, slf4j will print warnings when running tests
+    // Without any binding, slf4j will print warnings when running tests
     "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test
   )
 
@@ -535,7 +541,9 @@ object Dependencies {
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
     slf4jApi,
     akkaPersistenceJdbc,
-    playJdbc
+    playJdbc,
+
+    h2 % Test
   )
 
   val `persistence-jdbc-javadsl` = libraryDependencies ++= Seq(
@@ -574,11 +582,13 @@ object Dependencies {
 
   val `kafka-broker-javadsl` = libraryDependencies ++=  Seq(
     slf4jApi,
+    "log4j" % "log4j" % "1.2.17",
     scalaTest % Test,
     "junit" % "junit" % JUnitVersion % Test
   )
 
   val `kafka-broker-scaladsl` = libraryDependencies ++= Seq(
+    "log4j" % "log4j" % "1.2.17",
     scalaTest % Test,
     "junit" % "junit" % JUnitVersion % Test
   )
@@ -589,7 +599,12 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     reactiveStreams,
-    playJson
+    playJson,
+    scalaParserCombinators,
+    akkaStream,
+    akkaActor,
+    akkaSlf4j,
+    "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
   ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % LogbackVersion)
 
   val log4j2 = libraryDependencies ++= Seq(slf4jApi) ++
@@ -600,7 +615,13 @@ object Dependencies {
 
       // Upgrades needed to match whitelist versions
       reactiveStreams,
-      playJson
+      playJson,
+      scalaParserCombinators,
+      akkaStream,
+      akkaActor,
+      akkaSlf4j,
+      "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
+
     )
 
   val `reloadable-server` = libraryDependencies ++= Seq(
@@ -608,7 +629,12 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     reactiveStreams,
-    playJson
+    playJson,
+    scalaParserCombinators,
+    akkaStream,
+    akkaActor,
+    akkaSlf4j,
+    "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
   )
 
   val `build-tool-support` = libraryDependencies ++= Seq(

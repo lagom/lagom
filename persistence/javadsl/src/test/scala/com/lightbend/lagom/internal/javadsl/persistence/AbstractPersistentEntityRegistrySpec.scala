@@ -41,9 +41,7 @@ class AbstractPersistentEntityRegistrySpec
 
   def withRegistry[T](block: (AbstractPersistentEntityRegistry) => T): T = {
     val injector = Guice.createInjector(new ActorSystemModule(system))
-    val registry = new AbstractPersistentEntityRegistry(system, injector) {
-      override protected val journalId = "testing-journal"
-    }
+    val registry = new AbstractPersistentEntityRegistry(system, injector)
     block(registry)
   }
 

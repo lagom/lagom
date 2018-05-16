@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.internal.javadsl.persistence.cassandra
 
+import java.util.Optional
 import javax.inject.{ Inject, Singleton }
 
 import akka.actor.ActorSystem
@@ -26,10 +27,6 @@ private[lagom] final class CassandraPersistentEntityRegistry @Inject() (system: 
   CassandraKeyspaceConfig.validateKeyspace("cassandra-journal", system.settings.config, log)
   CassandraKeyspaceConfig.validateKeyspace("cassandra-snapshot-store", system.settings.config, log)
 
-  override protected val journalId = CassandraReadJournal.Identifier
-
-  private val cassandraReadJournal = PersistenceQuery(system).readJournalFor[CassandraReadJournal](journalId)
-
-  override protected val eventsByTagQuery: Option[EventsByTagQuery] = Some(cassandraReadJournal)
+  override protected val queryPluginId = Optional.of(CassandraReadJournal.Identifier)
 
 }

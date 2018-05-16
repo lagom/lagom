@@ -6,6 +6,7 @@ package com.lightbend.lagom.dev
 import java.lang.reflect.Method
 import java.net.{ URL, URLClassLoader }
 import java.util
+import java.util.Collections
 
 /**
  * A ClassLoader with a toString() that prints name/urls.
@@ -48,11 +49,29 @@ class DelegatingClassLoader(commonLoader: ClassLoader, sharedClasses: Set[String
       findResourcesMethod.invoke(cl, name).asInstanceOf[util.Enumeration[URL]]
     }
     val superResources = super.getResources(name)
-    val resources = new util.Vector[URL]()
-    while (appResources.hasMoreElements) resources.add(appResources.nextElement())
-    while (superResources.hasMoreElements) resources.add(superResources.nextElement())
-    resources.elements()
+    if (!superResources.hasMoreElements) {
+      appResources
+    } else if (!appResources.hasMoreElements) {
+      superResources
+    } else {
+      val resources = new util.LinkedHashSet[URL]
+      while (appResources.hasMoreElements) resources.add(appResources.nextElement())
+      while (superResources.hasMoreElements) resources.add(superResources.nextElement())
+      Collections.enumeration(resources)
+    }
   }
 
   override def toString: String = "DelegatingClassLoader, using parent: " + getParent
+}
+
+/**
+ * A ClassLoader that only uses resources from its parent.
+ *
+ * The reason we only pull resources from our parent classloader is that the Delegating ClassLoader already uses
+ * this classloaders findResources method to locate the resources provided by this ClassLoader, and so our parent
+ * will already be returning our resources. Only pulling from the parent ensures we don't duplicate this.
+ */
+class DelegatedResourcesClassLoader(name: String, urls: Array[URL], parent: ClassLoader) extends NamedURLClassLoader(name, urls, parent) {
+  require(parent ne null)
+  override def getResources(name: String): java.util.Enumeration[java.net.URL] = getParent.getResources(name)
 }

@@ -168,7 +168,7 @@ abstract class PersistentEntity[Command, Event, State] {
   /**
    * Create a new empty `BehaviorBuilder` with a given state.
    */
-  final def newBehaviorBuilder(state: State): BehaviorBuilder = new BehaviorBuilder(state)
+  final def newBehaviorBuilder(state: State): BehaviorBuilder = new BehaviorBuilderImpl(state)
 
   /**
    * Behavior consists of current state and functions to process incoming commands
@@ -191,19 +191,17 @@ abstract class PersistentEntity[Command, Event, State] {
      * Create a `BehaviorBuilder` that corresponds to this `Behavior`, i.e. the builder
      * is populated with same state, same event and command handler functions.
      */
-    def builder(): BehaviorBuilder = new BehaviorBuilder(state, eventHandlers, commandHandlers)
+    def builder(): BehaviorBuilder = new BehaviorBuilderImpl(state, eventHandlers, commandHandlers)
 
   }
 
-  /**
-   * Mutable builder that is used for defining the event and command handlers.
-   * Use [#build] to create the immutable [[Behavior]].
-   */
-  protected final class BehaviorBuilder(
+  // in order to keep all the constructors protected but still generate javadocs this class
+  // extends a public sealed trait where documentation is provided.
+  private final class BehaviorBuilderImpl(
     state:       State,
     evtHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
     cmdHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]]
-  ) {
+  ) extends BehaviorBuilder {
 
     def this(state: State) = this(state, Map.empty, Map.empty)
 
@@ -218,30 +216,79 @@ abstract class PersistentEntity[Command, Event, State] {
       _state = state
     }
 
-    /**
-     * Register an event handler for a given event class. The `handler` function
-     * is supposed to return the new state after applying the event to the current state.
-     * Current state can be accessed with the `state` method of the `PersistentEntity`.
-     */
     def setEventHandler[A <: Event](eventClass: Class[A], handler: JFunction[A, State]): Unit =
       setEventHandlerChangingBehavior[A](eventClass, new JFunction[A, Behavior] {
         override def apply(evt: A): Behavior = behavior.withState(handler.apply(evt))
       })
+
+    def setEventHandlerChangingBehavior[A <: Event](eventClass: Class[A], handler: JFunction[A, Behavior]): Unit =
+      eventHandlers = eventHandlers.updated(eventClass, handler)
+
+    def removeEventHandler(eventClass: Class[_ <: Event]): Unit =
+      eventHandlers -= eventClass
+
+    def setCommandHandler[R, A <: Command with ReplyType[R]](
+      commandClass: Class[A],
+      handler:      JBiFunction[A, CommandContext[R], Persist[_ <: Event]]
+    ): Unit = {
+      commandHandlers = commandHandlers.updated(
+        commandClass,
+        handler.asInstanceOf[JBiFunction[A, CommandContext[Any], Persist[_ <: Event]]]
+      )
+    }
+
+    def removeCommandHandler(commandClass: Class[_ <: Command]): Unit =
+      commandHandlers -= commandClass
+
+    def setReadOnlyCommandHandler[R, A <: Command with ReplyType[R]](
+      commandClass: Class[A],
+      handler:      JBiConsumer[A, ReadOnlyCommandContext[R]]
+    ): Unit = {
+      setCommandHandler[R, A](commandClass, new JBiFunction[A, CommandContext[R], Persist[_ <: Event]] {
+        override def apply(cmd: A, ctx: CommandContext[R]): Persist[Event] = {
+          handler.accept(cmd, ctx)
+          ctx.done()
+        }
+      });
+    }
+
+    def build(): Behavior =
+      Behavior(_state, eventHandlers, commandHandlers)
+
+  }
+
+  /**
+   * Mutable builder that is used for defining the event and command handlers.
+   * Use [[BehaviorBuilder#build]] to create the immutable [[PersistentEntity.Behavior]].
+   */
+  // In order to provide javadoc preventing instantiation or extension this sealed trait is added
+  // to hold docs and BehaviorBuilderImpl is made private to hold implementation
+  sealed trait BehaviorBuilder {
+    def getState(): State
+    def setState(state: State): Unit
+    /**
+     * Register an event handler for a given event class. The `handler` function
+     * is supposed to return the new state after applying the event to the current state.
+     * Current state can be accessed with the `state` method of the `PersistentEntity`.
+     *
+     * Invoking this method a second time for the same `eventClass` will override the existing `handler`.
+     */
+    def setEventHandler[A <: Event](eventClass: Class[A], handler: JFunction[A, State]): Unit
 
     /**
      * Register an event handler that is updating the behavior for a given event class.
      * The `handler` function  is supposed to return the new behavior after applying the
      * event to the current state. Current behavior can be accessed with the `behavior`
      * method of the `PersistentEntity`.
+     *
+     * Invoking this method a second time for the same `eventClass` will override the existing `handler`.
      */
-    def setEventHandlerChangingBehavior[A <: Event](eventClass: Class[A], handler: JFunction[A, Behavior]): Unit =
-      eventHandlers = eventHandlers.updated(eventClass, handler)
+    def setEventHandlerChangingBehavior[A <: Event](eventClass: Class[A], handler: JFunction[A, Behavior]): Unit
 
     /**
      * Remove an event handler for a given event class.
      */
-    def removeEventHandler(eventClass: Class[_ <: Event]): Unit =
-      eventHandlers -= eventClass
+    def removeEventHandler(eventClass: Class[_ <: Event]): Unit
 
     /**
      * Register a command handler for a given command class.
@@ -259,46 +306,36 @@ abstract class PersistentEntity[Command, Event, State] {
      *
      * The `handler` function may validate the incoming command and reject it by
      * sending a `reply` and returning `ctx.done()`.
+     *
+     * Invoking this method a second time for the same `commandClass` will override the existing `handler`.
      */
     def setCommandHandler[R, A <: Command with ReplyType[R]](
       commandClass: Class[A],
       handler:      JBiFunction[A, CommandContext[R], Persist[_ <: Event]]
-    ): Unit = {
-      commandHandlers = commandHandlers.updated(
-        commandClass,
-        handler.asInstanceOf[JBiFunction[A, CommandContext[Any], Persist[_ <: Event]]]
-      )
-    }
+    ): Unit
 
     /**
      * Remove a command handler for a given command class.
      */
-    def removeCommandHandler(commandClass: Class[_ <: Command]): Unit =
-      commandHandlers -= commandClass
+    def removeCommandHandler(commandClass: Class[_ <: Command]): Unit
 
     /**
      *  Register a read-only command handler for a given command class. A read-only command
      *  handler does not persist events (i.e. it does not change state) but it may perform side
      *  effects, such as replying to the request. Replies are sent with the `reply` method of the
      *  context that is passed to the command handler function.
+     *
+     * Invoking this method a second time for the same `commandClass` will override the existing `handler`.
      */
     def setReadOnlyCommandHandler[R, A <: Command with ReplyType[R]](
       commandClass: Class[A],
       handler:      JBiConsumer[A, ReadOnlyCommandContext[R]]
-    ): Unit = {
-      setCommandHandler[R, A](commandClass, new JBiFunction[A, CommandContext[R], Persist[_ <: Event]] {
-        override def apply(cmd: A, ctx: CommandContext[R]): Persist[Event] = {
-          handler.accept(cmd, ctx)
-          ctx.done()
-        }
-      });
-    }
+    ): Unit
 
     /**
      * Construct the corresponding immutable `Behavior`.
      */
-    def build(): Behavior =
-      Behavior(_state, eventHandlers, commandHandlers)
+    def build(): Behavior
 
   }
 

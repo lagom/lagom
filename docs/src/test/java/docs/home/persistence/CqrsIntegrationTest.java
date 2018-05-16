@@ -43,7 +43,7 @@ import akka.stream.Materializer;
 import akka.stream.javadsl.Source;
 import akka.stream.testkit.TestSubscriber;
 import akka.stream.testkit.scaladsl.TestSink;
-import akka.testkit.JavaTestKit;
+import akka.testkit.javadsl.TestKit;
 
 
 public class CqrsIntegrationTest {
@@ -96,22 +96,19 @@ public class CqrsIntegrationTest {
     return injector.instanceOf(ReadSide.class);
   }
 
-  //yeah, the Akka testkit is in need of some Java 8 love
   private void eventually(Effect block) {
-    new JavaTestKit(system) {
+    new TestKit(system) {
       {
-        new AwaitAssert(Duration.create(20, TimeUnit.SECONDS)) {
-          @Override
-          protected void check() {
-            try {
-              block.apply();
-            } catch (RuntimeException e) {
-              throw e;
-            } catch (Exception e) {
-              throw new RuntimeException(e);
-            }
+        awaitAssert(duration("20 seconds"), () -> {
+          try {
+            block.apply();
+          } catch (RuntimeException e) {
+            throw e;
+          } catch (Exception e) {
+            throw new RuntimeException(e);
           }
-        };
+          return null;
+        });
       }
     };
   }

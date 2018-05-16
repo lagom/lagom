@@ -3,15 +3,18 @@
  */
 package com.lightbend.lagom.internal.scaladsl.persistence
 
+import java.util.Optional
 import java.util.concurrent.{ ConcurrentHashMap, TimeUnit }
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.cluster.Cluster
 import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
 import akka.event.Logging
-import akka.persistence.query.Offset
+import akka.pattern.ask
+import akka.persistence.query.{ Offset, PersistenceQuery }
 import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.stream.scaladsl
+import akka.util.Timeout
 import akka.{ Done, NotUsed }
 import com.lightbend.lagom.scaladsl.persistence._
 import scala.concurrent.Future
@@ -23,17 +26,15 @@ import scala.reflect.ClassTag
  *
  * Akka persistence plugins can extend this to implement a custom registry.
  */
-abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEntityRegistry {
+class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEntityRegistry {
 
-  /**
-   * The ID of the journal.
-   */
-  protected val journalId: String
+  protected val name: Option[String] = None
+  protected val journalPluginId: String = ""
+  protected val snapshotPluginId: String = ""
+  protected val queryPluginId: Option[String] = None
 
-  /**
-   * The events by tag query. Necessary for implementing read sides and the eventStream query.
-   */
-  protected val eventsByTagQuery: Option[EventsByTagQuery] = None
+  private lazy val eventsByTagQuery: Option[EventsByTagQuery] =
+    queryPluginId.map(id => PersistenceQuery(system).readJournalFor[EventsByTagQuery](id))
 
   private val sharding = ClusterSharding(system)
   private val cluster = Cluster(system)
@@ -82,6 +83,8 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
   private val registeredTypeNames = new ConcurrentHashMap[String, Class[_]]()
   private val reverseRegister = new ConcurrentHashMap[Class[_], String]()
 
+  private def prependName(entityTypeName: String) = name.fold("")(_ + "-") + entityTypeName
+
   override def register(entityFactory: => PersistentEntity): Unit = {
 
     // try to create one instance to fail fast
@@ -101,12 +104,13 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
 
     if (role.forall(Cluster(system).selfRoles.contains)) {
       val entityProps = PersistentEntityActor.props(
-        persistenceIdPrefix = entityTypeName, None, () => entityFactory, snapshotAfter, passivateAfterIdleTimeout
+        persistenceIdPrefix = entityTypeName, None, () => entityFactory, snapshotAfter, passivateAfterIdleTimeout,
+        journalPluginId, snapshotPluginId
       )
-      sharding.start(entityTypeName, entityProps, shardingSettings, extractEntityId, extractShardId)
+      sharding.start(prependName(entityTypeName), entityProps, shardingSettings, extractEntityId, extractShardId)
     } else {
       // not required role, start in proxy mode
-      sharding.startProxy(entityTypeName, role, extractEntityId, extractShardId)
+      sharding.startProxy(prependName(entityTypeName), role, extractEntityId, extractShardId)
     }
   }
 
@@ -120,9 +124,8 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
     val entityClass = implicitly[ClassTag[P]].runtimeClass.asInstanceOf[Class[P]]
     val entityName = reverseRegister.get(entityClass)
     if (entityName == null) throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
-
     val resultHandler = resultHandlerFor(entityId)
-    new PersistentEntityRef(entityId, sharding.shardRegion(entityName), system, askTimeout, resultHandler)
+    new PersistentEntityRef(entityId, sharding.shardRegion(prependName(entityName)), system, askTimeout, resultHandler)
   }
 
   private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)
@@ -143,7 +146,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem) extends Per
               env.offset
             ))
       case None =>
-        throw new UnsupportedOperationException(s"The $journalId Lagom persistence plugin does not support streaming events by tag")
+        throw new UnsupportedOperationException(s"The Lagom persistence plugin does not support streaming events by tag")
     }
   }
 

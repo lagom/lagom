@@ -13,32 +13,30 @@ import akka.event.Logging
 import akka.japi.Pair
 import akka.pattern.ask
 import akka.persistence.query.scaladsl.EventsByTagQuery
-import akka.persistence.query.{ Offset => AkkaOffset }
+import akka.persistence.query.{ PersistenceQuery, Offset => AkkaOffset }
 import akka.stream.javadsl
 import akka.util.Timeout
 import akka.{ Done, NotUsed }
 import com.google.inject.Injector
 import com.lightbend.lagom.javadsl.persistence._
-
 import scala.concurrent.duration.{ FiniteDuration, _ }
 import scala.util.control.NonFatal
+import scala.compat.java8.OptionConverters._
 
 /**
  * Provides shared functionality for implementing a persistent entity registry.
  *
  * Akka persistence plugins can extend this to implement a custom registry.
  */
-abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) extends PersistentEntityRegistry {
+class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) extends PersistentEntityRegistry {
 
-  /**
-   * The ID of the journal.
-   */
-  protected val journalId: String
+  protected val name: Optional[String] = Optional.empty()
+  protected val journalPluginId: String = ""
+  protected val snapshotPluginId: String = ""
+  protected val queryPluginId: Optional[String] = Optional.empty()
 
-  /**
-   * The events by tag query. Necessary for implementing read sides and the eventStream query.
-   */
-  protected val eventsByTagQuery: Option[EventsByTagQuery] = None
+  private lazy val eventsByTagQuery: Option[EventsByTagQuery] =
+    queryPluginId.asScala.map(id => PersistenceQuery(system).readJournalFor[EventsByTagQuery](id))
 
   private val sharding = ClusterSharding(system)
   private val cluster = Cluster(system)
@@ -87,6 +85,8 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
   private val registeredTypeNames = new ConcurrentHashMap[String, Class[_]]()
   private val reverseRegister = new ConcurrentHashMap[Class[_], String]()
 
+  private def prependName(entityTypeName: String) = name.asScala.fold("")(_ + "-") + entityTypeName
+
   override def register[C, E, S](entityClass: Class[_ <: PersistentEntity[C, E, S]]): Unit = {
 
     val entityFactory: () => PersistentEntity[C, E, S] =
@@ -113,12 +113,13 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
 
     if (role.forall(Cluster(system).selfRoles.contains)) {
       val entityProps = PersistentEntityActor.props(
-        persistenceIdPrefix = entityTypeName, Optional.empty(), entityFactory, snapshotAfter, passivateAfterIdleTimeout
+        persistenceIdPrefix = entityTypeName, Optional.empty(), entityFactory, snapshotAfter, passivateAfterIdleTimeout,
+        journalPluginId, snapshotPluginId
       )
-      sharding.start(entityTypeName, entityProps, shardingSettings, extractEntityId, extractShardId)
+      sharding.start(prependName(entityTypeName), entityProps, shardingSettings, extractEntityId, extractShardId)
     } else {
       // not required role, start in proxy mode
-      sharding.startProxy(entityTypeName, role, extractEntityId, extractShardId)
+      sharding.startProxy(prependName(entityTypeName), role, extractEntityId, extractShardId)
     }
   }
 
@@ -131,7 +132,7 @@ abstract class AbstractPersistentEntityRegistry(system: ActorSystem, injector: I
   override def refFor[C](entityClass: Class[_ <: PersistentEntity[C, _, _]], entityId: String): PersistentEntityRef[C] = {
     val entityName = reverseRegister.get(entityClass)
     if (entityName == null) throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
-    new PersistentEntityRef(entityId, sharding.shardRegion(entityName), askTimeout, errorHandlerFor(entityId))
+    new PersistentEntityRef(entityId, sharding.shardRegion(prependName(entityName)), askTimeout, errorHandlerFor(entityId))
   }
 
   private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)

@@ -19,13 +19,13 @@ The version of Lagom can be updated by editing the `project/plugins.sbt` file, a
 addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0")
 ```
 
-Lagom 1.4.0 also requires Sbt 0.13.16 or later. If your existing project is using a previous version of Sbt, you will need to upgrade it by editing the `project/build.properties` file. For example:
+Lagom 1.4.0 also requires Sbt 0.13.16 or later (recommended sbt 1.x). If your existing project is using a previous version of Sbt, you will need to upgrade it by editing the `project/build.properties` file. For example:
 
 ```
-sbt.version=0.13.16
+sbt.version=1.1.4
 ```
 
-
+We also recommend you [upgrade](https://www.scala-sbt.org/download.html) your `sbt` launcher.
 
 ## Scala 2.12 support
 
@@ -64,7 +64,7 @@ scalaVersion in ThisBuild := "2.12.4"
 
 ## Akka HTTP as the default server engine
 
-Play 2.6 introduces a new default server engine implemented using [Akka HTTP](https://doc.akka.io/docs/akka-http/current/scala.html) instead of Netty.
+Play 2.6 introduces a new default server engine implemented using [Akka HTTP](https://doc.akka.io/docs/akka-http/current/?language=java) instead of Netty.
 
 You can read more in the Play documentation at [Akka HTTP Server Backend](https://www.playframework.com/documentation/2.6.x/AkkaHttpServer).
 

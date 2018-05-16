@@ -286,7 +286,8 @@ def scalaVersionSince = Map(
 def since10 = Seq("1.0.0") ++ since11
 def since11 = Seq("1.1.0") ++ since12
 def since12 = Seq("1.2.2") ++ since13
-def since13 = Seq("1.3.3")
+def since13 = Seq("1.3.3") ++ since14
+def since14 = Seq("1.4.0")
 
 val javadslProjects = Seq[Project](
   `api-javadsl`,
@@ -727,7 +728,10 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
 
       // writeReplace method should never have been public, and it only throws an exception, so nothing
       // lost by hiding it.
-      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntityRef.writeReplace")
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntityRef.writeReplace"),
+
+      // See https://github.com/lagom/lagom/pull/1302 was a `protected final class` and became a `public sealed trait`
+      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$BehaviorBuilder")
     ),
     Dependencies.`persistence-javadsl`
   )
@@ -806,7 +810,10 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
 
 
 lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
-  .dependsOn(`persistence-core` % "compile;test->test")
+  .dependsOn(
+    `persistence-core` % "compile;test->test",
+    logback % Test
+  )
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
@@ -823,8 +830,7 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
   .dependsOn(
     `persistence-jdbc-core` % "compile;test->test",
     `persistence-core` % "compile;test->test",
-    `persistence-javadsl` % "compile;test->test",
-    logback % Test
+    `persistence-javadsl` % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since12): _*)
@@ -844,8 +850,7 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
   .dependsOn(
     `persistence-jdbc-core` % "compile;test->test",
     `persistence-core` % "compile;test->test",
-    `persistence-scaladsl` % "compile;test->test",
-    logback % Test
+    `persistence-scaladsl` % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since13): _*)
