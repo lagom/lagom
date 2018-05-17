@@ -1,36 +1,5 @@
 package docs.home.persistence;
 
-import com.lightbend.lagom.internal.javadsl.registry.NoServiceLocator;
-import com.lightbend.lagom.javadsl.api.ServiceLocator;
-import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil;
-import docs.home.persistence.BlogCommand.*;
-import docs.home.persistence.BlogEvent.*;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.assertThat;
-import static play.inject.Bindings.bind;
-
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.lightbend.lagom.javadsl.persistence.ReadSide;
-import com.typesafe.config.Config;
-import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
-import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession;
-import java.io.File;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import org.junit.*;
-
-import play.Application;
-import play.inject.Injector;
-import play.inject.guice.GuiceApplicationBuilder;
-import scala.collection.JavaConversions;
-import scala.concurrent.duration.Duration;
-
 import akka.actor.ActorSystem;
 import akka.cluster.Cluster;
 import akka.japi.Pair;
@@ -42,7 +11,38 @@ import akka.stream.javadsl.Source;
 import akka.stream.testkit.TestSubscriber;
 import akka.stream.testkit.scaladsl.TestSink;
 import akka.testkit.javadsl.TestKit;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
+import com.lightbend.lagom.internal.javadsl.registry.NoServiceLocator;
+import com.lightbend.lagom.javadsl.api.ServiceLocator;
+import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
+import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
+import com.lightbend.lagom.javadsl.persistence.ReadSide;
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession;
+import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigValueFactory;
+import docs.home.persistence.BlogCommand.AddPost;
+import docs.home.persistence.BlogEvent.PostAdded;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import play.Application;
+import play.inject.Injector;
+import play.inject.guice.GuiceApplicationBuilder;
+import scala.collection.JavaConverters;
 import scala.concurrent.duration.FiniteDuration;
+
+import java.io.File;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.Assert.assertThat;
+import static play.inject.Bindings.bind;
 
 
 public class CqrsIntegrationTest {
@@ -51,20 +51,25 @@ public class CqrsIntegrationTest {
   static Injector injector;
   static Application application;
   static CassandraSession cassandraSession;
-    private FiniteDuration defaultTimeout = new FiniteDuration(13, TimeUnit.SECONDS);
+  private FiniteDuration defaultTimeout = new FiniteDuration(18, TimeUnit.SECONDS);
 
-    @BeforeClass
+  @BeforeClass
   public static void setup() throws Exception {
 
-    Config config = TestUtil.persistenceConfig("CqrsIntegrationTest", CassandraLauncher.randomPort());
+    Config config = TestUtil
+        .persistenceConfig("CqrsIntegrationTest", CassandraLauncher.randomPort())
+        // Following sets the default timeout on Akka TestProbes.
+        .withValue(
+            "akka.test.single-expect-default",
+            ConfigValueFactory.fromAnyRef("19s"));
 
     File cassandraDirectory = new File("target/CqrsIntegrationTest");
     CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", true, 0);
 
     application = new GuiceApplicationBuilder()
-            .configure(config)
-            .bindings(bind(ServiceLocator.class).to(NoServiceLocator.class))
-            .build();
+        .configure(config)
+        .bindings(bind(ServiceLocator.class).to(NoServiceLocator.class))
+        .build();
 
     injector = application.injector();
     system = injector.instanceOf(ActorSystem.class);
@@ -113,8 +118,10 @@ public class CqrsIntegrationTest {
     };
   }
 
+  // DISCLAIMER: This tests uses non-uniform timeout values (13s, 14s, 15s, ...) as a good practice to help isolate
+  // the cause of a timeout in case of test failure.
+
   @Test
-  @Ignore
   public void testAddBlogPostsAndUpdateReadSide() throws Exception {
 
     // At system startup event processor is started.
@@ -125,7 +132,7 @@ public class CqrsIntegrationTest {
     // persist some events via the Post PersistentEntity
     final PersistentEntityRef<BlogCommand> ref1 = registry().refFor(Post.class, "1");
     final AddPost cmd1 = new AddPost(new PostContent("Title 1", "Body"));
-    ref1.ask(cmd1).toCompletableFuture().get(16, SECONDS); // await only for deterministic order
+    ref1.ask(cmd1).toCompletableFuture().get(13, SECONDS); // await only for deterministic order
 
     final PersistentEntityRef<BlogCommand> ref2 = registry().refFor(Post.class, "2");
     final AddPost cmd2 = new AddPost(new PostContent("Title 2", "Body"));
@@ -162,7 +169,7 @@ public class CqrsIntegrationTest {
     // and update the blogsummary table
     final PersistentEntityRef<BlogCommand> ref3 = registry().refFor(Post.class, "3");
     final AddPost cmd3 = new AddPost(new PostContent("Title 3", "Body"));
-    ref3.ask(cmd3).toCompletableFuture().get(17, SECONDS);
+    ref3.ask(cmd3).toCompletableFuture().get(16, SECONDS);
 
     eventually(() -> {
       final Source<String, ?> queryResult = cassandraSession.select(boundSelectStmt).map(row -> row.getString("title"));
@@ -182,7 +189,7 @@ public class CqrsIntegrationTest {
     final TestSubscriber.Probe<BlogEvent> eventProbe = eventStream.map(pair -> pair.first())
         .runWith(TestSink.probe(system), mat);
     eventProbe.request(4);
-    List<BlogEvent> events = JavaConversions.seqAsJavaList(eventProbe.expectNextN(3));
+    List<BlogEvent> events = JavaConverters.seqAsJavaList(eventProbe.expectNextN(3));
 
     assertThat(events, hasItem(new PostAdded("1", new PostContent("Title 1", "Body"))));
     assertThat(events, hasItem(new PostAdded("2", new PostContent("Title 2", "Body"))));
@@ -190,7 +197,7 @@ public class CqrsIntegrationTest {
 
     final PersistentEntityRef<BlogCommand> ref4 = registry().refFor(Post.class, "4");
     final AddPost cmd4 = new AddPost(new PostContent("Title 4", "Body"));
-    ref4.ask(cmd4).toCompletableFuture().get(18, SECONDS);
+    ref4.ask(cmd4).toCompletableFuture().get(17, SECONDS);
 
     eventProbe.expectNext(
         defaultTimeout,
