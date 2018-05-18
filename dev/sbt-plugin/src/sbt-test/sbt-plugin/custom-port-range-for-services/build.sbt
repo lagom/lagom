@@ -7,13 +7,13 @@ lagomServicesPortRange in ThisBuild := PortRange(10000, 10001)
 lazy val a = (project in file("a")).enablePlugins(LagomJava)
   .settings(Seq(
     sourceDirectory := baseDirectory.value / "src-a",
-    scalaVersion := sys.props.get("scala.version").getOrElse("2.12.4")
+    scalaVersion := sys.props.get("scala.version").getOrElse("2.12.6")
   ))
 
 lazy val b = (project in file("b")).enablePlugins(LagomJava)
   .settings(Seq(
     sourceDirectory := baseDirectory.value / "src-b",
-    scalaVersion := sys.props.get("scala.version").getOrElse("2.12.4")
+    scalaVersion := sys.props.get("scala.version").getOrElse("2.12.6")
   ))
 
 InputKey[Unit]("verifyPortProjA") := {
