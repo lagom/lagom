@@ -1,4 +1,4 @@
-val ScalaVersion = "2.12.4"
+val ScalaVersion = "2.12.6"
 
 val AkkaVersion = "2.5.12"
 val JUnitVersion = "4.11"
