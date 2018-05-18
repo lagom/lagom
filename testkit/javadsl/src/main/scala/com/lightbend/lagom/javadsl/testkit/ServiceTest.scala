@@ -52,7 +52,6 @@ import scala.util.control.NonFatal
 object ServiceTest {
 
   // These are all specified as strings so that we can say they are disabled without having a dependency on them.
-  private val DBModule = "play.api.db.DBModule"
   private val JdbcPersistenceModule = "com.lightbend.lagom.javadsl.persistence.jdbc.JdbcPersistenceModule"
   private val CassandraPersistenceModule = "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule"
   private val KafkaBrokerModule = "com.lightbend.lagom.internal.javadsl.broker.kafka.KafkaBrokerModule"
@@ -306,7 +305,7 @@ object ServiceTest {
         initialBuilder
           .configure(CassandraTestConfig.persistenceConfig(testName, cassandraPort))
           .configure("lagom.cluster.join-self", "on")
-          .disableModules(DBModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
+          .disableModules(JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
 
       } else if (setup.jdbc) {
 
@@ -323,7 +322,7 @@ object ServiceTest {
           .configure("lagom.cluster.join-self", "on")
           .disable(classOf[PersistenceModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
-          .disableModules(CassandraPersistenceModule, DBModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
+          .disableModules(CassandraPersistenceModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
 
       } else {
 
@@ -331,7 +330,7 @@ object ServiceTest {
           .configure("akka.actor.provider", "akka.actor.LocalActorRefProvider")
           .disable(classOf[PersistenceModule], classOf[PubSubModule], classOf[JoinClusterModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
-          .disableModules(CassandraPersistenceModule, DBModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
+          .disableModules(CassandraPersistenceModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
       }
 
     val application = setup.configureBuilder(finalBuilder).build()
