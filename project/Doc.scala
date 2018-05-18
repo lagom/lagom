@@ -157,7 +157,6 @@ object Unidoc extends AutoPlugin {
 
   lazy val GenjavadocCompilerPlugin = config("genjavadocplugin") hide
 
-  override def trigger = allRequirements
   override def requires = plugins.JvmPlugin
   override def projectConfigurations: Seq[Configuration] = Seq(Genjavadoc)
 

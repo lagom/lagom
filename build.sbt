@@ -369,7 +369,7 @@ lazy val root = (project in file("."))
   .settings(UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*)
   .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects).map(Project.projectToRef): _*)
 
-def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin)
+def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) && Unidoc
 def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
 
 lazy val api = (project in file("service/core/api"))
@@ -1017,7 +1017,6 @@ lazy val `dev-environment` = (project in file("dev"))
     publish := {},
     PgpKeys.publishSigned := {}
   )
-  .disablePlugins(Unidoc)
 
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   .settings(runtimeLibCommon: _*)
@@ -1040,7 +1039,6 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     }.taskValue,
     Dependencies.`build-tool-support`
   )
-  .disablePlugins(Unidoc)
 
 // This is almost the same as `build-tool-support`, but targeting sbt
 // while `build-tool-support` targets Maven and possibly other build
@@ -1061,7 +1059,6 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
     Dependencies.`build-tool-support`,
     target := target.value / "lagom-sbt-build-tool-support"
   )
-  .disablePlugins(Unidoc)
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(common: _*)
@@ -1096,7 +1093,6 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     },
     publishMavenStyle := isSnapshot.value
   ).dependsOn(`sbt-build-tool-support`)
-  .disablePlugins(Unidoc)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .enablePlugins(lagom.SbtMavenPlugin)
@@ -1176,7 +1172,7 @@ def archetypeProject(archetypeName: String) =
       },
       // Don't force copyright headers in Maven archetypes
       HeaderKey.excludes := Seq("*")
-    ).disablePlugins(EclipsePlugin, Unidoc)
+    ).disablePlugins(EclipsePlugin)
 
 lazy val `maven-java-archetype` = archetypeProject("java")
 lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
@@ -1268,7 +1264,6 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
     scalaVersion := Dependencies.SbtScalaVersions.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value)
   ).dependsOn(`sbt-plugin`)
-  .disablePlugins(Unidoc)
 
 // This project also get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-library")
