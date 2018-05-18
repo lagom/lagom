@@ -2,7 +2,7 @@ import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 
 interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 
-scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.4")
+scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.6")
 
 lazy val p = (project in file("p")).enablePlugins(PlayJava && LagomPlay)
   .settings(
