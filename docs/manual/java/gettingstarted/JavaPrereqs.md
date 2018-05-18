@@ -66,7 +66,7 @@ The system should respond with something like the following:
 
 ```
 [info] Set current project to example (in build file:/home/alice/)
-[info] 1.1.4
+[info] 1.1.5
 ```
 If you do not have the right version of sbt, download it from [the scala-sbt website](https://www.scala-sbt.org/download.html). The [documentation](https://www.scala-sbt.org/release/docs/Setup.html) contains installation instructions.
 
