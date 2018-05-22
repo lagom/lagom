@@ -6,19 +6,18 @@ package com.lightbend.lagom.internal.javadsl.persistence
 import java.util.Optional
 import java.util.concurrent.{ CompletableFuture, CompletionStage, ConcurrentHashMap, TimeUnit }
 
-import akka.actor.{ ActorSystem, CoordinatedShutdown }
+import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
 import akka.event.Logging
 import akka.japi.Pair
-import akka.pattern.ask
 import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.persistence.query.{ PersistenceQuery, Offset => AkkaOffset }
 import akka.stream.javadsl
-import akka.util.Timeout
 import akka.{ Done, NotUsed }
-import com.google.inject.Injector
 import com.lightbend.lagom.javadsl.persistence._
+import play.api.inject.Injector
+
 import scala.concurrent.duration.{ FiniteDuration, _ }
 import scala.util.control.NonFatal
 import scala.compat.java8.OptionConverters._
@@ -78,7 +77,7 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
   override def register[C, E, S](entityClass: Class[_ <: PersistentEntity[C, E, S]]): Unit = {
 
     val entityFactory: () => PersistentEntity[C, E, S] =
-      () => injector.getInstance(entityClass)
+      () => injector.instanceOf(entityClass)
 
     // try to create one instance to fail fast (e.g. wrong constructor)
     val entityTypeName = try {

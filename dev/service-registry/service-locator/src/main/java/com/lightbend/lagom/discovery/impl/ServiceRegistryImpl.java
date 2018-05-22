@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import akka.actor.ActorRef;
 import akka.pattern.PatternsCS;
 import akka.util.Timeout;
-import com.google.inject.Inject;
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry;
@@ -24,6 +23,7 @@ import scala.Option;
 import scala.compat.java8.OptionConverters;
 import scala.concurrent.duration.Duration;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.pcollections.PSequence;

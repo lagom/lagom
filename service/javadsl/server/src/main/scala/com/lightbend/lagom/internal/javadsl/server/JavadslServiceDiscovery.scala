@@ -6,7 +6,6 @@ package com.lightbend.lagom.internal.javadsl.server
 import java.io.File
 import java.lang.reflect.Type
 import java.util
-import java.util.Optional
 
 import com.google.inject.{ Binding, Module }
 import com.google.inject.spi._

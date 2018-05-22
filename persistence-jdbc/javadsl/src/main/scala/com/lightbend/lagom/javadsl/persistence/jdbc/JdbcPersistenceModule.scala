@@ -3,29 +3,28 @@
  */
 package com.lightbend.lagom.javadsl.persistence.jdbc
 
-import javax.inject.{ Inject, Singleton }
-
+import javax.inject.{ Inject, Provider, Singleton }
 import akka.actor.ActorSystem
-import com.google.inject.{ AbstractModule, Key, Provider }
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc._
 import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbProvider, SlickOffsetStore }
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
 import com.lightbend.lagom.spi.persistence.OffsetStore
+import play.api.{ Configuration, Environment }
 import play.api.db.DBApi
-import play.api.inject.ApplicationLifecycle
+import play.api.inject.{ ApplicationLifecycle, Binding, Module }
 
 import scala.concurrent.ExecutionContext
 
-class JdbcPersistenceModule extends AbstractModule {
-  override def configure(): Unit = {
+class JdbcPersistenceModule extends Module {
 
-    bind(classOf[SlickProvider]).toProvider(classOf[GuiceSlickProvider])
-    bind(classOf[JdbcReadSide]).to(classOf[JdbcReadSideImpl])
-    bind(classOf[PersistentEntityRegistry]).to(classOf[JdbcPersistentEntityRegistry])
-    bind(classOf[JdbcSession]).to(classOf[JdbcSessionImpl])
-    bind(classOf[SlickOffsetStore]).to(classOf[JavadslJdbcOffsetStore])
-    bind(classOf[OffsetStore]).to(Key.get(classOf[SlickOffsetStore]))
-  }
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
+    bind[SlickProvider].toProvider[GuiceSlickProvider],
+    bind[JdbcReadSide].to[JdbcReadSideImpl],
+    bind[PersistentEntityRegistry].to[JdbcPersistentEntityRegistry],
+    bind[JdbcSession].to[JdbcSessionImpl],
+    bind[SlickOffsetStore].to[JavadslJdbcOffsetStore],
+    bind[OffsetStore].to(bind[SlickOffsetStore])
+  )
 }
 
 @Singleton

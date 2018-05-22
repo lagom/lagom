@@ -11,11 +11,12 @@ import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.stream.Materializer
-import com.google.inject.Injector
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings, ClusterStartupTask }
 import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.Config
+import play.api.inject.Injector
+
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
 import scala.compat.java8.OptionConverters._
@@ -42,7 +43,7 @@ private[lagom] class ReadSideImpl @Inject() (
   ): Unit = {
 
     val processorFactory: () => ReadSideProcessor[Event] =
-      () => injector.getInstance(processorClass)
+      () => injector.instanceOf(processorClass)
 
     registerFactory(processorFactory, processorClass)
   }
