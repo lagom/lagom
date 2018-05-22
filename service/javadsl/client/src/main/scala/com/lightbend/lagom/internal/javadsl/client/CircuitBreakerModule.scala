@@ -4,9 +4,8 @@
 package com.lightbend.lagom.internal.javadsl.client
 
 import javax.inject.{ Inject, Provider, Singleton }
-
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakerMetricsProviderProvider, CircuitBreakers }
+import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakerMetricsProviderImpl, CircuitBreakerMetricsProviderProvider, CircuitBreakers }
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.javadsl.client.CircuitBreakersPanel
 import play.api.inject.{ Binding, Module }
@@ -19,7 +18,9 @@ class CircuitBreakerModule extends Module {
       bind[CircuitBreakersPanel].to[CircuitBreakersPanelImpl],
       // for backward compatibility we still need to provide it for wiring
       bind[CircuitBreakers].toProvider[CircuitBreakersProvider],
-      bind[CircuitBreakerMetricsProvider].toProvider[CircuitBreakerMetricsProviderProvider]
+      bind[CircuitBreakerMetricsProvider].toProvider[CircuitBreakerMetricsProviderProvider],
+      bind[CircuitBreakerConfig].toSelf,
+      bind[CircuitBreakerMetricsProviderImpl].toSelf
     )
   }
 }

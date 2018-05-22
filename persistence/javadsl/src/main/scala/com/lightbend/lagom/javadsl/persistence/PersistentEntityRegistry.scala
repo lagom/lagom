@@ -7,6 +7,7 @@ import java.util.concurrent.CompletionStage
 import java.util.{ Optional, UUID }
 
 import akka.japi.Pair
+import akka.japi.function.Creator
 import akka.stream.javadsl
 import akka.{ Done, NotUsed }
 import com.lightbend.lagom.javadsl.persistence.Offset.{ Sequence, TimeBasedUUID }

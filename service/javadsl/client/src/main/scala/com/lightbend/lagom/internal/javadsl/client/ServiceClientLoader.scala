@@ -3,9 +3,7 @@
  */
 package com.lightbend.lagom.internal.javadsl.client
 
-import javax.inject.{ Inject, Singleton }
-
-import com.google.inject.Provider
+import javax.inject.{ Inject, Provider, Singleton }
 import com.lightbend.lagom.internal.javadsl.api.{ JacksonPlaceholderExceptionSerializer, JacksonPlaceholderSerializerFactory, ServiceReader }
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }

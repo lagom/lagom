@@ -14,7 +14,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
 import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule
-import com.google.inject.Guice
+import play.api.inject.guice.GuiceInjectorBuilder
 
 object ClusteredPubSubConfig extends MultiNodeConfig {
   val node1 = role("node1")
@@ -54,9 +54,9 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig)
   val topic1 = TopicId(classOf[Notification], "1")
   val topic2 = TopicId(classOf[Notification], "2")
 
-  val injector = Guice.createInjector(new ActorSystemModule(system), new PubSubModule)
+  val injector = new GuiceInjectorBuilder().bindings(new ActorSystemModule(system), new PubSubModule).build()
 
-  val registry = injector.getInstance(classOf[PubSubRegistry])
+  val registry = injector.instanceOf(classOf[PubSubRegistry])
 
   "PubSub in a Cluster" must {
 

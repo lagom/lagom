@@ -3,17 +3,18 @@
  */
 package com.lightbend.lagom.javadsl.pubsub
 
-import com.google.inject.AbstractModule
 import com.lightbend.lagom.internal.javadsl.pubsub.PubSubRegistryImpl
+import play.api.{ Configuration, Environment }
+import play.api.inject.{ Binding, Module }
 
 /**
  * Guice module for the PubSub API.
  */
-class PubSubModule extends AbstractModule {
+class PubSubModule extends Module {
 
-  override def configure(): Unit = {
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
     // eagerSingleton because the distributed registry benefits from being alive as early as possible.
-    binder.bind(classOf[PubSubRegistry]).to(classOf[PubSubRegistryImpl]).asEagerSingleton()
-  }
+    bind[PubSubRegistry].to[PubSubRegistryImpl].eagerly()
+  )
 
 }

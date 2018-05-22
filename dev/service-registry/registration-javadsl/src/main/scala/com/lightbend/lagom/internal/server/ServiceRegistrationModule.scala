@@ -9,11 +9,8 @@ import java.util.function.{ Function => JFunction }
 import scala.compat.java8.FutureConverters.CompletionStageOps
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import com.google.inject.Provider
 import akka.NotUsed
-import javax.inject.Inject
-import javax.inject.Singleton
-
+import javax.inject.{ Inject, Provider, Singleton }
 import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistry, ServiceRegistryService }
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
 import com.typesafe.config.Config

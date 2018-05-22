@@ -7,78 +7,49 @@ import java.net.URI
 
 import scala.concurrent.Future
 import akka.actor.ActorSystem
-import com.google.inject.{ Inject, TypeLiteral }
-import com.google.inject.{ AbstractModule, Key }
-import com.google.inject.matcher.AbstractMatcher
-import com.google.inject.spi.InjectionListener
-import com.google.inject.spi.TypeEncounter
-import com.google.inject.spi.TypeListener
 import com.lightbend.lagom.internal.javadsl.persistence.cassandra._
-import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorAdapter
-import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorHolder
+import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraOffsetStore, CassandraReadSideSettings, ServiceLocatorAdapter, ServiceLocatorHolder }
 import com.lightbend.lagom.javadsl.api.ServiceLocator
-import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
 import com.lightbend.lagom.spi.persistence.OffsetStore
+import javax.annotation.PostConstruct
+import javax.inject.Inject
+import play.api.{ Configuration, Environment }
+import play.api.inject._
+
+import scala.util.Try
 
 /**
  * Guice module for the Persistence API.
  */
-class CassandraPersistenceModule extends AbstractModule {
-  override def configure(): Unit = {
-    binder.bind(classOf[CassandraPersistenceModule.InitServiceLocatorHolder]).asEagerSingleton()
-    binder.bind(classOf[PersistentEntityRegistry]).to(classOf[CassandraPersistentEntityRegistry])
-    binder.bind(classOf[CassandraSession])
-    binder.bind(classOf[CassandraReadSide]).to(classOf[CassandraReadSideImpl])
-    binder.bind(classOf[CassandraOffsetStore]).to(classOf[JavadslCassandraOffsetStore])
-    binder.bind(classOf[OffsetStore]).to(Key.get(classOf[CassandraOffsetStore]))
-    initServiceLocatorHolder()
-  }
+class CassandraPersistenceModule extends Module {
 
-  private def initServiceLocatorHolder(): Unit = {
-    val listener: TypeListener = new TypeListener {
-      override def hear[I](typeLiteral: TypeLiteral[I], typeEncounter: TypeEncounter[I]): Unit = {
-        typeEncounter.register(new InjectionListener[I] {
-          override def afterInjection(i: I): Unit = {
-            i.asInstanceOf[CassandraPersistenceModule.InitServiceLocatorHolder].init()
-          }
-        })
-      }
-    }
-    val matcher = new AbstractMatcher[TypeLiteral[_]] {
-      override def matches(typeLiteral: TypeLiteral[_]): Boolean = {
-        classOf[CassandraPersistenceModule.InitServiceLocatorHolder] == typeLiteral.getRawType
-      }
-    }
-    binder.bindListener(matcher, listener)
-  }
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
+    bind[CassandraPersistenceModule.InitServiceLocatorHolder].toSelf.eagerly(),
+    bind[PersistentEntityRegistry].to[CassandraPersistentEntityRegistry],
+    bind[CassandraSession].toSelf,
+    bind[CassandraReadSide].to[CassandraReadSideImpl],
+    bind[CassandraReadSideSettings].toSelf,
+    bind[CassandraOffsetStore].to[JavadslCassandraOffsetStore],
+    bind[OffsetStore].to(bind[CassandraOffsetStore])
+  )
+
 }
 
-private object CassandraPersistenceModule {
+private[lagom] object CassandraPersistenceModule {
 
-  private class InitServiceLocatorHolder @Inject() (system: ActorSystem) {
+  class InitServiceLocatorHolder @Inject() (system: ActorSystem, injector: Injector) {
 
-    @volatile private var serviceLocator: Option[ServiceLocator] = None
-    @volatile private var env: Option[play.Environment] = None
-
-    @Inject(optional = true)
-    def setServiceLocator(_serviceLocator: ServiceLocator): Unit = {
-      serviceLocator = Some(_serviceLocator)
-    }
-
-    @Inject(optional = true)
-    def setEnvironment(_env: play.Environment): Unit = {
-      env = Some(_env)
-    }
-
-    private[CassandraPersistenceModule] def init(): Unit = {
-      serviceLocator.foreach { locator =>
+    // Guice doesn't support this, but other DI frameworks do.
+    @PostConstruct
+    def init(): Unit = {
+      Try(injector.instanceOf[ServiceLocator]).foreach { locator =>
         ServiceLocatorHolder(system).setServiceLocator(new ServiceLocatorAdapter {
           override def locateAll(name: String): Future[List[URI]] = {
             import system.dispatcher
             import scala.compat.java8.FutureConverters._
-            import scala.collection.JavaConversions._
-            locator.locateAll(name).toScala.map(_.toList)
+            import scala.collection.JavaConverters._
+            locator.locateAll(name).toScala.map(_.asScala.toList)
           }
         })
       }
