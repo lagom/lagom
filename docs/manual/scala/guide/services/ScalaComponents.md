@@ -1,6 +1,6 @@
 # Scala Components
 
-This is a list of available Components you may use to build your application cake. This list contains Components provided by Lagom, Play and ConductR. You may develop your own Components and use those instead of the provided on this list as long as the contracts are fulfilled.
+This is a list of available Components you may use to build your application cake. This list contains Components provided by Lagom, Play and Lightbend Orchestration. You may develop your own Components and use those instead of the provided on this list as long as the contracts are fulfilled.
 
 #####  Service Components
 
@@ -34,7 +34,7 @@ This is a list of available Components you may use to build your application cak
 
 You can mix in `Components` from other frameworks or libraries, for example:
 
- * [ConductRApplicationComponents](https://github.com/typesafehub/conductr-lib/blob/master/lagom14-scala-conductr-bundle-lib/src/main/scala/com/typesafe/conductr/bundlelib/lagom/scaladsl/ConductRApplicationComponents.scala): provides a Service Locator provided by ConductR, reads any ConductR provided configuration and makes the service register into ConductR's Service Registry. See [[ConductR]]
+ * [LagomServiceLocatorComponents](https://developer.lightbend.com/docs/lightbend-orchestration/latest/features.html#lagom-scala): is defined by the `reactive-lib` component of Lightbend Orchestration, and provides a Lagom `ServiceLocator` implementation that works with the native service discovery features of Kubernetes and DC/OS (Marathon).
  * [AhcWSComponents](https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.libs.ws.ahc.AhcWSComponents): provides a `WSClient` based on an Async HTTP Client.
  * [DBComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/DBComponents.html)
  * [HikariCPComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/HikariCPComponents.html)

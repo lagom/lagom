@@ -1,6 +1,3 @@
 ProductionOverview:Production Overview
-ConductR:Lightbend ConductR
-ConductRMaven:Using ConductR with maven
-ConductRSbt:Using ConductR with sbt
 ReactivePlatform:Reactive Platform
 

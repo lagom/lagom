@@ -1,4 +1,3 @@
 ProductionOverview:Production Overview
-ConductR:Lightbend ConductR
 ReactivePlatform:Reactive Platform
 
