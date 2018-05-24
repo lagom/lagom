@@ -1,6 +1,6 @@
 # Scala Components
 
-This is a list of available Components you may use to build your application cake. This list contains Components provided by Lagom, Play and ConductR. You may develop your own Components and use those instead of the provided on this list as long as the contracts are fulfilled.
+This is a list of available Components you may use to build your application cake. This list contains Components provided by Lagom, Play and Lightbend Orchestration. You may develop your own Components and use those instead of the provided on this list as long as the contracts are fulfilled.
 
 #####  Service Components
 
@@ -26,7 +26,7 @@ This is a list of available Components you may use to build your application cak
 | [LagomDevModeServiceLocatorComponents](api/com/lightbend/lagom/scaladsl/devmode/LagomDevModeServiceLocatorComponents.html) | provides the dev mode service locator. This is meant to be used by Lagom Services and other applications such as Play Apps that want to interact with Lagom Services in Dev Mode. See the [scaladocs](api/com/lightbend/lagom/scaladsl/devmode/LagomDevModeServiceLocatorComponents.html) for more details. |
 | [LagomDevModeComponents](api/com/lightbend/lagom/scaladsl/devmode/LagomDevModeComponents.html) | provides the dev mode service locator and registers the services with it in dev mode. See [[Wiring together a Lagom application|DependencyInjection#Wiring-together-a-Lagom-application]].|
 | [StaticServiceLocatorComponents](api/com/lightbend/lagom/scaladsl/client/StaticServiceLocatorComponents.html)| provides a Service Locator that always resolves the same URI for a given Service name. |
-| [ConfigurationServiceLocatorComponents](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocatorComponents.html)| provides a Service Locator based on `application.conf` files. See [[Using static values for services and Cassandra to simulate a managed runtime|ProductionOverview#Using-static-values-for-services-and-Cassandra-to-simulate-a-managed-runtime]].|
+| [ConfigurationServiceLocatorComponents](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocatorComponents.html)| provides a Service Locator based on `application.conf` files. See [[Using static values for services and Cassandra to simulate a managed runtime|ProductionOverview#Using-static-values-for-services-and-Cassandra]].|
 | [RoundRobinServiceLocatorComponents](api/com/lightbend/lagom/scaladsl/client/RoundRobinServiceLocatorComponents.html)| provides a Service Locator that applies a Round Robin over the passed in sequence of URI. |
 | [CircuitBreakerComponents](api/com/lightbend/lagom/scaladsl/client/CircuitBreakerComponents.html)| implementors of a Service Locator will need to extend this to reuse the Circuit Breaker config provided by Lagom.|
 
@@ -34,7 +34,7 @@ This is a list of available Components you may use to build your application cak
 
 You can mix in `Components` from other frameworks or libraries, for example:
 
- * [ConductRApplicationComponents](https://github.com/typesafehub/conductr-lib/blob/master/lagom14-scala-conductr-bundle-lib/src/main/scala/com/typesafe/conductr/bundlelib/lagom/scaladsl/ConductRApplicationComponents.scala): provides a Service Locator provided by ConductR, reads any ConductR provided configuration and makes the service register into ConductR's Service Registry. See [[ConductR]]
+ * [LagomServiceLocatorComponents](https://developer.lightbend.com/docs/lightbend-orchestration/current/features.html#lagom-scala): is defined by the `reactive-lib` component of Lightbend Orchestration, and provides a Lagom `ServiceLocator` implementation that works with the native service discovery features of Kubernetes and DC/OS (Marathon).
  * [AhcWSComponents](https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.libs.ws.ahc.AhcWSComponents): provides a `WSClient` based on an Async HTTP Client.
  * [DBComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/DBComponents.html)
  * [HikariCPComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/HikariCPComponents.html)

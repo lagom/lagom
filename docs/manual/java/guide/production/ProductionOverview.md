@@ -1,24 +1,56 @@
-# Production
+# Running Lagom in production
 
-Lagom doesn't prescribe any particular production environment. If you are interested in deploying on [Kubernetes](https://kubernetes.io/), see our guide that demonstrates [how to deploy the Chirper example application](https://developer.lightbend.com/guides/lagom-kubernetes-k8s-deploy-microservices/).
+Lagom can be set up to work with most production environments, ranging from basic, manual deployments on physical servers to fully-managed service orchestration platforms such as [Kubernetes](https://kubernetes.io/) and [Mesosphere DC/OS](https://dcos.io/). The core APIs in Lagom are independent of any particular deployment platform. Where Lagom does need to interface with the environment, it provides extensible plugin points that allow you to configure your services for production without requiring changes to your service implementation code.
 
-## Deployment considerations
+[Lightbend Orchestration](https://developer.lightbend.com/docs/lightbend-orchestration/current/) is an open-source suite of tools that helps you deploy Lagom services to Kubernetes and DC/OS. It provides an easy way to create Docker images for your applications and introduces an automated process for generating Kubernetes and DC/OS resource and configuration files for you from those images. This process helps reduce the friction between development and operations. If you are using Kubernetes or DC/OS, or interested in trying one of these platforms, we encourage you to read the Lightbend Orchestration documentation to understand how to use it with Lagom and other components of the [Lightbend Reactive Platform](https://www.lightbend.com/products/reactive-platform).
 
-The deployment platform determines the type of archive you will need to use for packaging your microservices as well as the way you set up service location. For packaging:
+If you are not using Kubernetes or DC/OS, you must configure your services in a way that suits your production environment. The following information provides an overview of production considerations that apply to any environment.
 
-* Lagom sbt support leverages the [sbt-native-packager](https://www.scala-sbt.org/sbt-native-packager/) to produce archives of various types. By default zip archives can be produced, but you can also produce tar.gz, MSI, debian, RPM, Docker and more.
+## Production considerations
 
-* Maven has a variety of plugins to produce artifacts for various platforms.
+The production environment determines the methods for packaging your services, managing Akka Cluster formation, and providing service location, including that for Cassandra and Kafka:
 
-At runtime, services need to locate each other. This requires you to provide an implementation of a [ServiceLocator](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html). And, the deployment platform you choose might impose its own requirements on configuration.
+* When using [[sbt builds|LagomBuild#Defining-a-build-in-sbt]], Lagom leverages the open-source [`sbt-native-packager`](https://www.scala-sbt.org/sbt-native-packager/) plugin to produce packages:
 
-The Cassandra module provided by `akka-persistence-cassandra` uses static lookup by default. Lagom overrides that behavior by implementing a Session provider based on service location. That allows all services to continue to operate without the need to redeploy if/when the Cassandra `contact-points` are updated or fail. Using this approach provides higher resiliency. However, it is possible to hardcode the list of `contact-points` where Cassandra may be located even when the server is started with a dynamic service locator as described in the section below.
+    * By default, sbt produces standalone "universal" [zip archives](https://www.scala-sbt.org/sbt-native-packager/formats/universal.html) containing the compiled service, all of its dependencies, and a start script. These have no special infrastructure requirements and can be unzipped and run just about anywhere that supports Java. However, this includes no built-in facility for process monitoring and recovering from crashes, so for a resilient production environment, you'll need to provide this another way.
 
-### Using static Cassandra contact points
+    * Lightbend Orchestration automatically configures `sbt-native-packager` to build and publish [Docker images](https://developer.lightbend.com/docs/lightbend-orchestration/current/building.html) that can be used with Kubernetes, DC/OS, or any other Docker-compatible production environment.
 
-If you want to use dynamic service location for your services but need to statically locate Cassandra,  you can set up `contact-points` in the `application.conf` file for your service. This disables Lagom's `ConfigSessionProvider` and falls back to that provided in `akka-persistence-cassandra` which uses the list of endpoints listed in `contact-points`. The `application.conf` configuration applies in all environments (development and production) unless overridden. See developer mode settings on [[overriding Cassandra setup in Dev Mode|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]] for more information on settings up Cassandra in dev mode.
+    * Otherwise, you can configure `sbt-native-packager` to produce [other archive formats](https://www.scala-sbt.org/sbt-native-packager/formats/universal.html#build), [Windows (MSI) installers](https://www.scala-sbt.org/sbt-native-packager/formats/windows.html), Linux packages in [Debian](https://www.scala-sbt.org/sbt-native-packager/formats/debian.html) or [RPM](https://www.scala-sbt.org/sbt-native-packager/formats/rpm.html) format and more.
 
-The following example shows how to set `contact-points` in the `application.conf` file:
+* Maven has a variety of plugins to produce artifacts for various platforms:
+
+    * The [Maven Assembly Plugin](http://maven.apache.org/plugins/maven-assembly-plugin/) can be used to build archives in zip, tar and other similar formats.
+
+    * The [Docker Maven Plugin](https://dmp.fabric8.io/) is recommended for building Docker images. Maven support in Lightbend Orchestration is currently under development.
+
+    * Other Maven packaging plugins in varying states of maturity are available from the [MojoHaus Project](https://www.mojohaus.org/plugins.html).
+
+* At runtime, services need to locate the addresses of other services to communicate with them. This requires you to configure an implementation of a [`ServiceLocator`](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html) that Lagom uses to look up the addresses of services by their names. The production environment you choose might provide a service discovery mechanism that you can use with Lagom.
+
+    * For simple deployments, Lagom includes a built-in service locator that uses addresses specified in the service configuration ([described below](#Using-static-values-for-services-and-Cassandra)).
+
+    * Lightbend Orchestration provides an open-source [`ServiceLocator` implementation](https://developer.lightbend.com/docs/lightbend-orchestration/current/features.html#service-location) that integrates with the service discovery features of Kubernetes or DC/OS, or any other environment that supports service discovery via DNS.
+
+    * Otherwise, you can implement the interface yourself to integrate with a service registry of your choosing (such as [Consul](https://www.consul.io/), [ZooKeeper](https://zookeeper.apache.org/), or [etcd](https://coreos.com/etcd/)) or start with an open-source example implementation such as [`lagom-service-locator-consul`](https://github.com/jboner/lagom-service-locator-consul) or [`lagom-service-locator-zookeeper`](https://github.com/jboner/lagom-service-locator-zookeeper).
+
+* Services that require an [Akka Cluster](https://doc.akka.io/docs/akka/current/cluster-usage.html) (which includes any that use the Lagom [[Persistence|PersistentEntity]] or [[Publish-Subscribe|PubSub]] APIs) must have a strategy for forming a cluster or joining an existing cluster on startup.
+
+    * If you don't use a service orchestration platform and can determine the addresses of some of your nodes in advance of deploying them, Akka Cluster can be configured manually by listing the addresses of [seed nodes](https://doc.akka.io/docs/akka/current/cluster-usage.html#joining-to-seed-nodes) in the service configuration.
+
+    * Lightbend Orchestration includes open-source support for [automatic Akka Cluster formation](https://developer.lightbend.com/docs/lightbend-orchestration/current/features.html#service-location) on Kubernetes or DC/OS.
+
+    * Otherwise, you can use the open-source [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/current/bootstrap.html) extension for integration with other service discovery infrastructure, or write your own programmatic cluster formation implementation. See the [[Lagom Cluster|Cluster]] documentation for more information.
+
+* Lagom's Cassandra module comes out of the box ready to locate your Cassandra cluster using the service locator. This means Lagom considers Cassandra like any other external service it may need to locate. If your production environment requires it, you can also choose to bypass the service locator by providing Cassandra contact points directly in the service configuration, as described in the [section below](#Using-static-Cassandra-contact-points).
+
+* Similarly, Lagom’s Kafka integration uses the service locator by default to look up bootstrap servers for the Kafka client. This can also be overridden to specify a list of brokers in the service configuration. See the [[Lagom Kafka Client|KafkaClient]] documentation for more information.
+
+## Using static Cassandra contact points
+
+If you want to use dynamic service location for your services but need to statically locate Cassandra, modify the `application.conf` for your service. You will need to disable Lagom's `ConfigSessionProvider` and fall back to the one provided in `akka-persistence-cassandra`, which uses the list of endpoints listed in `contact-points`. The `application.conf` settings will be applied in all environments (development and production) unless overridden. See developer mode settings on [[overriding Cassandra setup in Dev Mode|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]] for more information on settings up Cassandra in dev mode.
+
+To set up static Cassandra `contact-points` and disable `ConfigSessionProvider`, modify the following sections of the `application.conf` file:
 
 ```
 cassandra.default {
@@ -44,15 +76,15 @@ lagom.persistence.read-side.cassandra {
 }
 ```
 
-## Using static values for services and Cassandra to simulate a managed runtime
+## Using static values for services and Cassandra
 
-While we would never advise using static service locations in production, to simulate a working Lagom system in the absence of a managed runtime, you can deploy Lagom systems to static locations by using static configuration. When using static service location, you can also hardcode Cassandra locations. To achieve this, you will need to:
+You can deploy Lagom systems to static locations by using static configuration. When using static service location, you can also hardcode Cassandra locations. To achieve this, follow these steps:
 
 1. Specify service locations in `application.conf`.
 2. Bind the `ConfigurationServiceLocator` in your Guice module.
 3. Optionally add Cassandra locations in `application.conf`.
 
-The  [`ConfigurationServiceLocator`](api/index.html?com/lightbend/lagom/javadsl/client/ConfigurationServiceLocator.html) reads the service locator configuration out of Lagom's `application.conf` file.  Here is an example that specifies static locations for two Lagom services:
+The [`ConfigurationServiceLocator`](api/index.html?com/lightbend/lagom/javadsl/client/ConfigurationServiceLocator.html) reads the service locator configuration from Lagom's `application.conf` file.  Here is an example that specifies static locations for two Lagom services:
 
 ```
 lagom.services {
