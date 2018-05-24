@@ -74,4 +74,4 @@ Lagom's Cassandra support is provided by the [`akka-persistence-cassandra`](http
 
 Lagom will start an embedded Cassandra server when running in developer mode. You can review the configuration options or how to disable the embedded server in the section on Cassandra Server in [[Running Lagom in development|CassandraServer]].
 
-In production you usually will prefer a dynamically locatable Cassandra server for resiliency. If you need to use a static list of contact-points to locate your Cassandra server review the section on deploying using static service location for Cassandra Service in [[Running Lagom in Production|ProductionOverview#Deploying-using-static-Cassandra-contact-points]].
+In production you usually will prefer a dynamically locatable Cassandra server for resiliency. If you need to use a static list of contact-points to locate your Cassandra server review the section on deploying using static service location for Cassandra Service in [[Running Lagom in Production|ProductionOverview#Using-static-Cassandra-contact-points]].

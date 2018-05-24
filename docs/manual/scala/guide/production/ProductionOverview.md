@@ -2,7 +2,7 @@
 
 Lagom can be set up to work with most production environments, ranging from basic, manual deployments on physical servers to fully-managed service orchestration platforms such as [Kubernetes](https://kubernetes.io/) and [Mesosphere DC/OS](https://dcos.io/). The core APIs in Lagom are independent of any particular deployment platform. Where Lagom does need to interface with the environment, it provides extensible plugin points that allow you to configure your services for production without requiring changes to your service implementation code.
 
-[Lightbend Orchestration](https://developer.lightbend.com/docs/lightbend-orchestration/latest/) is an open-source suite of tools that helps you deploy Lagom services to Kubernetes and DC/OS. It provides an easy way to create Docker images for your applications and introduces an automated process for generating Kubernetes and DC/OS resource and configuration files for you from those images. This process helps reduce the friction between development and operations. If you are using Kubernetes or DC/OS, or interested in trying one of these platforms, we encourage you to read the Lightbend Orchestration documentation to understand how to use it with Lagom and other components of the [Lightbend Reactive Platform](https://www.lightbend.com/products/reactive-platform).
+[Lightbend Orchestration](https://developer.lightbend.com/docs/lightbend-orchestration/current/) is an open-source suite of tools that helps you deploy Lagom services to Kubernetes and DC/OS. It provides an easy way to create Docker images for your applications and introduces an automated process for generating Kubernetes and DC/OS resource and configuration files for you from those images. This process helps reduce the friction between development and operations. If you are using Kubernetes or DC/OS, or interested in trying one of these platforms, we encourage you to read the Lightbend Orchestration documentation to understand how to use it with Lagom and other components of the [Lightbend Reactive Platform](https://www.lightbend.com/products/reactive-platform).
 
 If you are not using Kubernetes or DC/OS, you must configure your services in a way that suits your production environment. The following information provides an overview of production considerations that apply to any environment.
 
@@ -20,9 +20,9 @@ The production environment determines the methods for packaging your services, m
 
 * At runtime, services need to locate the addresses of other services to communicate with them. This requires you to configure an implementation of a [`ServiceLocator`](api/com/lightbend/lagom/scaladsl/api/ServiceLocator.html) that Lagom uses to look up the addresses of services by their names. The production environment you choose might provide a service discovery mechanism that you can use with Lagom.
 
-    * For simple deployments, Lagom includes a built-in service locator that uses addresses specified in the service configuration ([described below](#Using-static-values-for-services-and-Cassandra-to-simulate-a-managed-runtime)).
+    * For simple deployments, Lagom includes a built-in service locator that uses addresses specified in the service configuration ([described below](#Using-static-values-for-services-and-Cassandra)).
 
-    * Lightbend Orchestration provides an open-source [`ServiceLocator` implementation](https://developer.lightbend.com/docs/lightbend-orchestration/latest/features.html#service-location) that integrates with the service discovery features of Kubernetes or DC/OS, or any other environment that supports service discovery via DNS.
+    * Lightbend Orchestration provides an open-source [`ServiceLocator` implementation](https://developer.lightbend.com/docs/lightbend-orchestration/current/features.html#service-location) that integrates with the service discovery features of Kubernetes or DC/OS, or any other environment that supports service discovery via DNS.
 
     * Otherwise, you can implement the interface yourself to integrate with a service registry of your choosing (such as [Consul](https://www.consul.io/), [ZooKeeper](https://zookeeper.apache.org/), or [etcd](https://coreos.com/etcd/)) or start with an open-source example implementation such as [`lagom-service-locator-consul`](https://github.com/jboner/lagom-service-locator-consul) or [`lagom-service-locator-zookeeper`](https://github.com/jboner/lagom-service-locator-zookeeper).
 
@@ -30,11 +30,11 @@ The production environment determines the methods for packaging your services, m
 
     * If you don't use a service orchestration platform and can determine the addresses of some of your nodes in advance of deploying them, Akka Cluster can be configured manually by listing the addresses of [seed nodes](https://doc.akka.io/docs/akka/current/cluster-usage.html#joining-to-seed-nodes) in the service configuration.
 
-    * Lightbend Orchestration includes open-source support for [automatic Akka Cluster formation](https://developer.lightbend.com/docs/lightbend-orchestration/latest/features.html#service-location) on Kubernetes or DC/OS.
+    * Lightbend Orchestration includes open-source support for [automatic Akka Cluster formation](https://developer.lightbend.com/docs/lightbend-orchestration/current/features.html#service-location) on Kubernetes or DC/OS.
 
     * Otherwise, you can use the open-source [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/current/bootstrap.html) extension for integration with other service discovery infrastructure, or write your own programmatic cluster formation implementation. See the [[Lagom Cluster|Cluster]] documentation for more information.
 
-* Lagom's Cassandra module comes out of the box ready to locate your Cassandra cluster using the service locator. This means Lagom considers Cassandra like any other external service it may need to locate. If your production environment requires it, you can also choose to bypass the service locator by providing Cassandra contact points directly in the service configuration, as described in the [section below](#Deploying-using-static-Cassandra-contact-points).
+* Lagom's Cassandra module comes out of the box ready to locate your Cassandra cluster using the service locator. This means Lagom considers Cassandra like any other external service it may need to locate. If your production environment requires it, you can also choose to bypass the service locator by providing Cassandra contact points directly in the service configuration, as described in the [section below](#Using-static-Cassandra-contact-points).
 
 * Similarly, Lagom’s Kafka integration uses the service locator by default to look up bootstrap servers for the Kafka client. This can also be overridden to specify a list of brokers in the service configuration. See the [[Lagom Kafka Client|KafkaClient]] documentation for more information.
 
