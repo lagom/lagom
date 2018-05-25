@@ -35,7 +35,7 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       lagom.persistence.read-side.run-on-role = "read-side"
       terminate-system-after-member-removed = 60s
 
-      # increase default barrier-timeout from 30s to 60s since to leave wider margin for Travis.
+      # increase default barrier-timeout from 30s to 60s to leave wider margin for Travis.
       akka.testconductor.barrier-timeout=60s
 
       # Don't terminate the actor system when doing a coordinated shutdown
