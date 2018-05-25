@@ -6,11 +6,14 @@
       <pattern>%date{ISO8601} %-5level %logger - %msg%n</pattern>
     </encoder>
   </appender>
-        
+
   <root level="INFO">
     <appender-ref ref="STDOUT" />
   </root>
-  
+
+  <logger name="com.datastax.driver" level="ERROR" />
   <logger name="org.apache.cassandra" level="ERROR" />
-  
+
+  <logger name="com.lightbend.lagom.scaladsl.persistence.cassandra" level="DEBUG"/>
+
 </configuration>

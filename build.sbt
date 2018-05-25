@@ -800,7 +800,8 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
     `persistence-core` % "compile;test->test",
     `persistence-scaladsl` % "compile;test->test",
     `persistence-cassandra-core` % "compile;test->test",
-    `api-scaladsl`
+    `api-scaladsl`,
+    `logback` % Test
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since13): _*)
