@@ -186,7 +186,7 @@ val defaultMultiJvmOptions: List[String] = {
     case key: String if knownPrefix.exists(pre => key.startsWith(pre)) => "-D" + key + "=" + System.getProperty(key)
   }
 
-  "-Xmx128m" :: properties
+  "-verbose:gc" :: "-Xmx128m" :: properties
 }
 
 def databasePortSetting: String = {
