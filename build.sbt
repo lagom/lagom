@@ -264,7 +264,7 @@ def mimaSettings(versions: Seq[String]): Seq[Setting[_]] = {
         organization.value % s"${moduleName.value}_${scalaBinaryVersion.value}" % version
       }.toSet
     },
-    mimaBinaryIssueFilters += ProblemFilters.excludePackage("com.lightbend.lagom.internal")
+    mimaBinaryIssueFilters += ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*")
   )
 }
 
