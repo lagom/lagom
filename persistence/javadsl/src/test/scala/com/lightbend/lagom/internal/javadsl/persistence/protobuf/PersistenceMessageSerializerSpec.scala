@@ -53,7 +53,7 @@ class PersistenceMessageSerializerSpec extends ActorSystemSpec {
 
     "not serialize PersistentEntityRef" in {
       intercept[NotSerializableException] {
-        SerializationExtension(system).serialize(new PersistentEntityRef[String]("abc", system.deadLetters, 5.seconds, DefaultPersistentEntityErrorHandler.Instance)).get
+        SerializationExtension(system).serialize(new PersistentEntityRef[String]("abc", system.deadLetters, 5.seconds, DefaultPersistentEntityErrorHandler.INSTANCE)).get
       }
     }
   }

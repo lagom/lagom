@@ -25,5 +25,5 @@ public class DefaultPersistentEntityErrorHandler implements PersistentEntityErro
 
     }
 
-    public static final PersistentEntityErrorHandler Instance = new DefaultPersistentEntityErrorHandler();
+    public static final PersistentEntityErrorHandler INSTANCE = new DefaultPersistentEntityErrorHandler();
 }

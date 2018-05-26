@@ -126,7 +126,7 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
   protected[persistence] def errorHandlerFor(entityId: String): PersistentEntityErrorHandler = {
     persistenceEntityTracingConfig.map {
       new TracingPersistentEntityErrorHandler(cluster, _, entityId)
-    }.getOrElse(DefaultPersistentEntityErrorHandler.Instance)
+    }.getOrElse(DefaultPersistentEntityErrorHandler.INSTANCE)
   }
 
   override def refFor[C](entityClass: Class[_ <: PersistentEntity[C, _, _]], entityId: String): PersistentEntityRef[C] = {

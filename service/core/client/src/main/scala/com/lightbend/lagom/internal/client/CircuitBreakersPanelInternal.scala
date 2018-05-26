@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.{ ConcurrentHashMap, TimeoutException }
 import java.util.function.{ Function => JFunction }
 import javax.inject.{ Inject, Singleton }
-
+import org.slf4j.LoggerFactory
 import akka.actor.ActorSystem
 import akka.pattern.{ CircuitBreakerOpenException, CircuitBreaker => AkkaCircuitBreaker }
 import com.lightbend.lagom.internal.spi.{ CircuitBreakerMetrics, CircuitBreakerMetricsProvider }
@@ -36,9 +36,10 @@ private[lagom] class CircuitBreakersPanelInternal(
 
   private val breakers = new ConcurrentHashMap[String, Option[CircuitBreakerHolder]]
 
-  private def traceFailureIfEnabled(id: String, e: Throwable) = {
-    if (traceFailuresEnabled)
-      system.log.error(e, s"Circuit breaker $id has failed")
+
+  private def logFailure(id: String, e: Throwable) = {
+      val logger = LoggerFactory.getLogger(s"CircuitBreakersPanel-${id}")
+      logger.debug(s"Circuit breaker $id has failed",e)
   }
 
   def withCircuitBreaker[T](id: String)(body: => Future[T]): Future[T] = {
@@ -53,12 +54,14 @@ private[lagom] class CircuitBreakersPanelInternal(
           case Success(_) => metrics.onCallSuccess(elapsed)
           case Failure(e: CircuitBreakerOpenException) =>
             metrics.onCallBreakerOpenFailure()
-          case Failure(e: TimeoutException) => metrics.onCallTimeoutFailure(elapsed)
-          case Failure(e)                   => metrics.onCallFailure(elapsed)
+            logFailure(id, e)
+          case Failure(e: TimeoutException) =>
+            metrics.onCallTimeoutFailure(elapsed)
+            logFailure(id, e)
+          case Failure(e)                   =>
+            metrics.onCallFailure(elapsed)
+            logFailure(id, e)
         }(system.dispatcher)
-        result.failed.foreach(
-          e => traceFailureIfEnabled(id, e)
-        )(system.dispatcher)
         result
       case None => body
     }
