@@ -11,7 +11,6 @@ import akka.actor.ActorSystem
 import akka.persistence.jdbc.config.{ JournalTableConfiguration, SlickConfiguration, SnapshotTableConfiguration }
 import akka.persistence.jdbc.journal.dao.JournalTables
 import akka.persistence.jdbc.snapshot.dao.SnapshotTables
-import akka.persistence.jdbc.util.{ SlickDatabase, SlickDriver }
 import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import org.slf4j.LoggerFactory
@@ -34,8 +33,8 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
 
   val autoCreateTables: Boolean = createTables.getBoolean("auto")
 
-  val db = SlickDatabase.forConfig(readSideConfig, slickConfig)
-  val profile = SlickDriver.forDriverName(readSideConfig)
+  val db = SlickUtils.forConfig(readSideConfig, slickConfig)
+  val profile = SlickUtils.forDriverName(readSideConfig)
 
   import profile.api._
 
