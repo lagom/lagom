@@ -186,7 +186,7 @@ val defaultMultiJvmOptions: List[String] = {
     case key: String if knownPrefix.exists(pre => key.startsWith(pre)) => "-D" + key + "=" + System.getProperty(key)
   }
 
-  "-Xmx128m" :: properties
+  "-verbose:gc" :: "-Xmx128m" :: properties
 }
 
 def databasePortSetting: String = {
@@ -778,7 +778,8 @@ lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassand
     `persistence-core` % "compile;test->test",
     `persistence-javadsl` % "compile;test->test",
     `persistence-cassandra-core` % "compile;test->test",
-    `api-javadsl`
+    `api-javadsl`,
+    `logback` % Test
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since12): _*)
@@ -800,7 +801,8 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
     `persistence-core` % "compile;test->test",
     `persistence-scaladsl` % "compile;test->test",
     `persistence-cassandra-core` % "compile;test->test",
-    `api-scaladsl`
+    `api-scaladsl`,
+    `logback` % Test
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since13): _*)
