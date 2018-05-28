@@ -43,7 +43,7 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       # 5s to 11s
       akka.test.single-expect-default = 11s
       ## use 9s and 11s for the above timeout because it's coprime values and it'll be easier to spot interferences.
-      ## Also, make the expectation higher since this tests often expects over an ask operation.
+      ## Also, make the Akka expect() timeouts higher since this tests often expect over an ask operation.
 
       # Don't terminate the actor system when doing a coordinated shutdown
       # See http://doc.akka.io/docs/akka/2.5.0/project/migration-guide-2.4.x-2.5.x.html#Coordinated_Shutdown
@@ -155,8 +155,8 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       // beginning of the test to ensure it's run.
       enterBarrier("before-1")
 
-      val ref1 = registry.refFor[TestEntity]("1").withAskTimeout(remaining)
-      val ref2 = registry.refFor[TestEntity]("2").withAskTimeout(remaining)
+      val ref1 = registry.refFor[TestEntity]("1")
+      val ref2 = registry.refFor[TestEntity]("2")
 
       // STEP 1: send some commands from all nodes of the test to ref1 and ref2
       // note that this is done on node1, node2 and node 3 !!
@@ -224,12 +224,12 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
       runOn(node1) {
         within(35.seconds) {
-          val ref1 = registry.refFor[TestEntity]("1").withAskTimeout(remaining)
+          val ref1 = registry.refFor[TestEntity]("1")
           val r1: Future[TestEntity.Evt] = ref1.ask(TestEntity.Add("a"))
           r1.pipeTo(testActor)
           expectMsg(TestEntity.Appended("A"))
 
-          val ref2 = registry.refFor[TestEntity]("2").withAskTimeout(remaining)
+          val ref2 = registry.refFor[TestEntity]("2")
           val r2: Future[TestEntity.Evt] = ref2.ask(TestEntity.Add("b"))
           r2.pipeTo(testActor)
           expectMsg(TestEntity.Appended("B"))
