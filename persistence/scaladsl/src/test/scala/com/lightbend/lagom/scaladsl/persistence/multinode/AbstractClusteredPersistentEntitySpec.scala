@@ -35,8 +35,15 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       lagom.persistence.read-side.run-on-role = "read-side"
       terminate-system-after-member-removed = 60s
 
-      # increase default barrier-timeout from 30s to 60s to leave wider margin for Travis.
+      # increase default timeouts to leave wider margin for Travis.
+      # 30s to 60s
       akka.testconductor.barrier-timeout=60s
+      # 5s to 9s
+      lagom.persistence.ask-timeout = 9s
+      # 5s to 11s
+      akka.test.single-expect-default = 11s
+      ## use 9s and 11s for the above timeout because it's coprime values and it'll be easier to spot interferences.
+      ## Also, make the Akka expect() timeouts higher since this tests often expect over an ask operation.
 
       # Don't terminate the actor system when doing a coordinated shutdown
       # See http://doc.akka.io/docs/akka/2.5.0/project/migration-guide-2.4.x-2.5.x.html#Coordinated_Shutdown
@@ -143,12 +150,12 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
   "A PersistentEntity in a Cluster" must {
 
-    "send commands to target entity" in within(21.seconds) {
+    "send commands to target entity" in within(75.seconds) {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
       enterBarrier("before-1")
 
-      val ref1 = registry.refFor[TestEntity]("1").withAskTimeout(remaining)
+      val ref1 = registry.refFor[TestEntity]("1")
       val ref2 = registry.refFor[TestEntity]("2")
 
       // STEP 1: send some commands from all nodes of the test to ref1 and ref2
@@ -216,13 +223,13 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       enterBarrier("node2-left")
 
       runOn(node1) {
-        within(15.seconds) {
-          val ref1 = registry.refFor[TestEntity]("1").withAskTimeout(remaining)
+        within(35.seconds) {
+          val ref1 = registry.refFor[TestEntity]("1")
           val r1: Future[TestEntity.Evt] = ref1.ask(TestEntity.Add("a"))
           r1.pipeTo(testActor)
           expectMsg(TestEntity.Appended("A"))
 
-          val ref2 = registry.refFor[TestEntity]("2").withAskTimeout(remaining)
+          val ref2 = registry.refFor[TestEntity]("2")
           val r2: Future[TestEntity.Evt] = ref2.ask(TestEntity.Add("b"))
           r2.pipeTo(testActor)
           expectMsg(TestEntity.Appended("B"))
