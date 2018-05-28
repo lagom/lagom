@@ -47,7 +47,7 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       akka.test.single-expect-default = 11s
       ## use 9s and 11s for the above timeout because it's coprime values and it'll be easier to spot interferences.
       ## Also, make the Akka expect() timeouts higher since this tests often expect over an ask operation.
- |
+
       # Don't terminate the actor system when doing a coordinated shutdown
       # See http://doc.akka.io/docs/akka/2.5.0/project/migration-guide-2.4.x-2.5.x.html#Coordinated_Shutdown
       akka.coordinated-shutdown.terminate-actor-system = off
