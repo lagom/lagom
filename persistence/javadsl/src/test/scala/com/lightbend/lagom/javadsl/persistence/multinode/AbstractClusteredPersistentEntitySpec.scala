@@ -147,7 +147,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       enterBarrier("before-1")
 
       val ref1 = registry.refFor(classOf[TestEntity], "1").withAskTimeout(remaining)
-      val ref2 = registry.refFor(classOf[TestEntity], "2")
+      val ref2 = registry.refFor(classOf[TestEntity], "2").withAskTimeout(remaining)
 
       // STEP 1: send some commands from all nodes of the test to ref1 and ref2
       // note that this is done on node1, node2 and node 3 !!
