@@ -1,6 +1,5 @@
 package com.lightbend.lagom.internal.persistence.jdbc
 
-
 import javax.naming.InitialContext
 
 import akka.persistence.jdbc.config.SlickConfiguration
@@ -19,7 +18,8 @@ object SlickUtils {
       .map(Database.forName(_, None))
       .orElse {
         slickConfiguration.jndiDbName.map(
-          new InitialContext().lookup(_).asInstanceOf[Database])
+          new InitialContext().lookup(_).asInstanceOf[Database]
+        )
       }
       .getOrElse(Database.forConfig("slick.db", config))
   }
