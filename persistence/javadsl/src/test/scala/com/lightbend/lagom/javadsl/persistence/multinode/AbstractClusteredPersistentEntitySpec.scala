@@ -148,13 +148,13 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
   "A PersistentEntity in a Cluster" must {
 
-    "send commands to target entity" in within(20.seconds) {
+    "send commands to target entity" in within(75.seconds) {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
       enterBarrier("before-1")
 
       val ref1 = registry.refFor(classOf[TestEntity], "1").withAskTimeout(remaining)
-      val ref2 = registry.refFor(classOf[TestEntity], "2")
+      val ref2 = registry.refFor(classOf[TestEntity], "2").withAskTimeout(remaining)
 
       // STEP 1: send some commands from all nodes of the test to ref1 and ref2
       // note that this is done on node1, node2 and node 3 !!
@@ -219,7 +219,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       enterBarrier("node2-left")
 
       runOn(node1) {
-        within(15.seconds) {
+        within(35.seconds) {
           val ref1 = registry.refFor(classOf[TestEntity], "1").withAskTimeout(remaining)
           val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
           r1.pipeTo(testActor)
