@@ -22,7 +22,7 @@ public class NotFound extends TransportException {
         super(ERROR_CODE, cause);
     }
 
-    public NotFound(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
-        super(errorCode, exceptionMessage);
+    public NotFound(ExceptionMessage exceptionMessage) {
+        super(ERROR_CODE, exceptionMessage);
     }
 }

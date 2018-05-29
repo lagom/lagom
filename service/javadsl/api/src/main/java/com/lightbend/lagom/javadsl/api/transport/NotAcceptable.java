@@ -23,7 +23,7 @@ public class NotAcceptable extends TransportException {
                 ") could not be satisfied by the server, the default that the server uses is: " + supported);
     }
 
-    public NotAcceptable(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
-        super(errorCode, exceptionMessage);
+    public NotAcceptable(ExceptionMessage exceptionMessage) {
+        super(ERROR_CODE, exceptionMessage);
     }
 }

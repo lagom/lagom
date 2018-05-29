@@ -23,7 +23,7 @@ public class SerializationException extends TransportException {
         super(ERROR_CODE, cause);
     }
 
-    public SerializationException(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
-        super(errorCode, exceptionMessage);
+    public SerializationException(ExceptionMessage exceptionMessage) {
+        super(ERROR_CODE, exceptionMessage);
     }
 }

@@ -22,7 +22,7 @@ public class Forbidden extends TransportException {
         super(ERROR_CODE, cause);
     }
 
-    public Forbidden(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
-        super(errorCode, exceptionMessage);
+    public Forbidden(ExceptionMessage exceptionMessage) {
+        super(ERROR_CODE, exceptionMessage);
     }
 }

@@ -22,7 +22,7 @@ public class PayloadTooLarge extends TransportException {
         super(ERROR_CODE, cause);
     }
 
-    public PayloadTooLarge(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
-        super(errorCode, exceptionMessage);
+    public PayloadTooLarge(ExceptionMessage exceptionMessage) {
+        super(ERROR_CODE, exceptionMessage);
     }
 }

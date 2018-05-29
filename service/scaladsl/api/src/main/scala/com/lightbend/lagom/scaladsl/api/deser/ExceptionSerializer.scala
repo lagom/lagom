@@ -56,25 +56,28 @@ trait ExceptionSerializer {
  */
 class DefaultExceptionSerializer(environment: Environment) extends ExceptionSerializer {
 
-  override def serialize(exception: Throwable, accept: Seq[MessageProtocol]): RawExceptionMessage = {
-    val (errorCode, message) = exception match {
-      case te: TransportException =>
-        (te.errorCode, te.exceptionMessage)
-      case e if environment.mode == Mode.Prod =>
-        // By default, don't give out information about generic exceptions.
-        (TransportErrorCode.InternalServerError, new ExceptionMessage("Exception", ""))
-      case e =>
-        // Ok to give out exception information in dev and test
-        val writer = new CharArrayWriter
-        e.printStackTrace(new PrintWriter(writer))
-        val detail = writer.toString
-        (TransportErrorCode.InternalServerError, new ExceptionMessage(s"${exception.getClass.getName}: ${exception.getMessage}", detail))
-    }
+  private final val isProdMode: Boolean = environment.mode == Mode.Prod
 
-    val messageBytes = ByteString.fromString(Json.stringify(Json.obj(
-      "name" -> message.name,
-      "detail" -> message.detail
-    )))
+  override def serialize(exception: Throwable, accept: Seq[MessageProtocol]): RawExceptionMessage = {
+    val (errorCode, name, detail, cause) =
+      exception match {
+        case te: TransportException =>
+          (te.errorCode, te.exceptionMessage.name, te.exceptionMessage.detail, if (te.getCause == null) "" else te.getCause.getMessage)
+        case _ if isProdMode =>
+          // By default, don't give out information about generic exceptions.
+          (TransportErrorCode.InternalServerError, "Exception", "", null)
+        case e =>
+          // Ok to give out exception information in dev and test
+          val writer = new CharArrayWriter
+          e.printStackTrace(new PrintWriter(writer))
+          (TransportErrorCode.InternalServerError, exception.getClass.getName, writer.toString, e.getMessage)
+      }
+
+    val minimalMessage: JsObject = Json.obj("name" -> name, "detail" -> detail)
+    val messageBytes = ByteString.fromString(Json.stringify(
+      if (isProdMode) minimalMessage
+      else minimalMessage ++ Json.obj("cause" -> cause)
+    ))
 
     RawExceptionMessage(errorCode, MessageProtocol(Some("application/json"), None, None), messageBytes)
   }

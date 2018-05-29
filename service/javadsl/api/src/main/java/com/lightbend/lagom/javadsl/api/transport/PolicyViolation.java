@@ -22,7 +22,7 @@ public class PolicyViolation extends TransportException {
         super(ERROR_CODE, cause);
     }
 
-    public PolicyViolation(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
-        super(errorCode, exceptionMessage);
+    public PolicyViolation(ExceptionMessage exceptionMessage) {
+        super(ERROR_CODE, exceptionMessage);
     }
 }
