@@ -152,6 +152,17 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
       exception.getMessage should include("<Foo>")
     }
 
+    "fail to read a Java service descriptor from a public interface because a the topic type is missing" in {
+      val exception = intercept[IllegalMessageTypeException] {
+        serviceDescriptor[MissingTopicTypeService]
+      }
+
+      // When users don't set a Topic type, <Message> is the type of the topic:
+      //     Topic  myMethod();
+      // because <Message> is the unbound type used in Service#topic(). See com.lightbend.lagom.javadsl.api.Service
+      exception.getMessage should include("<TopicMessageType>")
+    }
+
   }
 
   def serviceDescriptor[S <: Service](implicit ct: ClassTag[S]) = {
