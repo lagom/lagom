@@ -287,7 +287,7 @@ object SerializationException {
 
   def apply(cause: Throwable) = new SerializationException(
     ErrorCode,
-    new ExceptionMessage(classOf[SerializationException].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[SerializationException].getSimpleName, ErrorCode.description), cause
   )
 }
 
@@ -305,7 +305,7 @@ object DeserializationException {
 
   def apply(cause: Throwable) = new DeserializationException(
     ErrorCode,
-    new ExceptionMessage(classOf[DeserializationException].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[DeserializationException].getSimpleName, ErrorCode.description), cause
   )
 }
 
@@ -323,7 +323,7 @@ object PolicyViolation {
 
   def apply(cause: Throwable) = new PolicyViolation(
     ErrorCode,
-    new ExceptionMessage(classOf[PolicyViolation].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[PolicyViolation].getSimpleName, ErrorCode.description), cause
   )
 }
 
@@ -341,7 +341,7 @@ object NotFound {
 
   def apply(cause: Throwable) = new NotFound(
     ErrorCode,
-    new ExceptionMessage(classOf[NotFound].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[NotFound].getSimpleName, ErrorCode.description), cause
   )
 }
 
@@ -359,7 +359,7 @@ object Forbidden {
 
   def apply(cause: Throwable) = new Forbidden(
     ErrorCode,
-    new ExceptionMessage(classOf[Forbidden].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[Forbidden].getSimpleName, ErrorCode.description), cause
   )
 }
 
@@ -377,7 +377,7 @@ object PayloadTooLarge {
 
   def apply(cause: Throwable) = new PayloadTooLarge(
     ErrorCode,
-    new ExceptionMessage(classOf[PayloadTooLarge].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[PayloadTooLarge].getSimpleName, ErrorCode.description), cause
   )
 }
 
@@ -395,6 +395,6 @@ object BadRequest {
 
   def apply(cause: Throwable) = new BadRequest(
     ErrorCode,
-    new ExceptionMessage(classOf[BadRequest].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[BadRequest].getSimpleName, ErrorCode.description), cause
   )
 }
