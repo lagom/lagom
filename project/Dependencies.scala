@@ -14,13 +14,13 @@ object Dependencies {
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.12"
+  val AkkaVersion = "2.5.13"
   val AkkaHttpVersion = "10.0.13"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.6", "2.11.12")
   val SbtScalaVersions = Seq("2.10.6", "2.12.6")
   val AkkaPersistenceCassandraVersion = "0.60"
-  val AkkaPersistenceJdbcVersion = "3.3.0"
+  val AkkaPersistenceJdbcVersion = "3.4.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
   val ScalaTestVersion = "3.0.4"
   val JacksonVersion = "2.8.11"
