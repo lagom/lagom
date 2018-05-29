@@ -48,7 +48,7 @@ abstract class CallResolver(
       case param: ParameterizedType if param.getRawType == classOf[Source[_, _]] =>
         val messageType = param.getActualTypeArguments()(0)
         Some(new UnresolvedStreamedMessageSerializer[Any](messageType).asInstanceOf[MessageSerializer[T, _]])
-      case typeVariable: TypeVariable[_] => throw new IllegalArgumentException(s"Illegal use of type variable <${typeVariable.getName}> in message type.")
+      case typeVariable: TypeVariable[_] => throw new IllegalArgumentException(s"Unspecified type variable <${typeVariable.getName}> in message type.")
       case _                             => None
     }
   }
@@ -57,7 +57,7 @@ abstract class CallResolver(
     messageSerializers.get(messageType).asInstanceOf[Option[MessageSerializer[T, _]]] orElse {
       messageType match {
         case param: ParameterizedType      => registeredMessageSerializerFor[T](param.getRawType)
-        case typeVariable: TypeVariable[_] => throw new IllegalArgumentException(s"Illegal use of type variable <${typeVariable.getName}> in message type.")
+        case typeVariable: TypeVariable[_] => throw new IllegalArgumentException(s"Unspecified type variable <${typeVariable.getName}> in message type.")
         case _                             => None
       }
     }

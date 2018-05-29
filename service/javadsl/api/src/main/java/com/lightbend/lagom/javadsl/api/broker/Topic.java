@@ -5,12 +5,12 @@ package com.lightbend.lagom.javadsl.api.broker;
 
 /**
  * A topic can be used to publish/subscribe messages to/from a message broker.
- * 
- * @param <Message> The message type.
+ *
+ * @param <TopicMessageType> The message type.
  *
  * Note: This class is not meant to be extended by client code.
  */
-public interface Topic<Message> {
+public interface Topic<TopicMessageType> {
 
   /**
    * The topic identifier.
@@ -22,7 +22,7 @@ public interface Topic<Message> {
    * Obtain a subscriber to this topic.
    * @return A Subscriber to this topic.
    */
-  Subscriber<Message> subscribe();
+  Subscriber<TopicMessageType> subscribe();
 
   /**
    * A topic identifier.
