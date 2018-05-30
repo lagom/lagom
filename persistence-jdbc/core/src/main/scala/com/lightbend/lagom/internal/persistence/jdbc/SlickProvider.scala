@@ -38,15 +38,15 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
   // setting the jndiDbName to null. In which case we fallback to slick.db.
   // slick.db must be defined otherwise the application will fail to start
   val db = {
-    if (readSideConfig.getString("jndiDbName") != null) {
+    if (readSideConfig.getString("slick.jndiDbName") != null) {
       new InitialContext()
-        .lookup(readSideConfig.getString("jndiDbName"))
+        .lookup(readSideConfig.getString("slick.jndiDbName"))
         .asInstanceOf[Database]
     } else if (readSideConfig.hasPath("slick.db")) {
       Database.forConfig("slick.db", readSideConfig)
     } else {
       throw new RuntimeException("Cannot start because read-side database configuration is missing. " +
-        "You must define either 'lagom.persistence.read-side.jdbc.jndiDbName' or 'lagom.persistence.read-side.jdbc.slick.db' in your application.conf.")
+        "You must define either 'lagom.persistence.read-side.jdbc.slick.jndiDbName' or 'lagom.persistence.read-side.jdbc.slick.db' in your application.conf.")
     }
   }
 
