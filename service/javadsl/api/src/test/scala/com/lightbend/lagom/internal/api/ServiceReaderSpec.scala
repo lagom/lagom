@@ -16,7 +16,7 @@ import com.lightbend.lagom.javadsl.api.transport.{ MessageProtocol, Method }
 import com.lightbend.lagom.api.mock._
 import org.scalatest._
 import com.lightbend.lagom.internal.javadsl.api.{ JacksonPlaceholderExceptionSerializer, JacksonPlaceholderSerializerFactory, MethodServiceCallHolder, ServiceReader }
-import com.lightbend.lagom.javadsl.api.{ Descriptor, IllegalPathParameterException, Service, ServiceCall }
+import com.lightbend.lagom.javadsl.api._
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -143,6 +143,24 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
       deserializeParams(uuidCall, Seq(Seq(uuid.toString))) should ===(Seq(uuid))
       serializeArgs(uuidCall, Seq(uuid)) should ===(Seq(Seq(uuid.toString)))
 
+    }
+
+    "fail to read a Java service descriptor from a public interface because a message type uses type variables" in {
+      val exception = intercept[IllegalMessageTypeException] {
+        serviceDescriptor[InvalidMessageTypeService]
+      }
+      exception.getMessage should include("<Foo>")
+    }
+
+    "fail to read a Java service descriptor from a public interface because a the topic type is missing" in {
+      val exception = intercept[IllegalMessageTypeException] {
+        serviceDescriptor[MissingTopicTypeService]
+      }
+
+      // When users don't set a Topic type, <Message> is the type of the topic:
+      //     Topic  myMethod();
+      // because <Message> is the unbound type used in Service#topic(). See com.lightbend.lagom.javadsl.api.Service
+      exception.getMessage should include("<TopicMessageType>")
     }
 
   }
