@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
+ */
 package com.lightbend.lagom.sbt.scripted
 
 import java.io.{ InputStreamReader, BufferedReader }
