@@ -11,10 +11,13 @@ import akka.actor.ActorSystem
 import akka.persistence.jdbc.config.{ JournalTableConfiguration, SlickConfiguration, SnapshotTableConfiguration }
 import akka.persistence.jdbc.journal.dao.JournalTables
 import akka.persistence.jdbc.snapshot.dao.SnapshotTables
-import akka.persistence.jdbc.util.{ SlickDatabase, SlickDriver }
 import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.typesafe.config.ConfigException
+import javax.naming.InitialContext
 import org.slf4j.LoggerFactory
+import slick.basic.DatabaseConfig
+import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.meta.MTable
 import slick.jdbc.{ H2Profile, JdbcProfile, MySQLProfile, PostgresProfile }
 
@@ -29,13 +32,25 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
   private val readSideConfig = system.settings.config.getConfig("lagom.persistence.read-side.jdbc")
   private val jdbcConfig = system.settings.config.getConfig("lagom.persistence.jdbc")
   private val createTables = jdbcConfig.getConfig("create-tables")
-
-  private val slickConfig = new SlickConfiguration(readSideConfig)
-
   val autoCreateTables: Boolean = createTables.getBoolean("auto")
 
-  val db = SlickDatabase.forConfig(readSideConfig, slickConfig)
-  val profile = SlickDriver.forDriverName(readSideConfig)
+  // users can disable the usage of jndiDbName for userland read-side operations by
+  // setting the jndiDbName to null. In which case we fallback to slick.db.
+  // slick.db must be defined otherwise the application will fail to start
+  val db = {
+    if (readSideConfig.hasPath("slick.jndiDbName")) {
+      new InitialContext()
+        .lookup(readSideConfig.getString("slick.jndiDbName"))
+        .asInstanceOf[Database]
+    } else if (readSideConfig.hasPath("slick.db")) {
+      Database.forConfig("slick.db", readSideConfig)
+    } else {
+      throw new RuntimeException("Cannot start because read-side database configuration is missing. " +
+        "You must define either 'lagom.persistence.read-side.jdbc.slick.jndiDbName' or 'lagom.persistence.read-side.jdbc.slick.db' in your application.conf.")
+    }
+  }
+
+  val profile = DatabaseConfig.forConfig[JdbcProfile]("slick", readSideConfig).profile
 
   import profile.api._
 
