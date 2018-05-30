@@ -38,7 +38,7 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
   // setting the jndiDbName to null. In which case we fallback to slick.db.
   // slick.db must be defined otherwise the application will fail to start
   val db = {
-    if (readSideConfig.getString("slick.jndiDbName") != null) {
+    if (readSideConfig.hasPath("slick.jndiDbName")) {
       new InitialContext()
         .lookup(readSideConfig.getString("slick.jndiDbName"))
         .asInstanceOf[Database]
