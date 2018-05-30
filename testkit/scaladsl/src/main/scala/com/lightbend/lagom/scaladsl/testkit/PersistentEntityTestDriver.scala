@@ -11,9 +11,11 @@ import scala.util.control.Exception.Catcher
 import scala.util.control.NonFatal
 
 import akka.actor.ActorSystem
+import akka.actor.ExtendedActorSystem
 import akka.serialization.JavaSerializer
+import akka.serialization.Serialization
 import akka.serialization.SerializationExtension
-import akka.serialization.SerializerWithStringManifest
+import akka.serialization.Serializers
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 
@@ -241,32 +243,31 @@ class PersistentEntityTestDriver[C, E, S](
   }
 
   private def checkSerialization(obj: Any): Option[Issue] = {
-    val obj1 = obj.asInstanceOf[AnyRef]
-    // check that it is configured
-    Try(serialization.findSerializerFor(obj1)) match {
-      case Failure(e) => Some(NoSerializer(obj, e))
-      case Success(serializer) =>
-        // verify serialization-deserialization round trip
-        Try(serializer.toBinary(obj1)) match {
-          case Failure(e) => Some(NotSerializable(obj, e))
-          case Success(blob) =>
-            val manifest = serializer match {
-              case ser: SerializerWithStringManifest => ser.manifest(obj1)
-              case _                                 => if (serializer.includeManifest) obj.getClass.getName else ""
-            }
-            serialization.deserialize(blob, serializer.identifier, manifest) match {
-              case Failure(e) => Some(NotDeserializable(obj, e))
-              case Success(obj2) =>
-                if (obj != obj2) {
-                  Some(NotEqualAfterSerialization(
-                    s"Object [$obj] does not equal [$obj2] after serialization/deserialization", obj1, obj2
-                  ))
-                } else if (serializer.isInstanceOf[JavaSerializer] && !isOkForJavaSerialization(obj1.getClass))
-                  Some(UsingJavaSerializer(obj1))
-                else
-                  None
-            }
-        }
+    Serialization.withTransportInformation(system.asInstanceOf[ExtendedActorSystem]) { () =>
+      val obj1 = obj.asInstanceOf[AnyRef]
+      // check that it is configured
+      Try(serialization.findSerializerFor(obj1)) match {
+        case Failure(e) => Some(NoSerializer(obj, e))
+        case Success(serializer) =>
+          // verify serialization-deserialization round trip
+          Try(serializer.toBinary(obj1)) match {
+            case Failure(e) => Some(NotSerializable(obj, e))
+            case Success(blob) =>
+              val manifest = Serializers.manifestFor(serializer, obj1)
+              serialization.deserialize(blob, serializer.identifier, manifest) match {
+                case Failure(e) => Some(NotDeserializable(obj, e))
+                case Success(obj2) =>
+                  if (obj != obj2) {
+                    Some(NotEqualAfterSerialization(
+                      s"Object [$obj] does not equal [$obj2] after serialization/deserialization", obj1, obj2
+                    ))
+                  } else if (serializer.isInstanceOf[JavaSerializer] && !isOkForJavaSerialization(obj1.getClass))
+                    Some(UsingJavaSerializer(obj1))
+                  else
+                    None
+              }
+          }
+      }
     }
   }
 
