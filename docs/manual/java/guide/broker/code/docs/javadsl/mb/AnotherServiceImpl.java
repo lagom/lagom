@@ -2,7 +2,14 @@ package docs.javadsl.mb;
 
 import akka.Done;
 import akka.NotUsed;
+import akka.stream.FlowShape;
+import akka.stream.Graph;
+import akka.stream.UniformFanInShape;
+import akka.stream.UniformFanOutShape;
 import akka.stream.javadsl.Flow;
+import akka.stream.javadsl.GraphDSL;
+import akka.stream.javadsl.Merge;
+import akka.stream.javadsl.Partition;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Message;
 import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys;
@@ -54,5 +61,20 @@ public class AnotherServiceImpl implements AnotherService {
             }));
         //#subscribe-to-topic-with-metadata
 
+    }
+
+    private void skipMessages() {
+        //#subscribe-to-topic-skip-messages
+        helloService.greetingsTopic()
+            .subscribe()
+            .atLeastOnce(Flow.fromFunction((GreetingMessage message) -> {
+                if (message.getMessage().equals("Kia ora")) {
+                    return doSomethingWithTheMessage(message);
+                } else {
+                    // Skip all messages where the message is not "Kia ora".
+                    return Done.getInstance();
+                }
+            }));
+        //#subscribe-to-topic-skip-messages
     }
 }
