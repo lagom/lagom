@@ -1,31 +1,35 @@
 package docs.scaladsl.mb
 
 import akka.{Done, NotUsed}
+import akka.stream.FlowShape
 import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.GraphDSL
+import akka.stream.scaladsl.GraphDSL.Implicits._
+import akka.stream.scaladsl.Merge
+import akka.stream.scaladsl.Partition
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.broker.Message
 
 //#inject-service
 class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
-//#inject-service
-  
+  //#inject-service
+
   //#subscribe-to-topic
   helloService
     .greetingsTopic()
     .subscribe // <-- you get back a Subscriber instance
     .atLeastOnce(
-      Flow[GreetingMessage].map { msg =>
-        // Do somehting with the `msg`
-        doSomethingWithTheMessage(msg)
-        Done
-      }
-    )
+    Flow.fromFunction(doSomethingWithTheMessage)
+  )
   //#subscribe-to-topic
 
   var lastObservedMessage: String = _
-  private def doSomethingWithTheMessage(greetingMessage: GreetingMessage) = {
+
+  private def doSomethingWithTheMessage(greetingMessage: GreetingMessage): Done = {
     lastObservedMessage = greetingMessage.message
+    Done
   }
+
   import scala.concurrent.ExecutionContext.Implicits.global
 
   override def foo: ServiceCall[NotUsed, String] = ServiceCall {
@@ -51,5 +55,18 @@ class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
     //#subscribe-to-topic-with-metadata
 
   }
-}
 
+  def skipMessages = {
+    //#subscribe-to-topic-skip-messages
+    helloService
+      .greetingsTopic()
+      .subscribe
+      .atLeastOnce(
+        Flow[GreetingMessage].map {
+          case msg@GreetingMessage("Kia ora") => doSomethingWithTheMessage(msg)
+          case _ => Done // Skip all messages where the message is not "Kia ora".
+        }
+      )
+    //#subscribe-to-topic-skip-messages
+  }
+}
