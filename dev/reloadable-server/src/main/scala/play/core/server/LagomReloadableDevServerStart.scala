@@ -240,7 +240,7 @@ object LagomReloadableDevServerStart {
         val actorSystemName = serverConfig.configuration.underlying.getString("lagom.akka.dev-mode.actor-system.name")
         val actorSystem = ActorSystem(actorSystemName, devModeAkkaConfig)
         val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem, ActorMaterializer()(actorSystem),
-          () => actorSystem.terminate())
+          () => Future.successful(()))
         val serverProvider = ServerProvider.fromConfiguration(classLoader, serverConfig.configuration)
         serverProvider.createServer(serverContext)
       } catch {

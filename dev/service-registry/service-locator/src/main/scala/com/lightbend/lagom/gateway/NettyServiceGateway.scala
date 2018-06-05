@@ -7,11 +7,12 @@ package com.lightbend.lagom.gateway
 import java.net.{ InetSocketAddress, URI }
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import javax.inject.{ Inject, Named, Singleton }
 
-import akka.actor.ActorRef
+import akka.Done
+import akka.actor.{ ActorRef, CoordinatedShutdown }
 import akka.pattern.ask
 import akka.util.Timeout
+import com.lightbend.lagom.internal.NettyFutureConverters
 import com.lightbend.lagom.internal.NettyFutureConverters._
 import com.lightbend.lagom.internal.api.Execution.trampoline
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
@@ -26,8 +27,8 @@ import io.netty.channel.socket.nio.{ NioServerSocketChannel, NioSocketChannel }
 import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.EventExecutor
+import javax.inject.{ Inject, Named, Singleton }
 import org.slf4j.LoggerFactory
-import play.api.inject.ApplicationLifecycle
 import play.api.libs.typedmap.TypedMap
 import play.api.mvc.request.{ RemoteConnection, RequestAttrKey, RequestTarget }
 import play.api.mvc.{ Headers, RequestHeader }
@@ -49,17 +50,17 @@ case class ServiceGatewayConfig(
 )
 
 @Singleton
-class NettyServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
+class NettyServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig,
                                             @Named("serviceRegistryActor") registry: ActorRef) {
   def start(): NettyServiceGateway = {
-    new NettyServiceGateway(lifecycle, config, registry)
+    new NettyServiceGateway(coordinatedShutdown, config, registry)
   }
 }
 
 /**
  * Netty implementation of the service gateway.
  */
-class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef) {
+class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig, registry: ActorRef) {
 
   private implicit val timeout = Timeout(5.seconds)
   private val log = LoggerFactory.getLogger(classOf[NettyServiceGateway])
@@ -366,15 +367,22 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
   }
 
   private val bindFuture = server.bind(config.host, config.port).channelFutureToScala
-  lifecycle.addStopHook(() => {
-    for {
-      channel <- bindFuture
-      closed <- channel.close().channelFutureToScala
-    } yield {
-      eventLoop.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS)
-      poolMap.asScala.foreach(_.getValue.close())
+
+  coordinatedShutdown.addTask(
+    CoordinatedShutdown.PhaseServiceUnbind,
+    "unbind-netty-service-gateway"
+  ) {
+      () =>
+        {
+          (for {
+            channel <- bindFuture
+            closed <- channel.close().channelFutureToScala
+          } yield {
+            eventLoop.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS)
+            poolMap.asScala.foreach(_.getValue.close())
+          }).map(_ => Done)
+        }
     }
-  })
 
   val address: InetSocketAddress = {
     val address = Await.result(bindFuture, 10.seconds).localAddress().asInstanceOf[InetSocketAddress]
