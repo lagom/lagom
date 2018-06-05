@@ -27,10 +27,10 @@ class ServiceLocatorServer extends Closeable {
   @volatile private var server: ReloadableServer = _
   @volatile private var gatewayAddress: InetSocketAddress = _
 
-  def start(serviceLocatorPort: Int, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit = synchronized {
+  def start(serviceLocatorPort: Int, serviceGatewayHost: String, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit = synchronized {
     require(server == null, "Service locator is already running on " + server.mainAddress)
 
-    val application = createApplication(ServiceGatewayConfig(serviceGatewayPort), unmanagedServices)
+    val application = createApplication(ServiceGatewayConfig(serviceGatewayHost, serviceGatewayPort), unmanagedServices)
     Play.start(application)
     try {
       server = createServer(application, serviceLocatorPort)
@@ -75,12 +75,12 @@ class ServiceLocatorServer extends Closeable {
   }
 
   def serviceLocatorAddress: URI = {
-    // Converting InetSocketAddress into URL is not that simple. 
-    // Because we know the service locator is running locally, I'm hardcoding the hostname and protocol. 
-    new URI(s"http://localhost:${server.mainAddress.getPort}")
+    // Converting InetSocketAddress into URL is not that simple.
+    // Because we know the service locator is running locally, I'm hardcoding the hostname and protocol.
+    new URI(s"http://${server.mainAddress.getHostName}:${server.mainAddress.getPort}")
   }
 
   def serviceGatewayAddress: URI = {
-    new URI(s"http://localhost:${gatewayAddress.getPort}")
+    new URI(s"http://${gatewayAddress.getHostName}:${gatewayAddress.getPort}")
   }
 }
