@@ -58,7 +58,7 @@ object LagomReloadableDevServerStart {
     buildLink: BuildLink,
     httpPort:  Int
   ): ReloadableServer = {
-    mainDev(buildLink, Some(httpPort), None, "0.0.0.0")
+    mainDev(buildLink, Some(httpPort), None, "127.0.0.1")
   }
 
   private def mainDev(

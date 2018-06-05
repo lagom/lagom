@@ -130,7 +130,7 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
     headers.filterNot(header => HeadersToFilter(header.lowercaseName()))
   }
 
-  private val bindingFuture = Http().bindAndHandle(handler, "0.0.0.0", config.port)
+  private val bindingFuture = Http().bindAndHandle(handler, "127.0.0.1", config.port)
   lifecycle.addStopHook(() => {
     for {
       binding <- bindingFuture
