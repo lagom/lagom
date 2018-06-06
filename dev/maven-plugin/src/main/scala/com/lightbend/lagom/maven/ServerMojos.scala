@@ -180,7 +180,8 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
       val scalaUnmanagedServices = StaticServiceLocations.staticServiceLocations(cassandraPort, theKafkaAddress) ++
         unmanagedServices.asScala.toMap
 
-      Servers.ServiceLocator.start(logger, scalaClassLoader, cp.map(_.getFile.toURI.toURL).toArray, serviceLocatorPort, serviceGatewayHost, serviceGatewayPort, scalaUnmanagedServices, serviceGatewayImpl)
+      Servers.ServiceLocator.start(logger, scalaClassLoader, cp.map(_.getFile.toURI.toURL).toArray, serviceLocatorHost,
+        serviceLocatorPort, serviceGatewayHost, serviceGatewayPort, scalaUnmanagedServices, serviceGatewayImpl)
     }
   }
 }

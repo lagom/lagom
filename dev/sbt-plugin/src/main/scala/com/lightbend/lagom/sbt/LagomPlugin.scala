@@ -507,6 +507,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val unmanagedServices: Map[String, String] =
       StaticServiceLocations.staticServiceLocations(lagomCassandraPort.value, lagomKafkaAddress.value) ++ lagomUnmanagedServices.value
 
+    val serviceLocatorHost = lagomServiceLocatorHost.value
     val serviceLocatorPort = lagomServiceLocatorPort.value
     val serviceGatewayHost = lagomServiceGatewayHost.value
     val serviceGatewayPort = lagomServiceGatewayPort.value
@@ -514,7 +515,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val urls = (managedClasspath in Compile).value.files.map(_.toURI.toURL).toArray
     val scala211 = scalaInstance.value
     val log = new SbtLoggerProxy(state.value.log)
-    Servers.ServiceLocator.start(log, scala211.loader, urls, serviceLocatorPort, serviceGatewayHost, serviceGatewayPort, unmanagedServices, serivceGatewayImpl)
+    Servers.ServiceLocator.start(log, scala211.loader, urls, serviceLocatorHost, serviceLocatorPort, serviceGatewayHost, serviceGatewayPort, unmanagedServices, serivceGatewayImpl)
   }
 
   private lazy val startCassandraServerTask = Def.task {
