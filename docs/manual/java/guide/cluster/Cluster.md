@@ -63,6 +63,6 @@ The naïve approach is to remove an unreachable node from the cluster membership
 
 A pre-packaged solution for the downing problem is provided by [Split Brain Resolver](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html), which is part of the [Lightbend Enterprise Suite](https://www.lightbend.com/platform/production). The `keep-majority` strategy is configured to be enabled by default if you use Lagom with the Enterprise Suite.
 
-See [Split Brain Resolver documentation](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) and [[Reactive Platform instructions|ReactivePlatform]] for how to enable it in the build of your project.
+See [[Using Lightbend Enterprise Suite with Lagom|EnterpriseSuite]] and the [Split Brain Resolver documentation](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) for instructions on how to enable it in the build of your project.
 
 Even if you don't use the commercial Enterprise Suite, you should still read & understand the concepts behind [Split Brain Resolver](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) to ensure your solution handles the concerns described there.
