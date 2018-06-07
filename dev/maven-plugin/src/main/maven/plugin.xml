@@ -171,13 +171,13 @@
             </configuration>
         </parameter>
         <parameter>
-            <name>serviceLocatorHost</name>
+            <name>serviceLocatorAddress</name>
             <type>java.lang.String</type>
             <required>false</required>
             <editable>true</editable>
             <description>The host to run the service locator on.</description>
             <configuration>
-                <serviceLocatorHost implementation="java.lang.String" default-value="127.0.0.1">${service.locator.host}</serviceLocatorHost>
+                <serviceLocatorAddress implementation="java.lang.String" default-value="127.0.0.1">${service.locator.address}</serviceLocatorAddress>
             </configuration>
         </parameter>
         <parameter>
@@ -191,13 +191,13 @@
             </configuration>
         </parameter>
         <parameter>
-            <name>serviceGatewayHost</name>
+            <name>serviceGatewayAddress</name>
             <type>java.lang.String</type>
             <required>false</required>
             <editable>true</editable>
             <description>The host to run the service gateway on.</description>
             <configuration>
-                <serviceGatewayHost implementation="java.lang.String" default-value="127.0.0.1">${service.gateway.host}</serviceGatewayHost>
+                <serviceGatewayAddress implementation="java.lang.String" default-value="127.0.0.1">${service.gateway.address}</serviceGatewayAddress>
             </configuration>
         </parameter>
         <parameter>
@@ -424,13 +424,13 @@
             <phase>pre-integration-test</phase>
             <parameters>
                 <parameter>
-                    <name>serviceLocatorHost</name>
+                    <name>serviceLocatorAddress</name>
                 </parameter>
                 <parameter>
                     <name>serviceLocatorPort</name>
                 </parameter>
                 <parameter>
-                    <name>serviceGatewayHost</name>
+                    <name>serviceGatewayAddress</name>
                 </parameter>
                 <parameter>
                     <name>serviceGatewayPort</name>

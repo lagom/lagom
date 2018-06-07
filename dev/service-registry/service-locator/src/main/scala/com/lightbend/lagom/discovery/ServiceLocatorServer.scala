@@ -27,13 +27,13 @@ class ServiceLocatorServer extends Closeable {
   @volatile private var server: ReloadableServer = _
   @volatile private var gatewayAddress: InetSocketAddress = _
 
-  def start(serviceLocatorHost: String, serviceLocatorPort: Int, serviceGatewayHost: String, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit = synchronized {
+  def start(serviceLocatorAddress: String, serviceLocatorPort: Int, serviceGatewayAddress: String, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit = synchronized {
     require(server == null, "Service locator is already running on " + server.mainAddress)
 
-    val application = createApplication(ServiceGatewayConfig(serviceGatewayHost, serviceGatewayPort), unmanagedServices)
+    val application = createApplication(ServiceGatewayConfig(serviceGatewayAddress, serviceGatewayPort), unmanagedServices)
     Play.start(application)
     try {
-      server = createServer(application, serviceLocatorHost, serviceLocatorPort)
+      server = createServer(application, serviceLocatorAddress, serviceLocatorPort)
     } catch {
       case NonFatal(e) =>
         throw new RuntimeException(s"Unable to start service locator on port $serviceLocatorPort", e)

@@ -90,21 +90,21 @@ private[lagom] object Servers {
 
   object ServiceLocator extends ServerContainer {
     protected type Server = Closeable {
-      def start(serviceLocatorHost: String, serviceLocatorPort: Int, serviceGatewayHost: String, serviceGatewayPort: Int,
+      def start(serviceLocatorAddress: String, serviceLocatorPort: Int, serviceGatewayAddress: String, serviceGatewayPort: Int,
                 unmanagedServices: JMap[String, String], gatewayImpl: String): Unit
       def serviceLocatorAddress: URI
       def serviceGatewayAddress: URI
     }
 
-    def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Array[URL], serviceLocatorHost: String,
-              serviceLocatorPort: Int, serviceGatewayHost: String, serviceGatewayPort: Int,
+    def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Array[URL], serviceLocatorAddress: String,
+              serviceLocatorPort: Int, serviceGatewayAddress: String, serviceGatewayPort: Int,
               unmanagedServices: Map[String, String], gatewayImpl: String): Closeable = synchronized {
       if (server == null) {
         withContextClassloader(new java.net.URLClassLoader(classpath, parentClassLoader)) { loader =>
           val serverClass = loader.loadClass("com.lightbend.lagom.discovery.ServiceLocatorServer")
           server = serverClass.newInstance().asInstanceOf[Server]
           try {
-            server.start(serviceLocatorHost, serviceLocatorPort, serviceGatewayHost, serviceGatewayPort, unmanagedServices.asJava, gatewayImpl)
+            server.start(serviceLocatorAddress, serviceLocatorPort, serviceGatewayAddress, serviceGatewayPort, unmanagedServices.asJava, gatewayImpl)
           } catch {
             case e: Exception =>
               val msg = "Failed to start embedded Service Locator or Service Gateway. " +
