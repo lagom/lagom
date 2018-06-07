@@ -191,7 +191,7 @@ class PersistentEntityTestDriver[C, E, S](
               applyEvent(evt)
               issues ++= checkSerialization(state)
               if (afterPersist != null)
-                afterPersist(event)
+                afterPersist(event, state)
             } catch {
               case NonFatal(e) =>
                 ctx.commandFailed(e) // reply with failure
