@@ -75,8 +75,6 @@ class ServiceLocatorServer extends Closeable {
   }
 
   def serviceLocatorAddress: URI = {
-    // Converting InetSocketAddress into URL is not that simple.
-    // Because we know the service locator is running locally, I'm hardcoding the hostname and protocol.
     new URI(s"http://${server.mainAddress.getHostName}:${server.mainAddress.getPort}")
   }
 
