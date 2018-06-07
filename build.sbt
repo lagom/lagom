@@ -265,7 +265,7 @@ def mimaSettings(versions: Seq[String]): Seq[Setting[_]] = {
       }.toSet
     },
     mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal"),
+      ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.*Module*")
     )
   )
