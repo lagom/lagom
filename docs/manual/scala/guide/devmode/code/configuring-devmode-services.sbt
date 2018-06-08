@@ -9,7 +9,7 @@ lazy val usersImpl = (project in file("usersImpl"))
 //#service-port
 
 //#service-address
-lazy val usersImpl = (project in file("usersImpl"))
+lazy val biddingImpl = (project in file("biddingImpl"))
   .enablePlugins(LagomScala)
   .settings(lagomServiceAddress := "0.0.0.0")
 //#service-address
