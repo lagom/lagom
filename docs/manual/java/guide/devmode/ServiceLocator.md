@@ -2,6 +2,23 @@
 
 A Service Locator is embedded in Lagom's development environment, allowing services to discover and communicate with each others. There are a number of settings and tasks available to tune the embedded Service Locator to your liking, let's explore them:
 
+## Default address
+
+By default, the service locator binds to `localhost`, but it is possible to use a different host by adding the following to your build.
+
+In the Maven root project pom:
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <version>${lagom.version}</version>
+    <configuration>
+        <serviceLocatorAddress>0.0.0.0</serviceLocatorAddress>
+    </configuration>
+</plugin>
+```
+
 ## Default port
 
 By default, the service locator runs on port `9008`, but it is possible to use a different port. For instance, you can tell the service locator to run on port `10000` by adding the following to your build.
@@ -57,9 +74,24 @@ Note that if the service you want to communicate with is actually a Lagom servic
 
 Some clients that want to connect to your services will not have access to your Service Locator. External clients need a stable address to communicate to and here's where the Service Gateway comes in. The Service Gateway will expose and reverse proxy all public endpoints registered by your services. A Service Gateway is embedded in Lagom's development environment, allowing clients from the outside (e.g. a browser) to connect to your Lagom services.
 
+## Default address
+
+By default the Service Gateway binds to `localhost`. It is possible to change that address by adding this to your build.
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <version>${lagom.version}</version>
+    <configuration>
+        <serviceGatewayAddress>0.0.0.0</serviceGatewayAddress>
+    </configuration>
+</plugin>
+```
+
 ## Default port
 
-By default the Service Gateway is listening for connections on port `9000` in `localhost`. It is possible to change that port by adding this to your build.
+By default the Service Gateway is listening for connections on port `9000`. It is possible to change that port by adding this to your build.
 
 In the Maven root project pom:
 
