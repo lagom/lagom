@@ -34,6 +34,16 @@
             <description>The range of ports this service should run on</description>
         </parameter>
         <parameter>
+            <name>serviceAddress</name>
+            <type>java.lang.String</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The address this service should run on</description>
+            <configuration>
+                <serviceAddress implementation="java.lang.String" default-value="127.0.0.1"/>
+            </configuration>
+        </parameter>
+        <parameter>
             <name>servicePort</name>
             <type>int</type>
             <required>false</required>
@@ -490,6 +500,9 @@
                     <name>playService</name>
                 </parameter>
                 <parameter>
+                    <name>serviceAddress</name>
+                </parameter>
+                <parameter>
                     <name>servicePort</name>
                 </parameter>
                 <parameter>
@@ -557,6 +570,9 @@
                 </parameter>
                 <parameter>
                     <name>servicePortRange</name>
+                </parameter>
+                <parameter>
+                    <name>serviceAddress</name>
                 </parameter>
                 <parameter>
                     <name>serviceLocatorPort</name>

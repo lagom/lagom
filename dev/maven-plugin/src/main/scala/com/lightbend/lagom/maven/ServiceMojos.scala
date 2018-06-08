@@ -53,6 +53,9 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
   var playService: Boolean = _
 
   @BeanProperty
+  var serviceAddress: String = _
+
+  @BeanProperty
   var servicePort: Int = _
 
   @BeanProperty
@@ -117,7 +120,7 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
       Some(this.cassandraPort)
     } else None
 
-    serviceManager.startServiceDevMode(project, selectedPort, serviceLocatorUrl, cassandraPort, playService = playService, resolvedWatchDirs)
+    serviceManager.startServiceDevMode(project, serviceAddress, selectedPort, serviceLocatorUrl, cassandraPort, playService = playService, resolvedWatchDirs)
   }
 }
 
@@ -150,6 +153,9 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
 
   @BeanProperty
   var servicePortRange: PortRangeBean = new PortRangeBean
+
+  @BeanProperty
+  var serviceAddress: String = _
 
   @BeanProperty
   var serviceLocatorPort: Int = _
@@ -202,7 +208,7 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
 
       val dependency = RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
 
-      serviceManager.startExternalProject(dependency, selectedPort, serviceLocatorUrl, serviceCassandraPort, playService = project.playService)
+      serviceManager.startExternalProject(dependency, serviceAddress, selectedPort, serviceLocatorUrl, serviceCassandraPort, playService = project.playService)
     }
   }
 

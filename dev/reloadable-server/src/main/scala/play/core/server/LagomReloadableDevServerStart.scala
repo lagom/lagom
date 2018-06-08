@@ -55,10 +55,11 @@ object LagomReloadableDevServerStart {
    * compiled with different versions of Scala.
    */
   def mainDevHttpMode(
-    buildLink: BuildLink,
-    httpPort:  Int
+    buildLink:   BuildLink,
+    httpAddress: String,
+    httpPort:    Int
   ): ReloadableServer = {
-    mainDev(buildLink, Some(httpPort), None, "127.0.0.1")
+    mainDev(buildLink, Some(httpPort), None, httpAddress)
   }
 
   private def mainDev(

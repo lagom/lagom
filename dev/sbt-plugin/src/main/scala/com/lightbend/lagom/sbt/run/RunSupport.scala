@@ -36,6 +36,7 @@ private[sbt] object RunSupport extends RunSupportCompat {
       lagomFileWatchService.value,
       baseDirectory.value,
       extraConfigs.toSeq ++ lagomDevSettings.value,
+      lagomServiceAddress.value,
       lagomServicePort.value,
       RunSupport
     )
@@ -50,7 +51,7 @@ private[sbt] object RunSupport extends RunSupportCompat {
     val buildLinkSettings = extraConfigs.toSeq ++ lagomDevSettings.value
 
     Reloader.startNoReload(scalaInstance.value.loader, classpath.map(_.data), baseDirectory.value, buildLinkSettings,
-      lagomServicePort.value)
+      lagomServiceAddress.value, lagomServicePort.value)
   }
 
   private def devModeDependencies = Def.task {

@@ -312,6 +312,8 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
 
     val lagomFileWatchService = settingKey[FileWatchService]("The file watch service to use")
     val lagomDevSettings = settingKey[Seq[(String, String)]]("Settings that should be passed to a Lagom app in dev mode")
+
+    val lagomServiceAddress = taskKey[String]("The address that the Lagom service should run on")
     val lagomServicePort = taskKey[Int]("The port that the Lagom service should run on")
 
     val lagomInfrastructureServices = taskKey[Seq[Task[Closeable]]]("The infrastructure services that should be run when runAll is invoked.")
@@ -489,6 +491,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     lagomFileWatchService := {
       FileWatchService.defaultWatchService(target.value, getPollInterval(pollInterval.value), new SbtLoggerProxy(sLog.value))
     },
+    lagomServiceAddress := "127.0.0.1",
     lagomServicePort := LagomPlugin.assignedPortFor(ProjectName(name.value), state.value).value,
     Internal.Keys.stop := {
       Internal.Keys.interactionMode.value match {
