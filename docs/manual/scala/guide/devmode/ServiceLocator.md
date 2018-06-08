@@ -75,4 +75,4 @@ Be aware that by disabling the Service Locator your services will not be able to
 [info] Service hello-impl listening for HTTP on localhost:57797
 ```
 
-For more information, see [[How are ports assigned to services?|ServicePort]].
+For more information, see [[How are Lagom services configured in development?|ConfiguringServicesInDevelopment]].

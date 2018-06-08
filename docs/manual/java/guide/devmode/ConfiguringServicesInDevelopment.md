@@ -1,3 +1,17 @@
+# How are addresses bound by services?
+
+By default, Lagom services bind to `localhost`. This address can be changed with the following.
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <configuration>
+        <serviceAddress>11000</serviceAddress>
+    </configuration>
+</plugin>
+```
+
 # How are ports assigned to services?
 
 When inspecting the list of running services, you may wonder how ports are being assigned. One thing you should notice is that ports are assigned consistently, meaning that each service will get the same port assigned. This is truly useful, as it allows to write scripts that exercise some service's functionality, and even share the created scripts with the rest of your team. Indeed, the same port is deterministically selected even on different machines!
