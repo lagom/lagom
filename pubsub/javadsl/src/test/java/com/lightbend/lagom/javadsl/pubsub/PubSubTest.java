@@ -5,10 +5,7 @@ package com.lightbend.lagom.javadsl.pubsub;
 
 import com.lightbend.lagom.internal.javadsl.pubsub.PubSubRegistryImpl;
 
-import com.lightbend.lagom.javadsl.pubsub.PubSubModule;
 import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -17,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import play.inject.Injector;
+import play.inject.guice.GuiceInjectorBuilder;
 import scala.concurrent.duration.Duration;
 
 import akka.actor.ActorSystem;
@@ -67,10 +66,11 @@ public class PubSubTest {
     system = null;
   }
 
-  private final Injector injector = Guice.createInjector(new ActorSystemModule(system), new PubSubModule());
+  private final Injector injector =
+      new GuiceInjectorBuilder().bindings(new ActorSystemModule(system), new PubSubModule()).build();
 
   private PubSubRegistry registry() {
-    return injector.getInstance(PubSubRegistry.class);
+    return injector.instanceOf(PubSubRegistry.class);
   }
 
   @Test

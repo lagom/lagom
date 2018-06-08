@@ -146,8 +146,8 @@ object ServiceReader {
 
       endpointWithCircuitBreaker
         .withServiceCallHolder(serviceCallHolder)
-        .withRequestSerializer(serviceResolver.resolveMessageSerializer(endpoint.requestSerializer(), request, method))
-        .withResponseSerializer(serviceResolver.resolveMessageSerializer(endpoint.responseSerializer(), response, method))
+        .withRequestSerializer(serviceResolver.resolveMessageSerializer(endpoint.requestSerializer(), request))
+        .withResponseSerializer(serviceResolver.resolveMessageSerializer(endpoint.responseSerializer(), response))
     }
 
     val topicResolver = new TopicCallResolver(
@@ -197,7 +197,7 @@ object ServiceReader {
 
       val topicHolder = constructTopicHolder(serviceResolver, method, topicCall.topicId)
 
-      val resolvedMessageSerializer = topicResolver.resolveMessageSerializer(topicCall.messageSerializer, topicMessageType, method).asInstanceOf[MessageSerializer[Any, ByteString]]
+      val resolvedMessageSerializer = topicResolver.resolveMessageSerializer(topicCall.messageSerializer, topicMessageType).asInstanceOf[MessageSerializer[Any, ByteString]]
 
       topicCall
         .withTopicHolder(topicHolder)

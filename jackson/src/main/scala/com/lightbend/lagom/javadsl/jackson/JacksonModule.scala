@@ -11,6 +11,7 @@ import play.api.inject.{ Binding, Module }
  */
 class JacksonModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[JacksonSerializerFactory].toSelf
+    bind[JacksonSerializerFactory].toSelf,
+    bind[JacksonExceptionSerializer].toSelf
   )
 }

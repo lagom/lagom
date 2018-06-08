@@ -7,29 +7,26 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.15"
+  val PlayVersion = "2.6.13"
   val PlayJsonVersion = "2.6.9"
-  val PlayStandaloneWsVersion = "1.1.9"
+  val PlayStandaloneWsVersion = "1.1.7"
   val TwirlVersion = "1.3.14"
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.13"
+  val AkkaVersion = "2.5.12"
   val AkkaHttpVersion = "10.0.13"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.6", "2.11.12")
   val SbtScalaVersions = Seq("2.10.6", "2.12.6")
   val AkkaPersistenceCassandraVersion = "0.60"
-  val AkkaPersistenceJdbcVersion = "3.4.0"
+  val AkkaPersistenceJdbcVersion = "3.3.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
   val ScalaTestVersion = "3.0.4"
   val JacksonVersion = "2.8.11"
-  val JacksonCoreVersion = JacksonVersion
-  val JacksonDatatypeVersion = JacksonVersion
-  val JacksonDatabindVersion = "2.8.11.1"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.25.Final"
+  val NettyVersion = "4.1.23.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
   val KafkaVersion = "0.11.0.1"
   val AkkaStreamKafkaVersion = "0.18"
@@ -115,11 +112,9 @@ object Dependencies {
   private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.2" excludeAll (excludeSlf4j: _*)
 
   private val jacksonFamily =
-    libraryFamily("com.fasterxml.jackson.core", JacksonCoreVersion)(
-      "jackson-annotations", "jackson-core"
-    ) ++ libraryFamily("com.fasterxml.jackson.core", JacksonDatabindVersion)(
-      "jackson-databind"
-    ) ++ libraryFamily("com.fasterxml.jackson.datatype", JacksonDatatypeVersion)(
+    libraryFamily("com.fasterxml.jackson.core", JacksonVersion)(
+      "jackson-annotations", "jackson-core", "jackson-databind"
+    ) ++ libraryFamily("com.fasterxml.jackson.datatype", JacksonVersion)(
       "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
     )
 
@@ -163,7 +158,7 @@ object Dependencies {
       akkaPersistenceCassandraLauncher,
       "com.typesafe.netty" % "netty-reactive-streams" % NettyReactiveStreamsVersion,
       "com.typesafe.netty" % "netty-reactive-streams-http" % NettyReactiveStreamsVersion,
-      "com.typesafe.play" %% "cachecontrol" % "1.1.3",
+      "com.typesafe.play" %% "cachecontrol" % "1.1.2",
       playJson,
       playFunctional,
       // play client libs
@@ -181,8 +176,8 @@ object Dependencies {
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.7.9",
       "commons-codec" % "commons-codec" % "1.10",
-      "io.aeron" % "aeron-client" % "1.9.1",
-      "io.aeron" % "aeron-driver" % "1.9.1",
+      "io.aeron" % "aeron-client" % "1.7.0",
+      "io.aeron" % "aeron-driver" % "1.7.0",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.7.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
@@ -194,7 +189,7 @@ object Dependencies {
       "junit" % "junit" % JUnitVersion,
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
-      "org.agrona" % "agrona" % "0.9.17",
+      "org.agrona" % "agrona" % "0.9.12",
       "org.apache.commons" % "commons-lang3" % "3.6",
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
@@ -202,7 +197,7 @@ object Dependencies {
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final",
       "org.immutables" % "value" % "2.3.2",
       javassist,
-      "org.joda" % "joda-convert" % "1.9.2",
+      "org.joda" % "joda-convert" % "1.7",
       "org.hamcrest" % "hamcrest-core" % "1.3",
       "org.lmdbjava" % "lmdbjava" % "0.6.0",
       "org.pcollections" % "pcollections" % "2.1.2",
@@ -323,10 +318,10 @@ object Dependencies {
 
   val jackson = libraryDependencies ++= Seq(
     "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-pcollections" % JacksonDatatypeVersion,
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-guava" % JacksonDatatypeVersion,
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % JacksonDatatypeVersion,
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % JacksonDatatypeVersion,
+    "com.fasterxml.jackson.datatype" % "jackson-datatype-pcollections" % JacksonVersion,
+    "com.fasterxml.jackson.datatype" % "jackson-datatype-guava" % JacksonVersion,
+    "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % JacksonVersion,
+    "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % JacksonVersion,
     akkaTestkit % Test,
     scalaTest % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test

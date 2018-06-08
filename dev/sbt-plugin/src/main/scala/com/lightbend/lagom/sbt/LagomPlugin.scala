@@ -71,10 +71,10 @@ object LagomJava extends AutoPlugin {
 }
 
 /**
- * The main plugin for Lagom Scala projects. To use this the plugin must be made available to your project
+ * The main plugin for Lagom Java projects. To use this the plugin must be made available to your project
  * via sbt's enablePlugins mechanism e.g.:
  * {{{
- *   lazy val root = project.in(file(".")).enablePlugins(LagomScala)
+ *   lazy val root = project.in(file(".")).enablePlugins(LagomJava)
  * }}}
  */
 object LagomScala extends AutoPlugin {

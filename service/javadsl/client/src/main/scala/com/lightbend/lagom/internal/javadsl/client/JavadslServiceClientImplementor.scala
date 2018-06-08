@@ -12,7 +12,6 @@ import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.{ ExecutionContext, Future }
 import org.slf4j.LoggerFactory
-import com.google.inject.Inject
 import com.lightbend.lagom.javadsl.api.{ Descriptor, ServiceCall, ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.javadsl.api.Descriptor.Call
 import com.lightbend.lagom.javadsl.api.broker.Topic
@@ -23,8 +22,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
-import javax.inject.Singleton
-
+import javax.inject.{ Inject, Singleton }
 import com.lightbend.lagom.internal.client.ClientServiceCallInvoker
 import com.lightbend.lagom.internal.javadsl.api.{ JavadslPath, MethodServiceCallHolder, MethodTopicHolder }
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactoryProvider

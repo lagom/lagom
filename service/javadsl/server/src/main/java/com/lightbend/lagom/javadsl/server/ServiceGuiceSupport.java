@@ -4,7 +4,6 @@
 package com.lightbend.lagom.javadsl.server;
 
 import com.google.inject.Binder;
-import com.google.inject.Key;
 import com.lightbend.lagom.internal.javadsl.BinderAccessor;
 import com.lightbend.lagom.internal.javadsl.server.JavadslServicesRouter;
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices;

@@ -6,30 +6,17 @@ package com.lightbend.lagom.internal.javadsl.api
 import java.lang.reflect._
 
 import akka.stream.javadsl.Source
-import com.lightbend.lagom.javadsl.api.IllegalMessageTypeException
-import com.lightbend.lagom.javadsl.api.deser.{ MessageSerializer, PathParamSerializer, SerializerFactory }
+import com.lightbend.lagom.javadsl.api.deser.{ PathParamSerializer, MessageSerializer, SerializerFactory }
 
 abstract class CallResolver(
   messageSerializers: Map[Type, MessageSerializer[_, _]],
   serializerFactory:  SerializerFactory
 ) extends SerializerFactory {
 
-  def resolveMessageSerializer[T, W](messageSerializer: MessageSerializer[T, W], typeInfo: Type, method: Method): MessageSerializer[T, _] = {
-    try {
-      resolveMessageSerializer(messageSerializer, typeInfo)
-    } catch {
-      case ex: IllegalArgumentException =>
-        throw new IllegalMessageTypeException(s"Error encountered while resolving a message serializer for the type $typeInfo" +
-          s" for the ${method.getDeclaringClass}.${method.getName} service call: ${ex.getMessage}", ex)
-    }
-  }
-
-  private def resolveMessageSerializer[T, W](messageSerializer: MessageSerializer[T, W], typeInfo: Type): MessageSerializer[T, _] = {
-    messageSerializer match {
-      case methodRef: MethodRefMessageSerializer[T, _] => messageSerializerFor[T](typeInfo)
-      case unresolved: UnresolvedMessageSerializer[T]  => unresolved.resolve(this, typeInfo)
-      case resolved                                    => resolved
-    }
+  def resolveMessageSerializer[T, W](messageSerializer: MessageSerializer[T, W], typeInfo: Type): MessageSerializer[T, _] = messageSerializer match {
+    case methodRef: MethodRefMessageSerializer[T, _] => messageSerializerFor[T](typeInfo)
+    case unresolved: UnresolvedMessageSerializer[T]  => unresolved.resolve(this, typeInfo)
+    case resolved                                    => resolved
   }
 
   def messageSerializerFor[T](messageType: Type): MessageSerializer[T, _] = {
@@ -48,17 +35,15 @@ abstract class CallResolver(
       case param: ParameterizedType if param.getRawType == classOf[Source[_, _]] =>
         val messageType = param.getActualTypeArguments()(0)
         Some(new UnresolvedStreamedMessageSerializer[Any](messageType).asInstanceOf[MessageSerializer[T, _]])
-      case typeVariable: TypeVariable[_] => throw new IllegalArgumentException(s"Unspecified type variable <${typeVariable.getName}> in message type.")
-      case _                             => None
+      case _ => None
     }
   }
 
   private def registeredMessageSerializerFor[T](messageType: Type): Option[MessageSerializer[T, _]] = {
     messageSerializers.get(messageType).asInstanceOf[Option[MessageSerializer[T, _]]] orElse {
       messageType match {
-        case param: ParameterizedType      => registeredMessageSerializerFor[T](param.getRawType)
-        case typeVariable: TypeVariable[_] => throw new IllegalArgumentException(s"Unspecified type variable <${typeVariable.getName}> in message type.")
-        case _                             => None
+        case param: ParameterizedType => registeredMessageSerializerFor[T](param.getRawType)
+        case clazz: Class[_]          => None
       }
     }
   }

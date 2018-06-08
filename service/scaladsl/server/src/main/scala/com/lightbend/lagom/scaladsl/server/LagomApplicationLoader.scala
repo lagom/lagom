@@ -108,7 +108,7 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
   protected def readDescriptor[S <: Service]: Descriptor = macro ScaladslServerMacroImpl.readDescriptor[S]
 
   /**
-   * Implement this to allow tooling, such as Lightbend Orchestration, to discover the service (if any) offered by this application.
+   * Implement this to allow tooling, such as ConductR, to discover the service (if any) offered by this application.
    *
    * This will be used to generate configuration regarding ACLs and service name for production deployment.
    *
