@@ -1,6 +1,6 @@
 # Using Lightbend Enterprise Suite with Lagom
 
-Lagom is part of the [Lightbend Reactive Platform](https://www.lightbend.com/products/lightbend-reactive-platform)—an application development solution for building Reactive systems on the JVM powered by an open source core and the commercial [Enterprise Suite](https://www.lightbend.com/products/enterprise-suite). Lagom services can be developed, deployed and run in production using only open source components, however we recommend considering the advanced features provided by Enterprise Suite.
+Lagom is part of the [Lightbend Reactive Platform](https://www.lightbend.com/products/lightbend-reactive-platform) — an application development solution for building Reactive systems on the JVM powered by an open source core and the commercial [Enterprise Suite](https://www.lightbend.com/products/enterprise-suite). Lagom services can be developed, deployed and run in production using only open source components, however we recommend considering the advanced features provided by Enterprise Suite.
 
 This page highlights the Enterprise Suite features that are especially useful for most Lagom users, but there are many more. You can find an overview on the [Lightbend web site](https://www.lightbend.com/products/enterprise-suite) or [contact Lightbend](https://www.lightbend.com/contact) to learn more.
 
