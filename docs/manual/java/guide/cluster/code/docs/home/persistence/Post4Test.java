@@ -6,8 +6,8 @@ import docs.home.persistence.BlogEvent.*;
 //#unit-test
 import static org.junit.Assert.assertEquals;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import play.inject.guice.GuiceInjectorBuilder;
+import play.inject.Injector;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity.InvalidCommandException;
 import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule;
 import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver;
@@ -39,9 +39,9 @@ public class Post4Test {
     system = null;
   }
 
-  private final Injector injector = Guice.createInjector(
-      new ActorSystemModule(system), new PubSubModule());
-  private final PubSubRegistry pubSub = injector.getInstance(PubSubRegistry.class);
+  private final Injector injector = new GuiceInjectorBuilder().bindings(
+      new ActorSystemModule(system), new PubSubModule()).build();
+  private final PubSubRegistry pubSub = injector.instanceOf(PubSubRegistry.class);
 
   @Test
   public void testAddPost() {

@@ -12,6 +12,7 @@ import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSetti
 import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
 import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.ConfigFactory
+import play.api.inject.guice.GuiceInjectorBuilder
 
 import scala.concurrent.duration._
 
@@ -24,7 +25,7 @@ object CassandraReadSideSpec {
 class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.defaultConfig) with AbstractReadSideSpec {
   import system.dispatcher
 
-  private lazy val injector = Guice.createInjector()
+  private lazy val injector = new GuiceInjectorBuilder().build()
   override protected lazy val persistentEntityRegistry = new CassandraPersistentEntityRegistry(system, injector)
 
   private lazy val testSession: CassandraSession = new CassandraSession(system)

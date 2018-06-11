@@ -9,13 +9,13 @@ import akka.stream.Materializer;
 import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
-import com.google.inject.Injector;
-import com.google.inject.Singleton;
 import com.lightbend.lagom.javadsl.persistence.*;
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler;
 import org.pcollections.PSequence;
+import play.inject.Injector;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -46,7 +46,7 @@ public class ReadSideTestDriver implements ReadSide {
 
   @Override
   public <Event extends AggregateEvent<Event>> void register(Class<? extends ReadSideProcessor<Event>> processorClass) {
-    ReadSideProcessor<Event> processor = injector.getInstance(processorClass);
+    ReadSideProcessor<Event> processor = injector.instanceOf(processorClass);
     PSequence<AggregateEventTag<Event>> eventTags = processor.aggregateTags();
 
     CompletionStage<Done> processorInit = processor.buildHandler().globalPrepare().thenCompose(x -> {

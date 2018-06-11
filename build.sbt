@@ -264,7 +264,10 @@ def mimaSettings(versions: Seq[String]): Seq[Setting[_]] = {
         organization.value % s"${moduleName.value}_${scalaBinaryVersion.value}" % version
       }.toSet
     },
-    mimaBinaryIssueFilters += ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*")
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
+      ProblemFilters.exclude[Problem]("com.lightbend.lagom.*Module*")
+    )
   )
 }
 
@@ -825,7 +828,10 @@ lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
 lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl"))
   .settings(
     name := "lagom-javadsl-persistence-jdbc",
-    Dependencies.`persistence-jdbc-javadsl`
+    Dependencies.`persistence-jdbc-javadsl`,
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.javadsl.persistence.jdbc.GuiceSlickProvider")
+    )
   )
   .dependsOn(
     `persistence-jdbc-core` % "compile;test->test",
