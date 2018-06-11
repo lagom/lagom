@@ -9,6 +9,7 @@ import java.util.concurrent.{ CompletableFuture, CompletionStage, CountDownLatch
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
+import akka.japi.function.Creator
 import akka.japi.{ Pair => JPair }
 import akka.persistence.query.{ NoOffset, Offset, Sequence }
 import akka.stream.javadsl.{ Source => JSource }
@@ -25,7 +26,7 @@ import com.lightbend.lagom.javadsl.api.broker.kafka.{ KafkaProperties, Partition
 import com.lightbend.lagom.javadsl.api.broker.{ Message, Topic }
 import com.lightbend.lagom.javadsl.broker.TopicProducer
 import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys
-import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, PersistentEntityRef, PersistentEntityRegistry, Offset => JOffset }
+import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, PersistentEntity, PersistentEntityRef, PersistentEntityRegistry, Offset => JOffset }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
 import org.scalatest.concurrent.ScalaFutures

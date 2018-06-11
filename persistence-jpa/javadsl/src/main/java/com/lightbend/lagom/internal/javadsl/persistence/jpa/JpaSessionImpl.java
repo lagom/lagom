@@ -5,8 +5,6 @@ package com.lightbend.lagom.internal.javadsl.persistence.jpa;
 
 import akka.Done;
 import akka.actor.ActorSystem;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc.SlickProvider;
 import com.lightbend.lagom.javadsl.persistence.jpa.JpaSession;
 import com.typesafe.config.Config;
@@ -18,6 +16,8 @@ import scala.compat.java8.JFunction0;
 import scala.concurrent.duration.FiniteDuration;
 import slick.jdbc.JdbcBackend;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;

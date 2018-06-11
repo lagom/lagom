@@ -5,23 +5,19 @@ package com.lightbend.lagom.javadsl.cluster.testkit
 
 import akka.actor.ActorSystem
 import akka.stream.{ ActorMaterializer, Materializer }
-import com.google.inject.AbstractModule
-import com.google.inject.Provides
+import play.api.{ Configuration, Environment }
+import play.api.inject.{ Binding, Module }
 
 import scala.concurrent.ExecutionContext
 
-class ActorSystemModule(system: ActorSystem) extends AbstractModule {
+class ActorSystemModule(system: ActorSystem) extends Module {
 
   private lazy val mat = ActorMaterializer()(system)
-  override def configure(): Unit = ()
 
-  @Provides
-  def provideActorSystem: ActorSystem = system
-
-  @Provides
-  def provideMaterializer: Materializer = mat
-
-  @Provides
-  def provideExecutionContext: ExecutionContext = system.dispatcher
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
+    bind[ActorSystem].to(system),
+    bind[Materializer].to(mat),
+    bind[ExecutionContext].to(system.dispatcher)
+  )
 
 }

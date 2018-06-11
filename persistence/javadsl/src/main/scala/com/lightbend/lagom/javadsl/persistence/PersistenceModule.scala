@@ -3,17 +3,20 @@
  */
 package com.lightbend.lagom.javadsl.persistence
 
-import com.google.inject.AbstractModule
 import com.lightbend.lagom.internal.javadsl.persistence.{ ReadSideConfigProvider, ReadSideImpl }
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
+import play.api.{ Configuration, Environment }
+import play.api.inject.{ Binding, Module }
 
 /**
  * Guice module for the Persistence API.
  */
-class PersistenceModule extends AbstractModule {
-  override def configure(): Unit = {
-    binder.bind(classOf[ReadSide]).to(classOf[ReadSideImpl])
-    binder.bind(classOf[ReadSideConfig]).toProvider(classOf[ReadSideConfigProvider])
-  }
+class PersistenceModule extends Module {
+
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
+    bind[ReadSideImpl].toSelf,
+    bind[ReadSide].to(bind[ReadSideImpl]),
+    bind[ReadSideConfig].toProvider[ReadSideConfigProvider]
+  )
 
 }

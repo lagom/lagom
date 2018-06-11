@@ -7,10 +7,9 @@ import java.net.URI
 import java.util.Optional
 import java.util.concurrent.CompletionStage
 import java.util.function.{ Function => JFunction }
-import javax.inject.{ Inject, Provider, Singleton }
 
+import javax.inject.{ Inject, Provider, Singleton }
 import akka.stream.Materializer
-import com.google.inject.AbstractModule
 import com.lightbend.lagom.internal.javadsl.api.broker.NoTopicFactoryProvider
 import com.lightbend.lagom.internal.javadsl.client.{ JavadslServiceClientImplementor, JavadslWebSocketClient, ServiceClientLoader }
 import com.lightbend.lagom.javadsl.api.Descriptor.Call
@@ -18,6 +17,7 @@ import com.lightbend.lagom.javadsl.api.transport.NotFound
 import com.lightbend.lagom.javadsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.javadsl.client.{ CircuitBreakersPanel, CircuitBreakingServiceLocator }
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
+import play.api.inject.{ Binding, Module }
 import play.api.libs.ws.WSClient
 import play.api.{ Configuration, Environment, Logger, Mode }
 
@@ -25,25 +25,29 @@ import scala.compat.java8.FutureConverters._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success }
 
-class ServiceRegistryModule(environment: Environment, configuration: Configuration) extends AbstractModule {
+class ServiceRegistryModule(environment: Environment, configuration: Configuration) extends Module {
   private val logger = Logger(this.getClass)
 
-  override def configure(): Unit = {
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
     if (environment.mode == Mode.Dev) {
-      bind(classOf[ServiceRegistryServiceLocator.ServiceLocatorConfig]).toInstance(createDevServiceLocatorConfig)
-      bind(classOf[ServiceRegistry]).toProvider(new ServiceRegistryClientProvider)
-      bind(classOf[ServiceLocator]).to(classOf[ServiceRegistryServiceLocator])
       logger.debug {
         s"Running in ${environment.mode} mode. The ${classOf[ServiceLocator].getName} interface was " +
           "bound to an implementation that will query the embedded Service Locator. This is fine to use " +
           "only during development."
       }
-    } else
+      Seq(
+        bind[ServiceRegistryServiceLocator.ServiceLocatorConfig].toInstance(createDevServiceLocatorConfig),
+        bind[ServiceRegistry].to(new ServiceRegistryClientProvider),
+        bind[ServiceLocator].to[ServiceRegistryServiceLocator]
+      )
+    } else {
       logger.debug {
         s"Running in ${environment.mode} mode, hence Lagom is not binding the ${classOf[ServiceLocator].getName} " +
           "interface to a default concrete implementation as it's expected that the production " +
           "environment you are using provides a custom implementation of this interface."
       }
+      Nil
+    }
   }
 
   protected def createDevServiceLocatorConfig: ServiceRegistryServiceLocator.ServiceLocatorConfig = {

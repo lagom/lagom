@@ -8,9 +8,9 @@ import java.util.regex.Pattern
 
 import akka.Done
 import akka.actor.{ Actor, Status }
-import com.google.inject.Inject
 import com.lightbend.lagom.internal.javadsl.registry.{ RegisteredService, ServiceRegistryService }
 import com.lightbend.lagom.javadsl.api.transport.{ TransportErrorCode, TransportException }
+import javax.inject.Inject
 import org.pcollections.{ PSequence, TreePVector }
 import play.api.Logger
 
