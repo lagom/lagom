@@ -7,7 +7,7 @@ By default, Lagom services bind to `localhost`. This address can be changed with
     <groupId>com.lightbend.lagom</groupId>
     <artifactId>lagom-maven-plugin</artifactId>
     <configuration>
-        <serviceAddress>11000</serviceAddress>
+        <serviceAddress>0.0.0.0</serviceAddress>
     </configuration>
 </plugin>
 ```
