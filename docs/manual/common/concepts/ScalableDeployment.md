@@ -8,7 +8,7 @@ To achieve truly reactive systems:
 
 <!---The following diagram shows a typical Lagom deployment. (see slide) -->
 
-While you can deploy on the appropriate technology of your choice, Lagom supports [Lightbend Enterprise Suite](https://www.lightbend.com/platform/production) out-of-the-box. Enterprise Suite is a perfect match for Lagom, as it provides the following features:
+While you can deploy on the appropriate technology of your choice, Lagom supports [Lightbend Enterprise Suite](https://www.lightbend.com/products/enterprise-suite) out-of-the-box. Enterprise Suite is a perfect match for Lagom, as it provides the following features:
 
 * A way to manage configuration separately from packaged artifacts.
 * Consolidated logging across many nodes.
@@ -20,4 +20,4 @@ While you can deploy on the appropriate technology of your choice, Lagom support
 * Support for monitoring services across a cluster.
 * The ability to test services locally before deploying in production.
 
-See [[Production Overview|ProductionOverview]] and [[Reactive Platform|ReactivePlatform]] for more information.
+See [[Running Lagom in production|ProductionOverview]] and [[Using Lightbend Enterprise Suite with Lagom|EnterpriseSuite]] for more information.
