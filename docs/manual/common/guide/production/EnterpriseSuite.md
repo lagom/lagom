@@ -14,7 +14,7 @@ Lagom is based on Akka, a set of open-source libraries for designing scalable, r
 * [Configuration Checker](https://developer.lightbend.com/docs/akka-commercial-addons/current/config-checker.html)
 * [Diagnostics Recorder](https://developer.lightbend.com/docs/akka-commercial-addons/current/diagnostics-recorder.html)
 * [Thread Starvation Detector](https://developer.lightbend.com/docs/akka-commercial-addons/current/starvation-detector.html)
-* [General Data Protection Regulation](https://developer.lightbend.com/docs/akka-commercial-addons/current/gdpr/index.html)
+* [GDPR for Akka Persistence](https://developer.lightbend.com/docs/akka-commercial-addons/current/gdpr/index.html)
 
 See the documentation for each of these to understand if they apply to your use of Lagom.
 
