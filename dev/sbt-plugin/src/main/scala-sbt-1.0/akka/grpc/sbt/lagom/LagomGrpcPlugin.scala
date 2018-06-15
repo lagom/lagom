@@ -25,8 +25,7 @@ trait LagomGrpcPlugin[ThePlugin <: AutoPlugin] extends AutoPlugin {
   def defaultLagomLanguage: AkkaGrpc.Language
   def requiredLagomPlugin: AutoPlugin
 
-  //  override def trigger: PluginTrigger = AllRequirements
-  override def trigger = noTrigger
+  override def trigger: PluginTrigger = AllRequirements
 
   override def requires: Plugins = requiredLagomPlugin && AkkaGrpcPlugin
 
