@@ -1,0 +1,26 @@
+@*
+ * Copyright (C) 2018 Lightbend Inc. <https://www.lightbend.com>
+ *@
+
+@(service: akka.grpc.gen.scaladsl.Service)
+
+package @service.packageName
+
+import akka.NotUsed
+import akka.grpc.internal.{ Marshaller, NettyClientUtils }
+import akka.grpc.internal.{ ScalaUnaryRequestBuilder, ScalaClientStreamingRequestBuilder }
+import akka.grpc.internal.{ ScalaServerStreamingRequestBuilder, ScalaBidirectionalStreamingRequestBuilder }
+import akka.grpc.scaladsl.{ SingleResponseRequestBuilder, StreamResponseRequestBuilder }
+import akka.grpc.GrpcClientSettings
+import akka.stream.{ Materializer, OverflowStrategy }
+import akka.stream.scaladsl.{ Flow, Sink, Source }
+import akka.stream.Materializer
+import scala.concurrent.{ ExecutionContext, Future }
+
+import io.grpc._
+import io.grpc.stub.{ ClientCalls, StreamObserver }
+import @{service.name}Client._
+
+final class @{service.name}LagomClient(settings: GrpcClientSettings)(implicit mat: Materializer, ex: ExecutionContext) extends @{service.name} {
+
+}
