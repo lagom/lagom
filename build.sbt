@@ -733,8 +733,12 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
       // lost by hiding it.
       ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntityRef.writeReplace"),
 
-      // See https://github.com/lagom/lagom/pull/1302 was a `protected final class` and became a `public sealed trait`
-      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$BehaviorBuilder")
+      // Was a `protected final class` and became a `public sealed abstract class`
+      // See https://github.com/lagom/lagom/pull/1302
+      ProblemFilters.exclude[AbstractClassProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$BehaviorBuilder"),
+      ProblemFilters.exclude[DirectAbstractMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity#BehaviorBuilder.*"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity#BehaviorBuilder.this"),
+      ProblemFilters.exclude[ReversedAbstractMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity#BehaviorBuilder.*")
     ),
     Dependencies.`persistence-javadsl`
   )
