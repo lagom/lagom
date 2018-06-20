@@ -265,6 +265,7 @@ abstract class PersistentEntity[Command, Event, State] {
   // to hold docs and BehaviorBuilderImpl is made private to hold implementation.
   // It is required to be an abstract class, not a trait, because it refers to type variables from the enclosing scope.
   // This would be legal in Scala, but causes inter-operation problems with some Java compilers (such as Eclipse).
+  // See https://github.com/lagom/lagom/pull/1395
   sealed abstract class BehaviorBuilder {
     def getState(): State
     def setState(state: State): Unit
