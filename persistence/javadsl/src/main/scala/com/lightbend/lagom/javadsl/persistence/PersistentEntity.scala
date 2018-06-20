@@ -261,9 +261,12 @@ abstract class PersistentEntity[Command, Event, State] {
    * Mutable builder that is used for defining the event and command handlers.
    * Use [[BehaviorBuilder#build]] to create the immutable [[PersistentEntity.Behavior]].
    */
-  // In order to provide javadoc preventing instantiation or extension this sealed trait is added
-  // to hold docs and BehaviorBuilderImpl is made private to hold implementation
-  sealed trait BehaviorBuilder {
+  // In order to provide javadoc preventing instantiation or extension this sealed abstract class is added
+  // to hold docs and BehaviorBuilderImpl is made private to hold implementation.
+  // It is required to be an abstract class, not a trait, because it refers to type variables from the enclosing scope.
+  // This would be legal in Scala, but causes inter-operation problems with some Java compilers (such as Eclipse).
+  // See https://github.com/lagom/lagom/pull/1395
+  sealed abstract class BehaviorBuilder {
     def getState(): State
     def setState(state: State): Unit
     /**
