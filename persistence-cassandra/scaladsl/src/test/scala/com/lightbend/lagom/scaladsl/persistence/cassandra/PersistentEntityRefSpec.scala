@@ -26,6 +26,7 @@ import org.scalactic.ConversionCheckedTripleEquals
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.concurrent.ScalaFutures
+import play.api.{ Environment, Mode => PlayMode }
 
 class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures with ConversionCheckedTripleEquals {
 
@@ -71,6 +72,8 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
   val components = new CassandraPersistenceComponents {
     override def actorSystem: ActorSystem = system
     override def executionContext: ExecutionContext = system.dispatcher
+
+    override def environment: Environment = Environment(new File("."), getClass.getClassLoader, PlayMode.Test)
     override def configuration: play.api.Configuration = play.api.Configuration(config)
     override def materializer: Materializer = ActorMaterializer()(system)
     override def serviceLocator: ServiceLocator = NoServiceLocator
