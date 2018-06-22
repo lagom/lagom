@@ -3,15 +3,12 @@
  */
 package com.lightbend.lagom.javadsl.client;
 
-import com.lightbend.lagom.internal.client.CircuitBreakers;
 import com.lightbend.lagom.internal.client.ConfigExtensions;
-import com.lightbend.lagom.internal.javadsl.client.CircuitBreakersPanelImpl;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
-import play.Configuration;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -29,16 +26,6 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
 
     private static final String LAGOM_SERVICES_KEY = "lagom.services";
     private final PMap<String, List<URI>> services;
-
-
-    /**
-     * @param circuitBreakers
-     * @deprecated Use constructor accepting {@link CircuitBreakersPanel} instead
-     */
-    @Deprecated
-    public ConfigurationServiceLocator(Configuration configuration, CircuitBreakers circuitBreakers) {
-        this(configuration.underlying(), new CircuitBreakersPanelImpl(circuitBreakers));
-    }
 
     @Inject
     public ConfigurationServiceLocator(Config config, CircuitBreakersPanel circuitBreakersPanel) {

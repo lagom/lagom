@@ -7,7 +7,7 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.15"
+  val PlayVersion = "2.7.0-M1"
   val PlayJsonVersion = "2.6.9"
   val PlayStandaloneWsVersion = "1.1.9"
   val TwirlVersion = "1.3.14"
@@ -112,6 +112,8 @@ object Dependencies {
   private val playFunctional = "com.typesafe.play" %% "play-functional" % PlayJsonVersion excludeAll (excludeSlf4j: _*)
   private val playFileWatch = "com.lightbend.play" %% "play-file-watch" % PlayFileWatchVersion excludeAll (excludeSlf4j: _*)
 
+  private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.6"
+
   private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.2" excludeAll (excludeSlf4j: _*)
 
   private val jacksonFamily =
@@ -195,7 +197,7 @@ object Dependencies {
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
       "org.agrona" % "agrona" % "0.9.17",
-      "org.apache.commons" % "commons-lang3" % "3.6",
+      commonsLang,
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
       "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
@@ -391,7 +393,8 @@ object Dependencies {
   val server = libraryDependencies ++= Nil
 
   val `server-javadsl` = libraryDependencies ++= Seq(
-    slf4jApi
+    slf4jApi,
+    commonsLang
   )
 
   val `server-scaladsl` = libraryDependencies ++= Seq(
