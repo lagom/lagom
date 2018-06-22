@@ -6,40 +6,42 @@ package com.lightbend.lagom.gateway
 import java.net.{ InetSocketAddress, URI }
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import javax.inject.{ Inject, Named, Singleton }
 
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
-import com.lightbend.lagom.internal.NettyFutureConverters
-import NettyFutureConverters._
 import com.lightbend.lagom.discovery.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
+import com.lightbend.lagom.internal.NettyFutureConverters
+import com.lightbend.lagom.internal.NettyFutureConverters._
+import com.lightbend.lagom.internal.api.Execution.trampoline
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 import io.netty.bootstrap.{ Bootstrap, ServerBootstrap }
 import io.netty.buffer.{ ByteBuf, Unpooled }
+import io.netty.channel._
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.pool.{ AbstractChannelPoolHandler, AbstractChannelPoolMap, ChannelPool, SimpleChannelPool }
 import io.netty.channel.socket.SocketChannel
-import io.netty.channel._
 import io.netty.channel.socket.nio.{ NioServerSocketChannel, NioSocketChannel }
 import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.EventExecutor
+import javax.inject.{ Inject, Named, Singleton }
 import org.slf4j.LoggerFactory
-import play.api.{ PlayException, UsefulException }
 import play.api.inject.ApplicationLifecycle
+import play.api.libs.typedmap.TypedMap
+import play.api.mvc.request.{ RemoteConnection, RequestAttrKey, RequestTarget }
+import play.api.mvc.{ Headers, RequestHeader }
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
+import play.api.{ PlayException, UsefulException }
 
-import scala.language.implicitConversions
 import scala.collection.JavaConverters._
 import scala.collection.immutable.Queue
-import scala.concurrent.{ Await, ExecutionContext }
-import scala.concurrent.duration._
 import scala.compat.java8.OptionConverters._
+import scala.concurrent.duration._
+import scala.concurrent.{ Await, ExecutionContext }
+import scala.language.implicitConversions
 import scala.util.{ Failure, Success }
-
-import com.lightbend.lagom.internal.api.Execution.trampoline
 
 case class ServiceGatewayConfig(
   port: Int
@@ -141,10 +143,15 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
                     log.debug("Unable to get connection to service")
                     ReferenceCountUtil.release(currentRequest)
                     currentRequest = null
-                    ctx.writeAndFlush(renderError(request, new PlayException(
-                      "Bad gateway",
-                      "The gateway could not establish a connection to the service"
-                    ), HttpResponseStatus.BAD_GATEWAY))
+                    ctx.writeAndFlush(renderError(
+                      currentChannel,
+                      request,
+                      new PlayException(
+                        "Bad gateway",
+                        "The gateway could not establish a connection to the service"
+                      ),
+                      HttpResponseStatus.BAD_GATEWAY
+                    ))
                     flushPipeline()
                 }
               case NotFound(registryMap) =>
@@ -390,6 +397,7 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
       }
     }
 
+    implicit val requestHeader = createRequestHeader(request)
     val html = views.html.defaultpages.devNotFound(request.method.name, path, Some(router)).body.getBytes("utf-8")
     val response = new DefaultFullHttpResponse(request.protocolVersion, HttpResponseStatus.NOT_FOUND,
       Unpooled.wrappedBuffer(html))
@@ -400,7 +408,8 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
     response
   }
 
-  private def renderError(request: HttpRequest, exception: UsefulException, status: HttpResponseStatus): HttpResponse = {
+  private def renderError(channel: Channel, request: HttpRequest, exception: UsefulException, status: HttpResponseStatus): HttpResponse = {
+    implicit val requestHeader = createRequestHeader(request)
     val html = views.html.defaultpages.devError(None, exception).body.getBytes("utf-8")
     val response = new DefaultFullHttpResponse(request.protocolVersion, status,
       Unpooled.wrappedBuffer(html))
@@ -408,6 +417,39 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
     response.headers().set(HttpHeaderNames.DATE, new Date())
     HttpUtil.setContentLength(response, html.length)
     response
+  }
+
+  private def createRequestHeader(request: HttpRequest): RequestHeader = {
+    new RequestHeader {
+      override def connection: RemoteConnection = ???
+      override def method: String = request.method.name()
+      override def target: RequestTarget = ???
+      override def version: String = request.protocolVersion.text()
+      override def headers: Headers = new NettyHeadersWrapper(request.headers)
+      // Send an attribute so our tests can tell which kind of server we're using.
+      // We only do this for the "non-default" engine, so we used to tag
+      // akka-http explicitly, so that benchmarking isn't affected by this.
+      override def attrs: TypedMap = TypedMap(RequestAttrKey.Server -> "netty")
+    }
+  }
+
+  private class NettyHeadersWrapper(nettyHeaders: HttpHeaders) extends Headers(null) {
+
+    override def headers: Seq[(String, String)] = {
+      // Lazily initialize the header sequence using the Netty headers. It's OK
+      // if we do this operation concurrently because the operation is idempotent.
+      if (_headers == null) {
+        _headers = nettyHeaders.entries.asScala.map(h => h.getKey -> h.getValue)
+      }
+      _headers
+    }
+
+    override def get(key: String): Option[String] = Option(nettyHeaders.get(key))
+    override def apply(key: String): String = {
+      val value = nettyHeaders.get(key)
+      if (value == null) scala.sys.error("Header doesn't exist") else value
+    }
+    override def getAll(key: String): Seq[String] = nettyHeaders.getAll(key).asScala
   }
 
 }
