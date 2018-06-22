@@ -135,6 +135,32 @@ class ScaladslStrictServiceRouterSpec extends AsyncFlatSpec with Matchers with B
   }
   // ---------------------------------------------------------------------------------------------------
 
+  it should "Translate exception into log level" in {
+    val hardcodedResponse = "a response"
+    val service = new SimpleStrictService {
+      override def simpleGet(): ServiceCall[NotUsed, String] = ServiceCall { _ =>
+        Future.successful(hardcodedResponse)
+      }
+    }
+
+    val router = new ScaladslServiceRouter(service.descriptor, service, HttpConfiguration.createWithDefaults())
+
+    "DEBUG" should be(router.translateErrorIntoLogLevel(NotFound("")))
+  }
+
+  it should "Translate exception into default log level" in {
+    val hardcodedResponse = "a response"
+    val service = new SimpleStrictService {
+      override def simpleGet(): ServiceCall[NotUsed, String] = ServiceCall { _ =>
+        Future.successful(hardcodedResponse)
+      }
+    }
+
+    val router = new ScaladslServiceRouter(service.descriptor, service, HttpConfiguration.createWithDefaults())
+
+    "WARN" should be(router.translateErrorIntoLogLevel(PayloadTooLarge("")))
+  }
+
   private def runRequest[T](service: Service)(x: mvc.EssentialAction => mvc.RequestHeader => Future[mvc.Result])(block: mvc.Result => T): Future[T] = {
     val httpConfig = HttpConfiguration.createWithDefaults()
     val router = new ScaladslServiceRouter(service.descriptor, service, httpConfig)

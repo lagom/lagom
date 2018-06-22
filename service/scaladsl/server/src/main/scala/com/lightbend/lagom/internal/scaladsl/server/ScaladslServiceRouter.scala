@@ -12,13 +12,14 @@ import com.lightbend.lagom.internal.server.ServiceRouter
 import com.lightbend.lagom.scaladsl.api.Descriptor
 import com.lightbend.lagom.scaladsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodServiceCall
-import com.lightbend.lagom.scaladsl.api.deser.StreamedMessageSerializer
 import com.lightbend.lagom.scaladsl.api.transport._
 import com.lightbend.lagom.scaladsl.server.{ LagomServiceRouter, PlayServiceCall }
+import com.typesafe.config.ConfigFactory
 import play.api.Logger
 import play.api.http.HttpConfiguration
 import play.api.mvc.EssentialAction
 
+import scala.collection.JavaConverters._
 import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -77,14 +78,22 @@ class ScaladslServiceRouter(override protected val descriptor: Descriptor, servi
     }
   }
 
+  private val config = ConfigFactory.load
+  private val default_log_level = config.getString("lagom.logging.default")
+  private val log_levels: Map[String, String] = config.getConfig("lagom.logging.exception.logging.level").root.unwrapped.asScala.toMap.mapValues(_.asInstanceOf[String])
+
   override protected def maybeLogException(exc: Throwable, log: => Logger, call: Call[_, _]) = {
-    exc match {
-      case _: NotFound | _: Forbidden => // no logging
-      case e @ (_: UnsupportedMediaType | _: PayloadTooLarge | _: NotAcceptable) =>
-        log.warn(e.getMessage)
-      case e =>
-        log.error(s"Exception in ${call.callId}", e)
+    translateErrorIntoLogLevel(exc) match {
+      case "TRACE" => log.trace(exc.getMessage)
+      case "DEBUG" => log.debug(exc.getMessage)
+      case "INFO"  => log.info(exc.getMessage)
+      case "WARN"  => log.warn(exc.getMessage)
+      case "ERROR" => log.error(s"Exception in ${call.callId}", exc)
     }
+  }
+
+  def translateErrorIntoLogLevel(exc: Throwable): String = {
+    log_levels.getOrElse(exc.getClass.getName, default_log_level)
   }
 
   override protected def invokeServiceCall[Request, Response](
