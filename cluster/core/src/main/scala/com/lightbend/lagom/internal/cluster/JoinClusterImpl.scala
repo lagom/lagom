@@ -18,10 +18,10 @@ private[lagom] object JoinClusterImpl {
   def join(system: ActorSystem, environment: Environment): Unit = {
 
     val config = system.settings.config
-    def joinSelf = config.getBoolean("lagom.cluster.join-self")
-    def exitJvm = config.getBoolean("lagom.cluster.exit-jvm-when-system-terminated")
-
-    def isProd: Boolean = environment.mode == Mode.Prod
+    
+    val joinSelf = config.getBoolean("lagom.cluster.join-self")
+    val exitJvm = config.getBoolean("lagom.cluster.exit-jvm-when-system-terminated")
+    val isProd: Boolean = environment.mode == Mode.Prod
 
     // join self if seed-nodes are not configured in dev-mode,
     // otherwise it will join the seed-nodes automatically
