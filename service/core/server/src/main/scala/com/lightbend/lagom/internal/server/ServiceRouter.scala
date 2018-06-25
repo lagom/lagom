@@ -19,7 +19,7 @@ import play.api.http.HttpEntity.Strict
 import play.api.http.websocket.{ BinaryMessage, CloseMessage, Message, TextMessage }
 import play.api.http.{ HeaderNames, HttpConfiguration }
 import play.api.libs.streams.{ Accumulator, AkkaStreams }
-import play.api.mvc.{ BodyParser, BodyParsers, EssentialAction, Handler, Result, Results, WebSocket, RequestHeader => PlayRequestHeader }
+import play.api.mvc.{ BodyParser, EssentialAction, Handler, PlayBodyParsers, Result, Results, WebSocket, RequestHeader => PlayRequestHeader }
 import play.api.routing.Router.Routes
 import play.api.routing.{ HandlerDef, Router, SimpleRouter }
 
@@ -33,7 +33,7 @@ object ServiceRouter {
   val WebSocketControlFrameMaxLength = 125
 }
 
-private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration)(implicit ec: ExecutionContext, mat: Materializer)
+private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration, parsers: PlayBodyParsers)(implicit ec: ExecutionContext, mat: Materializer)
   extends SimpleRouter with LagomServiceApiBridge {
 
   protected val descriptor: Descriptor
@@ -111,7 +111,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
     val contentLength = req.headers.get(HeaderNames.CONTENT_LENGTH)
     val hasBody = contentLength.filter(_ != "0").orElse(req.headers.get(HeaderNames.TRANSFER_ENCODING)).isDefined
     if (hasBody) {
-      BodyParsers.parse.maxLength(httpConfiguration.parser.maxMemoryBuffer, BodyParser { _ =>
+      parsers.maxLength(httpConfiguration.parser.maxMemoryBuffer, BodyParser { _ =>
         Accumulator(Sink.fold[ByteString, ByteString](ByteString.empty)((state, bs) => state ++ bs)).map(Right.apply)
       }).apply(req)
     } else {
@@ -206,7 +206,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
     }
   }
 
-  private def logException(exc: Throwable, descriptor: Descriptor, call: Call[_, _]) = {
+  private def logException(exc: Throwable, descriptor: Descriptor, call: Call[_, _]): Unit = {
     def log = Logger(descriptorName(descriptor))
 
     val cause = exc match {

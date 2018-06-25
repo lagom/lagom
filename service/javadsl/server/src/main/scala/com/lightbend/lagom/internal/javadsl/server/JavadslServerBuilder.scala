@@ -117,10 +117,10 @@ class ResolvedServicesProvider(bindings: Seq[ServiceGuiceSupport.ServiceBinding[
 }
 
 @Singleton
-class JavadslServicesRouter @Inject() (resolvedServices: ResolvedServices, httpConfiguration: HttpConfiguration)(implicit ec: ExecutionContext, mat: Materializer) extends SimpleRouter with LagomServiceRouter {
+class JavadslServicesRouter @Inject() (resolvedServices: ResolvedServices, httpConfiguration: HttpConfiguration, parsers: PlayBodyParsers)(implicit ec: ExecutionContext, mat: Materializer) extends SimpleRouter with LagomServiceRouter {
 
   private val serviceRouters = resolvedServices.services.map { service =>
-    new JavadslServiceRouter(service.descriptor, service.service, httpConfiguration)
+    new JavadslServiceRouter(service.descriptor, service.service, httpConfiguration, parsers)
   }
 
   override val routes: Routes =
@@ -129,8 +129,8 @@ class JavadslServicesRouter @Inject() (resolvedServices: ResolvedServices, httpC
   override def documentation: Seq[(String, String, String)] = serviceRouters.flatMap(_.documentation)
 }
 
-class JavadslServiceRouter(override protected val descriptor: Descriptor, service: Any, httpConfiguration: HttpConfiguration)(implicit ec: ExecutionContext, mat: Materializer)
-  extends ServiceRouter(httpConfiguration) with JavadslServiceApiBridge with LagomServiceRouter {
+class JavadslServiceRouter(override protected val descriptor: Descriptor, service: Any, httpConfiguration: HttpConfiguration, parsers: PlayBodyParsers)(implicit ec: ExecutionContext, mat: Materializer)
+  extends ServiceRouter(httpConfiguration, parsers) with JavadslServiceApiBridge with LagomServiceRouter {
 
   private class JavadslServiceRoute(override val call: Call[Any, Any]) extends ServiceRoute {
     override val path: Path = JavadslPath.fromCallId(call.callId)

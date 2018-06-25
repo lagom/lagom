@@ -222,7 +222,7 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
           ))
 
         // Custom server builder to inject our changeServer callback
-        override lazy val lagomServerBuilder = new LagomServerBuilder(httpConfiguration, new ServiceResolver {
+        override lazy val lagomServerBuilder = new LagomServerBuilder(httpConfiguration, playBodyParsers, new ServiceResolver {
           override def resolve(descriptor: Descriptor): Descriptor = changeServer(serviceResolver.resolve(descriptor))
         })(materializer, executionContext)
 

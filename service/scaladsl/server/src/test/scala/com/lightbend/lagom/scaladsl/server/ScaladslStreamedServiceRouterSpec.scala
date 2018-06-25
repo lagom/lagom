@@ -18,7 +18,7 @@ import org.scalatest.{ Assertion, AsyncFlatSpec, BeforeAndAfterAll, Matchers }
 import play.api.http.HttpConfiguration
 import play.api.http.websocket.{ Message, TextMessage }
 import play.api.mvc
-import play.api.mvc.Handler
+import play.api.mvc.{ Handler, PlayBodyParsers }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -75,7 +75,8 @@ class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with
 
   private def runRequest(service: Service)(x: mvc.WebSocket => mvc.RequestHeader => Future[WSFlow])(block: => Assertion): Future[Assertion] = {
     val httpConfig = HttpConfiguration.createWithDefaults()
-    val router = new ScaladslServiceRouter(service.descriptor, service, httpConfig)
+    val parsers = PlayBodyParsers()
+    val router = new ScaladslServiceRouter(service.descriptor, service, httpConfig, parsers)
     val req: mvc.Request[NotUsed] = new FakeRequest(method = "GET", path = PathProvider.PATH)
     val handler = router.routes(req)
     val futureResult: Future[WSFlow] = Handler.applyStages(req, handler) match {
