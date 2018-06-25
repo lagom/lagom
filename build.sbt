@@ -16,11 +16,21 @@ import sbt.CrossVersion._
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
 
 def defineSbtVersion(scalaBinVer: String): String = scalaBinVer match {
-  case "2.12" => "1.0.2"
-  case _ => "0.13.16"
+  case "2.12" => "1.1.6"
+  case _ => "0.13.17"
 }
 
-def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
+def evictionSettings: Seq[Setting[_]] = Seq(
+  // This avoids a lot of dependency resolution warnings to be showed.
+  // They are not required in Lagom since we have a more strict whitelist
+  // of which dependencies are allowed. So it should be safe to not have
+  // the build logs polluted with evictions warnings.
+  evictionWarningOptions in update := EvictionWarningOptions.default
+    .withWarnTransitiveEvictions(false)
+    .withWarnDirectEvictions(false)
+)
+
+def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSettings ++ Seq(
   organization := "com.lightbend.lagom",
   // Must be "Apache-2.0", because bintray requires that it is a license that it knows about
   licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))),
@@ -539,7 +549,11 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
       ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.router"),
 
       // changed signature of a method in a private class in https://github.com/lagom/lagom/pull/1109
-      ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.server.ActorSystemProvider.start")
+      ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.server.ActorSystemProvider.start"),
+
+      // injected body parsers to avoid access to global state in https://github.com/lagom/lagom/pull/1401
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServerBuilder.this"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServerComponents.playBodyParsers")
     )
   )
   .enablePlugins(RuntimeLibPlugins)
@@ -737,8 +751,12 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
       // lost by hiding it.
       ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntityRef.writeReplace"),
 
-      // See https://github.com/lagom/lagom/pull/1302 was a `protected final class` and became a `public sealed trait`
-      ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$BehaviorBuilder")
+      // Was a `protected final class` and became a `public sealed abstract class`
+      // See https://github.com/lagom/lagom/pull/1302 and https://github.com/lagom/lagom/pull/1395
+      ProblemFilters.exclude[AbstractClassProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$BehaviorBuilder"),
+      ProblemFilters.exclude[DirectAbstractMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity#BehaviorBuilder.*"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity#BehaviorBuilder.this"),
+      ProblemFilters.exclude[ReversedAbstractMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity#BehaviorBuilder.*")
     ),
     Dependencies.`persistence-javadsl`
   )

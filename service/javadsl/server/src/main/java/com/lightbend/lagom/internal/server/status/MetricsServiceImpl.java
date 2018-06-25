@@ -13,19 +13,19 @@ import com.lightbend.lagom.javadsl.api.transport.NotFound;
 import com.lightbend.lagom.javadsl.server.status.CircuitBreakerStatus;
 import com.lightbend.lagom.javadsl.server.status.Latency;
 import com.lightbend.lagom.javadsl.server.status.MetricsService;
+
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
-import scala.concurrent.duration.FiniteDuration;
 
 import akka.actor.ActorSystem;
 import akka.stream.javadsl.Source;
 
 public class MetricsServiceImpl implements MetricsService {
-  
+
   private final Optional<CircuitBreakerMetricsProviderImpl> provider;
 
   @Inject
@@ -47,14 +47,14 @@ public class MetricsServiceImpl implements MetricsService {
       return CompletableFuture.completedFuture(allCircuitBreakerStatus());
     };
   }
-  
+
   @Override
   public ServiceCall<NotUsed, Source<List<CircuitBreakerStatus>, ?>> circuitBreakers() {
     return request -> {
       if (!provider.isPresent())
         throw new NotFound("No metrics");
       Source<List<CircuitBreakerStatus>, ?> source = 
-        Source.tick(FiniteDuration.create(100, TimeUnit.MILLISECONDS), FiniteDuration.create(2, TimeUnit.SECONDS), "tick")
+        Source.tick(Duration.ofMillis(100), Duration.ofSeconds(2), "tick")
           .map(tick -> allCircuitBreakerStatus());
       return CompletableFuture.completedFuture(source);
     };
