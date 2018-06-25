@@ -30,7 +30,7 @@ class OnStart {
 
   @Inject
   public OnStart(Environment environment, Config configuration) {
-  	dumpInjectedCassandraConfig(app);
+    dumpInjectedCassandraConfig(environment, configuration);
   }
 
   private void dumpInjectedCassandraConfig(Environment environment, Config configuration) {
