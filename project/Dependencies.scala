@@ -7,15 +7,15 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.15"
+  val PlayVersion = "2.7.0-M1"
   val PlayJsonVersion = "2.6.9"
-  val PlayStandaloneWsVersion = "1.1.9"
-  val TwirlVersion = "1.3.14"
+  val PlayStandaloneWsVersion = "2.0.0-M2"
+  val TwirlVersion = "1.4.0-M2"
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
   val AkkaVersion = "2.5.13"
-  val AkkaHttpVersion = "10.0.13"
+  val AkkaHttpVersion = "10.1.3"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.6", "2.11.12")
   val SbtScalaVersions = Seq("2.10.6", "2.12.6")
@@ -23,11 +23,11 @@ object Dependencies {
   val AkkaPersistenceJdbcVersion = "3.4.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
   val ScalaTestVersion = "3.0.4"
-  val JacksonVersion = "2.8.11"
+  val JacksonVersion = "2.9.6"
   val JacksonCoreVersion = JacksonVersion
   val JacksonDatatypeVersion = JacksonVersion
-  val JacksonDatabindVersion = "2.8.11.1"
-  val GuavaVersion = "22.0"
+  val JacksonDatabindVersion = JacksonVersion
+  val GuavaVersion = "25.1-jre"
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.1.25.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
@@ -35,7 +35,7 @@ object Dependencies {
   val AkkaStreamKafkaVersion = "0.18"
 
   val ScalaJava8CompatVersion = "0.8.0"
-  val ScalaXmlVersion = "1.0.6"
+  val ScalaXmlVersion = "1.1.0"
   val SlickVersion = "3.2.3"
   // Also be sure to update JUnitVersion in docs/build.sbt.
   val JUnitVersion = "4.11"
@@ -112,6 +112,8 @@ object Dependencies {
   private val playFunctional = "com.typesafe.play" %% "play-functional" % PlayJsonVersion excludeAll (excludeSlf4j: _*)
   private val playFileWatch = "com.lightbend.play" %% "play-file-watch" % PlayFileWatchVersion excludeAll (excludeSlf4j: _*)
 
+  private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.6"
+
   private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.2" excludeAll (excludeSlf4j: _*)
 
   private val jacksonFamily =
@@ -143,13 +145,15 @@ object Dependencies {
       "com.github.jnr" % "jnr-ffi" % "2.1.6",
       "com.github.jnr" % "jnr-posix" % "3.0.27",
       "com.github.jnr" % "jnr-x86asm" % "1.0.2",
-      "com.google.code.findbugs" % "jsr305" % "1.3.9",
-      "com.google.errorprone" % "error_prone_annotations" % "2.0.18",
+      "com.google.code.findbugs" % "jsr305" % "3.0.2",
+      "com.google.errorprone" % "error_prone_annotations" % "2.1.3",
       "com.google.guava" % "guava" % GuavaVersion,
       "com.google.j2objc" % "j2objc-annotations" % "1.1",
-      "com.google.inject" % "guice" % "4.1.0",
-      "com.google.inject.extensions" % "guice-assistedinject" % "4.1.0",
+      "com.google.inject" % "guice" % "4.2.0",
+      "com.google.inject.extensions" % "guice-assistedinject" % "4.2.0",
       "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
+      "org.checkerframework" % "checker-qual" % "2.0.0",
+      "javax.xml.bind" % "jaxb-api" % "2.3.0",
       h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
       "com.lmax" % "disruptor" % "3.3.6",
@@ -179,12 +183,12 @@ object Dependencies {
       "com.typesafe.play" %% "twirl-api" % TwirlVersion,
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-      "com.zaxxer" % "HikariCP" % "2.7.9",
+      "com.zaxxer" % "HikariCP" % "3.2.0",
       "commons-codec" % "commons-codec" % "1.10",
       "io.aeron" % "aeron-client" % "1.9.1",
       "io.aeron" % "aeron-driver" % "1.9.1",
       dropwizardMetricsCore,
-      "io.jsonwebtoken" % "jjwt" % "0.7.0",
+      "io.jsonwebtoken" % "jjwt" % "0.9.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
       "io.netty" % "netty" % "3.10.6.Final",
       "javax.cache" % "cache-api" % "1.0.0",
@@ -195,7 +199,7 @@ object Dependencies {
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
       "org.agrona" % "agrona" % "0.9.17",
-      "org.apache.commons" % "commons-lang3" % "3.6",
+      commonsLang,
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
       "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
@@ -207,7 +211,6 @@ object Dependencies {
       "org.lmdbjava" % "lmdbjava" % "0.6.0",
       "org.pcollections" % "pcollections" % "2.1.2",
       reactiveStreams,
-      "org.reflections" % "reflections" % "0.9.11",
       "org.scalactic" %% "scalactic" % ScalaTestVersion,
       "org.scalatest" %% "scalatest" % ScalaTestVersion,
       "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion,
@@ -391,7 +394,8 @@ object Dependencies {
   val server = libraryDependencies ++= Nil
 
   val `server-javadsl` = libraryDependencies ++= Seq(
-    slf4jApi
+    slf4jApi,
+    commonsLang
   )
 
   val `server-scaladsl` = libraryDependencies ++= Seq(
@@ -572,7 +576,8 @@ object Dependencies {
   val `persistence-jpa-javadsl` = libraryDependencies ++= Seq(
     "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final" % Provided,
     "org.hibernate" % "hibernate-core" % "5.2.5.Final" % Test,
-    h2 % Test
+    h2 % Test,
+    javassist % Test
   )
 
   val `broker-javadsl` = libraryDependencies ++= Nil
