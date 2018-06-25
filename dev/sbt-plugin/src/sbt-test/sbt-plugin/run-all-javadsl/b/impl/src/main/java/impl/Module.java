@@ -9,6 +9,8 @@ import javax.inject.Inject;
 import java.util.Date;
 import java.io.*;
 
+import com.typesafe.config.Config;
+
 public class Module extends AbstractModule implements ServiceGuiceSupport {
 	@Override
 	protected void configure() {
@@ -21,18 +23,18 @@ public class Module extends AbstractModule implements ServiceGuiceSupport {
 class OnStart {
 
   @Inject
-  public OnStart(Application app) {
-  	doOnStart(app);
+  public OnStart(Environment environment, Config configuration) {
+  	doOnStart(environment, configuration);
   }
 
-  private void doOnStart(Application app) {
+  private void doOnStart(Environment environment, Config configuration) {
   	try {
   	  // open for append
-      FileWriter writer = new FileWriter(app.getFile("target/reload.log"), true);
+      FileWriter writer = new FileWriter(environment.getFile("target/reload.log"), true);
       writer.write(new Date() + " - reloaded\n");
       writer.close();
 
-      if (app.configuration().getBoolean("fail", false)) {
+      if (configuration.hasPathOrNull("fail") && configuration.getBoolean("fail")) {
         throw new RuntimeException();
       }
     }
