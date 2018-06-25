@@ -99,12 +99,12 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig)
 
         probe.expectNext("A")
           .expectNext("B")
-          .expectNoMsg(200.millis)
+          .expectNoMessage(200.millis)
           .request(2)
           .expectNext("C")
           .expectNext("D")
           .cancel()
-          .expectNoMsg(200.millis)
+          .expectNoMessage(200.millis)
 
       }
 
