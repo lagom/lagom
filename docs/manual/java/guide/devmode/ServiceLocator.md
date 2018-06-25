@@ -21,7 +21,7 @@ In the Maven root project pom:
 
 In sbt:
 
-@[service-locator-address](code/build-service-port.sbt)
+@[service-locator-address](code/build-service-locator.sbt)
 
 ## Default port
 
