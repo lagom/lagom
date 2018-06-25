@@ -546,7 +546,11 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
       ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.router"),
 
       // changed signature of a method in a private class in https://github.com/lagom/lagom/pull/1109
-      ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.server.ActorSystemProvider.start")
+      ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.server.ActorSystemProvider.start"),
+
+      // injected body parsers to avoid access to global state in https://github.com/lagom/lagom/pull/1401
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServerBuilder.this"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServerComponents.playBodyParsers")
     )
   )
   .enablePlugins(RuntimeLibPlugins)
