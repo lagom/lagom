@@ -69,7 +69,7 @@ public class PersistentEntityRefTest {
 
   @AfterClass
   public static void teardown() {
-    application.getWrappedApplication().stop();
+    application.asScala().stop();
     CassandraLauncher.stop();
   }
 

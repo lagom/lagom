@@ -42,7 +42,7 @@ trait ServiceSupport extends WordSpecLike with Matchers with Inside {
     }
     val jBlock = new Procedure[TestServer] {
       override def apply(server: TestServer): Unit = {
-        block(server.app.getWrappedApplication)
+        block(server.app.asScala())
       }
     }
     val setup = ServiceTest.defaultSetup.configureBuilder(jConfigureBuilder).withCluster(false)
