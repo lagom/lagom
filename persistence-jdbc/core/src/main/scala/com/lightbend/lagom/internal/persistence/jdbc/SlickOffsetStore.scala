@@ -12,10 +12,9 @@ import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
 import com.typesafe.config.Config
-import play.api.Configuration
 
-import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
 
 /**
@@ -59,8 +58,8 @@ private[lagom] class SlickOffsetStore(system: ActorSystem, val slick: SlickProvi
 
   case class OffsetRow(id: String, tag: String, sequenceOffset: Option[Long], timeUuidOffset: Option[String])
 
-  import system.dispatcher
   import slick.profile.api._
+  import system.dispatcher
 
   override def prepare(eventProcessorId: String, tag: String): Future[SlickOffsetDao] = {
     runPreparations(eventProcessorId, tag).map(offset =>
@@ -86,7 +85,7 @@ private[lagom] class SlickOffsetStore(system: ActorSystem, val slick: SlickProvi
       ClusterStartupTask(
         system,
         "slickOffsetStorePrepare",
-        createTables,
+        () => createTables,
         config.globalPrepareTimeout,
         config.role,
         config.minBackoff,

@@ -114,7 +114,7 @@ public class PubSubTest {
 
     probe.expectNext("hello-1");
     probe.expectNext("hello-2");
-    probe.expectNoMsg(Duration.create(100, TimeUnit.MILLISECONDS));
+    probe.expectNoMessage(Duration.create(100, TimeUnit.MILLISECONDS));
 
     probe.request(10);
     probe.expectNext("hello-3");
@@ -242,12 +242,12 @@ public class PubSubTest {
 
     probe.expectNext(new Notification("hello-1"));
     probe.expectNext(new Notification("hello-2"));
-    probe.expectNoMsg(Duration.create(1, TimeUnit.SECONDS));
+    probe.expectNoMessage(Duration.create(1, TimeUnit.SECONDS));
     probe.request(100);
     probe.expectNext(new Notification("hello-8"));
     probe.expectNext(new Notification("hello-9"));
     probe.expectNext(new Notification("hello-10"));
-    probe.expectNoMsg(Duration.create(100, TimeUnit.MILLISECONDS));
+    probe.expectNoMessage(Duration.create(100, TimeUnit.MILLISECONDS));
   }
 
 }

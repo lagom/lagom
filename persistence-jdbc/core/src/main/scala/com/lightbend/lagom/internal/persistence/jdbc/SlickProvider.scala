@@ -8,12 +8,11 @@ import java.util.concurrent.TimeUnit
 
 import akka.Done
 import akka.actor.ActorSystem
-import akka.persistence.jdbc.config.{ JournalTableConfiguration, SlickConfiguration, SnapshotTableConfiguration }
+import akka.persistence.jdbc.config.{ JournalTableConfiguration, SnapshotTableConfiguration }
 import akka.persistence.jdbc.journal.dao.JournalTables
 import akka.persistence.jdbc.snapshot.dao.SnapshotTables
 import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
-import com.typesafe.config.ConfigException
 import javax.naming.InitialContext
 import org.slf4j.LoggerFactory
 import slick.basic.DatabaseConfig
@@ -111,7 +110,7 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
     }
 
     val task = ClusterStartupTask(
-      system, "jdbcCreateTables", createTables, createTablesTimeout, role, minBackoff, maxBackoff, randomBackoffFactor
+      system, "jdbcCreateTables", () => createTables, createTablesTimeout, role, minBackoff, maxBackoff, randomBackoffFactor
     )
     Some(task)
   } else {

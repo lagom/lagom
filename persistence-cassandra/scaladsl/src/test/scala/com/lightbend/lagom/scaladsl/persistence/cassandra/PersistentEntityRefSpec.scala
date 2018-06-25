@@ -5,10 +5,8 @@ package com.lightbend.lagom.scaladsl.persistence.cassandra
 
 import java.io.File
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.concurrent.duration._
-import akka.actor.{ ActorSystem, BootstrapSetup }
 import akka.actor.setup.ActorSystemSetup
+import akka.actor.{ ActorSystem, BootstrapSetup }
 import akka.cluster.Cluster
 import akka.pattern.AskTimeoutException
 import akka.persistence.cassandra.testkit.CassandraLauncher
@@ -16,18 +14,21 @@ import akka.stream.{ ActorMaterializer, Materializer }
 import akka.testkit.TestKit
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
-import com.lightbend.lagom.scaladsl.persistence.{ PersistentEntity, PersistentEntityRegistry, TestEntity, TestEntitySerializerRegistry }
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.{ InvalidCommandException, UnhandledCommandException }
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Mode
 import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
+import com.lightbend.lagom.scaladsl.persistence.{ PersistentEntity, PersistentEntityRegistry, TestEntity, TestEntitySerializerRegistry }
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{ Config, ConfigFactory }
-import org.scalactic.ConversionCheckedTripleEquals
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
+import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
 
-class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures with ConversionCheckedTripleEquals {
+import scala.concurrent.duration._
+import scala.concurrent.{ ExecutionContext, Future }
+
+class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with ScalaFutures with TypeCheckedTripleEquals {
 
   override implicit val patienceConfig = PatienceConfig(5.seconds, 150.millis)
 

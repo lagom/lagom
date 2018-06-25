@@ -8,7 +8,7 @@ import akka.actor.setup.ActorSystemSetup
 import akka.event.{ Logging, LoggingAdapter }
 import akka.testkit.{ ImplicitSender, TestKit }
 import com.typesafe.config.{ Config, ConfigFactory }
-import org.scalactic.{ Constraint, ConversionCheckedTripleEquals }
+import org.scalactic.{ CanEqual, TypeCheckedTripleEquals }
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
 
 object ActorSystemSpec {
@@ -25,7 +25,7 @@ object ActorSystemSpec {
 }
 
 abstract class ActorSystemSpec(system: ActorSystem) extends TestKit(system)
-  with WordSpecLike with Matchers with BeforeAndAfterAll with ConversionCheckedTripleEquals
+  with WordSpecLike with Matchers with BeforeAndAfterAll with TypeCheckedTripleEquals
   with ImplicitSender {
 
   def this(testName: String, config: Config) =
@@ -45,8 +45,8 @@ abstract class ActorSystemSpec(system: ActorSystem) extends TestKit(system)
   val log: LoggingAdapter = Logging(system, this.getClass)
 
   // for ScalaTest === compare of Class objects
-  implicit def classEqualityConstraint[A, B]: Constraint[Class[A], Class[B]] =
-    new Constraint[Class[A], Class[B]] {
+  implicit def classEqualityConstraint[A, B]: CanEqual[Class[A], Class[B]] =
+    new CanEqual[Class[A], Class[B]] {
       def areEqual(a: Class[A], b: Class[B]) = a == b
     }
 
