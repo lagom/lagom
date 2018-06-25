@@ -390,7 +390,11 @@ lazy val `api-javadsl` = (project in file("service/javadsl/api"))
   .settings(mimaSettings(since10): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
-    Dependencies.`api-javadsl`
+    Dependencies.`api-javadsl`,
+    mimaBinaryIssueFilters ++= Seq(
+      // play.Configuration removal in https://github.com/lagom/lagom/pull/1402
+      ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.javadsl.api.ConfigurationServiceLocator.this")
+    )
   ).dependsOn(api)
 
 lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
@@ -475,7 +479,11 @@ lazy val `client-javadsl` = (project in file("service/javadsl/client"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-javadsl-client",
-    Dependencies.`client-javadsl`
+    Dependencies.`client-javadsl`,
+    mimaBinaryIssueFilters ++= Seq(
+      // play.Configuration removal in https://github.com/lagom/lagom/pull/1402
+      ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.javadsl.client.ConfigurationServiceLocator.this")
+    )
   )
   .dependsOn(client, `api-javadsl`, jackson)
 
