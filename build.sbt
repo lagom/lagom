@@ -20,7 +20,17 @@ def defineSbtVersion(scalaBinVer: String): String = scalaBinVer match {
   case _ => "0.13.16"
 }
 
-def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ Seq(
+def evictionSettings: Seq[Setting[_]] = Seq(
+  // This avoids a lot of dependency resolution warnings to be showed.
+  // They are not required in Lagom since we have a more strict whitelist
+  // of which dependencies are allowed. So it should be safe to not have
+  // the build logs polluted with evictions warnings.
+  evictionWarningOptions in update := EvictionWarningOptions.default
+    .withWarnTransitiveEvictions(false)
+    .withWarnDirectEvictions(false)
+)
+
+def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSettings ++ Seq(
   organization := "com.lightbend.lagom",
   // Must be "Apache-2.0", because bintray requires that it is a license that it knows about
   licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))),
