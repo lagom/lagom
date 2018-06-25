@@ -19,6 +19,10 @@ In the Maven root project pom:
 </plugin>
 ```
 
+In sbt:
+
+@[service-locator-address](code/build-service-port.sbt)
+
 ## Default port
 
 By default, the service locator runs on port `9008`, but it is possible to use a different port. For instance, you can tell the service locator to run on port `10000` by adding the following to your build.
