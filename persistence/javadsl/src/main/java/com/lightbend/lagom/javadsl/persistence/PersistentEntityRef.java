@@ -32,7 +32,7 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
   }
 
   /**
-   * @deprecated Use the other constructor.
+   * @deprecated Use {@link #PersistentEntityRef(String, ActorRef, FiniteDuration)} instead.
    */
   @Deprecated
   public PersistentEntityRef(String entityId, ActorRef region, ActorSystem system, FiniteDuration askTimeout) {

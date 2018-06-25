@@ -83,7 +83,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       classOf[TestEntity.Evt],
       new ClusterStartupTask(mockRef),
       eventStream,
-      processorFactory
+      () => processorFactory
     )
 
     val readSide: ActorRef = system.actorOf(processorProps)

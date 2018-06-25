@@ -7,7 +7,6 @@ import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
-import akka.stream.testkit.TestSubscriber
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestKit
 import com.lightbend.lagom.internal.scaladsl.PubSubRegistryImpl
@@ -71,7 +70,7 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
       Source(List(Notification("hello-1"), Notification("hello-2"), Notification("hello-3"))).runWith(pub)
       probe.expectNext("hello-1")
       probe.expectNext("hello-2")
-      probe.expectNoMsg(100.milliseconds)
+      probe.expectNoMessage(100.milliseconds)
       probe.request(10)
       probe.expectNext("hello-3")
     }
@@ -156,12 +155,12 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
       for (i <- 1 to 10) yield ref.publish(Notification("hello-" + i))
       probe.expectNext(Notification("hello-1"))
       probe.expectNext(Notification("hello-2"))
-      probe.expectNoMsg(1.second)
+      probe.expectNoMessage(1.second)
       probe.request(100)
       probe.expectNext(Notification("hello-8"))
       probe.expectNext(Notification("hello-9"))
       probe.expectNext(Notification("hello-10"))
-      probe.expectNoMsg(100.milliseconds)
+      probe.expectNoMessage(100.milliseconds)
     }
   }
 
