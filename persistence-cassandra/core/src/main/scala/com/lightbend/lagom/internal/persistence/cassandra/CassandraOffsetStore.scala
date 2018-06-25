@@ -40,7 +40,7 @@ private[lagom] abstract class CassandraOffsetStore(
       ClusterStartupTask(
         system,
         "cassandraOffsetStorePrepare",
-        createTable,
+        () => createTable(),
         config.globalPrepareTimeout,
         config.role,
         config.minBackoff,

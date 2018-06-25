@@ -43,7 +43,7 @@ object TestEntityReadSide {
       }
 
       readSide.builder[TestEntity.Evt]("testoffsets")
-        .setGlobalPrepare(createTable)
+        .setGlobalPrepare(() => createTable())
         .setPrepare(tag => prepareWriteStmt())
         .setEventHandler[TestEntity.Appended](updateCount)
         .build()

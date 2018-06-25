@@ -45,7 +45,7 @@ class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec(Test
 
       outcome.state should be(replies.last)
 
-      expectNoMsg(200.millis)
+      expectNoMessage(200.millis)
       probe1.expectMsgType[TestEntity.AfterRecovery]
       probe2.expectMsgType[TestEntity.AfterRecovery]
 

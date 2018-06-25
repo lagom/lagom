@@ -66,7 +66,7 @@ private[lagom] final class CassandraReadSideImpl @Inject() (
       private var handlers = Map.empty[Class[_ <: Event], Handler[Event]]
 
       override def setGlobalPrepare(callback: Supplier[CompletionStage[Done]]): ReadSideHandlerBuilder[Event] = {
-        globalPrepareCallback = callback.get
+        globalPrepareCallback = () => callback.get
         this
       }
 
