@@ -64,7 +64,7 @@ To check which version of sbt you are using, run `sbt sbtVersion` from the comma
 
 ```
 [info] Set current project to example (in build file:/home/alice/)
-[info] 1.1.5
+[info] 1.1.6
 ```
 
 ## Proxy setup
