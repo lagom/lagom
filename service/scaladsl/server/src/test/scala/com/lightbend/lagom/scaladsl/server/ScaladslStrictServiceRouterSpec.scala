@@ -16,7 +16,7 @@ import com.lightbend.lagom.scaladsl.server.testkit.FakeRequest
 import org.scalatest.{ AsyncFlatSpec, BeforeAndAfterAll, Matchers }
 import play.api.http.HttpConfiguration
 import play.api.mvc
-import play.api.mvc.Handler
+import play.api.mvc.{ Handler, PlayBodyParsers }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -137,7 +137,8 @@ class ScaladslStrictServiceRouterSpec extends AsyncFlatSpec with Matchers with B
 
   private def runRequest[T](service: Service)(x: mvc.EssentialAction => mvc.RequestHeader => Future[mvc.Result])(block: mvc.Result => T): Future[T] = {
     val httpConfig = HttpConfiguration.createWithDefaults()
-    val router = new ScaladslServiceRouter(service.descriptor, service, httpConfig)
+    val parsers = PlayBodyParsers()
+    val router = new ScaladslServiceRouter(service.descriptor, service, httpConfig, parsers)
     val req: mvc.Request[NotUsed] = new FakeRequest(method = "GET", path = PathProvider.PATH)
     val handler = router.routes(req)
     val futureResult: Future[mvc.Result] = Handler.applyStages(req, handler) match {
