@@ -9,7 +9,7 @@ import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceInfo }
 import com.lightbend.lagom.scaladsl.client.ServiceResolver
 import com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents
 import play.api.http.HttpConfiguration
-import play.api.mvc.{ Handler, RequestHeader }
+import play.api.mvc.{ Handler, PlayBodyParsers, RequestHeader }
 import play.api.routing.Router.Routes
 import play.api.routing.{ Router, SimpleRouter }
 
@@ -77,11 +77,12 @@ object LagomServer {
 
 trait LagomServerComponents extends MetricsServiceComponents {
   def httpConfiguration: HttpConfiguration
+  def playBodyParsers: PlayBodyParsers
   def materializer: Materializer
   def executionContext: ExecutionContext
   def serviceResolver: ServiceResolver
 
-  lazy val lagomServerBuilder: LagomServerBuilder = new LagomServerBuilder(httpConfiguration, serviceResolver)(materializer, executionContext)
+  lazy val lagomServerBuilder: LagomServerBuilder = new LagomServerBuilder(httpConfiguration, playBodyParsers, serviceResolver)(materializer, executionContext)
   protected def bindService[T <: Service]: LagomServiceBinder[T] = macro ScaladslServerMacroImpl.createBinder[T]
 
   /**
@@ -105,9 +106,9 @@ trait LagomServerComponents extends MetricsServiceComponents {
   def lagomServer: LagomServer
 }
 
-final class LagomServerBuilder(httpConfiguration: HttpConfiguration, serviceResolver: ServiceResolver)(implicit materializer: Materializer, executionContext: ExecutionContext) {
+final class LagomServerBuilder(httpConfiguration: HttpConfiguration, parsers: PlayBodyParsers, serviceResolver: ServiceResolver)(implicit materializer: Materializer, executionContext: ExecutionContext) {
   def buildRouter(service: Service): LagomServiceRouter = {
-    new ScaladslServiceRouter(serviceResolver.resolve(service.descriptor), service, httpConfiguration)(executionContext, materializer)
+    new ScaladslServiceRouter(serviceResolver.resolve(service.descriptor), service, httpConfiguration, parsers)(executionContext, materializer)
   }
 }
 
