@@ -29,11 +29,11 @@ class FooOnStart {
     private void doOnStart(Application app) {
         try {
             // open for append
-            FileWriter writer = new FileWriter(app.getFile("target/reload.log"), true);
+            FileWriter writer = new FileWriter(app.getWrappedApplication().environment().getFile("target/reload.log"), true);
             writer.write(new Date() + " - reloaded\n");
             writer.close();
 
-            if (app.configuration().getBoolean("fail", false)) {
+            if (app.config().getBoolean("fail")) {
                 throw new RuntimeException();
             }
         }

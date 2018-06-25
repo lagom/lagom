@@ -5,8 +5,8 @@ package com.lightbend.lagom.gateway
 
 import java.net.InetSocketAddress
 import java.util.Locale
-import javax.inject.{ Inject, Named }
 
+import javax.inject.{ Inject, Named }
 import akka.actor.{ ActorRef, ActorSystem }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
@@ -19,6 +19,9 @@ import com.lightbend.lagom.discovery.ServiceRegistryActor.{ Found, NotFound, Rou
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 import org.slf4j.LoggerFactory
 import play.api.inject.ApplicationLifecycle
+import play.api.libs.typedmap.TypedMap
+import play.api.mvc.request.{ RemoteConnection, RequestAttrKey, RequestTarget }
+import play.api.mvc.{ Headers, RequestHeader }
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 
@@ -106,6 +109,8 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
       }
     }
 
+    implicit val requestHeader = createRequestHeader(request)
+
     val html = views.html.defaultpages.devNotFound(request.method.name, path, Some(router)).body
     HttpResponse(
       status = StatusCodes.NotFound,
@@ -115,6 +120,20 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
       )
     )
   }
+
+  private def createRequestHeader(request: HttpRequest): RequestHeader = {
+    new RequestHeader {
+      override def connection: RemoteConnection = ???
+      override def method: String = request.method.name()
+      override def target: RequestTarget = ???
+      override def version: String = request.protocol.value
+      override def headers: Headers = new AkkaHeadersWrapper(request.headers)
+      override def attrs: TypedMap = TypedMap(RequestAttrKey.Server -> "akka-http")
+    }
+  }
+
+  private class AkkaHeadersWrapper(akkaHeaders: Seq[HttpHeader])
+    extends Headers(akkaHeaders.map(h => (h.name, h.value)))
 
   private val HeadersToFilter = Set(
     "Timeout-Access",

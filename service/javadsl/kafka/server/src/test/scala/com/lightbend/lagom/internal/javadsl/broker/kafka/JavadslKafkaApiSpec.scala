@@ -21,11 +21,12 @@ import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec._
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter.{ dslOffsetToOffset, offsetToDslOffset }
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer
 import com.lightbend.lagom.javadsl.api.ScalaService._
-import com.lightbend.lagom.javadsl.api._
+import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceLocator }
 import com.lightbend.lagom.javadsl.api.broker.kafka.{ KafkaProperties, PartitionKeyStrategy }
 import com.lightbend.lagom.javadsl.api.broker.{ Message, Topic }
 import com.lightbend.lagom.javadsl.broker.TopicProducer
 import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys
+import com.lightbend.lagom.javadsl.client.ConfigurationServiceLocator
 import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, PersistentEntity, PersistentEntityRef, PersistentEntityRegistry, Offset => JOffset }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
