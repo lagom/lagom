@@ -7,7 +7,6 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
-import play.Configuration;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -50,14 +49,6 @@ public class ConfigurationServiceLocator implements ServiceLocator {
             }
         }
         this.services = HashTreePMap.from(services);
-    }
-
-    /**
-     * @deprecated use {@link ConfigurationServiceLocator(Config)} instead.
-     */
-    @Deprecated
-    public ConfigurationServiceLocator(Configuration configuration) {
-        this(configuration.underlying());
     }
 
     @Override

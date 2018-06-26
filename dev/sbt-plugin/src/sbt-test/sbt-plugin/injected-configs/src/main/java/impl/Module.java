@@ -10,6 +10,8 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.ArrayList;
 
+import com.typesafe.config.Config;
+
 public class Module extends AbstractModule implements ServiceGuiceSupport {
 	@Override
 	protected void configure() {
@@ -25,14 +27,13 @@ class OnStart {
 
   public static String INTERNAL_ACTOR_SYSTEM_NAME        = "lagom.akka.dev-mode.actor-system.name";
   public static String APPLICATION_ACTOR_SYSTEM_NAME     = "play.akka.actor-system";
-  
+
   @Inject
-  public OnStart(Application app) {
-  	dumpInjectedConfig(app);
+  public OnStart(Environment environment, Config configuration) {
+  	dumpInjectedConfig(environment, configuration);
   }
 
-  private void dumpInjectedConfig(Application app) {
-    Configuration config = app.configuration();
+  private void dumpInjectedConfig(Environment environment, Config configuration) {
     ArrayList<String> keys = new ArrayList<>(Arrays.asList(
             CASSANDRA_JOURNAL_PORT,
             CASSANDRA_SNAPSHOT_STORE_PORT,
@@ -41,9 +42,9 @@ class OnStart {
             APPLICATION_ACTOR_SYSTEM_NAME
     ));
 
-    try(FileWriter writer = new FileWriter(app.getFile("target/injected-config.conf"), true)) {
+    try(FileWriter writer = new FileWriter(environment.getFile("target/injected-config.conf"), true)) {
       for(String key: keys) {
-        String value = config.getString(key);
+        String value = configuration.getString(key);
         writer.write(key + "="+value+"\n");
       }
     }

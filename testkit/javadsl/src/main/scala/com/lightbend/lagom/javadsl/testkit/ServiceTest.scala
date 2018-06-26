@@ -242,7 +242,7 @@ object ServiceTest {
      * by `withServer`.
      */
     def stop(): Unit = {
-      Try(Play.stop(app.getWrappedApplication))
+      Try(Play.stop(app.asScala()))
       Try(server.stop())
     }
   }
@@ -335,10 +335,10 @@ object ServiceTest {
 
     val application = setup.configureBuilder(finalBuilder).build()
 
-    Play.start(application.getWrappedApplication)
+    Play.start(application.asScala())
 
     val serverConfig = ServerConfig(port = Some(0), mode = Mode.Test)
-    val srv = ServerProvider.defaultServerProvider.createServer(serverConfig, application.getWrappedApplication)
+    val srv = ServerProvider.defaultServerProvider.createServer(serverConfig, application.asScala())
     val assignedPort = srv.httpPort.orElse(srv.httpsPort).get
     port.success(assignedPort)
 
