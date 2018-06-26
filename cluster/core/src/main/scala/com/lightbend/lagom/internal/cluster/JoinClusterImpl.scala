@@ -16,7 +16,6 @@ import scala.concurrent.duration._
 private[lagom] object JoinClusterImpl {
 
   def join(system: ActorSystem, environment: Environment): Unit = {
-
     val config = system.settings.config 
     val joinSelf = config.getBoolean("lagom.cluster.join-self")
     val exitJvm = config.getBoolean("lagom.cluster.exit-jvm-when-system-terminated")
