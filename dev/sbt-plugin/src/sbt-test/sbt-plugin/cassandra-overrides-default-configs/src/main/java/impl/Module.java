@@ -40,7 +40,7 @@ class OnStart {
 
     try(FileWriter writer = new FileWriter(environment.getFile("target/injected-cassandra.conf"), true)) {
       for(String key: keys) {
-        String value = config.getString(key);
+        String value = configuration.getString(key);
         writer.write(key + "="+value+"\n");
       }
     }
