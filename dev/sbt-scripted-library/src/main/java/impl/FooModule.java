@@ -6,6 +6,7 @@ package impl;
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 import api.FooService;
+import com.typesafe.config.Config;
 import play.*;
 import javax.inject.Inject;
 import java.util.Date;
@@ -22,18 +23,18 @@ public class FooModule extends AbstractModule implements ServiceGuiceSupport {
 class FooOnStart {
 
     @Inject
-    public FooOnStart(Application app) {
-        doOnStart(app);
+    public FooOnStart(Environment environment, Config configuration) {
+        doOnStart(environment, configuration);
     }
 
-    private void doOnStart(Application app) {
+    private void doOnStart(Environment environment, Config configuration) {
         try {
             // open for append
-            FileWriter writer = new FileWriter(app.getFile("target/reload.log"), true);
+            FileWriter writer = new FileWriter(environment.getFile("target/reload.log"), true);
             writer.write(new Date() + " - reloaded\n");
             writer.close();
 
-            if (app.configuration().getBoolean("fail", false)) {
+            if (configuration.hasPathOrNull("fail") && configuration.getBoolean("fail")) {
                 throw new RuntimeException();
             }
         }

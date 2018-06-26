@@ -83,7 +83,7 @@ public class CqrsIntegrationTest {
 
   @AfterClass
   public static void teardown() {
-    application.getWrappedApplication().stop();
+    application.asScala().stop();
     application = null;
     system = null;
     injector = null;
