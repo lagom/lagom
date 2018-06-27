@@ -1,6 +1,6 @@
 # Introduction and prerequisites
 
-Lagom exposes two APIs, Java and Scala, and provides a framework and development environment as a set of libraries and build tool plugins. While the libraries can be consumed from any build tool, you can only take advantage of Lagom's high productivity development environment by using one of the supported build tools, Maven or sbt. 
+Lagom exposes two APIs, Java and Scala, and provides a framework and development environment as a set of libraries and build tool plugins. While the libraries can be consumed from any build tool, you can only take advantage of Lagom's high productivity development environment by using one of the supported build tools, Maven or sbt.
 
 We recommend using [sbt](https://www.scala-sbt.org/) as the build tool for the Lagom Scala API. The sbt build tool provides dependency management, which downloads the Lagom libraries and plugins for you. When you create an sbt build, Lagom tool plugins will run your services and the associated Lagom infrastructure with a single command and hot reload when the tool detects code changes.
 
@@ -8,14 +8,14 @@ Factoring or re-factoring functionality into right-sized services will be critic
 
 > One microservice is no microservice - they come in systems.
 
-The template also gives you a quick way to verify that your project and build tool are set up correctly. Later, you can download more complex [[Lagom examples|LagomExamples]] that demonstrate Lagom functionality. 
- 
-We also suggest that you start from the command line. After using the template to create an sbt build, you can integrate it into any IDE. The documentation provides tips to help you with Eclipse or IntelliJ, two popular IDEs. 
- 
+The template also gives you a quick way to verify that your project and build tool are set up correctly. Later, you can download more complex [[Lagom examples|LagomExamples]] that demonstrate Lagom functionality.
+
+We also suggest that you start from the command line. After using the template to create an sbt build, you can integrate it into any IDE. The documentation provides tips to help you with Eclipse or IntelliJ, two popular IDEs.
+
 Before trying the template, make sure that your environment conforms to Lagom prerequisites:
 
-* Java Development Kit (JDK), version 8 or higher. 
-* sbt 1.x 
+* Java Development Kit (JDK), version 8
+* sbt 1.x
 * Internet access (If using a proxy, verify that an HTTP_PROXY environment variable points to the correct location)
 
 For more details on verifying or installing prerequisites see the following sections:

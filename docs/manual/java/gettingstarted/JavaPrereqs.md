@@ -12,7 +12,7 @@ Reference these sections for help with:
 
 ## JDK
 
-Before installing a build tool, verify that you have a Java Development Kit (JDK), version 8 or higher and that your machine is configured correctly.
+Before installing a build tool, verify that you have a Java Development Kit (JDK), version 8 and that your machine is configured correctly.
 
 Check the JDK version by running `java` and `javac` from the command line:
 
