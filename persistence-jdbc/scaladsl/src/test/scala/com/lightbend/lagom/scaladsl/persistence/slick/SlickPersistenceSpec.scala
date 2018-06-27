@@ -20,10 +20,9 @@ import play.api.{ Configuration, Environment }
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext }
 
-abstract class SlickPersistenceSpec private (_system: ActorSystem)(implicit ec: ExecutionContext)
-  extends ActorSystemSpec(_system) {
+abstract class SlickPersistenceSpec private (_system: ActorSystem) extends ActorSystemSpec(_system) {
 
-  def this(testName: String, config: Config, registry: JsonSerializerRegistry)(implicit ec: ExecutionContext) =
+  def this(testName: String, config: Config, registry: JsonSerializerRegistry) =
     this(ActorSystem(testName, ActorSystemSetup(
       BootstrapSetup(
         config.withFallback(TestUtil.clusterConfig()).withFallback(Configuration.load(Environment.simple()).underlying)
@@ -31,21 +30,22 @@ abstract class SlickPersistenceSpec private (_system: ActorSystem)(implicit ec: 
       JsonSerializerRegistry.serializationSetupFor(registry)
     )))
 
-  def this(config: Config, registry: JsonSerializerRegistry)(implicit ec: ExecutionContext) =
+  def this(config: Config, registry: JsonSerializerRegistry) =
     this(PersistenceSpec.getCallerName(getClass), config, registry)
 
-  def this(registry: JsonSerializerRegistry)(implicit ec: ExecutionContext) =
+  def this(registry: JsonSerializerRegistry) =
     this(ConfigFactory.empty(), registry)
 
+  import system.dispatcher
+
   protected lazy val slick = new SlickProvider(system)
-  protected lazy val slickReadSide: SlickReadSide = new SlickReadSideImpl(
-    slick,
+  protected lazy val offsetStore =
     new SlickOffsetStore(
       system,
       slick,
       new OffsetTableConfiguration(system.settings.config, ReadSideConfig())
     )
-  )
+  protected lazy val slickReadSide: SlickReadSide = new SlickReadSideImpl(slick, offsetStore)
 
   private lazy val applicationLifecycle: ApplicationLifecycle = new DefaultApplicationLifecycle
 
