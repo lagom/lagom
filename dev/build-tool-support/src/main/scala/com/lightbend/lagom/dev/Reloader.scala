@@ -73,7 +73,7 @@ object Reloader {
     parentClassLoader: ClassLoader, dependencyClasspath: Seq[File],
     reloadCompile: () => CompileResult, classLoaderDecorator: ClassLoader => ClassLoader,
     monitoredFiles: Seq[File], fileWatchService: FileWatchService, projectPath: File,
-    devSettings: Seq[(String, String)], httpPort: Int, reloadLock: AnyRef
+    devSettings: Seq[(String, String)], httpAddress: String, httpPort: Int, reloadLock: AnyRef
   ): DevServer = {
     /*
      * We need to do a bit of classloader magic to run the Play application.
@@ -122,8 +122,8 @@ object Reloader {
 
     val server = {
       val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
-      val mainDev = mainClass.getMethod("mainDevHttpMode", classOf[BuildLink], classOf[Int])
-      mainDev.invoke(null, reloader, httpPort: java.lang.Integer).asInstanceOf[ReloadableServer]
+      val mainDev = mainClass.getMethod("mainDevHttpMode", classOf[BuildLink], classOf[String], classOf[Int])
+      mainDev.invoke(null, reloader, httpAddress, httpPort: java.lang.Integer).asInstanceOf[ReloadableServer]
     }
 
     new DevServer {
@@ -142,7 +142,7 @@ object Reloader {
    * Start the Lagom server without hot reloading
    */
   def startNoReload(parentClassLoader: ClassLoader, dependencyClasspath: Seq[File], buildProjectPath: File,
-                    devSettings: Seq[(String, String)], httpPort: Int): DevServer = {
+                    devSettings: Seq[(String, String)], httpAddress: String, httpPort: Int): DevServer = {
     val buildLoader = this.getClass.getClassLoader
 
     lazy val delegatingLoader: ClassLoader = new DelegatingClassLoader(
@@ -165,8 +165,8 @@ object Reloader {
     }
 
     val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
-    val mainDev = mainClass.getMethod("mainDevHttpMode", classOf[BuildLink], classOf[Int])
-    val server = mainDev.invoke(null, _buildLink, httpPort: java.lang.Integer).asInstanceOf[ReloadableServer]
+    val mainDev = mainClass.getMethod("mainDevHttpMode", classOf[BuildLink], classOf[String], classOf[Int])
+    val server = mainDev.invoke(null, _buildLink, httpAddress, httpPort: java.lang.Integer).asInstanceOf[ReloadableServer]
 
     server.reload() // it's important to initialize the server
 

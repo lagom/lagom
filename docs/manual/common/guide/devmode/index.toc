@@ -1,6 +1,6 @@
 DevEnvironment:Development Environment
 RunningServices:Running Services
-ServicePort:How are ports assigned to services?
+ConfiguringServicesInDevelopment:How are Lagom services configured in development?
 ServiceLocator:Service Locator and Service Gateway
 CassandraServer:Cassandra Server
 KafkaServer:Kafka Server

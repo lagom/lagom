@@ -312,6 +312,8 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
 
     val lagomFileWatchService = settingKey[FileWatchService]("The file watch service to use")
     val lagomDevSettings = settingKey[Seq[(String, String)]]("Settings that should be passed to a Lagom app in dev mode")
+
+    val lagomServiceAddress = taskKey[String]("The address that the Lagom service should run on")
     val lagomServicePort = taskKey[Int]("The port that the Lagom service should run on")
 
     val lagomInfrastructureServices = taskKey[Seq[Task[Closeable]]]("The infrastructure services that should be run when runAll is invoked.")
@@ -319,7 +321,9 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     // service locator tasks and settings
     val lagomUnmanagedServices = settingKey[Map[String, String]]("External services name and address known by the service location")
     val lagomServiceLocatorUrl = settingKey[String]("URL of the service locator")
+    val lagomServiceLocatorAddress = settingKey[String]("Address used by the service locator")
     val lagomServiceLocatorPort = settingKey[Int]("Port used by the service locator")
+    val lagomServiceGatewayAddress = settingKey[String]("Address used by the service gateway")
     val lagomServiceGatewayPort = settingKey[Int]("Port used by the service gateway")
     val lagomServiceGatewayImpl = settingKey[String]("Implementation of the service gateway: \"akka-http\" (default) or \"netty\"")
     val lagomServiceLocatorEnabled = settingKey[Boolean]("Enable/Disable the service locator")
@@ -447,10 +451,12 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     lagomInfrastructureServices := lagomInfrastructureServicesTask.value,
     lagomServicesPortRange := defaultPortRange,
     lagomServiceLocatorEnabled := true,
+    lagomServiceLocatorAddress := "127.0.0.1",
     lagomServiceLocatorPort := 9008,
+    lagomServiceGatewayAddress := "127.0.0.1",
     lagomServiceGatewayPort := 9000,
     lagomServiceGatewayImpl := "akka-http",
-    lagomServiceLocatorUrl := s"http://localhost:${lagomServiceLocatorPort.value}",
+    lagomServiceLocatorUrl := s"http://${lagomServiceLocatorAddress.value}:${lagomServiceLocatorPort.value}",
     lagomCassandraEnabled := true,
     lagomCassandraPort := 4000, // If you change the default make sure to also update the play/reference-overrides.conf in the persistence project
     lagomCassandraCleanOnStart := false,
@@ -485,6 +491,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     lagomFileWatchService := {
       FileWatchService.defaultWatchService(target.value, getPollInterval(pollInterval.value), new SbtLoggerProxy(sLog.value))
     },
+    lagomServiceAddress := "127.0.0.1",
     lagomServicePort := LagomPlugin.assignedPortFor(ProjectName(name.value), state.value).value,
     Internal.Keys.stop := {
       Internal.Keys.interactionMode.value match {
@@ -503,13 +510,15 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val unmanagedServices: Map[String, String] =
       StaticServiceLocations.staticServiceLocations(lagomCassandraPort.value, lagomKafkaAddress.value) ++ lagomUnmanagedServices.value
 
+    val serviceLocatorAddress = lagomServiceLocatorAddress.value
     val serviceLocatorPort = lagomServiceLocatorPort.value
+    val serviceGatewayAddress = lagomServiceGatewayAddress.value
     val serviceGatewayPort = lagomServiceGatewayPort.value
     val serivceGatewayImpl = lagomServiceGatewayImpl.value
     val urls = (managedClasspath in Compile).value.files.map(_.toURI.toURL).toArray
     val scala211 = scalaInstance.value
     val log = new SbtLoggerProxy(state.value.log)
-    Servers.ServiceLocator.start(log, scala211.loader, urls, serviceLocatorPort, serviceGatewayPort, unmanagedServices, serivceGatewayImpl)
+    Servers.ServiceLocator.start(log, scala211.loader, urls, serviceLocatorAddress, serviceLocatorPort, serviceGatewayAddress, serviceGatewayPort, unmanagedServices, serivceGatewayImpl)
   }
 
   private lazy val startCassandraServerTask = Def.task {

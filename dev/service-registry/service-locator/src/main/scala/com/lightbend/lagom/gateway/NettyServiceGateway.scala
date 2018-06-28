@@ -42,6 +42,7 @@ import scala.util.{ Failure, Success }
 import com.lightbend.lagom.internal.api.Execution.trampoline
 
 case class ServiceGatewayConfig(
+  host: String,
   port: Int
 )
 

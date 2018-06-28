@@ -73,7 +73,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
     }
   }
 
-  def startServiceDevMode(project: MavenProject, port: Int, serviceLocatorUrl: Option[String], cassandraPort: Option[Int], playService: Boolean, additionalWatchDirs: Seq[File]): Unit = synchronized {
+  def startServiceDevMode(project: MavenProject, address: String, port: Int, serviceLocatorUrl: Option[String], cassandraPort: Option[Int], playService: Boolean, additionalWatchDirs: Seq[File]): Unit = synchronized {
     runningServices.get(project) match {
       case Some(service) =>
         logger.info("Service " + project.getArtifactId + " already running!")
@@ -142,6 +142,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
             watchService,
             new File(project.getBuild.getDirectory),
             devSettings.toSeq,
+            address,
             port,
             reloadLock
           )
@@ -181,7 +182,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
     }
   }
 
-  def startExternalProject(dependency: Dependency, port: Int, serviceLocatorUrl: Option[String], cassandraPort: Option[Int], playService: Boolean): Unit = synchronized {
+  def startExternalProject(dependency: Dependency, address: String, port: Int, serviceLocatorUrl: Option[String], cassandraPort: Option[Int], playService: Boolean): Unit = synchronized {
     runningExternalProjects.get(dependency) match {
       case Some(service) =>
         logger.info("External project " + dependency.getArtifact.getArtifactId + " already running!")
@@ -206,7 +207,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
         val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(dependencies)
 
         val service = Reloader.startNoReload(scalaClassLoader, dependencies.map(_.getFile),
-          new File(session.getCurrentProject.getBuild.getDirectory), devSettings.toSeq, port)
+          new File(session.getCurrentProject.getBuild.getDirectory), devSettings.toSeq, address, port)
 
         runningExternalProjects += (dependency -> service)
     }

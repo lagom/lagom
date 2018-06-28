@@ -12,8 +12,8 @@ To run all services in Maven, simply run the `lagom:runAll` command:
 $ cd <path to your Lagom project>
 $ mvn lagom:runAll
 INFO ...
-INFO Service hello-impl listening for HTTP on 0:0:0:0:0:0:0:0:23966
-INFO Service hello-stream-impl listening for HTTP on 0:0:0:0:0:0:0:0:27462
+INFO Service hello-impl listening for HTTP on localhost:23966
+INFO Service hello-stream-impl listening for HTTP on localhost:27462
 (Services started, press enter to stop and go back to the console...)
 ```
 
@@ -35,8 +35,8 @@ To run all Lagom services together, with automatic reloading, just enter `runAll
 ```console
 > runAll
 [info] ...
-[info] Service hello-impl listening for HTTP on 0:0:0:0:0:0:0:0:23966
-[info] Service stream-impl listening for HTTP on 0:0:0:0:0:0:0:0:27462
+[info] Service hello-impl listening for HTTP on localhost:23966
+[info] Service stream-impl listening for HTTP on localhost:27462
 (Services started, press enter to stop and go back to the console...)
 ```
 
@@ -86,9 +86,9 @@ This all happens automatically without special code or additional configuration.
 You can verify that your services are running by viewing `http://localhost:9008/services` in a web browser (or with a command line tool such as `curl`). The Service Locator, running on port `9008`, will return JSON such as:
 
 ```
-[{"name":"hello-stream","url":"http://0.0.0.0:26230"},
+[{"name":"hello-stream","url":"http://127.0.0.1:26230"},
  {"name":"cas_native","url":"tcp://127.0.0.1:4000/cas_native"},
- {"name":"hello","url":"http://0.0.0.0:24266"}]
+ {"name":"hello","url":"http://127.0.0.1:24266"}]
 ```
 
 `cas_native` is the [Cassandra](https://cassandra.apache.org/) server. As you will learn in the [[documentation for writing persistent and clustered services|PersistentEntity]], Cassandra is the default database in Lagom, and it's an integral part of the development environment.

@@ -34,6 +34,16 @@
             <description>The range of ports this service should run on</description>
         </parameter>
         <parameter>
+            <name>serviceAddress</name>
+            <type>java.lang.String</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The address this service should run on</description>
+            <configuration>
+                <serviceAddress implementation="java.lang.String" default-value="127.0.0.1"/>
+            </configuration>
+        </parameter>
+        <parameter>
             <name>servicePort</name>
             <type>int</type>
             <required>false</required>
@@ -170,7 +180,16 @@
                 <kafkaAddress implementation="java.lang.String">${kafka.address}</kafkaAddress>
             </configuration>
         </parameter>
-
+        <parameter>
+            <name>serviceLocatorAddress</name>
+            <type>java.lang.String</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The host to run the service locator on.</description>
+            <configuration>
+                <serviceLocatorAddress implementation="java.lang.String" default-value="127.0.0.1">${service.locator.address}</serviceLocatorAddress>
+            </configuration>
+        </parameter>
         <parameter>
             <name>serviceLocatorPort</name>
             <type>int</type>
@@ -179,6 +198,16 @@
             <description>The port to run the service locator on.</description>
             <configuration>
                 <serviceLocatorPort implementation="int" default-value="9008">${service.locator.port}</serviceLocatorPort>
+            </configuration>
+        </parameter>
+        <parameter>
+            <name>serviceGatewayAddress</name>
+            <type>java.lang.String</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The host to run the service gateway on.</description>
+            <configuration>
+                <serviceGatewayAddress implementation="java.lang.String" default-value="127.0.0.1">${service.gateway.address}</serviceGatewayAddress>
             </configuration>
         </parameter>
         <parameter>
@@ -405,7 +434,13 @@
             <phase>pre-integration-test</phase>
             <parameters>
                 <parameter>
+                    <name>serviceLocatorAddress</name>
+                </parameter>
+                <parameter>
                     <name>serviceLocatorPort</name>
+                </parameter>
+                <parameter>
+                    <name>serviceGatewayAddress</name>
                 </parameter>
                 <parameter>
                     <name>serviceGatewayPort</name>
@@ -463,6 +498,9 @@
                 </parameter>
                 <parameter>
                     <name>playService</name>
+                </parameter>
+                <parameter>
+                    <name>serviceAddress</name>
                 </parameter>
                 <parameter>
                     <name>servicePort</name>
@@ -532,6 +570,9 @@
                 </parameter>
                 <parameter>
                     <name>servicePortRange</name>
+                </parameter>
+                <parameter>
+                    <name>serviceAddress</name>
                 </parameter>
                 <parameter>
                     <name>serviceLocatorPort</name>

@@ -27,13 +27,13 @@ class ServiceLocatorServer extends Closeable {
   @volatile private var server: ReloadableServer = _
   @volatile private var gatewayAddress: InetSocketAddress = _
 
-  def start(serviceLocatorPort: Int, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit = synchronized {
+  def start(serviceLocatorAddress: String, serviceLocatorPort: Int, serviceGatewayAddress: String, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit = synchronized {
     require(server == null, "Service locator is already running on " + server.mainAddress)
 
-    val application = createApplication(ServiceGatewayConfig(serviceGatewayPort), unmanagedServices)
+    val application = createApplication(ServiceGatewayConfig(serviceGatewayAddress, serviceGatewayPort), unmanagedServices)
     Play.start(application)
     try {
-      server = createServer(application, serviceLocatorPort)
+      server = createServer(application, serviceLocatorAddress, serviceLocatorPort)
     } catch {
       case NonFatal(e) =>
         throw new RuntimeException(s"Unable to start service locator on port $serviceLocatorPort", e)
@@ -58,8 +58,8 @@ class ServiceLocatorServer extends Closeable {
       .build()
   }
 
-  private def createServer(application: Application, port: Int): ReloadableServer = {
-    val config = ServerConfig(port = Some(port), mode = Mode.Test)
+  private def createServer(application: Application, host: String, port: Int): ReloadableServer = {
+    val config = ServerConfig(address = host, port = Some(port), mode = Mode.Test)
     val provider = implicitly[ServerProvider]
     provider.createServer(config, application)
   }
@@ -75,12 +75,10 @@ class ServiceLocatorServer extends Closeable {
   }
 
   def serviceLocatorAddress: URI = {
-    // Converting InetSocketAddress into URL is not that simple. 
-    // Because we know the service locator is running locally, I'm hardcoding the hostname and protocol. 
-    new URI(s"http://localhost:${server.mainAddress.getPort}")
+    new URI(s"http://${server.mainAddress.getHostName}:${server.mainAddress.getPort}")
   }
 
   def serviceGatewayAddress: URI = {
-    new URI(s"http://localhost:${gatewayAddress.getPort}")
+    new URI(s"http://${gatewayAddress.getHostName}:${gatewayAddress.getPort}")
   }
 }
