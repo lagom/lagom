@@ -16,7 +16,7 @@ Data flowing through a topic is serialized to JSON by default. Of course, it is 
 
 Kafka will distribute messages for a particular topic across many partitions, so that the topic can scale. Messages sent to different partitions may be processed out of order, so if the ordering of the messages you are publishing matters, you need to ensure that the messages are partitioned in such a way that order is preserved.  Typically, this means ensuring each message for a particular entity goes to the same partition.
 
-Lagom allows this by allowing you to configure a partition key strategy, which extracts the partition key out of a message. Kafka will then use this key to help decide what partition to send each message to. The partition can be selected using the [`partitionKeyStrategy`](api/index.html?com/lightbend/lagom/javadsl/api/broker/kafka/KafkaProperties.html#partitionKeyStrategy--) property, by passing a [`PartitionKeyStrategy`](api/index.html?com/lightbend/lagom/javadsl/api/broker/kafka/PartitionKeyStrategy.html) to it: 
+Lagom allows this by allowing you to configure a partition key strategy, which extracts the partition key out of a message. Kafka will then use this key to help decide what partition to send each message to. The partition can be selected using the [`partitionKeyStrategy`](api/index.html?com/lightbend/lagom/javadsl/api/broker/kafka/KafkaProperties.html#partitionKeyStrategy--) property, by passing a [`PartitionKeyStrategy`](api/index.html?com/lightbend/lagom/javadsl/api/broker/kafka/PartitionKeyStrategy.html) to it:
 
 @[withTopics](code/docs/javadsl/mb/BlogPostService.java)
 
@@ -40,7 +40,7 @@ You may not want all events persisted by your services to be published. If that 
 
 @[filter-events](code/docs/javadsl/mb/FilteredServiceImpl.java)
 
-When an event is filtered, the `TopicProducer` does not publish the event. It also does not advance the offset. If the `TopicProducer` restarts then it will resume from the last offset. If a large number of events are filtered then the last offset could be quite far behind, and so all those events will be reprocessed and filtered out again. You need to be aware that this may occur and keep the number of consecutively filtered elements relatively low and also minimise the time and resources required to perform the filtering.
+When an event is filtered, the `TopicProducer` does not publish the event. It also does not advance the offset. If the `TopicProducer` restarts then it will resume from the last offset. If a large number of events are filtered then the last offset could be quite far behind, and so all those events will be reprocessed and filtered out again. You need to be aware that this may occur and keep the number of consecutively filtered elements relatively low and also minimize the time and resources required to perform the filtering.
 
 ### Offset storage
 
@@ -84,7 +84,7 @@ For example, consider a situation where you have a blog post created event and a
 
 @[content](code/docs/javadsl/mb/BlogPostEvent.java)
 
-The `@JsonTypeInfo` annotation describes how the type of the event will be serialised. In this case, it's saying each event type will be identified by its name, and that name will go into a property called `type`. The `@JsonTypeName` on each event subclass says what the name of that event should be. And the `@JsonSubTypes` annotation is used to tell Jackson what the possible sub types of the event are, so that it knows where to look when deserializing.
+The `@JsonTypeInfo` annotation describes how the type of the event will be serialized. In this case, it's saying each event type will be identified by its name, and that name will go into a property called `type`. The `@JsonTypeName` on each event subclass says what the name of that event should be. And the `@JsonSubTypes` annotation is used to tell Jackson what the possible sub types of the event are, so that it knows where to look when deserializing.
 
 The resulting JSON for the `BlogPostCreated` event will look like this:
 
@@ -105,4 +105,4 @@ While the JSON for the `BlogPostPublished` event will look like this:
 }
 ```
 
-Finally, note the `defaultImpl = Void.class` in the `@JsonSubTypes` annotation. This tells Jackson that if it comes across an event type that it doesn't recognise the name for, to deserialize it as `null`. This is optional, but can be important for ensuring forwards compatibility in your services, if a service adds a new event subclass that it publishes, often you want your existing services that consume that event stream to just ignore it. Setting this will allow them to do that, otherwise, you'll have to upgrade all the services that consume that event stream to explicitly ignore it before you upgrade the producer that produces the events.
+Finally, note the `defaultImpl = Void.class` in the `@JsonSubTypes` annotation. This tells Jackson that if it comes across an event type that it doesn't recognize the name for, to deserialize it as `null`. This is optional, but can be important for ensuring forwards compatibility in your services, if a service adds a new event subclass that it publishes, often you want your existing services that consume that event stream to just ignore it. Setting this will allow them to do that, otherwise, you'll have to upgrade all the services that consume that event stream to explicitly ignore it before you upgrade the producer that produces the events.
