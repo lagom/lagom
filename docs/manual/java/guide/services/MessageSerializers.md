@@ -1,6 +1,6 @@
 # Message Serializers
 
-Out of the box, Lagom uses Jackson to serialize request and response messages.  However, you can define custom serializers on a per service call basis, as well register a serializer for a given type for the whole service, and finally you can also customise the serialization factory used by Lagom to completely change the serializers Lagom uses when no serializer is selected.
+Out of the box, Lagom uses Jackson to serialize request and response messages.  However, you can define custom serializers on a per service call basis, as well register a serializer for a given type for the whole service, and finally you can also customize the serialization factory used by Lagom to completely change the serializers Lagom uses when no serializer is selected.
 
 ## How Lagom selects a message serializer
 
