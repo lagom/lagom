@@ -48,6 +48,7 @@ lazy val docs = project
       "org.hibernate" % "hibernate-core" % HibernateVersion,
       "javax.validation" % "validation-api" % ValidationApiVersion
     ),
+    scalacOptions ++= Seq("-deprecation"),
     javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
     testOptions in Test += Tests.Argument("-oDF"),
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
