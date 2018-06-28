@@ -54,7 +54,7 @@ Once the "Services started" message has appeared, if you make a change to your s
 
 ## Managing custom services
 
-By default, Lagom will, in addition to running your services, also start a service locator, a Cassandra server and a Kafka server. If using sbt, you can customise what Lagom starts, including adding other databases and infrastructure services.
+By default, Lagom will, in addition to running your services, also start a service locator, a Cassandra server and a Kafka server. If using sbt, you can customize what Lagom starts, including adding other databases and infrastructure services.
 
 > **Note:** Managing custom services is not currently supported in Maven, due to Maven's inability to arbitrarily add behaviour, such as the logic necessary to start and stop an external process, to a build. This is typically not a big problem, it simply means developers have to manually install, start and stop these services themselves.
 

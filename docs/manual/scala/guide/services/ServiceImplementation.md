@@ -6,7 +6,7 @@ For example, here's an implementation of the `HelloService` descriptor:
 
 @[hello-service-impl](code/ServiceImplementation.scala)
 
-As you can see, the `sayHello` method is implemented using the `apply` factory method on [`ServiceCall`](api/com/lightbend/lagom/scaladsl/api/ServiceCall$.html). This takes a function of `Request => Future[Response]` and returns a [`ServiceCall`](api/com/lightbend/lagom/scaladsl/api/ServiceCall.html) whose `invoke` method simply delegates to that function.  An important thing to realise here is that the invocation of `sayHello` itself does not execute the call, it only returns the service call to be executed.  The advantage here is that when it comes to composing the call with other cross cutting concerns, such as authentication, this can easily be done using ordinary function based composition.
+As you can see, the `sayHello` method is implemented using the `apply` factory method on [`ServiceCall`](api/com/lightbend/lagom/scaladsl/api/ServiceCall$.html). This takes a function of `Request => Future[Response]` and returns a [`ServiceCall`](api/com/lightbend/lagom/scaladsl/api/ServiceCall.html) whose `invoke` method simply delegates to that function.  An important thing to realize here is that the invocation of `sayHello` itself does not execute the call, it only returns the service call to be executed.  The advantage here is that when it comes to composing the call with other cross cutting concerns, such as authentication, this can easily be done using ordinary function based composition.
 
 Let's have a look at our [`ServiceCall`](api/com/lightbend/lagom/scaladsl/api/ServiceCall.html) interface again:
 
