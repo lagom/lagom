@@ -19,11 +19,19 @@ val branch = {
   } else rev
 }
 
+def evictionSettings: Seq[Setting[_]] = Seq(
+  // This avoids a lot of dependency resolution warnings to be showed.
+  // No need to show them here since it is the docs project.
+  evictionWarningOptions in update := EvictionWarningOptions.default
+    .withWarnTransitiveEvictions(false)
+    .withWarnDirectEvictions(false)
+)
 
 lazy val docs = project
   .in(file("."))
   .enablePlugins(LightbendMarkdown)
   .settings(forkedTests: _*)
+  .settings(evictionSettings: _*)
   .settings(
     resolvers += Resolver.typesafeIvyRepo("releases"),
     scalaVersion := ScalaVersion,
