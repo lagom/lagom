@@ -40,7 +40,7 @@ You may not want all events persisted by your services to be published. If that 
 
 @[filter-events](code/docs/scaladsl/mb/FilteredServiceImpl.scala)
 
-When an event is filtered, the `TopicProducer` does not publish the event. It also does not advance the offset. If the `TopicProducer` restarts then it will resume from the last offset. If a large number of events are filtered then the last offset could be quite far behind, and so all those events will be reprocessed and filtered out again. You need to be aware that this may occur and keep the number of consecutively filtered elements relatively low and also minimise the time and resources required to perform the filtering.
+When an event is filtered, the `TopicProducer` does not publish the event. It also does not advance the offset. If the `TopicProducer` restarts then it will resume from the last offset. If a large number of events are filtered then the last offset could be quite far behind, and so all those events will be reprocessed and filtered out again. You need to be aware that this may occur and keep the number of consecutively filtered elements relatively low and also minimize the time and resources required to perform the filtering.
 
 ### Offset storage
 

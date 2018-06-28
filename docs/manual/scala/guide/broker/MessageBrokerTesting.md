@@ -4,7 +4,7 @@ When decoupling communication via a Broker you can test from both ends of the `T
 
 A broker will not be started neither when writing publish nor consumption tests. Instead, Lagom provides in-memory implementations of the Broker API in order to make  tests faster. Integration tests with a complete broker should be later implemented but that is out of scope of this documentation. The provided in-memory implementation of the Broker API runs locally and provides exactly-once delivery. If you want to test your code under scenarios where there's message loss (`at-most-once`) or message duplicates (`at-least-once`) you will be responsible for writing such behaviour by injecting duplicates or skipping messages.
 
-The Lagom in-memory broker implementation will also help testing your message serialisation and deserialisation. That is only available in the tools to [[test publishing|MessageBrokerTesting#Testing-publish]] though since the publishing end is the one responsible to describe the messages being sent over the wire. When you test the consuming end of a topic, no de/serialisation will be run under the covers.
+The Lagom in-memory broker implementation will also help testing your message serialization and deserialization. That is only available in the tools to [[test publishing|MessageBrokerTesting#Testing-publish]] though since the publishing end is the one responsible to describe the messages being sent over the wire. When you test the consuming end of a topic, no de/serialization will be run under the covers.
 
 The following code samples use the `HelloService` and `AnotherService` already presented in previous sections. `HelloService` publishes `GreetingsMessage`s on the `"greetings"` topic and `AnotherService` subscribed to those messages using `atLeastOnce` semantics.
 
@@ -19,7 +19,7 @@ In order to start the application with a stubbed broker you will have to mixin a
 
 Use a [`ServiceTest`](api/com/lightbend/lagom/scaladsl/testkit/ServiceTest$.html) you to create a client to your Service and using that client you can `subscribe` to the published topics. Finally, after interacting with the Service to cause the emission of some events you can assert events were published on the `Topic`.
 
-The producer end is responsible to describe the public API and provide the serialisable mappings for all messages exchanged (both in `ServiceCall`s and `TopicCall`s). The tests granting the proper behavior of the publishing operations should also test the serialisbility and deserilisability of the messages.
+The producer end is responsible to describe the public API and provide the serializable mappings for all messages exchanged (both in `ServiceCall`s and `TopicCall`s). The tests granting the proper behavior of the publishing operations should also test the serializability and deserializability of the messages.
 
 
 ## Testing subscription
