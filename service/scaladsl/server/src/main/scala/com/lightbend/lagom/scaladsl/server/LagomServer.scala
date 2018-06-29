@@ -83,6 +83,8 @@ trait LagomServerComponents extends MetricsServiceComponents {
   def serviceResolver: ServiceResolver
 
   lazy val lagomServerBuilder: LagomServerBuilder = new LagomServerBuilder(httpConfiguration, playBodyParsers, serviceResolver)(materializer, executionContext)
+
+  @deprecated("Use LagomServerComponents#serverFor instead", "1.5.0")
   protected def bindService[T <: Service]: LagomServiceBinder[T] = macro ScaladslServerMacroImpl.createBinder[T]
 
   /**
