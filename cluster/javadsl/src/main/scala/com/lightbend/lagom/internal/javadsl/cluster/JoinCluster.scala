@@ -6,6 +6,7 @@ package com.lightbend.lagom.internal.javadsl.cluster
 import akka.actor.ActorSystem
 import com.google.inject.{ AbstractModule, Inject }
 import com.lightbend.lagom.internal.cluster.JoinClusterImpl
+import play.api.Environment
 
 class JoinClusterModule extends AbstractModule {
   override def configure(): Unit = {
