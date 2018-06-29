@@ -684,7 +684,11 @@ lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-cluster",
-    Dependencies.`cluster-scaladsl`
+    Dependencies.`cluster-scaladsl`,
+    mimaBinaryIssueFilters ++= Seq(
+      // see https://github.com/lagom/lagom/pull/1393
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.cluster.ClusterComponents.environment")
+    )
   ) configs (MultiJvm)
 
 lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))

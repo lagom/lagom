@@ -13,7 +13,7 @@ import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.persistence.multinode.{ AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec }
 import com.typesafe.config.Config
-import play.api.Configuration
+import play.api.{ Configuration, Environment, Mode }
 import play.api.inject.DefaultApplicationLifecycle
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -57,6 +57,8 @@ class CassandraClusteredPersistentEntitySpec extends AbstractClusteredPersistent
     new CassandraPersistenceComponents {
       override def actorSystem: ActorSystem = system
       override def executionContext: ExecutionContext = system.dispatcher
+
+      override def environment: Environment = Environment(new File("."), getClass.getClassLoader, Mode.Test)
       override def materializer: Materializer = ActorMaterializer()(system)
       override def configuration: Configuration = Configuration(system.settings.config)
       override def serviceLocator: ServiceLocator = NoServiceLocator
