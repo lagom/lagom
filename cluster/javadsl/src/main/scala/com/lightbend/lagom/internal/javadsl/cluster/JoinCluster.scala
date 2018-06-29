@@ -15,6 +15,6 @@ class JoinClusterModule extends Module {
   )
 }
 
-private[lagom] class JoinCluster @Inject() (system: ActorSystem) {
-  JoinClusterImpl.join(system)
+private[lagom] class JoinCluster @Inject() (system: ActorSystem, environment: Environment) {
+  JoinClusterImpl.join(system, environment)
 }

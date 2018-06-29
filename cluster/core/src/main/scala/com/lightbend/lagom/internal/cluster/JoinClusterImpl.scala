@@ -8,21 +8,28 @@ import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.cluster.Cluster
+import play.api.{ Environment, Mode }
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
 private[lagom] object JoinClusterImpl {
 
-  def join(system: ActorSystem): Unit = {
-
+  def join(system: ActorSystem, environment: Environment): Unit = {
     val config = system.settings.config
-    def joinSelf = config.getBoolean("lagom.cluster.join-self")
-    def exitJvm = config.getBoolean("lagom.cluster.exit-jvm-when-system-terminated")
+    val joinSelf = config.getBoolean("lagom.cluster.join-self")
+    val exitJvm = config.getBoolean("lagom.cluster.exit-jvm-when-system-terminated")
+    val isProd: Boolean = environment.mode == Mode.Prod
 
     // join self if seed-nodes are not configured in dev-mode,
     // otherwise it will join the seed-nodes automatically
     val cluster = Cluster(system)
+
+    if (isProd && joinSelf) {
+      system.log.warning("The \"lagom.cluster.join-self\" setting should not be enabled in production, because it can " +
+        "conflict with Akka Cluster Bootstrap or cause split-brain clusters.")
+    }
+
     if (cluster.settings.SeedNodes.isEmpty && joinSelf)
       cluster.join(cluster.selfAddress)
 
