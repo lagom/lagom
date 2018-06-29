@@ -449,12 +449,14 @@ object Dependencies {
     akkaCluster,
     akkaTestkit % Test,
     scalaTest % Test,
+    play,
     "com.novocode" % "junit-interface" % "0.11" % Test,
 
     // Upgrades needed to match whitelist
     scalaJava8Compat,
     scalaParserCombinators,
-    scalaXml % Test
+    scalaXml % Test,
+    akkaSlf4j
   )
 
   val `cluster-javadsl` = libraryDependencies ++= Seq(
@@ -471,7 +473,8 @@ object Dependencies {
     "com.novocode" % "junit-interface" % "0.11" % Test,
 
     // Upgrades needed to match whitelist
-    scalaXml % Test
+    scalaXml % Test,
+    akkaSlf4j
     // explicitly depend on particular versions of jackson
   ) ++ jacksonFamily ++ Seq(
     // explicitly depend on particular versions of guava
@@ -499,7 +502,8 @@ object Dependencies {
     scalaTest % Test,
 
     // Upgrades needed to match whitelist
-    scalaXml % Test
+    scalaXml % Test,
+    akkaSlf4j
   )
 
   val `persistence-core` = libraryDependencies ++= Seq(
