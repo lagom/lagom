@@ -7,9 +7,10 @@ import com.typesafe.config.Config
 import javax.inject.{ Inject, Singleton }
 import play.api.db.{ ConnectionPool, DBApi, DBApiProvider, DefaultDBApi }
 import play.api.inject.{ ApplicationLifecycle, Injector, NewInstanceInjector }
-import play.api.{ Configuration, Environment }
+import play.api.{ Configuration, Environment, Logger }
 
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 // This overrides the DBApiProvider from Play with Lagom-specific behavior
 // TODO: file an issue in Play to make this configurable so we can remove the override
@@ -28,6 +29,8 @@ private[lagom] class LagomDBApiProvider @Inject() (
   injector
 ) {
 
+  private val logger = Logger(classOf[LagomDBApiProvider])
+
   override lazy val get: DBApi = {
     val config = configuration.underlying
     val dbKey = config.getString("play.db.config")
@@ -36,7 +39,14 @@ private[lagom] class LagomDBApiProvider @Inject() (
       Configuration(config).getPrototypedMap(dbKey, "play.db.prototype").mapValues(_.underlying)
     } else Map.empty[String, Config]
     val db = new DefaultDBApi(configs, pool, environment, injector)
-    lifecycle.addStopHook { () => Future.successful(db.shutdown()) }
+    lifecycle.addStopHook { () =>
+      Future.successful {
+        try db.shutdown()
+        catch {
+          case NonFatal(ex) => logger.debug("error on db shutdown", ex)
+        }
+      }
+    }
     // The only difference between this and the parent implementation in Play
     // is that Play tries to connect eagerly to the database on startup and
     // fails on misconfiguration:

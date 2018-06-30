@@ -10,17 +10,12 @@ import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.typesafe.config.ConfigFactory
 import javax.inject.Inject
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec, WordSpecLike }
+import org.scalatest._
 import play.api.Play
 import play.api.db.DBApi
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 import play.inject.guice.GuiceApplicationBuilder
-import play.api.inject.{
-  ApplicationLifecycle,
-  BindingKey,
-  DefaultApplicationLifecycle,
-  bind => sBind
-}
+import play.api.inject.{ ApplicationLifecycle, BindingKey, DefaultApplicationLifecycle, bind => sBind }
 
 /**
  * This test will simply wire a minimal application using Guice.
@@ -33,7 +28,7 @@ import play.api.inject.{
  * after wiring and the test should just pass.
  */
 class JdbcPersistenceModuleSpec
-  extends WordSpecLike
+  extends AsyncWordSpec
   with Matchers
   with BeforeAndAfterAll {
 
@@ -41,8 +36,6 @@ class JdbcPersistenceModuleSpec
     "wire Lagom's specific LagomDbApiProvider without throwing any error even in the absence of a properly configured DB" in {
 
       val lifecycle = new DefaultApplicationLifecycle
-      val initialBuilder = new GuiceApplicationBuilder()
-        .overrides(sBind[ApplicationLifecycle].to(lifecycle))
 
       // bogus DB configurations
       val dbConfig =
@@ -56,14 +49,19 @@ class JdbcPersistenceModuleSpec
         """.stripMargin
 
       // this would blow up if we were eagerly creating DB connections
-      new GuiceApplicationBuilder()
-        .overrides(sBind[ApplicationLifecycle].to(lifecycle))
-        .bindings(sBind[DbWrapper].toSelf)
-        .configure(ConfigFactory.parseString(dbConfig))
-        .build()
+      val app =
+        new GuiceApplicationBuilder()
+          .overrides(sBind[ApplicationLifecycle].to(lifecycle))
+          .bindings(sBind[DbWrapper].toSelf)
+          .configure(ConfigFactory.parseString(dbConfig))
+          .build()
+
+      app.getWrappedApplication.stop().map(_ => Succeeded)
     }
   }
 
 }
 
+// this little class will force Guice to wire the DBApi
+// and so we can prove that it was created but not connection attempt was made
 class DbWrapper @Inject() (val dbApi: DBApi)
