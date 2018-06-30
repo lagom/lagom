@@ -43,7 +43,7 @@ private[lagom] class LagomDBApiProvider @Inject() (
       Future.successful {
         try db.shutdown()
         catch {
-          case NonFatal(ex) => logger.debug("error on db shutdown", ex)
+          case NonFatal(ex) => logger.error("error on db shutdown", ex)
         }
       }
     }
