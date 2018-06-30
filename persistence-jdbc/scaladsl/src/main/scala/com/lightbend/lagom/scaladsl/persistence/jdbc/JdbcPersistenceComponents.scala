@@ -20,7 +20,7 @@ trait JdbcPersistenceComponents
   with ReadSideJdbcPersistenceComponents
   with WriteSideJdbcPersistenceComponents
 
-private[lagom] trait SlickProviderComponents extends DBComponents {
+private[lagom] trait SlickProviderComponents extends LagomDBComponents {
 
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext

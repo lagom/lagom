@@ -6,6 +6,7 @@ package com.lightbend.lagom.javadsl.persistence.jdbc
 import akka.actor.ActorSystem
 import com.google.inject.{ AbstractModule, Key, Provider }
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc._
+import com.lightbend.lagom.internal.persistence.LagomDBApiProvider
 import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbProvider, SlickOffsetStore }
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
 import com.lightbend.lagom.spi.persistence.OffsetStore
@@ -44,42 +45,3 @@ class GuiceSlickProvider @Inject() (dbApi: DBApi, actorSystem: ActorSystem, appl
   }
 }
 
-// This overrides the DBApiProvider from Play with Lagom-specific behavior
-// TODO: file an issue in Play to make this configurable so we can remove the override
-@Singleton
-private class LagomDBApiProvider @Inject() (
-  environment:           Environment,
-  configuration:         Configuration,
-  defaultConnectionPool: ConnectionPool,
-  lifecycle:             ApplicationLifecycle,
-  injector:              Injector             = NewInstanceInjector
-) extends DBApiProvider(
-  environment,
-  configuration,
-  defaultConnectionPool,
-  lifecycle,
-  injector
-) {
-
-  override lazy val get: DBApi = {
-    val config = configuration.underlying
-    val dbKey = config.getString("play.db.config")
-    val pool = ConnectionPool.fromConfig(config.getString("play.db.pool"), injector, environment, defaultConnectionPool)
-    val configs = if (config.hasPath(dbKey)) {
-      Configuration(config).getPrototypedMap(dbKey, "play.db.prototype").mapValues(_.underlying)
-    } else Map.empty[String, Config]
-    val db = new DefaultDBApi(configs, pool, environment, injector)
-    lifecycle.addStopHook { () => Future.successful(db.shutdown()) }
-    // The only difference between this and the parent implementation in Play
-    // is that Play tries to connect eagerly to the database on startup and
-    // fails on misconfiguration:
-    //
-    // db.connect(logConnection = environment.mode != Mode.Test)
-    //
-    // In Lagom, we don't want to depend on the database being up when the
-    // service starts.
-    // Instead, it should recover automatically when the DB comes up.
-    db
-  }
-
-}
