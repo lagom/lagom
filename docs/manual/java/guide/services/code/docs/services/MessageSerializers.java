@@ -303,6 +303,7 @@ public class MessageSerializers {
       }
 
       @Override
+      @SuppressWarnings("unchecked")
       public <MessageEntity> MessageSerializer<MessageEntity, ?> messageSerializerFor(Type type) {
         if (type instanceof Class) {
           Class<MessageEntity> clazz = (Class<MessageEntity>) type;
