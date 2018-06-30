@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.time.Duration;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
@@ -59,7 +60,7 @@ public class ServiceImplementation {
     //#tick-service-call
     public ServerServiceCall<String, Source<String, ?>> tick(int intervalMs) {
       return tickMessage -> {
-        FiniteDuration interval = FiniteDuration.create(intervalMs, TimeUnit.MILLISECONDS);
+        Duration interval = Duration.ofMillis(intervalMs);
         return completedFuture(Source.tick(interval, interval, tickMessage));
       };
     }

@@ -8,6 +8,8 @@ import com.lightbend.lagom.javadsl.pubsub.PubSubRegistry;
 import com.lightbend.lagom.javadsl.pubsub.TopicId;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -44,9 +46,11 @@ public class WorkerService2Impl implements WorkerService2 {
           return null;
         }
       });
+      Set<String> useRoles = new TreeSet<String>();
+      useRoles.add("worker-node");
       Props routerProps = new ClusterRouterGroup(groupConf,
         new ClusterRouterGroupSettings(1000, paths,
-          true, "worker-node")).props();
+          true, useRoles)).props();
     this.workerRouter = system.actorOf(routerProps, "workerRouter");
 
     this.topic = pubSub.refFor(TopicId.of(JobStatus.class, "jobs-status"));

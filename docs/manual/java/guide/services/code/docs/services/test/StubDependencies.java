@@ -19,7 +19,7 @@ public class StubDependencies {
   }
 
   private final Setup setup = defaultSetup()
-      .withConfigureBuilder(b -> b.overrides(
+      .configureBuilder(b -> b.overrides(
           bind(GreetingService.class).to(GreetingStub.class)));
 
 
