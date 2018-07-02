@@ -7,6 +7,6 @@ import com.lightbend.lagom.scaladsl.persistence.{ AbstractPersistentEntityActorS
 
 import scala.concurrent.ExecutionContext
 
-class SlickPersistentEntityActorSpec(implicit ec: ExecutionContext)
+class SlickPersistentEntityActorSpec
   extends SlickPersistenceSpec(TestEntitySerializerRegistry)
   with AbstractPersistentEntityActorSpec
