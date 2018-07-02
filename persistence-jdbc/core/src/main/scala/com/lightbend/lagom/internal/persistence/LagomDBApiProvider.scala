@@ -39,14 +39,6 @@ private[lagom] class LagomDBApiProvider @Inject() (
       Configuration(config).getPrototypedMap(dbKey, "play.db.prototype").mapValues(_.underlying)
     } else Map.empty[String, Config]
     val db = new DefaultDBApi(configs, pool, environment, injector)
-    // lifecycle.addStopHook { () =>
-    //   Future.successful {
-    //     try db.shutdown()
-    //     catch {
-    //       case NonFatal(ex) => logger.error("error on db shutdown", ex)
-    //     }
-    //   }
-    // }
     lifecycle.addStopHook { () => Future.fromTry(Try(db.shutdown())) }
     // The only difference between this and the parent implementation in Play
     // is that Play tries to connect eagerly to the database on startup and
