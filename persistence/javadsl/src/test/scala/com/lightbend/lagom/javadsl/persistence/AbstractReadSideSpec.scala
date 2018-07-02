@@ -88,7 +88,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
         sender() ! Status.Failure(new RuntimeException("Simulated global prepare failure"))
         stats = stats.recordFailure()
 
-      case Mock.SwitchMode => context.become(successMode)
+      case Mock.BecomeSuccessful => context.become(successMode)
     }
 
     def getStats: Receive = {
@@ -102,7 +102,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       def recordFailure() = copy(failureCount = failureCount + 1)
       def recordSuccess() = copy(successCount = successCount + 1)
     }
-    case object SwitchMode
+    case object BecomeSuccessful
     case object GetStats
   }
 
@@ -205,7 +205,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       assertAppendCount("1", 5L)
 
       // switch mock to 'Success' mode
-      mockRef ! Mock.SwitchMode
+      mockRef ! Mock.BecomeSuccessful
       readSideActor.foreach(_ ! EnsureActive(tag.tag))
 
       eventually {
