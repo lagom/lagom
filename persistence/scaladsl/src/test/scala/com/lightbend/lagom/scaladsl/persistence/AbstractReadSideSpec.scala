@@ -68,7 +68,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   class Mock(inFailureMode: Boolean = false) extends Actor {
 
     private var stats = Mock.MockStats(0, 0)
-    
+
     def receive = if (inFailureMode) failureMode else successMode
 
     def successMode: Receive = getStats.orElse {
