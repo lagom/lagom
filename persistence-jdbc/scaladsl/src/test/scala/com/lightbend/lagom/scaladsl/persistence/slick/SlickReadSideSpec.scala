@@ -3,19 +3,25 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.slick
 
+import akka.cluster.Cluster
 import akka.persistence.query.Sequence
+import com.lightbend.lagom.internal.persistence.jdbc.SlickDbTestProvider
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcPersistentEntityRegistry
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence._
+import com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil
+import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 
 import scala.concurrent.duration.DurationDouble
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
-class SlickReadSideSpec(implicit ec: ExecutionContext)
+class SlickReadSideSpec
   extends SlickPersistenceSpec(TestEntitySerializerRegistry)
   with AbstractReadSideSpec {
 
-  override protected val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, slick)
+  import system.dispatcher
+
+  override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, slick)
 
   override def processorFactory(): ReadSideProcessor[Evt] =
     new SlickTestEntityReadSide.TestEntityReadSideProcessor(slickReadSide, slick.db, slick.profile)
