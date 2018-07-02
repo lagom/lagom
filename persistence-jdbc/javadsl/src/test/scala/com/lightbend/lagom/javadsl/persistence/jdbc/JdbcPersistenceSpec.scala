@@ -30,20 +30,17 @@ abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec
 
   protected lazy val slick = new SlickProvider(system)
 
-  protected lazy val jdbcReadSide: JdbcReadSide = {
-    val offsetStore =
-      new JavadslJdbcOffsetStore(
-        slick,
-        system,
-        new OffsetTableConfiguration(
-          system.settings.config,
-          ReadSideConfig()
-        ),
+  protected lazy val offsetStore =
+    new JavadslJdbcOffsetStore(
+      slick,
+      system,
+      new OffsetTableConfiguration(
+        system.settings.config,
         ReadSideConfig()
-      )
-
-    new JdbcReadSideImpl(slick, offsetStore)
-  }
+      ),
+      ReadSideConfig()
+    )
+  protected lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(slick, offsetStore)
 
   private lazy val applicationLifecycle: ApplicationLifecycle = new DefaultApplicationLifecycle
 
