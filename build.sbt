@@ -714,7 +714,7 @@ lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
   ) configs (MultiJvm)
 
 lazy val `persistence-core` = (project in file("persistence/core"))
-  .dependsOn(`cluster-core`)
+  .dependsOn(`cluster-core`, logback % Test)
   .settings(runtimeLibCommon: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
@@ -833,8 +833,7 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
 
 lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
   .dependsOn(
-    `persistence-core` % "compile;test->test",
-    logback % Test
+    `persistence-core` % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)

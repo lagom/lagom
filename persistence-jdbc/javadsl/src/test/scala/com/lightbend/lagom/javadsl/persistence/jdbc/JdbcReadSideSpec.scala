@@ -7,8 +7,7 @@ import java.lang.Long
 import java.util.concurrent.CompletionStage
 
 import com.google.inject.Guice
-import com.lightbend.lagom.internal.javadsl.persistence.jdbc.JdbcPersistentEntityRegistry
-import com.lightbend.lagom.javadsl.persistence.Offset.Sequence
+import com.lightbend.lagom.internal.javadsl.persistence.jdbc.{ JdbcPersistentEntityRegistry, JdbcSessionImpl }
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.javadsl.persistence._
 
@@ -21,6 +20,7 @@ class JdbcReadSideSpec extends JdbcPersistenceSpec with AbstractReadSideSpec {
   override def processorFactory(): ReadSideProcessor[Evt] =
     new JdbcTestEntityReadSide.TestEntityReadSideProcessor(jdbcReadSide)
 
+  protected lazy val session: JdbcSession = new JdbcSessionImpl(slick)
   private lazy val readSide = new JdbcTestEntityReadSide(session)
 
   override def getAppendCount(id: String): CompletionStage[Long] = readSide.getAppendCount(id)

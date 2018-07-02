@@ -10,6 +10,7 @@ import com.lightbend.lagom.scaladsl.persistence.{ AggregateEventTag, EventStream
 import scala.concurrent.{ ExecutionContext, Future }
 import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.JdbcProfile
+import slick.jdbc.meta.MTable
 
 trait Tables {
 
@@ -25,7 +26,18 @@ trait Tables {
   }
   lazy val testCounts: TableQuery[TestCounts] = TableQuery[TestCounts]
 
-  def createTable: DBIO[_] = testCounts.schema.create
+  def createTable: DBIO[_] = {
+    // create if exists not exists
+    // Note: this hack will become obsolete in Slick 3.3.0
+    // see https://github.com/slick/slick/pull/1704
+    MTable.getTables.flatMap { tables =>
+      if (!tables.exists(_.name.name == testCounts.baseTableRow.tableName)) {
+        testCounts.schema.create
+      } else {
+        DBIO.successful(())
+      }
+    }.transactionally
+  }
 
   def countUpdate(id: String, diff: Int = 1): DBIO[_] = {
     val q: Query[TestCounts, TestCount, Seq] = testCounts.filter(_.id === id)
