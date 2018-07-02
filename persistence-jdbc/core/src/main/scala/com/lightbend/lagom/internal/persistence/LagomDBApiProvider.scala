@@ -29,8 +29,6 @@ private[lagom] class LagomDBApiProvider @Inject() (
   injector
 ) {
 
-  private val logger = Logger(classOf[LagomDBApiProvider])
-
   override lazy val get: DBApi = {
     val config = configuration.underlying
     val dbKey = config.getString("play.db.config")
