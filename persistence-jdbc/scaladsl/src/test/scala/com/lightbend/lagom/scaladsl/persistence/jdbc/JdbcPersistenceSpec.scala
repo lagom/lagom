@@ -36,7 +36,6 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
   import system.dispatcher
 
   protected lazy val slick = new SlickProvider(system)
-  protected lazy val session: JdbcSession = new JdbcSessionImpl(slick)
   protected lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(
     slick,
     new SlickOffsetStore(

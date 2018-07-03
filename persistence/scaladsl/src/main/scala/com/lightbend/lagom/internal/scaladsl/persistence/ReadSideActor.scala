@@ -71,23 +71,24 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
     case Start =>
 
       val tag = new AggregateEventTag(clazz, tagName)
-      val backoffSource = RestartSource.withBackoff(
-        config.minBackoff,
-        config.maxBackoff,
-        config.randomBackoffFactor
-      ) { () =>
-        val handler = processor().buildHandler()
-        val futureOffset = handler.prepare(tag)
-        Source
-          .fromFuture(futureOffset)
-          .initialTimeout(config.offsetTimeout)
-          .flatMapConcat {
-            offset =>
-              val eventStreamSource = eventStreamFactory(tag, offset)
-              val userlandFlow = handler.handle()
-              eventStreamSource.via(userlandFlow)
-          }
-      }
+      val backoffSource =
+        RestartSource.withBackoff(
+          config.minBackoff,
+          config.maxBackoff,
+          config.randomBackoffFactor
+        ) { () =>
+          val handler = processor().buildHandler()
+          val futureOffset = handler.prepare(tag)
+          Source
+            .fromFuture(futureOffset)
+            .initialTimeout(config.offsetTimeout)
+            .flatMapConcat {
+              offset =>
+                val eventStreamSource = eventStreamFactory(tag, offset)
+                val userlandFlow = handler.handle()
+                eventStreamSource.via(userlandFlow)
+            }
+        }
 
       val (killSwitch, streamDone) = backoffSource
         .viaMat(KillSwitches.single)(Keep.right)
@@ -100,11 +101,13 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
     case EnsureActive(_) =>
     // Yes, we are active
 
-    case Status.Failure(e) =>
-      throw e
-
     case Done =>
       throw new IllegalStateException("Stream terminated when it shouldn't")
+
+    case Status.Failure(cause) =>
+      // Crash if the globalPrepareTask or the event stream fail
+      // This actor will be restarted by ClusterDistribution
+      throw cause
 
   }
 
