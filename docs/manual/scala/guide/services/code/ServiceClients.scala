@@ -84,7 +84,7 @@ package circuitbreakers {
 package metricsservice {
 
   import helloservice._
-  import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomApplicationContext, LagomServer}
+  import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomApplicationContext, LagomServerComponents}
   import play.api.libs.ws.ahc.AhcWSComponents
   import com.softwaremill.macwire._
 
@@ -92,9 +92,10 @@ package metricsservice {
 
   abstract class MyApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
-      with AhcWSComponents {
+      with AhcWSComponents 
+      with LagomServerComponents {
 
-    override lazy val lagomServer = LagomServer.serverFor[BiddingService](wire[BiddingServiceImpl])
+    override lazy val lagomServer = serverFor[BiddingService](wire[BiddingServiceImpl])
   }
   //#metrics-service
 
