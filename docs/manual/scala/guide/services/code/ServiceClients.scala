@@ -95,7 +95,7 @@ package metricsservice {
       with AhcWSComponents 
       with LagomServerComponents {
 
-    override lazy val lagomServer = serverFor[BiddingService](wire[BiddingServiceImpl])
+    override lazy val lagomServer = serverFor[HelloService](wire[HelloServiceImpl])
   }
   //#metrics-service
 
