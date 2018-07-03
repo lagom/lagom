@@ -39,13 +39,15 @@ abstract class SlickPersistenceSpec private (_system: ActorSystem) extends Actor
   import system.dispatcher
 
   protected lazy val slick = new SlickProvider(system)
-  protected lazy val offsetStore =
-    new SlickOffsetStore(
-      system,
-      slick,
-      new OffsetTableConfiguration(system.settings.config, ReadSideConfig())
-    )
-  protected lazy val slickReadSide: SlickReadSide = new SlickReadSideImpl(slick, offsetStore)
+  protected lazy val slickReadSide: SlickReadSide = {
+    val offsetStore =
+      new SlickOffsetStore(
+        system,
+        slick,
+        new OffsetTableConfiguration(system.settings.config, ReadSideConfig())
+      )
+    new SlickReadSideImpl(slick, offsetStore)
+  }
 
   private lazy val applicationLifecycle: ApplicationLifecycle = new DefaultApplicationLifecycle
 
