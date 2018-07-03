@@ -3,7 +3,7 @@
  */
 package com.lightbend.lagom.internal.javadsl.persistence
 
-import akka.actor.{ Actor, ActorLogging, Props }
+import akka.actor.{ Actor, ActorLogging, Props, Status }
 import akka.cluster.sharding.ShardRegion.EntityId
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.{ Keep, RestartSource, Sink }
@@ -105,6 +105,11 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
     case Done =>
       throw new IllegalStateException("Stream terminated when it shouldn't")
+
+    case Status.Failure(cause) =>
+      // Crash if the globalPrepareTask or the event stream fail
+      // This actor will be restarted by ClusterDistribution
+      throw cause
 
   }
 
