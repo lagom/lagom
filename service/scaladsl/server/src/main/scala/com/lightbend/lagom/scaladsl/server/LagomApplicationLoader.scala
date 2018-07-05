@@ -5,8 +5,7 @@ package com.lightbend.lagom.scaladsl.server
 
 import java.net.URI
 
-import akka.actor.setup.ActorSystemSetup
-import akka.actor.{ ActorSystem, BootstrapSetup, CoordinatedShutdown }
+import akka.actor.ActorSystem
 import akka.event.Logging
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServerMacroImpl
@@ -20,7 +19,7 @@ import com.typesafe.config.Config
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.inject.DefaultApplicationLifecycle
-import play.api.libs.concurrent.ActorSystemProvider.{ ApplicationShutdownReason, StopHook }
+import play.api.libs.concurrent.ActorSystemProvider.StopHook
 import play.api.mvc.EssentialFilter
 import play.core.DefaultWebCommands
 

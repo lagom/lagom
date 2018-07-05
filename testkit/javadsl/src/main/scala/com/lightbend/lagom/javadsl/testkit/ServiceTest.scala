@@ -26,6 +26,7 @@ import play.inject.Injector
 import play.inject.guice.GuiceApplicationBuilder
 
 import scala.annotation.tailrec
+import scala.collection.JavaConverters._
 import scala.concurrent.Promise
 import scala.concurrent.duration._
 import scala.util.Try
@@ -310,7 +311,7 @@ object ServiceTest {
       } else if (setup.jdbc) {
 
         initialBuilder
-          .configure(TestConfig.JdbcConfig)
+          .configure(TestConfig.JdbcConfig.asJava)
           .configure(CassandraTestConfig.clusterConfig())
           .configure("lagom.cluster.join-self", "on")
           .disableModules(CassandraPersistenceModule, KafkaClientModule, KafkaBrokerModule)

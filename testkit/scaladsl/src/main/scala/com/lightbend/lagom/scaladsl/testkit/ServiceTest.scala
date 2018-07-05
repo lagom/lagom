@@ -11,8 +11,7 @@ import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, RequiresLagomServicePort }
 import play.api.ApplicationLoader.Context
 import play.api.inject.DefaultApplicationLifecycle
-import play.api.{ Configuration, Environment, Play }
-import play.core.DefaultWebCommands
+import play.api.{ ApplicationLoader, Environment, Play }
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 
 import scala.concurrent.Future
@@ -235,31 +234,29 @@ object ServiceTest {
 
     val lifecycle = new DefaultApplicationLifecycle
 
-    val config =
+    val config: Map[String, AnyRef] =
       if (setup.cassandra) {
         val now = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
         val testName = s"ServiceTest_$now"
 
         val cassandraPort = CassandraTestServer.run(testName, lifecycle)
 
-        ClusterConfiguration ++ Configuration(TestUtil.persistenceConfig(testName, cassandraPort))
+        ClusterConfiguration ++ TestConfig.cassandraConfig(testName, cassandraPort)
       } else if (setup.jdbc) {
-        ClusterConfiguration ++ JdbcConfiguration
+        ClusterConfiguration ++ TestConfig.JdbcConfig
       } else if (setup.cluster) {
         ClusterConfiguration
       } else {
-        Configuration.empty
+        Map.empty
       }
 
     val lagomApplication =
       applicationConstructor(
         LagomApplicationContext(
-          Context(
-            Environment.simple(),
-            None,
-            new DefaultWebCommands,
-            config,
-            lifecycle
+          ApplicationLoader.createContext(
+            environment = Environment.simple(),
+            initialSettings = config,
+            lifecycle = lifecycle
           )
         )
       )
@@ -281,7 +278,6 @@ object ServiceTest {
     new TestServer[T](lagomApplication, server)
   }
 
-  private lazy val JdbcConfiguration = Configuration(TestConfig.JdbcConfig)
-  private lazy val ClusterConfiguration = Configuration("lagom.cluster.join-self" -> "on")
+  private lazy val ClusterConfiguration = Map("lagom.cluster.join-self" -> "on")
 
 }
