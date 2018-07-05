@@ -15,6 +15,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.lightbend.lagom.internal.javadsl.registry.NoServiceLocator;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
+import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.lightbend.lagom.javadsl.persistence.ReadSide;
@@ -38,6 +39,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import java.time.Duration;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -104,7 +107,7 @@ public class CqrsIntegrationTest {
   private void eventually(Effect block) {
     new TestKit(system) {
       {
-        awaitAssert(duration("20 seconds"), () -> {
+        awaitAssert(Duration.ofSeconds(20), () -> {
           try {
             block.apply();
           } catch (RuntimeException e) {
@@ -183,8 +186,8 @@ public class CqrsIntegrationTest {
 
     // For other use cases than updating a read-side table in Cassandra it is possible
     // to consume the events directly.
-    final Source<Pair<BlogEvent, UUID>, ?> eventStream = Source.from(BlogEvent.TAG.allTags())
-            .flatMapMerge(BlogEvent.TAG.numShards(), tag -> registry().eventStream(tag, Optional.empty()));
+    final Source<Pair<BlogEvent, Offset>, ?> eventStream = Source.from(BlogEvent.TAG.allTags())
+            .flatMapMerge(BlogEvent.TAG.numShards(), tag -> registry().eventStream(tag, Offset.NONE));
 
     final TestSubscriber.Probe<BlogEvent> eventProbe = eventStream.map(pair -> pair.first())
         .runWith(TestSink.probe(system), mat);
