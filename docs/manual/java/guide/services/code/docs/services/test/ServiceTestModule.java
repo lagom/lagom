@@ -37,6 +37,7 @@ public class ServiceTestModule extends AbstractModule implements ServiceGuiceSup
    * This method is used in docs/ so that many tests can share a single Guice module.
    */
    @Override
+   @SuppressWarnings({"deprecation", "unchecked"})
    public void bindServices(ServiceBinding<?>... serviceBindings) {
     Binder binder = BinderAccessor.binder(this);
 

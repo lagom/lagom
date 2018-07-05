@@ -77,7 +77,7 @@ trait CassandraBlogEventProcessor {
       //#create-builder
 
       //#register-global-prepare
-      builder.setGlobalPrepare(createTable)
+      builder.setGlobalPrepare(() => createTable())
       //#register-global-prepare
 
       //#register-prepare

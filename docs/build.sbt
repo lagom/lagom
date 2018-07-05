@@ -19,11 +19,19 @@ val branch = {
   } else rev
 }
 
+def evictionSettings: Seq[Setting[_]] = Seq(
+  // This avoids a lot of dependency resolution warnings to be showed.
+  // No need to show them here since it is the docs project.
+  evictionWarningOptions in update := EvictionWarningOptions.default
+    .withWarnTransitiveEvictions(false)
+    .withWarnDirectEvictions(false)
+)
 
 lazy val docs = project
   .in(file("."))
   .enablePlugins(LightbendMarkdown)
   .settings(forkedTests: _*)
+  .settings(evictionSettings: _*)
   .settings(
     resolvers += Resolver.typesafeIvyRepo("releases"),
     scalaVersion := ScalaVersion,
@@ -40,6 +48,7 @@ lazy val docs = project
       "org.hibernate" % "hibernate-core" % HibernateVersion,
       "javax.validation" % "validation-api" % ValidationApiVersion
     ),
+    scalacOptions ++= Seq("-deprecation"),
     javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation"),
     testOptions in Test += Tests.Argument("-oDF"),
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),

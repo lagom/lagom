@@ -6,7 +6,7 @@ import akka.actor.ActorSystem
 import akka.testkit.ImplicitSender
 import akka.testkit.TestKit
 import com.typesafe.config.ConfigFactory
-import org.scalactic.ConversionCheckedTripleEquals
+import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
@@ -23,7 +23,8 @@ object ActorServiceSpec {
 
 class ActorServiceSpec extends TestKit(ActorSystem("ActorServiceSpec", ActorServiceSpec.config))
   with ServiceSupport
-  with BeforeAndAfterAll with ConversionCheckedTripleEquals
+  with BeforeAndAfterAll
+  with TypeCheckedTripleEquals
   with ImplicitSender {
 
   val workerRoleConfig = ConfigFactory.parseString("akka.cluster.roles = [worker-node]")
