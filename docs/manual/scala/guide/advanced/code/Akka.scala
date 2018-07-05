@@ -67,7 +67,7 @@ package workerserviceimpl {
           totalInstances = 1000,
           routeesPaths = paths,
           allowLocalRoutees = true,
-          useRole = Some("worker-node")
+          useRoles = Set("worker-node")
         )
       ).props
       system.actorOf(routerProps, "workerRouter")

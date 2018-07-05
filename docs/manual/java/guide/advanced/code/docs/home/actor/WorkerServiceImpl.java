@@ -6,6 +6,8 @@ import static akka.pattern.PatternsCS.ask;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
@@ -44,9 +46,12 @@ public class WorkerServiceImpl implements WorkerService {
           return null;
         }
       });
+      Set<String> useRoles = new TreeSet<>();
+      useRoles.add("worker-node");
+
       Props routerProps = new ClusterRouterGroup(groupConf,
         new ClusterRouterGroupSettings(1000, paths,
-          true, "worker-node")).props();
+          true, useRoles)).props();
     this.workerRouter = system.actorOf(routerProps, "workerRouter");
   }
 

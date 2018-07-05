@@ -9,13 +9,13 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.InvalidCommandE
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.lightbend.lagom.scaladsl.testkit.PersistentEntityTestDriver
 import com.typesafe.config.ConfigFactory
-import org.scalactic.ConversionCheckedTripleEquals
+import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
 
 class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll
-  with ConversionCheckedTripleEquals {
+  with TypeCheckedTripleEquals {
 
   val system = ActorSystem("PostSpec", JsonSerializerRegistry.actorSystemSetupFor(BlogPostSerializerRegistry))
 
