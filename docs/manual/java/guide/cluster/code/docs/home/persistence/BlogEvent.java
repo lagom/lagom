@@ -103,6 +103,7 @@ interface BlogEvent extends Jsonable, AggregateEvent<BlogEvent> {
   final class PostPublished implements BlogEvent {
     private final String postId;
 
+    @JsonCreator
     public PostPublished(String postId) {
       this.postId = postId;
     }
