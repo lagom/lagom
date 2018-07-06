@@ -16,8 +16,10 @@ import com.lightbend.lagom.internal.javadsl.client.CircuitBreakersPanelImpl;
 import com.lightbend.lagom.internal.javadsl.client.JavadslServiceClientImplementor;
 import com.lightbend.lagom.internal.javadsl.client.JavadslWebSocketClient;
 import com.lightbend.lagom.internal.javadsl.client.ServiceClientLoader;
+import com.lightbend.lagom.internal.javadsl.registry.JavaServiceRegistryClient;
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry;
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryServiceLocator;
+import com.lightbend.lagom.internal.registry.ServiceRegistryClient;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
@@ -46,14 +48,12 @@ import play.api.libs.ws.ahc.AhcWSClientConfig;
 import play.api.libs.ws.ahc.AhcWSClientConfigParser;
 import scala.Function0;
 import scala.Some;
-import scala.collection.Map$;
-import scala.compat.java8.OptionConverters;
+import scala.collection.immutable.Map$;
 import scala.concurrent.Future;
 
 import java.io.Closeable;
 import java.io.File;
 import java.net.URI;
-import java.time.Duration;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -150,9 +150,10 @@ public class LagomClientFactory implements Closeable {
     public <T> T createDevClient(Class<T> clientInterface, URI serviceLocatorUri) {
         ServiceRegistry serviceRegistry = serviceClientLoaderCreator.apply(new StaticServiceLocator(circuitBreakersPanel,
                 serviceLocatorUri)).loadServiceClient(ServiceRegistry.class);
+        ServiceRegistryClient client = new JavaServiceRegistryClient(serviceRegistry, actorSystem.dispatcher());
 
-        ServiceLocator serviceLocator = new ServiceRegistryServiceLocator(circuitBreakersPanel, serviceRegistry,
-                new ServiceRegistryServiceLocator.ServiceLocatorConfig(serviceLocatorUri), actorSystem.dispatcher());
+        ServiceLocator serviceLocator = new ServiceRegistryServiceLocator(circuitBreakersPanel, client,
+            actorSystem.dispatcher());
 
         return serviceClientLoaderCreator.apply(serviceLocator).loadServiceClient(clientInterface);
     }
