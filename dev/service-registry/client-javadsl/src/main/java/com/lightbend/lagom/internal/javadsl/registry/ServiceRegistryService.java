@@ -3,10 +3,12 @@
  */
 package com.lightbend.lagom.internal.javadsl.registry;
 
-import com.lightbend.lagom.javadsl.api.ServiceAcl;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * A service to be registered by the service registry
@@ -14,6 +16,16 @@ import java.util.List;
 public class ServiceRegistryService {
     private final URI uri;
     private final List<ServiceAcl> acls;
+
+    public static ServiceRegistryService of(URI uri, List<com.lightbend.lagom.javadsl.api.ServiceAcl> acls) {
+        List<ServiceAcl> internalAcls =
+            acls.stream().map(api -> {
+                    Optional<Method> method = api.method().map(m -> new Method(m.name()));
+                    return new ServiceAcl(method, api.pathRegex());
+                }
+            ).collect(Collectors.toList());
+        return new ServiceRegistryService(uri, internalAcls);
+    }
 
     public ServiceRegistryService(URI uri, List<ServiceAcl> acls) {
         this.uri = uri;
@@ -50,8 +62,8 @@ public class ServiceRegistryService {
     @Override
     public String toString() {
         return "ServiceRegistryService{" +
-                "uri='" + uri + '\'' +
-                ", acls=" + acls +
-                '}';
+            "uri='" + uri + '\'' +
+            ", acls=" + acls +
+            '}';
     }
 }

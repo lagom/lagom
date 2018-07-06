@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import akka.NotUsed
 import javax.inject.{ Inject, Provider, Singleton }
-import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistry, ServiceRegistryService }
+import com.lightbend.lagom.internal.javadsl.registry.{ ServiceAcl, ServiceRegistry, ServiceRegistryService }
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
 import com.typesafe.config.Config
 import play.api.Configuration
@@ -65,7 +65,8 @@ object ServiceRegistrationModule {
     }
 
     locatableServices.foreach { service =>
-      registry.register(service.descriptor.name).invoke(new ServiceRegistryService(config.url, service.descriptor.acls)).exceptionally(new JFunction[Throwable, NotUsed] {
+      val c = ServiceRegistryService.of(config.url, service.descriptor.acls)
+      registry.register(service.descriptor.name).invoke(c).exceptionally(new JFunction[Throwable, NotUsed] {
         def apply(t: Throwable) = {
           logger.error(s"Service name=[${service.descriptor.name}] couldn't register itself to the service locator.", t)
           NotUsed.getInstance()
