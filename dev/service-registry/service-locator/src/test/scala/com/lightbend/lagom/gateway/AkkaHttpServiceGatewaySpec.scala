@@ -41,7 +41,7 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
     }, "localhost", port = 0), 10.seconds)
 
     val serviceRegistry = actorSystem.actorOf(Props(new ServiceRegistryActor(new UnmanagedServices(
-      Map("service" -> new ServiceRegistryService(
+      Map("service" -> ServiceRegistryService.of(
         URI.create(s"http://localhost:${serviceBinding.localAddress.getPort}"),
         Seq(
           ServiceAcl.methodAndPath(Method.GET, "/hello"),
