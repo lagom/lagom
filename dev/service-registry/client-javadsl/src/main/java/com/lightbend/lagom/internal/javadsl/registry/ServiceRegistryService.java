@@ -19,9 +19,9 @@ public class ServiceRegistryService {
 
     public static ServiceRegistryService of(URI uri, List<com.lightbend.lagom.javadsl.api.ServiceAcl> acls) {
         List<ServiceAcl> internalAcls =
-            acls.stream().map(api -> {
-                    Optional<Method> method = api.method().map(m -> new Method(m.name()));
-                    return new ServiceAcl(method, api.pathRegex());
+            acls.stream().map(acl -> {
+                    Optional<Method> method = acl.method().map(m -> new Method(m.name()));
+                    return new ServiceAcl(method, acl.pathRegex());
                 }
             ).collect(Collectors.toList());
         return new ServiceRegistryService(uri, internalAcls);
