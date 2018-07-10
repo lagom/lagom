@@ -3,10 +3,11 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.cassandra.testkit
 
-import akka.persistence.PersistentActor
+import com.lightbend.lagom.internal.persistence.testkit.{ AwaitPersistenceInit => InternalAwaitPersistenceInit }
 import com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil
 import com.typesafe.config.{ Config, ConfigFactory }
 
+@deprecated("Internal object, not intended for direct use.", "1.5.0")
 object TestUtil extends AbstractTestUtil {
 
   def persistenceConfig(testName: String, cassandraPort: Int, useServiceLocator: Boolean) = ConfigFactory.parseString(s"""
@@ -38,21 +39,7 @@ object TestUtil extends AbstractTestUtil {
     akka.test.single-expect-default = 5s
     """).withFallback(clusterConfig())
 
-  class AwaitPersistenceInit extends PersistentActor {
-    def persistenceId: String = self.path.name
-
-    def receiveRecover: Receive = {
-      case _ =>
-    }
-
-    def receiveCommand: Receive = {
-      case msg =>
-        persist(msg) { _ =>
-          sender() ! msg
-          context.stop(self)
-        }
-    }
-  }
+  class AwaitPersistenceInit extends InternalAwaitPersistenceInit
 
   def persistenceConfig(testName: String, cassandraPort: Int): Config = {
     persistenceConfig(testName, cassandraPort, useServiceLocator = false)

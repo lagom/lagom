@@ -522,6 +522,12 @@ object Dependencies {
     playJson
   )
 
+  val `persistence-testkit` = libraryDependencies ++= Seq(
+    akkaPersistence,
+    akkaTestkit,
+    slf4jApi
+  )
+
   val `persistence-javadsl` = libraryDependencies ++= Seq(
     slf4jApi,
     // this mean we have production code depending on testkit

@@ -13,14 +13,15 @@ import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.cluster.JoinClusterModule
 import com.lightbend.lagom.internal.javadsl.persistence.testkit.CassandraTestConfig
+import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.testkit._
 import com.lightbend.lagom.javadsl.api.{ Service, ServiceLocator }
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
 import play.Application
-import play.api.{ Mode, Play }
 import play.api.inject.{ ApplicationLifecycle, BindingKey, DefaultApplicationLifecycle, bind => sBind }
+import play.api.{ Mode, Play }
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 import play.inject.Injector
 import play.inject.guice.GuiceApplicationBuilder
@@ -345,7 +346,7 @@ object ServiceTest {
 
     if (setup.cassandra || setup.jdbc) {
       val system = application.injector().instanceOf(classOf[ActorSystem])
-      CassandraTestConfig.awaitPersistenceInit(system)
+      awaitPersistenceInit(system)
     }
 
     new TestServer(assignedPort, application, srv)

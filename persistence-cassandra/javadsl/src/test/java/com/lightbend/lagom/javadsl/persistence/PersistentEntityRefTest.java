@@ -3,6 +3,7 @@
  */
 package com.lightbend.lagom.javadsl.persistence;
 
+import static com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
@@ -62,7 +63,7 @@ public class PersistentEntityRefTest {
 
     File cassandraDirectory = new File("target/PersistentEntityRefTest");
     CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", true, 0);
-    TestUtil.awaitPersistenceInit(system);
+    awaitPersistenceInit(system);
 
   }
 

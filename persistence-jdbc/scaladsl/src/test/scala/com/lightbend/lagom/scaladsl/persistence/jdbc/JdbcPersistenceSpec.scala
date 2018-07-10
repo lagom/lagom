@@ -8,7 +8,8 @@ import akka.actor.{ ActorSystem, BootstrapSetup }
 import akka.cluster.Cluster
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbTestProvider, SlickOffsetStore, SlickProvider }
-import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.{ JdbcReadSideImpl, JdbcSessionImpl, OffsetTableConfiguration }
+import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
+import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.{ JdbcReadSideImpl, OffsetTableConfiguration }
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
 import com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
@@ -60,7 +61,7 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
     // Trigger tables to be created
     Await.ready(slick.ensureTablesCreated(), 20.seconds)
 
-    TestUtil.awaitPersistenceInit(system)
+    awaitPersistenceInit(system)
   }
 
   override def afterAll(): Unit = {

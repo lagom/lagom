@@ -6,10 +6,9 @@ package com.lightbend.lagom.scaladsl.testkit
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.testkit.{ CassandraTestServer, TestConfig }
-import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, RequiresLagomServicePort }
-import play.api.ApplicationLoader.Context
 import play.api.inject.DefaultApplicationLifecycle
 import play.api.{ ApplicationLoader, Environment, Play }
 import play.core.server.{ Server, ServerConfig, ServerProvider }
@@ -272,7 +271,7 @@ object ServiceTest {
     }
 
     if (setup.cassandra || setup.jdbc) {
-      TestUtil.awaitPersistenceInit(lagomApplication.actorSystem)
+      awaitPersistenceInit(lagomApplication.actorSystem)
     }
 
     new TestServer[T](lagomApplication, server)
