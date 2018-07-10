@@ -12,8 +12,8 @@ import akka.japi.function.{ Effect, Procedure }
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.cluster.JoinClusterModule
-import com.lightbend.lagom.internal.javadsl.persistence.testkit.CassandraTestConfig
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
+import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig._
 import com.lightbend.lagom.internal.testkit._
 import com.lightbend.lagom.javadsl.api.{ Service, ServiceLocator }
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
@@ -305,23 +305,21 @@ object ServiceTest {
         val cassandraPort = CassandraTestServer.run(testName, lifecycle)
 
         initialBuilder
-          .configure(CassandraTestConfig.persistenceConfig(testName, cassandraPort))
-          .configure("lagom.cluster.join-self", "on")
+          .configure(cassandraConfig(testName, cassandraPort))
+          .configure(ClusterConfig)
           .disableModules(JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
 
       } else if (setup.jdbc) {
 
         initialBuilder
-          .configure(TestConfig.JdbcConfig.asJava)
-          .configure(CassandraTestConfig.clusterConfig())
-          .configure("lagom.cluster.join-self", "on")
+          .configure(JdbcConfig)
+          .configure(ClusterConfig)
           .disableModules(CassandraPersistenceModule, KafkaClientModule, KafkaBrokerModule)
 
       } else if (setup.cluster) {
 
         initialBuilder
-          .configure(CassandraTestConfig.clusterConfig())
-          .configure("lagom.cluster.join-self", "on")
+          .configure(ClusterConfig)
           .disable(classOf[PersistenceModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
           .disableModules(CassandraPersistenceModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)

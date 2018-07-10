@@ -13,11 +13,11 @@ import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.{ ActorMaterializer, Materializer }
 import akka.testkit.TestKit
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
+import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfig
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.{ InvalidCommandException, UnhandledCommandException }
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Mode
-import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.persistence.{ PersistentEntity, PersistentEntityRegistry, TestEntity, TestEntitySerializerRegistry }
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{ Config, ConfigFactory }
@@ -40,7 +40,7 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
       akka.remote.netty.tcp.hostname = 127.0.0.1
       akka.loglevel = INFO
       akka.cluster.sharding.distributed-data.durable.keys = []
-  """).withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
+  """).withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
   private val system: ActorSystem = ActorSystem("PersistentEntityRefSpec", ActorSystemSetup(
     BootstrapSetup(config),
     JsonSerializerRegistry.serializationSetupFor(TestEntitySerializerRegistry)

@@ -4,8 +4,8 @@
 package com.lightbend.lagom.scaladsl.persistence.testkit
 
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.persistence.testkit.{ AwaitPersistenceInit => InternalAwaitPersistenceInit }
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.lightbend.lagom.internal.persistence.testkit.{ PersistenceTestConfig, AwaitPersistenceInit => InternalAwaitPersistenceInit }
+import com.typesafe.config.Config
 
 @deprecated("Internal object, not intended for direct use.", "1.5.0")
 object AbstractTestUtil {
@@ -15,11 +15,7 @@ object AbstractTestUtil {
 @deprecated("Internal trait, not intended for direct use.", "1.5.0")
 trait AbstractTestUtil {
 
-  def clusterConfig(): Config = ConfigFactory.parseString(s"""
-    akka.actor.provider = akka.cluster.ClusterActorRefProvider
-    akka.remote.netty.tcp.port = 0
-    akka.remote.netty.tcp.hostname = 127.0.0.1
-  """)
+  def clusterConfig(): Config = PersistenceTestConfig.ClusterConfig
 
   def awaitPersistenceInit(system: ActorSystem): Unit = InternalAwaitPersistenceInit.awaitPersistenceInit(system)
 

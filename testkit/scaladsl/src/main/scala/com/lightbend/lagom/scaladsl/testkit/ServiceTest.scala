@@ -7,7 +7,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
-import com.lightbend.lagom.internal.testkit.{ CassandraTestServer, TestConfig }
+import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig._
+import com.lightbend.lagom.internal.testkit.CassandraTestServer
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, RequiresLagomServicePort }
 import play.api.inject.DefaultApplicationLifecycle
 import play.api.{ ApplicationLoader, Environment, Play }
@@ -240,11 +241,11 @@ object ServiceTest {
 
         val cassandraPort = CassandraTestServer.run(testName, lifecycle)
 
-        ClusterConfiguration ++ TestConfig.cassandraConfig(testName, cassandraPort)
+        ClusterConfigMap ++ cassandraConfigMap(testName, cassandraPort)
       } else if (setup.jdbc) {
-        ClusterConfiguration ++ TestConfig.JdbcConfig
+        ClusterConfigMap ++ JdbcConfigMap
       } else if (setup.cluster) {
-        ClusterConfiguration
+        ClusterConfigMap
       } else {
         Map.empty
       }
@@ -276,7 +277,5 @@ object ServiceTest {
 
     new TestServer[T](lagomApplication, server)
   }
-
-  private lazy val ClusterConfiguration = Map("lagom.cluster.join-self" -> "on")
 
 }

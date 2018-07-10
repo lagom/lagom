@@ -3,17 +3,12 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.slick
 
-import akka.cluster.Cluster
-import akka.persistence.query.Sequence
-import com.lightbend.lagom.internal.persistence.jdbc.SlickDbTestProvider
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.JdbcPersistentEntityRegistry
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence._
-import com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil
-import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 
+import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
-import scala.concurrent.{ Await, ExecutionContext, Future }
 
 class SlickReadSideSpec
   extends SlickPersistenceSpec(TestEntitySerializerRegistry)

@@ -11,7 +11,6 @@ import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbTestProvider, Slic
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.{ JdbcReadSideImpl, OffsetTableConfiguration }
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
-import com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{ Config, ConfigFactory }
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
@@ -25,7 +24,7 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
   def this(testName: String, config: Config, registry: JsonSerializerRegistry) =
     this(ActorSystem(testName, ActorSystemSetup(
       BootstrapSetup(
-        config.withFallback(TestUtil.clusterConfig()).withFallback(Configuration.load(Environment.simple()).underlying)
+        config.withFallback(Configuration.load(Environment.simple()).underlying)
       ),
       JsonSerializerRegistry.serializationSetupFor(registry)
     )))

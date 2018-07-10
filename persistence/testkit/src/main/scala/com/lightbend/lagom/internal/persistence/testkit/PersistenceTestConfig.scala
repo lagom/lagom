@@ -1,10 +1,22 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
-package com.lightbend.lagom.internal.testkit
+package com.lightbend.lagom.internal.persistence.testkit
 
-private[lagom] object TestConfig {
-  def cassandraConfig(keyspacePrefix: String, cassandraPort: Int): Map[String, AnyRef] = Map(
+import scala.collection.JavaConverters._
+import com.typesafe.config.{ Config, ConfigFactory }
+
+private[lagom] object PersistenceTestConfig {
+  lazy val ClusterConfigMap: Map[String, AnyRef] = Map(
+    "lagom.cluster.join-self" -> "on",
+    "akka.actor.provider" -> "akka.cluster.ClusterActorRefProvider",
+    "akka.remote.netty.tcp.port" -> "0",
+    "akka.remote.netty.tcp.hostname" -> "127.0.0.1"
+  )
+
+  lazy val ClusterConfig: Config = ConfigFactory.parseMap(ClusterConfigMap.asJava)
+
+  def cassandraConfigMap(keyspacePrefix: String, cassandraPort: Int): Map[String, AnyRef] = Map(
     "cassandra-journal.session-provider" -> "akka.persistence.cassandra.ConfigSessionProvider",
     "cassandra-snapshot-store.session-provider" -> "akka.persistence.cassandra.ConfigSessionProvider",
     "lagom.persistence.read-side.cassandra.session-provider" -> "akka.persistence.cassandra.ConfigSessionProvider",
@@ -24,8 +36,13 @@ private[lagom] object TestConfig {
     "akka.test.single-expect-default" -> "5s"
   )
 
-  lazy val JdbcConfig: Map[String, AnyRef] = Map(
+  def cassandraConfig(keyspacePrefix: String, cassandraPort: Int): Config =
+    ConfigFactory.parseMap(cassandraConfigMap(keyspacePrefix, cassandraPort).asJava)
+
+  lazy val JdbcConfigMap: Map[String, AnyRef] = Map(
     "akka.persistence.journal.plugin" -> "jdbc-journal",
     "akka.persistence.snapshot-store.plugin" -> "jdbc-snapshot-store"
   )
+
+  lazy val JdbcConfig: Config = ConfigFactory.parseMap(JdbcConfigMap.asJava)
 }
