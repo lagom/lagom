@@ -46,7 +46,8 @@ final class Post2 extends PersistentEntity {
           if (content.title == null || content.title.equals("")) {
             ctx.invalidCommand("Title must be defined")
             ctx.done
-          } //#validate-command
+          }
+          //#validate-command
           else {
             ctx.thenPersist(PostAdded(entityId, content)) { _ =>
               // After persist is done additional side effects can be performed
