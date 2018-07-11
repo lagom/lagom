@@ -45,7 +45,7 @@ InputKey[Unit]("absence") := {
   val pathRegex = Def.spaceDelimited().parsed.head
   import java.nio.file.Files
   import java.nio.file.Paths
-  import scala.collection.JavaConversions._
+  import scala.collection.JavaConverters._
   val path = Paths.get(pathRegex)
   val files = Files.newDirectoryStream(path.getParent(), path.getFileName().toString()).iterator.toList
   if(files.nonEmpty)
