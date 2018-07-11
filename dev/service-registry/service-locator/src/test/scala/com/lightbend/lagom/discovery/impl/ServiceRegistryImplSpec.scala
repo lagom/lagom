@@ -33,7 +33,7 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
     "allow to register a service" in withServiceRegistry() { registry =>
       val expectedUrl = new URI("http://localhost:9000")
       val serviceName = "fooservice"
-      registry.register(serviceName).invoke(new ServiceRegistryService(expectedUrl, Collections.emptyList[ServiceAcl]))
+      registry.register(serviceName).invoke(ServiceRegistryService.of(expectedUrl, Collections.emptyList[ServiceAcl]))
       val registeredUrl = registry.lookup(serviceName).invoke(NotUsed).toCompletableFuture().get(
         testTimeoutInSeconds, TimeUnit.SECONDS
       )
@@ -43,9 +43,9 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
     "allow to register a service of same service twice (idempotent)" in withServiceRegistry() { registry =>
       val expectedUrl = new URI("http://localhost:9000")
       val serviceName = "fooservice"
-      registry.register(serviceName).invoke(new ServiceRegistryService(expectedUrl, Collections.emptyList[ServiceAcl]))
+      registry.register(serviceName).invoke(ServiceRegistryService.of(expectedUrl, Collections.emptyList[ServiceAcl]))
         .toCompletableFuture().get(testTimeoutInSeconds, TimeUnit.SECONDS)
-      registry.register(serviceName).invoke(new ServiceRegistryService(expectedUrl, Collections.emptyList[ServiceAcl]))
+      registry.register(serviceName).invoke(ServiceRegistryService.of(expectedUrl, Collections.emptyList[ServiceAcl]))
         .toCompletableFuture().get(testTimeoutInSeconds, TimeUnit.SECONDS)
       val registeredUrl = registry.lookup(serviceName).invoke(NotUsed).toCompletableFuture().get(
         testTimeoutInSeconds, TimeUnit.SECONDS
@@ -64,10 +64,10 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
       val url1 = new URI("http://localhost:9000")
       val url2 = new URI("http://localhost:9001")
       val serviceName = "fooservice"
-      registry.register(serviceName).invoke(new ServiceRegistryService(url1, Collections.emptyList[ServiceAcl]))
+      registry.register(serviceName).invoke(ServiceRegistryService.of(url1, Collections.emptyList[ServiceAcl]))
         .toCompletableFuture.get(testTimeoutInSeconds, TimeUnit.SECONDS)
       intercept[ExecutionException] {
-        registry.register(serviceName).invoke(new ServiceRegistryService(url2, Collections.emptyList[ServiceAcl]))
+        registry.register(serviceName).invoke(ServiceRegistryService.of(url2, Collections.emptyList[ServiceAcl]))
           .toCompletableFuture.get(testTimeoutInSeconds, TimeUnit.SECONDS)
       }
     }
@@ -75,7 +75,7 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
     "allow to retrieve the full list of registered services" in {
       val url = new URI("http://localhost:9000")
       val name = "fooservice"
-      val service = new ServiceRegistryService(url, Collections.emptyList[ServiceAcl])
+      val service = ServiceRegistryService.of(url, Collections.emptyList[ServiceAcl])
       val registeredService = Map(name -> service)
       val expectedRegisteredServices: List[RegisteredService] = (for {
         (name, service) <- registeredService
@@ -92,7 +92,7 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
 
     "default to well-known port for http URLs if no port number provided" in withServiceRegistryActor() { actor =>
       val registry = new ServiceRegistryImpl(actor)
-      registry.register("fooservice").invoke(new ServiceRegistryService(
+      registry.register("fooservice").invoke(ServiceRegistryService.of(
         URI.create("http://localhost"),
         Collections.singletonList(new ServiceAcl(Optional.of(Method.GET), Optional.of("/")))
       )).toCompletableFuture.get(testTimeoutInSeconds, TimeUnit.SECONDS)
@@ -106,7 +106,7 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
 
     "default to well-known port for https URLs if no port number provided" in withServiceRegistryActor() { actor =>
       val registry = new ServiceRegistryImpl(actor)
-      registry.register("fooservice").invoke(new ServiceRegistryService(
+      registry.register("fooservice").invoke(ServiceRegistryService.of(
         URI.create("https://localhost"),
         Collections.singletonList(new ServiceAcl(Optional.of(Method.GET), Optional.of("/")))
       )).toCompletableFuture.get(testTimeoutInSeconds, TimeUnit.SECONDS)

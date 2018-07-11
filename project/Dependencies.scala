@@ -696,7 +696,12 @@ object Dependencies {
     scalaTest % Test
   )
 
-  val `service-registry-client-javadsl` = libraryDependencies ++= Nil
+  val `service-registry-client-javadsl` =
+    libraryDependencies ++= Seq(
+      "junit" % "junit" % JUnitVersion,
+      akkaTestkit % Test,
+      "com.novocode" % "junit-interface" % "0.11" % Test
+    )
 
   val `service-registration-javadsl` = libraryDependencies ++= Nil
 
