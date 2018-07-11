@@ -201,8 +201,8 @@ object LagomApplicationContext {
     environment = Environment.simple(),
     devContext = None,
     initialConfiguration = Configuration.empty,
-    lifecycle = new DefaultApplicationLifecycle)
-  )
+    lifecycle = new DefaultApplicationLifecycle
+  ))
 
 }
 
