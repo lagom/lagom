@@ -5,6 +5,5 @@ package com.lightbend.lagom.javadsl.persistence.jdbc.testkit
 
 import com.lightbend.lagom.javadsl.persistence.testkit.AbstractTestUtil
 
-object TestUtil extends AbstractTestUtil {
-
-}
+@deprecated("Internal class, not intended for direct use.", "1.5.0")
+object TestUtil extends AbstractTestUtil

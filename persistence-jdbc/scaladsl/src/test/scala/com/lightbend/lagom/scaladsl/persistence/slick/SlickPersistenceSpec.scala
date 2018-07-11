@@ -8,24 +8,24 @@ import akka.actor.{ ActorSystem, BootstrapSetup }
 import akka.cluster.Cluster
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbTestProvider, SlickOffsetStore, SlickProvider }
+import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.scaladsl.persistence.jdbc.OffsetTableConfiguration
 import com.lightbend.lagom.internal.scaladsl.persistence.slick.SlickReadSideImpl
 import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
-import com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{ Config, ConfigFactory }
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 import play.api.{ Configuration, Environment }
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{ Await, ExecutionContext }
 
 abstract class SlickPersistenceSpec private (_system: ActorSystem) extends ActorSystemSpec(_system) {
 
   def this(testName: String, config: Config, registry: JsonSerializerRegistry) =
     this(ActorSystem(testName, ActorSystemSetup(
       BootstrapSetup(
-        config.withFallback(TestUtil.clusterConfig()).withFallback(Configuration.load(Environment.simple()).underlying)
+        config.withFallback(Configuration.load(Environment.simple()).underlying)
       ),
       JsonSerializerRegistry.serializationSetupFor(registry)
     )))
@@ -64,7 +64,7 @@ abstract class SlickPersistenceSpec private (_system: ActorSystem) extends Actor
     // Trigger tables to be created
     Await.ready(slick.ensureTablesCreated(), 20.seconds)
 
-    TestUtil.awaitPersistenceInit(system)
+    awaitPersistenceInit(system)
   }
 
   override def afterAll(): Unit = {

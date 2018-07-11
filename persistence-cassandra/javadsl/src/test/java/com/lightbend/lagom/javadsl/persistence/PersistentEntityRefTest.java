@@ -3,11 +3,12 @@
  */
 package com.lightbend.lagom.javadsl.persistence;
 
+import static com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit;
+import static com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfig;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 
-import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity.InvalidCommandException;
@@ -49,7 +50,7 @@ public class PersistentEntityRefTest {
         "akka.remote.netty.tcp.hostname = 127.0.0.1 \n" +
         "akka.loglevel = INFO \n" +
         "akka.cluster.sharding.distributed-data.durable.keys = [] \n")
-        .withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort()));
+        .withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort()));
 
     application = new GuiceApplicationBuilder()
             .configure(config)
@@ -62,7 +63,7 @@ public class PersistentEntityRefTest {
 
     File cassandraDirectory = new File("target/PersistentEntityRefTest");
     CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", true, 0);
-    TestUtil.awaitPersistenceInit(system);
+    awaitPersistenceInit(system);
 
   }
 
