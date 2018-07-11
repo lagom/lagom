@@ -348,6 +348,7 @@ val coreProjects = Seq[Project](
   `kafka-client`,
   `kafka-broker`,
   `persistence-core`,
+  `persistence-testkit`,
   `persistence-cassandra-core`,
   `persistence-jdbc-core`,
   `testkit-core`,
@@ -575,7 +576,13 @@ lazy val `testkit-core` = (project in file("testkit/core"))
   .settings(
     name := "lagom-core-testkit",
     Dependencies.`testkit-core`
-  ).settings(forkedTests: _*)
+  )
+  .settings(forkedTests: _*)
+  .dependsOn(
+    // Ideally, this would be the other way around,
+    // but it will require some more refactoring
+    `persistence-testkit`
+  )
 
 
 lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
@@ -734,6 +741,14 @@ lazy val `persistence-core` = (project in file("persistence/core"))
     Dependencies.`persistence-core`
   )
 
+lazy val `persistence-testkit` = (project in file("persistence/testkit"))
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    name := "lagom-persistence-testkit",
+    Dependencies.`persistence-testkit`
+  )
+
 lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
   .settings(
     name := "lagom-javadsl-persistence",
@@ -768,7 +783,12 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
     ),
     Dependencies.`persistence-javadsl`
   )
-  .dependsOn(`persistence-core` % "compile;test->test", jackson, `cluster-javadsl`)
+  .dependsOn(
+    `persistence-core` % "compile;test->test",
+    `persistence-testkit`,
+    jackson,
+    `cluster-javadsl`
+  )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since12): _*)
   .settings(Protobuf.settings)
@@ -783,7 +803,12 @@ lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
       ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil#AwaitPersistenceInit.persistAsync")
     )
   )
-  .dependsOn(`persistence-core` % "compile;test->test", `play-json`, `cluster-scaladsl`)
+  .dependsOn(
+    `persistence-core` % "compile;test->test",
+    `persistence-testkit`,
+    `play-json`,
+    `cluster-scaladsl`
+  )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since13): _*)
   .settings(Protobuf.settings)

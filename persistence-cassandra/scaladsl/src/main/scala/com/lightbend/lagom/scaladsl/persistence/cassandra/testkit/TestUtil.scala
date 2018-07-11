@@ -3,58 +3,19 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.cassandra.testkit
 
-import akka.persistence.PersistentActor
+import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfig
+import com.lightbend.lagom.internal.persistence.testkit.{ AwaitPersistenceInit => InternalAwaitPersistenceInit }
 import com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.Config
 
+@deprecated("Internal object, not intended for direct use.", "1.5.0")
 object TestUtil extends AbstractTestUtil {
 
-  def persistenceConfig(testName: String, cassandraPort: Int, useServiceLocator: Boolean) = ConfigFactory.parseString(s"""
-    cassandra-journal.session-provider = akka.persistence.cassandra.ConfigSessionProvider
-    cassandra-snapshot-store.session-provider = akka.persistence.cassandra.ConfigSessionProvider
-    lagom.persistence.read-side.cassandra.session-provider = akka.persistence.cassandra.ConfigSessionProvider
+  def persistenceConfig(testName: String, cassandraPort: Int, useServiceLocator: Boolean): Config =
+    cassandraConfig(testName, cassandraPort)
 
-    akka.persistence.journal.plugin = "cassandra-journal"
-    akka.persistence.snapshot-store.plugin = "cassandra-snapshot-store"
+  class AwaitPersistenceInit extends InternalAwaitPersistenceInit
 
-    cassandra-journal {
-      port = $cassandraPort
-      keyspace = $testName
-      contact-points = ["127.0.0.1"]
-    }
-    cassandra-snapshot-store {
-      port = $cassandraPort
-      keyspace = $testName
-      contact-points = ["127.0.0.1"]
-    }
-    cassandra-query-journal.eventual-consistency-delay = 2s
-
-    lagom.persistence.read-side.cassandra {
-      port = $cassandraPort
-      keyspace = ${testName}_read
-      contact-points = ["127.0.0.1"]
-    }
-
-    akka.test.single-expect-default = 5s
-    """).withFallback(clusterConfig())
-
-  class AwaitPersistenceInit extends PersistentActor {
-    def persistenceId: String = self.path.name
-
-    def receiveRecover: Receive = {
-      case _ =>
-    }
-
-    def receiveCommand: Receive = {
-      case msg =>
-        persist(msg) { _ =>
-          sender() ! msg
-          context.stop(self)
-        }
-    }
-  }
-
-  def persistenceConfig(testName: String, cassandraPort: Int): Config = {
-    persistenceConfig(testName, cassandraPort, useServiceLocator = false)
-  }
+  def persistenceConfig(testName: String, cassandraPort: Int): Config =
+    cassandraConfig(testName, cassandraPort)
 }

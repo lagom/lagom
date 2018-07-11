@@ -12,19 +12,21 @@ import akka.pattern.AskTimeoutException
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.{ ActorMaterializer, Materializer }
 import akka.testkit.TestKit
+import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
+import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfig
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.{ InvalidCommandException, UnhandledCommandException }
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Mode
-import com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.scaladsl.persistence.{ PersistentEntity, PersistentEntityRegistry, TestEntity, TestEntitySerializerRegistry }
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.concurrent.ScalaFutures
-import play.api.{ Environment, Mode => PlayMode }
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
+import play.api.{ Environment, Mode => PlayMode }
+
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -38,7 +40,7 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
       akka.remote.netty.tcp.hostname = 127.0.0.1
       akka.loglevel = INFO
       akka.cluster.sharding.distributed-data.durable.keys = []
-  """).withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
+  """).withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
   private val system: ActorSystem = ActorSystem("PersistentEntityRefSpec", ActorSystemSetup(
     BootstrapSetup(config),
     JsonSerializerRegistry.serializationSetupFor(TestEntitySerializerRegistry)
@@ -50,7 +52,7 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
     Cluster.get(system).join(Cluster.get(system).selfAddress)
     val cassandraDirectory: File = new File("target/PersistentEntityRefTest")
     CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", true, 0)
-    TestUtil.awaitPersistenceInit(system)
+    awaitPersistenceInit(system)
   }
 
   override def afterAll(): Unit = {

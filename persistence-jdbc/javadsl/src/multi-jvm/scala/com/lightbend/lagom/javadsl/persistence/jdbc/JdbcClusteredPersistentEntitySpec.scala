@@ -5,14 +5,11 @@ package com.lightbend.lagom.javadsl.persistence.jdbc
 
 import java.util.concurrent.CompletionStage
 
-import com.lightbend.lagom.internal.javadsl.persistence.jdbc.SlickProvider
-import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.javadsl.persistence.jdbc.testkit.TestUtil
+import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.javadsl.persistence.multinode.{ AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec }
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.h2.tools.Server
-import play.api.db.DBApi
 
 object JdbcClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
   override def additionalCommonConfig(databasePort: Int): Config = ConfigFactory.parseString(

@@ -7,15 +7,16 @@ import java.io.File
 import java.util.concurrent.CompletionStage
 
 import akka.persistence.cassandra.testkit.CassandraLauncher
+import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
+import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfig
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
-import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil
 import com.lightbend.lagom.javadsl.persistence.multinode.{ AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec }
 import com.lightbend.lagom.javadsl.persistence.{ ReadSideProcessor, TestEntityReadSide }
 import com.typesafe.config.Config
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
   override def additionalCommonConfig(databasePort: Int): Config =
-    TestUtil.persistenceConfig("ClusteredPersistentEntitySpec", databasePort)
+    cassandraConfig("ClusteredPersistentEntitySpec", databasePort)
 }
 
 class CassandraClusteredPersistentEntitySpecMultiJvmNode1 extends CassandraClusteredPersistentEntitySpec
@@ -30,7 +31,7 @@ class CassandraClusteredPersistentEntitySpec extends AbstractClusteredPersistent
     runOn(node1) {
       val cassandraDirectory = new File("target/" + system.name)
       CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", clean = true, port = databasePort)
-      TestUtil.awaitPersistenceInit(system)
+      awaitPersistenceInit(system)
     }
     enterBarrier("cassandra-started")
 
