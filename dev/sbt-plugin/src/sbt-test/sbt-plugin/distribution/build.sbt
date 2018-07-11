@@ -1,3 +1,5 @@
+import java.nio.file.{ DirectoryStream, Path }
+
 import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 import com.lightbend.lagom.sbt.Internal
 
@@ -47,7 +49,7 @@ InputKey[Unit]("absence") := {
   import java.nio.file.Paths
   import scala.collection.JavaConverters._
   val path = Paths.get(pathRegex)
-  val files = Files.newDirectoryStream(path.getParent(), path.getFileName().toString()).iterator.toList
+  val files: Seq[Path] = Files.newDirectoryStream(path.getParent(), path.getFileName().toString()).iterator.asScala.toList
   if(files.nonEmpty)
     throw new RuntimeException(s"Found a file matching the provided file pattern `$pathRegex`!")
 }
