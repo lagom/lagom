@@ -87,7 +87,7 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Config, serviceInfo: Se
 
   // TODO: ServiceRegistryService should not flatmap the ACL lists (locatableService's names are lost)
   private val serviceAcls = serviceInfo.getAcls
-  private val service = new ServiceRegistryService(serviceUrl, serviceAcls)
+  private val service = ServiceRegistryService.of(serviceUrl, serviceAcls)
   // TODO: fix -> this register operation is registering all ACLs under the microservice name, not under each locatable service name. Will lead to unlocatable.
   serviceRegistry.register(serviceInfo.serviceName()).invoke(service)
 
