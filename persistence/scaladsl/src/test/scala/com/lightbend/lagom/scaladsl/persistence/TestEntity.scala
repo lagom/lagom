@@ -162,8 +162,8 @@ class TestEntity(system: ActorSystem)
         case (ChangeMode(mode), ctx, state) => {
           mode match {
             case mode if state.mode == mode => ctx.done
-            case Mode.Append                => ctx.thenPersist(InAppendMode)(ctx.reply)
-            case Mode.Prepend               => ctx.thenPersist(InPrependMode)(ctx.reply)
+            case Mode.Append                => ctx.thenPersist(InAppendMode)((_, _) => ctx.reply _)
+            case Mode.Prepend               => ctx.thenPersist(InPrependMode)((_, _) => ctx.reply _)
           }
         }
       }
@@ -178,10 +178,10 @@ class TestEntity(system: ActorSystem)
         case (GetAddress, ctx, state) => ctx.reply(Cluster.get(system).selfAddress)
       }
       .onCommand[Clear.type, State] {
-        case (Clear, ctx, state) => ctx.thenPersist(Cleared)(_ => ctx.reply(state))
+        case (Clear, ctx, state) => ctx.thenPersist(Cleared)((_, _) => ctx.reply(state))
       }
       .onCommand[UnhandledEvtCmd.type, State] {
-        case (_, ctx, state) => ctx.thenPersist(Unhandled)(_ => ctx.reply(state))
+        case (_, ctx, state) => ctx.thenPersist(Unhandled)((_, _) => ctx.reply(state))
       }
       .onEvent {
         case (Cleared, _) => null
@@ -206,7 +206,7 @@ class TestEntity(system: ActorSystem)
           }
           val appended = Appended(elem.toUpperCase)
           if (times == 1)
-            ctx.thenPersist(appended)(ctx.reply)
+            ctx.thenPersist(appended)((_, _) => ctx.reply _)
           else
             ctx.thenPersistAll(List.fill(times)(appended): _*)(() => ctx.reply(appended))
       }
@@ -225,7 +225,7 @@ class TestEntity(system: ActorSystem)
           }
           val prepended = Prepended(elem.toLowerCase)
           if (times == 1)
-            ctx.thenPersist(prepended)(ctx.reply)
+            ctx.thenPersist(prepended)((_, _) => ctx.reply _)
           else
             ctx.thenPersistAll(List.fill(times)(prepended): _*)(() => ctx.reply(prepended))
       }

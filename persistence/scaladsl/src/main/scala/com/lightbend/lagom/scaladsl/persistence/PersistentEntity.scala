@@ -259,7 +259,7 @@ abstract class PersistentEntity {
      * that one event is to be persisted. External side effects can be
      * performed after successful persist in the `afterPersist` function.
      */
-    def thenPersist[B <: Event](event: B)(afterPersist: B => Unit = (_: B) => ()): Persist =
+    def thenPersist[B <: Event](event: B)(afterPersist: (B, State) => Unit = (_: B, _: State) => ()): Persist =
       PersistOne(event, afterPersist)
 
     /**
@@ -290,7 +290,7 @@ abstract class PersistentEntity {
   /**
    * INTERNAL API
    */
-  private[lagom] case class PersistOne[B <: Event](event: B, afterPersist: B => Unit) extends Persist
+  private[lagom] case class PersistOne[B <: Event](event: B, afterPersist: (B, State) => Unit) extends Persist
 
   /**
    * INTERNAL API
