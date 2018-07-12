@@ -109,6 +109,7 @@ object Dependencies {
   private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playAkkaHttpServer = "com.typesafe.play" %% "play-akka-http-server" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playTest = "com.typesafe.play" %% "play-test" % PlayVersion excludeAll (excludeSlf4j: _*)
 
   private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
@@ -444,6 +445,7 @@ object Dependencies {
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
     playAkkaHttpServer,
+    playTest % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest
   )

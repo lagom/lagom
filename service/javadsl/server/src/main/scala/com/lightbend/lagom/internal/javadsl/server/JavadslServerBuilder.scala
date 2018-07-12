@@ -5,8 +5,8 @@
 package com.lightbend.lagom.internal.javadsl.server
 
 import java.util.function.{ BiFunction, Function => JFunction }
-import javax.inject.{ Inject, Provider, Singleton }
 
+import javax.inject.{ Inject, Named, Provider, Singleton }
 import akka.stream.Materializer
 import akka.util.ByteString
 import com.lightbend.lagom.internal.api._
@@ -27,6 +27,8 @@ import play.api.mvc.{ RequestHeader => PlayRequestHeader, ResponseHeader => _, _
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 import play.api.{ Environment, Logger }
+import play.routing.Router
+import java.util.{ List => JList }
 
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
@@ -35,9 +37,12 @@ import scala.concurrent.{ ExecutionContext, Future }
 /**
  * Turns a service implementation and descriptor into a Play router
  */
-class JavadslServerBuilder @Inject() (environment: Environment, httpConfiguration: HttpConfiguration,
-                                      jacksonSerializerFactory:   JacksonSerializerFactory,
-                                      jacksonExceptionSerializer: JacksonExceptionSerializer)(implicit ec: ExecutionContext, mat: Materializer) {
+class JavadslServerBuilder @Inject() (
+  environment:                Environment,
+  httpConfiguration:          HttpConfiguration,
+  jacksonSerializerFactory:   JacksonSerializerFactory,
+  jacksonExceptionSerializer: JacksonExceptionSerializer
+)(implicit ec: ExecutionContext, mat: Materializer) {
 
   private val log = Logger(this.getClass)
 
@@ -118,19 +123,37 @@ class ResolvedServicesProvider(bindings: Seq[ServiceGuiceSupport.ServiceBinding[
 }
 
 @Singleton
-class JavadslServicesRouter @Inject() (resolvedServices: ResolvedServices, httpConfiguration: HttpConfiguration, parsers: PlayBodyParsers)(implicit ec: ExecutionContext, mat: Materializer) extends SimpleRouter with LagomServiceRouter {
+class JavadslServicesRouter @Inject() (
+  resolvedServices:  ResolvedServices,
+  httpConfiguration: HttpConfiguration,
+  parsers:           PlayBodyParsers,
+  additionalRouters: AdditionalRouters
+)(implicit ec: ExecutionContext, mat: Materializer) extends SimpleRouter with LagomServiceRouter {
 
   private val serviceRouters = resolvedServices.services.map { service =>
     new JavadslServiceRouter(service.descriptor, service.service, httpConfiguration, parsers)
   }
 
-  override val routes: Routes =
-    serviceRouters.foldLeft(PartialFunction.empty[PlayRequestHeader, Handler])((routes, router) => routes.orElse(router.routes))
+  override val routes: Routes = {
+    val mergedRouters =
+      serviceRouters.foldLeft(PartialFunction.empty[PlayRequestHeader, Handler]) {
+        (routes, router) => routes.orElse(router.routes)
+      }
+
+    additionalRouters.getRouters.asScala.foldLeft(mergedRouters) {
+      (routes, router) => routes.orElse(router.asScala().routes)
+    }
+  }
 
   override def documentation: Seq[(String, String, String)] = serviceRouters.flatMap(_.documentation)
 }
 
-class JavadslServiceRouter(override protected val descriptor: Descriptor, service: Any, httpConfiguration: HttpConfiguration, parsers: PlayBodyParsers)(implicit ec: ExecutionContext, mat: Materializer)
+class JavadslServiceRouter(
+  override protected val descriptor: Descriptor,
+  service:                           Any,
+  httpConfiguration:                 HttpConfiguration,
+  parsers:                           PlayBodyParsers
+)(implicit ec: ExecutionContext, mat: Materializer)
   extends ServiceRouter(httpConfiguration, parsers) with JavadslServiceApiBridge with LagomServiceRouter {
 
   private class JavadslServiceRoute(override val call: Call[Any, Any]) extends ServiceRoute {

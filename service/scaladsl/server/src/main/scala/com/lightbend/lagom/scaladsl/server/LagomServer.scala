@@ -27,6 +27,15 @@ sealed trait LagomServer {
   // TODO: replace with LagomServiceBinding[_] when removing LagomServer.forServices
   val serviceBindings: immutable.Seq[LagomServiceBinding[_]]
   def router: LagomServiceRouter
+
+  final def plusRouter(additionalRouter: Router) = {
+    val self = this
+    new LagomServer {
+      override val name: String = self.name
+      override val serviceBindings: immutable.Seq[LagomServiceBinding[_]] = self.serviceBindings
+      override def router: LagomServiceRouter = self.router.plusRouter(additionalRouter)
+    }
+  }
 }
 
 /**
@@ -43,7 +52,22 @@ sealed trait LagomServer {
  * ->   /     com.lightbend.lagom.scaladsl.server.LagomServiceRouter
  * ```
  */
-trait LagomServiceRouter extends Router
+trait LagomServiceRouter extends Router {
+
+  final def plusRouter(additionalRouter: Router): LagomServiceRouter = {
+    val self = this
+    new LagomServiceRouter {
+      override val documentation: Seq[(String, String, String)] =
+        self.documentation ++ additionalRouter.documentation
+
+      override def withPrefix(prefix: String): Router =
+        self.withPrefix(prefix).orElse(additionalRouter.withPrefix(prefix))
+
+      override val routes: Routes =
+        self.routes.orElse(additionalRouter.routes)
+    }
+  }
+}
 
 object LagomServer {
   @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Use LagomServerComponents.serverFor instead", "1.3.3")
