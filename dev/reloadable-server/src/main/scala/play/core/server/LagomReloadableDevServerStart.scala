@@ -8,13 +8,14 @@ import java.net.InetAddress
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import play.api.ApplicationLoader.DevContext
 import play.api._
 import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
 import play.core.server.ReloadableServer
 import play.utils.Threads
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
@@ -134,9 +135,14 @@ object LagomReloadableDevServerStart {
               // Let's load the application on another thread
               // as we are now on the Netty IO thread.
               //
-              // Because we are on DEV mode here, it doesn't really matter
-              // but it's more coherent with the way it works in PROD mode.
-              implicit val ec = play.core.Execution.internalContext
+              // this whole Await.result(Future{}) thing has been revisited in Play
+              // but the issue is not yet fully addressed there neither
+              // see issues:
+              // https://github.com/playframework/playframework/pull/7627
+              // and https://github.com/playframework/playframework/pull/7644
+              //
+              // we should reconsider if still need to have our own reloadable server
+              implicit val ec = ExecutionContext.global
               Await.result(scala.concurrent.Future {
 
                 val reloaded = buildLink.reload match {
@@ -172,7 +178,11 @@ object LagomReloadableDevServerStart {
                       }
 
                       val newApplication = Threads.withContextClassLoader(projectClassloader) {
-                        val context = ApplicationLoader.createContext(environment, dirAndDevSettings, Some(sourceMapper))
+                        val context = ApplicationLoader.Context.create(
+                          environment = environment,
+                          initialSettings = dirAndDevSettings,
+                          devContext = Some(DevContext(sourceMapper, buildLink))
+                        )
                         val loader = ApplicationLoader(context)
                         loader.load(context)
                       }
@@ -188,21 +198,21 @@ object LagomReloadableDevServerStart {
                         logExceptionAndGetResult(path, e, hint)
                         lastState
 
-                      case e: PlayException => {
+                      case e: PlayException =>
                         lastState = Failure(e)
                         logExceptionAndGetResult(path, e)
                         lastState
-                      }
-                      case NonFatal(e) => {
+
+                      case NonFatal(e) =>
                         lastState = Failure(UnexpectedException(unexpected = Some(e)))
                         logExceptionAndGetResult(path, e)
                         lastState
-                      }
-                      case e: LinkageError => {
+
+                      case e: LinkageError =>
                         lastState = Failure(UnexpectedException(unexpected = Some(e)))
                         logExceptionAndGetResult(path, e)
                         lastState
-                      }
+
                     }
                   }
 
