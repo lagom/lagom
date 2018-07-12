@@ -1123,7 +1123,7 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(common: _*)
   .settings(scriptedSettings: _*)
-  .enablePlugins(SbtPluginPlugins)
+  .enablePlugins(SbtPluginPlugins, SbtTwirl)
   .settings(
     name := "lagom-sbt-plugin",
     sbtPlugin := true,
@@ -1131,13 +1131,11 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     scalaVersion := Dependencies.SbtScalaVersions.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     Dependencies.`sbt-plugin`,
-    libraryDependencies ++= Seq(
-      Defaults.sbtPluginExtra(
-        "com.typesafe.play" % "sbt-plugin" % Dependencies.PlayVersion,
-        CrossVersion.binarySbtVersion((sbtVersion in pluginCrossBuild).value),
-        CrossVersion.binaryScalaVersion(scalaVersion.value)
-      ).exclude("org.slf4j", "slf4j-simple")
-    ),
+    libraryDependencies ++= Dependencies.sbtPluginDeps(
+      (sbtVersion in pluginCrossBuild).value,
+      scalaVersion.value
+    )
+    ,
     scriptedDependencies := {
       val () = scriptedDependencies.value
       val () = publishLocal.value

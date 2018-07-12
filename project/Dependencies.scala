@@ -16,6 +16,7 @@ object Dependencies {
   // Also be sure to update AkkaVersion in docs/build.sbt.
   val AkkaVersion = "2.5.13"
   val AkkaHttpVersion = "10.0.13"
+  val AkkaGrpcVersion = "0.1+31-8ae8c6da+20180615-1624"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.6", "2.11.12")
   val SbtScalaVersions = Seq("2.10.6", "2.12.6")
@@ -666,6 +667,28 @@ object Dependencies {
     "org.slf4j" % "slf4j-nop" % "1.7.14",
     scalaTest % Test
   )
+
+  // Computes some dynamic deps depending on the sbt version. This deps
+  // are Defaults.sbtPluginExtra in all cases.
+  def sbtPluginDeps(sbtVersion: String, scalaVersion: String) = {
+    Seq(
+      Defaults.sbtPluginExtra(
+        "com.typesafe.play" % "sbt-plugin" % Dependencies.PlayVersion,
+        CrossVersion.binarySbtVersion(sbtVersion),
+        CrossVersion.binaryScalaVersion(scalaVersion)
+      ).exclude("org.slf4j", "slf4j-simple")) ++ {
+      if (sbtVersion.contains("0.13")) {
+        Nil
+      } else {
+        Seq(
+          Defaults.sbtPluginExtra(
+            "com.lightbend.akka.grpc" % "sbt-akka-grpc" % Dependencies.AkkaGrpcVersion,
+            CrossVersion.binarySbtVersion(sbtVersion),
+            CrossVersion.binaryScalaVersion(scalaVersion))
+        )
+      }
+    }
+  }
 
   val `maven-plugin` = libraryDependencies ++= Seq(
     "org.apache.maven" % "maven-plugin-api" % MavenVersion,
