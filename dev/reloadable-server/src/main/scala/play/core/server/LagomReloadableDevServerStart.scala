@@ -132,16 +132,6 @@ object LagomReloadableDevServerStart {
 
             synchronized {
 
-              // Let's load the application on another thread
-              // as we are now on the Netty IO thread.
-              //
-              // this whole Await.result(Future{}) thing has been revisited in Play
-              // but the issue is not yet fully addressed there neither
-              // see issues:
-              // https://github.com/playframework/playframework/pull/7627
-              // and https://github.com/playframework/playframework/pull/7644
-              //
-              // we should reconsider if still need to have our own reloadable server
               val reloaded = buildLink.reload match {
                 case NonFatal(t)     => Failure(t)
                 case cl: ClassLoader => Success(Some(cl))
