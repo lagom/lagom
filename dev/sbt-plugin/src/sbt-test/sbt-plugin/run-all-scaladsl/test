@@ -1,24 +1,25 @@
 # Structure of this test:
 # =======================
 
-# Here we test that the `lagomRunReloadAll` task on a multi-projects build. Both project 
+# Here we test that the `lagomRunReloadAll` task on a multi-projects build. Both project
 # `a` and `b` have the LagomScala plugin enable, while project `c` doesn't. Therefore, we
-# expect that evaluating the `runReloadAll` task will load both project `a` and `b` 
-# applications, but not the one for project `c`. Then, any change that result in a classpath 
-# change on either project `a` or `b` will cause the application to reload, while the same 
+# expect that evaluating the `runReloadAll` task will load both project `a` and `b`
+# applications, but not the one for project `c`. Then, any change that result in a classpath
+# change on either project `a` or `b` will cause the application to reload, while the same
 # kind of changes applied to project `c` won't produce any effect.
 
 # Additionally, when making assertions about reloads, we need to wait:
-# 1) At least a second after changing the file before we make a request. The reason 
-#    for this is that the classpath change detection is based on file modification 
+# 1) At least a second after changing the file before we make a request. The reason
+#    for this is that the classpath change detection is based on file modification
 #    times, which only have 1 second precision.
-# 2) Another 6 seconds to allow the application to be recompiled and reloaded. Because 
-#    we are waiting for "stuff" to happen in the background, it is possible that we 
-#    should wait for longer on slower machines (i.e., this test has the potential of 
+# 2) Another 6 seconds to allow the application to be recompiled and reloaded. Because
+#    we are waiting for "stuff" to happen in the background, it is possible that we
+#    should wait for longer on slower machines (i.e., this test has the potential of
 #    being flaky).
 
 # `runAll` tests
 # --------------
+> clean
 > runAll
 > verifyReloadsProjA 1
 > assertRequest 10000 /foo ack foo
