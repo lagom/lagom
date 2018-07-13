@@ -188,7 +188,7 @@ object LagomApplicationContext {
    * Create a Lagom application loader context.
    *
    * @param context The Play context to wrap.
-   * @return A Lagom applciation context.
+   * @return A Lagom application context.
    */
   def apply(context: Context): LagomApplicationContext = new LagomApplicationContext {
     override val playContext: Context = context
@@ -197,7 +197,13 @@ object LagomApplicationContext {
   /**
    * A test application loader context, useful when loading the application in unit or integration tests.
    */
-  val Test = apply(Context(Environment.simple(), None, new DefaultWebCommands, Configuration.empty, new DefaultApplicationLifecycle))
+  val Test = apply(Context(
+    environment = Environment.simple(),
+    devContext = None,
+    initialConfiguration = Configuration.empty,
+    lifecycle = new DefaultApplicationLifecycle
+  ))
+
 }
 
 /**
