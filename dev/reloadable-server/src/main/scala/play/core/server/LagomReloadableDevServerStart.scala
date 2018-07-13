@@ -142,88 +142,83 @@ object LagomReloadableDevServerStart {
               // and https://github.com/playframework/playframework/pull/7644
               //
               // we should reconsider if still need to have our own reloadable server
-              implicit val ec = ExecutionContext.global
-              Await.result(scala.concurrent.Future {
+              val reloaded = buildLink.reload match {
+                case NonFatal(t)     => Failure(t)
+                case cl: ClassLoader => Success(Some(cl))
+                case null            => Success(None)
+              }
 
-                val reloaded = buildLink.reload match {
-                  case NonFatal(t)     => Failure(t)
-                  case cl: ClassLoader => Success(Some(cl))
-                  case null            => Success(None)
-                }
+              reloaded.flatMap { maybeClassLoader =>
 
-                reloaded.flatMap { maybeClassLoader =>
+                val maybeApplication: Option[Try[Application]] = maybeClassLoader.map { projectClassloader =>
+                  try {
 
-                  val maybeApplication: Option[Try[Application]] = maybeClassLoader.map { projectClassloader =>
-                    try {
+                    if (lastState.isSuccess) {
+                      println()
+                      println(play.utils.Colors.magenta("--- (RELOAD) ---"))
+                      println()
+                    }
 
-                      if (lastState.isSuccess) {
-                        println()
-                        println(play.utils.Colors.magenta("--- (RELOAD) ---"))
-                        println()
-                      }
+                    // First, stop the old application if it exists
+                    lastState.foreach(Play.stop)
 
-                      // First, stop the old application if it exists
-                      lastState.foreach(Play.stop)
-
-                      // Create the new environment
-                      val environment = Environment(path, projectClassloader, Mode.Dev)
-                      val sourceMapper = new SourceMapper {
-                        def sourceOf(className: String, line: Option[Int]) = {
-                          Option(buildLink.findSource(className, line.map(_.asInstanceOf[java.lang.Integer]).orNull)).flatMap {
-                            case Array(file: java.io.File, null) => Some((file, None))
-                            case Array(file: java.io.File, line: java.lang.Integer) => Some((file, Some(line)))
-                            case _ => None
-                          }
+                    // Create the new environment
+                    val environment = Environment(path, projectClassloader, Mode.Dev)
+                    val sourceMapper = new SourceMapper {
+                      def sourceOf(className: String, line: Option[Int]) = {
+                        Option(buildLink.findSource(className, line.map(_.asInstanceOf[java.lang.Integer]).orNull)).flatMap {
+                          case Array(file: java.io.File, null) => Some((file, None))
+                          case Array(file: java.io.File, line: java.lang.Integer) => Some((file, Some(line)))
+                          case _ => None
                         }
                       }
-
-                      val newApplication = Threads.withContextClassLoader(projectClassloader) {
-                        val context = ApplicationLoader.Context.create(
-                          environment = environment,
-                          initialSettings = dirAndDevSettings,
-                          devContext = Some(DevContext(sourceMapper, buildLink))
-                        )
-                        val loader = ApplicationLoader(context)
-                        loader.load(context)
-                      }
-
-                      Play.start(newApplication)
-
-                      Success(newApplication)
-                    } catch {
-                      // No binary dependency on play-guice
-                      case e if e.getClass.getName == "com.google.inject.CreationException" =>
-                        lastState = Failure(e)
-                        val hint = "Hint: Maybe you have forgot to enable your service Module class via `play.modules.enabled`? (check in your project's application.conf)"
-                        logExceptionAndGetResult(path, e, hint)
-                        lastState
-
-                      case e: PlayException =>
-                        lastState = Failure(e)
-                        logExceptionAndGetResult(path, e)
-                        lastState
-
-                      case NonFatal(e) =>
-                        lastState = Failure(UnexpectedException(unexpected = Some(e)))
-                        logExceptionAndGetResult(path, e)
-                        lastState
-
-                      case e: LinkageError =>
-                        lastState = Failure(UnexpectedException(unexpected = Some(e)))
-                        logExceptionAndGetResult(path, e)
-                        lastState
-
                     }
-                  }
 
-                  maybeApplication.flatMap(_.toOption).foreach { app =>
-                    lastState = Success(app)
-                  }
+                    val newApplication = Threads.withContextClassLoader(projectClassloader) {
+                      val context = ApplicationLoader.Context.create(
+                        environment = environment,
+                        initialSettings = dirAndDevSettings,
+                        devContext = Some(DevContext(sourceMapper, buildLink))
+                      )
+                      val loader = ApplicationLoader(context)
+                      loader.load(context)
+                    }
 
-                  maybeApplication.getOrElse(lastState)
+                    Play.start(newApplication)
+
+                    Success(newApplication)
+                  } catch {
+                    // No binary dependency on play-guice
+                    case e if e.getClass.getName == "com.google.inject.CreationException" =>
+                      lastState = Failure(e)
+                      val hint = "Hint: Maybe you have forgot to enable your service Module class via `play.modules.enabled`? (check in your project's application.conf)"
+                      logExceptionAndGetResult(path, e, hint)
+                      lastState
+
+                    case e: PlayException =>
+                      lastState = Failure(e)
+                      logExceptionAndGetResult(path, e)
+                      lastState
+
+                    case NonFatal(e) =>
+                      lastState = Failure(UnexpectedException(unexpected = Some(e)))
+                      logExceptionAndGetResult(path, e)
+                      lastState
+
+                    case e: LinkageError =>
+                      lastState = Failure(UnexpectedException(unexpected = Some(e)))
+                      logExceptionAndGetResult(path, e)
+                      lastState
+
+                  }
                 }
 
-              }, Duration.Inf)
+                maybeApplication.flatMap(_.toOption).foreach { app =>
+                  lastState = Success(app)
+                }
+
+                maybeApplication.getOrElse(lastState)
+              }
             }
           }
 
