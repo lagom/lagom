@@ -7,7 +7,7 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.15"
+  val PlayVersion = "2.6.16"
   val PlayJsonVersion = "2.6.9"
   val PlayStandaloneWsVersion = "1.1.9"
   val TwirlVersion = "1.3.14"
@@ -150,6 +150,7 @@ object Dependencies {
       "com.google.inject" % "guice" % "4.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "4.1.0",
       "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
+      "javax.xml.bind" % "jaxb-api" % "2.3.0",
       h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
       "com.lmax" % "disruptor" % "3.3.6",
