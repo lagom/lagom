@@ -14,7 +14,7 @@ object Dependencies {
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.13"
+  val AkkaVersion = "2.5.14"
   val AkkaHttpVersion = "10.0.13"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.6", "2.11.12")
@@ -68,7 +68,7 @@ object Dependencies {
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
   private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0"
-  private val typesafeConfig = "com.typesafe" % "config" % "1.3.2"
+  private val typesafeConfig = "com.typesafe" % "config" % "1.3.3"
   private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.3"
   private val h2 = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0" excludeAll (excludeSlf4j: _*)
