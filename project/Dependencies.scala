@@ -150,6 +150,7 @@ object Dependencies {
       "com.google.inject" % "guice" % "4.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "4.1.0",
       "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
+      "javax.xml.bind" % "jaxb-api" % "2.3.0",
       h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
       "com.lmax" % "disruptor" % "3.3.6",
