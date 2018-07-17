@@ -757,6 +757,10 @@ object Dependencies {
     akkaHttpCore,
     scalaTest % Test
   )
+  val `dev-mode-ssl-support` = libraryDependencies ++= Seq(
+    playAkkaHttpServer,
+    akkaHttpCore
+  )
 
   val `service-registry-client-core` =
     libraryDependencies ++= Seq(

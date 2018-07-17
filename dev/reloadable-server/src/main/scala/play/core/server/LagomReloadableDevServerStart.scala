@@ -9,15 +9,14 @@ import java.net.InetAddress
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.lightbend.lagom.devmode.ssl.FakeKeyStoreGenerator
 import play.api.ApplicationLoader.DevContext
 import play.api._
 import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
-import play.core.server.ReloadableServer
 import play.utils.Threads
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ Await, ExecutionContext, Future }
-import scala.concurrent.duration._
+import scala.concurrent.Future
 import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
 
@@ -36,39 +35,11 @@ object LagomReloadableDevServerStart {
    */
   private val startupWarningThreshold = 1000L
 
-  /**
-   * Provides an HTTPS-only server for the dev environment.
-   *
-   * <p>This method uses simple Java types so that it can be used with reflection by code
-   * compiled with different versions of Scala.
-   */
-  def mainDevOnlyHttpsMode(
-    buildLink:   BuildLink,
-    httpsPort:   Int,
-    httpAddress: String
-  ): ReloadableServer = {
-    mainDev(buildLink, None, Some(httpsPort), httpAddress)
-  }
-
-  /**
-   * Provides an HTTP server for the dev environment
-   *
-   * <p>This method uses simple Java types so that it can be used with reflection by code
-   * compiled with different versions of Scala.
-   */
-  def mainDevHttpMode(
+  def mainDev(
     buildLink:   BuildLink,
     httpAddress: String,
-    httpPort:    Int
-  ): ReloadableServer = {
-    mainDev(buildLink, Some(httpPort), None, httpAddress)
-  }
-
-  private def mainDev(
-    buildLink:   BuildLink,
     httpPort:    Option[Int],
-    httpsPort:   Option[Int],
-    httpAddress: String
+    httpsPort:   Option[Int]
   ): ReloadableServer = {
     val classLoader = getClass.getClassLoader
     Threads.withContextClassLoader(classLoader) {
@@ -76,12 +47,22 @@ object LagomReloadableDevServerStart {
         val process = new RealServerProcess(args = Seq.empty)
         val path: File = buildLink.projectPath
 
+        val httpsSettings: Option[Map[String, String]] = httpsPort.map { port =>
+          Map(
+            "play.server.https.port" -> port.toString,
+            "play.server.https.keyStore.path" -> FakeKeyStoreGenerator.keyStoreFile(new File(".")).getAbsolutePath,
+            "play.server.https.keyStore.type" -> "JKS",
+            "ssl-config.loose.disableHostnameVerification" -> "true"
+          )
+        }
+
         val dirAndDevSettings: Map[String, String] =
           ServerConfig.rootDirConfig(path) ++
             buildLink.settings.asScala.toMap ++
-            httpPort.toList.map("play.server.http.port" -> _.toString).toMap +
-            ("play.server.http.address" -> httpAddress) +
-            {
+            httpPort.toList.map("play.server.http.port" -> _.toString).toMap ++
+            httpsSettings.getOrElse(Map.empty) +
+            ("play.server.https.address" -> httpAddress) +
+            ("play.server.akka.http2.enabled" -> "true") + {
               // on dev-mode, we often have more than one cluster on the same jvm
               "akka.cluster.jmx.multi-mbeans-in-same-jvm" -> "on"
             }

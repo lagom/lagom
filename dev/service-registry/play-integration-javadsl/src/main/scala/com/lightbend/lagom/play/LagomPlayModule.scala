@@ -83,8 +83,8 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Config, serviceInfo: Se
     this(config.underlying, serviceInfo, serviceRegistry, applicationLifecycle)
 
   private val httpAddress = config.getString("play.server.http.address")
-  private val httpPort = config.getString("play.server.http.port")
-  private val serviceUrl = new URI(s"http://$httpAddress:$httpPort")
+  private val httpPort = config.getString("play.server.https.port")
+  private val serviceUrl = new URI(s"https://$httpAddress:$httpPort")
 
   // TODO: ServiceRegistryService should not flatmap the ACL lists (locatableService's names are lost)
   private val serviceAcls = serviceInfo.getAcls

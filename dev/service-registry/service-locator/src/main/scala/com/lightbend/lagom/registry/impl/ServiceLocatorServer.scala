@@ -4,7 +4,7 @@
 
 package com.lightbend.lagom.registry.impl
 
-import java.io.Closeable
+import java.io.{ Closeable, File }
 import java.net.{ InetSocketAddress, URI }
 import java.util.{ Map => JMap }
 
@@ -25,7 +25,10 @@ class ServiceLocatorServer extends Closeable {
   def start(serviceLocatorAddress: String, serviceLocatorPort: Int, serviceGatewayAddress: String, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit = synchronized {
     require(server == null, "Service locator is already running on " + server.mainAddress)
 
-    val application = createApplication(ServiceGatewayConfig(serviceGatewayAddress, serviceGatewayPort), unmanagedServices)
+    // we create a single application which we will reuse for both gateway and locator
+    val application = createApplication(ServiceGatewayConfig(serviceGatewayAddress, serviceGatewayPort, new File(".")), unmanagedServices)
+
+    // the service locator is a play app
     Play.start(application)
     try {
       server = createServer(application, serviceLocatorAddress, serviceLocatorPort)
@@ -33,6 +36,8 @@ class ServiceLocatorServer extends Closeable {
       case NonFatal(e) =>
         throw new RuntimeException(s"Unable to start service locator on port $serviceLocatorPort", e)
     }
+
+    // the service gateway is a bare-AkkaHTTP server
     try {
       gatewayAddress = gatewayImpl match {
         case "netty"     => application.injector.instanceOf[NettyServiceGatewayFactory].start().address
@@ -48,7 +53,14 @@ class ServiceLocatorServer extends Closeable {
   }
 
   private def createApplication(serviceGatewayConfig: ServiceGatewayConfig, unmanagedServices: JMap[String, String]): Application = {
-    new GuiceApplicationBuilder()
+    val initialSettings = Map(
+      "ssl-config.loose.disableHostnameVerification" -> "true"
+    )
+    val environment = Environment.simple()
+    new GuiceApplicationBuilder(
+      environment = environment,
+      configuration = Configuration.load(environment, initialSettings)
+    )
       .overrides(new ServiceRegistryModule(serviceGatewayConfig, unmanagedServices))
       .build()
   }
@@ -74,6 +86,7 @@ class ServiceLocatorServer extends Closeable {
   }
 
   def serviceGatewayAddress: URI = {
-    new URI(s"http://${gatewayAddress.getHostName}:${gatewayAddress.getPort}")
+    new URI(s"https://${gatewayAddress.getHostName}:${gatewayAddress.getPort}")
   }
+
 }

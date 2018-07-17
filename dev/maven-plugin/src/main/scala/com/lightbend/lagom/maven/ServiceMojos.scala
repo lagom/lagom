@@ -56,8 +56,12 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
   @BeanProperty
   var serviceAddress: String = _
 
+  // TODO: deprecate in favor of serviceHttpPort
   @BeanProperty
   var servicePort: Int = _
+
+  @BeanProperty
+  var serviceHttpsPort: Int = _
 
   @BeanProperty
   var servicePortRange: PortRangeBean = new PortRangeBean
@@ -104,24 +108,30 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
       case (true, configured) => Some(configured)
     }
 
-    val selectedPort = if (servicePort == -1) {
-      val portMap = serviceManager.getPortMap(
-        servicePortRange,
-        externalProjects.asScala.map(d => d.artifact.getGroupId + ":" + d.artifact.getArtifactId)
-      )
-      val port = portMap.get(ProjectName(project.getArtifactId))
-      port.map(_.value).getOrElse {
-        sys.error("No port selected for service " + project.getArtifactId)
+    def selectPort(servicePort: Int, useTls: Boolean) = {
+      if (servicePort == -1) {
+        val portMap = serviceManager.getPortMap(
+          servicePortRange,
+          externalProjects.asScala.map(d => d.artifact.getGroupId + ":" + d.artifact.getArtifactId)
+        )
+        val portId = if (useTls) s"s{project.getArtifactId}-tls" else project.getArtifactId
+        val port = portMap.get(ProjectName(portId))
+        port.map(_.value).getOrElse {
+          sys.error(s"No port selected for service ${project.getArtifactId} (use TLS: $useTls)")
+        }
+      } else {
+        servicePort
       }
-    } else {
-      servicePort
     }
+
+    val selectedPort = selectPort(servicePort, useTls = false)
+    val selectedHttpsPort = selectPort(serviceHttpsPort, useTls = true)
 
     val cassandraPort = if (cassandraEnabled) {
       Some(this.cassandraPort)
     } else None
 
-    serviceManager.startServiceDevMode(project, serviceAddress, selectedPort, serviceLocatorUrl, cassandraPort, playService = playService, resolvedWatchDirs)
+    serviceManager.startServiceDevMode(project, serviceAddress, selectedPort, selectedHttpsPort, serviceLocatorUrl, cassandraPort, playService = playService, resolvedWatchDirs)
   }
 }
 
@@ -196,20 +206,27 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
         sys.error("External projects must specify an artifact with a groupId, artifactId and version")
       }
 
-      val selectedPort = if (project.servicePort == -1) {
-        val port = portMap.get(ProjectName(project.artifact.getGroupId + ":" + project.artifact.getArtifactId))
-        port.map(_.value).getOrElse {
-          sys.error("No port selected for service " + project.artifact.getArtifactId)
+      def selectPort(servicePort: Int, useTls: Boolean) = {
+        if (servicePort == -1) {
+          val artifactBasename = project.artifact.getGroupId + ":" + project.artifact.getArtifactId
+          val portId = if (useTls) s"$artifactBasename-tls" else artifactBasename
+          val port = portMap.get(ProjectName(portId))
+          port.map(_.value).getOrElse {
+            sys.error(s"No port selected for service $artifactBasename (use TLS: $useTls)")
+          }
+        } else {
+          servicePort
         }
-      } else {
-        project.servicePort
       }
+
+      val selectedPort = selectPort(project.servicePort, useTls = false)
+      val selectedHttpsPort = selectPort(project.serviceHttpsPort, useTls = false)
 
       val serviceCassandraPort = cassandraPort.filter(_ => project.cassandraEnabled)
 
       val dependency = RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
 
-      serviceManager.startExternalProject(dependency, serviceAddress, selectedPort, serviceLocatorUrl, serviceCassandraPort, playService = project.playService)
+      serviceManager.startExternalProject(dependency, serviceAddress, selectedPort, selectedHttpsPort, serviceLocatorUrl, serviceCassandraPort, playService = project.playService)
     }
   }
 
@@ -235,8 +252,12 @@ class ExternalProject {
   @BeanProperty
   var playService: Boolean = false
 
+  // TODO: deprecate in favor of serviceHttpPort
   @BeanProperty
   var servicePort: Int = -1
+
+  @BeanProperty
+  var serviceHttpsPort: Int = -1
 
   @BeanProperty
   var cassandraEnabled: Boolean = true

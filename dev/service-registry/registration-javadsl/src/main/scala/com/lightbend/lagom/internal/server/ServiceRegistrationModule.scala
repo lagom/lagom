@@ -33,8 +33,8 @@ object ServiceRegistrationModule {
 
     override lazy val get = {
       val httpAddress = config.getString("play.server.http.address")
-      val httpPort = config.getString("play.server.http.port")
-      val url = new URI(s"http://$httpAddress:$httpPort")
+      val httpsPort = config.getString("play.server.https.port")
+      val url = new URI(s"https://$httpAddress:$httpsPort")
 
       ServiceConfig(url)
     }

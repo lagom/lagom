@@ -25,8 +25,8 @@ class ServiceRegistration(
   private val logger: Logger = Logger(this.getClass)
   private val uri = {
     val httpAddress = config.getString("play.server.http.address")
-    val httpPort = config.getString("play.server.http.port")
-    URI.create(s"http://$httpAddress:$httpPort")
+    val httpPort = config.getString("play.server.https.port")
+    URI.create(s"https://$httpAddress:$httpPort")
   }
 
   coordinatedShutdown.addTask(CoordinatedShutdown.PhaseBeforeServiceUnbind, "unregister-services-from-service-locator-scaladsl") { () =>

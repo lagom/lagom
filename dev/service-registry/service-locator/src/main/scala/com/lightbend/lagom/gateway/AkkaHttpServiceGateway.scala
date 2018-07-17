@@ -9,16 +9,18 @@ import java.util.Locale
 
 import akka.Done
 import akka.actor.{ ActorRef, ActorSystem, CoordinatedShutdown }
-import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.ws._
+import akka.http.scaladsl.{ ConnectionContext, Http, HttpExt, HttpsConnectionContext }
 import akka.pattern.ask
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
 import akka.util.Timeout
+import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLEngineProvider
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 import com.lightbend.lagom.registry.impl.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
 import javax.inject.{ Inject, Named }
+import javax.net.ssl.SSLContext
 import org.slf4j.LoggerFactory
 import play.api.libs.typedmap.TypedMap
 import play.api.mvc.request.{ RemoteConnection, RequestAttrKey, RequestTarget }
@@ -33,19 +35,29 @@ import scala.concurrent.{ Await, Future }
 class AkkaHttpServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig)
   (@Named("serviceRegistryActor") registry: ActorRef)
   (implicit actorSystem: ActorSystem, mat: Materializer) {
-
   def start(): InetSocketAddress = {
     new AkkaHttpServiceGateway(coordinatedShutdown, config, registry).address
   }
 }
 
-class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig, registry: ActorRef)(implicit actorSystem: ActorSystem, mat: Materializer) {
+class AkkaHttpServiceGateway(
+  coordinatedShutdown: CoordinatedShutdown,
+  config:              ServiceGatewayConfig,
+  registry:            ActorRef
+)(implicit actorSystem: ActorSystem, mat: Materializer) {
 
   private val log = LoggerFactory.getLogger(classOf[AkkaHttpServiceGateway])
 
   import actorSystem.dispatcher
+
   private implicit val timeout = Timeout(5.seconds)
-  val http = Http()
+
+  val sslCtx: SSLContext = new LagomDevModeSSLEngineProvider(config.rootLagomProjectFolder).sslContext
+
+  private val devModeConnectionContext: HttpsConnectionContext = ConnectionContext.https(sslCtx)
+
+  val http: HttpExt = Http()
+  http.setDefaultClientHttpsContext(ConnectionContext.https(sslCtx))
 
   private val handler = Flow[HttpRequest].mapAsync(1) { request =>
     log.debug("Routing request {}", request)
@@ -58,9 +70,20 @@ class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: S
         val newUri = request.uri.withAuthority(serviceUri.getHost, serviceUri.getPort)
         request.header[UpgradeToWebSocket] match {
           case Some(upgrade) =>
-            handleWebSocketRequest(request, newUri, upgrade)
+            handleWebSocketRequest(
+              request,
+              newUri,
+              upgrade,
+              devModeConnectionContext
+            )
           case None =>
-            http.singleRequest(request.withUri(newUri).withHeaders(filterHeaders(request.headers)))
+            val req = request
+              .withUri(newUri)
+              .withHeaders(filterHeaders(request.headers))
+            http.singleRequest(
+              req,
+              connectionContext = devModeConnectionContext
+            )
         }
       case NotFound(registryMap) =>
         log.debug("Sending not found response")
@@ -68,16 +91,21 @@ class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: S
     }
   }
 
-  private def handleWebSocketRequest(request: HttpRequest, uri: Uri, upgrade: UpgradeToWebSocket) = {
+  private def handleWebSocketRequest(request: HttpRequest, uri: Uri, upgrade: UpgradeToWebSocket, connCtx: HttpsConnectionContext) = {
     log.debug("Switching to WebSocket protocol")
     val wsUri = uri.withScheme("ws")
     val flow = Flow.fromSinkAndSourceMat(Sink.asPublisher[Message](fanout = false), Source.asSubscriber[Message])(Keep.both)
 
-    val (responseFuture, (publisher, subscriber)) = http.singleWebSocketRequest(
-      WebSocketRequest(wsUri, extraHeaders = filterHeaders(request.headers),
-        upgrade.requestedProtocols.headOption),
-      flow
-    )
+    val (responseFuture, (publisher, subscriber)) =
+      http.singleWebSocketRequest(
+        WebSocketRequest(
+          wsUri,
+          extraHeaders = filterHeaders(request.headers),
+          upgrade.requestedProtocols.headOption
+        ),
+        flow,
+        connectionContext = connCtx
+      )
 
     responseFuture.map {
 
@@ -101,6 +129,7 @@ class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: S
     // to a Play router with all the acls in the documentation variable so that it can render it
     val router = new SimpleRouter {
       override def routes: Routes = PartialFunction.empty
+
       override val documentation: Seq[(String, String, String)] = registry.toSeq.flatMap {
         case (serviceName, service) =>
           val call = s"Service: $serviceName (${service.uris})"
@@ -159,8 +188,7 @@ class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: S
     headers.filterNot(header => HeadersToFilter(header.lowercaseName()))
   }
 
-  private val bindingFuture = Http().bindAndHandle(handler, config.host, config.port)
-
+  private val bindingFuture = Http().bindAndHandle(handler, config.host, config.port, devModeConnectionContext)
   coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-akka-http-service-gateway") { () =>
     for {
       binding <- bindingFuture
