@@ -31,8 +31,8 @@ object Dependencies {
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.1.25.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
-  val KafkaVersion = "0.11.0.1"
-  val AkkaStreamKafkaVersion = "0.18"
+  val KafkaVersion = "1.0.1"
+  val AlpakkaKafkaVersion = "0.22"
 
   val ScalaJava8CompatVersion = "0.8.0"
   val ScalaXmlVersion = "1.1.0"
@@ -91,7 +91,7 @@ object Dependencies {
   // latest version of APC depend on a Cassandra driver core that's not compatible with Lagom (newer netty/guava/etc... under the covers)
   private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion
   private val akkaPersistenceCassandraLauncher = "com.typesafe.akka" %% "akka-persistence-cassandra-launcher" % AkkaPersistenceCassandraVersion
-  private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafkaVersion
+  private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % AlpakkaKafkaVersion
 
   private val akkaHttpCore = "com.typesafe.akka" %% "akka-http-core" % AkkaHttpVersion
   private val akkaParsing = "com.typesafe.akka" %% "akka-parsing" % AkkaHttpVersion
@@ -197,7 +197,7 @@ object Dependencies {
       "joda-time" % "joda-time" % "2.9.9",
       "junit" % "junit" % JUnitVersion,
       "net.jodah" % "typetools" % "0.5.0",
-      "net.jpountz.lz4" % "lz4" % "1.3.0",
+      "org.lz4" % "lz4-java" % "1.4",
       "org.agrona" % "agrona" % "0.9.17",
       commonsLang,
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
@@ -218,7 +218,7 @@ object Dependencies {
       scalaXml,
       "org.scala-sbt" % "test-interface" % "1.0",
       "org.typelevel" %% "macro-compat" % "1.1.1",
-      "org.xerial.snappy" % "snappy-java" % "1.1.2.6",
+      "org.xerial.snappy" % "snappy-java" % "1.1.4",
       "tyrex" % "tyrex" % "1.0.1"
 
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", AkkaVersion)(
@@ -279,7 +279,7 @@ object Dependencies {
     "com.yammer.metrics" % "metrics-core" % "2.2.0",
     "jline" % "jline" % "0.9.94",
     "log4j" % "log4j" % "1.2.17",
-    "net.sf.jopt-simple" % "jopt-simple" % "5.0.3",
+    "net.sf.jopt-simple" % "jopt-simple" % "5.0.4",
     "org.apache.commons" % "commons-math" % "2.2",
     "org.apache.curator" % "curator-client" % "2.10.0",
     "org.apache.curator" % "curator-framework" % "2.10.0",
