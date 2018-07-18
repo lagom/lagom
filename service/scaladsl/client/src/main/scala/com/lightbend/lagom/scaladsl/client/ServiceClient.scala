@@ -4,11 +4,11 @@
 package com.lightbend.lagom.scaladsl.client
 
 import java.io.File
+import java.util.concurrent.TimeUnit
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.stream.{ ActorMaterializer, Materializer }
-import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl
-import com.lightbend.lagom.internal.client.WebSocketClientConfig
+import com.lightbend.lagom.internal.client.{ CircuitBreakerMetricsProviderImpl, WebSocketClientConfig }
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
 import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
@@ -16,12 +16,13 @@ import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
-import play.api.libs.concurrent.ActorSystemProvider
+import play.api.libs.concurrent.{ ActorSystemProvider, CoordinatedShutdownProvider }
 import play.api.libs.ws.WSClient
 import play.api.{ Configuration, Environment, Mode }
 
 import scala.collection.immutable
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, ExecutionContext }
 import scala.language.experimental.macros
 
 /**
@@ -155,7 +156,8 @@ abstract class LagomClientApplication(
     allowMissingApplicationConf = true
   )
   override lazy val applicationLifecycle: ApplicationLifecycle = defaultApplicationLifecycle
-  lazy val actorSystem: ActorSystem = new ActorSystemProvider(environment, configuration, applicationLifecycle).get
+  lazy val actorSystem: ActorSystem = new ActorSystemProvider(environment, configuration).get
+  lazy val coordinatedShutdown: CoordinatedShutdown = new CoordinatedShutdownProvider(actorSystem, applicationLifecycle).get
 
   override lazy val materializer: Materializer = ActorMaterializer.create(actorSystem)
   override lazy val executionContext: ExecutionContext = actorSystem.dispatcher
@@ -163,5 +165,21 @@ abstract class LagomClientApplication(
   /**
    * Stop the application.
    */
-  def stop(): Unit = defaultApplicationLifecycle.stop()
+  def stop(): Unit = {
+    // CoordinatedShutdown may be invoked many times over the same actorSystem but
+    // only the first invocation runs the tasks (later invocations are noop).
+    val runFromPhase = CoordinatedShutdownProvider.loadRunFromPhaseConfig(actorSystem)
+    val cs = CoordinatedShutdown(actorSystem)
+    // The await operation should last at most the total timeout of the coordinated shutdown.
+    // We're adding a few extra seconds of margin (5 sec) to make sure the coordinated shutdown
+    // has enough room to complete and yet we will timeout in case something goes wrong (invalid setup,
+    // failed task, bug, etc...) preventing the coordinated shutdown from completing.
+    val shutdownTimeout = cs.totalTimeout() + Duration(5, TimeUnit.SECONDS)
+    Await.result(
+      cs.run(ClientStoppedReason, runFromPhase),
+      shutdownTimeout
+    )
+  }
 }
+
+case object ClientStoppedReason extends CoordinatedShutdown.Reason
