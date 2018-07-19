@@ -7,7 +7,7 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.16"
+  val PlayVersion = "2.6.17"
   val PlayJsonVersion = "2.6.9"
   val PlayStandaloneWsVersion = "1.1.9"
   val TwirlVersion = "1.3.14"
