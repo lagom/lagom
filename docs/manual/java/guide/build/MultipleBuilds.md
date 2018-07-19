@@ -77,7 +77,11 @@ The `helloworld` Lagom service can be imported by adding the following declarati
 
 The first argument passed to `lagomExternalJavadslProject` is the name that will be used in your build to refer to this externally defined project. While, the second argument provides the dependency to the `hello-impl` JAR, using the conventional sbt syntax for declaring dependencies. Note in fact that the `lagomExternalJavadslProject` method returns a sbt `Project`, which you can further customize if needed.
 
-After having added the external Lagom project to your build, just type `reload` in the sbt console. Then, when executing `runAll`, you should see that the `hello` service is started, together with all other services defined in the build:
+After having added the external Lagom project to your build, we need to provide the binding as it's necessary to consume a service, so that Lagom can provide an implementation for your application to use.  This can be done using the `bindClient` method on [ServiceClientGuiceSupport](api/index.html?com/lightbend/lagom/javadsl/client/ServiceClientGuiceSupport.html).
+
+@[bind-hello-client](../services/code/docs/services/client/Module.java)
+
+After providing the binding, just type `reload` in the sbt console. Then, when executing `runAll`, you should see that the `hello` service is started, together with all other services defined in the build:
 
 
 ```console
