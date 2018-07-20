@@ -148,7 +148,12 @@ abstract class LagomClientApplication(
 
   override lazy val serviceInfo: ServiceInfo = ServiceInfo(clientName, Map.empty)
   override lazy val environment: Environment = Environment(new File("."), classLoader, Mode.Prod)
-  lazy val configuration: Configuration = Configuration.load(environment, Map.empty)
+  lazy val configuration: Configuration = Configuration.load(
+    environment.classLoader,
+    System.getProperties,
+    Map.empty,
+    allowMissingApplicationConf = true
+  )
   override lazy val applicationLifecycle: ApplicationLifecycle = defaultApplicationLifecycle
   lazy val actorSystem: ActorSystem = new ActorSystemProvider(environment, configuration, applicationLifecycle).get
 
