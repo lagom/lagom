@@ -8,7 +8,6 @@ import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys._
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
 import lagom.Protobuf
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
-import de.heikoseeberger.sbtheader.{ HeaderKey, HeaderPattern }
 import com.typesafe.tools.mima.core._
 import sbt.CrossVersion._
 
@@ -36,22 +35,9 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
   licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))),
   homepage := Some(url("https://www.lagomframework.com/")),
   sonatypeProfileName := "com.lightbend",
-  headers := headers.value ++ Map(
-     "scala" -> (
-       HeaderPattern.cStyleBlockComment,
-       """|/*
-          | * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
-          | */
-          |""".stripMargin
-     ),
-     "java" -> (
-       HeaderPattern.cStyleBlockComment,
-       """|/*
-          | * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
-          | */
-          |""".stripMargin
-     )
-  ),
+  headerLicense := Some(HeaderLicense.Custom(
+    "Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>"
+  )),
 
   pomExtra := {
     <scm>
@@ -225,8 +211,8 @@ def multiJvmTestSettings: Seq[Setting[_]] = {
     forkedTests ++
     // enabling HeaderPlugin in MultiJvm requires two sets of settings.
     // see https://github.com/sbt/sbt-header/issues/37
-    HeaderPlugin.settingsFor(MultiJvm) ++
-    AutomateHeaderPlugin.automateFor(MultiJvm) ++
+    headerSettings(MultiJvm) ++
+    automateHeaderSettings(MultiJvm) ++
     inConfig(MultiJvm)(SbtScalariform.configScalariformSettings) ++
     (compileInputs in(MultiJvm, compile) := {
       (compileInputs in(MultiJvm, compile)) dependsOn (scalariformFormat in MultiJvm)
@@ -1231,7 +1217,7 @@ def archetypeProject(archetypeName: String) =
         (unmanagedResources in Compile).value ++ gitIgnoreFiles
       },
       // Don't force copyright headers in Maven archetypes
-      HeaderKey.excludes := Seq("*")
+      excludeFilter in headerResources := "*"
     ).disablePlugins(EclipsePlugin)
 
 lazy val `maven-java-archetype` = archetypeProject("java")

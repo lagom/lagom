@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.it.mocks;
 
 import akka.Done;
@@ -30,7 +31,7 @@ import java.util.stream.IntStream;
 public class MockServiceImpl implements MockService {
 
     private final Materializer materializer;
-  
+
     @Inject
     public MockServiceImpl(Materializer materializer) {
       this.materializer = materializer;
@@ -48,7 +49,7 @@ public class MockServiceImpl implements MockService {
             return CompletableFuture.completedFuture(NotUsed.getInstance());
         };
     }
-    
+
     @Override
     public ServiceCall<NotUsed, NotUsed> alwaysFail() {
         return request -> {
@@ -56,7 +57,7 @@ public class MockServiceImpl implements MockService {
             throw new RuntimeException("Simulated error");
         };
     }
-    
+
     @Override
     public ServiceCall<Done, Done> doneCall(){
       return done -> CompletableFuture.completedFuture(done);

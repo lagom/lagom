@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.it.mocks;
 
 import static org.junit.Assert.assertEquals;
@@ -18,7 +19,7 @@ import akka.Done;
 import akka.NotUsed;
 
 public class MockServiceTest {
-  
+
   private static TestServer server;
   private static MockService client;
 
@@ -28,7 +29,7 @@ public class MockServiceTest {
         .configureBuilder(b -> b.bindings(new MockServiceModule())));
     client = server.client(MockService.class);
   }
-  
+
   @AfterClass
   public static void tearDown() {
     if (server != null) {
@@ -37,7 +38,7 @@ public class MockServiceTest {
       client = null;
     }
   }
-  
+
   @Test
   public void testInvoke() throws Exception {
     MockRequestEntity req = new MockRequestEntity("bar", 20);
@@ -45,7 +46,7 @@ public class MockServiceTest {
     assertEquals(10, response.incomingId());
     assertEquals(req, response.incomingRequest());
   }
-  
+
   @Test
   public void testInvokeForNotUsedParameters() throws Exception {
     MockServiceImpl.invoked.set(false);
@@ -53,7 +54,7 @@ public class MockServiceTest {
     assertEquals(NotUsed.getInstance(), reply);
     assertTrue(MockServiceImpl.invoked.get());
   }
-  
+
   @Test
   public void testInvokeForDoneParameters() throws Exception {
     MockServiceImpl.invoked.set(false);
@@ -61,8 +62,8 @@ public class MockServiceTest {
         .toCompletableFuture().get(10, SECONDS);
     assertEquals(Done.getInstance(), reply);
   }
-  
+
   // many more tests are written in MockServiceSpec and ErrorHandlingSpec
-  
+
 
 }
