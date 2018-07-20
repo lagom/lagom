@@ -1454,3 +1454,7 @@ commands += Command.command("mimaCheckOneAtATime") { state =>
   }
   state
 }
+
+// TODO remove me before merging!!!
+// This is to allow us to resolve Play snapshots
+resolvers in ThisBuild += Opts.resolver.sonatypeSnapshots
