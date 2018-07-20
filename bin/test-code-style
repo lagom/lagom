@@ -5,7 +5,6 @@
 runSbt  scalariformFormat \
         test:scalariformFormat \
         multi-jvm:scalariformFormat \
-        headerCreate \
         headerCheck \
         test:headerCheck \
         multi-jvm:headerCheck \
