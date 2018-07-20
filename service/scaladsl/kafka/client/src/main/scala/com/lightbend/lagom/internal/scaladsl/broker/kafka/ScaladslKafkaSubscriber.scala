@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.internal.scaladsl.broker.kafka
 
 import java.util.concurrent.atomic.AtomicInteger

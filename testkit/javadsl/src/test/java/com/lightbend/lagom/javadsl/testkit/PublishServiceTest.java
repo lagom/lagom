@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.javadsl.testkit;
 
 import com.lightbend.lagom.javadsl.testkit.services.PublishService;
@@ -25,7 +26,7 @@ public class PublishServiceTest {
     public void shouldEmitGreetingsMessageWhenHelloEntityEmitsEnEvent() {
         withServer(setup, server -> {
             PublishService client = server.client(PublishService.class);
-            Source<PublishEvent, ?> source = 
+            Source<PublishEvent, ?> source =
                   client.messageTopic().subscribe().atMostOnceSource();
 
             // use akka stream testkit

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.serialization
 
 // JsonSerializable would be a nice name, but that is already defined in Jackson,
