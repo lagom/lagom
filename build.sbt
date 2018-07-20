@@ -180,6 +180,8 @@ def formattingPreferences = {
     .setPreference(AlignParameters, true)
     .setPreference(AlignSingleLineCaseStatements, true)
     .setPreference(SpacesAroundMultiImports, true)
+    .setPreference(DanglingCloseParenthesis, Force)
+    .setPreference(AlignArguments, false)
 }
 
 val defaultMultiJvmOptions: List[String] = {
