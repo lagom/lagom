@@ -4,7 +4,6 @@
 package com.lightbend.lagom.scaladsl.client
 
 import java.io.File
-import java.util.concurrent.TimeUnit
 
 import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.stream.{ ActorMaterializer, Materializer }
@@ -21,8 +20,7 @@ import play.api.libs.ws.WSClient
 import play.api.{ Configuration, Environment, Mode }
 
 import scala.collection.immutable
-import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.ExecutionContext
 import scala.language.experimental.macros
 
 /**
@@ -165,21 +163,7 @@ abstract class LagomClientApplication(
   /**
    * Stop the application.
    */
-  def stop(): Unit = {
-    // CoordinatedShutdown may be invoked many times over the same actorSystem but
-    // only the first invocation runs the tasks (later invocations are noop).
-    val runFromPhase = CoordinatedShutdownProvider.loadRunFromPhaseConfig(actorSystem)
-    val cs = CoordinatedShutdown(actorSystem)
-    // The await operation should last at most the total timeout of the coordinated shutdown.
-    // We're adding a few extra seconds of margin (5 sec) to make sure the coordinated shutdown
-    // has enough room to complete and yet we will timeout in case something goes wrong (invalid setup,
-    // failed task, bug, etc...) preventing the coordinated shutdown from completing.
-    val shutdownTimeout = cs.totalTimeout() + Duration(5, TimeUnit.SECONDS)
-    Await.result(
-      cs.run(ClientStoppedReason, runFromPhase),
-      shutdownTimeout
-    )
-  }
+  def stop(): Unit = CoordinatedShutdownProvider.syncShutdown(actorSystem, ClientStoppedReason)
 }
 
 case object ClientStoppedReason extends CoordinatedShutdown.Reason

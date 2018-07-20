@@ -168,19 +168,8 @@ public class LagomClientFactory implements Closeable {
         closeGracefully(() -> eventLoop.shutdownGracefully(0, 10, TimeUnit.SECONDS));
     }
 
-    private void coordinatedShutdown() throws InterruptedException, ExecutionException, TimeoutException {
-        // CoordinatedShutdown may be invoked many times over the same actorSystem but
-        // only the first invocation runs the tasks (later invocations are noop).
-        Optional<String> runFromPhase =
-            OptionConverters.toJava(CoordinatedShutdownProvider.loadRunFromPhaseConfig(actorSystem));
-        CoordinatedShutdown cs = CoordinatedShutdown.get(actorSystem);
-        // The await operation should last at most the total timeout of the coordinated shutdown.
-        // We're adding a few extra seconds of margin (5 sec) to make sure the coordinated shutdown
-        // has enough room to complete and yet we will timeout in case something goes wrong (invalid setup,
-        // failed task, bug, etc...) preventing the coordinated shutdown from completing.
-        Duration shutdownTimeout = Duration.ofNanos(cs.totalTimeout().toNanos()).plus(Duration.ofSeconds(5));
-        cs.run(CoordinatedShutdown.unknownReason(), runFromPhase)
-            .toCompletableFuture().get(shutdownTimeout.getSeconds(), TimeUnit.SECONDS);
+    private void coordinatedShutdown() throws InterruptedException, TimeoutException {
+        CoordinatedShutdownProvider.syncShutdown(actorSystem, CoordinatedShutdown.unknownReason());
     }
 
     /**
