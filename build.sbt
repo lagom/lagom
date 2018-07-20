@@ -1221,7 +1221,7 @@ def archetypeProject(archetypeName: String) =
         (unmanagedResources in Compile).value ++ gitIgnoreFiles
       },
       // Don't force copyright headers in Maven archetypes
-      excludeFilter in Compile := "*"
+      excludeFilter in headerResources := "*"
     ).disablePlugins(EclipsePlugin)
 
 lazy val `maven-java-archetype` = archetypeProject("java")
