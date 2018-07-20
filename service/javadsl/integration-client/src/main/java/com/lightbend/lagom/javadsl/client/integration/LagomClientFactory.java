@@ -48,6 +48,7 @@ import play.api.libs.ws.ahc.AhcWSClientConfig;
 import play.api.libs.ws.ahc.AhcWSClientConfigParser;
 import scala.Function0;
 import scala.Some;
+import scala.collection.immutable.Map$;
 import scala.concurrent.Future;
 
 import java.io.Closeable;
@@ -181,7 +182,13 @@ public class LagomClientFactory implements Closeable {
     public static LagomClientFactory create(String serviceName, ClassLoader classLoader) {
         // Environment and config
         Environment environment = Environment.apply(new File("."), classLoader, Mode.Prod$.MODULE$);
-        Config configuration = Configuration.load(environment).underlying();
+
+        Config configuration = Configuration.load(
+            environment.classLoader(),
+            System.getProperties(),
+            Map$.MODULE$.empty(),
+            true
+        ).underlying();
 
         // Akka
         ActorSystem actorSystem = ActorSystem.create("lagom-client", configuration,
