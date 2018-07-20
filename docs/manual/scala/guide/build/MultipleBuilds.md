@@ -42,7 +42,7 @@ The first argument passed to `lagomExternalScaladslProject` is the name that wil
 
 ## Binding the service
 
-After having added the external Lagom project to your build, we need to provide the binding as it's necessary to consume a service, so that Lagom can provide an implementation for your application to use.  This can be done using the `bindClient` as explained in [[Binding a service client|ServiceClients#Binding-a-service-client]] .
+After having added the external Lagom project to your build, we need to provide the binding as it's necessary to consume a service, so that Lagom can provide an implementation for your application to use.  This can be done using `serviceClient.implement[T]` as explained in [[Binding a service client|ServiceClients#Binding-a-service-client]] .
 
 After providing the binding, just type `reload` in the sbt console. Then, when executing `runAll`, you should see that the `hello` service is started, together with all other services defined in the build:
 
