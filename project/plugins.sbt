@@ -1,7 +1,5 @@
 // Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
 
-sourceGenerators in Compile += buildInfo.taskValue
-
 libraryDependencies ++= Seq(
   "org.scala-sbt" % "scripted-plugin" % sbtVersion.value
 )
