@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.it.two;
 
 import static com.lightbend.lagom.javadsl.api.Service.call;

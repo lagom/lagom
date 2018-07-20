@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.it.mocks;
 
 import akka.util.ByteString;
@@ -31,9 +32,9 @@ public interface MockService extends Service {
     ServiceCall<MockRequestEntity, MockResponseEntity> mockCall(long id);
 
     ServiceCall<NotUsed, NotUsed> doNothing();
-    
+
     ServiceCall<NotUsed, NotUsed> alwaysFail();
-    
+
     ServiceCall<Done, Done> doneCall();
 
     ServiceCall<MockRequestEntity, Source<MockResponseEntity, ?>> streamResponse();

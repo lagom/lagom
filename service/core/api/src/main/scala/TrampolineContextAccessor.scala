@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 import scala.concurrent.ExecutionContext
 
 // Hack to expose play.core.Execution.trampoline, which is package private to [play], to be package private to [lagom].
