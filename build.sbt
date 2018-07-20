@@ -38,10 +38,6 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
   headerLicense := Some(HeaderLicense.Custom(
     "Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>"
   )),
-  headerMappings := headerMappings.value ++ Seq(
-    HeaderFileType.scala,
-    HeaderFileType.java
-  ).map(_ -> HeaderCommentStyle.cStyleBlockComment).toMap,
 
   pomExtra := {
     <scm>
