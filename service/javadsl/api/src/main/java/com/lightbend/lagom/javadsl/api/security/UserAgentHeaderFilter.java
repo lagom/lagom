@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.javadsl.api.security;
 
 import com.lightbend.lagom.javadsl.api.transport.HeaderFilter;

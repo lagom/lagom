@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.it.mocks;
 
 import akka.NotUsed;
@@ -20,7 +21,7 @@ public class PersistenceServiceImpl implements PersistenceService {
   private final CassandraSession db;
 
   @Inject
-  public PersistenceServiceImpl(PersistentEntityRegistry persistentEntityRegistry, PubSubRegistry pubSubRegistry, 
+  public PersistenceServiceImpl(PersistentEntityRegistry persistentEntityRegistry, PubSubRegistry pubSubRegistry,
     CassandraReadSide readSide, CassandraSession db) {
     this.persistentEntityRegistry = persistentEntityRegistry;
     this.pubSubRegistry = pubSubRegistry;
@@ -42,7 +43,7 @@ public class PersistenceServiceImpl implements PersistenceService {
       return CompletableFuture.completedFuture("ok");
     };
   }
-  
+
   @Override
   public ServiceCall<NotUsed, String> checkCassandraSession() {
     return request -> {

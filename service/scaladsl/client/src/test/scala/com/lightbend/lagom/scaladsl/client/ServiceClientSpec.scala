@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.scaladsl.client
 
 import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId

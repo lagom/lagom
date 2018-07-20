@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.javadsl.persistence.jpa;
 
 import com.lightbend.lagom.internal.javadsl.persistence.jpa.JpaReadSideImpl;

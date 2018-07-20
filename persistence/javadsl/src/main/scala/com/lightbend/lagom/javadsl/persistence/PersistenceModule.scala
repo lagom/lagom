@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.javadsl.persistence
 
 import com.lightbend.lagom.internal.javadsl.persistence.{ ReadSideConfigProvider, ReadSideImpl }
