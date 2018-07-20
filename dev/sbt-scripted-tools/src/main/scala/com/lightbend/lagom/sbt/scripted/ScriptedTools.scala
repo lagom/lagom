@@ -136,7 +136,7 @@ object ScriptedTools extends AutoPlugin {
     uri:             Option[URI]    = None,
     retry:           Boolean        = false,
     shouldBeDown:    Boolean        = false,
-    statusAssertion: Int => Unit    = _ => (),
+    statusAssertion: Int => Unit = _ => (),
     bodyAssertion:   String => Unit = _ => ()
   )
 

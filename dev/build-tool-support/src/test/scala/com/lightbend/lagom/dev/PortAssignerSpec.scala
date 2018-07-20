@@ -81,9 +81,9 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
     }
 
     "assign ports first to projects with non-colliding hash/port" in {
-      // Using the range is key to exercise the expected functionality. Basically, we want to check that 
+      // Using the range is key to exercise the expected functionality. Basically, we want to check that
       // the port assigned to `projC` cannot be affected by `projB`, which happens to have the same hash of `projA`.
-      // Said otherwise, projects with non colliding hash should get their port assigned **before** projects 
+      // Said otherwise, projects with non colliding hash should get their port assigned **before** projects
       // that result in a port collision.
       val portRange = PortRange(7, 9)
 
@@ -103,7 +103,7 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       val projectsWithCollisions = Seq(projA, projB, projC)
       val projectName2portWithCollisions = PortAssigner.computeProjectsPort(portRange, projectsWithCollisions)
 
-      // Note how project A and C have still got assigned the same port, while project B will get the next available port, counting 
+      // Note how project A and C have still got assigned the same port, while project B will get the next available port, counting
       // from 7 (which is project's A port). That turns out to be port 9.
       projectName2portWithCollisions(projA) shouldBe Port(7)
       projectName2portWithCollisions(projC) shouldBe Port(8)
