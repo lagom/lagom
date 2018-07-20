@@ -13,8 +13,10 @@ import play.api.inject.{ bind => playBind }
 /**
  * This test will simply wire a minimal application using Guice.
  *
- * It tests that Lagom correctly overrides Play's configuration to
- * fail fast when database is not available.
+ * Lagom used to override default Play configuration to fail on startup when
+ * unable to connect to a configured database.
+ * As of Play 2.7.0, it no longer fails on startup by default.
+ * This test remains to ensure that Lagom doesn't introduce a startup failure.
  */
 class JdbcPersistenceModuleSpec
   extends AsyncWordSpec
