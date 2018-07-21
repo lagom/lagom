@@ -4,7 +4,7 @@ buildInfoSettings
 sourceGenerators in Compile += buildInfo.taskValue
 
 libraryDependencies ++= Seq(
-  "org.scala-sbt" % "scripted-plugin" % sbtVersion.value
+  "org.scala-sbt" %% "scripted-plugin" % "1.1.4" // TODO: replace with sbtVersion.value
 )
 
 addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.3.3")
