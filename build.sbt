@@ -370,6 +370,7 @@ lazy val root = (project in file("."))
   .enablePlugins(lagom.UnidocRoot)
   .settings(UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*)
   .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects).map(Project.projectToRef): _*)
+  .disablePlugins(ScriptedPlugin)
 
 def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) && Unidoc
 def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
@@ -381,6 +382,7 @@ lazy val api = (project in file("service/core/api"))
     name := "lagom-api",
     Dependencies.api
   )
+  .disablePlugins(ScriptedPlugin)
 
 
 lazy val `api-javadsl` = (project in file("service/javadsl/api"))
@@ -395,6 +397,7 @@ lazy val `api-javadsl` = (project in file("service/javadsl/api"))
       ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.javadsl.api.ConfigurationServiceLocator.this")
     )
   ).dependsOn(api)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
   .settings(name := "lagom-scaladsl-api")
@@ -414,6 +417,7 @@ lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.api.deser.PathParamSerializer$NamedPathParamSerializer")
     )
   ).dependsOn(api)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val immutables = (project in file("immutables"))
   .settings(name := "lagom-javadsl-immutables")
@@ -428,6 +432,7 @@ lazy val spi = (project in file("spi"))
   .settings(name := "lagom-spi")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val jackson = (project in file("jackson"))
   .settings(name := "lagom-javadsl-jackson")
@@ -437,6 +442,7 @@ lazy val jackson = (project in file("jackson"))
     Dependencies.jackson
   )
   .dependsOn(`api-javadsl`, immutables % "test->compile")
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `play-json` = (project in file("play-json"))
   .settings(runtimeLibCommon: _*)
@@ -450,6 +456,7 @@ lazy val `play-json` = (project in file("play-json"))
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.playjson.JsonMigration.transform")
     )
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `api-tools` = (project in file("api-tools"))
   .settings(runtimeLibCommon: _*)
@@ -462,7 +469,7 @@ lazy val `api-tools` = (project in file("api-tools"))
     `server-javadsl` % Test,
     `server-scaladsl` % Test
   )
-
+  .disablePlugins(ScriptedPlugin)
 
 lazy val client = (project in file("service/core/client"))
   .settings(runtimeLibCommon: _*)
@@ -471,6 +478,7 @@ lazy val client = (project in file("service/core/client"))
     name := "lagom-client",
     Dependencies.client
   ).dependsOn(api, spi)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `client-javadsl` = (project in file("service/javadsl/client"))
   .settings(runtimeLibCommon: _*)
@@ -485,6 +493,7 @@ lazy val `client-javadsl` = (project in file("service/javadsl/client"))
     )
   )
   .dependsOn(client, `api-javadsl`, jackson)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `client-scaladsl` = (project in file("service/scaladsl/client"))
   .settings(runtimeLibCommon: _*)
@@ -500,6 +509,7 @@ lazy val `client-scaladsl` = (project in file("service/scaladsl/client"))
     )
   )
   .dependsOn(client, `api-scaladsl`, `macro-testkit` % Test)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `integration-client-javadsl` = (project in file("service/javadsl/integration-client"))
   .settings(
@@ -510,6 +520,7 @@ lazy val `integration-client-javadsl` = (project in file("service/javadsl/integr
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-javadsl`, `service-registry-client-javadsl`, `kafka-client-javadsl`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val server = (project in file("service/core/server"))
   .settings(
@@ -519,7 +530,7 @@ lazy val server = (project in file("service/core/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
   .dependsOn(client)
-
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `server-javadsl` = (project in file("service/javadsl/server"))
   .settings(
@@ -532,6 +543,7 @@ lazy val `server-javadsl` = (project in file("service/javadsl/server"))
   .dependsOn(server, `client-javadsl`, immutables % "provided")
   // bring jackson closer to the root of the dependency tree to prompt Maven to choose the right version
   .dependsOn(jackson)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
   .settings(
@@ -557,6 +569,7 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
   .settings(mimaSettings(since13): _*)
   .settings(runtimeLibCommon: _*)
   .dependsOn(server, `client-scaladsl`, `play-json`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `testkit-core` = (project in file("testkit/core"))
   .settings(runtimeLibCommon: _*)
@@ -571,7 +584,7 @@ lazy val `testkit-core` = (project in file("testkit/core"))
     // but it will require some more refactoring
     `persistence-testkit`
   )
-
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
   .settings(runtimeLibCommon: _*)
@@ -591,6 +604,7 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
     `jackson` % "test->test",
     `persistence-jdbc-javadsl` % Test
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
   .settings(runtimeLibCommon: _*)
@@ -609,6 +623,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
     `persistence-cassandra-scaladsl` % "compile;test->test",
     `persistence-jdbc-scaladsl` % Test
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
   .settings(runtimeLibCommon: _*)
@@ -628,6 +643,7 @@ lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integra
     logback,
     `integration-client-javadsl`
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integration-tests"))
   .settings(runtimeLibCommon: _*)
@@ -640,6 +656,7 @@ lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integ
     publish := {}
   )
   .dependsOn(`server-scaladsl`, logback, `testkit-scaladsl`)
+  .disablePlugins(ScriptedPlugin)
 
 // for forked tests
 def forkedTests: Seq[Setting[_]] = Seq(
@@ -670,6 +687,7 @@ lazy val `cluster-core` = (project in file("cluster/core"))
     name := "lagom-cluster-core",
     Dependencies.`cluster-core`
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
   .dependsOn(`cluster-core`, jackson)
@@ -680,7 +698,8 @@ lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
   .settings(
     name := "lagom-javadsl-cluster",
     Dependencies.`cluster-javadsl`
-  ) configs (MultiJvm)
+  ).configs(MultiJvm)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
   .dependsOn(`cluster-core`, `play-json`)
@@ -695,7 +714,8 @@ lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
       // see https://github.com/lagom/lagom/pull/1393
       ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.cluster.ClusterComponents.environment")
     )
-  ) configs (MultiJvm)
+  ).configs(MultiJvm)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
   .dependsOn(`cluster-javadsl`)
@@ -706,7 +726,8 @@ lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
   .settings(
     name := "lagom-javadsl-pubsub",
     Dependencies.`pubsub-javadsl`
-  ) configs (MultiJvm)
+  ).configs(MultiJvm)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
   .dependsOn(`cluster-scaladsl`)
@@ -717,7 +738,8 @@ lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
   .settings(
     name := "lagom-scaladsl-pubsub",
     Dependencies.`pubsub-scaladsl`
-  ) configs (MultiJvm)
+  ).configs(MultiJvm)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `persistence-core` = (project in file("persistence/core"))
   .dependsOn(`cluster-core`, logback % Test)
@@ -728,6 +750,7 @@ lazy val `persistence-core` = (project in file("persistence/core"))
     name := "lagom-persistence-core",
     Dependencies.`persistence-core`
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `persistence-testkit` = (project in file("persistence/testkit"))
   .settings(runtimeLibCommon: _*)
@@ -736,6 +759,7 @@ lazy val `persistence-testkit` = (project in file("persistence/testkit"))
     name := "lagom-persistence-testkit",
     Dependencies.`persistence-testkit`
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
   .settings(
@@ -781,6 +805,7 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
   .settings(mimaSettings(since12): _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
   .settings(
@@ -801,6 +826,7 @@ lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
   .settings(mimaSettings(since13): _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `persistence-cassandra-core` = (project in file("persistence-cassandra/core"))
   .dependsOn(`persistence-core` % "compile;test->test")
@@ -810,6 +836,7 @@ lazy val `persistence-cassandra-core` = (project in file("persistence-cassandra/
     name := "lagom-persistence-cassandra-core",
     Dependencies.`persistence-cassandra-core`
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassandra/javadsl"))
   .settings(
@@ -830,7 +857,8 @@ lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassand
   .settings(mimaSettings(since12): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .settings() configs (MultiJvm)
+  .configs(MultiJvm)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassandra/scaladsl"))
   .settings(
@@ -852,8 +880,8 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
   .settings(mimaSettings(since13): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .settings() configs (MultiJvm)
-
+  .configs(MultiJvm)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
   .dependsOn(
@@ -866,6 +894,7 @@ lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
     name := "lagom-persistence-jdbc-core",
     Dependencies.`persistence-jdbc-core`
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl"))
   .settings(
@@ -884,7 +913,8 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
   .settings(mimaSettings(since12): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*) configs (MultiJvm)
+  .settings(forkedTests: _*).configs(MultiJvm)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scaladsl"))
   .settings(
@@ -904,7 +934,8 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
   .settings(mimaSettings(since13): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*) configs (MultiJvm)
+  .settings(forkedTests: _*).configs(MultiJvm)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `persistence-jpa-javadsl` = (project in file("persistence-jpa/javadsl"))
   .dependsOn(`persistence-jdbc-javadsl` % "compile;test->test")
@@ -926,6 +957,7 @@ lazy val `broker-javadsl` = (project in file("service/javadsl/broker"))
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since12): _*)
   .dependsOn(`api-javadsl`, `persistence-javadsl`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `broker-scaladsl` = (project in file("service/scaladsl/broker"))
   .enablePlugins(RuntimeLibPlugins)
@@ -936,6 +968,7 @@ lazy val `broker-scaladsl` = (project in file("service/scaladsl/broker"))
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since13): _*)
   .dependsOn(`api-scaladsl`, `persistence-scaladsl`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `kafka-client` = (project in file("service/core/kafka/client"))
   .enablePlugins(RuntimeLibPlugins)
@@ -946,6 +979,7 @@ lazy val `kafka-client` = (project in file("service/core/kafka/client"))
     Dependencies.`kafka-client`
   )
   .dependsOn(`api`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `kafka-client-javadsl` = (project in file("service/javadsl/kafka/client"))
   .enablePlugins(RuntimeLibPlugins)
@@ -963,6 +997,7 @@ lazy val `kafka-client-javadsl` = (project in file("service/javadsl/kafka/client
     )
   )
   .dependsOn(`api-javadsl`, `kafka-client`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `kafka-client-scaladsl` = (project in file("service/scaladsl/kafka/client"))
   .enablePlugins(RuntimeLibPlugins)
@@ -973,6 +1008,7 @@ lazy val `kafka-client-scaladsl` = (project in file("service/scaladsl/kafka/clie
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since13): _*)
   .dependsOn(`api-scaladsl`, `kafka-client`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `kafka-broker` = (project in file("service/core/kafka/server"))
   .enablePlugins(RuntimeLibPlugins)
@@ -982,6 +1018,7 @@ lazy val `kafka-broker` = (project in file("service/core/kafka/server"))
   )
   .settings(runtimeLibCommon: _*)
   .dependsOn(`api`, `persistence-core`, `kafka-client`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server"))
   .enablePlugins(RuntimeLibPlugins)
@@ -1002,6 +1039,7 @@ lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server
     `kafka-server` % Test,
     logback % Test
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/server"))
   .enablePlugins(RuntimeLibPlugins)
@@ -1022,6 +1060,7 @@ lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/serv
     `kafka-server` % Test,
     logback % Test
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
@@ -1030,6 +1069,7 @@ lazy val logback = (project in file("logback"))
     name := "lagom-logback",
     Dependencies.logback
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val log4j2 = (project in file("log4j2"))
   .enablePlugins(RuntimeLibPlugins)
@@ -1038,6 +1078,7 @@ lazy val log4j2 = (project in file("log4j2"))
     name := "lagom-log4j2",
     Dependencies.log4j2
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val devEnvironmentProjects = Seq[Project](
   `reloadable-server`,
@@ -1065,6 +1106,7 @@ lazy val `dev-environment` = (project in file("dev"))
     publish := {},
     PgpKeys.publishSigned := {}
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   .settings(runtimeLibCommon: _*)
@@ -1073,6 +1115,7 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
     name := "lagom-reloadable-server",
     Dependencies.`reloadable-server`
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
   .settings(common: _*)
@@ -1087,6 +1130,7 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     }.taskValue,
     Dependencies.`build-tool-support`
   )
+  .disablePlugins(ScriptedPlugin)
 
 // This is almost the same as `build-tool-support`, but targeting sbt
 // while `build-tool-support` targets Maven and possibly other build
@@ -1107,6 +1151,7 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
     Dependencies.`build-tool-support`,
     target := target.value / "lagom-sbt-build-tool-support"
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(common: _*)
@@ -1141,6 +1186,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     },
     publishMavenStyle := isSnapshot.value
   ).dependsOn(`sbt-build-tool-support`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .enablePlugins(lagom.SbtMavenPlugin)
@@ -1163,6 +1209,7 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
       "-Dorg.slf4j.simpleLogger.showThreadName=false"
     )
   ).dependsOn(`build-tool-support`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
     .settings(
@@ -1171,6 +1218,7 @@ lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
       EclipseKeys.projectFlavor := EclipseProjectFlavor.Java,
       Dependencies.`maven-launcher`
     )
+  .disablePlugins(ScriptedPlugin)
 
 def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++
   Seq(scriptedLaunchOpts += s"-Dproject.version=${version.value}") ++
@@ -1301,6 +1349,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
       // pom is created
       Classpaths.defaultPackageKeys.map(key => publishArtifact in key := false): _*
     )
+  .disablePlugins(ScriptedPlugin)
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
@@ -1345,6 +1394,7 @@ lazy val `service-locator` = (project in file("dev") / "service-registry" / "ser
     }
   )
   .dependsOn(`server-javadsl`, logback, `service-registry-client-javadsl`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `service-registry-client-javadsl` = (project in file("dev") / "service-registry" / "client-javadsl")
   .settings(
@@ -1354,6 +1404,7 @@ lazy val `service-registry-client-javadsl` = (project in file("dev") / "service-
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-javadsl`, immutables % "provided")
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `service-registration-javadsl` = (project in file("dev") / "service-registry" / "registration-javadsl")
   .settings(
@@ -1363,6 +1414,7 @@ lazy val `service-registration-javadsl` = (project in file("dev") / "service-reg
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`server-javadsl`, `service-registry-client-javadsl`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `devmode-scaladsl` = (project in file("dev") / "service-registry" / "devmode-scaladsl")
   .settings(
@@ -1373,6 +1425,7 @@ lazy val `devmode-scaladsl` = (project in file("dev") / "service-registry" / "de
   .settings(mimaSettings(since13): _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-scaladsl`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `play-integration-javadsl` = (project in file("dev") / "service-registry" / "play-integration-javadsl")
   .settings(
@@ -1382,6 +1435,7 @@ lazy val `play-integration-javadsl` = (project in file("dev") / "service-registr
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`service-registry-client-javadsl`)
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
   .settings(common: _*)
@@ -1391,6 +1445,7 @@ lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
     name := "lagom-cassandra-server",
     Dependencies.`cassandra-server`
   )
+  .disablePlugins(ScriptedPlugin)
 
 lazy val `kafka-server` = (project in file("dev") / "kafka-server")
   .settings(common: _*)
@@ -1400,6 +1455,7 @@ lazy val `kafka-server` = (project in file("dev") / "kafka-server")
     name := "lagom-kafka-server",
     Dependencies.`kafka-server`
   )
+  .disablePlugins(ScriptedPlugin)
 
 // kafka-server has a transitive dependency on slf4j-log4j12.
 // This is required for running Kafka in development mode, where it runs in its own process and uses log4j 1.2.
@@ -1419,6 +1475,7 @@ lazy val `macro-testkit` = (project in file("macro-testkit"))
     PgpKeys.publishSigned := {},
     publish := {}
   )
+  .disablePlugins(ScriptedPlugin)
 
 // We can't just run a big aggregated mimaReportBinaryIssues due to
 // https://github.com/typesafehub/migration-manager/issues/163
