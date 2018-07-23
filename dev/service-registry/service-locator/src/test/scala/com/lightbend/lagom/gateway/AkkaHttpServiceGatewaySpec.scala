@@ -9,20 +9,20 @@ import java.net.URI
 import akka.actor.{ ActorSystem, Props }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.ws.{ Message, TextMessage, UpgradeToWebSocket, WebSocketRequest }
-import akka.http.scaladsl.model.{ HttpEntity, HttpRequest, HttpResponse, Uri }
+import akka.http.scaladsl.model.{ HttpEntity, HttpRequest, HttpResponse }
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{ Flow, Sink, Source }
 import akka.util.ByteString
-import com.lightbend.lagom.discovery.{ ServiceRegistryActor, UnmanagedServices }
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.transport.Method
+import com.lightbend.lagom.registry.impl.{ ServiceRegistryActor, UnmanagedServices }
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 import play.api.inject.DefaultApplicationLifecycle
 
+import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.collection.JavaConverters._
 
 class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAfterAll {
 

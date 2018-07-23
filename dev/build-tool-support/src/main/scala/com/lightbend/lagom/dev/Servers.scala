@@ -102,7 +102,7 @@ private[lagom] object Servers {
               unmanagedServices: Map[String, String], gatewayImpl: String): Closeable = synchronized {
       if (server == null) {
         withContextClassloader(new java.net.URLClassLoader(classpath, parentClassLoader)) { loader =>
-          val serverClass = loader.loadClass("com.lightbend.lagom.discovery.ServiceLocatorServer")
+          val serverClass = loader.loadClass("com.lightbend.lagom.registry.impl.ServiceLocatorServer")
           server = serverClass.newInstance().asInstanceOf[Server]
           try {
             server.start(serviceLocatorAddress, serviceLocatorPort, serviceGatewayAddress, serviceGatewayPort, unmanagedServices.asJava, gatewayImpl)
