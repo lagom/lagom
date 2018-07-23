@@ -13,8 +13,8 @@ import akka.stream.testkit.scaladsl.TestSink;
 import akka.testkit.javadsl.TestKit;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
-import com.lightbend.lagom.internal.javadsl.registry.NoServiceLocator;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
+import com.lightbend.lagom.javadsl.client.ConfigurationServiceLocator;
 import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
@@ -71,7 +71,7 @@ public class CqrsIntegrationTest {
 
     application = new GuiceApplicationBuilder()
         .configure(config)
-        .bindings(bind(ServiceLocator.class).to(NoServiceLocator.class))
+        .bindings(bind(ServiceLocator.class).to(ConfigurationServiceLocator.class))
         .build();
 
     injector = application.injector();

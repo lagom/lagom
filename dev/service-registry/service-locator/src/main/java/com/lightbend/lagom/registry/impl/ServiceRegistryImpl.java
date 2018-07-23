@@ -2,7 +2,7 @@
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.discovery.impl;
+package com.lightbend.lagom.registry.impl;
 
 import java.net.URI;
 import java.util.Optional;
@@ -15,7 +15,7 @@ import akka.util.Timeout;
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry;
-import com.lightbend.lagom.discovery.ServiceRegistryActor.*;
+import com.lightbend.lagom.registry.impl.ServiceRegistryActor.*;
 
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService;
 import play.Logger;

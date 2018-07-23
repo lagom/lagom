@@ -8,8 +8,8 @@ import java.net.URI
 import java.util.Optional
 import java.util.concurrent.CompletionStage
 import java.util.function.{ Function => JFunction }
-
 import javax.inject.{ Inject, Provider, Singleton }
+
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.api.broker.NoTopicFactoryProvider
 import com.lightbend.lagom.internal.javadsl.client.{ JavadslServiceClientImplementor, JavadslWebSocketClient, ServiceClientLoader }
@@ -154,17 +154,4 @@ abstract class BaseServiceLocator extends ServiceLocator {
 
 object ServiceRegistryServiceLocator {
   case class ServiceLocatorConfig(url: URI)
-}
-
-/**
- * An implementation of the service locator that always fails to locate the passed service's `name`.
- */
-class NoServiceLocator extends ServiceLocator {
-  import java.util.concurrent.CompletableFuture
-
-  override def locate(name: String, serviceCall: Call[_, _]): CompletionStage[Optional[URI]] =
-    CompletableFuture.completedFuture(Optional.empty())
-
-  override def doWithService[T](name: String, serviceCall: Call[_, _], block: JFunction[URI, CompletionStage[T]]): CompletionStage[Optional[T]] =
-    CompletableFuture.completedFuture(Optional.empty())
 }

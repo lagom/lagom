@@ -2,19 +2,17 @@
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.discovery.impl
+package com.lightbend.lagom.registry.impl
 
 import java.util.{ Collections, Optional }
 import java.util.concurrent.ExecutionException
 
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.pattern.ask
-import com.lightbend.lagom.discovery.ServiceRegistryActor
 import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.transport.{ Method, NotFound }
 import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
-import com.lightbend.lagom.discovery.UnmanagedServices
 import akka.NotUsed
 import java.util.concurrent.TimeUnit
 import java.net.URI

@@ -2,16 +2,13 @@
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.discovery.impl;
+package com.lightbend.lagom.registry.impl;
 
 import com.google.inject.AbstractModule;
-import com.lightbend.lagom.internal.javadsl.registry.NoServiceLocator;
+import com.lightbend.lagom.gateway.ServiceGatewayConfig;
+import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
-import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry;
-import com.lightbend.lagom.discovery.ServiceRegistryActor;
-import com.lightbend.lagom.discovery.UnmanagedServices;
-import com.lightbend.lagom.gateway.ServiceGatewayConfig;
 import play.libs.akka.AkkaGuiceSupport;
 
 import java.util.Collections;
