@@ -1,8 +1,5 @@
 // Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
 
-buildInfoSettings
-sourceGenerators in Compile += buildInfo.taskValue
-
 libraryDependencies ++= Seq(
   "org.scala-sbt" % "scripted-plugin" % sbtVersion.value
 )
@@ -23,3 +20,5 @@ addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.0")
 addSbtPlugin("com.lightbend" % "sbt-whitesource" % "0.1.11")
+
+enablePlugins(BuildInfoPlugin)
