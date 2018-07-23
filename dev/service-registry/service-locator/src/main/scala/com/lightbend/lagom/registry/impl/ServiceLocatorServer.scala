@@ -2,14 +2,14 @@
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.discovery
+package com.lightbend.lagom.registry.impl
 
 import java.io.Closeable
 import java.net.{ InetSocketAddress, URI }
 import java.util.{ Map => JMap }
 
-import com.lightbend.lagom.discovery.impl.ServiceRegistryModule
 import com.lightbend.lagom.gateway._
+import com.lightbend.lagom.registry.impl.ServiceRegistryModule
 import play.api.Application
 import play.api.Logger
 import play.api.Mode

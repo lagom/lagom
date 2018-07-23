@@ -16,8 +16,8 @@ import akka.pattern.ask
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
 import akka.util.Timeout
-import com.lightbend.lagom.discovery.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
+import com.lightbend.lagom.registry.impl.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
 import org.slf4j.LoggerFactory
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.typedmap.TypedMap
@@ -27,8 +27,8 @@ import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 
 import scala.collection.immutable
-import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
+import scala.concurrent.{ Await, Future }
 
 class AkkaHttpServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
                                                @Named("serviceRegistryActor") registry: ActorRef)(implicit actorSystem: ActorSystem, mat: Materializer) {

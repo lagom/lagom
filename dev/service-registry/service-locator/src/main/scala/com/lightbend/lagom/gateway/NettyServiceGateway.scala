@@ -12,11 +12,10 @@ import javax.inject.{ Inject, Named, Singleton }
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
-import com.lightbend.lagom.discovery.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
-import com.lightbend.lagom.internal.NettyFutureConverters
 import com.lightbend.lagom.internal.NettyFutureConverters._
 import com.lightbend.lagom.internal.api.Execution.trampoline
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
+import com.lightbend.lagom.registry.impl.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
 import io.netty.bootstrap.{ Bootstrap, ServerBootstrap }
 import io.netty.buffer.{ ByteBuf, Unpooled }
 import io.netty.channel._

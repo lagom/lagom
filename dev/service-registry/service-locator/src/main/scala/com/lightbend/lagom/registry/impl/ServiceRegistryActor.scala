@@ -2,7 +2,7 @@
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.discovery
+package com.lightbend.lagom.registry.impl
 
 import java.net.InetSocketAddress
 import java.util.regex.Pattern
