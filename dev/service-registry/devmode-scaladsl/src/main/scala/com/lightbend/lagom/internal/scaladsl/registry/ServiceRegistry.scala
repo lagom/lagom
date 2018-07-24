@@ -8,6 +8,7 @@ import java.net.URI
 
 import akka.NotUsed
 import akka.util.ByteString
+import com.lightbend.lagom.internal.registry.ServiceRegistryClient
 import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.{ NegotiatedDeserializer, NegotiatedSerializer }
 import com.lightbend.lagom.scaladsl.api.deser.{ MessageSerializer, StrictMessageSerializer }
 import com.lightbend.lagom.scaladsl.api.transport.{ MessageProtocol, Method }
@@ -33,7 +34,7 @@ trait ServiceRegistry extends Service {
   import ServiceRegistry._
 
   def descriptor: Descriptor = {
-    named(ServiceName).withCalls(
+    named(ServiceRegistryClient.ServiceName).withCalls(
       restCall(Method.PUT, "/services/:id", register _),
       restCall(Method.DELETE, "/services/:id", this.unregister _),
       restCall(Method.GET, "/services/:id", lookup _),
@@ -43,7 +44,6 @@ trait ServiceRegistry extends Service {
 }
 
 object ServiceRegistry {
-  val ServiceName = "lagom-service-registry"
 
   implicit val uriMessageSerializer: MessageSerializer[URI, ByteString] = new StrictMessageSerializer[URI] {
 
