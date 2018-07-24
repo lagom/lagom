@@ -4,10 +4,10 @@
 
 runSbt  +scalariformFormat \
         +test:scalariformFormat \
-        +multi-jvm:scalariformFormat \
+        multi-jvm:scalariformFormat \
         +headerCheck \
         +test:headerCheck \
-        +multi-jvm:headerCheck \
+        multi-jvm:headerCheck \
         validateDependencies \
         mimaCheckOneAtATime
 
