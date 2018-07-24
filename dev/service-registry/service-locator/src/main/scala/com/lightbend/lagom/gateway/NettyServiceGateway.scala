@@ -368,6 +368,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
 
   private val bindFuture = server.bind(config.host, config.port).channelFutureToScala
 
+  val unbindTimeout = cs.timeout(CoordinatedShutdown.PhaseServiceUnbind)
   coordinatedShutdown.addTask(
     CoordinatedShutdown.PhaseServiceUnbind,
     "unbind-netty-service-gateway"
@@ -378,7 +379,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
             channel <- bindFuture
             closed <- channel.close().channelFutureToScala
           } yield {
-            eventLoop.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS)
+            eventLoop.shutdownGracefully(100, unbindTimeout.toMillis - 100, TimeUnit.MILLISECONDS)
             poolMap.asScala.foreach(_.getValue.close())
           }).map(_ => Done)
         }
