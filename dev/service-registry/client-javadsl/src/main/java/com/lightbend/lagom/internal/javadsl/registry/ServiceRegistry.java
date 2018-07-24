@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
+import com.lightbend.lagom.internal.registry.ServiceRegistryClient$;
 import org.pcollections.PSequence;
 
 import akka.NotUsed;
@@ -30,13 +31,13 @@ import com.lightbend.lagom.javadsl.api.transport.UnsupportedMediaType;
 
 public interface ServiceRegistry extends Service {
 
-	String SERVICE_NAME = "lagom-service-registry";
+	String SERVICE_NAME = ServiceRegistryClient$.MODULE$.ServiceName();
 
 	ServiceCall<ServiceRegistryService, NotUsed> register(String name);
 	ServiceCall<NotUsed, NotUsed> unregister(String name);
 	ServiceCall<NotUsed, URI> lookup(String name);
 	ServiceCall<NotUsed, PSequence<RegisteredService>> registeredServices();
-	
+
 	@Override
 	default Descriptor descriptor() {
 		// @formatter:off
@@ -90,7 +91,7 @@ class CustomSerializers {
               }
               catch(URISyntaxException e) {
                 throw new DeserializationException(e);
-              } 
+              }
           }
       }
 

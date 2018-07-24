@@ -1,3 +1,4 @@
+import Dependencies.scalaTest
 import sbt._
 import sbt.Keys._
 
@@ -16,6 +17,7 @@ object Dependencies {
   // Also be sure to update AkkaVersion in docs/build.sbt.
   val AkkaVersion = "2.5.14"
   val AkkaHttpVersion = "10.1.3"
+  val AkkaManagementVersion = "0.17.0"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.6", "2.11.12")
   val SbtScalaVersions = Seq("2.10.6", "2.12.6")
@@ -85,6 +87,8 @@ object Dependencies {
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
   private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.2"
+
+  private val akkaDiscovery = "com.lightbend.akka.discovery" %% "akka-discovery" % AkkaManagementVersion
 
   private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % AkkaPersistenceJdbcVersion excludeAll (excludeSlf4j: _*)
 
@@ -160,6 +164,7 @@ object Dependencies {
       "com.novocode" % "junit-interface" % JUnitInterfaceVersion,
       typesafeConfig,
       sslConfig,
+      akkaDiscovery,
       akkaHttpCore,
       akkaStreamKafka,
       akkaParsing,
@@ -701,16 +706,30 @@ object Dependencies {
     scalaTest % Test
   )
 
+  val `service-registry-client-core` =
+    libraryDependencies ++= Seq(
+      akkaDiscovery,
+      slf4jApi,
+
+      akkaTestkit % Test,
+      scalaTest % Test
+    )
+
   val `service-registry-client-javadsl` =
     libraryDependencies ++= Seq(
-      "junit" % "junit" % JUnitVersion,
+      akkaDiscovery,
+
       akkaTestkit % Test,
+      "junit" % "junit" % JUnitVersion % Test,
       "com.novocode" % "junit-interface" % "0.11" % Test
     )
 
   val `service-registration-javadsl` = libraryDependencies ++= Nil
 
-  val `devmode-scaladsl` = libraryDependencies ++= Nil
+  val `devmode-scaladsl` =
+    libraryDependencies ++= Seq(
+      akkaDiscovery
+    )
 
   val `play-integration-javadsl` = libraryDependencies ++= Nil
 
