@@ -1419,26 +1419,3 @@ lazy val `macro-testkit` = (project in file("macro-testkit"))
     PgpKeys.publishSigned := {},
     publish := {}
   )
-
-// We can't just run a big aggregated mimaReportBinaryIssues due to
-// https://github.com/typesafehub/migration-manager/issues/163
-// Travis doesn't provide us enough memory to do so. So instead, we
-// run the binary compatibility checks one at a time, which works
-// around the issue.
-commands += Command.command("mimaCheckOneAtATime") { state =>
-  val extracted = Project.extract(state)
-  val results = (javadslProjects ++ scaladslProjects).map { project =>
-    println(s"Checking binary compatibility for ${project.id}")
-    try {
-      extracted.runTask(mimaReportBinaryIssues in project, state)
-      true
-    } catch {
-      case scala.util.control.NonFatal(e) => false
-    }
-  }
-
-  if (results.contains(false)) {
-    throw new FeedbackProvidedException {}
-  }
-  state
-}
