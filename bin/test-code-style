@@ -2,12 +2,12 @@
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-runSbt  scalariformFormat \
-        test:scalariformFormat \
-        multi-jvm:scalariformFormat \
-        headerCheck \
-        test:headerCheck \
-        multi-jvm:headerCheck \
+runSbt  +scalariformFormat \
+        +test:scalariformFormat \
+        +multi-jvm:scalariformFormat \
+        +headerCheck \
+        +test:headerCheck \
+        +multi-jvm:headerCheck \
         validateDependencies \
         mimaCheckOneAtATime
 
