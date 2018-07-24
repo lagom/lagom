@@ -7,9 +7,11 @@ package com.lightbend.lagom.scaladsl.devmode
 import java.net.URI
 
 import akka.actor.ActorSystem
+import akka.discovery.SimpleServiceDiscovery
 import akka.stream.Materializer
+import com.lightbend.lagom.internal.registry.{ DevModeSimpleServiceDiscovery, ServiceRegistryClient }
 import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
-import com.lightbend.lagom.internal.scaladsl.registry.{ ServiceRegistration, ServiceRegistry, ServiceRegistryServiceLocator }
+import com.lightbend.lagom.internal.scaladsl.registry._
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
@@ -72,14 +74,14 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
     // We need to create our own static service locator since the service locator will depend on this service registry.
     val staticServiceLocator = new ServiceLocator {
       override def doWithService[T](name: String, serviceCall: Call[_, _])(block: (URI) => Future[T])(implicit ec: ExecutionContext): Future[Option[T]] = {
-        if (name == ServiceRegistry.ServiceName) {
+        if (name == ServiceRegistryClient.ServiceName) {
           block(devModeServiceLocatorUrl).map(Some.apply)
         } else {
           Future.successful(None)
         }
       }
       override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = {
-        if (name == ServiceRegistry.ServiceName) {
+        if (name == ServiceRegistryClient.ServiceName) {
           Future.successful(Some(devModeServiceLocatorUrl))
         } else {
           Future.successful(None)
@@ -93,5 +95,19 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
     serviceClient.implement[ServiceRegistry]
   }
 
-  lazy val serviceLocator: ServiceLocator = new ServiceRegistryServiceLocator(circuitBreakersPanel, serviceRegistry, executionContext)
+  private lazy val serviceRegistryClient: ServiceRegistryClient =
+    new ScalaServiceRegistryClient(serviceRegistry)(executionContext)
+
+  private lazy val devModeSimpleServiceDiscovery: DevModeSimpleServiceDiscovery =
+    DevModeSimpleServiceDiscovery(actorSystem)
+  // This needs to be done eagerly to ensure it initializes for Akka libraries
+  // that use service discovery without dependency injection.
+  devModeSimpleServiceDiscovery.setServiceRegistryClient(serviceRegistryClient)
+
+  // Make ServiceLocator and SimpleServiceDiscovery available to the application
+  lazy val serviceLocator: ServiceLocator =
+    new ServiceRegistryServiceLocator(circuitBreakersPanel, serviceRegistryClient, executionContext)
+  lazy val serviceDiscovery: SimpleServiceDiscovery =
+    devModeSimpleServiceDiscovery
+
 }

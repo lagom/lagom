@@ -1049,6 +1049,7 @@ lazy val devEnvironmentProjects = Seq[Project](
   `service-registration-javadsl`,
   `cassandra-server`,
   `play-integration-javadsl`,
+  `service-registry-client-core`,
   `devmode-scaladsl`,
   `service-registry-client-javadsl`,
   `maven-java-archetype`,
@@ -1346,6 +1347,15 @@ lazy val `service-locator` = (project in file("dev") / "service-registry" / "ser
   )
   .dependsOn(`server-javadsl`, logback, `service-registry-client-javadsl`)
 
+lazy val `service-registry-client-core` = (project in file("dev") / "service-registry" / "client-core")
+  .settings(
+    name := "lagom-service-registry-client-core",
+    Dependencies.`service-registry-client-core`
+  )
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .dependsOn(logback % Test)
+
 lazy val `service-registry-client-javadsl` = (project in file("dev") / "service-registry" / "client-javadsl")
   .settings(
     name := "lagom-service-registry-client",
@@ -1353,7 +1363,7 @@ lazy val `service-registry-client-javadsl` = (project in file("dev") / "service-
   )
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(`client-javadsl`, immutables % "provided")
+  .dependsOn(`client-javadsl`, `service-registry-client-core`, immutables % "provided")
 
 lazy val `service-registration-javadsl` = (project in file("dev") / "service-registry" / "registration-javadsl")
   .settings(
@@ -1372,7 +1382,7 @@ lazy val `devmode-scaladsl` = (project in file("dev") / "service-registry" / "de
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since13): _*)
   .enablePlugins(RuntimeLibPlugins)
-  .dependsOn(`client-scaladsl`)
+  .dependsOn(`client-scaladsl`, `service-registry-client-core`)
 
 lazy val `play-integration-javadsl` = (project in file("dev") / "service-registry" / "play-integration-javadsl")
   .settings(
