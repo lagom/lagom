@@ -2,6 +2,12 @@
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
+
+## The following are three separate `sbt` invocations because in some versions of sbt (0.13)
+## trying to run all tasks in a single session caused "GC overhead limit exceeded" (both in
+## Travis and locally).
+## See https://github.com/lagom/lagom/pull/1482
+
 runSbt  +scalariformFormat \
         +test:scalariformFormat \
         multi-jvm:scalariformFormat
