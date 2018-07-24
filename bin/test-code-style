@@ -17,7 +17,7 @@ runSbt  +headerCheck \
         multi-jvm:headerCheck
 
 runSbt  validateDependencies \
-        mimaCheckOneAtATime
+        mimaReportBinaryIssues
 
 git diff --exit-code || (
   echo "ERROR: Scalariform check failed, see differences above."
