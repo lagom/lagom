@@ -9,13 +9,12 @@ import java.util.function.{ Function => JFunction }
 
 import akka.actor.CoordinatedShutdown
 import akka.{ Done, NotUsed }
-import com.google.inject.Provider
 import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistry, ServiceRegistryService }
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
 import com.typesafe.config.Config
 import javax.inject.{ Inject, Provider, Singleton }
-import play.api.{ Configuration, Environment, Logger }
 import play.api.inject.{ Binding, Module }
+import play.api.{ Configuration, Environment, Logger }
 
 import scala.compat.java8.FutureConverters.CompletionStageOps
 import scala.concurrent.{ ExecutionContext, Future }

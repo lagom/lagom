@@ -368,7 +368,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
 
   private val bindFuture = server.bind(config.host, config.port).channelFutureToScala
 
-  val unbindTimeout = cs.timeout(CoordinatedShutdown.PhaseServiceUnbind)
+  val unbindTimeout = coordinatedShutdown.timeout(CoordinatedShutdown.PhaseServiceUnbind)
   coordinatedShutdown.addTask(
     CoordinatedShutdown.PhaseServiceUnbind,
     "unbind-netty-service-gateway"

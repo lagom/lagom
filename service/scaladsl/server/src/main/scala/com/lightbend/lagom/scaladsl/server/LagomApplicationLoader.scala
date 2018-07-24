@@ -6,7 +6,7 @@ package com.lightbend.lagom.scaladsl.server
 
 import java.net.URI
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.event.Logging
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServerMacroImpl
