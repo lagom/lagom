@@ -12,6 +12,7 @@ import akka.testkit.TestKit
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.{ Matchers, WordSpecLike }
 
+import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -44,6 +45,6 @@ class DevModeSimpleServiceDiscoverySpec
 }
 
 private class StaticServiceRegistryClient(registrations: Map[String, List[URI]]) extends ServiceRegistryClient {
-  override def locateAll(serviceName: String): Future[List[URI]] =
+  override def locateAll(serviceName: String): Future[immutable.Seq[URI]] =
     Future.successful(registrations.getOrElse(serviceName, Nil))
 }

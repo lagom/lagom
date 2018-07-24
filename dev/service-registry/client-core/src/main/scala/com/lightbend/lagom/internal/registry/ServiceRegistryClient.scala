@@ -6,10 +6,11 @@ package com.lightbend.lagom.internal.registry
 
 import java.net.URI
 
+import scala.collection.immutable
 import scala.concurrent.Future
 
 private[lagom] trait ServiceRegistryClient {
-  def locateAll(serviceName: String): Future[List[URI]]
+  def locateAll(serviceName: String): Future[immutable.Seq[URI]]
 }
 
 private[lagom] object ServiceRegistryClient {

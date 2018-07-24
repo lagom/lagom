@@ -19,7 +19,7 @@ private[lagom] class ServiceRegistryServiceLocator(
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {
 
   override def locateAll(name: String, serviceCall: Call[_, _]): Future[List[URI]] =
-    client.locateAll(name)
+    client.locateAll(name).map(_.toList)
 
   override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] =
     locateAll(name, serviceCall).map(_.headOption)
