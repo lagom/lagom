@@ -44,27 +44,27 @@ object Protobuf {
         val cache = targets / "protoc" / "cache"
 
         (sourceDirs zip targetDirs) map {
-          case (src, dst) ⇒
+          case (src, dst) =>
             val relative = src.relativeTo(sources).getOrElse(throw new Exception(s"path $src is not a in source tree $sources")).toString
             val tmp = targets / "protoc" / relative
             IO.delete(tmp)
             generate(cmd, src, tmp, log, importPath.value)
-            transformDirectory(tmp, dst, _ ⇒ true, transformFile(_.replace("com.google.protobuf", "akka.protobuf")), cache, log)
+            transformDirectory(tmp, dst, _ => true, transformFile(_.replace("com.google.protobuf", "akka.protobuf")), cache, log)
         }
       }
     })
 
-  private def callProtoc[T](protoc: String, args: Seq[String], log: Logger, thunk: (ProcessBuilder, Logger) ⇒ T): T =
+  private def callProtoc[T](protoc: String, args: Seq[String], log: Logger, thunk: (ProcessBuilder, Logger) => T): T =
     try {
       val proc = Process(protoc, args)
       thunk(proc, log)
     } catch {
-      case e: Exception ⇒
+      case e: Exception =>
         throw new RuntimeException("error while executing '%s' with args: %s" format (protoc, args.mkString(" ")), e)
     }
 
   private def checkProtocVersion(protoc: String, protocVersion: String, log: Logger): Unit = {
-    val res = callProtoc(protoc, Seq("--version"), log, { (p, l) ⇒ p !! l })
+    val res = callProtoc(protoc, Seq("--version"), log, { (p, l) => p !! l })
     val version = res.split(" ").last.trim
     if (version != protocVersion) {
       sys.error("Wrong protoc version! Expected %s but got %s" format (protocVersion, version))
@@ -80,7 +80,7 @@ object Protobuf {
         targetDir.mkdirs()
 
         log.info("Generating %d protobuf files from %s to %s".format(protoFiles.size, srcDir, targetDir))
-        protoFiles.foreach { proto ⇒ log.info("Compiling %s" format proto) }
+        protoFiles.foreach { proto => log.info("Compiling %s" format proto) }
 
         val protoPathArg = importPath match {
           case None => Nil
@@ -124,11 +124,11 @@ object Protobuf {
   /**
     * Transform a file, line by line.
     */
-  def transformFile(transform: String ⇒ String)(source: File, target: File): Unit = {
-    IO.reader(source) { reader ⇒
-      IO.writer(target, "", IO.defaultCharset) { writer ⇒
+  def transformFile(transform: String => String)(source: File, target: File): Unit = {
+    IO.reader(source) { reader =>
+      IO.writer(target, "", IO.defaultCharset) { writer =>
         val pw = new PrintWriter(writer)
-        IO.foreachLine(reader) { line ⇒ pw.println(transform(line)) }
+        IO.foreachLine(reader) { line => pw.println(transform(line)) }
       }
     }
   }
