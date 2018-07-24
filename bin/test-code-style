@@ -4,11 +4,13 @@
 
 runSbt  +scalariformFormat \
         +test:scalariformFormat \
-        multi-jvm:scalariformFormat \
-        +headerCheck \
+        multi-jvm:scalariformFormat
+
+runSbt  +headerCheck \
         +test:headerCheck \
-        multi-jvm:headerCheck \
-        validateDependencies \
+        multi-jvm:headerCheck
+
+runSbt  validateDependencies \
         mimaCheckOneAtATime
 
 git diff --exit-code || (
