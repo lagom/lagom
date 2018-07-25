@@ -6,7 +6,7 @@ package com.lightbend.lagom.gateway
 
 import java.net.URI
 
-import akka.actor.{ ActorSystem, Props }
+import akka.actor.{ ActorSystem, CoordinatedShutdown, Props }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.ws.{ Message, TextMessage, UpgradeToWebSocket, WebSocketRequest }
 import akka.http.scaladsl.model.{ HttpEntity, HttpRequest, HttpResponse }
@@ -18,7 +18,7 @@ import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.transport.Method
 import com.lightbend.lagom.registry.impl.{ ServiceRegistryActor, UnmanagedServices }
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
-import play.api.inject.DefaultApplicationLifecycle
+import play.core.server.Server.ServerStoppedReason
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
@@ -29,13 +29,13 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
   implicit val actorSystem = ActorSystem()
   import actorSystem.dispatcher
   implicit val mat = ActorMaterializer()
+  val coordinatedShutdown = CoordinatedShutdown(actorSystem)
   val http = Http()
 
-  var serviceBinding: Http.ServerBinding = _
   var gateway: AkkaHttpServiceGateway = _
 
   override protected def beforeAll(): Unit = {
-    serviceBinding = Await.result(http.bindAndHandle(Flow[HttpRequest].map {
+    var serviceBinding = Await.result(http.bindAndHandle(Flow[HttpRequest].map {
       case hello if hello.uri.path.toString() == "/hello" => HttpResponse(entity = HttpEntity("Hello!"))
       case stream if stream.uri.path.toString() == "/stream" =>
         stream.header[UpgradeToWebSocket].get.handleMessages(Flow[Message])
@@ -51,7 +51,7 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
       ))
     ))))
 
-    gateway = new AkkaHttpServiceGateway(new DefaultApplicationLifecycle, ServiceGatewayConfig("127.0.0.1", 0), serviceRegistry)
+    gateway = new AkkaHttpServiceGateway(coordinatedShutdown, ServiceGatewayConfig("127.0.0.1", 0), serviceRegistry)
   }
 
   def gatewayUri = "http://localhost:" + gateway.address.getPort
@@ -85,6 +85,6 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
   }
 
   override protected def afterAll(): Unit = {
-    actorSystem.terminate()
+    coordinatedShutdown.run(ServerStoppedReason)
   }
 }

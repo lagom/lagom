@@ -6,7 +6,7 @@ package com.lightbend.lagom.scaladsl.server
 
 import java.net.URI
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.event.Logging
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServerMacroImpl
@@ -240,11 +240,8 @@ abstract class LagomApplication(context: LagomApplicationContext)
     Configuration.load(environment) ++ context.playContext.initialConfiguration ++ additionalConfig
   }
 
-  override lazy val actorSystem: ActorSystem = {
-    val (system, stopHook) = ActorSystemProvider.start(config, environment, optionalJsonSerializerRegistry)
-    applicationLifecycle.addStopHook(stopHook)
-    system
-  }
+  override lazy val actorSystem: ActorSystem =
+    ActorSystemProvider.start(config, environment, optionalJsonSerializerRegistry)
 
   LagomServerTopicFactoryVerifier.verify(lagomServer, topicPublisherName)
 }
@@ -260,7 +257,7 @@ private object ActorSystemProvider {
     config:             Config,
     environment:        Environment,
     serializerRegistry: Option[JsonSerializerRegistry]
-  ): (ActorSystem, StopHook) = {
+  ): ActorSystem = {
     val serializationSetup =
       JsonSerializerRegistry.serializationSetupFor(serializerRegistry.getOrElse(EmptyJsonSerializerRegistry))
 
@@ -268,7 +265,7 @@ private object ActorSystemProvider {
       environment.classLoader,
       Configuration(config),
       serializationSetup
-    )
+    )._1
   }
 
 }

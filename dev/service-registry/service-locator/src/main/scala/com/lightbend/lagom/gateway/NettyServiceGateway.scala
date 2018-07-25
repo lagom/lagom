@@ -9,7 +9,8 @@ import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.inject.{ Inject, Named, Singleton }
 
-import akka.actor.ActorRef
+import akka.Done
+import akka.actor.{ ActorRef, CoordinatedShutdown }
 import akka.pattern.ask
 import akka.util.Timeout
 import com.lightbend.lagom.internal.NettyFutureConverters._
@@ -27,7 +28,6 @@ import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.EventExecutor
 import org.slf4j.LoggerFactory
-import play.api.inject.ApplicationLifecycle
 import play.api.libs.typedmap.TypedMap
 import play.api.mvc.request.{ RemoteConnection, RequestAttrKey, RequestTarget }
 import play.api.mvc.{ Headers, RequestHeader }
@@ -49,17 +49,17 @@ case class ServiceGatewayConfig(
 )
 
 @Singleton
-class NettyServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
+class NettyServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig,
                                             @Named("serviceRegistryActor") registry: ActorRef) {
   def start(): NettyServiceGateway = {
-    new NettyServiceGateway(lifecycle, config, registry)
+    new NettyServiceGateway(coordinatedShutdown, config, registry)
   }
 }
 
 /**
  * Netty implementation of the service gateway.
  */
-class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef) {
+class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig, registry: ActorRef) {
 
   private implicit val timeout = Timeout(5.seconds)
   private val log = LoggerFactory.getLogger(classOf[NettyServiceGateway])
@@ -366,15 +366,18 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
   }
 
   private val bindFuture = server.bind(config.host, config.port).channelFutureToScala
-  lifecycle.addStopHook(() => {
+
+  coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-netty-service-gateway") { () =>
+    poolMap.asScala.foreach(_.getValue.close())
+
+    val unbindTimeout = coordinatedShutdown.timeout(CoordinatedShutdown.PhaseServiceUnbind)
+
     for {
       channel <- bindFuture
-      closed <- channel.close().channelFutureToScala
-    } yield {
-      eventLoop.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS)
-      poolMap.asScala.foreach(_.getValue.close())
-    }
-  })
+      _ <- channel.close().channelFutureToScala
+      _ <- eventLoop.shutdownGracefully(100, unbindTimeout.toMillis - 100, TimeUnit.MILLISECONDS).toScala
+    } yield Done
+  }
 
   val address: InetSocketAddress = {
     val address = Await.result(bindFuture, 10.seconds).localAddress().asInstanceOf[InetSocketAddress]

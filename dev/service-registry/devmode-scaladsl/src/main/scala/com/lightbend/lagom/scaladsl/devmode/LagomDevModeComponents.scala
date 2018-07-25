@@ -6,7 +6,7 @@ package com.lightbend.lagom.scaladsl.devmode
 
 import java.net.URI
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.discovery.SimpleServiceDiscovery
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.registry.{ DevModeSimpleServiceDiscovery, ServiceRegistryClient }
@@ -17,7 +17,6 @@ import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents
 import play.api.Environment
-import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -38,10 +37,10 @@ import scala.concurrent.{ ExecutionContext, Future }
  * will be automatically provided to the service by Lagom's dev mode build plugins.
  */
 trait LagomDevModeComponents extends LagomDevModeServiceLocatorComponents {
-  def applicationLifecycle: ApplicationLifecycle
+  def coordinatedShutdown: CoordinatedShutdown
 
   // Eagerly register services
-  new ServiceRegistration(serviceInfo, applicationLifecycle, config, serviceRegistry)(executionContext)
+  new ServiceRegistration(serviceInfo, coordinatedShutdown, config, serviceRegistry)(executionContext)
 }
 
 /**
