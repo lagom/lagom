@@ -10,8 +10,6 @@ addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "2.3")
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.9")
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.1")
 addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.4")
-// need this for com.typesafe.sbt.preprocess.Preprocess
-addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "0.7.1")
 addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm" % "0.4.0")
 addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.2")
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.2.1")
