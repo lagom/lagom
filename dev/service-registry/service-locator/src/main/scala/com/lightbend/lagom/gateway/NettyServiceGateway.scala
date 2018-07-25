@@ -373,8 +373,8 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
     for {
       channel <- bindFuture
       _ <- channel.close().channelFutureToScala
+      _ <- eventLoop.shutdownGracefully(100, unbindTimeout.toMillis - 100, TimeUnit.MILLISECONDS).toScala
     } yield {
-      eventLoop.shutdownGracefully(100, unbindTimeout.toMillis - 100, TimeUnit.MILLISECONDS)
       poolMap.asScala.foreach(_.getValue.close())
       Done
     }
