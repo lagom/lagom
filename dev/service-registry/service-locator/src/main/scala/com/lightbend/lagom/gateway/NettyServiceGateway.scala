@@ -369,21 +369,16 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
   private val bindFuture = server.bind(config.host, config.port).channelFutureToScala
 
   val unbindTimeout = coordinatedShutdown.timeout(CoordinatedShutdown.PhaseServiceUnbind)
-  coordinatedShutdown.addTask(
-    CoordinatedShutdown.PhaseServiceUnbind,
-    "unbind-netty-service-gateway"
-  ) {
-      () =>
-        {
-          (for {
-            channel <- bindFuture
-            closed <- channel.close().channelFutureToScala
-          } yield {
-            eventLoop.shutdownGracefully(100, unbindTimeout.toMillis - 100, TimeUnit.MILLISECONDS)
-            poolMap.asScala.foreach(_.getValue.close())
-          }).map(_ => Done)
-        }
+  coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-netty-service-gateway") { () =>
+    for {
+      channel <- bindFuture
+      _ <- channel.close().channelFutureToScala
+    } yield {
+      eventLoop.shutdownGracefully(100, unbindTimeout.toMillis - 100, TimeUnit.MILLISECONDS)
+      poolMap.asScala.foreach(_.getValue.close())
+      Done
     }
+  }
 
   val address: InetSocketAddress = {
     val address = Await.result(bindFuture, 10.seconds).localAddress().asInstanceOf[InetSocketAddress]

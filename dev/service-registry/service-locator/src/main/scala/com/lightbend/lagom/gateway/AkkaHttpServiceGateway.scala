@@ -165,18 +165,12 @@ class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: S
 
   private val bindingFuture = Http().bindAndHandle(handler, config.host, config.port)
 
-  coordinatedShutdown.addTask(
-    CoordinatedShutdown.PhaseServiceUnbind,
-    "unbind-akka-http-service-gateway"
-  ) {
-      () =>
-        {
-          (for {
-            binding <- bindingFuture
-            unbind <- binding.unbind()
-          } yield unbind).map(_ => Done)
-        }
-    }
+  coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-akka-http-service-gateway") { () =>
+    for {
+      binding <- bindingFuture
+      _ <- binding.unbind()
+    } yield Done
+  }
 
   val address: InetSocketAddress = Await.result(bindingFuture, 10.seconds).localAddress
 }
