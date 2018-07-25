@@ -6,16 +6,21 @@ package com.lightbend.lagom.internal.scaladsl.registry
 
 import java.net.URI
 
+import akka.Done
+import akka.actor.CoordinatedShutdown
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
 import com.typesafe.config.Config
-import play.api.inject.ApplicationLifecycle
 import play.api.Logger
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success }
 
-class ServiceRegistration(serviceInfo: ServiceInfo, lifecycle: ApplicationLifecycle, config: Config,
-                          registry: ServiceRegistry)(implicit ec: ExecutionContext) {
+class ServiceRegistration(
+  serviceInfo:         ServiceInfo,
+  coordinatedShutdown: CoordinatedShutdown,
+  config:              Config,
+  registry:            ServiceRegistry
+)(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(this.getClass)
   private val uri = {
@@ -24,10 +29,10 @@ class ServiceRegistration(serviceInfo: ServiceInfo, lifecycle: ApplicationLifecy
     URI.create(s"http://$httpAddress:$httpPort")
   }
 
-  lifecycle.addStopHook { () =>
+  coordinatedShutdown.addTask(CoordinatedShutdown.PhaseBeforeServiceUnbind, "unregister-services-from-service-locator-scaladsl") { () =>
     Future.sequence(serviceInfo.locatableServices.map {
       case (service, _) => registry.unregister(service).invoke()
-    }).map(_ => ())
+    }).map(_ => Done)
   }
 
   serviceInfo.locatableServices.foreach {

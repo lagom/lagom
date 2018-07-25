@@ -6,9 +6,9 @@ package com.lightbend.lagom.gateway
 
 import java.net.InetSocketAddress
 import java.util.Locale
-import javax.inject.{ Inject, Named }
 
-import akka.actor.{ ActorRef, ActorSystem }
+import akka.Done
+import akka.actor.{ ActorRef, ActorSystem, CoordinatedShutdown }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.ws._
@@ -18,8 +18,8 @@ import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
 import akka.util.Timeout
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 import com.lightbend.lagom.registry.impl.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
+import javax.inject.{ Inject, Named }
 import org.slf4j.LoggerFactory
-import play.api.inject.ApplicationLifecycle
 import play.api.libs.typedmap.TypedMap
 import play.api.mvc.request.{ RemoteConnection, RequestAttrKey, RequestTarget }
 import play.api.mvc.{ Headers, RequestHeader }
@@ -30,15 +30,16 @@ import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 
-class AkkaHttpServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
-                                               @Named("serviceRegistryActor") registry: ActorRef)(implicit actorSystem: ActorSystem, mat: Materializer) {
+class AkkaHttpServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig)
+  (@Named("serviceRegistryActor") registry: ActorRef)
+  (implicit actorSystem: ActorSystem, mat: Materializer) {
 
   def start(): InetSocketAddress = {
-    new AkkaHttpServiceGateway(lifecycle, config, registry).address
+    new AkkaHttpServiceGateway(coordinatedShutdown, config, registry).address
   }
 }
 
-class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef)(implicit actorSystem: ActorSystem, mat: Materializer) {
+class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig, registry: ActorRef)(implicit actorSystem: ActorSystem, mat: Materializer) {
 
   private val log = LoggerFactory.getLogger(classOf[AkkaHttpServiceGateway])
 
@@ -158,12 +159,13 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
   }
 
   private val bindingFuture = Http().bindAndHandle(handler, config.host, config.port)
-  lifecycle.addStopHook(() => {
+
+  coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-akka-http-service-gateway") { () =>
     for {
       binding <- bindingFuture
-      unbind <- binding.unbind()
-    } yield unbind
-  })
+      _ <- binding.unbind()
+    } yield Done
+  }
 
   val address: InetSocketAddress = Await.result(bindingFuture, 10.seconds).localAddress
 }
