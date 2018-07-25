@@ -217,7 +217,7 @@ object Dependencies {
       "org.pcollections" % "pcollections" % "2.1.2",
       reactiveStreams,
       "org.scalactic" %% "scalactic" % ScalaTestVersion,
-      "org.scalatest" %% "scalatest" % ScalaTestVersion,
+      scalaTest,
       "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion,
       scalaParserCombinators,
       scalaXml,
