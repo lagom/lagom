@@ -30,14 +30,9 @@ import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 
-class AkkaHttpServiceGatewayFactory @Inject() (
-  coordinatedShutdown:                     CoordinatedShutdown,
-  config:                                  ServiceGatewayConfig,
-  @Named("serviceRegistryActor") registry: ActorRef
-)(implicit
-  actorSystem: ActorSystem,
-  mat: Materializer
-) {
+class AkkaHttpServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig)
+  (@Named("serviceRegistryActor") registry: ActorRef)
+  (implicit actorSystem: ActorSystem, mat: Materializer) {
 
   def start(): InetSocketAddress = {
     new AkkaHttpServiceGateway(coordinatedShutdown, config, registry).address

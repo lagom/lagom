@@ -165,6 +165,7 @@ def formattingPreferences = {
     .setPreference(RewriteArrowSymbols, false)
     .setPreference(AlignParameters, true)
     .setPreference(AlignSingleLineCaseStatements, true)
+    .setPreference(AllowParamGroupsOnNewlines, true)
     .setPreference(SpacesAroundMultiImports, true)
     .setPreference(DanglingCloseParenthesis, Force)
     .setPreference(AlignArguments, false)
