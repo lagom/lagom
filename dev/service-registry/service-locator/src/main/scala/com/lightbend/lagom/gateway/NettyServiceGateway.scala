@@ -7,12 +7,12 @@ package com.lightbend.lagom.gateway
 import java.net.{ InetSocketAddress, URI }
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import javax.inject.{ Inject, Named, Singleton }
 
 import akka.Done
 import akka.actor.{ ActorRef, CoordinatedShutdown }
 import akka.pattern.ask
 import akka.util.Timeout
-import com.lightbend.lagom.internal.NettyFutureConverters
 import com.lightbend.lagom.internal.NettyFutureConverters._
 import com.lightbend.lagom.internal.api.Execution.trampoline
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
@@ -27,7 +27,6 @@ import io.netty.channel.socket.nio.{ NioServerSocketChannel, NioSocketChannel }
 import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.EventExecutor
-import javax.inject.{ Inject, Named, Singleton }
 import org.slf4j.LoggerFactory
 import play.api.libs.typedmap.TypedMap
 import play.api.mvc.request.{ RemoteConnection, RequestAttrKey, RequestTarget }
@@ -368,16 +367,16 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
 
   private val bindFuture = server.bind(config.host, config.port).channelFutureToScala
 
-  val unbindTimeout = coordinatedShutdown.timeout(CoordinatedShutdown.PhaseServiceUnbind)
   coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-netty-service-gateway") { () =>
+    poolMap.asScala.foreach(_.getValue.close())
+
+    val unbindTimeout = coordinatedShutdown.timeout(CoordinatedShutdown.PhaseServiceUnbind)
+
     for {
       channel <- bindFuture
       _ <- channel.close().channelFutureToScala
       _ <- eventLoop.shutdownGracefully(100, unbindTimeout.toMillis - 100, TimeUnit.MILLISECONDS).toScala
-    } yield {
-      poolMap.asScala.foreach(_.getValue.close())
-      Done
-    }
+    } yield Done
   }
 
   val address: InetSocketAddress = {
