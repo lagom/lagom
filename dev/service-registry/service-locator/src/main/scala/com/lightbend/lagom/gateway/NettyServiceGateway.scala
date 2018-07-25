@@ -365,7 +365,7 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
     }
   }
 
-  private val bindFuture = server.bind(config.port).channelFutureToScala
+  private val bindFuture = server.bind(config.host, config.port).channelFutureToScala
   lifecycle.addStopHook(() => {
     for {
       channel <- bindFuture
