@@ -245,7 +245,6 @@ abstract class LagomApplication(context: LagomApplicationContext)
     applicationLifecycle.addStopHook(stopHook)
     system
   }
-  override lazy val coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(actorSystem)
 
   LagomServerTopicFactoryVerifier.verify(lagomServer, topicPublisherName)
 }
