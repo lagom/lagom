@@ -264,6 +264,7 @@ def mimaSettings(versions: Seq[String]): Seq[Setting[_]] = {
     },
     mimaBinaryIssueFilters ++= Seq(
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
+      ProblemFilters.exclude[Problem]("com.lightbend.lagom.*Components*"),
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.*Module*")
     )
   )
@@ -495,7 +496,6 @@ lazy val `client-scaladsl` = (project in file("service/scaladsl/client"))
     name := "lagom-scaladsl-client",
     Dependencies.`client-scaladsl`,
     mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents.circuitBreakersPanel"),
       ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("com.lightbend.lagom.scaladsl.api.LagomConfigComponent.config")
     )
   )
@@ -549,8 +549,7 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
       ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.server.ActorSystemProvider.start"),
 
       // injected body parsers to avoid access to global state in https://github.com/lagom/lagom/pull/1401
-      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServerBuilder.this"),
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServerComponents.playBodyParsers")
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServerBuilder.this")
     )
   )
   .enablePlugins(RuntimeLibPlugins)
@@ -690,11 +689,7 @@ lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-cluster",
-    Dependencies.`cluster-scaladsl`,
-    mimaBinaryIssueFilters ++= Seq(
-      // see https://github.com/lagom/lagom/pull/1393
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.cluster.ClusterComponents.environment")
-    )
+    Dependencies.`cluster-scaladsl`
   ) configs (MultiJvm)
 
 lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
@@ -741,8 +736,6 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
   .settings(
     name := "lagom-javadsl-persistence",
     mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.PersistenceModule$InitServiceLocatorHolder"),
-      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.PersistenceModule$"),
       // See https://github.com/lagom/lagom/pull/405 for justification for this breaking change,
       // and verification that it causes no binary compatibility problems in practice.
       ProblemFilters.exclude[IncompatibleTemplateDefProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$Persist"),
@@ -837,7 +830,6 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
     name := "lagom-scaladsl-persistence-cassandra",
     Dependencies.`persistence-cassandra-scaladsl`,
     mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.ReadSideCassandraPersistenceComponents.testCasReadSideSettings"),
       ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil#AwaitPersistenceInit.persist"),
       ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil#AwaitPersistenceInit.persistAsync")
     )
@@ -889,11 +881,7 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
 lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scaladsl"))
   .settings(
     name := "lagom-scaladsl-persistence-jdbc",
-    Dependencies.`persistence-jdbc-scaladsl`,
-    mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[UpdateForwarderBodyProblem]("com.lightbend.lagom.scaladsl.persistence.jdbc.WriteSideJdbcPersistenceComponents.slickProvider"),
-      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.scaladsl.persistence.jdbc.ReadSideJdbcPersistenceComponents")
-    )
+    Dependencies.`persistence-jdbc-scaladsl`
   )
   .dependsOn(
     `persistence-jdbc-core` % "compile;test->test",
