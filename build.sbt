@@ -146,6 +146,8 @@ def runtimeScalaSettings: Seq[Setting[_]] = Seq(
 )
 
 def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
+  publishTo := sonatypePublishTo.value,
+
   Dependencies.validateDependenciesSetting,
   Dependencies.pruneWhitelistSetting,
   Dependencies.dependencyWhitelistSetting,
