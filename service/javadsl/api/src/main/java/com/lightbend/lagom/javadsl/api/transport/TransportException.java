@@ -41,6 +41,12 @@ public class TransportException extends RuntimeException {
         this.exceptionMessage = exceptionMessage;
     }
 
+    public TransportException(TransportErrorCode errorCode, String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = errorCode;
+        this.exceptionMessage = new ExceptionMessage(this.getClass().getSimpleName(), message);
+    }
+
     public static TransportException fromCodeAndMessage(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
         BiFunction<TransportErrorCode, ExceptionMessage, TransportException> creator = BY_NAME_TRANSPORT_EXCEPTIONS.get(exceptionMessage.name());
         if (creator != null) {
