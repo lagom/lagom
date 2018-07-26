@@ -130,6 +130,8 @@ def releaseStepCommandAndRemaining(command: String): State => State = { original
 }
 
 def runtimeScalaSettings: Seq[Setting[_]] = Seq(
+  publishTo := sonatypePublishTo.value,
+
   crossScalaVersions := Dependencies.ScalaVersions,
   scalaVersion := Dependencies.ScalaVersions.head,
 
@@ -146,8 +148,6 @@ def runtimeScalaSettings: Seq[Setting[_]] = Seq(
 )
 
 def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
-  publishTo := sonatypePublishTo.value,
-
   Dependencies.validateDependenciesSetting,
   Dependencies.pruneWhitelistSetting,
   Dependencies.dependencyWhitelistSetting,
