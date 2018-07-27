@@ -13,6 +13,8 @@ object LagomPublish {
     (name.value, resolverValue) match {
       case (_, None) => throw new PublishValidationFailed("`publishTo` not set.")
       case ("lagom-sbt-plugin", x) =>
+        // see https://github.com/sbt/sbt-bintray/blob/7c93bacaae3ffc128564ceacb6e73ec4486525dd/src/main/scala/Bintray.scala#L16-L29 for
+        // details on the syntax of Bintray Resolver names.
         if (x.get.name != "Bintray-Sbt-Publish-lagom-sbt-plugin-releases-lagom-sbt-plugin") {
           throw new PublishValidationFailed("""Invalid resolver. Expected: "Raw(Bintray-Sbt-Publish-lagom-sbt-plugin-releases-lagom-sbt-plugin)".""")
         }
