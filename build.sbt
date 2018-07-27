@@ -129,9 +129,11 @@ def releaseStepCommandAndRemaining(command: String): State => State = { original
   runCommand(command, originalState.copy(remainingCommands = Nil)).copy(remainingCommands = originalRemaining)
 }
 
-def runtimeScalaSettings: Seq[Setting[_]] = Seq(
-  publishTo := sonatypePublishTo.value,
+def sonatypeSettings: Seq[Setting[_]] = Seq(
+  publishTo := sonatypePublishTo.value
+)
 
+def runtimeScalaSettings: Seq[Setting[_]] = Seq(
   crossScalaVersions := Dependencies.ScalaVersions,
   scalaVersion := Dependencies.ScalaVersions.head,
 
@@ -147,7 +149,7 @@ def runtimeScalaSettings: Seq[Setting[_]] = Seq(
   )
 )
 
-def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
+def runtimeLibCommon: Seq[Setting[_]] = common ++ sonatypeSettings ++ runtimeScalaSettings ++ Seq(
   Dependencies.validateDependenciesSetting,
   Dependencies.pruneWhitelistSetting,
   Dependencies.dependencyWhitelistSetting,
@@ -1069,6 +1071,9 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   )
 
 lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
+  .disablePlugins(BintrayPlugin)
+  .enablePlugins(AutomateHeaderPlugin && Sonatype)
+  .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(
     name := "lagom-build-tool-support",
@@ -1088,6 +1093,9 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
 //
 // https://github.com/playframework/playframework/blob/2.6.7/framework/build.sbt#L27-L40
 lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-support")
+  .disablePlugins(BintrayPlugin)
+  .enablePlugins(AutomateHeaderPlugin && Sonatype)
+  .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(
     name := "lagom-sbt-build-tool-support",
@@ -1137,7 +1145,9 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   ).dependsOn(`sbt-build-tool-support`)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
-  .enablePlugins(lagom.SbtMavenPlugin)
+  .disablePlugins(BintrayPlugin)
+  .enablePlugins(lagom.SbtMavenPlugin && AutomateHeaderPlugin && Sonatype && Unidoc)
+  .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(
     name := "Lagom Maven Plugin",
@@ -1185,6 +1195,9 @@ val ArchetypeVariablePattern = "%([A-Z-]+)%".r
 
 def archetypeProject(archetypeName: String) =
   Project(s"maven-$archetypeName-archetype", file("dev") / "archetypes" / s"maven-$archetypeName")
+    .disablePlugins(BintrayPlugin)
+    .enablePlugins(AutomateHeaderPlugin && Sonatype)
+    .settings(sonatypeSettings: _*)
     .settings(common: _*)
     .settings(
       name := s"maven-archetype-lagom-$archetypeName",
@@ -1218,6 +1231,9 @@ def archetypeProject(archetypeName: String) =
 
 lazy val `maven-java-archetype` = archetypeProject("java")
 lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
+  .disablePlugins(BintrayPlugin)
+  .enablePlugins(AutomateHeaderPlugin && Sonatype)
+  .settings(sonatypeSettings: _*)
     .settings(common: _*)
     .settings(
       name := "lagom-maven-dependencies",
@@ -1298,8 +1314,11 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
-  .settings(name := "lagom-sbt-scripted-tools")
+  .disablePlugins(BintrayPlugin)
+  .enablePlugins(AutomateHeaderPlugin && Sonatype)
+  .settings(sonatypeSettings: _*)
   .settings(common: _*)
+  .settings(name := "lagom-sbt-scripted-tools")
   .settings(
     sbtPlugin := true,
     crossScalaVersions := Dependencies.SbtScalaVersions,
@@ -1389,6 +1408,7 @@ lazy val `play-integration-javadsl` = (project in file("dev") / "service-registr
 lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
   .settings(common: _*)
   .settings(runtimeScalaSettings: _*)
+  .settings(sonatypeSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-cassandra-server",
@@ -1398,6 +1418,7 @@ lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
 lazy val `kafka-server` = (project in file("dev") / "kafka-server")
   .settings(common: _*)
   .settings(runtimeScalaSettings: _*)
+  .settings(sonatypeSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-kafka-server",
