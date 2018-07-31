@@ -42,10 +42,10 @@ object PortAssigner {
 
     def build(projects: immutable.SortedSet[ProjectName]): Map[ProjectName, Port] = {
       require(
-        projects.size <= range.delta,
+        projects.size * 2 <= range.delta,
         s"""A larger port range is needed, as you have ${projects.size} Lagom projects and only ${range.delta} 
-             |ports available. You should increase the range passed for the 
-             |lagomPortRange build setting
+             |ports available. The number of ports available must be at least twice the number of projects.
+             | You should increase the range passed for the lagomPortRange build setting.
          """.stripMargin
       )
 
@@ -73,7 +73,9 @@ object PortAssigner {
           else loop(rest, assignedPort + projectedPort, unassigned, result + (proj -> projectedPort))
       }
 
-      loop(projects.iterator.toSeq, Set.empty[Port], Vector.empty[ProjectName], Map.empty[ProjectName, Port])
+      val seq: Seq[ProjectName] = projects.iterator.toSeq
+      val projectNamesWithTls = seq.flatMap { plainName => Seq(plainName, ProjectName(plainName.name + "-tls")) }
+      loop(projectNamesWithTls, Set.empty[Port], Vector.empty[ProjectName], Map.empty[ProjectName, Port])
     }
 
     private def projectedPortFor(name: ProjectName): Port = {

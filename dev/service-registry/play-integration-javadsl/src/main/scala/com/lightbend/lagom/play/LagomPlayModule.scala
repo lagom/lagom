@@ -82,7 +82,8 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Config, serviceInfo: Se
            applicationLifecycle: ApplicationLifecycle) =
     this(config.underlying, serviceInfo, serviceRegistry, applicationLifecycle)
 
-  private val httpAddress = config.getString("play.server.http.address")
+  // TODO: register both ports.
+  private val httpAddress = config.getString("play.server.https.address")
   private val httpPort = config.getString("play.server.https.port")
   private val serviceUrl = new URI(s"https://$httpAddress:$httpPort")
 

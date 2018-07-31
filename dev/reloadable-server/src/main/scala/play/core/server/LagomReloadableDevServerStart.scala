@@ -38,8 +38,8 @@ object LagomReloadableDevServerStart {
   def mainDev(
     buildLink:   BuildLink,
     httpAddress: String,
-    httpPort:    Option[Int],
-    httpsPort:   Option[Int]
+    httpPort:    Int,
+    httpsPort:   Int
   ): ReloadableServer = {
     val classLoader = getClass.getClassLoader
     Threads.withContextClassLoader(classLoader) {
@@ -47,25 +47,34 @@ object LagomReloadableDevServerStart {
         val process = new RealServerProcess(args = Seq.empty)
         val path: File = buildLink.projectPath
 
-        val httpsSettings: Option[Map[String, String]] = httpsPort.map { port =>
+        val httpsSettings: Map[String, String] =
           Map(
-            "play.server.https.port" -> port.toString,
+            // The pairs play.server.httpx.{address,port} are read from PlayRegisterWithServiceRegistry
+            // to register the service
+            "play.server.https.address" -> httpAddress, // there's no httpsAddress
+            "play.server.https.port" -> httpsPort.toString,
             "play.server.https.keyStore.path" -> FakeKeyStoreGenerator.keyStoreFile(new File(".")).getAbsolutePath,
             "play.server.https.keyStore.type" -> "JKS",
             "ssl-config.loose.disableHostnameVerification" -> "true"
           )
-        }
-
-        val dirAndDevSettings: Map[String, String] =
+        val httpSettings: Map[String, String] =
+          Map(
+            // The pairs play.server.httpx.{address,port} are read from PlayRegisterWithServiceRegistry
+            // to register the service
+            "play.server.http.address" -> httpAddress,
+            "play.server.http.port" -> httpPort.toString
+          )
+        import scala.collection.JavaConverters.asJavaIterable
+        val dirAndDevSettings: Map[String, AnyRef] =
           ServerConfig.rootDirConfig(path) ++
             buildLink.settings.asScala.toMap ++
-            httpPort.toList.map("play.server.http.port" -> _.toString).toMap ++
-            httpsSettings.getOrElse(Map.empty) +
-            ("play.server.https.address" -> httpAddress) +
-            ("play.server.akka.http2.enabled" -> "true") + {
-              // on dev-mode, we often have more than one cluster on the same jvm
-              "akka.cluster.jmx.multi-mbeans-in-same-jvm" -> "on"
-            }
+            httpSettings ++
+            httpsSettings +
+            ("play.filters.hosts.allowed" ->
+              List(s"$httpAddress:$httpPort", s"$httpAddress:$httpsPort", s"localhost:$httpPort", s"localhost:$httpsPort").asJavaCollection)
+        //            ("play.server.akka.http2.enabled" -> "true") +
+        // on dev-mode, we often have more than one cluster on the same jvm
+        ("akka.cluster.jmx.multi-mbeans-in-same-jvm" -> "on")
 
         // Use plain Java call here in case of scala classloader mess
         {
@@ -206,8 +215,8 @@ object LagomReloadableDevServerStart {
         // Start server with the application
         val serverConfig = ServerConfig(
           rootDir = path,
-          port = httpPort,
-          sslPort = httpsPort,
+          port = Some(httpPort),
+          sslPort = Some(httpsPort),
           address = httpAddress,
           mode = Mode.Dev,
           properties = process.properties,
