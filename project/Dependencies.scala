@@ -27,7 +27,7 @@ object Dependencies {
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M4")
     val AkkaHttp     = "10.1.9"
 
-    val AkkaPersistenceCassandra = "0.62"
+    val AkkaPersistenceCassandra = "0.99"
     val AkkaPersistenceJdbc      = "3.5.2"
     val AkkaManagement           = "1.0.1"
 
@@ -92,7 +92,7 @@ object Dependencies {
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.0"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
-    ("com.datastax.cassandra" % "cassandra-driver-core" % "3.6.0").excludeAll(excludeSlf4j: _*)
+    ("com.datastax.cassandra" % "cassandra-driver-core" % "3.7.2").excludeAll(excludeSlf4j: _*)
 
   private val akkaActor            = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
   private val akkaRemote           = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
@@ -165,6 +165,11 @@ object Dependencies {
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
   private val okio    = "com.squareup.okio"    % "okio"   % "2.2.2"
 
+  private val jffi         = "com.github.jnr" % "jffi"          % "1.2.17"
+  private val jnrConstants = "com.github.jnr" % "jnr-constants" % "0.9.9"
+  private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.8"
+  private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.45"
+
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", Versions.JacksonCore)(
       "jackson-annotations",
@@ -198,10 +203,10 @@ object Dependencies {
       "aopalliance" % "aopalliance" % "1.0",
       cassandraDriverCore,
       akkaPersistenceJdbc,
-      "com.github.jnr"           % "jffi"                    % "1.2.16",
-      "com.github.jnr"           % "jnr-constants"           % "0.9.9",
-      "com.github.jnr"           % "jnr-ffi"                 % "2.1.7",
-      "com.github.jnr"           % "jnr-posix"               % "3.0.44",
+      jffi,
+      jnrConstants,
+      jnrFfi,
+      jnrPosix,
       "com.github.jnr"           % "jnr-x86asm"              % "1.0.2",
       "com.google.code.findbugs" % "jsr305"                  % "3.0.2",
       "com.google.errorprone"    % "error_prone_annotations" % "2.3.2",
@@ -536,7 +541,8 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProtobuf
+    akkaProtobuf,
+    guava,
   )
 
   val client = libraryDependencies ++= Seq(
@@ -669,7 +675,8 @@ object Dependencies {
     akkaHttpCore,
     akkaHttpRouteDsl,
     akkaHttpSprayJson,
-    akkaParsing
+    akkaParsing,
+    guava,
   )
 
   val `akka-management-javadsl`  = libraryDependencies ++= Seq.empty[ModuleID]
@@ -692,6 +699,8 @@ object Dependencies {
     akkaSlf4j,
     playJson,
     sprayJson,
+    jffi,
+    jnrFfi,
     // transitive dependencies from Akka Management
     // may not match the Akka version in use so
     // must be explicitly bumped
@@ -889,13 +898,15 @@ object Dependencies {
     scalaTest % Test,
     junit     % Test,
     // Upgrades needed to match whitelist versions
-    kafkaClients
+    jnrPosix
   )
 
   val `kafka-broker-scaladsl` = libraryDependencies ++= Seq(
     "log4j"   % "log4j" % "1.2.17",
     scalaTest % Test,
-    junit     % Test
+    junit     % Test,
+    // Upgrades needed to match whitelist versions
+    jnrPosix
   )
 
   val logback = libraryDependencies ++= slf4j ++ Seq(
@@ -910,7 +921,8 @@ object Dependencies {
     akkaActor,
     akkaSlf4j,
     akkaProtobuf,
-    scalaXml
+    scalaXml,
+    guava,
   ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % Versions.Logback)
 
   val log4j2 = libraryDependencies ++= Seq(slf4jApi) ++
@@ -927,7 +939,8 @@ object Dependencies {
       akkaStream,
       akkaActor,
       akkaSlf4j,
-      akkaProtobuf
+      akkaProtobuf,
+      guava,
     )
 
   val `reloadable-server` = libraryDependencies ++= Seq(
