@@ -69,7 +69,11 @@ class AkkaHttpServiceGateway(
     (registry ? Route(request.method.name, path, portName)).mapTo[RouteResult].flatMap {
       case Found(serviceUri) =>
         log.debug("Request is to be routed to {}", serviceUri)
-        val newUri = request.uri.withAuthority(serviceUri.getHost, serviceUri.getPort)
+        val newUri = request
+          .uri
+          .withAuthority(serviceUri.getHost, serviceUri.getPort)
+          .withScheme("https") // TODO: scheme should be the one found on the service regsitry!
+
         request.header[UpgradeToWebSocket] match {
           case Some(upgrade) =>
             handleWebSocketRequest(
@@ -78,6 +82,7 @@ class AkkaHttpServiceGateway(
               upgrade,
               devModeConnectionContext
             )
+
           case None =>
             val headers = filterHeaders(request.headers) ++
               request.header[Host].to[Set].map(_.host).map(`X-Forwarded-Host`.apply) ++
