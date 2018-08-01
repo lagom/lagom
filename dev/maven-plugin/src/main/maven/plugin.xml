@@ -221,6 +221,16 @@
             </configuration>
         </parameter>
         <parameter>
+            <name>serviceGatewayHttpsPort</name>
+            <type>int</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The HTTPS port to run the service gateway on.</description>
+            <configuration>
+                <serviceGatewayHttpsPort implementation="int" default-value="9443">${service.gateway.port}</serviceGatewayHttpsPort>
+            </configuration>
+        </parameter>
+        <parameter>
             <name>serviceGatewayImpl</name>
             <type>java.lang.String</type>
             <required>false</required>

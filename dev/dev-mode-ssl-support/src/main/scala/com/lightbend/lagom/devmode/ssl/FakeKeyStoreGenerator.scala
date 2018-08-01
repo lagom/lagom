@@ -6,9 +6,9 @@ package com.lightbend.lagom.devmode.ssl
 
 import java.io.{ Closeable, File, IOException }
 import java.math.BigInteger
-import java.security.cert.X509Certificate
+import java.security.cert.{ X509Certificate, Certificate }
 import java.security.interfaces.RSAPublicKey
-import java.security.{ KeyPair, KeyPairGenerator, KeyStore, SecureRandom }
+import java.security._
 import java.util.Date
 
 import play.api.Logger
@@ -35,9 +35,15 @@ private[lagom] object LagomIO {
  * TODO: export CA to CA.crt so users can easily import into the browser and trust it.
  */
 object FakeKeyStoreGenerator {
-  private val GeneratedKeyStore = "dev-mode/generated.keystore"
+  private val GeneratedKeyStore = "target/dev-mode/generated.keystore"
+  private val ExportedCACert = "target/dev-mode/ca.crt"
+  private val ExportedCert = "target/dev-mode/service.crt"
   val trustedCAAlias = "playgeneratedCAtrusted"
+  val trustedAlias = "playgeneratedtrusted"
 
+  /**
+   * @param appPath a file descriptor to the root folder of the project (the root, not a particular module).
+   */
   def keyStoreFile(appPath: File) = new File(appPath, GeneratedKeyStore)
 
   private val DnNameCA = "CN=localhost-CA, OU=Unit Testing, O=Mavericks, L=Lagom Base 1, ST=Cyberspace, C=CY"
@@ -125,7 +131,7 @@ object FakeKeyStoreGenerator {
     keyStore.setKeyEntry("playgeneratedCA", keyPair.getPrivate, "".toCharArray, Array(cacert))
     keyStore.setCertificateEntry(trustedCAAlias, cacert)
     keyStore.setKeyEntry("playgenerated", keyPair.getPrivate, "".toCharArray, Array(cert))
-    keyStore.setCertificateEntry("playgeneratedtrusted", cert)
+    keyStore.setCertificateEntry(trustedAlias, cert)
     keyStore
   }
 

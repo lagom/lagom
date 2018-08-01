@@ -10,6 +10,7 @@ import java.util.Locale
 import akka.Done
 import akka.actor.{ ActorRef, ActorSystem, CoordinatedShutdown }
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.Host
 import akka.http.scaladsl.model.ws._
 import akka.http.scaladsl.{ ConnectionContext, Http, HttpExt, HttpsConnectionContext }
 import akka.pattern.ask
@@ -27,6 +28,7 @@ import play.api.mvc.request.{ RemoteConnection, RequestAttrKey, RequestTarget }
 import play.api.mvc.{ Headers, RequestHeader }
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
+import akka.http.scaladsl.model.headers.`X-Forwarded-Host`
 
 import scala.collection.immutable
 import scala.concurrent.duration._
@@ -77,9 +79,13 @@ class AkkaHttpServiceGateway(
               devModeConnectionContext
             )
           case None =>
+            val headers = filterHeaders(request.headers) ++
+              request.header[Host].to[Set].map(_.host).map(`X-Forwarded-Host`.apply) ++
+              Set(Host(newUri.authority))
             val req = request
               .withUri(newUri)
-              .withHeaders(filterHeaders(request.headers))
+              .withHeaders(headers)
+
             http.singleRequest(
               req,
               connectionContext = devModeConnectionContext
@@ -181,20 +187,26 @@ class AkkaHttpServiceGateway(
     "Sec-WebSocket-Key",
     "UpgradeToWebSocket",
     "Upgrade",
-    "Connection"
+    "Connection",
+    "Host" // Host is replaced and `X-Forwarded-Host` is used instead.
   ).map(_.toLowerCase(Locale.ENGLISH))
 
-  private def filterHeaders(headers: immutable.Seq[HttpHeader]) = {
-    headers.filterNot(header => HeadersToFilter(header.lowercaseName()))
+  private def filterHeaders(headers: immutable.Seq[HttpHeader]): immutable.Seq[HttpHeader] = {
+    headers
+      .filterNot(header => HeadersToFilter(header.lowercaseName()))
   }
 
-  private val bindingFuture = Http().bindAndHandle(handler, config.host, config.port, devModeConnectionContext)
-  coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-akka-http-service-gateway") { () =>
-    for {
-      binding <- bindingFuture
-      _ <- binding.unbind()
-    } yield Done
-  }
+  private val bindingHttp: Future[Http.ServerBinding] = Http().bindAndHandle(handler, config.host, config.httpPort)
+  private val bindingHttps: Future[Http.ServerBinding] = Http().bindAndHandle(handler, config.host, config.httpsPort, devModeConnectionContext)
 
-  val address: InetSocketAddress = Await.result(bindingFuture, 10.seconds).localAddress
+  def setupUnbind(binding: Future[Http.ServerBinding], alias: String): Unit =
+    coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, taskName = s"unbind-akka-http-service-gateway-$alias") { () =>
+      binding.flatMap(_.unbind().map(_ => Done))
+    }
+
+  setupUnbind(bindingHttp, alias = "plaintext")
+  setupUnbind(bindingHttps, alias = "tls")
+
+  val address: InetSocketAddress = Await.result(bindingHttps, 10.seconds).localAddress
+
 }

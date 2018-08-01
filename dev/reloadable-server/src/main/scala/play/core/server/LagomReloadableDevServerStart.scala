@@ -64,7 +64,6 @@ object LagomReloadableDevServerStart {
             "play.server.http.address" -> httpAddress,
             "play.server.http.port" -> httpPort.toString
           )
-        import scala.collection.JavaConverters.asJavaIterable
         val dirAndDevSettings: Map[String, AnyRef] =
           ServerConfig.rootDirConfig(path) ++
             buildLink.settings.asScala.toMap ++

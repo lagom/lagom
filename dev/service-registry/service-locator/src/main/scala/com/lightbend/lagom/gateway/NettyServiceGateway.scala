@@ -47,7 +47,8 @@ import com.lightbend.lagom.internal.api.Execution.trampoline
 
 case class ServiceGatewayConfig(
   host:                   String,
-  port:                   Int,
+  httpPort:               Int,
+  httpsPort:              Int,
   rootLagomProjectFolder: File
 )
 
@@ -369,7 +370,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
     }
   }
 
-  private val bindFuture = server.bind(config.host, config.port).channelFutureToScala
+  private val bindFuture = server.bind(config.host, config.httpPort).channelFutureToScala
 
   coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-netty-service-gateway") { () =>
     poolMap.asScala.foreach(_.getValue.close())
@@ -385,7 +386,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
 
   val address: InetSocketAddress = {
     val address = Await.result(bindFuture, 10.seconds).localAddress().asInstanceOf[InetSocketAddress]
-    if (address == null) throw new IllegalStateException(s"Channel could not be bound on port ${config.port}")
+    if (address == null) throw new IllegalStateException(s"Channel could not be bound on port ${config.httpPort}")
     address
   }
 

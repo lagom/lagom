@@ -91,25 +91,26 @@ private[lagom] object Servers {
 
   object ServiceLocator extends ServerContainer {
     protected type Server = Closeable {
-      def start(serviceLocatorAddress: String, serviceLocatorPort: Int, serviceGatewayAddress: String, serviceGatewayPort: Int,
+      def start(serviceLocatorAddress: String, serviceLocatorPort: Int, serviceGatewayAddress: String,
+                serviceGatewayHttpPort: Int, serviceGatewayHttpsPort: Int,
                 unmanagedServices: JMap[String, String], gatewayImpl: String): Unit
       def serviceLocatorAddress: URI
       def serviceGatewayAddress: URI
     }
 
     def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Array[URL], serviceLocatorAddress: String,
-              serviceLocatorPort: Int, serviceGatewayAddress: String, serviceGatewayPort: Int,
+              serviceLocatorPort: Int, serviceGatewayAddress: String, serviceGatewayHttpPort: Int, serviceGatewayHttpsPort: Int,
               unmanagedServices: Map[String, String], gatewayImpl: String): Closeable = synchronized {
       if (server == null) {
         withContextClassloader(new java.net.URLClassLoader(classpath, parentClassLoader)) { loader =>
           val serverClass = loader.loadClass("com.lightbend.lagom.registry.impl.ServiceLocatorServer")
           server = serverClass.newInstance().asInstanceOf[Server]
           try {
-            server.start(serviceLocatorAddress, serviceLocatorPort, serviceGatewayAddress, serviceGatewayPort, unmanagedServices.asJava, gatewayImpl)
+            server.start(serviceLocatorAddress, serviceLocatorPort, serviceGatewayAddress, serviceGatewayHttpPort, serviceGatewayHttpsPort, unmanagedServices.asJava, gatewayImpl)
           } catch {
             case e: Exception =>
               val msg = "Failed to start embedded Service Locator or Service Gateway. " +
-                s"Hint: Are ports $serviceLocatorPort and $serviceGatewayPort already in use?"
+                s"Hint: Are ports $serviceLocatorPort, $serviceGatewayHttpPort or $serviceGatewayHttpsPort already in use?"
               stop()
               throw new RuntimeException(msg, e)
           }
@@ -117,6 +118,7 @@ private[lagom] object Servers {
       }
       if (server != null) {
         log.info("Service locator is running at " + server.serviceLocatorAddress)
+        // TODO: trace all valid locations for the service gateway.
         log.info("Service gateway is running at " + server.serviceGatewayAddress)
       }
 

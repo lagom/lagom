@@ -22,11 +22,26 @@ class ServiceLocatorServer extends Closeable {
   @volatile private var server: ReloadableServer = _
   @volatile private var gatewayAddress: InetSocketAddress = _
 
-  def start(serviceLocatorAddress: String, serviceLocatorPort: Int, serviceGatewayAddress: String, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit = synchronized {
+  def start(
+    serviceLocatorAddress:   String,
+    serviceLocatorPort:      Int,
+    serviceGatewayAddress:   String,
+    serviceGatewayHttpPort:  Int,
+    serviceGatewayHttpsPort: Int,
+    unmanagedServices:       JMap[String, String],
+    gatewayImpl:             String
+  ): Unit = synchronized {
     require(server == null, "Service locator is already running on " + server.mainAddress)
 
     // we create a single application which we will reuse for both gateway and locator
-    val application = createApplication(ServiceGatewayConfig(serviceGatewayAddress, serviceGatewayPort, new File(".")), unmanagedServices)
+    val application = createApplication(
+      ServiceGatewayConfig(
+        serviceGatewayAddress,
+        serviceGatewayHttpPort,
+        serviceGatewayHttpsPort,
+        new File(".")
+      ), unmanagedServices
+    )
 
     // the service locator is a play app
     Play.start(application)
@@ -46,15 +61,21 @@ class ServiceLocatorServer extends Closeable {
       }
     } catch {
       case NonFatal(e) =>
-        throw new RuntimeException(s"Unable to start service gateway on port $serviceGatewayPort", e)
+        throw new RuntimeException(s"Unable to start service gateway on ports: $serviceGatewayHttpPort, $serviceGatewayHttpsPort", e)
     }
     logger.info("Service locator can be reached at " + serviceLocatorAddress)
     logger.info("Service gateway can be reached at " + serviceGatewayAddress)
   }
 
   private def createApplication(serviceGatewayConfig: ServiceGatewayConfig, unmanagedServices: JMap[String, String]): Application = {
-    val initialSettings = Map(
-      "ssl-config.loose.disableHostnameVerification" -> "true"
+    import scala.collection.JavaConverters._
+    val initialSettings: Map[String, AnyRef] = Map(
+      "ssl-config.loose.disableHostnameVerification" -> "true",
+      "play.filters.hosts.enabled" ->
+        Seq(
+          s"localhost:${serviceGatewayConfig.httpPort}", s"localhost:${serviceGatewayConfig.httpsPort}",
+          s"${serviceGatewayConfig.host}:${serviceGatewayConfig.httpPort}", s"${serviceGatewayConfig.host}:${serviceGatewayConfig.httpsPort}"
+        ).asJava
     )
     val environment = Environment.simple()
     new GuiceApplicationBuilder(
@@ -82,11 +103,12 @@ class ServiceLocatorServer extends Closeable {
   }
 
   def serviceLocatorAddress: URI = {
-    new URI(s"http://${server.mainAddress.getHostName}:${server.mainAddress.getPort}")
+    new URI(s"http://${server.mainAddress.getAddress.getHostAddress}:${server.mainAddress.getPort}")
   }
 
   def serviceGatewayAddress: URI = {
-    new URI(s"https://${gatewayAddress.getHostName}:${gatewayAddress.getPort}")
+    // TODO: support multiple addresses for gateway (http vs https)
+    new URI(s"https://${server.mainAddress.getAddress.getHostAddress}:${gatewayAddress.getPort}")
   }
 
 }
