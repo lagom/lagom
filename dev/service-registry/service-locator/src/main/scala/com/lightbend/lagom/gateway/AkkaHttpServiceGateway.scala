@@ -50,11 +50,12 @@ class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: S
   private val handler = Flow[HttpRequest].mapAsync(1) { request =>
     log.debug("Routing request {}", request)
     val path = request.uri.path.toString()
+    val portName = { if ("https" == request.uri.scheme) Some("https") else None }
 
-    (registry ? Route(request.method.name, path)).mapTo[RouteResult].flatMap {
-      case Found(serviceAddress) =>
-        log.debug("Request is to be routed to {}", serviceAddress)
-        val newUri = request.uri.withAuthority(serviceAddress.getHostName, serviceAddress.getPort)
+    (registry ? Route(request.method.name, path, portName)).mapTo[RouteResult].flatMap {
+      case Found(serviceUri) =>
+        log.debug("Request is to be routed to {}", serviceUri)
+        val newUri = request.uri.withAuthority(serviceUri.getHost, serviceUri.getPort)
         request.header[UpgradeToWebSocket] match {
           case Some(upgrade) =>
             handleWebSocketRequest(request, newUri, upgrade)
@@ -63,7 +64,7 @@ class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: S
         }
       case NotFound(registryMap) =>
         log.debug("Sending not found response")
-        Future.successful(renderNotFound(request, path, registryMap))
+        Future.successful(renderNotFound(request, path, registryMap.map { case (k, v) => (k, v._2) }))
     }
   }
 
@@ -102,7 +103,7 @@ class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: S
       override def routes: Routes = PartialFunction.empty
       override val documentation: Seq[(String, String, String)] = registry.toSeq.flatMap {
         case (serviceName, service) =>
-          val call = s"Service: $serviceName (${service.uri})"
+          val call = s"Service: $serviceName (${service.uris})"
           service.acls().asScala.map { acl =>
             val method = acl.method.asScala.fold("*")(_.name)
             val path = acl.pathRegex.orElse(".*")

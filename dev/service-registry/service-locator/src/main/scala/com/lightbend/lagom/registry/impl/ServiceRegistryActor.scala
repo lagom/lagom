@@ -4,7 +4,7 @@
 
 package com.lightbend.lagom.registry.impl
 
-import java.net.InetSocketAddress
+import java.net.URI
 import java.util.regex.Pattern
 
 import akka.Done
@@ -19,63 +19,137 @@ import scala.collection.JavaConverters._
 import scala.compat.java8.OptionConverters._
 
 object ServiceRegistryActor {
-  case class Lookup(name: String)
+  case class Lookup(serviceName: String, portName: Option[String])
   case class Remove(name: String)
   case class Register(name: String, service: ServiceRegistryService)
-  case class Route(method: String, path: String)
+  case class Route(method: String, path: String, portName: Option[String])
   case object GetRegisteredServices
   case class RegisteredServices(services: PSequence[RegisteredService])
   sealed trait RouteResult
-  case class Found(address: InetSocketAddress) extends RouteResult
-  case class NotFound(registry: Map[String, ServiceRegistryService]) extends RouteResult
+  case class Found(address: URI) extends RouteResult
+  case class NotFound(registry: Map[String, (URI, ServiceRegistryService)]) extends RouteResult
+
 }
 
-class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) extends Actor {
+case class ServiceName(name: String) extends AnyVal
 
+// identifies a single entry on the registry. This Registry will expand portname's `Some(tcp)`
+// and `Some(`http`)` duplicating the entry on the registry to also use `None` for backwards compatibility
+case class ServiceRegistryKey(serviceName: ServiceName, portName: Option[String])
+
+object InternalRegistry {
+
+  def build(unmanagedServices: UnmanagedServices): InternalRegistry = new InternalRegistry(
+    unmanagedServices.services.flatMap {
+      case (serviceName, serviceRegistryService) =>
+        serviceRegistryService.uris().asScala.flatMap {
+          buildRegistryItem(serviceName, serviceRegistryService)
+        }
+    }.toMap
+  )
+
+  private def buildRegistryItem(serviceName: String, serviceRegistryService: ServiceRegistryService)(serviceUri: URI): Seq[(ServiceRegistryKey, (URI, ServiceRegistryService))] = {
+    val portNames = {
+      serviceUri.getScheme match {
+        case "tcp" =>
+          Seq(None) // using "tcp://" defaults to having no protoName
+        case "http" =>
+          // using "http://" defaults to having no protoName and also Some("http") so "http" becomes the
+          // default result when searching without a `protoName` query.
+          Seq(None, Some(serviceUri.getScheme))
+        case _ => Seq(Some(serviceUri.getScheme))
+      }
+    }
+    val registryItems: Seq[(ServiceRegistryKey, (URI, ServiceRegistryService))] = portNames.map { pn =>
+      val srk = ServiceRegistryKey(ServiceName(serviceName), pn)
+      srk -> (serviceUri, serviceRegistryService)
+    }
+    registryItems
+  }
+
+  def build(serviceName: String, details: ServiceRegistryService): Map[ServiceRegistryKey, (URI, ServiceRegistryService)] =
+    details.uris().asScala.flatMap {
+      buildRegistryItem(serviceName, details)
+    }.toMap
+
+}
+
+/**
+ * @param reg map using servicename and portname as keys and a single URI as value. The original ServiceRegistryService
+ *            where eack K/V in the map was extracted from is added into the value to be able to traceback.
+ */
+class InternalRegistry(var reg: Map[ServiceRegistryKey, (URI, ServiceRegistryService)]) {
   private val logger: Logger = Logger(classOf[ServiceLocatorServer])
 
+  def list(): Seq[(ServiceName, Option[String], URI)] = reg.toSeq.map { case (k, v) => (k.serviceName, k.portName, v._1) }
+
+  /** Simple view of the registry that removes the portName info, grouping registries per ServiceName */
+  val serviceValues: Map[ServiceName, (URI, ServiceRegistryService)] = reg.map { case (k, v) => k.serviceName -> v }
+
+  def lookup(serviceName: String, portName: Option[String]): Option[URI] = reg.get(ServiceRegistryKey(ServiceName(serviceName), portName)).map(_._1)
+
+  def register(serviceName: String, details: ServiceRegistryService): Any = {
+    val subset: Map[ServiceRegistryKey, (URI, ServiceRegistryService)] = reg.filter { case (k, _) => k.serviceName.name == serviceName }
+    if (subset.isEmpty) {
+      if (logger.isDebugEnabled) {
+        logger.debug(s"Registering service [$serviceName] with ACLs [${details.acls().asScala.map { acl => acl.toString }.mkString(", ")}] on ${details.uris().asScala.mkString(",")}).")
+      }
+      reg = reg ++ InternalRegistry.build(serviceName, details)
+      Done
+    } else {
+      val actualDetails: ServiceRegistryService = subset.values.map(_._2).head
+      if (actualDetails.equals(details)) {
+        Done // idempotent, same already registered
+      } else {
+        Status.Failure(new ServiceAlreadyRegistered(serviceName))
+      }
+    }
+  }
+
+  def remove(serviName: String) =
+    reg = reg.filterNot { case (k, _) => k.serviceName.name == serviName }
+}
+
+class InternalRouter {
+  private val logger: Logger = Logger(classOf[InternalRouter])
   import ServiceRegistryActor._
 
-  private var registry: Map[String, ServiceRegistryService] = unmanagedServices.services
-  private var router = PartialFunction.empty[Route, InetSocketAddress]
-  private var routerFunctions = Seq.empty[PartialFunction[Route, InetSocketAddress]]
+  private var router = PartialFunction.empty[Route, (URI, ServiceRegistryService)]
+  // maps a Route to ServiceNames
+  private var routerFunctions = Seq.empty[PartialFunction[Route, (URI, ServiceRegistryService)]]
+  private var simpleRegistry: Map[String, (URI, ServiceRegistryService)] = Map.empty[String, (URI, ServiceRegistryService)]
 
-  override def preStart(): Unit = {
-    rebuildRouter()
+  def routeFor(route: ServiceRegistryActor.Route): RouteResult = {
+    router.lift(route).fold[RouteResult](NotFound(simpleRegistry)) {
+      case (uri, _) =>
+        Found(uri)
+    }
   }
 
-  override def receive: Receive = {
-    case Lookup(name) => sender() ! registry.get(name).map(_.uri())
-    case Remove(name) =>
-      registry -= name
-      rebuildRouter()
-    case Register(name, service) =>
-      registry.get(name) match {
-        case None =>
-          if (logger.isDebugEnabled) {
-            logger.debug(s"Registering service [$name] with ACLs [${service.acls().asScala.map { acl => acl.toString }.mkString(", ")}] on ${service.uri()}).")
-          }
-          registry += (name -> service)
-          rebuildRouter()
-          sender() ! Done
-        case Some(existing) =>
-          if (existing == service)
-            sender() ! Done // idempotent, same already registered
-          else
-            sender() ! Status.Failure(new ServiceAlreadyRegistered(name))
-      }
-    case GetRegisteredServices =>
-      val services: List[RegisteredService] = (for {
-        (name, service) <- registry
-      } yield RegisteredService.of(name, service.uri))(collection.breakOut)
-      import scala.collection.JavaConverters._
-      sender() ! RegisteredServices(TreePVector.from(services.asJava))
-    case route: Route =>
-      sender() ! router.lift(route).fold[RouteResult](NotFound(registry))(Found.apply)
-      warnOnAmbiguity(route)
+  def rebuild(registry: InternalRegistry): Unit = {
+    routerFunctions = registry.reg.map { case (k, v) => (k.serviceName.name, k.portName, v._1, v._2) }.toSeq.flatMap { case (name, portname, uri, details) => serviceRouter(name, portname, uri, details) }
+    simpleRegistry = registry.serviceValues.map { case (k, v) => k.name -> v }
+    router = routerFunctions.foldLeft(PartialFunction.empty[Route, (URI, ServiceRegistryService)])(_ orElse _)
   }
 
-  private def warnOnAmbiguity(route: Route) = {
+  private def serviceRouter(serviceName: String, registeredPortName: Option[String], uri: URI, service: ServiceRegistryService): Seq[PartialFunction[Route, (URI, ServiceRegistryService)]] = {
+    // lazy because if there's no ACLs, then there's no need to create an InetSocketAddress, and hence no need to fail
+    // if the port can't be calculated.
+    val routerFunctions: Seq[PartialFunction[Route, (URI, ServiceRegistryService)]] = service.acls.asScala.map {
+      case acl =>
+        acl.method().asScala -> acl.pathRegex().asScala.map(Pattern.compile)
+    }.map {
+      case (aclMethod, pathRegex) =>
+        val pf: PartialFunction[Route, (URI, ServiceRegistryService)] = {
+          case Route(method, path, requestedPortName) if aclMethod.forall(_.name == method) && pathRegex.forall(_.matcher(path).matches()) && registeredPortName == requestedPortName =>
+            (uri, service)
+        }
+        pf
+    }
+    routerFunctions
+  }
+
+  def warnOnAmbiguity(route: Route): Unit = {
     if (logger.isWarnEnabled) {
       val servingRoutes = routerFunctions.filter(_.isDefinedAt(route))
       if (servingRoutes.size > 1) {
@@ -85,34 +159,42 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
     }
   }
 
-  private def serviceRouter(service: ServiceRegistryService) = {
-    val addressUri = service.uri
-    // lazy because if there's no ACLs, then there's no need to create an InetSocketAddress, and hence no need to fail
-    // if the port can't be calculated.
-    lazy val address = (addressUri.getScheme, addressUri.getHost, addressUri.getPort) match {
-      case (_, null, _)        => throw new IllegalArgumentException("Cannot register a URI that doesn't have a host: " + addressUri)
-      case ("http", host, -1)  => new InetSocketAddress(host, 80)
-      case ("https", host, -1) => new InetSocketAddress(host, 443)
-      case (_, _, -1)          => throw new IllegalArgumentException("Cannot register a URI that does not specify a port: " + addressUri)
-      case (_, host, port)     => new InetSocketAddress(host, port)
-    }
-    val routerFunctions: Seq[PartialFunction[Route, InetSocketAddress]] = service.acls.asScala.map {
-      case acl =>
-        acl.method().asScala -> acl.pathRegex().asScala.map(Pattern.compile)
-    }.map {
-      case (aclMethod, pathRegex) =>
-        val pf: PartialFunction[Route, InetSocketAddress] = {
-          case Route(method, path) if aclMethod.forall(_.name == method) && pathRegex.forall(_.matcher(path).matches()) =>
-            address
-        }
-        pf
-    }
-    routerFunctions
+}
+
+class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) extends Actor {
+
+  private val logger: Logger = Logger(classOf[ServiceLocatorServer])
+
+  import ServiceRegistryActor._
+
+  private val registry: InternalRegistry = InternalRegistry.build(unmanagedServices)
+  private val router: InternalRouter = new InternalRouter
+
+  override def preStart(): Unit = {
+    router.rebuild(registry)
   }
 
-  private def rebuildRouter() = {
-    routerFunctions = registry.values.flatMap(serviceRouter).toSeq
-    router = routerFunctions.foldLeft(PartialFunction.empty[Route, InetSocketAddress])(_ orElse _)
+  override def receive: Receive = {
+
+    // Service Locator operations
+    case Remove(name) =>
+      registry.remove(name)
+      router.rebuild(registry)
+    case Register(name, service) =>
+      sender() ! registry.register(name, service)
+      router.rebuild(registry)
+    case Lookup(serviceName, portName) => sender() ! registry.lookup(serviceName, portName)
+    case GetRegisteredServices =>
+      val services: Seq[RegisteredService] = for {
+        (serviceName, portName, uri) <- registry.list()
+      } yield RegisteredService.of(serviceName.name, uri, portName.asJava)
+      import scala.collection.JavaConverters._
+      sender() ! RegisteredServices(TreePVector.from(services.asJava))
+
+    // Service Gateway operations
+    case route: Route =>
+      sender() ! router.routeFor(route)
+      router.warnOnAmbiguity(route)
   }
 
 }

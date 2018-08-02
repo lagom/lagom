@@ -26,9 +26,15 @@ private[lagom] class ServiceRegistryServiceLocator @Inject() (
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {
 
   override def locateAll(name: String, serviceCall: Call[_, _]): CompletionStage[JList[URI]] =
-    client.locateAll(name).map(_.asJava).toJava
+    // a ServiceLocator doesn't know what a `portName` is so we fallback to `None` and the
+    // implementation will return any registry without a name. For compatibility reasons,
+    // any service regsitered using `http` as portName will also be registered without name.
+    client.locateAll(name, None).map(_.asJava).toJava
 
   override def locate(name: String, serviceCall: Call[_, _]): CompletionStage[Optional[URI]] =
-    client.locateAll(name).map(_.headOption.asJava).toJava
+    // a ServiceLocator doesn't know what a `portName` is so we fallback to `None` and the
+    // implementation will return any registry without a name. For compatibility reasons,
+    // any service regsitered using `http` as portName will also be registered without name.
+    client.locateAll(name, None).map(_.headOption.asJava).toJava
 
 }

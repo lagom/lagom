@@ -64,18 +64,18 @@ public class ServiceRegistryImpl implements ServiceRegistry {
 	}
 
 	@Override
-	public ServiceCall<NotUsed, URI> lookup(String name) {
+    public ServiceCall<NotUsed, URI> lookup(String serviceName, Optional<String> portName){
 		return request -> {
 			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("locate invoked, name=[" + name + "], request=[" + request + "]");
-			return PatternsCS.ask(registry, new Lookup(name), timeout).thenApply(result -> {
+                LOGGER.debug("locate invoked, name=[" + serviceName + "] and portName=[" + portName + "] . request=[" + request + "]");
+			return PatternsCS.ask(registry, new Lookup(serviceName, OptionConverters.toScala(portName)), timeout).thenApply(result -> {
 				@SuppressWarnings("unchecked")
 				Optional<URI> location = OptionConverters.toJava((Option<URI>) result);
-				logServiceLookupResult(name, location);
+				logServiceLookupResult(serviceName, location);
 				if (location.isPresent()) {
 					return location.get();
 				} else {
-					throw new com.lightbend.lagom.javadsl.api.transport.NotFound(name);
+                    throw new com.lightbend.lagom.javadsl.api.transport.NotFound("Can't find service " + serviceName + " with port" + portName);
 				}
 			});
 		};

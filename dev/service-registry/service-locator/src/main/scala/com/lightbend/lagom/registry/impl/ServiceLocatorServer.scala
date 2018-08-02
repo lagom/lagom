@@ -9,16 +9,10 @@ import java.net.{ InetSocketAddress, URI }
 import java.util.{ Map => JMap }
 
 import com.lightbend.lagom.gateway._
-import com.lightbend.lagom.registry.impl.ServiceRegistryModule
-import play.api.Application
-import play.api.Logger
-import play.api.Mode
-import play.api.Play
+import play.api.{ Application, Logger, Mode, Play }
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.guice.GuiceableModule.fromGuiceModule
-import play.core.server.ReloadableServer
-import play.core.server.ServerConfig
-import play.core.server.ServerProvider
+import play.core.server.{ ReloadableServer, ServerConfig, ServerProvider }
 
 import scala.util.control.NonFatal
 

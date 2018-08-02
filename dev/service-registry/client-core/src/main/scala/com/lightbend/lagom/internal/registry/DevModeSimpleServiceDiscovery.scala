@@ -23,7 +23,7 @@ private[lagom] class DevModeSimpleServiceDiscovery(system: ActorSystem) extends 
   override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] =
     for {
       client <- clientPromise.future
-      uris <- client.locateAll(lookup.serviceName)
+      uris <- client.locateAll(lookup.serviceName, lookup.portName)
     } yield Resolved(lookup.serviceName, uris.map(toResolvedTarget))
 
   private def toResolvedTarget(uri: URI) = ResolvedTarget(uri.getHost, optionalPort(uri.getPort))

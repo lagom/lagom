@@ -119,10 +119,10 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
             val path = URI.create(request.uri).getPath
 
             implicit val ec = ctx.executor
-            (registry ? Route(request.method.name, path)).mapTo[RouteResult].map {
+            (registry ? Route(request.method.name, path, None)).mapTo[RouteResult].map {
               case Found(serviceAddress) =>
                 log.debug("Request is to be routed to {}, getting connection from pool", serviceAddress)
-                val pool = poolMap.get(serviceAddress)
+                val pool = poolMap.get(new InetSocketAddress(serviceAddress.getHost, serviceAddress.getPort))
                 currentPool = pool
                 currentPool.acquire().toScala.onComplete {
                   case Success(channel) =>
@@ -159,7 +159,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
                 log.debug("Sending not found response")
                 ReferenceCountUtil.release(currentRequest)
                 currentRequest = null
-                ctx.writeAndFlush(renderNotFound(request, path, registryMap))
+                ctx.writeAndFlush(renderNotFound(request, path, registryMap.map { case (k, v) => (k, v._2) }))
                 flushPipeline()
             }.recover {
               case t =>
@@ -392,7 +392,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
       override def routes: Routes = PartialFunction.empty
       override val documentation: Seq[(String, String, String)] = registry.toSeq.flatMap {
         case (serviceName, service) =>
-          val call = s"Service: $serviceName (${service.uri})"
+          val call = s"Service: $serviceName (${service.uris})"
           service.acls().asScala.map { acl =>
             val method = acl.method.asScala.fold("*")(_.name)
             val path = acl.pathRegex.orElse(".*")
