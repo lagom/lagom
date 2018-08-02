@@ -19,7 +19,7 @@ import com.lightbend.lagom.javadsl.api.transport.{ RequestHeader => _, _ }
 import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceInfo }
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.{ ClassServiceBinding, InstanceServiceBinding }
-import com.lightbend.lagom.javadsl.server.{ LagomServiceRouter, PlayServiceCall, ServiceGuiceSupport }
+import com.lightbend.lagom.javadsl.server.{ AdditionalRouters, LagomServiceRouter, PlayServiceCall, ServiceGuiceSupport }
 import org.pcollections.HashTreePMap
 import play.api.http.HttpConfiguration
 import play.api.inject.Injector
@@ -127,7 +127,7 @@ class JavadslServicesRouter @Inject() (
   resolvedServices:  ResolvedServices,
   httpConfiguration: HttpConfiguration,
   parsers:           PlayBodyParsers,
-  additionalRouters: AdditionalRouters
+  additionalRouters: JList[Router]
 )(implicit ec: ExecutionContext, mat: Materializer) extends SimpleRouter with LagomServiceRouter {
 
   private val serviceRouters = resolvedServices.services.map { service =>
@@ -140,7 +140,7 @@ class JavadslServicesRouter @Inject() (
         (routes, router) => routes.orElse(router.routes)
       }
 
-    additionalRouters.getRouters.asScala.foldLeft(mergedRouters) {
+    additionalRouters.asScala.foldLeft(mergedRouters) {
       (routes, router) => routes.orElse(router.asScala().routes)
     }
   }

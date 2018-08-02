@@ -1,13 +1,14 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.it
 
 import akka.util.ByteString
 import play.api.libs.streams.Accumulator
 import play.api.mvc
 import play.api.mvc._
-import play.api.routing.SimpleRouterImpl
+import play.api.routing.{ Router, SimpleRouter, SimpleRouterImpl }
 import play.core.j.JavaRouterAdapter
 
 import scala.concurrent.{ ExecutionContext, Future }

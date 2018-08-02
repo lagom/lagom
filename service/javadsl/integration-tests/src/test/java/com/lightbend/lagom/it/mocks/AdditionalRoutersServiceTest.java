@@ -21,6 +21,8 @@ import static org.junit.Assert.fail;
 
 import play.test.*;
 
+import java.util.concurrent.ExecutionException;
+
 import static play.test.Helpers.*;
 
 public class AdditionalRoutersServiceTest {
@@ -58,23 +60,29 @@ public class AdditionalRoutersServiceTest {
 
     @Test
     public void shouldRespondOnAdditionalRouters() throws Exception {
-        Http.RequestBuilder reqPing = Helpers.fakeRequest()
-            .method(GET)
-            .uri("/ping");
 
-        Result pingRes = route(server.app(), reqPing);
-        assertEquals(OK, pingRes.status());
-        assertEquals(pingRes.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "ping");
+        {
+            Http.RequestBuilder request = Helpers.fakeRequest(GET, "/ping/");
+            Result result = route(server.app(), request);
+            assertEquals(OK, result.status());
+            assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "ping");
+        }
 
-        Http.RequestBuilder reqPong = Helpers.fakeRequest()
-            .method(GET)
-            .uri("/pong");
+        {
+            Http.RequestBuilder request = Helpers.fakeRequest(GET, "/pong/");
+            Result result = route(server.app(), request);
+            assertEquals(OK, result.status());
+            assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "pong");
+        }
 
-        Result pongRes = route(server.app(), reqPong);
-        assertEquals(OK, pongRes.status());
-         // FIXME this actually gets a PING! :O
-        assertEquals(pongRes.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "pong");
+        {
+            Http.RequestBuilder request = Helpers.fakeRequest(GET, "/echo/");
+            Result result = route(server.app(), request);
+            assertEquals(OK, result.status());
+            assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "Hello");
+        }
     }
+
 
 
 }
