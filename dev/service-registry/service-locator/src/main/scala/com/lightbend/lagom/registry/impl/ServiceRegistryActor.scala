@@ -52,10 +52,10 @@ object InternalRegistry {
     val portNames = {
       serviceUri.getScheme match {
         case "tcp" =>
-          Seq(None) // using "tcp://" defaults to having no protoName
+          Seq(None) // using "tcp://" defaults to having no portName
         case "http" =>
-          // using "http://" defaults to having no protoName and also Some("http") so "http" becomes the
-          // default result when searching without a `protoName` query.
+          // using "http://" defaults to having no portName and also Some("http") so "http" becomes the
+          // default result when searching without a `portName` query.
           Seq(None, Some(serviceUri.getScheme))
         case _ => Seq(Some(serviceUri.getScheme))
       }
