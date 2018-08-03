@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.gateway
 
+import java.io.File
 import java.net.URI
 
 import akka.actor.{ ActorSystem, CoordinatedShutdown, Props }
@@ -51,7 +52,7 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
       ))
     ))))
 
-    gateway = new AkkaHttpServiceGateway(coordinatedShutdown, ServiceGatewayConfig("127.0.0.1", 0), serviceRegistry)
+    gateway = new AkkaHttpServiceGateway(coordinatedShutdown, ServiceGatewayConfig("127.0.0.1", 0, 0, new File(".")), serviceRegistry)
   }
 
   def gatewayUri = "http://localhost:" + gateway.address.getPort

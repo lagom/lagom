@@ -86,7 +86,7 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       // the port assigned to `projC` cannot be affected by `projB`, which happens to have the same hash of `projA`.
       // Said otherwise, projects with non colliding hash should get their port assigned **before** projects
       // that result in a port collision.
-      val portRange = PortRange(7, 9)
+      val portRange = PortRange(7, 11)
 
       // Here we have two projects that will hash to different ports, i.e., no collisions.
       val projA = "AaAa".asProjectName
