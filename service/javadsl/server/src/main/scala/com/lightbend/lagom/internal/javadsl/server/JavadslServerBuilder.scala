@@ -6,7 +6,7 @@ package com.lightbend.lagom.internal.javadsl.server
 
 import java.util.function.{ BiFunction, Function => JFunction }
 
-import javax.inject.{ Inject, Named, Provider, Singleton }
+import javax.inject.{ Inject, Provider, Singleton }
 import akka.stream.Materializer
 import akka.util.ByteString
 import com.lightbend.lagom.internal.api._
@@ -19,7 +19,7 @@ import com.lightbend.lagom.javadsl.api.transport.{ RequestHeader => _, _ }
 import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceInfo }
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.{ ClassServiceBinding, InstanceServiceBinding }
-import com.lightbend.lagom.javadsl.server.{ AdditionalRouters, LagomServiceRouter, PlayServiceCall, ServiceGuiceSupport }
+import com.lightbend.lagom.javadsl.server.{ LagomServiceRouter, PlayServiceCall, ServiceGuiceSupport }
 import org.pcollections.HashTreePMap
 import play.api.http.HttpConfiguration
 import play.api.inject.Injector

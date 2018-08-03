@@ -6,13 +6,19 @@ package com.lightbend.lagom.internal.javadsl.server
 
 import java.util
 
-import com.lightbend.lagom.javadsl.server.AdditionalRouters
+import akka.annotation.InternalApi
+import com.lightbend.lagom.javadsl.server.AdditionalRouter
 import javax.inject.{ Inject, Provider }
 import play.api.inject.Injector
 import play.routing.Router
-import scala.collection.immutable
 
-class AdditionalRoutersProvider @Inject() (
+/**
+ * Provides a list of [[play.routing.Router]]s built from a list of [[AdditionalRouter]]
+ * @param injector
+ * @param additionalRouters
+ */
+@InternalApi
+private[lagom] class AdditionalRoutersProvider @Inject() (
   injector:          Injector,
   additionalRouters: util.List[AdditionalRouter]
 ) extends Provider[util.List[Router]] {

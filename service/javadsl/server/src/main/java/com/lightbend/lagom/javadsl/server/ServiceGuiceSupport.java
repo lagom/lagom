@@ -5,20 +5,17 @@
 package com.lightbend.lagom.javadsl.server;
 
 import akka.annotation.ApiMayChange;
+import akka.annotation.InternalApi;
 import com.google.inject.Binder;
 import com.google.inject.TypeLiteral;
 import com.lightbend.lagom.internal.javadsl.BinderAccessor;
 import com.lightbend.lagom.internal.javadsl.server.*;
-import com.lightbend.lagom.internal.javadsl.server.AdditionalRouter;
 import com.lightbend.lagom.internal.server.status.MetricsServiceImpl;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
 import com.lightbend.lagom.javadsl.client.ServiceClientGuiceSupport;
 import com.lightbend.lagom.javadsl.server.status.MetricsService;
 import play.routing.Router;
-import scala.None;
-
-import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,28 +34,20 @@ import java.util.List;
 public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
 
 
-
+    // TODO: document usage and explain when and how to prefix
     @ApiMayChange
-    default <T extends Service> LagomServiceBuilder serverFor(Class<T> serviceInterface, Class<? extends T> serviceImplementation){
-        return new LagomServiceBuilder(serviceBinding(serviceInterface, serviceImplementation), this);
+    default <R extends Router> AdditionalRouter additionalRouter(Class<R> router) {
+        return new ClassBased<R>(router);
     }
 
-    @ApiMayChange
-    default <T extends Service> LagomServiceBuilder serverFor(Class<T> serviceInterface, T serviceInstance){
-        return new LagomServiceBuilder(serviceBinding(serviceInterface, serviceInstance), this);
-    }
 
+    // TODO: document usage and explain when and how to prefix
     @ApiMayChange
-    default AdditionalRouter bindRouter(Class<? extends Router> router) {
-        return new ClassBased(router);
-    }
-
-    @ApiMayChange
-    default AdditionalRouter bindRouter(Router router) {
+    default AdditionalRouter additionalRouter(Router router) {
         return new InstanceBased(router);
     }
 
-
+    @InternalApi
     class LagomServiceBuilder {
 
         private ServiceBinding<?> binding;
@@ -71,13 +60,11 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
             this.guiceSupport = guiceSupport;
         }
 
-        public LagomServiceBuilder withAdditionalRouters(AdditionalRouter additionalRouter, AdditionalRouter... additionalRouters) {
+        private LagomServiceBuilder withAdditionalRouters(AdditionalRouter additionalRouter, AdditionalRouter... additionalRouters) {
             this.additionalRouters.add(additionalRouter);
             this.additionalRouters.addAll(Arrays.asList(additionalRouters));
             return this;
         }
-
-
 
         public void bind() {
 
@@ -109,12 +96,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
 
             if (additionalRouters.isEmpty()) {
                 // if not defined, we bind an empty list of routers
-                binder.bind(AdditionalRouters.class).toProvider(new Provider<AdditionalRouters>() {
-                    @Override
-                    public AdditionalRouters get() {
-                        return AdditionalRouters.EMPTY;
-                    }
-                });
+                binder.bind(new TypeLiteral<List<Router>>(){}).toInstance(Collections.emptyList());
             } else {
                 // bind the list of AdditionalRouter provided by the user
                 binder.bind(new TypeLiteral<List<AdditionalRouter>>(){}).toInstance(additionalRouters);
@@ -223,8 +205,33 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * @param <T>                   type constraint ensuring <code>serviceImplementation</code> implements <code>serviceInterface</code>
      */
     default <T extends Service> void bindService(Class<T> serviceInterface, Class<? extends T> serviceImplementation) {
-        serverFor(serviceInterface, serviceImplementation).bind();
+        new LagomServiceBuilder(serviceBinding(serviceInterface, serviceImplementation), this).bind();
     }
+
+    /**
+     * Binds a Service interface with its implementation.
+     * <p>
+     * Inspects the service descriptor and creates routes to serve every call described.
+     * <p>
+     * Allows the configuration of additional Play routers.
+     * <p>
+     * Builds the {@link ServiceInfo} metadata.
+     *
+     * @param serviceInterface      the interface class for a {@link Service}
+     * @param serviceImplementation the implementation class for the <code>serviceInterface</code>
+     * @param additionalRouter      an additional Play Router
+     * @param additionalRouters     additional Play Routers (can be omitted)
+     * @param <T>                   type constraint ensuring <code>serviceImplementation</code> implements <code>serviceInterface</code>
+     */
+    default <T extends Service> void bindService(Class<T> serviceInterface,
+                                                 Class<? extends T> serviceImplementation,
+                                                 AdditionalRouter additionalRouter,
+                                                 AdditionalRouter... additionalRouters) {
+        new LagomServiceBuilder(serviceBinding(serviceInterface, serviceImplementation), this)
+            .withAdditionalRouters(additionalRouter, additionalRouters)
+            .bind();
+    }
+
 
     /**
      * Binds a Service interface with an instance that implements it.
@@ -238,7 +245,31 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * @param <T>              type constraint ensuring <code>serviceImplementation</code> implements <code>serviceInterface</code>
      */
     default <T extends Service> void bindService(Class<T> serviceInterface, T service) {
-        serverFor(serviceInterface, service).bind();
+        new LagomServiceBuilder(serviceBinding(serviceInterface, service), this).bind();
+    }
+
+    /**
+     * Binds a Service interface with an instance that implements it.
+     * <p>
+     * Inspects the service descriptor and creates routes to serve every call described.
+     * <p>
+     * Allows the configuration of additional Play routers.
+     * <p>
+     * Builds the {@link ServiceInfo} metadata.
+     *
+     * @param serviceInterface the interface class for a {@link Service}
+     * @param service          an instance of a class implementing <code>serviceInterface</code>
+     * @param additionalRouter      an additional Play Router
+     * @param additionalRouters     additional Play Routers (can be omitted)
+     * @param <T>              type constraint ensuring <code>serviceImplementation</code> implements <code>serviceInterface</code>
+     */
+    default <T extends Service> void bindService(Class<T> serviceInterface,
+                                                 T service,
+                                                 AdditionalRouter additionalRouter,
+                                                 AdditionalRouter... additionalRouters) {
+        new LagomServiceBuilder(serviceBinding(serviceInterface, service), this)
+            .withAdditionalRouters(additionalRouter, additionalRouters)
+            .bind();
     }
 
 

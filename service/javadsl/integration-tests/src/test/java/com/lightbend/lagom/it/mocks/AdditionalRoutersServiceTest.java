@@ -12,16 +12,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import play.mvc.Http;
 import play.mvc.Result;
-
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.defaultSetup;
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.startServer;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import play.test.*;
 
-import java.util.concurrent.ExecutionException;
 
 import static play.test.Helpers.*;
 
@@ -61,6 +56,7 @@ public class AdditionalRoutersServiceTest {
     @Test
     public void shouldRespondOnAdditionalRouters() throws Exception {
 
+        // call the ping router (instance + bind dsl prefix)
         {
             Http.RequestBuilder request = Helpers.fakeRequest(GET, "/ping/");
             Result result = route(server.app(), request);
@@ -68,6 +64,7 @@ public class AdditionalRoutersServiceTest {
             assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "ping");
         }
 
+        // call the pong router (prefixed instance)
         {
             Http.RequestBuilder request = Helpers.fakeRequest(GET, "/pong/");
             Result result = route(server.app(), request);
@@ -75,12 +72,22 @@ public class AdditionalRoutersServiceTest {
             assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "pong");
         }
 
+        // call the echo router (router instantiated using Injector + hard-coded prefix)
         {
-            Http.RequestBuilder request = Helpers.fakeRequest(GET, "/echo/");
+            Http.RequestBuilder request = Helpers.fakeRequest(GET, "/hello-prefixed/");
+            Result result = route(server.app(), request);
+            assertEquals(OK, result.status());
+            assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "[prefixed] Hello");
+        }
+
+        // call the echo router (router instantiated using Injector + bind dsl prefix)
+        {
+            Http.RequestBuilder request = Helpers.fakeRequest(GET, "/hello/");
             Result result = route(server.app(), request);
             assertEquals(OK, result.status());
             assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "Hello");
         }
+
     }
 
 
