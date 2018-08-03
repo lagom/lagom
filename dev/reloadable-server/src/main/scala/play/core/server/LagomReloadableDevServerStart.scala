@@ -47,10 +47,12 @@ object LagomReloadableDevServerStart {
         val process = new RealServerProcess(args = Seq.empty)
         val path: File = buildLink.projectPath
 
+        // The pairs play.server.httpx.{address,port} are read from PlayRegisterWithServiceRegistry
+        // to register the service
         val httpsSettings: Map[String, String] =
           Map(
-            // The pairs play.server.httpx.{address,port} are read from PlayRegisterWithServiceRegistry
-            // to register the service
+            // In dev mode, `play.server.https.address` and `play.server.http.address` are assigned the same value
+            // but both settings are set in case some code specifically read one config setting or the other.
             "play.server.https.address" -> httpAddress, // there's no httpsAddress
             "play.server.https.port" -> httpsPort.toString,
             "play.server.https.keyStore.path" -> FakeKeyStoreGenerator.keyStoreFile(new File(".")).getAbsolutePath,
@@ -69,6 +71,10 @@ object LagomReloadableDevServerStart {
             buildLink.settings.asScala.toMap ++
             httpSettings ++
             httpsSettings +
+            // each user service needs to tune its "play.filters.hosts.allowed" so that Play's
+            // AllowedHostFilter (https://www.playframework.com/documentation/2.6.x/AllowedHostsFilter)
+            // doesn't block request with header "Host: " with a value "localhost:<someport>". The following
+            // setting whitelists 'localhost` for both http/s ports and also 'httpAddress' for both ports too.
             ("play.filters.hosts.allowed" ->
               List(s"$httpAddress:$httpPort", s"$httpAddress:$httpsPort", s"localhost:$httpPort", s"localhost:$httpsPort").asJavaCollection)
         //            ("play.server.akka.http2.enabled" -> "true") +

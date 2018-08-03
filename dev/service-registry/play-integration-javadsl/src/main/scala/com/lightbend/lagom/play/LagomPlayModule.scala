@@ -82,10 +82,16 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Config, serviceInfo: Se
            applicationLifecycle: ApplicationLifecycle) =
     this(config.underlying, serviceInfo, serviceRegistry, applicationLifecycle)
 
+
+  // This code is similar to `ServerRegistrationModule` in project `registration-javadsl`
+  // and  `ServiceRegistration` in project `dev-mode-scala`
+
+  // In dev mode, `play.server.http.address` is used for both HTTP and HTTPS.
+  // Reading one value or the other gets the same result.
+  private val httpAddress = config.getString("play.server.http.address")
   // TODO: register both ports.
-  private val httpAddress = config.getString("play.server.https.address")
-  private val httpPort = config.getString("play.server.https.port")
-  private val serviceUrl = new URI(s"https://$httpAddress:$httpPort")
+  private val httpsPort = config.getString("play.server.https.port")
+  private val serviceUrl = new URI(s"https://$httpAddress:$httpsPort")
 
   // TODO: ServiceRegistryService should not flatmap the ACL lists (locatableService's names are lost)
   private val serviceAcls = serviceInfo.getAcls

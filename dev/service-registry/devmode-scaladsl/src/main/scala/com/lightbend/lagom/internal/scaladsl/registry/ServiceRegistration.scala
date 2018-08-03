@@ -22,11 +22,16 @@ class ServiceRegistration(
   registry:            ServiceRegistry
 )(implicit ec: ExecutionContext) {
 
+  // This code is similar to `ServerRegistrationModule` in project `registration-javadsl`
+  // and `PlayRegisterWithServiceRegistry` in project `play-integration-javadsl
+
   private val logger: Logger = Logger(this.getClass)
   private val uri = {
+    // In dev mode, `play.server.http.address` is used for both HTTP and HTTPS.
+    // Reading one value or the other gets the same result.
     val httpAddress = config.getString("play.server.http.address")
-    val httpPort = config.getString("play.server.https.port")
-    URI.create(s"https://$httpAddress:$httpPort")
+    val httpsPort = config.getString("play.server.https.port")
+    URI.create(s"https://$httpAddress:$httpsPort")
   }
 
   coordinatedShutdown.addTask(CoordinatedShutdown.PhaseBeforeServiceUnbind, "unregister-services-from-service-locator-scaladsl") { () =>

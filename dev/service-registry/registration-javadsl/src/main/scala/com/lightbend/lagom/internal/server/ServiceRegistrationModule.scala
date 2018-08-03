@@ -31,7 +31,11 @@ object ServiceRegistrationModule {
 
   class ServiceConfigProvider @Inject() (config: Config) extends Provider[ServiceConfig] {
 
+    // This code is similar to `ServiceRegistration` in project `dev-mode-scala`
+    // and `PlayRegisterWithServiceRegistry` in project `play-integration-javadsl
     override lazy val get = {
+      // In dev mode, `play.server.http.address` is used for both HTTP and HTTPS.
+      // Reading one value or the other gets the same result.
       val httpAddress = config.getString("play.server.http.address")
       val httpsPort = config.getString("play.server.https.port")
       val url = new URI(s"https://$httpAddress:$httpsPort")

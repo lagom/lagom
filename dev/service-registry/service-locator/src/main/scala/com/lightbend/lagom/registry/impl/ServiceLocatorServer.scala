@@ -71,6 +71,10 @@ class ServiceLocatorServer extends Closeable {
     import scala.collection.JavaConverters._
     val initialSettings: Map[String, AnyRef] = Map(
       "ssl-config.loose.disableHostnameVerification" -> "true",
+      // TODO: remove the following setting.
+      // I think the following setting is unnecessary and is actually a leftover. I'm basing the suspicion in two facts:
+      // the correct setting is actually called "allowed" (not "enabled") as seen in the docs https://www.playframework.com/documentation/2.6.x/AllowedHostsFilter
+      // and because this setting is tuning the Service Registry which I think doesn't have the AllowedHostsFilter.
       "play.filters.hosts.enabled" ->
         Seq(
           s"localhost:${serviceGatewayConfig.httpPort}", s"localhost:${serviceGatewayConfig.httpsPort}",
