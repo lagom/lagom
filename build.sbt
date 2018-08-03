@@ -73,7 +73,8 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
 
   ScalariformKeys.preferences in Compile  := formattingPreferences,
   ScalariformKeys.preferences in Test     := formattingPreferences,
-  ScalariformKeys.preferences in MultiJvm := formattingPreferences
+  ScalariformKeys.preferences in MultiJvm := formattingPreferences,
+  LagomPublish.validatePublishSettingsSetting
 )
 
 def bintraySettings: Seq[Setting[_]] = Seq(
