@@ -6,6 +6,7 @@ package com.lightbend.lagom.it.mocks;
 
 import akka.actor.ActorSystem;
 import akka.stream.ActorMaterializer;
+import akka.stream.Materializer;
 import com.lightbend.lagom.javadsl.testkit.ServiceTest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -23,18 +24,15 @@ import static play.test.Helpers.*;
 public class AdditionalRoutersServiceTest {
 
     private static ServiceTest.TestServer server;
-
-    private static ActorSystem system;
-    private static ActorMaterializer materializer;
+    private static Materializer materializer;
 
     @BeforeClass
     public static void setUp() {
-        system = ActorSystem.create();
-        materializer = ActorMaterializer.create(system);
         server = startServer(defaultSetup()
             .withCluster(false).withCassandra(false)
             .configureBuilder(b -> b.bindings(new AdditionalRoutersServiceModule()))
         );
+        materializer = server.materializer();
     }
 
     @AfterClass
@@ -42,14 +40,6 @@ public class AdditionalRoutersServiceTest {
         if (server != null) {
             server.stop();
             server = null;
-        }
-        if (materializer != null) {
-            materializer.shutdown();
-            materializer = null;
-        }
-        if (system != null) {
-            system.terminate();
-            system = null;
         }
     }
 
