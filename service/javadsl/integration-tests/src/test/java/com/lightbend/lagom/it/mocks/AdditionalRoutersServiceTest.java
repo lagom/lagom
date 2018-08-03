@@ -43,36 +43,37 @@ public class AdditionalRoutersServiceTest {
         }
     }
 
+
+    /** call the ping router (instance + bind dsl prefix) */
     @Test
-    public void testAdditionalPingRouter() throws Exception {
-        // call the ping router (instance + bind dsl prefix)
+    public void testInstanceRouterWithBindingPrefix() throws Exception {
         Http.RequestBuilder request = Helpers.fakeRequest(GET, "/ping/");
         Result result = route(server.app(), request);
         assertEquals(OK, result.status());
         assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "ping");
     }
 
+    /** call the pong router (prefixed instance) */
     @Test
-    public void testAdditionalPongRouter() throws Exception {
-        // call the pong router (prefixed instance)
+    public void testInstanceRouterWithPreConfiguredPrefix() throws Exception {
         Http.RequestBuilder request = Helpers.fakeRequest(GET, "/pong/");
         Result result = route(server.app(), request);
         assertEquals(OK, result.status());
         assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "pong");
     }
 
+    /** call the echo router (router instantiated using Injector + bind dsl prefix) */
     @Test
-    public void testAdditionalHelloRouter() throws Exception {
-        // call the echo router (router instantiated using Injector + bind dsl prefix)
+    public void testInjectedRouterWithBindingPrefix() throws Exception {
         Http.RequestBuilder request = Helpers.fakeRequest(GET, "/hello/");
         Result result = route(server.app(), request);
         assertEquals(OK, result.status());
         assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "Hello");
     }
 
+    /** call the echo router (router instantiated using Injector + hard-coded prefix) */
     @Test
-    public void testAdditionalPrefixedHelloRouter() throws Exception {
-        // call the echo router (router instantiated using Injector + hard-coded prefix)
+    public void testInjectedRouterWithPreConfiguredPrefix() throws Exception {
         Http.RequestBuilder request = Helpers.fakeRequest(GET, "/hello-prefixed/");
         Result result = route(server.app(), request);
         assertEquals(OK, result.status());
