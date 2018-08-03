@@ -54,42 +54,38 @@ public class AdditionalRoutersServiceTest {
     }
 
     @Test
-    public void shouldRespondOnAdditionalRouters() throws Exception {
-
+    public void testAdditionalPingRouter() throws Exception {
         // call the ping router (instance + bind dsl prefix)
-        {
-            Http.RequestBuilder request = Helpers.fakeRequest(GET, "/ping/");
-            Result result = route(server.app(), request);
-            assertEquals(OK, result.status());
-            assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "ping");
-        }
-
-        // call the pong router (prefixed instance)
-        {
-            Http.RequestBuilder request = Helpers.fakeRequest(GET, "/pong/");
-            Result result = route(server.app(), request);
-            assertEquals(OK, result.status());
-            assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "pong");
-        }
-
-        // call the echo router (router instantiated using Injector + hard-coded prefix)
-        {
-            Http.RequestBuilder request = Helpers.fakeRequest(GET, "/hello-prefixed/");
-            Result result = route(server.app(), request);
-            assertEquals(OK, result.status());
-            assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "[prefixed] Hello");
-        }
-
-        // call the echo router (router instantiated using Injector + bind dsl prefix)
-        {
-            Http.RequestBuilder request = Helpers.fakeRequest(GET, "/hello/");
-            Result result = route(server.app(), request);
-            assertEquals(OK, result.status());
-            assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "Hello");
-        }
-
+        Http.RequestBuilder request = Helpers.fakeRequest(GET, "/ping/");
+        Result result = route(server.app(), request);
+        assertEquals(OK, result.status());
+        assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "ping");
     }
 
+    @Test
+    public void testAdditionalPongRouter() throws Exception {
+        // call the pong router (prefixed instance)
+        Http.RequestBuilder request = Helpers.fakeRequest(GET, "/pong/");
+        Result result = route(server.app(), request);
+        assertEquals(OK, result.status());
+        assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "pong");
+    }
 
+    @Test
+    public void testAdditionalHelloRouter() throws Exception {
+        // call the echo router (router instantiated using Injector + bind dsl prefix)
+        Http.RequestBuilder request = Helpers.fakeRequest(GET, "/hello/");
+        Result result = route(server.app(), request);
+        assertEquals(OK, result.status());
+        assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "Hello");
+    }
 
+    @Test
+    public void testAdditionalPrefixedHelloRouter() throws Exception {
+        // call the echo router (router instantiated using Injector + hard-coded prefix)
+        Http.RequestBuilder request = Helpers.fakeRequest(GET, "/hello-prefixed/");
+        Result result = route(server.app(), request);
+        assertEquals(OK, result.status());
+        assertEquals(result.body().consumeData(materializer).toCompletableFuture().get().utf8String(), "[prefixed] Hello");
+    }
 }
