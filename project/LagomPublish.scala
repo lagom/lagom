@@ -1,4 +1,4 @@
-import sbt.Keys.{ name, publishTo }
+import sbt.Keys.{ name, publishTo, version }
 import sbt.{ Def, FeedbackProvidedException, Resolver, Task, taskKey }
 
 object LagomPublish {
@@ -7,6 +7,7 @@ object LagomPublish {
 
   val validatePublishSettingsTask: Def.Initialize[Task[Unit]] = Def.task {
     val resolverValue: Option[Resolver] = publishTo.value
+    val inReleaseVersion: Boolean = !version.value.contains("SNAPSHOT")
 
     // the following implements the rules described in https://github.com/lagom/lagom/issues/1496#issuecomment-408398508
     // TODO: improve rules and validations depending on the version (SNAPSHOT vs release)
@@ -15,17 +16,21 @@ object LagomPublish {
       case ("lagom-sbt-plugin", x) =>
         // see https://github.com/sbt/sbt-bintray/blob/7c93bacaae3ffc128564ceacb6e73ec4486525dd/src/main/scala/Bintray.scala#L16-L29 for
         // details on the syntax of Bintray Resolver names.
-        if (x.get.name != "Bintray-Sbt-Publish-lagom-sbt-plugin-releases-lagom-sbt-plugin") {
-          throw new PublishValidationFailed("""Invalid resolver. Expected: "Raw(Bintray-Sbt-Publish-lagom-sbt-plugin-releases-lagom-sbt-plugin)".""")
+        if (inReleaseVersion && x.get.name != "Bintray-Sbt-Publish-lagom-sbt-plugin-releases-lagom-sbt-plugin") {
+          throw new PublishValidationFailed(s"""Invalid resolver. Expected: "Raw(Bintray-Sbt-Publish-lagom-sbt-plugin-releases-lagom-sbt-plugin)" but was "${x.get.name}".""")
         }
+        // TODO: Add a validation for "lagom-sbt-plugin" when the version is a snapshot.
       case (_, x) =>
+        // TODO: this could be improved to assert the specific Resolver depending on release-vs-snapshot nature of the version.
+        // e.g. sonatype-staging vs sonatype-snapshots
         if (!x.get.name.toLowerCase.contains("sonatype")) {
-          throw new PublishValidationFailed(s"""Invalid resolver. Expected: Sonatype. Actual $x.""")
+          throw new PublishValidationFailed(s"""Invalid resolver. Expected: Sonatype. Actual ${x.get}.""")
         }
     }
   }
 
   val validatePublishSettingsSetting = validatePublishSettings := validatePublishSettingsTask.value
+
 
   private class PublishValidationFailed(message: String) extends RuntimeException with FeedbackProvidedException {
     override def toString = message
