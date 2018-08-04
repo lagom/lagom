@@ -149,10 +149,10 @@ object LagomPlayJava extends AutoPlugin {
 }
 
 /**
- * This plugin will automatically be enabled if using PlayScala and LagomPlay, to add the play integration
+ * This plugin will automatically be enabled if using PlayService and LagomPlay, to add the play integration
  */
 object LagomPlayScala extends AutoPlugin {
-  override def requires = LagomPlay && PlayScala
+  override def requires = LagomPlay && PlayService
   override def trigger = allRequirements
 
   override def projectSettings = Seq(
