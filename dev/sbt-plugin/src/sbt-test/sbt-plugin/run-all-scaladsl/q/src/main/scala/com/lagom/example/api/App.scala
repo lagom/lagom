@@ -24,6 +24,6 @@ abstract class App(context: Context)
 
   final lazy val controller: Controller = wire[Controller]
 
-  override final lazy val router: Router = Router.from(controller.routes)
+  override final lazy val router: Router = controller
 
 }
