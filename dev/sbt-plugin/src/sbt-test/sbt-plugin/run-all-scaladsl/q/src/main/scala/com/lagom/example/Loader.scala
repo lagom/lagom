@@ -14,14 +14,14 @@ class App(context: Context)
 
   import play.api.routing.sird._
 
-  val health: Router.Routes = {
+  val routes: Router.Routes = {
     case GET(p"/q") =>
       Action {
         Ok(Response.response)
       }
   }
 
-  override val router: Router = Router.from(health)
+  override val router: Router = Router.from(routes)
 
 }
 
