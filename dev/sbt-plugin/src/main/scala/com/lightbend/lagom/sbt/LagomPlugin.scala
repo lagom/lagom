@@ -151,7 +151,7 @@ object LagomPlayJava extends AutoPlugin {
 /**
  * TODO: Jules
  */
-object LagomPlayScalaService extends AutoPlugin {
+object LagomPlayServiceScala extends AutoPlugin {
   override def requires = LagomPlay
   override def trigger = noTrigger
 
@@ -167,7 +167,7 @@ object LagomPlayScala extends AutoPlugin {
   override def requires = LagomPlay && PlayScala
   override def trigger = allRequirements
 
-  override def projectSettings = LagomPlayScalaService.projectSettings
+  override def projectSettings = LagomPlayServiceScala.projectSettings
 }
 
 /**
