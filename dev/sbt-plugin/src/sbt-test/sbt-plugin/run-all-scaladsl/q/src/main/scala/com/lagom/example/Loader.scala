@@ -1,39 +1,14 @@
-import play.api.{Application, ApplicationLoader, BuiltInComponentsFromContext, LoggerConfigurator}
-import play.api.libs.ws.ahc.AhcWSComponents
-import com.softwaremill.macwire._
-import com.lightbend.lagom.scaladsl.api._
-import com.lightbend.lagom.scaladsl.client.LagomServiceClientComponents
+package com.lagom.example
+
+import com.lagom.example.api.App
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
-import play.api.routing.Router
-
-import scala.collection.immutable
-
-class App(context: Context)
-  extends BuiltInComponentsFromContext(context)
-    with play.filters.HttpFiltersComponents {
-
-  import play.api.routing.sird._
-
-  val routes: Router.Routes = {
-    case GET(p"/q") =>
-      Action {
-        Ok(Response.response)
-      }
-  }
-
-  override val router: Router = Router.from(routes)
-
-}
+import com.lightbend.lagom.scaladsl.dns.DnsServiceLocatorComponents
+import play.api.ApplicationLoader.Context
+import play.api.{Application, ApplicationLoader, Mode}
 
 final class Loader extends ApplicationLoader {
-  def load(context: Context): Application = {
-    // Configure the Logger.
-    // More info:
-    //  - https://www.playframework.com/documentation/2.6.x/ScalaCompileTimeDependencyInjection#Configuring-Logging
-    LoggerConfigurator(context.environment.classLoader).foreach {
-      _.configure(context.environment, context.initialConfiguration, Map.empty)
-    }
-
-    new App(context).application
+  override def load(context: Context): Application = context.environment.mode match {
+    case Mode.Dev => (new App(context) with LagomDevModeComponents).application
+    case _        => (new App(context) with DnsServiceLocatorComponents).application
   }
 }

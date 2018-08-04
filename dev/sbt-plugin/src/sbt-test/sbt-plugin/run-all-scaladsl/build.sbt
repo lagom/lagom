@@ -51,7 +51,9 @@ lazy val q = (project in file("q")).enablePlugins(LagomPlayServiceScala)
     lagomServicePort := 9002,
     libraryDependencies ++= Seq(
       filters,
-      akkaHttpServer
+      logback,
+      akkaHttpServer,
+      macwire
     )
   )
 

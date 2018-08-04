@@ -80,13 +80,13 @@ $ copy-file changes/p/foo.js.1 p/app/assets/foo.js
 
 
 # Now try the LagomPlayServiceScala project
-> assertRequest 9002 /q Hello PlayService app!
+> assertRequest 9002 /q Hello LagomPlayServiceScala app!
 # Make sure we can access it from the service gateway
-> assertRequest 9000 /q Hello PlayService app!
+> assertRequest 9000 /q Hello LagomPlayServiceScala app!
 
 # Change response
-$ copy-file changes/q/Response.scala.1 q/src/main/scala/com/lagom/example/Response.scala
-> assertRequest 9002 /q Hello changed PlayService app!
+$ copy-file changes/q/Response.scala.1 q/src/main/scala/com/lagom/example/api/Response.scala
+> assertRequest 9002 /q Hello changed LagomPlayServiceScala app!
 
 # And now let's try the same on project C (which isn't a microservice project)
 
