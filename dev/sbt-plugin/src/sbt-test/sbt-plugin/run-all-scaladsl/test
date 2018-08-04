@@ -78,6 +78,16 @@ $ copy-file changes/p/index.scala.html.1 p/app/views/index.scala.html
 $ copy-file changes/p/foo.js.1 p/app/assets/foo.js
 > assertRequest 9001 /assets/foo.js var bar
 
+
+# Now try the LagomPlayServiceScala project
+> assertRequest 9002 /q Hello PlayService app!
+# Make sure we can access it from the service gateway
+> assertRequest 9000 /q Hello PlayService app!
+
+# Change response
+$ copy-file changes/q/Response.scala.1 q/src/main/scala/com/lagom/example/Response.scala
+> assertRequest 9002 /q Hello changed PlayService app!
+
 # And now let's try the same on project C (which isn't a microservice project)
 
 > verifyNoReloadsProjC
