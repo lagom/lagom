@@ -110,7 +110,7 @@ object LagomScala extends AutoPlugin {
  * }}}
  */
 object LagomPlay extends AutoPlugin {
-  override def requires = LagomReloadableService && Play
+  override def requires = LagomReloadableService && PlayService
   override def trigger = noTrigger
 
   import LagomReloadableService.autoImport._
@@ -149,15 +149,25 @@ object LagomPlayJava extends AutoPlugin {
 }
 
 /**
- * This plugin will automatically be enabled if using PlayService and LagomPlay, to add the play integration
+ * TODO: Jules
  */
-object LagomPlayScala extends AutoPlugin {
-  override def requires = LagomPlay && PlayService
-  override def trigger = allRequirements
+object LagomPlayScalaService extends AutoPlugin {
+  override def requires = LagomPlay
+  override def trigger = noTrigger
 
   override def projectSettings = Seq(
     libraryDependencies += LagomImport.lagomScaladslDevMode
   )
+}
+
+/**
+ * This plugin will automatically be enabled if using PlayScala and LagomPlay, to add the play integration
+ */
+object LagomPlayScala extends AutoPlugin {
+  override def requires = LagomPlay && PlayScala
+  override def trigger = allRequirements
+
+  override def projectSettings = LagomPlayScalaService.projectSettings
 }
 
 /**
