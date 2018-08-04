@@ -14,7 +14,7 @@ final class Controller(
 
   import com.lagom.example.api.Response._
 
-  override def routes: Router.Routes = {
+  override val routes: Router.Routes = {
     case GET(p"/q") => Action { Ok(response) }
   }
 
