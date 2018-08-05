@@ -9,13 +9,12 @@ import play.api.routing.{Router, SimpleRouter}
 import play.api.{Environment, Mode}
 
 final class Controller(
+  responses: Responses
   Action: DefaultActionBuilder
 ) extends SimpleRouter {
 
-  import com.lagom.example.api.Response._
-
   override val routes: Router.Routes = {
-    case GET(p"/q") => Action { Ok(response) }
+    case GET(p"/q") => Action { Ok(responses.main) }
   }
 
 }

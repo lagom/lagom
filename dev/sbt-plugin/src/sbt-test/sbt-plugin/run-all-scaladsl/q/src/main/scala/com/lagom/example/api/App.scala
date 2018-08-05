@@ -22,6 +22,7 @@ abstract class App(context: Context)
     locatableServices = Map(serviceName -> (ServiceAcl.forPathRegex("(?!/api/).*") :: Nil))
   )
 
+  final lazy val responses: Responses   = wire[Responses]
   final lazy val controller: Controller = wire[Controller]
 
   override final lazy val router: Router = controller
