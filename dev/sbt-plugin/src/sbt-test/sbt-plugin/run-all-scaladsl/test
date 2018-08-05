@@ -87,7 +87,6 @@ $ copy-file changes/p/foo.js.1 p/app/assets/foo.js
 # Change response
 $ copy-file changes/q/Response.scala.1 q/src/main/scala/com/lagom/example/api/Response.scala
 $ sleep 8000
-> verifyReloadsProjQ 1
 > assertRequest 9002 /q Hello changed LagomPlayServiceScala app!
 
 # And now let's try the same on project C (which isn't a microservice project)
