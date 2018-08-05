@@ -77,6 +77,11 @@ InputKey[Unit]("verifyNoReloadsProjC") := {
   }
 }
 
+InputKey[Unit]("verifyReloadsProjQ") := {
+  val expected = Def.spaceDelimited().parsed.head.toInt
+  DevModeBuild.waitForReloads((target in q).value / "reload.log", expected)
+}
+
 InputKey[Unit]("assertRequest") := {
   val args = Def.spaceDelimited().parsed
   val port = args(0)
