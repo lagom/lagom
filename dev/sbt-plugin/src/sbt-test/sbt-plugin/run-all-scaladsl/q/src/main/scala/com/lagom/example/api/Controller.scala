@@ -9,7 +9,7 @@ import play.api.routing.{Router, SimpleRouter}
 import play.api.{Environment, Mode}
 
 final class Controller(
-  responses: Responses
+  responses: Responses,
   Action: DefaultActionBuilder
 ) extends SimpleRouter {
 
