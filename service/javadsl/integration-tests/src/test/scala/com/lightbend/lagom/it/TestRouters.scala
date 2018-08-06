@@ -33,7 +33,7 @@ object PongRouter {
 }
 
 /**
- * A Java Router to be wired by Guice that always respond with 'hello'
+ * A Router to be wired by Guice that always respond with 'hello'
  */
 class HelloRouter @Inject() (echo: Greeter) extends Router {
 
@@ -47,7 +47,7 @@ class HelloRouter @Inject() (echo: Greeter) extends Router {
 }
 
 /**
- * A Java Router to be wired by Guice that always respond with '[prefixed] hello' and already prefixed with '/hello-prefixed'
+ * A Router to be wired by Guice that always respond with '[prefixed] hello' and already prefixed with '/hello-prefixed'
  */
 class PrefixedHelloRouter @Inject() (echo: Greeter) extends HelloRouter(echo) {
   override val underlying = FixedResponseRouter(s"[prefixed] ${echo.say()}").withPrefix("/hello-prefixed")
@@ -59,7 +59,7 @@ class Greeter {
 }
 
 /**
- * Builds a router that can be used in test, Scala or Java.
+ * Builds a router that can be used in test.
  *
  * The router is configured with a fixed message and always respond with the same message.
  * @return
