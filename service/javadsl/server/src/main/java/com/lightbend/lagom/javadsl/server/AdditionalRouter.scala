@@ -7,7 +7,8 @@ package com.lightbend.lagom.javadsl.server
 import java.util
 
 import play.api.inject.Injector
-import play.routing.Router
+import play.api.routing.Router
+import play.core.j.JavaRouterAdapter
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable

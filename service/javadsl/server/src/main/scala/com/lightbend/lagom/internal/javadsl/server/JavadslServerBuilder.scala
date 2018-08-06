@@ -27,7 +27,7 @@ import play.api.mvc.{ RequestHeader => PlayRequestHeader, ResponseHeader => _, _
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 import play.api.{ Environment, Logger }
-import play.routing.Router
+import play.api.routing.Router
 import java.util.{ List => JList }
 
 import scala.collection.JavaConverters._
@@ -141,7 +141,7 @@ class JavadslServicesRouter @Inject() (
       }
 
     additionalRouters.asScala.foldLeft(mergedRouters) {
-      (routes, router) => routes.orElse(router.asScala().routes)
+      (routes, router) => routes.orElse(router.routes)
     }
   }
 

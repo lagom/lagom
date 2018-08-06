@@ -15,10 +15,10 @@ public class AdditionalRoutersServiceModule  extends AbstractModule implements S
             AdditionalRoutersService.class, AdditionalRoutersServiceImpl.class,
 
             // bind a router using an instance and prefix it using the bind dsl
-            additionalRouter(PingRouter.newInstanceJava()).withPrefix("/ping"),
+            additionalRouter(PingRouter.newInstance()).withPrefix("/ping"),
 
             // bind a prefixed router using an instance
-            additionalRouter(PongRouter.newInstanceJava()),
+            additionalRouter(PongRouter.newInstance()),
 
             // bind a router using a class (DI case) and prefix it using bind dsl
             additionalRouter(HelloRouter.class).withPrefix("/hello"),

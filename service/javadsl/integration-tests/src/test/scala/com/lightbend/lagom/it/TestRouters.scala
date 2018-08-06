@@ -6,14 +6,15 @@ package com.lightbend.lagom.it
 
 import java.util
 import java.util.Optional
+
 import javax.inject.Inject
 import play.api.mvc
 import play.api.mvc.{ request, _ }
 import play.api.routing.Router.Routes
-import play.api.routing.{ SimpleRouter, SimpleRouterImpl }
+import play.api.routing.{ Router, SimpleRouter, SimpleRouterImpl }
 import play.core.j.JavaRouterAdapter
 import play.mvc.Http
-import play.routing.Router
+
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
@@ -21,28 +22,28 @@ import scala.concurrent.{ ExecutionContext, Future }
  */
 object PingRouter {
   def apply() = FixedResponseRouter("ping")
-  def newInstanceJava() = new JavaRouterAdapter(apply())
+  def newInstance() = apply()
 }
 /**
  * Builds a router that always respond with 'pong' and already prefixed with '/pong'.
  */
 object PongRouter {
   def apply() = FixedResponseRouter("pong").withPrefix("/pong")
-  def newInstanceJava() = new JavaRouterAdapter(apply())
+  def newInstance() = apply()
 }
 
 /**
  * A Java Router to be wired by Guice that always respond with 'hello'
  */
-class HelloRouter @Inject() (echo: Greeter) extends play.routing.Router {
+class HelloRouter @Inject() (echo: Greeter) extends Router {
 
   val underlying: play.api.routing.Router = FixedResponseRouter(echo.say())
 
-  override def route(request: Http.RequestHeader): Optional[Handler] =
-    Optional.ofNullable(underlying.routes.lift(request.asScala()).orNull)
+  override def routes: Routes = underlying.routes
 
-  override def documentation(): util.List[Router.RouteDocumentation] = underlying.asJava.documentation()
-  override def withPrefix(prefix: String): Router = underlying.asJava.withPrefix(prefix)
+  override def documentation: Seq[(String, String, String)] = underlying.documentation
+
+  override def withPrefix(prefix: String): Router = underlying.withPrefix(prefix)
 }
 
 /**

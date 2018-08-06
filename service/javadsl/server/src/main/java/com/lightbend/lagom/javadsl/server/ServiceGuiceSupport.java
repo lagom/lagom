@@ -15,7 +15,7 @@ import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
 import com.lightbend.lagom.javadsl.client.ServiceClientGuiceSupport;
 import com.lightbend.lagom.javadsl.server.status.MetricsService;
-import play.routing.Router;
+import play.api.routing.Router;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -104,8 +104,6 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
                 // and provide a List<Router>
                 binder.bind(new TypeLiteral<List<Router>>(){}).toProvider(AdditionalRoutersProvider.class);
             }
-
-
 
             // And bind the router
             binder.bind(LagomServiceRouter.class).to(JavadslServicesRouter.class);

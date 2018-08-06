@@ -15,11 +15,6 @@ public interface AdditionalRoutersService extends Service {
 
     @Override
     default Descriptor descriptor() {
-        return named("additional-routers")
-
-            .withServiceAcls(
-                ServiceAcl.path("/ping"),
-                ServiceAcl.path("/pong")
-            );
+        return named("additional-routers");
     }
 }
