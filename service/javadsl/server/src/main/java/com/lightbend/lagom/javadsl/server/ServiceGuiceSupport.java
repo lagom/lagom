@@ -34,14 +34,72 @@ import java.util.List;
 public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
 
 
-    // TODO: document usage and explain when and how to prefix
+
+    /**
+     * Helper method to create an {@link AdditionalRouter} instance that can be used to
+     * declare additional Play {@link Router}s on a Lagom Service.
+     *
+     *
+     * <p>This method should be used when the {@link Router} has some dependencies and needs to get them injected
+     * by Lagom's runtime DI infrastructure (Guice).
+     *
+     * <p>Typically, this will be a {@link Router} generated from a Play {@code routes}
+     * or a akka-grpc generated Play {@link Router}.
+     *
+     * <p>Once you declare a {@link Router}, you may need to define it's prefix to indicate on which path it should be available.
+     *
+     * <pre>
+     * bindService(
+     *     MyService.class, MyServiceImpl.class,
+     *     additionalRouter(HelloWorldRouter.class).withPrefix("/hello"),
+     * );
+     * </pre>
+     *
+     * You don't need to configure a prefix if the {@link Router} has a pre-configured.
+     * A akka-grpc generated Play {@link Router}, for instance, has its prefix already defined by the gRPC descriptor
+     * and doesn't need to have its prefix reconfigured.
+     *
+     * <p>Note that this method won't create a binding and is intended to be used in conjunction with
+     * {@link ServiceGuiceSupport#bindService(Class, Service, AdditionalRouter, AdditionalRouter...)}
+     * or {@link ServiceGuiceSupport#bindService(Class, Class, AdditionalRouter, AdditionalRouter...)}.
+     * Calling this method outside this context will have no effect.
+     *
+     * @param router an additional Play Router class
+     * @return an AdditionalRouter instance
+     */
     @ApiMayChange
     default <R extends Router> AdditionalRouter additionalRouter(Class<R> router) {
         return new ClassBased<R>(router);
     }
 
 
-    // TODO: document usage and explain when and how to prefix
+    /**
+     * Helper method to create an {@link AdditionalRouter} instance that can be used to
+     * declare additional Play {@link Router}s on a Lagom Service.
+     *
+     *
+     * <p>This method should be used when the {@link Router} does not have any
+     * other dependencies and therefore can be immediately passed as an instance.
+     *
+     * <p>Once you declare a {@link Router}, you may need to define it's prefix to indicate on which path it should be available.
+     *
+     * <pre>
+     * bindService(
+     *     MyService.class, MyServiceImpl.class,
+     *     additionalRouter(new HelloWorldRouter()).withPrefix("/hello"),
+     * );
+     * </pre>
+     *
+     * You don't need to configure a prefix if the {@link Router} has a pre-configured.
+     *
+     * <p>Note that this method won't create a binding and is intended to be used in conjunction with
+     * {@link ServiceGuiceSupport#bindService(Class, Service, AdditionalRouter, AdditionalRouter...)}
+     * or {@link ServiceGuiceSupport#bindService(Class, Class, AdditionalRouter, AdditionalRouter...)}.
+     * Calling this method outside this context will have no effect.
+     *
+     * @param router an additional Play Router instance
+     * @return an AdditionalRouter instance
+     */
     @ApiMayChange
     default AdditionalRouter additionalRouter(Router router) {
         return new InstanceBased(router);
@@ -226,8 +284,8 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      *
      * @param serviceInterface      the interface class for a {@link Service}
      * @param serviceImplementation the implementation class for the <code>serviceInterface</code>
-     * @param additionalRouter      an additional Play Router
-     * @param additionalRouters     additional Play Routers (can be omitted)
+     * @param additionalRouter      a first AdditionalRouter
+     * @param additionalRouters     other AdditionalRouter if any (can be omitted)
      * @param <T>                   type constraint ensuring <code>serviceImplementation</code> implements <code>serviceInterface</code>
      */
     default <T extends Service> void bindService(Class<T> serviceInterface,
@@ -260,14 +318,16 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * <p>
      * Inspects the service descriptor and creates routes to serve every call described.
      * <p>
-     * Allows the configuration of additional Play routers.
+     * Allows the configuration of additional Play routers. {@link AdditionalRouter} can be configured using
+     * {@link ServiceGuiceSupport#additionalRouter(Class)} or {@link ServiceGuiceSupport#additionalRouter(Router)}.
+     *
      * <p>
      * Builds the {@link ServiceInfo} metadata.
      *
      * @param serviceInterface the interface class for a {@link Service}
      * @param service          an instance of a class implementing <code>serviceInterface</code>
-     * @param additionalRouter      an additional Play Router
-     * @param additionalRouters     additional Play Routers (can be omitted)
+     * @param additionalRouter      a first AdditionalRouter
+     * @param additionalRouters     other AdditionalRouter if any (can be omitted)
      * @param <T>              type constraint ensuring <code>serviceImplementation</code> implements <code>serviceInterface</code>
      */
     default <T extends Service> void bindService(Class<T> serviceInterface,
