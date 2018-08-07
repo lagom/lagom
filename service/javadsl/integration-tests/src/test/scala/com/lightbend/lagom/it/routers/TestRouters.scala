@@ -2,20 +2,16 @@
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.it
-
-import java.util
-import java.util.Optional
+package com.lightbend.lagom.it.routers
 
 import javax.inject.Inject
 import play.api.mvc
-import play.api.mvc.{ request, _ }
+import play.api.mvc._
 import play.api.routing.Router.Routes
-import play.api.routing.{ Router, SimpleRouter, SimpleRouterImpl }
+import play.api.routing.{Router, SimpleRouterImpl}
 import play.core.j.JavaRouterAdapter
-import play.mvc.Http
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Builds a router that always respond with 'ping'.

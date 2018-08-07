@@ -2,7 +2,7 @@
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.it.mocks;
+package com.lightbend.lagom.it.routers;
 
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;

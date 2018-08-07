@@ -2,10 +2,8 @@
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.it.mocks;
+package com.lightbend.lagom.it.routers;
 
-import akka.actor.ActorSystem;
-import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import com.lightbend.lagom.javadsl.testkit.ServiceTest;
 import org.junit.AfterClass;

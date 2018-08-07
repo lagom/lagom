@@ -2,10 +2,9 @@
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.it.mocks;
+package com.lightbend.lagom.it.routers;
 
 import com.google.inject.AbstractModule;
-import com.lightbend.lagom.it.*;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 
 public class AdditionalRoutersServiceModule  extends AbstractModule implements ServiceGuiceSupport {
