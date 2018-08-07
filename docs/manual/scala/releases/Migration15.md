@@ -29,6 +29,8 @@ We recommend migrating to Kubernetes, DC/OS or another deployment solution befor
 
 If you are not using Kubernetes or DC/OS, you must configure your services in a way that suits your production environment. See [[Running Lagom in production|ProductionOverview]] for more information.
 
+If you are using ConductR in production and need assistance migrating to other solutions please [contact Lightbend](https://www.lightbend.com/contact).
+
 
 ## Lightbend Orchestration
 
