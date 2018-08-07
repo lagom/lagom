@@ -27,8 +27,9 @@ public class AdditionalRoutersServiceTest {
     @BeforeClass
     public static void setUp() {
         server = startServer(defaultSetup()
-            .withCluster(false).withCassandra(false)
-            .configureBuilder(b -> b.bindings(new AdditionalRoutersServiceModule()))
+            .withCluster(false)
+            .withCassandra(false)
+            .configureBuilder(b -> b.overrides(new AdditionalRoutersServiceModule()))
         );
         materializer = server.materializer();
     }

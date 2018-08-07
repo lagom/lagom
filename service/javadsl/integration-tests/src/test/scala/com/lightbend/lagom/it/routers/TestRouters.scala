@@ -8,10 +8,10 @@ import javax.inject.Inject
 import play.api.mvc
 import play.api.mvc._
 import play.api.routing.Router.Routes
-import play.api.routing.{Router, SimpleRouterImpl}
+import play.api.routing.{ Router, SimpleRouterImpl }
 import play.core.j.JavaRouterAdapter
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Builds a router that always respond with 'ping'.

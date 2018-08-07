@@ -94,16 +94,11 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
             // Bind the resolved services
             binder.bind(ResolvedServices.class).toProvider(new ResolvedServicesProvider(new ServiceBinding<?>[]{binding, metricsServiceBinding}));
 
-            if (additionalRouters.isEmpty()) {
-                // if not defined, we bind an empty list of routers
-                binder.bind(new TypeLiteral<List<Router>>(){}).toInstance(Collections.emptyList());
-            } else {
-                // bind the list of AdditionalRouter provided by the user
-                binder.bind(new TypeLiteral<List<AdditionalRouter>>(){}).toInstance(additionalRouters);
-                // bind a provider that can get the list of AdditionalRouter and a Injector
-                // and provide a List<Router>
-                binder.bind(new TypeLiteral<List<Router>>(){}).toProvider(AdditionalRoutersProvider.class);
-            }
+            // bind the list of AdditionalRouter provided by the user
+            binder.bind(new TypeLiteral<List<AdditionalRouter>>(){}).toInstance(additionalRouters);
+            // bind a provider that can get the list of AdditionalRouter and a Injector
+            // and provide a List<Router>
+            binder.bind(new TypeLiteral<List<Router>>(){}).toProvider(AdditionalRoutersProvider.class);
 
             // And bind the router
             binder.bind(LagomServiceRouter.class).to(JavadslServicesRouter.class);

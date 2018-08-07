@@ -6,11 +6,15 @@ package com.lightbend.lagom.javadsl.testkit
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util
+import java.util.{ Collections, List }
 import java.util.function.{ Function => JFunction }
 
 import akka.actor.ActorSystem
+import akka.annotation.InternalApi
 import akka.japi.function.{ Effect, Procedure }
 import akka.stream.Materializer
+import com.google.inject.{ Binder, Module, TypeLiteral }
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.cluster.JoinClusterModule
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
@@ -22,6 +26,7 @@ import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
 import play.Application
 import play.api.inject.{ ApplicationLifecycle, BindingKey, DefaultApplicationLifecycle, bind => sBind }
+import play.api.routing.Router
 import play.api.{ Mode, Play }
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 import play.inject.Injector
@@ -204,6 +209,7 @@ object ServiceTest {
         copy(cluster = false, cassandra = false)
       }
     }
+
   }
 
   /**
