@@ -28,12 +28,12 @@ sealed trait LagomServer {
   val serviceBindings: immutable.Seq[LagomServiceBinding[_]]
   def router: LagomServiceRouter
 
-  final def plusRouter(additionalRouter: Router) = {
+  final def additionalRouter(otherRouter: Router) = {
     val self = this
     new LagomServer {
       override val name: String = self.name
       override val serviceBindings: immutable.Seq[LagomServiceBinding[_]] = self.serviceBindings
-      override def router: LagomServiceRouter = self.router.plusRouter(additionalRouter)
+      override def router: LagomServiceRouter = self.router.additionalRouter(otherRouter)
     }
   }
 }
@@ -54,17 +54,17 @@ sealed trait LagomServer {
  */
 trait LagomServiceRouter extends Router {
 
-  final def plusRouter(additionalRouter: Router): LagomServiceRouter = {
+  final def additionalRouter(router: Router): LagomServiceRouter = {
     val self = this
     new LagomServiceRouter {
       override val documentation: Seq[(String, String, String)] =
-        self.documentation ++ additionalRouter.documentation
+        self.documentation ++ router.documentation
 
       override def withPrefix(prefix: String): Router =
-        self.withPrefix(prefix).orElse(additionalRouter.withPrefix(prefix))
+        self.withPrefix(prefix).orElse(router.withPrefix(prefix))
 
       override val routes: Routes =
-        self.routes.orElse(additionalRouter.routes)
+        self.routes.orElse(router.routes)
     }
   }
 }

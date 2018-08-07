@@ -48,7 +48,7 @@ class AdditionalRoutersSpec extends WordSpec with Matchers with ScalaFutures {
   class TestApp(context: LagomApplicationContext) extends LagomApplication(context) with AhcWSComponents with LocalServiceLocator {
     override def lagomServer: LagomServer =
       serverFor[AdditionalRoutersService](new AdditionalRoutersServiceImpl)
-        .plusRouter(FixedResponseRouter("hello").withPrefix("/hello"))
+        .additionalRouter(FixedResponseRouter("hello").withPrefix("/hello"))
   }
 
 }
