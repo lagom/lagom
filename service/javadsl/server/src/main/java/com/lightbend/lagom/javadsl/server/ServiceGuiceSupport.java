@@ -112,7 +112,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      *
      * @param serviceInfo the metadata identifying this Lagom Service.
      */
-    default void bindServiceInfo(ServiceInfo serviceInfo) {
+    default void bindServiceInfo(ServiceInfo serviceInfo, AdditionalRouter... additionalRouters) {
         // copied from super interface since default methods in JAVA can't be invoked from extending interfaces.
         Binder binder = BinderAccessor.binder(this);
         binder.bind(ServiceInfo.class).toInstance(serviceInfo);
@@ -124,6 +124,12 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
 
         // Bind the resolved services
         binder.bind(ResolvedServices.class).toProvider(new ResolvedServicesProvider(allServiceBindings));
+
+        // bind the list of AdditionalRouter provided by the user
+        binder.bind(new TypeLiteral<List<AdditionalRouter>>(){}).toInstance(Arrays.asList(additionalRouters));
+        // bind a provider that can get the list of AdditionalRouter and a Injector
+        // and provide a List<Router>
+        binder.bind(new TypeLiteral<List<Router>>(){}).toProvider(AdditionalRoutersProvider.class);
 
         // And bind the router
         binder.bind(LagomServiceRouter.class).to(JavadslServicesRouter.class);
@@ -179,6 +185,13 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
 
         // Bind the resolved services
         binder.bind(ResolvedServices.class).toProvider(new ResolvedServicesProvider(allServiceBindings));
+
+        // bind empty list
+        // NB: bindServices is deprecated for quite some time and we can't
+        // add support for additional routers to it because it uses already varargs
+        // we will need to come up with another dsl to make it possible, but since it's already deprecated it
+        // makes no sense to try to support additional routers for it
+        binder.bind(new TypeLiteral<List<Router>>(){}).toInstance(Collections.emptyList());
 
         // And bind the router
         binder.bind(LagomServiceRouter.class).to(JavadslServicesRouter.class);
