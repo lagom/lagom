@@ -55,7 +55,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * );
      * </pre>
      *
-     * You don't need to configure a prefix if the {@link Router} has a pre-configured.
+     * You don't need to configure a prefix if the {@link Router} has it pre-configured.
      * A akka-grpc generated Play {@link Router}, for instance, has its prefix already defined by the gRPC descriptor
      * and doesn't need to have its prefix reconfigured.
      *
@@ -90,7 +90,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * );
      * </pre>
      *
-     * You don't need to configure a prefix if the {@link Router} has a pre-configured.
+     * You don't need to configure a prefix if the {@link Router} has it pre-configured.
      *
      * <p>Note that this method won't create a binding and is intended to be used in conjunction with
      * {@link ServiceGuiceSupport#bindService(Class, Service, AdditionalRouter, AdditionalRouter...)}
