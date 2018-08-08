@@ -27,7 +27,7 @@ trait ServiceRegistry extends Service {
 
   def register(name: String): ServiceCall[ServiceRegistryService, NotUsed]
   def unregister(name: String): ServiceCall[NotUsed, NotUsed]
-  def lookup(name: String): ServiceCall[NotUsed, URI]
+  def lookup(name: String, portName: Option[String]): ServiceCall[NotUsed, URI]
   def registeredServices: ServiceCall[NotUsed, immutable.Seq[RegisteredService]]
 
   import Service._
@@ -37,7 +37,7 @@ trait ServiceRegistry extends Service {
     named(ServiceRegistryClient.ServiceName).withCalls(
       restCall(Method.PUT, "/services/:id", register _),
       restCall(Method.DELETE, "/services/:id", this.unregister _),
-      restCall(Method.GET, "/services/:id", lookup _),
+      restCall(Method.GET, "/services/:id?portName", lookup _),
       pathCall("/services", registeredServices)
     ).withLocatableService(false)
   }
@@ -60,19 +60,20 @@ object ServiceRegistry {
           URI.create(wire.decodeString(protocol.charset.getOrElse("utf-8")))
       }
   }
-
 }
 
-case class RegisteredService(name: String, url: URI)
+case class RegisteredService(name: String, url: URI, portName: Option[String])
 
 object RegisteredService {
   import UriFormat.uriFormat
   implicit val format: Format[RegisteredService] = Json.format[RegisteredService]
 }
 
-case class ServiceRegistryService(uri: URI, acls: immutable.Seq[ServiceAcl])
+case class ServiceRegistryService(uris: immutable.Seq[URI], acls: immutable.Seq[ServiceAcl])
 
 object ServiceRegistryService {
+  def apply(uri: URI, acls: immutable.Seq[ServiceAcl]): ServiceRegistryService = ServiceRegistryService(Seq(uri), acls)
+
   import UriFormat.uriFormat
 
   implicit val methodFormat: Format[Method] =

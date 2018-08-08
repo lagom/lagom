@@ -7,34 +7,43 @@ package com.lightbend.lagom.internal.javadsl.registry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * A service to be registered by the service registry
  */
 public class ServiceRegistryService {
-    private final URI uri;
+    private final List<URI> uris;
     private final List<ServiceAcl> acls;
 
     public static ServiceRegistryService of(URI uri, List<com.lightbend.lagom.javadsl.api.ServiceAcl> acls) {
+        return of(Collections.singletonList(uri), acls);
+    }
+    public static ServiceRegistryService of(List<URI> uris, List<com.lightbend.lagom.javadsl.api.ServiceAcl> acls) {
         List<ServiceAcl> internalAcls =
             acls.stream().map(acl -> {
                     Optional<Method> method = acl.method().map(m -> new Method(m.name()));
                     return new ServiceAcl(method, acl.pathRegex());
                 }
             ).collect(Collectors.toList());
-        return new ServiceRegistryService(uri, internalAcls);
+        return new ServiceRegistryService(uris, internalAcls);
     }
 
+    public ServiceRegistryService(URI uri) {
+        this(uri, Collections.emptyList());
+    }
     public ServiceRegistryService(URI uri, List<ServiceAcl> acls) {
-        this.uri = uri;
+        this(Arrays.asList(uri), acls);
+    }
+    @JsonCreator
+    public ServiceRegistryService(List<URI> uris, List<ServiceAcl> acls) {
+        this.uris = uris;
         this.acls = acls;
     }
 
-    public URI uri() {
-        return uri;
+    public List<URI> uris() {
+        return uris;
     }
 
     public List<ServiceAcl> acls() {
@@ -48,22 +57,20 @@ public class ServiceRegistryService {
 
         ServiceRegistryService that = (ServiceRegistryService) o;
 
-        if (!uri.equals(that.uri)) return false;
+        if (!uris.equals(that.uris)) return false;
         return acls.equals(that.acls);
 
     }
 
     @Override
     public int hashCode() {
-        int result = uri.hashCode();
-        result = 31 * result + acls.hashCode();
-        return result;
+        return Objects.hash(uris, acls);
     }
 
     @Override
     public String toString() {
         return "ServiceRegistryService{" +
-            "uri='" + uri + '\'' +
+            "uri='" + uris + '\'' +
             ", acls=" + acls +
             '}';
     }

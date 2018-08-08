@@ -18,6 +18,7 @@ import play.api.{ Configuration, Environment, Logger }
 
 import scala.compat.java8.FutureConverters.CompletionStageOps
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.collection.JavaConverters._
 
 class ServiceRegistrationModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
@@ -63,7 +64,8 @@ object ServiceRegistrationModule {
     }
 
     locatableServices.foreach { service =>
-      val c = ServiceRegistryService.of(config.url, service.descriptor.acls)
+      val uris = Seq(config.url)
+      val c = ServiceRegistryService.of(uris.asJava, service.descriptor.acls)
       registry.register(service.descriptor.name).invoke(c).exceptionally(new JFunction[Throwable, NotUsed] {
         def apply(t: Throwable) = {
           logger.error(s"Service name=[${service.descriptor.name}] couldn't register itself to the service locator.", t)

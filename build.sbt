@@ -1358,7 +1358,14 @@ lazy val `service-locator` = (project in file("dev") / "service-registry" / "ser
       </dependencyManagement>
     }
   )
-  .dependsOn(`server-javadsl`, logback, `service-registry-client-javadsl`)
+  .dependsOn(
+    `server-javadsl`,
+    logback,
+    `service-registry-client-javadsl`,
+    `play-json` % "compile -> test",
+    `jackson` % "compile -> test",
+    `devmode-scaladsl` % "compile -> test"
+  )
 
 lazy val `service-registry-client-core` = (project in file("dev") / "service-registry" / "client-core")
   .settings(

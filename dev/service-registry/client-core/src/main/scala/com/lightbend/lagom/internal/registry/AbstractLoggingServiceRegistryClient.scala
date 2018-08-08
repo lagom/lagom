@@ -17,14 +17,14 @@ private[lagom] abstract class AbstractLoggingServiceRegistryClient(implicit ec: 
 
   protected val log: Logger = LoggerFactory.getLogger(getClass)
 
-  override def locateAll(serviceName: String): Future[immutable.Seq[URI]] = {
+  override def locateAll(serviceName: String, portName: Option[String]): Future[immutable.Seq[URI]] = {
     require(
       serviceName != ServiceRegistryClient.ServiceName,
       "The service registry client cannot locate the service registry service itself"
     )
     log.debug("Locating service name=[{}] ...", serviceName)
 
-    val location: Future[immutable.Seq[URI]] = internalLocateAll(serviceName)
+    val location: Future[immutable.Seq[URI]] = internalLocateAll(serviceName, portName)
 
     location.onComplete {
       case Success(Nil) =>
@@ -38,6 +38,6 @@ private[lagom] abstract class AbstractLoggingServiceRegistryClient(implicit ec: 
     location
   }
 
-  protected def internalLocateAll(serviceName: String): Future[immutable.Seq[URI]]
+  protected def internalLocateAll(serviceName: String, portName: Option[String]): Future[immutable.Seq[URI]]
 
 }

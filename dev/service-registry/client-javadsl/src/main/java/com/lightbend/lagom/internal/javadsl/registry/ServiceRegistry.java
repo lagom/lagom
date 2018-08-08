@@ -35,7 +35,8 @@ public interface ServiceRegistry extends Service {
 
 	ServiceCall<ServiceRegistryService, NotUsed> register(String name);
 	ServiceCall<NotUsed, NotUsed> unregister(String name);
-	ServiceCall<NotUsed, URI> lookup(String name);
+	// TODO: add support for Optional<String> protocol on lookup
+	ServiceCall<NotUsed, URI> lookup(String serviceName, Optional<String> portName);
 	ServiceCall<NotUsed, PSequence<RegisteredService>> registeredServices();
 
 	@Override
@@ -44,7 +45,7 @@ public interface ServiceRegistry extends Service {
 		return named(SERVICE_NAME).withCalls(
             restCall(Method.PUT, "/services/:id", this::register),
 		    restCall(Method.DELETE, "/services/:id", this::unregister),
-		    restCall(Method.GET, "/services/:id", this::lookup).withResponseSerializer(CustomSerializers.URI),
+		    restCall(Method.GET, "/services/:id?portName", this::lookup).withResponseSerializer(CustomSerializers.URI),
 		    pathCall("/services", this::registeredServices)
         ).withLocatableService(false);
 		// @formatter:on
