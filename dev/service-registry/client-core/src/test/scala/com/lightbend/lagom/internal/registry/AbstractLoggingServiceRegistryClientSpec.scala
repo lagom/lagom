@@ -13,7 +13,7 @@ import scala.concurrent.Future
 class AbstractLoggingServiceRegistryClientSpec extends AsyncWordSpec with Matchers {
 
   private val client = new AbstractLoggingServiceRegistryClient {
-    override def internalLocateAll(serviceName: String): Future[List[URI]] = serviceName match {
+    override def internalLocateAll(serviceName: String, portName: Option[String]): Future[List[URI]] = serviceName match {
       case "failing-service"    => Future.failed(new IllegalArgumentException("Ignore: expected error"))
       case "empty-service"      => Future.successful(List())
       case "successful-service" => Future.successful(List(URI.create("http://localhost:8080")))
@@ -27,18 +27,18 @@ class AbstractLoggingServiceRegistryClientSpec extends AsyncWordSpec with Matche
      */
 
     "internal lookup fails" in {
-      client.locateAll("failing-service")
+      client.locateAll("failing-service", None)
         .failed
         .map(_ shouldBe an[IllegalArgumentException])
     }
 
     "internal lookup has no result" in {
-      client.locateAll("empty-service")
+      client.locateAll("empty-service", None)
         .map(_ shouldEqual Nil)
     }
 
     "internal lookup has a successful result" in {
-      client.locateAll("successful-service")
+      client.locateAll("successful-service", None)
         .map(_ shouldEqual List(URI.create("http://localhost:8080")))
     }
 

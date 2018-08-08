@@ -10,7 +10,8 @@ import scala.collection.immutable
 import scala.concurrent.Future
 
 private[lagom] trait ServiceRegistryClient {
-  def locateAll(serviceName: String): Future[immutable.Seq[URI]]
+  // TODO: add support for `protocol:Option[String]` on lookup
+  def locateAll(serviceName: String, portName: Option[String]): Future[immutable.Seq[URI]]
 }
 
 private[lagom] object ServiceRegistryClient {

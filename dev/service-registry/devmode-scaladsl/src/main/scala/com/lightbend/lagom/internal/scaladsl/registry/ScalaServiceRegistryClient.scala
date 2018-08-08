@@ -15,8 +15,8 @@ import scala.concurrent.{ ExecutionContext, Future }
 private[lagom] class ScalaServiceRegistryClient(registry: ServiceRegistry)(implicit ec: ExecutionContext)
   extends AbstractLoggingServiceRegistryClient {
 
-  override protected def internalLocateAll(serviceName: String): Future[immutable.Seq[URI]] =
-    registry.lookup(serviceName).invoke()
+  override protected def internalLocateAll(serviceName: String, portName: Option[String]): Future[immutable.Seq[URI]] =
+    registry.lookup(serviceName, portName).invoke()
       .map(immutable.Seq[URI](_))
       .recover {
         case _: NotFound => Nil
