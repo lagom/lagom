@@ -29,28 +29,28 @@ sealed trait LagomServer {
   def router: LagomServiceRouter
 
   /**
-    * Allows the configuration of additional Play [[Router]]s.
-    *
-    * Typically, this will be a [[Router]] generated from a Play [[Router]]
-    * or a akka-grpc generated Play [[Router]].
-    *
-    * Once you declare a [[Router]], you may need to define it's prefix to indicate on which path it should be available.
-    *
-    * {{{
-    *   new LagomApplication(context) with AhcWSComponents with LocalServiceLocator {
-    *     override def lagomServer: LagomServer =
-    *       serverFor[MyService](new MyServiceImpl)
-    *         .additionalRouter(new HelloWorldRouter().withPrefix("/hello"))
-    *   }
-    * }}}
-    *
-    * You don't need to configure a prefix if the [[Router]] has it pre-configured.
-    * A akka-grpc generated Play [[Router]], for instance, has its prefix already defined by the gRPC descriptor
-    * and doesn't need to have its prefix reconfigured.
-    *
-    * @param otherRouter
-    * @return
-    */
+   * Allows the configuration of additional Play [[Router]]s.
+   *
+   * Typically, this will be a [[Router]] generated from a Play [[Router]]
+   * or a akka-grpc generated Play [[Router]].
+   *
+   * Once you declare a [[Router]], you may need to define it's prefix to indicate on which path it should be available.
+   *
+   * {{{
+   *   new LagomApplication(context) with AhcWSComponents with LocalServiceLocator {
+   *     override def lagomServer: LagomServer =
+   *       serverFor[MyService](new MyServiceImpl)
+   *         .additionalRouter(new HelloWorldRouter().withPrefix("/hello"))
+   *   }
+   * }}}
+   *
+   * You don't need to configure a prefix if the [[Router]] has it pre-configured.
+   * A akka-grpc generated Play [[Router]], for instance, has its prefix already defined by the gRPC descriptor
+   * and doesn't need to have its prefix reconfigured.
+   *
+   * @param otherRouter
+   * @return
+   */
   final def additionalRouter(otherRouter: Router) = {
     val self = this
     new LagomServer {
