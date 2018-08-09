@@ -499,7 +499,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     },
     lagomServiceAddress := "127.0.0.1",
     lagomServicePort := LagomPlugin.assignedPortFor(ProjectName(name.value), state.value).value,
-    lagomServiceHttpsPort := LagomPlugin.assignedPortFor(ProjectName(s"${name.value}-tls"), state.value).value,
+    lagomServiceHttpsPort := LagomPlugin.assignedPortFor(ProjectName(name.value).withTls, state.value).value,
     Internal.Keys.stop := {
       Internal.Keys.interactionMode.value match {
         case nonBlocking: PlayNonBlockingInteractionMode => nonBlocking.stop()

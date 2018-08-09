@@ -8,7 +8,9 @@ import scala.collection.immutable
 
 object PortAssigner {
 
-  private[lagom] case class ProjectName(name: String) extends AnyVal
+  private[lagom] case class ProjectName(name: String) {
+    def withTls = ProjectName(name + "-tls")
+  }
   private[lagom] object ProjectName {
     implicit object OrderingProjectName extends Ordering[ProjectName] {
       def compare(x: ProjectName, y: ProjectName): Int = x.name.compare(y.name)
@@ -41,8 +43,12 @@ object PortAssigner {
   private class Project2PortMapBuilder(val range: PortRange) extends AnyVal {
 
     def build(projects: immutable.SortedSet[ProjectName]): Map[ProjectName, Port] = {
+
+      // duplicate the project list by adding the tls variant
+      val projectNamesWithTls = projects.flatMap { plainName => Seq(plainName, plainName.withTls) }
+
       require(
-        projects.size * 2 <= range.delta,
+        projectNamesWithTls.size <= range.delta,
         s"""A larger port range is needed, as you have ${projects.size} Lagom projects and only ${range.delta} 
              |ports available. The number of ports available must be at least twice the number of projects.
              | You should increase the range passed for the lagomPortRange build setting.
@@ -58,24 +64,23 @@ object PortAssigner {
       }
 
       @annotation.tailrec
-      def loop(projectNames: Seq[ProjectName], assignedPort: Set[Port], unassigned: Vector[ProjectName], result: Map[ProjectName, Port]): Map[ProjectName, Port] = projectNames match {
-        case Nil if unassigned.nonEmpty =>
-          // if we are here there are projects with colliding hash that still need to get their port assigned. As expected, this step is carried out after assigning
-          // a port to all non-colliding projects.
-          val proj = unassigned.head
-          val projectedPort = projectedPortFor(proj)
-          val port = findFirstAvailablePort(projectedPort, assignedPort)
-          loop(projectNames, assignedPort + port, unassigned.tail, result + (proj -> port))
-        case Nil => result
-        case proj +: rest =>
-          val projectedPort = projectedPortFor(proj)
-          if (assignedPort(projectedPort)) loop(rest, assignedPort, unassigned :+ proj, result)
-          else loop(rest, assignedPort + projectedPort, unassigned, result + (proj -> projectedPort))
-      }
+      def loop(projectNames: Seq[ProjectName], assignedPort: Set[Port], unassigned: Vector[ProjectName], result: Map[ProjectName, Port]): Map[ProjectName, Port] =
+        projectNames match {
+          case Nil if unassigned.nonEmpty =>
+            // if we are here there are projects with colliding hash that still need to get their port assigned. As expected, this step is carried out after assigning
+            // a port to all non-colliding projects.
+            val proj = unassigned.head
+            val projectedPort = projectedPortFor(proj)
+            val port = findFirstAvailablePort(projectedPort, assignedPort)
+            loop(projectNames, assignedPort + port, unassigned.tail, result + (proj -> port))
+          case Nil => result
+          case proj +: rest =>
+            val projectedPort = projectedPortFor(proj)
+            if (assignedPort(projectedPort)) loop(rest, assignedPort, unassigned :+ proj, result)
+            else loop(rest, assignedPort + projectedPort, unassigned, result + (proj -> projectedPort))
+        }
 
-      val seq: Seq[ProjectName] = projects.iterator.toSeq
-      val projectNamesWithTls = seq.flatMap { plainName => Seq(plainName, ProjectName(plainName.name + "-tls")) }
-      loop(projectNamesWithTls, Set.empty[Port], Vector.empty[ProjectName], Map.empty[ProjectName, Port])
+      loop(projectNamesWithTls.toSeq, Set.empty[Port], Vector.empty[ProjectName], Map.empty[ProjectName, Port])
     }
 
     private def projectedPortFor(name: ProjectName): Port = {

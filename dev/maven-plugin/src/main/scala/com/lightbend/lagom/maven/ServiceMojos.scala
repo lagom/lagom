@@ -108,14 +108,17 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
       case (true, configured) => Some(configured)
     }
 
-    def selectPort(servicePort: Int, useTls: Boolean) = {
+    def selectPort(servicePort: Int, useTls: Boolean): Int = {
       if (servicePort == -1) {
         val portMap = serviceManager.getPortMap(
           servicePortRange,
           externalProjects.asScala.map(d => d.artifact.getGroupId + ":" + d.artifact.getArtifactId)
         )
-        val portId = if (useTls) s"s{project.getArtifactId}-tls" else project.getArtifactId
-        val port = portMap.get(ProjectName(portId))
+        val portName = {
+          val pn = ProjectName(project.getArtifactId)
+          if (useTls) pn.withTls else pn
+        }
+        val port = portMap.get(portName)
         port.map(_.value).getOrElse {
           sys.error(s"No port selected for service ${project.getArtifactId} (use TLS: $useTls)")
         }
@@ -209,8 +212,12 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
       def selectPort(servicePort: Int, useTls: Boolean) = {
         if (servicePort == -1) {
           val artifactBasename = project.artifact.getGroupId + ":" + project.artifact.getArtifactId
-          val portId = if (useTls) s"$artifactBasename-tls" else artifactBasename
-          val port = portMap.get(ProjectName(portId))
+
+          val portName = {
+            val pn = ProjectName(artifactBasename)
+            if (useTls) pn.withTls else pn
+          }
+          val port = portMap.get(portName)
           port.map(_.value).getOrElse {
             sys.error(s"No port selected for service $artifactBasename (use TLS: $useTls)")
           }

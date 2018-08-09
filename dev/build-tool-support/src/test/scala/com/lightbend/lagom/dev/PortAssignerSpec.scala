@@ -28,7 +28,8 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       val projects = Seq(projA, projB, projC)
       val projectName2port = PortAssigner.computeProjectsPort(portRange, projects)
 
-      projectName2port.values.toSet should have size 3 // no duplicates
+      // we expect 6 port because each project gets a http and a https port
+      projectName2port.values.toSet should have size 6 // no duplicates
     }
 
     "assign different ports for projects with the same hash" in {
@@ -70,15 +71,22 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       val projB = "BBBB".asProjectName
       val projC = "AaBB".asProjectName
 
+      // verify they have indeed the same hash
+      projA.name.hashCode() should be(projB.name.hashCode())
+      projB.name.hashCode() should be(projC.name.hashCode())
+
       // small port range to force the wrap around logic to be run
-      val portRange = PortRange(7, 11)
+      val portRange = PortRange(7, 14)
 
       val projects = Seq(projA, projC, projB)
       val projectName2port = PortAssigner.computeProjectsPort(portRange, projects)
 
-      projectName2port(projA) shouldBe Port(11)
-      projectName2port(projC) shouldBe Port(7) // wrap around behavior executed!
-      projectName2port(projB) shouldBe Port(8)
+      projectName2port(projA) shouldBe Port(7)
+      projectName2port(projA.withTls) shouldBe Port(14)
+      projectName2port(projC) shouldBe Port(8) // wrap around behavior executed!
+      projectName2port(projC.withTls) shouldBe Port(9) // wrap around behavior executed!
+      projectName2port(projB) shouldBe Port(10)
+      projectName2port(projB.withTls) shouldBe Port(11)
     }
 
     "assign ports first to projects with non-colliding hash/port" in {
@@ -86,29 +94,38 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       // the port assigned to `projC` cannot be affected by `projB`, which happens to have the same hash of `projA`.
       // Said otherwise, projects with non colliding hash should get their port assigned **before** projects
       // that result in a port collision.
-      val portRange = PortRange(7, 11)
+      val portRange = PortRange(7, 14)
 
       // Here we have two projects that will hash to different ports, i.e., no collisions.
       val projA = "AaAa".asProjectName
-      val projC = "d".asProjectName
+      val projC = "dad".asProjectName
 
       val projectsWithNoCollisions = Seq(projA, projC)
       val projectName2portNoCollisions = PortAssigner.computeProjectsPort(portRange, projectsWithNoCollisions)
 
       // Here we check the port we expect to be assigned when only projects A and B exist
       projectName2portNoCollisions(projA) shouldBe Port(7)
-      projectName2portNoCollisions(projC) shouldBe Port(8)
+      projectName2portNoCollisions(projA.withTls) shouldBe Port(14)
+      projectName2portNoCollisions(projC) shouldBe Port(10)
+      projectName2portNoCollisions(projC.withTls) shouldBe Port(13)
 
       // Now let's add a project that happens to have the same hash of project A (and, hence, we will have a port collision)
       val projB = "BBBB".asProjectName
       val projectsWithCollisions = Seq(projA, projB, projC)
       val projectName2portWithCollisions = PortAssigner.computeProjectsPort(portRange, projectsWithCollisions)
 
-      // Note how project A and C have still got assigned the same port, while project B will get the next available port, counting
-      // from 7 (which is project's A port). That turns out to be port 9.
+      // Note how project A and C have still got assigned the same ports, while project B will get the next available port, counting
+      // from 7 (which is project's A port).
       projectName2portWithCollisions(projA) shouldBe Port(7)
-      projectName2portWithCollisions(projC) shouldBe Port(8)
-      projectName2portWithCollisions(projB) shouldBe Port(9)
+      projectName2portWithCollisions(projA.withTls) shouldBe Port(14)
+
+      // ProjC has no conflict an will take port 10 and 13
+      projectName2portWithCollisions(projC) shouldBe Port(10)
+      projectName2portWithCollisions(projC.withTls) shouldBe Port(13)
+
+      // because ports 7 and 14 are taken by projA, projB will take the next two available ports, ie: 8 and 9
+      projectName2portWithCollisions(projB) shouldBe Port(8)
+      projectName2portWithCollisions(projB.withTls) shouldBe Port(9)
     }
 
     "throw an IllegalArgumentException if the port range is smaller than the number of projects" in {
