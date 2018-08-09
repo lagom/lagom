@@ -9,7 +9,7 @@ import java.net.{ InetSocketAddress, URI }
 import java.util.{ Map => JMap }
 
 import com.lightbend.lagom.gateway._
-import play.api.{ Application, Logger, Mode, Play }
+import play.api._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.guice.GuiceableModule.fromGuiceModule
 import play.core.server.{ ReloadableServer, ServerConfig, ServerProvider }
