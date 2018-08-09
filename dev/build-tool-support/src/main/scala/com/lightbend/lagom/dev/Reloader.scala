@@ -71,10 +71,18 @@ object Reloader {
    * Start the Lagom server in dev mode.
    */
   def startDevMode(
-    parentClassLoader: ClassLoader, dependencyClasspath: Seq[File],
-    reloadCompile: () => CompileResult, classLoaderDecorator: ClassLoader => ClassLoader,
-    monitoredFiles: Seq[File], fileWatchService: FileWatchService, projectPath: File,
-    devSettings: Seq[(String, String)], httpAddress: String, httpPort: Int, httpsPort: Int, reloadLock: AnyRef
+    parentClassLoader:    ClassLoader,
+    dependencyClasspath:  Seq[File],
+    reloadCompile:        () => CompileResult,
+    classLoaderDecorator: ClassLoader => ClassLoader,
+    monitoredFiles:       Seq[File],
+    fileWatchService:     FileWatchService,
+    projectPath:          File,
+    devSettings:          Seq[(String, String)],
+    httpAddress:          String,
+    httpPort:             Int,
+    httpsPort:            Int,
+    reloadLock:           AnyRef
   ): DevServer = {
     /*
      * We need to do a bit of classloader magic to run the Play application.
