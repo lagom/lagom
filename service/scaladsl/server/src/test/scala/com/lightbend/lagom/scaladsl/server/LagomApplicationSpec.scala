@@ -13,10 +13,9 @@ import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{ Matchers, WordSpec }
 import play.api.ApplicationLoader.Context
-import play.api.{ ApplicationLoader, Configuration, Environment }
+import play.api.Environment
 import play.api.inject.DefaultApplicationLifecycle
 import play.api.libs.ws.ahc.AhcWSComponents
-import play.core.DefaultWebCommands
 
 import scala.concurrent.Future
 
@@ -51,7 +50,7 @@ class LagomApplicationSpec extends WordSpec with Matchers {
     }
 
     "preserve config settings provided via ProvidesAdditionalConfiguration trait extension" in {
-      val context = LagomApplicationContext(ApplicationLoader.createContext(Environment.simple(), Map(configKey -> "via context")))
+      val context = LagomApplicationContext(Context.create(Environment.simple(), Map(configKey -> "via context")))
       new LagomApplication(context) with AhcWSComponents with FakeComponent {
         config.getString(configKey) shouldBe "via additional"
 
@@ -67,7 +66,7 @@ class LagomApplicationSpec extends WordSpec with Matchers {
 
   trait FakeComponent extends ProvidesAdditionalConfiguration {
     override def additionalConfiguration: AdditionalConfiguration = super.additionalConfiguration ++
-      Configuration(ConfigFactory.parseString(configKey + "=\"via additional\""))
+      ConfigFactory.parseString(configKey + "=\"via additional\"")
   }
 
   trait MockTopicComponents extends TopicFactoryProvider {
