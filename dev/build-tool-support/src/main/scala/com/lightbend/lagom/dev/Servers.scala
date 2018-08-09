@@ -93,27 +93,29 @@ private[lagom] object Servers {
   object ServiceLocator extends ServerContainer {
     protected type Server = Closeable {
       def start(
-        serviceLocatorAddress:  String,
-        serviceLocatorPort:     Int,
-        serviceGatewayAddress:  String,
-        serviceGatewayHttpPort: Int,
-        unmanagedServices:      JMap[String, String],
-        gatewayImpl:            String
+        serviceLocatorAddress:   String,
+        serviceLocatorPort:      Int,
+        serviceGatewayAddress:   String,
+        serviceGatewayHttpPort:  Int,
+        serviceGatewayHttpsPort: Int,
+        unmanagedServices:       JMap[String, String],
+        gatewayImpl:             String
       ): Unit
       def serviceLocatorAddress: URI
       def serviceGatewayAddress: URI
     }
 
     def start(
-      log:                    LoggerProxy,
-      parentClassLoader:      ClassLoader,
-      classpath:              Array[URL],
-      serviceLocatorAddress:  String,
-      serviceLocatorPort:     Int,
-      serviceGatewayAddress:  String,
-      serviceGatewayHttpPort: Int,
-      unmanagedServices:      Map[String, String],
-      gatewayImpl:            String
+      log:                     LoggerProxy,
+      parentClassLoader:       ClassLoader,
+      classpath:               Array[URL],
+      serviceLocatorAddress:   String,
+      serviceLocatorPort:      Int,
+      serviceGatewayAddress:   String,
+      serviceGatewayHttpPort:  Int,
+      serviceGatewayHttpsPort: Int,
+      unmanagedServices:       Map[String, String],
+      gatewayImpl:             String
     ): Closeable =
       synchronized {
         if (server == null) {
@@ -121,11 +123,15 @@ private[lagom] object Servers {
             val serverClass = loader.loadClass("com.lightbend.lagom.registry.impl.ServiceLocatorServer")
             server = serverClass.newInstance().asInstanceOf[Server]
             try {
-              server.start(serviceLocatorAddress, serviceLocatorPort, serviceGatewayAddress, serviceGatewayHttpPort, unmanagedServices.asJava, gatewayImpl)
+              server.start(
+                serviceLocatorAddress, serviceLocatorPort,
+                serviceGatewayAddress, serviceGatewayHttpPort, serviceGatewayHttpsPort,
+                unmanagedServices.asJava, gatewayImpl
+              )
             } catch {
               case e: Exception =>
                 val msg = "Failed to start embedded Service Locator or Service Gateway. " +
-                  s"Hint: Are ports $serviceLocatorPort or $serviceGatewayHttpPort already in use?"
+                  s"Hint: Are ports $serviceLocatorPort or $serviceGatewayHttpPort or $serviceGatewayHttpsPort already in use?"
                 stop()
                 throw new RuntimeException(msg, e)
             }

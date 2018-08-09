@@ -23,12 +23,13 @@ class ServiceLocatorServer extends Closeable {
   @volatile private var gatewayAddress: InetSocketAddress = _
 
   def start(
-    serviceLocatorAddress:  String,
-    serviceLocatorPort:     Int,
-    serviceGatewayAddress:  String,
-    serviceGatewayHttpPort: Int,
-    unmanagedServices:      JMap[String, String],
-    gatewayImpl:            String
+    serviceLocatorAddress:   String,
+    serviceLocatorPort:      Int,
+    serviceGatewayAddress:   String,
+    serviceGatewayHttpPort:  Int,
+    serviceGatewayHttpsPort: Int,
+    unmanagedServices:       JMap[String, String],
+    gatewayImpl:             String
   ): Unit =
     synchronized {
       require(server == null, "Service locator is already running on " + server.mainAddress)
@@ -37,7 +38,9 @@ class ServiceLocatorServer extends Closeable {
       val application = createApplication(
         ServiceGatewayConfig(
           serviceGatewayAddress,
-          serviceGatewayHttpPort
+          serviceGatewayHttpPort,
+          serviceGatewayHttpsPort,
+          new File(".")
         ), unmanagedServices
       )
 
@@ -59,7 +62,7 @@ class ServiceLocatorServer extends Closeable {
         }
       } catch {
         case NonFatal(e) =>
-          throw new RuntimeException(s"Unable to start service gateway on port: $serviceGatewayHttpPort", e)
+          throw new RuntimeException(s"Unable to start service gateway on ports: $serviceGatewayHttpPort, $serviceGatewayHttpsPort", e)
       }
       logger.info("Service locator can be reached at " + serviceLocatorAddress)
       logger.info("Service gateway can be reached at " + serviceGatewayAddress)

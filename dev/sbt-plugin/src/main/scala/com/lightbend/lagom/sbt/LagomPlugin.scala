@@ -328,7 +328,8 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val lagomServiceLocatorAddress = settingKey[String]("Address used by the service locator")
     val lagomServiceLocatorPort = settingKey[Int]("Port used by the service locator")
     val lagomServiceGatewayAddress = settingKey[String]("Address used by the service gateway")
-    val lagomServiceGatewayPort = settingKey[Int]("Port used by the service gateway")
+    val lagomServiceGatewayPort = settingKey[Int]("Port used by the service gateway for paintext HTTP")
+    val lagomServiceGatewayHttpsPort = settingKey[Int]("Port used by the service gateway for HTTPS.")
     val lagomServiceGatewayImpl = settingKey[String]("Implementation of the service gateway: \"akka-http\" (default) or \"netty\"")
     val lagomServiceLocatorEnabled = settingKey[Boolean]("Enable/Disable the service locator")
     val lagomServiceLocatorStart = taskKey[Closeable]("Start the service locator")
@@ -459,6 +460,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     lagomServiceLocatorPort := 9008,
     lagomServiceGatewayAddress := "127.0.0.1",
     lagomServiceGatewayPort := 9000,
+    lagomServiceGatewayHttpsPort := 9443,
     lagomServiceGatewayImpl := "akka-http",
     lagomServiceLocatorUrl := s"http://${lagomServiceLocatorAddress.value}:${lagomServiceLocatorPort.value}",
     lagomCassandraEnabled := true,
@@ -519,6 +521,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val serviceLocatorPort = lagomServiceLocatorPort.value
     val serviceGatewayAddress = lagomServiceGatewayAddress.value
     val serviceGatewayHttpPort = lagomServiceGatewayPort.value
+    val serviceGatewayHttpsPort = lagomServiceGatewayHttpsPort.value
     val serivceGatewayImpl = lagomServiceGatewayImpl.value
     val classpathUrls = (managedClasspath in Compile).value.files.map(_.toURI.toURL).toArray
     val scala211 = scalaInstance.value
@@ -532,6 +535,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
       serviceLocatorPort,
       serviceGatewayAddress,
       serviceGatewayHttpPort,
+      serviceGatewayHttpsPort,
       unmanagedServices,
       serivceGatewayImpl
     )

@@ -9,22 +9,26 @@ import java.util.Locale
 
 import akka.Done
 import akka.actor.{ ActorRef, ActorSystem, CoordinatedShutdown }
-import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.Host
 import akka.http.scaladsl.model.ws._
+import akka.http.scaladsl.{ ConnectionContext, Http, HttpExt, HttpsConnectionContext }
 import akka.pattern.ask
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
 import akka.util.Timeout
+import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLEngineProvider
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 import com.lightbend.lagom.registry.impl.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
 import javax.inject.{ Inject, Named }
+import javax.net.ssl.SSLContext
 import org.slf4j.LoggerFactory
 import play.api.libs.typedmap.TypedMap
 import play.api.mvc.request.{ RemoteConnection, RequestAttrKey, RequestTarget }
 import play.api.mvc.{ Headers, RequestHeader }
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
+import akka.http.scaladsl.model.headers.`X-Forwarded-Host`
 
 import scala.collection.immutable
 import scala.concurrent.duration._
@@ -33,7 +37,6 @@ import scala.concurrent.{ Await, Future }
 class AkkaHttpServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig)
   (@Named("serviceRegistryActor") registry: ActorRef)
   (implicit actorSystem: ActorSystem, mat: Materializer) {
-
   def start(): InetSocketAddress = {
     new AkkaHttpServiceGateway(coordinatedShutdown, config, registry).address
   }
@@ -48,8 +51,15 @@ class AkkaHttpServiceGateway(
   private val log = LoggerFactory.getLogger(classOf[AkkaHttpServiceGateway])
 
   import actorSystem.dispatcher
+
   private implicit val timeout = Timeout(5.seconds)
-  val http = Http()
+
+  val sslCtx: SSLContext = new LagomDevModeSSLEngineProvider(config.rootLagomProjectFolder).sslContext
+
+  private val devModeConnectionContext: HttpsConnectionContext = ConnectionContext.https(sslCtx)
+
+  val http: HttpExt = Http()
+  http.setDefaultClientHttpsContext(ConnectionContext.https(sslCtx))
 
   private val handler = Flow[HttpRequest].mapAsync(1) { request =>
     log.debug("Routing request {}", request)
@@ -58,12 +68,32 @@ class AkkaHttpServiceGateway(
     (registry ? Route(request.method.name, path, None)).mapTo[RouteResult].flatMap {
       case Found(serviceUri) =>
         log.debug("Request is to be routed to {}", serviceUri)
-        val newUri = request.uri.withAuthority(serviceUri.getHost, serviceUri.getPort)
+        val newUri = request
+          .uri
+          .withAuthority(serviceUri.getHost, serviceUri.getPort)
+          .withScheme("https") // TODO: scheme should be the one found on the service regsitry!
+
         request.header[UpgradeToWebSocket] match {
           case Some(upgrade) =>
-            handleWebSocketRequest(request, newUri, upgrade)
+            handleWebSocketRequest(
+              request,
+              newUri,
+              upgrade,
+              devModeConnectionContext
+            )
+
           case None =>
-            http.singleRequest(request.withUri(newUri).withHeaders(filterHeaders(request.headers)))
+            val headers = filterHeaders(request.headers) ++
+              request.header[Host].to[Set].map(_.host).map(`X-Forwarded-Host`.apply) ++
+              Set(Host(newUri.authority))
+            val req = request
+              .withUri(newUri)
+              .withHeaders(headers)
+
+            http.singleRequest(
+              req,
+              connectionContext = devModeConnectionContext
+            )
         }
       case NotFound(registryMap) =>
         log.debug("Sending not found response")
@@ -72,16 +102,21 @@ class AkkaHttpServiceGateway(
 
   }
 
-  private def handleWebSocketRequest(request: HttpRequest, uri: Uri, upgrade: UpgradeToWebSocket) = {
+  private def handleWebSocketRequest(request: HttpRequest, uri: Uri, upgrade: UpgradeToWebSocket, connCtx: HttpsConnectionContext) = {
     log.debug("Switching to WebSocket protocol")
     val wsUri = uri.withScheme("ws")
     val flow = Flow.fromSinkAndSourceMat(Sink.asPublisher[Message](fanout = false), Source.asSubscriber[Message])(Keep.both)
 
-    val (responseFuture, (publisher, subscriber)) = http.singleWebSocketRequest(
-      WebSocketRequest(wsUri, extraHeaders = filterHeaders(request.headers),
-        upgrade.requestedProtocols.headOption),
-      flow
-    )
+    val (responseFuture, (publisher, subscriber)) =
+      http.singleWebSocketRequest(
+        WebSocketRequest(
+          wsUri,
+          extraHeaders = filterHeaders(request.headers),
+          upgrade.requestedProtocols.headOption
+        ),
+        flow,
+        connectionContext = connCtx
+      )
 
     responseFuture.map {
 
@@ -105,6 +140,7 @@ class AkkaHttpServiceGateway(
     // to a Play router with all the acls in the documentation variable so that it can render it
     val router = new SimpleRouter {
       override def routes: Routes = PartialFunction.empty
+
       override val documentation: Seq[(String, String, String)] = registry.toSeq.flatMap {
         case (serviceName, service) =>
           val call = s"Service: $serviceName (${service.uris})"
@@ -156,21 +192,26 @@ class AkkaHttpServiceGateway(
     "Sec-WebSocket-Key",
     "UpgradeToWebSocket",
     "Upgrade",
-    "Connection"
+    "Connection",
+    "Host" // Host is replaced and `X-Forwarded-Host` is used instead.
   ).map(_.toLowerCase(Locale.ENGLISH))
 
-  private def filterHeaders(headers: immutable.Seq[HttpHeader]) = {
-    headers.filterNot(header => HeadersToFilter(header.lowercaseName()))
+  private def filterHeaders(headers: immutable.Seq[HttpHeader]): immutable.Seq[HttpHeader] = {
+    headers
+      .filterNot(header => HeadersToFilter(header.lowercaseName()))
   }
 
-  private val bindingFuture = Http().bindAndHandle(handler, config.host, config.port)
+  private val bindingHttp: Future[Http.ServerBinding] = Http().bindAndHandle(handler, config.host, config.httpPort)
+  private val bindingHttps: Future[Http.ServerBinding] = Http().bindAndHandle(handler, config.host, config.httpsPort, devModeConnectionContext)
 
-  coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-akka-http-service-gateway") { () =>
-    for {
-      binding <- bindingFuture
-      _ <- binding.unbind()
-    } yield Done
-  }
+  def setupUnbind(binding: Future[Http.ServerBinding], alias: String): Unit =
+    coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, taskName = s"unbind-akka-http-service-gateway-$alias") { () =>
+      binding.flatMap(_.unbind().map(_ => Done))
+    }
 
-  val address: InetSocketAddress = Await.result(bindingFuture, 10.seconds).localAddress
+  setupUnbind(bindingHttp, alias = "plaintext")
+  setupUnbind(bindingHttps, alias = "tls")
+
+  val address: InetSocketAddress = Await.result(bindingHttps, 10.seconds).localAddress
+
 }

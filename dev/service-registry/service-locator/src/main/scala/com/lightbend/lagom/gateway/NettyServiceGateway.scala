@@ -8,8 +8,8 @@ import java.io.File
 import java.net.{ InetSocketAddress, URI }
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import javax.inject.{ Inject, Named, Singleton }
 
+import javax.inject.{ Inject, Named, Singleton }
 import akka.Done
 import akka.actor.{ ActorRef, CoordinatedShutdown }
 import akka.pattern.ask
@@ -46,8 +46,10 @@ import scala.util.{ Failure, Success }
 import com.lightbend.lagom.internal.api.Execution.trampoline
 
 case class ServiceGatewayConfig(
-  host: String,
-  port: Int
+  host:                   String,
+  httpPort:               Int,
+  httpsPort:              Int,
+  rootLagomProjectFolder: File
 )
 
 @Singleton
@@ -368,7 +370,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
     }
   }
 
-  private val bindFuture = server.bind(config.host, config.port).channelFutureToScala
+  private val bindFuture = server.bind(config.host, config.httpPort).channelFutureToScala
 
   coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-netty-service-gateway") { () =>
     poolMap.asScala.foreach(_.getValue.close())
@@ -384,7 +386,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
 
   val address: InetSocketAddress = {
     val address = Await.result(bindFuture, 10.seconds).localAddress().asInstanceOf[InetSocketAddress]
-    if (address == null) throw new IllegalStateException(s"Channel could not be bound on port ${config.port}")
+    if (address == null) throw new IllegalStateException(s"Channel could not be bound on port ${config.httpPort}")
     address
   }
 

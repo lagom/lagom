@@ -154,6 +154,8 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
   @BeanProperty
   var serviceGatewayPort: Int = _
   @BeanProperty
+  var serviceGatewayHttpsPort: Int = _
+  @BeanProperty
   var serviceGatewayImpl: String = _
   @BeanProperty
   var unmanagedServices: JMap[String, String] = Collections.emptyMap[String, String]
@@ -189,6 +191,7 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
         serviceLocatorPort,
         serviceGatewayAddress,
         serviceGatewayPort,
+        serviceGatewayHttpsPort,
         scalaUnmanagedServices,
         serviceGatewayImpl
       )
