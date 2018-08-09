@@ -23,69 +23,55 @@ class ServiceLocatorServer extends Closeable {
   @volatile private var gatewayAddress: InetSocketAddress = _
 
   def start(
-    serviceLocatorAddress:   String,
-    serviceLocatorPort:      Int,
-    serviceGatewayAddress:   String,
-    serviceGatewayHttpPort:  Int,
-    serviceGatewayHttpsPort: Int,
-    unmanagedServices:       JMap[String, String],
-    gatewayImpl:             String
-  ): Unit = synchronized {
-    require(server == null, "Service locator is already running on " + server.mainAddress)
+    serviceLocatorAddress:  String,
+    serviceLocatorPort:     Int,
+    serviceGatewayAddress:  String,
+    serviceGatewayHttpPort: Int,
+    unmanagedServices:      JMap[String, String],
+    gatewayImpl:            String
+  ): Unit =
+    synchronized {
+      require(server == null, "Service locator is already running on " + server.mainAddress)
 
-    // we create a single application which we will reuse for both gateway and locator
-    val application = createApplication(
-      ServiceGatewayConfig(
-        serviceGatewayAddress,
-        serviceGatewayHttpPort,
-        serviceGatewayHttpsPort,
-        new File(".")
-      ), unmanagedServices
-    )
+      // we create a single application which we will reuse for both gateway and locator
+      val application = createApplication(
+        ServiceGatewayConfig(
+          serviceGatewayAddress,
+          serviceGatewayHttpPort
+        ), unmanagedServices
+      )
 
-    // the service locator is a play app
-    Play.start(application)
-    try {
-      server = createServer(application, serviceLocatorAddress, serviceLocatorPort)
-    } catch {
-      case NonFatal(e) =>
-        throw new RuntimeException(s"Unable to start service locator on port $serviceLocatorPort", e)
-    }
-
-    // the service gateway is a bare-AkkaHTTP server
-    try {
-      gatewayAddress = gatewayImpl match {
-        case "netty"     => application.injector.instanceOf[NettyServiceGatewayFactory].start().address
-        case "akka-http" => application.injector.instanceOf[AkkaHttpServiceGatewayFactory].start()
-        case other       => sys.error("Unknown gateway implementation: " + other)
+      // the service locator is a play app
+      Play.start(application)
+      try {
+        server = createServer(application, serviceLocatorAddress, serviceLocatorPort)
+      } catch {
+        case NonFatal(e) =>
+          throw new RuntimeException(s"Unable to start service locator on port $serviceLocatorPort", e)
       }
-    } catch {
-      case NonFatal(e) =>
-        throw new RuntimeException(s"Unable to start service gateway on ports: $serviceGatewayHttpPort, $serviceGatewayHttpsPort", e)
+
+      // the service gateway is a bare-AkkaHTTP server
+      try {
+        gatewayAddress = gatewayImpl match {
+          case "netty"     => application.injector.instanceOf[NettyServiceGatewayFactory].start().address
+          case "akka-http" => application.injector.instanceOf[AkkaHttpServiceGatewayFactory].start()
+          case other       => sys.error("Unknown gateway implementation: " + other)
+        }
+      } catch {
+        case NonFatal(e) =>
+          throw new RuntimeException(s"Unable to start service gateway on port: $serviceGatewayHttpPort", e)
+      }
+      logger.info("Service locator can be reached at " + serviceLocatorAddress)
+      logger.info("Service gateway can be reached at " + serviceGatewayAddress)
     }
-    logger.info("Service locator can be reached at " + serviceLocatorAddress)
-    logger.info("Service gateway can be reached at " + serviceGatewayAddress)
-  }
 
   private def createApplication(serviceGatewayConfig: ServiceGatewayConfig, unmanagedServices: JMap[String, String]): Application = {
-    import scala.collection.JavaConverters._
+
     val initialSettings: Map[String, AnyRef] = Map(
-      "ssl-config.loose.disableHostnameVerification" -> "true",
-      // TODO: remove the following setting.
-      // I think the following setting is unnecessary and is actually a leftover. I'm basing the suspicion in two facts:
-      // the correct setting is actually called "allowed" (not "enabled") as seen in the docs https://www.playframework.com/documentation/2.6.x/AllowedHostsFilter
-      // and because this setting is tuning the Service Registry which I think doesn't have the AllowedHostsFilter.
-      "play.filters.hosts.enabled" ->
-        Seq(
-          s"localhost:${serviceGatewayConfig.httpPort}", s"localhost:${serviceGatewayConfig.httpsPort}",
-          s"${serviceGatewayConfig.host}:${serviceGatewayConfig.httpPort}", s"${serviceGatewayConfig.host}:${serviceGatewayConfig.httpsPort}"
-        ).asJava
+      "ssl-config.loose.disableHostnameVerification" -> "true"
     )
     val environment = Environment.simple()
-    new GuiceApplicationBuilder(
-      environment = environment,
-      configuration = Configuration.load(environment, initialSettings)
-    )
+    new GuiceApplicationBuilder(environment, Configuration.load(environment, initialSettings))
       .overrides(new ServiceRegistryModule(serviceGatewayConfig, unmanagedServices))
       .build()
   }

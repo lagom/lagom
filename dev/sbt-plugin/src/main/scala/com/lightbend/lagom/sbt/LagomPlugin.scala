@@ -328,8 +328,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val lagomServiceLocatorAddress = settingKey[String]("Address used by the service locator")
     val lagomServiceLocatorPort = settingKey[Int]("Port used by the service locator")
     val lagomServiceGatewayAddress = settingKey[String]("Address used by the service gateway")
-    val lagomServiceGatewayPort = settingKey[Int]("Port used by the service gateway for paintext HTTPs")
-    val lagomServiceGatewayHttpsPort = settingKey[Int]("Port used by the service gateway for HTTPS.")
+    val lagomServiceGatewayPort = settingKey[Int]("Port used by the service gateway")
     val lagomServiceGatewayImpl = settingKey[String]("Implementation of the service gateway: \"akka-http\" (default) or \"netty\"")
     val lagomServiceLocatorEnabled = settingKey[Boolean]("Enable/Disable the service locator")
     val lagomServiceLocatorStart = taskKey[Closeable]("Start the service locator")
@@ -460,7 +459,6 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     lagomServiceLocatorPort := 9008,
     lagomServiceGatewayAddress := "127.0.0.1",
     lagomServiceGatewayPort := 9000,
-    lagomServiceGatewayHttpsPort := 9443,
     lagomServiceGatewayImpl := "akka-http",
     lagomServiceLocatorUrl := s"http://${lagomServiceLocatorAddress.value}:${lagomServiceLocatorPort.value}",
     lagomCassandraEnabled := true,
@@ -521,12 +519,22 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val serviceLocatorPort = lagomServiceLocatorPort.value
     val serviceGatewayAddress = lagomServiceGatewayAddress.value
     val serviceGatewayHttpPort = lagomServiceGatewayPort.value
-    val serviceGatewayHttpsPort = lagomServiceGatewayHttpsPort.value
     val serivceGatewayImpl = lagomServiceGatewayImpl.value
     val classpathUrls = (managedClasspath in Compile).value.files.map(_.toURI.toURL).toArray
     val scala211 = scalaInstance.value
     val log = new SbtLoggerProxy(state.value.log)
-    Servers.ServiceLocator.start(log, scala211.loader, classpathUrls, serviceLocatorAddress, serviceLocatorPort, serviceGatewayAddress, serviceGatewayHttpPort, serviceGatewayHttpsPort, unmanagedServices, serivceGatewayImpl)
+
+    Servers.ServiceLocator.start(
+      log,
+      scala211.loader,
+      classpathUrls,
+      serviceLocatorAddress,
+      serviceLocatorPort,
+      serviceGatewayAddress,
+      serviceGatewayHttpPort,
+      unmanagedServices,
+      serivceGatewayImpl
+    )
   }
 
   private lazy val startCassandraServerTask = Def.task {
@@ -541,7 +549,17 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     // and called using structural typing (reflection) by sbt thus on a classloader with scala 2.10
     val yamlConfig = lagomCassandraYamlFile.value.orNull
     val log = new SbtLoggerProxy(state.value.log)
-    Servers.CassandraServer.start(log, scala211.loader, classpath, port, cleanOnStart, jvmOptions, yamlConfig, maxWaiting)
+
+    Servers.CassandraServer.start(
+      log,
+      scala211.loader,
+      classpath,
+      port,
+      cleanOnStart,
+      jvmOptions,
+      yamlConfig,
+      maxWaiting
+    )
   }
 
   private lazy val startKafkaServerTask = Def.task {
@@ -554,7 +572,16 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val targetDir = target.value
     val cleanOnStart = lagomKafkaCleanOnStart.value
 
-    Servers.KafkaServer.start(log, classpath, kafkaPort, zooKeeperPort, kafkaPropertiesFile, jvmOptions, targetDir, cleanOnStart)
+    Servers.KafkaServer.start(
+      log,
+      classpath,
+      kafkaPort,
+      zooKeeperPort,
+      kafkaPropertiesFile,
+      jvmOptions,
+      targetDir,
+      cleanOnStart
+    )
   }
 
   private def sequential(tasks: Seq[Task[Closeable]]): Initialize[Task[Seq[Closeable]]] =

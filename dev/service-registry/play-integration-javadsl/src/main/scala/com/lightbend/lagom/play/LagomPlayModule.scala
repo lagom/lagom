@@ -82,7 +82,6 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Config, serviceInfo: Se
            applicationLifecycle: ApplicationLifecycle) =
     this(config.underlying, serviceInfo, serviceRegistry, applicationLifecycle)
 
-
   // This code is similar to `ServerRegistrationModule` in project `registration-javadsl`
   // and  `ServiceRegistration` in project `dev-mode-scala`
 
