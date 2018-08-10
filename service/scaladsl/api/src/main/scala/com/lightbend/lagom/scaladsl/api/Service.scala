@@ -281,7 +281,7 @@ object ServiceSupport {
    *
    * @param clazz The class that the method should be looked up from (should be the service interface).
    * @param name The name of the method to look up.
-   * @param pathParamSerializers The list of path parameter serializers, (typcially captured by implicit parameters),
+   * @param pathParamSerializers The list of path parameter serializers, (typically captured by implicit parameters),
    *                             for the arguments to the method.
    * @return The service call holder.
    */

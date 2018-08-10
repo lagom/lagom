@@ -26,22 +26,22 @@ class ServiceRegistryInteropSpec extends FlatSpec with Matchers with Futures {
 
   behavior of "ServiceRegistry serializers"
 
-  it should "should interop betwen java and scala (RegisteredService)" in {
+  it should "should interop between java and scala (RegisteredService)" in {
     val msg = jRegisteredService.of("inventory", URI.create("https://localhost:123/asdf"), Optional.of("https"))
     roundTrip(msg) should be(msg)
   }
 
-  it should "should interop betwen java and scala when optional fields are empty (RegisteredService)" in {
+  it should "should interop between java and scala when optional fields are empty (RegisteredService)" in {
     val msg = jRegisteredService.of("inventory", URI.create("https://localhost:123/asdf"), Optional.empty[String])
     roundTrip(msg) should be(msg)
   }
 
-  it should "should interop betwen java and scala (ServiceRegistryService)" in {
+  it should "should interop between java and scala (ServiceRegistryService)" in {
     val msg = jServiceRegistryService.of(URI.create("https://localhost:123/asdf"), Collections.singletonList(ServiceAcl.methodAndPath(Method.GET, "/items")))
     roundTrip(msg) should be(msg)
   }
 
-  it should "should interop betwen java and scala when optional fields are empty (ServiceRegistryService)" in {
+  it should "should interop between java and scala when optional fields are empty (ServiceRegistryService)" in {
     val msg = jServiceRegistryService.of(URI.create("https://localhost:123/asdf"), Collections.emptyList[ServiceAcl])
     roundTrip(msg) should be(msg)
   }
