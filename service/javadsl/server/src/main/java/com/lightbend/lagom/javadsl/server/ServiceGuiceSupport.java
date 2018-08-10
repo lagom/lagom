@@ -46,7 +46,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * <p>Typically, this will be a {@link Router} generated from a Play {@code routes}
      * or a akka-grpc generated Play {@link Router}.
      *
-     * <p>Once you declare a {@link Router}, you may need to define it's prefix to indicate on which path it should be available.
+     * <p>Once you declare a {@link Router}, you may need to define its prefix to indicate on which path it should be available.
      *
      * <pre>
      * bindService(
@@ -81,7 +81,7 @@ public interface ServiceGuiceSupport extends ServiceClientGuiceSupport {
      * <p>This method should be used when the {@link Router} does not have any
      * other dependencies and therefore can be immediately passed as an instance.
      *
-     * <p>Once you declare a {@link Router}, you may need to define it's prefix to indicate on which path it should be available.
+     * <p>Once you declare a {@link Router}, you may need to define its prefix to indicate on which path it should be available.
      *
      * <pre>
      * bindService(
