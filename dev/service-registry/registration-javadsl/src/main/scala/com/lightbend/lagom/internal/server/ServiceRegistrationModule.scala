@@ -19,6 +19,7 @@ import play.api.{ Configuration, Environment, Logger }
 import scala.compat.java8.FutureConverters.CompletionStageOps
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.collection.JavaConverters._
+import scala.collection.immutable
 
 class ServiceRegistrationModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
@@ -37,14 +38,16 @@ object ServiceRegistrationModule {
       // In dev mode, `play.server.http.address` is used for both HTTP and HTTPS.
       // Reading one value or the other gets the same result.
       val httpAddress = config.getString("play.server.http.address")
-      val httpsPort = config.getString("play.server.https.port")
-      val url = new URI(s"https://$httpAddress:$httpsPort")
+      val uris = List("http", "https").map { scheme =>
+        val port = config.getString(s"play.server.$scheme.port")
+        new URI(s"$scheme://$httpAddress:$port")
+      }
 
-      ServiceConfig(url)
+      ServiceConfig(uris)
     }
   }
 
-  case class ServiceConfig(url: URI)
+  case class ServiceConfig(uris: immutable.Seq[URI])
 
   /**
    * Automatically registers the service on start, and also unregister it on stop.
@@ -68,8 +71,7 @@ object ServiceRegistrationModule {
     }
 
     locatableServices.foreach { service =>
-      val uris = Seq(config.url)
-      val c = ServiceRegistryService.of(uris.asJava, service.descriptor.acls)
+      val c = ServiceRegistryService.of(config.uris.asJava, service.descriptor.acls)
       registry.register(service.descriptor.name).invoke(c).exceptionally(new JFunction[Throwable, NotUsed] {
         def apply(t: Throwable) = {
           logger.error(s"Service name=[${service.descriptor.name}] couldn't register itself to the service locator.", t)

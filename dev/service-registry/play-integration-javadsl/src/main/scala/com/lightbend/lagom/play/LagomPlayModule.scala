@@ -88,13 +88,13 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Config, serviceInfo: Se
   // In dev mode, `play.server.http.address` is used for both HTTP and HTTPS.
   // Reading one value or the other gets the same result.
   private val httpAddress = config.getString("play.server.http.address")
-  // TODO: register both ports.
-  private val httpsPort = config.getString("play.server.https.port")
-  private val serviceUrl = new URI(s"https://$httpAddress:$httpsPort")
+  val uris = List("http", "https").map { scheme =>
+    val port = config.getString(s"play.server.$scheme.port")
+    new URI(s"$scheme://$httpAddress:$port")
+  }
 
-  // TODO: ServiceRegistryService should not flatmap the ACL lists (locatableService's names are lost)
   private val serviceAcls = serviceInfo.getAcls
-  private val service = ServiceRegistryService.of(serviceUrl, serviceAcls)
+  private val service = ServiceRegistryService.of(uris.asJava, serviceAcls)
   // TODO: fix -> this register operation is registering all ACLs under the microservice name, not under each locatable service name. Will lead to unlocatable.
   serviceRegistry.register(serviceInfo.serviceName()).invoke(service)
 
