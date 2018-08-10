@@ -18,8 +18,8 @@ import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry;
 import com.lightbend.lagom.registry.impl.ServiceRegistryActor.*;
 
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService;
-import play.Logger;
-import play.Logger.ALogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scala.Option;
 import scala.compat.java8.OptionConverters;
 import scala.concurrent.duration.Duration;
@@ -33,7 +33,7 @@ import com.lightbend.lagom.internal.javadsl.registry.RegisteredService;
 
 public class ServiceRegistryImpl implements ServiceRegistry {
 
-	private static final ALogger LOGGER = Logger.of(ServiceRegistryImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRegistryImpl.class);
 
 	private final Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
 	private final ActorRef registry;
