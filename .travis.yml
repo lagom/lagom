@@ -23,8 +23,8 @@ before_install:
     - rm ~/.m2/settings.xml
 cache:
   directories:
-    - $HOME/.ivy2/cache
-    - $HOME/.sbt/boot/scala*
+    - $HOME/.ivy2
+    - $HOME/.sbt
     - $HOME/.m2/repository
 before_cache:
   # Ensure changes to the cache aren't persisted
@@ -33,6 +33,7 @@ before_cache:
   - rm -r $HOME/.m2/repository/com/lightbend/lagom/*
   # Delete all ivydata files since ivy touches them on each build
   - find $HOME/.ivy2/cache -name "ivydata-*.properties" | xargs rm
+  - find $HOME/.sbt -name "*.lock" -delete
 notifications:
   webhooks:
     urls:
