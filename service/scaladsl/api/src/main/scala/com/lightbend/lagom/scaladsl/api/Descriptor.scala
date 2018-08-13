@@ -258,7 +258,7 @@ object Descriptor {
   sealed trait TopicCall[Message] {
 
     /**
-     * The identifier for teh topic.
+     * The identifier for the topic.
      */
     val topicId: TopicId
 

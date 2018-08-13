@@ -136,7 +136,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
   protected def getAppendCount(id: String): Future[Long]
 
   /**
-   * uses overridden {{getAppendCount}} to assert a given entity {{id}} emited the {{expected}} number of events. The
+   * uses overridden {{getAppendCount}} to assert a given entity {{id}} emitted the {{expected}} number of events. The
    * implementation uses polling from only node1 so nodes 2 and 3 will skip this code.
    */
   def expectAppendCount(id: String, expected: Long) = {
