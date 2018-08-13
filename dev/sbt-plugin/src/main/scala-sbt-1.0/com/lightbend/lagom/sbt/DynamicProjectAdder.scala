@@ -10,8 +10,9 @@ package sbt {
 
     def reapply(
       newSettings: Seq[Setting[_]],
-      structure:   BuildStructure
-    )(implicit display: Show[ScopedKey[_]]): BuildStructure = Load.reapply(newSettings, structure)
+      structure:   BuildStructure,
+      log:         Logger
+    )(implicit display: Show[ScopedKey[_]]): BuildStructure = Load.reapply(newSettings, structure, log)
 
     def finalTransforms(ss: Seq[Setting[_]]): Seq[Setting[_]] = Load.finalTransforms(ss)
 
@@ -120,7 +121,8 @@ package com.lightbend.lagom.sbt {
 
         // Now we recreate the structure, this is where the structure data is calculated, which evaluates all the settings
         // and works out all the dependencies.
-        val reindexedStructure = sbt.LagomLoad.reapply(newSession.mergeSettings, structureWithNewProject)
+        val logger = extracted.get(Keys.sLog in ThisBuild)
+        val reindexedStructure = sbt.LagomLoad.reapply(newSession.mergeSettings, structureWithNewProject, logger)
 
         // And finally, put all the new stuff in a new state.
         state.copy(attributes = state.attributes.put(stateBuildStructure, reindexedStructure).put(sessionSettings, newSession))

@@ -15,7 +15,7 @@ import sbt.CrossVersion._
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
 
 def defineSbtVersion(scalaBinVer: String): String = scalaBinVer match {
-  case "2.12" => "1.1.6"
+  case "2.12" => "1.2.1"
   case _ => "0.13.17"
 }
 
