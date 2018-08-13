@@ -85,7 +85,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <scala.binary.version>${scala-binary-version}</scala.binary.version>
-        ## Substitues in the scala-binary-version value entered when a project is created from the archetype
+        ## Substitutes in the scala-binary-version value entered when a project is created from the archetype
 
         <lagom.version>%LAGOM-VERSION%</lagom.version>
     </properties>

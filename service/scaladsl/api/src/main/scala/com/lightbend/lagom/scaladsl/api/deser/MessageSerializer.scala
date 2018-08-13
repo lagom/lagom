@@ -47,7 +47,7 @@ trait MessageSerializer[Message, WireFormat] {
   /**
    * Get a deserializer for an entity described by the given request or response protocol.
    *
-   * @param protocol The protocol of the message request or response associated with teh entity.
+   * @param protocol The protocol of the message request or response associated with the entity.
    * @return A deserializer for request/response messages.
    * @throws UnsupportedMediaType If the deserializer can't deserialize that protocol.
    */
