@@ -1,8 +1,8 @@
 package docs.services.test;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
 import com.google.inject.TypeLiteral;
-import com.google.inject.AbstractModule;
 import com.lightbend.lagom.internal.javadsl.BinderAccessor;
 import com.lightbend.lagom.internal.javadsl.server.JavadslServicesRouter;
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices;
@@ -15,10 +15,11 @@ import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 import com.lightbend.lagom.javadsl.server.status.MetricsService;
 import docs.services.HelloService;
 import docs.services.HelloServiceImpl;
+import play.api.routing.Router;
+
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Arrays;
-import play.api.routing.Router;
 
 public class ServiceTestModule extends AbstractModule implements ServiceGuiceSupport {
 
