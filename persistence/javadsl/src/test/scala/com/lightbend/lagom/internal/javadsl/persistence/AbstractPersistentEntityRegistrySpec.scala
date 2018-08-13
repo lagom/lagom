@@ -56,7 +56,7 @@ class AbstractPersistentEntityRegistrySpec
     registry.refFor(entityClass, uselessId)
   }
 
-  it should "register and refFor given a class type for a Persistent Entity with overriden name" in withRegistry { registry =>
+  it should "register and refFor given a class type for a Persistent Entity with overridden name" in withRegistry { registry =>
     val entityClass = classOf[NamedEntity]
     registry.register(entityClass)
     registry.refFor(entityClass, uselessId)

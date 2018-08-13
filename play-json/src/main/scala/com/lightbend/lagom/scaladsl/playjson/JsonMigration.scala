@@ -10,7 +10,7 @@ import scala.collection.immutable
 import scala.reflect.ClassTag
 
 /**
- * Conveneince factories to create [[JsonMigration]]s.
+ * Convenience factories to create [[JsonMigration]]s.
  */
 object JsonMigrations {
 

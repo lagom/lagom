@@ -92,7 +92,7 @@ The migration code would look like:
 
 ### Structural Changes
 
-In a similar way we can do arbitary structural changes.
+In a similar way we can do arbitrary structural changes.
 
 Old class:
 

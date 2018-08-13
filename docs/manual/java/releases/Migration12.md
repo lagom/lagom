@@ -66,7 +66,7 @@ If the updates on your read-side are idempotent, then this task can be done at a
 
 ## Testkit changes
 
-The testkit has been modified such that Cassandra and clustering are disabled by default, whereas previously they were enabled by default. This is to accomodate for the fact that Lagom now has multiple persistence backends, not just Cassandra.
+The testkit has been modified such that Cassandra and clustering are disabled by default, whereas previously they were enabled by default. This is to accommodate for the fact that Lagom now has multiple persistence backends, not just Cassandra.
 
 If you have tests that depend on Cassandra, you will need to update them to enable Cassandra, using:
 
