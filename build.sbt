@@ -6,7 +6,7 @@ import com.typesafe.sbt.SbtMultiJvm
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys._
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
-import lagom.Protobuf
+import lagom.{Protobuf, Unidoc}
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import com.typesafe.tools.mima.core._
 import sbt.CrossVersion._
@@ -74,7 +74,9 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
   ScalariformKeys.preferences in Compile  := formattingPreferences,
   ScalariformKeys.preferences in Test     := formattingPreferences,
   ScalariformKeys.preferences in MultiJvm := formattingPreferences,
-  LagomPublish.validatePublishSettingsSetting
+  LagomPublish.validatePublishSettingsSetting,
+
+  autoAPIMappings in ScalaUnidoc := true
 )
 
 def bintraySettings: Seq[Setting[_]] = Seq(
@@ -366,6 +368,7 @@ lazy val root = (project in file("."))
   .settings(name := "lagom")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(CrossPerProjectPlugin)
+  .settings(Unidoc.settings(scaladslProjects, javadslProjects): _*)
   .settings(
     crossScalaVersions := Dependencies.ScalaVersions,
     scalaVersion := Dependencies.ScalaVersions.head,
@@ -374,11 +377,10 @@ lazy val root = (project in file("."))
     publishArtifact in Compile := false,
     publish := {}
   )
-  .enablePlugins(lagom.UnidocRoot)
-  .settings(UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*)
+  .enablePlugins(JavaUnidocPlugin && ScalaUnidocPlugin)
   .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects).map(Project.projectToRef): _*)
 
-def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) && Unidoc
+def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) && GenJavadocPlugin
 def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
 
 lazy val api = (project in file("service/core/api"))
@@ -1147,7 +1149,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .disablePlugins(BintrayPlugin)
-  .enablePlugins(lagom.SbtMavenPlugin && AutomateHeaderPlugin && Sonatype && Unidoc)
+  .enablePlugins(lagom.SbtMavenPlugin && AutomateHeaderPlugin && Sonatype && GenJavadocPlugin)
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(
