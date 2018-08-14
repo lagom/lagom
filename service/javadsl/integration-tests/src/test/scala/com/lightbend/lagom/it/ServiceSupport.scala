@@ -4,18 +4,26 @@
 
 package com.lightbend.lagom.it
 
+import java.util.Collections
 import java.util.function.{ Function => JFunction }
+
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import org.scalatest.{ Inside, Matchers, WordSpecLike }
-import play.api.Application
+import play.api.{ Application, Configuration, Environment }
 import play.inject.guice.GuiceApplicationBuilder
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import akka.japi.function.Procedure
+import com.google.inject.{ Binder, Module, TypeLiteral }
 import com.lightbend.lagom.javadsl.testkit.ServiceTest
 import com.lightbend.lagom.javadsl.testkit.ServiceTest.TestServer
+import play.api.routing.Router
+import java.util
+
+import com.lightbend.lagom.internal.testkit.EmptyAdditionalRoutersModule
 
 sealed trait HttpBackend {
   final val provider: String = s"play.core.server.${codeName}ServerProvider"
@@ -38,6 +46,7 @@ trait ServiceSupport extends WordSpecLike with Matchers with Inside {
     val jConfigureBuilder = new JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder] {
       override def apply(b: GuiceApplicationBuilder): GuiceApplicationBuilder = {
         configureBuilder(b)
+          .overrides(EmptyAdditionalRoutersModule)
           .configure("play.server.provider", httpBackend.provider)
       }
     }

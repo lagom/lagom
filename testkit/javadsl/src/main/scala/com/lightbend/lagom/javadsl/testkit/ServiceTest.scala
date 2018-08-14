@@ -28,7 +28,6 @@ import play.inject.Injector
 import play.inject.guice.GuiceApplicationBuilder
 
 import scala.annotation.tailrec
-import scala.collection.JavaConverters._
 import scala.concurrent.Promise
 import scala.concurrent.duration._
 import scala.util.Try
@@ -204,6 +203,7 @@ object ServiceTest {
         copy(cluster = false, cassandra = false)
       }
     }
+
   }
 
   /**
