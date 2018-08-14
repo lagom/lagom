@@ -4,11 +4,10 @@ libraryDependencies ++= Seq(
   "org.scala-sbt" % "scripted-plugin" % sbtVersion.value
 )
 
-addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.3.3")
-
 // the plugins used during release can have an impact on default values
 // of the build. To validate your changes on the release plugins don't
 // affect the release process, review https://github.com/lagom/lagom/issues/1496#issuecomment-408398508
+addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.4.2")
 addSbtPlugin("de.heikoseeberger" % "sbt-header" % "5.0.0")
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "2.3")
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.9")
