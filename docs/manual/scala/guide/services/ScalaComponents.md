@@ -34,7 +34,7 @@ This is a list of available Components you may use to build your application cak
 
 You can mix in `Components` from other frameworks or libraries, for example:
 
- * [LagomServiceLocatorComponents](https://developer.lightbend.com/docs/lightbend-orchestration/current/features.html#lagom-scala): is defined by the `reactive-lib` component of Lightbend Orchestration, and provides a Lagom `ServiceLocator` implementation that works with the native service discovery features of Kubernetes and DC/OS (Marathon).
+ * [LagomServiceLocatorComponents](https://developer.lightbend.com/docs/lightbend-orchestration/current/setup/project-configuration.html#lagom-scala): is defined by the `reactive-lib` component of Lightbend Orchestration, and provides a Lagom `ServiceLocator` implementation that works with the native service discovery features of Kubernetes and DC/OS (Marathon).
  * [AhcWSComponents](https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.libs.ws.ahc.AhcWSComponents): provides a `WSClient` based on an Async HTTP Client.
  * [DBComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/DBComponents.html)
  * [HikariCPComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/HikariCPComponents.html)
