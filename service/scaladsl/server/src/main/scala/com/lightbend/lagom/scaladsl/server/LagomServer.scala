@@ -27,6 +27,38 @@ sealed trait LagomServer {
   // TODO: replace with LagomServiceBinding[_] when removing LagomServer.forServices
   val serviceBindings: immutable.Seq[LagomServiceBinding[_]]
   def router: LagomServiceRouter
+
+  /**
+   * Allows the configuration of additional Play [[Router]]s.
+   *
+   * Typically, this will be a [[Router]] generated from a Play [[Router]]
+   * or a akka-grpc generated Play [[Router]].
+   *
+   * Once you declare a [[Router]], you may need to define it's prefix to indicate on which path it should be available.
+   *
+   * {{{
+   *   new LagomApplication(context) with AhcWSComponents with LocalServiceLocator {
+   *     override def lagomServer: LagomServer =
+   *       serverFor[MyService](new MyServiceImpl)
+   *         .additionalRouter(new HelloWorldRouter().withPrefix("/hello"))
+   *   }
+   * }}}
+   *
+   * You don't need to configure a prefix if the [[Router]] has it pre-configured.
+   * A akka-grpc generated Play [[Router]], for instance, has its prefix already defined by the gRPC descriptor
+   * and doesn't need to have its prefix reconfigured.
+   *
+   * @param otherRouter
+   * @return
+   */
+  final def additionalRouter(otherRouter: Router) = {
+    val self = this
+    new LagomServer {
+      override val name: String = self.name
+      override val serviceBindings: immutable.Seq[LagomServiceBinding[_]] = self.serviceBindings
+      override def router: LagomServiceRouter = self.router.additionalRouter(otherRouter)
+    }
+  }
 }
 
 /**
@@ -43,7 +75,22 @@ sealed trait LagomServer {
  * ->   /     com.lightbend.lagom.scaladsl.server.LagomServiceRouter
  * ```
  */
-trait LagomServiceRouter extends Router
+trait LagomServiceRouter extends Router {
+
+  final def additionalRouter(router: Router): LagomServiceRouter = {
+    val self = this
+    new LagomServiceRouter {
+      override val documentation: Seq[(String, String, String)] =
+        self.documentation ++ router.documentation
+
+      override def withPrefix(prefix: String): Router =
+        self.withPrefix(prefix).orElse(router.withPrefix(prefix))
+
+      override val routes: Routes =
+        self.routes.orElse(router.routes)
+    }
+  }
+}
 
 object LagomServer {
   @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Use LagomServerComponents.serverFor instead", "1.3.3")
