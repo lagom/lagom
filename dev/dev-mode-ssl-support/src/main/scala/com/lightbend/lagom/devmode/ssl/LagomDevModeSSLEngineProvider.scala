@@ -26,24 +26,21 @@ class LagomDevModeSSLEngineProvider(rootLagomProjectFolder: File) extends SSLEng
   }
 
   def createSSLContext(rootLagomProjectFolder: File): SSLContext = {
-    val file = FakeKeyStoreGenerator.keyStoreFile(rootLagomProjectFolder)
+    val rootLagomProjectKeystoreFile = FakeKeyStoreGenerator.keyStoreFile(rootLagomProjectFolder)
     val keyStore =
-      if (!FakeKeyStoreGenerator.keyStoreFile(rootLagomProjectFolder).exists()) {
-        FakeKeyStoreGenerator.buildKeystore(rootLagomProjectFolder)
-      } else {
-        FakeKeyStoreGenerator.load(rootLagomProjectFolder)
-      }
+      if (!rootLagomProjectKeystoreFile.exists()) FakeKeyStoreGenerator.buildKeystore(rootLagomProjectFolder)
+      else FakeKeyStoreGenerator.load(rootLagomProjectFolder)
 
     val keyManagerFactory: KeyManagerFactory = {
 
-      val in = java.nio.file.Files.newInputStream(file.toPath)
+      val in = java.nio.file.Files.newInputStream(rootLagomProjectKeystoreFile.toPath)
       try {
         val kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
         kmf.init(keyStore, Array.emptyCharArray)
         kmf
       } catch {
         case NonFatal(e) => {
-          throw new Exception("Error loading HTTPS keystore from " + file.getAbsolutePath, e)
+          throw new Exception("Error loading HTTPS keystore from " + rootLagomProjectKeystoreFile.getAbsolutePath, e)
         }
       } finally {
         LagomIO.closeQuietly(in)

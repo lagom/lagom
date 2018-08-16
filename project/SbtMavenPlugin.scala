@@ -101,6 +101,8 @@ object SbtMavenPlugin extends AutoPlugin {
     }
 
     val results = testsToRun.map { test =>
+      log.info(s"${scala.Console.BOLD} Executing: ${test} ${scala.Console.RESET}")
+
       val mavenExecutions = IO.readLines(test / "test").map(_.trim).filter(_.nonEmpty)
 
       val testDir = Files.createTempDirectory("maven-test").toFile

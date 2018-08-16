@@ -47,6 +47,12 @@ object LagomReloadableDevServerStart {
         val process = new RealServerProcess(args = Seq.empty)
         val path: File = buildLink.projectPath
 
+        val keystoreBaseFolder = new File(".")
+        val keystoreFilePath = FakeKeyStoreGenerator.keyStoreFile(keystoreBaseFolder)
+        val keyStore =
+          if (!keystoreFilePath.exists()) FakeKeyStoreGenerator.buildKeystore(keystoreBaseFolder)
+          else FakeKeyStoreGenerator.load(keystoreBaseFolder)
+
         // The pairs play.server.httpx.{address,port} are read from PlayRegisterWithServiceRegistry
         // to register the service
         val httpsSettings: Map[String, String] =
@@ -55,7 +61,7 @@ object LagomReloadableDevServerStart {
             // but both settings are set in case some code specifically read one config setting or the other.
             "play.server.https.address" -> httpAddress, // there's no httpsAddress
             "play.server.https.port" -> httpsPort.toString,
-            "play.server.https.keyStore.path" -> FakeKeyStoreGenerator.keyStoreFile(new File(".")).getAbsolutePath,
+            "play.server.https.keyStore.path" -> keystoreFilePath.getAbsolutePath,
             "play.server.https.keyStore.type" -> "JKS",
             "ssl-config.loose.disableHostnameVerification" -> "true"
           )
@@ -234,9 +240,10 @@ object LagomReloadableDevServerStart {
         val devModeAkkaConfig = serverConfig.configuration.underlying.getConfig("lagom.akka.dev-mode.config")
         val actorSystemName = serverConfig.configuration.underlying.getString("lagom.akka.dev-mode.actor-system.name")
         val actorSystem = ActorSystem(actorSystemName, devModeAkkaConfig)
-        val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem, ActorMaterializer()(actorSystem),
-          () => Future.successful(()))
+        val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem, ActorMaterializer()(actorSystem), () => Future.successful(()))
         val serverProvider = ServerProvider.fromConfiguration(classLoader, serverConfig.configuration)
+        println(s"serverContext = ${serverContext}")
+        println(s"serverProvider = ${serverProvider}")
         serverProvider.createServer(serverContext)
       } catch {
         case e: ExceptionInInitializerError => throw e.getCause

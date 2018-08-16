@@ -227,7 +227,7 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
       }
 
       val selectedPort = selectPort(project.servicePort, useTls = false)
-      val selectedHttpsPort = selectPort(project.serviceHttpsPort, useTls = false)
+      var selectedHttpsPort = selectPort(project.serviceHttpsPort, useTls = true)
 
       val serviceCassandraPort = cassandraPort.filter(_ => project.cassandraEnabled)
 
@@ -275,7 +275,7 @@ class ExternalProject {
  */
 class StartAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends LagomAbstractMojo {
 
-  private val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
+  private val consoleHelper: ConsoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
 
   override def execute(): Unit = {
 
@@ -291,7 +291,7 @@ class StartAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, ses
     }
   }
 
-  def executeGoal(name: String) = {
+  def executeGoal(name: String): Boolean = {
     facade.executeMavenPluginGoal(session.getCurrentProject, name)
   }
 }
