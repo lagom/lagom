@@ -139,7 +139,7 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
     private object JsValueDeserializer extends NegotiatedDeserializer[JsValue, ByteString] {
       override def deserialize(wire: ByteString): JsValue = try {
         if (wire.isEmpty) {
-          JsObject(Seq.empty)
+          JsNull
         } else {
           Json.parse(wire.iterator.asInputStream)
         }
