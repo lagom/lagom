@@ -133,8 +133,6 @@ class InternalRouter {
   }
 
   private def serviceRouter(serviceName: String, registeredPortName: Option[String], uri: URI, service: ServiceRegistryService): Seq[PartialFunction[Route, (URI, ServiceRegistryService)]] = {
-    // lazy because if there's no ACLs, then there's no need to create an InetSocketAddress, and hence no need to fail
-    // if the port can't be calculated.
     val routerFunctions: Seq[PartialFunction[Route, (URI, ServiceRegistryService)]] = service.acls.asScala.map {
       case acl =>
         acl.method().asScala -> acl.pathRegex().asScala.map(Pattern.compile)
