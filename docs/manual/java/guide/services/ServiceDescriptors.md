@@ -18,7 +18,7 @@ An important thing to note here is that invoking the `sayHello()` method does no
 
 While the `sayHello()` method describes how the call will be programmatically invoked or implemented, it does not describe how this call gets mapped down onto the transport.  This is done by providing a `default` implementation of the [`descriptor()`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#descriptor--) call, whose interface is described by [`Service`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html).
 
-You can see that we're returning a service named `hello`, and we're describing one call, the `sayHello` call.  Because this service is so simple, in this case we don't need to do anything more than simply passing the Service call `sayHello` defined above in the example as a method reference to the [`call`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#call-java.util.function.Supplier-) method.
+You can see that we're returning a service named `hello`, and we're describing one call, the `sayHello` call.  Because this service is so simple, in this case, we don't need to do anything more than simply passing the Service call `sayHello` defined above in the example as a method reference to the [`call`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#call-java.util.function.Supplier-) method.
 
 ## Call identifiers
 
@@ -32,7 +32,7 @@ In this case, we've named it `hello`, instead of the default of `sayHello`.  Whe
 
 ### Path based identifiers
 
-The second type of identifier is a path based identifier.  This uses a URI path and query string to route calls, and from it dynamic path parameters can optionally be extracted out.  They can be configured using the [`pathCall`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#pathCall-java.lang.String-java.util.function.Supplier-) method.
+The second type of identifier is a path based identifier.  This uses a URI path and query string to route calls, and from it, dynamic path parameters can optionally be extracted out.  They can be configured using the [`pathCall`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#pathCall-java.lang.String-java.util.function.Supplier-) method.
 
 Dynamic path parameters are extracted from the path by declaring dynamic parts in the path.  These are prefixed with a colon, for example, a path of `/order/:id` has a dynamic part called `id`. Lagom will extract this parameter from the path, and pass it to the service call method. In order to convert it to the type accepted by the method, Lagom will use a [`PathParamSerializer`](api/index.html?com/lightbend/lagom/javadsl/api/deser/PathParamSerializer.html).  Lagom includes many `PathParamSerializer`'s out of the box, such as for `String`, `Long`, `Integer` and `Boolean`.  Here's an example of extracting a `long` parameter from the path and passing it to a service call:
 
@@ -68,7 +68,7 @@ So far, all of the service call examples we've seen have used strict messages, f
 
 ### Streamed messages
 
-A streamed message is a message of type [`Source`](https://doc.akka.io/japi/akka/2.5/akka/stream/javadsl/Source.html).  `Source` is an [Akka streams](https://doc.akka.io/docs/akka/2.5/stream/?language=java) API that allows asynchronous streaming and handling of messages.  Here's an example streamed service call:
+A streamed message is a message of type [`Source`](https://doc.akka.io/japi/akka/2.5/akka/stream/javadsl/Source.html). A `Source` is an [Akka streams](https://doc.akka.io/docs/akka/2.5/stream/?language=java) API that allows asynchronous streaming and handling of messages.  Here's an example streamed service call:
 
 @[call-stream](code/docs/services/FirstDescriptor.java)
 
@@ -80,7 +80,7 @@ A bidirectional streamed call might look like this:
 
 In this case, the server might return a `Source` that converts every message received in the request stream to messages prefixed with `Hello`.
 
-Lagom will choose an appropriate transport for the stream, typically, this will be WebSockets.  WebSockets support bidirectional streaming, and so are a good general purpose option for streaming.  When only one of the request or response message is streamed, Lagom will implement the sending and receiving of the strict message by sending or receiving a single message, and then leaving the WebSocket open until the other direction closes.  Otherwise, Lagom will close the WebSocket when either direction closes.
+Lagom will choose an appropriate transport for the stream, typically, this will be WebSockets.  WebSockets support bidirectional streaming, and so is a good general purpose option for streaming.  When only one of the request or response message is streamed, Lagom will implement the sending and receiving of the strict message by sending or receiving a single message, and then leave the WebSocket open until the other direction closes.  Otherwise, Lagom will close the WebSocket when either direction closes.
 
 ### Message serialization
 
