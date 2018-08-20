@@ -159,7 +159,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
                 log.debug("Sending not found response")
                 ReferenceCountUtil.release(currentRequest)
                 currentRequest = null
-                ctx.writeAndFlush(renderNotFound(request, path, registryMap.map { case (k, v) => (k, v.serviceRegistryService) }))
+                ctx.writeAndFlush(renderNotFound(request, path, registryMap.mapValues(_.serviceRegistryService)))
                 flushPipeline()
             }.recover {
               case t =>
