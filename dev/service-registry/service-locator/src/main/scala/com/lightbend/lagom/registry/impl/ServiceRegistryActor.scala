@@ -183,7 +183,7 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
     case Register(name, service) =>
       sender() ! registry.register(name, service)
       router.rebuild(registry)
-    case l @ Lookup(serviceName, portName) => sender() ! registry.lookup(serviceName, portName)
+    case Lookup(serviceName, portName) => sender() ! registry.lookup(serviceName, portName)
     case GetRegisteredServices =>
       val services: Seq[RegisteredService] = for {
         (serviceName, portName, uri) <- registry.list()
