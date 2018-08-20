@@ -19,7 +19,7 @@ object Dependencies {
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.6", "2.11.12")
   val SbtScalaVersions = Seq("2.10.6", "2.12.6")
-  val AkkaPersistenceCassandraVersion = "0.60"
+  val AkkaPersistenceCassandraVersion = "0.61"
   val AkkaPersistenceJdbcVersion = "3.4.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
   val ScalaTestVersion = "3.0.4"
