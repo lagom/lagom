@@ -242,8 +242,6 @@ object LagomReloadableDevServerStart {
         val actorSystem = ActorSystem(actorSystemName, devModeAkkaConfig)
         val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem, ActorMaterializer()(actorSystem), () => Future.successful(()))
         val serverProvider = ServerProvider.fromConfiguration(classLoader, serverConfig.configuration)
-        println(s"serverContext = ${serverContext}")
-        println(s"serverProvider = ${serverProvider}")
         serverProvider.createServer(serverContext)
       } catch {
         case e: ExceptionInInitializerError => throw e.getCause
