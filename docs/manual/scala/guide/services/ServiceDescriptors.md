@@ -76,7 +76,7 @@ A bidirectional streamed call might look like this:
 
 In this case, the server might return a `Source` that converts every message received in the request stream to messages prefixed with `Hello`.
 
-Lagom will choose an appropriate transport for the stream, typically, this will be WebSockets.  WebSockets support bidirectional streaming, and so are a good general purpose option for streaming.  When only one of the request or response message is streamed, Lagom will implement the sending and receiving of the strict message by sending or receiving a single message, and then leaving the WebSocket open until the other direction closes.  Otherwise, Lagom will close the WebSocket when either direction closes.
+Lagom will choose an appropriate transport for the stream, typically, this will be WebSockets.  The WebSocket protocol supports bidirectional streaming, so is a good general purpose option for streaming.  When only one of the request or response message is streamed, Lagom will implement the sending and receiving of the strict message by sending or receiving a single message, and then leaving the WebSocket open until the other direction closes.  Otherwise, Lagom will close the WebSocket when either direction closes.
 
 ### Message serialization
 
