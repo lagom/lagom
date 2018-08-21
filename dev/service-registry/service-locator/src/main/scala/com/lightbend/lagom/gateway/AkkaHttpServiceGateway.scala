@@ -39,7 +39,11 @@ class AkkaHttpServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedS
   }
 }
 
-class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig, registry: ActorRef)(implicit actorSystem: ActorSystem, mat: Materializer) {
+class AkkaHttpServiceGateway(
+  coordinatedShutdown: CoordinatedShutdown,
+  config:              ServiceGatewayConfig,
+  registry:            ActorRef
+)(implicit actorSystem: ActorSystem, mat: Materializer) {
 
   private val log = LoggerFactory.getLogger(classOf[AkkaHttpServiceGateway])
 
@@ -49,10 +53,9 @@ class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: S
 
   private val handler = Flow[HttpRequest].mapAsync(1) { request =>
     log.debug("Routing request {}", request)
-    val path = request.uri.path.toString()
-    val portName = { if ("https" == request.uri.scheme) Some("https") else None }
 
-    (registry ? Route(request.method.name, path, portName)).mapTo[RouteResult].flatMap {
+    val path = request.uri.path.toString()
+    (registry ? Route(request.method.name, path, None)).mapTo[RouteResult].flatMap {
       case Found(serviceUri) =>
         log.debug("Request is to be routed to {}", serviceUri)
         val newUri = request.uri.withAuthority(serviceUri.getHost, serviceUri.getPort)
@@ -66,6 +69,7 @@ class AkkaHttpServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: S
         log.debug("Sending not found response")
         Future.successful(renderNotFound(request, path, registryMap.mapValues(_.serviceRegistryService)))
     }
+
   }
 
   private def handleWebSocketRequest(request: HttpRequest, uri: Uri, upgrade: UpgradeToWebSocket) = {

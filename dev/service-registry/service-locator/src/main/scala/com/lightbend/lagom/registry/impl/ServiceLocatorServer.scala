@@ -4,12 +4,12 @@
 
 package com.lightbend.lagom.registry.impl
 
-import java.io.Closeable
+import java.io.{ Closeable, File }
 import java.net.{ InetSocketAddress, URI }
 import java.util.{ Map => JMap }
 
 import com.lightbend.lagom.gateway._
-import play.api.{ Application, Logger, Mode, Play }
+import play.api._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.guice.GuiceableModule.fromGuiceModule
 import play.core.server.{ ReloadableServer, ServerConfig, ServerProvider }
@@ -22,33 +22,56 @@ class ServiceLocatorServer extends Closeable {
   @volatile private var server: ReloadableServer = _
   @volatile private var gatewayAddress: InetSocketAddress = _
 
-  def start(serviceLocatorAddress: String, serviceLocatorPort: Int, serviceGatewayAddress: String, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit = synchronized {
-    require(server == null, "Service locator is already running on " + server.mainAddress)
+  def start(
+    serviceLocatorAddress:  String,
+    serviceLocatorPort:     Int,
+    serviceGatewayAddress:  String,
+    serviceGatewayHttpPort: Int,
+    unmanagedServices:      JMap[String, String],
+    gatewayImpl:            String
+  ): Unit =
+    synchronized {
+      require(server == null, "Service locator is already running on " + server.mainAddress)
 
-    val application = createApplication(ServiceGatewayConfig(serviceGatewayAddress, serviceGatewayPort), unmanagedServices)
-    Play.start(application)
-    try {
-      server = createServer(application, serviceLocatorAddress, serviceLocatorPort)
-    } catch {
-      case NonFatal(e) =>
-        throw new RuntimeException(s"Unable to start service locator on port $serviceLocatorPort", e)
-    }
-    try {
-      gatewayAddress = gatewayImpl match {
-        case "netty"     => application.injector.instanceOf[NettyServiceGatewayFactory].start().address
-        case "akka-http" => application.injector.instanceOf[AkkaHttpServiceGatewayFactory].start()
-        case other       => sys.error("Unknown gateway implementation: " + other)
+      // we create a single application which we will reuse for both gateway and locator
+      val application = createApplication(
+        ServiceGatewayConfig(
+          serviceGatewayAddress,
+          serviceGatewayHttpPort
+        ), unmanagedServices
+      )
+
+      // the service locator is a play app
+      Play.start(application)
+      try {
+        server = createServer(application, serviceLocatorAddress, serviceLocatorPort)
+      } catch {
+        case NonFatal(e) =>
+          throw new RuntimeException(s"Unable to start service locator on port $serviceLocatorPort", e)
       }
-    } catch {
-      case NonFatal(e) =>
-        throw new RuntimeException(s"Unable to start service gateway on port $serviceGatewayPort", e)
+
+      // the service gateway is a bare-AkkaHTTP server
+      try {
+        gatewayAddress = gatewayImpl match {
+          case "netty"     => application.injector.instanceOf[NettyServiceGatewayFactory].start().address
+          case "akka-http" => application.injector.instanceOf[AkkaHttpServiceGatewayFactory].start()
+          case other       => sys.error("Unknown gateway implementation: " + other)
+        }
+      } catch {
+        case NonFatal(e) =>
+          throw new RuntimeException(s"Unable to start service gateway on port: $serviceGatewayHttpPort", e)
+      }
+      logger.info("Service locator can be reached at " + serviceLocatorAddress)
+      logger.info("Service gateway can be reached at " + serviceGatewayAddress)
     }
-    logger.info("Service locator can be reached at " + serviceLocatorAddress)
-    logger.info("Service gateway can be reached at " + serviceGatewayAddress)
-  }
 
   private def createApplication(serviceGatewayConfig: ServiceGatewayConfig, unmanagedServices: JMap[String, String]): Application = {
-    new GuiceApplicationBuilder()
+
+    val initialSettings: Map[String, AnyRef] = Map(
+      "ssl-config.loose.disableHostnameVerification" -> "true"
+    )
+    val environment = Environment.simple()
+    new GuiceApplicationBuilder(environment, Configuration.load(environment, initialSettings))
       .overrides(new ServiceRegistryModule(serviceGatewayConfig, unmanagedServices))
       .build()
   }
@@ -70,10 +93,12 @@ class ServiceLocatorServer extends Closeable {
   }
 
   def serviceLocatorAddress: URI = {
-    new URI(s"http://${server.mainAddress.getHostName}:${server.mainAddress.getPort}")
+    new URI(s"http://${server.mainAddress.getAddress.getHostAddress}:${server.mainAddress.getPort}")
   }
 
   def serviceGatewayAddress: URI = {
-    new URI(s"http://${gatewayAddress.getHostName}:${gatewayAddress.getPort}")
+    // TODO: support multiple addresses for gateway (http vs https)
+    new URI(s"https://${server.mainAddress.getAddress.getHostAddress}:${gatewayAddress.getPort}")
   }
+
 }

@@ -84,6 +84,8 @@ object Dependencies {
   private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % AkkaVersion
   private val akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion excludeAll (excludeSlf4j: _*)
   private val akkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
+  private val akkaProfobuf = "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
+
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
   private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.2"
@@ -407,7 +409,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
+    akkaProfobuf
   )
 
   val client = libraryDependencies ++= Seq(
@@ -681,7 +683,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
+    akkaProfobuf
   ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % LogbackVersion)
 
   val log4j2 = libraryDependencies ++= Seq(slf4jApi) ++
@@ -697,7 +699,7 @@ object Dependencies {
       akkaStream,
       akkaActor,
       akkaSlf4j,
-      "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
+      akkaProfobuf
 
     )
 
@@ -711,7 +713,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
+    akkaProfobuf
   )
 
   val `build-tool-support` = libraryDependencies ++= Seq(
@@ -756,6 +758,18 @@ object Dependencies {
     playAkkaHttpServer,
     akkaHttpCore,
     scalaTest % Test
+  )
+
+  val `dev-mode-ssl-support` = libraryDependencies ++= Seq(
+    playAkkaHttpServer,
+    akkaHttpCore,
+
+    // updates to match whitelist
+    akkaActor,
+    akkaStream,
+    akkaProfobuf,
+    akkaSlf4j,
+    typesafeConfig
   )
 
   val `service-registry-client-core` =

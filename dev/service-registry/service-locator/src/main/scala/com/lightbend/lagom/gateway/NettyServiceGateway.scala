@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.gateway
 
+import java.io.File
 import java.net.{ InetSocketAddress, URI }
 import java.util.Date
 import java.util.concurrent.TimeUnit
@@ -42,6 +43,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext }
 import scala.language.implicitConversions
 import scala.util.{ Failure, Success }
+import com.lightbend.lagom.internal.api.Execution.trampoline
 
 case class ServiceGatewayConfig(
   host: String,
@@ -96,6 +98,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
     override def reportFailure(cause: Throwable): Unit = {
       log.error("Error caught in Netty executor", cause)
     }
+
     override def execute(runnable: Runnable): Unit = executor.execute(runnable)
   }
 
@@ -390,6 +393,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
     // to a Play router with all the acls in the documentation variable so that it can render it
     val router = new SimpleRouter {
       override def routes: Routes = PartialFunction.empty
+
       override val documentation: Seq[(String, String, String)] = registry.toSeq.flatMap {
         case (serviceName, service) =>
           val call = s"Service: $serviceName (${service.uris})"
