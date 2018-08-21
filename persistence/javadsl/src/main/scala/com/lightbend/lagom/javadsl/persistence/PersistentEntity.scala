@@ -211,8 +211,10 @@ abstract class PersistentEntity[Command, Event, State] {
     private var commandHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]] =
       cmdHandlers
 
+    @scala.deprecated
     def getState(): State = _state
 
+    @scala.deprecated
     def setState(state: State): Unit = {
       _state = state
     }
@@ -268,7 +270,9 @@ abstract class PersistentEntity[Command, Event, State] {
   // This would be legal in Scala, but causes inter-operation problems with some Java compilers (such as Eclipse).
   // See https://github.com/lagom/lagom/pull/1395
   sealed abstract class BehaviorBuilder {
+    @scala.deprecated
     def getState(): State
+    @scala.deprecated
     def setState(state: State): Unit
     /**
      * Register an event handler for a given event class. The `handler` function
