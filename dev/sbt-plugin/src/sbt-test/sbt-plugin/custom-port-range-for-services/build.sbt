@@ -2,7 +2,7 @@ import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 
 interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 
-lagomServicesPortRange in ThisBuild := PortRange(10000, 10001)
+lagomServicesPortRange in ThisBuild := PortRange(10000, 10003)
 
 lazy val a = (project in file("a")).enablePlugins(LagomJava)
   .settings(Seq(

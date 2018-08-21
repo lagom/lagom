@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.gateway
 
+import java.io.File
 import java.net.URI
 
 import akka.actor.{ ActorSystem, CoordinatedShutdown, Props }

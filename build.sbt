@@ -1041,6 +1041,7 @@ lazy val devEnvironmentProjects = Seq[Project](
   `sbt-build-tool-support`,
   `sbt-plugin`,
   `maven-plugin`,
+  `dev-mode-ssl-support`,
   `service-locator`,
   `service-registration-javadsl`,
   `cassandra-server`,
@@ -1070,6 +1071,7 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
     name := "lagom-reloadable-server",
     Dependencies.`reloadable-server`
   )
+  .dependsOn(`dev-mode-ssl-support`)
 
 lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
   .disablePlugins(BintrayPlugin)
@@ -1362,10 +1364,19 @@ lazy val `service-locator` = (project in file("dev") / "service-registry" / "ser
     `server-javadsl`,
     logback,
     `service-registry-client-javadsl`,
+    `dev-mode-ssl-support`,
     `play-json` % "compile -> test",
     `jackson` % "compile -> test",
     `devmode-scaladsl` % "compile -> test"
   )
+
+lazy val `dev-mode-ssl-support` = (project in file("dev") / "dev-mode-ssl-support"  )
+  .settings(
+    name := "lagom-dev-mode-ssl-support",
+    Dependencies.`dev-mode-ssl-support`
+  )
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
 
 lazy val `service-registry-client-core` = (project in file("dev") / "service-registry" / "client-core")
   .settings(

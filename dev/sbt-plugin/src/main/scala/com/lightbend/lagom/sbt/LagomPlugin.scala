@@ -16,7 +16,7 @@ import play.sbt.PlayImport.PlayKeys
 import play.sbt._
 import sbt.Def.Initialize
 import sbt.Keys._
-import sbt._
+import sbt.{ Def, _ }
 import sbt.plugins.{ CorePlugin, IvyPlugin, JvmPlugin }
 
 /**
@@ -315,7 +315,10 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val lagomDevSettings = settingKey[Seq[(String, String)]]("Settings that should be passed to a Lagom app in dev mode")
 
     val lagomServiceAddress = taskKey[String]("The address that the Lagom service should run on")
+    // TODO: deprecate lagomServicePort in favor of a new setting called lagomServiceHttpPort
+    // @deprecated("Use lagomServiceHttpPort instead", "1.5.0")
     val lagomServicePort = taskKey[Int]("The port that the Lagom service should run on")
+    val lagomServiceHttpsPort = taskKey[Int]("The port that the Lagom service should listen for HTTPS traffic")
 
     val lagomInfrastructureServices = taskKey[Seq[Task[Closeable]]]("The infrastructure services that should be run when runAll is invoked.")
 
@@ -494,6 +497,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     },
     lagomServiceAddress := "127.0.0.1",
     lagomServicePort := LagomPlugin.assignedPortFor(ProjectName(name.value), state.value).value,
+    lagomServiceHttpsPort := LagomPlugin.assignedPortFor(ProjectName(name.value).withTls, state.value).value,
     Internal.Keys.stop := {
       Internal.Keys.interactionMode.value match {
         case nonBlocking: PlayNonBlockingInteractionMode => nonBlocking.stop()
@@ -514,12 +518,23 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val serviceLocatorAddress = lagomServiceLocatorAddress.value
     val serviceLocatorPort = lagomServiceLocatorPort.value
     val serviceGatewayAddress = lagomServiceGatewayAddress.value
-    val serviceGatewayPort = lagomServiceGatewayPort.value
+    val serviceGatewayHttpPort = lagomServiceGatewayPort.value
     val serivceGatewayImpl = lagomServiceGatewayImpl.value
-    val urls = (managedClasspath in Compile).value.files.map(_.toURI.toURL).toArray
+    val classpathUrls = (managedClasspath in Compile).value.files.map(_.toURI.toURL).toArray
     val scala211 = scalaInstance.value
     val log = new SbtLoggerProxy(state.value.log)
-    Servers.ServiceLocator.start(log, scala211.loader, urls, serviceLocatorAddress, serviceLocatorPort, serviceGatewayAddress, serviceGatewayPort, unmanagedServices, serivceGatewayImpl)
+
+    Servers.ServiceLocator.start(
+      log,
+      scala211.loader,
+      classpathUrls,
+      serviceLocatorAddress,
+      serviceLocatorPort,
+      serviceGatewayAddress,
+      serviceGatewayHttpPort,
+      unmanagedServices,
+      serivceGatewayImpl
+    )
   }
 
   private lazy val startCassandraServerTask = Def.task {
@@ -534,7 +549,17 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     // and called using structural typing (reflection) by sbt thus on a classloader with scala 2.10
     val yamlConfig = lagomCassandraYamlFile.value.orNull
     val log = new SbtLoggerProxy(state.value.log)
-    Servers.CassandraServer.start(log, scala211.loader, classpath, port, cleanOnStart, jvmOptions, yamlConfig, maxWaiting)
+
+    Servers.CassandraServer.start(
+      log,
+      scala211.loader,
+      classpath,
+      port,
+      cleanOnStart,
+      jvmOptions,
+      yamlConfig,
+      maxWaiting
+    )
   }
 
   private lazy val startKafkaServerTask = Def.task {
@@ -547,7 +572,16 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val targetDir = target.value
     val cleanOnStart = lagomKafkaCleanOnStart.value
 
-    Servers.KafkaServer.start(log, classpath, kafkaPort, zooKeeperPort, kafkaPropertiesFile, jvmOptions, targetDir, cleanOnStart)
+    Servers.KafkaServer.start(
+      log,
+      classpath,
+      kafkaPort,
+      zooKeeperPort,
+      kafkaPropertiesFile,
+      jvmOptions,
+      targetDir,
+      cleanOnStart
+    )
   }
 
   private def sequential(tasks: Seq[Task[Closeable]]): Initialize[Task[Seq[Closeable]]] =
@@ -586,7 +620,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
         val filter = ScopeFilter(inProjects(projects: _*))
         // Services are going to be started without a specific order. Whether we will need to take into consideration
         // services' dependencies is not something clear yet.
-        val runningServiceTasks = lagomRun.all(filter)
+        val runningServiceTasks: Def.Initialize[Task[Seq[(String, DevServer)]]] = lagomRun.all(filter)
 
         Def.task {
           val log = state.value.log
