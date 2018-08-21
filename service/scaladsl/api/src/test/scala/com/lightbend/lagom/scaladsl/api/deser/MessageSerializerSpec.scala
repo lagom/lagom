@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
+ */
 package com.lightbend.lagom.scaladsl.api.deser
 
 import MessageSerializer._
