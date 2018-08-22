@@ -171,7 +171,7 @@ See [[Storing Persistent Entities in Cassandra|PersistentEntityCassandra#Configu
 
 If you are using Lagom's Persistence API with a relational database, you will need to add an index to your journal table.
 
-The relational database support is based on the [`akka-persistence-jdbc`](https://github.com/dnvriend/akka-persistence-jdbc) plugin. This plugin was updated to version 3.1.0, which includes an important [bug fix](https://github.com/dnvriend/akka-persistence-jdbc/issues/96) that requires a new column index. If you do not update your database schema, it will result in degraded performance when querying events.
+The relational database support is based on the [`akka-persistence-jdbc`](https://github.com/dnvriend/akka-persistence-jdbc) plugin. This plugin was updated to version 3.1.0, which includes an important [bug fix](https://github.com/dnvriend/akka-persistence-jdbc/issues/96) that requires a new column index and a change to the primary key. If you do not update your database schema, it will result in degraded performance when querying events.
 
 Below you will find the index creation statement for each supported database.
 
@@ -179,24 +179,28 @@ Below you will find the index creation statement for each supported database.
 
 ```sql
 CREATE UNIQUE INDEX journal_ordering_idx ON public.journal(ordering);
+<<postgres command goes here>
 ```
 
 ### MySQL
 
 ```sql
 CREATE UNIQUE INDEX journal_ordering_idx ON journal(ordering);
+ALTER TABLE journal DROP PRIMARY KEY, ADD PRIMARY KEY (persistence_id, sequence_number);
 ```
 
 ### Oracle
 
 ```sql
 CREATE UNIQUE INDEX "journal_ordering_idx" ON "journal"("ordering")
+<<oracle command goes here>>
 ```
 
 ### H2 Database (for use in development only)
 
 ```sql
 CREATE UNIQUE INDEX "journal_ordering_idx" ON PUBLIC."journal"("ordering");
+<<h2 command goes here>>
 ```
 
 From version 3.0.0, the `akka-persistence-jdbc` Persistence Query implementation treats the offset as exclusive instead of inclusive, matching the behavior of the Cassandra implementation. Most Lagom users will not be affected by this change. Previous versions of Lagom compensated for the different behavior of the Cassandra and JDBC implementations automatically, and this change allowed that workaround to be removed. This will only impact you if you were using the Akka Persistence Query API directly.
