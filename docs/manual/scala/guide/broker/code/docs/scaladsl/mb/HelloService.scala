@@ -23,7 +23,7 @@ trait HelloService extends Service {
   }
 
   // The topic handle
-  def greetingsTopic() : Topic [GreetingMessage]
+  def greetingsTopic() : Topic[GreetingMessage]
 
   def hello(id: String): ServiceCall[NotUsed, String]
   def useGreeting(id: String): ServiceCall[GreetingMessage, Done]
