@@ -56,9 +56,12 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
   @BeanProperty
   var serviceAddress: String = _
 
-  // TODO: deprecate in favor of serviceHttpPort
-  @BeanProperty
+  /** @deprecated As of release 1.5.0. Use serviceHttpPort instead */
+  @BeanProperty @Deprecated
   var servicePort: Int = _
+
+  @BeanProperty
+  var serviceHttpPort: Int = _
 
   @BeanProperty
   var serviceHttpsPort: Int = _
@@ -88,6 +91,16 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
   var watchDirs: JList[String] = Collections.emptyList()
 
   override def execute(): Unit = {
+
+    if (servicePort != -1) {
+      // this property is also marked as deprecated in
+      // the plugin.xml descriptor, but somehow mvn is not printing anything. Therefore, we add a warning ourselves.
+      getLog.warn("Lagom's maven plugin property 'servicePort' is deprecated as of release 1.5.0. Use serviceHttpPort instead.")
+      // for backward compatibility, we must set the http port to servicePort
+      // if the later was configured by the user
+      if (serviceHttpPort == -1) serviceHttpPort = servicePort
+      else getLog.warn(s"Both 'serviceHttpPort' ($serviceHttpPort) and 'servicePort' ($servicePort) are configured, 'servicePort' will be ignored")
+    }
 
     val project = session.getCurrentProject
 
@@ -127,14 +140,23 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
       }
     }
 
-    val selectedPort = selectPort(servicePort, useTls = false)
+    val selectedPort = selectPort(serviceHttpPort, useTls = false)
     val selectedHttpsPort = selectPort(serviceHttpsPort, useTls = true)
 
     val cassandraPort = if (cassandraEnabled) {
       Some(this.cassandraPort)
     } else None
 
-    serviceManager.startServiceDevMode(project, serviceAddress, selectedPort, selectedHttpsPort, serviceLocatorUrl, cassandraPort, playService = playService, resolvedWatchDirs)
+    serviceManager.startServiceDevMode(
+      project,
+      serviceAddress,
+      selectedPort,
+      selectedHttpsPort,
+      serviceLocatorUrl,
+      cassandraPort,
+      playService,
+      resolvedWatchDirs
+    )
   }
 }
 
@@ -226,14 +248,22 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
         }
       }
 
-      val selectedPort = selectPort(project.servicePort, useTls = false)
-      var selectedHttpsPort = selectPort(project.serviceHttpsPort, useTls = true)
+      val selectedPort = selectPort(project.serviceHttpPort, useTls = false)
+      val selectedHttpsPort = selectPort(project.serviceHttpsPort, useTls = true)
 
       val serviceCassandraPort = cassandraPort.filter(_ => project.cassandraEnabled)
 
       val dependency = RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
 
-      serviceManager.startExternalProject(dependency, serviceAddress, selectedPort, selectedHttpsPort, serviceLocatorUrl, serviceCassandraPort, playService = project.playService)
+      serviceManager.startExternalProject(
+        dependency,
+        serviceAddress,
+        selectedPort,
+        selectedHttpsPort,
+        serviceLocatorUrl,
+        serviceCassandraPort,
+        project.playService
+      )
     }
   }
 
@@ -259,9 +289,12 @@ class ExternalProject {
   @BeanProperty
   var playService: Boolean = false
 
-  // TODO: deprecate in favor of serviceHttpPort
-  @BeanProperty
+  /** @deprecated As of release 1.5.0. Use serviceHttpPort instead. */
+  @BeanProperty @Deprecated
   var servicePort: Int = -1
+
+  @BeanProperty
+  var serviceHttpPort: Int = -1
 
   @BeanProperty
   var serviceHttpsPort: Int = -1

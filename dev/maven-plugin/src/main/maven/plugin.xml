@@ -54,6 +54,26 @@
             </configuration>
         </parameter>
         <parameter>
+            <name>serviceHttpPort</name>
+            <type>int</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The http port this service should run on</description>
+            <configuration>
+                <serviceHttpPort implementation="int" default-value="-1"/>
+            </configuration>
+        </parameter>
+        <parameter>
+            <name>serviceHttpsPort</name>
+            <type>int</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>The https port this service should run on</description>
+            <configuration>
+                <serviceHttpsPort implementation="int" default-value="-1"/>
+            </configuration>
+        </parameter>
+        <parameter>
             <name>watchDirs</name>
             <type>java.util.List</type>
             <required>false</required>
@@ -504,6 +524,13 @@
                 </parameter>
                 <parameter>
                     <name>servicePort</name>
+                    <deprecated>As of release 1.5.0. Use serviceHttpPort instead.</deprecated>
+                </parameter>
+                <parameter>
+                    <name>serviceHttpPort</name>
+                </parameter>
+                <parameter>
+                    <name>serviceHttpsPort</name>
                 </parameter>
                 <parameter>
                     <name>servicePortRange</name>
