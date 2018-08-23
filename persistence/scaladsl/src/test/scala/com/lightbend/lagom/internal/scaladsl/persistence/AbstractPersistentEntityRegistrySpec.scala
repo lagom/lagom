@@ -6,7 +6,7 @@ package com.lightbend.lagom.internal.scaladsl.persistence
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import com.lightbend.lagom.scaladsl.persistence.{ NamedEntity, TestEntity }
+import com.lightbend.lagom.scaladsl.persistence.{ NamedEntity, TestEntity, TracingPersistentEntityResultHandler }
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{ BeforeAndAfterAll, FlatSpec, Matchers }
@@ -25,7 +25,9 @@ class AbstractPersistentEntityRegistrySpec
       "akka.actor.provider = akka.cluster.ClusterActorRefProvider \n" +
         "akka.remote.netty.tcp.port = 0 \n" +
         "akka.remote.netty.tcp.hostname = 127.0.0.1 \n" +
-        "akka.loglevel = INFO \n"
+        "akka.loglevel = INFO \n" +
+        "lagom.persistence.error-tracing.log-cluster-state-on-timeout = true \n" +
+        "lagom.persistence.error-tracing.log-command-payload-on-failure = true \n"
     )
     system = ActorSystem.create("PubSubTest", config)
     Cluster(system).join(Cluster(system).selfAddress)
@@ -60,6 +62,12 @@ class AbstractPersistentEntityRegistrySpec
   it should "throw IAE if refFor  before registering" in withRegistry { registry =>
     assertThrows[IllegalArgumentException] {
       registry.refFor[TestEntity](uselessId)
+    }
+  }
+
+  it should "correctly create the right result handler " in withRegistry { registry =>
+    assert {
+      registry.resultHandlerFor(uselessId).isInstanceOf[TracingPersistentEntityResultHandler]
     }
   }
 

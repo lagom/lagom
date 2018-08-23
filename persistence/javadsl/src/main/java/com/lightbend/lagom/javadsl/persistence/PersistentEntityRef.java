@@ -25,19 +25,22 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
   private final String entityId;
   private final ActorRef region;
   private final Timeout timeout;
+  private final PersistentEntityErrorHandler persistentEntityErrorHandler;
 
-  public PersistentEntityRef(String entityId, ActorRef region, FiniteDuration askTimeout) {
+
+  public PersistentEntityRef(String entityId, ActorRef region, FiniteDuration askTimeout,PersistentEntityErrorHandler persistentEntityErrorHandler) {
     this.entityId = entityId;
     this.region = region;
     this.timeout = Timeout.apply(askTimeout);
+    this.persistentEntityErrorHandler = persistentEntityErrorHandler;
   }
 
   /**
    * @deprecated Use {@link #PersistentEntityRef(String, ActorRef, FiniteDuration)} instead.
    */
   @Deprecated
-  public PersistentEntityRef(String entityId, ActorRef region, ActorSystem system, FiniteDuration askTimeout) {
-    this(entityId, region, askTimeout);
+  public PersistentEntityRef(String entityId, ActorRef region, ActorSystem system, FiniteDuration askTimeout,PersistentEntityErrorHandler persistentEntityErrorHandler) {
+    this(entityId, region, askTimeout, persistentEntityErrorHandler);
   }
 
   public String entityId() {
@@ -56,27 +59,25 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
   @SuppressWarnings("unchecked")
   public <Reply, Cmd extends Object & PersistentEntity.ReplyType<Reply>> CompletionStage<Reply> ask(Cmd command) {
     CompletionStage<Object> future = PatternsCS.ask(region, new CommandEnvelope(entityId, command), timeout);
-
     return future.thenCompose(result -> {
-      if (result instanceof Throwable) {
-        CompletableFuture<Reply> failed = new CompletableFuture<>();
-        failed.completeExceptionally((Throwable) result);
-        return failed;
-      } else {
-        return CompletableFuture.completedFuture((Reply) result);
-      }
-    });
-
+          if (result instanceof Throwable) {
+              return persistentEntityErrorHandler.handleAskFailure((Throwable)result,command);
+          } else {
+              return CompletableFuture.completedFuture((Reply) result);
+          }
+      });
   }
 
-  /**
+
+
+    /**
    * The timeout for {@link #ask(Object)}. The timeout is by default defined in configuration
    * but it can be adjusted for a specific <code>PersistentEntityRef</code> using this method.
    * Note that this returns a new <code>PersistentEntityRef</code> instance with the given timeout
    * (<code>PersistentEntityRef</code> is immutable).
    */
   public PersistentEntityRef<Command> withAskTimeout(FiniteDuration timeout) {
-    return new PersistentEntityRef<>(entityId, region, timeout);
+    return new PersistentEntityRef<>(entityId, region, timeout, persistentEntityErrorHandler);
   }
 
   //  Reasons for why we don't not support serialization of the PersistentEntityRef:

@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.{ ConcurrentHashMap, TimeoutException }
 import java.util.function.{ Function => JFunction }
 import javax.inject.{ Inject, Singleton }
-
+import org.slf4j.LoggerFactory
 import akka.actor.ActorSystem
 import akka.pattern.{ CircuitBreakerOpenException, CircuitBreaker => AkkaCircuitBreaker }
 import com.lightbend.lagom.internal.spi.{ CircuitBreakerMetrics, CircuitBreakerMetricsProvider }
@@ -33,8 +33,15 @@ private[lagom] class CircuitBreakersPanelInternal(
 
   private lazy val config = circuitBreakerConfig.config
   private lazy val defaultBreakerConfig = circuitBreakerConfig.default
+  private lazy val traceFailuresEnabled = if (config.hasPath("trace-failures")) config.getBoolean("trace-failures") else false
 
   private val breakers = new ConcurrentHashMap[String, Option[CircuitBreakerHolder]]
+
+
+  private def logFailure(id: String, e: Throwable) = {
+      val logger = LoggerFactory.getLogger(s"CircuitBreakersPanel-${id}")
+      logger.debug(s"Circuit breaker $id has failed",e)
+  }
 
   def withCircuitBreaker[T](id: String)(body: => Future[T]): Future[T] = {
     breaker(id) match {
@@ -45,10 +52,16 @@ private[lagom] class CircuitBreakersPanelInternal(
 
         val result: Future[T] = b.withCircuitBreaker(body, failedCallDefinition)
         result.onComplete {
-          case Success(_)                              => metrics.onCallSuccess(elapsed)
-          case Failure(_: CircuitBreakerOpenException) => metrics.onCallBreakerOpenFailure()
-          case Failure(_: TimeoutException)            => metrics.onCallTimeoutFailure(elapsed)
-          case Failure(_)                              => metrics.onCallFailure(elapsed)
+          case Success(_) => metrics.onCallSuccess(elapsed)
+          case Failure(e: CircuitBreakerOpenException) =>
+            metrics.onCallBreakerOpenFailure()
+            logFailure(id, e)
+          case Failure(e: TimeoutException) =>
+            metrics.onCallTimeoutFailure(elapsed)
+            logFailure(id, e)
+          case Failure(e)                   =>
+            metrics.onCallFailure(elapsed)
+            logFailure(id, e)
         }(system.dispatcher)
         result
       case None => body

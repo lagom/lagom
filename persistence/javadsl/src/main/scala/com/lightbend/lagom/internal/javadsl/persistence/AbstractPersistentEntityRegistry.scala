@@ -39,7 +39,19 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
     queryPluginId.asScala.map(id => PersistenceQuery(system).readJournalFor[EventsByTagQuery](id))
 
   private val sharding = ClusterSharding(system)
+  private val cluster = Cluster(system)
+
   private val conf = system.settings.config.getConfig("lagom.persistence")
+
+  val persistenceEntityTracingConfig = {
+    if (conf.hasPath("error-tracing")) {
+      val logClusterStateOnAskTimeout = conf.getBoolean("error-tracing.log-cluster-state-on-timeout")
+      val logCommandPayloadOnTimeout = conf.getBoolean("error-tracing.log-command-payload-on-failure")
+      Some(new ErrorTracingConfig(logClusterStateOnAskTimeout, logCommandPayloadOnTimeout))
+    } else
+      None
+  }
+
   private val snapshotAfter: Optional[Int] = conf.getString("snapshot-after") match {
     case "off" => Optional.empty()
     case _     => Optional.of(conf.getInt("snapshot-after"))
@@ -111,10 +123,16 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
     }
   }
 
+  protected[persistence] def errorHandlerFor(entityId: String): PersistentEntityErrorHandler = {
+    persistenceEntityTracingConfig.map {
+      new TracingPersistentEntityErrorHandler(cluster, _, entityId)
+    }.getOrElse(DefaultPersistentEntityErrorHandler.INSTANCE)
+  }
+
   override def refFor[C](entityClass: Class[_ <: PersistentEntity[C, _, _]], entityId: String): PersistentEntityRef[C] = {
     val entityName = reverseRegister.get(entityClass)
     if (entityName == null) throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
-    new PersistentEntityRef(entityId, sharding.shardRegion(prependName(entityName)), askTimeout)
+    new PersistentEntityRef(entityId, sharding.shardRegion(prependName(entityName)), askTimeout, errorHandlerFor(entityId))
   }
 
   private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)
@@ -134,7 +152,7 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
           .asJava
 
       case None =>
-        throw new UnsupportedOperationException(s"The Lagom persistence plugin does not support streaming events by tag")
+        throw new UnsupportedOperationException(s"The $journalId Lagom persistence plugin does not support streaming events by tag")
     }
   }
 

@@ -5,7 +5,7 @@
 package com.lightbend.lagom.internal.scaladsl.persistence
 
 import java.util.Optional
-import java.util.concurrent.{ CompletionStage, ConcurrentHashMap, TimeUnit }
+import java.util.concurrent.{ ConcurrentHashMap, TimeUnit }
 
 import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.cluster.Cluster
@@ -38,7 +38,18 @@ class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEn
     queryPluginId.map(id => PersistenceQuery(system).readJournalFor[EventsByTagQuery](id))
 
   private val sharding = ClusterSharding(system)
+  private val cluster = Cluster(system)
+
   private val conf = system.settings.config.getConfig("lagom.persistence")
+
+  val persistenceEntityTracingConfig = {
+    if (conf.hasPath("error-tracing")) {
+      val logClusterStateOnAskTimeout = conf.getBoolean("error-tracing.log-cluster-state-on-timeout")
+      val logCommandPayloadOnTimeout = conf.getBoolean("error-tracing.log-command-payload-on-failure")
+      Some(new PersistentEntityTracingConfig(logClusterStateOnAskTimeout, logCommandPayloadOnTimeout))
+    } else
+      None
+  }
   private val snapshotAfter: Option[Int] = conf.getString("snapshot-after") match {
     case "off" => None
     case _     => Some(conf.getInt("snapshot-after"))
@@ -104,11 +115,18 @@ class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEn
     }
   }
 
+  protected[persistence] def resultHandlerFor(entityId: String): PersistentEntityResultHandler = {
+    persistenceEntityTracingConfig.map {
+      new TracingPersistentEntityResultHandler(cluster, _, entityId)
+    }.getOrElse(DefaultPersistentEntityResultHandler)
+  }
+
   override def refFor[P <: PersistentEntity: ClassTag](entityId: String): PersistentEntityRef[P#Command] = {
     val entityClass = implicitly[ClassTag[P]].runtimeClass.asInstanceOf[Class[P]]
     val entityName = reverseRegister.get(entityClass)
     if (entityName == null) throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
-    new PersistentEntityRef(entityId, sharding.shardRegion(prependName(entityName)), system, askTimeout)
+    val resultHandler = resultHandlerFor(entityId)
+    new PersistentEntityRef(entityId, sharding.shardRegion(prependName(entityName)), system, askTimeout, resultHandler)
   }
 
   private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)
