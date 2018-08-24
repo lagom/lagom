@@ -31,7 +31,7 @@ object Dependencies {
   val JacksonDatabindVersion = JacksonVersion
   val GuavaVersion = "25.1-jre"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.25.Final"
+  val NettyVersion = "4.1.28.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
   val KafkaVersion = "1.0.1"
   val AlpakkaKafkaVersion = "0.22"
@@ -190,17 +190,17 @@ object Dependencies {
       "com.typesafe.play" % "shaded-oauth" % PlayStandaloneWsVersion,
       playTest,
       // dependencies added by play-test
-      "org.fluentlenium" % "fluentlenium-core" % "3.5.2",
-      "org.seleniumhq.selenium" % "selenium-support" % "3.9.1",
-      "org.seleniumhq.selenium" % "selenium-api" % "3.9.1",
-      "org.seleniumhq.selenium" % "selenium-remote-driver" % "3.9.1",
-      "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.9.1",
-      "net.bytebuddy" % "byte-buddy" % "1.7.9",
+            "org.fluentlenium" % "fluentlenium-core" % "3.6.1",
+      "org.seleniumhq.selenium" % "selenium-support" % "3.13.0",
+      "org.seleniumhq.selenium" % "selenium-api" % "3.13.0",
+      "org.seleniumhq.selenium" % "selenium-remote-driver" % "3.13.0",
+      "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.13.0",
+      "net.bytebuddy" % "byte-buddy" % "1.8.3",
       "org.apache.commons" % "commons-exec" % "1.3",
       "commons-logging" % "commons-logging" % "1.2",
-      "com.google.code.gson" % "gson" % "2.8.2",
-      "com.squareup.okhttp3" % "okhttp" % "3.9.1",
-      "com.squareup.okio" % "okio" % "1.13.0",
+      "com.google.code.gson" % "gson" % "2.8.4",
+      "com.squareup.okhttp3" % "okhttp" % "3.10.0",
+      "com.squareup.okio" % "okio" % "1.14.1",
       "org.atteo.classindex" % "classindex" % "3.4",
       "org.seleniumhq.selenium" % "htmlunit-driver" % "2.31.0",
       "net.sourceforge.htmlunit" % "htmlunit" % "2.31",
