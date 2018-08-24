@@ -66,7 +66,8 @@ The `lagom-maven-plugin` offers a configuration item called `externalProjects` t
 Now when you run `lagom:runAll`, the `hello-impl` service will also be started.  There are a few additional configuration items that `externalProject` supports:
 
 * `playService` - Indicates that this is a Play, rather than a Lagom service. Defaults to `false`.
-* `servicePort` - Allows the port that the service is run on to be overridden. Defaults to automatic selection of a port by Lagom.
+* `serviceHttpPort` - Allows the http port that the service is run on to be overridden. Defaults to automatic selection of a port by Lagom.
+* `serviceHttpsPort` - Allows the https port that the service is run on to be overridden. Defaults to automatic selection of a port by Lagom.
 * `cassandraEnabled` - Configures whether this service needs Cassandra or not. Defaults to `true`.
 
 ### Using sbt
