@@ -8,6 +8,7 @@ import java.io.File
 
 import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.stream.{ ActorMaterializer, Materializer }
+import com.lightbend.lagom.internal.api.CoordinatedShutdownSupport
 import com.lightbend.lagom.internal.client.{ CircuitBreakerMetricsProviderImpl, WebSocketClientConfig }
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
 import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
@@ -164,7 +165,7 @@ abstract class LagomClientApplication(
   /**
    * Stop the application.
    */
-  def stop(): Unit = CoordinatedShutdownProvider.syncShutdown(actorSystem, ClientStoppedReason)
+  def stop(): Unit = CoordinatedShutdownSupport.syncShutdown(actorSystem, ClientStoppedReason)
 }
 
 case object ClientStoppedReason extends CoordinatedShutdown.Reason
