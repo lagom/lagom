@@ -10,6 +10,7 @@ import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json._
 
 class MessageSerializerSpec extends WordSpec with Matchers {
+
   case class Dummy(prop: Option[String])
 
   "JsValueMessageSerializer" should {

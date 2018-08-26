@@ -66,7 +66,7 @@ public class JacksonSerializerFactory implements SerializerFactory {
         public JacksonMessageSerializer(Type type) {
             JavaType javaType = objectMapper.constructType(type);
             serializer = new JacksonSerializer(objectMapper.writerFor(javaType));
-            deserializer = new JacksonDeserializer(objectMapper.readerFor(javaType));
+            deserializer = new JacksonDeserializer(objectMapper.readerFor(javaType), type);
         }
 
         @Override
@@ -116,14 +116,19 @@ public class JacksonSerializerFactory implements SerializerFactory {
 
         private class JacksonDeserializer implements NegotiatedDeserializer<MessageEntity, ByteString> {
             private final ObjectReader reader;
+            private final Type type;
 
-            public JacksonDeserializer(ObjectReader reader) {
+            public JacksonDeserializer(ObjectReader reader, Type type) {
                 this.reader = reader;
+                this.type = type;
             }
 
             @Override
             public MessageEntity deserialize(ByteString bytes) {
                 try {
+                    if (bytes.isEmpty() && this.type == Optional.class) {
+                        bytes = ByteString.fromString("null");
+                    }
                     return reader.readValue(bytes.iterator().asInputStream());
                 } catch (Exception e) {
                     throw new DeserializationException(e);
