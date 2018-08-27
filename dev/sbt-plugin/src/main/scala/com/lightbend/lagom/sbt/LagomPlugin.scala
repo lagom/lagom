@@ -700,8 +700,10 @@ object LagomLog4j2 extends AutoPlugin {
 private[sbt] object SbtConsoleHelper {
   private val consoleHelper = new ConsoleHelper(new Colors("sbt.log.noformat"))
   def printStartScreen(log: Logger, services: (String, DevServer)*): Unit =
-    consoleHelper.printStartScreen(new SbtLoggerProxy(log), services.map {
-      case (name, service) => name -> service.url()
+    consoleHelper.printStartScreen(new SbtLoggerProxy(log), services.flatMap {
+      case (name, service) =>
+        service.bindings().map(serviceBinding =>
+          ServiceBindingInfo(name, serviceBinding.protocol, serviceBinding.address, serviceBinding.port))
     })
 
   def blockUntilExit(log: Logger, interaction: play.sbt.PlayInteractionMode, services: Seq[Closeable], infrastructureServices: Seq[Closeable]): Unit = {

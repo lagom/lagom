@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.maven
 
+import com.lightbend.lagom.dev.Reloader.DevServerBinding
 import org.apache.maven.project.MavenProject
 
 /**
@@ -29,7 +30,10 @@ object LagomKeys {
   val PlayService = new LagomKey[Boolean]("playService")
 
   /** The URL of the service */
+  @deprecated("1.5.0", "Use LagomServiceBindings instead")
   val LagomServiceUrl = new LagomKey[String]("lagomServiceUrl")
+
+  val LagomServiceBindings = new LagomKey[Seq[DevServerBinding]]("lagomServiceBindings")
 }
 
 final class LagomKey[A](name: String) {

@@ -15,14 +15,20 @@ import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration._
 
 /**
+ * @param name the service name
+ * @param protocol HTTP or HTTPS (or something else (?)
+ * @param url a string of format "address:port"
+ */
+case class ServiceBindingInfo(name: String, protocol: String, address: String, port: Int)
+/**
  * Helper for working with the console
  */
 class ConsoleHelper(colors: Colors) {
 
-  def printStartScreen(log: LoggerProxy, services: Seq[(String, String)]): Unit = {
+  def printStartScreen(log: LoggerProxy, services: Seq[ServiceBindingInfo]): Unit = {
     services.foreach {
-      case (name, url) =>
-        log.info(s"Service $name listening for HTTP on $url")
+      case ServiceBindingInfo(name, protocol, address, port) =>
+        log.info(s"Service $name listening for $protocol on $address:$port")
     }
     log.info(colors.green(s"(Service${if (services.size > 1) "s" else ""} started, press enter to stop and go back to the console...)"))
   }

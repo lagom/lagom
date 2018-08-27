@@ -5,9 +5,9 @@
 package com.lightbend.lagom.maven
 
 import java.io.File
-import javax.inject.Inject
 
-import com.lightbend.lagom.dev.{ Colors, ConsoleHelper }
+import javax.inject.Inject
+import com.lightbend.lagom.dev.{ Colors, ConsoleHelper, ServiceBindingInfo }
 import com.lightbend.lagom.dev.PortAssigner.ProjectName
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.model.Dependency
@@ -30,11 +30,16 @@ class RunMojo @Inject() (mavenFacade: MavenFacade, logger: MavenLoggerProxy, ses
     val project = session.getCurrentProject
     mavenFacade.executeMavenPluginGoal(project, "start")
 
-    val serviceUrl = LagomKeys.LagomServiceUrl.get(project).getOrElse {
-      sys.error(s"Service ${project.getArtifactId} is not running?")
+    val bindingInfos: Seq[ServiceBindingInfo] = {
+      val bindings = LagomKeys.LagomServiceBindings.get(project).getOrElse {
+        sys.error(s"Service ${project.getArtifactId} is not running?")
+      }
+      bindings.map { serviceBinding =>
+        ServiceBindingInfo(project.getArtifactId, serviceBinding.protocol, serviceBinding.address, serviceBinding.port)
+      }
     }
 
-    consoleHelper.printStartScreen(logger, Seq(project.getArtifactId -> serviceUrl))
+    consoleHelper.printStartScreen(logger, bindingInfos)
 
     consoleHelper.blockUntilExit()
 
@@ -368,13 +373,16 @@ class RunAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, sessi
 
     executeGoal("startAll")
 
-    val serviceUrls = services.map { project =>
-      project.getArtifactId -> LagomKeys.LagomServiceUrl.get(project).getOrElse {
+    val bindingInfos: Seq[ServiceBindingInfo] = services.flatMap { project =>
+      val bindings = LagomKeys.LagomServiceBindings.get(project).getOrElse {
         sys.error(s"Service ${project.getArtifactId} is not running?")
+      }
+      bindings.map { serviceBinding =>
+        ServiceBindingInfo(project.getArtifactId, serviceBinding.protocol, serviceBinding.address, serviceBinding.port)
       }
     }
 
-    consoleHelper.printStartScreen(logger, serviceUrls)
+    consoleHelper.printStartScreen(logger, bindingInfos)
 
     consoleHelper.blockUntilExit()
 
