@@ -28,10 +28,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static scala.collection.JavaConversions.asJavaIterable;
 
@@ -89,6 +90,7 @@ public class JpaReadSideImpl implements JpaReadSide {
 
         private volatile AggregateEventTag<Event> tag;
         private volatile SlickOffsetDao offsetDao;
+        private BatchedOffsetUpdater batchUpdateOffsetUpdater;
 
         private JpaReadSideHandler(
                 String readSideId,
@@ -99,6 +101,7 @@ public class JpaReadSideImpl implements JpaReadSide {
             this.globalPrepare = globalPrepare;
             this.prepare = prepare;
             this.eventHandlers = eventHandlers;
+            batchUpdateOffsetUpdater = new BatchedOffsetUpdater();
         }
 
         @Override
@@ -128,6 +131,8 @@ public class JpaReadSideImpl implements JpaReadSide {
 
         @Override
         public Flow<Pair<Event, Offset>, Done, ?> handle() {
+            //This parameter shall be taken from configuration and will be global to this class (Not local to this method)
+	    boolean isBatchUpdateEnabled = true;
             return Flow.<Pair<Event, Offset>>create().mapAsync(1, eventAndOffset -> {
                 Event event = eventAndOffset.first();
                 Offset offset = eventAndOffset.second();
@@ -135,7 +140,7 @@ public class JpaReadSideImpl implements JpaReadSide {
                 @SuppressWarnings("unchecked") BiConsumer<EntityManager, Event> eventHandler =
                         (BiConsumer<EntityManager, Event>) eventHandlers.get(eventClass);
 
-                return jpa.withTransaction(entityManager -> {
+                CompletionStage<Done> result = jpa.withTransaction(entityManager -> {
                     if (log.isDebugEnabled())
                         log.debug("Starting handler for event {} at offset {} in JpaReadSideHandler: {}",
                             eventClass.getName(), offset, readSideId);
@@ -146,12 +151,22 @@ public class JpaReadSideImpl implements JpaReadSide {
                             log.debug("Unhandled event {} at offset {} in JpaReadSideHandler: {}",
                                 eventClass.getName(), offset, readSideId);
                     }
-                    updateOffset(entityManager, offset);
+                    if(!isBatchUpdateEnabled){
+			updateOffset(entityManager, offset);
+		    }
                     if (log.isDebugEnabled())
                         log.debug("Completed handler for event {} at offset {} in JpaReadSideHandler: {}",
                             eventClass.getName(), offset, readSideId);
                     return Done.getInstance();
                 });
+                if(isBatchUpdateEnabled){
+		        CompletionStage<Done> offsetUpdateResult = result.thenApply( r -> {
+			        batchUpdateOffsetUpdater.checkAndUpdateOffset(offset);
+			        return Done.getInstance();
+		        });
+		        return offsetUpdateResult;
+		}
+		return result;
             });
         }
 
@@ -228,5 +243,51 @@ public class JpaReadSideImpl implements JpaReadSide {
                     .setParameter(3, sequenceOffset)
                     .setParameter(4, timeUuidOffset);
         }
+        
+        private class BatchedOffsetUpdater {
+
+		private Long updateOffsetRequestCount = 0l;
+		private Long lastupdatedOffsetRequestCount = 0l;
+		private Offset offsetToBeUpdated = null;
+		private Object lock = new Object();
+
+		private Timer offsetUpdaterTimer = new Timer("offset-update-timer", true);
+
+		BatchedOffsetUpdater() {
+			offsetUpdaterTimer.schedule(new UpdateOffsetTask(), 5 * 1000);
+		}
+
+		public void checkAndUpdateOffset(Offset offset) {
+			synchronized (lock) {
+				updateOffsetRequestCount++;
+				if (updateOffsetRequestCount - lastupdatedOffsetRequestCount > 6) {
+					batchUpdateOffset(offset);
+				} else {
+					offsetToBeUpdated = offset;
+				}
+			}
+		}
+
+		private void batchUpdateOffset(Offset offset) {
+			jpa.withTransaction(entityManager -> {
+				updateOffset(entityManager, offset);
+				offsetToBeUpdated = null;
+				lastupdatedOffsetRequestCount = updateOffsetRequestCount;
+				return Done.getInstance();
+			});
+		}
+
+		class UpdateOffsetTask extends TimerTask {
+
+			public void run() {
+				synchronized (lock) {
+					if (offsetToBeUpdated != null) {
+						batchUpdateOffset(offsetToBeUpdated);
+					}
+					offsetUpdaterTimer.schedule(new UpdateOffsetTask(), 5 * 1000);
+				}
+			}
+		}
+	}
     }
 }
