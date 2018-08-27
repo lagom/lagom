@@ -1,6 +1,6 @@
 # How are addresses bound by services?
 
-By default, Lagom services bind to `localhost`. 
+By default, Lagom services bind to `localhost`.
 
 In Maven, this can be done by modifying the service implementation's pom configuration:
 
@@ -37,7 +37,7 @@ In Maven, you can do this by modifying the service implementation's pom configur
     <groupId>com.lightbend.lagom</groupId>
     <artifactId>lagom-maven-plugin</artifactId>
     <configuration>
-        <servicePort>11000</servicePort>
+        <serviceHttpPort>11000</serviceHttpPort>
     </configuration>
 </plugin>
 ```

@@ -5,7 +5,7 @@ lagomServicesPortRange in ThisBuild := PortRange(40000, 45000)
 //#service-port
 lazy val usersImpl = (project in file("usersImpl"))
   .enablePlugins(LagomScala)
-  .settings(lagomServicePort := 11000)
+  .settings(lagomServiceHttpPort := 11000)
 //#service-port
 
 //#service-address

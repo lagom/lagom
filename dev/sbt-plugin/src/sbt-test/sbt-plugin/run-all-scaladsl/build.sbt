@@ -13,7 +13,7 @@ lazy val `a-api` = (project in file("a") / "api")
 
 lazy val `a-impl` = (project in file("a") / "impl").enablePlugins(LagomScala)
   .settings(
-    lagomServicePort := 10000,
+    lagomServiceHttpPort := 10000,
     libraryDependencies += macwire
   )
   .dependsOn(`a-api`)
@@ -25,7 +25,7 @@ lazy val `b-api` = (project in file("b") / "api")
 
 lazy val `b-impl` = (project in file("b") / "impl").enablePlugins(LagomScala)
   .settings(
-    lagomServicePort := 10001,
+    lagomServiceHttpPort := 10001,
     libraryDependencies += macwire
   )
   .dependsOn(`b-api`, `a-api`)
@@ -39,7 +39,7 @@ lazy val c = (project in file("c"))
 
 lazy val p = (project in file("p")).enablePlugins(PlayScala && LagomPlay)
   .settings(
-    lagomServicePort := 9001,
+    lagomServiceHttpPort := 9001,
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       macwire

@@ -38,7 +38,7 @@ private[sbt] object RunSupport extends RunSupportCompat {
       baseDirectory.value,
       extraConfigs.toSeq ++ lagomDevSettings.value,
       lagomServiceAddress.value,
-      lagomServicePort.value,
+      selectHttpPortToUse.value,
       lagomServiceHttpsPort.value,
       RunSupport
     )
@@ -51,9 +51,39 @@ private[sbt] object RunSupport extends RunSupportCompat {
     val classpath = (devModeDependencies.value ++ (fullClasspath in Runtime).value).distinct
 
     val buildLinkSettings = extraConfigs.toSeq ++ lagomDevSettings.value
+    Reloader.startNoReload(
+      scalaInstance.value.loader,
+      classpath.map(_.data),
+      baseDirectory.value,
+      buildLinkSettings,
+      lagomServiceAddress.value,
+      selectHttpPortToUse.value,
+      lagomServiceHttpsPort.value
+    )
+  }
 
-    Reloader.startNoReload(scalaInstance.value.loader, classpath.map(_.data), baseDirectory.value, buildLinkSettings,
-      lagomServiceAddress.value, lagomServicePort.value, lagomServiceHttpsPort.value)
+  /**
+   * This task will calculate which port should be used for http.
+   * To keep backward compatibility, we detect if the user have manually configured lagomServicePort in which
+   * case we read the value set by the user and we don't use generated port.
+   *
+   * This task must be removed together with the deprecated lagomServicePort.
+   */
+  private def selectHttpPortToUse = Def.task {
+
+    val logger = Keys.sLog.value
+    val deprecatedServicePort = lagomServicePort.value
+    val serviceHttpPort = lagomServiceHttpPort.value
+    val generatedHttpPort = lagomGeneratedServiceHttpPortCache.value
+    val isUsingGeneratedPort = serviceHttpPort == generatedHttpPort
+
+    // deprecated setting was modified by user.
+    if (deprecatedServicePort != -1 && isUsingGeneratedPort) {
+      deprecatedServicePort
+    } else if (deprecatedServicePort != -1 && !isUsingGeneratedPort) {
+      logger.warn(s"Both 'lagomServiceHttpPort' ($serviceHttpPort) and 'lagomServicePort' ($deprecatedServicePort) are configured, 'lagomServicePort' will be ignored")
+      serviceHttpPort
+    } else serviceHttpPort
   }
 
   private def devModeDependencies = Def.task {
