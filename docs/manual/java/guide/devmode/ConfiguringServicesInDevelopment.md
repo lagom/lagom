@@ -38,6 +38,7 @@ In Maven, you can do this by modifying the service implementation's pom configur
     <artifactId>lagom-maven-plugin</artifactId>
     <configuration>
         <serviceHttpPort>11000</serviceHttpPort>
+        <serviceHttpsPort>11003</serviceHttpsPort>
     </configuration>
 </plugin>
 ```
