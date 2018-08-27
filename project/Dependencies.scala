@@ -190,7 +190,7 @@ object Dependencies {
       "com.typesafe.play" % "shaded-oauth" % PlayStandaloneWsVersion,
       playTest,
       // dependencies added by play-test
-            "org.fluentlenium" % "fluentlenium-core" % "3.6.1",
+      "org.fluentlenium" % "fluentlenium-core" % "3.6.1",
       "org.seleniumhq.selenium" % "selenium-support" % "3.13.0",
       "org.seleniumhq.selenium" % "selenium-api" % "3.13.0",
       "org.seleniumhq.selenium" % "selenium-remote-driver" % "3.13.0",
