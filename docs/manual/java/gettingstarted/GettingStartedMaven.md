@@ -89,9 +89,11 @@ It will take a bit of time for the services to start. The `Services started` mes
 [info] Service locator is running at http://localhost:9008
 [info] Service gateway is running at http://localhost:9000
 ...
-[info] Service hello-impl listening for HTTP on 0:0:0:0:0:0:0:0:24266
-[info] Service stream-impl listening for HTTP on 0:0:0:0:0:0:0:0:26230
-(Services started, press enter to stop and go back to the console...)
+[INFO] Service hello-impl listening for HTTP on 127.0.0.1:65499
+[INFO] Service hello-impl listening for HTTPS on 127.0.0.1:50695
+[INFO] Service stream-impl listening for HTTP on 127.0.0.1:60212
+[INFO] Service stream-impl listening for HTTPS on 127.0.0.1:58440
+[INFO] (Services started, press enter to stop and go back to the console...)
 ```
 
 Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser:
