@@ -9,7 +9,7 @@ import akka.actor.CoordinatedShutdown;
 import akka.japi.function.Effect;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
-import com.lightbend.lagom.internal.api.CoordinatedShutdownSupport;
+import play.api.internal.libs.concurrent.CoordinatedShutdownSupport;
 import com.lightbend.lagom.internal.client.*;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactoryProvider;
