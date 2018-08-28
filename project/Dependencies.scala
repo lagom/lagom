@@ -1,6 +1,5 @@
-import Dependencies.scalaTest
-import sbt._
 import sbt.Keys._
+import sbt._
 
 object Dependencies {
 
@@ -133,6 +132,7 @@ object Dependencies {
       "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
     )
 
+  val scalaParserCombinatorOverrides = Set(scalaParserCombinators)
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.
@@ -344,7 +344,7 @@ object Dependencies {
 
   // Dependencies for each module
   val api = libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+    scalaParserCombinators,
     scalaXml,
     akkaActor,
     akkaSlf4j,
