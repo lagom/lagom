@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.scaladsl.persistence
 
 import scala.collection.immutable
@@ -100,8 +101,8 @@ abstract class PersistentEntity {
 
   type Behavior = State => Actions
   type EventHandler = PartialFunction[(Event, State), State]
-  private[lagom]type CommandHandler = PartialFunction[(Command, CommandContext[Any], State), Persist]
-  private[lagom]type ReadOnlyCommandHandler = PartialFunction[(Command, ReadOnlyCommandContext[Any], State), Unit]
+  private[lagom] type CommandHandler = PartialFunction[(Command, CommandContext[Any], State), Persist]
+  private[lagom] type ReadOnlyCommandHandler = PartialFunction[(Command, ReadOnlyCommandContext[Any], State), Unit]
 
   private var _entityId: String = _
 

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.scaladsl.testkit
 
 import java.time.LocalDateTime
@@ -10,8 +11,9 @@ import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awa
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig._
 import com.lightbend.lagom.internal.testkit.CassandraTestServer
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, RequiresLagomServicePort }
+import play.api.ApplicationLoader.Context
 import play.api.inject.DefaultApplicationLifecycle
-import play.api.{ ApplicationLoader, Environment, Play }
+import play.api.{ Environment, Play }
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 
 import scala.concurrent.Future
@@ -253,7 +255,7 @@ object ServiceTest {
     val lagomApplication =
       applicationConstructor(
         LagomApplicationContext(
-          ApplicationLoader.createContext(
+          Context.create(
             environment = Environment.simple(),
             initialSettings = config,
             lifecycle = lifecycle

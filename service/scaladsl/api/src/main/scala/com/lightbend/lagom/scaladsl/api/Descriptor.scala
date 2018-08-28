@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.scaladsl.api
 
 import akka.NotUsed
@@ -257,7 +258,7 @@ object Descriptor {
   sealed trait TopicCall[Message] {
 
     /**
-     * The identifier for teh topic.
+     * The identifier for the topic.
      */
     val topicId: TopicId
 

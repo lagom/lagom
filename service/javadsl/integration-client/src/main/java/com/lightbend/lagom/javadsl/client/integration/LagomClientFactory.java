@@ -1,30 +1,30 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.javadsl.client.integration;
 
 import akka.actor.ActorSystem;
-import akka.japi.Effect;
+import akka.actor.CoordinatedShutdown;
+import akka.japi.function.Effect;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
-import com.lightbend.lagom.internal.client.CircuitBreakerConfig;
-import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl;
-import com.lightbend.lagom.internal.client.WebSocketClient;
-import com.lightbend.lagom.internal.client.WebSocketClientConfig;
-import com.lightbend.lagom.internal.client.WebSocketClientConfig$;
+import com.lightbend.lagom.internal.client.*;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactoryProvider;
+import com.lightbend.lagom.internal.javadsl.client.CircuitBreakersPanelImpl;
 import com.lightbend.lagom.internal.javadsl.client.JavadslServiceClientImplementor;
 import com.lightbend.lagom.internal.javadsl.client.JavadslWebSocketClient;
 import com.lightbend.lagom.internal.javadsl.client.ServiceClientLoader;
+import com.lightbend.lagom.internal.javadsl.registry.JavaServiceRegistryClient;
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry;
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryServiceLocator;
+import com.lightbend.lagom.internal.registry.ServiceRegistryClient;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
 import com.lightbend.lagom.javadsl.broker.kafka.KafkaTopicFactory;
 import com.lightbend.lagom.javadsl.client.CircuitBreakersPanel;
-import com.lightbend.lagom.internal.javadsl.client.CircuitBreakersPanelImpl;
 import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator;
 import com.lightbend.lagom.javadsl.jackson.JacksonExceptionSerializer;
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory;
@@ -35,11 +35,11 @@ import org.pcollections.PVector;
 import org.pcollections.TreePVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import play.api.Configuration;
 import play.api.Environment;
 import play.api.Mode;
-import play.api.Configuration;
 import play.api.inject.ApplicationLifecycle;
+import play.api.libs.concurrent.CoordinatedShutdownProvider;
 import play.api.libs.ws.WSClient;
 import play.api.libs.ws.WSClientConfig;
 import play.api.libs.ws.WSConfigParser;
@@ -56,10 +56,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -153,9 +150,10 @@ public class LagomClientFactory implements Closeable {
     public <T> T createDevClient(Class<T> clientInterface, URI serviceLocatorUri) {
         ServiceRegistry serviceRegistry = serviceClientLoaderCreator.apply(new StaticServiceLocator(circuitBreakersPanel,
                 serviceLocatorUri)).loadServiceClient(ServiceRegistry.class);
+        ServiceRegistryClient client = new JavaServiceRegistryClient(serviceRegistry, actorSystem.dispatcher());
 
-        ServiceLocator serviceLocator = new ServiceRegistryServiceLocator(circuitBreakersPanel, serviceRegistry,
-                new ServiceRegistryServiceLocator.ServiceLocatorConfig(serviceLocatorUri), actorSystem.dispatcher());
+        ServiceLocator serviceLocator = new ServiceRegistryServiceLocator(circuitBreakersPanel, client,
+            actorSystem.dispatcher());
 
         return serviceClientLoaderCreator.apply(serviceLocator).loadServiceClient(clientInterface);
     }
@@ -168,8 +166,12 @@ public class LagomClientFactory implements Closeable {
     public void close() {
         closeGracefully(wsClient::close);
         closeGracefully(webSocketClient::shutdown);
-        closeGracefully(actorSystem::terminate);
+        closeGracefully(this::coordinatedShutdown);
         closeGracefully(() -> eventLoop.shutdownGracefully(0, 10, TimeUnit.SECONDS));
+    }
+
+    private void coordinatedShutdown() throws InterruptedException, TimeoutException {
+        CoordinatedShutdownProvider.syncShutdown(actorSystem, CoordinatedShutdown.unknownReason());
     }
 
     /**

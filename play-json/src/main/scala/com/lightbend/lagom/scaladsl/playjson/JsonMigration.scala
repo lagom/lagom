@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.scaladsl.playjson
 
 import play.api.libs.json._
@@ -9,7 +10,7 @@ import scala.collection.immutable
 import scala.reflect.ClassTag
 
 /**
- * Conveneince factories to create [[JsonMigration]]s.
+ * Convenience factories to create [[JsonMigration]]s.
  */
 object JsonMigrations {
 

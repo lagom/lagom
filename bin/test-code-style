@@ -2,14 +2,22 @@
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-runSbt  scalariformFormat \
-        test:scalariformFormat \
-        multi-jvm:scalariformFormat \
-        checkHeaders \
-        test:checkHeaders \
-        multi-jvm:checkHeaders \
-        validateDependencies \
-        mimaCheckOneAtATime
+
+## The following are three separate `sbt` invocations because in some versions of sbt (0.13)
+## trying to run all tasks in a single session caused "GC overhead limit exceeded" (both in
+## Travis and locally).
+## See https://github.com/lagom/lagom/pull/1482
+
+runSbt  +scalariformFormat \
+        +test:scalariformFormat \
+        multi-jvm:scalariformFormat
+
+runSbt  +headerCheck \
+        +test:headerCheck \
+        multi-jvm:headerCheck
+
+runSbt  validateDependencies \
+        mimaReportBinaryIssues
 
 git diff --exit-code || (
   echo "ERROR: Scalariform check failed, see differences above."

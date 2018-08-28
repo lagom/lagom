@@ -1,12 +1,14 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.internal.scaladsl.registry
 
 import java.net.URI
 
 import akka.NotUsed
 import akka.util.ByteString
+import com.lightbend.lagom.internal.registry.ServiceRegistryClient
 import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.{ NegotiatedDeserializer, NegotiatedSerializer }
 import com.lightbend.lagom.scaladsl.api.deser.{ MessageSerializer, StrictMessageSerializer }
 import com.lightbend.lagom.scaladsl.api.transport.{ MessageProtocol, Method }
@@ -25,24 +27,23 @@ trait ServiceRegistry extends Service {
 
   def register(name: String): ServiceCall[ServiceRegistryService, NotUsed]
   def unregister(name: String): ServiceCall[NotUsed, NotUsed]
-  def lookup(name: String): ServiceCall[NotUsed, URI]
+  def lookup(name: String, portName: Option[String]): ServiceCall[NotUsed, URI]
   def registeredServices: ServiceCall[NotUsed, immutable.Seq[RegisteredService]]
 
   import Service._
   import ServiceRegistry._
 
   def descriptor: Descriptor = {
-    named(ServiceName).withCalls(
+    named(ServiceRegistryClient.ServiceName).withCalls(
       restCall(Method.PUT, "/services/:id", register _),
       restCall(Method.DELETE, "/services/:id", this.unregister _),
-      restCall(Method.GET, "/services/:id", lookup _),
+      restCall(Method.GET, "/services/:id?portName", lookup _),
       pathCall("/services", registeredServices)
     ).withLocatableService(false)
   }
 }
 
 object ServiceRegistry {
-  val ServiceName = "lagom-service-registry"
 
   implicit val uriMessageSerializer: MessageSerializer[URI, ByteString] = new StrictMessageSerializer[URI] {
 
@@ -59,19 +60,20 @@ object ServiceRegistry {
           URI.create(wire.decodeString(protocol.charset.getOrElse("utf-8")))
       }
   }
-
 }
 
-case class RegisteredService(name: String, url: URI)
+case class RegisteredService(name: String, url: URI, portName: Option[String])
 
 object RegisteredService {
   import UriFormat.uriFormat
   implicit val format: Format[RegisteredService] = Json.format[RegisteredService]
 }
 
-case class ServiceRegistryService(uri: URI, acls: immutable.Seq[ServiceAcl])
+case class ServiceRegistryService(uris: immutable.Seq[URI], acls: immutable.Seq[ServiceAcl])
 
 object ServiceRegistryService {
+  def apply(uri: URI, acls: immutable.Seq[ServiceAcl]): ServiceRegistryService = ServiceRegistryService(Seq(uri), acls)
+
   import UriFormat.uriFormat
 
   implicit val methodFormat: Format[Method] =

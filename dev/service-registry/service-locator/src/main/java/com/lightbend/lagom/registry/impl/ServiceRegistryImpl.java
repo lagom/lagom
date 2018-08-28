@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
-package com.lightbend.lagom.discovery.impl;
+
+package com.lightbend.lagom.registry.impl;
 
 import java.net.URI;
 import java.util.Optional;
@@ -14,11 +15,11 @@ import akka.util.Timeout;
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry;
-import com.lightbend.lagom.discovery.ServiceRegistryActor.*;
+import com.lightbend.lagom.registry.impl.ServiceRegistryActor.*;
 
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService;
-import play.Logger;
-import play.Logger.ALogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scala.Option;
 import scala.compat.java8.OptionConverters;
 import scala.concurrent.duration.Duration;
@@ -32,7 +33,7 @@ import com.lightbend.lagom.internal.javadsl.registry.RegisteredService;
 
 public class ServiceRegistryImpl implements ServiceRegistry {
 
-	private static final ALogger LOGGER = Logger.of(ServiceRegistryImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRegistryImpl.class);
 
 	private final Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
 	private final ActorRef registry;
@@ -63,18 +64,18 @@ public class ServiceRegistryImpl implements ServiceRegistry {
 	}
 
 	@Override
-	public ServiceCall<NotUsed, URI> lookup(String name) {
+    public ServiceCall<NotUsed, URI> lookup(String serviceName, Optional<String> portName){
 		return request -> {
 			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("locate invoked, name=[" + name + "], request=[" + request + "]");
-			return PatternsCS.ask(registry, new Lookup(name), timeout).thenApply(result -> {
+                LOGGER.debug("locate invoked, name=[" + serviceName + "] and portName=[" + portName + "] . request=[" + request + "]");
+			return PatternsCS.ask(registry, new Lookup(serviceName, OptionConverters.toScala(portName)), timeout).thenApply(result -> {
 				@SuppressWarnings("unchecked")
 				Optional<URI> location = OptionConverters.toJava((Option<URI>) result);
-				logServiceLookupResult(name, location);
+				logServiceLookupResult(serviceName, location);
 				if (location.isPresent()) {
 					return location.get();
 				} else {
-					throw new com.lightbend.lagom.javadsl.api.transport.NotFound(name);
+                    throw new com.lightbend.lagom.javadsl.api.transport.NotFound("Can't find service " + serviceName + " with port" + portName);
 				}
 			});
 		};

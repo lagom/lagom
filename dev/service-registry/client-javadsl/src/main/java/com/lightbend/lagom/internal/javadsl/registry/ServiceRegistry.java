@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.internal.javadsl.registry;
 
 import static com.lightbend.lagom.javadsl.api.Service.named;
@@ -12,6 +13,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
+import com.lightbend.lagom.internal.registry.ServiceRegistryClient$;
 import org.pcollections.PSequence;
 
 import akka.NotUsed;
@@ -29,20 +31,21 @@ import com.lightbend.lagom.javadsl.api.transport.UnsupportedMediaType;
 
 public interface ServiceRegistry extends Service {
 
-	String SERVICE_NAME = "lagom-service-registry";
+	String SERVICE_NAME = ServiceRegistryClient$.MODULE$.ServiceName();
 
 	ServiceCall<ServiceRegistryService, NotUsed> register(String name);
 	ServiceCall<NotUsed, NotUsed> unregister(String name);
-	ServiceCall<NotUsed, URI> lookup(String name);
+	// TODO: add support for Optional<String> protocol on lookup
+	ServiceCall<NotUsed, URI> lookup(String serviceName, Optional<String> portName);
 	ServiceCall<NotUsed, PSequence<RegisteredService>> registeredServices();
-	
+
 	@Override
 	default Descriptor descriptor() {
 		// @formatter:off
 		return named(SERVICE_NAME).withCalls(
             restCall(Method.PUT, "/services/:id", this::register),
 		    restCall(Method.DELETE, "/services/:id", this::unregister),
-		    restCall(Method.GET, "/services/:id", this::lookup).withResponseSerializer(CustomSerializers.URI),
+		    restCall(Method.GET, "/services/:id?portName", this::lookup).withResponseSerializer(CustomSerializers.URI),
 		    pathCall("/services", this::registeredServices)
         ).withLocatableService(false);
 		// @formatter:on
@@ -89,7 +92,7 @@ class CustomSerializers {
               }
               catch(URISyntaxException e) {
                 throw new DeserializationException(e);
-              } 
+              }
           }
       }
 

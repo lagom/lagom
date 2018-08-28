@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.sbt.scripted
 
 import java.io.{ BufferedReader, InputStreamReader }
@@ -136,7 +137,7 @@ object ScriptedTools extends AutoPlugin {
     uri:             Option[URI]    = None,
     retry:           Boolean        = false,
     shouldBeDown:    Boolean        = false,
-    statusAssertion: Int => Unit    = _ => (),
+    statusAssertion: Int => Unit = _ => (),
     bodyAssertion:   String => Unit = _ => ()
   )
 

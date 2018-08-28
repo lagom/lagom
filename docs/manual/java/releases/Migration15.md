@@ -9,16 +9,17 @@ Lagom 1.5 also updates to the latest major versions of Play (2.7) and Akka HTTP 
 
 ### Maven
 
-If you're using a `lagom.version` property in the `properties` section of your root `pom.xml`, then simply update that to `1.5.0-M1`. Otherwise, you'll need to go through every place that a Lagom dependency, including plugins, is used, and set the version there.
+If you're using a `lagom.version` property in the `properties` section of your root `pom.xml`, then simply update that to `1.5.0-M2`. Otherwise, you'll need to go through every place that a Lagom dependency, including plugins, is used, and set the version there.
 
 ### sbt
 
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin. For example:
 
 ```scala
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.5.0-M1")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.5.0-M2")
 ```
 
+We also recommend upgrading to sbt 1.2.1 or later, by updating the `sbt.version` in `project/build.properties`.
 
 ## Deprecations
 
@@ -34,6 +35,8 @@ We recommend migrating to Kubernetes, DC/OS or another deployment solution befor
 [Lighbend Orchestration](https://developer.lightbend.com/docs/lightbend-orchestration/current/) is an open-source suite of tools that helps you deploy Lagom services to Kubernetes and DC/OS. It provides an easy way to create Docker images for your applications and introduces an automated process for generating Kubernetes and DC/OS resource and configuration files for you from those images. This process helps reduce the friction between development and operations. If you are using Kubernetes or DC/OS, or interested in trying one of these platforms, we encourage you to read the Lightbend Orchestration documentation to understand how to use it with Lagom and other components of the [Lightbend Reactive Platform](https://www.lightbend.com/products/reactive-platform).
 
 If you are not using Kubernetes or DC/OS, you must configure your services in a way that suits your production environment. See [[Running Lagom in production|ProductionOverview]] for more information.
+
+If you are using ConductR in production and need assistance migrating to other solutions please [contact Lightbend](https://www.lightbend.com/contact).
 
 
 ## Lightbend Orchestration

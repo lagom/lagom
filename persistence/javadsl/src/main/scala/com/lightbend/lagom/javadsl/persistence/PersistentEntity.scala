@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.javadsl.persistence
 
 import akka.japi.Util.immutableSeq
@@ -210,8 +211,10 @@ abstract class PersistentEntity[Command, Event, State] {
     private var commandHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]] =
       cmdHandlers
 
+    @scala.deprecated("The method is deprecated because it was deemed obsolete", since = "1.5.0")
     def getState(): State = _state
 
+    @scala.deprecated("The method is deprecated because it was deemed obsolete", since = "1.5.0")
     def setState(state: State): Unit = {
       _state = state
     }
@@ -267,7 +270,9 @@ abstract class PersistentEntity[Command, Event, State] {
   // This would be legal in Scala, but causes inter-operation problems with some Java compilers (such as Eclipse).
   // See https://github.com/lagom/lagom/pull/1395
   sealed abstract class BehaviorBuilder {
+    @scala.deprecated("The method is deprecated because it was deemed obsolete", since = "1.5.0")
     def getState(): State
+    @scala.deprecated("The method is deprecated because it was deemed obsolete", since = "1.5.0")
     def setState(state: State): Unit
     /**
      * Register an event handler for a given event class. The `handler` function

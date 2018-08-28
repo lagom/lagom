@@ -1,14 +1,14 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.scaladsl.client
 
 import java.io.File
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.stream.{ ActorMaterializer, Materializer }
-import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl
-import com.lightbend.lagom.internal.client.WebSocketClientConfig
+import com.lightbend.lagom.internal.client.{ CircuitBreakerMetricsProviderImpl, WebSocketClientConfig }
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
 import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
@@ -16,7 +16,7 @@ import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
-import play.api.libs.concurrent.ActorSystemProvider
+import play.api.libs.concurrent.{ ActorSystemProvider, CoordinatedShutdownProvider }
 import play.api.libs.ws.WSClient
 import play.api.{ Configuration, Environment, Mode }
 
@@ -155,7 +155,8 @@ abstract class LagomClientApplication(
     allowMissingApplicationConf = true
   )
   override lazy val applicationLifecycle: ApplicationLifecycle = defaultApplicationLifecycle
-  lazy val actorSystem: ActorSystem = new ActorSystemProvider(environment, configuration, applicationLifecycle).get
+  lazy val actorSystem: ActorSystem = new ActorSystemProvider(environment, configuration).get
+  lazy val coordinatedShutdown: CoordinatedShutdown = new CoordinatedShutdownProvider(actorSystem, applicationLifecycle).get
 
   override lazy val materializer: Materializer = ActorMaterializer.create(actorSystem)
   override lazy val executionContext: ExecutionContext = actorSystem.dispatcher
@@ -163,5 +164,7 @@ abstract class LagomClientApplication(
   /**
    * Stop the application.
    */
-  def stop(): Unit = defaultApplicationLifecycle.stop()
+  def stop(): Unit = CoordinatedShutdownProvider.syncShutdown(actorSystem, ClientStoppedReason)
 }
+
+case object ClientStoppedReason extends CoordinatedShutdown.Reason

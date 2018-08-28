@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.javadsl.testkit
 
 import java.time.LocalDateTime
@@ -27,7 +28,6 @@ import play.inject.Injector
 import play.inject.guice.GuiceApplicationBuilder
 
 import scala.annotation.tailrec
-import scala.collection.JavaConverters._
 import scala.concurrent.Promise
 import scala.concurrent.duration._
 import scala.util.Try
@@ -173,8 +173,8 @@ object ServiceTest {
       jdbc = false,
       cluster = false,
       configureBuilder = new JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder] {
-      override def apply(b: GuiceApplicationBuilder): GuiceApplicationBuilder = b
-    }
+        override def apply(b: GuiceApplicationBuilder): GuiceApplicationBuilder = b
+      }
     )
 
     override def withCassandra(enabled: Boolean): Setup = {
@@ -203,6 +203,7 @@ object ServiceTest {
         copy(cluster = false, cassandra = false)
       }
     }
+
   }
 
   /**

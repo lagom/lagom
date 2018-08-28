@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.dev
 
 /**
@@ -20,7 +21,8 @@ object LagomConfig {
   def actorSystemConfig(name: String) = Map(
     "lagom.akka.dev-mode.actor-system.name" -> s"$name-internal-dev-mode",
     "play.akka.actor-system" -> s"$name-application",
-    "lagom.defaults.cluster.join-self" -> "on"
+    "lagom.defaults.cluster.join-self" -> "on",
+    "akka.discovery.method" -> "com.lightbend.lagom.internal.registry.DevModeSimpleServiceDiscovery"
   )
 
 }

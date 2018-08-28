@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package play.core.server
 
 import java.io.File
@@ -8,15 +9,14 @@ import java.net.InetAddress
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.lightbend.lagom.devmode.ssl.FakeKeyStoreGenerator
 import play.api.ApplicationLoader.DevContext
 import play.api._
 import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
-import play.core.server.ReloadableServer
 import play.utils.Threads
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ Await, ExecutionContext, Future }
-import scala.concurrent.duration._
+import scala.concurrent.Future
 import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
 
@@ -35,39 +35,11 @@ object LagomReloadableDevServerStart {
    */
   private val startupWarningThreshold = 1000L
 
-  /**
-   * Provides an HTTPS-only server for the dev environment.
-   *
-   * <p>This method uses simple Java types so that it can be used with reflection by code
-   * compiled with different versions of Scala.
-   */
-  def mainDevOnlyHttpsMode(
-    buildLink:   BuildLink,
-    httpsPort:   Int,
-    httpAddress: String
-  ): ReloadableServer = {
-    mainDev(buildLink, None, Some(httpsPort), httpAddress)
-  }
-
-  /**
-   * Provides an HTTP server for the dev environment
-   *
-   * <p>This method uses simple Java types so that it can be used with reflection by code
-   * compiled with different versions of Scala.
-   */
-  def mainDevHttpMode(
+  def mainDev(
     buildLink:   BuildLink,
     httpAddress: String,
-    httpPort:    Int
-  ): ReloadableServer = {
-    mainDev(buildLink, Some(httpPort), None, httpAddress)
-  }
-
-  private def mainDev(
-    buildLink:   BuildLink,
-    httpPort:    Option[Int],
-    httpsPort:   Option[Int],
-    httpAddress: String
+    httpPort:    Int,
+    httpsPort:   Int
   ): ReloadableServer = {
     val classLoader = getClass.getClassLoader
     Threads.withContextClassLoader(classLoader) {
@@ -75,15 +47,45 @@ object LagomReloadableDevServerStart {
         val process = new RealServerProcess(args = Seq.empty)
         val path: File = buildLink.projectPath
 
-        val dirAndDevSettings: Map[String, String] =
+        val keystoreBaseFolder = new File(".")
+        val keystoreFilePath = FakeKeyStoreGenerator.keyStoreFile(keystoreBaseFolder)
+        val keyStore =
+          if (!keystoreFilePath.exists()) FakeKeyStoreGenerator.buildKeystore(keystoreBaseFolder)
+          else FakeKeyStoreGenerator.load(keystoreBaseFolder)
+
+        // The pairs play.server.httpx.{address,port} are read from PlayRegisterWithServiceRegistry
+        // to register the service
+        val httpsSettings: Map[String, String] =
+          Map(
+            // In dev mode, `play.server.https.address` and `play.server.http.address` are assigned the same value
+            // but both settings are set in case some code specifically read one config setting or the other.
+            "play.server.https.address" -> httpAddress, // there's no httpsAddress
+            "play.server.https.port" -> httpsPort.toString,
+            "play.server.https.keyStore.path" -> keystoreFilePath.getAbsolutePath,
+            "play.server.https.keyStore.type" -> "JKS",
+            "ssl-config.loose.disableHostnameVerification" -> "true"
+          )
+        val httpSettings: Map[String, String] =
+          Map(
+            // The pairs play.server.httpx.{address,port} are read from PlayRegisterWithServiceRegistry
+            // to register the service
+            "play.server.http.address" -> httpAddress,
+            "play.server.http.port" -> httpPort.toString
+          )
+        val dirAndDevSettings: Map[String, AnyRef] =
           ServerConfig.rootDirConfig(path) ++
             buildLink.settings.asScala.toMap ++
-            httpPort.toList.map("play.server.http.port" -> _.toString).toMap +
-            ("play.server.http.address" -> httpAddress) +
-            {
-              // on dev-mode, we often have more than one cluster on the same jvm
-              "akka.cluster.jmx.multi-mbeans-in-same-jvm" -> "on"
-            }
+            httpSettings ++
+            httpsSettings +
+            // each user service needs to tune its "play.filters.hosts.allowed" so that Play's
+            // AllowedHostFilter (https://www.playframework.com/documentation/2.6.x/AllowedHostsFilter)
+            // doesn't block request with header "Host: " with a value "localhost:<someport>". The following
+            // setting whitelists 'localhost` for both http/s ports and also 'httpAddress' for both ports too.
+            ("play.filters.hosts.allowed" ->
+              List(s"$httpAddress:$httpPort", s"$httpAddress:$httpsPort", s"localhost:$httpPort", s"localhost:$httpsPort").asJavaCollection)
+        //            ("play.server.akka.http2.enabled" -> "true") +
+        // on dev-mode, we often have more than one cluster on the same jvm
+        ("akka.cluster.jmx.multi-mbeans-in-same-jvm" -> "on")
 
         // Use plain Java call here in case of scala classloader mess
         {
@@ -224,8 +226,8 @@ object LagomReloadableDevServerStart {
         // Start server with the application
         val serverConfig = ServerConfig(
           rootDir = path,
-          port = httpPort,
-          sslPort = httpsPort,
+          port = Some(httpPort),
+          sslPort = Some(httpsPort),
           address = httpAddress,
           mode = Mode.Dev,
           properties = process.properties,
@@ -238,8 +240,7 @@ object LagomReloadableDevServerStart {
         val devModeAkkaConfig = serverConfig.configuration.underlying.getConfig("lagom.akka.dev-mode.config")
         val actorSystemName = serverConfig.configuration.underlying.getString("lagom.akka.dev-mode.actor-system.name")
         val actorSystem = ActorSystem(actorSystemName, devModeAkkaConfig)
-        val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem, ActorMaterializer()(actorSystem),
-          () => actorSystem.terminate())
+        val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem, ActorMaterializer()(actorSystem), () => Future.successful(()))
         val serverProvider = ServerProvider.fromConfiguration(classLoader, serverConfig.configuration)
         serverProvider.createServer(serverContext)
       } catch {

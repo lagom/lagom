@@ -1,48 +1,31 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.internal.scaladsl.registry
 
 import java.net.URI
 
-import com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel
+import com.lightbend.lagom.internal.registry.ServiceRegistryClient
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
-import com.lightbend.lagom.scaladsl.api.transport.NotFound
-import com.lightbend.lagom.scaladsl.client.CircuitBreakingServiceLocator
-import play.api.Logger
+import com.lightbend.lagom.scaladsl.client.{ CircuitBreakersPanel, CircuitBreakingServiceLocator }
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Success }
 
-class ServiceRegistryServiceLocator(
+private[lagom] class ServiceRegistryServiceLocator(
   circuitBreakers: CircuitBreakersPanel,
-  registry:        ServiceRegistry,
+  client:          ServiceRegistryClient,
   implicit val ec: ExecutionContext
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {
 
-  private val logger: Logger = Logger(this.getClass())
+  override def locateAll(name: String, serviceCall: Call[_, _]): Future[List[URI]] =
+    // a ServiceLocator doesn't know what a `portName` is so we default to `None` and the
+    // implementation will return any registry without a port name. This means that in order
+    // for this queries to work any service registered using `http` as portName will also have
+    // to be registered without name.
+    client.locateAll(name, None).map(_.toList)
 
-  override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = {
-
-    require(name != ServiceRegistry.ServiceName)
-    logger.debug(s"Locating service name=[$name] ...")
-
-    val location: Future[Option[URI]] = {
-      registry.lookup(name).invoke().map(Some.apply).recover {
-        case notFound: NotFound => None
-      }
-    }
-
-    location.onComplete {
-      case Success(Some(address)) =>
-        logger.debug(s"Service name=[$name] can be reached at address=[${address.getPath}]")
-      case Success(None) =>
-        logger.warn(s"Service name=[$name] was not found. Hint: Maybe it was not registered?")
-      case Failure(e) =>
-        logger.warn(s"The service locator replied with an error when looking up the service name=[$name] address", e)
-    }
-
-    location
-  }
+  override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] =
+    locateAll(name, serviceCall).map(_.headOption)
 
 }

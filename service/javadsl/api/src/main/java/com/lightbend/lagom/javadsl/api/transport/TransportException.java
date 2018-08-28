@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.javadsl.api.transport;
 
 import com.lightbend.lagom.javadsl.api.deser.DeserializationException;
@@ -38,6 +39,12 @@ public class TransportException extends RuntimeException {
         super(exceptionMessage.detail());
         this.errorCode = errorCode;
         this.exceptionMessage = exceptionMessage;
+    }
+
+    public TransportException(TransportErrorCode errorCode, String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = errorCode;
+        this.exceptionMessage = new ExceptionMessage(this.getClass().getSimpleName(), message);
     }
 
     public static TransportException fromCodeAndMessage(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {

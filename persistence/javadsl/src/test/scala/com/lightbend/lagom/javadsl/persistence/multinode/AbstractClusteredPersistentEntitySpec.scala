@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.javadsl.persistence.multinode
 
 import java.util.concurrent.CompletionStage
@@ -41,12 +42,14 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       # increase default timeouts to leave wider margin for Travis.
       # 30s to 60s
       akka.testconductor.barrier-timeout=60s
-      # 5s to 10s
-      lagom.persistence.ask-timeout = 9s
-      # 5s to 10s
-      akka.test.single-expect-default = 11s
-      ## use 9s and 11s for the above timeout because it's coprime values and it'll be easier to spot interferences.
-      ## Also, make the Akka expect() timeouts higher since this tests often expect over an ask operation.
+
+      ## use 13s and 15s for the timeouts below because they are coprime values and it'll be easier to spot interferences.
+      ## Also, make Akka's `single-expect-default` timeout higher since this test often `expect`'s over an ask operation.
+      ## NOTE: these values used to be '9s' and '11s' but '9s' triggered timeouts quite often in Travis. If '13s'
+      ## also triggers timeouts in Travis it's possible there's something worth reviewing on this test.
+      lagom.persistence.ask-timeout = 13s
+      akka.test.single-expect-default = 15s
+
 
       # Don't terminate the actor system when doing a coordinated shutdown
       # See http://doc.akka.io/docs/akka/2.5.0/project/migration-guide-2.4.x-2.5.x.html#Coordinated_Shutdown
@@ -132,7 +135,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
   protected def getAppendCount(id: String): CompletionStage[java.lang.Long]
 
   /**
-   * uses overridden {{getAppendCount}} to assert a given entity {{id}} emited the {{expected}} number of events. The
+   * uses overridden {{getAppendCount}} to assert a given entity {{id}} emitted the {{expected}} number of events. The
    * implementation uses polling from only node1 so nodes 2 and 3 will skip this code.
    */
   def expectAppendCount(id: String, expected: Long) = {

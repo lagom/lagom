@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.internal.scaladsl.persistence
 
 import akka.actor.{ Actor, ActorLogging, Props, Status }
@@ -77,18 +78,18 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
           config.maxBackoff,
           config.randomBackoffFactor
         ) { () =>
-          val handler = processor().buildHandler()
-          val futureOffset = handler.prepare(tag)
-          Source
-            .fromFuture(futureOffset)
-            .initialTimeout(config.offsetTimeout)
-            .flatMapConcat {
-              offset =>
-                val eventStreamSource = eventStreamFactory(tag, offset)
-                val userlandFlow = handler.handle()
-                eventStreamSource.via(userlandFlow)
-            }
-        }
+            val handler = processor().buildHandler()
+            val futureOffset = handler.prepare(tag)
+            Source
+              .fromFuture(futureOffset)
+              .initialTimeout(config.offsetTimeout)
+              .flatMapConcat {
+                offset =>
+                  val eventStreamSource = eventStreamFactory(tag, offset)
+                  val userlandFlow = handler.handle()
+                  eventStreamSource.via(userlandFlow)
+              }
+          }
 
       val (killSwitch, streamDone) = backoffSource
         .viaMat(KillSwitches.single)(Keep.right)

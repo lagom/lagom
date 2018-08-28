@@ -1,25 +1,25 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.internal.server
 
 import java.net.URI
 import java.util.function.{ Function => JFunction }
 
-import scala.compat.java8.FutureConverters.CompletionStageOps
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import akka.NotUsed
-import javax.inject.{ Inject, Provider, Singleton }
-import com.lightbend.lagom.internal.javadsl.registry.{ ServiceAcl, ServiceRegistry, ServiceRegistryService }
+import akka.actor.CoordinatedShutdown
+import akka.{ Done, NotUsed }
+import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistry, ServiceRegistryService }
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
 import com.typesafe.config.Config
-import play.api.Configuration
-import play.api.Environment
-import play.api.Logger
-import play.api.inject.ApplicationLifecycle
-import play.api.inject.Binding
-import play.api.inject.Module
+import javax.inject.{ Inject, Provider, Singleton }
+import play.api.inject.{ Binding, Module }
+import play.api.{ Configuration, Environment, Logger }
+
+import scala.compat.java8.FutureConverters.CompletionStageOps
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.collection.JavaConverters._
+import scala.collection.immutable
 
 class ServiceRegistrationModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
@@ -32,40 +32,46 @@ object ServiceRegistrationModule {
 
   class ServiceConfigProvider @Inject() (config: Config) extends Provider[ServiceConfig] {
 
+    // This code is similar to `ServiceRegistration` in project `dev-mode-scala`
+    // and `PlayRegisterWithServiceRegistry` in project `play-integration-javadsl
     override lazy val get = {
+      // In dev mode, `play.server.http.address` is used for both HTTP and HTTPS.
+      // Reading one value or the other gets the same result.
       val httpAddress = config.getString("play.server.http.address")
-      val httpPort = config.getString("play.server.http.port")
-      val url = new URI(s"http://$httpAddress:$httpPort")
+      val uris = List("http", "https").map { scheme =>
+        val port = config.getString(s"play.server.$scheme.port")
+        new URI(s"$scheme://$httpAddress:$port")
+      }
 
-      ServiceConfig(url)
+      ServiceConfig(uris)
     }
   }
 
-  case class ServiceConfig(url: URI)
+  case class ServiceConfig(uris: immutable.Seq[URI])
 
   /**
    * Automatically registers the service on start, and also unregister it on stop.
    */
   @Singleton
   private class RegisterWithServiceRegistry @Inject() (
-    lifecycle:        ApplicationLifecycle,
-    resolvedServices: ResolvedServices,
-    config:           ServiceConfig,
-    registry:         ServiceRegistry
+    coordinatedShutdown: CoordinatedShutdown,
+    resolvedServices:    ResolvedServices,
+    config:              ServiceConfig,
+    registry:            ServiceRegistry
   )(implicit ec: ExecutionContext) {
 
     private lazy val logger: Logger = Logger(this.getClass())
 
     private val locatableServices = resolvedServices.services.filter(_.descriptor.locatableService)
 
-    lifecycle.addStopHook { () =>
+    coordinatedShutdown.addTask(CoordinatedShutdown.PhaseBeforeServiceUnbind, "unregister-services-from-service-locator-javadsl") { () =>
       Future.sequence(locatableServices.map { service =>
         registry.unregister(service.descriptor.name).invoke().toScala
-      }).map(_ => ())
+      }).map(_ => Done)
     }
 
     locatableServices.foreach { service =>
-      val c = ServiceRegistryService.of(config.url, service.descriptor.acls)
+      val c = ServiceRegistryService.of(config.uris.asJava, service.descriptor.acls)
       registry.register(service.descriptor.name).invoke(c).exceptionally(new JFunction[Throwable, NotUsed] {
         def apply(t: Throwable) = {
           logger.error(s"Service name=[${service.descriptor.name}] couldn't register itself to the service locator.", t)

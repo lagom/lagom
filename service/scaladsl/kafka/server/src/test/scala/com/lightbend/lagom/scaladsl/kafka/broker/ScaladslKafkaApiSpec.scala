@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.scaladsl.kafka.broker
 
 import java.util.concurrent.atomic.AtomicLong
@@ -22,9 +23,9 @@ import com.lightbend.lagom.scaladsl.kafka.broker.ScaladslKafkaApiSpec._
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.spi.persistence.InMemoryOffsetStore
+import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest._
-import play.api.Configuration
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.mutable
@@ -45,13 +46,16 @@ class ScaladslKafkaApiSpec extends WordSpecLike
       override lazy val offsetStore = new InMemoryOffsetStore
       override lazy val lagomServer = serverFor[TestService](new TestServiceImpl)
 
-      override def additionalConfiguration = super.additionalConfiguration ++ Configuration.from(Map(
-        "akka.remote.netty.tcp.port" -> "0",
-        "akka.remote.netty.tcp.hostname" -> "127.0.0.1",
-        "akka.persistence.journal.plugin" -> "akka.persistence.journal.inmem",
-        "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local",
-        "lagom.services.kafka_native" -> s"tcp://localhost:${KafkaLocalServer.DefaultPort}"
-      ))
+      override def additionalConfiguration = {
+        import scala.collection.JavaConverters._
+        super.additionalConfiguration ++ ConfigFactory.parseMap(Map(
+          "akka.remote.netty.tcp.port" -> "0",
+          "akka.remote.netty.tcp.hostname" -> "127.0.0.1",
+          "akka.persistence.journal.plugin" -> "akka.persistence.journal.inmem",
+          "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local",
+          "lagom.services.kafka_native" -> s"tcp://localhost:${KafkaLocalServer.DefaultPort}"
+        ).asJava)
+      }
 
       lazy val testService = serviceClient.implement[TestService]
     }

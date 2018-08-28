@@ -1,13 +1,14 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.gateway
 
 import java.net.InetSocketAddress
 import java.util.Locale
-import javax.inject.{ Inject, Named }
 
-import akka.actor.{ ActorRef, ActorSystem }
+import akka.Done
+import akka.actor.{ ActorRef, ActorSystem, CoordinatedShutdown }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.ws._
@@ -15,10 +16,10 @@ import akka.pattern.ask
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
 import akka.util.Timeout
-import com.lightbend.lagom.discovery.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
+import com.lightbend.lagom.registry.impl.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
+import javax.inject.{ Inject, Named }
 import org.slf4j.LoggerFactory
-import play.api.inject.ApplicationLifecycle
 import play.api.libs.typedmap.TypedMap
 import play.api.mvc.request.{ RemoteConnection, RequestAttrKey, RequestTarget }
 import play.api.mvc.{ Headers, RequestHeader }
@@ -26,18 +27,23 @@ import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 
 import scala.collection.immutable
-import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
+import scala.concurrent.{ Await, Future }
 
-class AkkaHttpServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
-                                               @Named("serviceRegistryActor") registry: ActorRef)(implicit actorSystem: ActorSystem, mat: Materializer) {
+class AkkaHttpServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig)
+  (@Named("serviceRegistryActor") registry: ActorRef)
+  (implicit actorSystem: ActorSystem, mat: Materializer) {
 
   def start(): InetSocketAddress = {
-    new AkkaHttpServiceGateway(lifecycle, config, registry).address
+    new AkkaHttpServiceGateway(coordinatedShutdown, config, registry).address
   }
 }
 
-class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef)(implicit actorSystem: ActorSystem, mat: Materializer) {
+class AkkaHttpServiceGateway(
+  coordinatedShutdown: CoordinatedShutdown,
+  config:              ServiceGatewayConfig,
+  registry:            ActorRef
+)(implicit actorSystem: ActorSystem, mat: Materializer) {
 
   private val log = LoggerFactory.getLogger(classOf[AkkaHttpServiceGateway])
 
@@ -47,12 +53,12 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
 
   private val handler = Flow[HttpRequest].mapAsync(1) { request =>
     log.debug("Routing request {}", request)
-    val path = request.uri.path.toString()
 
-    (registry ? Route(request.method.name, path)).mapTo[RouteResult].flatMap {
-      case Found(serviceAddress) =>
-        log.debug("Request is to be routed to {}", serviceAddress)
-        val newUri = request.uri.withAuthority(serviceAddress.getHostName, serviceAddress.getPort)
+    val path = request.uri.path.toString()
+    (registry ? Route(request.method.name, path, None)).mapTo[RouteResult].flatMap {
+      case Found(serviceUri) =>
+        log.debug("Request is to be routed to {}", serviceUri)
+        val newUri = request.uri.withAuthority(serviceUri.getHost, serviceUri.getPort)
         request.header[UpgradeToWebSocket] match {
           case Some(upgrade) =>
             handleWebSocketRequest(request, newUri, upgrade)
@@ -61,8 +67,9 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
         }
       case NotFound(registryMap) =>
         log.debug("Sending not found response")
-        Future.successful(renderNotFound(request, path, registryMap))
+        Future.successful(renderNotFound(request, path, registryMap.mapValues(_.serviceRegistryService)))
     }
+
   }
 
   private def handleWebSocketRequest(request: HttpRequest, uri: Uri, upgrade: UpgradeToWebSocket) = {
@@ -100,7 +107,7 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
       override def routes: Routes = PartialFunction.empty
       override val documentation: Seq[(String, String, String)] = registry.toSeq.flatMap {
         case (serviceName, service) =>
-          val call = s"Service: $serviceName (${service.uri})"
+          val call = s"Service: $serviceName (${service.uris})"
           service.acls().asScala.map { acl =>
             val method = acl.method.asScala.fold("*")(_.name)
             val path = acl.pathRegex.orElse(".*")
@@ -157,12 +164,13 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
   }
 
   private val bindingFuture = Http().bindAndHandle(handler, config.host, config.port)
-  lifecycle.addStopHook(() => {
+
+  coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-akka-http-service-gateway") { () =>
     for {
       binding <- bindingFuture
-      unbind <- binding.unbind()
-    } yield unbind
-  })
+      _ <- binding.unbind()
+    } yield Done
+  }
 
   val address: InetSocketAddress = Await.result(bindingFuture, 10.seconds).localAddress
 }

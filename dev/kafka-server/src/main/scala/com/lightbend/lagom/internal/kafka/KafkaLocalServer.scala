@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.internal.kafka
 
 import java.io.File
@@ -28,8 +29,8 @@ class KafkaLocalServer private (kafkaProperties: Properties, zooKeeperServer: Ka
 
   def start(): Unit = {
     if (kafkaServerRef.get == null) {
-      // There is a possible race condition here. However, instead of attempting to avoid it 
-      // by using a lock, we are working with it and do the necessary clean up if indeed we 
+      // There is a possible race condition here. However, instead of attempting to avoid it
+      // by using a lock, we are working with it and do the necessary clean up if indeed we
       // end up creating two Kafka server instances.
       val newKafkaServer = KafkaServerStartable.fromProps(kafkaProperties)
       if (kafkaServerRef.compareAndSet(null, newKafkaServer)) {

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.scaladsl.it.mocks
 
 import java.util.concurrent.atomic.{ AtomicBoolean, AtomicReference }

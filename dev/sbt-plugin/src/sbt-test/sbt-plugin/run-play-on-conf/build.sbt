@@ -6,7 +6,7 @@ scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.6")
 
 lazy val p = (project in file("p")).enablePlugins(PlayJava && LagomPlay)
   .settings(
-    lagomServicePort := 9001,
+    lagomServiceHttpPort := 9001,
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(lagomJavadslClient, lagomJavadslApi)
   )

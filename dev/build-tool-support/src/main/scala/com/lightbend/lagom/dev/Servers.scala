@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.dev
 
 import java.io.{ Closeable, File }
@@ -81,48 +82,65 @@ private[lagom] object Servers {
 
     protected var server: Server = _
 
-    final def tryStop(log: LoggerProxy): Unit = synchronized {
-      if (server != null) stop(log)
-    }
+    final def tryStop(log: LoggerProxy): Unit =
+      synchronized {
+        if (server != null) stop(log)
+      }
 
     protected def stop(log: LoggerProxy): Unit
   }
 
   object ServiceLocator extends ServerContainer {
     protected type Server = Closeable {
-      def start(serviceLocatorAddress: String, serviceLocatorPort: Int, serviceGatewayAddress: String, serviceGatewayPort: Int,
-                unmanagedServices: JMap[String, String], gatewayImpl: String): Unit
+      def start(
+        serviceLocatorAddress:  String,
+        serviceLocatorPort:     Int,
+        serviceGatewayAddress:  String,
+        serviceGatewayHttpPort: Int,
+        unmanagedServices:      JMap[String, String],
+        gatewayImpl:            String
+      ): Unit
       def serviceLocatorAddress: URI
       def serviceGatewayAddress: URI
     }
 
-    def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Array[URL], serviceLocatorAddress: String,
-              serviceLocatorPort: Int, serviceGatewayAddress: String, serviceGatewayPort: Int,
-              unmanagedServices: Map[String, String], gatewayImpl: String): Closeable = synchronized {
-      if (server == null) {
-        withContextClassloader(new java.net.URLClassLoader(classpath, parentClassLoader)) { loader =>
-          val serverClass = loader.loadClass("com.lightbend.lagom.discovery.ServiceLocatorServer")
-          server = serverClass.newInstance().asInstanceOf[Server]
-          try {
-            server.start(serviceLocatorAddress, serviceLocatorPort, serviceGatewayAddress, serviceGatewayPort, unmanagedServices.asJava, gatewayImpl)
-          } catch {
-            case e: Exception =>
-              val msg = "Failed to start embedded Service Locator or Service Gateway. " +
-                s"Hint: Are ports $serviceLocatorPort and $serviceGatewayPort already in use?"
-              stop()
-              throw new RuntimeException(msg, e)
+    def start(
+      log:                    LoggerProxy,
+      parentClassLoader:      ClassLoader,
+      classpath:              Array[URL],
+      serviceLocatorAddress:  String,
+      serviceLocatorPort:     Int,
+      serviceGatewayAddress:  String,
+      serviceGatewayHttpPort: Int,
+      unmanagedServices:      Map[String, String],
+      gatewayImpl:            String
+    ): Closeable =
+      synchronized {
+        if (server == null) {
+          withContextClassloader(new java.net.URLClassLoader(classpath, parentClassLoader)) { loader =>
+            val serverClass = loader.loadClass("com.lightbend.lagom.registry.impl.ServiceLocatorServer")
+            server = serverClass.newInstance().asInstanceOf[Server]
+            try {
+              server.start(serviceLocatorAddress, serviceLocatorPort, serviceGatewayAddress, serviceGatewayHttpPort, unmanagedServices.asJava, gatewayImpl)
+            } catch {
+              case e: Exception =>
+                val msg = "Failed to start embedded Service Locator or Service Gateway. " +
+                  s"Hint: Are ports $serviceLocatorPort or $serviceGatewayHttpPort already in use?"
+                stop()
+                throw new RuntimeException(msg, e)
+            }
           }
         }
-      }
-      if (server != null) {
-        log.info("Service locator is running at " + server.serviceLocatorAddress)
-        log.info("Service gateway is running at " + server.serviceGatewayAddress)
-      }
+        if (server != null) {
+          log.info("Service locator is running at " + server.serviceLocatorAddress)
+          // TODO: trace all valid locations for the service gateway.
+          log.info("Service gateway is running at " + server.serviceGatewayAddress)
+        }
 
-      new Closeable {
-        override def close(): Unit = stop(log)
+        new Closeable {
+          override def close(): Unit = stop(log)
+        }
       }
-    }
 
     private def withContextClassloader[T](loader: ClassLoader)(body: ClassLoader => T): T = {
       val current = Thread.currentThread().getContextClassLoader
@@ -132,20 +150,22 @@ private[lagom] object Servers {
       } finally Thread.currentThread().setContextClassLoader(current)
     }
 
-    protected def stop(log: LoggerProxy): Unit = synchronized {
-      if (server == null) {
-        log.info("Service locator was already stopped")
-      } else {
-        log.info("Stopping service locator")
-        stop()
+    protected def stop(log: LoggerProxy): Unit =
+      synchronized {
+        if (server == null) {
+          log.info("Service locator was already stopped")
+        } else {
+          log.info("Stopping service locator")
+          stop()
+        }
       }
-    }
 
-    private def stop(): Unit = synchronized {
-      try server.close()
-      catch { case _: Exception => () }
-      finally server = null
-    }
+    private def stop(): Unit =
+      synchronized {
+        try server.close()
+        catch { case _: Exception => () }
+        finally server = null
+      }
   }
 
   private[lagom] object CassandraServer extends ServerContainer {
@@ -166,24 +186,24 @@ private[lagom] object Servers {
       jvmOptions:        Seq[String],
       yamlConfig:        File,
       maxWaiting:        FiniteDuration
-    ): Closeable = synchronized {
+    ): Closeable =
+      synchronized {
+        if (server != null) {
+          log.info(s"Cassandra is running at ${server.address}")
+        } else {
+          val loader = new java.net.URLClassLoader(classpath.map(_.toURI.toURL).toArray, parentClassLoader)
+          val directory = new File("target/embedded-cassandra")
+          val serverClass = loader.loadClass("com.lightbend.lagom.internal.cassandra.CassandraLauncher")
+          server = serverClass.newInstance().asInstanceOf[Server]
 
-      if (server != null) {
-        log.info(s"Cassandra is running at ${server.address}")
-      } else {
-        val loader = new java.net.URLClassLoader(classpath.map(_.toURI.toURL).toArray, parentClassLoader)
-        val directory = new File("target/embedded-cassandra")
-        val serverClass = loader.loadClass("com.lightbend.lagom.internal.cassandra.CassandraLauncher")
-        server = serverClass.newInstance().asInstanceOf[Server]
+          server.start(directory, yamlConfig, cleanOnStart, port, jvmOptions.toArray)
 
-        server.start(directory, yamlConfig, cleanOnStart, port, jvmOptions.toArray)
-
-        waitForRunningCassandra(log, server, maxWaiting)
+          waitForRunningCassandra(log, server, maxWaiting)
+        }
+        new Closeable {
+          override def close(): Unit = stop(log)
+        }
       }
-      new Closeable {
-        override def close(): Unit = stop(log)
-      }
-    }
 
     private def waitForRunningCassandra(log: LoggerProxy, server: Server, maxWaiting: FiniteDuration): Unit = {
       val contactPoint = Seq(new java.net.InetSocketAddress(server.hostname, server.port)).asJava
@@ -219,24 +239,26 @@ private[lagom] object Servers {
       tryConnect(maxWaiting.fromNow)
     }
 
-    protected def stop(log: LoggerProxy): Unit = synchronized {
-      if (server == null) {
-        log.info("Cassandra was already stopped")
-      } else {
-        log.info("Stopping cassandra")
-        stop()
+    protected def stop(log: LoggerProxy): Unit =
+      synchronized {
+        if (server == null) {
+          log.info("Cassandra was already stopped")
+        } else {
+          log.info("Stopping cassandra")
+          stop()
+        }
       }
-    }
 
-    private def stop(): Unit = synchronized {
-      try {
-        server.stop()
-      } catch {
-        case _: Exception => ()
-      } finally {
-        server = null.asInstanceOf[Server]
+    private def stop(): Unit =
+      synchronized {
+        try {
+          server.stop()
+        } catch {
+          case _: Exception => ()
+        } finally {
+          server = null.asInstanceOf[Server]
+        }
       }
-    }
   }
 
   private[lagom] object KafkaServer extends ServerContainer {

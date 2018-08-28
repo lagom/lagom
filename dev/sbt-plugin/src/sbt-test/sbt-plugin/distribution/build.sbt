@@ -22,8 +22,8 @@ lazy val playProj = (project in file("playProj")).enablePlugins(PlayJava, LagomP
 val checkStartScriptLagomProj = taskKey[Unit]("checkStartScriptLagomProj")
 val checkStartScriptPlayProj = taskKey[Unit]("checkStartScriptPlayProj")
 
-checkStartScriptLagomProj := checkStartScriptTask(lagomProj)
-checkStartScriptPlayProj := checkStartScriptTask(playProj)
+checkStartScriptLagomProj := checkStartScriptTask(lagomProj).value
+checkStartScriptPlayProj := checkStartScriptTask(playProj).value
 
 def checkStartScriptTask(p: Project) = Def.task {
   val startScript = ((target in p).value) / "universal" / "stage" / "bin" / ((name in p).value)
@@ -34,11 +34,14 @@ def checkStartScriptTask(p: Project) = Def.task {
   }
   val contents = IO.read(startScript)
   val lines = IO.readLines(startScript)
-  if (!contents.contains( """app_mainclass=("play.core.server.ProdServerStart")""")) {
+  // For sbt 0.13, the main class name is declared between double quotes. For sbt 1.2.x it is not.
+  if (contents.contains("app_mainclass=(play.core.server.ProdServerStart)") || contents.contains( """app_mainclass=("play.core.server.ProdServerStart")""")) {
+    // Also check for classpath declaration
+    lines.find(_ startsWith "declare -r app_classpath")
+      .getOrElse( startScriptError(contents, "Start script doesn't declare app_classpath"))
+  } else {
     startScriptError(contents, "Cannot find the declaration of the main class in the script")
   }
-  val appClasspath = lines.find(_ startsWith "declare -r app_classpath")
-      .getOrElse( startScriptError(contents, "Start script doesn't declare app_classpath"))
 }
 
 InputKey[Unit]("absence") := {

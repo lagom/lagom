@@ -1,3 +1,4 @@
+import Dependencies.scalaTest
 import sbt._
 import sbt.Keys._
 
@@ -7,7 +8,7 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.7.0-M1"
+  val PlayVersion = "2.7.0-M2"
   val PlayJsonVersion = "2.6.9"
   val PlayStandaloneWsVersion = "2.0.0-M2"
   val TwirlVersion = "1.4.0-M2"
@@ -16,10 +17,11 @@ object Dependencies {
   // Also be sure to update AkkaVersion in docs/build.sbt.
   val AkkaVersion = "2.5.14"
   val AkkaHttpVersion = "10.1.3"
+  val AkkaManagementVersion = "0.17.0"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.6", "2.11.12")
   val SbtScalaVersions = Seq("2.10.6", "2.12.6")
-  val AkkaPersistenceCassandraVersion = "0.60"
+  val AkkaPersistenceCassandraVersion = "0.61"
   val AkkaPersistenceJdbcVersion = "3.4.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
   val ScalaTestVersion = "3.0.4"
@@ -38,7 +40,7 @@ object Dependencies {
   val ScalaXmlVersion = "1.1.0"
   val SlickVersion = "3.2.3"
   // Also be sure to update JUnitVersion in docs/build.sbt.
-  val JUnitVersion = "4.11"
+  val JUnitVersion = "4.12"
   // Also be sure to update JUnitInterfaceVersion in docs/build.sbt.
   val JUnitInterfaceVersion = "0.11"
 
@@ -82,9 +84,13 @@ object Dependencies {
   private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % AkkaVersion
   private val akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion excludeAll (excludeSlf4j: _*)
   private val akkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
+  private val akkaProfobuf = "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
+
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
   private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.2"
+
+  private val akkaDiscovery = "com.lightbend.akka.discovery" %% "akka-discovery" % AkkaManagementVersion
 
   private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % AkkaPersistenceJdbcVersion excludeAll (excludeSlf4j: _*)
 
@@ -105,6 +111,7 @@ object Dependencies {
   private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playAkkaHttpServer = "com.typesafe.play" %% "play-akka-http-server" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val playTest = "com.typesafe.play" %% "play-test" % PlayVersion excludeAll (excludeSlf4j: _*)
 
   private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
   private val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
@@ -112,7 +119,8 @@ object Dependencies {
   private val playFunctional = "com.typesafe.play" %% "play-functional" % PlayJsonVersion excludeAll (excludeSlf4j: _*)
   private val playFileWatch = "com.lightbend.play" %% "play-file-watch" % PlayFileWatchVersion excludeAll (excludeSlf4j: _*)
 
-  private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.6"
+  private val junit = "junit" % "junit" % JUnitVersion
+  private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.7"
 
   private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.2" excludeAll (excludeSlf4j: _*)
 
@@ -160,6 +168,7 @@ object Dependencies {
       "com.novocode" % "junit-interface" % JUnitInterfaceVersion,
       typesafeConfig,
       sslConfig,
+      akkaDiscovery,
       akkaHttpCore,
       akkaStreamKafka,
       akkaParsing,
@@ -179,6 +188,43 @@ object Dependencies {
       "com.typesafe.play" %% "play-ahc-ws-standalone" % PlayStandaloneWsVersion,
       "com.typesafe.play" % "shaded-asynchttpclient" % PlayStandaloneWsVersion,
       "com.typesafe.play" % "shaded-oauth" % PlayStandaloneWsVersion,
+      playTest,
+      // dependencies added by play-test
+      "org.fluentlenium" % "fluentlenium-core" % "3.5.2",
+      "org.seleniumhq.selenium" % "selenium-support" % "3.9.1",
+      "org.seleniumhq.selenium" % "selenium-api" % "3.9.1",
+      "org.seleniumhq.selenium" % "selenium-remote-driver" % "3.9.1",
+      "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.9.1",
+      "net.bytebuddy" % "byte-buddy" % "1.7.9",
+      "org.apache.commons" % "commons-exec" % "1.3",
+      "commons-logging" % "commons-logging" % "1.2",
+      "com.google.code.gson" % "gson" % "2.8.2",
+      "com.squareup.okhttp3" % "okhttp" % "3.9.1",
+      "com.squareup.okio" % "okio" % "1.13.0",
+      "org.atteo.classindex" % "classindex" % "3.4",
+      "org.seleniumhq.selenium" % "htmlunit-driver" % "2.31.0",
+      "net.sourceforge.htmlunit" % "htmlunit" % "2.31",
+      "xalan" % "xalan" % "2.7.2",
+      "xalan" % "serializer" % "2.7.2",
+      "org.apache.commons" % "commons-text" % "1.3",
+      "org.apache.httpcomponents" % "httpmime" % "4.5.5",
+      "org.apache.httpcomponents" % "httpclient" % "4.5.5",
+      "org.apache.httpcomponents" % "httpcore" % "4.4.9",
+      "net.sourceforge.htmlunit" % "htmlunit-core-js" % "2.31",
+      "net.sourceforge.htmlunit" % "neko-htmlunit" % "2.31",
+      "xerces" % "xercesImpl" % "2.11.0",
+      "xml-apis" % "xml-apis" % "1.4.01",
+      "net.sourceforge.htmlunit" % "htmlunit-cssparser" % "1.0.0",
+      "commons-io" % "commons-io" % "2.6",
+      "commons-net" % "commons-net" % "3.6",
+      "org.eclipse.jetty.websocket" % "websocket-client" % "9.4.10.v20180503",
+      "org.eclipse.jetty" % "jetty-client" % "9.4.10.v20180503",
+      "org.eclipse.jetty" % "jetty-http" % "9.4.10.v20180503",
+      "org.eclipse.jetty" % "jetty-util" % "9.4.10.v20180503",
+      "org.eclipse.jetty" % "jetty-io" % "9.4.10.v20180503",
+      "org.eclipse.jetty" % "jetty-xml" % "9.4.10.v20180503",
+      "org.eclipse.jetty.websocket" % "websocket-common" % "9.4.10.v20180503",
+      "org.eclipse.jetty.websocket" % "websocket-api" % "9.4.10.v20180503",
 
       "com.typesafe.play" %% "twirl-api" % TwirlVersion,
       "com.typesafe.slick" %% "slick" % SlickVersion,
@@ -212,7 +258,7 @@ object Dependencies {
       "org.pcollections" % "pcollections" % "2.1.2",
       reactiveStreams,
       "org.scalactic" %% "scalactic" % ScalaTestVersion,
-      "org.scalatest" %% "scalatest" % ScalaTestVersion,
+      scalaTest,
       "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion,
       scalaParserCombinators,
       scalaXml,
@@ -332,6 +378,7 @@ object Dependencies {
     "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % JacksonDatatypeVersion,
     akkaTestkit % Test,
     scalaTest % Test,
+    junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test
   )
 
@@ -362,7 +409,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
+    akkaProfobuf
   )
 
   val client = libraryDependencies ++= Seq(
@@ -439,12 +486,16 @@ object Dependencies {
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
     playNettyServer,
     playAkkaHttpServer,
+    playTest % Test,
+    junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest
   )
 
   val `integration-tests-scaladsl` = libraryDependencies ++= Seq(
     playAkkaHttpServer,
+    playTest % Test,
+    junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest
   )
@@ -454,6 +505,7 @@ object Dependencies {
     akkaTestkit % Test,
     scalaTest % Test,
     play,
+    junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
 
     // Upgrades needed to match whitelist
@@ -467,6 +519,7 @@ object Dependencies {
     akkaTestkit % Test,
     akkaMultiNodeTestkit % Test,
     scalaTest % Test,
+    junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test
   )
 
@@ -474,6 +527,7 @@ object Dependencies {
     akkaTestkit % Test,
     akkaMultiNodeTestkit % Test,
     scalaTest % Test,
+    junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
 
     // Upgrades needed to match whitelist
@@ -491,6 +545,7 @@ object Dependencies {
     akkaMultiNodeTestkit % Test,
     akkaStreamTestkit % Test,
     scalaTest % Test,
+    junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test
     // explicitly depend on particular versions of jackson
   ) ++ jacksonFamily ++ Seq(
@@ -520,6 +575,7 @@ object Dependencies {
     akkaMultiNodeTestkit % Test,
     akkaStreamTestkit % Test,
     scalaTest % Test,
+    junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
 
     // Upgrades needed to match whitelist
@@ -553,7 +609,9 @@ object Dependencies {
     "io.netty" % "netty-handler" % NettyVersion
   )
 
-  val `persistence-cassandra-javadsl` = libraryDependencies ++= Nil
+  val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
+    junit % Test
+  )
 
   val `persistence-cassandra-scaladsl` = libraryDependencies ++= Nil
 
@@ -562,6 +620,7 @@ object Dependencies {
     akkaPersistenceJdbc,
     playJdbc,
 
+    junit % Test,
     h2 % Test
   )
 
@@ -604,13 +663,13 @@ object Dependencies {
     slf4jApi,
     "log4j" % "log4j" % "1.2.17",
     scalaTest % Test,
-    "junit" % "junit" % JUnitVersion % Test
+    junit % Test
   )
 
   val `kafka-broker-scaladsl` = libraryDependencies ++= Seq(
     "log4j" % "log4j" % "1.2.17",
     scalaTest % Test,
-    "junit" % "junit" % JUnitVersion % Test
+    junit % Test
   )
 
   val logback = libraryDependencies ++= slf4j ++ Seq(
@@ -624,7 +683,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
+    akkaProfobuf
   ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % LogbackVersion)
 
   val log4j2 = libraryDependencies ++= Seq(slf4jApi) ++
@@ -640,7 +699,7 @@ object Dependencies {
       akkaStream,
       akkaActor,
       akkaSlf4j,
-      "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
+      akkaProfobuf
 
     )
 
@@ -654,7 +713,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
+    akkaProfobuf
   )
 
   val `build-tool-support` = libraryDependencies ++= Seq(
@@ -701,16 +760,42 @@ object Dependencies {
     scalaTest % Test
   )
 
+  val `dev-mode-ssl-support` = libraryDependencies ++= Seq(
+    playAkkaHttpServer,
+    akkaHttpCore,
+
+    // updates to match whitelist
+    akkaActor,
+    akkaStream,
+    akkaProfobuf,
+    akkaSlf4j,
+    typesafeConfig
+  )
+
+  val `service-registry-client-core` =
+    libraryDependencies ++= Seq(
+      akkaDiscovery,
+      slf4jApi,
+
+      akkaTestkit % Test,
+      scalaTest % Test
+    )
+
   val `service-registry-client-javadsl` =
     libraryDependencies ++= Seq(
-      "junit" % "junit" % JUnitVersion,
+      akkaDiscovery,
+
       akkaTestkit % Test,
+      junit % Test,
       "com.novocode" % "junit-interface" % "0.11" % Test
     )
 
   val `service-registration-javadsl` = libraryDependencies ++= Nil
 
-  val `devmode-scaladsl` = libraryDependencies ++= Nil
+  val `devmode-scaladsl` =
+    libraryDependencies ++= Seq(
+      akkaDiscovery
+    )
 
   val `play-integration-javadsl` = libraryDependencies ++= Nil
 

@@ -1,21 +1,23 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package com.lightbend.lagom.gateway
 
+import java.io.File
 import java.net.{ InetSocketAddress, URI }
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.inject.{ Inject, Named, Singleton }
 
-import akka.actor.ActorRef
+import akka.Done
+import akka.actor.{ ActorRef, CoordinatedShutdown }
 import akka.pattern.ask
 import akka.util.Timeout
-import com.lightbend.lagom.discovery.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
-import com.lightbend.lagom.internal.NettyFutureConverters
 import com.lightbend.lagom.internal.NettyFutureConverters._
 import com.lightbend.lagom.internal.api.Execution.trampoline
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
+import com.lightbend.lagom.registry.impl.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
 import io.netty.bootstrap.{ Bootstrap, ServerBootstrap }
 import io.netty.buffer.{ ByteBuf, Unpooled }
 import io.netty.channel._
@@ -27,7 +29,6 @@ import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.EventExecutor
 import org.slf4j.LoggerFactory
-import play.api.inject.ApplicationLifecycle
 import play.api.libs.typedmap.TypedMap
 import play.api.mvc.request.{ RemoteConnection, RequestAttrKey, RequestTarget }
 import play.api.mvc.{ Headers, RequestHeader }
@@ -42,6 +43,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext }
 import scala.language.implicitConversions
 import scala.util.{ Failure, Success }
+import com.lightbend.lagom.internal.api.Execution.trampoline
 
 case class ServiceGatewayConfig(
   host: String,
@@ -49,17 +51,17 @@ case class ServiceGatewayConfig(
 )
 
 @Singleton
-class NettyServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
+class NettyServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig,
                                             @Named("serviceRegistryActor") registry: ActorRef) {
   def start(): NettyServiceGateway = {
-    new NettyServiceGateway(lifecycle, config, registry)
+    new NettyServiceGateway(coordinatedShutdown, config, registry)
   }
 }
 
 /**
  * Netty implementation of the service gateway.
  */
-class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef) {
+class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig, registry: ActorRef) {
 
   private implicit val timeout = Timeout(5.seconds)
   private val log = LoggerFactory.getLogger(classOf[NettyServiceGateway])
@@ -96,6 +98,7 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
     override def reportFailure(cause: Throwable): Unit = {
       log.error("Error caught in Netty executor", cause)
     }
+
     override def execute(runnable: Runnable): Unit = executor.execute(runnable)
   }
 
@@ -119,10 +122,10 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
             val path = URI.create(request.uri).getPath
 
             implicit val ec = ctx.executor
-            (registry ? Route(request.method.name, path)).mapTo[RouteResult].map {
+            (registry ? Route(request.method.name, path, None)).mapTo[RouteResult].map {
               case Found(serviceAddress) =>
                 log.debug("Request is to be routed to {}, getting connection from pool", serviceAddress)
-                val pool = poolMap.get(serviceAddress)
+                val pool = poolMap.get(new InetSocketAddress(serviceAddress.getHost, serviceAddress.getPort))
                 currentPool = pool
                 currentPool.acquire().toScala.onComplete {
                   case Success(channel) =>
@@ -159,7 +162,7 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
                 log.debug("Sending not found response")
                 ReferenceCountUtil.release(currentRequest)
                 currentRequest = null
-                ctx.writeAndFlush(renderNotFound(request, path, registryMap))
+                ctx.writeAndFlush(renderNotFound(request, path, registryMap.mapValues(_.serviceRegistryService)))
                 flushPipeline()
             }.recover {
               case t =>
@@ -365,16 +368,19 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
     }
   }
 
-  private val bindFuture = server.bind(config.port).channelFutureToScala
-  lifecycle.addStopHook(() => {
+  private val bindFuture = server.bind(config.host, config.port).channelFutureToScala
+
+  coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-netty-service-gateway") { () =>
+    poolMap.asScala.foreach(_.getValue.close())
+
+    val unbindTimeout = coordinatedShutdown.timeout(CoordinatedShutdown.PhaseServiceUnbind)
+
     for {
       channel <- bindFuture
-      closed <- channel.close().channelFutureToScala
-    } yield {
-      eventLoop.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS)
-      poolMap.asScala.foreach(_.getValue.close())
-    }
-  })
+      _ <- channel.close().channelFutureToScala
+      _ <- eventLoop.shutdownGracefully(100, unbindTimeout.toMillis - 100, TimeUnit.MILLISECONDS).toScala
+    } yield Done
+  }
 
   val address: InetSocketAddress = {
     val address = Await.result(bindFuture, 10.seconds).localAddress().asInstanceOf[InetSocketAddress]
@@ -387,9 +393,10 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
     // to a Play router with all the acls in the documentation variable so that it can render it
     val router = new SimpleRouter {
       override def routes: Routes = PartialFunction.empty
+
       override val documentation: Seq[(String, String, String)] = registry.toSeq.flatMap {
         case (serviceName, service) =>
-          val call = s"Service: $serviceName (${service.uri})"
+          val call = s"Service: $serviceName (${service.uris})"
           service.acls().asScala.map { acl =>
             val method = acl.method.asScala.fold("*")(_.name)
             val path = acl.pathRegex.orElse(".*")
