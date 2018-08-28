@@ -8,18 +8,17 @@ import java.io.Closeable
 import java.net.URL
 import java.util.concurrent.{ Executors, TimeUnit }
 
-import com.lightbend.lagom.dev.Reloader.DevServer
+import com.lightbend.lagom.dev.Reloader.{ DevServer, DevServerBinding }
 import play.dev.filewatch.LoggerProxy
 
 import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration._
 
 /**
- * @param name the service name
- * @param protocol HTTP or HTTPS (or something else (?)
- * @param url a string of format "address:port"
+ * @param serviceName the service name
+ * @param bindings a list of bindings offered by the service
  */
-case class ServiceBindingInfo(name: String, protocol: String, address: String, port: Int)
+case class ServiceBindingInfo(serviceName: String, bindings: Seq[DevServerBinding])
 /**
  * Helper for working with the console
  */
@@ -27,8 +26,9 @@ class ConsoleHelper(colors: Colors) {
 
   def printStartScreen(log: LoggerProxy, services: Seq[ServiceBindingInfo]): Unit = {
     services.foreach {
-      case ServiceBindingInfo(name, protocol, address, port) =>
-        log.info(s"Service $name listening for $protocol on $address:$port")
+      case ServiceBindingInfo(name, bindings) =>
+        bindings.foreach(b =>
+          log.info(s"Service $name listening for ${b.protocol} on ${b.address}:${b.port}"))
     }
     log.info(colors.green(s"(Service${if (services.size > 1) "s" else ""} started, press enter to stop and go back to the console...)"))
   }
