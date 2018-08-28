@@ -6,8 +6,8 @@ package com.lightbend.lagom.scaladsl.api.deser
 
 import MessageSerializer._
 import akka.util.ByteString
-import com.lightbend.lagom.scaladsl.api.transport.{DeserializationException, MessageProtocol}
-import org.scalatest.{Matchers, WordSpec}
+import com.lightbend.lagom.scaladsl.api.transport.{ DeserializationException, MessageProtocol }
+import org.scalatest.{ Matchers, WordSpec }
 import play.api.libs.json._
 
 class MessageSerializerSpec extends WordSpec with Matchers {
@@ -27,7 +27,7 @@ class MessageSerializerSpec extends WordSpec with Matchers {
 
       override def writes(o: Option[T]): JsValue = o match {
         case Some(t) ⇒ implicitly[Writes[T]].writes(t)
-        case None ⇒ JsNull
+        case None    ⇒ JsNull
       }
     }
 
