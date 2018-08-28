@@ -79,7 +79,7 @@ The `helloworld` Lagom service can be imported by adding the following declarati
 
 The first argument passed to `lagomExternalJavadslProject` is the name that will be used in your build to refer to this externally defined project. While, the second argument provides the dependency to the `hello-impl` JAR, using the conventional sbt syntax for declaring dependencies. Note in fact that the `lagomExternalJavadslProject` method returns a sbt `Project`, which you can further customize if needed.
 
-You can further configure the service (what ports it is available on, the address it is bound to, etc...) using [[the same settings than a managed Lagom Service|ConfiguringServicesInDevelopment]].
+You can further configure the service (what ports it is available on, the address it is bound to, etc...) using [[the same settings as a managed Lagom Service|ConfiguringServicesInDevelopment]].
 
 ## Usinng the External Service
 
