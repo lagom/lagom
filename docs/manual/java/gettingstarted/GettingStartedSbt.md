@@ -68,8 +68,10 @@ It will take a bit of time to build the project and start the services. Among ot
 [info] Cassandra server running at 127.0.0.1:4000
 [info] Service locator is running at http://localhost:9008
 [info] Service gateway is running at http://localhost:9000
-[info] Service helloworld-impl listening for HTTP on 0:0:0:0:0:0:0:0:24266
-[info] Service hellostream-impl listening for HTTP on 0:0:0:0:0:0:0:0:26230
+[info] Service helloworld-impl listening for HTTP on 127.0.0.1:24266
+[info] Service helloworld-impl listening for HTTPS on 127.0.0.1:50695
+[info] Service hellostream-impl listening for HTTP on 127.0.0.1:26230
+[info] Service hellostream-impl listening for HTTPS on 127.0.0.1:58440
 (Services started, press enter to stop and go back to the console...)
 ```
 
