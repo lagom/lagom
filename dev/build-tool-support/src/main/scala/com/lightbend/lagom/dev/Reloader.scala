@@ -52,12 +52,6 @@ object Reloader {
   private def urls(cp: Seq[File]): Array[URL] = cp.map(_.toURI.toURL).toArray
 
   case class DevServerBinding(protocol: String, address: String, port: Int)
-  object DevServerBinding {
-    def fromString(url: String): Seq[DevServerBinding] = Seq {
-      val arr = url.split(":")
-      DevServerBinding("HTTP", arr(0), arr(1).toInt)
-    }
-  }
 
   /**
    * Play dev server

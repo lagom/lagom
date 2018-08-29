@@ -29,10 +29,7 @@ object LagomKeys {
   /** Whether this project is a Play service */
   val PlayService = new LagomKey[Boolean]("playService")
 
-  /** The URL of the service */
-  @deprecated("1.5.0", "Use LagomServiceBindings instead")
-  val LagomServiceUrl = new LagomKey[String]("lagomServiceUrl")
-
+  /** List of bindings this service is exposing */
   val LagomServiceBindings = new LagomKey[Seq[DevServerBinding]]("lagomServiceBindings")
 }
 
