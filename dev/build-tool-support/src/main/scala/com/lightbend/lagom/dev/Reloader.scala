@@ -71,12 +71,8 @@ object Reloader {
     /** Reloads the application.*/
     def reload(): Unit
 
-    /** URL at which the application is running (if started) */
-    @deprecated("1.5.0", "Use #bindings() instead.")
-    def url(): String
-
     /** List of bindings this server is exposing.*/
-    def bindings(): Seq[DevServerBinding] = DevServerBinding.fromString(url())
+    def bindings(): Seq[DevServerBinding]
   }
 
   /**
@@ -155,8 +151,7 @@ object Reloader {
         server.stop()
         reloader.close()
       }
-      def url(): String = server.mainAddress().getHostName + ":" + server.mainAddress().getPort
-      override def bindings(): Seq[DevServerBinding] =
+      def bindings(): Seq[DevServerBinding] =
         Seq(
           DevServerBinding("HTTP", httpAddress, httpPort),
           DevServerBinding("HTTPS", httpAddress, httpsPort)
@@ -205,10 +200,8 @@ object Reloader {
       /** Reloads the application.*/
       def reload(): Unit = ()
 
-      /** URL at which the application is running (if started) */
-      def url(): String = server.mainAddress().getHostName + ":" + server.mainAddress().getPort
-
-      override def bindings(): Seq[DevServerBinding] =
+      /** List of bindings this server is exposing.*/
+      def bindings(): Seq[DevServerBinding] =
         Seq(
           DevServerBinding("HTTP", httpAddress, httpPort),
           DevServerBinding("HTTPS", httpAddress, httpsPort)
