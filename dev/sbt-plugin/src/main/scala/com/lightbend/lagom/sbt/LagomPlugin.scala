@@ -701,7 +701,7 @@ private[sbt] object SbtConsoleHelper {
   private val consoleHelper = new ConsoleHelper(new Colors("sbt.log.noformat"))
   def printStartScreen(log: Logger, services: (String, DevServer)*): Unit =
     consoleHelper.printStartScreen(new SbtLoggerProxy(log), services.map {
-      case (name, service) => name -> service.url()
+      case (name, service) => ServiceBindingInfo(name, service.bindings())
     })
 
   def blockUntilExit(log: Logger, interaction: play.sbt.PlayInteractionMode, services: Seq[Closeable], infrastructureServices: Seq[Closeable]): Unit = {

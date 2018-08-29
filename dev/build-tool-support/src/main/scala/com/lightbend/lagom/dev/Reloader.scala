@@ -51,6 +51,8 @@ object Reloader {
 
   private def urls(cp: Seq[File]): Array[URL] = cp.map(_.toURI.toURL).toArray
 
+  case class DevServerBinding(protocol: String, address: String, port: Int)
+
   /**
    * Play dev server
    */
@@ -63,8 +65,8 @@ object Reloader {
     /** Reloads the application.*/
     def reload(): Unit
 
-    /** URL at which the application is running (if started) */
-    def url(): String
+    /** List of bindings this server is exposing.*/
+    def bindings(): Seq[DevServerBinding]
   }
 
   /**
@@ -129,7 +131,7 @@ object Reloader {
 
     lazy val reloader = new Reloader(reloadCompile, decoratedLoader, projectPath, devSettings, monitoredFiles, fileWatchService, reloadLock)
 
-    val server = {
+    val server: ReloadableServer = {
       val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
       val mainDev = mainClass.getMethod("mainDev", classOf[BuildLink], classOf[String], classOf[Int], classOf[Int])
       mainDev.invoke(null, reloader, httpAddress, httpPort: java.lang.Integer, httpsPort: java.lang.Integer).asInstanceOf[ReloadableServer]
@@ -143,7 +145,11 @@ object Reloader {
         server.stop()
         reloader.close()
       }
-      def url(): String = server.mainAddress().getHostName + ":" + server.mainAddress().getPort
+      def bindings(): Seq[DevServerBinding] =
+        Seq(
+          DevServerBinding("HTTP", httpAddress, httpPort),
+          DevServerBinding("HTTPS", httpAddress, httpsPort)
+        )
     }
   }
 
@@ -188,8 +194,12 @@ object Reloader {
       /** Reloads the application.*/
       def reload(): Unit = ()
 
-      /** URL at which the application is running (if started) */
-      def url(): String = server.mainAddress().getHostName + ":" + server.mainAddress().getPort
+      /** List of bindings this server is exposing.*/
+      def bindings(): Seq[DevServerBinding] =
+        Seq(
+          DevServerBinding("HTTP", httpAddress, httpPort),
+          DevServerBinding("HTTPS", httpAddress, httpsPort)
+        )
 
       def close(): Unit = server.stop()
     }

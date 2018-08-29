@@ -132,7 +132,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
           // of our plugin
           val reloadLock = classOf[Maven]
 
-          val service = Reloader.startDevMode(
+          val service: DevServer = Reloader.startDevMode(
             scalaClassLoader,
             projectDependencies.external.map(_.getFile),
             () => {
@@ -155,7 +155,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
           // Setup trigger to reload when a source file changes
           service.addChangeListener(() => service.reload())
 
-          LagomKeys.LagomServiceUrl.put(project, service.url())
+          LagomKeys.LagomServiceBindings.put(project, service.bindings())
 
           runningServices += (project -> service)
         } catch {

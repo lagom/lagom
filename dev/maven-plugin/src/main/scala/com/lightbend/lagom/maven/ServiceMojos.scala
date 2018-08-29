@@ -5,9 +5,9 @@
 package com.lightbend.lagom.maven
 
 import java.io.File
-import javax.inject.Inject
 
-import com.lightbend.lagom.dev.{ Colors, ConsoleHelper }
+import javax.inject.Inject
+import com.lightbend.lagom.dev.{ Colors, ConsoleHelper, Reloader, ServiceBindingInfo }
 import com.lightbend.lagom.dev.PortAssigner.ProjectName
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.model.Dependency
@@ -18,29 +18,6 @@ import java.util.{ Collections, List => JList }
 import org.apache.maven.RepositoryUtils
 
 import scala.collection.JavaConverters._
-
-/**
- * Run a service, blocking until the user hits enter before stopping it again.
- */
-class RunMojo @Inject() (mavenFacade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends LagomAbstractMojo {
-
-  private val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
-
-  override def execute(): Unit = {
-    val project = session.getCurrentProject
-    mavenFacade.executeMavenPluginGoal(project, "start")
-
-    val serviceUrl = LagomKeys.LagomServiceUrl.get(project).getOrElse {
-      sys.error(s"Service ${project.getArtifactId} is not running?")
-    }
-
-    consoleHelper.printStartScreen(logger, Seq(project.getArtifactId -> serviceUrl))
-
-    consoleHelper.blockUntilExit()
-
-    mavenFacade.executeMavenPluginGoal(project, "stop")
-  }
-}
 
 /**
  * Start a service.
@@ -358,8 +335,34 @@ class StopAllMojo @Inject() (facade: MavenFacade, session: MavenSession) extends
 /**
  * Run a service, blocking until the user hits enter before stopping it again.
  */
+class RunMojo @Inject() (mavenFacade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends LagomAbstractMojo {
+  // This Mojo shares a lot of code (duplicate) with RunAllMojo
+  private val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
+
+  override def execute(): Unit = {
+    val project = session.getCurrentProject
+    mavenFacade.executeMavenPluginGoal(project, "start")
+
+    val bindingInfo: ServiceBindingInfo =
+      LagomKeys.LagomServiceBindings
+        .get(project)
+        .map { bindings => ServiceBindingInfo(project.getArtifactId, bindings) }
+        .getOrElse {
+          sys.error(s"Service ${project.getArtifactId} is not running?")
+        }
+
+    consoleHelper.printStartScreen(logger, Seq(bindingInfo))
+    consoleHelper.blockUntilExit()
+    mavenFacade.executeMavenPluginGoal(project, "stop")
+  }
+}
+
+/**
+ * Run a service, blocking until the user hits enter before stopping it again.
+ */
 class RunAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends LagomAbstractMojo {
 
+  // This Mojo shares a lot of code (duplicate) with RunMojo
   val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
 
   override def execute(): Unit = {
@@ -368,13 +371,16 @@ class RunAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, sessi
 
     executeGoal("startAll")
 
-    val serviceUrls = services.map { project =>
-      project.getArtifactId -> LagomKeys.LagomServiceUrl.get(project).getOrElse {
-        sys.error(s"Service ${project.getArtifactId} is not running?")
-      }
+    val bindingInfos: Seq[ServiceBindingInfo] = services.map { project =>
+      LagomKeys.LagomServiceBindings
+        .get(project)
+        .map { bindings => ServiceBindingInfo(project.getArtifactId, bindings) }
+        .getOrElse {
+          sys.error(s"Service ${project.getArtifactId} is not running?")
+        }
     }
 
-    consoleHelper.printStartScreen(logger, serviceUrls)
+    consoleHelper.printStartScreen(logger, bindingInfos)
 
     consoleHelper.blockUntilExit()
 
