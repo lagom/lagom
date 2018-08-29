@@ -343,17 +343,16 @@ class RunMojo @Inject() (mavenFacade: MavenFacade, logger: MavenLoggerProxy, ses
     val project = session.getCurrentProject
     mavenFacade.executeMavenPluginGoal(project, "start")
 
-    val bindingInfo: ServiceBindingInfo = {
-      val bindings: Seq[Reloader.DevServerBinding] = LagomKeys.LagomServiceBindings.get(project).getOrElse {
-        sys.error(s"Service ${project.getArtifactId} is not running?")
-      }
-      ServiceBindingInfo(project.getArtifactId, bindings)
-    }
+    val bindingInfo: ServiceBindingInfo =
+      LagomKeys.LagomServiceBindings
+        .get(project)
+        .map { bindings => ServiceBindingInfo(project.getArtifactId, bindings) }
+        .getOrElse {
+          sys.error(s"Service ${project.getArtifactId} is not running?")
+        }
 
     consoleHelper.printStartScreen(logger, Seq(bindingInfo))
-
     consoleHelper.blockUntilExit()
-
     mavenFacade.executeMavenPluginGoal(project, "stop")
   }
 }
@@ -373,10 +372,12 @@ class RunAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, sessi
     executeGoal("startAll")
 
     val bindingInfos: Seq[ServiceBindingInfo] = services.map { project =>
-      val bindings = LagomKeys.LagomServiceBindings.get(project).getOrElse {
-        sys.error(s"Service ${project.getArtifactId} is not running?")
-      }
-      ServiceBindingInfo(project.getArtifactId, bindings)
+      LagomKeys.LagomServiceBindings
+        .get(project)
+        .map { bindings => ServiceBindingInfo(project.getArtifactId, bindings) }
+        .getOrElse {
+          sys.error(s"Service ${project.getArtifactId} is not running?")
+        }
     }
 
     consoleHelper.printStartScreen(logger, bindingInfos)
