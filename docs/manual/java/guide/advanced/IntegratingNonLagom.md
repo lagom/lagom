@@ -26,11 +26,17 @@ Of course, you will also need to add a dependency to the API project that you ha
 
 The Lagom integration client provides [`LagomClientFactory`](api/index.html?com/lightbend/lagom/javadsl/client/integration/LagomClientFactory.html) creating Lagom client services.  This factory creates and manages thread pools and connection pools, so it's important to manage its lifecycle correctly in your application, ensuring that you only create one instance of it, and to shut it down when you're finished with it.
 
-The factory can be instantiated by invoking the static [`create`](api/index.html?com/lightbend/lagom/javadsl/client/integration/LagomClientFactory.html#create-java.lang.String-java.lang.ClassLoader-) method, for example:
+The factory can be instantiated by invoking the static [`create(String, ClassLoader)`](api/index.html?com/lightbend/lagom/javadsl/client/integration/LagomClientFactory.html#create-java.lang.String-java.lang.ClassLoader-) or [`create(String, ClassLoader, ActorSystem, Materializer)`](api/index.html?com/lightbend/lagom/javadsl/client/integration/LagomClientFactory.html#create-java.lang.String-java.lang.ClassLoader-akka.actor.ActorSystem-akka.stream.Materializer-) methods:
+
+The first [`create(String, ClassLoader)`](api/index.html?com/lightbend/lagom/javadsl/client/integration/LagomClientFactory.html#create-java.lang.String-java.lang.ClassLoader-) variant should be used in applications that do not have a running `ActorSystem`. Internally, the `LagomClientFactory` will create a dedicated `ActorSystem` and `Materializer` to be used by the clients. Both will managed by the `LagomClientFactory` and will be shutdown when the factory is closed.
 
 @[create-factory](code/docs/advanced/IntegratingNonLagom.java)
 
 The first argument is a service name, this will be the name of the service that is consuming the Lagom service, and will impact how calls made through this client will identify themselves to the service.  The second argument is a `ClassLoader`, it will be used to create the service proxy and needs to have the API for the client in it.
+
+The second [`create(String, ClassLoader, ActorSystem, Materializer)`](api/index.html?com/lightbend/lagom/javadsl/client/integration/LagomClientFactory.html#create-java.lang.String-java.lang.ClassLoader-akka.actor.ActorSystem-akka.stream.Materializer-) variant should be used in applications that have a running `ActorSystem. In which case, we recommend to reuse the existing `ActorSystem` and `Materializer`.
+
+@[create-factory-external-actor-system](code/docs/advanced/IntegratingNonLagom.java)
 
 When you have finished with the factory, for example, when the system shuts down, you need to close the factory, by invoking the [`close`](api/index.html?com/lightbend/lagom/javadsl/client/integration/LagomClientFactory.html#close--) method:
 

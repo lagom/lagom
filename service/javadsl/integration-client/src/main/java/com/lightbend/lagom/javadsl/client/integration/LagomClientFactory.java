@@ -30,6 +30,7 @@ import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator;
 import com.lightbend.lagom.javadsl.jackson.JacksonExceptionSerializer;
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.pcollections.PVector;
@@ -53,6 +54,7 @@ import scala.concurrent.Future;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Optional;
@@ -62,8 +64,6 @@ import java.util.function.Function;
 
 /**
  * Factory for creating Lagom service clients.
- *
- * This is designed for use from non Lagom systems.
  *
  * Generally, there should be only one instance of this per system.  Additionally, since it holds thread and connection
  * pools, it must be shutdown, by calling the {@link #close()} method, when no longer needed.
@@ -78,15 +78,22 @@ public class LagomClientFactory implements Closeable {
     private final ActorSystem actorSystem;
     private final CircuitBreakersPanel circuitBreakersPanel;
     private final Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator;
+    private final Boolean managedActorSystem;
 
-    private LagomClientFactory(EventLoopGroup eventLoop, WSClient wsClient, WebSocketClient webSocketClient, ActorSystem actorSystem,
-                               CircuitBreakersPanel circuitBreakersPanel, Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator) {
+    private LagomClientFactory(EventLoopGroup eventLoop,
+                               WSClient wsClient,
+                               WebSocketClient webSocketClient,
+                               ActorSystem actorSystem,
+                               CircuitBreakersPanel circuitBreakersPanel,
+                               Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator,
+                               Boolean managedActorSystem) {
         this.eventLoop = eventLoop;
         this.wsClient = wsClient;
         this.webSocketClient = webSocketClient;
         this.actorSystem = actorSystem;
         this.circuitBreakersPanel = circuitBreakersPanel;
         this.serviceClientLoaderCreator = serviceClientLoaderCreator;
+        this.managedActorSystem = managedActorSystem;
     }
 
     /**
@@ -170,72 +177,79 @@ public class LagomClientFactory implements Closeable {
         closeGracefully(() -> eventLoop.shutdownGracefully(0, 10, TimeUnit.SECONDS));
     }
 
+
     private void coordinatedShutdown() throws InterruptedException, TimeoutException {
+<<<<<<< HEAD
         CoordinatedShutdownSupport.syncShutdown(actorSystem, CoordinatedShutdown.unknownReason());
+=======
+        if (managedActorSystem)
+            CoordinatedShutdownProvider.syncShutdown(actorSystem, CoordinatedShutdown.unknownReason());
+>>>>>>> extends LagomClientFactory to use external ActorSystem
     }
 
-    /**
-     * Create a client factory that uses the given service locator.
-     *
-     * @param serviceName The name of this service that is going to be accessing the services created by this factory.
-     * @param classLoader The classloader.
-     * @return The client factory.
-     */
-    public static LagomClientFactory create(String serviceName, ClassLoader classLoader) {
-        // Environment and config
-        Environment environment = Environment.apply(new File("."), classLoader, Mode.Prod$.MODULE$);
-
-        Config configuration = Configuration.load(
-            environment.classLoader(),
-            System.getProperties(),
-            Map$.MODULE$.empty(),
-            true
-        ).underlying();
-
-        // Akka
-        ActorSystem actorSystem = ActorSystem.create("lagom-client", configuration,
-                classLoader);
-        Materializer materializer = ActorMaterializer.create(actorSystem);
+    private static LagomClientFactory create(String serviceName,
+                                             Environment environment,
+                                             Config configuration,
+                                             ActorSystem actorSystem,
+                                             Materializer materializer,
+                                             Boolean managedActorSystem) {
 
         // Netty event loop
         EventLoopGroup eventLoop = new NioEventLoopGroup();
 
         // WS
         WSClientConfig wsClientConfig = new WSConfigParser(configuration, environment.classLoader()).parse();
-        AhcWSClientConfig ahcWSClientConfig = new AhcWSClientConfigParser(wsClientConfig, configuration, environment.classLoader()).parse();
+
+        AhcWSClientConfig ahcWSClientConfig =
+            new AhcWSClientConfigParser(
+                wsClientConfig,
+                configuration,
+                environment.classLoader()
+            ).parse();
+
         WSClient wsClient = AhcWSClient.apply(ahcWSClientConfig, scala.Option.empty(), materializer);
 
 
         // WebSocketClient
-	WebSocketClientConfig webSocketClientConfig = WebSocketClientConfig$.MODULE$.apply(configuration);
+        WebSocketClientConfig webSocketClientConfig = WebSocketClientConfig$.MODULE$.apply(configuration);
         // Use dummy lifecycle, we manage the lifecycle manually
-        JavadslWebSocketClient webSocketClient = new JavadslWebSocketClient(environment, webSocketClientConfig, eventLoop, new ApplicationLifecycle() {
-            @Override
-            public void addStopHook(Function0<Future<?>> hook) {
-            }
-            @Override
-            public void addStopHook(Callable<? extends CompletionStage<?>> hook) {
-            }
-            @Override
-            public play.inject.ApplicationLifecycle asJava() {
-                return new play.inject.DelegateApplicationLifecycle(this);
-            }
-            @Override
-            public Future<?> stop() {
-                return null;
-            }
-        }, actorSystem.dispatcher());
+        ApplicationLifecycle applicationLifecycle =
+            new ApplicationLifecycle() {
+                @Override
+                public void addStopHook(Function0<Future<?>> hook) {
+                }
+                @Override
+                public void addStopHook(Callable<? extends CompletionStage<?>> hook) {
+                }
+                @Override
+                public play.inject.ApplicationLifecycle asJava() {
+                    return new play.inject.DelegateApplicationLifecycle(this);
+                }
+                @Override
+                public Future<?> stop() {
+                    return null;
+                }
+            };
+
+        JavadslWebSocketClient webSocketClient =
+            new JavadslWebSocketClient(
+                environment,
+                webSocketClientConfig,
+                eventLoop,
+                applicationLifecycle,
+                actorSystem.dispatcher()
+            );
 
         // TODO: review this. Building a kafka client shouldn't require the whole ServiceInfo, just the name.
         ServiceInfo serviceInfo = ServiceInfo.of(serviceName);
 
         // ServiceClientLoader
         CircuitBreakersPanel circuitBreakersPanel =
-                new CircuitBreakersPanelImpl(
-                        actorSystem,
-                        new CircuitBreakerConfig(configuration),
-                        new CircuitBreakerMetricsProviderImpl(actorSystem)
-                );
+            new CircuitBreakersPanelImpl(
+                actorSystem,
+                new CircuitBreakerConfig(configuration),
+                new CircuitBreakerMetricsProviderImpl(actorSystem)
+            );
 
 
         JacksonSerializerFactory serializerFactory = new JacksonSerializerFactory(actorSystem);
@@ -243,17 +257,122 @@ public class LagomClientFactory implements Closeable {
 
         Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator = serviceLocator -> {
             // Kafka client
-            TopicFactory kafkaTopicFactory = new KafkaTopicFactory(serviceInfo, actorSystem, materializer,
-                    actorSystem.dispatcher(), serviceLocator);
+            TopicFactory kafkaTopicFactory =
+                new KafkaTopicFactory(
+                    serviceInfo,
+                    actorSystem,
+                    materializer,
+                    actorSystem.dispatcher(),
+                    serviceLocator
+                );
+
             TopicFactoryProvider topicFactoryProvider = () -> Some.apply(kafkaTopicFactory);
 
-            JavadslServiceClientImplementor implementor = new JavadslServiceClientImplementor(wsClient, webSocketClient, serviceInfo,
-                    serviceLocator, environment, topicFactoryProvider, actorSystem.dispatcher(), materializer);
+            JavadslServiceClientImplementor implementor =
+                new JavadslServiceClientImplementor(
+                    wsClient,
+                    webSocketClient,
+                    serviceInfo,
+                    serviceLocator,
+                    environment,
+                    topicFactoryProvider,
+                    actorSystem.dispatcher(),
+                    materializer
+                );
+
             return new ServiceClientLoader(serializerFactory, exceptionSerializer, environment, implementor);
 
         };
-        return new LagomClientFactory(eventLoop, wsClient, webSocketClient, actorSystem, circuitBreakersPanel,
-                serviceClientLoaderCreator);
+
+        return new LagomClientFactory(
+            eventLoop,
+            wsClient,
+            webSocketClient,
+            actorSystem,
+            circuitBreakersPanel,
+            serviceClientLoaderCreator,
+            managedActorSystem
+        );
+    }
+
+
+    private static Environment buildtEnvironment(ClassLoader classLoader) {
+        return Environment.apply(new File("."), classLoader, Mode.Prod$.MODULE$);
+    }
+
+    private static Config buildConfig(ClassLoader classLoader) {
+        return Configuration.load(
+            classLoader,
+            System.getProperties(),
+            Map$.MODULE$.empty(),
+            true
+        ).underlying();
+    }
+    /**
+     * Creates a Lagom client factory.
+     *
+     * Generally, there should be only one instance of this per system.  Additionally, since it holds thread and connection
+     * pools, it must be shutdown, by calling the {@link #close()} method, when no longer needed.
+     *
+     * This method should be used whenever your application has already a running ActorSystem. In that case it's preferable to reuse it
+     * inside LagomClientFactory instead to let the factory create and manage its own (see {@link #create(String, ClassLoader)}).
+     *
+     * Calling {@link #close()} on a {@link LagomClientFactory} created using this method will NOT terminated
+     * the passed {@link ActorSystem} and {@link Materializer}.
+     *
+     * @param serviceName The name of this service that is going to be accessing the services created by this factory.
+     * @param classLoader The classloader.
+     * @param actorSystem An existing ActorSystem
+     * @param materializer An ActorMaterializer
+     * @return The client factory.
+     */
+    public static LagomClientFactory create(String serviceName, ClassLoader classLoader, ActorSystem actorSystem, Materializer materializer) {
+        return create(
+            serviceName,
+            buildtEnvironment(classLoader),
+            buildConfig(classLoader),
+            actorSystem,
+            materializer,
+            /*managedActorSystem*/ false);
+    }
+
+
+    /**
+     * Creates a Lagom client factory.
+     *
+     * Generally, there should be only one instance of this per system.  Additionally, since it holds thread and connection
+     * pools, it must be shutdown, by calling the {@link #close()} method, when no longer needed.
+     *
+     * This method should be used whenever your application does NOT have a running {@link ActorSystem}
+     * and you don't want to manage one yourself.
+     *
+     * Internally, this method will create a new {@link ActorSystem} that will be attached to the lifecycle of this factory.
+     * In other words, the internal {@link ActorSystem} will terminate upon calling {@link #close()}.
+     *
+     * In case your application already have a running {@link ActorSystem}, we recommend
+     * to use {@link #create(String, ClassLoader, ActorSystem, Materializer)}) instead.
+     *
+     * @param serviceName The name of this service that is going to be accessing the services created by this factory.
+     * @param classLoader The classloader.
+     * @return The client factory.
+     */
+    public static LagomClientFactory create(String serviceName, ClassLoader classLoader) {
+        // Environment and config
+        Environment environment = buildtEnvironment(classLoader);
+        Config configuration = buildConfig(classLoader);
+
+        // Akka
+        Config noRemote = ConfigFactory.parseString("akka.actor.provider = local");
+        ActorSystem actorSystem = ActorSystem.create("lagom-client", noRemote.withFallback(configuration), classLoader);
+        Materializer materializer = ActorMaterializer.create(actorSystem);
+
+        return create(
+            serviceName,
+            environment,
+            configuration,
+            actorSystem,
+            materializer,
+            /*managedActorSystem*/ true);
     }
 
     private void closeGracefully(Effect close) {
