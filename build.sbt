@@ -1444,6 +1444,7 @@ lazy val `service-registry-client-core` = (project in file("dev") / "service-reg
     Dependencies.`service-registry-client-core`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(overrideGuavaSettings: _*)
   .settings(overridesScalaParserCombinators: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(logback % Test)
@@ -1454,7 +1455,6 @@ lazy val `service-registry-client-javadsl` = (project in file("dev") / "service-
     Dependencies.`service-registry-client-javadsl`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-javadsl`, `service-registry-client-core`, immutables % "provided")

@@ -168,7 +168,7 @@ object Dependencies {
       "com.google.inject" % "guice" % "4.2.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "4.2.0",
       "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
-      "org.checkerframework" % "checker-qual" % "2.5.2",
+      "org.checkerframework" % "checker-qual" % "2.0.0",
       "javax.xml.bind" % "jaxb-api" % "2.3.0",
       h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
