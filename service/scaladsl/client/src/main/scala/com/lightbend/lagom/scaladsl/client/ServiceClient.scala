@@ -17,6 +17,7 @@ import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 import play.api.libs.concurrent.{ ActorSystemProvider, CoordinatedShutdownProvider }
+import play.api.internal.libs.concurrent.CoordinatedShutdownSupport
 import play.api.libs.ws.WSClient
 import play.api.{ Configuration, Environment, Mode }
 
@@ -164,7 +165,7 @@ abstract class LagomClientApplication(
   /**
    * Stop the application.
    */
-  def stop(): Unit = CoordinatedShutdownProvider.syncShutdown(actorSystem, ClientStoppedReason)
+  def stop(): Unit = CoordinatedShutdownSupport.syncShutdown(actorSystem, ClientStoppedReason)
 }
 
 case object ClientStoppedReason extends CoordinatedShutdown.Reason

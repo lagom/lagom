@@ -1,6 +1,5 @@
-import Dependencies.scalaTest
-import sbt._
 import sbt.Keys._
+import sbt._
 
 object Dependencies {
 
@@ -8,14 +7,14 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.7.0-M2"
-  val PlayJsonVersion = "2.6.9"
-  val PlayStandaloneWsVersion = "2.0.0-M2"
+  val PlayVersion = "2.7.0-M3"
+  val PlayJsonVersion = "2.6.10"
+  val PlayStandaloneWsVersion = "2.0.0-M3"
   val TwirlVersion = "1.4.0-M2"
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.14"
+  val AkkaVersion = "2.5.15"
   val AkkaHttpVersion = "10.1.3"
   val AkkaManagementVersion = "0.17.0"
   // Also be sure to update ScalaVersion in docs/build.sbt.
@@ -29,9 +28,9 @@ object Dependencies {
   val JacksonCoreVersion = JacksonVersion
   val JacksonDatatypeVersion = JacksonVersion
   val JacksonDatabindVersion = JacksonVersion
-  val GuavaVersion = "25.1-jre"
+  val GuavaVersion = "26.0-jre"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.25.Final"
+  val NettyVersion = "4.1.29.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
   val KafkaVersion = "1.0.1"
   val AlpakkaKafkaVersion = "0.22"
@@ -69,11 +68,11 @@ object Dependencies {
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
   private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
-  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0"
+  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.3"
-  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.3"
+  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.4"
   private val h2 = "com.h2database" % "h2" % "1.4.192"
-  private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0" excludeAll (excludeSlf4j: _*)
+  private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.6.0" excludeAll (excludeSlf4j: _*)
 
   private val akkaActor = "com.typesafe.akka" %% "akka-actor" % AkkaVersion
   private val akkaCluster = "com.typesafe.akka" %% "akka-cluster" % AkkaVersion
@@ -133,6 +132,7 @@ object Dependencies {
       "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
     )
 
+  val scalaParserCombinatorOverrides = Set(scalaParserCombinators)
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.
@@ -150,17 +150,17 @@ object Dependencies {
       akkaPersistenceJdbc,
       "com.github.jnr" % "jffi" % "1.2.16",
       "com.github.jnr" % "jnr-constants" % "0.9.9",
-      "com.github.jnr" % "jnr-ffi" % "2.1.6",
-      "com.github.jnr" % "jnr-posix" % "3.0.27",
+      "com.github.jnr" % "jnr-ffi" % "2.1.7",
+      "com.github.jnr" % "jnr-posix" % "3.0.44",
       "com.github.jnr" % "jnr-x86asm" % "1.0.2",
       "com.google.code.findbugs" % "jsr305" % "3.0.2",
       "com.google.errorprone" % "error_prone_annotations" % "2.1.3",
-      "com.google.guava" % "guava" % GuavaVersion,
+      guava,
       "com.google.j2objc" % "j2objc-annotations" % "1.1",
       "com.google.inject" % "guice" % "4.2.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "4.2.0",
       "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
-      "org.checkerframework" % "checker-qual" % "2.0.0",
+      "org.checkerframework" % "checker-qual" % "2.5.2",
       "javax.xml.bind" % "jaxb-api" % "2.3.0",
       h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
@@ -190,17 +190,17 @@ object Dependencies {
       "com.typesafe.play" % "shaded-oauth" % PlayStandaloneWsVersion,
       playTest,
       // dependencies added by play-test
-      "org.fluentlenium" % "fluentlenium-core" % "3.5.2",
-      "org.seleniumhq.selenium" % "selenium-support" % "3.9.1",
-      "org.seleniumhq.selenium" % "selenium-api" % "3.9.1",
-      "org.seleniumhq.selenium" % "selenium-remote-driver" % "3.9.1",
-      "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.9.1",
-      "net.bytebuddy" % "byte-buddy" % "1.7.9",
+      "org.fluentlenium" % "fluentlenium-core" % "3.6.1",
+      "org.seleniumhq.selenium" % "selenium-support" % "3.13.0",
+      "org.seleniumhq.selenium" % "selenium-api" % "3.13.0",
+      "org.seleniumhq.selenium" % "selenium-remote-driver" % "3.13.0",
+      "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.13.0",
+      "net.bytebuddy" % "byte-buddy" % "1.8.3",
       "org.apache.commons" % "commons-exec" % "1.3",
       "commons-logging" % "commons-logging" % "1.2",
-      "com.google.code.gson" % "gson" % "2.8.2",
-      "com.squareup.okhttp3" % "okhttp" % "3.9.1",
-      "com.squareup.okio" % "okio" % "1.13.0",
+      "com.google.code.gson" % "gson" % "2.8.4",
+      "com.squareup.okhttp3" % "okhttp" % "3.10.0",
+      "com.squareup.okio" % "okio" % "1.14.1",
       "org.atteo.classindex" % "classindex" % "3.4",
       "org.seleniumhq.selenium" % "htmlunit-driver" % "2.31.0",
       "net.sourceforge.htmlunit" % "htmlunit" % "2.31",
@@ -231,8 +231,8 @@ object Dependencies {
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "3.2.0",
       "commons-codec" % "commons-codec" % "1.10",
-      "io.aeron" % "aeron-client" % "1.9.1",
-      "io.aeron" % "aeron-driver" % "1.9.1",
+      "io.aeron" % "aeron-client" % "1.9.3",
+      "io.aeron" % "aeron-driver" % "1.9.3",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.9.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
@@ -244,7 +244,7 @@ object Dependencies {
       "junit" % "junit" % JUnitVersion,
       "net.jodah" % "typetools" % "0.5.0",
       "org.lz4" % "lz4-java" % "1.4",
-      "org.agrona" % "agrona" % "0.9.17",
+      "org.agrona" % "agrona" % "0.9.18",
       commonsLang,
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
@@ -254,7 +254,7 @@ object Dependencies {
       javassist,
       "org.joda" % "joda-convert" % "1.9.2",
       "org.hamcrest" % "hamcrest-core" % "1.3",
-      "org.lmdbjava" % "lmdbjava" % "0.6.0",
+      "org.lmdbjava" % "lmdbjava" % "0.6.1",
       "org.pcollections" % "pcollections" % "2.1.2",
       reactiveStreams,
       "org.scalactic" %% "scalactic" % ScalaTestVersion,
@@ -344,7 +344,7 @@ object Dependencies {
 
   // Dependencies for each module
   val api = libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+    scalaParserCombinators,
     scalaXml,
     akkaActor,
     akkaSlf4j,
@@ -606,14 +606,20 @@ object Dependencies {
 
     // Upgrades needed to match whitelist
     dropwizardMetricsCore,
+    cassandraDriverCore,
     "io.netty" % "netty-handler" % NettyVersion
   )
 
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
-    junit % Test
+    junit % Test,
+    // Upgrades needed to match whitelist
+    cassandraDriverCore
   )
 
-  val `persistence-cassandra-scaladsl` = libraryDependencies ++= Nil
+  val `persistence-cassandra-scaladsl` = libraryDependencies ++= Seq(
+    // Upgrades needed to match whitelist
+    cassandraDriverCore
+  )
 
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
     slf4jApi,
@@ -778,7 +784,9 @@ object Dependencies {
       slf4jApi,
 
       akkaTestkit % Test,
-      scalaTest % Test
+      scalaTest % Test,
+      // updates to match whitelist
+      akkaActor
     )
 
   val `service-registry-client-javadsl` =

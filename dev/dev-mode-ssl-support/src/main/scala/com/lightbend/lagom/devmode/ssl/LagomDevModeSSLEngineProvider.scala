@@ -7,9 +7,10 @@ package com.lightbend.lagom.devmode.ssl
 import java.io.File
 import java.security.KeyStore
 import java.security.cert.X509Certificate
-import javax.net.ssl._
 
+import javax.net.ssl._
 import play.api.Logger
+import play.core.server.ssl.FakeKeyStore
 import play.server.api.SSLEngineProvider
 
 import scala.util.control.NonFatal
@@ -26,10 +27,8 @@ class LagomDevModeSSLEngineProvider(rootLagomProjectFolder: File) extends SSLEng
   }
 
   def createSSLContext(rootLagomProjectFolder: File): SSLContext = {
-    val rootLagomProjectKeystoreFile = FakeKeyStoreGenerator.keyStoreFile(rootLagomProjectFolder)
-    val keyStore =
-      if (!rootLagomProjectKeystoreFile.exists()) FakeKeyStoreGenerator.buildKeystore(rootLagomProjectFolder)
-      else FakeKeyStoreGenerator.load(rootLagomProjectFolder)
+    val rootLagomProjectKeystoreFile = FakeKeyStore.getKeyStoreFilePath(rootLagomProjectFolder)
+    val keyStore = FakeKeyStore.createKeyStore(rootLagomProjectKeystoreFile)
 
     val keyManagerFactory: KeyManagerFactory = {
 
@@ -69,7 +68,7 @@ class TrustManager(trustStore: KeyStore) extends X509TrustManager {
   def getAcceptedIssuers(): Array[X509Certificate] = {
     Array(
       trustStore
-        .getCertificate(FakeKeyStoreGenerator.trustedCAAlias)
+        .getCertificate(FakeKeyStore.TrustedAlias)
         .asInstanceOf[X509Certificate]
     )
   }

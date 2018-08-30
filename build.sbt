@@ -29,6 +29,10 @@ def evictionSettings: Seq[Setting[_]] = Seq(
     .withWarnDirectEvictions(false)
 )
 
+def overridesScalaParserCombinators = Seq(
+  dependencyOverrides ++= Dependencies.scalaParserCombinatorOverrides
+)
+
 def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSettings ++ Seq(
   organization := "com.lightbend.lagom",
   // Must be "Apache-2.0", because bintray requires that it is a license that it knows about
@@ -389,7 +393,6 @@ lazy val api = (project in file("service/core/api"))
     Dependencies.api
   )
 
-
 lazy val `api-javadsl` = (project in file("service/javadsl/api"))
   .settings(name := "lagom-javadsl-api")
   .settings(runtimeLibCommon: _*)
@@ -464,12 +467,12 @@ lazy val `api-tools` = (project in file("api-tools"))
   .settings(
     Dependencies.`api-tools`
   )
+  .settings(overridesScalaParserCombinators: _*)
   .dependsOn(
     spi,
     `server-javadsl` % Test,
     `server-scaladsl` % Test
   )
-
 
 lazy val client = (project in file("service/core/client"))
   .settings(runtimeLibCommon: _*)
@@ -1026,6 +1029,7 @@ lazy val logback = (project in file("logback"))
     name := "lagom-logback",
     Dependencies.logback
   )
+  .settings(overridesScalaParserCombinators: _*)
 
 lazy val log4j2 = (project in file("log4j2"))
   .enablePlugins(RuntimeLibPlugins)
@@ -1034,6 +1038,7 @@ lazy val log4j2 = (project in file("log4j2"))
     name := "lagom-log4j2",
     Dependencies.log4j2
   )
+  .settings(overridesScalaParserCombinators: _*)
 
 lazy val devEnvironmentProjects = Seq[Project](
   `reloadable-server`,
@@ -1071,6 +1076,7 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
     name := "lagom-reloadable-server",
     Dependencies.`reloadable-server`
   )
+  .settings(overridesScalaParserCombinators: _*)
   .dependsOn(`dev-mode-ssl-support`)
 
 lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
@@ -1376,6 +1382,7 @@ lazy val `dev-mode-ssl-support` = (project in file("dev") / "dev-mode-ssl-suppor
     Dependencies.`dev-mode-ssl-support`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(overridesScalaParserCombinators: _*)
   .enablePlugins(RuntimeLibPlugins)
 
 lazy val `service-registry-client-core` = (project in file("dev") / "service-registry" / "client-core")
@@ -1384,6 +1391,7 @@ lazy val `service-registry-client-core` = (project in file("dev") / "service-reg
     Dependencies.`service-registry-client-core`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(overridesScalaParserCombinators: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(logback % Test)
 
