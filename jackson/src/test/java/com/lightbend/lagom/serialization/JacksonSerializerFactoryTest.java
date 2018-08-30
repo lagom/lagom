@@ -7,6 +7,8 @@ package com.lightbend.lagom.serialization;
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
 import akka.util.ByteString;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lightbend.lagom.javadsl.api.deser.DeserializationException;
 import com.lightbend.lagom.javadsl.api.deser.StrictMessageSerializer;
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol;
@@ -24,10 +26,11 @@ public class JacksonSerializerFactoryTest {
 
     static ActorSystem system;
 
-    private class Dummy {
+    static class Dummy {
         private final Optional<String> opt;
 
-        Dummy(Optional<String> opt) {
+        @JsonCreator
+        Dummy(@JsonProperty("opt") Optional<String> opt) {
             this.opt = opt;
         }
     }
@@ -46,15 +49,34 @@ public class JacksonSerializerFactoryTest {
     private final JacksonSerializerFactory factory = new JacksonSerializerFactory(system);
 
     @Test
-    public void testDeserializeEmptyByteStringToOptional() {
+    public void shouldDeserializeEmptyByteStringToOptionalEmpty() {
         StrictMessageSerializer<Optional<String>> serializer = factory.messageSerializerFor(Optional.class);
         Optional<String> out = serializer.deserializer(new MessageProtocol()).deserialize(ByteString.empty());
-        assertEquals(out, Optional.empty());
+        assertEquals(Optional.empty(), out);
     }
 
     @Test(expected = DeserializationException.class)
-    public void testFailToDeserializeEmptyByteStringToDummy() {
+    public void shouldFailToDeserializeEmptyByteStringToDummy() {
         StrictMessageSerializer<Dummy> serializer = factory.messageSerializerFor(Dummy.class);
         serializer.deserializer(new MessageProtocol()).deserialize(ByteString.empty());
+    }
+
+    @Test
+    public void shouldDeserializeAValidEmptyJsObjectToDummy() {
+        StrictMessageSerializer<Dummy> serializer = factory.messageSerializerFor(Dummy.class);
+        Dummy deserialize = serializer.deserializer(new MessageProtocol()).deserialize(ByteString.fromString("{}"));
+        assertEquals(Optional.empty(), deserialize.opt);
+    }
+    @Test
+    public void shouldDeserializeAValidNullifiedJsObjectToDummy() {
+        StrictMessageSerializer<Dummy> serializer = factory.messageSerializerFor(Dummy.class);
+        Dummy deserialize = serializer.deserializer(new MessageProtocol()).deserialize(ByteString.fromString("{\"opt\":null}"));
+        assertEquals(Optional.empty(), deserialize.opt);
+    }
+    @Test
+    public void shouldDeserializeAValidJsObjectToDummy() {
+        StrictMessageSerializer<Dummy> serializer = factory.messageSerializerFor(Dummy.class);
+        Dummy deserialize = serializer.deserializer(new MessageProtocol()).deserialize(ByteString.fromString("{\"opt\":\"abc\"}"));
+        assertEquals(Optional.of("abc"), deserialize.opt);
     }
 }
