@@ -9,6 +9,7 @@ import akka.actor.CoordinatedShutdown;
 import akka.japi.function.Effect;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
+import play.api.internal.libs.concurrent.CoordinatedShutdownSupport;
 import com.lightbend.lagom.internal.client.*;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactoryProvider;
@@ -39,7 +40,6 @@ import play.api.Configuration;
 import play.api.Environment;
 import play.api.Mode;
 import play.api.inject.ApplicationLifecycle;
-import play.api.libs.concurrent.CoordinatedShutdownProvider;
 import play.api.libs.ws.WSClient;
 import play.api.libs.ws.WSClientConfig;
 import play.api.libs.ws.WSConfigParser;
@@ -171,7 +171,7 @@ public class LagomClientFactory implements Closeable {
     }
 
     private void coordinatedShutdown() throws InterruptedException, TimeoutException {
-        CoordinatedShutdownProvider.syncShutdown(actorSystem, CoordinatedShutdown.unknownReason());
+        CoordinatedShutdownSupport.syncShutdown(actorSystem, CoordinatedShutdown.unknownReason());
     }
 
     /**

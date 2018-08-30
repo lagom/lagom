@@ -265,7 +265,7 @@ private object ActorSystemProvider {
       environment.classLoader,
       Configuration(config),
       serializationSetup
-    )._1
+    )
   }
 
 }

@@ -9,9 +9,9 @@ import java.net.InetAddress
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.lightbend.lagom.devmode.ssl.FakeKeyStoreGenerator
 import play.api.ApplicationLoader.DevContext
 import play.api._
+import play.core.server.ssl.FakeKeyStore
 import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
 import play.utils.Threads
 
@@ -48,10 +48,8 @@ object LagomReloadableDevServerStart {
         val path: File = buildLink.projectPath
 
         val keystoreBaseFolder = new File(".")
-        val keystoreFilePath = FakeKeyStoreGenerator.keyStoreFile(keystoreBaseFolder)
-        val keyStore =
-          if (!keystoreFilePath.exists()) FakeKeyStoreGenerator.buildKeystore(keystoreBaseFolder)
-          else FakeKeyStoreGenerator.load(keystoreBaseFolder)
+        val keystoreFilePath = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
+        FakeKeyStore.createKeyStore(keystoreBaseFolder)
 
         // The pairs play.server.httpx.{address,port} are read from PlayRegisterWithServiceRegistry
         // to register the service

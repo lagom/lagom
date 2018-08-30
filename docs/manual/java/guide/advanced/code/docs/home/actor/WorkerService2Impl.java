@@ -6,6 +6,8 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.pubsub.PubSubRef;
 import com.lightbend.lagom.javadsl.pubsub.PubSubRegistry;
 import com.lightbend.lagom.javadsl.pubsub.TopicId;
+
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -67,8 +69,12 @@ public class WorkerService2Impl implements WorkerService2 {
   public ServiceCall<Job, JobAccepted> doWork() {
     return job -> {
       // send the job to a worker, via the consistent hashing router
-      CompletionStage<JobAccepted> reply = ask(workerRouter, job, Timeout.apply(
-          5, TimeUnit.SECONDS))
+      CompletionStage<JobAccepted> reply =
+          ask(
+              workerRouter,
+              job,
+              Duration.ofSeconds(5)
+          )
         .thenApply(ack -> {
           return (JobAccepted) ack;
         });
