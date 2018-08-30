@@ -10,14 +10,20 @@ Lagom 1.5 also updates to the latest major versions of Play (2.7) and Akka HTTP 
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin. For example:
 
 ```scala
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.5.0-M2")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.5.0-M3")
 ```
 
 We also recommend upgrading to sbt 1.2.1 or later, by updating the `sbt.version` in `project/build.properties`.
 
 ## Deprecations
 
-TODO
+### Service Ports
+
+Lagom 1.5.0 now has support for SSL calls for gRPC integration and new a build setting was introduced to configure https port for a given service manually.
+
+In sbt, the new setting is called `lagomServiceHttpsPort`. To keep the names aligned, we are deprecating  `lagomServicePort` in favour of `lagomServiceHttpPort`.
+
+TODO: add links to gRPC integration and SSL support documentation.
 
 
 ## ConductR
