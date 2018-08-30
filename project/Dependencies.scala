@@ -28,7 +28,7 @@ object Dependencies {
   val JacksonCoreVersion = JacksonVersion
   val JacksonDatatypeVersion = JacksonVersion
   val JacksonDatabindVersion = JacksonVersion
-  val GuavaVersion = "25.1-jre"
+  val GuavaVersion = "26.0-jre"
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.1.29.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
@@ -72,7 +72,7 @@ object Dependencies {
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.3"
   private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.4"
   private val h2 = "com.h2database" % "h2" % "1.4.192"
-  private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0" excludeAll (excludeSlf4j: _*)
+  private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.6.0" excludeAll (excludeSlf4j: _*)
 
   private val akkaActor = "com.typesafe.akka" %% "akka-actor" % AkkaVersion
   private val akkaCluster = "com.typesafe.akka" %% "akka-cluster" % AkkaVersion
@@ -132,14 +132,6 @@ object Dependencies {
       "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
     )
 
-  // Play is using Guava 26.0-jre which is not compatible with cassandra-driver-core that requires Guava [16, 25].
-  // So we need to override the guava version to 25.1.-jre which is still compatible with cassandra-driver-core.
-  // There is a fix to make cassandra-driver-core compatible with newer versions of Guava:
-  // https://github.com/datastax/java-driver/pull/1067
-  //
-  // But this is not released yet. As soon as there is a release, we can update cassandra-driver-core and remove
-  // this override.
-  val guavaOverrides = Set(guava)
   val scalaParserCombinatorOverrides = Set(scalaParserCombinators)
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
@@ -159,7 +151,7 @@ object Dependencies {
       "com.github.jnr" % "jffi" % "1.2.16",
       "com.github.jnr" % "jnr-constants" % "0.9.9",
       "com.github.jnr" % "jnr-ffi" % "2.1.7",
-      "com.github.jnr" % "jnr-posix" % "3.0.27",
+      "com.github.jnr" % "jnr-posix" % "3.0.44",
       "com.github.jnr" % "jnr-x86asm" % "1.0.2",
       "com.google.code.findbugs" % "jsr305" % "3.0.2",
       "com.google.errorprone" % "error_prone_annotations" % "2.1.3",
@@ -168,7 +160,7 @@ object Dependencies {
       "com.google.inject" % "guice" % "4.2.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "4.2.0",
       "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
-      "org.checkerframework" % "checker-qual" % "2.0.0",
+      "org.checkerframework" % "checker-qual" % "2.5.2",
       "javax.xml.bind" % "jaxb-api" % "2.3.0",
       h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
@@ -614,14 +606,20 @@ object Dependencies {
 
     // Upgrades needed to match whitelist
     dropwizardMetricsCore,
+    cassandraDriverCore,
     "io.netty" % "netty-handler" % NettyVersion
   )
 
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
-    junit % Test
+    junit % Test,
+    // Upgrades needed to match whitelist
+    cassandraDriverCore
   )
 
-  val `persistence-cassandra-scaladsl` = libraryDependencies ++= Nil
+  val `persistence-cassandra-scaladsl` = libraryDependencies ++= Seq(
+    // Upgrades needed to match whitelist
+    cassandraDriverCore
+  )
 
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
     slf4jApi,

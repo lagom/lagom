@@ -29,11 +29,6 @@ def evictionSettings: Seq[Setting[_]] = Seq(
     .withWarnDirectEvictions(false)
 )
 
-def overrideGuavaSettings = Seq(
-  // See comment at `guavaOverrides` declaration to see why we need this override.
-  dependencyOverrides ++= Dependencies.guavaOverrides
-)
-
 def overridesScalaParserCombinators = Seq(
   dependencyOverrides ++= Dependencies.scalaParserCombinatorOverrides
 )
@@ -397,12 +392,10 @@ lazy val api = (project in file("service/core/api"))
     name := "lagom-api",
     Dependencies.api
   )
-  .settings(overrideGuavaSettings: _*)
 
 lazy val `api-javadsl` = (project in file("service/javadsl/api"))
   .settings(name := "lagom-javadsl-api")
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since10): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -416,7 +409,6 @@ lazy val `api-javadsl` = (project in file("service/javadsl/api"))
 lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
   .settings(name := "lagom-scaladsl-api")
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since13): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -450,7 +442,6 @@ lazy val spi = (project in file("spi"))
 lazy val jackson = (project in file("jackson"))
   .settings(name := "lagom-javadsl-jackson")
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     Dependencies.jackson
@@ -459,7 +450,6 @@ lazy val jackson = (project in file("jackson"))
 
 lazy val `play-json` = (project in file("play-json"))
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since13): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -483,12 +473,9 @@ lazy val `api-tools` = (project in file("api-tools"))
     `server-javadsl` % Test,
     `server-scaladsl` % Test
   )
-  .settings(overrideGuavaSettings: _*)
-
 
 lazy val client = (project in file("service/core/client"))
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-client",
@@ -497,7 +484,6 @@ lazy val client = (project in file("service/core/client"))
 
 lazy val `client-javadsl` = (project in file("service/javadsl/client"))
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since10): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -512,7 +498,6 @@ lazy val `client-javadsl` = (project in file("service/javadsl/client"))
 
 lazy val `client-scaladsl` = (project in file("service/scaladsl/client"))
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(mimaSettings(since13): _*)
   .settings(macroCompileSettings: _*)
@@ -532,7 +517,6 @@ lazy val `integration-client-javadsl` = (project in file("service/javadsl/integr
   )
   .settings(mimaSettings(since10): _*)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-javadsl`, `service-registry-client-javadsl`, `kafka-client-javadsl`)
 
@@ -543,7 +527,6 @@ lazy val server = (project in file("service/core/server"))
   )
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .dependsOn(client)
 
 
@@ -555,7 +538,6 @@ lazy val `server-javadsl` = (project in file("service/javadsl/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(mimaSettings(since10): _*)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .dependsOn(server, `client-javadsl`, immutables % "provided")
   // bring jackson closer to the root of the dependency tree to prompt Maven to choose the right version
   .dependsOn(jackson)
@@ -584,12 +566,10 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(mimaSettings(since13): _*)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .dependsOn(server, `client-scaladsl`, `play-json`)
 
 lazy val `testkit-core` = (project in file("testkit/core"))
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-core-testkit",
@@ -605,7 +585,6 @@ lazy val `testkit-core` = (project in file("testkit/core"))
 
 lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
@@ -625,7 +604,6 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
@@ -644,7 +622,6 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(AutomateHeaderPlugin)
   .settings(forkedTests: _*)
   .settings(
@@ -664,7 +641,6 @@ lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integra
 
 lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integration-tests"))
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(AutomateHeaderPlugin)
   .settings(forkedTests: _*)
   .settings(
@@ -699,7 +675,6 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
 
 lazy val `cluster-core` = (project in file("cluster/core"))
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-cluster-core",
@@ -709,7 +684,6 @@ lazy val `cluster-core` = (project in file("cluster/core"))
 lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
   .dependsOn(`cluster-core`, jackson)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since10): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -721,7 +695,6 @@ lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
 lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
   .dependsOn(`cluster-core`, `play-json`)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since13): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -733,7 +706,6 @@ lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
 lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
   .dependsOn(`cluster-javadsl`)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since10): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -745,7 +717,6 @@ lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
 lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
   .dependsOn(`cluster-scaladsl`)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since13): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -757,7 +728,6 @@ lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
 lazy val `persistence-core` = (project in file("persistence/core"))
   .dependsOn(`cluster-core`, logback % Test)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -812,7 +782,6 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
     `cluster-javadsl`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since12): _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
@@ -833,7 +802,6 @@ lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
     `cluster-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since13): _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
@@ -846,7 +814,6 @@ lazy val `persistence-cassandra-core` = (project in file("persistence-cassandra/
     name := "lagom-persistence-cassandra-core",
     Dependencies.`persistence-cassandra-core`
   )
-  .settings(overrideGuavaSettings: _*)
 
 lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassandra/javadsl"))
   .settings(
@@ -864,7 +831,6 @@ lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassand
     `api-javadsl`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since12): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -886,7 +852,6 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
     `api-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since13): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -898,7 +863,6 @@ lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
     `persistence-core` % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
@@ -920,7 +884,6 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
     `persistence-javadsl` % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since12): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -937,7 +900,6 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
     `persistence-scaladsl` % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since13): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -946,7 +908,6 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
 lazy val `persistence-jpa-javadsl` = (project in file("persistence-jpa/javadsl"))
   .dependsOn(`persistence-jdbc-javadsl` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
@@ -962,7 +923,6 @@ lazy val `broker-javadsl` = (project in file("service/javadsl/broker"))
     Dependencies.`broker-javadsl`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since12): _*)
   .dependsOn(`api-javadsl`, `persistence-javadsl`)
 
@@ -973,14 +933,12 @@ lazy val `broker-scaladsl` = (project in file("service/scaladsl/broker"))
     Dependencies.`broker-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since13): _*)
   .dependsOn(`api-scaladsl`, `persistence-scaladsl`)
 
 lazy val `kafka-client` = (project in file("service/core/kafka/client"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-kafka-client",
@@ -991,7 +949,6 @@ lazy val `kafka-client` = (project in file("service/core/kafka/client"))
 lazy val `kafka-client-javadsl` = (project in file("service/javadsl/kafka/client"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since12): _*)
   .settings(
     name := "lagom-javadsl-kafka-client",
@@ -1013,7 +970,6 @@ lazy val `kafka-client-scaladsl` = (project in file("service/scaladsl/kafka/clie
     Dependencies.`kafka-client-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since13): _*)
   .dependsOn(`api-scaladsl`, `kafka-client`)
 
@@ -1024,13 +980,11 @@ lazy val `kafka-broker` = (project in file("service/core/kafka/server"))
     Dependencies.`kafka-broker`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .dependsOn(`api`, `persistence-core`, `kafka-client`)
 
 lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since12): _*)
   .settings(forkedTests: _*)
   .settings(excludeLog4jFromKafkaServer: _*)
@@ -1051,7 +1005,6 @@ lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server
 lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since13): _*)
   .settings(forkedTests: _*)
   .settings(excludeLog4jFromKafkaServer: _*)
@@ -1077,7 +1030,6 @@ lazy val logback = (project in file("logback"))
     Dependencies.logback
   )
   .settings(overridesScalaParserCombinators: _*)
-  .settings(overrideGuavaSettings: _*)
 
 lazy val log4j2 = (project in file("log4j2"))
   .enablePlugins(RuntimeLibPlugins)
@@ -1087,7 +1039,6 @@ lazy val log4j2 = (project in file("log4j2"))
     Dependencies.log4j2
   )
   .settings(overridesScalaParserCombinators: _*)
-  .settings(overrideGuavaSettings: _*)
 
 lazy val devEnvironmentProjects = Seq[Project](
   `reloadable-server`,
@@ -1126,7 +1077,6 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
     Dependencies.`reloadable-server`
   )
   .settings(overridesScalaParserCombinators: _*)
-  .settings(overrideGuavaSettings: _*)
   .dependsOn(`dev-mode-ssl-support`)
 
 lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
@@ -1389,7 +1339,6 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
 lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-library")
   .settings(name := "lagom-sbt-scripted-library")
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(
     PgpKeys.publishSigned := {},
     publish := {}
@@ -1398,7 +1347,6 @@ lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-librar
 
 lazy val `service-locator` = (project in file("dev") / "service-registry" / "service-locator")
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-service-locator",
@@ -1435,7 +1383,6 @@ lazy val `dev-mode-ssl-support` = (project in file("dev") / "dev-mode-ssl-suppor
   )
   .settings(runtimeLibCommon: _*)
   .settings(overridesScalaParserCombinators: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
 
 lazy val `service-registry-client-core` = (project in file("dev") / "service-registry" / "client-core")
@@ -1444,7 +1391,6 @@ lazy val `service-registry-client-core` = (project in file("dev") / "service-reg
     Dependencies.`service-registry-client-core`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(overridesScalaParserCombinators: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(logback % Test)
@@ -1455,7 +1401,6 @@ lazy val `service-registry-client-javadsl` = (project in file("dev") / "service-
     Dependencies.`service-registry-client-javadsl`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-javadsl`, `service-registry-client-core`, immutables % "provided")
 
@@ -1465,7 +1410,6 @@ lazy val `service-registration-javadsl` = (project in file("dev") / "service-reg
     Dependencies.`service-registration-javadsl`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`server-javadsl`, `service-registry-client-javadsl`)
 
@@ -1475,7 +1419,6 @@ lazy val `devmode-scaladsl` = (project in file("dev") / "service-registry" / "de
     Dependencies.`devmode-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(mimaSettings(since13): _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-scaladsl`, `service-registry-client-core`)
@@ -1486,7 +1429,6 @@ lazy val `play-integration-javadsl` = (project in file("dev") / "service-registr
     Dependencies.`play-integration-javadsl`
   )
   .settings(runtimeLibCommon: _*)
-  .settings(overrideGuavaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`service-registry-client-javadsl`)
 
@@ -1502,7 +1444,6 @@ lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
 
 lazy val `kafka-server` = (project in file("dev") / "kafka-server")
   .settings(common: _*)
-  .settings(overrideGuavaSettings: _*)
   .settings(runtimeScalaSettings: _*)
   .settings(sonatypeSettings)
   .enablePlugins(RuntimeLibPlugins)
