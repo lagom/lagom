@@ -14,7 +14,7 @@ object Dependencies {
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.15"
+  val AkkaVersion = "2.5.16"
   val AkkaHttpVersion = "10.1.3"
   val AkkaManagementVersion = "0.17.0"
   // Also be sure to update ScalaVersion in docs/build.sbt.
