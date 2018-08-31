@@ -1,0 +1,17 @@
+# Structure of this test:
+# =======================
+
+# Here we test that Lagom devmode runs service in both HTTP and HTTPS
+
+# `lagomRun` tests
+# --------------
+> run
+$ sleep 7000
+
+# hit the service directly over HTTP (port set on build.sbt)
+> makeRequest http://localhost:7080/foo 200
+
+# hit the service directly over HTTPS (port set on build.sbt)
+> makeRequest https://localhost:7443/foo 200
+
+> stop
