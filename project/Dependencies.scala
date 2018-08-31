@@ -14,7 +14,7 @@ object Dependencies {
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.14"
+  val AkkaVersion = "2.5.16"
   val AkkaHttpVersion = "10.0.13"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.6", "2.11.12")
@@ -67,9 +67,9 @@ object Dependencies {
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
   private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
-  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0"
+  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.3"
-  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.3"
+  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.2.4"
   private val h2 = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0" excludeAll (excludeSlf4j: _*)
 
@@ -140,7 +140,7 @@ object Dependencies {
       akkaPersistenceJdbc,
       "com.github.jnr" % "jffi" % "1.2.16",
       "com.github.jnr" % "jnr-constants" % "0.9.9",
-      "com.github.jnr" % "jnr-ffi" % "2.1.6",
+      "com.github.jnr" % "jnr-ffi" % "2.1.7",
       "com.github.jnr" % "jnr-posix" % "3.0.27",
       "com.github.jnr" % "jnr-x86asm" % "1.0.2",
       "com.google.code.findbugs" % "jsr305" % "1.3.9",
@@ -182,8 +182,8 @@ object Dependencies {
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.7.9",
       "commons-codec" % "commons-codec" % "1.10",
-      "io.aeron" % "aeron-client" % "1.9.1",
-      "io.aeron" % "aeron-driver" % "1.9.1",
+      "io.aeron" % "aeron-client" % "1.9.3",
+      "io.aeron" % "aeron-driver" % "1.9.3",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.7.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
@@ -195,7 +195,7 @@ object Dependencies {
       "junit" % "junit" % JUnitVersion,
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
-      "org.agrona" % "agrona" % "0.9.17",
+      "org.agrona" % "agrona" % "0.9.18",
       "org.apache.commons" % "commons-lang3" % "3.6",
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
@@ -205,7 +205,7 @@ object Dependencies {
       javassist,
       "org.joda" % "joda-convert" % "1.9.2",
       "org.hamcrest" % "hamcrest-core" % "1.3",
-      "org.lmdbjava" % "lmdbjava" % "0.6.0",
+      "org.lmdbjava" % "lmdbjava" % "0.6.1",
       "org.pcollections" % "pcollections" % "2.1.2",
       reactiveStreams,
       "org.reflections" % "reflections" % "0.9.11",
