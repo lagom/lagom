@@ -157,7 +157,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
       runningServices += (project -> service)
     } catch {
       case NonFatal(e) =>
-        throw new RuntimeException(s"Failed to start service ${project.getArtifactId}: ${e.getMessage}", e)
+        throw new RuntimeException(s"Failed to start service ${project.getArtifactId}", e)
     }
   }
 
