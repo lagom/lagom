@@ -131,11 +131,7 @@ object Reloader {
 
     lazy val reloader = new Reloader(reloadCompile, decoratedLoader, projectPath, devSettings, monitoredFiles, fileWatchService, reloadLock)
 
-    val server: ReloadableServer = {
-      val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
-      val mainDev = mainClass.getMethod("mainDev", classOf[BuildLink], classOf[String], classOf[Int], classOf[Int])
-      mainDev.invoke(null, reloader, httpAddress, httpPort: java.lang.Integer, httpsPort: java.lang.Integer).asInstanceOf[ReloadableServer]
-    }
+    val server: ReloadableServer = mainDev(applicationLoader, reloader, httpAddress, httpPort, httpsPort)
 
     new DevServer {
       val buildLink: BuildLink = reloader
@@ -179,13 +175,11 @@ object Reloader {
       override def findSource(className: String, line: Integer): Array[AnyRef] = null
     }
 
-    val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
-    val mainDev = mainClass.getMethod("mainDev", classOf[BuildLink], classOf[String], classOf[Int], classOf[Int])
-    val server = mainDev.invoke(null, _buildLink, httpAddress, httpPort: java.lang.Integer, httpsPort: java.lang.Integer).asInstanceOf[ReloadableServer]
+    val server: ReloadableServer = mainDev(applicationLoader, _buildLink, httpAddress, httpPort, httpsPort)
 
     server.reload() // it's important to initialize the server
 
-    new Reloader.DevServer {
+    new DevServer {
       val buildLink: BuildLink = _buildLink
 
       /** Allows to register a listener that will be triggered a monitored file is changed. */
@@ -203,6 +197,18 @@ object Reloader {
 
       def close(): Unit = server.stop()
     }
+  }
+
+  private def mainDev(
+    applicationLoader: ClassLoader,
+    buildLink:         BuildLink,
+    httpAddress:       String,
+    httpPort:          Int,
+    httpsPort:         Int
+  ): ReloadableServer = {
+    val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
+    val mainDev = mainClass.getMethod("mainDev", classOf[BuildLink], classOf[String], classOf[Int], classOf[Int])
+    mainDev.invoke(null, buildLink, httpAddress, httpPort: java.lang.Integer, httpsPort: java.lang.Integer).asInstanceOf[ReloadableServer]
   }
 
 }
