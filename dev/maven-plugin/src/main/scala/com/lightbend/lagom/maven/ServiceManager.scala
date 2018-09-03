@@ -75,93 +75,89 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
   }
 
   def startServiceDevMode(project: MavenProject, address: String, httpPort: Int, httpsPort: Int, serviceLocatorUrl: Option[String], cassandraPort: Option[Int], playService: Boolean, additionalWatchDirs: Seq[File]): Unit = synchronized {
-    runningServices.get(project) match {
-      case Some(service) =>
-        logger.info("Service " + project.getArtifactId + " already running!")
-      case None =>
+    if (runningServices.contains(project))
+      logger.info("Service " + project.getArtifactId + " already running!")
+    else try {
+      // First, resolve the project. We need to do this so that we can find out the Scala version.
+      val plainDeps = facade.resolveProject(project, Nil)
 
-        try {
-          // First, resolve the project. We need to do this so that we can find out the Scala version.
-          val plainDeps = facade.resolveProject(project, Nil)
+      val scalaBinaryVersion = detectScalaBinaryVersion(plainDeps.map(_.getArtifact))
 
-          val scalaBinaryVersion = detectScalaBinaryVersion(plainDeps.map(_.getArtifact))
+      val devDeps = calculateDevModeDependencies(scalaBinaryVersion, playService, serviceLocatorUrl, cassandraPort)
 
-          val devDeps = calculateDevModeDependencies(scalaBinaryVersion, playService, serviceLocatorUrl, cassandraPort)
+      // Now resolve again with the dev mode dependencies added
+      val projectDependencies = resolveDependencies(project, devDeps)
 
-          // Now resolve again with the dev mode dependencies added
-          val projectDependencies = resolveDependencies(project, devDeps)
+      val projects = project +: projectDependencies.internal
 
-          val projects = project +: projectDependencies.internal
+      // This is the list of projects to build on each file change, in build order, calculated by getting the list
+      // of all projects that we depend on in build order, and limiting it to just the ones that we've already
+      // calculated are a runtime scoped dependency
+      val buildProjects = session.getProjectDependencyGraph.getUpstreamProjects(project, true).asScala.collect {
+        case runtimeDep if projects.contains(runtimeDep) =>
+          // We need to ensure that we resolve each project that we depend on too
+          facade.resolveProject(runtimeDep, Nil)
+          runtimeDep
+      } :+ project
 
-          // This is the list of projects to build on each file change, in build order, calculated by getting the list
-          // of all projects that we depend on in build order, and limiting it to just the ones that we've already
-          // calculated are a runtime scoped dependency
-          val buildProjects = session.getProjectDependencyGraph.getUpstreamProjects(project, true).asScala.collect {
-            case runtimeDep if projects.contains(runtimeDep) =>
-              // We need to ensure that we resolve each project that we depend on too
-              facade.resolveProject(runtimeDep, Nil)
-              runtimeDep
-          } :+ project
+      val sourceDirsToWatch = projects.flatMap { project =>
+        new File(project.getBuild.getSourceDirectory) ::
+          project.getBuild.getResources.asScala.map(r => new File(r.getDirectory)).toList
+      } ++ additionalWatchDirs
 
-          val sourceDirsToWatch = projects.flatMap { project =>
-            new File(project.getBuild.getSourceDirectory) ::
-              project.getBuild.getResources.asScala.map(r => new File(r.getDirectory)).toList
-          } ++ additionalWatchDirs
+      val watchService = FileWatchService.defaultWatchService(
+        new File(session.getTopLevelProject.getBuild.getDirectory, "target"),
+        200, logger
+      )
 
-          val watchService = FileWatchService.defaultWatchService(
-            new File(session.getTopLevelProject.getBuild.getDirectory, "target"),
-            200, logger
-          )
+      val serviceClassPath = projects.map { project =>
+        new File(project.getBuild.getOutputDirectory)
+      }
 
-          val serviceClassPath = projects.map { project =>
-            new File(project.getBuild.getOutputDirectory)
+      val devSettings =
+        LagomConfig.actorSystemConfig(project.getArtifactId) ++
+          serviceLocatorUrl.map(LagomConfig.ServiceLocatorUrl -> _).toMap ++
+          cassandraPort.fold(Map.empty[String, String]) { port =>
+            LagomConfig.cassandraPort(port)
           }
 
-          val devSettings =
-            LagomConfig.actorSystemConfig(project.getArtifactId) ++
-              serviceLocatorUrl.map(LagomConfig.ServiceLocatorUrl -> _).toMap ++
-              cassandraPort.fold(Map.empty[String, String]) { port =>
-                LagomConfig.cassandraPort(port)
-              }
+      val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(projectDependencies.external)
 
-          val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(projectDependencies.external)
+      // Because Maven plugins may be run in their own classloaders, we can't use any instance of something that
+      // we've created as a mutex, because another project might have loaded us in a different classloader. So
+      // while this is rather hacky, it is guaranteed to be a singleton from the perspective of all the instances
+      // of our plugin
+      val reloadLock = classOf[Maven]
 
-          // Because Maven plugins may be run in their own classloaders, we can't use any instance of something that
-          // we've created as a mutex, because another project might have loaded us in a different classloader. So
-          // while this is rather hacky, it is guaranteed to be a singleton from the perspective of all the instances
-          // of our plugin
-          val reloadLock = classOf[Maven]
+      val service: DevServer = Reloader.startDevMode(
+        scalaClassLoader,
+        projectDependencies.external.map(_.getFile),
+        () => {
+          reloadCompile(buildProjects, serviceClassPath)
+        },
+        identity,
+        sourceDirsToWatch,
+        watchService,
+        new File(project.getBuild.getDirectory),
+        devSettings.toSeq,
+        address,
+        httpPort,
+        httpsPort,
+        reloadLock
+      )
 
-          val service: DevServer = Reloader.startDevMode(
-            scalaClassLoader,
-            projectDependencies.external.map(_.getFile),
-            () => {
-              reloadCompile(buildProjects, serviceClassPath)
-            },
-            identity,
-            sourceDirsToWatch,
-            watchService,
-            new File(project.getBuild.getDirectory),
-            devSettings.toSeq,
-            address,
-            httpPort,
-            httpsPort,
-            reloadLock
-          )
+      // Eagerly reload to start
+      service.reload()
 
-          // Eagerly reload to start
-          service.reload()
+      // Setup trigger to reload when a source file changes
+      service.addChangeListener(() => service.reload())
 
-          // Setup trigger to reload when a source file changes
-          service.addChangeListener(() => service.reload())
+      LagomKeys.LagomServiceBindings.put(project, service.bindings())
 
-          LagomKeys.LagomServiceBindings.put(project, service.bindings())
-
-          runningServices += (project -> service)
-        } catch {
-          case NonFatal(e) =>
-            throw new RuntimeException(s"Failed to start service ${project.getArtifactId}: ${e.getMessage}", e)
-        }
+      runningServices += (project -> service)
+    } catch {
+      case NonFatal(e) =>
+        throw new RuntimeException(s"Failed to start service ${project.getArtifactId}: ${e.getMessage}", e)
     }
   }
 
@@ -193,33 +189,31 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
     cassandraPort:     Option[Int],
     playService:       Boolean
   ): Unit = synchronized {
-    runningExternalProjects.get(dependency) match {
-      case Some(service) =>
-        logger.info("External project " + dependency.getArtifact.getArtifactId + " already running!")
-      case None =>
+    if (runningExternalProjects.contains(dependency))
+      logger.info("External project " + dependency.getArtifact.getArtifactId + " already running!")
+    else {
+      // First resolve to find out the scala binary version
+      val plainDeps = facade.resolveDependency(dependency, Nil)
 
-        // First resolve to find out the scala binary version
-        val plainDeps = facade.resolveDependency(dependency, Nil)
+      val scalaBinaryVersion = detectScalaBinaryVersion(plainDeps)
 
-        val scalaBinaryVersion = detectScalaBinaryVersion(plainDeps)
+      val devDeps = calculateDevModeDependencies(scalaBinaryVersion, playService, serviceLocatorUrl, cassandraPort)
 
-        val devDeps = calculateDevModeDependencies(scalaBinaryVersion, playService, serviceLocatorUrl, cassandraPort)
+      // Now resolve with the dev mode deps added
+      val dependencies = facade.resolveDependency(dependency, devDeps)
 
-        // Now resolve with the dev mode deps added
-        val dependencies = facade.resolveDependency(dependency, devDeps)
+      val devSettings = LagomConfig.actorSystemConfig(dependency.getArtifact.getArtifactId) ++
+        serviceLocatorUrl.map(LagomConfig.ServiceLocatorUrl -> _).toMap ++
+        cassandraPort.fold(Map.empty[String, String]) { port =>
+          LagomConfig.cassandraPort(port)
+        }
 
-        val devSettings = LagomConfig.actorSystemConfig(dependency.getArtifact.getArtifactId) ++
-          serviceLocatorUrl.map(LagomConfig.ServiceLocatorUrl -> _).toMap ++
-          cassandraPort.fold(Map.empty[String, String]) { port =>
-            LagomConfig.cassandraPort(port)
-          }
+      val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(dependencies)
 
-        val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(dependencies)
+      val service = Reloader.startNoReload(scalaClassLoader, dependencies.map(_.getFile),
+        new File(session.getCurrentProject.getBuild.getDirectory), devSettings.toSeq, address, httpPort, httpsPort)
 
-        val service = Reloader.startNoReload(scalaClassLoader, dependencies.map(_.getFile),
-          new File(session.getCurrentProject.getBuild.getDirectory), devSettings.toSeq, address, httpPort, httpsPort)
-
-        runningExternalProjects += (dependency -> service)
+      runningExternalProjects += (dependency -> service)
     }
   }
 
