@@ -126,7 +126,7 @@ object Reloader {
      */
     lazy val delegatingLoader: ClassLoader = new DelegatingClassLoader(parentClassLoader, Build.sharedClasses.asScala.toSet, buildLoader, reloader.getClassLoader _)
 
-    lazy val applicationLoader = new NamedURLClassLoader("LagomDependencyClassLoader", urls(dependencyClasspath), delegatingLoader)
+    lazy val applicationLoader = buildForApplication(dependencyClasspath, delegatingLoader)
     lazy val decoratedLoader = classLoaderDecorator(applicationLoader)
 
     lazy val reloader = new Reloader(reloadCompile, decoratedLoader, projectPath, devSettings, monitoredFiles, fileWatchService, reloadLock)
@@ -160,8 +160,7 @@ object Reloader {
       parentClassLoader,
       Build.sharedClasses.asScala.toSet, buildLoader, () => Some(applicationLoader)
     )
-    lazy val applicationLoader = new NamedURLClassLoader("LagomDependencyClassLoader", urls(dependencyClasspath),
-      delegatingLoader)
+    lazy val applicationLoader = buildForApplication(dependencyClasspath, delegatingLoader)
 
     val _buildLink = new BuildLink {
       private val initialized = new java.util.concurrent.atomic.AtomicBoolean(false)
@@ -198,6 +197,9 @@ object Reloader {
       def close(): Unit = server.stop()
     }
   }
+
+  private def buildForApplication(dependencyClasspath: Seq[File], delegatingLoader: => ClassLoader): ClassLoader =
+    new NamedURLClassLoader("LagomDependencyClassLoader", urls(dependencyClasspath), delegatingLoader)
 
   private def mainDev(
     applicationLoader: ClassLoader,
