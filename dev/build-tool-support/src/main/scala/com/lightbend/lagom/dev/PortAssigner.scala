@@ -63,7 +63,7 @@ object PortAssigner {
     }
 
     @annotation.tailrec
-    def loop(projectNames: Seq[ProjectName], assignedPort: Set[Port], unassigned: Vector[ProjectName], result: Map[ProjectName, Port]): Map[ProjectName, Port] =
+    def assignProjectPort(projectNames: Seq[ProjectName], assignedPort: Set[Port], unassigned: Vector[ProjectName], result: Map[ProjectName, Port]): Map[ProjectName, Port] =
       projectNames match {
         case Nil if unassigned.nonEmpty =>
           // if we are here there are projects with colliding hash that still need to get their port assigned. As expected, this step is carried out after assigning
@@ -71,12 +71,12 @@ object PortAssigner {
           val proj = unassigned.head
           val projectedPort = projectedPortFor(proj)
           val port = findFirstAvailablePort(projectedPort, assignedPort)
-          loop(projectNames, assignedPort + port, unassigned.tail, result + (proj -> port))
+          assignProjectPort(projectNames, assignedPort + port, unassigned.tail, result + (proj -> port))
         case Nil => result
         case proj +: rest =>
           val projectedPort = projectedPortFor(proj)
-          if (assignedPort(projectedPort)) loop(rest, assignedPort, unassigned :+ proj, result)
-          else loop(rest, assignedPort + projectedPort, unassigned, result + (proj -> projectedPort))
+          if (assignedPort(projectedPort)) assignProjectPort(rest, assignedPort, unassigned :+ proj, result)
+          else assignProjectPort(rest, assignedPort + projectedPort, unassigned, result + (proj -> projectedPort))
       }
 
     def projectedPortFor(name: ProjectName): Port = {
@@ -85,6 +85,6 @@ object PortAssigner {
       Port(range.min + portDelta)
     }
 
-    loop(projects.toSeq, Set.empty[Port], Vector.empty[ProjectName], Map.empty[ProjectName, Port])
+    assignProjectPort(projects.toSeq, Set.empty[Port], Vector.empty[ProjectName], Map.empty[ProjectName, Port])
   }
 }
