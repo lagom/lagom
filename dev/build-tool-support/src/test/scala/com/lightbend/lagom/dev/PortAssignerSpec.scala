@@ -26,7 +26,7 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       val projC = "c".asProjectName
 
       val projects = Seq(projA, projB, projC)
-      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects)
+      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects, true)
 
       // we expect 6 port because each project gets a http and a https port
       projectName2port.values.toSet should have size 6 // no duplicates
@@ -43,7 +43,7 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       projB.name.hashCode() should be(projC.name.hashCode())
 
       val projects = Seq(projA, projC, projB)
-      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects)
+      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects, true)
 
       projectName2port(projA) should not be projectName2port(projB)
       projectName2port(projA) should not be projectName2port(projC)
@@ -54,12 +54,12 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       val projA = "a".asProjectName
       val projC = "c".asProjectName
       val existingProjects = Seq(projA, projC)
-      val existingProjectName2port = PortAssigner.computeProjectsPort(portRange, existingProjects)
+      val existingProjectName2port = PortAssigner.computeProjectsPort(portRange, existingProjects, true)
 
       // SUT
       val projB = "b".asProjectName
       val projects = Seq(projA, projB, projC)
-      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects)
+      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects, true)
 
       projectName2port(projA) shouldBe existingProjectName2port(projA)
       projectName2port(projC) shouldBe existingProjectName2port(projC)
@@ -79,7 +79,7 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       val portRange = PortRange(7, 14)
 
       val projects = Seq(projA, projC, projB)
-      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects)
+      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects, true)
 
       projectName2port(projA) shouldBe Port(7)
       projectName2port(projA.withTls) shouldBe Port(14)
@@ -101,7 +101,7 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       val projC = "dad".asProjectName
 
       val projectsWithNoCollisions = Seq(projA, projC)
-      val projectName2portNoCollisions = PortAssigner.computeProjectsPort(portRange, projectsWithNoCollisions)
+      val projectName2portNoCollisions = PortAssigner.computeProjectsPort(portRange, projectsWithNoCollisions, true)
 
       // Here we check the port we expect to be assigned when only projects A and B exist
       projectName2portNoCollisions(projA) shouldBe Port(7)
@@ -112,7 +112,7 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       // Now let's add a project that happens to have the same hash of project A (and, hence, we will have a port collision)
       val projB = "BBBB".asProjectName
       val projectsWithCollisions = Seq(projA, projB, projC)
-      val projectName2portWithCollisions = PortAssigner.computeProjectsPort(portRange, projectsWithCollisions)
+      val projectName2portWithCollisions = PortAssigner.computeProjectsPort(portRange, projectsWithCollisions, true)
 
       // Note how project A and C have still got assigned the same ports, while project B will get the next available port, counting
       // from 7 (which is project's A port).
@@ -136,7 +136,7 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
       val projects = Seq(projA, projB)
 
       intercept[IllegalArgumentException] {
-        PortAssigner.computeProjectsPort(portRange, projects)
+        PortAssigner.computeProjectsPort(portRange, projects, true)
       }
     }
   }

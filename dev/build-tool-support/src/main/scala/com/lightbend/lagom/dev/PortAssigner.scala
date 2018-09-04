@@ -34,59 +34,57 @@ object PortAssigner {
     def next: Port = Port(value + 1)
   }
 
-  def computeProjectsPort(range: PortRange, projectNames: Seq[ProjectName]): Map[ProjectName, Port] = {
+  def computeProjectsPort(range: PortRange, projectNames: Seq[ProjectName], enableSsl: Boolean): Map[ProjectName, Port] = {
     val lagomProjects = projectNames.to[immutable.SortedSet]
-    val mapBuilder = new Project2PortMapBuilder(range)
-    mapBuilder.build(lagomProjects)
-  }
 
-  private class Project2PortMapBuilder(val range: PortRange) extends AnyVal {
-
-    def build(projects: immutable.SortedSet[ProjectName]): Map[ProjectName, Port] = {
-
+    val projects =
       // duplicate the project list by adding the tls variant
-      val projectNamesWithTls = projects.flatMap { plainName => Seq(plainName, plainName.withTls) }
+      if (enableSsl) lagomProjects.flatMap { plainName => Seq(plainName, plainName.withTls) }
+      else lagomProjects
 
-      require(
-        projectNamesWithTls.size <= range.delta,
-        s"""A larger port range is needed, as you have ${projects.size} Lagom projects and only ${range.delta} 
-             |ports available. The number of ports available must be at least twice the number of projects.
-             | You should increase the range passed for the lagomPortRange build setting.
-         """.stripMargin
-      )
+    val doubleMessage =
+      if (enableSsl) "The number of ports available must be at least twice the number of projects."
+      else ""
 
-      @annotation.tailrec
-      def findFirstAvailablePort(port: Port, unavailable: Set[Port]): Port = {
-        // wrap around if the port's number equal the portRange max limit
-        if (!range.includes(port.value)) findFirstAvailablePort(Port(range.min), unavailable)
-        else if (unavailable(port)) findFirstAvailablePort(port.next, unavailable)
-        else port
-      }
+    require(
+      projects.size <= range.delta,
+      s"""A larger port range is needed, as you have ${lagomProjects.size} Lagom projects and only ${range.delta}
+         |ports available. $doubleMessage
+         |You should increase the range passed for the lagomPortRange build setting.
+       """.stripMargin
+    )
 
-      @annotation.tailrec
-      def loop(projectNames: Seq[ProjectName], assignedPort: Set[Port], unassigned: Vector[ProjectName], result: Map[ProjectName, Port]): Map[ProjectName, Port] =
-        projectNames match {
-          case Nil if unassigned.nonEmpty =>
-            // if we are here there are projects with colliding hash that still need to get their port assigned. As expected, this step is carried out after assigning
-            // a port to all non-colliding projects.
-            val proj = unassigned.head
-            val projectedPort = projectedPortFor(proj)
-            val port = findFirstAvailablePort(projectedPort, assignedPort)
-            loop(projectNames, assignedPort + port, unassigned.tail, result + (proj -> port))
-          case Nil => result
-          case proj +: rest =>
-            val projectedPort = projectedPortFor(proj)
-            if (assignedPort(projectedPort)) loop(rest, assignedPort, unassigned :+ proj, result)
-            else loop(rest, assignedPort + projectedPort, unassigned, result + (proj -> projectedPort))
-        }
-
-      loop(projectNamesWithTls.toSeq, Set.empty[Port], Vector.empty[ProjectName], Map.empty[ProjectName, Port])
+    @annotation.tailrec
+    def findFirstAvailablePort(port: Port, unavailable: Set[Port]): Port = {
+      // wrap around if the port's number equal the portRange max limit
+      if (!range.includes(port.value)) findFirstAvailablePort(Port(range.min), unavailable)
+      else if (unavailable(port)) findFirstAvailablePort(port.next, unavailable)
+      else port
     }
 
-    private def projectedPortFor(name: ProjectName): Port = {
+    @annotation.tailrec
+    def loop(projectNames: Seq[ProjectName], assignedPort: Set[Port], unassigned: Vector[ProjectName], result: Map[ProjectName, Port]): Map[ProjectName, Port] =
+      projectNames match {
+        case Nil if unassigned.nonEmpty =>
+          // if we are here there are projects with colliding hash that still need to get their port assigned. As expected, this step is carried out after assigning
+          // a port to all non-colliding projects.
+          val proj = unassigned.head
+          val projectedPort = projectedPortFor(proj)
+          val port = findFirstAvailablePort(projectedPort, assignedPort)
+          loop(projectNames, assignedPort + port, unassigned.tail, result + (proj -> port))
+        case Nil => result
+        case proj +: rest =>
+          val projectedPort = projectedPortFor(proj)
+          if (assignedPort(projectedPort)) loop(rest, assignedPort, unassigned :+ proj, result)
+          else loop(rest, assignedPort + projectedPort, unassigned, result + (proj -> projectedPort))
+      }
+
+    def projectedPortFor(name: ProjectName): Port = {
       val hash = Math.abs(name.hashCode())
       val portDelta = hash % range.delta
       Port(range.min + portDelta)
     }
+
+    loop(projects.toSeq, Set.empty[Port], Vector.empty[ProjectName], Map.empty[ProjectName, Port])
   }
 }

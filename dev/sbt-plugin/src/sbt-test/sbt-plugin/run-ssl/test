@@ -9,9 +9,9 @@
 $ sleep 7000
 
 # hit the service directly over HTTP (port set on build.sbt)
-> makeRequest http://localhost:7080/foo 200
+> makeRequest http://localhost:51270/foo 200
 
 # hit the service directly over HTTPS (port set on build.sbt)
-> makeRequest https://localhost:7443/foo 200
+> makeRequest https://localhost:61297/foo 200
 
 > stop

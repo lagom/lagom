@@ -47,40 +47,51 @@ object LagomReloadableDevServerStart {
         val process = new RealServerProcess(args = Seq.empty)
         val path: File = buildLink.projectPath
 
-        val keystoreBaseFolder = new File(".")
-        val keystoreFilePath = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
-        FakeKeyStore.createKeyStore(keystoreBaseFolder)
+        val enableSsl = httpsPort > 0
 
         // The pairs play.server.httpx.{address,port} are read from PlayRegisterWithServiceRegistry
         // to register the service
         val httpsSettings: Map[String, String] =
-          Map(
-            // In dev mode, `play.server.https.address` and `play.server.http.address` are assigned the same value
-            // but both settings are set in case some code specifically read one config setting or the other.
-            "play.server.https.address" -> httpAddress, // there's no httpsAddress
-            "play.server.https.port" -> httpsPort.toString,
-            "play.server.https.keyStore.path" -> keystoreFilePath.getAbsolutePath,
-            "play.server.https.keyStore.type" -> "JKS",
-            "ssl-config.loose.disableHostnameVerification" -> "true"
-          )
+          if (enableSsl) {
+            val keystoreBaseFolder = new File(".")
+            val keystoreFilePath = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
+            FakeKeyStore.createKeyStore(keystoreBaseFolder)
+
+            Map(
+              // In dev mode, `play.server.https.address` and `play.server.http.address` are assigned the same value
+              // but both settings are set in case some code specifically read one config setting or the other.
+              "play.server.https.address" -> httpAddress, // there's no httpsAddress
+              "play.server.https.port" -> httpsPort.toString,
+              "play.server.https.keyStore.path" -> keystoreFilePath.getAbsolutePath,
+              "play.server.https.keyStore.type" -> "JKS"
+            )
+          } else Map.empty
+
         val httpSettings: Map[String, String] =
           Map(
             // The pairs play.server.httpx.{address,port} are read from PlayRegisterWithServiceRegistry
             // to register the service
             "play.server.http.address" -> httpAddress,
-            "play.server.http.port" -> httpPort.toString
+            "play.server.http.port" -> httpPort.toString,
+            "ssl-config.loose.disableHostnameVerification" -> "true"
           )
+
+        // each user service needs to tune its "play.filters.hosts.allowed" so that Play's
+        // AllowedHostFilter (https://www.playframework.com/documentation/2.6.x/AllowedHostsFilter)
+        // doesn't block request with header "Host: " with a value "localhost:<someport>". The following
+        // setting whitelists 'localhost` for both http/s ports and also 'httpAddress' for both ports too.
+        val allowHostsSetting = "play.filters.hosts.allowed" -> {
+          val http = List(s"$httpAddress:$httpPort", s"localhost:$httpPort")
+          val https = if (enableSsl) List(s"$httpAddress:$httpsPort", s"localhost:$httpsPort") else Nil
+          (http ++ https).asJavaCollection
+        }
+
         val dirAndDevSettings: Map[String, AnyRef] =
           ServerConfig.rootDirConfig(path) ++
             buildLink.settings.asScala.toMap ++
             httpSettings ++
             httpsSettings +
-            // each user service needs to tune its "play.filters.hosts.allowed" so that Play's
-            // AllowedHostFilter (https://www.playframework.com/documentation/2.6.x/AllowedHostsFilter)
-            // doesn't block request with header "Host: " with a value "localhost:<someport>". The following
-            // setting whitelists 'localhost` for both http/s ports and also 'httpAddress' for both ports too.
-            ("play.filters.hosts.allowed" ->
-              List(s"$httpAddress:$httpPort", s"$httpAddress:$httpsPort", s"localhost:$httpPort", s"localhost:$httpsPort").asJavaCollection)
+            allowHostsSetting
         //            ("play.server.akka.http2.enabled" -> "true") +
         // on dev-mode, we often have more than one cluster on the same jvm
         ("akka.cluster.jmx.multi-mbeans-in-same-jvm" -> "on")
