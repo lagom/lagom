@@ -117,25 +117,19 @@ object Reloader {
      * use some attention.
      */
 
-    val buildLoader = this.getClass.getClassLoader
-
     /**
      * ClassLoader that delegates loading of shared build link classes to the
      * buildLoader. Also accesses the reloader resources to make these available
      * to the applicationLoader, creating a full circle for resource loading.
      */
-    lazy val delegatingLoader: ClassLoader = new DelegatingClassLoader(parentClassLoader, Build.sharedClasses.asScala.toSet, buildLoader, reloader.getClassLoader _)
+    lazy val delegatingLoader: ClassLoader = buildDelegating(parentClassLoader, reloader.getClassLoader _)
 
-    lazy val applicationLoader = new NamedURLClassLoader("LagomDependencyClassLoader", urls(dependencyClasspath), delegatingLoader)
+    lazy val applicationLoader = buildForApplication(dependencyClasspath, delegatingLoader)
     lazy val decoratedLoader = classLoaderDecorator(applicationLoader)
 
     lazy val reloader = new Reloader(reloadCompile, decoratedLoader, projectPath, devSettings, monitoredFiles, fileWatchService, reloadLock)
 
-    val server: ReloadableServer = {
-      val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
-      val mainDev = mainClass.getMethod("mainDev", classOf[BuildLink], classOf[String], classOf[Int], classOf[Int])
-      mainDev.invoke(null, reloader, httpAddress, httpPort: java.lang.Integer, httpsPort: java.lang.Integer).asInstanceOf[ReloadableServer]
-    }
+    val server: ReloadableServer = mainDev(applicationLoader, reloader, httpAddress, httpPort, httpsPort)
 
     new DevServer {
       val buildLink: BuildLink = reloader
@@ -158,14 +152,9 @@ object Reloader {
    */
   def startNoReload(parentClassLoader: ClassLoader, dependencyClasspath: Seq[File], buildProjectPath: File,
                     devSettings: Seq[(String, String)], httpAddress: String, httpPort: Int, httpsPort: Int): DevServer = {
-    val buildLoader = this.getClass.getClassLoader
 
-    lazy val delegatingLoader: ClassLoader = new DelegatingClassLoader(
-      parentClassLoader,
-      Build.sharedClasses.asScala.toSet, buildLoader, () => Some(applicationLoader)
-    )
-    lazy val applicationLoader = new NamedURLClassLoader("LagomDependencyClassLoader", urls(dependencyClasspath),
-      delegatingLoader)
+    lazy val delegatingLoader: ClassLoader = buildDelegating(parentClassLoader, () => Some(applicationLoader))
+    lazy val applicationLoader = buildForApplication(dependencyClasspath, delegatingLoader)
 
     val _buildLink = new BuildLink {
       private val initialized = new java.util.concurrent.atomic.AtomicBoolean(false)
@@ -179,13 +168,11 @@ object Reloader {
       override def findSource(className: String, line: Integer): Array[AnyRef] = null
     }
 
-    val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
-    val mainDev = mainClass.getMethod("mainDev", classOf[BuildLink], classOf[String], classOf[Int], classOf[Int])
-    val server = mainDev.invoke(null, _buildLink, httpAddress, httpPort: java.lang.Integer, httpsPort: java.lang.Integer).asInstanceOf[ReloadableServer]
+    val server: ReloadableServer = mainDev(applicationLoader, _buildLink, httpAddress, httpPort, httpsPort)
 
     server.reload() // it's important to initialize the server
 
-    new Reloader.DevServer {
+    new DevServer {
       val buildLink: BuildLink = _buildLink
 
       /** Allows to register a listener that will be triggered a monitored file is changed. */
@@ -203,6 +190,30 @@ object Reloader {
 
       def close(): Unit = server.stop()
     }
+  }
+
+  private def buildDelegating(
+    parentClassLoader:      ClassLoader,
+    applicationClassLoader: () => Option[ClassLoader]
+  ): ClassLoader = {
+    val buildLoader = this.getClass.getClassLoader
+    val sharedClasses = Build.sharedClasses.asScala.toSet
+    new DelegatingClassLoader(parentClassLoader, sharedClasses, buildLoader, applicationClassLoader)
+  }
+
+  private def buildForApplication(dependencyClasspath: Seq[File], delegatingLoader: => ClassLoader): ClassLoader =
+    new NamedURLClassLoader("LagomDependencyClassLoader", urls(dependencyClasspath), delegatingLoader)
+
+  private def mainDev(
+    applicationLoader: ClassLoader,
+    buildLink:         BuildLink,
+    httpAddress:       String,
+    httpPort:          Int,
+    httpsPort:         Int
+  ): ReloadableServer = {
+    val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
+    val mainDev = mainClass.getMethod("mainDev", classOf[BuildLink], classOf[String], classOf[Int], classOf[Int])
+    mainDev.invoke(null, buildLink, httpAddress, httpPort: java.lang.Integer, httpsPort: java.lang.Integer).asInstanceOf[ReloadableServer]
   }
 
 }
