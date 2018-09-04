@@ -11,6 +11,7 @@ import akka.Done
 import akka.actor.{ ActorRef, ActorSystem, CoordinatedShutdown }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.{ Host, `X-Forwarded-Host` }
 import akka.http.scaladsl.model.ws._
 import akka.pattern.ask
 import akka.stream.Materializer
@@ -63,7 +64,18 @@ class AkkaHttpServiceGateway(
           case Some(upgrade) =>
             handleWebSocketRequest(request, newUri, upgrade)
           case None =>
-            http.singleRequest(request.withUri(newUri).withHeaders(filterHeaders(request.headers)))
+
+            val xForwardedHost = request.header[Host].to[Set].map(_.host).map(`X-Forwarded-Host`.apply)
+            val newHostHeader = Set(Host(newUri.authority))
+            val headers =
+              filterHeaders(request.headers) ++
+                xForwardedHost ++
+                newHostHeader
+
+            val outgoingRequest = request
+              .withUri(newUri)
+              .withHeaders(headers)
+            http.singleRequest(outgoingRequest)
         }
       case NotFound(registryMap) =>
         log.debug("Sending not found response")
@@ -156,7 +168,8 @@ class AkkaHttpServiceGateway(
     "Sec-WebSocket-Key",
     "UpgradeToWebSocket",
     "Upgrade",
-    "Connection"
+    "Connection",
+    "Host"
   ).map(_.toLowerCase(Locale.ENGLISH))
 
   private def filterHeaders(headers: immutable.Seq[HttpHeader]) = {
