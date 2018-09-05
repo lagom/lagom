@@ -236,7 +236,9 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
       }
 
       val selectedPort = selectPort(project.serviceHttpPort, useTls = false)
-      val selectedHttpsPort = selectPort(project.serviceHttpsPort, useTls = true)
+      val selectedHttpsPort =
+        if (serviceEnableSsl) selectPort(project.serviceHttpsPort, useTls = true)
+        else -1
 
       val serviceCassandraPort = cassandraPort.filter(_ => project.cassandraEnabled)
 
