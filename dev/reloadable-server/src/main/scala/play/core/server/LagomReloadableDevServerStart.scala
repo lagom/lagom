@@ -234,7 +234,7 @@ object LagomReloadableDevServerStart {
         val serverConfig = ServerConfig(
           rootDir = path,
           port = Some(httpPort),
-          sslPort = Some(httpsPort),
+          sslPort = if (httpsPort > 0) Some(httpsPort) else None,
           address = httpAddress,
           mode = Mode.Dev,
           properties = process.properties,
