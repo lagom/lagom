@@ -138,7 +138,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
                       channel.pipeline().addLast(ctx.executor, clientHandler)
                       currentChannel = channel
 
-                      val proxyRequest = prepareProxyRequest(request)
+                      val proxyRequest = prepareProxyRequest(request, serviceAddress)
 
                       channel.writeAndFlush(proxyRequest)
                       flushPipeline()
@@ -215,7 +215,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
       currentRequest = null
     }
 
-    private def prepareProxyRequest(request: HttpRequest): HttpRequest = {
+    private def prepareProxyRequest(request: HttpRequest, downstreamAddress: URI): HttpRequest = {
       val newRequest = request match {
         case full: FullHttpRequest =>
           new DefaultFullHttpRequest(request.protocolVersion, request.method, request.uri, full.content())
@@ -224,16 +224,30 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
       }
       for (header <- request.headers.asScala) {
         // Ignore connection headers
-        if (!header.getKey.equalsIgnoreCase(HttpHeaders.Names.CONNECTION)) {
+        if (!header.getKey.equalsIgnoreCase(HttpHeaderNames.CONNECTION.toString)) {
           newRequest.headers.add(header.getKey, header.getValue)
         }
       }
-      // todo - add Forwarded and other headers
+      // todo - add Forwarded and other headers.
+      // UPDATE: current impl adds x-Forwarded-Host instead of `Forwarded`. The TODO message above still applies.
+      // see https://github.com/lagom/lagom/pull/1572
+      val newHostHeaders: HttpHeaders = rebuildHostHeaders(request, downstreamAddress)
+      newRequest.headers.remove(HttpHeaderNames.HOST).add(newHostHeaders)
 
       // Ensure the correct connection header is added to keep the connection alive
       HttpUtil.setKeepAlive(newRequest, true)
 
       newRequest
+    }
+
+    private def rebuildHostHeaders(originalRequest: HttpRequest, downstreamAddress: URI): HttpHeaders = {
+      val originalHostValue = Option(originalRequest.headers().get(HttpHeaderNames.HOST))
+
+      val xForwardedHost: Option[(String, String)] = originalHostValue.map(hostValue => "X-Forwarded-Host" -> hostValue)
+      (Seq(
+        HttpHeaderNames.HOST -> s"${downstreamAddress.getHost}:${downstreamAddress.getPort}"
+      ) ++ xForwardedHost.toSeq)
+        .foldLeft[HttpHeaders](new DefaultHttpHeaders())((acc, header) => acc.add(header._1, header._2))
     }
 
     /**
