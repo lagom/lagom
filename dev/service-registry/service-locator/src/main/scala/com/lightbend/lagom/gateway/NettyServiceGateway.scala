@@ -229,7 +229,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
         }
       }
       // todo - add Forwarded and other headers.
-      // UPDATE: current impl adds x-Forwarded-Host instead of `Forwarded`. The TODO message above still applies.
+      // UPDATE: current impl adds `X-Forwarded-Host instead of `Forwarded`. The `todo` message above still applies.
       // see https://github.com/lagom/lagom/pull/1572
       val newHostHeaders: HttpHeaders = rebuildHostHeaders(request, downstreamAddress)
       newRequest.headers.remove(HttpHeaderNames.HOST).add(newHostHeaders)
