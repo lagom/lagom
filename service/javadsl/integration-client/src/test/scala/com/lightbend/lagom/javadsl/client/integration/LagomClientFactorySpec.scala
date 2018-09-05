@@ -22,26 +22,6 @@ class LagomClientFactorySpec extends FlatSpec with Matchers with BeforeAndAfterE
   implicit val timeout = Timeout(5.seconds)
 
   /**
-   * This test checks that we can start an LagomClientFactory where an
-   * ActorSystem is already running without failing because of binding the akka-remote port.
-   */
-  "LagomClientFactory" should "not bind on akka-remote port when using its own actor system" in {
-
-    // check that actor system is operational
-    (echoActor ? "hey").mapTo[String].futureValue shouldBe "hey"
-
-    // create an close a factory should work
-    // without conflicting with external ActorSystem (remote port binding)
-    LagomClientFactory
-      .create("test", this.getClass.getClassLoader)
-      .close()
-
-    // check that actor system is still operational
-    (echoActor ? "hey").mapTo[String].futureValue shouldBe "hey"
-
-  }
-
-  /**
    * This test checks that a LagomClientFactory created while passing an external ActorSystem
    * won't shutdown the ActorSystem when closed.
    */

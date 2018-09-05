@@ -30,7 +30,6 @@ import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator;
 import com.lightbend.lagom.javadsl.jackson.JacksonExceptionSerializer;
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.pcollections.PVector;
@@ -54,7 +53,6 @@ import scala.concurrent.Future;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Optional;
@@ -179,12 +177,8 @@ public class LagomClientFactory implements Closeable {
 
 
     private void coordinatedShutdown() throws InterruptedException, TimeoutException {
-<<<<<<< HEAD
-        CoordinatedShutdownSupport.syncShutdown(actorSystem, CoordinatedShutdown.unknownReason());
-=======
         if (managedActorSystem)
-            CoordinatedShutdownProvider.syncShutdown(actorSystem, CoordinatedShutdown.unknownReason());
->>>>>>> extends LagomClientFactory to use external ActorSystem
+            CoordinatedShutdownSupport.syncShutdown(actorSystem, CoordinatedShutdown.unknownReason());
     }
 
     private static LagomClientFactory create(String serviceName,
@@ -362,8 +356,7 @@ public class LagomClientFactory implements Closeable {
         Config configuration = buildConfig(classLoader);
 
         // Akka
-        Config noRemote = ConfigFactory.parseString("akka.actor.provider = local");
-        ActorSystem actorSystem = ActorSystem.create("lagom-client", noRemote.withFallback(configuration), classLoader);
+        ActorSystem actorSystem = ActorSystem.create("lagom-client", configuration, classLoader);
         Materializer materializer = ActorMaterializer.create(actorSystem);
 
         return create(
