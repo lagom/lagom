@@ -1142,6 +1142,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
 
       // javadsl projects
       val () = (publishLocal in `api-javadsl`).value
+      val () = (publishLocal in `server-javadsl`).value
       val () = (publishLocal in `client-javadsl`).value
       val () = (publishLocal in `service-registration-javadsl`).value
       val () = (publishLocal in `service-registry-client-javadsl`).value
