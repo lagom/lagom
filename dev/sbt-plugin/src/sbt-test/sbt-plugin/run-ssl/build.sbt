@@ -6,8 +6,7 @@ scalaVersion := sys.props.get("scala.version").getOrElse("2.12.6")
 
 interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 
-lagomServiceHttpPort := 7080
-lagomServiceHttpsPort := 7443
+lagomServiceEnableSsl in ThisBuild := true
 
 InputKey[Unit]("makeRequest") := {
   val args = Def.spaceDelimited("<url> <status> ...").parsed

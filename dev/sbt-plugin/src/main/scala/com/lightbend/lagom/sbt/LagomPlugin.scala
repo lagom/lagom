@@ -316,6 +316,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
 
     val lagomServiceAddress = taskKey[String]("The address that the Lagom service should run on")
 
+    val lagomServiceEnableSsl = settingKey[Boolean]("Whether Lagom services should bind HTTPS ports.")
     @deprecated("Use lagomServiceHttpPort instead", "1.5.0")
     val lagomServicePort = taskKey[Int]("The port that the Lagom service should run on")
     val lagomServiceHttpPort = taskKey[Int]("The port that the Lagom service should listen for HTTP traffic")
@@ -420,6 +421,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
   private val defaultPortRange = PortRange(0xc000, 0xffff)
 
   override def globalSettings = Seq(
+    lagomServiceEnableSsl := false,
     onLoad := onLoad.value andThen assignProjectsPort andThen DynamicProjectAdder.addProjects(serviceLocatorProject, cassandraProject, kafkaServerProject)
   )
 
@@ -427,6 +429,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val extracted = Project.extract(state)
 
     val scope = Scope(Select(ThisBuild), Zero, Zero, Zero)
+    val enableSsl = extracted.get(lagomServiceEnableSsl in ThisBuild)
     val portRange = extracted.structure.data.get(scope, lagomServicesPortRange.key)
       .getOrElse(defaultPortRange)
     val oldPortMap = state.get(projectPortMap).getOrElse(Map.empty)
@@ -440,7 +443,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     } yield {
       ProjectName(projName)
     })(collection.breakOut)
-    val portMap = oldPortMap ++ PortAssigner.computeProjectsPort(portRange, lagomProjects)
+    val portMap = oldPortMap ++ PortAssigner.computeProjectsPort(portRange, lagomProjects, enableSsl)
     state.put(projectPortMap, portMap)
   }
 
@@ -503,7 +506,13 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     lagomServicePort := -1,
     lagomServiceHttpPort := LagomPlugin.assignedPortFor(ProjectName(name.value), state.value).value,
     lagomGeneratedServiceHttpPortCache := lagomServiceHttpPort.value,
-    lagomServiceHttpsPort := LagomPlugin.assignedPortFor(ProjectName(name.value).withTls, state.value).value,
+    lagomServiceHttpsPort := {
+      val s = state.value
+      val n = name.value
+      if (lagomServiceEnableSsl.value)
+        LagomPlugin.assignedPortFor(ProjectName(n).withTls, s).value
+      else Port.Unassigned.value
+    },
     Internal.Keys.stop := {
       Internal.Keys.interactionMode.value match {
         case nonBlocking: PlayNonBlockingInteractionMode => nonBlocking.stop()

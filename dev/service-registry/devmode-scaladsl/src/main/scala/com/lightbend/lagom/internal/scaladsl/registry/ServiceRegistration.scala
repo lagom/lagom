@@ -13,6 +13,7 @@ import com.lightbend.lagom.scaladsl.api.ServiceInfo
 import com.typesafe.config.Config
 import play.api.Logger
 
+import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success }
 
@@ -31,9 +32,18 @@ class ServiceRegistration(
   // In dev mode, `play.server.http.address` is used for both HTTP and HTTPS.
   // Reading one value or the other gets the same result.
   private val httpAddress = config.getString("play.server.http.address")
-  private val uris = List("http", "https").map { scheme =>
-    val port = config.getString(s"play.server.$scheme.port")
-    new URI(s"$scheme://$httpAddress:$port")
+  private val uris = {
+    val uris = immutable.Seq.newBuilder[URI]
+
+    val httpPort = config.getString("play.server.http.port")
+    uris += new URI(s"http://$httpAddress:$httpPort")
+
+    if (config.hasPath("play.server.https.port")) {
+      val httpsPort = config.getString("play.server.https.port")
+      uris += new URI(s"https://$httpAddress:$httpsPort")
+    }
+
+    uris.result()
   }
 
   coordinatedShutdown.addTask(CoordinatedShutdown.PhaseBeforeServiceUnbind, "unregister-services-from-service-locator-scaladsl") { () =>

@@ -59,7 +59,7 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
     }
   }
 
-  def getPortMap(portRange: PortRangeBean, externalProjects: Seq[String]): Map[ProjectName, Port] = synchronized {
+  def getPortMap(portRange: PortRangeBean, externalProjects: Seq[String], enableSsl: Boolean): Map[ProjectName, Port] = synchronized {
     portMap match {
       case Some(map) => map
       case None =>
@@ -67,7 +67,8 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
         val map = PortAssigner.computeProjectsPort(
           PortRange(portRange.min, portRange.max),
           lagomServices.map(project => new ProjectName(project.getArtifactId))
-            ++ externalProjects.map(ProjectName.apply)
+            ++ externalProjects.map(ProjectName.apply),
+          enableSsl
         )
         portMap = Some(map)
         map
