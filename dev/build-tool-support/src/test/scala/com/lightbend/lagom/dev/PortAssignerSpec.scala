@@ -139,5 +139,18 @@ class PortAssignerSpec extends WordSpecLike with Matchers {
         PortAssigner.computeProjectsPort(portRange, projects, true)
       }
     }
+
+    "not error if ssl is disabled and therefore there is no need for double the ports" in {
+      val projA = "a".asProjectName
+      val projB = "b".asProjectName
+
+      val portRange = PortRange(1, 2)
+      val projects = Seq(projA, projB)
+
+      val projectName2port = PortAssigner.computeProjectsPort(portRange, projects, false)
+
+      // we expect 2 port because each project gets only a http port
+      projectName2port.values should have size 2 // no duplicates
+    }
   }
 }
