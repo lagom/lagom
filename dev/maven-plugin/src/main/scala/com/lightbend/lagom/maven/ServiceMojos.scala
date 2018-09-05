@@ -171,6 +171,9 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
   var externalProjects: JList[ExternalProject] = Collections.emptyList()
 
   @BeanProperty
+  var serviceEnableSsl: Boolean = false
+
+  @BeanProperty
   var servicePortRange: PortRangeBean = new PortRangeBean
 
   @BeanProperty
