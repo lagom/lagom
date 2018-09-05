@@ -17,6 +17,7 @@ import play.api.inject.{ ApplicationLifecycle, Binding, Module }
 import play.api.{ Configuration, Environment, Logger }
 
 import scala.collection.JavaConverters._
+import scala.collection.immutable
 import scala.compat.java8.FutureConverters._
 import scala.util.{ Success, Try }
 
@@ -88,9 +89,18 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Config, serviceInfo: Se
   // In dev mode, `play.server.http.address` is used for both HTTP and HTTPS.
   // Reading one value or the other gets the same result.
   private val httpAddress = config.getString("play.server.http.address")
-  val uris = List("http", "https").map { scheme =>
-    val port = config.getString(s"play.server.$scheme.port")
-    new URI(s"$scheme://$httpAddress:$port")
+  val uris = {
+    val uris = immutable.Seq.newBuilder[URI]
+
+    val httpPort = config.getString("play.server.http.port")
+    uris += new URI(s"http://$httpAddress:$httpPort")
+
+    if (config.hasPath("play.server.https.port")) {
+      val httpsPort = config.getString("play.server.https.port")
+      uris += new URI(s"https://$httpAddress:$httpsPort")
+    }
+
+    uris.result()
   }
 
   private val serviceAcls = serviceInfo.getAcls
