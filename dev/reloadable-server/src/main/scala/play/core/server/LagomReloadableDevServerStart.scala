@@ -72,9 +72,12 @@ object LagomReloadableDevServerStart {
             // The pairs play.server.httpx.{address,port} are read from PlayRegisterWithServiceRegistry
             // to register the service
             "play.server.http.address" -> httpAddress,
-            "play.server.http.port" -> httpPort.toString,
-            "ssl-config.loose.disableHostnameVerification" -> "true"
+            "play.server.http.port" -> httpPort.toString
           )
+
+        val httpsClientSettings: Map[String, String] = Map(
+          "ssl-config.loose.disableHostnameVerification" -> "true"
+        )
 
         // each user service needs to tune its "play.filters.hosts.allowed" so that Play's
         // AllowedHostFilter (https://www.playframework.com/documentation/2.6.x/AllowedHostsFilter)
@@ -90,7 +93,8 @@ object LagomReloadableDevServerStart {
           ServerConfig.rootDirConfig(path) ++
             buildLink.settings.asScala.toMap ++
             httpSettings ++
-            httpsSettings +
+            httpsSettings ++
+            httpsClientSettings +
             allowHostsSetting
         //            ("play.server.akka.http2.enabled" -> "true") +
 
