@@ -506,11 +506,13 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     lagomServicePort := -1,
     lagomServiceHttpPort := LagomPlugin.assignedPortFor(ProjectName(name.value), state.value).value,
     lagomGeneratedServiceHttpPortCache := lagomServiceHttpPort.value,
-    lagomServiceHttpsPort := (
+    lagomServiceHttpsPort := {
+      val s = state.value
+      val n = name.value
       if (lagomServiceEnableSsl.value)
-        LagomPlugin.assignedPortFor(ProjectName(name.value).withTls, state.value).value
+        LagomPlugin.assignedPortFor(ProjectName(n).withTls, s).value
       else Port.Unassigned.value
-    ),
+    },
     Internal.Keys.stop := {
       Internal.Keys.interactionMode.value match {
         case nonBlocking: PlayNonBlockingInteractionMode => nonBlocking.stop()
