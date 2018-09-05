@@ -33,6 +33,9 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
   @BeanProperty
   var serviceAddress: String = _
 
+  @BeanProperty
+  var serviceEnableSsl: Boolean = false
+
   /** @deprecated As of release 1.5.0. Use serviceHttpPort instead */
   @BeanProperty @Deprecated
   var servicePort: Int = _
@@ -102,7 +105,8 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
       if (servicePort == -1) {
         val portMap = serviceManager.getPortMap(
           servicePortRange,
-          externalProjects.asScala.map(d => d.artifact.getGroupId + ":" + d.artifact.getArtifactId)
+          externalProjects.asScala.map(d => d.artifact.getGroupId + ":" + d.artifact.getArtifactId),
+          serviceEnableSsl
         )
         val portName = {
           val pn = ProjectName(project.getArtifactId)
@@ -118,7 +122,9 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
     }
 
     val selectedPort = selectPort(serviceHttpPort, useTls = false)
-    val selectedHttpsPort = selectPort(serviceHttpsPort, useTls = true)
+    val selectedHttpsPort =
+      if (serviceEnableSsl) selectPort(serviceHttpsPort, useTls = true)
+      else -1
 
     val cassandraPort = if (cassandraEnabled) {
       Some(this.cassandraPort)
@@ -165,6 +171,9 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
   var externalProjects: JList[ExternalProject] = Collections.emptyList()
 
   @BeanProperty
+  var serviceEnableSsl: Boolean = false
+
+  @BeanProperty
   var servicePortRange: PortRangeBean = new PortRangeBean
 
   @BeanProperty
@@ -199,7 +208,8 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
 
     lazy val portMap = serviceManager.getPortMap(
       servicePortRange,
-      externalProjects.asScala.map(d => d.artifact.getGroupId + ":" + d.artifact.getArtifactId)
+      externalProjects.asScala.map(d => d.artifact.getGroupId + ":" + d.artifact.getArtifactId),
+      serviceEnableSsl
     )
 
     externalProjects.asScala.foreach { project =>
@@ -226,7 +236,9 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
       }
 
       val selectedPort = selectPort(project.serviceHttpPort, useTls = false)
-      val selectedHttpsPort = selectPort(project.serviceHttpsPort, useTls = true)
+      val selectedHttpsPort =
+        if (serviceEnableSsl) selectPort(project.serviceHttpsPort, useTls = true)
+        else -1
 
       val serviceCassandraPort = cassandraPort.filter(_ => project.cassandraEnabled)
 
