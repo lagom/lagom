@@ -65,7 +65,7 @@ class AkkaHttpServiceGateway(
             handleWebSocketRequest(request, newUri, upgrade)
           case None =>
 
-            val xForwardedHost = request.header[Host].to[Set].map(_.host).map(`X-Forwarded-Host`.apply)
+            val xForwardedHost = request.header[Host].to[Set].map { h => `X-Forwarded-Host`(h.host) }
             val newHostHeader = Set(Host(newUri.authority))
             val headers =
               filterHeaders(request.headers) ++

@@ -241,13 +241,14 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
     }
 
     private def rebuildHostHeaders(originalRequest: HttpRequest, downstreamAddress: URI): HttpHeaders = {
-      val originalHostValue = Option(originalRequest.headers().get(HttpHeaderNames.HOST))
+      val headers =
+        new DefaultHttpHeaders()
+          .add(HttpHeaderNames.HOST, s"${downstreamAddress.getHost}:${downstreamAddress.getPort}")
 
-      val xForwardedHost: Option[(String, String)] = originalHostValue.map(hostValue => "X-Forwarded-Host" -> hostValue)
-      (Seq(
-        HttpHeaderNames.HOST -> s"${downstreamAddress.getHost}:${downstreamAddress.getPort}"
-      ) ++ xForwardedHost.toSeq)
-        .foldLeft[HttpHeaders](new DefaultHttpHeaders())((acc, header) => acc.add(header._1, header._2))
+      if (originalRequest.headers().contains(HttpHeaderNames.HOST))
+        headers.add("X-Forwarded-Host", originalRequest.headers().get(HttpHeaderNames.HOST))
+      else
+        headers
     }
 
     /**
