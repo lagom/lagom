@@ -131,6 +131,8 @@ object Reloader {
 
     val server: ReloadableServer = mainDev(applicationLoader, reloader, httpAddress, httpPort, httpsPort)
 
+    val _bindings = bindings(httpAddress, httpPort, httpsPort)
+
     new DevServer {
       val buildLink: BuildLink = reloader
       def addChangeListener(f: () => Unit): Unit = reloader.addChangeListener(f)
@@ -139,11 +141,7 @@ object Reloader {
         server.stop()
         reloader.close()
       }
-      def bindings(): Seq[DevServerBinding] =
-        Seq(
-          DevServerBinding("HTTP", httpAddress, httpPort),
-          DevServerBinding("HTTPS", httpAddress, httpsPort)
-        )
+      def bindings(): Seq[DevServerBinding] = _bindings
     }
   }
 
@@ -172,6 +170,8 @@ object Reloader {
 
     server.reload() // it's important to initialize the server
 
+    val _bindings = bindings(httpAddress, httpPort, httpsPort)
+
     new DevServer {
       val buildLink: BuildLink = _buildLink
 
@@ -182,11 +182,7 @@ object Reloader {
       def reload(): Unit = ()
 
       /** List of bindings this server is exposing.*/
-      def bindings(): Seq[DevServerBinding] =
-        Seq(
-          DevServerBinding("HTTP", httpAddress, httpPort),
-          DevServerBinding("HTTPS", httpAddress, httpsPort)
-        )
+      def bindings(): Seq[DevServerBinding] = _bindings
 
       def close(): Unit = server.stop()
     }
@@ -214,6 +210,17 @@ object Reloader {
     val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
     val mainDev = mainClass.getMethod("mainDev", classOf[BuildLink], classOf[String], classOf[Int], classOf[Int])
     mainDev.invoke(null, buildLink, httpAddress, httpPort: java.lang.Integer, httpsPort: java.lang.Integer).asInstanceOf[ReloadableServer]
+  }
+
+  private def bindings(httpAddress: String, httpPort: Int, httpsPort: Int): Seq[DevServerBinding] = {
+    val bindings = Seq.newBuilder[DevServerBinding]
+
+    bindings += DevServerBinding("HTTP", httpAddress, httpPort)
+
+    if (httpsPort > 0)
+      bindings += DevServerBinding("HTTPS", httpAddress, httpsPort)
+
+    bindings.result()
   }
 
 }
