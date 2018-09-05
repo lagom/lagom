@@ -4,7 +4,6 @@
 
 package com.lightbend.lagom.gateway
 
-import java.io.File
 import java.net.URI
 
 import akka.actor.{ ActorSystem, CoordinatedShutdown, Props }
@@ -34,19 +33,24 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
   val http = Http()
 
   var gateway: AkkaHttpServiceGateway = _
+  var servicePort: Int = _
 
   override protected def beforeAll(): Unit = {
     var serviceBinding = Await.result(http.bindAndHandle(Flow[HttpRequest].map {
-      case hello if hello.uri.path.toString() == "/hello" => HttpResponse(entity = HttpEntity("Hello!"))
+      case hello if hello.uri.path.toString() == "/hello"    => HttpResponse(entity = HttpEntity("Hello!"))
+      case req if req.uri.path.toString() == "/echo-headers" => HttpResponse(entity = HttpEntity(req.headers.map(h => s"${h.name()}: ${h.value}").mkString("\n")))
       case stream if stream.uri.path.toString() == "/stream" =>
         stream.header[UpgradeToWebSocket].get.handleMessages(Flow[Message])
     }, "localhost", port = 0), 10.seconds)
 
+    servicePort = serviceBinding.localAddress.getPort
+
     val serviceRegistry = actorSystem.actorOf(Props(new ServiceRegistryActor(new UnmanagedServices(
       Map("service" -> ServiceRegistryService.of(
-        URI.create(s"http://localhost:${serviceBinding.localAddress.getPort}"),
+        URI.create(s"http://localhost:$servicePort"),
         Seq(
           ServiceAcl.methodAndPath(Method.GET, "/hello"),
+          ServiceAcl.methodAndPath(Method.GET, "/echo-headers"),
           ServiceAcl.methodAndPath(Method.GET, "/stream")
         ).asJava
       ))
@@ -81,6 +85,22 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
     "serve not found when no ACL matches" in {
       val response = Await.result(http.singleRequest(HttpRequest(uri = s"$gatewayUri/notfound")), 10.seconds)
       response.status.intValue() should ===(404)
+    }
+
+    "Rewrite 'Host: ' and stack into 'X-Forwarded-Host: ' " in {
+      val answer: String = Await.result(for {
+        response <- http.singleRequest(HttpRequest(uri = s"$gatewayUri/echo-headers"))
+        data <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
+      } yield data.utf8String, 10.seconds)
+
+      val port = gateway.address.getPort
+
+      val headers = answer.split("\n")
+      headers should contain(s"Host: localhost:$servicePort")
+
+      // The following two assertions should be switched when https://github.com/akka/akka-http/issues/2191 is fixed
+      headers should contain(s"X-Forwarded-Host: localhost")
+      //      answer should contain(s"X-Forwarded-Host: localhost:$port")
     }
 
   }
