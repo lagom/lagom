@@ -371,8 +371,8 @@ lazy val root = (project in file("."))
   .settings(runtimeLibCommon: _*)
   .enablePlugins(CrossPerProjectPlugin)
   .settings(
-    crossScalaVersions := Dependencies.ScalaVersions,
-    scalaVersion := Dependencies.ScalaVersions.head,
+    crossScalaVersions := Dependencies.Versions.ScalaVersions,
+    scalaVersion := Dependencies.Versions.ScalaVersions.head,
     PgpKeys.publishSigned := {},
     publishLocal := {},
     publishArtifact in Compile := false,
