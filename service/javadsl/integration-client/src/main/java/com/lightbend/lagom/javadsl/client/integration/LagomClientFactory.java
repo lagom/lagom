@@ -76,7 +76,7 @@ public class LagomClientFactory implements Closeable {
     private final ActorSystem actorSystem;
     private final CircuitBreakersPanel circuitBreakersPanel;
     private final Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator;
-    private final Boolean managedActorSystem;
+    private final boolean managedActorSystem;
 
     private LagomClientFactory(EventLoopGroup eventLoop,
                                WSClient wsClient,
@@ -84,7 +84,7 @@ public class LagomClientFactory implements Closeable {
                                ActorSystem actorSystem,
                                CircuitBreakersPanel circuitBreakersPanel,
                                Function<ServiceLocator, ServiceClientLoader> serviceClientLoaderCreator,
-                               Boolean managedActorSystem) {
+                               boolean managedActorSystem) {
         this.eventLoop = eventLoop;
         this.wsClient = wsClient;
         this.webSocketClient = webSocketClient;
@@ -188,7 +188,7 @@ public class LagomClientFactory implements Closeable {
                                              Config configuration,
                                              ActorSystem actorSystem,
                                              Materializer materializer,
-                                             Boolean managedActorSystem) {
+                                             boolean managedActorSystem) {
 
         // Netty event loop
         EventLoopGroup eventLoop = new NioEventLoopGroup();
