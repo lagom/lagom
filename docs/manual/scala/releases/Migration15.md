@@ -25,6 +25,17 @@ In sbt, the new setting is called `lagomServiceHttpsPort`. To keep the names ali
 
 TODO: add links to gRPC integration and SSL support documentation.
 
+### Persistence testkit `TestUtil`
+
+The following:
+
+* `com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil` (`lagom-scaladsl-persistence-cassandra`)
+* `com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil` (`lagom-scaladsl-persistence-jdbc`)
+* `com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil` (`lagom-scaladsl-persistence`)
+
+were all never intended for public consumption, and therfore have been marked deprecated in 1.5.0 for removal in
+2.0.0.
+
 
 ## ConductR
 
