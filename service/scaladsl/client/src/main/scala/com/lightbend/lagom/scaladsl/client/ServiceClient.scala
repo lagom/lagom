@@ -112,6 +112,7 @@ trait ServiceResolver {
  * The Lagom service client components.
  */
 trait LagomServiceClientComponents extends TopicFactoryProvider { self: LagomConfigComponent =>
+
   def wsClient: WSClient
   def serviceInfo: ServiceInfo
   def serviceLocator: ServiceLocator
@@ -126,11 +127,13 @@ trait LagomServiceClientComponents extends TopicFactoryProvider { self: LagomCon
   lazy val serviceResolver: ServiceResolver = new ScaladslServiceResolver(defaultExceptionSerializer)
   lazy val defaultExceptionSerializer: ExceptionSerializer = new DefaultExceptionSerializer(environment)
 
-  lazy val scaladslWebSocketClient: ScaladslWebSocketClient = new ScaladslWebSocketClient(
-    environment,
-    WebSocketClientConfig(config),
-    applicationLifecycle
-  )(executionContext)
+  lazy val scaladslWebSocketClient: ScaladslWebSocketClient =
+    new ScaladslWebSocketClient(
+      environment,
+      WebSocketClientConfig(config),
+      applicationLifecycle
+    )(executionContext)
+
   lazy val serviceClient: ServiceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
     serviceLocator, serviceResolver, optionalTopicFactory)(executionContext, materializer)
 }
@@ -141,31 +144,134 @@ trait LagomServiceClientComponents extends TopicFactoryProvider { self: LagomCon
  * It is important to invoke [[#stop]] when the application is no longer needed, as this will trigger the shutdown
  * of all thread and connection pools.
  */
+@deprecated(message = "Use StandaloneLagomClientFactory instead", since = "1.5.0")
 abstract class LagomClientApplication(
   clientName:  String,
   classLoader: ClassLoader = classOf[LagomClientApplication].getClassLoader
+) extends StandaloneLagomClientFactory(clientName, classLoader)
+
+/**
+ * Convenience for constructing service clients in a non Lagom server application.
+ *
+ * A StandaloneLagomClientFactory should be used only if your application does NOT have its own [[ActorSystem]], in which
+ * this standalone factory will create and manage an [[ActorSystem]] and Akka Streams [[Materializer]].
+ *
+ * It is important to invoke [[StandaloneLagomClientFactory#stop()]] when the application is no longer needed,
+ * as this will trigger the shutdown of the underlying [[ActorSystem]] and Akka Streams [[Materializer]].
+ *
+ * There is one component that you’ll need to provide when creating a client application, that is a service locator.
+ * It is up to you what service locator you use, it could be a third party service locator, or a service locator created
+ * from static configuration.
+ *
+ * Lagom provides a number of built-in service locators, including a [[StaticServiceLocator]], a [[RoundRobinServiceLocator]]
+ * and a [[ConfigurationServiceLocator]]. The easiest way to use these is to mix in their respective Components traits.
+ *
+ * For example, here’s a client application built using the static service locator, which uses a static URI:
+ * {{{
+ * import java.net.URI
+ * import com.lightbend.lagom.scaladsl.client._
+ * import play.api.libs.ws.ahc.AhcWSComponents
+ *
+ * val clientApplication = new StandaloneLagomClientFactory("my-client")
+ *   with StaticServiceLocatorComponents
+ *   with AhcWSComponents {
+ *
+ *   override def staticServiceUri = URI.create("http://localhost:8080")
+ * }
+ * }}}
+ *
+ *
+ * @param clientName The name of this service that is going to be accessing the services created by this factory.
+ * @param classLoader A classloader, it will be used to create the service proxy and needs to have the API for the client in it.
+ */
+abstract class StandaloneLagomClientFactory(
+  clientName:  String,
+  classLoader: ClassLoader = classOf[StandaloneLagomClientFactory].getClassLoader
+) extends LagomClientFactory(clientName, classLoader) {
+
+  override lazy val actorSystem: ActorSystem = new ActorSystemProvider(environment, configuration).get
+  lazy val coordinatedShutdown: CoordinatedShutdown = new CoordinatedShutdownProvider(actorSystem, applicationLifecycle).get
+  override lazy val materializer: Materializer = ActorMaterializer.create(actorSystem)
+
+  /**
+   * Stop this [[LagomClientFactory]] by shutting down the internal [[ActorSystem]] and Akka Streams [[Materializer]]
+   */
+  override def stop(): Unit = CoordinatedShutdownSupport.syncShutdown(actorSystem, ClientStoppedReason)
+}
+case object ClientStoppedReason extends CoordinatedShutdown.Reason
+
+/**
+ * Convenience for constructing service clients in a non Lagom server application.
+ *
+ * LagomClientFactory should be used only if your application DO have its own [[ActorSystem]] and Akka Streams [[Materializer]],
+ * in which case you should reuse then when build a [[LagomClientFactory]].
+ *
+ * The easiest way to reuse your existing [[ActorSystem]] and Akka Stream [[Materializer]] is to extend the [[LagomClientFactory]]
+ * and add a constructor where you can pass them as arguments (see example below).
+ *
+ * There is one component that you’ll need to provide when creating a [[LagomClientFactory]], that is a service locator.
+ * It is up to you what service locator you use, it could be a third party service locator, or a service locator created
+ * from static configuration.
+ *
+ * Lagom provides a number of built-in service locators, including a [[StaticServiceLocator]], a [[RoundRobinServiceLocator]]
+ * and a [[ConfigurationServiceLocator]]. The easiest way to use these is to mix in their respective Components traits.
+ *
+ * For example, here’s a client factory built using the static service locator, which uses a static URI,
+ * and reusing an [[ActorSystem]] and Akka Streams [[Materializer]] created outside it:
+ *
+ * {{{
+ * import java.net.URI
+ * import com.lightbend.lagom.scaladsl.client._
+ * import play.api.libs.ws.ahc.AhcWSComponents
+ *
+ * class MyLagomClientFactory(val actorSystem: ActorSystem, val materialzer: Materializer)
+ *   extends LagomClientFactory("my-client")
+ *   with StaticServiceLocatorComponents
+ *   with AhcWSComponents {
+ *
+ *   override def staticServiceUri = URI.create("http://localhost:8080")
+ * }
+ *
+ *
+ * val actorSystem = ActorSystem("my-app")
+ * val materializer = ActorMaterializer()(actorSystem)
+ * val clientFactory = new MyLagomClientFactory(actorSystem, materializer)
+ * }}}
+ *
+ * @param clientName The name of this service that is going to be accessing the services created by this factory.
+ * @param classLoader A classloader, it will be used to create the service proxy and needs to have the API for the client in it.
+ */
+abstract class LagomClientFactory(
+  clientName:  String,
+  classLoader: ClassLoader = classOf[LagomClientFactory].getClassLoader
 ) extends LagomServiceClientComponents with LagomConfigComponent {
+
   private val defaultApplicationLifecycle = new DefaultApplicationLifecycle
 
   override lazy val serviceInfo: ServiceInfo = ServiceInfo(clientName, Map.empty)
   override lazy val environment: Environment = Environment(new File("."), classLoader, Mode.Prod)
+
   lazy val configuration: Configuration = Configuration.load(
     environment.classLoader,
     System.getProperties,
     Map.empty,
     allowMissingApplicationConf = true
   )
-  override lazy val applicationLifecycle: ApplicationLifecycle = defaultApplicationLifecycle
-  lazy val actorSystem: ActorSystem = new ActorSystemProvider(environment, configuration).get
-  lazy val coordinatedShutdown: CoordinatedShutdown = new CoordinatedShutdownProvider(actorSystem, applicationLifecycle).get
 
-  override lazy val materializer: Materializer = ActorMaterializer.create(actorSystem)
+  override lazy val applicationLifecycle: ApplicationLifecycle = defaultApplicationLifecycle
   override lazy val executionContext: ExecutionContext = actorSystem.dispatcher
 
   /**
-   * Stop the application.
+   * Override this method if your [[LagomClientFactory]] implementation needs to free any resource.
+   * The default implementation is empty.
+   *
+   * The [[StandaloneLagomClientFactory]], for instance, is reponsible for managing an internal [[ActorSystem]] and Akka Streams [[Materializer]]
+   * and make sure that they are shutdown with this method is called.
+   *
+   * Alternatively, when implementing your own [[LagomClientFactory]], you may choose to reuse an existing [[ActorSystem]],
+   * but use a internal [[Materializer]]. In which case, you can use this method to shutdown the [[Materializer]] only.
+   *
    */
-  def stop(): Unit = CoordinatedShutdownSupport.syncShutdown(actorSystem, ClientStoppedReason)
+  def stop(): Unit = ()
 }
 
-case object ClientStoppedReason extends CoordinatedShutdown.Reason
