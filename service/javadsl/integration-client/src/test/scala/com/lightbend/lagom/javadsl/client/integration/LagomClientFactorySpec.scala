@@ -46,8 +46,6 @@ class LagomClientFactorySpec extends FlatSpec with Matchers with BeforeAndAfterE
   }
 
   override protected def beforeEach(): Unit = {
-    // this test will load src/test/resource/application.conf
-    // that is configured to enable akka-remote
     system = ActorSystem("test", ConfigFactory.load())
     echoActor = system.actorOf(Props(new EchoActor), "echo")
   }
