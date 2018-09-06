@@ -314,12 +314,12 @@ public class LagomClientFactory implements Closeable {
      * inside LagomClientFactory instead to let the factory create and manage its own (see {@link #create(String, ClassLoader)}).
      *
      * Calling {@link #close()} on a {@link LagomClientFactory} created using this method will NOT terminated
-     * the passed {@link ActorSystem} and {@link Materializer}.
+     * the passed {@link ActorSystem} and Akka Streams {@link Materializer}.
      *
      * @param serviceName The name of this service that is going to be accessing the services created by this factory.
-     * @param classLoader The classloader.
-     * @param actorSystem An existing ActorSystem
-     * @param materializer An ActorMaterializer
+     * @param classLoader A classloader, it will be used to create the service proxy and needs to have the API for the client in it.
+     * @param actorSystem An existing {@link ActorSystem}
+     * @param materializer An existing Akka Streams {@link Materializer}
      * @return The client factory.
      */
     public static LagomClientFactory create(String serviceName, ClassLoader classLoader, ActorSystem actorSystem, Materializer materializer) {
@@ -349,7 +349,7 @@ public class LagomClientFactory implements Closeable {
      * to use {@link #create(String, ClassLoader, ActorSystem, Materializer)}) instead.
      *
      * @param serviceName The name of this service that is going to be accessing the services created by this factory.
-     * @param classLoader The classloader.
+     * @param classLoader A classloader, it will be used to create the service proxy and needs to have the API for the client in it.
      * @return The client factory.
      */
     public static LagomClientFactory create(String serviceName, ClassLoader classLoader) {
