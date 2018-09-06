@@ -17,8 +17,10 @@ public class IntegratingNonLagom {
     public void testClientFactory() {
         withServer(defaultSetup(), server -> {
             //#create-factory
-            LagomClientFactory clientFactory = LagomClientFactory.create("legacy-system",
-                LagomClientFactory.class.getClassLoader());
+            LagomClientFactory clientFactory = LagomClientFactory.create(
+                "legacy-system",
+                LagomClientFactory.class.getClassLoader()
+            );
             //#create-factory
 
             URI helloServiceUri = URI.create("http://localhost:" + server.port());
