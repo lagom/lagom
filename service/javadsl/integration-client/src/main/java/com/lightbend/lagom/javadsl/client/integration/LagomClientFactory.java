@@ -176,9 +176,11 @@ public class LagomClientFactory implements Closeable {
     }
 
 
+    static class ClientStoppedReason implements CoordinatedShutdown.Reason{}
+
     private void coordinatedShutdown() throws InterruptedException, TimeoutException {
         if (managedActorSystem)
-            CoordinatedShutdownSupport.syncShutdown(actorSystem, CoordinatedShutdown.unknownReason());
+            CoordinatedShutdownSupport.syncShutdown(actorSystem, new ClientStoppedReason());
     }
 
     private static LagomClientFactory create(String serviceName,
