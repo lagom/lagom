@@ -4,22 +4,22 @@ package staticservicelocator {
 
   import docs.scaladsl.services.helloservice.HelloService
 
-  class MyApp {
-    //#static-service-locator
+  class MyAppStandalone {
+    //#static-service-locator-standalone
     import java.net.URI
     import com.lightbend.lagom.scaladsl.client._
     import play.api.libs.ws.ahc.AhcWSComponents
 
-    val clientApplication = new LagomClientApplication("my-client")
+    val clientFactory = new StandaloneLagomClientFactory("my-client", classOf[StandaloneLagomClientFactory].getClassLoader)
       with StaticServiceLocatorComponents
       with AhcWSComponents {
 
       override def staticServiceUri = URI.create("http://localhost:8080")
     }
-    //#static-service-locator
+    //#static-service-locator-standalone
 
     //#stop-application
-    clientApplication.stop()
+    clientFactory.stop()
     //#stop-application
 
     //#create-client
@@ -27,6 +27,29 @@ package staticservicelocator {
     //#create-client
   }
 
+
+  class MyApp {
+    //#static-service-locator
+    import java.net.URI
+    import com.lightbend.lagom.scaladsl.client._
+    import play.api.libs.ws.ahc.AhcWSComponents
+
+    class MyLagomClientFactory(val actorSystem: ActorSystem, val materialzer: Materializer)
+      extends LagomClientFactory("my-client", classOf[MyLagomClientFactory].getClassLoader)
+      with StaticServiceLocatorComponents
+      with AhcWSComponents {
+        override def staticServiceUri = URI.create("http://localhost:8080")
+    }
+
+    val actorSystem = ActorSystem("my-app")
+    val materializer = ActorMaterializer()(actorSystem)
+    val clientFactory = new MyLagomClientFactory(actorSystem, materializer)
+    //#static-service-locator
+
+    clientApplication.stop()
+
+    val helloService = clientApplication.serviceClient.implement[HelloService]
+  }
 }
 
 
