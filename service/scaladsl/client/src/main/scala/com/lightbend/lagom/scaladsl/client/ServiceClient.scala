@@ -153,11 +153,12 @@ abstract class LagomClientApplication(
 /**
  * Convenience for constructing service clients in a non Lagom server application.
  *
- * A StandaloneLagomClientFactory should be used only if your application does NOT have its own [[ActorSystem]], in which
+ * A [[StandaloneLagomClientFactory]] should be used only if your application does NOT have its own [[ActorSystem]], in which
  * this standalone factory will create and manage an [[ActorSystem]] and Akka Streams [[Materializer]].
  *
  * It is important to invoke [[StandaloneLagomClientFactory#stop()]] when the application is no longer needed,
- * as this will trigger the shutdown of the underlying [[ActorSystem]] and Akka Streams [[Materializer]].
+ * as this will trigger the shutdown of the underlying [[ActorSystem]] and Akka Streams [[Materializer]]
+ * releasing all thread and connection pools in use by the clients.
  *
  * There is one component that you’ll need to provide when creating a client application, that is a service locator.
  * It is up to you what service locator you use, it could be a third party service locator, or a service locator created
@@ -195,6 +196,7 @@ abstract class StandaloneLagomClientFactory(
 
   /**
    * Stop this [[LagomClientFactory]] by shutting down the internal [[ActorSystem]] and Akka Streams [[Materializer]]
+   * releasing all thread and connection pools in use by the clients
    */
   override def stop(): Unit = CoordinatedShutdownSupport.syncShutdown(actorSystem, ClientStoppedReason)
 }
@@ -203,8 +205,8 @@ case object ClientStoppedReason extends CoordinatedShutdown.Reason
 /**
  * Convenience for constructing service clients in a non Lagom server application.
  *
- * LagomClientFactory should be used only if your application DO have its own [[ActorSystem]] and Akka Streams [[Materializer]],
- * in which case you should reuse then when build a [[LagomClientFactory]].
+ * [[LagomClientFactory]] should be used only if your application DO have its own [[ActorSystem]] and Akka Streams [[Materializer]],
+ * in which case you should reuse then when building a [[LagomClientFactory]].
  *
  * The easiest way to reuse your existing [[ActorSystem]] and Akka Stream [[Materializer]] is to extend the [[LagomClientFactory]]
  * and add a constructor where you can pass them as arguments (see example below).
