@@ -144,7 +144,7 @@ trait LagomServiceClientComponents extends TopicFactoryProvider { self: LagomCon
  * It is important to invoke [[#stop]] when the application is no longer needed, as this will trigger the shutdown
  * of all thread and connection pools.
  */
-@deprecated(message = "Use StandaloneLagomClientFactory instead", since = "1.5.0")
+@deprecated(message = "Use StandaloneLagomClientFactory instead", since = "1.4.9")
 abstract class LagomClientApplication(
   clientName:  String,
   classLoader: ClassLoader = classOf[LagomClientApplication].getClassLoader
