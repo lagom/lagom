@@ -46,9 +46,9 @@ package staticservicelocator {
     val clientFactory = new MyLagomClientFactory(actorSystem, materializer)
     //#static-service-locator
 
-    clientApplication.stop()
+    clientFactory.stop()
 
-    val helloService = clientApplication.serviceClient.implement[HelloService]
+    val helloService = clientFactory.serviceClient.implement[HelloService]
   }
 }
 
@@ -67,11 +67,11 @@ package devmode {
 
 
     val clientApplication = if (devMode) {
-      new LagomClientApplication("my-client")
+      new StandaloneLagomClientFactory("my-client")
         with AhcWSComponents
         with LagomDevModeServiceLocatorComponents
     } else {
-      new LagomClientApplication("my-client")
+      new StandaloneLagomClientFactory("my-client")
         with StaticServiceLocatorComponents
         with AhcWSComponents {
 
@@ -81,7 +81,7 @@ package devmode {
     //#dev-mode
 
     //#dev-mode-url
-    new LagomClientApplication("my-client")
+    new StandaloneLagomClientFactory("my-client")
       with AhcWSComponents
       with LagomDevModeServiceLocatorComponents {
 

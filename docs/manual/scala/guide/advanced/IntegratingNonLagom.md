@@ -36,9 +36,9 @@ For example, here's a `StandaloneLagomClientFactory` built using the static serv
 
 The [`LagomClientFactory`](api/com/lightbend/lagom/scaladsl/client/LagomClientFactory.html) variant is useful for applications that have a running `ActorSystem`. In which case, we recommend to reuse the existing `ActorSystem` and `Materializer`.
 
-The easiest way to reuse your existing [[ActorSystem]] and Akka Stream [[Materializer]] is to extend the [[LagomClientFactory]] and add a constructor where you can pass them as arguments.
+The easiest way to reuse your existing `ActorSystem` and Akka Stream `Materializer` is to extend the `LagomClientFactory` and add a constructor where you can pass them as arguments.
 
-For example, here’s a `LagomClientFactory` built using the static service locator, which uses a static URI, and reusing an [[ActorSystem]] and [[Materializer]] created outside it:
+For example, here’s a `LagomClientFactory` built using the static service locator, which uses a static URI, and reusing an `ActorSystem` and `Materializer` created outside it:
 
 @[static-service-locator](code/IntegratingNonLagom.scala)
 
@@ -46,9 +46,7 @@ When you have finished with the application, for example, when the system shuts 
 
 @[stop-application](code/IntegratingNonLagom.scala)
 
-This is dependent on the variant you choose and if your implementation is managing any resources. For instance, the `StandaloneLagomClientFactory` is responsible for managing an internal `ActorSystem` and Akka Streams `Materializer` and therefore its `stop()` method will make sure that they are shutdown. The `LagomClientFactory` on the other hand is not managing any resource and its `stop()` method has a noops implementation.
-
-You may want to override the `stop()` method when implementing your own `LagomClientFactory`, For instance, in case you are reusing an existing `ActorSystem`, but prefer to use a internal `Materializer`. In which case, you can use this method to shutdown the `Materializer` only.
+You may want to override the `stop()` method when implementing your own `LagomClientFactory`. For instance, in case you are reusing an existing `ActorSystem`, but prefer to use a internal `Materializer`. In which case, you can use this method to shutdown the `Materializer` only. When overriding this method, make sure you also release the internally managed resources by calling `LagomClientFactory.releaseInternalResources()` method.
 
 Typically this factory will be a singleton in your system.  If your system is using Spring for example, you would create a `FactoryBean` that instantiates it, and you would implement a `@PreDestroy` annotated method that stopped the factory client.
 

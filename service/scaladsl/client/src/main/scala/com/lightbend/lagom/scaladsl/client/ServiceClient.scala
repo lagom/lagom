@@ -5,7 +5,9 @@
 package com.lightbend.lagom.scaladsl.client
 
 import java.io.File
+import java.util.concurrent.TimeUnit
 
+import akka.Done
 import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.stream.{ ActorMaterializer, Materializer }
 import com.lightbend.lagom.internal.client.{ CircuitBreakerMetricsProviderImpl, WebSocketClientConfig }
@@ -18,11 +20,13 @@ import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, Exce
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 import play.api.libs.concurrent.{ ActorSystemProvider, CoordinatedShutdownProvider }
 import play.api.internal.libs.concurrent.CoordinatedShutdownSupport
+import play.api.internal.libs.concurrent.CoordinatedShutdownSupport.asyncShutdown
 import play.api.libs.ws.WSClient
 import play.api.{ Configuration, Environment, Mode }
 
 import scala.collection.immutable
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.duration.Duration
 import scala.language.experimental.macros
 
 /**
@@ -153,11 +157,11 @@ abstract class LagomClientApplication(
 /**
  * Convenience for constructing service clients in a non Lagom server application.
  *
- * A [[StandaloneLagomClientFactory]] should be used only if your application does NOT have its own [[ActorSystem]], in which
- * this standalone factory will create and manage an [[ActorSystem]] and Akka Streams [[Materializer]].
+ * A [[StandaloneLagomClientFactory]] should be used only if your application does NOT have its own [[akka.actor.ActorSystem]], in which
+ * this standalone factory will create and manage an [[akka.actor.ActorSystem]] and Akka Streams [[akka.stream.Materializer]].
  *
  * It is important to invoke [[StandaloneLagomClientFactory#stop()]] when the application is no longer needed,
- * as this will trigger the shutdown of the underlying [[ActorSystem]] and Akka Streams [[Materializer]]
+ * as this will trigger the shutdown of the underlying [[akka.actor.ActorSystem]] and Akka Streams [[akka.stream.Materializer]]
  * releasing all thread and connection pools in use by the clients.
  *
  * There is one more component that you’ll need to provide when creating a client application, that is a service locator.
@@ -196,10 +200,26 @@ abstract class StandaloneLagomClientFactory(
   override lazy val materializer: Materializer = ActorMaterializer.create(actorSystem)
 
   /**
-   * Stop this [[LagomClientFactory]] by shutting down the internal [[ActorSystem]] and Akka Streams [[Materializer]]
-   * releasing all thread and connection pools in use by the clients
+   * Stop this [[LagomClientFactory]] by shutting down the internal [[akka.actor.ActorSystem]], Akka Streams [[akka.stream.Materializer]]
+   * and internal resources.
    */
-  override def stop(): Unit = CoordinatedShutdownSupport.syncShutdown(actorSystem, ClientStoppedReason)
+  override def stop(): Unit = {
+
+    // we need to use the stop method from ApplicationLifecycle because the
+    // WebSocket client register a stop hook on it
+    // ideally, we should have used a CoordinatedShutdown phase for it,
+    // but we can't know if the ActorSystem is going to be shutdown together with this Factory
+    val stopped =
+      releaseInternalResources().flatMap { _ =>
+        CoordinatedShutdownSupport.asyncShutdown(actorSystem, ClientStoppedReason)
+      }(executionContext)
+
+    val shutdownTimeout = CoordinatedShutdown(actorSystem).totalTimeout() + Duration(5, TimeUnit.SECONDS)
+    Await.result(
+      stopped,
+      shutdownTimeout
+    )
+  }
 }
 
 case object ClientStoppedReason extends CoordinatedShutdown.Reason
@@ -207,10 +227,10 @@ case object ClientStoppedReason extends CoordinatedShutdown.Reason
 /**
  * Convenience for constructing service clients in a non Lagom server application.
  *
- * [[LagomClientFactory]] should be used only if your application DO have its own [[ActorSystem]] and Akka Streams [[Materializer]],
+ * [[LagomClientFactory]] should be used only if your application DO have its own [[akka.actor.ActorSystem]] and Akka Streams [[akka.stream.Materializer]],
  * in which case you should reuse then when building a [[LagomClientFactory]].
  *
- * The easiest way to reuse your existing [[ActorSystem]] and Akka Stream [[Materializer]] is to extend the [[LagomClientFactory]]
+ * The easiest way to reuse your existing [[akka.actor.ActorSystem]] and Akka Stream [[akka.stream.Materializer]] is to extend the [[LagomClientFactory]]
  * and add a constructor where you can pass them as arguments (see example below).
  *
  * There is one more component that you’ll need to provide when creating a [[LagomClientFactory]], that is a service locator.
@@ -221,7 +241,7 @@ case object ClientStoppedReason extends CoordinatedShutdown.Reason
  * and a [[ConfigurationServiceLocator]]. The easiest way to use these is to mix in their respective Components traits.
  *
  * For example, here’s a client factory built using the static service locator, which uses a static URI,
- * and reusing an [[ActorSystem]] and Akka Streams [[Materializer]] created outside it:
+ * and reusing an [[akka.actor.ActorSystem]] and Akka Streams [[akka.stream.Materializer]] created outside it:
  *
  * {{{
  * import java.net.URI
@@ -268,12 +288,22 @@ abstract class LagomClientFactory(
 
   /**
    * Override this method if your [[LagomClientFactory]] implementation needs to free any resource.
-   * The default implementation is empty.
    *
-   * When implementing your own [[LagomClientFactory]], you may choose to reuse an existing [[ActorSystem]],
-   * but use a internal [[Materializer]]. In which case, you can use this method to shutdown the [[Materializer]] only.
+   * For example, when implementing your own [[LagomClientFactory]], you may choose to reuse an existing [[akka.actor.ActorSystem]],
+   * but use a internal [[akka.stream.Materializer]]. In which case, you can use this method to only shutdown the [[akka.stream.Materializer]].
+   *
+   * If you override this method, make sure you also release the internally managed resources
+   * by calling [[#releaseInternalResources()]] method.
    *
    */
-  def stop(): Unit = ()
+  def stop(): Unit = {
+    Await.result(
+      releaseInternalResources(),
+      Duration(5, TimeUnit.SECONDS)
+    )
+  }
+
+  protected def releaseInternalResources(): Future[Done] =
+    defaultApplicationLifecycle.stop().map(_ => Done)(executionContext)
 }
 
