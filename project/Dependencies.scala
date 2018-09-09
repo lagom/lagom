@@ -6,7 +6,7 @@ object Dependencies {
   object Versions {
     // Version numbers
 
-    // If you update PlayVersion, you probably need to update the other Play*Version variables.
+    // If you update the version of Play, you probably need to update the other Play* variables.
     // Also be sure to update PlayVersion in docs/build.sbt.
     val Play = "2.7.0-M3"
     val PlayJson = "2.6.10"
