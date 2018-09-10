@@ -303,7 +303,11 @@ abstract class LagomClientFactory(
     )
   }
 
-  protected def releaseInternalResources(): Future[Done] =
+  /**
+   * Releases the internal resources manages by this LagomClientFactory.
+   * @return
+   */
+  final protected def releaseInternalResources(): Future[Done] =
     defaultApplicationLifecycle.stop().map(_ => Done)(executionContext)
 }
 
