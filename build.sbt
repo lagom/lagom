@@ -139,8 +139,8 @@ def sonatypeSettings: Seq[Setting[_]] = Seq(
 )
 
 def runtimeScalaSettings: Seq[Setting[_]] = Seq(
-  crossScalaVersions := Dependencies.ScalaVersions,
-  scalaVersion := Dependencies.ScalaVersions.head,
+  crossScalaVersions := Dependencies.Versions.Scala,
+  scalaVersion := Dependencies.Versions.Scala.head,
 
   // compile options
   scalacOptions in Compile ++= Seq(
@@ -371,8 +371,8 @@ lazy val root = (project in file("."))
   .settings(runtimeLibCommon: _*)
   .enablePlugins(CrossPerProjectPlugin)
   .settings(
-    crossScalaVersions := Dependencies.ScalaVersions,
-    scalaVersion := Dependencies.ScalaVersions.head,
+    crossScalaVersions := Dependencies.Versions.Scala,
+    scalaVersion := Dependencies.Versions.Scala.head,
     PgpKeys.publishSigned := {},
     publishLocal := {},
     publishArtifact in Compile := false,
@@ -1087,8 +1087,8 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
   .settings(
     name := "lagom-build-tool-support",
     publishMavenStyle := true,
-    crossScalaVersions := Seq(Dependencies.ScalaVersions.head),
-    scalaVersion := Dependencies.ScalaVersions.head,
+    crossScalaVersions := Seq(Dependencies.Versions.Scala.head),
+    scalaVersion := Dependencies.Versions.Scala.head,
     crossPaths := false,
     sourceGenerators in Compile += Def.task {
       Generators.version(version.value, (sourceManaged in Compile).value)
@@ -1108,8 +1108,8 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
   .settings(common: _*)
   .settings(
     name := "lagom-sbt-build-tool-support",
-    crossScalaVersions := Dependencies.SbtScalaVersions,
-    scalaVersion := Dependencies.SbtScalaVersions.head,
+    crossScalaVersions := Dependencies.Versions.SbtScala,
+    scalaVersion := Dependencies.Versions.SbtScala.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     sbtPlugin := true,
     sourceGenerators in Compile += Def.task {
@@ -1126,13 +1126,13 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(
     name := "lagom-sbt-plugin",
     sbtPlugin := true,
-    crossScalaVersions := Dependencies.SbtScalaVersions,
-    scalaVersion := Dependencies.SbtScalaVersions.head,
+    crossScalaVersions := Dependencies.Versions.SbtScala,
+    scalaVersion := Dependencies.Versions.SbtScala.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     Dependencies.`sbt-plugin`,
     libraryDependencies ++= Seq(
       Defaults.sbtPluginExtra(
-        "com.typesafe.play" % "sbt-plugin" % Dependencies.PlayVersion,
+        "com.typesafe.play" % "sbt-plugin" % Dependencies.Versions.Play,
         CrossVersion.binarySbtVersion((sbtVersion in pluginCrossBuild).value),
         CrossVersion.binaryScalaVersion(scalaVersion.value)
       ).exclude("org.slf4j", "slf4j-simple")
@@ -1186,8 +1186,8 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
     description := "Provides Lagom development environment support to maven.",
     Dependencies.`maven-plugin`,
     publishMavenStyle := true,
-    crossScalaVersions := Seq(Dependencies.ScalaVersions.head),
-    scalaVersion := Dependencies.ScalaVersions.head,
+    crossScalaVersions := Seq(Dependencies.Versions.Scala.head),
+    scalaVersion := Dependencies.Versions.Scala.head,
     crossPaths := false,
     mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
     mavenTestArgs := Seq(
@@ -1271,7 +1271,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
       name := "lagom-maven-dependencies",
       crossPaths := false,
       autoScalaLibrary := false,
-      scalaVersion := Dependencies.ScalaVersions.head,
+      scalaVersion := Dependencies.Versions.Scala.head,
       pomExtra := pomExtra.value :+
         {
 
@@ -1283,7 +1283,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
 
               val artifactName = (artifact in project).value.name
 
-              Dependencies.ScalaVersions.map { supportedVersion =>
+              Dependencies.Versions.Scala.map { supportedVersion =>
                 // we are sure this won't be a None
                 val crossFunc =
                   CrossVersion(new Binary(binaryScalaVersion), supportedVersion, binaryScalaVersion(supportedVersion)).get
@@ -1324,7 +1324,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
                   } else {
                     // if it's a Scala dependency,
                     // generate <dependency> block for each supported scala version
-                    Dependencies.ScalaVersions.map { supportedVersion =>
+                    Dependencies.Versions.Scala.map { supportedVersion =>
                       val crossDep = CrossVersion(supportedVersion, binaryScalaVersion(supportedVersion))(dep)
                         <dependency>
                           <groupId>{crossDep.organization}</groupId>
@@ -1353,8 +1353,8 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
   .settings(name := "lagom-sbt-scripted-tools")
   .settings(
     sbtPlugin := true,
-    crossScalaVersions := Dependencies.SbtScalaVersions,
-    scalaVersion := Dependencies.SbtScalaVersions.head,
+    crossScalaVersions := Dependencies.Versions.SbtScala,
+    scalaVersion := Dependencies.Versions.SbtScala.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value)
   ).dependsOn(`sbt-plugin`)
 
