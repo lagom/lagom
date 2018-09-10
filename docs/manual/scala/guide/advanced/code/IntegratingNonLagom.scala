@@ -1,5 +1,8 @@
 package docs.scaladsl.advanced
 
+import _root_.akka.actor.ActorSystem
+import _root_.akka.stream.{ActorMaterializer, Materializer}
+
 package staticservicelocator {
 
   import docs.scaladsl.services.helloservice.HelloService
@@ -23,7 +26,7 @@ package staticservicelocator {
     //#stop-application
 
     //#create-client
-    val helloService = clientApplication.serviceClient.implement[HelloService]
+    val helloService = clientFactory.serviceClient.implement[HelloService]
     //#create-client
   }
 
@@ -34,7 +37,7 @@ package staticservicelocator {
     import com.lightbend.lagom.scaladsl.client._
     import play.api.libs.ws.ahc.AhcWSComponents
 
-    class MyLagomClientFactory(val actorSystem: ActorSystem, val materialzer: Materializer)
+    class MyLagomClientFactory(val actorSystem: ActorSystem, val materializer: Materializer)
       extends LagomClientFactory("my-client", classOf[MyLagomClientFactory].getClassLoader)
       with StaticServiceLocatorComponents
       with AhcWSComponents {
