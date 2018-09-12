@@ -34,8 +34,7 @@ trait ServiceCall[Request, Response] {
    *
    * @return A future of the response entity.
    */
-  def invoke()(implicit evidence: Request =:= NotUsed): Future[Response] =
-    this.asInstanceOf[ServiceCall[NotUsed, Response]].invoke(NotUsed)
+  def invoke()(implicit evidence: NotUsed =:= Request): Future[Response] = invoke(NotUsed)
 
   /**
    * Make any modifications necessary to the request header.
