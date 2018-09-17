@@ -62,8 +62,13 @@ object LagomReloadableDevServerStart {
               // but both settings are set in case some code specifically read one config setting or the other.
               "play.server.https.address" -> httpAddress, // there's no httpsAddress
               "play.server.https.port" -> httpsPort.toString,
+              // These configure the server
               "play.server.https.keyStore.path" -> keystoreFilePath.getAbsolutePath,
-              "play.server.https.keyStore.type" -> "JKS"
+              "play.server.https.keyStore.type" -> "JKS",
+              // These configure the clients (play-ws and akka-grpc)
+              "ssl-config.loose.disableHostnameVerification" -> "true",
+              "ssl-config.trustManager.stores.0.type" -> "JKS",
+              "ssl-config.trustManager.stores.0.path" -> keystoreFilePath.getAbsolutePath
             )
           } else Map.empty
 
@@ -75,10 +80,6 @@ object LagomReloadableDevServerStart {
             "play.server.http.port" -> httpPort.toString
           )
 
-        val httpsClientSettings: Map[String, String] = Map(
-          "ssl-config.loose.disableHostnameVerification" -> "true"
-        )
-
         // each user service needs to tune its "play.filters.hosts.allowed" so that Play's
         // AllowedHostFilter (https://www.playframework.com/documentation/2.6.x/AllowedHostsFilter)
         // doesn't block request with header "Host: " with a value "localhost:<someport>". The following
@@ -89,14 +90,16 @@ object LagomReloadableDevServerStart {
           (http ++ https).asJavaCollection
         }
 
+        // on dev-mode, we often have more than one cluster on the same jvm
+        val clusterSettings = "akka.cluster.jmx.multi-mbeans-in-same-jvm" -> "on"
+
         val dirAndDevSettings: Map[String, AnyRef] =
           ServerConfig.rootDirConfig(path) ++
             buildLink.settings.asScala.toMap ++
             httpSettings ++
-            httpsSettings ++
-            httpsClientSettings +
-            allowHostsSetting
-        //            ("play.server.akka.http2.enabled" -> "true") +
+            httpsSettings +
+            allowHostsSetting +
+            clusterSettings
 
         // Use plain Java call here in case of scala classloader mess
         {
