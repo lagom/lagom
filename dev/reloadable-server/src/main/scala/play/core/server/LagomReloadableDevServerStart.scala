@@ -89,13 +89,17 @@ object LagomReloadableDevServerStart {
           (http ++ https).asJavaCollection
         }
 
+        // on dev-mode, we often have more than one cluster on the same jvm
+        val clusterSettings = "akka.cluster.jmx.multi-mbeans-in-same-jvm" -> "on"
+
         val dirAndDevSettings: Map[String, AnyRef] =
           ServerConfig.rootDirConfig(path) ++
             buildLink.settings.asScala.toMap ++
             httpSettings ++
             httpsSettings ++
             httpsClientSettings +
-            allowHostsSetting
+            allowHostsSetting +
+            clusterSettings
         //            ("play.server.akka.http2.enabled" -> "true") +
 
         // Use plain Java call here in case of scala classloader mess
