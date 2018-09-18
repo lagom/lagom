@@ -7,7 +7,8 @@ import static org.junit.Assert.assertEquals;
 
 import docs.services.HelloService;
 import org.junit.Test;
-
+import akka.actor.ActorSystem;
+import akka.stream.Materializer;
 import java.net.URI;
 
 public class IntegratingNonLagom {
@@ -16,9 +17,39 @@ public class IntegratingNonLagom {
     public void testClientFactory() {
         withServer(defaultSetup(), server -> {
             //#create-factory
-            LagomClientFactory clientFactory = LagomClientFactory.create("legacy-system",
-                    LagomClientFactory.class.getClassLoader());
+            LagomClientFactory clientFactory = LagomClientFactory.create(
+                "legacy-system",
+                LagomClientFactory.class.getClassLoader()
+            );
             //#create-factory
+
+            URI helloServiceUri = URI.create("http://localhost:" + server.port());
+
+            //#create-client
+            HelloService serviceClient = clientFactory.createClient(HelloService.class, helloServiceUri);
+            //#create-client
+
+            assertEquals("Hello world", serviceClient.sayHello().invoke("world").toCompletableFuture().get(10, SECONDS));
+
+            //#close-factory
+            clientFactory.close();
+            //#close-factory
+        });
+    }
+
+    @Test
+    public void testClientFactoryWithExternalActorSystem() {
+        withServer(defaultSetup(), server -> {
+            ActorSystem actorSystem = server.system();
+            Materializer materializer = server.materializer();
+            //#create-factory-external-actor-system
+            LagomClientFactory clientFactory = LagomClientFactory.create(
+                "legacy-system",
+                LagomClientFactory.class.getClassLoader(),
+                actorSystem,
+                materializer
+            );
+            //#create-factory-external-actor-system
 
             URI helloServiceUri = URI.create("http://localhost:" + server.port());
 
@@ -36,7 +67,7 @@ public class IntegratingNonLagom {
 
     private void devMode(LagomClientFactory clientFactory) {
         boolean isDevelopment = false;
-        URI helloServiceUri = URI.create("http://localhost:9008");
+        URI helloServiceUri = URI.create("http://localhost:8000");
 
         //#dev-mode
         HelloService helloService;
