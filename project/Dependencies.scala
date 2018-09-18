@@ -74,6 +74,7 @@ object Dependencies {
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0" excludeAll (excludeSlf4j: _*)
 
   private val akkaActor = "com.typesafe.akka" %% "akka-actor" % AkkaVersion
+  private val akkaRemote = "com.typesafe.akka" %% "akka-remote" % AkkaVersion
   private val akkaCluster = "com.typesafe.akka" %% "akka-cluster" % AkkaVersion
   private val akkaClusterSharding = "com.typesafe.akka" %% "akka-cluster-sharding" % AkkaVersion
   private val akkaClusterTools = "com.typesafe.akka" %% "akka-cluster-tools" % AkkaVersion
@@ -386,7 +387,11 @@ object Dependencies {
 
   val `integration-client-javadsl` = libraryDependencies ++= Seq(
     playWs,
-    playAhcWs
+    playAhcWs,
+    // we need to explicitly add akka-remote in test scope
+    // because the test for LagomClientFactory needs it
+    akkaRemote % Test,
+    scalaTest % Test
   )
 
   val server = libraryDependencies ++= Nil
