@@ -272,7 +272,8 @@ abstract class PersistentEntity {
      * that several events are to be persisted. External side effects can be
      * performed after successful persist in the `afterPersist` function.
      * `afterPersist` is invoked once when all events have been persisted
-     * successfully.
+     * successfully. Events will be persisted atomically and in the same
+     * order as they are passed here.
      */
     def thenPersistAll(events: Event*)(afterPersist: () => Unit = () => ()): Persist =
       PersistAll(events.to[immutable.Seq], afterPersist)

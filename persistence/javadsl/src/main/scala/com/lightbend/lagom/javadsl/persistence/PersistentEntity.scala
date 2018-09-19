@@ -397,7 +397,8 @@ abstract class PersistentEntity[Command, Event, State] {
 
     /**
      * A command handler may return this `Persist` directive to define
-     * that several events are to be persisted.
+     * that several events are to be persisted. Events will be persisted
+     * atomically and in the same order as they are passed here.
      */
     def thenPersistAll[B <: Event](events: JList[B]): Persist[B] =
       return new PersistAll(immutableSeq(events), afterPersist = null)
@@ -407,7 +408,8 @@ abstract class PersistentEntity[Command, Event, State] {
      * that several events are to be persisted. External side effects can be
      * performed after successful persist in the `afterPersist` function.
      * `afterPersist` is invoked once when all events have been persisted
-     * successfully.
+     * successfully. Events will be persisted atomically and in the same
+     * order as they are passed here.
      */
     def thenPersistAll[B <: Event](events: JList[B], afterPersist: Effect): Persist[B] =
       return new PersistAll(immutableSeq(events), afterPersist)
