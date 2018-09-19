@@ -83,6 +83,10 @@ object PersistentEntity {
  * successfully. Replies are sent with the `reply` method of the context that is passed
  * to the command handler function.
  *
+ * The command handlers may emit zero, one or many events. When many events are emitted,
+ * they are stored atomically and in the same order they were emitted. Only after persisting
+ * all the events external side effects will be performed.
+ *
  * The event handlers are typically only updating the state, but they may also change
  * the behavior of the entity in the sense that new functions for processing commands
  * and events may be defined. This is useful when implementing finite state machine (FSM)
@@ -393,7 +397,8 @@ abstract class PersistentEntity[Command, Event, State] {
 
     /**
      * A command handler may return this `Persist` directive to define
-     * that several events are to be persisted.
+     * that several events are to be persisted. Events will be persisted
+     * atomically and in the same order as they are passed here.
      */
     def thenPersistAll[B <: Event](events: JList[B]): Persist[B] =
       return new PersistAll(immutableSeq(events), afterPersist = null)
@@ -403,7 +408,8 @@ abstract class PersistentEntity[Command, Event, State] {
      * that several events are to be persisted. External side effects can be
      * performed after successful persist in the `afterPersist` function.
      * `afterPersist` is invoked once when all events have been persisted
-     * successfully.
+     * successfully. Events will be persisted atomically and in the same
+     * order as they are passed here.
      */
     def thenPersistAll[B <: Event](events: JList[B], afterPersist: Effect): Persist[B] =
       return new PersistAll(immutableSeq(events), afterPersist)

@@ -227,7 +227,7 @@ This needs a deeper explanation to understand the guarantees provided by Lagom. 
 1. a command handler is selected, if none is found an `UnhandledCommandException` is thrown
 2. the command handler is invoked for the command, one or more events may be emitted (to process a command that emits no events, `setReadOnlyCommandHandler` must be used)
 3. events are applied to the appropriate event Handler (this can cause `Behavior` changes so defining the command handler on a behavior doesn't require all event handlers to be supported on that behavior)
-4. if applying the events didn't cause any exception, events are persisted atomically
+4. if applying the events didn't cause any exception, events are persisted atomically and in the same order they were emitted on the command handler
 5. if there's an `afterPersist`, then it is invoked (only once)
 6. if the snapshotting threshold is exceeded, a snapshot is generated and stored
 7. finally, the command processing completes and a new command may be processed.
