@@ -78,6 +78,10 @@ object PersistentEntity {
  * successfully. Replies are sent with the `reply` method of the context that is passed
  * to the command handler function.
  *
+ * The command handlers may emit zero, one or many events. When many events are emitted,
+ * they are stored atomically and in the same order they were emitted. Only after persisting
+ * all the events external side effects will be performed.
+ *
  * The event handlers are typically only updating the state, but they may also change
  * the behavior of the entity in the sense that new functions for processing commands
  * and events may be defined for a given state. This is useful when implementing
