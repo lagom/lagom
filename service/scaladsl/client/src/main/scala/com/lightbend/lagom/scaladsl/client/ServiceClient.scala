@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit
 
 import akka.Done
 import akka.actor.{ActorSystem, CoordinatedShutdown}
-import akka.event.Logging
 import akka.stream.{ActorMaterializer, Materializer}
 import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl
 import com.lightbend.lagom.internal.client.WebSocketClientConfig
@@ -23,8 +22,6 @@ import play.api.inject.{ApplicationLifecycle, DefaultApplicationLifecycle}
 import play.api.libs.concurrent.ActorSystemProvider
 import play.api.libs.ws.WSClient
 import play.api.{Configuration, Environment, Mode}
-import sun.jvm.hotspot.CommandProcessor.NonBootFilter
-
 import scala.collection.immutable
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
@@ -208,12 +205,12 @@ abstract class StandaloneLagomClientFactory(
    */
   override def stop(): Unit = {
 
+    implicit val exc = executionContext
+
     // we need to use the stop method from ApplicationLifecycle because the
     // WebSocket client register a stop hook on it
     // ideally, we should have used a CoordinatedShutdown phase for it,
     // but we can't know if the ActorSystem is going to be shutdown together with this Factory
-    implicit val exc = executionContext
-
     val stopped =
       releaseInternalResources()
         // we don't want to fail the Future if we can't close the internal resources
