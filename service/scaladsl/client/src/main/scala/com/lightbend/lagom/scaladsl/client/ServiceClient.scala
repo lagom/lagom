@@ -9,8 +9,7 @@ import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.actor.{ActorSystem, CoordinatedShutdown}
 import akka.stream.{ActorMaterializer, Materializer}
-import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl
-import com.lightbend.lagom.internal.client.WebSocketClientConfig
+import com.lightbend.lagom.internal.client.{CircuitBreakerMetricsProviderImpl, WebSocketClientConfig}
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
 import com.lightbend.lagom.internal.scaladsl.client.{ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient}
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
@@ -22,9 +21,10 @@ import play.api.inject.{ApplicationLifecycle, DefaultApplicationLifecycle}
 import play.api.libs.concurrent.ActorSystemProvider
 import play.api.libs.ws.WSClient
 import play.api.{Configuration, Environment, Mode}
+
 import scala.collection.immutable
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.experimental.macros
 import scala.util.control.NonFatal
 
@@ -214,13 +214,14 @@ abstract class StandaloneLagomClientFactory(
     val stopped =
       releaseInternalResources()
         // we don't want to fail the Future if we can't close the internal resources
-        .recover[Either[Throwable, Done]]  {
-            case NonFatal(ex) =>
-              log.warn("failed to close internal resources", ex)
-              Right(Done)
-            case fatal =>
-              log.warn("failed to close internal resources", fatal)
-              Left(fatal)
+        .map(_ => Right[Throwable, Done](Done))
+        .recover {
+          case NonFatal(ex) =>
+            log.warn("failed to close internal resources", ex)
+            Right(Done)
+          case fatal =>
+            log.warn("failed to close internal resources", fatal)
+            Left(fatal)
         }
         .flatMap {
           case Right(_) => actorSystem.terminate()
@@ -230,7 +231,7 @@ abstract class StandaloneLagomClientFactory(
             // using the fatal exception we got from above
             actorSystem.terminate()
               .recover { case NonFatal(_) => throw fatal }
-              .flatMap( _ => throw fatal)
+              .flatMap(_ => throw fatal)
         }
         .map(_ => ())
 
