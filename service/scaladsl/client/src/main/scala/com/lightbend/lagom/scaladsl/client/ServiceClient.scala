@@ -7,25 +7,29 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 import akka.Done
-import akka.actor.{ ActorSystem, CoordinatedShutdown }
-import akka.stream.{ ActorMaterializer, Materializer }
+import akka.actor.{ActorSystem, CoordinatedShutdown}
+import akka.event.Logging
+import akka.stream.{ActorMaterializer, Materializer}
 import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl
 import com.lightbend.lagom.internal.client.WebSocketClientConfig
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
-import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
+import com.lightbend.lagom.internal.scaladsl.client.{ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient}
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
-import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
+import com.lightbend.lagom.scaladsl.api.deser.{DefaultExceptionSerializer, ExceptionSerializer}
+import org.slf4j.LoggerFactory
+import play.api.inject.{ApplicationLifecycle, DefaultApplicationLifecycle}
 import play.api.libs.concurrent.ActorSystemProvider
 import play.api.libs.ws.WSClient
-import play.api.{ Configuration, Environment, Mode }
+import play.api.{Configuration, Environment, Mode}
+import sun.jvm.hotspot.CommandProcessor.NonBootFilter
 
 import scala.collection.immutable
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 import scala.language.experimental.macros
+import scala.util.control.NonFatal
 
 /**
  * The Lagom service client implementor.
@@ -196,6 +200,8 @@ abstract class StandaloneLagomClientFactory(
   lazy val actorSystem: ActorSystem = new ActorSystemProvider(environment, configuration, applicationLifecycle).get
   override lazy val materializer: Materializer = ActorMaterializer.create(actorSystem)
 
+  private val log = LoggerFactory.getLogger(this.getClass)
+
   /**
    * Stop this [[LagomClientFactory]] by shutting down the internal [[akka.actor.ActorSystem]], Akka Streams [[akka.stream.Materializer]]
    * and internal resources.
@@ -206,10 +212,30 @@ abstract class StandaloneLagomClientFactory(
     // WebSocket client register a stop hook on it
     // ideally, we should have used a CoordinatedShutdown phase for it,
     // but we can't know if the ActorSystem is going to be shutdown together with this Factory
-    implicit val ex = executionContext
-    val stopped = Future.sequence(
-      releaseInternalResources() +: actorSystem.terminate() +: Nil
-    ).map(_ => ())
+    implicit val exc = executionContext
+
+    val stopped =
+      releaseInternalResources()
+        // we don't want to fail the Future if we can't close the internal resources
+        .recover[Either[Throwable, Done]]  {
+            case NonFatal(ex) =>
+              log.warn("failed to close internal resources", ex)
+              Right(Done)
+            case fatal =>
+              log.warn("failed to close internal resources", fatal)
+              Left(fatal)
+        }
+        .flatMap {
+          case Right(_) => actorSystem.terminate()
+          case Left(fatal) =>
+            // if releaseInternalResources throws a fatal exception
+            // we still try to stop the actor system, but fail the final Future
+            // using the fatal exception we got from above
+            actorSystem.terminate()
+              .recover { case NonFatal(_) => throw fatal }
+              .flatMap( _ => throw fatal)
+        }
+        .map(_ => ())
 
     val shutdownTimeout = CoordinatedShutdown(actorSystem).totalTimeout() + Duration(5, TimeUnit.SECONDS)
     Await.result(
