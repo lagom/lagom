@@ -206,10 +206,10 @@ abstract class StandaloneLagomClientFactory(
     // WebSocket client register a stop hook on it
     // ideally, we should have used a CoordinatedShutdown phase for it,
     // but we can't know if the ActorSystem is going to be shutdown together with this Factory
-    val stopped =
-      releaseInternalResources().flatMap { _ =>
-        actorSystem.terminate()
-      }(executionContext)
+    implicit val ex = executionContext
+    val stopped = Future.sequence(
+      releaseInternalResources() +: actorSystem.terminate() +: Nil
+    ).map(_ => ())
 
     val shutdownTimeout = CoordinatedShutdown(actorSystem).totalTimeout() + Duration(5, TimeUnit.SECONDS)
     Await.result(
