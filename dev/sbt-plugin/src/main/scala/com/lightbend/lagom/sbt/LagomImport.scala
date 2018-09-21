@@ -16,6 +16,7 @@ object LagomImport extends LagomImportCompat {
 
   val lagomJavadslApi = component("lagom-javadsl-api")
   val lagomJavadslClient = component("lagom-javadsl-client")
+  val lagomJavadslIntegrationClient = component("lagom-javadsl-integration-client")
   val lagomJavadslCluster = component("lagom-javadsl-cluster")
   // Scoped to `Provided` because it's needed only at compile-time.
   val lagomJavadslImmutables = component("lagom-javadsl-immutables") % Provided
