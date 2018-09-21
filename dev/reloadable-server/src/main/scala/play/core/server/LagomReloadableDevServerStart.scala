@@ -9,6 +9,7 @@ import java.net.InetAddress
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLEngineProvider
 import play.api.ApplicationLoader.DevContext
 import play.api._
 import play.core.server.ssl.FakeKeyStore
@@ -62,6 +63,7 @@ object LagomReloadableDevServerStart {
               // but both settings are set in case some code specifically read one config setting or the other.
               "play.server.https.address" -> httpAddress, // there's no httpsAddress
               "play.server.https.port" -> httpsPort.toString,
+              // See also com/lightbend/lagom/scaladsl/testkit/ServiceTest.scala
               // These configure the server
               "play.server.https.keyStore.path" -> keystoreFilePath.getAbsolutePath,
               "play.server.https.keyStore.type" -> "JKS",
