@@ -7,24 +7,24 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 import akka.Done
-import akka.actor.{ActorSystem, CoordinatedShutdown}
-import akka.stream.{ActorMaterializer, Materializer}
-import com.lightbend.lagom.internal.client.{CircuitBreakerMetricsProviderImpl, WebSocketClientConfig}
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
+import akka.stream.{ ActorMaterializer, Materializer }
+import com.lightbend.lagom.internal.client.{ CircuitBreakerMetricsProviderImpl, WebSocketClientConfig }
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
-import com.lightbend.lagom.internal.scaladsl.client.{ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient}
+import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.api.deser.{DefaultExceptionSerializer, ExceptionSerializer}
+import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
 import org.slf4j.LoggerFactory
-import play.api.inject.{ApplicationLifecycle, DefaultApplicationLifecycle}
+import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 import play.api.libs.concurrent.ActorSystemProvider
 import play.api.libs.ws.WSClient
-import play.api.{Configuration, Environment, Mode}
+import play.api.{ Configuration, Environment, Mode }
 
 import scala.collection.immutable
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.language.experimental.macros
 import scala.util.control.NonFatal
 
