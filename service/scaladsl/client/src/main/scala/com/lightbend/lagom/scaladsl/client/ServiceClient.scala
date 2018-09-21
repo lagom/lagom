@@ -17,6 +17,7 @@ import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
+import org.slf4j.LoggerFactory
 import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
 import play.api.libs.concurrent.{ ActorSystemProvider, CoordinatedShutdownProvider }
 import play.api.internal.libs.concurrent.CoordinatedShutdownSupport
@@ -28,6 +29,7 @@ import scala.collection.immutable
 import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration.Duration
 import scala.language.experimental.macros
+import scala.util.control.NonFatal
 
 /**
  * The Lagom service client implementor.
@@ -199,20 +201,44 @@ abstract class StandaloneLagomClientFactory(
   lazy val coordinatedShutdown: CoordinatedShutdown = new CoordinatedShutdownProvider(actorSystem, applicationLifecycle).get
   override lazy val materializer: Materializer = ActorMaterializer.create(actorSystem)
 
+  private val log = LoggerFactory.getLogger(this.getClass)
+
   /**
    * Stop this [[LagomClientFactory]] by shutting down the internal [[akka.actor.ActorSystem]], Akka Streams [[akka.stream.Materializer]]
    * and internal resources.
    */
   override def stop(): Unit = {
 
+    implicit val ex = executionContext
+
     // we need to use the stop method from ApplicationLifecycle because the
     // WebSocket client register a stop hook on it
     // ideally, we should have used a CoordinatedShutdown phase for it,
     // but we can't know if the ActorSystem is going to be shutdown together with this Factory
     val stopped =
-      releaseInternalResources().flatMap { _ =>
-        CoordinatedShutdownSupport.asyncShutdown(actorSystem, ClientStoppedReason)
-      }(executionContext)
+      releaseInternalResources()
+        // we don't want to fail the Future if we can't close the internal resources
+        .map(_ => Right[Throwable, Done](Done))
+        .recover[Either[Throwable, Done]] {
+          case NonFatal(ex) =>
+            log.warn("failed to close internal resources", ex)
+            Right(Done)
+          case fatal =>
+            log.warn("failed to close internal resources", fatal)
+            Left(fatal)
+        }
+        .flatMap {
+          case Right(_) =>
+            CoordinatedShutdownSupport.asyncShutdown(actorSystem, ClientStoppedReason)
+          case Left(fatal) =>
+            // if releaseInternalResources throws a fatal exception
+            // we still try to stop the actor system, but fail the final Future
+            // using the fatal exception we got from above
+            CoordinatedShutdownSupport.asyncShutdown(actorSystem, ClientStoppedReason)
+              .recover { case NonFatal(_) => throw fatal }
+              .flatMap(_ => throw fatal)
+        }
+        .map(_ => ())
 
     val shutdownTimeout = CoordinatedShutdown(actorSystem).totalTimeout() + Duration(5, TimeUnit.SECONDS)
     Await.result(
