@@ -50,6 +50,8 @@ before_cache:
 notifications:
   webhooks:
     urls:
-        - https://webhooks.gitter.im/e/773aba95141768c32dae
-    on_success: always
+      - https://webhooks.gitter.im/e/2aa0aeda88d31fe293d4
+    on_success: change
     on_failure: always
+    on_start: never
+
