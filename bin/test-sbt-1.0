@@ -4,5 +4,5 @@
 
 SCALA_VERSION="2.12.6"
 
-runSbt +publishLocal
+runSbt "+++ ${SCALA_VERSION} publishLocal"
 runSbtNoisy "++${SCALA_VERSION} scripted"
