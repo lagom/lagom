@@ -2,5 +2,10 @@
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
+# We are not running sbt 0.13 job for scheduled builds because they use
+# Akka snapshots which aren't being published for Scala 2.11 anymore. So
+# +publishLocal will fail.
+checkIfShouldSkip "sbt 0.13"
+
 runSbt +publishLocal
 runSbtNoisy scripted
