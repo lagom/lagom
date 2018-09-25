@@ -1,3 +1,6 @@
+/**
+ * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
+ */
 import sbt.Keys._
 import sbt._
 
@@ -15,7 +18,7 @@ object Dependencies {
     val PlayFileWatch = "1.1.7"
 
     // Also be sure to update AkkaVersion in docs/build.sbt.
-    val Akka = "2.5.16"
+    val Akka: String = sys.props.getOrElse("akka.version", "2.5.16")
     val AkkaHttp = "10.1.3"
     val AkkaManagement = "0.17.0"
     // Also be sure to update ScalaVersion in docs/build.sbt.
