@@ -596,6 +596,7 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
     `server-javadsl`,
     `pubsub-javadsl`,
     `broker-javadsl`,
+    `dev-mode-ssl-support`, // TODO: remove this when SSLContext provider is promoted to play or ssl-config
     `persistence-core` % "compile;test->test",
     `persistence-cassandra-javadsl` % "test->test",
     `jackson` % "test->test",

@@ -180,7 +180,11 @@ object ServiceTest {
    * When the server is started you can get the service client and other
    * Guice bindings here.
    */
-  final class TestServer[A <: LagomApplication] private[testkit] (val application: A, val playServer: Server, @ApiMayChange val sslContext: Option[SSLContext] = None) {
+  final class TestServer[A <: LagomApplication] private[testkit] (
+    val application:              A,
+    val playServer:               Server,
+    @ApiMayChange val sslContext: Option[SSLContext] = None
+  ) {
 
     /**
      * Convenient access to the materializer

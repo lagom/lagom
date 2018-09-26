@@ -9,8 +9,10 @@ import java.time.format.DateTimeFormatter
 import java.util.function.{ Function => JFunction }
 
 import akka.actor.ActorSystem
+import akka.annotation.ApiMayChange
 import akka.japi.function.{ Effect, Procedure }
 import akka.stream.Materializer
+import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLEngineProvider
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.cluster.JoinClusterModule
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
@@ -20,9 +22,11 @@ import com.lightbend.lagom.javadsl.api.{ Service, ServiceLocator }
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
+import javax.net.ssl.SSLContext
 import play.Application
 import play.api.inject.{ ApplicationLifecycle, BindingKey, DefaultApplicationLifecycle, bind => sBind }
-import play.api.{ Mode, Play }
+import play.api.{ Configuration, Mode, Play }
+import play.core.server.ssl.FakeKeyStore
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 import play.inject.Injector
 import play.inject.guice.GuiceApplicationBuilder
@@ -30,7 +34,7 @@ import play.inject.guice.GuiceApplicationBuilder
 import scala.annotation.tailrec
 import scala.concurrent.Promise
 import scala.concurrent.duration._
-import scala.util.Try
+import scala.util.{ Random, Try }
 import scala.util.control.NonFatal
 
 /**
@@ -140,6 +144,24 @@ object ServiceTest {
     def withCluster(): Setup = withCluster(true)
 
     /**
+      * Enable or disable the SSL port.
+      *
+      * @param enabled True if the server should bind an HTTP+TLS port, or false if only HTTP should be bound.
+      * @return A copy of this setup.
+      */
+    @ApiMayChange
+    def withSsl(enabled: Boolean): Setup
+
+    /**
+      * Enable the SSL port.
+      *
+      * @return A copy of this setup.
+      */
+    @ApiMayChange
+    def withSsl(): Setup = withSsl(true)
+
+
+    /**
      * Whether Cassandra is enabled.
      */
     def cassandra: Boolean
@@ -155,6 +177,11 @@ object ServiceTest {
     def cluster: Boolean
 
     /**
+     * Whether HTTPS is enabled.
+     */
+    def ssl: Boolean
+
+    /**
      * The builder configuration function
      */
     def configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]
@@ -165,6 +192,7 @@ object ServiceTest {
     cassandra:        Boolean,
     jdbc:             Boolean,
     cluster:          Boolean,
+    ssl:              Boolean,
     configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]
   ) extends Setup {
 
@@ -172,6 +200,7 @@ object ServiceTest {
       cassandra = false,
       jdbc = false,
       cluster = false,
+      ssl = false,
       configureBuilder = new JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder] {
         override def apply(b: GuiceApplicationBuilder): GuiceApplicationBuilder = b
       }
@@ -192,16 +221,20 @@ object ServiceTest {
         copy(jdbc = false)
       }
 
-    override def configureBuilder(configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]): Setup = {
-      copy(configureBuilder = configureBuilder)
-    }
-
     override def withCluster(enabled: Boolean): Setup = {
       if (enabled) {
         copy(cluster = true)
       } else {
         copy(cluster = false, cassandra = false)
       }
+    }
+
+    override def withSsl(enabled: Boolean): Setup = {
+      copy(ssl = enabled)
+    }
+
+    override def configureBuilder(configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]): Setup = {
+      copy(configureBuilder = configureBuilder)
     }
 
   }
@@ -215,7 +248,13 @@ object ServiceTest {
    * When the server is started you can get the service client and other
    * Guice bindings here.
    */
-  class TestServer(val port: Int, val app: Application, server: Server) {
+  class TestServer(
+                    val port: Int,
+                    val app: Application,
+                    server: Server,
+                    @ApiMayChange val portSsl: Option[Int] = None,
+                    @ApiMayChange val sslContext: Option[SSLContext] = None,
+                  ) {
 
     /**
      * Get the service client for a service.
@@ -289,6 +328,13 @@ object ServiceTest {
     val port = Promise[Int]()
     val testServiceLocatorPort = TestServiceLocatorPort(port.future)
 
+    val sslPort: Option[Int] =
+      if (setup.ssl) {
+        Some(Random.nextInt(10000) + 5000) // A random value in the range [5000,15000)
+      } else {
+        None
+      }
+
     val now = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
     val testName = s"ServiceTest_$now"
 
@@ -338,7 +384,37 @@ object ServiceTest {
 
     Play.start(application.asScala())
 
-    val serverConfig = ServerConfig(port = Some(0), mode = Mode.Test)
+    val sslSettings: Map[String, AnyRef] =
+      if (setup.ssl) {
+        val keystoreBaseFolder = application.environment().rootPath
+        val keystoreFilePath = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
+        Map(
+          "play.server.https.port" -> sslPort.toString,
+          // See also play/core/server/LagomReloadableDevServerStart.scala
+          // These configure the server
+          "play.server.https.keyStore.path" -> keystoreFilePath.getAbsolutePath,
+          "play.server.https.keyStore.type" -> "JKS",
+          // These configure the clients (play-ws and akka-grpc)
+          "ssl-config.loose.disableHostnameVerification" -> "true",
+          "ssl-config.trustManager.stores.0.type" -> "JKS",
+          "ssl-config.trustManager.stores.0.path" -> keystoreFilePath.getAbsolutePath
+        )
+      } else {
+        Map.empty[String, AnyRef]
+      }
+
+
+    val props = System.getProperties
+    val sslConfig: Configuration = Configuration.load(this.getClass.getClassLoader, props, sslSettings, allowMissingApplicationConf = true)
+    val serverConfig: ServerConfig = new ServerConfig(
+      port = Some(0),
+      sslPort = sslPort,
+      mode = application.environment().mode.asScala(),
+      configuration = sslConfig,
+      rootDir = application.environment().rootPath,
+      address = "0.0.0.0",
+      properties = props
+    )
     val srv = ServerProvider.defaultServerProvider.createServer(serverConfig, application.asScala())
     val assignedPort = srv.httpPort.orElse(srv.httpsPort).get
     port.success(assignedPort)
@@ -348,7 +424,15 @@ object ServiceTest {
       awaitPersistenceInit(system)
     }
 
-    new TestServer(assignedPort, application, srv)
+    // TODO: review this when SSLContext provider is promoted to play or ssl-config
+    val sslContext =
+      if (setup.ssl) {
+        Some(new LagomDevModeSSLEngineProvider(application.environment().rootPath).sslContext)
+      }else{
+        None
+      }
+
+    new TestServer(assignedPort, application, srv, sslPort, sslContext)
   }
 
   /**
