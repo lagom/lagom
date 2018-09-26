@@ -103,6 +103,7 @@ object ServiceTest {
      * @param enabled True if the server should bind an HTTP+TLS port, or false if only HTTP should be bound.
      * @return A copy of this setup.
      */
+    @ApiMayChange
     def withSsl(enabled: Boolean): Setup
 
     /**
@@ -110,6 +111,7 @@ object ServiceTest {
      *
      * @return A copy of this setup.
      */
+    @ApiMayChange
     def withSsl(): Setup = withSsl(true)
 
     /**
