@@ -100,13 +100,13 @@ object ServiceTest {
     /**
      * Enable or disable the SSL port.
      *
-     * @param enabled True if thhe server should bind an HTTP+TLS port, or false if only HTTP should be bound.
+     * @param enabled True if the server should bind an HTTP+TLS port, or false if only HTTP should be bound.
      * @return A copy of this setup.
      */
     def withSsl(enabled: Boolean): Setup
 
     /**
-     * Enable or disable the SSL port.
+     * Enable the SSL port.
      *
      * @return A copy of this setup.
      */
@@ -163,12 +163,9 @@ object ServiceTest {
         copy(cluster = false, cassandra = false)
       }
     }
+
     override def withSsl(enabled: Boolean): Setup = {
-      if (enabled) {
-        copy(ssl = true)
-      } else {
-        copy(ssl = false)
-      }
+      copy(ssl = enabled)
     }
   }
 
