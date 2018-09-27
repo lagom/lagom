@@ -7,6 +7,7 @@ package com.lightbend.lagom.javadsl.testkit
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Optional
 import java.util.function.{ Function => JFunction }
 
 import akka.actor.ActorSystem
@@ -27,7 +28,7 @@ import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
 import javax.net.ssl.SSLContext
 import play.Application
 import play.api.inject.{ ApplicationLifecycle, BindingKey, DefaultApplicationLifecycle, bind => sBind }
-import play.api.{ Configuration, Mode, Play }
+import play.api.{ Configuration, Play }
 import play.core.server.ssl.FakeKeyStore
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 import play.inject.Injector
@@ -36,7 +37,7 @@ import play.inject.guice.GuiceApplicationBuilder
 import scala.annotation.tailrec
 import scala.concurrent.Promise
 import scala.concurrent.duration._
-import scala.util.{ Random, Try }
+import scala.util.Try
 import scala.util.control.NonFatal
 
 /**
@@ -254,9 +255,10 @@ object ServiceTest {
                     val port: Int,
                     val app: Application,
                     server: Server,
-                    @ApiMayChange val portSsl: Option[Int] = None,
-                    @ApiMayChange val sslContext: Option[SSLContext] = None,
+                    @ApiMayChange val sslContext: Optional[SSLContext] = Optional.empty(),
                   ) {
+
+    @ApiMayChange val portSsl: Optional[Integer] = Optional.ofNullable(server.httpsPort.map(Integer.valueOf).orNull)
 
     /**
      * Get the service client for a service.
@@ -412,7 +414,8 @@ object ServiceTest {
       awaitPersistenceInit(system)
     }
 
-    new TestServer(assignedPort, application, srv, sslSetup.sslPort, sslSetup.sslContext)
+    val javaSslContext = Optional.ofNullable(sslSetup.sslContext.orNull)
+    new TestServer(assignedPort, application, srv, javaSslContext)
   }
 
   /**
