@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.scaladsl.testkit
 
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -11,7 +12,8 @@ import akka.annotation.ApiMayChange
 import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLEngineProvider
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig._
-import com.lightbend.lagom.internal.testkit.CassandraTestServer
+import com.lightbend.lagom.internal.testkit.TestkitSslSetup.Disabled
+import com.lightbend.lagom.internal.testkit.{ CassandraTestServer, TestkitSslSetup }
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, RequiresLagomServicePort }
 import javax.net.ssl.SSLContext
 import play.api.ApplicationLoader.Context
@@ -22,7 +24,7 @@ import play.core.server.{ Server, ServerConfig, ServerProvider }
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
-import scala.util.{ Random, Try }
+import scala.util.Try
 
 /**
  * Support for writing functional tests for one service. The service is running in a server and in the test you can
@@ -301,36 +303,25 @@ object ServiceTest {
 
     Play.start(lagomApplication.application)
 
-    val (sslPort, sslSettings, sslcontext) = if (setup.ssl) {
+    val sslSetup: TestkitSslSetup.TestkitSslSetup = if (setup.ssl) {
       val keystoreBaseFolder = environment.rootPath
-      val keystoreFilePath = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
+      val keystoreFilePath: File = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
+      // ensure it exists
       FakeKeyStore.createKeyStore(keystoreBaseFolder)
-      val sslPort: Int = Random.nextInt(10000) + 5000 // A random value in the range [5000,15000)
-      val sslSettings: Map[String, AnyRef] = Map(
-        "play.server.https.port" -> sslPort.toString,
-        // See also play/core/server/LagomReloadableDevServerStart.scala
-        // These configure the server
-        "play.server.https.keyStore.path" -> keystoreFilePath.getAbsolutePath,
-        "play.server.https.keyStore.type" -> "JKS",
-        // These configure the clients (play-ws and akka-grpc)
-        "ssl-config.loose.disableHostnameVerification" -> "true",
-        "ssl-config.trustManager.stores.0.type" -> "JKS",
-        "ssl-config.trustManager.stores.0.path" -> keystoreFilePath.getAbsolutePath
-      )
 
       // TODO: review this when SSLContext provider is promoted to play or ssl-config
-      val sslContext = new LagomDevModeSSLEngineProvider(environment.rootPath).sslContext
-
-      (Some(sslPort), sslSettings, Some(sslContext))
-    } else
-      (None, Map.empty[String, AnyRef], None)
+      val sslContext: SSLContext = new LagomDevModeSSLEngineProvider(environment.rootPath).sslContext
+      TestkitSslSetup.enabled(keystoreFilePath, sslContext)
+    } else {
+      Disabled
+    }
 
     val props = System.getProperties
-    val sslConfig: Configuration = Configuration.load(this.getClass.getClassLoader, props, sslSettings, allowMissingApplicationConf = true)
+    val sslConfig: Configuration = Configuration.load(this.getClass.getClassLoader, props, sslSetup.sslSettings, allowMissingApplicationConf = true)
 
     val serverConfig: ServerConfig = new ServerConfig(
       port = Some(0),
-      sslPort = sslPort,
+      sslPort = sslSetup.sslPort,
       mode = lagomApplication.environment.mode,
       configuration = sslConfig,
       rootDir = environment.rootPath,
@@ -349,7 +340,7 @@ object ServiceTest {
       awaitPersistenceInit(lagomApplication.actorSystem)
     }
 
-    new TestServer[T](lagomApplication, server, sslcontext)
+    new TestServer[T](lagomApplication, server, sslSetup.sslContext)
   }
 
 }

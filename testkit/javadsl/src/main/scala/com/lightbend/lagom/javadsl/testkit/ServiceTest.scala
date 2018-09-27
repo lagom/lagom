@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.javadsl.testkit
 
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.function.{ Function => JFunction }
@@ -17,6 +18,7 @@ import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.cluster.JoinClusterModule
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig._
+import com.lightbend.lagom.internal.testkit.TestkitSslSetup.Disabled
 import com.lightbend.lagom.internal.testkit._
 import com.lightbend.lagom.javadsl.api.{ Service, ServiceLocator }
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
@@ -328,13 +330,6 @@ object ServiceTest {
     val port = Promise[Int]()
     val testServiceLocatorPort = TestServiceLocatorPort(port.future)
 
-    val sslPort: Option[Int] =
-      if (setup.ssl) {
-        Some(Random.nextInt(10000) + 5000) // A random value in the range [5000,15000)
-      } else {
-        None
-      }
-
     val now = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
     val testName = s"ServiceTest_$now"
 
@@ -384,31 +379,24 @@ object ServiceTest {
 
     Play.start(application.asScala())
 
-    val sslSettings: Map[String, AnyRef] =
-      if (setup.ssl) {
-        val keystoreBaseFolder = application.environment().rootPath
-        val keystoreFilePath = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
-        Map(
-          "play.server.https.port" -> sslPort.toString,
-          // See also play/core/server/LagomReloadableDevServerStart.scala
-          // These configure the server
-          "play.server.https.keyStore.path" -> keystoreFilePath.getAbsolutePath,
-          "play.server.https.keyStore.type" -> "JKS",
-          // These configure the clients (play-ws and akka-grpc)
-          "ssl-config.loose.disableHostnameVerification" -> "true",
-          "ssl-config.trustManager.stores.0.type" -> "JKS",
-          "ssl-config.trustManager.stores.0.path" -> keystoreFilePath.getAbsolutePath
-        )
-      } else {
-        Map.empty[String, AnyRef]
-      }
+    val sslSetup : TestkitSslSetup.TestkitSslSetup= if (setup.ssl) {
+      val keystoreBaseFolder = application.environment().rootPath
+      val keystoreFilePath: File = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
+      // ensure it exists
+      FakeKeyStore.createKeyStore(keystoreBaseFolder)
 
+      // TODO: review this when SSLContext provider is promoted to play or ssl-config
+      val sslContext: SSLContext = new LagomDevModeSSLEngineProvider(application.environment().rootPath).sslContext
+      TestkitSslSetup.enabled(keystoreFilePath, sslContext)
+    } else{
+      Disabled
+    }
 
     val props = System.getProperties
-    val sslConfig: Configuration = Configuration.load(this.getClass.getClassLoader, props, sslSettings, allowMissingApplicationConf = true)
+    val sslConfig: Configuration = Configuration.load(this.getClass.getClassLoader, props, sslSetup.sslSettings, allowMissingApplicationConf = true)
     val serverConfig: ServerConfig = new ServerConfig(
       port = Some(0),
-      sslPort = sslPort,
+      sslPort = sslSetup.sslPort,
       mode = application.environment().mode.asScala(),
       configuration = sslConfig,
       rootDir = application.environment().rootPath,
@@ -424,15 +412,7 @@ object ServiceTest {
       awaitPersistenceInit(system)
     }
 
-    // TODO: review this when SSLContext provider is promoted to play or ssl-config
-    val sslContext =
-      if (setup.ssl) {
-        Some(new LagomDevModeSSLEngineProvider(application.environment().rootPath).sslContext)
-      }else{
-        None
-      }
-
-    new TestServer(assignedPort, application, srv, sslPort, sslContext)
+    new TestServer(assignedPort, application, srv, sslSetup.sslPort, sslSetup.sslContext)
   }
 
   /**
