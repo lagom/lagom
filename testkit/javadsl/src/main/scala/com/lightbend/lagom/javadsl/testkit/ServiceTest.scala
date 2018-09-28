@@ -147,22 +147,21 @@ object ServiceTest {
     def withCluster(): Setup = withCluster(true)
 
     /**
-      * Enable or disable the SSL port.
-      *
-      * @param enabled True if the server should bind an HTTP+TLS port, or false if only HTTP should be bound.
-      * @return A copy of this setup.
-      */
+     * Enable or disable the SSL port.
+     *
+     * @param enabled True if the server should bind an HTTP+TLS port, or false if only HTTP should be bound.
+     * @return A copy of this setup.
+     */
     @ApiMayChange
     def withSsl(enabled: Boolean): Setup
 
     /**
-      * Enable the SSL port.
-      *
-      * @return A copy of this setup.
-      */
+     * Enable the SSL port.
+     *
+     * @return A copy of this setup.
+     */
     @ApiMayChange
     def withSsl(): Setup = withSsl(true)
-
 
     /**
      * Whether Cassandra is enabled.
@@ -252,11 +251,11 @@ object ServiceTest {
    * Guice bindings here.
    */
   class TestServer(
-                    val port: Int,
-                    val app: Application,
-                    server: Server,
-                    @ApiMayChange val sslContext: Optional[SSLContext] = Optional.empty(),
-                  ) {
+    val port:                     Int,
+    val app:                      Application,
+    server:                       Server,
+    @ApiMayChange val sslContext: Optional[SSLContext] = Optional.empty()
+  ) {
 
     @ApiMayChange val portSsl: Optional[Integer] = Optional.ofNullable(server.httpsPort.map(Integer.valueOf).orNull)
 
@@ -381,7 +380,7 @@ object ServiceTest {
 
     Play.start(application.asScala())
 
-    val sslSetup : TestkitSslSetup.TestkitSslSetup= if (setup.ssl) {
+    val sslSetup: TestkitSslSetup.TestkitSslSetup = if (setup.ssl) {
       val keystoreBaseFolder = application.environment().rootPath
       val keystoreFilePath: File = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
       // ensure it exists
@@ -390,7 +389,7 @@ object ServiceTest {
       // TODO: review this when SSLContext provider is promoted to play or ssl-config
       val sslContext: SSLContext = new LagomDevModeSSLEngineProvider(application.environment().rootPath).sslContext
       TestkitSslSetup.enabled(keystoreFilePath, sslContext)
-    } else{
+    } else {
       Disabled
     }
 
