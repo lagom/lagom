@@ -25,6 +25,9 @@ private[api] object MethodRefResolver {
   def resolveMethodRef(lambda: Any): Method = {
     val lambdaType = lambda.getClass
 
+    val ktMethod = resolveKotlinMethodRef(lambda)
+    if (ktMethod != null) return ktMethod
+
     if (!classOf[java.io.Serializable].isInstance(lambda)) {
       throw new IllegalArgumentException("Can only resolve method references from serializable SAMs, class was: " + lambdaType)
     }
@@ -47,7 +50,7 @@ private[api] object MethodRefResolver {
     // Try to load the class that the method ref is defined on
     val ownerClass = loadClass(lambdaType.getClassLoader, serializedLambda.getImplClass)
 
-    val argumentClasses = getArgumentClasses(lambdaType.getClassLoader, serializedLambda.getImplMethodSignature)
+    val argumentClasses = getArgumentClasses(lambdaType.getClassLoader, serializedLambda.getImplMethodSignature, 1)
     if (serializedLambda.getImplClass.equals("<init>")) {
       throw new IllegalArgumentException("Passed in method ref is a constructor.")
     } else {
@@ -55,11 +58,41 @@ private[api] object MethodRefResolver {
     }
   }
 
+  private def resolveKotlinMethodRef(lambda: Any): Method = {
+    val lambdaType = lambda.getClass
+    val functionField = try {
+      lambdaType.getDeclaredField("function")
+    } catch {
+      case _: NoSuchFieldException => return null
+    }
+    functionField.setAccessible(true)
+    val function = functionField.get(lambda)
+    val functionClass = function.getClass
+
+    val getOwner = functionClass.getDeclaredMethod("getOwner")
+    getOwner.setAccessible(true)
+    val ownerKClass = getOwner.invoke(function)
+    val getJClass = ownerKClass.getClass.getDeclaredMethod("getJClass")
+    getJClass.setAccessible(true)
+    val ownerClass = getJClass.invoke(ownerKClass).asInstanceOf[Class[_]]
+
+    val getName: Method = functionClass.getDeclaredMethod("getName")
+    getName.setAccessible(true)
+    val methodName = getName.invoke(function).asInstanceOf[String]
+
+    val getSignature: Method = functionClass.getDeclaredMethod("getSignature")
+    getSignature.setAccessible(true)
+    val signature = getSignature.invoke(function).asInstanceOf[String]
+
+    val argumentClasses = getArgumentClasses(lambdaType.getClassLoader, signature, methodName.length + 1)
+    ownerClass.getDeclaredMethod(methodName, argumentClasses: _*)
+  }
+
   private def loadClass(classLoader: ClassLoader, internalName: String) = {
     Class.forName(internalName.replace('/', '.'), false, classLoader)
   }
 
-  private def getArgumentClasses(classLoader: ClassLoader, methodDescriptor: String): List[Class[_]] = {
+  private def getArgumentClasses(classLoader: ClassLoader, methodDescriptor: String, offset: Int): List[Class[_]] = {
 
     def parseArgumentClasses(offset: Int, arrayDepth: Int): List[Class[_]] = {
       methodDescriptor.charAt(offset) match {
@@ -93,6 +126,6 @@ private[api] object MethodRefResolver {
       }
     }
 
-    parseArgumentClasses(1, 0)
+    parseArgumentClasses(offset, 0)
   }
 }
