@@ -4,21 +4,27 @@
 
 package com.lightbend.lagom.scaladsl.testkit
 
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+import akka.annotation.ApiMayChange
+import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLEngineProvider
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig._
-import com.lightbend.lagom.internal.testkit.CassandraTestServer
+import com.lightbend.lagom.internal.testkit.TestkitSslSetup.Disabled
+import com.lightbend.lagom.internal.testkit.{ CassandraTestServer, TestkitSslSetup }
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, RequiresLagomServicePort }
+import javax.net.ssl.SSLContext
 import play.api.ApplicationLoader.Context
 import play.api.inject.DefaultApplicationLifecycle
-import play.api.{ Environment, Play }
+import play.api.{ Configuration, Environment, Play }
+import play.core.server.ssl.FakeKeyStore
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 
 import scala.concurrent.Future
-import scala.util.Try
 import scala.util.control.NonFatal
+import scala.util.Try
 
 /**
  * Support for writing functional tests for one service. The service is running in a server and in the test you can
@@ -94,6 +100,23 @@ object ServiceTest {
     def withCluster(): Setup = withCluster(true)
 
     /**
+     * Enable or disable the SSL port.
+     *
+     * @param enabled True if the server should bind an HTTP+TLS port, or false if only HTTP should be bound.
+     * @return A copy of this setup.
+     */
+    @ApiMayChange
+    def withSsl(enabled: Boolean): Setup
+
+    /**
+     * Enable the SSL port.
+     *
+     * @return A copy of this setup.
+     */
+    @ApiMayChange
+    def withSsl(): Setup = withSsl(true)
+
+    /**
      * Whether Cassandra is enabled.
      */
     def cassandra: Boolean
@@ -108,12 +131,18 @@ object ServiceTest {
      */
     def cluster: Boolean
 
+    /**
+     * Whether SSL is enabled.
+     */
+    def ssl: Boolean
+
   }
 
   private case class SetupImpl(
     cassandra: Boolean = false,
     jdbc:      Boolean = false,
-    cluster:   Boolean = false
+    cluster:   Boolean = false,
+    ssl:       Boolean = false
   ) extends Setup {
 
     override def withCassandra(enabled: Boolean): Setup = {
@@ -138,6 +167,10 @@ object ServiceTest {
         copy(cluster = false, cassandra = false)
       }
     }
+
+    override def withSsl(enabled: Boolean): Setup = {
+      copy(ssl = enabled)
+    }
   }
 
   /**
@@ -149,7 +182,11 @@ object ServiceTest {
    * When the server is started you can get the service client and other
    * Guice bindings here.
    */
-  final class TestServer[A <: LagomApplication] private[testkit] (val application: A, val playServer: Server) {
+  final class TestServer[A <: LagomApplication] private[testkit] (
+    val application:              A,
+    val playServer:               Server,
+    @ApiMayChange val sslContext: Option[SSLContext] = None
+  ) {
 
     /**
      * Convenient access to the materializer
@@ -252,11 +289,12 @@ object ServiceTest {
         Map.empty
       }
 
+    val environment = Environment.simple()
     val lagomApplication =
       applicationConstructor(
         LagomApplicationContext(
           Context.create(
-            environment = Environment.simple(),
+            environment = environment,
             initialSettings = config,
             lifecycle = lifecycle
           )
@@ -264,7 +302,32 @@ object ServiceTest {
       )
 
     Play.start(lagomApplication.application)
-    val serverConfig = ServerConfig(port = Some(0), mode = lagomApplication.environment.mode)
+
+    val sslSetup: TestkitSslSetup.TestkitSslSetup = if (setup.ssl) {
+      val keystoreBaseFolder = environment.rootPath
+      val keystoreFilePath: File = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
+      // ensure it exists
+      FakeKeyStore.createKeyStore(keystoreBaseFolder)
+
+      // TODO: review this when SSLContext provider is promoted to play or ssl-config
+      val sslContext: SSLContext = new LagomDevModeSSLEngineProvider(environment.rootPath).sslContext
+      TestkitSslSetup.enabled(keystoreFilePath, sslContext)
+    } else {
+      Disabled
+    }
+
+    val props = System.getProperties
+    val sslConfig: Configuration = Configuration.load(this.getClass.getClassLoader, props, sslSetup.sslSettings, allowMissingApplicationConf = true)
+
+    val serverConfig: ServerConfig = new ServerConfig(
+      port = Some(0),
+      sslPort = sslSetup.sslPort,
+      mode = lagomApplication.environment.mode,
+      configuration = sslConfig,
+      rootDir = environment.rootPath,
+      address = "0.0.0.0",
+      properties = props
+    )
     val server = ServerProvider.defaultServerProvider.createServer(serverConfig, lagomApplication.application)
 
     lagomApplication match {
@@ -277,7 +340,7 @@ object ServiceTest {
       awaitPersistenceInit(lagomApplication.actorSystem)
     }
 
-    new TestServer[T](lagomApplication, server)
+    new TestServer[T](lagomApplication, server, sslSetup.sslContext)
   }
 
 }

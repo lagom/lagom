@@ -13,8 +13,6 @@ import play.api.Logger
 import play.core.server.ssl.FakeKeyStore
 import play.server.api.SSLEngineProvider
 
-import scala.util.control.NonFatal
-
 /**
  * This class calls sslContext.createSSLEngine() with no parameters and returns the result.
  */
@@ -27,28 +25,15 @@ class LagomDevModeSSLEngineProvider(rootLagomProjectFolder: File) extends SSLEng
   }
 
   def createSSLContext(rootLagomProjectFolder: File): SSLContext = {
-    val rootLagomProjectKeystoreFile = FakeKeyStore.getKeyStoreFilePath(rootLagomProjectFolder)
-    val keyStore = FakeKeyStore.createKeyStore(rootLagomProjectKeystoreFile)
+    val keyStore = FakeKeyStore.createKeyStore(rootLagomProjectFolder)
 
-    val keyManagerFactory: KeyManagerFactory = {
-
-      val in = java.nio.file.Files.newInputStream(rootLagomProjectKeystoreFile.toPath)
-      try {
-        val kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
-        kmf.init(keyStore, Array.emptyCharArray)
-        kmf
-      } catch {
-        case NonFatal(e) => {
-          throw new Exception("Error loading HTTPS keystore from " + rootLagomProjectKeystoreFile.getAbsolutePath, e)
-        }
-      } finally {
-        LagomIO.closeQuietly(in)
-      }
-    }
+    val kmf: KeyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
+    kmf.init(keyStore, Array.emptyCharArray)
+    val kms: Array[KeyManager] = kmf.getKeyManagers
 
     // Configure the SSL context
     val sslContext = SSLContext.getInstance("TLS")
-    sslContext.init(keyManagerFactory.getKeyManagers, Array(new TrustManager(keyStore)), null)
+    sslContext.init(kms, Array(new TrustManager(keyStore)), null)
     sslContext
   }
 
