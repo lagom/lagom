@@ -9,14 +9,17 @@ import java.security.KeyStore
 import java.security.cert.X509Certificate
 
 import javax.net.ssl._
-import play.api.Logger
-import play.core.server.ssl.FakeKeyStore
+
+import com.typesafe.sslconfig.util.NoopLogger
+import com.typesafe.sslconfig.ssl.FakeKeyStore
+
 import play.server.api.SSLEngineProvider
 
 /**
  * This class calls sslContext.createSSLEngine() with no parameters and returns the result.
  */
 class LagomDevModeSSLEngineProvider(rootLagomProjectFolder: File) extends SSLEngineProvider {
+  import LagomDevModeSSLEngineProvider._
 
   val sslContext: SSLContext = createSSLContext(rootLagomProjectFolder)
 
@@ -40,10 +43,12 @@ class LagomDevModeSSLEngineProvider(rootLagomProjectFolder: File) extends SSLEng
 }
 
 object LagomDevModeSSLEngineProvider {
-  private val logger = Logger(classOf[LagomDevModeSSLEngineProvider])
+  private final val FakeKeyStore = new FakeKeyStore(NoopLogger.factory())
 }
 
 class TrustManager(trustStore: KeyStore) extends X509TrustManager {
+  import TrustManager._
+
   val nullArray = Array[X509Certificate]()
 
   def checkClientTrusted(x509Certificates: Array[X509Certificate], s: String): Unit = {}
@@ -57,4 +62,8 @@ class TrustManager(trustStore: KeyStore) extends X509TrustManager {
         .asInstanceOf[X509Certificate]
     )
   }
+}
+
+object TrustManager {
+  private final val FakeKeyStore = new FakeKeyStore(NoopLogger.factory())
 }

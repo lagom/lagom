@@ -10,6 +10,9 @@ import java.time.format.DateTimeFormatter
 import java.util.Optional
 import java.util.function.{ Function => JFunction }
 
+import com.typesafe.sslconfig.util.NoopLogger
+import com.typesafe.sslconfig.ssl.FakeKeyStore
+
 import akka.actor.ActorSystem
 import akka.annotation.ApiMayChange
 import akka.japi.function.{ Effect, Procedure }
@@ -29,7 +32,6 @@ import javax.net.ssl.SSLContext
 import play.Application
 import play.api.inject.{ ApplicationLifecycle, BindingKey, DefaultApplicationLifecycle, bind => sBind }
 import play.api.{ Configuration, Play }
-import play.core.server.ssl.FakeKeyStore
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 import play.inject.Injector
 import play.inject.guice.GuiceApplicationBuilder
@@ -381,6 +383,7 @@ object ServiceTest {
     Play.start(application.asScala())
 
     val sslSetup: TestkitSslSetup.TestkitSslSetup = if (setup.ssl) {
+      val FakeKeyStore = new FakeKeyStore(NoopLogger.factory())
       val keystoreBaseFolder = application.environment().rootPath
       val keystoreFilePath: File = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
       // ensure it exists

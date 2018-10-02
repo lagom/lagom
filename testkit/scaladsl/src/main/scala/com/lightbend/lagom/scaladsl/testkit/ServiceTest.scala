@@ -8,6 +8,9 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+import com.typesafe.sslconfig.util.NoopLogger
+import com.typesafe.sslconfig.ssl.FakeKeyStore
+
 import akka.annotation.ApiMayChange
 import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLEngineProvider
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
@@ -19,7 +22,6 @@ import javax.net.ssl.SSLContext
 import play.api.ApplicationLoader.Context
 import play.api.inject.DefaultApplicationLifecycle
 import play.api.{ Configuration, Environment, Play }
-import play.core.server.ssl.FakeKeyStore
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 
 import scala.concurrent.Future
@@ -304,6 +306,7 @@ object ServiceTest {
     Play.start(lagomApplication.application)
 
     val sslSetup: TestkitSslSetup.TestkitSslSetup = if (setup.ssl) {
+      val FakeKeyStore = new FakeKeyStore(NoopLogger.factory())
       val keystoreBaseFolder = environment.rootPath
       val keystoreFilePath: File = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
       // ensure it exists

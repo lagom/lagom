@@ -7,12 +7,14 @@ package play.core.server
 import java.io.File
 import java.net.InetAddress
 
+import com.typesafe.sslconfig.util.NoopLogger
+import com.typesafe.sslconfig.ssl.FakeKeyStore
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLEngineProvider
 import play.api.ApplicationLoader.DevContext
 import play.api._
-import play.core.server.ssl.FakeKeyStore
 import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
 import play.utils.Threads
 
@@ -54,6 +56,7 @@ object LagomReloadableDevServerStart {
         // to register the service
         val httpsSettings: Map[String, String] =
           if (enableSsl) {
+            val FakeKeyStore = new FakeKeyStore(NoopLogger.factory())
             val keystoreBaseFolder = new File(".")
             val keystoreFilePath = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
             FakeKeyStore.createKeyStore(keystoreBaseFolder)
