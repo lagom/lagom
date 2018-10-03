@@ -359,6 +359,7 @@ object Dependencies {
     guava,
 
     // Upgrades needed to match whitelist
+    sslConfig,
     playJson
   )
 
@@ -366,11 +367,18 @@ object Dependencies {
     playJava,
     playGuice,
     "org.pcollections" % "pcollections" % "2.1.2",
+
+    // Upgrades needed to match whitelist
+    sslConfig,
+
     scalaTest % Test,
     "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % Versions.Jackson % Test
   )
 
   val `api-scaladsl` = libraryDependencies ++= Seq(
+    // Upgrades needed to match whitelist
+    sslConfig,
+
     scalaTest % Test
   )
 
@@ -382,6 +390,10 @@ object Dependencies {
     "com.fasterxml.jackson.datatype" % "jackson-datatype-guava" % Versions.JacksonDatatype,
     "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % Versions.JacksonDatatype,
     "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % Versions.JacksonDatatype,
+
+    // Upgrades needed to match whitelist
+    sslConfig,
+
     akkaTestkit % Test,
     scalaTest % Test,
     junit % Test,
@@ -395,6 +407,7 @@ object Dependencies {
     scalaTest % Test,
 
     // Upgrades needed to match whitelist
+    scalaOrganization.value % "scala-reflect" % scalaVersion.value,
     scalaJava8Compat,
     scalaXml % Test,
     scalaParserCombinators % Test
@@ -410,6 +423,7 @@ object Dependencies {
 
     // Upgrades needed to match whitelist
     reactiveStreams,
+    sslConfig,
     playJson,
     scalaParserCombinators,
     akkaStream,
@@ -428,6 +442,7 @@ object Dependencies {
     scalaTest % Test,
 
     // Upgrades needed to match whitelist versions
+    sslConfig,
     "io.netty" % "netty-handler" % Versions.Netty
   )
 
@@ -467,6 +482,7 @@ object Dependencies {
     akkaPersistenceCassandraLauncher,
 
     // Upgrades needed to match whitelist
+    sslConfig,
     playJson,
     akkaSlf4j
   )
@@ -519,6 +535,7 @@ object Dependencies {
     "com.novocode" % "junit-interface" % "0.11" % Test,
 
     // Upgrades needed to match whitelist
+    sslConfig,
     scalaJava8Compat,
     scalaParserCombinators,
     scalaXml % Test,
@@ -541,6 +558,7 @@ object Dependencies {
     "com.novocode" % "junit-interface" % "0.11" % Test,
 
     // Upgrades needed to match whitelist
+    sslConfig,
     scalaXml % Test,
     akkaSlf4j
     // explicitly depend on particular versions of jackson
@@ -571,6 +589,7 @@ object Dependencies {
     scalaTest % Test,
 
     // Upgrades needed to match whitelist
+    sslConfig,
     scalaXml % Test,
     akkaSlf4j
   )
@@ -589,6 +608,7 @@ object Dependencies {
     "com.novocode" % "junit-interface" % "0.11" % Test,
 
     // Upgrades needed to match whitelist
+    sslConfig,
     playJson
   )
 
@@ -615,6 +635,7 @@ object Dependencies {
     akkaPersistenceCassandraLauncher % Test,
 
     // Upgrades needed to match whitelist
+    sslConfig,
     dropwizardMetricsCore,
     cassandraDriverCore,
     "io.netty" % "netty-handler" % Versions.Netty
@@ -662,15 +683,24 @@ object Dependencies {
   val `kafka-client` = libraryDependencies ++= Seq(
     "org.slf4j" % "log4j-over-slf4j" % Versions.Slf4j,
     akkaStreamKafka exclude("org.slf4j", "slf4j-log4j12"),
-    scalaTest % Test
+    scalaTest % Test,
+
+    // Upgrades needed to match whitelist$
+    sslConfig
   )
 
   val `kafka-client-javadsl` = libraryDependencies ++= Seq(
-    scalaTest % Test
+    scalaTest % Test,
+
+    // Upgrades needed to match whitelist$
+    sslConfig
   )
 
   val `kafka-client-scaladsl` = libraryDependencies ++= Seq(
-    scalaTest % Test
+    scalaTest % Test,
+
+    // Upgrades needed to match whitelist$
+    sslConfig
   )
 
   val `kafka-broker` = libraryDependencies ++= Nil
@@ -694,6 +724,7 @@ object Dependencies {
 
     // Upgrades needed to match whitelist versions
     reactiveStreams,
+    sslConfig,
     playJson,
     scalaParserCombinators,
     akkaStream,
@@ -710,6 +741,7 @@ object Dependencies {
 
       // Upgrades needed to match whitelist versions
       reactiveStreams,
+      sslConfig,
       playJson,
       scalaParserCombinators,
       akkaStream,
