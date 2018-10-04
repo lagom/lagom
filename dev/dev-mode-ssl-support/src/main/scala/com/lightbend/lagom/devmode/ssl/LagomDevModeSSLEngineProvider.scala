@@ -11,7 +11,7 @@ import java.security.cert.X509Certificate
 import javax.net.ssl._
 
 import com.typesafe.sslconfig.util.NoopLogger
-import com.typesafe.sslconfig.ssl.FakeKeyStore
+import com.typesafe.sslconfig.{ ssl => sslconfig }
 
 import play.server.api.SSLEngineProvider
 
@@ -43,12 +43,10 @@ class LagomDevModeSSLEngineProvider(rootLagomProjectFolder: File) extends SSLEng
 }
 
 object LagomDevModeSSLEngineProvider {
-  private final val FakeKeyStore = new FakeKeyStore(NoopLogger.factory())
+  private final val FakeKeyStore = new sslconfig.FakeKeyStore(NoopLogger.factory())
 }
 
 class TrustManager(trustStore: KeyStore) extends X509TrustManager {
-  import TrustManager._
-
   val nullArray = Array[X509Certificate]()
 
   def checkClientTrusted(x509Certificates: Array[X509Certificate], s: String): Unit = {}
@@ -58,12 +56,8 @@ class TrustManager(trustStore: KeyStore) extends X509TrustManager {
   def getAcceptedIssuers(): Array[X509Certificate] = {
     Array(
       trustStore
-        .getCertificate(FakeKeyStore.TrustedAlias)
+        .getCertificate(sslconfig.FakeKeyStore.TrustedAlias)
         .asInstanceOf[X509Certificate]
     )
   }
-}
-
-object TrustManager {
-  private final val FakeKeyStore = new FakeKeyStore(NoopLogger.factory())
 }
