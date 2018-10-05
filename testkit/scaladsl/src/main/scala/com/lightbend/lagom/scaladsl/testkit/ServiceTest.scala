@@ -8,11 +8,8 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-import com.typesafe.sslconfig.util.NoopLogger
-import com.typesafe.sslconfig.ssl.FakeKeyStore
-
 import akka.annotation.ApiMayChange
-import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLEngineProvider
+import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLHolder
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig._
 import com.lightbend.lagom.internal.testkit.TestkitSslSetup.Disabled
@@ -25,8 +22,8 @@ import play.api.{ Configuration, Environment, Play }
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 
 import scala.concurrent.Future
-import scala.util.control.NonFatal
 import scala.util.Try
+import scala.util.control.NonFatal
 
 /**
  * Support for writing functional tests for one service. The service is running in a server and in the test you can
@@ -47,7 +44,7 @@ object ServiceTest {
      * Enable or disable Cassandra.
      *
      * @param enabled True if Cassandra should be enabled, or false if disabled. Enabling Cassandra will also enable the
-     * cluster.
+     *                cluster.
      * @return A copy of this setup.
      */
     def withCassandra(enabled: Boolean): Setup
@@ -185,9 +182,9 @@ object ServiceTest {
    * Guice bindings here.
    */
   final class TestServer[A <: LagomApplication] private[testkit] (
-    val application:              A,
-    val playServer:               Server,
-    @ApiMayChange val sslContext: Option[SSLContext] = None
+    val application:                    A,
+    val playServer:                     Server,
+    @ApiMayChange val clientSslContext: Option[SSLContext] = None
   ) {
 
     /**
@@ -306,15 +303,12 @@ object ServiceTest {
     Play.start(lagomApplication.application)
 
     val sslSetup: TestkitSslSetup.TestkitSslSetup = if (setup.ssl) {
-      val FakeKeyStore = new FakeKeyStore(NoopLogger.factory())
-      val keystoreBaseFolder = environment.rootPath
-      val keystoreFilePath: File = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
-      // ensure it exists
-      FakeKeyStore.createKeyStore(keystoreBaseFolder)
-
-      // TODO: review this when SSLContext provider is promoted to play or ssl-config
-      val sslContext: SSLContext = new LagomDevModeSSLEngineProvider(environment.rootPath).sslContext
-      TestkitSslSetup.enabled(keystoreFilePath, sslContext)
+      val sslHolder = new LagomDevModeSSLHolder(environment)
+      val keystoreFile: File = sslHolder.keyStoreFile
+      val clientSslContext: SSLContext = sslHolder.sslContext
+      // In tests we're using a self-signed certificate so we use the same keyStore for both
+      // the server and the client trustStore.
+      TestkitSslSetup.enabled(keystoreFile, keystoreFile, clientSslContext)
     } else {
       Disabled
     }
@@ -343,7 +337,7 @@ object ServiceTest {
       awaitPersistenceInit(lagomApplication.actorSystem)
     }
 
-    new TestServer[T](lagomApplication, server, sslSetup.sslContext)
+    new TestServer[T](lagomApplication, server, sslSetup.clientSslContext)
   }
 
 }
