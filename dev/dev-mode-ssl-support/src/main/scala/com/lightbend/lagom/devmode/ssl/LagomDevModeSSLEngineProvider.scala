@@ -56,7 +56,7 @@ class TrustManager(trustStore: KeyStore) extends X509TrustManager {
   def getAcceptedIssuers(): Array[X509Certificate] = {
     Array(
       trustStore
-        .getCertificate(sslconfig.FakeKeyStore.TrustedAlias)
+        .getCertificate(sslconfig.FakeKeyStore.SelfSigned.Alias.trustedCertEntry)
         .asInstanceOf[X509Certificate]
     )
   }

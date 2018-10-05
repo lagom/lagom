@@ -75,7 +75,7 @@ object Dependencies {
   private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.3"
-  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.3.4"
+  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.3.5"
   private val h2 = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.6.0" excludeAll (excludeSlf4j: _*)
 
