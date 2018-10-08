@@ -1,6 +1,6 @@
 # Slick Read-Side support
 
-This page is specifically about Lagom's support for relational database read-sides using JDBC.  Before reading this, you should familiarize yourself with Lagom's general [[read-side support|ReadSide]] and [[relational database read-side support overview|ReadSideRDBMS]].
+This page is specifically about Lagom's support for relational database read-sides using Slick.  Before reading this, you should familiarize yourself with Lagom's general [[read-side support|ReadSide]] and [[relational database read-side support overview|ReadSideRDBMS]].
 
 
 ## Configuration
