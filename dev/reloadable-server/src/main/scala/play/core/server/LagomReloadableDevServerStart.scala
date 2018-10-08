@@ -9,10 +9,9 @@ import java.net.InetAddress
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLEngineProvider
+import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLHolder
 import play.api.ApplicationLoader.DevContext
 import play.api._
-import play.core.server.ssl.FakeKeyStore
 import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
 import play.utils.Threads
 
@@ -54,9 +53,10 @@ object LagomReloadableDevServerStart {
         // to register the service
         val httpsSettings: Map[String, String] =
           if (enableSsl) {
+            // in Dev mode we hardcode the keystoreBaseFolder to File(".").
             val keystoreBaseFolder = new File(".")
-            val keystoreFilePath = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
-            FakeKeyStore.createKeyStore(keystoreBaseFolder)
+            val sslHolder = new LagomDevModeSSLHolder(keystoreBaseFolder)
+            val keystoreFilePath = sslHolder.keyStoreFile
 
             Map(
               // In dev mode, `play.server.https.address` and `play.server.http.address` are assigned the same value

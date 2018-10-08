@@ -14,7 +14,7 @@ import akka.actor.ActorSystem
 import akka.annotation.ApiMayChange
 import akka.japi.function.{ Effect, Procedure }
 import akka.stream.Materializer
-import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLEngineProvider
+import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLHolder
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.cluster.JoinClusterModule
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
@@ -29,7 +29,6 @@ import javax.net.ssl.SSLContext
 import play.Application
 import play.api.inject.{ ApplicationLifecycle, BindingKey, DefaultApplicationLifecycle, bind => sBind }
 import play.api.{ Configuration, Play }
-import play.core.server.ssl.FakeKeyStore
 import play.core.server.{ Server, ServerConfig, ServerProvider }
 import play.inject.Injector
 import play.inject.guice.GuiceApplicationBuilder
@@ -251,10 +250,10 @@ object ServiceTest {
    * Guice bindings here.
    */
   class TestServer(
-    val port:                     Int,
-    val app:                      Application,
-    server:                       Server,
-    @ApiMayChange val sslContext: Optional[SSLContext] = Optional.empty()
+    val port:                           Int,
+    val app:                            Application,
+    server:                             Server,
+    @ApiMayChange val clientSslContext: Optional[SSLContext] = Optional.empty()
   ) {
 
     @ApiMayChange val portSsl: Optional[Integer] = Optional.ofNullable(server.httpsPort.map(Integer.valueOf).orNull)
@@ -381,14 +380,12 @@ object ServiceTest {
     Play.start(application.asScala())
 
     val sslSetup: TestkitSslSetup.TestkitSslSetup = if (setup.ssl) {
-      val keystoreBaseFolder = application.environment().rootPath
-      val keystoreFilePath: File = FakeKeyStore.getKeyStoreFilePath(keystoreBaseFolder)
-      // ensure it exists
-      FakeKeyStore.createKeyStore(keystoreBaseFolder)
-
-      // TODO: review this when SSLContext provider is promoted to play or ssl-config
-      val sslContext: SSLContext = new LagomDevModeSSLEngineProvider(application.environment().rootPath).sslContext
-      TestkitSslSetup.enabled(keystoreFilePath, sslContext)
+      val sslHolder = new LagomDevModeSSLHolder(application.environment().asScala())
+      val keystoreFile: File = sslHolder.keyStoreFile
+      val clientSslContext: SSLContext = sslHolder.sslContext
+      // In tests we're using a self-signed certificate so we use the same keyStore for both
+      // the server and the client trustStore.
+      TestkitSslSetup.enabled(keystoreFile, keystoreFile, clientSslContext)
     } else {
       Disabled
     }
@@ -413,7 +410,7 @@ object ServiceTest {
       awaitPersistenceInit(system)
     }
 
-    val javaSslContext = Optional.ofNullable(sslSetup.sslContext.orNull)
+    val javaSslContext = Optional.ofNullable(sslSetup.clientSslContext.orNull)
     new TestServer(assignedPort, application, srv, javaSslContext)
   }
 
