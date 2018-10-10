@@ -32,7 +32,7 @@ The production environment determines the methods for packaging your services, m
 
     * Lightbend Orchestration includes open-source support for [automatic Akka Cluster formation](https://developer.lightbend.com/docs/lightbend-orchestration/current/features/akka-cluster-bootstrap.html) on Kubernetes or DC/OS.
 
-    * Otherwise, you can use the open-source [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/current/bootstrap.html) extension for integration with other service discovery infrastructure, or write your own programmatic cluster formation implementation. See the [[Lagom Cluster|Cluster]] documentation for more information.
+    * Otherwise, you can use the open-source [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/current/bootstrap/index.html) extension for integration with other service discovery infrastructure, or write your own programmatic cluster formation implementation. See the [[Lagom Cluster|Cluster]] documentation for more information.
 
 * Lagom's Cassandra module comes out of the box ready to locate your Cassandra cluster using the service locator. This means Lagom considers Cassandra like any other external service it may need to locate. If your production environment requires it, you can also choose to bypass the service locator by providing Cassandra contact points directly in the service configuration, as described in the [section below](#Using-static-Cassandra-contact-points).
 
