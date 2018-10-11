@@ -577,6 +577,7 @@ lazy val `testkit-core` = (project in file("testkit/core"))
   )
   .settings(forkedTests: _*)
   .dependsOn(
+    `dev-mode-ssl-support`, // TODO: remove this when SSLContext provider is promoted to play or ssl-config
     // Ideally, this would be the other way around,
     // but it will require some more refactoring
     `persistence-testkit`

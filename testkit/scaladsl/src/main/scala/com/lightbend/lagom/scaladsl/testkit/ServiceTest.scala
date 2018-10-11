@@ -304,11 +304,10 @@ object ServiceTest {
 
     val sslSetup: TestkitSslSetup.TestkitSslSetup = if (setup.ssl) {
       val sslHolder = new LagomDevModeSSLHolder(environment)
-      val keystoreFile: File = sslHolder.keyStoreFile
       val clientSslContext: SSLContext = sslHolder.sslContext
       // In tests we're using a self-signed certificate so we use the same keyStore for both
       // the server and the client trustStore.
-      TestkitSslSetup.enabled(keystoreFile, keystoreFile, clientSslContext)
+      TestkitSslSetup.enabled(sslHolder.keyStoreMetadata, sslHolder.trustStoreMetadata, clientSslContext)
     } else {
       Disabled
     }
