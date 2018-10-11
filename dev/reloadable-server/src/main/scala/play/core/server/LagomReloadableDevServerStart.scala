@@ -10,6 +10,7 @@ import java.net.InetAddress
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLHolder
+import com.typesafe.sslconfig.ssl.FakeKeyStore
 import play.api.ApplicationLoader.DevContext
 import play.api._
 import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
@@ -56,7 +57,6 @@ object LagomReloadableDevServerStart {
             // in Dev mode we hardcode the keystoreBaseFolder to File(".").
             val keystoreBaseFolder = new File(".")
             val sslHolder = new LagomDevModeSSLHolder(keystoreBaseFolder)
-            val keystoreFilePath = sslHolder.keyStoreFile
 
             Map(
               // In dev mode, `play.server.https.address` and `play.server.http.address` are assigned the same value
@@ -65,12 +65,14 @@ object LagomReloadableDevServerStart {
               "play.server.https.port" -> httpsPort.toString,
               // See also com/lightbend/lagom/scaladsl/testkit/ServiceTest.scala
               // These configure the server
-              "play.server.https.keyStore.path" -> keystoreFilePath.getAbsolutePath,
-              "play.server.https.keyStore.type" -> "JKS",
+              "play.server.https.keyStore.path" -> sslHolder.keyStoreMetadata.storeFile.getAbsolutePath,
+              "play.server.https.keyStore.type" -> sslHolder.keyStoreMetadata.storeType,
+              "play.server.https.keyStore.password" -> String.valueOf(sslHolder.keyStoreMetadata.storePassword),
               // These configure the clients (play-ws and akka-grpc)
               "ssl-config.loose.disableHostnameVerification" -> "true",
-              "ssl-config.trustManager.stores.0.type" -> "JKS",
-              "ssl-config.trustManager.stores.0.path" -> keystoreFilePath.getAbsolutePath
+              "ssl-config.trustManager.stores.0.path" -> sslHolder.trustStoreMetadata.storeFile.getAbsolutePath,
+              "ssl-config.trustManager.stores.0.type" -> sslHolder.trustStoreMetadata.storeType,
+              "ssl-config.trustManager.stores.0.password" -> String.valueOf(sslHolder.trustStoreMetadata.storePassword)
             )
           } else Map.empty
 
