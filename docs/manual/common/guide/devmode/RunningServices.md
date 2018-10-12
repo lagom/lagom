@@ -17,4 +17,4 @@ $ sbt
 > <your-project-name>/run
 ```
 
-One thing you should remember is that `run` only starts the specific service, it doesn't start neither the Service Locator, nor the Cassandra server. Hence, prior to manually starting services, you may want to manually start both the [[Service Locator|ServiceLocator#Start-and-stop]], and the [[Cassandra server|CassandraServer#Start-and-stop]].
+Remember that `run` only starts the specified service. Neither the Service Locator nor the Cassandra server start implicitly. Hence, consider manually starting both the [[Service Locator|ServiceLocator#Start-and-stop]] and the [[Cassandra server|CassandraServer#Start-and-stop]] prior to manually running other services.
