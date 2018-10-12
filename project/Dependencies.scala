@@ -13,13 +13,13 @@ object Dependencies {
     // Also be sure to update PlayVersion in docs/build.sbt.
     val Play = "2.7.0-M4"
     val PlayJson = "2.6.10"
-    val PlayStandaloneWs = "2.0.0-M4"
+    val PlayStandaloneWs = "2.0.0-M6"
     val Twirl = "1.4.0-M2"
     val PlayFileWatch = "1.1.7"
 
     // Also be sure to update AkkaVersion in docs/build.sbt.
-    val Akka: String = sys.props.getOrElse("akka.version", "2.5.16")
-    val AkkaHttp = "10.1.3"
+    val Akka: String = sys.props.getOrElse("akka.version", "2.5.17")
+    val AkkaHttp = "10.1.5"
     val AkkaManagement = "0.17.0"
     // Also be sure to update ScalaVersion in docs/build.sbt.
     val Scala = Seq("2.12.6", "2.11.12")
@@ -163,8 +163,8 @@ object Dependencies {
       "com.google.errorprone" % "error_prone_annotations" % "2.1.3",
       guava,
       "com.google.j2objc" % "j2objc-annotations" % "1.1",
-      "com.google.inject" % "guice" % "4.2.0",
-      "com.google.inject.extensions" % "guice-assistedinject" % "4.2.0",
+      "com.google.inject" % "guice" % "4.2.1",
+      "com.google.inject.extensions" % "guice-assistedinject" % "4.2.1",
       "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
       "org.checkerframework" % "checker-qual" % "2.5.2",
       "javax.xml.bind" % "jaxb-api" % "2.3.0",
