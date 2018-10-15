@@ -4,7 +4,7 @@
 
 package com.lightbend.lagom.registry.impl
 
-import java.io.{ Closeable, File }
+import java.io.Closeable
 import java.net.{ InetSocketAddress, URI }
 import java.util.{ Map => JMap }
 
@@ -12,7 +12,7 @@ import com.lightbend.lagom.gateway._
 import play.api._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.guice.GuiceableModule.fromGuiceModule
-import play.core.server.{ ReloadableServer, Server, ServerConfig, ServerProvider }
+import play.core.server.{ Server, ServerConfig, ServerProvider }
 
 import scala.util.control.NonFatal
 
@@ -31,7 +31,7 @@ class ServiceLocatorServer extends Closeable {
     gatewayImpl:            String
   ): Unit =
     synchronized {
-      require(server == null, "Service locator is already running on " + server.asInstanceOf[Server].mainAddress)
+      require(server == null, "Service locator is already running on " + server.mainAddress)
 
       // we create a single application which we will reuse for both gateway and locator
       val application = createApplication(
