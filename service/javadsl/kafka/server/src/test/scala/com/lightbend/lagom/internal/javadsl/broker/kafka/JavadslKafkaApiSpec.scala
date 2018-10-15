@@ -4,34 +4,33 @@
 
 package com.lightbend.lagom.internal.javadsl.broker.kafka
 
-import java.util.Optional
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{ CompletableFuture, CompletionStage, CountDownLatch, TimeUnit }
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import akka.japi.function.Creator
 import akka.japi.{ Pair => JPair }
 import akka.persistence.query.{ NoOffset, Offset, Sequence }
+import akka.stream.OverflowStrategy
 import akka.stream.javadsl.{ Source => JSource }
 import akka.stream.scaladsl.{ Flow, Sink, Source, SourceQueue }
-import akka.stream.{ Materializer, OverflowStrategy }
 import akka.{ Done, NotUsed }
 import com.google.inject.AbstractModule
 import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec._
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter.{ dslOffsetToOffset, offsetToDslOffset }
 import com.lightbend.lagom.internal.kafka.KafkaLocalServer
 import com.lightbend.lagom.javadsl.api.ScalaService._
-import com.lightbend.lagom.javadsl.api._
 import com.lightbend.lagom.javadsl.api.broker.kafka.{ KafkaProperties, PartitionKeyStrategy }
 import com.lightbend.lagom.javadsl.api.broker.{ Message, Topic }
+import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceLocator }
 import com.lightbend.lagom.javadsl.broker.TopicProducer
 import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys
-import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, PersistentEntity, PersistentEntityRef, PersistentEntityRegistry, Offset => JOffset }
+import com.lightbend.lagom.javadsl.client.ConfigurationServiceLocator
+import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag, PersistentEntityRef, PersistentEntityRegistry, Offset => JOffset }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest._
+import org.scalatest.concurrent.ScalaFutures
 import play.api.inject._
 import play.api.inject.guice.GuiceApplicationBuilder
 
