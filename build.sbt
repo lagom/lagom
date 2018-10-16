@@ -575,6 +575,7 @@ lazy val `testkit-core` = (project in file("testkit/core"))
     name := "lagom-core-testkit",
     Dependencies.`testkit-core`
   )
+  .settings(overridesScalaParserCombinators: _*)
   .settings(forkedTests: _*)
   .dependsOn(
     `dev-mode-ssl-support`, // TODO: remove this when SSLContext provider is promoted to play or ssl-config
@@ -592,6 +593,7 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
     name := "lagom-javadsl-testkit",
     Dependencies.`testkit-javadsl`
   )
+  .settings(overridesScalaParserCombinators: _*)
   .dependsOn(
     `testkit-core`,
     `server-javadsl`,
@@ -608,6 +610,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
+  .settings(overridesScalaParserCombinators: _*)
   .settings(
     name := "lagom-scaladsl-testkit",
     Dependencies.`testkit-scaladsl`

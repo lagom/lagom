@@ -4,7 +4,7 @@
 
 package com.lightbend.lagom.registry.impl
 
-import java.io.{ Closeable, File }
+import java.io.Closeable
 import java.net.{ InetSocketAddress, URI }
 import java.util.{ Map => JMap }
 
@@ -12,14 +12,14 @@ import com.lightbend.lagom.gateway._
 import play.api._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.guice.GuiceableModule.fromGuiceModule
-import play.core.server.{ ReloadableServer, ServerConfig, ServerProvider }
+import play.core.server.{ Server, ServerConfig, ServerProvider }
 
 import scala.util.control.NonFatal
 
 class ServiceLocatorServer extends Closeable {
   private val logger: Logger = Logger(this.getClass())
 
-  @volatile private var server: ReloadableServer = _
+  @volatile private var server: Server = _
   @volatile private var gatewayAddress: InetSocketAddress = _
 
   def start(
@@ -76,7 +76,7 @@ class ServiceLocatorServer extends Closeable {
       .build()
   }
 
-  private def createServer(application: Application, host: String, port: Int): ReloadableServer = {
+  private def createServer(application: Application, host: String, port: Int): Server = {
     val config = ServerConfig(address = host, port = Some(port), mode = Mode.Test)
     val provider = implicitly[ServerProvider]
     provider.createServer(config, application)
@@ -98,7 +98,7 @@ class ServiceLocatorServer extends Closeable {
 
   def serviceGatewayAddress: URI = {
     // TODO: support multiple addresses for gateway (http vs https)
-    new URI(s"https://${server.mainAddress.getAddress.getHostAddress}:${gatewayAddress.getPort}")
+    new URI(s"http://${server.mainAddress.getAddress.getHostAddress}:${gatewayAddress.getPort}")
   }
 
 }
