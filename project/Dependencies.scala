@@ -182,7 +182,7 @@ object Dependencies {
       akkaPersistenceCassandraLauncher,
       "com.typesafe.netty" % "netty-reactive-streams" % Versions.NettyReactiveStreams,
       "com.typesafe.netty" % "netty-reactive-streams-http" % Versions.NettyReactiveStreams,
-      "com.typesafe.play" %% "cachecontrol" % "1.1.3",
+      "com.typesafe.play" %% "cachecontrol" % "1.1.4",
       playJson,
       playFunctional,
       // play client libs
