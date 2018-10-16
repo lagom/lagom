@@ -155,9 +155,7 @@ final class AggregateEventShards[Event <: AggregateEvent[Event]](
   )
 
   /**
-   * Get all the tags for this shard.
-   *
-   * @return All the tags.
+   * @return all the tags that this app will use according to the `numShards` and the `eventType`
    */
   val allTags: Set[AggregateEventTag[Event]] = {
     (for (shardNo <- 0 until numShards) yield new AggregateEventTag(
