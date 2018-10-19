@@ -6,17 +6,15 @@ package com.lightbend.lagom.javadsl.client;
 
 import akka.actor.ActorSystem;
 import akka.discovery.Lookup;
-import com.lightbend.lagom.internal.client.ServiceLocatorConfig;
-import com.lightbend.lagom.internal.client.ServiceConfigEntry;
-import com.lightbend.lagom.javadsl.api.Descriptor;
-
 import akka.discovery.ServiceDiscovery;
 import akka.discovery.SimpleServiceDiscovery;
+import com.lightbend.lagom.internal.client.ServiceNameParser;
+import com.lightbend.lagom.javadsl.api.Descriptor;
+import com.typesafe.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -32,75 +30,80 @@ public class AkkaDiscoveryServiceLocator extends CircuitBreakingServiceLocator {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final SimpleServiceDiscovery serviceDiscovery;
-    private final ServiceLocatorConfig serviceLocatorConfig;
+    private final Config config;
 
     @Inject
     public AkkaDiscoveryServiceLocator(CircuitBreakersPanel circuitBreakersPanel, ActorSystem actorSystem) {
         super(circuitBreakersPanel);
         this.serviceDiscovery = ServiceDiscovery.get(actorSystem).discovery();
-        this.serviceLocatorConfig = ServiceLocatorConfig.load(actorSystem.settings().config());
+        this.config = actorSystem.settings().config();
+    }
+
+    @Override
+    public CompletionStage<List<URI>> locateAll(String name, Descriptor.Call<?, ?> serviceCall) {
+
+        logger.debug("Lookup for service: " + name);
+        Lookup lookupQuery = patchLookupIfNeeded(ServiceNameParser.toLookupQuery(name));
+        logger.debug("query -> " + lookupQuery);
+
+        CompletionStage<SimpleServiceDiscovery.Resolved> lookup =
+                serviceDiscovery.lookup(lookupQuery, Duration.ofSeconds(5));
+
+        return lookup.thenCompose(resolved -> {
+            logger.debug("Retrieved address: " + resolved.getAddresses());
+            List<URI> uris =
+                    resolved.getAddresses()
+                            .stream()
+                            .map(this::toURI)
+                            .collect(Collectors.toList());
+
+            return CompletableFuture.completedFuture(uris);
+        });
+    }
+
+    /**
+     * Patch Lookup to use 'http' as portName and 'tcp' as protocol
+     * if not assigned and not Kafka or Cassandra lookups.
+     */
+    private Lookup patchLookupIfNeeded(Lookup lookup) {
+
+        if(lookup.portName().isEmpty() && lookup.protocol().isEmpty()) {
+            Config discoveryConfig = config.getConfig("lagom.akka.discovery.defaults");
+
+            String serviceName = discoveryConfig.getString("prefix") +
+                    lookup.serviceName() +
+                    discoveryConfig.getString("suffix");
+
+            Lookup lookupPatched =  Lookup.create(serviceName)
+                    .withPortName(discoveryConfig.getString("port-name"))
+                    .withProtocol(discoveryConfig.getString("protocol"));
+
+            logger.debug("Patched: " + lookup + " -> " + lookupPatched);
+            return lookupPatched;
+        }
+        else
+            return lookup;
     }
 
 
     @Override
     public CompletionStage<Optional<URI>> locate(String name, Descriptor.Call<?, ?> serviceCall) {
-
-        logger.debug("Lookup for service: " + name );
-        Lookup lookupQuery = Lookup.create(name);
-
-        String scheme = serviceLocatorConfig.defaultScheme();
-
-        Optional<ServiceConfigEntry> serviceEntry = serviceLocatorConfig.lookUpJava(name);
-        if (serviceEntry.isPresent()) {
-            ServiceConfigEntry entry = serviceEntry.get();
-            if (entry.portName().isDefined()) {
-                String portName = entry.portName().get();
-                logger.debug("Service " + name + " using port name: " + portName);
-                lookupQuery = lookupQuery.withPortName(portName);
-            }
-
-            if (entry.scheme().isDefined()) {
-                scheme = entry.scheme().get();
-                logger.debug("Service " + name + " using scheme: " + scheme);
-            }
-
-        }
-        else {
-            String defaultPortName = serviceLocatorConfig.defaultPortName();
-            logger.debug("Service " + name + " not declared in config. Port name will default to: " + defaultPortName);
-            // when no service define in config, we default to portName http
-            lookupQuery = lookupQuery.withPortName(defaultPortName);
-        }
-
-        CompletionStage<SimpleServiceDiscovery.Resolved> lookup =
-            serviceDiscovery.lookup(lookupQuery, Duration.ofSeconds(5));
-
-        String finalScheme = scheme;
-        return lookup.thenCompose(resolved -> {
-
-            logger.debug("Retrieved address: " + resolved.getAddresses().size());
-            logger.debug("Retrieved address: " + resolved.getAddresses());
-
-            SimpleServiceDiscovery.ResolvedTarget resolvedTarget = selectRandomTarget(filterValid(resolved.getAddresses()));
-            Optional<URI> optionalURI = Optional.of(toURI(resolvedTarget, finalScheme));
-            return CompletableFuture.completedFuture(optionalURI);
-        });
+        return locateAll(name, serviceCall).thenApply(this::selectRandomURI);
     }
 
-    private URI toURI(SimpleServiceDiscovery.ResolvedTarget resolvedTarget, String scheme) {
+    private URI toURI(SimpleServiceDiscovery.ResolvedTarget resolvedTarget) {
 
         // it's safe to call 'get' here, those have already been validated in #filterValid
-        int port = resolvedTarget.getPort().map(i -> (Integer) i).get();
-        InetAddress address = resolvedTarget.getAddress().get();
+        int port = resolvedTarget.getPort().map(i -> (Integer) i).orElseGet(() -> -1);
         try {
             return new URI(
-                scheme, // scheme
-                null, // userInfo
-                address.getHostAddress(), // host
-                port, // port
-                null, // path
-                null, // query
-                null // fragment
+                    "http", // scheme
+                    null, // userInfo
+                    resolvedTarget.host(), // host
+                    port, // port
+                    null, // path
+                    null, // query
+                    null // fragment
             );
 
         } catch (URISyntaxException e) {
@@ -108,23 +111,12 @@ public class AkkaDiscoveryServiceLocator extends CircuitBreakingServiceLocator {
         }
     }
 
-    private List<SimpleServiceDiscovery.ResolvedTarget> filterValid(List<SimpleServiceDiscovery.ResolvedTarget> resolvedTargets) {
-
-
-        List<SimpleServiceDiscovery.ResolvedTarget> valid =
-            resolvedTargets.stream()
-                .filter(target -> target.getAddress().isPresent() && target.getPort().isPresent())
-                .collect(Collectors.toList());
-
-        if (valid.isEmpty()) {
-            throw new IllegalStateException("No valid address found");
+    private Optional<URI> selectRandomURI(List<URI> uris) {
+        if (uris.isEmpty()) {
+            return Optional.empty();
+        } else {
+            int index = ThreadLocalRandom.current().nextInt(uris.size());
+            return Optional.of(uris.get(index));
         }
-
-        return valid;
-    }
-
-    private SimpleServiceDiscovery.ResolvedTarget selectRandomTarget(List<SimpleServiceDiscovery.ResolvedTarget> resolvedTargets) {
-        int index = ThreadLocalRandom.current().nextInt(resolvedTargets.size());
-        return resolvedTargets.get(index);
     }
 }

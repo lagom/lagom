@@ -14,6 +14,10 @@ object Dependencies {
 
   object Compile {
     val akkaDiscovery = "com.lightbend.akka.discovery" %% "akka-discovery" % Versions.AkkaManagement
+    val akkaClusterHttp = "com.lightbend.akka.management" %% "akka-management-cluster-http" % Versions.AkkaManagement
+    val akkaClusterBootstrap = "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % Versions.AkkaManagement
+    val akkaManagement = "com.lightbend.akka.management" %% "akka-management" % Versions.AkkaManagement
+
     val lagomJavaDslClient = "com.lightbend.lagom" %% "lagom-javadsl-client" % Versions.lagom14 % "provided"
   }
 
@@ -24,7 +28,10 @@ object Dependencies {
   private val deps = libraryDependencies
 
   val core = deps ++= Seq(
-    Compile.akkaDiscovery, 
+    Compile.akkaDiscovery,
+    Compile.akkaClusterHttp,
+    Compile.akkaClusterBootstrap,
+    Compile.akkaManagement,
     Compile.lagomJavaDslClient,
     Test.scalaTest
   )

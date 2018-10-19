@@ -10,7 +10,9 @@ import scala.collection.Seq;
 public class AkkaDiscoveryServiceLocatorModule extends Module {
     @Override
     public Seq<Binding<?>> bindings(Environment environment, Configuration configuration) {
+
         return environment.mode().asJava() != play.Mode.PROD ? seq() : seq(
+                bind(Bootstrap.class).toSelf().eagerly(),
                 bind(ServiceLocator.class).to(AkkaDiscoveryServiceLocator.class)
         );
     }
