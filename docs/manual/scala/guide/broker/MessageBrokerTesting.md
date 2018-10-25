@@ -26,12 +26,12 @@ The producer end is responsible to describe the public API and provide the seria
 
 Testing the consumption of messages requires starting the Service under test with a stub of the upstream Service producing data into the topic. The following snippet demonstrates how to achieve it. 
 
-1. An in-memory `Topic` is required and means to send messages into it. Using the `ProducerStubFactory` it's possible to obtain a `ProducerStub` given a topic name.
+1. An in-memory `Topic` is required and means to send messages into that in-mem Topic. Using the `ProducerStubFactory` it's possible to obtain a `ProducerStub` given a topic name.
 2. With the `producerStub` instance a service stub can be build to replace the production ready upstream service. This will have to use the topic bound to the `ProducerStub` created in the previous step.
 3. Use the `ProducerStub` on the tests to send messages into the topic and interact normally with the service under test to verify the Service code. 
 
 @[topic-test-consuming-from-a-topic](code/docs/scaladsl/mb/AnotherServiceSpec.scala)
 
 
-
+When testing a subscription it's possible the Service under test is also a producer itself. In those situations, the `Application` used for the unit tests must mix-in `LagomKafkaComponents` and just use `TestTopicComponents` instead.
 
