@@ -150,9 +150,7 @@ final class AggregateEventShards[Event <: AggregateEvent[Event]](
   )
 
   /**
-   * Get all the tags for this shard.
-   *
-   * @return All the tags.
+   * @return all the tags that this app will use according to the `numShards` and the `eventType`
    */
   val allTags: PSequence[AggregateEventTag[Event]] = {
     val shardTags = for (shardNo <- 0 until numShards) yield AggregateEventTag.of(
