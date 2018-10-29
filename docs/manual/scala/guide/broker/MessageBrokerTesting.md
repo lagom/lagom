@@ -33,5 +33,5 @@ Testing the consumption of messages requires starting the Service under test wit
 @[topic-test-consuming-from-a-topic](code/docs/scaladsl/mb/AnotherServiceSpec.scala)
 
 
-When testing a subscription it's possible the Service under test is also a producer itself. In those situations, the `Application` used for the unit tests must mix-in `LagomKafkaComponents` and just use `TestTopicComponents` instead.
+When testing a subscription it is possible the Service under test is also a producer itself. In those situations, the `Application` used for the unit tests must differ from the `Application` used for production. The `Application` used in unit tests must not mix-in `LagomKafkaComponents` and just use `TestTopicComponents` instead.
 
