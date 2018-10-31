@@ -23,16 +23,6 @@ class HealthChecks(system: ExtendedActorSystem) extends ManagementRouteProvider 
   val log: LoggingAdapter = Logging(system, getClass)
   val cluster = Cluster(system)
 
-  private val readyStates: Set[MemberStatus] =
-    Set(
-      MemberStatus.Joining,
-      MemberStatus.WeaklyUp,
-      MemberStatus.Up,
-      MemberStatus.Leaving,
-      MemberStatus.Exiting)
-
-
-
   def routes(settings: ManagementRouteProviderSettings): Route = pathPrefix("status") {
     import system.dispatcher
 
@@ -40,7 +30,11 @@ class HealthChecks(system: ExtendedActorSystem) extends ManagementRouteProvider 
       path("ready") {
         get {
           val selfState = cluster.selfMember.status
-          if (readyStates.contains(selfState)) {
+          // Note, only ready if Up. Even WeaklyUp should be avoided.
+          // In a scenario of a rolling update, it's possbile that the new nodes become WeaklyUp
+          // and this can cause Kubernetes to cut access to the other nodes. As a result, the nodes can't
+          // move out of WeaklyUp.
+          if (selfState == MemberStatus.Up) {
             log.debug("Available, cluster status: {}", selfState)
             complete(StatusCodes.OK)
           } else {
