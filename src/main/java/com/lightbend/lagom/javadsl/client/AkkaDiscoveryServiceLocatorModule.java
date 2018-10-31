@@ -10,10 +10,15 @@ import scala.collection.Seq;
 public class AkkaDiscoveryServiceLocatorModule extends Module {
     @Override
     public Seq<Binding<?>> bindings(Environment environment, Configuration configuration) {
-
-        return environment.mode().asJava() != play.Mode.PROD ? seq() : seq(
+        if (environment.mode().asJava() == play.Mode.PROD) {
+            // Only enable Akka Management and cluster Bootstrap in Production
+            // Only use the AkkaDiscoveryServiceLocator in Production
+            return seq(
                 bind(Bootstrap.class).toSelf().eagerly(),
                 bind(ServiceLocator.class).to(AkkaDiscoveryServiceLocator.class)
-        );
+            );
+        } else {
+            return seq();
+        }
     }
 }
