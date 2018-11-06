@@ -29,7 +29,7 @@ import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.compat.java8.FutureConverters._
 import scala.collection.JavaConverters._
 /**
- * A Consumer for consuming messages from Kafka using the akka-stream-kafka API.
+ * A Consumer for consuming messages from Kafka using the Alpakka Kafka API.
  */
 private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](kafkaConfig: KafkaConfig, topicCall: TopicCall[Payload],
                                                                         groupId: Subscriber.GroupId, info: ServiceInfo, system: ActorSystem,
@@ -48,7 +48,7 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](kafkaCon
     val newGroupId = {
       if (groupIdName == null) {
         // An empty group id is not allowed by Kafka (see https://issues.apache.org/jira/browse/KAFKA-2648
-        // and https://github.com/akka/reactive-kafka/issues/155)
+        // and https://github.com/akka/alpakka-kafka/issues/155)
         val defaultGroupId = GroupId.default(info)
         log.debug {
           "Passed a null groupId, but Kafka requires clients to set one (see KAFKA-2648). " +
