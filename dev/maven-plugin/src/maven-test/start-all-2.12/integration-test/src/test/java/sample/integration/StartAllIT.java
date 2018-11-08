@@ -115,7 +115,7 @@ public class StartAllIT {
         });
 
         // Now we set up a consumer. We can't use the Lagom message broker api for this because
-        // it's not possible to plug it into the LagomClientFactory. Hence, we use akka-stream-kafka 
+        // it's not possible to plug it into the LagomClientFactory. Hence, we use Alpakka Kafka
         // to create a consumer that will be notified when messages are published to the "greetings" topic.
         Consumer.atMostOnceSource(consumerSettings(), Subscriptions.topics(topicName))
             .map(record -> record.value())

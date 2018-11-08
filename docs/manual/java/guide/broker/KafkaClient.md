@@ -25,7 +25,7 @@ When importing the Lagom Kafka Broker module keep in mind that the Lagom Kafka B
 
 ## Configuration
 
-The Lagom Kafka Client implementation is built using [akka-stream-kafka](https://github.com/akka/reactive-kafka). The akka-stream-kafka library wraps the official [Apache Java Kafka client](https://kafka.apache.org/documentation.html) and exposes a (Akka) stream based API to publish/consume messages to/from Kafka. Therefore, we have effectively three libraries at play, with each of them exposing its own configuration. Let's explore  the configuration keys exposed by each layer, starting with the one sitting at the top, i.e., the Lagom Kafka Client.
+The Lagom Kafka Client implementation is built using [Alpakka Kafka](https://github.com/akka/alpakka-kafka). The Alpakka Kafka library wraps the official [Apache Java Kafka client](https://kafka.apache.org/documentation.html) and exposes a (Akka) stream based API to publish/consume messages to/from Kafka. Therefore, we have effectively three libraries at play, with each of them exposing its own configuration. Let's explore the configuration keys exposed by each layer, starting with the one sitting at the top, i.e., the Lagom Kafka Client.
 
 ### Lagom Kafka Client
 
@@ -37,9 +37,9 @@ Second, we have configuration that is specific to the publisher and the subscrib
 
 Third, the consumer has a few more configuration keys allowing you to decide how often the read-side offset is persisted in the datastore. When tuning these values, you are trading performances (storing the offset every time a message is consumed can be costly), with the risk of having to re-process some message if a failure occurs.
 
-### Akka Stream Kafka configuration
+### Alpakka Kafka configuration
 
-See the [akka-stream-kafka reference.conf](https://github.com/akka/reactive-kafka/blob/master/core/src/main/resources/reference.conf) to find out about the available configuration parameters.
+See the [Alpakka Kafka reference.conf](https://github.com/akka/alpakka-kafka/blob/master/core/src/main/resources/reference.conf) to find out about the available configuration parameters.
 
 ### Apache Java Kafka Client
 

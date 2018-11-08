@@ -36,8 +36,8 @@ object Dependencies {
     val Maven = "3.3.9"
     val Netty = "4.1.29.Final"
     val NettyReactiveStreams = "2.0.0"
-    val Kafka = "1.0.1"
-    val AlpakkaKafka = "0.22"
+    val Kafka = "2.0.0"
+    val AlpakkaKafka = "1.0-M1"
 
     val ScalaJava8Compat = "0.8.0"
     val ScalaXml = "1.1.0"
@@ -249,7 +249,7 @@ object Dependencies {
       "joda-time" % "joda-time" % "2.9.9",
       "junit" % "junit" % Versions.JUnit,
       "net.jodah" % "typetools" % "0.5.0",
-      "org.lz4" % "lz4-java" % "1.4",
+      "org.lz4" % "lz4-java" % "1.4.1",
       "org.agrona" % "agrona" % "0.9.18",
       commonsLang,
       "org.apache.kafka" % "kafka-clients" % Versions.Kafka,
@@ -270,7 +270,7 @@ object Dependencies {
       scalaXml,
       "org.scala-sbt" % "test-interface" % "1.0",
       "org.typelevel" %% "macro-compat" % "1.1.1",
-      "org.xerial.snappy" % "snappy-java" % "1.1.4",
+      "org.xerial.snappy" % "snappy-java" % "1.1.7.1",
       "tyrex" % "tyrex" % "1.0.1"
 
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
@@ -331,13 +331,15 @@ object Dependencies {
     "com.yammer.metrics" % "metrics-core" % "2.2.0",
     "jline" % "jline" % "0.9.94",
     "log4j" % "log4j" % "1.2.17",
+    "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     "net.sf.jopt-simple" % "jopt-simple" % "5.0.4",
     "org.apache.commons" % "commons-math" % "2.2",
     "org.apache.curator" % "curator-client" % "2.10.0",
     "org.apache.curator" % "curator-framework" % "2.10.0",
     "org.apache.curator" % "curator-test" % "2.10.0",
     "org.apache.kafka" %% "kafka" % Versions.Kafka,
-    "org.apache.zookeeper" % "zookeeper" % "3.4.10"
+    "org.apache.zookeeper" % "zookeeper" % "3.4.13",
+    "org.apache.yetus" % "audience-annotations" % "0.5.0"
   )
 
   private def crossLibraryFamily(groupId: String, version: String)(artifactIds: String*) = {

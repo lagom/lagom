@@ -32,7 +32,7 @@ import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
 import scala.collection.immutable
 
 /**
- * A Producer for publishing messages in Kafka using the akka-stream-kafka API.
+ * A Producer for publishing messages in Kafka using the Alpakka Kafka API.
  */
 private[lagom] object Producer {
 
