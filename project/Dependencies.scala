@@ -881,7 +881,7 @@ object Dependencies {
     val log = streams.value.log
     val svb = scalaBinaryVersion.value
 
-    val whitelist = dependencyWhitelist.value.map { moduleId =>
+    val whitelist = (dependencyWhitelist.value++KafkaTestWhitelist).map { moduleId =>
       val crossModuleId = cross(moduleId)
       (crossModuleId.organization, crossModuleId.name) -> crossModuleId.revision
     }.toMap
