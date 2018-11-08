@@ -87,7 +87,7 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
   }
 
   private def atLeastOnce(serviceLocatorUris: Option[String]): Source[Done, _] = {
-    // Creating a Source of pair where the first element is a reactive-kafka committable offset,
+    // Creating a Source of pair where the first element is a Alpakka Kafka committable offset,
     // and the second it's the actual message. Then, the source of pair is splitted into
     // two streams, so that the `flow` passed in argument can be applied to the underlying message.
     // After having applied the `flow`, the two streams are combined back and the processed message's

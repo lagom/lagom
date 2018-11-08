@@ -4,7 +4,7 @@ lagomCassandraPort in ThisBuild := 9042
 //#cassandra-port
 
 //#cassandra-clean-on-start
-lagomCassandraCleanOnStart in ThisBuild := false
+lagomCassandraCleanOnStart in ThisBuild := true
 //#cassandra-clean-on-start
 
 //#cassandra-jvm-options
