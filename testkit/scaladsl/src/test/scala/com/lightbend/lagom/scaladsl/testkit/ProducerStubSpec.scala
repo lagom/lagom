@@ -8,15 +8,15 @@ import com.lightbend.lagom.scaladsl.server.{ LagomApplicationContext, LocalServi
 import com.lightbend.lagom.scaladsl.testkit.services._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{ Seconds, Span }
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
+import org.scalatest.{ AsyncWordSpec, BeforeAndAfterAll, Matchers }
 
-class ProducerStubSpec extends WordSpec with Matchers with BeforeAndAfterAll with Eventually {
+class ProducerStubSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll with Eventually {
 
   var producerStub: ProducerStub[AlphaEvent] = _
 
   private val stubbedApplication: LagomApplicationContext => DownstreamApplication = {
     ctx =>
-      new DownstreamApplication(ctx) with LocalServiceLocator {
+      new DownstreamApplication(ctx) with LocalServiceLocator with TestTopicComponents {
         val stubFactory = new ProducerStubFactory(actorSystem, materializer)
         producerStub = stubFactory.producer[AlphaEvent](AlphaService.TOPIC_ID)
         override lazy val alphaService = new AlphaServiceStub(producerStub)

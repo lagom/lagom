@@ -598,6 +598,8 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
     `testkit-core`,
     `server-scaladsl`,
     `broker-scaladsl`,
+    `kafka-broker-scaladsl`,
+    `dev-mode-ssl-support`, // TODO: remove this when SSLContext provider is promoted to play or ssl-config
     `persistence-core` % "compile;test->test",
     `persistence-scaladsl` % "compile;test->test",
     `persistence-cassandra-scaladsl` % "compile;test->test",

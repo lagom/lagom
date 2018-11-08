@@ -7,11 +7,14 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 import akka.{ Done, NotUsed }
 import akka.stream.scaladsl.Flow
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall }
+import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.Service._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.playjson.{ JsonSerializer, JsonSerializerRegistry }
 import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext }
+import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
+import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
+import play.api.Configuration
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.immutable.Seq
@@ -53,7 +56,20 @@ object FakesSerializerRegistry extends JsonSerializerRegistry {
 
 abstract class DownstreamApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
+  with CassandraPersistenceComponents
+  with ProvidesAdditionalConfiguration
   with AhcWSComponents {
+
+  // This is a hack so C* persistence in this Applicaiton doesn't complain. C* Persistence is only used
+  // so intances of this Application can mix-in a TopicComponents implementation (Test or Kafka)
+  override def additionalConfiguration: AdditionalConfiguration =
+    super.additionalConfiguration ++ Configuration.from(Map(
+      "cassandra-journal.keyspace" -> "asdf",
+      "cassandra-snapshot-store.keyspace" -> "asdf",
+      "lagom.persistence.read-side.cassandra.keyspace" -> "asdf"
+    ))
+
+  override lazy val jsonSerializerRegistry: FakesSerializerRegistry.type = FakesSerializerRegistry
 
   lazy val alphaService = serviceClient.implement[AlphaService]
 
@@ -67,9 +83,13 @@ trait CharlieService extends Service {
       .addCalls(
         namedCall("messages", messages)
       )
+      .addTopics(
+        topic("charlie-topic", topicCall)
+      )
   }
 
   def messages: ServiceCall[NotUsed, Seq[ReceivedMessage]]
+  def topicCall: Topic[String]
 }
 
 case class ReceivedMessage(topicId: String, msg: Int)
@@ -97,4 +117,6 @@ class CharlieServiceImpl(alpha: AlphaService) extends CharlieService {
       Seq(receivedMessages.asScala.toSeq: _*)
     }
   }
+
+  override def topicCall: Topic[String] = ???
 }
