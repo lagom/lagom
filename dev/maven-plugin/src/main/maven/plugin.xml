@@ -118,7 +118,7 @@
             <editable>true</editable>
             <description>Whether the Cassandra database should be cleaned when it starts.</description>
             <configuration>
-                <cassandraCleanOnStart implementation="boolean" default-value="true">${cassandra.cleanOnStart}</cassandraCleanOnStart>
+                <cassandraCleanOnStart implementation="boolean" default-value="false">${cassandra.cleanOnStart}</cassandraCleanOnStart>
             </configuration>
         </parameter>
         <parameter>
