@@ -25,7 +25,7 @@ In sbt:
 
 ## Clean up on start
 
-By default, all database files created by your running services are going to be deleted the next time the Cassandra server is started. You can turn off this feature by adding the following in your build.
+By default, all database files created by your running services are saved for the next time the Cassandra server is started. You can change the behaviour by adding the following in your build.
 
 In the Maven root project pom:
 
@@ -35,7 +35,7 @@ In the Maven root project pom:
     <artifactId>lagom-maven-plugin</artifactId>
     <version>${lagom.version}</version>
     <configuration>
-        <cassandraCleanOnStart>false</cassandraCleanOnStart>
+        <cassandraCleanOnStart>true</cassandraCleanOnStart>
     </configuration>
 </plugin>
 ```
