@@ -36,7 +36,7 @@ object Dependencies {
     val Maven = "3.3.9"
     val Netty = "4.1.29.Final"
     val NettyReactiveStreams = "2.0.0"
-    val Kafka = "1.0.1"
+    val Kafka = "2.0.0"
     val AlpakkaKafka = "1.0-M1"
 
     val ScalaJava8Compat = "0.8.0"
