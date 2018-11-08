@@ -1,0 +1,17 @@
+sudo: false
+language: scala
+jdk: oraclejdk8
+scala: 2.12.7
+
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt
+
+before_cache:
+  - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
+  - find $HOME/.sbt  -name "*.lock"               -delete
+
+notifications:
+  email:
+    on_success: never
