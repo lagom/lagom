@@ -11,11 +11,11 @@ object Dependencies {
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     // Also be sure to update PlayVersion in docs/build.sbt.
-    val Play = "2.7.0-M4"
-    val PlayJson = "2.6.10"
-    val PlayStandaloneWs = "2.0.0-M6"
-    val Twirl = "1.4.0-M2"
-    val PlayFileWatch = "1.1.7"
+    val Play = "2.7.0-RC3"
+    val PlayJson = "2.7.0-RC1"
+    val PlayStandaloneWs = "2.0.0-RC1"
+    val Twirl = "1.4.0-RC1"
+    val PlayFileWatch = "1.1.8"
 
     // Also be sure to update AkkaVersion in docs/build.sbt.
     val Akka: String = sys.props.getOrElse("akka.version", "2.5.18")
