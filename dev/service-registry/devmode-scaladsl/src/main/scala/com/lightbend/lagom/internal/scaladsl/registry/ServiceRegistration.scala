@@ -6,7 +6,7 @@ package com.lightbend.lagom.internal.scaladsl.registry
 
 import akka.Done
 import akka.actor.CoordinatedShutdown
-import com.lightbend.lagom.internal.registry.playServerUris
+import com.lightbend.lagom.internal.registry.serviceDnsRecords
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
 import com.typesafe.config.Config
 import play.api.Logger
@@ -23,7 +23,7 @@ class ServiceRegistration(
 
   private val logger: Logger = Logger(this.getClass)
 
-  private val uris = playServerUris(config)
+  private val uris = serviceDnsRecords(config)
 
   coordinatedShutdown.addTask(CoordinatedShutdown.PhaseBeforeServiceUnbind, "unregister-services-from-service-locator-scaladsl") { () =>
     Future.sequence(serviceInfo.locatableServices.map {

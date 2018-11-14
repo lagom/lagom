@@ -11,7 +11,7 @@ import com.typesafe.config.Config
 import scala.collection.immutable
 
 package object registry {
-  private[lagom] def playServerUris(config: Config): immutable.Seq[URI] = {
+  private[lagom] def serviceDnsRecords(config: Config): immutable.Seq[URI] = {
     val uris = immutable.Seq.newBuilder[URI]
 
     // In dev mode, `play.server.http.address` is used for both HTTP and HTTPS.

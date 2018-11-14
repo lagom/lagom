@@ -9,7 +9,7 @@ import java.util.Optional
 import javax.inject.Inject
 
 import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistry, ServiceRegistryService }
-import com.lightbend.lagom.internal.registry.playServerUris
+import com.lightbend.lagom.internal.registry.serviceDnsRecords
 import com.lightbend.lagom.javadsl.api.{ ServiceAcl, ServiceInfo }
 import com.lightbend.lagom.javadsl.api.transport.Method
 import com.typesafe.config.Config
@@ -82,7 +82,7 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Config, serviceInfo: Se
            applicationLifecycle: ApplicationLifecycle) =
     this(config.underlying, serviceInfo, serviceRegistry, applicationLifecycle)
 
-  val uris = playServerUris(config)
+  val uris = serviceDnsRecords(config)
 
   private val serviceAcls = serviceInfo.getAcls
   private val service = ServiceRegistryService.of(uris.asJava, serviceAcls)

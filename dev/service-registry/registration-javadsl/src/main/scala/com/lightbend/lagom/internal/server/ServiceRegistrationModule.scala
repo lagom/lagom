@@ -11,7 +11,7 @@ import akka.actor.CoordinatedShutdown
 import akka.{ Done, NotUsed }
 import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistry, ServiceRegistryService }
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
-import com.lightbend.lagom.internal.registry.playServerUris
+import com.lightbend.lagom.internal.registry.serviceDnsRecords
 import com.typesafe.config.Config
 import javax.inject.{ Inject, Provider, Singleton }
 import play.api.inject.{ Binding, Module }
@@ -32,7 +32,7 @@ class ServiceRegistrationModule extends Module {
 object ServiceRegistrationModule {
 
   class ServiceConfigProvider @Inject() (config: Config) extends Provider[ServiceConfig] {
-    override lazy val get = ServiceConfig(playServerUris(config))
+    override lazy val get = ServiceConfig(serviceDnsRecords(config))
   }
 
   case class ServiceConfig(uris: immutable.Seq[URI])
