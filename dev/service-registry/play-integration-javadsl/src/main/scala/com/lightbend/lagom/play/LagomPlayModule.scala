@@ -4,12 +4,12 @@
 
 package com.lightbend.lagom.play
 
-import java.net.URI
 import java.util.{ List => JList }
 import java.util.Optional
 import javax.inject.Inject
 
 import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistry, ServiceRegistryService }
+import com.lightbend.lagom.internal.registry.playServerUris
 import com.lightbend.lagom.javadsl.api.{ ServiceAcl, ServiceInfo }
 import com.lightbend.lagom.javadsl.api.transport.Method
 import com.typesafe.config.Config
@@ -17,7 +17,6 @@ import play.api.inject.{ ApplicationLifecycle, Binding, Module }
 import play.api.{ Configuration, Environment, Logger }
 
 import scala.collection.JavaConverters._
-import scala.collection.immutable
 import scala.compat.java8.FutureConverters._
 import scala.util.{ Success, Try }
 
@@ -83,25 +82,7 @@ class PlayRegisterWithServiceRegistry @Inject() (config: Config, serviceInfo: Se
            applicationLifecycle: ApplicationLifecycle) =
     this(config.underlying, serviceInfo, serviceRegistry, applicationLifecycle)
 
-  // This code is similar to `ServerRegistrationModule` in project `registration-javadsl`
-  // and  `ServiceRegistration` in project `dev-mode-scala`
-
-  // In dev mode, `play.server.http.address` is used for both HTTP and HTTPS.
-  // Reading one value or the other gets the same result.
-  private val httpAddress = config.getString("play.server.http.address")
-  val uris = {
-    val uris = immutable.Seq.newBuilder[URI]
-
-    val httpPort = config.getString("play.server.http.port")
-    uris += new URI(s"http://$httpAddress:$httpPort")
-
-    if (config.hasPath("play.server.https.port")) {
-      val httpsPort = config.getString("play.server.https.port")
-      uris += new URI(s"https://$httpAddress:$httpsPort")
-    }
-
-    uris.result()
-  }
+  val uris = playServerUris(config)
 
   private val serviceAcls = serviceInfo.getAcls
   private val service = ServiceRegistryService.of(uris.asJava, serviceAcls)
