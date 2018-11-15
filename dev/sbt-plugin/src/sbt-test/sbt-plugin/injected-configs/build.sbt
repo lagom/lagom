@@ -3,7 +3,7 @@ import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 lazy val `my-project` = (project in file(".")).enablePlugins(LagomJava)
   .settings(libraryDependencies ++= Seq(lagomJavadslPersistenceCassandra, lagomSbtScriptedLibrary))
 
-scalaVersion := sys.props.get("scala.version").getOrElse("2.12.6")
+scalaVersion := sys.props.get("scala.version").getOrElse("2.12.7")
 
 interactionMode := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 
