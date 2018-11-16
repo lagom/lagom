@@ -1,10 +1,10 @@
-val ScalaVersion = "2.12.6"
+val ScalaVersion = "2.12.7"
 
-val AkkaVersion: String = sys.props.getOrElse("akka.version", "2.5.17")
+val AkkaVersion: String = sys.props.getOrElse("akka.version", "2.5.18")
 val JUnitVersion = "4.11"
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion = "3.0.4"
-val PlayVersion = "2.7.0-M4"
+val PlayVersion = "2.7.0-RC3"
 val Log4jVersion = "2.10.0"
 val MacWireVersion = "2.3.0"
 val LombokVersion = "1.16.20"
