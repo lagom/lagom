@@ -11,30 +11,30 @@ object Dependencies {
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     // Also be sure to update PlayVersion in docs/build.sbt.
-    val Play = "2.7.0-M4"
-    val PlayJson = "2.6.10"
-    val PlayStandaloneWs = "2.0.0-M6"
-    val Twirl = "1.4.0-M2"
-    val PlayFileWatch = "1.1.7"
+    val Play = "2.7.0-RC3"
+    val PlayJson = "2.7.0-RC1"
+    val PlayStandaloneWs = "2.0.0-RC1"
+    val Twirl = "1.4.0-RC1"
+    val PlayFileWatch = "1.1.8"
 
     // Also be sure to update AkkaVersion in docs/build.sbt.
-    val Akka: String = sys.props.getOrElse("akka.version", "2.5.17")
+    val Akka: String = sys.props.getOrElse("akka.version", "2.5.18")
     val AkkaHttp = "10.1.5"
-    val AkkaManagement = "0.17.0"
+    val AkkaManagement = "0.19.0"
     // Also be sure to update ScalaVersion in docs/build.sbt.
-    val Scala = Seq("2.12.6", "2.11.12")
-    val SbtScala = Seq("2.10.6", "2.12.6")
+    val Scala = Seq("2.12.7", "2.11.12")
+    val SbtScala = Seq("2.10.7", "2.12.7")
     val AkkaPersistenceCassandra = "0.61"
     val AkkaPersistenceJdbc = "3.4.0"
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest = "3.0.4"
-    val Jackson = "2.9.6"
+    val Jackson = "2.9.7"
     val JacksonCore = Jackson
     val JacksonDatatype = Jackson
     val JacksonDatabind = Jackson
-    val Guava = "26.0-jre"
+    val Guava = "27.0-jre"
     val Maven = "3.3.9"
-    val Netty = "4.1.29.Final"
+    val Netty = "4.1.31.Final"
     val NettyReactiveStreams = "2.0.0"
     val Kafka = "2.0.0"
     val AlpakkaKafka = "1.0-M1"
@@ -52,6 +52,8 @@ object Dependencies {
     // Also be sure to update Log4jVersion in docs/build.sbt.
     val Log4j = "2.10.0"
 
+    val jetty = "9.4.12.v20180830"
+  
   }
 
   // Some setup before we start creating ModuleID vals
@@ -75,7 +77,7 @@ object Dependencies {
   private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.3"
-  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.3.6"
+  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.3.7"
   private val h2 = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.6.0" excludeAll (excludeSlf4j: _*)
 
@@ -125,7 +127,7 @@ object Dependencies {
   private val playFileWatch = "com.lightbend.play" %% "play-file-watch" % Versions.PlayFileWatch excludeAll (excludeSlf4j: _*)
 
   private val junit = "junit" % "junit" % Versions.JUnit
-  private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.7"
+  private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.8"
 
   private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.2" excludeAll (excludeSlf4j: _*)
 
@@ -160,14 +162,14 @@ object Dependencies {
       "com.github.jnr" % "jnr-posix" % "3.0.44",
       "com.github.jnr" % "jnr-x86asm" % "1.0.2",
       "com.google.code.findbugs" % "jsr305" % "3.0.2",
-      "com.google.errorprone" % "error_prone_annotations" % "2.1.3",
+      "com.google.errorprone" % "error_prone_annotations" % "2.2.0",
       guava,
       "com.google.j2objc" % "j2objc-annotations" % "1.1",
-      "com.google.inject" % "guice" % "4.2.1",
-      "com.google.inject.extensions" % "guice-assistedinject" % "4.2.1",
+      "com.google.inject" % "guice" % "4.2.2",
+      "com.google.inject.extensions" % "guice-assistedinject" % "4.2.2",
       "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
       "org.checkerframework" % "checker-qual" % "2.5.2",
-      "javax.xml.bind" % "jaxb-api" % "2.3.0",
+      "javax.xml.bind" % "jaxb-api" % "2.3.1",
       h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
       "com.lmax" % "disruptor" % "3.3.6",
@@ -182,7 +184,7 @@ object Dependencies {
       akkaPersistenceCassandraLauncher,
       "com.typesafe.netty" % "netty-reactive-streams" % Versions.NettyReactiveStreams,
       "com.typesafe.netty" % "netty-reactive-streams-http" % Versions.NettyReactiveStreams,
-      "com.typesafe.play" %% "cachecontrol" % "1.1.3",
+      "com.typesafe.play" %% "cachecontrol" % "1.1.4",
       playJson,
       playFunctional,
       // play client libs
@@ -196,51 +198,51 @@ object Dependencies {
       "com.typesafe.play" % "shaded-oauth" % Versions.PlayStandaloneWs,
       playTest,
       // dependencies added by play-test
-      "org.fluentlenium" % "fluentlenium-core" % "3.6.1",
-      "org.seleniumhq.selenium" % "selenium-support" % "3.13.0",
-      "org.seleniumhq.selenium" % "selenium-api" % "3.13.0",
-      "org.seleniumhq.selenium" % "selenium-remote-driver" % "3.13.0",
-      "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.13.0",
-      "net.bytebuddy" % "byte-buddy" % "1.8.3",
+      "org.fluentlenium" % "fluentlenium-core" % "3.7.0",
+      "org.seleniumhq.selenium" % "selenium-support" % "3.14.0",
+      "org.seleniumhq.selenium" % "selenium-api" % "3.14.0",
+      "org.seleniumhq.selenium" % "selenium-remote-driver" % "3.14.0",
+      "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.14.0",
+      "net.bytebuddy" % "byte-buddy" % "1.8.15",
       "org.apache.commons" % "commons-exec" % "1.3",
       "commons-logging" % "commons-logging" % "1.2",
       "com.google.code.gson" % "gson" % "2.8.4",
       "com.squareup.okhttp3" % "okhttp" % "3.10.0",
       "com.squareup.okio" % "okio" % "1.14.1",
       "org.atteo.classindex" % "classindex" % "3.4",
-      "org.seleniumhq.selenium" % "htmlunit-driver" % "2.31.0",
-      "net.sourceforge.htmlunit" % "htmlunit" % "2.31",
+      "org.seleniumhq.selenium" % "htmlunit-driver" % "2.33.0",
       "xalan" % "xalan" % "2.7.2",
       "xalan" % "serializer" % "2.7.2",
-      "org.apache.commons" % "commons-text" % "1.3",
-      "org.apache.httpcomponents" % "httpmime" % "4.5.5",
-      "org.apache.httpcomponents" % "httpclient" % "4.5.5",
-      "org.apache.httpcomponents" % "httpcore" % "4.4.9",
-      "net.sourceforge.htmlunit" % "htmlunit-core-js" % "2.31",
-      "net.sourceforge.htmlunit" % "neko-htmlunit" % "2.31",
-      "xerces" % "xercesImpl" % "2.11.0",
+      "org.apache.commons" % "commons-text" % "1.4",
+      "org.apache.httpcomponents" % "httpmime" % "4.5.6",
+      "org.apache.httpcomponents" % "httpclient" % "4.5.6",
+      "org.apache.httpcomponents" % "httpcore" % "4.4.10",
+      "net.sourceforge.htmlunit" % "htmlunit" % "2.33",
+      "net.sourceforge.htmlunit" % "htmlunit-core-js" % "2.33",
+      "net.sourceforge.htmlunit" % "neko-htmlunit" % "2.33",
+      "xerces" % "xercesImpl" % "2.12.0",
       "xml-apis" % "xml-apis" % "1.4.01",
-      "net.sourceforge.htmlunit" % "htmlunit-cssparser" % "1.0.0",
+      "net.sourceforge.htmlunit" % "htmlunit-cssparser" % "1.2.0",
       "commons-io" % "commons-io" % "2.6",
       "commons-net" % "commons-net" % "3.6",
-      "org.eclipse.jetty.websocket" % "websocket-client" % "9.4.10.v20180503",
-      "org.eclipse.jetty" % "jetty-client" % "9.4.10.v20180503",
-      "org.eclipse.jetty" % "jetty-http" % "9.4.10.v20180503",
-      "org.eclipse.jetty" % "jetty-util" % "9.4.10.v20180503",
-      "org.eclipse.jetty" % "jetty-io" % "9.4.10.v20180503",
-      "org.eclipse.jetty" % "jetty-xml" % "9.4.10.v20180503",
-      "org.eclipse.jetty.websocket" % "websocket-common" % "9.4.10.v20180503",
-      "org.eclipse.jetty.websocket" % "websocket-api" % "9.4.10.v20180503",
+      "org.eclipse.jetty.websocket" % "websocket-client" % Versions.jetty,
+      "org.eclipse.jetty" % "jetty-client" % Versions.jetty,
+      "org.eclipse.jetty" % "jetty-http" % Versions.jetty,
+      "org.eclipse.jetty" % "jetty-util" % Versions.jetty,
+      "org.eclipse.jetty" % "jetty-io" % Versions.jetty,
+      "org.eclipse.jetty" % "jetty-xml" % Versions.jetty,
+      "org.eclipse.jetty.websocket" % "websocket-common" % Versions.jetty,
+      "org.eclipse.jetty.websocket" % "websocket-api" % Versions.jetty,
 
       "com.typesafe.play" %% "twirl-api" % Versions.Twirl,
       "com.typesafe.slick" %% "slick" % Versions.Slick,
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
       "com.zaxxer" % "HikariCP" % "3.2.0",
       "commons-codec" % "commons-codec" % "1.10",
-      "io.aeron" % "aeron-client" % "1.9.3",
-      "io.aeron" % "aeron-driver" % "1.9.3",
+      "io.aeron" % "aeron-client" % "1.11.2",
+      "io.aeron" % "aeron-driver" % "1.11.2",
       dropwizardMetricsCore,
-      "io.jsonwebtoken" % "jjwt" % "0.9.0",
+      "io.jsonwebtoken" % "jjwt" % "0.9.1",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
       "io.netty" % "netty" % "3.10.6.Final",
       "javax.cache" % "cache-api" % "1.0.0",
@@ -250,10 +252,10 @@ object Dependencies {
       "junit" % "junit" % Versions.JUnit,
       "net.jodah" % "typetools" % "0.5.0",
       "org.lz4" % "lz4-java" % "1.4.1",
-      "org.agrona" % "agrona" % "0.9.18",
+      "org.agrona" % "agrona" % "0.9.25",
       commonsLang,
       "org.apache.kafka" % "kafka-clients" % Versions.Kafka,
-      "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
+      "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.17",
       "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final",
       "org.immutables" % "value" % "2.3.2",
@@ -271,7 +273,13 @@ object Dependencies {
       "org.scala-sbt" % "test-interface" % "1.0",
       "org.typelevel" %% "macro-compat" % "1.1.1",
       "org.xerial.snappy" % "snappy-java" % "1.1.7.1",
-      "tyrex" % "tyrex" % "1.0.1"
+      "tyrex" % "tyrex" % "1.0.1",
+
+      "org.scala-lang.modules"%%"scala-collection-compat"%"0.1.1",
+      "com.google.guava"%"failureaccess"%"1.0",
+      "com.google.guava"%"listenablefuture"%"9999.0-empty-to-avoid-conflict-with-guava",
+      "javax.activation"%"javax.activation-api"%"1.2.0"
+
 
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
       "akka-actor", "akka-cluster", "akka-cluster-sharding", "akka-cluster-tools", "akka-distributed-data",
