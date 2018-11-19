@@ -2,7 +2,7 @@
 
 This guide explains how to migrate from Lagom 1.4 to Lagom 1.5. If you are upgrading from an earlier version, be sure to review previous migration guides.
 
-Lagom 1.5 also updates to the latest major versions of Play (2.7) and Akka HTTP (10.1). We have highlighted the changes that are relevant to most Lagom users, but you may need to change code in your services that uses Play APIs directly. You'll also need to update any Play services in your Lagom project repositories to be compatible with Play 2.7. Please refer to the Play 2.7 migration guide (TODO) and the [Akka HTTP 10.1.0 release announcement](https://akka.io/blog/news/2018/03/08/akka-http-10.1.0-released.html) for more details.
+Lagom 1.5 also updates to the latest major versions of Play (2.7), Aka (2.5.18) and Akka HTTP (10.1). We have highlighted the changes that are relevant to most Lagom users, but you may need to change code in your services that uses Play APIs directly. You'll also need to update any Play services in your Lagom project repositories to be compatible with Play 2.7. Please refer to the Play 2.7 migration guide (https://www.playframework.com/documentation/2.7.0-RC3/Migration27), [Akka 2.5.18 release announcement](https://akka.io/blog/news/2018/10/07/akka-2.5.18-released) and the [Akka HTTP 10.1.0 release announcement](https://akka.io/blog/news/2018/03/08/akka-http-10.1.0-released.html)  for more details.
 
 
 ## Build changes
@@ -10,7 +10,7 @@ Lagom 1.5 also updates to the latest major versions of Play (2.7) and Akka HTTP 
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin. For example:
 
 ```scala
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.5.0-M3")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.5.0-RC1")
 ```
 
 We also recommend upgrading to sbt 1.2.1 or later, by updating the `sbt.version` in `project/build.properties`.
@@ -33,7 +33,7 @@ The following:
 * `com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil` (`lagom-scaladsl-persistence-jdbc`)
 * `com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil` (`lagom-scaladsl-persistence`)
 
-were all never intended for public consumption, and therfore have been marked deprecated in 1.5.0 for removal in
+were never intended for public consumption, and therefore have been marked deprecated in 1.5.0 for removal in
 2.0.0.
 
 
