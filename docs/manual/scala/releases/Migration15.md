@@ -33,7 +33,7 @@ The following:
 * `com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil` (`lagom-scaladsl-persistence-jdbc`)
 * `com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil` (`lagom-scaladsl-persistence`)
 
-were all never intended for public consumption, and therfore have been marked deprecated in 1.5.0 for removal in
+were never intended for public consumption, and therefore have been marked deprecated in 1.5.0 for removal in
 2.0.0.
 
 

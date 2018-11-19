@@ -41,7 +41,7 @@ The following:
 * `com.lightbend.lagom.javadsl.persistence.jdbc.testkit.TestUtil` (`lagom-javadsl-persistence-jdbc`)
 * `com.lightbend.lagom.javadsl.persistence.testkit.AbstractTestUtil` (`lagom-javadsl-persistence`)
 
-were all never intended for public consumption, and therfore have been marked deprecated in 1.5.0 for removal in
+were never intended for public consumption, and therefore have been marked deprecated in 1.5.0 for removal in
 2.0.0.
 
 
