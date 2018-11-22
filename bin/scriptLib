@@ -18,7 +18,7 @@ if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
 
     echo "Using Akka SNAPSHOT ${AKKA_VERSION}"
 
-    EXTRA_OPTS="-Dakka.version=${AKKA_VERSION}"
+    EXTRA_OPTS="-Dakka_version=${AKKA_VERSION}"
 fi
 
 checkIfShouldSkip() {

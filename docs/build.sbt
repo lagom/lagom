@@ -1,6 +1,6 @@
 val ScalaVersion = "2.12.7"
 
-val AkkaVersion: String = sys.props.getOrElse("akka.version", "2.5.18")
+val AkkaVersion: String = sys.props.getOrElse("akka_version", "2.5.18")
 val JUnitVersion = "4.11"
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion = "3.0.4"
