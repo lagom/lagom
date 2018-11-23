@@ -18,7 +18,7 @@ object Dependencies {
     val PlayFileWatch = "1.1.8"
 
     // Also be sure to update AkkaVersion in docs/build.sbt.
-    val Akka: String = sys.props.getOrElse("akka.version", "2.5.18")
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.18")
     val AkkaHttp = "10.1.5"
     val AkkaManagement = "0.19.0"
     // Also be sure to update ScalaVersion in docs/build.sbt.
@@ -53,7 +53,7 @@ object Dependencies {
     val Log4j = "2.10.0"
 
     val jetty = "9.4.12.v20180830"
-  
+
   }
 
   // Some setup before we start creating ModuleID vals
