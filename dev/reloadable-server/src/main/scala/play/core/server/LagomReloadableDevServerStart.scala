@@ -7,7 +7,8 @@ package play.core.server
 import java.io.File
 import java.net.InetAddress
 
-import akka.actor.ActorSystem
+import akka.Done
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.stream.ActorMaterializer
 import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLHolder
 import com.typesafe.sslconfig.ssl.FakeKeyStore
@@ -195,6 +196,14 @@ object LagomReloadableDevServerStart {
                       loader.load(context)
                     }
 
+                    newApplication.coordinatedShutdown.addTask(CoordinatedShutdown.PhaseBeforeActorSystemTerminate, "force-reload") { () =>
+                      // We'll only force a reload if the reason for shutdown is not an Application.stop
+                      if (!newApplication.coordinatedShutdown.shutdownReason().contains(ApplicationStoppedReason)) {
+                        buildLink.forceReload()
+                      }
+                      Future.successful(Done)
+                    }
+
                     Play.start(newApplication)
 
                     Success(newApplication)
@@ -258,7 +267,17 @@ object LagomReloadableDevServerStart {
         // them will fail.
         val devModeAkkaConfig = serverConfig.configuration.underlying.getConfig("lagom.akka.dev-mode.config")
         val actorSystemName = serverConfig.configuration.underlying.getString("lagom.akka.dev-mode.actor-system.name")
-        val actorSystem = ActorSystem(actorSystemName, devModeAkkaConfig)
+        val actorSystem: ActorSystem = ActorSystem(actorSystemName, devModeAkkaConfig)
+        val serverCoordinatedShutdown = CoordinatedShutdown(actorSystem)
+
+        // Registering a task that invokes `Play.stop` is necessary for the scenarios where
+        // the Application and the Server use separate ActorSystems (e.g. DevMode).
+        serverCoordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceStop, "shutdown-application-dev-mode") {
+          () =>
+            implicit val ctx = actorSystem.dispatcher
+            val stoppedApp = appProvider.get.map(Play.stop)
+            Future.fromTry(stoppedApp).map(_ => Done)
+        }
         val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem, ActorMaterializer()(actorSystem), () => Future.successful(()))
         val serverProvider = ServerProvider.fromConfiguration(classLoader, serverConfig.configuration)
         serverProvider.createServer(serverContext)
