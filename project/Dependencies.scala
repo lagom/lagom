@@ -11,10 +11,10 @@ object Dependencies {
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     // Also be sure to update PlayVersion in docs/build.sbt.
-    val Play = "2.7.0-RC3"
-    val PlayJson = "2.7.0-RC1"
-    val PlayStandaloneWs = "2.0.0-RC1"
-    val Twirl = "1.4.0-RC1"
+    val Play = "2.7.0-RC8"
+    val PlayJson = "2.7.0-RC2"
+    val PlayStandaloneWs = "2.0.0-RC2"
+    val Twirl = "1.4.0-RC4"
     val PlayFileWatch = "1.1.8"
 
     // Also be sure to update AkkaVersion in docs/build.sbt.
@@ -39,7 +39,7 @@ object Dependencies {
     val Kafka = "2.0.0"
     val AlpakkaKafka = "1.0-M1"
 
-    val ScalaJava8Compat = "0.8.0"
+    val ScalaJava8Compat = "0.9.0"
     val ScalaXml = "1.1.0"
     val Slick = "3.2.3"
     // Also be sure to update JUnitVersion in docs/build.sbt.
@@ -53,6 +53,8 @@ object Dependencies {
     val Log4j = "2.10.0"
 
     val jetty = "9.4.12.v20180830"
+
+    val Selenium = "3.141.59"
 
   }
 
@@ -198,19 +200,19 @@ object Dependencies {
       "com.typesafe.play" % "shaded-oauth" % Versions.PlayStandaloneWs,
       playTest,
       // dependencies added by play-test
-      "org.fluentlenium" % "fluentlenium-core" % "3.7.0",
-      "org.seleniumhq.selenium" % "selenium-support" % "3.14.0",
-      "org.seleniumhq.selenium" % "selenium-api" % "3.14.0",
-      "org.seleniumhq.selenium" % "selenium-remote-driver" % "3.14.0",
-      "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.14.0",
+      "org.fluentlenium" % "fluentlenium-core" % "3.7.1",
+      "org.seleniumhq.selenium" % "selenium-support" % Versions.Selenium,
+      "org.seleniumhq.selenium" % "selenium-api" % Versions.Selenium,
+      "org.seleniumhq.selenium" % "selenium-remote-driver" % Versions.Selenium,
+      "org.seleniumhq.selenium" % "selenium-firefox-driver" % Versions.Selenium,
       "net.bytebuddy" % "byte-buddy" % "1.8.15",
       "org.apache.commons" % "commons-exec" % "1.3",
       "commons-logging" % "commons-logging" % "1.2",
       "com.google.code.gson" % "gson" % "2.8.4",
-      "com.squareup.okhttp3" % "okhttp" % "3.10.0",
+      "com.squareup.okhttp3" % "okhttp" % "3.11.0",
       "com.squareup.okio" % "okio" % "1.14.1",
       "org.atteo.classindex" % "classindex" % "3.4",
-      "org.seleniumhq.selenium" % "htmlunit-driver" % "2.33.0",
+      "org.seleniumhq.selenium" % "htmlunit-driver" % "2.33.3",
       "xalan" % "xalan" % "2.7.2",
       "xalan" % "serializer" % "2.7.2",
       "org.apache.commons" % "commons-text" % "1.4",
