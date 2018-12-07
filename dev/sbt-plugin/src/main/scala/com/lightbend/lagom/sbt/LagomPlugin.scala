@@ -228,6 +228,10 @@ object LagomReloadableService extends AutoPlugin {
   import autoImport._
 
   override def projectSettings = Seq(
+    compile in Compile := {
+      lagomVerifyProjectFamilyAlignment.value
+      (compile in Compile).value
+    },
     lagomRun := {
       val service = runLagomTask.value
       // eagerly loads the service
@@ -244,10 +248,30 @@ object LagomReloadableService extends AutoPlugin {
       ).map(LagomReloadableServiceCompat.joinAnalysis)
     }.value,
 
+    lagomVerifyProjectFamilyAlignment := Def.task {
+
+      val evalState = state.value
+      val logger = evalState.log
+      logger.info("Verifying Project Family Alignment on [${thisProjectRef.value.project}]")
+      val deps = (dependencyClasspath in Compile).value
+      val dependencyClassLoader = new java.net.URLClassLoader(deps.files.map(_.toURI.toURL).toArray)
+      val manifestInfo = new ManifestInfo(dependencyClassLoader, new SbtLoggerProxy(logger))
+
+      val shouldFail = Project.extract(evalState).get(lagomFailOnProjectFamilyMismatch)
+      if (shouldFail)
+        manifestInfo.failOnVersionMismatch(AkkaProjectFamily, AkkaHttpProjectFamily)
+      else {
+        val errors = manifestInfo.collectErrorOnVersionMismatch(AkkaProjectFamily, AkkaHttpProjectFamily)
+        errors.foreach(s => logger.warn(s))
+      }
+
+    }.value,
+
     lagomReloaderClasspath := Classpaths.concatDistinct(
       exportedProducts in Runtime,
       internalDependencyClasspath in Runtime
     ).value,
+
     lagomClassLoaderDecorator := identity,
 
     lagomWatchDirectories := Def.taskDyn {
@@ -307,6 +331,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     }
 
     val lagomRun = taskKey[(String, DevServer)]("Run a Lagom service")
+
     val runAll = taskKey[Unit]("Run all Lagom services")
 
     val lagomServicesPortRange = settingKey[PortRange]("Port range used to assign a port to each Lagom service in the build")
@@ -337,6 +362,9 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val lagomServiceLocatorEnabled = settingKey[Boolean]("Enable/Disable the service locator")
     val lagomServiceLocatorStart = taskKey[Closeable]("Start the service locator")
     val lagomServiceLocatorStop = taskKey[Unit]("Stop the service locator")
+
+    val lagomVerifyProjectFamilyAlignment = taskKey[Unit]("Verify that akka and akka-http versions are aligned")
+    val lagomFailOnProjectFamilyMismatch = settingKey[Boolean]("Whether we should fail at compile time if project family mismatch is detected. Defaults to true")
 
     // cassandra tasks and settings
     val lagomCassandraStart = taskKey[Closeable]("Start the local cassandra server")
@@ -483,7 +511,8 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     lagomKafkaJvmOptions := Seq("-Xms256m", "-Xmx1024m"),
     runAll := runAllMicroservicesTask.value,
     Internal.Keys.interactionMode := PlayConsoleInteractionMode,
-    lagomDevSettings := Nil
+    lagomDevSettings := Nil,
+    lagomFailOnProjectFamilyMismatch := true
   ) ++
     // This is important as we want to evaluate these tasks exactly once.
     // Without it, we could be evaluating the same task multiple times, for each aggregated project.
