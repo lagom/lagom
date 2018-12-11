@@ -16,7 +16,7 @@ import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class DevModeSimpleServiceDiscoverySpec
+class DevModeServiceDiscoverySpec
   extends TestKit(ActorSystem("DevModeSimpleServiceDiscoverySpec"))
   with WordSpecLike
   with Matchers {
@@ -27,7 +27,7 @@ class DevModeSimpleServiceDiscoverySpec
       "test-service-without-port" -> List(URI.create("http://localhost"))
     )
   )
-  private val discovery = DevModeSimpleServiceDiscovery(system)
+  private val discovery = DevModeServiceDiscovery(system)
   discovery.setServiceRegistryClient(client)
 
   "DevModeSimpleServiceDiscoverySpec" should {

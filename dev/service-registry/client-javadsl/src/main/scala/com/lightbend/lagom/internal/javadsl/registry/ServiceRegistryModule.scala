@@ -15,7 +15,7 @@ import akka.discovery.ServiceDiscovery
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.api.broker.NoTopicFactoryProvider
 import com.lightbend.lagom.internal.javadsl.client.{ JavadslServiceClientImplementor, JavadslWebSocketClient, ServiceClientLoader }
-import com.lightbend.lagom.internal.registry.{ DevModeSimpleServiceDiscovery, ServiceRegistryClient }
+import com.lightbend.lagom.internal.registry.{ DevModeServiceDiscovery, ServiceRegistryClient }
 import com.lightbend.lagom.javadsl.api.Descriptor.Call
 import com.lightbend.lagom.javadsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
@@ -121,10 +121,10 @@ abstract class BaseServiceLocator extends ServiceLocator {
 private final class DevModeSimpleServiceDiscoveryProvider @Inject() (
   actorSystem:           ActorSystem,
   serviceRegistryClient: ServiceRegistryClient
-) extends Provider[DevModeSimpleServiceDiscovery] {
+) extends Provider[DevModeServiceDiscovery] {
 
-  override def get(): DevModeSimpleServiceDiscovery = {
-    val discovery = DevModeSimpleServiceDiscovery(actorSystem)
+  override def get(): DevModeServiceDiscovery = {
+    val discovery = DevModeServiceDiscovery(actorSystem)
     discovery.setServiceRegistryClient(serviceRegistryClient)
     discovery
   }

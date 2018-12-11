@@ -13,7 +13,7 @@ import akka.discovery.{ Discovery, Lookup, ServiceDiscovery }
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 
-private[lagom] class DevModeSimpleServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
+private[lagom] class DevModeServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
   private val clientPromise = Promise[ServiceRegistryClient]
 
   implicit private val ec: ExecutionContext = system.dispatcher
@@ -31,9 +31,9 @@ private[lagom] class DevModeSimpleServiceDiscovery(system: ActorSystem) extends 
   private def optionalPort(port: Int): Option[Int] = if (port < 0) None else Some(port)
 }
 
-private[lagom] object DevModeSimpleServiceDiscovery {
-  def apply(system: ActorSystem): DevModeSimpleServiceDiscovery =
+private[lagom] object DevModeServiceDiscovery {
+  def apply(system: ActorSystem): DevModeServiceDiscovery =
     Discovery(system)
-      .loadServiceDiscovery(classOf[DevModeSimpleServiceDiscovery].getName)
-      .asInstanceOf[DevModeSimpleServiceDiscovery]
+      .loadServiceDiscovery("lagom-dev-mode")
+      .asInstanceOf[DevModeServiceDiscovery]
 }
