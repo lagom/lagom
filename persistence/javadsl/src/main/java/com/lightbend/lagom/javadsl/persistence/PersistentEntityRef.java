@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+
 /**
  * Commands are sent to a {@link PersistentEntity} using a
  * <code>PersistentEntityRef</code>. It is retrieved with
@@ -65,6 +66,7 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
    */
   @SuppressWarnings("unchecked")
   public <Reply, Cmd extends Object & PersistentEntity.ReplyType<Reply>> CompletionStage<Reply> ask(Cmd command) {
+
     CompletionStage<Object> future = Patterns.ask(region, new CommandEnvelope(entityId, command), timeout);
 
     return future.thenCompose(result -> {
