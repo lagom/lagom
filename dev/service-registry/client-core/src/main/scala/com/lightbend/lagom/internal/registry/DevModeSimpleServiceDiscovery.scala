@@ -7,13 +7,13 @@ package com.lightbend.lagom.internal.registry
 import java.net.URI
 
 import akka.actor.ActorSystem
-import akka.discovery.SimpleServiceDiscovery._
-import akka.discovery.{ Lookup, ServiceDiscovery, SimpleServiceDiscovery }
+import akka.discovery.ServiceDiscovery._
+import akka.discovery.{ Discovery, Lookup, ServiceDiscovery }
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 
-private[lagom] class DevModeSimpleServiceDiscovery(system: ActorSystem) extends SimpleServiceDiscovery {
+private[lagom] class DevModeSimpleServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
   private val clientPromise = Promise[ServiceRegistryClient]
 
   implicit private val ec: ExecutionContext = system.dispatcher
@@ -33,7 +33,7 @@ private[lagom] class DevModeSimpleServiceDiscovery(system: ActorSystem) extends 
 
 private[lagom] object DevModeSimpleServiceDiscovery {
   def apply(system: ActorSystem): DevModeSimpleServiceDiscovery =
-    ServiceDiscovery(system)
+    Discovery(system)
       .loadServiceDiscovery(classOf[DevModeSimpleServiceDiscovery].getName)
       .asInstanceOf[DevModeSimpleServiceDiscovery]
 }

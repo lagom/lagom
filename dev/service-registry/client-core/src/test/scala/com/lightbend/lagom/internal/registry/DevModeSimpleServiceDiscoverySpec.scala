@@ -7,7 +7,7 @@ package com.lightbend.lagom.internal.registry
 import java.net.URI
 
 import akka.actor.ActorSystem
-import akka.discovery.SimpleServiceDiscovery.{ Resolved, ResolvedTarget }
+import akka.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import akka.testkit.TestKit
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.{ Matchers, WordSpecLike }

@@ -7,7 +7,7 @@ package com.lightbend.lagom.scaladsl.devmode
 import java.net.URI
 
 import akka.actor.{ ActorSystem, CoordinatedShutdown }
-import akka.discovery.SimpleServiceDiscovery
+import akka.discovery.ServiceDiscovery
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.registry.{ DevModeSimpleServiceDiscovery, ServiceRegistryClient }
 import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
@@ -106,7 +106,7 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
   // Make ServiceLocator and SimpleServiceDiscovery available to the application
   lazy val serviceLocator: ServiceLocator =
     new ServiceRegistryServiceLocator(circuitBreakersPanel, serviceRegistryClient, executionContext)
-  lazy val serviceDiscovery: SimpleServiceDiscovery =
+  lazy val serviceDiscovery: ServiceDiscovery =
     devModeSimpleServiceDiscovery
 
 }
