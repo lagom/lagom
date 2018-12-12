@@ -107,7 +107,12 @@
             </dependency>
             <dependency>
                 <groupId>com.lightbend.lagom</groupId>
-                <artifactId>service-locator-akka-discovery_${scala.binary.version}</artifactId>
+                <artifactId>lagom-javadsl-akka-service-locator_${scala.binary.version}</artifactId>
+                <version>0.0.3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.lightbend.lagom</groupId>
+                <artifactId>lagom-cluster-bootstrap_${scala.binary.version}</artifactId>
                 <version>0.0.3</version>
             </dependency>
 
@@ -115,8 +120,8 @@
     </dependencyManagement>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lagom.version>1.5.0-M3</lagom.version>
+        <lagom.version>1.4.9</lagom.version>
         <scala.binary.version>2.12</scala.binary.version>
-        <akka.management>0.18.0</akka.management>
+        <akka.management>0.19.0</akka.management>
     </properties>
 </project>
