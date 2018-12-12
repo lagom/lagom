@@ -88,7 +88,7 @@ object Dependencies {
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.3"
   private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.3.7"
-  private val h2 = "com.h2database" % "h2" % "1.4.197"
+  private val h2 = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.6.0" excludeAll (excludeSlf4j: _*)
 
   private val akkaActor = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
