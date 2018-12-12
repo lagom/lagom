@@ -84,6 +84,7 @@ object Dependencies {
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % Versions.ScalaJava8Compat
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
   private val javassist = "org.javassist" % "javassist" % "3.24.0-GA"
+  private val byteBuddy = "net.bytebuddy" % "byte-buddy" % "1.8.17"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.3"
   private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.3.7"
@@ -114,6 +115,7 @@ object Dependencies {
   private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % Versions.AkkaPersistenceCassandra
   private val akkaPersistenceCassandraLauncher = "com.typesafe.akka" %% "akka-persistence-cassandra-launcher" % Versions.AkkaPersistenceCassandra
   private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % Versions.AlpakkaKafka
+  private val kafkaClients = "org.apache.kafka" % "kafka-clients" % Versions.Kafka
 
   private val akkaHttpCore = "com.typesafe.akka" %% "akka-http-core" % Versions.AkkaHttp
   private val akkaParsing = "com.typesafe.akka" %% "akka-parsing" % Versions.AkkaHttp
@@ -141,6 +143,9 @@ object Dependencies {
   private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.8.1"
 
   private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.6" excludeAll (excludeSlf4j: _*)
+
+  private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
+  private val okio = "com.squareup.okio" % "okio" % "1.14.1"
 
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", Versions.JacksonCore)(
@@ -214,12 +219,12 @@ object Dependencies {
       "org.seleniumhq.selenium" % "selenium-api" % Versions.Selenium,
       "org.seleniumhq.selenium" % "selenium-remote-driver" % Versions.Selenium,
       "org.seleniumhq.selenium" % "selenium-firefox-driver" % Versions.Selenium,
-      "net.bytebuddy" % "byte-buddy" % "1.8.15",
+      byteBuddy,
       "org.apache.commons" % "commons-exec" % "1.3",
       "commons-logging" % "commons-logging" % "1.2",
       "com.google.code.gson" % "gson" % "2.8.4",
-      "com.squareup.okhttp3" % "okhttp" % "3.11.0",
-      "com.squareup.okio" % "okio" % "1.14.1",
+      okhttp3,
+      okio,
       "org.atteo.classindex" % "classindex" % "3.4",
       "org.seleniumhq.selenium" % "htmlunit-driver" % "2.33.3",
       "xalan" % "xalan" % "2.7.2",
@@ -265,10 +270,10 @@ object Dependencies {
       "org.lz4" % "lz4-java" % "1.4.1",
       "org.agrona" % "agrona" % "0.9.25",
       commonsLang,
-      "org.apache.kafka" % "kafka-clients" % Versions.Kafka,
+      kafkaClients,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.17",
       "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
-      "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final",
+      "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.2.Final",
       "org.immutables" % "value" % Versions.Immutables,
       javassist,
       "org.joda" % "joda-convert" % "1.9.2",
@@ -330,17 +335,19 @@ object Dependencies {
   // so we maintain it separately.
   val JpaTestWhitelist = Seq(
     "antlr" % "antlr" % "2.7.7",
-    "com.fasterxml" % "classmate" % "1.3.0",
-    "dom4j" % "dom4j" % "1.6.1",
+    "com.fasterxml" % "classmate" % "1.3.4",
+    "org.dom4j" % "dom4j" % "2.1.1",
     "javax.annotation" % "jsr250-api" % "1.0",
     "javax.el" % "el-api" % "2.2",
     "javax.enterprise" % "cdi-api" % "1.1",
     "org.apache.geronimo.specs" % "geronimo-jta_1.1_spec" % "1.1.1",
     "org.hibernate" % "hibernate-core" % Versions.HibernateCore,
-    "org.hibernate.common" % "hibernate-commons-annotations" % "5.0.1.Final",
-    "org.jboss" % "jandex" % "2.0.3.Final",
-    "org.jboss.logging" % "jboss-logging" % "3.3.0.Final",
-    "org.jboss.spec.javax.interceptor" % "jboss-interceptors-api_1.1_spec" % "1.0.0.Beta1"
+    "org.hibernate.common" % "hibernate-commons-annotations" % "5.0.4.Final",
+    "org.jboss" % "jandex" % "2.0.5.Final",
+    "org.jboss.logging" % "jboss-logging" % "3.3.2.Final",
+    "org.jboss.spec.javax.interceptor" % "jboss-interceptors-api_1.1_spec" % "1.0.0.Beta1",
+    "javax.persistence" % "javax.persistence-api" % "2.2",
+    "org.jboss.spec.javax.transaction" % "jboss-transaction-api_1.2_spec" % "1.1.1.Final"
   )
 
   // These dependencies are used by the Kafka tests, but we don't want to export them as part of our regular
@@ -353,9 +360,9 @@ object Dependencies {
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     "net.sf.jopt-simple" % "jopt-simple" % "5.0.4",
     "org.apache.commons" % "commons-math" % "2.2",
-    "org.apache.curator" % "curator-client" % "2.10.0",
-    "org.apache.curator" % "curator-framework" % "2.10.0",
-    "org.apache.curator" % "curator-test" % "2.10.0",
+    "org.apache.curator" % "curator-client" % Versions.Curator,
+    "org.apache.curator" % "curator-framework" % Versions.Curator,
+    "org.apache.curator" % "curator-test" % Versions.Curator,
     "org.apache.kafka" %% "kafka" % Versions.Kafka,
     "org.apache.zookeeper" % "zookeeper" % "3.4.13",
     "org.apache.yetus" % "audience-annotations" % "0.5.0"
@@ -449,6 +456,7 @@ object Dependencies {
     sslConfig,
     playJson,
     scalaParserCombinators,
+    scalaXml,
     akkaStream,
     akkaActor,
     akkaSlf4j,
@@ -507,7 +515,8 @@ object Dependencies {
     // Upgrades needed to match whitelist
     sslConfig,
     playJson,
-    akkaSlf4j
+    akkaSlf4j,
+    scalaXml
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
@@ -538,7 +547,14 @@ object Dependencies {
     playTest % Test,
     junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
-    scalaTest
+    scalaTest,
+
+    // Upgrades needed to match whitelist
+    okio % Test,
+    byteBuddy % Test,
+    commonsLang % Test,
+    "io.netty" % "netty-transport-native-epoll" % Versions.Netty,
+    "io.netty" % "netty-transport-native-unix-common" % Versions.Netty
   )
 
   val `integration-tests-scaladsl` = libraryDependencies ++= Seq(
@@ -546,7 +562,14 @@ object Dependencies {
     playTest % Test,
     junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
-    scalaTest
+    scalaTest,
+
+    // Upgrades needed to match whitelist
+    okio % Test,
+    byteBuddy % Test,
+    commonsLang % Test,
+    "io.netty" % "netty-transport-native-epoll" % Versions.Netty,
+    "io.netty" % "netty-transport-native-unix-common" % Versions.Netty
   )
 
   val `cluster-core` = libraryDependencies ++= Seq(
@@ -561,7 +584,7 @@ object Dependencies {
     sslConfig,
     scalaJava8Compat,
     scalaParserCombinators,
-    scalaXml % Test,
+    scalaXml,
     akkaSlf4j
   )
 
@@ -582,7 +605,7 @@ object Dependencies {
 
     // Upgrades needed to match whitelist
     sslConfig,
-    scalaXml % Test,
+    scalaXml,
     akkaSlf4j
     // explicitly depend on particular versions of jackson
   ) ++ jacksonFamily ++ Seq(
@@ -632,7 +655,8 @@ object Dependencies {
 
     // Upgrades needed to match whitelist
     sslConfig,
-    playJson
+    playJson,
+    scalaXml
   )
 
   val `persistence-testkit` = libraryDependencies ++= Seq(
@@ -662,6 +686,7 @@ object Dependencies {
     sslConfig,
     dropwizardMetricsCore,
     cassandraDriverCore,
+    scalaXml,
     "io.netty" % "netty-handler" % Versions.Netty
   )
 
@@ -682,7 +707,10 @@ object Dependencies {
     playJdbc,
 
     junit % Test,
-    h2 % Test
+    h2 % Test,
+
+    // Upgrades needed to match whitelist versions
+    scalaXml
   )
 
   val `persistence-jdbc-javadsl` = libraryDependencies ++= Seq(
@@ -694,7 +722,7 @@ object Dependencies {
   )
 
   val `persistence-jpa-javadsl` = libraryDependencies ++= Seq(
-    "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.2" % Provided,
+    "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.2.Final" % Provided,
     "org.hibernate" % "hibernate-core" % Versions.HibernateCore % Test,
     h2 % Test,
     javassist % Test
@@ -710,30 +738,36 @@ object Dependencies {
     scalaTest % Test,
 
     // Upgrades needed to match whitelist$
-    sslConfig
+    sslConfig,
+    kafkaClients
   )
 
   val `kafka-client-javadsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
 
     // Upgrades needed to match whitelist$
-    sslConfig
+    sslConfig,
+    kafkaClients
   )
 
   val `kafka-client-scaladsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
 
     // Upgrades needed to match whitelist$
-    sslConfig
+    sslConfig,
+    kafkaClients
   )
 
-  val `kafka-broker` = libraryDependencies ++= Nil
+  val `kafka-broker` = libraryDependencies ++= Seq(kafkaClients)
 
   val `kafka-broker-javadsl` = libraryDependencies ++=  Seq(
     slf4jApi,
     "log4j" % "log4j" % "1.2.17",
     scalaTest % Test,
-    junit % Test
+    junit % Test,
+
+    // Upgrades needed to match whitelist versions
+    kafkaClients
   )
 
   val `kafka-broker-scaladsl` = libraryDependencies ++= Seq(
@@ -768,6 +802,7 @@ object Dependencies {
       reactiveStreams,
       sslConfig,
       playJson,
+      scalaXml,
       scalaParserCombinators,
       akkaStream,
       akkaActor,
@@ -783,6 +818,7 @@ object Dependencies {
     reactiveStreams,
     playJson,
     scalaParserCombinators,
+    scalaXml,
     akkaStream,
     akkaActor,
     akkaSlf4j,
@@ -843,7 +879,8 @@ object Dependencies {
     akkaProfobuf,
     akkaSlf4j,
     typesafeConfig,
-    sslConfig
+    sslConfig,
+    scalaXml
   )
 
   val `service-registry-client-core` =
@@ -854,7 +891,8 @@ object Dependencies {
       akkaTestkit % Test,
       scalaTest % Test,
       // updates to match whitelist
-      akkaActor
+      akkaActor,
+      scalaJava8Compat
     )
 
   val `service-registry-client-javadsl` =
