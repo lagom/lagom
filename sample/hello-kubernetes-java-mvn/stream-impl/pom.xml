@@ -51,7 +51,11 @@
         </dependency>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
-            <artifactId>service-locator-akka-discovery_${scala.binary.version}</artifactId>
+            <artifactId>lagom-javadsl-akka-service-locator_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.lightbend.lagom</groupId>
+            <artifactId>lagom-cluster-bootstrap_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>com.lightbend.akka.discovery</groupId>
