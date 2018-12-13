@@ -28,7 +28,7 @@ jobs:
       script: bin/test-sbt-0.13
       name: "Scripted tests for sbt 0.13"
     - script: bin/test-sbt-1.0
-      name: "Scripted tests for sbt 0.13"
+      name: "Scripted tests for sbt 1"
     - script: bin/test-maven
       name: "PublishM2 and test Maven"
 before_install:
