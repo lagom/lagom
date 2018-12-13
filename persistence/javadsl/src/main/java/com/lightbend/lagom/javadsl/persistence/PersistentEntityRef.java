@@ -7,7 +7,7 @@ package com.lightbend.lagom.javadsl.persistence;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.NoSerializationVerificationNeeded;
-import akka.pattern.PatternsCS;
+import akka.pattern.Patterns;
 import akka.util.Timeout;
 import scala.concurrent.duration.FiniteDuration;
 
@@ -55,7 +55,7 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
    */
   @SuppressWarnings("unchecked")
   public <Reply, Cmd extends Object & PersistentEntity.ReplyType<Reply>> CompletionStage<Reply> ask(Cmd command) {
-    CompletionStage<Object> future = PatternsCS.ask(region, new CommandEnvelope(entityId, command), timeout);
+    CompletionStage<Object> future = Patterns.ask(region, new CommandEnvelope(entityId, command), timeout);
 
     return future.thenCompose(result -> {
       if (result instanceof Throwable) {
