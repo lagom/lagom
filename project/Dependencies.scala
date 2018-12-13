@@ -18,7 +18,7 @@ object Dependencies {
     val PlayFileWatch = "1.1.8"
 
     // Also be sure to update AkkaVersion in docs/build.sbt.
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.18")
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.19")
     val AkkaHttp = "10.1.5"
     val AkkaManagement = "0.19.0"
     // Also be sure to update ScalaVersion in docs/build.sbt.
@@ -239,8 +239,8 @@ object Dependencies {
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
       "com.zaxxer" % "HikariCP" % "3.2.0",
       "commons-codec" % "commons-codec" % "1.10",
-      "io.aeron" % "aeron-client" % "1.11.2",
-      "io.aeron" % "aeron-driver" % "1.11.2",
+      "io.aeron" % "aeron-client" % "1.12.0",
+      "io.aeron" % "aeron-driver" % "1.12.0",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.9.1",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
@@ -251,8 +251,9 @@ object Dependencies {
       "joda-time" % "joda-time" % "2.9.9",
       "junit" % "junit" % Versions.JUnit,
       "net.jodah" % "typetools" % "0.5.0",
-      "org.lz4" % "lz4-java" % "1.4.1",
-      "org.agrona" % "agrona" % "0.9.25",
+      "org.lz4" % "lz4-java" % "1.5.0",
+      "com.github.luben" % "zstd-jni" % "1.3.5-4",
+      "org.agrona" % "agrona" % "0.9.27",
       commonsLang,
       "org.apache.kafka" % "kafka-clients" % Versions.Kafka,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.17",
@@ -272,7 +273,7 @@ object Dependencies {
       scalaXml,
       "org.scala-sbt" % "test-interface" % "1.0",
       "org.typelevel" %% "macro-compat" % "1.1.1",
-      "org.xerial.snappy" % "snappy-java" % "1.1.7.1",
+      "org.xerial.snappy" % "snappy-java" % "1.1.7.2",
       "tyrex" % "tyrex" % "1.0.1",
 
       "org.scala-lang.modules"%%"scala-collection-compat"%"0.1.1",
