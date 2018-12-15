@@ -11,10 +11,10 @@ object Dependencies {
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     // Also be sure to update PlayVersion in docs/build.sbt.
-    val Play = "2.7.0-RC3"
-    val PlayJson = "2.7.0-RC1"
-    val PlayStandaloneWs = "2.0.0-RC1"
-    val Twirl = "1.4.0-RC1"
+    val Play = "2.7.0-RC8"
+    val PlayJson = "2.7.0-RC2"
+    val PlayStandaloneWs = "2.0.0-RC2"
+    val Twirl = "1.4.0-RC4"
     val PlayFileWatch = "1.1.8"
 
     // Also be sure to update AkkaVersion in docs/build.sbt.
@@ -28,21 +28,28 @@ object Dependencies {
     val SbtScala = Seq("2.10.7", "2.12.7")
     val AkkaPersistenceCassandra = "0.61"
     val AkkaPersistenceJdbc = "3.4.0"
+
+    val Disruptor = "3.3.11"
+
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
-    val ScalaTest = "3.0.4"
+    val ScalaTest = "3.0.5"
     val Jackson = "2.9.7"
     val JacksonCore = Jackson
     val JacksonDatatype = Jackson
     val JacksonDatabind = Jackson
     val Guava = "27.0-jre"
     val Maven = "3.3.9"
-    val Netty = "4.1.31.Final"
+    val Netty = "4.1.32.Final"
     val NettyReactiveStreams = "2.0.0"
-    val Kafka = "2.0.0"
+    val Kafka = "2.0.1"
     val AlpakkaKafka = "1.0-M1"
+    val Curator = "2.12.0"
+    val Immutables = "2.3.10"
+    val HibernateCore = "5.3.7.Final"
+    val PCollections = "2.2.0"
 
-    val ScalaJava8Compat = "0.8.0"
-    val ScalaXml = "1.1.0"
+    val ScalaJava8Compat = "0.9.0"
+    val ScalaXml = "1.1.1"
     val Slick = "3.2.3"
     // Also be sure to update JUnitVersion in docs/build.sbt.
     val JUnit = "4.12"
@@ -52,9 +59,11 @@ object Dependencies {
     val Slf4j = "1.7.25"
     val Logback = "1.2.3"
     // Also be sure to update Log4jVersion in docs/build.sbt.
-    val Log4j = "2.10.0"
+    val Log4j = "2.11.1"
 
     val jetty = "9.4.12.v20180830"
+
+    val Selenium = "3.141.59"
 
   }
 
@@ -76,7 +85,8 @@ object Dependencies {
   private val guava = "com.google.guava" % "guava" % Versions.Guava
   private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % Versions.ScalaJava8Compat
   private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
-  private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
+  private val javassist = "org.javassist" % "javassist" % "3.24.0-GA"
+  private val byteBuddy = "net.bytebuddy" % "byte-buddy" % "1.8.17"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
   private val typesafeConfig = "com.typesafe" % "config" % "1.3.3"
   private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.3.7"
@@ -107,6 +117,7 @@ object Dependencies {
   private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % Versions.AkkaPersistenceCassandra
   private val akkaPersistenceCassandraLauncher = "com.typesafe.akka" %% "akka-persistence-cassandra-launcher" % Versions.AkkaPersistenceCassandra
   private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % Versions.AlpakkaKafka
+  private val kafkaClients = "org.apache.kafka" % "kafka-clients" % Versions.Kafka
 
   private val akkaHttpCore = "com.typesafe.akka" %% "akka-http-core" % Versions.AkkaHttp
   private val akkaParsing = "com.typesafe.akka" %% "akka-parsing" % Versions.AkkaHttp
@@ -128,10 +139,15 @@ object Dependencies {
   private val playFunctional = "com.typesafe.play" %% "play-functional" % Versions.PlayJson excludeAll (excludeSlf4j: _*)
   private val playFileWatch = "com.lightbend.play" %% "play-file-watch" % Versions.PlayFileWatch excludeAll (excludeSlf4j: _*)
 
-  private val junit = "junit" % "junit" % Versions.JUnit
-  private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.8"
+  private val pcollections = "org.pcollections" % "pcollections" % Versions.PCollections
 
-  private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.2" excludeAll (excludeSlf4j: _*)
+  private val junit = "junit" % "junit" % Versions.JUnit
+  private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.8.1"
+
+  private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.6" excludeAll (excludeSlf4j: _*)
+
+  private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
+  private val okio = "com.squareup.okio" % "okio" % "1.14.1"
 
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", Versions.JacksonCore)(
@@ -174,7 +190,7 @@ object Dependencies {
       "javax.xml.bind" % "jaxb-api" % "2.3.1",
       h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
-      "com.lmax" % "disruptor" % "3.3.6",
+      "com.lmax" % "disruptor" % Versions.Disruptor,
       "com.novocode" % "junit-interface" % Versions.JUnitInterface,
       typesafeConfig,
       sslConfig,
@@ -200,19 +216,19 @@ object Dependencies {
       "com.typesafe.play" % "shaded-oauth" % Versions.PlayStandaloneWs,
       playTest,
       // dependencies added by play-test
-      "org.fluentlenium" % "fluentlenium-core" % "3.7.0",
-      "org.seleniumhq.selenium" % "selenium-support" % "3.14.0",
-      "org.seleniumhq.selenium" % "selenium-api" % "3.14.0",
-      "org.seleniumhq.selenium" % "selenium-remote-driver" % "3.14.0",
-      "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.14.0",
-      "net.bytebuddy" % "byte-buddy" % "1.8.15",
+      "org.fluentlenium" % "fluentlenium-core" % "3.7.1",
+      "org.seleniumhq.selenium" % "selenium-support" % Versions.Selenium,
+      "org.seleniumhq.selenium" % "selenium-api" % Versions.Selenium,
+      "org.seleniumhq.selenium" % "selenium-remote-driver" % Versions.Selenium,
+      "org.seleniumhq.selenium" % "selenium-firefox-driver" % Versions.Selenium,
+      byteBuddy,
       "org.apache.commons" % "commons-exec" % "1.3",
       "commons-logging" % "commons-logging" % "1.2",
       "com.google.code.gson" % "gson" % "2.8.4",
-      "com.squareup.okhttp3" % "okhttp" % "3.10.0",
-      "com.squareup.okio" % "okio" % "1.14.1",
+      okhttp3,
+      okio,
       "org.atteo.classindex" % "classindex" % "3.4",
-      "org.seleniumhq.selenium" % "htmlunit-driver" % "2.33.0",
+      "org.seleniumhq.selenium" % "htmlunit-driver" % "2.33.3",
       "xalan" % "xalan" % "2.7.2",
       "xalan" % "serializer" % "2.7.2",
       "org.apache.commons" % "commons-text" % "1.4",
@@ -256,16 +272,16 @@ object Dependencies {
       "org.lz4" % "lz4-java" % "1.4.1",
       "org.agrona" % "agrona" % "0.9.27",
       commonsLang,
-      "org.apache.kafka" % "kafka-clients" % Versions.Kafka,
+      kafkaClients,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.17",
       "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
-      "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final",
-      "org.immutables" % "value" % "2.3.2",
+      "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.2.Final",
+      "org.immutables" % "value" % Versions.Immutables,
       javassist,
       "org.joda" % "joda-convert" % "1.9.2",
       "org.hamcrest" % "hamcrest-core" % "1.3",
       "org.lmdbjava" % "lmdbjava" % "0.6.1",
-      "org.pcollections" % "pcollections" % "2.1.2",
+      pcollections,
       reactiveStreams,
       "org.scalactic" %% "scalactic" % Versions.ScalaTest,
       scalaTest,
@@ -277,10 +293,10 @@ object Dependencies {
       "org.xerial.snappy" % "snappy-java" % "1.1.7.1",
       "tyrex" % "tyrex" % "1.0.1",
 
-      "org.scala-lang.modules"%%"scala-collection-compat"%"0.1.1",
-      "com.google.guava"%"failureaccess"%"1.0",
-      "com.google.guava"%"listenablefuture"%"9999.0-empty-to-avoid-conflict-with-guava",
-      "javax.activation"%"javax.activation-api"%"1.2.0"
+      "org.scala-lang.modules" %% "scala-collection-compat" % "0.1.1",
+      "com.google.guava" % "failureaccess" % "1.0",
+      "com.google.guava" % "listenablefuture" % "9999.0-empty-to-avoid-conflict-with-guava",
+      "javax.activation" % "javax.activation-api" % "1.2.0"
 
 
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
@@ -321,17 +337,19 @@ object Dependencies {
   // so we maintain it separately.
   val JpaTestWhitelist = Seq(
     "antlr" % "antlr" % "2.7.7",
-    "com.fasterxml" % "classmate" % "1.3.0",
-    "dom4j" % "dom4j" % "1.6.1",
+    "com.fasterxml" % "classmate" % "1.3.4",
+    "org.dom4j" % "dom4j" % "2.1.1",
     "javax.annotation" % "jsr250-api" % "1.0",
     "javax.el" % "el-api" % "2.2",
     "javax.enterprise" % "cdi-api" % "1.1",
     "org.apache.geronimo.specs" % "geronimo-jta_1.1_spec" % "1.1.1",
-    "org.hibernate" % "hibernate-core" % "5.2.5.Final",
-    "org.hibernate.common" % "hibernate-commons-annotations" % "5.0.1.Final",
-    "org.jboss" % "jandex" % "2.0.3.Final",
-    "org.jboss.logging" % "jboss-logging" % "3.3.0.Final",
-    "org.jboss.spec.javax.interceptor" % "jboss-interceptors-api_1.1_spec" % "1.0.0.Beta1"
+    "org.hibernate" % "hibernate-core" % Versions.HibernateCore,
+    "org.hibernate.common" % "hibernate-commons-annotations" % "5.0.4.Final",
+    "org.jboss" % "jandex" % "2.0.5.Final",
+    "org.jboss.logging" % "jboss-logging" % "3.3.2.Final",
+    "org.jboss.spec.javax.interceptor" % "jboss-interceptors-api_1.1_spec" % "1.0.0.Beta1",
+    "javax.persistence" % "javax.persistence-api" % "2.2",
+    "org.jboss.spec.javax.transaction" % "jboss-transaction-api_1.2_spec" % "1.1.1.Final"
   )
 
   // These dependencies are used by the Kafka tests, but we don't want to export them as part of our regular
@@ -344,9 +362,9 @@ object Dependencies {
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     "net.sf.jopt-simple" % "jopt-simple" % "5.0.4",
     "org.apache.commons" % "commons-math" % "2.2",
-    "org.apache.curator" % "curator-client" % "2.10.0",
-    "org.apache.curator" % "curator-framework" % "2.10.0",
-    "org.apache.curator" % "curator-test" % "2.10.0",
+    "org.apache.curator" % "curator-client" % Versions.Curator,
+    "org.apache.curator" % "curator-framework" % Versions.Curator,
+    "org.apache.curator" % "curator-test" % Versions.Curator,
     "org.apache.kafka" %% "kafka" % Versions.Kafka,
     "org.apache.zookeeper" % "zookeeper" % "3.4.13",
     "org.apache.yetus" % "audience-annotations" % "0.5.0"
@@ -378,7 +396,7 @@ object Dependencies {
   val `api-javadsl` = libraryDependencies ++= Seq(
     playJava,
     playGuice,
-    "org.pcollections" % "pcollections" % "2.1.2",
+    pcollections,
 
     // Upgrades needed to match whitelist
     sslConfig,
@@ -394,7 +412,7 @@ object Dependencies {
     scalaTest % Test
   )
 
-  val immutables = libraryDependencies += "org.immutables" % "value" % "2.3.2"
+  val immutables = libraryDependencies += "org.immutables" % "value" % Versions.Immutables
 
   val jackson = libraryDependencies ++= Seq(
     "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % Versions.Jackson,
@@ -405,6 +423,7 @@ object Dependencies {
 
     // Upgrades needed to match whitelist
     sslConfig,
+    pcollections,
 
     akkaTestkit % Test,
     scalaTest % Test,
@@ -421,6 +440,7 @@ object Dependencies {
     // Upgrades needed to match whitelist
     scalaOrganization.value % "scala-reflect" % scalaVersion.value,
     scalaJava8Compat,
+    pcollections,
     scalaXml % Test,
     scalaParserCombinators % Test
     // explicitly depend on particular versions of jackson
@@ -438,6 +458,7 @@ object Dependencies {
     sslConfig,
     playJson,
     scalaParserCombinators,
+    scalaXml,
     akkaStream,
     akkaActor,
     akkaSlf4j,
@@ -496,7 +517,8 @@ object Dependencies {
     // Upgrades needed to match whitelist
     sslConfig,
     playJson,
-    akkaSlf4j
+    akkaSlf4j,
+    scalaXml
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
@@ -527,7 +549,14 @@ object Dependencies {
     playTest % Test,
     junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
-    scalaTest
+    scalaTest,
+
+    // Upgrades needed to match whitelist
+    okio % Test,
+    byteBuddy % Test,
+    commonsLang % Test,
+    "io.netty" % "netty-transport-native-epoll" % Versions.Netty,
+    "io.netty" % "netty-transport-native-unix-common" % Versions.Netty
   )
 
   val `integration-tests-scaladsl` = libraryDependencies ++= Seq(
@@ -535,7 +564,14 @@ object Dependencies {
     playTest % Test,
     junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
-    scalaTest
+    scalaTest,
+
+    // Upgrades needed to match whitelist
+    okio % Test,
+    byteBuddy % Test,
+    commonsLang % Test,
+    "io.netty" % "netty-transport-native-epoll" % Versions.Netty,
+    "io.netty" % "netty-transport-native-unix-common" % Versions.Netty
   )
 
   val `cluster-core` = libraryDependencies ++= Seq(
@@ -550,7 +586,7 @@ object Dependencies {
     sslConfig,
     scalaJava8Compat,
     scalaParserCombinators,
-    scalaXml % Test,
+    scalaXml,
     akkaSlf4j
   )
 
@@ -571,7 +607,7 @@ object Dependencies {
 
     // Upgrades needed to match whitelist
     sslConfig,
-    scalaXml % Test,
+    scalaXml,
     akkaSlf4j
     // explicitly depend on particular versions of jackson
   ) ++ jacksonFamily ++ Seq(
@@ -621,13 +657,15 @@ object Dependencies {
 
     // Upgrades needed to match whitelist
     sslConfig,
-    playJson
+    playJson,
+    scalaXml
   )
 
   val `persistence-testkit` = libraryDependencies ++= Seq(
     akkaPersistence,
     akkaTestkit,
-    slf4jApi
+    slf4jApi,
+    scalaJava8Compat
   )
 
   val `persistence-javadsl` = libraryDependencies ++= Seq(
@@ -650,6 +688,7 @@ object Dependencies {
     sslConfig,
     dropwizardMetricsCore,
     cassandraDriverCore,
+    scalaXml,
     "io.netty" % "netty-handler" % Versions.Netty
   )
 
@@ -670,7 +709,10 @@ object Dependencies {
     playJdbc,
 
     junit % Test,
-    h2 % Test
+    h2 % Test,
+
+    // Upgrades needed to match whitelist versions
+    scalaXml
   )
 
   val `persistence-jdbc-javadsl` = libraryDependencies ++= Seq(
@@ -682,8 +724,8 @@ object Dependencies {
   )
 
   val `persistence-jpa-javadsl` = libraryDependencies ++= Seq(
-    "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final" % Provided,
-    "org.hibernate" % "hibernate-core" % "5.2.5.Final" % Test,
+    "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.2.Final" % Provided,
+    "org.hibernate" % "hibernate-core" % Versions.HibernateCore % Test,
     h2 % Test,
     javassist % Test
   )
@@ -698,30 +740,36 @@ object Dependencies {
     scalaTest % Test,
 
     // Upgrades needed to match whitelist$
-    sslConfig
+    sslConfig,
+    kafkaClients
   )
 
   val `kafka-client-javadsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
 
     // Upgrades needed to match whitelist$
-    sslConfig
+    sslConfig,
+    kafkaClients
   )
 
   val `kafka-client-scaladsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
 
     // Upgrades needed to match whitelist$
-    sslConfig
+    sslConfig,
+    kafkaClients
   )
 
-  val `kafka-broker` = libraryDependencies ++= Nil
+  val `kafka-broker` = libraryDependencies ++= Seq(kafkaClients)
 
   val `kafka-broker-javadsl` = libraryDependencies ++=  Seq(
     slf4jApi,
     "log4j" % "log4j" % "1.2.17",
     scalaTest % Test,
-    junit % Test
+    junit % Test,
+
+    // Upgrades needed to match whitelist versions
+    kafkaClients
   )
 
   val `kafka-broker-scaladsl` = libraryDependencies ++= Seq(
@@ -742,19 +790,21 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProfobuf
+    akkaProfobuf,
+    scalaXml
   ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % Versions.Logback)
 
   val log4j2 = libraryDependencies ++= Seq(slf4jApi) ++
     log4jModules ++
     Seq(
-      "com.lmax" % "disruptor" % "3.3.6",
+      "com.lmax" % "disruptor" % Versions.Disruptor,
       play,
 
       // Upgrades needed to match whitelist versions
       reactiveStreams,
       sslConfig,
       playJson,
+      scalaXml,
       scalaParserCombinators,
       akkaStream,
       akkaActor,
@@ -770,6 +820,7 @@ object Dependencies {
     reactiveStreams,
     playJson,
     scalaParserCombinators,
+    scalaXml,
     akkaStream,
     akkaActor,
     akkaSlf4j,
@@ -830,7 +881,8 @@ object Dependencies {
     akkaProfobuf,
     akkaSlf4j,
     typesafeConfig,
-    sslConfig
+    sslConfig,
+    scalaXml
   )
 
   val `service-registry-client-core` =
@@ -841,7 +893,8 @@ object Dependencies {
       akkaTestkit % Test,
       scalaTest % Test,
       // updates to match whitelist
-      akkaActor
+      akkaActor,
+      scalaJava8Compat
     )
 
   val `service-registry-client-javadsl` =
@@ -872,8 +925,8 @@ object Dependencies {
     // Note that curator 3.x is only compatible with zookeeper 3.5.x. Kafka currently uses zookeeper 3.4, hence we have
     // to use curator 2.x, which is compatible with zookeeper 3.4 (see the notice in
     // http://curator.apache.org/index.html - make sure to scroll to the bottom)
-    "org.apache.curator" % "curator-framework" % "2.10.0",
-    "org.apache.curator" % "curator-test" % "2.10.0",
+    "org.apache.curator" % "curator-framework" % Versions.Curator,
+    "org.apache.curator" % "curator-test" % Versions.Curator,
     javassist,
     scalaJava8Compat,
     scalaTest % Test
