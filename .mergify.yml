@@ -1,0 +1,34 @@
+
+pull_request_rules:
+  - name: Merge PRs that are ready
+    conditions:
+      - "#approved-reviews-by>=1"
+      - "#changes-requested-reviews-by=0"
+      - label=merge-when-green
+      - label!=block-merge
+    actions:
+      merge:
+        method: merge
+        strict: smart
+
+  - name: Delete the merge-when-green label after merge
+    conditions:
+      - merged
+      - label=merge-when-green
+    actions:
+      label:
+        remove: [merge-when-green]
+
+  - name: Delete the PR branch after merge
+    conditions:
+      - merged
+    actions:
+      delete_head_branch: {}
+
+  - name: auto add wip
+    conditions:
+      # match a few flavours of wip
+      - title~=^(\[wip\]( |:) |\[WIP\]( |:) |wip( |:) |WIP( |:)).*
+    actions:
+      label:
+        add: ["block-merge"]
