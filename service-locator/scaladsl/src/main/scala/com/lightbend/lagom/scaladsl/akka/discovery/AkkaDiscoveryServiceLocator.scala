@@ -5,16 +5,21 @@ import java.net.URI
 import akka.actor.ActorSystem
 import akka.discovery.ServiceDiscovery
 import com.lightbend.lagom.internal.client.AkkaDiscoveryHelper
-import com.lightbend.lagom.scaladsl.api.{Descriptor, ServiceLocator}
-import com.lightbend.lagom.scaladsl.client.{CircuitBreakerComponents, CircuitBreakersPanel, CircuitBreakingServiceLocator}
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.ServiceLocator
+import com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents
+import com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel
+import com.lightbend.lagom.scaladsl.client.CircuitBreakingServiceLocator
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 /**
   * Akka discovery based implementation of the [[ServiceLocator]].
   */
-class AkkaDiscoveryServiceLocator(circuitBreakers: CircuitBreakersPanel, actorSystem: ActorSystem)(implicit ec: ExecutionContext)
-  extends CircuitBreakingServiceLocator(circuitBreakers) {
+class AkkaDiscoveryServiceLocator(circuitBreakers: CircuitBreakersPanel, actorSystem: ActorSystem)(
+    implicit ec: ExecutionContext)
+    extends CircuitBreakingServiceLocator(circuitBreakers) {
 
   private val helper: AkkaDiscoveryHelper = new AkkaDiscoveryHelper(
     actorSystem.settings.config.getConfig("lagom.akka.discovery"),

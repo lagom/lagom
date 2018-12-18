@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2016-2018 Lightbend Inc. <https://www.lightbend.com>
  */
- 
- package com.lightbend.lagom.internal.client
+
+package com.lightbend.lagom.internal.client
 
 import java.util.regex.Pattern
 
@@ -28,8 +28,9 @@ private[lagom] class ServiceNameParser(config: Config) {
         if (matcher.matches()) {
           val serviceName = matcher.group("service")
           if (serviceName == null || serviceName.isEmpty) {
-            throw new IllegalArgumentException("Service lookup regex did not contain a named capturing group called " +
-              "'service', or that group matched an empty string.")
+            throw new IllegalArgumentException(
+              "Service lookup regex did not contain a named capturing group called " +
+                "'service', or that group matched an empty string.")
           }
 
           def groupOrElse(group: String, default: Option[String]) =
