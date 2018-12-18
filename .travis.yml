@@ -2,7 +2,7 @@ sudo: false
 language: scala
 jdk: oraclejdk8
 scala: 2.12.7
-
+script: sbt scalafmtCheck test:scalafmtCheck test
 cache:
   directories:
     - $HOME/.ivy2/cache
