@@ -5,6 +5,7 @@
 package com.lightbend.lagom.javadsl.akka.discovery;
 
 import akka.actor.ActorSystem;
+import akka.discovery.Discovery;
 import akka.discovery.ServiceDiscovery;
 import com.lightbend.lagom.internal.client.AkkaDiscoveryHelper;
 import com.lightbend.lagom.javadsl.api.Descriptor;
@@ -29,8 +30,9 @@ public class AkkaDiscoveryServiceLocator extends CircuitBreakingServiceLocator {
     @Inject
     public AkkaDiscoveryServiceLocator(CircuitBreakersPanel circuitBreakersPanel, ActorSystem actorSystem) {
         super(circuitBreakersPanel);
-        this.helper = new AkkaDiscoveryHelper(actorSystem.settings().config().getConfig("lagom.akka.discovery"),
-            ServiceDiscovery.get(actorSystem).discovery(), actorSystem.dispatcher());
+        this.helper = new AkkaDiscoveryHelper(
+                actorSystem.settings().config().getConfig("lagom.akka.discovery"),
+                Discovery.get(actorSystem).discovery(), actorSystem.dispatcher());
     }
 
     @Override

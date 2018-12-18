@@ -3,6 +3,7 @@ package com.lightbend.lagom.scaladsl.akka.discovery
 import java.net.URI
 
 import akka.actor.ActorSystem
+import akka.discovery.Discovery
 import akka.discovery.ServiceDiscovery
 import com.lightbend.lagom.internal.client.AkkaDiscoveryHelper
 import com.lightbend.lagom.scaladsl.api.Descriptor
@@ -23,7 +24,7 @@ class AkkaDiscoveryServiceLocator(circuitBreakers: CircuitBreakersPanel, actorSy
 
   private val helper: AkkaDiscoveryHelper = new AkkaDiscoveryHelper(
     actorSystem.settings.config.getConfig("lagom.akka.discovery"),
-    ServiceDiscovery(actorSystem).discovery
+    Discovery(actorSystem).discovery
   )
 
   override def locate(name: String, serviceCall: Descriptor.Call[_, _]): Future[Option[URI]] =

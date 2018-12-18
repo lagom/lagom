@@ -6,9 +6,10 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 import akka.discovery.Lookup
-import akka.discovery.SimpleServiceDiscovery
-import akka.discovery.SimpleServiceDiscovery.ResolvedTarget
+import akka.discovery.ServiceDiscovery
+import akka.discovery.ServiceDiscovery.ResolvedTarget
 import com.typesafe.config.Config
+import com.typesafe.config.ConfigObject
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -19,22 +20,25 @@ import scala.collection.JavaConverters._
 /**
   * Helper for implementing Akka Discovery based service locators in Lagom.
   */
-private[lagom] class AkkaDiscoveryHelper(config: Config, serviceDiscovery: SimpleServiceDiscovery)(
+private[lagom] class AkkaDiscoveryHelper(config: Config, serviceDiscovery: ServiceDiscovery)(
     implicit ec: ExecutionContext) {
+
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val serviceNameParser = new ServiceNameParser(config)
   private val lookupTimeout = config.getDuration("lookup-timeout", TimeUnit.MILLISECONDS).millis
+
   private val portNameSchemeMapping = {
     val mappings = config.getConfig("port-name-scheme-mapping")
     config
       .getObject("port-name-scheme-mapping")
       .asScala
       .map {
-        case (key, value) => key -> mappings.getString(key)
+        case (key, _) => key -> mappings.getString(key)
       }
       .toMap
   }
+
   private val defaultScheme = Some(config.getString("defaults.scheme")).filter(_.nonEmpty)
 
   def locateAll(name: String): Future[Seq[URI]] = {
@@ -50,7 +54,7 @@ private[lagom] class AkkaDiscoveryHelper(config: Config, serviceDiscovery: Simpl
   def locate(name: String): Future[Option[URI]] = locateAll(name).map(selectRandomURI)
 
   private def toURI(resolvedTarget: ResolvedTarget, lookup: Lookup): URI = {
-    // it's safe to call 'get' here, those have already been validated in #filterValid
+
     val port = resolvedTarget.port.getOrElse(-1)
 
     val scheme = lookup.portName
