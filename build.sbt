@@ -19,7 +19,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "lagom-akka-discovery-root"
   )
-  .aggregate(serviceLocatorCore, serviceLocatorJavadsl, serviceLocatorScaladsl, bootstrap)
+  .aggregate(serviceLocatorCore, serviceLocatorJavadsl, serviceLocatorScaladsl)
 
 lazy val serviceLocatorCore = (project in file("service-locator/core"))
   .settings(commonSettings)
@@ -42,9 +42,3 @@ lazy val serviceLocatorScaladsl = (project in file("service-locator/scaladsl"))
     libraryDependencies ++= Dependencies.serviceLocatorScaladsl
   ).dependsOn(serviceLocatorCore)
 
-lazy val bootstrap = (project in file("bootstrap"))
-  .settings(commonSettings)
-  .settings(
-    name := "lagom-cluster-bootstrap",
-    libraryDependencies ++= Dependencies.bootstrap
-  )
