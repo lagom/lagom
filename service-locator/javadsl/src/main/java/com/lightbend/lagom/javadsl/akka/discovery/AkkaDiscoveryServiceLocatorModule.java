@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2018 Lightbend Inc. <https://www.lightbend.com>
+ */
+
 package com.lightbend.lagom.javadsl.akka.discovery;
 
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
