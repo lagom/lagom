@@ -48,7 +48,7 @@ db.default {
   url = "jdbc:postgresql://database.example.com/lagom-db"
 }
 
-jdbc-defaults.slick.profile = "slick.jdbc.PostgresProfile$"
+lagom.persistence.read-side.jdbc.slick.profile = "slick.jdbc.PostgresProfile$"
 ```
 
 ## Table creation
