@@ -5,20 +5,12 @@ pull_request_rules:
       - status-success=continuous-integration/travis-ci/pr
       - "#approved-reviews-by>=1"
       - "#changes-requested-reviews-by=0"
-      - label=merge-when-green
+      - "#review-requested=0"
       - label!=block-merge
     actions:
       merge:
         method: squash
         strict: smart
-
-  - name: Delete the merge-when-green label after merge
-    conditions:
-      - merged
-      - label=merge-when-green
-    actions:
-      label:
-        remove: [merge-when-green]
 
   - name: Delete the PR branch after merge
     conditions:
