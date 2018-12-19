@@ -1,7 +1,7 @@
 package docs.home.actor;
 
 //#service-impl
-import static akka.pattern.PatternsCS.ask;
+import static akka.pattern.Patterns.ask;
 
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 
