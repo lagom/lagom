@@ -2,7 +2,24 @@ sudo: false
 language: scala
 jdk: oraclejdk8
 scala: 2.12.7
-script: sbt  headerCheck test:headerCheck scalafmtCheck test:scalafmtCheck test
+
+# make sure to fetch enough commits, so that git describe still works
+git:
+  depth: false
+
+jobs:
+  include:
+    - stage: tests
+      script: sbt headerCheck test:headerCheck scalafmtCheck test:scalafmtCheck test
+    - stage: publish
+      script: sbt +publish
+
+stages:
+  - name: tests
+    if: NOT tag =~ ^v
+  - name: publish
+    if: repo = lagom/akka-discovery-service-locator AND tag =~ ^v
+
 cache:
   directories:
     - $HOME/.ivy2/cache
