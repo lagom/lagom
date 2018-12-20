@@ -5,13 +5,12 @@
 package com.lightbend.lagom.registry.impl;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import akka.actor.ActorRef;
 import akka.pattern.Patterns;
-import akka.util.Timeout;
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry;
@@ -22,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
 import scala.compat.java8.OptionConverters;
-import scala.concurrent.duration.Duration;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -35,7 +33,7 @@ public class ServiceRegistryImpl implements ServiceRegistry {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRegistryImpl.class);
 
-	private final Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
+	private final Duration timeout = Duration.ofSeconds(5);
 	private final ActorRef registry;
 
 	@Inject
