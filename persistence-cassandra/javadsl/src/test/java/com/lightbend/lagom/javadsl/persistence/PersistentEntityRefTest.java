@@ -18,7 +18,6 @@ import com.lightbend.lagom.javadsl.persistence.TestEntity.Cmd;
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt;
 import com.lightbend.lagom.javadsl.persistence.TestEntity.State;
 import java.io.File;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -111,7 +110,8 @@ public class PersistentEntityRefTest {
 
   @Test(expected = AskTimeoutException.class)
   public void testAskTimeout() throws Throwable {
-    PersistentEntityRef<Cmd> ref = registry().refFor(TestEntity.class, "10").withAskTimeout(Duration.ofMillis(1));
+    PersistentEntityRef<Cmd> ref = registry().refFor(TestEntity.class, "10").withAskTimeout(
+        FiniteDuration.create(1, MILLISECONDS));
 
     List<CompletionStage<Evt>> replies = new ArrayList<>();
     for (int i = 0; i < 100; i++) {
