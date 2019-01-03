@@ -41,8 +41,8 @@ object Dependencies {
     val Maven = "3.3.9"
     val Netty = "4.1.32.Final"
     val NettyReactiveStreams = "2.0.0"
-    val Kafka = "2.0.1"
-    val AlpakkaKafka = "1.0-M1"
+    val Kafka = "2.1.0"
+    val AlpakkaKafka = "1.0-RC1"
     val Curator = "2.12.0"
     val Immutables = "2.3.10"
     val HibernateCore = "5.3.7.Final"
@@ -269,7 +269,8 @@ object Dependencies {
       "joda-time" % "joda-time" % "2.9.9",
       "junit" % "junit" % Versions.JUnit,
       "net.jodah" % "typetools" % "0.5.0",
-      "org.lz4" % "lz4-java" % "1.4.1",
+      "org.lz4" % "lz4-java" % "1.5.0",
+      "com.github.luben" % "zstd-jni" % "1.3.5-4",
       "org.agrona" % "agrona" % "0.9.27",
       commonsLang,
       kafkaClients,
@@ -290,7 +291,7 @@ object Dependencies {
       scalaXml,
       "org.scala-sbt" % "test-interface" % "1.0",
       "org.typelevel" %% "macro-compat" % "1.1.1",
-      "org.xerial.snappy" % "snappy-java" % "1.1.7.1",
+      "org.xerial.snappy" % "snappy-java" % "1.1.7.2",
       "tyrex" % "tyrex" % "1.0.1",
 
       "org.scala-lang.modules" %% "scala-collection-compat" % "0.1.1",
