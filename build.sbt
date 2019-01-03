@@ -1220,8 +1220,8 @@ def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++
   Seq(
     scripted := scripted.tag(Tags.Test).evaluated,
     scriptedLaunchOpts ++= Seq(
-      "-Xmx768m",
-      "-XX:MaxMetaspaceSize=384m",
+      "-Xmx512m",
+      "-XX:MaxMetaspaceSize=512m",
       "-Dscala.version=" + sys.props.get("scripted.scala.version").getOrElse((scalaVersion in `reloadable-server`).value)
     )
   )
