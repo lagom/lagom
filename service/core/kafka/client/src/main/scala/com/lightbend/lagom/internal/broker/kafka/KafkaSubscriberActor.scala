@@ -8,8 +8,8 @@ import java.net.URI
 
 import akka.Done
 import akka.actor.{ Actor, ActorLogging, Props, Status }
-import akka.kafka.ConsumerMessage.{ CommittableOffset, CommittableOffsetBatch }
-import akka.kafka.scaladsl.{ Consumer => ReactiveConsumer }
+import akka.kafka.ConsumerMessage.CommittableOffset
+import akka.kafka.scaladsl.{ Committer, Consumer => ReactiveConsumer }
 import akka.kafka.{ AutoSubscription, ConsumerSettings }
 import akka.pattern.pipe
 import akka.stream.scaladsl.{ Flow, GraphDSL, Keep, Sink, Source, Unzip, Zip }
@@ -105,10 +105,8 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
       val zip = builder.add(Zip[CommittableOffset, Done])
       val committer = {
         val commitFlow = Flow[(CommittableOffset, Done)]
-          .groupedWithin(consumerConfig.batchingSize, consumerConfig.batchingInterval)
-          .map(group => group.foldLeft(CommittableOffsetBatch.empty) { (batch, elem) => batch.updated(elem._1) })
-          // parallelism set to 3 for no good reason other than because the akka team has seen good throughput with this value
-          .mapAsync(parallelism = 3)(_.commitScaladsl())
+          .map(_._1)
+          .via(Committer.flow(consumerConfig.committerSettings))
         builder.add(commitFlow)
       }
       // To allow the user flow to do its own batching, the offset side of the flow needs to effectively buffer

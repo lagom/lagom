@@ -37,7 +37,7 @@ private[lagom] class ScaladslKafkaSubscriber[Payload, SubscriberPayload](kafkaCo
 
   private lazy val consumerId = KafkaClientIdSequenceNumber.getAndIncrement
 
-  private def consumerConfig = ConsumerConfig(system.settings.config)
+  private def consumerConfig = ConsumerConfig(system)
 
   @throws(classOf[IllegalArgumentException])
   override def withGroupId(groupIdName: String): Subscriber[SubscriberPayload] = {

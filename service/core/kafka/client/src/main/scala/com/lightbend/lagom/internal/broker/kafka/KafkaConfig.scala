@@ -6,6 +6,8 @@ package com.lightbend.lagom.internal.broker.kafka
 
 import java.util.concurrent.TimeUnit
 
+import akka.actor.ActorSystem
+import akka.kafka.CommitterSettings
 import com.typesafe.config.Config
 
 import scala.concurrent.duration.{ FiniteDuration, _ }
@@ -61,24 +63,26 @@ object ProducerConfig {
 
 sealed trait ConsumerConfig extends ClientConfig {
   def offsetBuffer: Int
-  def batchingSize: Int
-  def batchingInterval: FiniteDuration
+  def committerSettings: CommitterSettings
 }
 
 object ConsumerConfig {
-  def apply(conf: Config): ConsumerConfig =
-    new ConsumerConfigImpl(conf.getConfig("lagom.broker.kafka.client.consumer"))
+  val configPath = "lagom.broker.kafka.client.consumer"
 
-  private final class ConsumerConfigImpl(conf: Config)
+  def apply(system: ActorSystem): ConsumerConfig =
+    // reads Alpakka defaults from Alpakka Kafka's reference.conf and overwrites with Lagom's values
+    new ConsumerConfigImpl(system.settings.config.getConfig(configPath), CommitterSettings(system))
+
+  private final class ConsumerConfigImpl(conf: Config, alpakkaCommitterSettings: CommitterSettings)
     extends ClientConfig.ClientConfigImpl(conf)
     with ConsumerConfig {
 
     override val offsetBuffer: Int = conf.getInt("offset-buffer")
-    override val batchingSize: Int = conf.getInt("batching-size")
-    override val batchingInterval: FiniteDuration = {
-      val interval = conf.getDuration("batching-interval")
-      FiniteDuration(interval.toMillis(), TimeUnit.MILLISECONDS)
-    }
+
+    override val committerSettings: CommitterSettings = alpakkaCommitterSettings
+      .withMaxBatch(conf.getInt("batching-size"))
+      .withMaxInterval(conf.getDuration("batching-interval"))
+      .withParallelism(conf.getInt("batching-parallelism"))
   }
 }
 
