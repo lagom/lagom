@@ -7,14 +7,14 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.20"
-  val PlayJsonVersion = "2.6.10"
-  val PlayStandaloneWsVersion = "1.1.10"
+  val PlayVersion = "2.6.21-SNAPSHOT"
+  val PlayJsonVersion = "2.6.12"
+  val PlayStandaloneWsVersion = "1.1.12"
   val TwirlVersion = "1.3.15"
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.18"
+  val AkkaVersion = "2.5.19"
   val AkkaHttpVersion = "10.0.14"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.7", "2.11.12")
@@ -26,10 +26,10 @@ object Dependencies {
   val JacksonVersion = "2.8.11"
   val JacksonCoreVersion = JacksonVersion
   val JacksonDatatypeVersion = JacksonVersion
-  val JacksonDatabindVersion = "2.8.11.1"
+  val JacksonDatabindVersion = "2.8.11.3"
   val GuavaVersion = "22.0"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.29.Final"
+  val NettyVersion = "4.1.32.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
   val KafkaVersion = "0.11.0.1"
   val AkkaStreamKafkaVersion = "0.18"
@@ -151,7 +151,8 @@ object Dependencies {
       "com.google.inject" % "guice" % "4.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "4.1.0",
       "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
-      "javax.xml.bind" % "jaxb-api" % "2.3.0",
+      "javax.xml.bind" % "jaxb-api" % "2.3.1",
+      "javax.activation" % "javax.activation-api" % "1.2.0",
       h2,
       "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
       "com.lmax" % "disruptor" % "3.3.6",
@@ -165,7 +166,7 @@ object Dependencies {
       akkaPersistenceCassandraLauncher,
       "com.typesafe.netty" % "netty-reactive-streams" % NettyReactiveStreamsVersion,
       "com.typesafe.netty" % "netty-reactive-streams-http" % NettyReactiveStreamsVersion,
-      "com.typesafe.play" %% "cachecontrol" % "1.1.3",
+      "com.typesafe.play" %% "cachecontrol" % "1.1.4",
       playJson,
       playFunctional,
       // play client libs
@@ -182,9 +183,9 @@ object Dependencies {
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.7.9",
-      "commons-codec" % "commons-codec" % "1.10",
-      "io.aeron" % "aeron-client" % "1.11.2",
-      "io.aeron" % "aeron-driver" % "1.11.2",
+      "commons-codec" % "commons-codec" % "1.11",
+      "io.aeron" % "aeron-client" % "1.12.0",
+      "io.aeron" % "aeron-driver" % "1.12.0",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.7.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
@@ -196,7 +197,7 @@ object Dependencies {
       "junit" % "junit" % JUnitVersion,
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
-      "org.agrona" % "agrona" % "0.9.25",
+      "org.agrona" % "agrona" % "0.9.27",
       "org.apache.commons" % "commons-lang3" % "3.6",
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
