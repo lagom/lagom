@@ -24,8 +24,8 @@ object Dependencies {
     val Aeron = "1.12.0"
 
     // Also be sure to update ScalaVersion in docs/build.sbt.
-    val Scala = Seq("2.12.7", "2.11.12")
-    val SbtScala = Seq("2.10.7", "2.12.7")
+    val Scala = Seq("2.12.8", "2.11.12")
+    val SbtScala = Seq("2.10.7", "2.12.8")
     val AkkaPersistenceCassandra = "0.61"
     val AkkaPersistenceJdbc = "3.4.0"
 
