@@ -15,7 +15,7 @@ object Dependencies {
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
   val AkkaVersion = "2.5.19"
-  val AkkaHttpVersion = "10.0.14"
+  val AkkaHttpVersion = "10.0.15"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.8", "2.11.12")
   val SbtScalaVersions = Seq("2.10.6", "2.12.8")
@@ -27,7 +27,7 @@ object Dependencies {
   val JacksonCoreVersion = JacksonVersion
   val JacksonDatatypeVersion = JacksonVersion
   val JacksonDatabindVersion = "2.8.11.3"
-  val GuavaVersion = "22.0"
+  val GuavaVersion = "23.6.1-jre"
   val MavenVersion = "3.3.9"
   val NettyVersion = "4.1.32.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
@@ -145,12 +145,13 @@ object Dependencies {
       "com.github.jnr" % "jnr-posix" % "3.0.27",
       "com.github.jnr" % "jnr-x86asm" % "1.0.2",
       "com.google.code.findbugs" % "jsr305" % "1.3.9",
-      "com.google.errorprone" % "error_prone_annotations" % "2.0.18",
+      "com.google.errorprone" % "error_prone_annotations" % "2.1.3",
       "com.google.guava" % "guava" % GuavaVersion,
       "com.google.j2objc" % "j2objc-annotations" % "1.1",
       "com.google.inject" % "guice" % "4.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "4.1.0",
       "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
+      "org.checkerframework" % "checker-compat-qual" % "2.0.0",
       "javax.xml.bind" % "jaxb-api" % "2.3.1",
       "javax.activation" % "javax.activation-api" % "1.2.0",
       h2,
@@ -298,7 +299,7 @@ object Dependencies {
 
   // Dependencies for each module
   val api = libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
     scalaXml,
     akkaActor,
     akkaSlf4j,
