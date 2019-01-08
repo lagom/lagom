@@ -30,6 +30,10 @@ def evictionSettings: Seq[Setting[_]] = Seq(
     .withWarnDirectEvictions(false)
 )
 
+def overridesScalaParserCombinators = Seq(
+  dependencyOverrides ++= Dependencies.scalaParserCombinatorOverrides
+)
+
 def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSettings ++ Seq(
   organization := "com.lightbend.lagom",
   // Must be "Apache-2.0", because bintray requires that it is a license that it knows about
@@ -461,6 +465,7 @@ lazy val `api-tools` = (project in file("api-tools"))
   .settings(
     Dependencies.`api-tools`
   )
+  .settings(overridesScalaParserCombinators)
   .dependsOn(
     spi,
     `server-javadsl` % Test,
@@ -1000,6 +1005,7 @@ lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/serv
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  .settings(overridesScalaParserCombinators)
   .settings(
     name := "lagom-logback",
     Dependencies.logback
@@ -1008,6 +1014,7 @@ lazy val logback = (project in file("logback"))
 lazy val log4j2 = (project in file("log4j2"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  .settings(overridesScalaParserCombinators)
   .settings(
     name := "lagom-log4j2",
     Dependencies.log4j2
@@ -1043,6 +1050,7 @@ lazy val `dev-environment` = (project in file("dev"))
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
+  .settings(overridesScalaParserCombinators)
   .settings(
     name := "lagom-reloadable-server",
     Dependencies.`reloadable-server`

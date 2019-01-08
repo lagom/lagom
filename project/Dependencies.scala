@@ -125,6 +125,8 @@ object Dependencies {
     )
 
 
+  val scalaParserCombinatorOverrides = Set(scalaParserCombinators)
+
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.
   // By maintaining this whitelist, we can be absolutely sure of what we depend on, that we consistently depend on the
