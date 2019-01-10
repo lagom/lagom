@@ -69,6 +69,8 @@ All service calls with Lagom service clients are by default using circuit breake
 
 In the above example the default identifier is used for the `sayHi` method, since no specific identifier is given. The default identifier is the same as the service name, i.e. `"hello"` in this example. The `hiAgain` method will use another circuit breaker instance, since `"hello2"` is specified as circuit breaker identifier.
 
+See [CircuitBreakerPanel recipe](https://github.com/lagom/lagom-recipes/tree/master/circuitbreakerpanel/circuitbreakerpanel-java-mvn) for an example you can use with any arbitrary API to apply the circuit breaker pattern.
+
 ### Circuit Breaker Configuration
 
 On the client side you can configure the circuit breakers. The default configuration is:

@@ -31,6 +31,8 @@ To use these with Lagom, the Cinnamon Telemetry agent must be included as a depe
 * [Java example project](https://developer.lightbend.com/docs/cinnamon/current/getting-started/lagom_java.html)
 * [Scala example project](https://developer.lightbend.com/docs/cinnamon/current/getting-started/lagom_scala.html)
 
+See [Integrating Lagom with Lightbend Telemetry](https://github.com/lagom/lagom-recipes/blob/master/lightbend-telemetry/lightbend-telemetry-java-mvn/README.md) for a Java example of integrating Telemetry into a Lagom service.
+
 ## Configuring a Lagom build for Enterprise Suite
 
 Bintray credentials are required to build applications using the Enterprise Suite portion of the Reactive Platform. Lightbend customers should log into the [support portal](https://portal.lightbend.com/ReactivePlatform/EnterpriseSuiteCredentials) to obtain their credentials. Follow the links below to see how to supply the credentials when using sbt or Maven.

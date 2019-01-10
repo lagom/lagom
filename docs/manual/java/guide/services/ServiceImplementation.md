@@ -66,6 +66,8 @@ If you're required to pass or return a `ServerServiceCall`, you can use the `Hea
 
 @[header-service-call-of-lambda](code/docs/services/ServiceImplementation.java)
 
+See [Header Manipulation and HTTP testing](https://github.com/lagom/lagom-recipes/blob/master/http-header-handling/http-header-handling-java-sbt/README.md) for an example of status code manipulation and how to test it.
+
 ## Service call composition
 
 You may have situations where you want to compose service calls with cross cutting concerns such as security or logging.  In Lagom, this is done by composing service calls explicitly.  The following shows a simple logging service call:
