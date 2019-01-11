@@ -16,6 +16,7 @@ val commonSettings = Seq(
 )
 
 lazy val root = (project in file("."))
+  .enablePlugins(NoPublish)
   .settings(
     name := "lagom-akka-discovery-root"
   )
