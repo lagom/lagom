@@ -4,13 +4,14 @@
 
 package com.lightbend.lagom.scaladsl.api.deser
 
-import MessageSerializer._
 import akka.util.ByteString
+import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer._
 import com.lightbend.lagom.scaladsl.api.transport.DeserializationException
 import com.lightbend.lagom.scaladsl.api.transport.MessageProtocol
 import org.scalatest.Matchers
 import org.scalatest.WordSpec
 import play.api.libs.json._
+import scala.collection.immutable.Seq
 
 class MessageSerializerSpec extends WordSpec with Matchers {
 
@@ -60,6 +61,26 @@ class MessageSerializerSpec extends WordSpec with Matchers {
       intercept[DeserializationException] {
         serializer.deserializer(MessageProtocol.empty).deserialize(ByteString.empty)
       }
+    }
+  }
+
+  "ByteString-to-ByteString" should {
+    "serialize any request of type ByteString to the same ByteSting" in {
+      val serializer = NoopMessageSerializer.serializerForRequest
+      val out = serializer.serialize(ByteString("sample string"))
+      out shouldBe ByteString("sample string")
+    }
+
+    "serialize any response of type ByteString to the same ByteSting" in {
+      val serializer = NoopMessageSerializer.serializerForResponse(Seq(MessageProtocol.empty))
+      val out = serializer.serialize(ByteString("sample string"))
+      out shouldBe ByteString("sample string")
+    }
+
+    "deserialize any ByteString's to the same ByteSting" in {
+      val deserializer = NoopMessageSerializer.deserializer(MessageProtocol.empty)
+      val out = deserializer.deserialize(ByteString("sample string"))
+      out shouldBe ByteString("sample string")
     }
   }
 }

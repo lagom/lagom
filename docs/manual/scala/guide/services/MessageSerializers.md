@@ -12,6 +12,8 @@ For example, this shows how to explicitly pass the default Lagom `String` serial
 
 We saw in the [[service descriptors|ServiceDescriptors#Using-Play-JSON]] documentation how by declaring an implicit Play JSON `Format` on a case classes companion object, Lagom will use that for messages of that type. The reason this works is that Lagom provides an implicit `MessageSerializer` that wraps a Play JSON `Format`. This is the `jsValueFormatMessageSerializer` method on the `MessageSerializer` companion object.
 
+The `MessageSerializer` companion object also provides implicit for other common, non-JSON payloads you may want to use. For example, anytime your request or response types are `NotUsed`, `Done` or `String` these default serializers will be used. Lagom also ships with support for a `ByteString` serializer (aka `noop`) so the there's direct access to the wire-level payload.
+
 The JSON message serializer format can also be explicitly used. Let's say you had a message with an `id` property, and for one service call you wanted the format used to be the default format that the Play JSON macro gives you, but in another you wanted a different format, one where the `id` field was called `identifier` in the JSON. You might provide two different formats:
 
 @[case-class-two-formats](code/MessageSerializers.scala)
