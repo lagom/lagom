@@ -4,35 +4,36 @@
 
 package com.lightbend.lagom.javadsl.jackson;
 
+import akka.Done;
+import akka.actor.ActorSystem;
+import akka.util.ByteString;
+import akka.util.ByteString$;
+import akka.util.ByteStringBuilder;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.lightbend.lagom.internal.jackson.JacksonObjectMapperProvider;
 import com.lightbend.lagom.javadsl.api.deser.DeserializationException;
-import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.NegotiatedDeserializer;
-import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.NegotiatedSerializer;
 import com.lightbend.lagom.javadsl.api.deser.SerializationException;
 import com.lightbend.lagom.javadsl.api.deser.SerializerFactory;
 import com.lightbend.lagom.javadsl.api.deser.StrictMessageSerializer;
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Optional;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
 
-import akka.Done;
-import akka.actor.ActorSystem;
-import akka.util.ByteString;
-import akka.util.ByteString$;
-import akka.util.ByteStringBuilder;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Optional;
 
 /** A Jackson Serializer Factory */
 @Singleton
 public class JacksonSerializerFactory implements SerializerFactory {
+
+  private final MessageProtocol defaultProtocol =
+      new MessageProtocol(Optional.of("application/json"), Optional.of("utf-8"), Optional.empty());
 
   private final ObjectMapper objectMapper;
 
@@ -49,6 +50,7 @@ public class JacksonSerializerFactory implements SerializerFactory {
   @Override
   public <MessageEntity> StrictMessageSerializer<MessageEntity> messageSerializerFor(Type type) {
     if (type == Done.class) return new DoneMessageSerializer<>();
+    else if (type == ByteString.class) return new NoopMessageSerializer<>();
     else return new JacksonMessageSerializer<>(type);
   }
 
@@ -96,8 +98,7 @@ public class JacksonSerializerFactory implements SerializerFactory {
 
       @Override
       public MessageProtocol protocol() {
-        return new MessageProtocol(
-            Optional.of("application/json"), Optional.of("utf-8"), Optional.empty());
+        return defaultProtocol;
       }
 
       @Override
@@ -187,6 +188,52 @@ public class JacksonSerializerFactory implements SerializerFactory {
       public MessageEntity deserialize(ByteString bytes) {
         return (MessageEntity) Done.getInstance();
       }
+    }
+  }
+
+  private class NoopMessageSerializer<MessageEntity>
+      implements StrictMessageSerializer<MessageEntity> {
+
+    private final NegotiatedSerializer<MessageEntity, ByteString> serializer = new NOPSerializer();
+    private final NegotiatedDeserializer<MessageEntity, ByteString> deserializer =
+        new NOPDeserializer();
+
+    private class NOPSerializer implements NegotiatedSerializer<MessageEntity, ByteString> {
+
+      @Override
+      public MessageProtocol protocol() {
+        return defaultProtocol;
+      }
+
+      @Override
+      public ByteString serialize(MessageEntity obj) {
+        return (ByteString) obj;
+      }
+    }
+
+    private class NOPDeserializer implements NegotiatedDeserializer<MessageEntity, ByteString> {
+      @Override
+      @SuppressWarnings("unchecked")
+      public MessageEntity deserialize(ByteString bytes) {
+        return (MessageEntity) bytes;
+      }
+    }
+
+    @Override
+    public NegotiatedSerializer<MessageEntity, ByteString> serializerForRequest() {
+      return serializer;
+    }
+
+    @Override
+    public NegotiatedDeserializer<MessageEntity, ByteString> deserializer(
+        MessageProtocol messageProtocol) throws SerializationException {
+      return deserializer;
+    }
+
+    @Override
+    public NegotiatedSerializer<MessageEntity, ByteString> serializerForResponse(
+        List<MessageProtocol> acceptedMessageProtocols) {
+      return serializer;
     }
   }
 }
