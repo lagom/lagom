@@ -12,7 +12,7 @@ jobs:
     - stage: tests
       script: sbt headerCheck test:headerCheck scalafmtCheck test:scalafmtCheck test
     - stage: publish
-      script: sbt +publish
+      script: sbt publish
 
 stages:
   - name: tests
