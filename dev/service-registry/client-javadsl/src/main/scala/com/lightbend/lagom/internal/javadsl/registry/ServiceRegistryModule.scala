@@ -8,14 +8,14 @@ import java.net.URI
 import java.util.Optional
 import java.util.concurrent.CompletionStage
 import java.util.function.{ Function => JFunction }
-import javax.inject.{ Inject, Provider, Singleton }
 
+import javax.inject.{ Inject, Provider, Singleton }
 import akka.actor.ActorSystem
-import akka.discovery.SimpleServiceDiscovery
+import akka.discovery.ServiceDiscovery
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.api.broker.NoTopicFactoryProvider
 import com.lightbend.lagom.internal.javadsl.client.{ JavadslServiceClientImplementor, JavadslWebSocketClient, ServiceClientLoader }
-import com.lightbend.lagom.internal.registry.{ DevModeSimpleServiceDiscovery, ServiceRegistryClient }
+import com.lightbend.lagom.internal.registry.{ DevModeServiceDiscovery, ServiceRegistryClient }
 import com.lightbend.lagom.javadsl.api.Descriptor.Call
 import com.lightbend.lagom.javadsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
@@ -43,7 +43,7 @@ class ServiceRegistryModule(environment: Environment, configuration: Configurati
 
         // This needs to be instantiated eagerly to ensure it initializes for
         // Akka libraries that use service discovery without dependency injection.
-        bind[SimpleServiceDiscovery].toProvider[DevModeSimpleServiceDiscoveryProvider].eagerly()
+        bind[ServiceDiscovery].toProvider[DevModeSimpleServiceDiscoveryProvider].eagerly()
       )
     } else {
       logger.debug {
@@ -121,10 +121,10 @@ abstract class BaseServiceLocator extends ServiceLocator {
 private final class DevModeSimpleServiceDiscoveryProvider @Inject() (
   actorSystem:           ActorSystem,
   serviceRegistryClient: ServiceRegistryClient
-) extends Provider[DevModeSimpleServiceDiscovery] {
+) extends Provider[DevModeServiceDiscovery] {
 
-  override def get(): DevModeSimpleServiceDiscovery = {
-    val discovery = DevModeSimpleServiceDiscovery(actorSystem)
+  override def get(): DevModeServiceDiscovery = {
+    val discovery = DevModeServiceDiscovery(actorSystem)
     discovery.setServiceRegistryClient(serviceRegistryClient)
     discovery
   }

@@ -7,9 +7,9 @@ package com.lightbend.lagom.scaladsl.devmode
 import java.net.URI
 
 import akka.actor.{ ActorSystem, CoordinatedShutdown }
-import akka.discovery.SimpleServiceDiscovery
+import akka.discovery.ServiceDiscovery
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.registry.{ DevModeSimpleServiceDiscovery, ServiceRegistryClient }
+import com.lightbend.lagom.internal.registry.{ DevModeServiceDiscovery, ServiceRegistryClient }
 import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
 import com.lightbend.lagom.internal.scaladsl.registry._
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
@@ -97,8 +97,8 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
   private lazy val serviceRegistryClient: ServiceRegistryClient =
     new ScalaServiceRegistryClient(serviceRegistry)(executionContext)
 
-  private lazy val devModeSimpleServiceDiscovery: DevModeSimpleServiceDiscovery =
-    DevModeSimpleServiceDiscovery(actorSystem)
+  private lazy val devModeSimpleServiceDiscovery: DevModeServiceDiscovery =
+    DevModeServiceDiscovery(actorSystem)
   // This needs to be done eagerly to ensure it initializes for Akka libraries
   // that use service discovery without dependency injection.
   devModeSimpleServiceDiscovery.setServiceRegistryClient(serviceRegistryClient)
@@ -106,7 +106,7 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
   // Make ServiceLocator and SimpleServiceDiscovery available to the application
   lazy val serviceLocator: ServiceLocator =
     new ServiceRegistryServiceLocator(circuitBreakersPanel, serviceRegistryClient, executionContext)
-  lazy val serviceDiscovery: SimpleServiceDiscovery =
+  lazy val serviceDiscovery: ServiceDiscovery =
     devModeSimpleServiceDiscovery
 
 }

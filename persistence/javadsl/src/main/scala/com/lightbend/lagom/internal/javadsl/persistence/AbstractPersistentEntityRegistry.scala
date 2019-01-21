@@ -66,7 +66,7 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
   }
 
   private val extractShardId: ShardRegion.ExtractShardId = {
-    case CommandEnvelope(entityId, payload) =>
+    case CommandEnvelope(entityId, _) =>
       (math.abs(entityId.hashCode) % maxNumberOfShards).toString
   }
 
@@ -116,8 +116,6 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
     if (entityName == null) throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
     new PersistentEntityRef(entityId, sharding.shardRegion(prependName(entityName)), askTimeout)
   }
-
-  private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)
 
   override def eventStream[Event <: AggregateEvent[Event]](
     aggregateTag: AggregateEventTag[Event],

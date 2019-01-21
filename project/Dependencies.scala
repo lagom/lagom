@@ -20,7 +20,6 @@ object Dependencies {
     // Also be sure to update AkkaVersion in docs/build.sbt.
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.19")
     val AkkaHttp = "10.1.5"
-    val AkkaManagement = "0.19.0"
     val Aeron = "1.12.0"
 
     // Also be sure to update ScalaVersion in docs/build.sbt.
@@ -109,7 +108,7 @@ object Dependencies {
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % Versions.Akka
   private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.2"
 
-  private val akkaDiscovery = "com.lightbend.akka.discovery" %% "akka-discovery" % Versions.AkkaManagement
+  private val akkaDiscovery = "com.typesafe.akka" %% "akka-discovery" % Versions.Akka
 
   private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % Versions.AkkaPersistenceJdbc excludeAll (excludeSlf4j: _*)
 
