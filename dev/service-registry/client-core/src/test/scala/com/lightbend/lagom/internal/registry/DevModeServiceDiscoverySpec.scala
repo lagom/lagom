@@ -7,7 +7,7 @@ package com.lightbend.lagom.internal.registry
 import java.net.URI
 
 import akka.actor.ActorSystem
-import akka.discovery.SimpleServiceDiscovery.{ Resolved, ResolvedTarget }
+import akka.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import akka.testkit.TestKit
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.{ Matchers, WordSpecLike }
@@ -16,7 +16,7 @@ import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class DevModeSimpleServiceDiscoverySpec
+class DevModeServiceDiscoverySpec
   extends TestKit(ActorSystem("DevModeSimpleServiceDiscoverySpec"))
   with WordSpecLike
   with Matchers {
@@ -27,7 +27,7 @@ class DevModeSimpleServiceDiscoverySpec
       "test-service-without-port" -> List(URI.create("http://localhost"))
     )
   )
-  private val discovery = DevModeSimpleServiceDiscovery(system)
+  private val discovery = DevModeServiceDiscovery(system)
   discovery.setServiceRegistryClient(client)
 
   "DevModeSimpleServiceDiscoverySpec" should {
