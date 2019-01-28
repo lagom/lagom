@@ -25,9 +25,9 @@ We also recommend upgrading to sbt 1.2.1 or later, by updating the `sbt.version`
 
 ### Service Ports
 
-Lagom 1.5.0 now has support for SSL calls for gRPC integration and new a build setting was introduced to configure https port for a given service manually.
+Lagom 1.5.0 now has support for SSL calls for gRPC integration and a new build setting was introduced to configure the https port for a given service manually.
 
-In Maven, the new setting is called `serviceHttpsPost`.  To keep the names aligned, we are deprecating  `servicePort` in favour of `serviceHttpPort`.
+In Maven, the new setting is called `serviceHttpsPort`.  To keep the names aligned, we are deprecating  `servicePort` in favour of `serviceHttpPort`.
 
 In sbt, the new setting is called `lagomServiceHttpsPort`. To keep the names aligned, we are deprecating  `lagomServicePort` in favour of `lagomServiceHttpPort`.
 
