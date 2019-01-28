@@ -168,7 +168,12 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
     // Calling MTable.getTables without parameters fails on MySQL
     // See https://github.com/lagom/lagom/issues/446
     // and https://github.com/slick/slick/issues/1692
-    MTable.getTables(None, currentSchema, Option("%"), None)
+    profile match {
+      case _: MySQLProfile =>
+        MTable.getTables(currentSchema, None, Option("%"), None)
+      case _ =>
+        MTable.getTables(None, currentSchema, Option("%"), None)
+    }
   }
 
   private def getCurrentSchema: DBIO[Option[String]] = {
@@ -203,7 +208,12 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
 
   def tableExists(schemaName: Option[String], tableName: String)(tables: Vector[MTable], currentSchema: Option[String]): Boolean = {
     tables.exists { t =>
-      t.name.schema.orElse(currentSchema) == schemaName.orElse(currentSchema) && t.name.name == tableName
+      profile match {
+        case _: MySQLProfile =>
+          t.name.catalog.orElse(currentSchema) == schemaName.orElse(currentSchema) && t.name.name == tableName
+        case _ =>
+          t.name.schema.orElse(currentSchema) == schemaName.orElse(currentSchema) && t.name.name == tableName
+      }
     }
   }
 
