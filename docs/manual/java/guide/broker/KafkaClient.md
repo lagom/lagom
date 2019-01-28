@@ -1,6 +1,6 @@
 # Lagom Kafka Client
 
-Lagom provides an implementation of the Message Broker API that uses Kafka. In the remainder you will learn how to add the dependency in your build, and how to configure and tune topic's publishers and subscribers.
+Lagom provides an implementation of the Message Broker API that uses Kafka. The following sections show how to add the dependency in your build, and how to configure and tune topic publishers and subscribers. For information on running Kafka in development, see the [[Kafka Server|KafkaServer]] page. 
 
 ## Dependency
 
@@ -74,3 +74,5 @@ If/when your subscriber-only service evolves to include features that publish da
 ### Consuming Topics from 3rd parties
 
 You may want your Lagom service to consume data produced on services not implemented in Lagom. In that case, as described in the [[Service Clients|ServiceClients]] section, you can create a `third-party-service-api` module in your Lagom project. That module will contain a Service Descriptor [[declaring the topic|MessageBrokerApi#Declaring-a-topic]] you will consume from. Once you have your `ThirdPartyService` interface and related classes implemented, you should add `third-party-service-api` as a dependency on your `fancy-service-impl`. Finally, you can consume from the topic described in `ThirdPartyService` as documented in the [[Subscribe to a topic|MessageBrokerApi#Subscribe-to-a-topic]] section.
+
+For an example, see the [consumer service recipe](https://github.com/lagom/lagom-recipes/blob/master/consumer-service/consumer-service-java-sbt/README.md).
