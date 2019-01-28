@@ -1,6 +1,6 @@
 # Persistent Entity
 
-[[Event Sourcing and CQRS|ES_CQRS]] is a recommended introduction to this section.
+We recommend reading [[Event Sourcing and CQRS|ES_CQRS]] as a prerequisite to this section.
 
 A `PersistentEntity` has a stable entity identifier, with which it can be accessed from the service implementation or other places. The state of an entity is persistent (durable) using [Event Sourcing](https://msdn.microsoft.com/en-us/library/jj591559.aspx). We represent all state changes as events and those immutable facts are appended to an event log. To recreate the current state of an entity when it is started we replay these events.
 
@@ -32,11 +32,11 @@ We recommend using Cassandra. Cassandra is a very scalable distributed database,
 
 Lagom also provides out of the box support for running Cassandra in a development environment - developers do not need to install, configure or manage Cassandra at all themselves when using Lagom, which makes for great developer velocity, and it means gone are the days where developers spend days setting up their development environment before they can start to be productive on a project.
 
-For instructions on configuring your project to use Cassandra, see [[Using Cassandra for Persistent Entities|PersistentEntityCassandra]]. If instead you want to use one of the relational databases listed above, see [[Using a Relational Database for Persistent Entities|PersistentEntityRDBMS]] on how to configure your project.
+For instructions on configuring your project to use Cassandra, see [[Using Cassandra for Persistent Entities|PersistentEntityCassandra]]. If instead you want to use one of the relational databases listed above, see [[Using a Relational Database for Persistent Entities|PersistentEntityRDBMS]] on how to configure your project. To see how to use Cassandra for write-side persistence and JPA for a read-side view, see the [Mixed Persistence Service](https://github.com/lagom/lagom-recipes/blob/master/mixed-persistence/mixed-persistence-java-sbt/README.md) recipe.
 
 ## PersistentEntity Stub
 
-This is how a [PersistentEntity](api/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntity.html) class looks like before filling in the implementation details:
+This is what a [PersistentEntity](api/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntity.html) class looks like before filling in the implementation details:
 
 @[post1](code/docs/home/persistence/Post1.java)
 

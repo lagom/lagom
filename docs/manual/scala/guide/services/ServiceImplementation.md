@@ -46,6 +46,8 @@ Here's an example of working with the headers:
 
 @[server-service-call](code/ServiceImplementation.scala)
 
+
+
 ## Service call composition
 
 You may have situations where you want to compose service calls with cross cutting concerns such as security or logging.  In Lagom, this is done by composing service calls explicitly.  The following shows a simple logging service call:
