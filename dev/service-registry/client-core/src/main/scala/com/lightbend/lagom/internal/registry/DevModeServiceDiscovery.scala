@@ -4,7 +4,7 @@
 
 package com.lightbend.lagom.internal.registry
 
-import java.net.URI
+import java.net.{ InetAddress, URI }
 
 import akka.actor.ActorSystem
 import akka.discovery.ServiceDiscovery._
@@ -26,7 +26,14 @@ private[lagom] class DevModeServiceDiscovery(system: ActorSystem) extends Servic
       uris <- client.locateAll(lookup.serviceName, lookup.portName)
     } yield Resolved(lookup.serviceName, uris.map(toResolvedTarget))
 
-  private def toResolvedTarget(uri: URI) = ResolvedTarget(uri.getHost, optionalPort(uri.getPort))
+  private def toResolvedTarget(uri: URI) =
+    ResolvedTarget(
+      uri.getHost,
+      optionalPort(uri.getPort),
+      // we don't have the InetAddress, but instead of using None
+      // we default to localhost as such we can use it for Akka Cluster Bootstrap eventually
+      address = Some(InetAddress.getLocalHost)
+    )
 
   private def optionalPort(port: Int): Option[Int] = if (port < 0) None else Some(port)
 }

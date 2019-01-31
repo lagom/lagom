@@ -4,7 +4,7 @@
 
 package com.lightbend.lagom.internal.registry
 
-import java.net.URI
+import java.net.{ InetAddress, URI }
 
 import akka.actor.ActorSystem
 import akka.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
@@ -32,12 +32,12 @@ class DevModeServiceDiscoverySpec
 
   "DevModeSimpleServiceDiscoverySpec" should {
     "resolve services in the registry" in {
-      val expected = Resolved("test-service", List(ResolvedTarget("localhost", Some(8080))))
+      val expected = Resolved("test-service", List(ResolvedTarget("localhost", Some(8080), Some(InetAddress.getLocalHost))))
       discovery.lookup("test-service", 100.milliseconds).futureValue shouldBe expected
     }
 
     "allow missing ports" in {
-      val expected = Resolved("test-service-without-port", List(ResolvedTarget("localhost", None)))
+      val expected = Resolved("test-service-without-port", List(ResolvedTarget("localhost", None, Some(InetAddress.getLocalHost))))
       discovery.lookup("test-service-without-port", 100.milliseconds).futureValue shouldBe expected
     }
   }
