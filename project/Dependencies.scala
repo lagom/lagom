@@ -11,15 +11,15 @@ object Dependencies {
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     // Also be sure to update PlayVersion in docs/build.sbt.
-    val Play = "2.7.0-RC8"
-    val PlayJson = "2.7.0-RC2"
-    val PlayStandaloneWs = "2.0.0-RC2"
-    val Twirl = "1.4.0-RC4"
+    val Play = "2.7.0"
+    val PlayJson = "2.7.0"
+    val PlayStandaloneWs = "2.0.1"
+    val Twirl = "1.4.0"
     val PlayFileWatch = "1.1.8"
 
     // Also be sure to update AkkaVersion in docs/build.sbt.
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.19")
-    val AkkaHttp = "10.1.5"
+    val AkkaHttp = "10.1.7"
     val Aeron = "1.12.0"
 
     // Also be sure to update ScalaVersion in docs/build.sbt.
@@ -32,7 +32,7 @@ object Dependencies {
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest = "3.0.5"
-    val Jackson = "2.9.7"
+    val Jackson = "2.9.8"
     val JacksonCore = Jackson
     val JacksonDatatype = Jackson
     val JacksonDatabind = Jackson
@@ -201,7 +201,7 @@ object Dependencies {
       akkaPersistenceCassandraLauncher,
       "com.typesafe.netty" % "netty-reactive-streams" % Versions.NettyReactiveStreams,
       "com.typesafe.netty" % "netty-reactive-streams-http" % Versions.NettyReactiveStreams,
-      "com.typesafe.play" %% "cachecontrol" % "1.1.4",
+      "com.typesafe.play" %% "cachecontrol" % "1.1.5",
       playJson,
       playFunctional,
       // play client libs
@@ -254,7 +254,7 @@ object Dependencies {
       "com.typesafe.play" %% "twirl-api" % Versions.Twirl,
       "com.typesafe.slick" %% "slick" % Versions.Slick,
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
-      "com.zaxxer" % "HikariCP" % "3.2.0",
+      "com.zaxxer" % "HikariCP" % "3.3.0",
       "commons-codec" % "commons-codec" % "1.10",
       "io.aeron" % "aeron-client" % Versions.Aeron,
       "io.aeron" % "aeron-driver" % Versions.Aeron,
@@ -265,7 +265,7 @@ object Dependencies {
       "javax.cache" % "cache-api" % "1.0.0",
       "javax.inject" % "javax.inject" % "1",
       "javax.transaction" % "jta" % "1.1",
-      "joda-time" % "joda-time" % "2.9.9",
+      "joda-time" % "joda-time" % "2.10.1",
       "junit" % "junit" % Versions.JUnit,
       "net.jodah" % "typetools" % "0.5.0",
       "org.lz4" % "lz4-java" % "1.5.0",
