@@ -18,7 +18,7 @@ object Dependencies {
     val PlayFileWatch = "1.1.8"
 
     // Also be sure to update AkkaVersion in docs/build.sbt.
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.19")
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.20")
     val AkkaHttp = "10.1.7"
     val Aeron = "1.12.0"
 
