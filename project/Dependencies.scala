@@ -26,7 +26,7 @@ object Dependencies {
     val Scala = Seq("2.12.8", "2.11.12")
     val SbtScala = Seq("2.10.7", "2.12.8")
     val AkkaPersistenceCassandra = "0.61"
-    val AkkaPersistenceJdbc = "3.4.0"
+    val AkkaPersistenceJdbc = "3.5.0"
 
     val Disruptor = "3.3.11"
 
@@ -49,7 +49,7 @@ object Dependencies {
 
     val ScalaJava8Compat = "0.9.0"
     val ScalaXml = "1.1.1"
-    val Slick = "3.2.3"
+    val Slick = "3.3.0"
     // Also be sure to update JUnitVersion in docs/build.sbt.
     val JUnit = "4.12"
     // Also be sure to update JUnitInterfaceVersion in docs/build.sbt.
