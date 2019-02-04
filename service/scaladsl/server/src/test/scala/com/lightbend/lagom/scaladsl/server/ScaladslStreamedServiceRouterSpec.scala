@@ -85,7 +85,7 @@ class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with
   // ---------------------------------------------------------------------------------------------------
 
   private def runRequest(
-      service: Service
+      service: SimpleStreamedService
   )(x: mvc.WebSocket => mvc.RequestHeader => Future[WSFlow])(block: => Assertion): Future[Assertion] = {
     val httpConfig                = HttpConfiguration.createWithDefaults()
     val parsers                   = PlayBodyParsers()

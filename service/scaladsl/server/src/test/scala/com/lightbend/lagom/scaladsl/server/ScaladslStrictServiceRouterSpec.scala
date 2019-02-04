@@ -26,6 +26,7 @@ import play.api.mvc.PlayBodyParsers
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.reflect.ClassTag
 
 /**
  * This test relies on DefaultExceptionSerializer so in case of failure some information is lost on de/ser. Check the
@@ -145,8 +146,8 @@ class ScaladslStrictServiceRouterSpec extends AsyncFlatSpec with Matchers with B
   }
   // ---------------------------------------------------------------------------------------------------
 
-  private def runRequest[T](
-      service: Service
+  private def runRequest[T, S <: Service: ClassTag](
+      service: S
   )(x: mvc.EssentialAction => mvc.RequestHeader => Future[mvc.Result])(block: mvc.Result => T): Future[T] = {
     val httpConfig                = HttpConfiguration.createWithDefaults()
     val parsers                   = PlayBodyParsers()

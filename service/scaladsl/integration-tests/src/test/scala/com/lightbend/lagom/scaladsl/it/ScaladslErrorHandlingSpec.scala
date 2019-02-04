@@ -12,6 +12,7 @@ import akka.util.ByteString
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceClient
 import com.lightbend.lagom.scaladsl.api.AdditionalConfiguration
 import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.api.Descriptor.CallId
@@ -42,6 +43,7 @@ import scala.collection.immutable
 import scala.concurrent.Await
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 
 /**
@@ -360,7 +362,7 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
           .asInstanceOf[Call[Any, Any]]
           .withServiceCallHolder(
             new ScalaMethodServiceCall[Any, Any](scalaMethodCall.method, scalaMethodCall.pathParamSerializers) {
-              override def invoke(service: Any, parameters: immutable.Seq[AnyRef]) = serviceCall
+              override def invoke[T <: Service: ClassTag](service: T, parameters: immutable.Seq[AnyRef]) = serviceCall
             }
           )
     }

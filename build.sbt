@@ -271,6 +271,9 @@ def mimaSettings(since: String): Seq[Setting[_]] = {
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.*Components*"),
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.*Module*"),
       ProblemFilters
+        .exclude[DirectMissingMethodProblem]("*lagom.*dsl.api.ServiceSupport#ScalaMethodServiceCall.invoke"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("*lagom.*dsl.server.LagomServerBuilder.buildRouter"),
+      ProblemFilters
         .exclude[DirectMissingMethodProblem]("*lagom.*dsl.persistence.PersistentEntityRegistry.gracefulShutdown"),
     )
   )

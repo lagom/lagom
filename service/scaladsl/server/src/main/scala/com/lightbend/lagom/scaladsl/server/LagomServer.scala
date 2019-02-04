@@ -174,11 +174,8 @@ final class LagomServerBuilder(
     parsers: PlayBodyParsers,
     serviceResolver: ServiceResolver
 )(implicit materializer: Materializer, executionContext: ExecutionContext) {
-  def buildRouter(service: Service): LagomServiceRouter = {
-    new ScaladslServiceRouter(serviceResolver.resolve(service.descriptor), service, httpConfiguration, parsers)(
-      executionContext,
-      materializer
-    )
+  def buildRouter[T <: Service: ClassTag](service: T): LagomServiceRouter = {
+    new ScaladslServiceRouter(serviceResolver.resolve(service.descriptor), service, httpConfiguration, parsers)
   }
 }
 

@@ -13,10 +13,7 @@ import akka.Done
 import akka.NotUsed
 import akka.util.ByteString
 import com.lightbend.lagom.scaladsl.api.AdditionalConfiguration
-import com.lightbend.lagom.scaladsl.it.mocks.MockRequestEntity
-import com.lightbend.lagom.scaladsl.it.mocks.MockResponseEntity
-import com.lightbend.lagom.scaladsl.it.mocks.MockService
-import com.lightbend.lagom.scaladsl.it.mocks.MockServiceImpl
+import com.lightbend.lagom.scaladsl.it.mocks._
 import com.lightbend.lagom.scaladsl.server.LagomApplication
 import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
 import com.lightbend.lagom.scaladsl.server.LagomServer
@@ -43,6 +40,14 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers {
         val id       = 10L
         val request  = MockRequestEntity("bar", 20)
         val response = Await.result(client.mockCall(id).invoke(request), 10.seconds)
+        response.incomingId should ===(id)
+        response.incomingRequest should ===(request)
+      }
+      "be possible to invoke for AnyValue path parameter" in withServer { implicit mat => client =>
+        val value    = 10L
+        val id       = MockAnyVal(value)
+        val request  = MockRequestEntity("bar", 20)
+        val response = Await.result(client.mockAnyValCall(id).invoke(request), 10.seconds)
         response.incomingId should ===(id)
         response.incomingRequest should ===(request)
       }
