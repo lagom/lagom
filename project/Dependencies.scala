@@ -27,6 +27,7 @@ object Dependencies {
     val SbtScala = Seq("2.10.7", "2.12.8")
     val AkkaPersistenceCassandra = "0.61"
     val AkkaPersistenceJdbc = "3.4.0"
+    val AkkaManagement = "1.0.0-RC2"
 
     val Disruptor = "3.3.11"
 
@@ -63,6 +64,8 @@ object Dependencies {
     val jetty = "9.4.12.v20180830"
 
     val Selenium = "3.141.59"
+
+
 
   }
 
@@ -103,6 +106,9 @@ object Dependencies {
   private val akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % Versions.Akka excludeAll (excludeSlf4j: _*)
   private val akkaStream = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
   private val akkaProfobuf = "com.typesafe.akka" %% "akka-protobuf" % Versions.Akka
+
+  private val akkaManagementClusterBootstrap = "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % Versions.AkkaManagement
+  private val akkaManagementClusterHttp =  "com.lightbend.akka.management" %% "akka-management-cluster-http" % Versions.AkkaManagement
 
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % Versions.Akka
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % Versions.Akka
@@ -576,6 +582,8 @@ object Dependencies {
 
   val `cluster-core` = libraryDependencies ++= Seq(
     akkaCluster,
+    akkaManagementClusterBootstrap,
+    akkaManagementClusterHttp,
     akkaTestkit % Test,
     scalaTest % Test,
     play,

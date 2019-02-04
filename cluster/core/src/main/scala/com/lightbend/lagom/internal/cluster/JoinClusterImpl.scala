@@ -7,9 +7,11 @@ package com.lightbend.lagom.internal.cluster
 import java.util.concurrent.TimeUnit
 
 import akka.Done
-import akka.actor.{ ActorSystem, CoordinatedShutdown }
+import akka.actor.{ActorSystem, CoordinatedShutdown, ExtendedActorSystem}
 import akka.cluster.Cluster
-import play.api.{ Environment, Mode }
+import akka.management.cluster.bootstrap.ClusterBootstrap
+import akka.management.scaladsl.AkkaManagement
+import play.api.{Environment, Mode}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -31,8 +33,13 @@ private[lagom] object JoinClusterImpl {
         "conflict with Akka Cluster Bootstrap or cause split-brain clusters.")
     }
 
-    if (cluster.settings.SeedNodes.isEmpty && joinSelf)
+    if (cluster.settings.SeedNodes.isEmpty && joinSelf) {
       cluster.join(cluster.selfAddress)
+    } else {
+      // TODO: move AkkaManagement to Guice module
+      AkkaManagement(system.asInstanceOf[ExtendedActorSystem]).start()
+      ClusterBootstrap(system.asInstanceOf[ExtendedActorSystem]).start()
+    }
 
     CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseClusterShutdown, "exit-jvm-when-downed") {
       () =>
