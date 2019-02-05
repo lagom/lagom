@@ -9,11 +9,9 @@ import java.net.URISyntaxException
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
-import akka.discovery.Lookup
 import akka.discovery.ServiceDiscovery
 import akka.discovery.ServiceDiscovery.ResolvedTarget
 import com.typesafe.config.Config
-import com.typesafe.config.ConfigObject
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -29,42 +27,26 @@ private[lagom] class AkkaDiscoveryHelper(config: Config, serviceDiscovery: Servi
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val serviceNameParser = new ServiceNameParser(config)
+  private val serviceNameMapper = new ServiceNameMapper(config)
   private val lookupTimeout = config.getDuration("lookup-timeout", TimeUnit.MILLISECONDS).millis
 
-  private val portNameSchemeMapping = {
-    val mappings = config.getConfig("port-name-scheme-mapping")
-    config
-      .getObject("port-name-scheme-mapping")
-      .asScala
-      .map {
-        case (key, _) => key -> mappings.getString(key)
-      }
-      .toMap
-  }
-
-  private val defaultScheme = Some(config.getString("defaults.scheme")).filter(_.nonEmpty)
-
   def locateAll(name: String): Future[Seq[URI]] = {
-    val lookupQuery = serviceNameParser.parseLookupQuery(name)
+    val serviceLookup = serviceNameMapper.mapLookupQuery(name)
     serviceDiscovery
-      .lookup(lookupQuery, lookupTimeout)
+      .lookup(serviceLookup.lookup, lookupTimeout)
       .map { resolved =>
         logger.debug("Retrieved addresses: {}", resolved.addresses)
-        resolved.addresses.map(target => toURI(target, lookupQuery))
+        resolved.addresses.map(target => toURI(target, serviceLookup))
       }
   }
 
   def locate(name: String): Future[Option[URI]] = locateAll(name).map(selectRandomURI)
 
-  private def toURI(resolvedTarget: ResolvedTarget, lookup: Lookup): URI = {
+  private def toURI(resolvedTarget: ResolvedTarget, lookup: ServiceLookup): URI = {
 
     val port = resolvedTarget.port.getOrElse(-1)
 
-    val scheme = lookup.portName
-      .flatMap(portNameSchemeMapping.get)
-      .orElse(defaultScheme)
-      .orNull
+    val scheme = lookup.scheme.orNull
 
     try {
       new URI(scheme, // scheme
