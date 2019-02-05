@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.collection.JavaConverters._
 
 /**
   * Helper for implementing Akka Discovery based service locators in Lagom.

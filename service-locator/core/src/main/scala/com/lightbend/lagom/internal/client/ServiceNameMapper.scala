@@ -4,8 +4,6 @@
 
 package com.lightbend.lagom.internal.client
 
-import java.util.regex.Pattern
-
 import akka.discovery.Lookup
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigObject
