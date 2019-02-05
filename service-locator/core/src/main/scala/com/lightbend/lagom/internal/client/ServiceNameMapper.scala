@@ -67,6 +67,4 @@ private[lagom] class ServiceNameMapper(config: Config) {
   }
 }
 
-private[lagom] case class ServiceNameMapping(name: String, lookup: Option[String], scheme: Option[String])
-
 private[lagom] case class ServiceLookup(lookup: Lookup, scheme: Option[String])
