@@ -25,6 +25,7 @@ lazy val root = (project in file("."))
   .aggregate(serviceLocatorCore, serviceLocatorJavadsl, serviceLocatorScaladsl)
 
 lazy val serviceLocatorCore = (project in file("service-locator/core"))
+  .enablePlugins(AutomateHeaderPlugin)
   .settings(commonSettings)
   .settings(
     name := "lagom-akka-discovery-service-locator-core",
@@ -32,6 +33,7 @@ lazy val serviceLocatorCore = (project in file("service-locator/core"))
   )
 
 lazy val serviceLocatorJavadsl = (project in file("service-locator/javadsl"))
+  .enablePlugins(AutomateHeaderPlugin)
   .settings(commonSettings)
   .settings(
     name := "lagom-javadsl-akka-discovery-service-locator",
@@ -39,6 +41,7 @@ lazy val serviceLocatorJavadsl = (project in file("service-locator/javadsl"))
   ).dependsOn(serviceLocatorCore)
 
 lazy val serviceLocatorScaladsl = (project in file("service-locator/scaladsl"))
+  .enablePlugins(AutomateHeaderPlugin)
   .settings(commonSettings)
   .settings(
     name := "lagom-scaladsl-akka-discovery-service-locator",
