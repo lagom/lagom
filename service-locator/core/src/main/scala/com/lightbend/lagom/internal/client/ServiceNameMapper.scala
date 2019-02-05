@@ -15,9 +15,31 @@ import scala.collection.JavaConverters._
 private[lagom] class ServiceNameMapper(config: Config) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val defaultPortName = Some(config.getString("defaults.port-name")).filter(_.nonEmpty)
-  private val defaultPortProtocol = Some(config.getString("defaults.port-protocol")).filter(_.nonEmpty)
-  private val defaultScheme = Some(config.getString("defaults.scheme")).filter(_.nonEmpty)
+  private val defaultPortName = readConfigValue(config, "defaults.port-name").toOption
+  private val defaultPortProtocol = readConfigValue(config, "defaults.port-protocol").toOption
+  private val defaultScheme = readConfigValue(config, "defaults.scheme").toOption
+
+  sealed private trait ConfigValue {
+    def toOption =
+      this match {
+        case NonEmpty(v) => Some(v)
+        case _           => None
+      }
+  }
+  private object ConfigValue {
+    def apply(value: String) =
+      if (value.trim.isEmpty) Empty
+      else NonEmpty(value.trim)
+  }
+  private case object Undefined extends ConfigValue
+  private case object Empty extends ConfigValue
+  private case class NonEmpty(value: String) extends ConfigValue
+
+  private def readConfigValue(config: Config, name: String) =
+    if (config.hasPathOrNull(name)) {
+      if (config.getIsNull(name)) Empty
+      else ConfigValue(config.getString(name))
+    } else Undefined
 
   private val serviceLookupMapping: Map[String, ServiceLookup] =
     config
@@ -31,30 +53,26 @@ private[lagom] class ServiceNameMapper(config: Config) {
         }
         val configEntry = entry.getValue.asInstanceOf[ConfigObject].toConfig
 
-        def getOptionString(name: String) =
-          if (configEntry.hasPath(name)) Some(configEntry.getString(name).trim)
-          else None
-
         val lookup: Lookup =
-          getOptionString("lookup")
+          readConfigValue(configEntry, "lookup").toOption
             .map(parseSrv)
             .getOrElse(Lookup(entry.getKey, defaultPortName, defaultPortProtocol))
 
         // if the user didn't explicitly set a value, use the default scheme,
         // otherwise honour user settings.
         val scheme =
-          getOptionString("scheme") match {
-            case None => defaultScheme
+          readConfigValue(configEntry, "scheme") match {
+            case Undefined => defaultScheme
             // this is the case the user explicitly set the scheme to empty string
-            case Some("") => None
-            case anyOther => anyOther
+            case Empty           => None
+            case NonEmpty(value) => Option(value)
           }
 
         entry.getKey -> ServiceLookup(lookup, scheme)
       }
       .toMap
 
-  private[lagom] def parseSrv(name: String) =
+  private def parseSrv(name: String) =
     if (LookupBuilder.isValidSrv(name)) LookupBuilder.parseSrv(name)
     else Lookup(name, defaultPortName, defaultPortProtocol)
 
