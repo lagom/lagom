@@ -1,4 +1,6 @@
-scalaVersion in ThisBuild := "2.12.8"
+
+crossScalaVersions in ThisBuild := Seq("2.12.8", "2.11.12")
+scalaVersion in ThisBuild := crossScalaVersions.value.head
 
 val commonSettings = Seq(
   organization := "com.lightbend.lagom",
