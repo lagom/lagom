@@ -16,7 +16,7 @@ class ServiceNameMapperSpec extends WordSpec with Matchers {
 
   val defaultPortName = Some("http")
   val defaultProtocol = Some("tcp")
-  val defaultScheme = Some("tcp")
+  val defaultScheme = Some("http")
 
   private def createParser(config: String) =
     new ServiceNameMapper(ConfigFactory.parseString(config).withFallback(defaultConfig))
