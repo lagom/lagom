@@ -17,95 +17,56 @@ import scala.collection.JavaConverters._
 private[lagom] class ServiceNameMapper(config: Config) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val serviceLookupRegex = Some(config.getString("service-lookup-regex"))
-    .filter(_.nonEmpty)
-    .map(Pattern.compile)
-
   private val defaultPortName = Some(config.getString("defaults.port-name")).filter(_.nonEmpty)
   private val defaultPortProtocol = Some(config.getString("defaults.port-protocol")).filter(_.nonEmpty)
-  private val serviceNameSuffix = config.getString("service-name-suffix")
-
-  private val portNameSchemeMapping = {
-    val mappings = config.getConfig("port-name-scheme-mapping")
-    config
-      .getObject("port-name-scheme-mapping")
-      .asScala
-      .map {
-        case (key, _) => key -> mappings.getString(key)
-      }
-      .toMap
-  }
   private val defaultScheme = Some(config.getString("defaults.scheme")).filter(_.nonEmpty)
 
-  private val serviceLookupMapping = config
-    .getObject("service-name-mappings")
-    .entrySet()
-    .asScala
-    .map { entry =>
-      if (entry.getValue.valueType != ConfigValueType.OBJECT) {
-        throw new IllegalArgumentException(
-          s"Illegal value type in service-name-mappings: ${entry.getKey} - ${entry.getValue.valueType}")
+  private val serviceLookupMapping: Map[String, ServiceLookup] =
+    config
+      .getObject("service-name-mappings")
+      .entrySet()
+      .asScala
+      .map { entry =>
+        if (entry.getValue.valueType != ConfigValueType.OBJECT) {
+          throw new IllegalArgumentException(
+            s"Illegal value type in service-name-mappings: ${entry.getKey} - ${entry.getValue.valueType}")
+        }
+        val configEntry = entry.getValue.asInstanceOf[ConfigObject].toConfig
+
+        def getOptionString(name: String) =
+          if (configEntry.hasPath(name)) Some(configEntry.getString(name).trim)
+          else None
+
+        val lookup: Lookup =
+          getOptionString("lookup")
+            .map(parseSrv)
+            .getOrElse(Lookup(entry.getKey, defaultPortName, defaultPortProtocol))
+
+        // if the user didn't explicitly set a value, use the default scheme,
+        // otherwise honour user settings.
+        val scheme =
+          getOptionString("scheme") match {
+            case None => defaultScheme
+            // this is the case the user explicitly set the scheme to empty string
+            case Some("") => None
+            case anyOther => anyOther
+          }
+
+        entry.getKey -> ServiceLookup(lookup, scheme)
       }
-      val c = entry.getValue.asInstanceOf[ConfigObject].toConfig
+      .toMap
 
-      def get(name: String) = if (c.hasPath(name)) Some(c.getString(name)) else None
-
-      val serviceName = get("service-name").getOrElse(entry.getKey) + serviceNameSuffix
-      val portName = get("port-name").orElse(defaultPortName)
-      val portProtocol = get("port-protocol").orElse(defaultPortProtocol)
-      val scheme = get("scheme")
-        .orElse(portName.flatMap(portNameSchemeMapping.get))
-        .orElse(defaultScheme)
-      entry.getKey -> ServiceNameMapping(entry.getKey, serviceName, portName, portProtocol, scheme)
-    }
-    .toMap
+  private[lagom] def parseSrv(name: String) =
+    if (LookupBuilder.isValidSrv(name)) LookupBuilder.parseSrv(name)
+    else Lookup(name, defaultPortName, defaultPortProtocol)
 
   private[lagom] def mapLookupQuery(name: String): ServiceLookup = {
-    // First attempt to construct lookup using configured mappings
-    val serviceLookup = serviceLookupMapping.get(name) match {
-      case Some(mapping) =>
-        ServiceLookup(Lookup(mapping.serviceName, mapping.portName, mapping.portProtocol), mapping.scheme)
-
-      case None =>
-        // Next attempt to construct lookup using the service lookup regex
-        val lookup = serviceLookupRegex match {
-          case Some(pattern) =>
-            val matcher = pattern.matcher(name)
-            if (matcher.matches()) {
-              val serviceName = matcher.group("service")
-              if (serviceName == null || serviceName.isEmpty) {
-                throw new IllegalArgumentException(
-                  "Service lookup regex did not contain a named capturing group called " +
-                    "'service', or that group matched an empty string.")
-              }
-
-              def groupOrElse(group: String, default: Option[String]) =
-                Option(matcher.group(group)).filter(_.nonEmpty).orElse(default)
-
-              Lookup(
-                serviceName + serviceNameSuffix,
-                groupOrElse("portName", defaultPortName),
-                groupOrElse("portProtocol", defaultPortProtocol)
-              )
-            } else {
-              Lookup(name + serviceNameSuffix, defaultPortName, defaultPortProtocol)
-            }
-          case None => Lookup(name + serviceNameSuffix, defaultPortName, defaultPortProtocol)
-
-        }
-
-        ServiceLookup(lookup, lookup.portName.flatMap(portNameSchemeMapping.get).orElse(defaultScheme))
-    }
-
+    val serviceLookup = serviceLookupMapping.getOrElse(name, ServiceLookup(parseSrv(name), defaultScheme))
     logger.debug("Lookup service '{}', mapped to {}", name: Any, serviceLookup: Any)
     serviceLookup
   }
 }
 
-private[lagom] case class ServiceNameMapping(name: String,
-                                             serviceName: String,
-                                             portName: Option[String],
-                                             portProtocol: Option[String],
-                                             scheme: Option[String])
+private[lagom] case class ServiceNameMapping(name: String, lookup: Option[String], scheme: Option[String])
 
 private[lagom] case class ServiceLookup(lookup: Lookup, scheme: Option[String])

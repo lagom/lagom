@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.internal.client
 
+import akka.discovery.Lookup
 import com.typesafe.config.ConfigFactory
 import org.scalatest.Matchers
 import org.scalatest.WordSpec
@@ -12,108 +13,116 @@ class ServiceNameMapperSpec extends WordSpec with Matchers {
 
   private val defaultConfig = ConfigFactory.defaultReference().getConfig("lagom.akka.discovery")
   private val parser = new ServiceNameMapper(defaultConfig)
+
+  val defaultPortName = Some("http")
+  val defaultProtocol = Some("tcp")
+  val defaultScheme = Some("tcp")
+
   private def createParser(config: String) =
     new ServiceNameMapper(ConfigFactory.parseString(config).withFallback(defaultConfig))
 
-  "The ServiceNameParser" should {
+  "The ServiceNameMapper" should {
 
-    "parse an unqualified Kubernetes SRV lookup" in {
-      val serviceLookup = parser.mapLookupQuery("_fooname._fooprotocol.myservice")
-      val lookup = serviceLookup.lookup
-      lookup.serviceName should be("myservice")
-      lookup.portName should be(Some("fooname"))
-      lookup.protocol should be(Some("fooprotocol"))
-      serviceLookup.scheme should be(Some("tcp"))
+    // ------------------------------------------------------------------------------
+    // Assert SRV lookups
+    "parse an unqualified SRV lookup" in {
+      val lookup = parser.mapLookupQuery("_fooname._fooprotocol.myservice").lookup
+      lookup shouldBe Lookup("myservice", Some("fooname"), Some("fooprotocol"))
     }
 
-    "parse a fully qualified Kubernetes SRV lookup" in {
+    "parse a fully-qualified SRV lookup" in {
       val lookup = parser.mapLookupQuery("_fooname._fooprotocol.myservice.mynamespace.svc.cluster.local").lookup
-      lookup.serviceName should be("myservice.mynamespace.svc.cluster.local")
-      lookup.portName should be(Some("fooname"))
-      lookup.protocol should be(Some("fooprotocol"))
+      lookup shouldBe Lookup("myservice.mynamespace.svc.cluster.local", Some("fooname"), Some("fooprotocol"))
     }
 
-    "parse an unqualified Kubernetes service name" in {
-      val serviceLookup = parser.mapLookupQuery("myservice")
-      val lookup = serviceLookup.lookup
-      lookup.serviceName should be("myservice")
-      lookup.portName should be(Some("http"))
-      lookup.protocol should be(Some("tcp"))
-      serviceLookup.scheme should be(Some("http"))
+    // ------------------------------------------------------------------------------
+    // Assert simple Service Name lookup
+    "parse an unqualified service name" in {
+      val lookup = parser.mapLookupQuery("myservice").lookup
+      lookup shouldBe Lookup("myservice", defaultPortName, defaultProtocol)
     }
 
-    "parse an fully qualified Kubernetes service name" in {
+    "parse an fully-qualified service name" in {
       val lookup = parser.mapLookupQuery("myservice.mynamespace.svc.cluster.local").lookup
-      lookup.serviceName should be("myservice.mynamespace.svc.cluster.local")
-      lookup.portName should be(Some("http"))
-      lookup.protocol should be(Some("tcp"))
+      lookup shouldBe Lookup("myservice.mynamespace.svc.cluster.local", defaultPortName, defaultProtocol)
     }
 
-    "not include default port name if not specified" in {
-      val lookup = createParser("""defaults.port-name = "" """).mapLookupQuery("myservice").lookup
-      lookup.serviceName should be("myservice")
-      lookup.portName should be(None)
-      lookup.protocol should be(Some("tcp"))
+    // ------------------------------------------------------------------------------
+    // Assert blank defaults
+    "not include default port name if defaults.port-name is blank" in {
+      val customParser = createParser("""defaults.port-name = "" """)
+      val lookup = customParser.mapLookupQuery("myservice").lookup
+      lookup shouldBe Lookup("myservice", None, defaultProtocol)
     }
 
-    "not include default port protocol if not specified" in {
-      val lookup = createParser("""defaults.port-protocol = "" """).mapLookupQuery("myservice").lookup
-      lookup.serviceName should be("myservice")
-      lookup.portName should be(Some("http"))
-      lookup.protocol should be(None)
+    "not include default port protocol if defaults.port-protocol is blank" in {
+      val customParser = createParser("""defaults.port-protocol = "" """)
+      val lookup = customParser.mapLookupQuery("myservice").lookup
+      lookup shouldBe Lookup("myservice", defaultPortName, None)
     }
 
-    "not attempt to parse the string if regex isn't specified" in {
-      val lookup = createParser("""service-lookup-regex = "" """)
-        .mapLookupQuery("_fooname._fooprotocol.myservice")
-        .lookup
-      lookup.serviceName should be("_fooname._fooprotocol.myservice")
-      lookup.portName should be(Some("http"))
-      lookup.protocol should be(Some("tcp"))
-    }
-
-    "include a suffix if configured" in {
-      createParser("service-name-suffix = .mynamespace.svc.cluster.local")
-        .mapLookupQuery("myservice")
-        .lookup
-        .serviceName should be("myservice.mynamespace.svc.cluster.local")
-    }
-
+    // ------------------------------------------------------------------------------
+    // Assert custom mappings
     "return a mapped service name" in {
-      val lookup = createParser("service-name-mappings.myservice.service-name = mappedmyservice")
-        .mapLookupQuery("myservice")
-        .lookup
-      lookup.serviceName should be("mappedmyservice")
-      lookup.portName should be(Some("http"))
-      lookup.protocol should be(Some("tcp"))
+      val customParser = createParser("service-name-mappings.myservice.lookup = mappedmyservice")
+      val lookup = customParser.mapLookupQuery("myservice").lookup
+      lookup shouldBe Lookup("mappedmyservice", defaultPortName, defaultProtocol)
     }
 
     "return a mapped port name" in {
-      val serviceLookup = createParser("service-name-mappings.myservice.port-name = remoting")
-        .mapLookupQuery("myservice")
-      val lookup = serviceLookup.lookup
-      lookup.serviceName should be("myservice")
-      lookup.portName should be(Some("remoting"))
-      lookup.protocol should be(Some("tcp"))
-      serviceLookup.scheme should be(Some("tcp"))
+      val customParser = createParser("service-name-mappings.myservice.lookup = _remoting._udp.mappedmyservice")
+      val lookup = customParser.mapLookupQuery("myservice").lookup
+      lookup shouldBe Lookup("mappedmyservice", Some("remoting"), Some("udp"))
     }
 
-    "return a mapped port protocol" in {
-      val lookup = createParser("service-name-mappings.myservice.port-protocol = udp")
-        .mapLookupQuery("myservice")
-        .lookup
-      lookup.serviceName should be("myservice")
-      lookup.portName should be(Some("http"))
-      lookup.protocol should be(Some("udp"))
+    // ------------------------------------------------------------------------------
+    // Assert Schema mapping
+    "return a default scheme if not specified" in {
+      val serviceLookup = parser.mapLookupQuery("myservice")
+      serviceLookup.scheme should be(defaultScheme)
+    }
+
+    "not include default scheme if defaults.scheme is blank" in {
+      val customParser = createParser("""defaults.scheme = "" """)
+      val serviceLookup = customParser.mapLookupQuery("myservice")
+      serviceLookup.scheme should be(None)
+    }
+
+    "not include scheme if service-name-mappings.myservice.scheme is blank" in {
+      val customParser = createParser("""
+          |service-name-mappings.myservice {
+          |  lookup = _remoting._udp.mappedmyservice
+          |  scheme = ""
+          |}
+        """.stripMargin)
+      val serviceLookup = customParser.mapLookupQuery("myservice")
+      serviceLookup.scheme should be(None)
+    }
+
+    "return a mapped schema for a mapped SVR" in {
+      val customParser = createParser("""
+          |service-name-mappings.myservice {
+          |  lookup = _remoting._udp.mappedmyservice
+          |  scheme = bar
+          |}
+        """.stripMargin)
+      val serviceLookup = customParser.mapLookupQuery("myservice")
+      serviceLookup.scheme should be(Some("bar"))
+    }
+
+    "return a default schema for a mapped SVR" in {
+      val customParser = createParser("""
+          |service-name-mappings.myservice {
+          |  lookup = _remoting._udp.mappedmyservice
+          |}
+        """.stripMargin)
+      val serviceLookup = customParser.mapLookupQuery("myservice")
+      serviceLookup.scheme should be(defaultScheme)
     }
 
     "return a mapped scheme" in {
-      val serviceLookup = createParser("service-name-mappings.myservice.scheme = foo")
-        .mapLookupQuery("myservice")
-      val lookup = serviceLookup.lookup
-      lookup.serviceName should be("myservice")
-      lookup.portName should be(Some("http"))
-      lookup.protocol should be(Some("tcp"))
+      val customParser = createParser("service-name-mappings.myservice.scheme = foo")
+      val serviceLookup = customParser.mapLookupQuery("myservice")
       serviceLookup.scheme should be(Some("foo"))
     }
 
