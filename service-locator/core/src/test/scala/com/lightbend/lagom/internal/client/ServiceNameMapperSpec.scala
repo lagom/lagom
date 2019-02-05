@@ -55,8 +55,20 @@ class ServiceNameMapperSpec extends WordSpec with Matchers {
       lookup shouldBe Lookup("myservice", None, defaultProtocol)
     }
 
+    "not include default port name if defaults.port-name is null" in {
+      val customParser = createParser("""defaults.port-name = null """)
+      val lookup = customParser.mapLookupQuery("myservice").lookup
+      lookup shouldBe Lookup("myservice", None, defaultProtocol)
+    }
+
     "not include default port protocol if defaults.port-protocol is blank" in {
       val customParser = createParser("""defaults.port-protocol = "" """)
+      val lookup = customParser.mapLookupQuery("myservice").lookup
+      lookup shouldBe Lookup("myservice", defaultPortName, None)
+    }
+
+    "not include default port protocol if defaults.port-protocol is null" in {
+      val customParser = createParser("""defaults.port-protocol = null """)
       val lookup = customParser.mapLookupQuery("myservice").lookup
       lookup shouldBe Lookup("myservice", defaultPortName, None)
     }
@@ -88,11 +100,28 @@ class ServiceNameMapperSpec extends WordSpec with Matchers {
       serviceLookup.scheme should be(None)
     }
 
+    "not include default scheme if defaults.scheme is null" in {
+      val customParser = createParser("""defaults.scheme = null """)
+      val serviceLookup = customParser.mapLookupQuery("myservice")
+      serviceLookup.scheme should be(None)
+    }
+
     "not include scheme if service-name-mappings.myservice.scheme is blank" in {
       val customParser = createParser("""
           |service-name-mappings.myservice {
           |  lookup = _remoting._udp.mappedmyservice
           |  scheme = ""
+          |}
+        """.stripMargin)
+      val serviceLookup = customParser.mapLookupQuery("myservice")
+      serviceLookup.scheme should be(None)
+    }
+
+    "not include scheme if service-name-mappings.myservice.scheme is null" in {
+      val customParser = createParser("""
+          |service-name-mappings.myservice {
+          |  lookup = _remoting._udp.mappedmyservice
+          |  scheme = null
           |}
         """.stripMargin)
       val serviceLookup = customParser.mapLookupQuery("myservice")
