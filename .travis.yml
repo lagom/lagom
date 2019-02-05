@@ -1,7 +1,5 @@
-sudo: false
 language: scala
 jdk: oraclejdk8
-scala: 2.12.8
 
 # make sure to fetch enough commits, so that git describe still works
 git:
@@ -10,9 +8,9 @@ git:
 jobs:
   include:
     - stage: tests
-      script: sbt headerCheck test:headerCheck scalafmtCheck test:scalafmtCheck test
+      script: sbt headerCheck test:headerCheck scalafmtCheck test:scalafmtCheck +test
     - stage: publish
-      script: sbt publish
+      script: sbt +publish
 
 stages:
   - name: tests
