@@ -16,7 +16,7 @@ stages:
   - name: tests
     if: NOT tag =~ ^v
   - name: publish
-    if: repo = lagom/akka-discovery-service-locator AND tag =~ ^v
+    if: repo = lagom/lagom-akka-discovery-service-locator AND tag =~ ^v
 
 cache:
   directories:
