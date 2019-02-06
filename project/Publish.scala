@@ -27,12 +27,13 @@ object Publish extends AutoPlugin {
   override def projectSettings = Seq(
     bintrayOrganization := Some("lagom"),
     bintrayPackage := "akka-discovery-service-locator",
-    scmInfo := Some(ScmInfo(url("https://github.com/lagom/akka-discovery-service-locator"), "git@github.com:lagom/akka-discovery-service-locator")),
+    homepage := Some(url("https://github.com/lagom/lagom-akka-discovery-service-locator")),
+    scmInfo := Some(ScmInfo(url("https://github.com/lagom/lagom-akka-discovery-service-locator"), "git@github.com:lagom/lagom-akka-discovery-service-locator")),
     licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
     developers += Developer("contributors",
       "Contributors",
       "https://gitter.im/lagom/contributors",
-      url("https://github.com/lagom/akka-discovery-service-locator/graphs/contributors")),
+      url("https://github.com/lagom/lagom-akka-discovery-service-locator/graphs/contributors")),
   )
 }
 
