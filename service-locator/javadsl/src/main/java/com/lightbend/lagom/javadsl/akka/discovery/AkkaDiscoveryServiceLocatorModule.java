@@ -5,25 +5,24 @@
 package com.lightbend.lagom.javadsl.akka.discovery;
 
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
-import play.api.Configuration;
-import play.api.Environment;
-import play.api.inject.Binding;
-import play.api.inject.Module;
-import scala.collection.Seq;
+import com.typesafe.config.Config;
+import play.Environment;
+import play.inject.Module;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Module providing the Akka Discovery based Lagom {@link ServiceLocator}.
  */
 public class AkkaDiscoveryServiceLocatorModule extends Module {
     @Override
-    public Seq<Binding<?>> bindings(Environment environment, Configuration configuration) {
-        if (environment.mode().asJava() == play.Mode.PROD) {
-            // Only use the AkkaDiscoveryServiceLocator in Production
-            return seq(
-                bind(ServiceLocator.class).to(AkkaDiscoveryServiceLocator.class)
+    public List<play.inject.Binding<?>> bindings(Environment environment, Config config) {
+        if (environment.isProd()) {
+            return Collections.singletonList(
+                bindClass(ServiceLocator.class).to(AkkaDiscoveryServiceLocator.class)
             );
-        } else {
-            return seq();
         }
+        return Collections.emptyList();
     }
 }

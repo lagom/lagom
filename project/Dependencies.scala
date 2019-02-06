@@ -3,12 +3,11 @@
  */
 
 import sbt._
-import sbt.Keys._
 
 object Dependencies {
 
   object Versions {
-    val Lagom14 = "1.4.9"
+    val Lagom14 = "1.4.10"
     val Akka = "2.5.20"
     val ScalaTest = "3.0.5"
   }
