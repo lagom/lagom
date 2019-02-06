@@ -1,6 +1,12 @@
 language: scala
 jdk: oraclejdk8
 
+addons:
+  apt:
+    packages:
+      # Needed for `xmllint` which is used to validate pom files
+      - libxml2-utils
+
 # make sure to fetch enough commits, so that git describe still works
 git:
   depth: false
@@ -11,6 +17,11 @@ jobs:
       script: sbt headerCheck test:headerCheck scalafmtCheck test:scalafmtCheck +test
     - stage: publish
       script: sbt +publish
+    - stage: validate-publish
+      script:
+        # Ensure that publishing works and produces valid artifacts
+        - sbt +publishLocal
+        - find . -name *.pom -exec xmllint --noout -schema http://maven.apache.org/xsd/maven-4.0.0.xsd {} \;
 
 stages:
   - name: tests
