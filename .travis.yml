@@ -1,5 +1,4 @@
 language: scala
-jdk: oraclejdk8
 
 addons:
   apt:
@@ -7,16 +6,43 @@ addons:
       # Needed for `xmllint` which is used to validate pom files
       - libxml2-utils
 
+env:
+  global:
+    - JABBA_HOME=$HOME/.jabba
+  matrix:
+    - TRAVIS_JDK=adopt@1.8.192-12
+    - TRAVIS_JDK=adopt@1.11.0-1
+
+before_install:
+  - curl -sL https://github.com/shyiko/jabba/raw/master/install.sh | bash && . ~/.jabba/jabba.sh
+
+install:
+  - $JABBA_HOME/bin/jabba install $TRAVIS_JDK
+  - unset _JAVA_OPTIONS
+  - export JAVA_HOME="$JABBA_HOME/jdk/$TRAVIS_JDK" && export PATH="$JAVA_HOME/bin:$PATH" && java -Xmx32m -version
+
+matrix:
+  fast_finish: true
+  allow_failures:
+  - env: TRAVIS_JDK=adopt@1.11.0-1 # Nice to see what is failing but not required for now.
+
+scala:
+  - 2.12.8
+  - 2.11.12
+
 # make sure to fetch enough commits, so that git describe still works
 git:
   depth: false
 
+# This defines the default "test" stage
+script: sbt ++$TRAVIS_SCALA_VERSION headerCheck test:headerCheck scalafmtCheck test:scalafmtCheck test
+
 jobs:
   include:
-    - stage: tests
-      script: sbt headerCheck test:headerCheck scalafmtCheck test:scalafmtCheck +test
     - stage: publish
       script: sbt +publish
+      env:
+        - TRAVIS_JDK=adopt@1.8.192-12
     - stage: validate-publish
       script:
         # Ensure that publishing works and produces valid artifacts
@@ -24,8 +50,6 @@ jobs:
         - find . -name *.pom -exec xmllint --noout -schema http://maven.apache.org/xsd/maven-4.0.0.xsd {} \;
 
 stages:
-  - name: tests
-    if: NOT tag =~ ^v
   - name: publish
     if: repo = lagom/lagom-akka-discovery-service-locator AND tag =~ ^v
 
