@@ -37,7 +37,6 @@ object SlickRepos {
     // need to import it first to make table compile
     import scala.concurrent.ExecutionContext.Implicits.global
     import slick.jdbc.H2Profile.api._
-    import slick.jdbc.meta.MTable
 
     class PostSummaryTable(tag: Tag)
       extends Table[PostSummary](tag, "post_summary") {
@@ -51,21 +50,12 @@ object SlickRepos {
     // #slick-mapping-schema
     import scala.concurrent.ExecutionContext.Implicits.global
     import slick.jdbc.H2Profile.api._
-    import slick.jdbc.meta.MTable
 
     class PostSummaryRepository {
       // table mapping omitted for conciseness
       val postSummaries = TableQuery[PostSummaryTable]
 
-      def createTable = {
-        MTable.getTables.flatMap { tables =>
-          if (!tables.exists(_.name.name == postSummaries.baseTableRow.tableName)) {
-            postSummaries.schema.create
-          } else {
-            DBIO.successful(())
-          }
-        }.transactionally
-      }
+      def createTable = postSummaries.schema.createIfNotExists
     }
     // #slick-mapping-schema
   }
@@ -75,7 +65,6 @@ object SlickRepos {
 
     import scala.concurrent.ExecutionContext.Implicits.global
     import slick.jdbc.H2Profile.api._
-    import slick.jdbc.meta.MTable
 
     class PostSummaryRepository {
       class PostSummaryTable(tag: Tag)
@@ -88,15 +77,7 @@ object SlickRepos {
 
       val postSummaries = TableQuery[PostSummaryTable]
 
-      def createTable = {
-        MTable.getTables.flatMap { tables =>
-          if (!tables.exists(_.name.name == postSummaries.baseTableRow.tableName)) {
-            postSummaries.schema.create
-          } else {
-            DBIO.successful(())
-          }
-        }.transactionally
-      }
+      def createTable = postSummaries.schema.createIfNotExists
 
       // #insert-or-update
       /* added to PostSummaryRepository to insert or update Post Summaries */
