@@ -7,11 +7,11 @@ package com.lightbend.lagom.internal.cluster
 import java.util.concurrent.TimeUnit
 
 import akka.Done
-import akka.actor.{ActorSystem, CoordinatedShutdown, ExtendedActorSystem}
+import akka.actor.{ ActorSystem, CoordinatedShutdown, ExtendedActorSystem }
 import akka.cluster.Cluster
 import akka.management.cluster.bootstrap.ClusterBootstrap
 import akka.management.scaladsl.AkkaManagement
-import play.api.{Environment, Mode}
+import play.api.{ Environment, Mode }
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
