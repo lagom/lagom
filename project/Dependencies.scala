@@ -100,6 +100,7 @@ object Dependencies {
   private val akkaCluster = "com.typesafe.akka" %% "akka-cluster" % Versions.Akka
   private val akkaClusterSharding = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
   private val akkaClusterTools = "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka
+  private val akkaDistributedData = "com.typesafe.akka" %% "akka-distributed-data" % Versions.Akka
   private val akkaMultiNodeTestkit = "com.typesafe.akka" %% "akka-multi-node-testkit" % Versions.Akka
   private val akkaPersistence = "com.typesafe.akka" %% "akka-persistence" % Versions.Akka
   private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
@@ -107,8 +108,9 @@ object Dependencies {
   private val akkaStream = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
   private val akkaProfobuf = "com.typesafe.akka" %% "akka-protobuf" % Versions.Akka
 
-  private val akkaManagementClusterBootstrap = "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % Versions.AkkaManagement
+  private val akkaManagement = "com.lightbend.akka.management" %% "akka-management" % Versions.AkkaManagement
   private val akkaManagementClusterHttp =  "com.lightbend.akka.management" %% "akka-management-cluster-http" % Versions.AkkaManagement
+  private val akkaManagementClusterBootstrap = "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % Versions.AkkaManagement
 
   private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % Versions.Akka
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % Versions.Akka
@@ -125,7 +127,11 @@ object Dependencies {
   private val kafkaClients = "org.apache.kafka" % "kafka-clients" % Versions.Kafka
 
   private val akkaHttpCore = "com.typesafe.akka" %% "akka-http-core" % Versions.AkkaHttp
+  private val akkaHttpRouteDsl = "com.typesafe.akka" %% "akka-http" % Versions.AkkaHttp
+  private val akkaHttpSprayJson = "com.typesafe.akka" %% "akka-http-spray-json" % Versions.AkkaHttp
   private val akkaParsing = "com.typesafe.akka" %% "akka-parsing" % Versions.AkkaHttp
+
+  private val sprayJson = "io.spray" %% "spray-json" % "1.3.3"
 
   private val play = "com.typesafe.play" %% "play" % Versions.Play excludeAll (excludeSlf4j: _*)
   private val playBuildLink = "com.typesafe.play" % "build-link" % Versions.Play excludeAll (excludeSlf4j: _*)
@@ -201,10 +207,16 @@ object Dependencies {
       sslConfig,
       akkaDiscovery,
       akkaHttpCore,
+      akkaHttpRouteDsl,
+      akkaHttpSprayJson,
       akkaStreamKafka,
       akkaParsing,
+      akkaManagement,
+      akkaManagementClusterHttp,
+      akkaManagementClusterBootstrap,
       akkaPersistenceCassandra,
       akkaPersistenceCassandraLauncher,
+      sprayJson,
       "com.typesafe.netty" % "netty-reactive-streams" % Versions.NettyReactiveStreams,
       "com.typesafe.netty" % "netty-reactive-streams-http" % Versions.NettyReactiveStreams,
       "com.typesafe.play" %% "cachecontrol" % "1.1.5",
@@ -595,7 +607,15 @@ object Dependencies {
     scalaJava8Compat,
     scalaParserCombinators,
     scalaXml,
-    akkaSlf4j
+    akkaSlf4j,
+
+    // transitive dependencies from Akka Management,
+    // must be explicitly bumped to Akka 2.5.20
+    akkaDiscovery,
+    akkaClusterSharding,
+    akkaDistributedData,
+    akkaPersistence,
+    akkaClusterTools
   )
 
   val `cluster-javadsl` = libraryDependencies ++= Seq(
