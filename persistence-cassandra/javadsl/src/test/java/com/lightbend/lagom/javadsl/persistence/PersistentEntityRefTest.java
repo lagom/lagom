@@ -51,8 +51,10 @@ public class PersistentEntityRefTest {
         "akka.remote.netty.tcp.port = 0 \n" +
         "akka.remote.netty.tcp.hostname = 127.0.0.1 \n" +
         "akka.loglevel = INFO \n" +
-        "akka.cluster.sharding.distributed-data.durable.keys = [] \n")
-        .withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort()));
+        "akka.cluster.sharding.distributed-data.durable.keys = [] \n" +
+        "lagom.cluster.join-self = on \n" +
+        "lagom.cluster.bootstrap.enabled = off"
+    ).withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort()));
 
     application = new GuiceApplicationBuilder()
             .configure(config)

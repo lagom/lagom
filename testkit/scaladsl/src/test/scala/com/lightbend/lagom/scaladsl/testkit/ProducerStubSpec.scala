@@ -25,7 +25,7 @@ class ProducerStubSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAl
   }
 
   "The ProducerStub" should {
-    "send message to consuming services" in ServiceTest.withServer(ServiceTest.defaultSetup)(stubbedApplication) { server =>
+    "send message to consuming services" in ServiceTest.withServer(ServiceTest.defaultSetup.withCluster())(stubbedApplication) { server =>
       implicit val exCtx = server.application.actorSystem.dispatcher
       producerStub.send(AlphaEvent(22))
       eventually(timeout(Span(5, Seconds))) {
