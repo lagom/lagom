@@ -31,9 +31,7 @@ trait ServiceSupport extends WordSpecLike with Matchers {
 
     val application =
       applicationBuilder
-        .loadConfig { env =>
-          Configuration.load(env, Map("lagom.cluster.bootstrap.enabled" -> "off"))
-        }
+        .configure("lagom.cluster.bootstrap.enabled" -> "off")
         .bindings(bind[TestServiceLocatorPort].to(testServiceLocatorPort))
         .overrides(bind[ServiceLocator].to(classOf[TestServiceLocator]))
         .disable(classOf[ServiceTestModule]) // enabled in application.conf
