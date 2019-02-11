@@ -37,8 +37,8 @@ You could imagine using cluster features across different services, but we recom
 A service instance joins a cluster when the service starts up.
 
 ### Joining during development
-In development you are typically only running the service on one cluster node. No explicit joining is necessary; the [[Lagom Development Environment|DevEnvironment]] handles it automatically.
 
+In development you are typically only running the service on one cluster node. No explicit joining is necessary; the [[Lagom Development Environment|DevEnvironment]] handles it automatically.
 
 ### Joining during production
 
