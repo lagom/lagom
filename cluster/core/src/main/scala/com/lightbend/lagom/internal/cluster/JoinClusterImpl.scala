@@ -42,7 +42,6 @@ private[lagom] object JoinClusterImpl {
       )
     }
 
-    // we give priority
     if (clusterBootstrapEnabled) {
       // TODO: move AkkaManagement to Guice module
       AkkaManagement(system.asInstanceOf[ExtendedActorSystem]).start()
