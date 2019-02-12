@@ -38,7 +38,7 @@ class AlphaServiceImpl extends AlphaService {
 class TopicPublishingSpec extends AsyncWordSpec with Matchers {
 
   "The AlphaService" should {
-    "publish events on alpha topic" in ServiceTest.withServer(ServiceTest.defaultSetup) { ctx =>
+    "publish events on alpha topic" in ServiceTest.withServer(ServiceTest.defaultSetup.withCluster()) { ctx =>
       new AlphaApplication(ctx) with LocalServiceLocator
     } { server =>
 

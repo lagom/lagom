@@ -38,18 +38,41 @@ A service instance joins a cluster when the service starts up.
 
 ### Joining during development
 
-In development you are typically only running the service on one cluster node. No explicit joining is necessary; the [[Lagom Development Environment|DevEnvironment]] handles it automatically. For deployment, you need to implement the joining yourself as follows.
+In development you are typically only running the service on one cluster node. No explicit joining is necessary; the [[Lagom Development Environment|DevEnvironment]] handles it automatically.
 
-First, define some initial contact points of the cluster, so-called seed nodes. You can define seed nodes in `application.conf`:
+### Joining during production
 
-    akka.cluster.seed-nodes = [
-      "akka.tcp://MyService@host1:2552",
-      "akka.tcp://MyService@host2:2552"]
+Starting from version 1.5.0, Lagom offers support for [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/current/bootstrap/). Akka Cluster Bootstrap is enabled by default in production mode and disabled in development and test mode.
+
+Akka Cluster Bootstrap helps forming (or joining to) a cluster by using [Akka Discovery](https://doc.akka.io/docs/akka/current/discovery/index.html) to discover peer nodes. It is an alternative to configuring static seed-nodes in dynamic deployment environments such as on Kubernetes or AWS.
+
+It builds on the flexibility of Akka Discovery, leveraging a range of discovery mechanisms depending on the environment you want to run your cluster in.
+
+### Manual Cluster Formation
+
+If you prefer to not use **Akka Cluster Bootstrap** and handle the cluster formation yourself, you can disable it in your `application.conf` file and configure the Akka Cluster seed nodes statically.
+
+First, disable the cluster bootstrap:
+
+```
+lagom.cluster.bootstrap.enabled = false
+```
+
+Then, define some initial contact points of the cluster, so-called seed nodes in your `application.conf`:
+
+```
+akka.cluster.seed-nodes = [
+  "akka.tcp://MyService@host1:2552",
+  "akka.tcp://MyService@host2:2552"]
+```
 
 Alternatively, this can be defined as Java system properties when starting the JVM:
 
-    -Dakka.cluster.seed-nodes.0=akka.tcp://MyService@host1:2552
-    -Dakka.cluster.seed-nodes.1=akka.tcp://MyService@host2:2552
+```
+-Dlagom.cluster.bootstrap.enabled=false
+-Dakka.cluster.seed-nodes.0=akka.tcp://MyService@host1:2552
+-Dakka.cluster.seed-nodes.1=akka.tcp://MyService@host2:2552
+```
 
 The node that is configured first in the list of `seed-nodes` is special. Only that node that will join itself. It is used for bootstrapping the cluster.
 
