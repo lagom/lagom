@@ -10,7 +10,7 @@ import com.lightbend.lagom.internal.client.AkkaDiscoveryHelper;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.client.CircuitBreakersPanel;
 import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator;
-import scala.collection.JavaConversions;
+import scala.collection.JavaConverters;
 import scala.compat.java8.FutureConverters;
 import scala.compat.java8.OptionConverters;
 
@@ -37,7 +37,7 @@ public class AkkaDiscoveryServiceLocator extends CircuitBreakingServiceLocator {
     @Override
     public CompletionStage<List<URI>> locateAll(String name, Descriptor.Call<?, ?> serviceCall) {
         return FutureConverters.toJava(helper.locateAll(name))
-            .thenApply(JavaConversions::seqAsJavaList);
+            .thenApply(xs -> JavaConverters.seqAsJavaListConverter(xs).asJava());
     }
 
     @Override
