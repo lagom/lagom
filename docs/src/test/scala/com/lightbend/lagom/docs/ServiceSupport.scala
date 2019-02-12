@@ -3,16 +3,16 @@ package com.lightbend.lagom.docs
 import java.util.concurrent.CompletionStage
 
 import com.google.inject.AbstractModule
-import com.lightbend.lagom.javadsl.api.transport.{ RequestHeader, ResponseHeader }
-import com.lightbend.lagom.javadsl.api.{ ServiceCall, ServiceLocator, Service}
-import com.lightbend.lagom.javadsl.server.{ HeaderServiceCall, ServiceGuiceSupport }
-import org.scalatest.{ Matchers, WordSpecLike }
-import play.api.Application
+import com.lightbend.lagom.javadsl.api.transport.{RequestHeader, ResponseHeader}
+import com.lightbend.lagom.javadsl.api.{Service, ServiceCall, ServiceLocator}
+import com.lightbend.lagom.javadsl.server.{HeaderServiceCall, ServiceGuiceSupport}
+import org.scalatest.{Matchers, WordSpecLike}
+import play.api.{Application, Configuration}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.bind
 import play.core.server.Server
 
-import scala.concurrent.{ Future, Promise }
+import scala.concurrent.{Future, Promise}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.reflect.ClassTag
 import scala.compat.java8.FutureConverters._
@@ -20,7 +20,8 @@ import com.lightbend.lagom.internal.testkit.TestServiceLocator
 import docs.services.test.ServiceTestModule
 import com.lightbend.lagom.internal.testkit.TestServiceLocatorPort
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcPersistenceModule
-import play.api.db.{ DBModule, HikariCPModule }
+import com.typesafe.config.ConfigFactory
+import play.api.db.{DBModule, HikariCPModule}
 
 trait ServiceSupport extends WordSpecLike with Matchers {
 
@@ -28,11 +29,13 @@ trait ServiceSupport extends WordSpecLike with Matchers {
     val port = Promise[Int]()
     val testServiceLocatorPort = TestServiceLocatorPort(port.future)
 
-    val application = applicationBuilder
-      .bindings(bind[TestServiceLocatorPort].to(testServiceLocatorPort))
-      .overrides(bind[ServiceLocator].to(classOf[TestServiceLocator]))
-      .disable(classOf[ServiceTestModule]) // enabled in application.conf
-      .build()
+    val application =
+      applicationBuilder
+        .configure("lagom.cluster.bootstrap.enabled" -> "off")
+        .bindings(bind[TestServiceLocatorPort].to(testServiceLocatorPort))
+        .overrides(bind[ServiceLocator].to(classOf[TestServiceLocator]))
+        .disable(classOf[ServiceTestModule]) // enabled in application.conf
+        .build()
 
     Server.withApplication(application) { assignedPort =>
       port.success(assignedPort.value)

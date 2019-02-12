@@ -56,6 +56,10 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       akka.coordinated-shutdown.terminate-actor-system = off
       akka.coordinated-shutdown.run-by-jvm-shutdown-hook = off
       akka.cluster.run-coordinated-shutdown-when-down = off
+
+      # multi-jvm tests forms the cluster programmatically
+      # therefore we disable Akka Cluster Bootstrap
+      lagom.cluster.bootstrap.enabled = off
     """
   ).withFallback(ConfigFactory.parseResources("play/reference-overrides.conf"))))
 
