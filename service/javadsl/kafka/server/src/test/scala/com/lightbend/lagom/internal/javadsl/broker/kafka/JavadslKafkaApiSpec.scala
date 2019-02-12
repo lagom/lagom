@@ -62,6 +62,8 @@ class JavadslKafkaApiSpec extends WordSpecLike
         "akka.remote.netty.tcp.hostname" -> "127.0.0.1",
         "akka.persistence.journal.plugin" -> "akka.persistence.journal.inmem",
         "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local",
+        "lagom.cluster.join-self" -> "on",
+        "lagom.cluster.bootstrap.enabled" -> "off",
         "lagom.services.kafka_native" -> s"tcp://localhost:${KafkaLocalServer.DefaultPort}"
       )
       .build()
@@ -71,11 +73,7 @@ class JavadslKafkaApiSpec extends WordSpecLike
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-
     kafkaServer.start()
-
-    val system = application.injector.instanceOf(classOf[ActorSystem])
-    Cluster(system).join(Cluster(system).selfAddress)
   }
 
   before {

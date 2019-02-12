@@ -7,8 +7,10 @@ package com.lightbend.lagom.internal.cluster
 import java.util.concurrent.TimeUnit
 
 import akka.Done
-import akka.actor.{ ActorSystem, CoordinatedShutdown }
+import akka.actor.{ ActorSystem, CoordinatedShutdown, ExtendedActorSystem }
 import akka.cluster.Cluster
+import akka.management.cluster.bootstrap.ClusterBootstrap
+import akka.management.scaladsl.AkkaManagement
 import play.api.{ Environment, Mode }
 
 import scala.concurrent.Future
@@ -19,6 +21,8 @@ private[lagom] object JoinClusterImpl {
   def join(system: ActorSystem, environment: Environment): Unit = {
     val config = system.settings.config
     val joinSelf = config.getBoolean("lagom.cluster.join-self")
+
+    val clusterBootstrapEnabled = config.getBoolean("lagom.cluster.bootstrap.enabled")
     val exitJvm = config.getBoolean("lagom.cluster.exit-jvm-when-system-terminated")
     val isProd: Boolean = environment.mode == Mode.Prod
 
@@ -31,8 +35,20 @@ private[lagom] object JoinClusterImpl {
         "conflict with Akka Cluster Bootstrap or cause split-brain clusters.")
     }
 
-    if (cluster.settings.SeedNodes.isEmpty && joinSelf)
+    if (clusterBootstrapEnabled && joinSelf) {
+      throw new IllegalArgumentException(
+        "Both \"lagom.cluster.bootstrap.enabled\" and \"lagom.cluster.join-self\" are enabled, you should enable only one. " +
+          "Typically, \"lagom.cluster.bootstrap.enabled\" should be used in production while \"lagom.cluster.join-self\" in development and test environments"
+      )
+    }
+
+    if (clusterBootstrapEnabled) {
+      // TODO: move AkkaManagement to Guice module
+      AkkaManagement(system.asInstanceOf[ExtendedActorSystem]).start()
+      ClusterBootstrap(system.asInstanceOf[ExtendedActorSystem]).start()
+    } else if (cluster.settings.SeedNodes.isEmpty && joinSelf) {
       cluster.join(cluster.selfAddress)
+    }
 
     CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseClusterShutdown, "exit-jvm-when-downed") {
       () =>

@@ -34,7 +34,8 @@ class JdbcPersistenceModuleSpec
           .configure(
             // Correct configuration, but the database is not available
             "db.default.driver" -> "org.h2.Driver",
-            "db.default.url" -> "jdbc:h2:tcp://localhost/~/notavailable"
+            "db.default.url" -> "jdbc:h2:tcp://localhost/~/notavailable",
+            "lagom.cluster.bootstrap.enabled" -> "off"
           )
           .build()
 
@@ -53,7 +54,8 @@ class JdbcPersistenceModuleSpec
             "db.default.driver" -> "org.h2.Driver",
             "db.default.url" -> "jdbc:h2:tcp://localhost/~/notavailable",
             // And it is configured to fail fast
-            "play.db.prototype.hikaricp.initializationFailTimeout" -> "1"
+            "play.db.prototype.hikaricp.initializationFailTimeout" -> "1",
+            "lagom.cluster.bootstrap.enabled" -> "off"
           )
           .build()
       }
