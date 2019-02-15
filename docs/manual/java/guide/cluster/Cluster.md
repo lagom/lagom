@@ -42,23 +42,71 @@ In development you are typically only running the service on one cluster node. N
 
 ### Joining during production
 
-Starting from version 1.5.0, Lagom offers support for [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/current/bootstrap/). Akka Cluster Bootstrap is enabled by default in production mode and disabled in development and test mode.
+Starting from version 1.5.0, Lagom offers support for [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/bootstrap/). Akka Cluster Bootstrap is enabled by default in production mode and disabled in development and test mode.
 
-Akka Cluster Bootstrap helps forming (or joining to) a cluster by using [Akka Discovery](https://doc.akka.io/docs/akka/current/discovery/index.html) to discover peer nodes. It is an alternative to configuring static seed-nodes in dynamic deployment environments such as on Kubernetes or AWS.
+Akka Cluster Bootstrap helps forming (or joining to) a cluster by using [Akka Discovery](https://doc.akka.io/docs/akka/2.5/discovery/index.html) to discover peer nodes. It is an alternative to configuring static seed-nodes in dynamic deployment environments such as on Kubernetes or AWS.
 
 It builds on the flexibility of Akka Discovery, leveraging a range of discovery mechanisms depending on the environment you want to run your cluster in.
 
+Akka Cluster Bootstrap, in Lagom, can be disabled though property `lagom.cluster.bootstrap.enabled = false`. Note that this configuration flag has no effect if you declare seed-nodes explicitly in which case Akka Cluster Bootstrap won't be used.
+
+#### Akka Discovery
+
+In order to find the peer nodes and form a cluster, Akka Cluster Bootstrap need to be configured to use one of the existing Akka Discovery implementations.
+
+The snippet bellow explifies how to configure the Akka Cluster Boostrap to use the Akka Discovery Kubernetes API.
+
+```
+akka.management.cluster.bootstrap {
+  # example using kubernetes-api
+  contact-point-discovery {
+    discovery-method = kubernetes-api
+    service-name = "hello-lagom"
+  }
+}
+```
+Other existing implementations are: DNS, AWS, Consul, Marathon API and static Configuration. It's also possible to implement your own Akka Discovery implementation if needed.
+
+For more detailed and advanced configurations options, please consult the [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/bootstrap/) documentation and its [reference.conf](https://github.com/akka/akka-management/blob/v1.0.0-RC2/cluster-bootstrap/src/main/resources/reference.conf) file.
+
+
+#### Clustter Http Management
+
+[Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/bootstrap/) relies on [Http Cluster Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/cluster-http-management.html) to form a cluster.
+
+Akka Management Cluster HTTP is a [Akka Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/akka-management.html) extension that allows interaction with an akka-cluster through an HTTP interface. This management extension exposes different operations to manage nodes in a cluster (by default only read-only operations are exposed) as well as health checks based on the cluster state.
+
+Therefore, Akka Management will also be enabled and will run on http port `8558`. You can configured it to another port by setting property `akka.management.http.port` in your `application.conf` file.
+
+#### Health Checks
+
+Akka Management supports two kinds of [health checks](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/healthchecks.html):
+
+  * Readiness checks: should the application receive external traffic, for example waiting for the cluster to form.
+  * Liveness checks: should the application be left running
+
+Readiness checks can be used to decide if a load balancer should route traffic where as liveness checks can be used in environments which can restart a hung process.
+
+By default, Lagom enables the Cluster Health Check. This health check includes a readiness check that returns `true` when the node is either `Up` or `WeaklyUp`.
+
+All readiness checks are hosted on `/ready` and liveness checks are hosted on `/alive` on the Akka Management endpoint (port 8558 by default). You can change the paths by configuring it your `application.conf` file:
+
+```
+akka.management.health-checks {
+  readiness-path = "health/ready"
+  liveness-path = "health/alive"
+}
+```
+For further information on Akka Cluster Bootstrap and Health Checks, consult Akka Managment documentation:
+ * [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/bootstrap/)
+ * [Http Cluster Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/cluster-http-management.html)
+ * [Health Checks](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/healthchecks.html)
+
 ### Manual Cluster Formation
 
-If you prefer to not use **Akka Cluster Bootstrap** and handle the cluster formation yourself, you can disable it in your `application.conf` file and configure the Akka Cluster seed nodes statically.
+If you prefer to not use **Akka Cluster Bootstrap** and handle the cluster formation yourself, you can configure the Akka Cluster seed nodes statically.
 
-First, disable the cluster bootstrap:
-
-```
-lagom.cluster.bootstrap.enabled = false
-```
-
-Then, define some initial contact points of the cluster, so-called seed nodes in your `application.conf`:
+You can define some initial contact points of the cluster, so-called seed nodes in your `application.conf`:
 
 ```
 akka.cluster.seed-nodes = [
