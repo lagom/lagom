@@ -42,12 +42,33 @@ private[lagom] object JoinClusterImpl {
       )
     }
 
-    if (clusterBootstrapEnabled) {
-      // TODO: move AkkaManagement to Guice module
-      AkkaManagement(system.asInstanceOf[ExtendedActorSystem]).start()
-      ClusterBootstrap(system.asInstanceOf[ExtendedActorSystem]).start()
-    } else if (cluster.settings.SeedNodes.isEmpty && joinSelf) {
-      cluster.join(cluster.selfAddress)
+    /*
+     * There are four ways to form a cluster in Lagom
+     *  1. lagom.cluster.join-self - Lagom's dev mode forms a single node cluster
+     *  2. lagom.cluster.bootstrap.enabled - Lagom's prod default. Uses Akka Cluster Bootstrap and Akka Management
+     *  3. Declared seed-nodes. Overrides the optoins above
+     *  4. Programmatically: No seed-nodes, join-self = false and bootstrap.enabled = false. User is on its own to form the cluster
+     *
+     *  Last option is rather unusual, but we should not block users willing to do so. We also use that option in multi-jvm tests.
+     *  In order to join programmatically, when need to disable all flags.
+     *
+     *  The code below make it possible by only forming the cluster if
+     *  there is no seed-nodes and bootstrap or join-self are enabled.
+     */
+    if (cluster.settings.SeedNodes.isEmpty) {
+
+      if(clusterBootstrapEnabled) {
+        // we should only run ClusterBootstrap if the user didn't configure the seed-needs
+        // and left clusterBootstrapEnabled on true (default)
+        // if the user has seed-nodes configured, we should not add AkkaManagement on their behalf
+
+        // TODO: move AkkaManagement to Guice module
+        AkkaManagement(system.asInstanceOf[ExtendedActorSystem]).start()
+        ClusterBootstrap(system.asInstanceOf[ExtendedActorSystem]).start()
+
+      } else if (joinSelf) {
+        cluster.join(cluster.selfAddress)
+      }
     }
 
     CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseClusterShutdown, "exit-jvm-when-downed") {
