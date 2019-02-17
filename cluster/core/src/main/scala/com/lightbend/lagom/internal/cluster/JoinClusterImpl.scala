@@ -57,7 +57,7 @@ private[lagom] object JoinClusterImpl {
      */
     if (cluster.settings.SeedNodes.isEmpty) {
 
-      if(clusterBootstrapEnabled) {
+      if (clusterBootstrapEnabled) {
         // we should only run ClusterBootstrap if the user didn't configure the seed-needs
         // and left clusterBootstrapEnabled on true (default)
         // if the user has seed-nodes configured, we should not add AkkaManagement on their behalf
