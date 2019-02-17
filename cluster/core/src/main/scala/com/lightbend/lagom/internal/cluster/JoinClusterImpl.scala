@@ -50,7 +50,7 @@ private[lagom] object JoinClusterImpl {
      *  4. Programmatically: No seed-nodes, join-self = false and bootstrap.enabled = false. User is on its own to form the cluster
      *
      *  Last option is rather unusual, but we should not block users willing to do so. We also use that option in multi-jvm tests.
-     *  In order to join programmatically, when need to disable all flags.
+     *  In order to join programmatically, one need to disable all flags.
      *
      *  The code below make it possible by only forming the cluster if
      *  there is no seed-nodes and bootstrap or join-self are enabled.
