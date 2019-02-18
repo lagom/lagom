@@ -13,7 +13,7 @@ import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationC
 import com.typesafe.config.ConfigFactory
 import javax.net.ssl.SSLContext
 import org.scalatest.concurrent.{ PatienceConfiguration, ScalaFutures }
-import org.scalatest.time.{ Milliseconds, Seconds, Span }
+import org.scalatest.time.{ Seconds, Span }
 import org.scalatest.{ Matchers, WordSpec }
 import play.api.libs.ws.ahc.{ AhcWSClientConfigFactory, AhcWSComponents, StandaloneAhcWSClient }
 
