@@ -43,17 +43,19 @@ private[lagom] object JoinClusterImpl {
     }
 
     /*
-     * There are four ways to form a cluster in Lagom
-     *  1. lagom.cluster.join-self - Lagom's dev mode forms a single node cluster
+     * There are several ways to form a cluster in Lagom
+     *  1. Declared seed-nodes. Highest priority setting.
      *  2. lagom.cluster.bootstrap.enabled - Lagom's prod default. Uses Akka Cluster Bootstrap and Akka Management
-     *  3. Declared seed-nodes. Overrides the optoins above
+     *  3. lagom.cluster.join-self - Lagom's dev mode forms a single node cluster (unrecommended for production)
      *  4. Programmatically: No seed-nodes, join-self = false and bootstrap.enabled = false. User is on its own to form the cluster
      *
-     *  Last option is rather unusual, but we should not block users willing to do so. We also use that option in multi-jvm tests.
+     *  Last option is rather unusual but allows users to fallback to plain Akka cluster formation API. This option
+     *  is used in Lagom tests, for example.
      *  In order to join programmatically, one need to disable all flags.
      *
-     *  The code below make it possible by only forming the cluster if
-     *  there is no seed-nodes and bootstrap or join-self are enabled.
+     *  The code below will form the cluster if there are no seed-nodes and bootstrap or join-self are enabled. Forming
+     *  the cluster when seed-nodes are defined is already handled by Akka internally so there's no need to add
+     *  extra code in Lagom's codebase.
      */
     if (cluster.settings.SeedNodes.isEmpty) {
 
