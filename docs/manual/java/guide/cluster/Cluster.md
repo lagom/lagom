@@ -54,7 +54,7 @@ Akka Cluster Bootstrap, in Lagom, can be disabled through the property `lagom.cl
 
 In order to find the peer nodes and form a cluster, Akka Cluster Bootstrap need to be configured to use one of the existing Akka Discovery implementations.
 
-The snippet bellow explifies how to configure the Akka Cluster Boostrap to use the Akka Discovery Kubernetes API.
+The snippet below exemplifies how to configure the Akka Cluster Boostrap to use the Akka Discovery Kubernetes API.
 
 ```
 akka.management.cluster.bootstrap {
