@@ -49,13 +49,13 @@ Akka Cluster Bootstrap helps forming (or joining to) a cluster by using [Akka Di
 
 It builds on the flexibility of Akka Discovery, leveraging a range of discovery mechanisms depending on the environment you want to run your cluster in.
 
-Akka Cluster Bootstrap, in Lagom, can be disabled though property `lagom.cluster.bootstrap.enabled = false`. Note that this configuration flag has no effect if you declare seed-nodes explicitly in which case Akka Cluster Bootstrap won't be used.
+Akka Cluster Bootstrap, in Lagom, can be disabled through the property `lagom.cluster.bootstrap.enabled = false`. Note that this configuration flag has no effect if you declare seed-nodes explicitly in which case Akka Cluster Bootstrap won't be used.
 
 #### Akka Discovery
 
 In order to find the peer nodes and form a cluster, Akka Cluster Bootstrap need to be configured to use one of the existing Akka Discovery implementations.
 
-The snippet bellow explifies how to configure the Akka Cluster Boostrap to use the Akka Discovery Kubernetes API.
+The snippet below exemplifies how to configure the Akka Cluster Boostrap to use the Akka Discovery Kubernetes API.
 
 ```
 akka.management.cluster.bootstrap {
@@ -66,8 +66,7 @@ akka.management.cluster.bootstrap {
   }
 }
 ```
-Other existing implementations are: DNS, AWS, Consul, Marathon API and static Configuration. It's also possible to implement your own Akka Discovery implementation if needed.
-
+[Other existing implementations](https://developer.lightbend.com/docs/akka-management/current/discovery/index.html) are: DNS, AWS, Consul, Marathon API and static Configuration. It's also possible to implement your own Akka Discovery implementation if needed.
 For more detailed and advanced configurations options, please consult the [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/bootstrap/) documentation and its [reference.conf](https://github.com/akka/akka-management/blob/v1.0.0-RC2/cluster-bootstrap/src/main/resources/reference.conf) file.
 
 
@@ -75,7 +74,7 @@ For more detailed and advanced configurations options, please consult the [Akka 
 
 [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/bootstrap/) relies on [Http Cluster Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/cluster-http-management.html) to form a cluster.
 
-Akka Management Cluster HTTP is a [Akka Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/akka-management.html) extension that allows interaction with an akka-cluster through an HTTP interface. This management extension exposes different operations to manage nodes in a cluster (by default only read-only operations are exposed) as well as health checks based on the cluster state.
+Akka Management Cluster HTTP is an [Akka Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/akka-management.html) extension that allows interaction with an akka-cluster through an HTTP interface. This management extension exposes different operations to manage nodes in a cluster (by default only read-only operations are exposed) as well as health checks based on the cluster state.
 
 Therefore, Akka Management will also be enabled and will run on http port `8558`. You can configured it to another port by setting property `akka.management.http.port` in your `application.conf` file.
 
