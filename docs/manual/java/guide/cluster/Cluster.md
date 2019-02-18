@@ -36,11 +36,15 @@ You could imagine using cluster features across different services, but we recom
 
 A service instance joins a cluster when the service starts up.
 
-### Joining during development
+1. **Joining during development**:  In development you are typically only running the service on one cluster node. No explicit joining is necessary; the [[Lagom Development Environment|DevEnvironment]] handles it automatically and creates a single-node cluster.
 
-In development you are typically only running the service on one cluster node. No explicit joining is necessary; the [[Lagom Development Environment|DevEnvironment]] handles it automatically.
+1. **Joining during production**: There are several mechanisms available to create a cluster in production. This documentation covers the two recommended approaches:
+    1. Akka Cluster Bootstrap (recommended)
+    2. Manual Cluster Formation (a.k.a. a static list of `seed-nodes`)
 
-### Joining during production
+The sections below cover the two options for Cluster Joining during Production in more detail.
+
+### Joining during production (Akka Cluster Bootstrap)
 
 Starting from version 1.5.0, Lagom offers support for [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/bootstrap/). Akka Cluster Bootstrap is enabled by default in production mode and disabled in development and test mode.
 
@@ -74,7 +78,7 @@ For more detailed and advanced configurations options, please consult the [Akka 
 
 [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/bootstrap/) relies on [Http Cluster Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/cluster-http-management.html) to form a cluster.
 
-Akka Management Cluster HTTP is a [Akka Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/akka-management.html) extension that allows interaction with an akka-cluster through an HTTP interface. This management extension exposes different operations to manage nodes in a cluster (by default only read-only operations are exposed) as well as health checks based on the cluster state.
+Akka Management Cluster HTTP is an [Akka Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/akka-management.html) extension that allows interaction with an akka-cluster through an HTTP interface. This management extension exposes different operations to manage nodes in a cluster (by default only read-only operations are exposed) as well as health checks based on the cluster state.
 
 Therefore, Akka Management will also be enabled and will run on http port `8558`. You can configured it to another port by setting property `akka.management.http.port` in your `application.conf` file.
 
@@ -102,7 +106,7 @@ For further information on Akka Cluster Bootstrap and Health Checks, consult Akk
  * [Http Cluster Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/cluster-http-management.html)
  * [Health Checks](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/healthchecks.html)
 
-### Manual Cluster Formation
+### Joining during production (Manual Cluster Formation)
 
 If you prefer to not use **Akka Cluster Bootstrap** and handle the cluster formation yourself, you can configure the Akka Cluster seed nodes statically.
 
