@@ -48,7 +48,7 @@ Akka Cluster Bootstrap helps forming (or joining to) a cluster by using [Akka Di
 
 It builds on the flexibility of Akka Discovery, leveraging a range of discovery mechanisms depending on the environment you want to run your cluster in.
 
-Akka Cluster Bootstrap, in Lagom, can be disabled though property `lagom.cluster.bootstrap.enabled = false`. Note that this configuration flag has no effect if you declare seed-nodes explicitly in which case Akka Cluster Bootstrap won't be used.
+Akka Cluster Bootstrap, in Lagom, can be disabled through the property `lagom.cluster.bootstrap.enabled = false`. Note that this configuration flag has no effect if you declare seed-nodes explicitly in which case Akka Cluster Bootstrap won't be used.
 
 #### Akka Discovery
 
