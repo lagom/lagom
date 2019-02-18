@@ -1014,7 +1014,8 @@ object Dependencies {
           ""
         )
       }
-      throw new DependencyWhitelistValidationFailed
+      if (sys.env.get("TRAVIS_EVENT_TYPE") != Some("cron"))
+        throw new DependencyWhitelistValidationFailed
     }
   }
 
