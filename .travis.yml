@@ -8,8 +8,7 @@ env:
     - TRAVIS_JDK=adopt@1.8.192-12
 
 stages:
-  - validations
-  - test
+  - validations-and-test
   - test-build-tools
   - java-11
 
