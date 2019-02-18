@@ -58,7 +58,7 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
 
   // This feature is somewhat limited, it assumes that the read side database is the same database as the journals and
   // snapshots
-  private val createTablesTask: Option[ClusterStartupTask] = if (autoCreateTables) {
+  private lazy val createTablesTask: Option[ClusterStartupTask] = if (autoCreateTables) {
     val journalCfg = new JournalTableConfiguration(system.settings.config.getConfig("jdbc-read-journal"))
     val snapshotCfg = new SnapshotTableConfiguration(system.settings.config.getConfig("jdbc-snapshot-store"))
 

@@ -36,7 +36,9 @@ private[lagom] abstract class CassandraOffsetStore(
     }
   }
 
-  val startupTask = if (cassandraReadSideSettings.autoCreateTables) {
+  // This must be lazy to ensure that the startup task doesn't run until something actually tries to use it.
+  // This ensures that we don't try and use any cluster features before the cluster is formed.
+  lazy val startupTask = if (cassandraReadSideSettings.autoCreateTables) {
     Some(
       ClusterStartupTask(
         system,

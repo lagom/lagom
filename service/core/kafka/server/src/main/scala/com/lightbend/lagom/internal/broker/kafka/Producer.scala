@@ -12,6 +12,7 @@ import org.apache.kafka.common.serialization.{ Serializer, StringSerializer }
 import akka.Done
 import akka.NotUsed
 import akka.actor.{ Actor, ActorLogging, ActorSystem, Props, Status, SupervisorStrategy }
+import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.kafka.ProducerMessage
 import akka.kafka.ProducerSettings
@@ -58,12 +59,14 @@ private[lagom] object Producer {
     )
     val clusterShardingSettings = ClusterShardingSettings(system).withRole(producerConfig.role)
 
-    ClusterDistribution(system).start(
-      s"kafkaProducer-$topicId",
-      backoffPublisherProps,
-      tags.toSet,
-      ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
-    )
+    Cluster(system).registerOnMemberUp {
+      ClusterDistribution(system).start(
+        s"kafkaProducer-$topicId",
+        backoffPublisherProps,
+        tags.toSet,
+        ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
+      )
+    }
   }
 
   private class TaggedOffsetProducerActor[Message](

@@ -99,15 +99,19 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
     // if the entityName is deemed unique, we add the entity to the reverse index:
     reverseRegister.putIfAbsent(entityClass, entityTypeName)
 
-    if (role.forall(Cluster(system).selfRoles.contains)) {
-      val entityProps = PersistentEntityActor.props(
-        persistenceIdPrefix = entityTypeName, Optional.empty(), entityFactory, snapshotAfter, passivateAfterIdleTimeout,
-        journalPluginId, snapshotPluginId
-      )
-      sharding.start(prependName(entityTypeName), entityProps, shardingSettings, extractEntityId, extractShardId)
-    } else {
-      // not required role, start in proxy mode
-      sharding.startProxy(prependName(entityTypeName), role, extractEntityId, extractShardId)
+    val cluster = Cluster(system)
+
+    cluster.registerOnMemberUp {
+      if (role.forall(cluster.selfRoles.contains)) {
+        val entityProps = PersistentEntityActor.props(
+          persistenceIdPrefix = entityTypeName, Optional.empty(), entityFactory, snapshotAfter, passivateAfterIdleTimeout,
+          journalPluginId, snapshotPluginId
+        )
+        sharding.start(prependName(entityTypeName), entityProps, shardingSettings, extractEntityId, extractShardId)
+      } else {
+        // not required role, start in proxy mode
+        sharding.startProxy(prependName(entityTypeName), role, extractEntityId, extractShardId)
+      }
     }
   }
 

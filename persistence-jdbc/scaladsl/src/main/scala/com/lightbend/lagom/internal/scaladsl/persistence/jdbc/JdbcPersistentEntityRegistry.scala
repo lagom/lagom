@@ -5,9 +5,8 @@
 package com.lightbend.lagom.internal.scaladsl.persistence.jdbc
 
 import akka.actor.ActorSystem
+import akka.cluster.Cluster
 import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
-import akka.persistence.query.scaladsl.EventsByTagQuery
-import akka.persistence.query.{ NoOffset, Offset, PersistenceQuery, Sequence }
 import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
 import com.lightbend.lagom.internal.scaladsl.persistence.AbstractPersistentEntityRegistry
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
@@ -21,7 +20,9 @@ private[lagom] final class JdbcPersistentEntityRegistry(system: ActorSystem, sli
   private lazy val ensureTablesCreated = slickProvider.ensureTablesCreated()
 
   override def register(entityFactory: => PersistentEntity): Unit = {
-    ensureTablesCreated
+    Cluster(system).registerOnMemberUp {
+      ensureTablesCreated
+    }
     super.register(entityFactory)
   }
 

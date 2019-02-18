@@ -4,18 +4,15 @@
 
 package com.lightbend.lagom.internal.scaladsl.persistence
 
-import java.util.Optional
-import java.util.concurrent.{ CompletionStage, ConcurrentHashMap, TimeUnit }
+import java.util.concurrent.{ ConcurrentHashMap, TimeUnit }
 
-import akka.actor.{ ActorSystem, CoordinatedShutdown }
+import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
 import akka.event.Logging
-import akka.pattern.ask
 import akka.persistence.query.{ Offset, PersistenceQuery }
 import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.stream.scaladsl
-import akka.util.Timeout
 import akka.{ Done, NotUsed }
 import com.lightbend.lagom.scaladsl.persistence._
 import scala.concurrent.Future
@@ -92,15 +89,19 @@ class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEn
     // if the entityName is deemed unique, we add the entity to the reverse index:
     reverseRegister.putIfAbsent(entityClass, entityTypeName)
 
-    if (role.forall(Cluster(system).selfRoles.contains)) {
-      val entityProps = PersistentEntityActor.props(
-        persistenceIdPrefix = entityTypeName, None, () => entityFactory, snapshotAfter, passivateAfterIdleTimeout,
-        journalPluginId, snapshotPluginId
-      )
-      sharding.start(prependName(entityTypeName), entityProps, shardingSettings, extractEntityId, extractShardId)
-    } else {
-      // not required role, start in proxy mode
-      sharding.startProxy(prependName(entityTypeName), role, extractEntityId, extractShardId)
+    val cluster = Cluster(system)
+
+    cluster.registerOnMemberUp {
+      if (role.forall(cluster.selfRoles.contains)) {
+        val entityProps = PersistentEntityActor.props(
+          persistenceIdPrefix = entityTypeName, None, () => entityFactory, snapshotAfter, passivateAfterIdleTimeout,
+          journalPluginId, snapshotPluginId
+        )
+        sharding.start(prependName(entityTypeName), entityProps, shardingSettings, extractEntityId, extractShardId)
+      } else {
+        // not required role, start in proxy mode
+        sharding.startProxy(prependName(entityTypeName), role, extractEntityId, extractShardId)
+      }
     }
   }
 
