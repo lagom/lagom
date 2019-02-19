@@ -101,7 +101,7 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       Source.maybe[ByteString].mapMaterializedValue(_ => NotUsed)
     }
     doMakeStreamedCall(requestAsStream, serializer, transportRequestHeader).map(
-      (deserializeResponseStream(responseSerializer, requestHeader) _).tupled
+      (deserializeResponseStream(responseSerializer, transportRequestHeader) _).tupled
     )
   }
 
@@ -130,7 +130,7 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       maybeResponse <- responseStream via AkkaStreams.ignoreAfterCancellation runWith Sink.headOption
     } yield {
       val bytes = maybeResponse.getOrElse(ByteString.empty)
-      val responseHeader = headerFilterTransformClientResponse(headerFilter, transportResponseHeader, requestHeader)
+      val responseHeader = headerFilterTransformClientResponse(headerFilter, transportResponseHeader, transportRequestHeader)
       val deserializer = messageSerializerDeserializer(responseSerializer, messageHeaderProtocol(responseHeader))
       responseHeader -> negotiatedDeserializerDeserialize(deserializer, bytes)
     }
@@ -185,7 +185,7 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
 
     val requestHolder = ws.url(requestHeaderUri(requestHeader).toString)
       .withHttpHeaders(contentTypeHeader: _*)
-      .withMethod(requestHeaderMethod(requestHeader))
+      .withMethod(requestHeaderMethod(transportRequestHeader))
 
     val requestWithBody =
       if (messageSerializerIsUsed(requestSerializer)) {
