@@ -48,26 +48,41 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       val requestSerializerStreamed = messageSerializerIsStreamed(requestSerializer)
       val responseSerializerStreamed = messageSerializerIsStreamed(responseSerializer)
 
-      val result: Future[(ResponseHeader, Response)] = (requestSerializerStreamed, responseSerializerStreamed) match {
-        case (false, false) =>
-          makeStrictCall(requestHeader, requestSerializer.asInstanceOf[MessageSerializer[Request, ByteString]],
-            responseSerializer.asInstanceOf[MessageSerializer[Response, ByteString]], request)
-        case (false, true) =>
-          makeStreamedResponseCall(requestHeader, requestSerializer.asInstanceOf[MessageSerializer[Request, ByteString]],
-            responseSerializer.asInstanceOf[MessageSerializer[Response, AkkaStreamsSource[ByteString, NotUsed]]], request)
-        case (true, false) =>
-          makeStreamedRequestCall(
-            requestHeader,
-            requestSerializer.asInstanceOf[MessageSerializer[Request, AkkaStreamsSource[ByteString, NotUsed]]],
-            responseSerializer.asInstanceOf[MessageSerializer[Response, ByteString]], request
-          )
-        case (true, true) =>
-          makeStreamedCall(
-            requestHeader,
-            requestSerializer.asInstanceOf[MessageSerializer[Request, AkkaStreamsSource[ByteString, NotUsed]]],
-            responseSerializer.asInstanceOf[MessageSerializer[Response, AkkaStreamsSource[ByteString, NotUsed]]], request
-          )
-      }
+      val result: Future[(ResponseHeader, Response)] =
+        (requestSerializerStreamed, responseSerializerStreamed) match {
+
+          case (false, false) =>
+            makeStrictCall(
+              requestHeader,
+              requestSerializer.asInstanceOf[MessageSerializer[Request, ByteString]],
+              responseSerializer.asInstanceOf[MessageSerializer[Response, ByteString]],
+              request
+            )
+
+          case (false, true) =>
+            makeStreamedResponseCall(
+              requestHeader,
+              requestSerializer.asInstanceOf[MessageSerializer[Request, ByteString]],
+              responseSerializer.asInstanceOf[MessageSerializer[Response, AkkaStreamsSource[ByteString, NotUsed]]],
+              request
+            )
+
+          case (true, false) =>
+            makeStreamedRequestCall(
+              requestHeader,
+              requestSerializer.asInstanceOf[MessageSerializer[Request, AkkaStreamsSource[ByteString, NotUsed]]],
+              responseSerializer.asInstanceOf[MessageSerializer[Response, ByteString]],
+              request
+            )
+
+          case (true, true) =>
+            makeStreamedCall(
+              requestHeader,
+              requestSerializer.asInstanceOf[MessageSerializer[Request, AkkaStreamsSource[ByteString, NotUsed]]],
+              responseSerializer.asInstanceOf[MessageSerializer[Response, AkkaStreamsSource[ByteString, NotUsed]]],
+              request
+            )
+        }
 
       result
     }).map {
@@ -85,7 +100,8 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
   private def makeStreamedResponseCall(
     requestHeader:      RequestHeader,
     requestSerializer:  MessageSerializer[Request, ByteString],
-    responseSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]], request: Request
+    responseSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]],
+    request:            Request
   ): Future[(ResponseHeader, Response)] = {
 
     val serializer = messageSerializerSerializerForRequest[Request, ByteString](requestSerializer)
@@ -112,8 +128,10 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
    * message is received, it assumes the response is an empty message.
    */
   private def makeStreamedRequestCall(
-    requestHeader: RequestHeader, requestSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]],
-    responseSerializer: MessageSerializer[Response, ByteString], request: Request
+    requestHeader:      RequestHeader,
+    requestSerializer:  MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]],
+    responseSerializer: MessageSerializer[Response, ByteString],
+    request:            Request
   ): Future[(ResponseHeader, Response)] = {
 
     val serializer = messageSerializerSerializerForRequest(requestSerializer.asInstanceOf[MessageSerializer[AkkaStreamsSource[Any, NotUsed], AkkaStreamsSource[ByteString, NotUsed]]])
@@ -140,8 +158,10 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
    * A call that is streamed in both directions.
    */
   private def makeStreamedCall(
-    requestHeader: RequestHeader, requestSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]],
-    responseSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]], request: Request
+    requestHeader:      RequestHeader,
+    requestSerializer:  MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]],
+    responseSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]],
+    request:            Request
   ): Future[(ResponseHeader, Response)] = {
 
     val serializer = messageSerializerSerializerForRequest(
@@ -175,17 +195,22 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
   /**
    * A call that is strict in both directions.
    */
-  private def makeStrictCall(requestHeader: RequestHeader, requestSerializer: MessageSerializer[Request, ByteString],
-                             responseSerializer: MessageSerializer[Response, ByteString], request: Request): Future[(ResponseHeader, Response)] = {
+  private def makeStrictCall(
+    requestHeader:      RequestHeader,
+    requestSerializer:  MessageSerializer[Request, ByteString],
+    responseSerializer: MessageSerializer[Response, ByteString],
+    request:            Request
+  ): Future[(ResponseHeader, Response)] = {
 
     val headerFilter = descriptorHeaderFilter(descriptor)
     val transportRequestHeader = headerFilterTransformClientRequest(headerFilter, requestHeader)
     val contentTypeHeader =
       messageProtocolToContentTypeHeader(messageHeaderProtocol(transportRequestHeader)).toSeq.map(HeaderNames.CONTENT_TYPE -> _)
 
-    val requestHolder = ws.url(requestHeaderUri(requestHeader).toString)
-      .withHttpHeaders(contentTypeHeader: _*)
-      .withMethod(requestHeaderMethod(transportRequestHeader))
+    val requestHolder =
+      ws.url(requestHeaderUri(transportRequestHeader).toString)
+        .withHttpHeaders(contentTypeHeader: _*)
+        .withMethod(requestHeaderMethod(transportRequestHeader))
 
     val requestWithBody =
       if (messageSerializerIsUsed(requestSerializer)) {
