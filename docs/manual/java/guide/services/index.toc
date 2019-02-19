@@ -6,4 +6,3 @@ Test:Testing Services
 MessageSerializers:Message serializers
 HeaderFilters:Header Filters
 ServiceErrorHandling:Error handling
-TLSHttpTransport:Secure HTTP Transport
