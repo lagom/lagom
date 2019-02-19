@@ -71,8 +71,10 @@ final class PubSubRef[T](val topic: TopicId[T], mediator: ActorRef, system: Acto
    * this `Sink` and then `run` the stream.
    */
   def publisher(): Sink[T, NotUsed] = {
-    scaladsl.Sink.foreach[T](publishFun)
-      .mapMaterializedValue(_ => NotUsed).asJava
+    val res: scaladsl.Sink[T, NotUsed] =
+      scaladsl.Sink.foreach[T](publishFun)
+        .mapMaterializedValue(_ => NotUsed)
+    res.asJava
   }
 
   /**
@@ -83,11 +85,13 @@ final class PubSubRef[T](val topic: TopicId[T], mediator: ActorRef, system: Acto
    * this `Source` and then `run` the stream.
    */
   def subscriber(): Source[T, NotUsed] = {
-    scaladsl.Source.actorRef[T](bufferSize, OverflowStrategy.dropHead)
-      .mapMaterializedValue { ref =>
-        mediator ! Subscribe(topic.name, ref)
-        NotUsed
-      }.asJava
+    val res: scaladsl.Source[T, NotUsed] =
+      scaladsl.Source.actorRef[T](bufferSize, OverflowStrategy.dropHead)
+        .mapMaterializedValue { ref =>
+          mediator ! Subscribe(topic.name, ref)
+          NotUsed
+        }
+    res.asJava
   }
 
   /**
