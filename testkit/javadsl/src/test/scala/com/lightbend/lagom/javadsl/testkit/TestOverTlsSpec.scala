@@ -14,6 +14,7 @@ import com.google.inject.AbstractModule
 import com.lightbend.lagom.javadsl.api.ServiceCall
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.javadsl.testkit.ServiceTest.{ Setup, TestServer }
+import com.lightbend.lagom.javadsl.testkit.services.tls.TestTlsService
 import com.typesafe.config.ConfigFactory
 import javax.inject.Inject
 import javax.net.ssl.SSLContext
