@@ -517,11 +517,13 @@ object Dependencies {
   val server = libraryDependencies ++= Nil
 
   val `server-javadsl` = libraryDependencies ++= Seq(
+    akkaManagement,
     slf4jApi,
     commonsLang
   )
 
   val `server-scaladsl` = libraryDependencies ++= Seq(
+    akkaManagement,
     slf4jApi,
     scalaTest % Test
   )

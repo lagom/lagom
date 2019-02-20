@@ -63,14 +63,11 @@ private[lagom] object JoinClusterImpl {
         // we should only run ClusterBootstrap if the user didn't configure the seed-needs
         // and left clusterBootstrapEnabled on true (default)
         // if the user has seed-nodes configured, we should not add AkkaManagement on their behalf
-
-        // TODO: move AkkaManagement to Guice module
-        AkkaManagement(system.asInstanceOf[ExtendedActorSystem]).start()
         ClusterBootstrap(system.asInstanceOf[ExtendedActorSystem]).start()
-
       } else if (joinSelf) {
         cluster.join(cluster.selfAddress)
       }
+
     }
 
     CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseClusterShutdown, "exit-jvm-when-downed") {
