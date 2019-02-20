@@ -74,13 +74,11 @@ akka.management.cluster.bootstrap {
 For more detailed and advanced configurations options, please consult the [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/bootstrap/) documentation and its [reference.conf](https://github.com/akka/akka-management/blob/v1.0.0-RC2/cluster-bootstrap/src/main/resources/reference.conf) file.
 
 
-#### Cluster Http Management
+#### Akka Management
 
-[Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/bootstrap/) relies on [Http Cluster Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/cluster-http-management.html) to form a cluster.
+[Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/bootstrap/) relies on [Akka Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/akka-management.html) to form a cluster.
 
-Akka Management Cluster HTTP is an [Akka Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/akka-management.html) extension that allows interaction with an akka-cluster through an HTTP interface. This management extension exposes different operations to manage nodes in a cluster (by default only read-only operations are exposed) as well as health checks based on the cluster state.
-
-Therefore, Akka Management will also be enabled and will run on http port `8558`. You can configured it to another port by setting property `akka.management.http.port` in your `application.conf` file.
+[Akka Management](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/akka-management.html) is an extension that opens a dedicated HTTP interface. This management extension allows dedicated plugins to include their routes. Akka Cluster Bootstrap uses this mechanism to expose a route. Akka Management will be enabled when the cluster joining mechanism is Cluster Http Management and it will run on http port `8558`. You can configure it to another port by setting property `akka.management.http.port` in your `application.conf` file.
 
 #### Health Checks
 
