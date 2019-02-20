@@ -9,6 +9,7 @@ import akka.stream.scaladsl.Merge
 import akka.stream.scaladsl.Partition
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.broker.Message
+import akka.actor.ActorSystem
 
 //#inject-service
 class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
@@ -68,5 +69,21 @@ class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
         }
       )
     //#subscribe-to-topic-skip-messages
+  }
+
+  def delaySubscription = {
+    val actorSystem = ActorSystem()
+    //#delay-subscription
+    import akka.cluster.Cluster
+
+    Cluster(actorSystem).registerOnMemberUp {
+      helloService
+        .greetingsTopic()
+        .subscribe
+        .atLeastOnce(
+          Flow.fromFunction(doSomethingWithTheMessage)
+        )
+    }
+    //#delay-subscription
   }
 }

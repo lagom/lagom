@@ -72,6 +72,14 @@ The easiest way to achieve this is to use a total function which returns `Done` 
 
 @[subscribe-to-topic-skip-messages](code/docs/scaladsl/mb/AnotherServiceImpl.scala)
 
+### Delaying subscription until cluster start
+
+When Lagom starts, it may take some time to form a cluster with other nodes. In development, this happens almost immediately because there is only a single node that starts a cluster with itself. But in production, it typically might take 5-10 seconds. During this time, Lagom's cluster based features, such as persistence, won't be available, and attempts to use them will result in errors and timeouts. If you start your Kafka subscriptions immediately when Lagom starts up, then they will likely fail. Generally, this is not a big a problem, because Lagom will automatically restart the stream when this happens, but it does mean that you're likely to see errors in the logs.
+
+To handle this situation a little more gracefully, you may consider delaying starting your subscriptions until after the cluster has started. This can be done like so:
+
+@[delay-subscription](code/docs/scaladsl/mb/AnotherServiceImpl.scala)
+
 ## Polymorphic event streams
 
 Typically you will want to publish more than one type of event to a particular topic. This can be done by creating an interface that each event implements. In order to successfully serialize these events to and from JSON, you will have to include some extra information on your JSON representation of the data.

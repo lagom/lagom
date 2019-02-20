@@ -5,17 +5,17 @@
 package com.lightbend.lagom.internal.javadsl.persistence
 
 import java.util.Optional
-import java.util.concurrent.{ CompletableFuture, CompletionStage, ConcurrentHashMap, TimeUnit }
+import java.util.concurrent.{ CompletableFuture, CompletionStage, ConcurrentHashMap }
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
-import akka.event.Logging
 import akka.japi.Pair
 import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.persistence.query.{ PersistenceQuery, Offset => AkkaOffset }
 import akka.stream.javadsl
 import akka.{ Done, NotUsed }
+import com.lightbend.lagom.internal.persistence.PersistenceConfig
 import com.lightbend.lagom.javadsl.persistence._
 import play.api.inject.Injector
 
@@ -39,27 +39,9 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
     queryPluginId.asScala.map(id => PersistenceQuery(system).readJournalFor[EventsByTagQuery](id))
 
   private val sharding = ClusterSharding(system)
-  private val conf = system.settings.config.getConfig("lagom.persistence")
-  private val snapshotAfter: Optional[Int] = conf.getString("snapshot-after") match {
-    case "off" => Optional.empty()
-    case _     => Optional.of(conf.getInt("snapshot-after"))
-  }
-  private val maxNumberOfShards: Int = conf.getInt("max-number-of-shards")
-  private val role: Option[String] = conf.getString("run-entities-on-role") match {
-    case "" => None
-    case r  => Some(r)
-  }
-  private val passivateAfterIdleTimeout: Duration = {
-    val durationMs = conf.getDuration("passivate-after-idle-timeout", TimeUnit.MILLISECONDS)
-    if (durationMs == 0) {
-      // Scaladoc of setReceiveTimeout says "Pass in `Duration.Undefined` to switch off this feature."
-      Duration.Undefined
-    } else {
-      durationMs.millis
-    }
-  }
-  private val askTimeout: FiniteDuration = conf.getDuration("ask-timeout", TimeUnit.MILLISECONDS).millis
-  private val shardingSettings = ClusterShardingSettings(system).withRole(role)
+  protected val config = PersistenceConfig(system.settings.config.getConfig("lagom.persistence"))
+
+  private val shardingSettings = ClusterShardingSettings(system).withRole(config.runEntitiesOnRole)
 
   private val extractEntityId: ShardRegion.ExtractEntityId = {
     case CommandEnvelope(entityId, payload) => (entityId, payload)
@@ -67,7 +49,7 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
 
   private val extractShardId: ShardRegion.ExtractShardId = {
     case CommandEnvelope(entityId, _) =>
-      (math.abs(entityId.hashCode) % maxNumberOfShards).toString
+      (math.abs(entityId.hashCode) % config.maxNumberOfShards).toString
   }
 
   private val registeredTypeNames = new ConcurrentHashMap[String, Class[_]]()
@@ -101,24 +83,30 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
 
     val cluster = Cluster(system)
 
-    cluster.registerOnMemberUp {
-      if (role.forall(cluster.selfRoles.contains)) {
-        val entityProps = PersistentEntityActor.props(
-          persistenceIdPrefix = entityTypeName, Optional.empty(), entityFactory, snapshotAfter, passivateAfterIdleTimeout,
-          journalPluginId, snapshotPluginId
-        )
-        sharding.start(prependName(entityTypeName), entityProps, shardingSettings, extractEntityId, extractShardId)
-      } else {
-        // not required role, start in proxy mode
-        sharding.startProxy(prependName(entityTypeName), role, extractEntityId, extractShardId)
+    def start(): Unit = {
+      cluster.registerOnMemberUp {
+        if (config.runEntitiesOnRole.forall(cluster.selfRoles.contains)) {
+          val entityProps = PersistentEntityActor.props(
+            persistenceIdPrefix = entityTypeName, Optional.empty(), entityFactory, config.snapshotAfter.asJava,
+            config.passivateAfterIdleTimeout, journalPluginId, snapshotPluginId
+          )
+          sharding.start(prependName(entityTypeName), entityProps, shardingSettings, extractEntityId, extractShardId)
+        } else {
+          // not required role, start in proxy mode
+          sharding.startProxy(prependName(entityTypeName), config.runEntitiesOnRole, extractEntityId, extractShardId)
+        }
       }
     }
+
+    if (config.delayRegistration) {
+      cluster.registerOnMemberUp(start())
+    } else start()
   }
 
   override def refFor[C](entityClass: Class[_ <: PersistentEntity[C, _, _]], entityId: String): PersistentEntityRef[C] = {
     val entityName = reverseRegister.get(entityClass)
     if (entityName == null) throw new IllegalArgumentException(s"[${entityClass.getName} must first be registered")
-    new PersistentEntityRef(entityId, sharding.shardRegion(prependName(entityName)), askTimeout)
+    new PersistentEntityRef(entityId, sharding.shardRegion(prependName(entityName)), config.askTimeout)
   }
 
   override def eventStream[Event <: AggregateEvent[Event]](

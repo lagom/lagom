@@ -20,9 +20,11 @@ private[lagom] final class JdbcPersistentEntityRegistry(system: ActorSystem, sli
   private lazy val ensureTablesCreated = slickProvider.ensureTablesCreated()
 
   override def register(entityFactory: => PersistentEntity): Unit = {
-    Cluster(system).registerOnMemberUp {
-      ensureTablesCreated
-    }
+    if (config.delayRegistration) {
+      Cluster(system).registerOnMemberUp {
+        ensureTablesCreated
+      }
+    } else ensureTablesCreated
     super.register(entityFactory)
   }
 
