@@ -27,7 +27,7 @@ class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSp
   import system.dispatcher
 
   private lazy val injector = new GuiceInjectorBuilder().build()
-  override protected lazy val persistentEntityRegistry = new CassandraPersistentEntityRegistry(system, injector)
+  override protected lazy val persistentEntityRegistry = new CassandraPersistentEntityRegistry(system, injector, persistenceConfig)
 
   private lazy val testSession: CassandraSession = new CassandraSession(system)
   private lazy val testCasReadSideSettings: CassandraReadSideSettings = new CassandraReadSideSettings(system)

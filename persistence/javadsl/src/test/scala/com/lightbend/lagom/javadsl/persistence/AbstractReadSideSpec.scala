@@ -15,7 +15,7 @@ import akka.testkit.ImplicitSender
 import akka.util.Timeout
 import akka.{ Done, NotUsed }
 import com.lightbend.lagom.internal.javadsl.persistence.{ PersistentEntityActor, ReadSideActor }
-import com.lightbend.lagom.internal.persistence.ReadSideConfig
+import com.lightbend.lagom.internal.persistence.{ PersistenceConfig, ReadSideConfig }
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
@@ -24,6 +24,7 @@ import com.lightbend.lagom.persistence.ActorSystemSpec
 import org.scalatest.BeforeAndAfter
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
 import akka.pattern._
+
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.duration._
 
@@ -37,6 +38,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
   implicit val mat = ActorMaterializer()
 
+  protected val persistenceConfig = PersistenceConfig(system.settings.config.getConfig("lagom.persistence"))
   protected val persistentEntityRegistry: PersistentEntityRegistry
 
   def eventStream[Event <: AggregateEvent[Event]](

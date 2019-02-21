@@ -28,7 +28,7 @@ import scala.compat.java8.OptionConverters._
  *
  * Akka persistence plugins can extend this to implement a custom registry.
  */
-class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) extends PersistentEntityRegistry {
+class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector, config: PersistenceConfig) extends PersistentEntityRegistry {
 
   protected val name: Optional[String] = Optional.empty()
   protected val journalPluginId: String = ""
@@ -39,8 +39,6 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
     queryPluginId.asScala.map(id => PersistenceQuery(system).readJournalFor[EventsByTagQuery](id))
 
   private val sharding = ClusterSharding(system)
-  protected val config = PersistenceConfig(system.settings.config.getConfig("lagom.persistence"))
-
   private val shardingSettings = ClusterShardingSettings(system).withRole(config.runEntitiesOnRole)
 
   private val extractEntityId: ShardRegion.ExtractEntityId = {
@@ -84,17 +82,15 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
     val cluster = Cluster(system)
 
     def start(): Unit = {
-      cluster.registerOnMemberUp {
-        if (config.runEntitiesOnRole.forall(cluster.selfRoles.contains)) {
-          val entityProps = PersistentEntityActor.props(
-            persistenceIdPrefix = entityTypeName, Optional.empty(), entityFactory, config.snapshotAfter.asJava,
-            config.passivateAfterIdleTimeout, journalPluginId, snapshotPluginId
-          )
-          sharding.start(prependName(entityTypeName), entityProps, shardingSettings, extractEntityId, extractShardId)
-        } else {
-          // not required role, start in proxy mode
-          sharding.startProxy(prependName(entityTypeName), config.runEntitiesOnRole, extractEntityId, extractShardId)
-        }
+      if (config.runEntitiesOnRole.forall(cluster.selfRoles.contains)) {
+        val entityProps = PersistentEntityActor.props(
+          persistenceIdPrefix = entityTypeName, Optional.empty(), entityFactory, config.snapshotAfter.asJava,
+          config.passivateAfterIdleTimeout, journalPluginId, snapshotPluginId
+        )
+        sharding.start(prependName(entityTypeName), entityProps, shardingSettings, extractEntityId, extractShardId)
+      } else {
+        // not required role, start in proxy mode
+        sharding.startProxy(prependName(entityTypeName), config.runEntitiesOnRole, extractEntityId, extractShardId)
       }
     }
 

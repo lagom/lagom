@@ -17,7 +17,7 @@ import scala.concurrent.duration._
 
 class JpaReadSideImplSpec extends JpaPersistenceSpec with AbstractReadSideSpec {
   private lazy val injector = new GuiceInjectorBuilder().build()
-  override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, injector, slick)
+  override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, injector, slick, persistenceConfig)
 
   private lazy val jpaReadSide: JpaReadSide = new JpaReadSideImpl(jpa, offsetStore)
 

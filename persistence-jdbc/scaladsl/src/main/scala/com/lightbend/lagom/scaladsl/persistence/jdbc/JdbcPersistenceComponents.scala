@@ -42,7 +42,7 @@ trait WriteSideJdbcPersistenceComponents extends WriteSidePersistenceComponents 
   def executionContext: ExecutionContext
 
   override lazy val persistentEntityRegistry: PersistentEntityRegistry =
-    new JdbcPersistentEntityRegistry(actorSystem, slickProvider)
+    new JdbcPersistentEntityRegistry(actorSystem, slickProvider, persistenceConfig)
 
 }
 

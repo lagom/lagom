@@ -24,7 +24,7 @@ trait CassandraPersistenceComponents extends PersistenceComponents
  */
 trait WriteSideCassandraPersistenceComponents extends WriteSidePersistenceComponents {
   override lazy val persistentEntityRegistry: PersistentEntityRegistry =
-    new CassandraPersistentEntityRegistry(actorSystem)
+    new CassandraPersistentEntityRegistry(actorSystem, persistenceConfig)
 
   def serviceLocator: ServiceLocator
 

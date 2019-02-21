@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
  *
  * Akka persistence plugins can extend this to implement a custom registry.
  */
-class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEntityRegistry {
+class AbstractPersistentEntityRegistry(system: ActorSystem, config: PersistenceConfig) extends PersistentEntityRegistry {
 
   protected val name: Option[String] = None
   protected val journalPluginId: String = ""
@@ -37,7 +37,6 @@ class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEn
     queryPluginId.map(id => PersistenceQuery(system).readJournalFor[EventsByTagQuery](id))
 
   private val sharding = ClusterSharding(system)
-  protected val config = PersistenceConfig(system.settings.config.getConfig("lagom.persistence"))
   private val shardingSettings = ClusterShardingSettings(system).withRole(config.runEntitiesOnRole)
 
   private val extractEntityId: ShardRegion.ExtractEntityId = {
