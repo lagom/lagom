@@ -42,7 +42,7 @@ object Dependencies {
     val Netty = "4.1.32.Final"
     val NettyReactiveStreams = "2.0.0"
     val Kafka = "2.1.0"
-    val AlpakkaKafka = "1.0-RC1"
+    val AlpakkaKafka = "1.0-RC2"
     val Curator = "2.12.0"
     val Immutables = "2.3.10"
     val HibernateCore = "5.3.7.Final"
