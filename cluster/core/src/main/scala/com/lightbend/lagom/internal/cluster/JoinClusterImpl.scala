@@ -4,21 +4,18 @@
 
 package com.lightbend.lagom.internal.cluster
 
-import java.util.concurrent.TimeUnit
-
 import akka.Done
 import akka.actor.{ ActorSystem, CoordinatedShutdown, ExtendedActorSystem }
 import akka.cluster.Cluster
 import akka.management.cluster.bootstrap.ClusterBootstrap
-import akka.management.scaladsl.AkkaManagement
+import com.lightbend.lagom.internal.akka.management.AkkaManagementTrigger
 import play.api.{ Environment, Mode }
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 private[lagom] object JoinClusterImpl {
 
-  def join(system: ActorSystem, environment: Environment): Unit = {
+  def join(system: ActorSystem, environment: Environment, akkaManagementTrigger: AkkaManagementTrigger): Unit = {
     val config = system.settings.config
     val joinSelf = config.getBoolean("lagom.cluster.join-self")
 
@@ -60,10 +57,14 @@ private[lagom] object JoinClusterImpl {
     if (cluster.settings.SeedNodes.isEmpty) {
 
       if (clusterBootstrapEnabled) {
+
+        akkaManagementTrigger.forcedStart()
+
         // we should only run ClusterBootstrap if the user didn't configure the seed-needs
         // and left clusterBootstrapEnabled on true (default)
         // if the user has seed-nodes configured, we should not add AkkaManagement on their behalf
         ClusterBootstrap(system.asInstanceOf[ExtendedActorSystem]).start()
+
       } else if (joinSelf) {
         cluster.join(cluster.selfAddress)
       }

@@ -6,6 +6,7 @@ package com.lightbend.lagom.scaladsl.cluster
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
+import com.lightbend.lagom.internal.akka.management.AkkaManagementTrigger
 import com.lightbend.lagom.internal.cluster.JoinClusterImpl
 import com.lightbend.lagom.scaladsl.playjson.RequiresJsonSerializerRegistry
 import play.api.Environment
@@ -16,10 +17,11 @@ import play.api.Environment
 trait ClusterComponents extends RequiresJsonSerializerRegistry {
   def actorSystem: ActorSystem
   def environment: Environment
+  def akkaManagementTrigger: AkkaManagementTrigger
 
   // eager initialization
   val cluster: Cluster = {
-    JoinClusterImpl.join(actorSystem, environment)
+    JoinClusterImpl.join(actorSystem, environment, akkaManagementTrigger)
     Cluster(actorSystem)
   }
 }

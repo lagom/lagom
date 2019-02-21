@@ -594,13 +594,17 @@ object Dependencies {
     "io.netty" % "netty-transport-native-unix-common" % Versions.Netty
   )
 
+  val `akka-management-core` = libraryDependencies ++= Seq(
+    play,
+    akkaManagement
+  )
+
   val `cluster-core` = libraryDependencies ++= Seq(
     akkaCluster,
     akkaManagementClusterBootstrap,
     akkaManagementClusterHttp,
     akkaTestkit % Test,
     scalaTest % Test,
-    play,
     junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
 

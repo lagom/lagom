@@ -244,6 +244,8 @@ abstract class LagomApplication(context: LagomApplicationContext)
   override lazy val actorSystem: ActorSystem =
     ActorSystemProvider.start(config, environment, optionalJsonSerializerRegistry)
 
+  akkaManagementTrigger.conditionalStart()
+
   LagomServerTopicFactoryVerifier.verify(lagomServer, topicPublisherName)
 }
 

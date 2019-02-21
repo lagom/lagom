@@ -4,25 +4,40 @@
 
 package com.lightbend.lagom.internal.javadsl.server
 
-import akka.actor.{ ActorSystem, ExtendedActorSystem }
-import akka.management.scaladsl.AkkaManagement
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
+import com.lightbend.lagom.internal.akka.management.AkkaManagementTrigger
+import com.typesafe.config.Config
 import javax.inject.{ Inject, Provider, Singleton }
 import play.api.inject.{ Binding, Module }
-import play.api.{ Configuration, Environment }
+import play.api.{ Configuration, Environment, Mode }
 
-class AkkaManagementModule extends Module {
+import scala.concurrent.ExecutionContext
 
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[AkkaManagement].toProvider[AkkaManagementProvider].eagerly()
-  )
+private[lagom] class AkkaManagementModule extends Module {
 
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+    if (environment.mode == Mode.Prod) {
+      Seq(bind[AkkaManagementTrigger].toProvider[AkkaManagementProvider].eagerly())
+    } else {
+      Seq.empty[Binding[_]]
+    }
+  }
 }
 
 @Singleton
-class AkkaManagementProvider @Inject() (system: ActorSystem) extends Provider[AkkaManagement] {
-  override def get(): AkkaManagement = {
-    val akkaManagement = AkkaManagement(system.asInstanceOf[ExtendedActorSystem])
-    akkaManagement.start()
-    akkaManagement
+private[lagom] class AkkaManagementProvider @Inject() (
+  config:              Config,
+  actorSystem:         ActorSystem,
+  coordinatedShutdown: CoordinatedShutdown,
+  executionContext:    ExecutionContext
+)
+  extends Provider[AkkaManagementTrigger] {
+
+  override def get(): AkkaManagementTrigger = {
+    val managementTrigger = new AkkaManagementTrigger(config, actorSystem, coordinatedShutdown)(executionContext)
+    managementTrigger.conditionalStart()
+    managementTrigger
   }
+
 }
+

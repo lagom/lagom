@@ -538,7 +538,7 @@ lazy val `server-javadsl` = (project in file("service/javadsl/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(mimaSettings(since10): _*)
   .settings(runtimeLibCommon: _*)
-  .dependsOn(server, `client-javadsl`, immutables % "provided")
+  .dependsOn(`akka-management-core`, server, `client-javadsl`, immutables % "provided")
   // bring jackson closer to the root of the dependency tree to prompt Maven to choose the right version
   .dependsOn(jackson)
 
@@ -566,7 +566,7 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(mimaSettings(since13): _*)
   .settings(runtimeLibCommon: _*)
-  .dependsOn(server, `client-scaladsl`, `play-json`)
+  .dependsOn(`akka-management-core`, server, `client-scaladsl`, `play-json`)
 
 lazy val `testkit-core` = (project in file("testkit/core"))
   .settings(runtimeLibCommon: _*)
@@ -680,7 +680,16 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   }
 }
 
+lazy val `akka-management-core` = (project in file("akka-management/core"))
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    name := "lagom-akka-management-core",
+    Dependencies.`akka-management-core`
+  )
+
 lazy val `cluster-core` = (project in file("cluster/core"))
+  .dependsOn(`akka-management-core`)
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
