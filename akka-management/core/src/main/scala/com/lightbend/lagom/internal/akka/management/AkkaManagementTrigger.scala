@@ -11,6 +11,15 @@ import com.typesafe.config.Config
 
 import scala.concurrent.{ ExecutionContext, Future }
 
+/**
+ * This class works as an entry point for Lagom to start AkkaManagement and register CoordinaterShutdown task for it.
+ *
+ * Lagom will by default start it in production, but a user can disable it with `lagom.akka.management.enabled = false`.
+ *
+ * This class will also be used by Lagom's ClusterBootstrap. In which case, AkkaManagement.start may be called twice. Once by
+ * Lagom itself, when `lagom.akka.management.enabled = true` (default), and once by Lagom's ClusterBootstrap. This is safe because
+ * AkkaManagement.start is idempotent. This also explain why we don't keep any state in this class.
+ */
 private[lagom] class AkkaManagementTrigger(
   config:              Config,
   system:              ActorSystem,

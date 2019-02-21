@@ -58,11 +58,14 @@ private[lagom] object JoinClusterImpl {
 
       if (clusterBootstrapEnabled) {
 
+        // akka-management is a hard requirement for Akka ClusterBootstrap
+        // therefore, we must make sure it get started.
+        // forcedStart won't honour `lagom.akka.management.enabled` and will start akka-management anyway
+        // this call has no effect if akka-management is already running
         akkaManagementTrigger.forcedStart()
 
         // we should only run ClusterBootstrap if the user didn't configure the seed-needs
         // and left clusterBootstrapEnabled on true (default)
-        // if the user has seed-nodes configured, we should not add AkkaManagement on their behalf
         ClusterBootstrap(system.asInstanceOf[ExtendedActorSystem]).start()
 
       } else if (joinSelf) {
