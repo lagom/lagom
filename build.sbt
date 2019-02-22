@@ -343,6 +343,7 @@ val coreProjects = Seq[Project](
   client,
   server,
   spi,
+  `akka-management-core`,
   `cluster-core`,
   `kafka-client`,
   `kafka-broker`,
