@@ -74,7 +74,7 @@ After this change, your service projects will get assigned a port in the range `
 
 # Using HTTPS in development mode
 
-When running Lagom in [[Development Mode|DevEnvironment]] it is possible to enable HTTPS via settings on your build files. In Maven use:
+When running Lagom in [[Development Mode|DevEnvironment]] it is possible to enable HTTPS via settings on your build files. In Maven you can do this by modifying the configuration of the `lagom-maven-plugin`:
 
 ```xml
 <plugin>
@@ -86,11 +86,11 @@ When running Lagom in [[Development Mode|DevEnvironment]] it is possible to enab
 </plugin>
 ```
 
-or in sbt:
+If you add the setting on the parent `pom.xml` all services will have SSL enabled. If you add the setting on only one of the service implementation projects then only that service will open the HTTPS port.
+
+To enable SSL in sbt you should use:
 
 @[service-enable-ssl](code/build-service.sbt)
-
-This will enable the HTTPS transport next to HTTP. 
 
 You can also tune the port the server is bound to (similarly to the HTTP port):
 
@@ -112,4 +112,4 @@ Once enabled, your Lagom services will be directly usable with HTTPS. At the mom
 
 Lagom's development mode instruments the process and injects a self-signed certificate. At same time, the lagom services running in dev mode are automatically tuned to trust that certificate so that you can use service-to-service HTTPS calls. 
 
-The Lagom service client uses HTTP or HTTPS depending on the Service Locator you used. You can create your own HTTPS client using Play-WS or the Akka-HTTP Client API. Then, you should do a lookup on the service locator stating you need an HTTPS port and connect normally using Play-WS or Akka-HTTP Client. If you use Akka gRPC for inter-service communication, you may need to use HTTPS.
+The Lagom service client uses HTTP in development mode. You can create your own HTTPS client using Play-WS or the Akka-HTTP Client API. Then, you should do a lookup on the service locator stating you need an HTTPS port and connect normally using Play-WS or Akka-HTTP Client. If you use Akka gRPC for inter-service communication, you may need to use HTTPS.
