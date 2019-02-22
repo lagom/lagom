@@ -16,11 +16,9 @@ import scala.concurrent.ExecutionContext
 private[lagom] class AkkaManagementModule extends Module {
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
-    if (environment.mode == Mode.Prod) {
-      Seq(bind[AkkaManagementTrigger].toProvider[AkkaManagementProvider].eagerly())
-    } else {
-      Seq.empty[Binding[_]]
-    }
+    // The trigger must be eager because it's often not required by anyone as a dependency to
+    // be injected and yet it must be started anyway
+    Seq(bind[AkkaManagementTrigger].toProvider[AkkaManagementProvider].eagerly())
   }
 }
 
@@ -29,14 +27,17 @@ private[lagom] class AkkaManagementProvider @Inject() (
   config:              Config,
   actorSystem:         ActorSystem,
   coordinatedShutdown: CoordinatedShutdown,
+  environment:         Environment,
   executionContext:    ExecutionContext
 )
   extends Provider[AkkaManagementTrigger] {
 
   override def get(): AkkaManagementTrigger = {
-    val managementTrigger = new AkkaManagementTrigger(config, actorSystem, coordinatedShutdown)(executionContext)
-    managementTrigger.conditionalStart()
-    managementTrigger
+    val instance = new AkkaManagementTrigger(config, actorSystem, coordinatedShutdown)(executionContext)
+    if (environment.mode == Mode.Prod) {
+      instance.start()
+    }
+    instance
   }
 
 }

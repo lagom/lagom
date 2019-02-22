@@ -31,11 +31,12 @@ private[lagom] class AkkaManagementTrigger(
   /**
    * Starts Akka HTTP Management honoring the `lagom.akka.management.enabled` setting
    */
-  private[lagom] def conditionalStart() = {
+  private[lagom] def start() = {
 
     if (enabled) {
       forcedStart()
     } else {
+      // TODO: trace a WARN to state nothing happened
       Future.successful(Done)
     }
 
@@ -45,6 +46,11 @@ private[lagom] class AkkaManagementTrigger(
    * Starts Akka HTTP Management ignoring the `lagom.akka.management.enabled` setting.
    */
   private[lagom] def forcedStart(): Future[Done] = {
+
+    if (!enabled) {
+      // TODO: trace that flag is ignored and AHM is started anyway
+    }
+
     val akkaManagement = AkkaManagement(system.asInstanceOf[ExtendedActorSystem])
     akkaManagement.start().map {
       _ =>
