@@ -11,6 +11,13 @@ object Dependencies {
   object Versions {
     // Version numbers
 
+    // Also be sure to update ScalaVersion in docs/build.sbt.
+    val Scala210 = "2.10.7"
+    val Scala211 = "2.11.12"
+    val Scala212 = "2.12.8"
+    val Scala = Seq(Scala212, Scala211)
+    val SbtScala = Seq(Scala210, Scala212)
+
     // If you update the version of Play, you probably need to update the other Play* variables.
     // Also be sure to update PlayVersion in docs/build.sbt.
     val Play = "2.7.0"
@@ -24,9 +31,6 @@ object Dependencies {
     val AkkaHttp = "10.1.7"
     val Aeron = "1.15.1"
 
-    // Also be sure to update ScalaVersion in docs/build.sbt.
-    val Scala = Seq("2.12.8", "2.11.12")
-    val SbtScala = Seq("2.10.7", "2.12.8")
     val AkkaPersistenceCassandra = "0.61"
     val AkkaPersistenceJdbc = "3.5.0"
     val AkkaManagement = "1.0.0-RC2"
