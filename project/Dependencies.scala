@@ -18,9 +18,9 @@ object Dependencies {
     val PlayFileWatch = "1.1.8"
 
     // Also be sure to update AkkaVersion in docs/build.sbt.
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.20")
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.21")
     val AkkaHttp = "10.1.7"
-    val Aeron = "1.12.0"
+    val Aeron = "1.15.1"
 
     // Also be sure to update ScalaVersion in docs/build.sbt.
     val Scala = Seq("2.12.8", "2.11.12")
@@ -42,7 +42,7 @@ object Dependencies {
     val Netty = "4.1.32.Final"
     val NettyReactiveStreams = "2.0.0"
     val Kafka = "2.1.0"
-    val AlpakkaKafka = "1.0-RC1"
+    val AlpakkaKafka = "1.0-RC2"
     val Curator = "2.12.0"
     val Immutables = "2.3.10"
     val HibernateCore = "5.3.7.Final"
@@ -288,7 +288,7 @@ object Dependencies {
       "net.jodah" % "typetools" % "0.5.0",
       "org.lz4" % "lz4-java" % "1.5.0",
       "com.github.luben" % "zstd-jni" % "1.3.5-4",
-      "org.agrona" % "agrona" % "0.9.27",
+      "org.agrona" % "agrona" % "0.9.31",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.17",
@@ -1023,7 +1023,8 @@ object Dependencies {
           ""
         )
       }
-      throw new DependencyWhitelistValidationFailed
+      if (sys.env.get("TRAVIS_EVENT_TYPE") != Some("cron"))
+        throw new DependencyWhitelistValidationFailed
     }
   }
 

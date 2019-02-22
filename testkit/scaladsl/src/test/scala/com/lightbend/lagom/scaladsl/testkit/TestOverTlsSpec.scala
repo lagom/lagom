@@ -1,0 +1,123 @@
+/*
+ * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ */
+
+package com.lightbend.lagom.scaladsl.testkit
+
+import akka.NotUsed
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import com.lightbend.lagom.scaladsl.api.transport.Method
+import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall }
+import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LagomServer, LocalServiceLocator }
+import com.typesafe.config.ConfigFactory
+import javax.net.ssl.SSLContext
+import org.scalatest.concurrent.{ PatienceConfiguration, ScalaFutures }
+import org.scalatest.time.{ Seconds, Span }
+import org.scalatest.{ Matchers, WordSpec }
+import play.api.libs.ws.ahc.{ AhcWSClientConfigFactory, AhcWSComponents, StandaloneAhcWSClient }
+
+import scala.concurrent.Future
+
+/**
+ *
+ */
+class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
+
+  val timeout = PatienceConfiguration.Timeout(Span(5, Seconds))
+  val defaultSetup = ServiceTest.defaultSetup.withCluster(false)
+
+  "TestOverTls" when {
+    "started with ssl" should {
+
+      "not provide an ssl port by default" in {
+        ServiceTest.withServer(defaultSetup)(new TestTlsApplication(_)) { server =>
+          server.playServer.httpsPort shouldBe empty
+        }
+      }
+
+      "provide an ssl port" in {
+        ServiceTest.withServer(defaultSetup.withSsl())(new TestTlsApplication(_)) { server =>
+          server.playServer.httpsPort should not be empty
+        }
+      }
+
+      "provide an ssl context for the client" in {
+        ServiceTest.withServer(defaultSetup.withSsl())(new TestTlsApplication(_)) { server =>
+          server.clientSslContext should not be empty
+        }
+      }
+
+      "complete an RPC call" in {
+        ServiceTest.withServer(defaultSetup.withSsl())(new TestTlsApplication(_)) { server =>
+          // The client's provided by Lagom's ServiceTest default to use HTTP
+          val client: TestTlsService = server.serviceClient.implement[TestTlsService]
+          val response = client.sampleCall().invoke()
+          whenReady(response, timeout) { r =>
+            r should be("sample response")
+          }
+        }
+      }
+
+      "complete a WS call over HTTPS" in {
+        ServiceTest.withServer(defaultSetup.withSsl())(new TestTlsApplication(_)) { server =>
+          implicit val ctx = server.application.executionContext
+          // To explicitly use HTTPS on a test you must create a client of your own and make sure it uses
+          // the provided SSLContext
+          val wsClient = buildCustomWS(server.clientSslContext.get)
+          val response =
+            wsClient
+              .url(s"https://localhost:${server.playServer.httpsPort.get}/api/sample")
+              .get()
+              .map {
+                _.body[String]
+              }
+          whenReady(response, timeout) { r =>
+            r should be("sample response")
+          }
+        }
+      }
+    }
+  }
+
+  private def buildCustomWS(sslContext: SSLContext) = {
+    implicit val system = ActorSystem("test-client")
+    implicit val mat = ActorMaterializer()
+    // This setting enables the use of `SSLContext.setDefault` on the following line.
+    val sslConfig = ConfigFactory.parseString("play.ws.ssl.default = true").withFallback(ConfigFactory.load())
+    SSLContext.setDefault(sslContext)
+    val config = AhcWSClientConfigFactory.forConfig(sslConfig)
+    // This wsClient will use the `SSLContext` from `SSLContext.getDefault` (instead of the internal config-based)
+    val wsClient = StandaloneAhcWSClient(config)
+    wsClient
+  }
+}
+
+trait TestTlsService extends Service {
+
+  import Service._
+
+  def sampleCall(): ServiceCall[NotUsed, String]
+
+  override final def descriptor: Descriptor =
+    named("test-tls")
+      .withCalls(
+        restCall(Method.GET, "/api/sample", sampleCall _)
+      )
+
+}
+
+class TestTlsServiceImpl() extends TestTlsService {
+  override def sampleCall: ServiceCall[NotUsed, String] = ServiceCall { _ =>
+    Future.successful("sample response")
+  }
+}
+
+class TestTlsApplication(context: LagomApplicationContext) extends LagomApplication(context)
+  with LocalServiceLocator
+  with AhcWSComponents {
+
+  override lazy val lagomServer: LagomServer = serverFor[TestTlsService](new TestTlsServiceImpl())
+
+}
+
