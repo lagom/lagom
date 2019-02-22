@@ -56,6 +56,9 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       # multi-jvm tests forms the cluster programmatically
       # therefore we disable Akka Cluster Bootstrap
       lagom.cluster.bootstrap.enabled = off
+
+      # we don't want and we don't need to start akka-mngt during test
+      lagom.akka.management.enabled" = off
     """
   ).withFallback(ConfigFactory.parseResources("play/reference-overrides.conf"))))
 

@@ -15,7 +15,8 @@ private[lagom] object PersistenceTestConfig {
     "akka.remote.netty.tcp.port" -> "0",
 
     "lagom.cluster.join-self" -> "on",
-    "lagom.cluster.bootstrap.enabled" -> "off"
+    "lagom.cluster.bootstrap.enabled" -> "off",
+    "lagom.akka.management.enabled" -> "off"
   )
 
   lazy val ClusterConfig: Config = ConfigFactory.parseMap(ClusterConfigMap.asJava)
