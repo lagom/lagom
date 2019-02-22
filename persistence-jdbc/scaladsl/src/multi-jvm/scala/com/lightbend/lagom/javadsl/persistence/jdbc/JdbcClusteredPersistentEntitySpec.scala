@@ -4,7 +4,7 @@
 
 package com.lightbend.lagom.scaladsl.persistence.jdbc
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.stream.{ ActorMaterializer, Materializer }
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence.multinode.{ AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec }
@@ -60,6 +60,8 @@ class JdbcClusteredPersistentEntitySpec extends AbstractClusteredPersistentEntit
     new JdbcPersistenceComponents with HikariCPComponents {
       override def actorSystem: ActorSystem = JdbcClusteredPersistentEntitySpec.this.system
       override def executionContext: ExecutionContext = system.dispatcher
+      override def coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(actorSystem)
+
       override lazy val materializer: Materializer = ActorMaterializer.create(system)
       override lazy val configuration: Configuration = Configuration(system.settings.config)
       override def environment: Environment = JdbcClusteredPersistentEntityConfig.environment

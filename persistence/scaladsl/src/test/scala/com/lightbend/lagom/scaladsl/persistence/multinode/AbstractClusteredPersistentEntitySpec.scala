@@ -14,11 +14,10 @@ import akka.testkit.ImplicitSender
 import com.lightbend.lagom.scaladsl.persistence._
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.{ Config, ConfigFactory }
-import org.slf4j.LoggerFactory
 import play.api.Environment
 
-import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
+import scala.concurrent.{ Await, Future }
 
 abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
 
@@ -56,6 +55,9 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       # multi-jvm tests forms the cluster programmatically
       # therefore we disable Akka Cluster Bootstrap
       lagom.cluster.bootstrap.enabled = off
+
+      # we don't want and we don't need to start akka-mngt during test
+      lagom.akka.management.enabled = off
     """
   ).withFallback(ConfigFactory.parseResources("play/reference-overrides.conf"))))
 

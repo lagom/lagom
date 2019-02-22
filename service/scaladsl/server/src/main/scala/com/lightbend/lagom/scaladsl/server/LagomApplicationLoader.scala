@@ -230,7 +230,8 @@ abstract class LagomApplication(context: LagomApplicationContext)
   with ProvidesJsonSerializerRegistry
   with LagomServerComponents
   with LagomServiceClientComponents
-  with LagomConfigComponent {
+  with LagomConfigComponent
+  with AkkaManagementComponents {
 
   override val httpFilters: Seq[EssentialFilter] = Nil
 

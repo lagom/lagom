@@ -8,6 +8,13 @@ import scala.collection.JavaConverters._
 import com.typesafe.config.{ Config, ConfigFactory }
 
 private[lagom] object PersistenceTestConfig {
+
+  lazy val BasicConfigMap: Map[String, AnyRef] = Map(
+    "lagom.akka.management.enabled" -> "off"
+  )
+
+  lazy val BasicConfig: Config = ConfigFactory.parseMap(BasicConfigMap.asJava)
+
   lazy val ClusterConfigMap: Map[String, AnyRef] = Map(
     "akka.actor.provider" -> "akka.cluster.ClusterActorRefProvider",
 
@@ -16,7 +23,7 @@ private[lagom] object PersistenceTestConfig {
 
     "lagom.cluster.join-self" -> "on",
     "lagom.cluster.bootstrap.enabled" -> "off"
-  )
+  ) ++ BasicConfigMap
 
   lazy val ClusterConfig: Config = ConfigFactory.parseMap(ClusterConfigMap.asJava)
 
@@ -42,7 +49,7 @@ private[lagom] object PersistenceTestConfig {
     "lagom.persistence.read-side.cassandra.keyspace" -> s"${keyspacePrefix}_read",
     "lagom.persistence.read-side.cassandra.port" -> cassandraPort.toString,
     "lagom.persistence.read-side.cassandra.session-provider" -> "akka.persistence.cassandra.ConfigSessionProvider"
-  )
+  ) ++ BasicConfigMap
 
   def cassandraConfig(keyspacePrefix: String, cassandraPort: Int): Config =
     ConfigFactory.parseMap(cassandraConfigMap(keyspacePrefix, cassandraPort).asJava)
@@ -50,7 +57,7 @@ private[lagom] object PersistenceTestConfig {
   lazy val JdbcConfigMap: Map[String, AnyRef] = Map(
     "akka.persistence.journal.plugin" -> "jdbc-journal",
     "akka.persistence.snapshot-store.plugin" -> "jdbc-snapshot-store"
-  )
+  ) ++ BasicConfigMap
 
   lazy val JdbcConfig: Config = ConfigFactory.parseMap(JdbcConfigMap.asJava)
 }

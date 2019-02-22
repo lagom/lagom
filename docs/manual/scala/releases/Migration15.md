@@ -49,11 +49,17 @@ If you are not using Kubernetes or DC/OS, you must configure your services in a 
 
 If you are using ConductR in production and need assistance migrating to other solutions please [contact Lightbend](https://www.lightbend.com/contact).
 
-
 ## Lightbend Orchestration
 
 TODO (new version required)
 
+## Cluster Formation
+
+A new mechanism to form and [[join an Akka Cluster|Cluster#Joining]] is introduced in Lagom 1.5. Apart from the original `Manual Cluster Formation` the new `Akka Cluster Bootstrap` is now supported. This new mechanism is introduced with lower precedence than `Manual Cluster Formation` so if you rely on the use of a list of `seed-nodes` then everything will work as before. On the other hand, `Akka Cluster Bootstrap` takes precedence over the `join-self` cluster formation for single-node clusters. If you use single-node clusters via `join-self` you will have to explicitly disable `Akka Cluster Bootstrap`:
+
+```
+lagom.cluster.bootstrap.enabled = false
+```
 
 ## Upgrading a production system
 

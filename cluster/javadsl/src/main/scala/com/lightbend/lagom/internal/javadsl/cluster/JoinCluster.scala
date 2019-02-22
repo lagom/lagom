@@ -5,6 +5,7 @@
 package com.lightbend.lagom.internal.javadsl.cluster
 
 import akka.actor.ActorSystem
+import com.lightbend.lagom.internal.akka.management.AkkaManagementTrigger
 import com.lightbend.lagom.internal.cluster.JoinClusterImpl
 import javax.inject.Inject
 import play.api.{ Configuration, Environment }
@@ -16,6 +17,12 @@ class JoinClusterModule extends Module {
   )
 }
 
-private[lagom] class JoinCluster @Inject() (system: ActorSystem, environment: Environment) {
-  JoinClusterImpl.join(system, environment)
+private[lagom] class JoinCluster @Inject() (
+  system:                ActorSystem,
+  environment:           Environment,
+  akkaManagementTrigger: AkkaManagementTrigger
+) {
+
+  JoinClusterImpl.join(system, environment, akkaManagementTrigger)
+
 }

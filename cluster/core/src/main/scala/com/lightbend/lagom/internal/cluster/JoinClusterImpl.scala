@@ -4,21 +4,18 @@
 
 package com.lightbend.lagom.internal.cluster
 
-import java.util.concurrent.TimeUnit
-
 import akka.Done
 import akka.actor.{ ActorSystem, CoordinatedShutdown, ExtendedActorSystem }
 import akka.cluster.Cluster
 import akka.management.cluster.bootstrap.ClusterBootstrap
-import akka.management.scaladsl.AkkaManagement
+import com.lightbend.lagom.internal.akka.management.AkkaManagementTrigger
 import play.api.{ Environment, Mode }
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 private[lagom] object JoinClusterImpl {
 
-  def join(system: ActorSystem, environment: Environment): Unit = {
+  def join(system: ActorSystem, environment: Environment, akkaManagementTrigger: AkkaManagementTrigger): Unit = {
     val config = system.settings.config
     val joinSelf = config.getBoolean("lagom.cluster.join-self")
 
@@ -42,12 +39,39 @@ private[lagom] object JoinClusterImpl {
       )
     }
 
-    if (clusterBootstrapEnabled) {
-      // TODO: move AkkaManagement to Guice module
-      AkkaManagement(system.asInstanceOf[ExtendedActorSystem]).start()
-      ClusterBootstrap(system.asInstanceOf[ExtendedActorSystem]).start()
-    } else if (cluster.settings.SeedNodes.isEmpty && joinSelf) {
-      cluster.join(cluster.selfAddress)
+    /*
+     * There are several ways to form a cluster in Lagom
+     *  1. Declared seed-nodes. Highest priority setting.
+     *  2. lagom.cluster.bootstrap.enabled - Lagom's prod default. Uses Akka Cluster Bootstrap and Akka Management
+     *  3. lagom.cluster.join-self - Lagom's dev mode forms a single node cluster (unrecommended for production)
+     *  4. Programmatically: No seed-nodes, join-self = false and bootstrap.enabled = false. User is on its own to form the cluster
+     *
+     *  Last option is rather unusual but allows users to fallback to plain Akka cluster formation API. This option
+     *  is used in Lagom tests, for example.
+     *  In order to join programmatically, one need to disable all flags.
+     *
+     *  The code below will form the cluster if there are no seed-nodes and bootstrap or join-self are enabled. Forming
+     *  the cluster when seed-nodes are defined is already handled by Akka internally so there's no need to add
+     *  extra code in Lagom's codebase.
+     */
+    if (cluster.settings.SeedNodes.isEmpty) {
+
+      if (clusterBootstrapEnabled) {
+
+        // akka-management is a hard requirement for Akka ClusterBootstrap
+        // therefore, we must make sure it get started.
+        // forcedStart won't honour `lagom.akka.management.enabled` and will start akka-management anyway
+        // this call has no effect if akka-management is already running
+        akkaManagementTrigger.forcedStart()
+
+        // we should only run ClusterBootstrap if the user didn't configure the seed-needs
+        // and left clusterBootstrapEnabled on true (default)
+        ClusterBootstrap(system.asInstanceOf[ExtendedActorSystem]).start()
+
+      } else if (joinSelf) {
+        cluster.join(cluster.selfAddress)
+      }
+
     }
 
     CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseClusterShutdown, "exit-jvm-when-downed") {
