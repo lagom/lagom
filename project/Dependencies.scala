@@ -596,7 +596,14 @@ object Dependencies {
 
   val `akka-management-core` = libraryDependencies ++= Seq(
     play,
-    akkaManagement
+    akkaManagement,
+
+    // Upgrades needed to match whitelist
+    akkaStream,
+    akkaActor,
+    akkaProfobuf,
+    akkaSlf4j,
+    scalaXml
   )
 
   val `akka-management-javadsl` = libraryDependencies ++= Seq.empty[ModuleID]
