@@ -309,6 +309,7 @@ val javadslProjects = Seq[Project](
   `broker-javadsl`,
   `kafka-client-javadsl`,
   `kafka-broker-javadsl`,
+  `akka-management-javadsl`,
   `cluster-javadsl`,
   `persistence-javadsl`,
   `persistence-cassandra-javadsl`,
@@ -328,6 +329,7 @@ val scaladslProjects = Seq[Project](
   `kafka-client-scaladsl`,
   `kafka-broker-scaladsl`,
   `server-scaladsl`,
+  `akka-management-scaladsl`,
   `cluster-scaladsl`,
   `persistence-scaladsl`,
   `persistence-cassandra-scaladsl`,
@@ -344,6 +346,7 @@ val coreProjects = Seq[Project](
   client,
   server,
   spi,
+  `akka-management-core`,
   `cluster-core`,
   `kafka-client`,
   `kafka-broker`,
@@ -539,7 +542,7 @@ lazy val `server-javadsl` = (project in file("service/javadsl/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(mimaSettings(since10): _*)
   .settings(runtimeLibCommon: _*)
-  .dependsOn(server, `client-javadsl`, immutables % "provided")
+  .dependsOn(`akka-management-javadsl`, server, `client-javadsl`, immutables % "provided")
   // bring jackson closer to the root of the dependency tree to prompt Maven to choose the right version
   .dependsOn(jackson)
 
@@ -567,7 +570,7 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(mimaSettings(since13): _*)
   .settings(runtimeLibCommon: _*)
-  .dependsOn(server, `client-scaladsl`, `play-json`)
+  .dependsOn(`akka-management-scaladsl`, server, `client-scaladsl`, `play-json`)
 
 lazy val `testkit-core` = (project in file("testkit/core"))
   .settings(runtimeLibCommon: _*)
@@ -681,7 +684,35 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   }
 }
 
+lazy val `akka-management-core` = (project in file("akka-management/core"))
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+//  .settings(mimaSettings(since15): _*)
+  .settings(
+    name := "lagom-akka-management-core",
+    Dependencies.`akka-management-core`
+  )
+lazy val `akka-management-javadsl` = (project in file("akka-management/javadsl"))
+  .dependsOn(`akka-management-core`)
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+//  .settings(mimaSettings(since15): _*)
+  .settings(
+    name := "lagom-akka-management-javadsl",
+    Dependencies.`akka-management-javadsl`
+  )
+lazy val `akka-management-scaladsl` = (project in file("akka-management/scaladsl"))
+  .dependsOn(`akka-management-core`)
+  .settings(runtimeLibCommon: _*)
+  .enablePlugins(RuntimeLibPlugins)
+//  .settings(mimaSettings(since15): _*)
+  .settings(
+    name := "lagom-akka-management-scaladsl",
+    Dependencies.`akka-management-scaladsl`
+  )
+
 lazy val `cluster-core` = (project in file("cluster/core"))
+  .dependsOn(`akka-management-core`)
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -690,7 +721,7 @@ lazy val `cluster-core` = (project in file("cluster/core"))
   )
 
 lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
-  .dependsOn(`cluster-core`, jackson)
+  .dependsOn(`akka-management-javadsl`, `cluster-core`, jackson)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since10): _*)
   .settings(multiJvmTestSettings: _*)
@@ -701,7 +732,7 @@ lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
   ) configs (MultiJvm)
 
 lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
-  .dependsOn(`cluster-core`, `play-json`)
+  .dependsOn(`akka-management-scaladsl`, `cluster-core`, `play-json`)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since13): _*)
   .settings(multiJvmTestSettings: _*)

@@ -370,6 +370,7 @@ object ServiceTest {
 
         initialBuilder
           .configure("akka.actor.provider", "akka.actor.LocalActorRefProvider")
+          .configure(BasicConfig)
           .disable(classOf[PersistenceModule], classOf[PubSubModule], classOf[JoinClusterModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
           .disableModules(CassandraPersistenceModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)

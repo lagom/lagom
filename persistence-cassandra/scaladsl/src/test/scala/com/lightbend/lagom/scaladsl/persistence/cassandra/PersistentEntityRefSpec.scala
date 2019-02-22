@@ -7,7 +7,7 @@ package com.lightbend.lagom.scaladsl.persistence.cassandra
 import java.io.File
 
 import akka.actor.setup.ActorSystemSetup
-import akka.actor.{ ActorSystem, BootstrapSetup }
+import akka.actor.{ ActorSystem, BootstrapSetup, CoordinatedShutdown }
 import akka.cluster.Cluster
 import akka.pattern.AskTimeoutException
 import akka.persistence.cassandra.testkit.CassandraLauncher
@@ -42,6 +42,7 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
       akka.loglevel = INFO
       akka.cluster.sharding.distributed-data.durable.keys = []
       lagom.cluster.join-self = on
+      lagom.akka.management.enabled = off
       lagom.cluster.bootstrap.enabled = off
   """).withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
   private val system: ActorSystem = ActorSystem("PersistentEntityRefSpec", ActorSystemSetup(
@@ -77,12 +78,14 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
   val components = new CassandraPersistenceComponents {
     override def actorSystem: ActorSystem = system
     override def executionContext: ExecutionContext = system.dispatcher
+    override def coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(actorSystem)
 
     override def environment: Environment = Environment(new File("."), getClass.getClassLoader, PlayMode.Test)
     override def configuration: play.api.Configuration = play.api.Configuration(config)
     override def materializer: Materializer = ActorMaterializer()(system)
     override def serviceLocator: ServiceLocator = NoServiceLocator
     override def jsonSerializerRegistry: JsonSerializerRegistry = TestEntitySerializerRegistry
+
   }
 
   private def registry: PersistentEntityRegistry = {
