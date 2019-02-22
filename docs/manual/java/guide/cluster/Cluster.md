@@ -38,7 +38,7 @@ A service instance joins a cluster when the service starts up.
 
 1. **Joining during development**:  In development you are typically only running the service on one cluster node. No explicit joining is necessary; the [[Lagom Development Environment|DevEnvironment]] handles it automatically and creates a single-node cluster.
 
-1. **Joining during production**: There are several mechanisms available to create a cluster in production. This documentation covers the two recommended approaches:
+1. **Joining during production**: There are several mechanisms available to create a cluster in production. This documentation covers two approaches supported out-of-the-box:
     1. Akka Cluster Bootstrap (recommended)
     2. Manual Cluster Formation (a.k.a. a static list of `seed-nodes`)
 
