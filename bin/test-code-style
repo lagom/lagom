@@ -16,7 +16,8 @@ runSbt  +headerCheck \
         +test:headerCheck \
         multi-jvm:headerCheck
 
-runSbt  validateDependencies \
+runSbt  versionSyncCheck \
+        validateDependencies \
         mimaReportBinaryIssues
 
 git diff --exit-code || (
