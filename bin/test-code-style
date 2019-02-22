@@ -14,7 +14,7 @@ runSbt  +scalariformFormat \
 
 runSbt  +headerCheck \
         +test:headerCheck \
-        multi-jvm:headerCheck
+        c:headerCheck
 
 runSbt  validateDependencies \
         mimaReportBinaryIssues

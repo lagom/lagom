@@ -4,7 +4,7 @@
 
 package com.lightbend.lagom.scaladsl.persistence.slick
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.stream.{ ActorMaterializer, Materializer }
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence.multinode.{ AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec }
@@ -58,6 +58,8 @@ class SlickClusteredPersistentEntitySpec
     new SlickPersistenceComponents with HikariCPComponents {
       override def actorSystem: ActorSystem = SlickClusteredPersistentEntitySpec.this.system
       override def executionContext: ExecutionContext = system.dispatcher
+      override def coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(actorSystem)
+
       override lazy val materializer: Materializer = ActorMaterializer.create(system)
       override lazy val configuration: Configuration = Configuration(system.settings.config)
       override def environment: Environment = SlickClusteredPersistentEntityConfig.environment
