@@ -11,6 +11,7 @@ import play.api.inject.{ Binding, Module }
 
 import scala.concurrent.ExecutionContext
 
+// TODO: This is not production code. It's only used in tests and it's never run in PROD.
 class ActorSystemModule(system: ActorSystem) extends Module {
 
   private lazy val mat = ActorMaterializer()(system)

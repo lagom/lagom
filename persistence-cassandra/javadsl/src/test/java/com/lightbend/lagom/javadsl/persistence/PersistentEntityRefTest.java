@@ -53,6 +53,7 @@ public class PersistentEntityRefTest {
         "akka.loglevel = INFO \n" +
         "akka.cluster.sharding.distributed-data.durable.keys = [] \n" +
         "lagom.cluster.join-self = on \n" +
+        "lagom.akka.management.enabled = off\n" +
         "lagom.cluster.bootstrap.enabled = off"
     ).withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort()));
 

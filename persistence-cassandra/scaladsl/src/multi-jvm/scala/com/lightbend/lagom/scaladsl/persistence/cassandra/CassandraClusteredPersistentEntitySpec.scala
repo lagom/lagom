@@ -6,7 +6,7 @@ package com.lightbend.lagom.scaladsl.persistence.cassandra
 
 import java.io.File
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.{ ActorMaterializer, Materializer }
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
@@ -59,12 +59,14 @@ class CassandraClusteredPersistentEntitySpec extends AbstractClusteredPersistent
     new CassandraPersistenceComponents {
       override def actorSystem: ActorSystem = system
       override def executionContext: ExecutionContext = system.dispatcher
+      override def coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(actorSystem)
 
       override def environment: Environment = Environment(new File("."), getClass.getClassLoader, Mode.Test)
       override def materializer: Materializer = ActorMaterializer()(system)
       override def configuration: Configuration = Configuration(system.settings.config)
       override def serviceLocator: ServiceLocator = NoServiceLocator
       override def jsonSerializerRegistry: JsonSerializerRegistry = ???
+
     }
 
   def testEntityReadSide = new TestEntityReadSide(components.actorSystem, components.cassandraSession)

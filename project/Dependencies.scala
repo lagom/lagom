@@ -517,11 +517,13 @@ object Dependencies {
   val server = libraryDependencies ++= Nil
 
   val `server-javadsl` = libraryDependencies ++= Seq(
+    akkaManagement,
     slf4jApi,
     commonsLang
   )
 
   val `server-scaladsl` = libraryDependencies ++= Seq(
+    akkaManagement,
     slf4jApi,
     scalaTest % Test
   )
@@ -592,13 +594,27 @@ object Dependencies {
     "io.netty" % "netty-transport-native-unix-common" % Versions.Netty
   )
 
+  val `akka-management-core` = libraryDependencies ++= Seq(
+    play,
+    akkaManagement,
+
+    // Upgrades needed to match whitelist
+    akkaStream,
+    akkaActor,
+    akkaProfobuf,
+    akkaSlf4j,
+    scalaXml
+  )
+
+  val `akka-management-javadsl` = libraryDependencies ++= Seq.empty[ModuleID]
+  val `akka-management-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
+
   val `cluster-core` = libraryDependencies ++= Seq(
     akkaCluster,
     akkaManagementClusterBootstrap,
     akkaManagementClusterHttp,
     akkaTestkit % Test,
     scalaTest % Test,
-    play,
     junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
 
