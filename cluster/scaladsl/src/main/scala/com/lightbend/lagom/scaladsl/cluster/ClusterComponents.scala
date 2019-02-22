@@ -9,12 +9,13 @@ import akka.cluster.Cluster
 import com.lightbend.lagom.internal.akka.management.AkkaManagementTrigger
 import com.lightbend.lagom.internal.cluster.JoinClusterImpl
 import com.lightbend.lagom.scaladsl.playjson.RequiresJsonSerializerRegistry
+import com.lightbend.lagom.scaladsl.server.AkkaManagementComponents
 import play.api.Environment
 
 /**
  * Cluster components (for compile-time injection).
  */
-trait ClusterComponents extends RequiresJsonSerializerRegistry {
+trait ClusterComponents extends RequiresJsonSerializerRegistry with AkkaManagementComponents {
   def actorSystem: ActorSystem
   def environment: Environment
   def akkaManagementTrigger: AkkaManagementTrigger

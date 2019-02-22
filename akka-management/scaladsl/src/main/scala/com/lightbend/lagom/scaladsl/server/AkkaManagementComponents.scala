@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext
 
 trait AkkaManagementComponents {
 
-  def config: Config
+  def configuration: play.api.Configuration
   def actorSystem: ActorSystem
   def coordinatedShutdown: CoordinatedShutdown
 
@@ -20,7 +20,7 @@ trait AkkaManagementComponents {
 
   // eager initialization
   val akkaManagementTrigger: AkkaManagementTrigger = {
-    val instance = new AkkaManagementTrigger(config, actorSystem, coordinatedShutdown)(executionContext)
+    val instance = new AkkaManagementTrigger(configuration.underlying, actorSystem, coordinatedShutdown)(executionContext)
     instance.conditionalStart()
     instance
   }

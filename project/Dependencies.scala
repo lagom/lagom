@@ -599,6 +599,9 @@ object Dependencies {
     akkaManagement
   )
 
+  val `akka-management-javadsl` = libraryDependencies ++= Seq.empty[ModuleID]
+  val `akka-management-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID] 
+  
   val `cluster-core` = libraryDependencies ++= Seq(
     akkaCluster,
     akkaManagementClusterBootstrap,
