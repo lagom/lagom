@@ -7,6 +7,7 @@ import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys._
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
 import lagom.Protobuf
+import lagom.build._
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import com.typesafe.tools.mima.core._
 
