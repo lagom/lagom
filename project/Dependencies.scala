@@ -1,6 +1,8 @@
 /**
  * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
+package lagom.build
+
 import sbt.Keys._
 import sbt._
 
