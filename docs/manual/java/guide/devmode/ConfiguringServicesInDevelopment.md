@@ -108,8 +108,8 @@ or in sbt:
 
 @[service-https-port](code/build-service.sbt)
 
-Once enabled, your Lagom services will be directly usable with HTTPS. At the moment, the Lagom Service Gateway is only bound to HTTP.
+Once enabled, your Lagom services will also be accessible over HTTPS. At the moment, the Lagom Service Gateway is only bound to HTTP.
 
-Lagom's development mode instruments the process and injects a self-signed certificate. At same time, the lagom services running in dev mode are automatically tuned to trust that certificate so that you can use service-to-service HTTPS calls. 
+Lagom's development mode instruments the process and injects a self-signed certificate. At same time, the Lagom services running in dev mode are automatically tuned to trust that certificate so that you can use service-to-service HTTPS calls.
 
 The Lagom service client uses HTTP in development mode. You can create your own HTTPS client using Play-WS or the Akka-HTTP Client API. Then, you should do a lookup on the service locator stating you need an HTTPS port and connect normally using Play-WS or Akka-HTTP Client. If you use Akka gRPC for inter-service communication, you may need to use HTTPS.
