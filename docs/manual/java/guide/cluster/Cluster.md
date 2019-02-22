@@ -69,7 +69,7 @@ akka.management.cluster.bootstrap {
   }
 }
 ```
-[Other existing implementations](https://developer.lightbend.com/docs/akka-management/current/discovery/index.html) are: DNS, AWS, Consul, Marathon API and static Configuration. It's also possible to implement your own Akka Discovery implementation if needed.
+[Other existing implementations](https://developer.lightbend.com/docs/akka-management/current/discovery/index.html) are DNS, AWS, Consul, Marathon API, and Static Configuration. It's also possible to provide your own Akka Discovery implementation if needed.
 
 For more detailed and advanced configurations options, please consult the [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0.0-RC2/bootstrap/) documentation and its [reference.conf](https://github.com/akka/akka-management/blob/v1.0.0-RC2/cluster-bootstrap/src/main/resources/reference.conf) file.
 
