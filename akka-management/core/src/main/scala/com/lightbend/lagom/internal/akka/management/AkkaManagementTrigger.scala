@@ -5,12 +5,12 @@
 package com.lightbend.lagom.internal.akka.management
 
 import akka.Done
-import akka.actor.{ActorSystem, CoordinatedShutdown, ExtendedActorSystem}
+import akka.actor.{ ActorSystem, CoordinatedShutdown, ExtendedActorSystem }
 import akka.management.scaladsl.AkkaManagement
 import com.typesafe.config.Config
 import play.api.Logger
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * This class works as an entry point for Lagom to start AkkaManagement and register CoordinaterShutdown task for it.
@@ -42,7 +42,8 @@ private[lagom] class AkkaManagementTrigger(
       doStart()
     } else {
       logger.debug(
-        s"'lagom.akka.management.enabled' property is set to '$enabledRenderedValue'. Akka Management won't start.")
+        s"'lagom.akka.management.enabled' property is set to '$enabledRenderedValue'. Akka Management won't start."
+      )
       Future.successful(Done)
     }
 
@@ -56,7 +57,8 @@ private[lagom] class AkkaManagementTrigger(
     if (!enabled) {
       logger.warn(
         s"'lagom.akka.management.enabled' property is set to '$enabledRenderedValue', " +
-        s"but Akka Management is being required to start by: '$requester'.")
+          s"but Akka Management is being required to start by: '$requester'."
+      )
     }
 
     doStart()
@@ -72,8 +74,8 @@ private[lagom] class AkkaManagementTrigger(
           CoordinatedShutdown.PhaseBeforeServiceUnbind,
           "stop-akka-http-management"
         ) { () =>
-          akkaManagement.stop()
-        }
+            akkaManagement.stop()
+          }
         Done
     }
   }
