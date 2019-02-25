@@ -23,3 +23,21 @@ Above, in the algorithm's description, it was mentioned that by default ports ar
 @[port-range](code/configuring-devmode-services.sbt)
 
 After this change, your service projects will get assigned a port in the range `[40000,45000]`. But mind that the smaller is the range, the higher are the chances that two or more project will claim the same port. This is not an issue in itself (as long as there are enough ports for all projects), but it is possible that adding a new service project in your build may provoke a change to the port assigned to an existing service project, if both projects happen to claim the same port. If you don't want this to happen, make sure the provided port range is wide enough. Alternatively, manually assign ports to service projects as it makes sense.
+
+# Using HTTPS in development mode
+
+When running Lagom in [[Development Mode|DevEnvironment]] it is possible to enable HTTPS via settings on your build files. In sbt use:
+
+@[service-enable-ssl](code/build-service.sbt)
+
+This will enable the HTTPS transport next to HTTP. 
+
+You can also tune the port the server is bound to (similarly to the HTTP port):
+
+@[service-https-port](code/build-service.sbt)
+
+Once enabled, your Lagom services will also be accessible over HTTPS. At the moment, the Lagom Service Gateway is only bound to HTTP.
+
+Lagom's development mode instruments the process and injects a self-signed certificate. At same time, the Lagom services running in dev mode are automatically tuned to trust that certificate so that you can use service-to-service HTTPS calls.
+
+The Lagom service client uses HTTP in development mode. You can create your own HTTPS client using Play-WS or the Akka-HTTP Client API. Then, you should do a lookup on the service locator stating you need an HTTPS port and connect normally using Play-WS or Akka-HTTP Client. If you use Akka gRPC for inter-service communication, you may need to use HTTPS.

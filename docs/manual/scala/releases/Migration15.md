@@ -21,9 +21,7 @@ We also recommend upgrading to sbt 1.2.1 or later, by updating the `sbt.version`
 
 Lagom 1.5.0 now has support for SSL calls for gRPC integration and a new build setting was introduced to configure the https port for a given service manually.
 
-In sbt, the new setting is called `lagomServiceHttpsPort`. To keep the names aligned, we are deprecating  `lagomServicePort` in favour of `lagomServiceHttpPort`.
-
-TODO: add links to gRPC integration and SSL support documentation.
+In sbt, the new setting is called `lagomServiceHttpsPort`. To keep the names aligned, we are deprecating `lagomServicePort` in favour of `lagomServiceHttpPort`.
 
 ### Persistence testkit `TestUtil`
 
@@ -36,6 +34,9 @@ The following:
 were never intended for public consumption, and therefore have been marked deprecated in 1.5.0 for removal in
 2.0.0.
 
+## TLS Support
+
+Lagom in both [[dev mode|ConfiguringServicesInDevelopment#Using-HTTPS-in-development-mode]] and [[tests|TestingServices#How-to-use-TLS-on-tests]] supports basic usage of TLS by means of self-signed certificates provided by the framework.
 
 ## ConductR
 

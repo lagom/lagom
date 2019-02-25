@@ -44,11 +44,21 @@
             </configuration>
         </parameter>
         <parameter>
+            <name>serviceEnableSsl</name>
+            <type>boolean</type>
+            <required>false</required>
+            <editable>true</editable>
+            <description>Whether SSL is enabled or not.</description>
+            <configuration>
+                <serviceEnableSsl implementation="boolean" default-value="false"/>
+            </configuration>
+        </parameter>
+        <parameter>
             <name>servicePort</name>
             <type>int</type>
             <required>false</required>
             <editable>true</editable>
-            <description>The port this service should run on</description>
+            <description>The port this service should run on. Deprecated, use serviceHttpPort instead.</description>
             <configuration>
                 <servicePort implementation="int" default-value="-1"/>
             </configuration>
@@ -521,6 +531,9 @@
                 </parameter>
                 <parameter>
                     <name>serviceAddress</name>
+                </parameter>
+                <parameter>
+                    <name>serviceEnableSsl</name>
                 </parameter>
                 <parameter>
                     <name>servicePort</name>
