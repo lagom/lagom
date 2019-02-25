@@ -30,30 +30,37 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
-// This is a complement to TestOverTlsSpec so we can embed some java code in theh docs. The actual unit test of
+// This is a complement to TestOverTlsSpec so we can embed some java code in the docs. The actual unit test of
 // the feature to use SSL in tests is on TestOverTlsSpec.
 public class TestOverTlsTest {
 
+    // #tls-test-service
     @Test
     public void testOverTlsWithCustomClient() {
         ServiceTest.withServer(
             ServiceTest.defaultSetup()
                 .withCluster(false)
                 .withSsl()
-                        .configureBuilder(builder ->
-                                builder.bindings(new TestTlsServiceModule())), server -> {
+                .configureBuilder(builder ->
+                    builder.bindings(new TestTlsServiceModule())), server -> {
 
-                WSClient wsClient = buildCustomWS(server.clientSslContext().get());
+                SSLContext sslContext = server.clientSslContext().get();
+                // Builds an instance of a WSClient with the provided SSLContext so
+                // the fake SSLContext prepared by Lagom's testkit is used.
+                WSClient wsClient = buildCustomWS(sslContext);
+                // use `localhost` as authority
+                String url = "https://localhost:" + server.portSsl().get() + "/api/sample";
                 String response = wsClient
-                    .url("https://localhost:"+server.portSsl().get()+ "/api/sample")
+                    .url(url)
                     .get()
                     .thenApply(WSResponse::getBody)
                     .toCompletableFuture()
                     .get(5, TimeUnit.SECONDS);
 
-            assertEquals("sample response", response);
-        });
+                assertEquals("sample response", response);
+            });
     }
+    // #tls-test-service
 
 
     private WSClient buildCustomWS(SSLContext sslContext){

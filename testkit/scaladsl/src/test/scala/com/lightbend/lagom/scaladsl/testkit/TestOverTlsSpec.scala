@@ -59,15 +59,19 @@ class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
         }
       }
 
+      // #tls-test-service
       "complete a WS call over HTTPS" in {
-        ServiceTest.withServer(defaultSetup.withSsl())(new TestTlsApplication(_)) { server =>
+        val setup = defaultSetup.withSsl()
+        ServiceTest.withServer(setup)(new TestTlsApplication(_)) { server =>
           implicit val ctx = server.application.executionContext
-          // To explicitly use HTTPS on a test you must create a client of your own and make sure it uses
-          // the provided SSLContext
+          // To explicitly use HTTPS on a test you must create a client of your
+          // own and make sure it uses the provided SSLContext
           val wsClient = buildCustomWS(server.clientSslContext.get)
+          // use `localhost` as authority
+          val url = s"https://localhost:${server.playServer.httpsPort.get}/api/sample"
           val response =
             wsClient
-              .url(s"https://localhost:${server.playServer.httpsPort.get}/api/sample")
+              .url(url)
               .get()
               .map {
                 _.body[String]
@@ -77,6 +81,8 @@ class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
           }
         }
       }
+      // #tls-test-service
+
     }
   }
 

@@ -70,6 +70,20 @@ When your tests have several test methods, and especially when using persistence
 
 @[test](code/docs/services/test/AdvancedHelloServiceTest.java)
 
+## How to use TLS on tests
+
+To open an SSL port on the `TestServer` used in your tests, you may enable SSL support using `withSsl`:
+
+```java
+Setup.defaultSetup.withSsl()
+```
+
+Enabling SSL will automatically open a new random port and provide an `javax.net.ssl.SSLContext` on the TestServer. Lagom doesn't provide any client factory that allows sending requests to the HTTPS port at the moment. You should create an HTTP client using Play-WS, Akka-HTTP or Akka-gRPC. Then, use the `httpsPort` and the `sslContext` provided by the `testServer` instance to send the request. Note that the `SSLContext` provided is built by Lagom's testkit to trust the `testServer` certificates. Finally, because the server certificate is issued for `CN=localhost` you will have to make sure that's the `authority` on the requests you generate, otherwise the server may decline and fail the request. At the moment it is not possible to setup the test server with different SSL Certificates.  
+
+
+@[tls-test-service](../../../../../testkit/javadsl/src/test/java/com/lightbend/lagom/javadsl/testkit/TestOverTlsTest.java)
+
+
 ## How to test several services
 
 Lagom will provide support for writing integration tests that involve several interacting services. This feature is [not yet implemented](https://github.com/lagom/lagom/issues/38).
