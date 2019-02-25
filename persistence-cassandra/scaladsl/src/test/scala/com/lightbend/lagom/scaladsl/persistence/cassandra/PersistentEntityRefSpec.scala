@@ -14,6 +14,7 @@ import akka.persistence.cassandra.testkit.CassandraLauncher
 import akka.stream.{ ActorMaterializer, Materializer }
 import akka.testkit.TestKit
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
+import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.ClusterConfig
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfig
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
@@ -35,16 +36,11 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
 
   override implicit val patienceConfig = PatienceConfig(5.seconds, 150.millis)
 
-  val config: Config = ConfigFactory.parseString("""
-      akka.actor.provider = akka.cluster.ClusterActorRefProvider
-      akka.remote.netty.tcp.port = 0
-      akka.remote.netty.tcp.hostname = 127.0.0.1
-      akka.loglevel = INFO
-      akka.cluster.sharding.distributed-data.durable.keys = []
-      lagom.cluster.join-self = on
-      lagom.akka.management.enabled = off
-      lagom.cluster.bootstrap.enabled = off
-  """).withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
+  val config: Config =
+    ConfigFactory.parseString("akka.loglevel = INFO")
+      .withFallback(ClusterConfig)
+      .withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
+
   private val system: ActorSystem = ActorSystem("PersistentEntityRefSpec", ActorSystemSetup(
     BootstrapSetup(config),
     JsonSerializerRegistry.serializationSetupFor(TestEntitySerializerRegistry)
