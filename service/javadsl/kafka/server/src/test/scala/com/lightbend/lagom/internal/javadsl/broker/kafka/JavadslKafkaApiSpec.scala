@@ -64,7 +64,6 @@ class JavadslKafkaApiSpec extends WordSpecLike
         "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local",
         "lagom.cluster.join-self" -> "on",
         "lagom.cluster.bootstrap.enabled" -> "off",
-        "lagom.akka.management.enabled" -> "off",
         "lagom.services.kafka_native" -> s"tcp://localhost:${KafkaLocalServer.DefaultPort}"
       )
       .build()
