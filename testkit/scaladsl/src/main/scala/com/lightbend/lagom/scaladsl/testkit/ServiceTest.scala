@@ -285,7 +285,7 @@ object ServiceTest {
       } else if (setup.cluster) {
         ClusterConfigMap
       } else {
-        Map.empty
+        BasicConfigMap
       }
 
     val environment = Environment.simple()

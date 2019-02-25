@@ -5,6 +5,7 @@
 package com.lightbend.lagom.javadsl.persistence;
 
 import static com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit;
+import static com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.ClusterConfig;
 import static com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfig;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -46,16 +47,10 @@ public class PersistentEntityRefTest {
 
   @BeforeClass
   public static void setup() {
-    Config config = ConfigFactory.parseString(
-        "akka.actor.provider = akka.cluster.ClusterActorRefProvider \n" +
-        "akka.remote.netty.tcp.port = 0 \n" +
-        "akka.remote.netty.tcp.hostname = 127.0.0.1 \n" +
-        "akka.loglevel = INFO \n" +
-        "akka.cluster.sharding.distributed-data.durable.keys = [] \n" +
-        "lagom.cluster.join-self = on \n" +
-        "lagom.akka.management.enabled = off\n" +
-        "lagom.cluster.bootstrap.enabled = off"
-    ).withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort()));
+    Config config =
+        ConfigFactory.parseString("akka.loglevel = INFO")
+            .withFallback(ClusterConfig())
+            .withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort()));
 
     application = new GuiceApplicationBuilder()
             .configure(config)
