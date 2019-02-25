@@ -34,7 +34,7 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
   var serviceAddress: String = _
 
   @BeanProperty
-  var serviceEnableSsl: Boolean = false
+  var serviceEnableSsl: Boolean = _
 
   /** @deprecated As of release 1.5.0. Use serviceHttpPort instead */
   @BeanProperty @Deprecated

@@ -27,11 +27,9 @@ We also recommend upgrading to sbt 1.2.1 or later, by updating the `sbt.version`
 
 Lagom 1.5.0 now has support for SSL calls for gRPC integration and a new build setting was introduced to configure the https port for a given service manually.
 
-In Maven, the new setting is called `serviceHttpsPort`.  To keep the names aligned, we are deprecating  `servicePort` in favour of `serviceHttpPort`.
+In Maven, the new setting is called `serviceHttpsPort`.  To keep the names aligned, we are deprecating `servicePort` in favour of `serviceHttpPort`.
 
-In sbt, the new setting is called `lagomServiceHttpsPort`. To keep the names aligned, we are deprecating  `lagomServicePort` in favour of `lagomServiceHttpPort`.
-
-TODO: add links to gRPC integration and SSL support documentation.
+In sbt, the new setting is called `lagomServiceHttpsPort`. To keep the names aligned, we are deprecating `lagomServicePort` in favour of `lagomServiceHttpPort`.
 
 ### Persistence testkit `TestUtil`
 
@@ -44,6 +42,9 @@ The following:
 were never intended for public consumption, and therefore have been marked deprecated in 1.5.0 for removal in
 2.0.0.
 
+## TLS Support
+
+Lagom in both [[dev mode|ConfiguringServicesInDevelopment#Using-HTTPS-in-development-mode]] and [[tests|Test#How-to-use-TLS-on-tests]] supports basic usage of TLS by means of self-signed certificates provided by the framework.
 
 ## ConductR
 
@@ -57,6 +58,7 @@ If you are not using Kubernetes or DC/OS, you must configure your services in a 
 
 If you are using ConductR in production and need assistance migrating to other solutions please [contact Lightbend](https://www.lightbend.com/contact).
 
+## TLS Support
 
 ## Lightbend Orchestration
 

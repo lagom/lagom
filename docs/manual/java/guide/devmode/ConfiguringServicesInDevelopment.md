@@ -70,3 +70,46 @@ In sbt, this can be done by modifying the project root configuration:
 @[port-range](code/configuring-devmode-services.sbt)
 
 After this change, your service projects will get assigned a port in the range `[40000,45000]`. But mind that the smaller is the range, the higher are the chances that two or more project will claim the same port. This is not an issue in itself (as long as there are enough ports for all projects), but it is possible that adding a new service project in your build may provoke a change to the port assigned to an existing service project, if both projects happen to claim the same port. If you don't want this to happen, make sure the provided port range is wide enough. Alternatively, manually assign ports to service projects as it makes sense.
+
+
+# Using HTTPS in development mode
+
+When running Lagom in [[Development Mode|DevEnvironment]] it is possible to enable HTTPS via settings on your build files. In Maven you can do this by modifying the configuration of the `lagom-maven-plugin`:
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <configuration>
+        <serviceEnableSsl>true</serviceEnableSsl>
+    </configuration>
+</plugin>
+```
+
+If you add the setting on the parent `pom.xml` all services will have SSL enabled. If you add the setting on only one of the service implementation projects then only that service will open the HTTPS port.
+
+To enable SSL in sbt you should use:
+
+@[service-enable-ssl](code/build-service.sbt)
+
+You can also tune the port the server is bound to (similarly to the HTTP port):
+
+```xml
+<plugin>
+    <groupId>com.lightbend.lagom</groupId>
+    <artifactId>lagom-maven-plugin</artifactId>
+    <configuration>
+        <serviceHttpsPort>30443</serviceHttpsPort>
+    </configuration>
+</plugin>
+```
+
+or in sbt:
+
+@[service-https-port](code/build-service.sbt)
+
+Once enabled, your Lagom services will also be accessible over HTTPS. At the moment, the Lagom Service Gateway is only bound to HTTP.
+
+Lagom's development mode instruments the process and injects a self-signed certificate. At same time, the Lagom services running in dev mode are automatically tuned to trust that certificate so that you can use service-to-service HTTPS calls.
+
+The Lagom service client uses HTTP in development mode. You can create your own HTTPS client using Play-WS or the Akka-HTTP Client API. Then, you should do a lookup on the service locator stating you need an HTTPS port and connect normally using Play-WS or Akka-HTTP Client. If you use Akka gRPC for inter-service communication, you may need to use HTTPS.
