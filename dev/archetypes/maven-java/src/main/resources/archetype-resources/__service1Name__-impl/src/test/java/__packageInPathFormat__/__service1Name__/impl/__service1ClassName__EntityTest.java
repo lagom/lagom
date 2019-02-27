@@ -14,7 +14,7 @@ import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver.Outcome;
 
 import akka.Done;
 import akka.actor.ActorSystem;
-import akka.testkit.JavaTestKit;
+import akka.testkit.javadsl.TestKit;
 import ${package}.${service1Name}.impl.${service1ClassName}Command.Hello;
 import ${package}.${service1Name}.impl.${service1ClassName}Command.UseGreetingMessage;
 import ${package}.${service1Name}.impl.${service1ClassName}Event.GreetingMessageChanged;
@@ -30,7 +30,7 @@ public class ${service1ClassName}EntityTest {
 
   @AfterClass
   public static void teardown() {
-    JavaTestKit.shutdownActorSystem(system);
+    TestKit.shutdownActorSystem(system);
     system = null;
   }
 
