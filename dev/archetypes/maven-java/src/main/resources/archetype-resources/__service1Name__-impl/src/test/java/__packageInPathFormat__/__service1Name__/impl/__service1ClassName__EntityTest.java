@@ -3,7 +3,6 @@ package ${package}.${service1Name}.impl;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
-import java.util.Optional;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
