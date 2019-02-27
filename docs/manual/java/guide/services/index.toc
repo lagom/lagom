@@ -6,3 +6,4 @@ Test:Testing Services
 MessageSerializers:Message serializers
 HeaderFilters:Header Filters
 ServiceErrorHandling:Error handling
+AdditionalRouters:Additional Routers

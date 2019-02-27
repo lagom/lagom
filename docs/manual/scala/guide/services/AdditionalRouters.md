@@ -40,7 +40,6 @@ class FileUploadRouter(action: DefaultActionBuilder) {
 In your application loader, you can wire the router and append it to your Lagom server.
 
 ```scala
-// Bind the service that this server provides
 override lazy val lagomServer =
   serverFor[HelloService](wire[HelloServiceImpl])
     .additionalRouter(wire[FileUploadRouter].router)
