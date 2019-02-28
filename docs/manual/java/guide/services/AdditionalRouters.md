@@ -58,4 +58,4 @@ curl -X POST -F "data=@somefile.txt" -v  http://localhost:9000/api/files
 
 Additional routers are not part of the Service API and therefore are not accessible from generated Lagom clients. Lagom clients only have access to methods defined on the Service interface.
 
-Additional routers are only part of the exposed HTTP endpoints.
+Additional routers are only part of the exposed HTTP endpoints. To access then, you will need to use a HTTP client, eg: [Play-WS](https://www.playframework.com/documentation/2.7.x/JavaWS)
