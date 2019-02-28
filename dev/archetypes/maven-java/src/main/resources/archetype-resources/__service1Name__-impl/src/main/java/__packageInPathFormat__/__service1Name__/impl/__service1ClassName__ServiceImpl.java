@@ -9,8 +9,6 @@ import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 
-import java.util.Optional;
-
 import javax.inject.Inject;
 import ${package}.${service1Name}.api.GreetingMessage;
 import ${package}.${service1Name}.api.${service1ClassName}Service;
