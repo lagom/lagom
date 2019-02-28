@@ -4,9 +4,9 @@ Since Lagom 1.5.0, it is possible to extend a Lagom Service with additional Play
 
 This is particularly useful when integrating Lagom with existing Play Routers, for instance a [Play gRPC Router](https://developer.lightbend.com/docs/play-grpc/0.5.0/lagom/serving-grpc.html) , or any other Play router that you have at your disposal.
 
-You add an additional router when binding your Lagom Service in your Guice module. You should pass the additonal routers to the `bindService` method together with the Service interface and its implementation. You do this by means of a helper method called `additonalRouters`.
+You add an additional router when binding your Lagom Service in your Guice module. You should pass the additional routers to the `bindService` method together with the Service interface and its implementation. You do this by means of a helper method called `additionalRouters`.
 
-There are two variants for `additionalRouters`, one that receives a `Class<play.api.routing.Router>` and one that receives a `play.api.routing.Router`.
+There are two variants for `additionalRouters`, one that receives a `Class<play.api.routing.Router>` and one that receives an instance of `play.api.routing.Router`.
 
 The first one should be used when your Router has some dependencies and needs to get them injected  by Lagom's runtime DI infrastructure (Guice). In this case, you pass the class and Guice will initialize it with the right dependencies.
 
@@ -35,11 +35,11 @@ The path `/api/files` will now be available on your Lagom service:
 curl -X POST -F "data=@somefile.txt" -v  http://localhost:65499/api/files
 ```
 
-> Note that in that example we are not using the Service Gateway to access the application. We are calling it directly using the service port (ie: 65499).
+> Note that in that example we are not using the Service Gateway to access the application. We are calling it directly using the service port, in this case, `65499`.
 
 ## Service Gateway Considerations
 
-An additional router is not part of your application `ServiceDescriptor` and therefore can't be automatically published as endpoints to the Service Gateway in development mode.
+An additional router is not part of your application `ServiceDescriptor` and therefore can't be automatically published as endpoints to the [[Service Gateway|ServiceLocator#Service-Gateway]] in development mode.
 
 If you want to access your additional routers through the gateway, you will need to explicitly add the ACL (Access Control List) for it in your `ServiceDescriptor` definition.
 
@@ -59,4 +59,3 @@ curl -X POST -F "data=@somefile.txt" -v  http://localhost:9000/api/files
 Additional routers are not part of the Service API and therefore are not accessible from generated Lagom clients. Lagom clients only have access to methods defined on the Service interface.
 
 Additional routers are only part of the exposed HTTP endpoints.
-

@@ -26,13 +26,13 @@ The path `/api/files` will now be available on your Lagom service:
 curl -X POST -F "data=@somefile.txt" -v  http://localhost:65499/api/files
 ```
 
-> Note that in that example we are not using the Service Gateway to access the application. We are calling it directly using the service port (ie: 65499).
+> Note that in that example we are not using the Service Gateway to access the application. We are calling it directly using the service port, in this case, 65499.
 
 ## Service Gateway Considerations
 
-An additional router is not part of your application `ServiceDescriptor` and therefore can't be automatically published as endpoints to the Service Gateway in development mode.
+An additional router is not part of your application `ServiceDescriptor` and therefore can't be automatically published as endpoints to the [[Service Gateway|ServiceLocator#Service-Gateway]] in development mode.
 
-If you want to access your additional routers thourgh the gateway, you will need to explicitly add the ACL (Access Control List) for it in your `ServiceDescriptor` definition.
+If you want to access your additional routers through the gateway, you will need to explicitly add the ACL (Access Control List) for it in your `ServiceDescriptor` definition.
 
 @[hello-service](code/AdditionalRouters.scala)
 
@@ -49,8 +49,3 @@ curl -X POST -F "data=@somefile.txt" -v  http://localhost:9000/api/files
 Additional routers are not part of the Service API and therefore are not accessible from generated Lagom clients. Lagom clients only have access to methods defined on the Service trait.
 
 Additional routers are only part of the exposed HTTP endpoints.
-
-
-
-
-
