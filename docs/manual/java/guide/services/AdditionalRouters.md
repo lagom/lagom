@@ -1,10 +1,10 @@
 # Additional Routers
 
-Since Lagom 1.5.0, is it possible to extend a Lagom Service with additional Play Routers.
+Since Lagom 1.5.0, it is possible to extend a Lagom Service with additional Play Routers.
 
-This is particular useful when itegrating Lagom with existing Play Routers, for instance a [Play gRPC Router](https://developer.lightbend.com/docs/play-grpc/0.5.0/lagom/serving-grpc.html) , or any other Play router that you have at your disposal.
+This is particularly useful when integrating Lagom with existing Play Routers, for instance a [Play gRPC Router](https://developer.lightbend.com/docs/play-grpc/0.5.0/lagom/serving-grpc.html) , or any other Play router that you have at your disposal.
 
-In Java, you add an additional router when binding your Lagom Service in your Guice module. You should pass the additonal routers to the `bindService` method together with the Service interface and its implementation. You do this by means of a helper method called `additonalRouters`.
+You add an additional router when binding your Lagom Service in your Guice module. You should pass the additonal routers to the `bindService` method together with the Service interface and its implementation. You do this by means of a helper method called `additonalRouters`.
 
 There are two variants for `additionalRouters`, one that receives a `Class<play.api.routing.Router>` and one that receives a `play.api.routing.Router`.
 
@@ -12,7 +12,7 @@ The first one should be used when your Router has some dependencies and needs to
 
 @[lagom-module-some-play-router-DI](code/docs/services/AdditionalRouters.java)
 
-The second variant should be used be used when the Router does not have any other dependencies and therefore can be immediately passed as an instance.
+The second variant should be used when the Router does not have any other dependencies and therefore can be immediately passed as an instance.
 
 @[lagom-module-some-play-router-instance](code/docs/services/AdditionalRouters.java)
 
@@ -29,7 +29,7 @@ In your Guice module, you append the additional router when binding your Lagom s
 
 @[lagom-module-file-upload](code/docs/services/AdditionalRouters.java)
 
-The path `/api/files` will now be exposed on your Lagom service:
+The path `/api/files` will now be available on your Lagom service:
 
 ```bash
 curl -X POST -F "data=@somefile.txt" -v  http://localhost:65499/api/files
@@ -41,7 +41,7 @@ curl -X POST -F "data=@somefile.txt" -v  http://localhost:65499/api/files
 
 An additional router is not part of your application `ServiceDescriptor` and therefore can't be automatically published as endpoints to the Service Gateway in development mode.
 
-If you want to access your additional routers thourgh the gateway, you will need to explicitly add the ACL (Access Control List) for it in your `ServiceDescriptor` definition.
+If you want to access your additional routers through the gateway, you will need to explicitly add the ACL (Access Control List) for it in your `ServiceDescriptor` definition.
 
 
 @[hello-service](code/docs/services/AdditionalRouters.java)
@@ -56,7 +56,7 @@ curl -X POST -F "data=@somefile.txt" -v  http://localhost:9000/api/files
 
 ## Lagom Client Considerations
 
-Additional routers are not part of the Service API and therefore are not accessbile from generated Lagom clients. Lagom clients only have access to methods defined on the Service interface.
+Additional routers are not part of the Service API and therefore are not accessible from generated Lagom clients. Lagom clients only have access to methods defined on the Service interface.
 
 Additional routers are only part of the exposed HTTP endpoints.
 
