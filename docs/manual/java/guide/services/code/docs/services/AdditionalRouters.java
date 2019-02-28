@@ -22,8 +22,6 @@ import static com.lightbend.lagom.javadsl.api.Service.named;
 import static com.lightbend.lagom.javadsl.api.Service.pathCall;
 import static com.lightbend.lagom.javadsl.api.ServiceAcl.path;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import com.example.fileupload.api.FileUploadService;
-import com.example.fileupload.impl.FileUploadServiceImpl;
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 
