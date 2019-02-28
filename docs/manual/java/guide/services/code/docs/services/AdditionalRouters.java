@@ -112,10 +112,10 @@ public class AdditionalRouters {
                         .POST("/api/files")
                         .routingTo(request -> {
                             Http.MultipartFormData<File> body = request.body().asMultipartFormData();
-                            List<Http.MultipartFormData.FilePart<File>> files = body.getFiles();
-                            String response = files.stream()
-                                    .map(f -> f.getFile().getAbsolutePath())
-                                    .collect(joining(",", "Uploaded[", "]"));
+                            String response =
+                                    body.getFiles().stream()
+                                        .map(f -> f.getRef().getAbsolutePath())
+                                        .collect(joining(",", "Uploaded[", "]"));
                             return ok(response);
                         })
                         .build().asScala();
