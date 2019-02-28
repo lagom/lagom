@@ -1,88 +1,106 @@
 package docs.scaladsl.services
 
-package helloservice {
 
-  import com.lightbend.lagom.scaladsl.api.ServiceCall
-  import scala.concurrent.Future
-
-
-  //#hello-service
-  trait HelloService extends Service {
-
-    def hello(id: String): ServiceCall[NotUsed, String]
-
-    override final def descriptor = {
-      import Service._
-      named("hello")
-        .withCalls(
-          pathCall("/api/hello/:id", hello _).withAutoAcl(true)
-        )
-        .withAcls(
-          // extra ACL to expose additional router endpoint on ServiceGateway
-          ServiceAcl(pathRegex = Some("/api/files"))
-        )
-    }
-  }
-  //#hello-service
-
-  //#hello-service-impl
-  class HelloServiceImpl extends HelloService {
-    override def sayHhello(name: String) = ServiceCall { _ =>
-      Future.successful(s"Hello $name!")
-    }
-  }
-  //#hello-service-impl
-}
-
-package lagomapplication {
-
-  import helloservice._
-
-  import com.lightbend.lagom.scaladsl.server._
-  import play.api.libs.ws.ahc.AhcWSComponents
-  import com.softwaremill.macwire._
+import akka.NotUsed
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.ServiceAcl
+import com.lightbend.lagom.scaladsl.api.ServiceCall
+import play.api.routing.SimpleRouter
+import scala.concurrent.Future
 
 
-  class SomePlayRouter extends SimpleRouter{
-    override def routes: Routes = ???
-  }
+package additionalrouters {
 
-  abstract class HelloApplication(context: LagomApplicationContext)
-    extends LagomApplication(context)
-      with AhcWSComponents {
+  package helloservice {
 
-    //#lagom-application-some-play-router
-    override lazy val lagomServer =
-        serverFor[HelloService](wire[HelloServiceImpl])
-        .additionalRouter(wire[SomePlayRouter])
-    //#lagom-application-some-play-router
-  }
+    //#hello-service
+    trait HelloService extends Service {
 
-  //#file-upload-router
-  import play.api.mvc.{DefaultActionBuilder, Results}
-  import play.api.routing.Router
-  import play.api.routing.sird._
+      def hello(id: String): ServiceCall[NotUsed, String]
 
-  class FileUploadRouter(action: DefaultActionBuilder) {
-    val router = Router.from {
-      case POST(p"/api/files") => action { _ =>
-        // for the sake of simplicity, this implementation
-        // only returns a short message for each incoming request.
-        Results.Ok("File(s) uploaded")
+      override final def descriptor = {
+        import Service._
+        named("hello")
+          .withCalls(
+            pathCall("/api/hello/:id", hello _).withAutoAcl(true)
+          )
+          .withAcls(
+            // extra ACL to expose additional router endpoint on ServiceGateway
+            ServiceAcl(pathRegex = Some("/api/files"))
+          )
       }
     }
+    //#hello-service
+
+    //#hello-service-impl
+    class HelloServiceImpl extends HelloService {
+      override def sayHhello(name: String) = ServiceCall { _ =>
+        Future.successful(s"Hello $name!")
+      }
+    }
+    //#hello-service-impl
   }
-  //#file-upload-router
+
+  package lagomapplication {
+
+    import helloservice._
+
+    import com.lightbend.lagom.scaladsl.server._
+    import play.api.libs.ws.ahc.AhcWSComponents
+    import com.softwaremill.macwire._
 
 
-  abstract class HelloApplication(context: LagomApplicationContext)
-    extends LagomApplication(context)
-      with AhcWSComponents {
+    package sompeplayrouter {
 
-    //#lagom-application-file-upload
-    override lazy val lagomServer =
-        serverFor[HelloService](wire[HelloServiceImpl])
-          .additionalRouter(wire[FileUploadRouter].router)
-    //#lagom-application-file-upload
+      import play.api.routing.Router.Routes
+
+      class SomePlayRouter extends SimpleRouter{
+        override def routes: Routes = ???
+      }
+
+      abstract class HelloApplication(context: LagomApplicationContext)
+        extends LagomApplication(context)
+          with AhcWSComponents {
+
+        //#lagom-application-some-play-router
+        override lazy val lagomServer =
+            serverFor[HelloService](wire[HelloServiceImpl])
+            .additionalRouter(wire[SomePlayRouter])
+        //#lagom-application-some-play-router
+      }
+    }
+
+
+    package fileuploadrouter {
+      //#file-upload-router
+      import play.api.mvc.{DefaultActionBuilder, Results}
+      import play.api.routing.Router
+      import play.api.routing.sird._
+
+      class FileUploadRouter(action: DefaultActionBuilder) {
+        val router = Router.from {
+          case POST(p"/api/files") => action { _ =>
+            // for the sake of simplicity, this implementation
+            // only returns a short message for each incoming request.
+            Results.Ok("File(s) uploaded")
+          }
+        }
+      }
+      //#file-upload-router
+
+
+      abstract class HelloApplication(context: LagomApplicationContext)
+        extends LagomApplication(context)
+          with AhcWSComponents {
+
+        //#lagom-application-file-upload
+        override lazy val lagomServer =
+            serverFor[HelloService](wire[HelloServiceImpl])
+              .additionalRouter(wire[FileUploadRouter].router)
+        //#lagom-application-file-upload
+      }
+    }
+
   }
 }
+

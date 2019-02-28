@@ -53,79 +53,89 @@ public class AdditionalRouters {
     }
 
 
-    //#file-upload-router
-    class FileUploadRouter implements SimpleRouter {
 
-        private final Router delegate;
+    // ------------------------------------------------------------------------
+    // SomePlay Router example
+    class SomePlayRouterExample {
 
-        @Inject
-        public FileUploadRouter(RoutingDsl routingDsl) {
-            this.delegate = routingDsl
-                    .POST("/api/files")
-                    .routingTo(request -> {
-                        // for the sake of simplicity, this implementation
-                        // only returns a short message for each incoming request.
-                        return ok("File(s) uploaded");
-                    })
-                    .build().asScala();
+        class SomePlayRouter implements SimpleRouter {
+            @Override
+            public PartialFunction<RequestHeader, Handler> routes() {
+                throw new RuntimeException("Not implemented");
+            }
         }
 
-        @Override
-        public PartialFunction<RequestHeader, Handler> routes() {
-            return delegate.routes();
+        public class HelloWorldModuleDI {
+            // example to show API that supports DI (Guice)
+            //#lagom-module-some-play-router-DI
+            public class HelloWorldModule extends AbstractModule implements ServiceGuiceSupport {
+                @Override
+                protected void configure() {
+                    bindService(
+                            HelloService.class, HelloServiceImpl.class,
+                            additionalRouter(SomePlayRouter.class)
+                    );
+                }
+            }
+            //#lagom-module-some-play-router-DI
+        }
+
+        public class HelloWorldModuleInstance {
+            // example to show API that supports passing instance
+            //#lagom-module-some-play-router-instance
+            public class HelloWorldModule extends AbstractModule implements ServiceGuiceSupport {
+                @Override
+                protected void configure() {
+                    bindService(
+                            HelloService.class, HelloServiceImpl.class,
+                            additionalRouter(new SomePlayRouter())
+                    );
+                }
+            }
+            //#lagom-module-some-play-router-instance
         }
     }
-    //#file-upload-router
 
-    class SomePlayRouter implements SimpleRouter {
-        @Override
-        public PartialFunction<RequestHeader, Handler> routes() {
-            throw new RuntimeException("Not implemented");
+
+
+    // ------------------------------------------------------------------------
+    class FileUploadRouterExample {
+        //#file-upload-router
+        class FileUploadRouter implements SimpleRouter {
+
+            private final Router delegate;
+
+            @Inject
+            public FileUploadRouter(RoutingDsl routingDsl) {
+                this.delegate = routingDsl
+                        .POST("/api/files")
+                        .routingTo(request -> {
+                            // for the sake of simplicity, this implementation
+                            // only returns a short message for each incoming request.
+                            return ok("File(s) uploaded");
+                        })
+                        .build().asScala();
+            }
+
+            @Override
+            public PartialFunction<RequestHeader, Handler> routes() {
+                return delegate.routes();
+            }
         }
-    }
+        //#file-upload-router
 
-    public class HelloWorldModuleDI {
-        // example to show API that supports DI (Guice)
-        //#lagom-module-some-play-router-DI
+        //#lagom-module-file-upload
         public class HelloWorldModule extends AbstractModule implements ServiceGuiceSupport {
             @Override
             protected void configure() {
                 bindService(
                         HelloService.class, HelloServiceImpl.class,
-                        additionalRouter(SomePlayRouter.class)
+                        additionalRouter(FileUploadRouter.class)
                 );
             }
         }
-        //#lagom-module-some-play-router-DI
+        //#lagom-module-file-upload
     }
-
-    public class HelloWorldModuleInstance {
-        // example to show API that supports passing instance
-        //#lagom-module-some-play-router-instance
-        public class HelloWorldModule extends AbstractModule implements ServiceGuiceSupport {
-            @Override
-            protected void configure() {
-                bindService(
-                        HelloService.class, HelloServiceImpl.class,
-                        additionalRouter(new SomePlayRouter())
-                );
-            }
-        }
-        //#lagom-module-some-play-router-instance
-    }
-
-
-    //#lagom-module-file-upload
-    public class HelloWorldModule extends AbstractModule implements ServiceGuiceSupport {
-        @Override
-        protected void configure() {
-            bindService(
-                    HelloService.class, HelloServiceImpl.class,
-                    additionalRouter(FileUploadRouter.class)
-            );
-        }
-    }
-    //#lagom-module-file-upload
 
 
 }
