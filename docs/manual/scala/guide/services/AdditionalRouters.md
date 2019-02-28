@@ -6,14 +6,7 @@ This is particular useful when itegrating Lagom with existing Play Routers, for 
 
 In Scala, you add an additional router when wiring your Lagom Server. After wiring the Lagom Server, you append the additional Play routers to it. 
 
-```scala
-override lazy val lagomServer =
-  serverFor[HelloService](wire[HelloServiceImpl])
-    .additionalRouter(someOtherPlayRouter)
-```
-
-
-
+@[lagom-application-some-play-router](code/AdditionalRouters.scala)
 
 ## File Upload Example
 
@@ -21,29 +14,11 @@ The following example shows how you can add a file upload endpoint to an existin
 
 The example is based on [ScalaSirdRouter](https://www.playframework.com/documentation/2.7.x/ScalaSirdRouter) that allows you to build a Play Router programmatically. It adds an extra path (`/api/files`) that receives POST calls for multipart-form data. 
 
-```scala
-import play.api.mvc.{DefaultActionBuilder, Results}
-import play.api.routing.Router
-import play.api.routing.sird._
-
-class FileUploadRouter(action: DefaultActionBuilder) {
-  val router = Router.from {
-    case POST(p"/api/files") => action { _ =>
-      // for the sake of simplicity, this implementation 
-      // only returns a short message for each incoming request. 
-      Results.Ok("File(s) uploaded")
-    }
-  }
-}
-```
+@[file-upload-router](code/AdditionalRouters.scala)
 
 In your application loader, you can wire the router and append it to your Lagom server.
 
-```scala
-override lazy val lagomServer =
-  serverFor[HelloService](wire[HelloServiceImpl])
-    .additionalRouter(wire[FileUploadRouter].router)
-```
+@[lagom-application-file-upload](code/AdditionalRouters.scala)
 
 The path `/api/files` will now be exposed on your Lagom service:
 
@@ -59,23 +34,7 @@ An additional router is not part of your application `ServiceDescriptor` and the
 
 If you want to access your additional routers thourgh the gateway, you will need to explicitly add the ACL (Access Control List) for it in your `ServiceDescriptor` definition.
 
-```scala
-trait HelloService extends Service {
-
-  def hello(id: String): ServiceCall[NotUsed, String]
-  override final def descriptor = {
-    import Service._
-    named("hello")
-      .withCalls(
-        pathCall("/api/hello/:id", hello _).withAutoAcl(true)
-      )
-      .withAcls(
-        // extra ACL to expose additional router endpoint on ServiceGateway  
-        ServiceAcl(pathRegex = Some("/api/files"))
-      )
-  }
-}
-```
+@[hello-service](code/AdditionalRouters.scala)
 
 Once the path is published on the Service Gateway, you can call: 
 
