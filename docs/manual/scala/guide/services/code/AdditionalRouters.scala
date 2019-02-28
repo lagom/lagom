@@ -73,17 +73,16 @@ package additionalrouters {
 
     package fileuploadrouter {
       //#file-upload-router
-      import play.api.mvc.{DefaultActionBuilder, Results}
+      import play.api.mvc.{DefaultActionBuilder, PlayBodyParsers, Results}
       import play.api.routing.Router
       import play.api.routing.sird._
 
-      class FileUploadRouter(action: DefaultActionBuilder) {
+      class FileUploadRouter(action: DefaultActionBuilder, parser: PlayBodyParsers) {
         val router = Router.from {
-          case POST(p"/api/files") => action { _ =>
-            // for the sake of simplicity, this implementation
-            // only returns a short message for each incoming request.
-            Results.Ok("File(s) uploaded")
-          }
+          case POST(p"/api/files") => action(parser.multipartFormData) { request =>
+              val filePaths = request.body.files.map(_.ref.getAbsolutePath)
+              Results.Ok(filePaths.mkString("Uploaded[", ", ", "]"))
+            }
         }
       }
       //#file-upload-router

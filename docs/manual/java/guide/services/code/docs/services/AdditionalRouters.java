@@ -24,6 +24,7 @@ import static com.lightbend.lagom.javadsl.api.ServiceAcl.path;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
+import static java.util.stream.Collectors.joining;
 
 public class AdditionalRouters {
 
@@ -110,9 +111,12 @@ public class AdditionalRouters {
                 this.delegate = routingDsl
                         .POST("/api/files")
                         .routingTo(request -> {
-                            // for the sake of simplicity, this implementation
-                            // only returns a short message for each incoming request.
-                            return ok("File(s) uploaded");
+                            Http.MultipartFormData<File> body = request.body().asMultipartFormData();
+                            List<Http.MultipartFormData.FilePart<File>> files = body.getFiles();
+                            String response = files.stream()
+                                    .map(f -> f.getFile().getAbsolutePath())
+                                    .collect(joining(",", "Uploaded[", "]"));
+                            return ok(response);
                         })
                         .build().asScala();
             }
