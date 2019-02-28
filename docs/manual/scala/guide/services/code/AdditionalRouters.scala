@@ -34,7 +34,7 @@ package additionalrouters {
 
     //#hello-service-impl
     class HelloServiceImpl extends HelloService {
-      override def sayHhello(name: String) = ServiceCall { _ =>
+      override def hello(name: String) = ServiceCall { _ =>
         Future.successful(s"Hello $name!")
       }
     }
