@@ -38,6 +38,18 @@ were never intended for public consumption, and therefore have been marked depre
 
 Lagom in both [[dev mode|ConfiguringServicesInDevelopment#Using-HTTPS-in-development-mode]] and [[tests|TestingServices#How-to-use-TLS-on-tests]] supports basic usage of TLS by means of self-signed certificates provided by the framework.
 
+## Cluster Formation
+
+A new mechanism to form and [[join an Akka Cluster|Cluster#Joining]] is introduced in Lagom 1.5. Apart from the original `Manual Cluster Formation` the new `Akka Cluster Bootstrap` is now supported. This new mechanism is introduced with lower precedence than `Manual Cluster Formation` so if you rely on the use of a list of `seed-nodes` then everything will work as before. On the other hand, `Akka Cluster Bootstrap` takes precedence over the `join-self` cluster formation for single-node clusters. If you use single-node clusters via `join-self` you will have to explicitly disable `Akka Cluster Bootstrap`:
+
+```
+lagom.cluster.bootstrap.enabled = false
+```
+
+## Service Discovery
+
+When opting in to Akka Cluster Bootstrapping as a mechanism for Cluster formation you will have to setup a [[Service Discovery|Cluster#Akka-Discovery]]  method for nodes to locate each other.
+
 ## ConductR
 
 ConductR is no longer supported with Lagom 1.5.
@@ -56,13 +68,48 @@ See Deployment below.
 
 ConductR tooling and Lightbend Orchestration handled all the required pieces to deploy on ConductR and Kubernetes or DC/OS. Lagom 1.5.0 only supports a manually maintained deployment process.
 
-In particular, ConductR tooling and Lightbend Orchestration handled the following:
+In particular, ConductR tooling and Lightbend Orchestration handled some or all of the following:
 
-1. extend the your application with: cluster bootstrapping, service location, akka management and health checks
-2. setup and produce docker images
-3. prepare the deployment specs for the target orchestrator
+1. extend the your application with: cluster bootstrapping, akka management and health checks
+2. Service Location
+3. setup and produce docker images
+4. prepare the deployment specs for the target orchestrator
+5. Secrets
 
-Regarding `1.`, starting with Lagom 1.5 your application will include [[Akka management HTTP|Cluster#Akka-Management]] out of the box with [[health checks|Cluster#Health-Checks]] enabled by default. Cluster formation also supports [[Cluster Bootstrapping|Cluster#Joining-during-production-(Akka-Cluster-Bootstrap)]] as a new way to form a cluster. These new defaults may require at least two changes on your codebase. First, if you want to opt-in to cluster bootstrapping you must make sure you don't set `seed-nodes`. Second, if you use Cluster Bootstrapping, you will have to setup a [[discovery|Cluster#Akka-Discovery]] mechanism (see the [[reference guide|Cluster#Akka-Discovery]] for more details).
+#### Application extensions
+
+Starting with Lagom 1.5 your application will include [[Akka management HTTP|Cluster#Akka-Management]] out of the box with [[health checks|Cluster#Health-Checks]] enabled by default. Cluster formation also supports [[Cluster Bootstrapping|Cluster#Joining-during-production-(Akka-Cluster-Bootstrap)]] as a new way to form a cluster. These new defaults may require at least two changes on your codebase. First, if you want to opt-in to cluster bootstrapping you must make sure you don't set `seed-nodes`. Second, if you use Cluster Bootstrapping, you will have to setup a [[discovery|Cluster#Akka-Discovery]] mechanism (see the [[reference guide|Cluster#Akka-Discovery]] for more details). 
+
+#### Service Location
+
+You will have to add a `ServiceLocator `of your choice. We recommend using the new [`lagom-akka-discovery-service-locator`](https://github.com/lagom/lagom-akka-discovery-service-locator) which is implemented using [Akka Service Discovery](https://doc.akka.io/docs/akka/current/discovery/index.html) implementations. This means you will have to change you `Loader` code:
+
+```scala
+// before 
+  import com.lightbend.rp.servicediscovery.lagom.scaladsl.LagomServiceLocatorComponents
+  override def load(context: LagomApplicationContext) =
+    new MyApplication(context) with LagomServiceLocatorComponents
+
+// after
+  import com.lightbend.lagom.scaladsl.akka.discovery.AkkaDiscoveryComponents
+  override def load(context: LagomApplicationContext): LagomApplication =
+    new MyProxyApplication(context) with AkkaDiscoveryComponents
+
+```
+
+Once you enable `AkkaDiscoveryComponents` you will need to enable an Akka Service Discovery [method](https://doc.akka.io/docs/akka/current/discovery/index.html):
+
+```
+akka {
+  discovery {
+   method = akka-dns
+  }
+}
+```
+
+Read the [docs](https://github.com/lagom/lagom-akka-discovery-service-locator) of the new `lagom-akka-discovery-service-locator` for more details.
+
+#### Docker images and deployment specs
 
 Regarding docker images and deployment specs, once you remove external tooling you will have to setup and maintain them manually. Instead of producing the `Dockerfile`, deployment scripts produced by tooling and orchestration specs from scratch, use the tooling to create these files and add them to git. You can later review and maintain them at will.
 
@@ -70,17 +117,15 @@ For example, using `docker:stage` on your project you will generate `<project-na
 
 Similarly, with a docker image produced with Lightbend Orchestration still enabled, you may use `rp generate-kubernetes-resources …` to produce Kubernetes YAML files that you can keep under SCM.
 
-### Cluster Formation
+#### Secrets
 
-A new mechanism to form and [[join an Akka Cluster|Cluster#Joining]] is introduced in Lagom 1.5. Apart from the original `Manual Cluster Formation` the new `Akka Cluster Bootstrap` is now supported. This new mechanism is introduced with lower precedence than `Manual Cluster Formation` so if you rely on the use of a list of `seed-nodes` then everything will work as before. On the other hand, `Akka Cluster Bootstrap` takes precedence over the `join-self` cluster formation for single-node clusters. If you use single-node clusters via `join-self` you will have to explicitly disable `Akka Cluster Bootstrap`:
+Lightbend Orchestration supported declaring [secrets](https://developer.lightbend.com/docs/lightbend-orchestration/current/features/secrets.html) on `build.sbt`  which user's code could then read from a file in the pod. Starting from Lagom 1.5 there is no specific support for secrets and the recommendation is to use the default option suggested by each target orchestrator. For example, when deploying to Kubernetes or OpenShift [declare the secret as an environment variable](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables) on your `Deployment` and inject the environment variable in your `application.conf`. For example:
 
 ```
-lagom.cluster.bootstrap.enabled = false
+my-database {
+  password = "${DB_PASSWORD}"
+}
 ```
-
-### Service Discovery
-
-When opting in to Akka Cluster Bootstrapping as a mechanism for Cluster formation you will have to setup a [[Service Discovery|Cluster#Akka-Discovery]]  method for nodes to locate each other.
 
 ##Upgrading a production system
 
