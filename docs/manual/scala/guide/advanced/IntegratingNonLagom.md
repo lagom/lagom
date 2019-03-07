@@ -26,7 +26,7 @@ In both cases, the constructor takes two arguments, a service name and a `ClassL
 
 There is one more component that you'll need to provide when creating a `LagomClientFactory`, that is a service locator. It is up to you what service locator you use, it could be a third party service locator, or a service locator created from static configuration.
 
-Lagom provides a number of built-in service locators, including a [`StaticServiceLocator`](api/com/lightbend/lagom/scaladsl/client/StaticServiceLocator.html), a [`RoundRobinServiceLocator`](api/com/lightbend/lagom/scaladsl/client/RoundRobinServiceLocator.html) and a [`ConfigurationServiceLocator`](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocator.html). The easiest way to use these is to mix in their respective `Components` traits.
+Lagom provides a number of built-in service locators, including a [`StaticServiceLocator`](api/com/lightbend/lagom/scaladsl/client/StaticServiceLocator.html), a [`RoundRobinServiceLocator`](api/com/lightbend/lagom/scaladsl/client/RoundRobinServiceLocator.html) and a [`ConfigurationServiceLocator`](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocator.html). The easiest way to use these is to mix in their respective [[`Components`|ScalaComponents#Service-Locator-Components]] traits.
 
 The [`StandaloneLagomClientFactory`](api/com/lightbend/lagom/scaladsl/client/StandaloneLagomClientFactory.html) variant is useful for applications that do not have a running `ActorSystem`. Internally, the `StandaloneLagomClientFactory` will create a dedicated `ActorSystem` and `Materializer` to be used by the clients. Both will be managed by the `StandaloneLagomClientFactory` and will be shutdown when the factory is closed.
 
