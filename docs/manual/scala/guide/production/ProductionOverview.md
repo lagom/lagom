@@ -93,6 +93,3 @@ lagom.services {
   cas_native = "tcp://10.1.2.3:9042"
 }
 ```
-
-
-
