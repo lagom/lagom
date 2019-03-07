@@ -24,13 +24,11 @@ The production environment determines the methods for packaging your services, m
 
     * Otherwise, you can implement the interface yourself to integrate with a service registry of your choosing (such as [Consul](https://www.consul.io/), [ZooKeeper](https://zookeeper.apache.org/), or [etcd](https://coreos.com/etcd/)) or start with an open-source example implementation such as [`lagom-service-locator-consul`](https://github.com/jboner/lagom-service-locator-consul) or [`lagom-service-locator-zookeeper`](https://github.com/jboner/lagom-service-locator-zookeeper).
 
-* Services that require an [Akka Cluster](https://doc.akka.io/docs/akka/current/cluster-usage.html) (which includes any that use the Lagom [[Persistence|PersistentEntity]] or [[Publish-Subscribe|PubSub]] APIs) must have a strategy for forming a cluster or joining an existing cluster on startup.
+* Lagom services that require an [Akka Cluster](https://doc.akka.io/docs/akka/current/cluster-usage.html) (which includes any that use the Lagom [[Persistence|PersistentEntity]] or [[Publish-Subscribe|PubSub]] APIs) must have a strategy for forming a cluster or joining an existing cluster on startup.
 
     * If you don't use a service orchestration platform and can determine the addresses of some of your nodes in advance of deploying them, Akka Cluster can be configured manually by listing the addresses of [seed nodes](https://doc.akka.io/docs/akka/current/cluster-usage.html#joining-to-seed-nodes) in the service configuration.
 
-    * Lightbend Orchestration includes open-source support for [automatic Akka Cluster formation](https://developer.lightbend.com/docs/lightbend-orchestration/current/features/akka-cluster-bootstrap.html) on Kubernetes or DC/OS.
-
-    * Otherwise, you can use the open-source [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/current/bootstrap/index.html) extension for integration with other service discovery infrastructure, or write your own programmatic cluster formation implementation. See the [[Lagom Cluster|Cluster]] documentation for more information.
+    * When you don't specify a no static list of `seed-nodes`, Lagom will enable the [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/current/bootstrap.html) extension for integration with other service discovery infrastructure. Using Akka Cluster Bootstrap requires setting up a `Service Discovery` method (for example [Service Discovery for Kubernetes](https://developer.lightbend.com/docs/akka-management/current/discovery/kubernetes.html)). See the [[Lagom Cluster|Cluster]] documentation for more information.
 
 * Lagom's Cassandra module comes out of the box ready to locate your Cassandra cluster using the service locator. This means Lagom considers Cassandra like any other external service it may need to locate. If your production environment requires it, you can also choose to bypass the service locator by providing Cassandra contact points directly in the service configuration, as described in the [section below](#Using-static-Cassandra-contact-points).
 
