@@ -1,6 +1,6 @@
 # Scala Components
 
-This is a list of available Components you may use to build your application cake. This list contains Components provided by Lagom, Play and Lightbend Orchestration. You may develop your own Components and use those instead of the provided on this list as long as the contracts are fulfilled.
+This is a list of available Components you may use to build your application cake. This list contains Components provided by Lagom, Play and other libraries. You may develop your own Components and use those instead of the provided on this list as long as the contracts are fulfilled.
 
 #####  Service Components
 
