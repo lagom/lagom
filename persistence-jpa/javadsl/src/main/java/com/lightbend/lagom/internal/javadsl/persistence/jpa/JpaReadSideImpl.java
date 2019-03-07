@@ -22,13 +22,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.compat.java8.FutureConverters;
 import slick.jdbc.JdbcProfile;
+import slick.jdbc.OracleProfile;
 import slick.jdbc.PostgresProfile;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -181,6 +181,12 @@ public class JpaReadSideImpl implements JpaReadSide {
                 JdbcProfile profile = getSlickDatabaseProfile();
                 if (profile instanceof PostgresProfile) {
                     postgresqlBindUpdateOffsetQuery(updateOffsetQuery, sequenceOffset, timeUuidOffset);
+                } else if (profile instanceof OracleProfile) {
+                    // Hibernate ignore the type of parameter in NativeQuery if the value of a parameter is null
+                    // WA for Oracle. See https://github.com/lagom/lagom/issues/1772
+                    defaultBindUpdateOffsetQuery(updateOffsetQuery,
+                        sequenceOffset == null ? "" : sequenceOffset,
+                        timeUuidOffset == null ? "" : timeUuidOffset);
                 } else {
                     defaultBindUpdateOffsetQuery(updateOffsetQuery, sequenceOffset, timeUuidOffset);
                 }
@@ -218,7 +224,7 @@ public class JpaReadSideImpl implements JpaReadSide {
                     .setParameter(10, tag.tag());
         }
 
-        private Query defaultBindUpdateOffsetQuery(Query query, Long sequenceOffset, String timeUuidOffset) {
+        private Query defaultBindUpdateOffsetQuery(Query query, Object sequenceOffset, String timeUuidOffset) {
             // H2:
             // merge into "read_side_offsets" ("read_side_id","tag","sequence_offset","time_uuid_offset")
             //   values (?,?,?,?)
