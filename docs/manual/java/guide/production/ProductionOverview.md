@@ -12,7 +12,7 @@ The production environment determines the methods for packaging your services, m
 
     * By default, sbt produces standalone "universal" [zip archives](https://www.scala-sbt.org/sbt-native-packager/formats/universal.html) containing the compiled service, all of its dependencies, and a start script. These have no special infrastructure requirements and can be unzipped and run just about anywhere that supports Java. However, this includes no built-in facility for process monitoring and recovering from crashes, so for a resilient production environment, you'll need to provide this another way.
 
-    * Lightbend Orchestration automatically configures `sbt-native-packager` to build and publish [Docker images](https://developer.lightbend.com/docs/lightbend-orchestration/current/building.html) that can be used with Kubernetes, DC/OS, or any other Docker-compatible production environment.
+    * You can also use `sbt-native-packager` to build and publish [Docker images](https://developer.lightbend.com/docs/lightbend-orchestration/current/building.html) that can be used with Kubernetes, DC/OS, or any other Docker-compatible production environment.
 
     * Otherwise, you can configure `sbt-native-packager` to produce [other archive formats](https://www.scala-sbt.org/sbt-native-packager/formats/universal.html#build), [Windows (MSI) installers](https://www.scala-sbt.org/sbt-native-packager/formats/windows.html), Linux packages in [Debian](https://www.scala-sbt.org/sbt-native-packager/formats/debian.html) or [RPM](https://www.scala-sbt.org/sbt-native-packager/formats/rpm.html) format and more.
 
@@ -20,7 +20,7 @@ The production environment determines the methods for packaging your services, m
 
     * The [Maven Assembly Plugin](http://maven.apache.org/plugins/maven-assembly-plugin/) can be used to build archives in zip, tar and other similar formats.
 
-    * The [Docker Maven Plugin](https://dmp.fabric8.io/) is recommended for building Docker images. Maven support in Lightbend Orchestration is currently under development.
+    * The [Docker Maven Plugin](https://dmp.fabric8.io/) is recommended for building Docker images.
 
     * Other Maven packaging plugins in varying states of maturity are available from the [MojoHaus Project](https://www.mojohaus.org/plugins.html).
 

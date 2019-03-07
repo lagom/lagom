@@ -12,7 +12,7 @@ The production environment determines the methods for packaging your services, m
 
     * By default, sbt produces standalone "universal" [zip archives](https://www.scala-sbt.org/sbt-native-packager/formats/universal.html) containing the compiled service, all of its dependencies, and a start script. These have no special infrastructure requirements and can be unzipped and run just about anywhere that supports Java. However, this includes no built-in facility for process monitoring and recovering from crashes, so for a resilient production environment, you'll need to provide this another way.
 
-    * Lightbend Orchestration automatically configures `sbt-native-packager` to build and publish [Docker images](https://developer.lightbend.com/docs/lightbend-orchestration/current/building.html) that can be used with Kubernetes, DC/OS, or any other Docker-compatible production environment.
+    * You can also use `sbt-native-packager` to build and publish [Docker images](https://developer.lightbend.com/docs/lightbend-orchestration/current/building.html) that can be used with Kubernetes, DC/OS, or any other Docker-compatible production environment.
 
     * Otherwise, you can configure `sbt-native-packager` to produce [other archive formats](https://www.scala-sbt.org/sbt-native-packager/formats/universal.html#build), [Windows (MSI) installers](https://www.scala-sbt.org/sbt-native-packager/formats/windows.html), Linux packages in [Debian](https://www.scala-sbt.org/sbt-native-packager/formats/debian.html) or [RPM](https://www.scala-sbt.org/sbt-native-packager/formats/rpm.html) format and more.
 
