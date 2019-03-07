@@ -1,8 +1,8 @@
 # Running Lagom in production
 
-Lagom can be set up to work with most production environments, ranging from basic, manual deployments on physical servers to fully-managed service orchestration platforms such as [Kubernetes](https://kubernetes.io/) and [Mesosphere DC/OS](https://dcos.io/). The core APIs in Lagom are independent of any particular deployment platform. Where Lagom does need to interface with the environment, it provides extensible plugin points that allow you to configure your services for production without requiring changes to your service implementation code.
+Lagom can be set up to work with most production environments, ranging from basic, manual deployments on physical servers to fully-managed service orchestration platforms such as [OpenShift](https://www.openshift.com/), [Kubernetes](https://kubernetes.io/) and [Mesosphere DC/OS](https://dcos.io/). The core APIs in Lagom are independent of any particular deployment platform. Where Lagom does need to interface with the environment, it provides extensible plugin points that allow you to configure your services for production without requiring changes to your service implementation code.
 
-If you are not using Kubernetes or DC/OS, you must configure your services in a way that suits your production environment. The following information provides an overview of production considerations that apply to any environment.
+The following information provides an overview of production considerations that apply to any environment. If you are deploying your service in OpenShift clusters, you can also refer to the [Deploying Lightbend applications to OpenShift](https://developer.lightbend.com/guides/openshift-deployment/) guide.
 
 ## Production considerations
 
