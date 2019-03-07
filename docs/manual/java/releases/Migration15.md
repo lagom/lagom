@@ -78,19 +78,23 @@ ConductR tooling and Lightbend Orchestration handled all the required pieces to 
 
 In particular, ConductR tooling and Lightbend Orchestration handled some or all of the following:
 
-1. extend the your application with: cluster bootstrapping, akka management and health checks
+1. extending the application with: cluster bootstrapping, akka management and health checks
 2. Service Location
-3. setup and produce docker images
-4. prepare the deployment specs for the target orchestrator
+3. setting up and producing docker images
+4. preparing the deployment specs for the target orchestrator
 5. Secrets
 
 #### Application extensions
 
-Starting with Lagom 1.5 your application will include [[Akka management HTTP|Cluster#Akka-Management]] out of the box with [[health checks|Cluster#Health-Checks]] enabled by default. Cluster formation also supports [[Cluster Bootstrapping|Cluster#Joining-during-production-(Akka-Cluster-Bootstrap)]] as a new way to form a cluster. These new defaults may require at least two changes on your codebase. First, if you want to opt-in to cluster bootstrapping you must make sure you don't set `seed-nodes`. Second, if you use Cluster Bootstrapping, you will have to setup a [[discovery|Cluster#Akka-Discovery]] mechanism (see the [[reference guide|Cluster#Akka-Discovery]] for more details). 
+Starting with Lagom 1.5 your application will include [[Akka management HTTP|Cluster#Akka-Management]] out of the box with [[health checks|Cluster#Health-Checks]] enabled by default.  Akka management HTTP is a supporting tool for health checks, cluster bootstrap and a few other new features in Lagom 1.5. 
+
+Cluster formation now also supports [[Cluster Bootstrapping|Cluster#Joining-during-production-(Akka-Cluster-Bootstrap)]] as a new way to form a cluster. 
+
+These new defaults may require at least two changes on your codebase. First, if you want to opt-in to cluster bootstrapping you must make sure you don't set `seed-nodes`. `seed-nodes` always takes precedence over any other cluster formation mechanism. Second, if you use Cluster Bootstrapping, you will have to setup a [discovery](https://doc.akka.io/docs/akka/2.5/discovery/index.html) mechanism (see the [[Lagom Cluster reference guide|Cluster#Akka-Discovery]] for more details). 
 
 #### Service Location
 
-You will have to add a `ServiceLocator `of your choice. We recommend using the new [`lagom-akka-discovery-service-locator`](https://github.com/lagom/lagom-akka-discovery-service-locator) which is implemented using [Akka Service Discovery](https://doc.akka.io/docs/akka/current/discovery/index.html) implementations.
+You no longer have a `ServiceLocator `provided by the tooling libraries so you will have to provide one of your choice. We recommend using the new [`lagom-akka-discovery-service-locator`](https://github.com/lagom/lagom-akka-discovery-service-locator) which is implemented using [Akka Service Discovery](https://doc.akka.io/docs/akka/current/discovery/index.html) implementations.
 
 Read the [docs](https://github.com/lagom/lagom-akka-discovery-service-locator) of the new `lagom-akka-discovery-service-locator` for details on how to setup the Akka Service Discovery [method](https://doc.akka.io/docs/akka/current/discovery/index.html). For example, 
 
@@ -104,7 +108,7 @@ akka {
 
 #### Docker images and deployment specs
 
-Regarding docker images and deployment specs, once you remove external tooling you will have to setup and maintain them manually. Instead of producing the `Dockerfile`, deployment scripts produced by tooling and orchestration specs from scratch, use the tooling to create these files and add them to git. You can later review and maintain them at will.
+With the removal of ConductR or Lightbend Orchestration, the docker images and deployment specs will have to be maintained manually. Therefore the recommended migration is to take ownership of the `Dockerfile`, deployment scripts and orchestration specs created by such tooling, such as by committing them to the source repository and then maintaining them.  We also found that such maintenance can be made easier by making use of [kustomize](https://github.com/kubernetes-sigs/kustomize).
 
 For example, using `docker:stage` on your project you will generate `<project-name>/target/docker/stage/Dockerfile` and other files required to build the image. You may use these files directly or have them as a guide to tune the `sbt-native-packager` plugin to produce a similar `Dockerfile`.
 
