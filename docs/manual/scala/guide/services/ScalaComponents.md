@@ -1,6 +1,6 @@
 # Scala Components
 
-This is a list of available Components you may use to build your application cake. This list contains Components provided by Lagom, Play and Lightbend Orchestration. You may develop your own Components and use those instead of the provided on this list as long as the contracts are fulfilled.
+This is a list of available Components you may use to build your application cake. This list contains Components provided by Lagom, Play and other libraries. You may develop your own Components and use those instead of the provided on this list as long as the contracts are fulfilled.
 
 #####  Service Components
 
@@ -34,7 +34,7 @@ This is a list of available Components you may use to build your application cak
 
 You can mix in `Components` from other frameworks or libraries, for example:
 
- * [LagomServiceLocatorComponents](https://developer.lightbend.com/docs/lightbend-orchestration/current/setup/project-configuration.html#lagom-scala): is defined by the `reactive-lib` component of Lightbend Orchestration, and provides a Lagom `ServiceLocator` implementation that works with the native service discovery features of Kubernetes and DC/OS (Marathon).
+ * [AkkaDiscoveryComponents](https://github.com/lagom/lagom-akka-discovery-service-locator): is defined by the `lagom-akka-discovery-service-locator` library and provides a Lagom `ServiceLocator` implementation built on [Akka Service Discovery](https://doc.akka.io/docs/akka/current/discovery/index.html). It is the recommended implementation for production specially for users targeting Kubernetes and DC/OS (Marathon).
  * [AhcWSComponents](https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.libs.ws.ahc.AhcWSComponents): provides a `WSClient` based on an Async HTTP Client.
  * [DBComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/DBComponents.html)
  * [HikariCPComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/HikariCPComponents.html)
