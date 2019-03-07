@@ -4,24 +4,26 @@ This guide explains how to migrate from Lagom 1.4 to Lagom 1.5. If you are upgra
 
 Lagom 1.5 also updates to the latest major versions of Play (2.7), Akka (2.5.21) and Akka HTTP (10.1). We have highlighted the changes that are relevant to most Lagom users, but you may need to change code in your services that uses Play APIs directly. You'll also need to update any Play services in your Lagom project repositories to be compatible with Play 2.7. Please refer to the Play 2.7 migration guide (https://www.playframework.com/documentation/2.7.0/Migration27), [Akka 2.5.21 release announcement](https://akka.io/blog/news/2019/02/13/akka-2.5.21-released) and the [Akka HTTP 10.1.x release announcements](https://akka.io/blog/news-archive.html) for more details.
 
-For a detailed list of  version upgrades for Slick, Alpakka-Kafka, Kafka, etc... refer to the [release notes](https://github.com/lagom/lagom/releases).
+For a detailed list of version upgrades for Slick, Alpakka-Kafka, Kafka, etc... refer to the [release notes](https://github.com/lagom/lagom/releases).
 
+## Migrating from Lagom 1.4
 
+To migrate from Lagom 1.4 we recommend first migrating to latest version of Lagom 1.4 (currently `1.4.11`) before upgrading to Lagom 1.5. Refer to the [release notes](https://github.com/lagom/lagom/releases) for details upgrading to latest version of Lagom 1.4.
 ## Build changes
 
 ### Maven
 
-If you're using a `lagom.version` property in the `properties` section of your root `pom.xml`, then simply update that to `1.5.0-RC1`. Otherwise, you'll need to go through every place that a Lagom dependency, including plugins, is used, and set the version there.
+If you're using a `lagom.version` property in the `properties` section of your root `pom.xml`, then simply update that to `1.5.0`. Otherwise, you'll need to go through every place that a Lagom dependency, including plugins, is used, and set the version there.
 
 ### sbt
 
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin. For example:
 
 ```scala
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.5.0-RC1")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.5.0")
 ```
 
-We also recommend upgrading to sbt 1.2.1 or later, by updating the `sbt.version` in `project/build.properties`.
+We also recommend upgrading to sbt 1.2.8 or later, by updating the `sbt.version` in `project/build.properties`.
 
 ## Deprecations
 
