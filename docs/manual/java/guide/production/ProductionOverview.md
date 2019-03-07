@@ -26,9 +26,9 @@ The production environment determines the methods for packaging your services, m
 
 * At runtime, services need to locate the addresses of other services to communicate with them. This requires you to configure an implementation of a [`ServiceLocator`](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html) that Lagom uses to look up the addresses of services by their names. The production environment you choose might provide a service discovery mechanism that you can use with Lagom.
 
-    * For simple deployments, Lagom includes a built-in service locator that uses addresses specified in the service configuration ([described below](#Using-static-values-for-services-and-Cassandra)).
+    * For simple deployments, Lagom includes a built-in service locator that uses hardcoded addresses specified in the service configuration ([described below](#Using-static-values-for-services-and-Cassandra)).
 
-    * Lightbend Orchestration provides an open-source [`ServiceLocator` implementation](https://developer.lightbend.com/docs/lightbend-orchestration/current/features/service-location.html) that integrates with the service discovery features of Kubernetes or DC/OS, or any other environment that supports service discovery via DNS.
+    * When using dynamic deployments where processes don't run on static IPs, you can use the open-source [`lagom-akka-discovery-service-locator`](https://github.com/lagom/lagom-akka-discovery-service-locator)  that can integrate with the service discovery features of Kubernetes or DC/OS, or any other environment supported by [Akka's Service Discovery](https://doc.akka.io/docs/akka/2.5/discovery/index.html).
 
     * Otherwise, you can implement the interface yourself to integrate with a service registry of your choosing (such as [Consul](https://www.consul.io/), [ZooKeeper](https://zookeeper.apache.org/), or [etcd](https://coreos.com/etcd/)) or start with an open-source example implementation such as [`lagom-service-locator-consul`](https://github.com/jboner/lagom-service-locator-consul) or [`lagom-service-locator-zookeeper`](https://github.com/jboner/lagom-service-locator-zookeeper).
 
