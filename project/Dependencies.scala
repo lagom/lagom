@@ -41,8 +41,8 @@ object Dependencies {
     val Maven = "3.3.9"
     val Netty = "4.1.32.Final"
     val NettyReactiveStreams = "2.0.0"
-    val Kafka = "2.1.0"
-    val AlpakkaKafka = "1.0-RC2"
+    val Kafka = "2.1.1"
+    val AlpakkaKafka = "1.0.1"
     val Curator = "2.12.0"
     val Immutables = "2.3.10"
     val HibernateCore = "5.3.7.Final"
@@ -287,7 +287,7 @@ object Dependencies {
       "junit" % "junit" % Versions.JUnit,
       "net.jodah" % "typetools" % "0.5.0",
       "org.lz4" % "lz4-java" % "1.5.0",
-      "com.github.luben" % "zstd-jni" % "1.3.5-4",
+      "com.github.luben" % "zstd-jni" % "1.3.7-1",
       "org.agrona" % "agrona" % "0.9.31",
       commonsLang,
       kafkaClients,
@@ -373,7 +373,7 @@ object Dependencies {
   // These dependencies are used by the Kafka tests, but we don't want to export them as part of our regular
   // whitelist, so we maintain it separately.
   val KafkaTestWhitelist = Seq(
-    "com.101tec" % "zkclient" % "0.10",
+    "com.101tec" % "zkclient" % "0.11",
     "com.yammer.metrics" % "metrics-core" % "2.2.0",
     "jline" % "jline" % "0.9.94",
     "log4j" % "log4j" % "1.2.17",
