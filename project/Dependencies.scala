@@ -873,6 +873,8 @@ object Dependencies {
     playFileWatch,
     // This is used in the code to check if the embedded cassandra server is started
     cassandraDriverCore,
+    // explicitly depend on particular versions of guava
+    guava,
     scalaTest % Test
   )
 
@@ -957,7 +959,9 @@ object Dependencies {
 
   val `cassandra-server` = libraryDependencies ++= Seq(
     akkaPersistenceCassandraLauncher,
-    akkaPersistenceCassandra
+    akkaPersistenceCassandra,
+    // explicitly depend on particular versions of guava
+    guava
   )
 
   val `kafka-server` = libraryDependencies ++= Seq(
