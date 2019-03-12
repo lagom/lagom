@@ -1,6 +1,6 @@
 # Using Lightbend Enterprise Suite with Lagom
 
-Lagom is part of the [Lightbend Reactive Platform](https://www.lightbend.com/products/lightbend-reactive-platform) — an application development solution for building Reactive systems on the JVM powered by an open source core and the commercial [Enterprise Suite](https://www.lightbend.com/products/enterprise-suite). Lagom services can be developed, deployed and run in production using only open source components, however we recommend considering the advanced features provided by Enterprise Suite.
+Lagom is part of the [Lightbend Platform](https://www.lightbend.com/products/lightbend-platform) — an application development solution for building Reactive systems on the JVM powered by an open source core and the commercial [Enterprise Suite](https://www.lightbend.com/products/enterprise-suite). Lagom services can be developed, deployed and run in production using only open source components, however we recommend considering the advanced features provided by Enterprise Suite.
 
 This page highlights the Enterprise Suite features that are especially useful for most Lagom users, but there are many more. You can find an overview on the [Lightbend web site](https://www.lightbend.com/products/enterprise-suite) or [contact Lightbend](https://www.lightbend.com/contact) to learn more.
 
@@ -33,10 +33,10 @@ To use these with Lagom, the Cinnamon Telemetry agent must be included as a depe
 
 ## Configuring a Lagom build for Enterprise Suite
 
-Bintray credentials are required to build applications using the Enterprise Suite portion of the Reactive Platform. Lightbend customers should log into the [support portal](https://portal.lightbend.com/ReactivePlatform/EnterpriseSuiteCredentials) to obtain their credentials. Follow the links below to see how to supply the credentials when using sbt or Maven.
+Bintray credentials are required to build applications using the Enterprise Suite portion of the Lightbend Platform. Lightbend customers should log into the [support portal](https://portal.lightbend.com/ReactivePlatform/EnterpriseSuiteCredentials) to obtain their credentials. Follow the links below to see how to supply the credentials when using sbt or Maven.
 
-* [Reactive Platform setup for sbt](https://developer.lightbend.com/docs/reactive-platform/2.0/setup/setup-sbt.html)
-* [Reactive Platform setup for Maven](https://developer.lightbend.com/docs/reactive-platform/2.0/setup/setup-maven.html)
+* [Lightbend Platform setup for sbt](https://developer.lightbend.com/docs/reactive-platform/2.0/setup/setup-sbt.html)
+* [Lightbend Platform setup for Maven](https://developer.lightbend.com/docs/reactive-platform/2.0/setup/setup-maven.html)
 
 
 [Contact Lightbend](https://www.lightbend.com/contact) to get started with Enterprise Suite.
