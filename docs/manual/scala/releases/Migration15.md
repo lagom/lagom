@@ -132,7 +132,7 @@ When opting in to Akka Cluster Bootstrapping as a mechanism for Cluster formatio
 
 
 
-Upgrading a production system
+## Upgrading a production system
 
 TODO
 
