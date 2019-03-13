@@ -40,7 +40,7 @@ object Dependencies {
     val JacksonDatatype = Jackson
     val JacksonDatabind = Jackson
     val Guava = "27.0-jre"
-    val Maven = "3.6.0"
+    val Maven = "3.5.4"
     val Netty = "4.1.32.Final"
     val NettyReactiveStreams = "2.0.0"
     val Kafka = "2.1.1"
