@@ -15,6 +15,8 @@ To migrate from Lagom 1.4 we recommend first migrating to latest version of Lago
 
 If you're using a `lagom.version` property in the `properties` section of your root `pom.xml`, then simply update that to `1.5.0`. Otherwise, you'll need to go through every place that a Lagom dependency, including plugins, is used, and set the version there.
 
+> **Note:** Lagom 1.5 requires, at least,  Maven `3.6.0`. Please update your environments.
+
 ### sbt
 
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin. For example:

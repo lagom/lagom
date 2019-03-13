@@ -45,7 +45,8 @@ If you do not have the correct JDK, download it from the  [Oracle website](http:
 
 
 ## Maven
-Lagom requires Maven 3.2.1 or higher, we recommend that you use at least Maven 3.3. In addition to verifying the version on the command line, check that your IDE is using the correct version.
+
+Lagom requires Maven 3.6.0 or higher. In addition to verifying the version on the command line, check that your IDE is using the correct version.
 
 To check the Maven version from a command line, enter:
 
