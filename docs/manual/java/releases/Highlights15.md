@@ -18,7 +18,7 @@ lagom.cluster.bootstrap.enabled = false
 
 ##  Additional Routers
 
-As of Lagom 1.5 it is possible to extend the routes exposed by your service. So your service will not only expose the calls listed in `Service.Descriptor` but will also serve endpoints handled by `additionalRouters`. The [[documentation|AdditionalRouters]] covers all the details. Additional routers make it trivial to extend a `Service.Descriptor` with features natively supported by Play such as Upload File. There is also a [Lagom recipe](https://github.com/lagom/lagom-recipes/tree/master/file-upload) detailing such a use case.
+As of Lagom 1.5 it is possible to extend the routes exposed by your service. So your service will not only expose the calls listed in `Service.Descriptor` but will also serve endpoints handled by `additionalRouters`. The [[documentation|AdditionalRouters]] covers all the details. Additional routers make it trivial to extend a `Service.Descriptor` with features natively supported by Play such as uploading a file. There is also a [Lagom recipe](https://github.com/lagom/lagom-recipes/tree/master/file-upload) detailing such a use case.
 
 ## gRPC
 
