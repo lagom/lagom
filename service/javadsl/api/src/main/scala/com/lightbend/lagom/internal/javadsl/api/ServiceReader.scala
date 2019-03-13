@@ -4,7 +4,9 @@
 
 package com.lightbend.lagom.internal.javadsl.api
 
+import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
+import java.lang.invoke.MethodType
 import java.lang.reflect.{ InvocationHandler, Method, Modifier, ParameterizedType, Type, Proxy => JProxy }
 
 import com.google.common.reflect.TypeToken
@@ -28,13 +30,30 @@ object ServiceReader {
 
   final val DescriptorMethodName = "descriptor"
 
+  private val isJava8 =
+    scala.sys.props.getOrElse("java.vm.specification.version", "").startsWith("1.8")
+
   /**
    * In order to invoke default methods of a proxy in Java 8 reflectively, we need to create a MethodHandles.Lookup
    * instance that is allowed to lookup private methods. The only way to do that is via reflection.
    */
-  private val methodHandlesLookupConstructor = classOf[MethodHandles.Lookup].getDeclaredConstructor(classOf[Class[_]], classOf[Int])
-  if (!methodHandlesLookupConstructor.isAccessible) {
-    methodHandlesLookupConstructor.setAccessible(true)
+  private val defaultMethodHandleSupplier: Method => MethodHandle = {
+    // Using different approaches for different Java versions: https://stackoverflow.com/a/49532492/463761
+    if (isJava8) {
+      val methodHandlesLookupConstructor = classOf[MethodHandles.Lookup].getDeclaredConstructor(classOf[Class[_]], classOf[Int])
+      if (!methodHandlesLookupConstructor.isAccessible)
+        methodHandlesLookupConstructor.setAccessible(true)
+      method =>
+        // We create a MethodHandles.Lookup that is allowed to look up private methods
+        methodHandlesLookupConstructor.newInstance(method.getDeclaringClass, Integer.valueOf(MethodHandles.Lookup.PRIVATE))
+          // Now using unreflect special, we get the default method from the declaring class, rather than the proxy
+          .unreflectSpecial(method, method.getDeclaringClass)
+    } else {
+      val lookup = MethodHandles.lookup
+      val returnType = MethodType.methodType(classOf[Descriptor])
+      method =>
+        lookup.findSpecial(method.getDeclaringClass, method.getName, returnType, method.getDeclaringClass)
+    }
   }
 
   def readServiceDescriptor(classLoader: ClassLoader, serviceInterface: Class[_ <: Service]): Descriptor = {
@@ -277,11 +296,7 @@ object ServiceReader {
       // If it's a default method, invoke it
       if (method.isDefault) {
         // This is the way to invoke default methods via reflection, using the JDK7 method handles API
-        val declaringClass = method.getDeclaringClass
-        // We create a MethodHandles.Lookup that is allowed to look up private methods
-        methodHandlesLookupConstructor.newInstance(declaringClass, new Integer(MethodHandles.Lookup.PRIVATE))
-          // Now using unreflect special, we get the default method from the declaring class, rather than the proxy
-          .unreflectSpecial(method, declaringClass)
+        defaultMethodHandleSupplier(method)
           // We bind to the proxy so that we end up invoking on the proxy
           .bindTo(proxy)
           // And now we actually invoke it

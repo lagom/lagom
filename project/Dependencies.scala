@@ -147,10 +147,10 @@ object Dependencies {
   private val playFileWatch = "com.lightbend.play" %% "play-file-watch" % Versions.PlayFileWatch excludeAll (excludeSlf4j: _*)
 
   private val pcollections = "org.pcollections" % "pcollections" % Versions.PCollections
-
+  private val jsr250 = "javax.annotation" % "jsr250-api" % "1.0"
   private val junit = "junit" % "junit" % Versions.JUnit
   private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.8.1"
-
+  private val javaxAnnotationApi = "javax.annotation" % "javax.annotation-api" % "1.3.2"
   private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.6" excludeAll (excludeSlf4j: _*)
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
@@ -264,7 +264,7 @@ object Dependencies {
       "org.eclipse.jetty" % "jetty-xml" % Versions.jetty,
       "org.eclipse.jetty.websocket" % "websocket-common" % Versions.jetty,
       "org.eclipse.jetty.websocket" % "websocket-api" % Versions.jetty,
-
+      jsr250,
       "com.typesafe.play" %% "twirl-api" % Versions.Twirl,
       "com.typesafe.slick" %% "slick" % Versions.Slick,
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
@@ -306,7 +306,7 @@ object Dependencies {
       "org.typelevel" %% "macro-compat" % "1.1.1",
       "org.xerial.snappy" % "snappy-java" % "1.1.7.2",
       "tyrex" % "tyrex" % "1.0.1",
-
+      javaxAnnotationApi,
       "org.scala-lang.modules" %% "scala-collection-compat" % "0.1.1",
       "com.google.guava" % "failureaccess" % "1.0",
       "com.google.guava" % "listenablefuture" % "9999.0-empty-to-avoid-conflict-with-guava",
@@ -353,7 +353,7 @@ object Dependencies {
     "antlr" % "antlr" % "2.7.7",
     "com.fasterxml" % "classmate" % "1.3.4",
     "org.dom4j" % "dom4j" % "2.1.1",
-    "javax.annotation" % "jsr250-api" % "1.0",
+    jsr250,
     "javax.el" % "el-api" % "2.2",
     "javax.enterprise" % "cdi-api" % "1.1",
     "org.apache.geronimo.specs" % "geronimo-jta_1.1_spec" % "1.1.1",
@@ -515,7 +515,8 @@ object Dependencies {
   val `server-javadsl` = libraryDependencies ++= Seq(
     akkaManagement,
     slf4jApi,
-    commonsLang
+    commonsLang,
+    javaxAnnotationApi
   )
 
   val `server-scaladsl` = libraryDependencies ++= Seq(
@@ -734,6 +735,7 @@ object Dependencies {
 
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
     junit % Test,
+    jsr250,
     // Upgrades needed to match whitelist
     cassandraDriverCore
   )
