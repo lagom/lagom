@@ -38,7 +38,7 @@ object Dependencies {
     val JacksonDatatype = Jackson
     val JacksonDatabind = Jackson
     val Guava = "27.0-jre"
-    val Maven = "3.3.9"
+    val Maven = "3.6.0"
     val Netty = "4.1.32.Final"
     val NettyReactiveStreams = "2.0.0"
     val Kafka = "2.1.1"
@@ -905,6 +905,7 @@ object Dependencies {
       .exclude("org.apache.maven.wagon", "wagon-http-shared4")
       .exclude("org.apache.httpcomponents", "httpclient")
       .exclude("org.apache.httpcomponents", "httpcore"),
+    "org.apache.maven" % "maven-compat" % Versions.Maven,
     "org.apache.maven.wagon" % "wagon-file" % "2.10",
     "org.eclipse.aether" % "aether-connector-basic" % "1.0.2.v20150114",
     "org.eclipse.aether" % "aether-transport-wagon" % "1.0.2.v20150114",
