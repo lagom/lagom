@@ -10,8 +10,6 @@ For a detailed list of version upgrades of other libraries Lagom builds on such 
 
 To migrate from Lagom 1.4 we recommend first migrating to latest version of Lagom 1.4 (currently `1.4.11`) before upgrading to Lagom 1.5. Refer to the [release notes](https://github.com/lagom/lagom/releases) for details upgrading to latest version of Lagom 1.4.
 
-Adds instructions to bump from lagom 1.4.latest only
-
 ## Build changes
 
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin. For example:
@@ -102,12 +100,13 @@ This means you will have to change you `Loader` code:
   import com.lightbend.rp.servicediscovery.lagom.scaladsl.LagomServiceLocatorComponents
   override def load(context: LagomApplicationContext) =
     new MyApplication(context) with LagomServiceLocatorComponents
+```
 
+```scala
 // after
   import com.lightbend.lagom.scaladsl.akka.discovery.AkkaDiscoveryComponents
   override def load(context: LagomApplicationContext): LagomApplication =
     new MyProxyApplication(context) with AkkaDiscoveryComponents
-
 ```
 
 Once you enable `AkkaDiscoveryComponents` you will need to enable an Akka Service Discovery [method](https://doc.akka.io/docs/akka/current/discovery/index.html):
@@ -124,11 +123,11 @@ Read the [docs](https://github.com/lagom/lagom-akka-discovery-service-locator) o
 
 #### Docker images and deployment specs
 
-With the removal of ConductR or Lightbend Orchestration, the docker images and deployment specs will have to be maintained manually. Therefore the recommended migration is to take ownership of the `Dockerfile`, deployment scripts and orchestration specs created by such tooling, such as by committing them to the source repository and then maintaining them.  We also found that such maintenance can be made easier by making use of [kustomize](https://github.com/kubernetes-sigs/kustomize).
+With the removal of ConductR or Lightbend Orchestration, the docker images and deployment specs will have to be maintained manually. Therefore the recommended migration is to take ownership of the `Dockerfile`, deployment scripts and orchestration specs.  
 
-For example, using `docker:stage` on your project you will generate `<project-name>/target/docker/stage/Dockerfile` and other files required to build the image. You may use these files directly or have them as a guide to tune the `sbt-native-packager` plugin to produce a similar `Dockerfile`.
+We have written a [comphrensive guide](https://developer.lightbend.com/guides/openshift-deployment/lagom/index.html) on how to deploy a Lagom application in Kubernetes or OpenShift. 
 
-Similarly, with a docker image produced with Lightbend Orchestration still enabled, you may use `rp generate-kubernetes-resources …` to produce Kubernetes YAML files that you can keep under SCM.
+We also found that such maintenance can be made easier by making use of [kustomize](https://github.com/kubernetes-sigs/kustomize).
 
 #### Secrets
 
@@ -140,7 +139,7 @@ my-database {
 }
 ```
 
-##Upgrading a production system
+## Upgrading a production system
 
 TODO
 
