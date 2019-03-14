@@ -978,7 +978,9 @@ object Dependencies {
     "org.apache.curator" % "curator-test" % Versions.Curator,
     javassist,
     scalaJava8Compat,
-    scalaTest % Test
+    scalaTest % Test,
+    // explicitly depend on particular versions of guava
+    guava
   )
 
   val validateDependencies = taskKey[Unit]("Validate Lagom dependencies to ensure they are whitelisted")
