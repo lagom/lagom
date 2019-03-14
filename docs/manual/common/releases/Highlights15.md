@@ -6,7 +6,7 @@ This page highlights the new features of Lagom 1.5. If you want to learn about t
 
 ## TLS Support
 
-Lagom in both [[dev mode|ConfiguringServicesInDevelopment#Using-HTTPS-in-development-mode]] and [[tests|Test#How-to-use-TLS-on-tests]] supports basic usage of TLS by means of self-signed certificates provided by the framework.
+Lagom in both [[dev mode|ConfiguringServicesInDevelopment#Using-HTTPS-in-development-mode]] and [[java tests|Test#How-to-use-TLS-on-tests]]/[[scala tests|TestingServices#How-to-use-TLS-on-tests]] supports basic usage of TLS by means of self-signed certificates provided by the framework.
 
 ## Cluster Formation
 
