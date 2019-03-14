@@ -23,6 +23,7 @@ jobs:
       name: "Run tests for Scala 2.12"
     - script: bin/test-documentation
       name: "Documentation validations and tests"
+
     - stage: test-build-tools
       script: bin/test-sbt-0.13
       name: "Scripted tests for sbt 0.13"
@@ -30,10 +31,29 @@ jobs:
       name: "Scripted tests for sbt 1"
     - script: bin/test-maven
       name: "PublishM2 and test Maven"
+
     - stage: java-11
-      script: bin/test-2.12
+      script: bin/test-code-style
       env: TRAVIS_JDK=adopt@1.11.0-1
-      name: "Run tests for Scala 2.12 and Java 11"
+      name: "Code validations (format, binary compatibilty, whitesource, etc.)"
+    - script: bin/test-2.11
+      env: TRAVIS_JDK=adopt@1.11.0-1
+      name: "Run tests for Scala 2.11"
+    - script: bin/test-2.12
+      env: TRAVIS_JDK=adopt@1.11.0-1
+      name: "Run tests for Scala 2.12"
+    - script: bin/test-documentation
+      env: TRAVIS_JDK=adopt@1.11.0-1
+      name: "Documentation validations and tests"
+    - script: bin/test-sbt-0.13
+      env: TRAVIS_JDK=adopt@1.11.0-1
+      name: "Scripted tests for sbt 0.13"
+    - script: bin/test-sbt-1.0
+      env: TRAVIS_JDK=adopt@1.11.0-1
+      name: "Scripted tests for sbt 1"
+    - script: bin/test-maven
+      env: TRAVIS_JDK=adopt@1.11.0-1
+      name: "PublishM2 and test Maven"
 
 before_install:
   # See https://github.com/travis-ci/travis-ci/issues/4629#issuecomment-239493916
