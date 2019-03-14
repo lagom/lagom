@@ -35,11 +35,6 @@ jobs:
       env: TRAVIS_JDK=adopt@1.11.0-1
       name: "Run tests for Scala 2.12 and Java 11"
 
-matrix:
-  fast_finish: true
-  allow_failures:
-    - env: TRAVIS_JDK=adopt@1.11.0-1 # not fully supported but allows problem discovery
-
 before_install:
   # See https://github.com/travis-ci/travis-ci/issues/4629#issuecomment-239493916
   - rm ~/.m2/settings.xml
