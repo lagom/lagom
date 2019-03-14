@@ -116,7 +116,7 @@ akka {
 
 With the removal of ConductR or Lightbend Orchestration, the docker images and deployment specs will have to be maintained manually. Therefore the recommended migration is to take ownership of the `Dockerfile`, deployment scripts and orchestration specs.  
 
-We have written a [comphrensive guide](https://developer.lightbend.com/guides/openshift-deployment/lagom/index.html) on how to deploy a Lagom application in Kubernetes or OpenShift. 
+We have written a [comprehensive guide](https://developer.lightbend.com/guides/openshift-deployment/lagom/index.html) on how to deploy a Lagom application in Kubernetes or OpenShift. 
 
 We also found that such maintenance can be made easier by making use of [kustomize](https://github.com/kubernetes-sigs/kustomize).
 
