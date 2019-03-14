@@ -98,7 +98,6 @@ object UnidocRoot extends AutoPlugin {
     target in (ScalaUnidoc, unidoc) := target.value / "unidoc",
     scalacOptions in (ScalaUnidoc, unidoc) ++= Seq("-skip-packages", "com.lightbend.lagom.internal"),
     javacOptions in doc := Seq(
-      "-windowtitle", "Lagom Services API",
       // Adding a user agent when we run `javadoc` is necessary to create link docs
       // with Akka (at least, maybe play too) because doc.akka.io is served by Cloudflare
       // which blocks requests without a User-Agent header.
