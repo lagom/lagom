@@ -27,3 +27,12 @@ Lagom 1.5 introduces support for cross-service gRPC communication. [gRPC](https:
 ## Deployment
 
 Neither ConductR not [Lightbend Orchestration](https://developer.lightbend.com/docs/lightbend-orchestration/current/) are supported in Lagom 1.5. See the [[Deployment|Migration15#Deployment]] section on the migration guide for more details.
+
+## Java 11 reflection fix
+
+Lagom 1.5.0 brings a [fix](lagom/lagom#1780) to the java reflection strategy Lagom uses to read the service
+descriptor, so that reflection works on JDK 11 (as well as JDK 9 and JDK 10).  We're happy to announce this fix
+in the Lagom 1.5.0 highlights and will be completing the necessary changes to fully support Java 11 in the next
+releases.
+
+[lagom/lagom#1780]: https://github.com/lagom/lagom/pull/1780
