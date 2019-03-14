@@ -118,7 +118,7 @@ With the removal of ConductR or Lightbend Orchestration, the docker images and d
 
 We have written a [comprehensive guide](https://developer.lightbend.com/guides/openshift-deployment/lagom/index.html) on how to deploy a Lagom application in Kubernetes or OpenShift. 
 
-We also found that such maintenance can be made easier by making use of [kustomize](https://github.com/kubernetes-sigs/kustomize).
+We also found that such maintenance can be made easier by using [kustomize](https://github.com/kubernetes-sigs/kustomize).
 
 #### Secrets
 
