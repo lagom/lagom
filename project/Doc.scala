@@ -46,7 +46,7 @@ object UnidocRoot extends AutoPlugin {
 
   override def trigger = noTrigger
 
-  override def requires = BaseUnidocPlugin && ScalaUnidocPlugin && JavaUnidocPlugin
+  override def requires = ScalaUnidocPlugin && JavaUnidocPlugin
 
   private def projectsAndDependencies(projects: Seq[ProjectReference]): ProjectFilter = {
     //projects.map(p => inDependencies(p, transitive = true, includeRoot = true)).reduce(_ || _)
