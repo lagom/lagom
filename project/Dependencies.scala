@@ -30,7 +30,7 @@ object Dependencies {
 
     val AkkaPersistenceCassandra = "0.61"
     val AkkaPersistenceJdbc = "3.5.0"
-    val AkkaManagement = "1.0.0-RC3"
+    val AkkaManagement = "1.0.0"
 
     val Disruptor = "3.3.11"
 
