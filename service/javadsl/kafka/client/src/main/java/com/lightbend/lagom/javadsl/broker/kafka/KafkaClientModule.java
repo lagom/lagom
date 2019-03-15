@@ -5,18 +5,18 @@
 package com.lightbend.lagom.javadsl.broker.kafka;
 
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory;
-import play.api.Configuration;
-import play.api.Environment;
-import play.api.inject.Binding;
-import play.api.inject.Module;
-import scala.collection.Seq;
+import com.typesafe.config.Config;
+import play.inject.Module;
+
+import java.util.Collections;
+import java.util.List;
 
 public class KafkaClientModule extends Module {
 
     @Override
-    public Seq<Binding<?>> bindings(Environment environment, Configuration configuration) {
-        return seq(
-            bind(TopicFactory.class).to(KafkaTopicFactory.class)
+    public List<play.inject.Binding<?>> bindings(play.Environment environment, Config config) {
+        return Collections.singletonList(
+            bindClass(TopicFactory.class).to(KafkaTopicFactory.class)
         );
     }
 }

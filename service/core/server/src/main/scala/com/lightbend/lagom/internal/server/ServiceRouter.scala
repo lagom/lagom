@@ -32,6 +32,8 @@ import scala.util.control.NonFatal
 object ServiceRouter {
   /** RFC 6455 Section 5.5 - maximum control frame size is 125 bytes */
   val WebSocketControlFrameMaxLength = 125
+
+  val logger = Logger(classOf[ServiceRouter])
 }
 
 private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration, parsers: PlayBodyParsers)(implicit ec: ExecutionContext, mat: Materializer)
@@ -363,7 +365,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
           (responseHeader, response) <- invokeServiceCall(serviceCall, requestHeader, request)
         } yield {
           if (!responseHeaderIsDefault(responseHeader)) {
-            Logger.warn("Response header contains a custom status code and/or custom protocol and/or custom headers, " +
+            logger.warn("Response header contains a custom status code and/or custom protocol and/or custom headers, " +
               "but this was invoked by a transport (eg WebSockets) that does not allow sending custom headers. " +
               "This response header will be ignored: " + responseHeader)
           }
