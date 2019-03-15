@@ -12,6 +12,7 @@ val HibernateVersion = "5.3.7.Final"
 val ValidationApiVersion = "2.0.1.Final"
 
 val branch = {
+  import scala.sys.process._
   val rev = "git rev-parse --abbrev-ref HEAD".!!.trim
   if (rev == "HEAD") {
     // not on a branch, get the hash
@@ -128,12 +129,13 @@ def forkedTests: Seq[Setting[_]] = Seq(
 def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // We could group non Cassandra tests into another group
   // to avoid new JVM for each test, see https://www.scala-sbt.org/release/docs/Testing.html
-  val javaOptions = Seq("-Xms256M", "-Xmx512M")
+  val javaOptions = Vector("-Xms256M", "-Xmx512M")
   tests map { test =>
     new Tests.Group(
       name = test.name,
       tests = Seq(test),
-      runPolicy = Tests.SubProcess(javaOptions))
+      runPolicy = Tests.SubProcess(ForkOptions().withRunJVMOptions(javaOptions)),
+    )
   }
 }
 

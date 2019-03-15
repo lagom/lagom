@@ -6,4 +6,4 @@
 # Akka snapshots which aren't being published for Scala 2.11 anymore.
 checkIfShouldSkip "Scala 2.11"
 
-runSbtNoisy "+++2.11.12 test"
+runSbtNoisy "++2.11.12 test"
