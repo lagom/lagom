@@ -4,7 +4,7 @@ libraryDependencies ++= Seq(
   "org.scala-sbt" % "scripted-plugin" % sbtVersion.value
 )
 
-addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.3.3")
+addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.4.2")
 
 // the plugins used during release can have an impact on default values
 // of the build. To validate your changes on the release plugins don't
