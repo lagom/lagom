@@ -40,7 +40,30 @@ private[lagom] object LookupBuilder {
 
   private val SrvQuery = """^_(.+?)\._(.+?)\.(.+?)$""".r
 
-  private val ServiceName = "^[^.]([A-Za-z0-9-]\\.{0,1})+[^-_.]$".r
+  /**
+    * Validates domain name:
+    * (as defined in https://tools.ietf.org/html/rfc1034)
+    *
+    * - a label has 1 to 63 chars
+    * - valid chars for a label are: a-z, A-Z, 0-9 and -
+    * - a label can't start with a 'hyphen' (-)
+    * - a label can't start with a 'digit' (0-9)
+    * - a label can't end with a 'hyphen' (-)
+    * - labels are separated by a 'dot' (.)
+    *
+    * Starts with a label:
+    * Label Pattern: (?![0-9-])[A-Za-z0-9-]{1,63}(?<!-)
+    *      (?![0-9-]) => negative look ahead, first char can't be hyphen (-) or digit (0-9)
+    *      [A-Za-z0-9-]{1,63} => digits, letters and hyphen, from 1 to 63
+    *      (?<!-) => negative look behind, last char can't be hyphen (-)
+    *
+    * A label can be followed by other labels:
+    *    Pattern: (\.(?![0-9-])[A-Za-z0-9-]{1,63}(?<!-)))*
+    *      . => separated by a . (dot)
+    *      label pattern => (?![0-9-])[A-Za-z0-9-]{1,63}(?<!-)
+    *      * => match zero or more times
+    */
+  private val DomainName = "^((?![0-9-])[A-Za-z0-9-]{1,63}(?<!-))((\\.(?![0-9-])[A-Za-z0-9-]{1,63}(?<!-)))*$".r
 
   /**
     * Create a service Lookup from a string with format:
@@ -53,13 +76,12 @@ private[lagom] object LookupBuilder {
     * The string is parsed and dismembered to build a Lookup as following:
     * Lookup(serviceName).withPortName(portName).withProtocol(protocol)
     *
-    *
     * @throws NullPointerException If the passed string is null
     * @throws IllegalArgumentException If the string doesn't not conform with the SRV format
     */
   def parseSrv(str: String): Lookup =
     str match {
-      case SrvQuery(portName, protocol, serviceName) if validServiceName(serviceName) ⇒
+      case SrvQuery(portName, protocol, serviceName) if validDomainName(serviceName) ⇒
         Lookup(serviceName).withPortName(portName).withProtocol(protocol)
 
       case null ⇒
@@ -73,11 +95,11 @@ private[lagom] object LookupBuilder {
     */
   def isValidSrv(srv: String): Boolean =
     srv match {
-      case SrvQuery(_, _, serviceName) ⇒ validServiceName(serviceName)
+      case SrvQuery(_, _, serviceName) ⇒ validDomainName(serviceName)
       case _ ⇒ false
     }
 
-  private def validServiceName(name: String): Boolean =
-    ServiceName.pattern.asPredicate().test(name)
+  private def validDomainName(name: String): Boolean =
+    DomainName.pattern.asPredicate().test(name)
 
 }
