@@ -8,11 +8,11 @@ As a complete microservices platform, Lagom assembles a collection of technologi
 
     * As described in [[Implementing services|ServiceImplementation]], A Lagom service may be "simple" or "streamed".  Streaming, asynchronous Lagom services are built on top of [Akka Streams](https://doc.akka.io/docs/akka/2.5/stream/index.html).
 
-* Lightbend customers can additionally use [Enterprise Suite](https://www.lightbend.com/platform/production) components to operationalize and production-harden their systems.
+* [Lightbend Platform](https://www.lightbend.com/lightbend-platform) subscribers can use additional components to operationalize and production-harden their systems.
 
-    * Akka's [Split Brain Resolver](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) handles network failures and system crashes.
+    * Akka [Split Brain Resolver](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) handles network failures and system crashes.
 
-    * [Lightbend's Telemetry (Cinnamon) product](https://developer.lightbend.com/docs/telemetry/current/home.html) provides real time monitoring of system health, availability and performance.
+    * [Lightbend Telemetry (Cinnamon)](https://developer.lightbend.com/docs/telemetry/current/home.html) provides real time monitoring of system health, availability and performance.
 
     * See [[Cluster]] for more details.
 

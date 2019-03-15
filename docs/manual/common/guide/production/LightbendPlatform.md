@@ -1,8 +1,8 @@
-# Using Lightbend Enterprise Suite with Lagom
+# Using Lightbend Platform with Lagom
 
-Lagom is part of the [Lightbend Platform](https://www.lightbend.com/lightbend-platform) — an application development solution for building Reactive systems on the JVM powered by an open source core and the commercial [Enterprise Suite](https://www.lightbend.com/products/enterprise-suite). Lagom services can be developed, deployed and run in production using only open source components, however we recommend considering the advanced features provided by Enterprise Suite.
+Lagom is part of the [Lightbend Platform](https://www.lightbend.com/lightbend-platform) — an operationally robust solution for deploying Reactive Microservices, adding the ability to infuse your applications with intelligence based on real-time streaming and Machine Learning (ML). Lagom services can be developed, deployed and run in production using only open source components, however we recommend considering the advanced features provided by Lightbend Platform.
 
-This page highlights the Enterprise Suite features that are especially useful for most Lagom users, but there are many more. You can find an overview on the [Lightbend web site](https://www.lightbend.com/products/enterprise-suite) or [contact Lightbend](https://www.lightbend.com/contact) to learn more.
+This page highlights the Lightbend Platform features that are especially useful for most Lagom users, but there are many more. You can find an overview on the [Lightbend web site](https://www.lightbend.com/lightbend-platform) or [contact Lightbend](https://www.lightbend.com/contact) to learn more.
 
 ## Akka Commercial Addons
 
@@ -20,11 +20,11 @@ See the documentation for each of these to understand if they apply to your use 
 
 We strongly recommend using the Split Brain Resolver with all services that use the Lagom Persistence API or other cluster-based functionality. Read about the importance of the Split Brain Resolver in the [[Cluster Downing|Cluster#Downing]] documentation.
 
-## Telemetry and Monitoring
+## Telemetry and Console
 
-Enterprise Suite also includes Intelligent Monitoring features to ensure the health and availability of your Lagom services. This has two essential pieces: [Telemetry (Cinnamon)](https://developer.lightbend.com/docs/telemetry/current/home.html) and [OpsClarity](https://developer.lightbend.com/docs/opsclarity/current/home.html). Telemetry makes it possible to gather metric, event and trace information from Akka, Scala, Play, and Lagom based applications. The information is transferred to various backends such as OpsClarity or Prometheus. OpsClarity provides an advanced monitoring user interface for visualizing and troubleshooting distributed systems.
+Lightbend Platform also includes observability features to ensure the health and availability of your Lagom services. This has two essential pieces: [Lightbend Telemetry](https://developer.lightbend.com/docs/telemetry/current/home.html) (code named "Cinnamon") and [Lightbend Console](https://developer.lightbend.com/docs/console/current/). Telemetry makes it possible to gather metric, event and trace information from Akka, Scala, Play, and Lagom based applications. The information is transferred to various backends such as Prometheus. The Console provides visibility for KPIs, reactive metrics, monitors and alerting, and includes a large selection of ready-to-use dashboards.
 
-To use these with Lagom, the Cinnamon Telemetry agent must be included as a dependency of your Lagom services. See the [Lightbend Telemetry documentation](https://developer.lightbend.com/docs/telemetry/current/home.html) for details:
+To use these with Lagom, the Lightbend Telemetry agent must be included as a dependency of your Lagom services. See the [Lightbend Telemetry documentation](https://developer.lightbend.com/docs/telemetry/current/home.html) for details:
 
 * [Features](https://developer.lightbend.com/docs/telemetry/current/introduction/overview/features.html)
 * [Configuring Lagom services to use Telemetry](https://developer.lightbend.com/docs/telemetry/current/instrumentations/lagom/lagom.html)
@@ -33,12 +33,12 @@ To use these with Lagom, the Cinnamon Telemetry agent must be included as a depe
 
 See [Integrating Lagom with Lightbend Telemetry](https://github.com/lagom/lagom-recipes/blob/master/lightbend-telemetry/lightbend-telemetry-java-mvn/README.md) for a Java example of integrating Telemetry into a Lagom service.
 
-## Configuring a Lagom build for Enterprise Suite
+## Configuring a Lagom build for Lightbend Platform
 
-Bintray credentials are required to build applications using the Enterprise Suite portion of the Lightbend Platform. Lightbend customers should log into the [support portal](https://portal.lightbend.com/ReactivePlatform/EnterpriseSuiteCredentials) to obtain their credentials. Follow the links below to see how to supply the credentials when using sbt or Maven.
+Bintray credentials are required to build applications using the Lightbend Platform. Lightbend customers should log into the [support portal](https://portal.lightbend.com/ReactivePlatform/EnterpriseSuiteCredentials) to obtain their credentials. Follow the links below to see how to supply the credentials when using sbt or Maven.
 
 * [Lightbend Platform setup for sbt](https://developer.lightbend.com/docs/reactive-platform/2.0/setup/setup-sbt.html)
 * [Lightbend Platform setup for Maven](https://developer.lightbend.com/docs/reactive-platform/2.0/setup/setup-maven.html)
 
 
-[Contact Lightbend](https://www.lightbend.com/contact) to get started with Enterprise Suite.
+[Contact Lightbend](https://www.lightbend.com/contact) to get started with Lightbend Platform.
