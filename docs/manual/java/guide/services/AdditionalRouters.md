@@ -2,7 +2,7 @@
 
 Since Lagom 1.5.0, it is possible to extend a Lagom Service with additional Play Routers.
 
-This is particularly useful when integrating Lagom with existing Play Routers, for instance a [Play gRPC Router](https://developer.lightbend.com/docs/play-grpc/0.5.0/lagom/serving-grpc.html) , or any other Play router that you have at your disposal.
+This is particularly useful when integrating Lagom with existing Play Routers, for instance a [Play gRPC Router](https://developer.lightbend.com/docs/play-grpc/0.6.0/lagom/serving-grpc.html?language=java), or any other Play router that you have at your disposal.
 
 You add an additional router when binding your Lagom Service in your Guice module. You should pass the additional routers to the `bindService` method together with the Service interface and its implementation. You do this by means of a helper method called `additionalRouters`.
 
