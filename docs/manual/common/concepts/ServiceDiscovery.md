@@ -12,7 +12,7 @@ Lagom provides the following functionality for your microservice systems during 
 
 ## Service registration
 
-A Service Registry collaborates with microservice instances to maintain an up-to-date lookup table. The table includes the host and port for each available microservice instance. As load changes, the system can spawn or destroy instances in any location while continuing to satisfy requests. You can design a system to enable microservices to self-register or you can use a [3rd Party Registration service](http://microservices.io/patterns/3rd-party-registration.html).
+A Service Registry collaborates with microservice instances to maintain an up-to-date lookup table. The table includes the host and port for each available microservice instance. As load changes, the system can spawn or destroy instances in any location while continuing to satisfy requests. You can design a system to enable microservices to self-register or you can use a [3rd Party Registration service](https://microservices.io/patterns/3rd-party-registration.html).
 
 When booting a Lagom microservice instance, a registrar will register the name of the microservice, the URL and the names of the locatable Service Descriptors on the Service Registry so that they can be located. When powering down an instance of a service, the registrar will have to update the Service Registry too. Lagom's [[Developer Environment|DevEnvironment]] provides an implementation of a Service Registry and a registrar so you can run your microservices locally.
  

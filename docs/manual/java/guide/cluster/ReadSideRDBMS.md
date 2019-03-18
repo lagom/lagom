@@ -2,7 +2,7 @@
 
 This page is specifically about Lagom's support for relational database read-sides.  Before reading this, you should familiarize yourself with Lagom's general [[read-side support|ReadSide]].
 
-Lagom supports two options for accessing relational databases in read-sides: using the JDBC API directly, or using the [Java Persistence API (JPA)](http://www.oracle.com/technetwork/java/javaee/tech/persistence-jsp-140049.html) to automatically map between Java objects and relational data.
+Lagom supports two options for accessing relational databases in read-sides: using the JDBC API directly, or using the [Java Persistence API (JPA)](https://www.oracle.com/technetwork/java/javaee/tech/persistence-jsp-140049.html) to automatically map between Java objects and relational data.
 
 ## Choosing between JDBC and JPA
 

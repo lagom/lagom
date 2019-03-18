@@ -2,7 +2,7 @@
 
 Since Lagom 1.5.0, it is possible to extend a Lagom Service with additional Play Routers.
 
-This is particularly useful when integrating Lagom with existing Play Routers, for instance a [Play gRPC Router](https://developer.lightbend.com/docs/play-grpc/0.5.0/lagom/serving-grpc.html) , or any other Play router that you have at your disposal.
+This is particularly useful when integrating Lagom with existing Play Routers, for instance a [Play gRPC Router](https://developer.lightbend.com/docs/play-grpc/0.6.0/lagom/serving-grpc.html?language=scala) , or any other Play router that you have at your disposal.
 
 You add an additional router when wiring your Lagom Server. After wiring the Lagom Server, you append the additional Play routers to it.
 
