@@ -4,5 +4,13 @@
 
 runSbt unidoc
 
+EXTRA_TASK=""
+
+# Check if it is a scheduled build
+if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
+    # check external links as well
+    EXTRA_TASK="markdownValidateExternalLinks"
+fi
+
 cd docs
-runSbt markdownValidateDocs test markdownEvaluateSbtFiles
+runSbt markdownValidateDocs test markdownEvaluateSbtFiles $EXTRA_TASK

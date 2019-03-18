@@ -1,6 +1,6 @@
 # Using Lightbend Enterprise Suite with Lagom
 
-Lagom is part of the [Lightbend Platform](https://www.lightbend.com/products/lightbend-platform) — an application development solution for building Reactive systems on the JVM powered by an open source core and the commercial [Enterprise Suite](https://www.lightbend.com/products/enterprise-suite). Lagom services can be developed, deployed and run in production using only open source components, however we recommend considering the advanced features provided by Enterprise Suite.
+Lagom is part of the [Lightbend Platform](https://www.lightbend.com/lightbend-platform) — an application development solution for building Reactive systems on the JVM powered by an open source core and the commercial [Enterprise Suite](https://www.lightbend.com/products/enterprise-suite). Lagom services can be developed, deployed and run in production using only open source components, however we recommend considering the advanced features provided by Enterprise Suite.
 
 This page highlights the Enterprise Suite features that are especially useful for most Lagom users, but there are many more. You can find an overview on the [Lightbend web site](https://www.lightbend.com/products/enterprise-suite) or [contact Lightbend](https://www.lightbend.com/contact) to learn more.
 
@@ -22,14 +22,14 @@ We strongly recommend using the Split Brain Resolver with all services that use 
 
 ## Telemetry and Monitoring
 
-Enterprise Suite also includes Intelligent Monitoring features to ensure the health and availability of your Lagom services. This has two essential pieces: [Telemetry (Cinnamon)](https://developer.lightbend.com/docs/cinnamon/current/home.html) and [OpsClarity](https://developer.lightbend.com/docs/opsclarity/current/home.html). Telemetry makes it possible to gather metric, event and trace information from Akka, Scala, Play, and Lagom based applications. The information is transferred to various backends such as OpsClarity or Prometheus. OpsClarity provides an advanced monitoring user interface for visualizing and troubleshooting distributed systems.
+Enterprise Suite also includes Intelligent Monitoring features to ensure the health and availability of your Lagom services. This has two essential pieces: [Telemetry (Cinnamon)](https://developer.lightbend.com/docs/telemetry/current/home.html) and [OpsClarity](https://developer.lightbend.com/docs/opsclarity/current/home.html). Telemetry makes it possible to gather metric, event and trace information from Akka, Scala, Play, and Lagom based applications. The information is transferred to various backends such as OpsClarity or Prometheus. OpsClarity provides an advanced monitoring user interface for visualizing and troubleshooting distributed systems.
 
-To use these with Lagom, the Cinnamon Telemetry agent must be included as a dependency of your Lagom services. See the [Lightbend Telemetry documentation](https://developer.lightbend.com/docs/cinnamon/current/home.html) for details:
+To use these with Lagom, the Cinnamon Telemetry agent must be included as a dependency of your Lagom services. See the [Lightbend Telemetry documentation](https://developer.lightbend.com/docs/telemetry/current/home.html) for details:
 
-* [Features](https://developer.lightbend.com/docs/cinnamon/current/introduction/overview/features.html)
-* [Configuring Lagom services to use Telemetry](https://developer.lightbend.com/docs/cinnamon/current/instrumentations/lagom/lagom.html)
-* [Java example project](https://developer.lightbend.com/docs/cinnamon/current/getting-started/lagom_java.html)
-* [Scala example project](https://developer.lightbend.com/docs/cinnamon/current/getting-started/lagom_scala.html)
+* [Features](https://developer.lightbend.com/docs/telemetry/current/introduction/overview/features.html)
+* [Configuring Lagom services to use Telemetry](https://developer.lightbend.com/docs/telemetry/current/instrumentations/lagom/lagom.html)
+* [Java example project](https://developer.lightbend.com/docs/telemetry/current/getting-started/lagom_java.html)
+* [Scala example project](https://developer.lightbend.com/docs/telemetry/current/getting-started/lagom_scala.html)
 
 ## Configuring a Lagom build for Enterprise Suite
 
