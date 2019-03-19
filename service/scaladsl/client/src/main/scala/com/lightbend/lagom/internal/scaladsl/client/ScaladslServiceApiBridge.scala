@@ -7,6 +7,7 @@ package com.lightbend.lagom.internal.scaladsl.client
 import java.net.URI
 import java.security.Principal
 
+import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
@@ -73,10 +74,10 @@ trait ScaladslServiceApiBridge extends LagomServiceApiBridge {
 
   override type NegotiatedSerializer[M, W] = deser.MessageSerializer.NegotiatedSerializer[M, W]
   override def negotiatedSerializerProtocol(ns: NegotiatedSerializer[_, _]): MessageProtocol = ns.protocol
-  override def negotiatedSerializerSerialize[M, W](ns: NegotiatedSerializer[M, W], m: M): W = ns.serialize(m)
+  override def negotiatedSerializerSerialize[M, W](ns: NegotiatedSerializer[M, W], m: M)(implicit mat: Materializer): W = ns.serializeMat(m)
 
   override type NegotiatedDeserializer[M, W] = deser.MessageSerializer.NegotiatedDeserializer[M, W]
-  override def negotiatedDeserializerDeserialize[M, W](ns: NegotiatedDeserializer[M, W], w: W): M = ns.deserialize(w)
+  override def negotiatedDeserializerDeserialize[M, W](ns: NegotiatedDeserializer[M, W], w: W)(implicit mat: Materializer): M = ns.deserializeMat(w)
 
   override type ExceptionSerializer = deser.ExceptionSerializer
   override def exceptionSerializerDeserializeHttpException(es: ExceptionSerializer, code: Int, mp: MessageProtocol, bytes: ByteString): Throwable = {

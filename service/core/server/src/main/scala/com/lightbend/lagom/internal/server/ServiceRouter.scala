@@ -180,8 +180,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
     requestHeader: RequestHeader, playRequestHeader: PlayRequestHeader
   ): Accumulator[ByteString, Result] = {
 
-
-    def responseHandle[Wire](responseHeader:ResponseHeader, response: Response)(httpEntityBuilder: (Wire, Option[String]) => HttpEntity): Result = {
+    def responseHandle[Wire](responseHeader: ResponseHeader, response: Response)(httpEntityBuilder: (Wire, Option[String]) => HttpEntity): Result = {
       val messageSerializer = responseSerializer.asInstanceOf[MessageSerializer[Response, Wire]]
       val serializer = messageSerializerSerializerForResponse(
         messageSerializer,
@@ -210,7 +209,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
         .withHeaders(toResponseHeaders(transformedResponseHeader): _*)
     }
 
-    def requestHandle[Wire](wireBodyParser:BodyParser[Either[MaxSizeExceeded, Wire]]) = {
+    def requestHandle[Wire](wireBodyParser: BodyParser[Either[MaxSizeExceeded, Wire]]) = {
 
       val requestSerializerStrict = requestSerializer.asInstanceOf[MessageSerializer[Request, Wire]]
       val requestMessageDeserializer = messageSerializerDeserializer(requestSerializerStrict, messageHeaderProtocol(requestHeader))
@@ -229,12 +228,12 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
           // Invoke the service call
           invokeServiceCall(serviceCall, requestHeader, request).map {
             case (responseHeader, response) =>
-              if (! messageSerializerIsStreamed(responseSerializer)) {
-                responseHandle[ByteString](responseHeader, response){ (responseBody, contentType) =>
+              if (!messageSerializerIsStreamed(responseSerializer)) {
+                responseHandle[ByteString](responseHeader, response) { (responseBody, contentType) =>
                   Strict(responseBody, contentType)
                 }
               } else {
-                responseHandle[Source[ByteString, NotUsed]](responseHeader, response){ (responseBody, contentType) =>
+                responseHandle[Source[ByteString, NotUsed]](responseHeader, response) { (responseBody, contentType) =>
                   Streamed(responseBody, None, contentType)
                 }
               }

@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.scaladsl.api.deser
 
+import akka.stream.Materializer
 import akka.{ Done, NotUsed }
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
@@ -37,7 +38,7 @@ trait MessageSerializer[Message, WireFormat] {
   def isStreamed: Boolean = false
 
   /**
-   * When [[isStreamed]] is set to true, this method
+   * Indicates if this Serializer is specific to WebSocket
    *
    * @return
    */
@@ -112,6 +113,15 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
      */
     @throws[SerializationException]
     def serialize(message: Message): WireFormat
+
+    /**
+     * Serialize the given message.
+     *
+     * @param message The message to serialize.
+     * @return The serialized message.
+     */
+    @throws[SerializationException]
+    def serializeMat(message: Message)(implicit mat: Materializer): WireFormat = serialize(message)
   }
 
   /**
@@ -130,6 +140,15 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
      */
     @throws[DeserializationException]
     def deserialize(wire: WireFormat): Message
+
+    /**
+     * Deserialize the given wire format.
+     *
+     * @param wire The raw wire data.
+     * @return The deserialized message.
+     */
+    @throws[DeserializationException]
+    def deserializeMat(wire: WireFormat)(implicit mat: Materializer): Message = deserialize(wire)
   }
 
   implicit val JsValueMessageSerializer: StrictMessageSerializer[JsValue] = new StrictMessageSerializer[JsValue] {

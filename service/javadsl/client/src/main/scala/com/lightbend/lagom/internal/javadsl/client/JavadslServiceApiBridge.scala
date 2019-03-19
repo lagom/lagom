@@ -9,6 +9,7 @@ import java.security.Principal
 import java.util.Locale
 import java.util.concurrent.CompletionStage
 
+import akka.stream.Materializer
 import akka.stream.javadsl.{ Source => JSource }
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
@@ -89,14 +90,15 @@ trait JavadslServiceApiBridge extends LagomServiceApiBridge {
   override def messageSerializerAcceptResponseProtocols(ms: MessageSerializer[_, _]): immutable.Seq[MessageProtocol] =
     ms.acceptResponseProtocols().asScala.to[immutable.Seq]
   override def messageSerializerIsStreamed(ms: MessageSerializer[_, _]): Boolean = ms.isStreamed
+  override def messageSerializerIsWebSocket(ms: MessageSerializer[_, _]): Boolean = ms.isWebSocket
   override def messageSerializerIsUsed(ms: MessageSerializer[_, _]): Boolean = ms.isUsed
 
   override type NegotiatedSerializer[M, W] = deser.MessageSerializer.NegotiatedSerializer[M, W]
   override def negotiatedSerializerProtocol(ns: NegotiatedSerializer[_, _]): MessageProtocol = ns.protocol()
-  override def negotiatedSerializerSerialize[M, W](ns: NegotiatedSerializer[M, W], m: M): W = ns.serialize(m)
+  override def negotiatedSerializerSerialize[M, W](ns: NegotiatedSerializer[M, W], m: M)(implicit mat: Materializer): W = ns.serializeMat(m, mat)
 
   override type NegotiatedDeserializer[M, W] = deser.MessageSerializer.NegotiatedDeserializer[M, W]
-  override def negotiatedDeserializerDeserialize[M, W](ns: NegotiatedDeserializer[M, W], w: W): M = ns.deserialize(w)
+  override def negotiatedDeserializerDeserialize[M, W](ns: NegotiatedDeserializer[M, W], w: W)(implicit mat: Materializer): M = ns.deserializeMat(w, mat)
 
   override type ExceptionSerializer = deser.ExceptionSerializer
   override def exceptionSerializerDeserializeHttpException(es: ExceptionSerializer, code: Int, mp: MessageProtocol, bytes: ByteString): Throwable = {

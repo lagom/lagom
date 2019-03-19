@@ -7,6 +7,7 @@ package com.lightbend.lagom.internal.api.transport
 import java.net.URI
 import java.security.Principal
 
+import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 
@@ -66,10 +67,10 @@ trait LagomServiceApiBridge {
 
   type NegotiatedSerializer[M, W]
   def negotiatedSerializerProtocol(ns: NegotiatedSerializer[_, _]): MessageProtocol
-  def negotiatedSerializerSerialize[M, W](ns: NegotiatedSerializer[M, W], m: M): W
+  def negotiatedSerializerSerialize[M, W](ns: NegotiatedSerializer[M, W], m: M)(implicit mat: Materializer): W
 
   type NegotiatedDeserializer[M, W]
-  def negotiatedDeserializerDeserialize[M, W](ns: NegotiatedDeserializer[M, W], w: W): M
+  def negotiatedDeserializerDeserialize[M, W](ns: NegotiatedDeserializer[M, W], w: W)(implicit mat: Materializer): M
 
   type ExceptionSerializer
   def exceptionSerializerDeserializeHttpException(es: ExceptionSerializer, code: Int, mp: MessageProtocol,
