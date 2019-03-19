@@ -17,12 +17,12 @@ import java.util.Optional;
 
 /**
  * Serializer for messages.
- * <p>
+ *
  * A message serializer is effectively a factory for negotiating serializers/deserializers.  They are created by passing
  * the relevant protocol information to then decide on a serializer/deserializer to use.
- * <p>
+ *
  * The returned serializers/deserializers may be invoked once for strict messages, or many times for streamed messages.
- * <p>
+ *
  * This interface doesn't actually specify the wireformat that the serializer must serialize to, there are two sub
  * interfaces that do, they being {@link StrictMessageSerializer}, which serializes messages that are primarily in
  * memory, to and from {@link ByteString}, and {@link StreamedMessageSerializer}, which serializes streams of messages.
@@ -42,7 +42,7 @@ public interface MessageSerializer<MessageEntity, WireFormat> {
 
     /**
      * Whether this serializer serializes values that are used or not.
-     * <p>
+     *
      * If false, it means this serializer is for an empty request/response, eg, they use the
      * {@link akka.NotUsed} type.
      *
@@ -73,7 +73,7 @@ public interface MessageSerializer<MessageEntity, WireFormat> {
 
     /**
      * Get a serializer for a client request.
-     * <p>
+     *
      * Since a client is the initiator of the request, it simply returns the default serializer for the entity.
      *
      * @return A serializer for request messages.
@@ -93,8 +93,8 @@ public interface MessageSerializer<MessageEntity, WireFormat> {
      * Negotiate a serializer for the response, given the accepted message headers.
      *
      * @param acceptedMessageProtocols The accepted message headers is a list of message headers that will be accepted by
-     *                                 the client. Any empty values in a message protocol, including the list itself,
-     *                                 indicate that any format is acceptable.
+     *                               the client. Any empty values in a message protocol, including the list itself,
+     *                               indicate that any format is acceptable.
      * @throws NotAcceptable If the serializer can't meet the requirements of any of the accept headers.
      */
     NegotiatedSerializer<MessageEntity, WireFormat> serializerForResponse(List<MessageProtocol> acceptedMessageProtocols) throws NotAcceptable;
@@ -103,7 +103,7 @@ public interface MessageSerializer<MessageEntity, WireFormat> {
      * A negotiated serializer.
      *
      * @param <MessageEntity> The type of entity that this serializer serializes.
-     * @param <WireFormat>    The wire format that this serializer serializes to.
+     * @param <WireFormat> The wire format that this serializer serializes to.
      */
     interface NegotiatedSerializer<MessageEntity, WireFormat> {
 
@@ -137,7 +137,7 @@ public interface MessageSerializer<MessageEntity, WireFormat> {
      * A negotiated deserializer.
      *
      * @param <MessageEntity> The type of entity that this serializer serializes.
-     * @param <WireFormat>    The wire format that this serializer serializes to.
+     * @param <WireFormat> The wire format that this serializer serializes to.
      */
     interface NegotiatedDeserializer<MessageEntity, WireFormat> {
 
