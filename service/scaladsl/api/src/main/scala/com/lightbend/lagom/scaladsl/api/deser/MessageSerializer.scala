@@ -37,6 +37,13 @@ trait MessageSerializer[Message, WireFormat] {
   def isStreamed: Boolean = false
 
   /**
+   * When [[isStreamed]] is set to true, this method
+   *
+   * @return
+   */
+  def isWebSocket: Boolean = isStreamed
+
+  /**
    * Get a serializer for a client request.
    *
    * Since a client is the initiator of the request, it simply returns the default serializer for the entity.

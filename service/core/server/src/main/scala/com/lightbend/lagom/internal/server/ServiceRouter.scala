@@ -10,17 +10,17 @@ import java.util.concurrent.CompletionException
 
 import akka.NotUsed
 import akka.stream._
-import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
+import akka.stream.scaladsl.{ Flow, Keep, RunnableGraph, Sink, Source }
 import akka.stream.stage.{ GraphStage, GraphStageLogic, InHandler, OutHandler }
 import akka.util.ByteString
 import com.lightbend.lagom.internal.api.Path
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
 import play.api.Logger
-import play.api.http.HttpEntity.Strict
+import play.api.http.HttpEntity.{ Streamed, Strict }
 import play.api.http.websocket.{ BinaryMessage, CloseMessage, Message, TextMessage }
-import play.api.http.{ HeaderNames, HttpConfiguration }
+import play.api.http.{ HeaderNames, HttpConfiguration, HttpEntity }
 import play.api.libs.streams.{ Accumulator, AkkaStreams }
-import play.api.mvc.{ BodyParser, EssentialAction, Handler, PlayBodyParsers, Result, Results, WebSocket, RequestHeader => PlayRequestHeader }
+import play.api.mvc.{ BodyParser, EssentialAction, Handler, MaxSizeExceeded, PlayBodyParsers, Result, Results, WebSocket, RequestHeader => PlayRequestHeader }
 import play.api.routing.Router.Routes
 import play.api.routing.{ HandlerDef, Router, SimpleRouter }
 
@@ -83,7 +83,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
 
           // If both request and response are strict, handle it using an action, otherwise handle it using a websocket
           val handler =
-            if (messageSerializerIsStreamed(requestSerializer) || messageSerializerIsStreamed(responseSerializer)) {
+            if (messageSerializerIsWebSocket(requestSerializer) || messageSerializerIsWebSocket(responseSerializer)) {
               websocket(
                 route.call.asInstanceOf[Call[Any, Any]],
                 descriptor,
@@ -110,7 +110,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
     })
   }
 
-  private val inMemoryBodyParser = BodyParser { req =>
+  private val inMemoryBodyParser: BodyParser[Either[MaxSizeExceeded, ByteString]] = BodyParser { req =>
     val contentLength = req.headers.get(HeaderNames.CONTENT_LENGTH)
     val hasBody = contentLength.filter(_ != "0").orElse(req.headers.get(HeaderNames.TRANSFER_ENCODING)).isDefined
     if (hasBody) {
@@ -122,6 +122,19 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
     }
   }
 
+  private val sourceBodyParser: BodyParser[Either[MaxSizeExceeded, Source[ByteString, NotUsed]]] = BodyParser { req =>
+    val flow: RunnableGraph[(Sink[ByteString, NotUsed], Source[ByteString, NotUsed])] = Source
+      .asSubscriber[ByteString]
+      .toMat(Sink.asPublisher[ByteString](fanout = false))(Keep.both)
+      .mapMaterializedValue {
+        case (sub, pub) => (Sink.fromSubscriber(sub), Source.fromPublisher(pub))
+      }
+
+    val (sink: Sink[ByteString, NotUsed], source: Source[ByteString, NotUsed]) = flow.run()
+
+    Accumulator(sink.mapMaterializedValue(_ => Future.successful(Right(Right(source)))))
+  }
+
   /**
    * Create the action.
    */
@@ -129,8 +142,8 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
     call:               Call[Request, Response],
     descriptor:         Descriptor,
     serviceCall:        ServiceCall[Request, Response],
-    requestSerializer:  MessageSerializer[Request, ByteString],
-    responseSerializer: MessageSerializer[Response, ByteString]
+    requestSerializer:  MessageSerializer[Request, _],
+    responseSerializer: MessageSerializer[Response, _]
   ): EssentialAction
 
   /**
@@ -140,8 +153,8 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
     call:               Call[Request, Response],
     descriptor:         Descriptor,
     serviceCall:        ServiceCall[Request, Response],
-    requestSerializer:  MessageSerializer[Request, ByteString],
-    responseSerializer: MessageSerializer[Response, ByteString]
+    requestSerializer:  MessageSerializer[Request, _],
+    responseSerializer: MessageSerializer[Response, _]
   ): EssentialAction = EssentialAction { request =>
     val unfilteredHeader = toLagomRequestHeader(request)
     val filteredHeaders = headerFilterTransformServerRequest(descriptorHeaderFilter(descriptor), unfilteredHeader)
@@ -163,49 +176,77 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
    */
   private def handleServiceCall[Request, Response](
     serviceCall: ServiceCall[Request, Response], descriptor: Descriptor,
-    requestSerializer: MessageSerializer[Request, ByteString], responseSerializer: MessageSerializer[Response, ByteString],
+    requestSerializer: MessageSerializer[Request, _], responseSerializer: MessageSerializer[Response, _],
     requestHeader: RequestHeader, playRequestHeader: PlayRequestHeader
   ): Accumulator[ByteString, Result] = {
-    val requestMessageDeserializer = messageSerializerDeserializer(requestSerializer, messageHeaderProtocol(requestHeader))
 
-    // Buffer the body in memory
-    inMemoryBodyParser(playRequestHeader).mapFuture {
-      // Error handling.
-      // If it's left of a result (which this particular body parser should never return) just return that result.
-      case Left(result)   => Future.successful(result)
-      // If the payload was too large, throw that exception (exception serializer will handle it later).
-      case Right(Left(_)) => throw newPayloadTooLarge("Request body larger than " + httpConfiguration.parser.maxMemoryBuffer)
-      // Body was successfully buffered.
-      case Right(Right(body)) =>
-        // Deserialize request
-        val request = negotiatedDeserializerDeserialize(requestMessageDeserializer, body)
 
-        // Invoke the service call
-        invokeServiceCall(serviceCall, requestHeader, request).map {
-          case (responseHeader, response) =>
-            // Serialize the response body
-            val serializer = messageSerializerSerializerForResponse(responseSerializer, requestHeaderAcceptedResponseProtocols(requestHeader))
-            val responseBody = negotiatedSerializerSerialize(serializer, response)
+    def responseHandle[Wire](responseHeader:ResponseHeader, response: Response)(httpEntityBuilder: (Wire, Option[String]) => HttpEntity): Result = {
+      val messageSerializer = responseSerializer.asInstanceOf[MessageSerializer[Response, Wire]]
+      val serializer = messageSerializerSerializerForResponse(
+        messageSerializer,
+        requestHeaderAcceptedResponseProtocols(requestHeader)
+      )
+      val responseBody = negotiatedSerializerSerialize(serializer, response)
 
-            // If no content type was defined by the service call itself, then replace the protocol with the
-            // serializers protocol
-            val rhWithProtocol = if (messageProtocolContentType(messageHeaderProtocol(responseHeader)).isEmpty) {
-              responseHeaderWithProtocol(responseHeader, negotiatedSerializerProtocol(serializer))
-            } else responseHeader
+      // If no content type was defined by the service call itself, then replace the protocol with the
+      // serializers protocol
+      val rhWithProtocol = if (messageProtocolContentType(messageHeaderProtocol(responseHeader)).isEmpty) {
+        responseHeaderWithProtocol(responseHeader, negotiatedSerializerProtocol(serializer))
+      } else responseHeader
 
-            // Transform the response header
-            val transformedResponseHeader = headerFilterTransformServerResponse(
-              descriptorHeaderFilter(descriptor),
-              rhWithProtocol,
-              requestHeader
-            )
+      // Transform the response header
+      val transformedResponseHeader = headerFilterTransformServerResponse(
+        descriptorHeaderFilter(descriptor),
+        rhWithProtocol,
+        requestHeader
+      )
 
-            // And create the result
-            Results.Status(responseHeaderStatus(transformedResponseHeader)).sendEntity(Strict(
-              responseBody,
-              messageProtocolToContentTypeHeader(messageHeaderProtocol(transformedResponseHeader))
-            )).withHeaders(toResponseHeaders(transformedResponseHeader): _*)
-        }
+      val contentType = messageProtocolToContentTypeHeader(messageHeaderProtocol(transformedResponseHeader))
+
+      val httpEntity = httpEntityBuilder.apply(responseBody, contentType)
+
+      Results.Status(responseHeaderStatus(transformedResponseHeader)).sendEntity(httpEntity)
+        .withHeaders(toResponseHeaders(transformedResponseHeader): _*)
+    }
+
+    def requestHandle[Wire](wireBodyParser:BodyParser[Either[MaxSizeExceeded, Wire]]) = {
+
+      val requestSerializerStrict = requestSerializer.asInstanceOf[MessageSerializer[Request, Wire]]
+      val requestMessageDeserializer = messageSerializerDeserializer(requestSerializerStrict, messageHeaderProtocol(requestHeader))
+      // Buffer the body in memory
+      wireBodyParser(playRequestHeader).mapFuture {
+        // Error handling.
+        // If it's left of a result (which this particular body parser should never return) just return that result.
+        case Left(result)   => Future.successful(result)
+        // If the payload was too large, throw that exception (exception serializer will handle it later).
+        case Right(Left(_)) => throw newPayloadTooLarge("Request body larger than " + httpConfiguration.parser.maxMemoryBuffer)
+        // Body was successfully buffered.
+        case Right(Right(body)) =>
+          // Deserialize request
+          val request = negotiatedDeserializerDeserialize(requestMessageDeserializer, body)
+
+          // Invoke the service call
+          invokeServiceCall(serviceCall, requestHeader, request).map {
+            case (responseHeader, response) =>
+              if (! messageSerializerIsStreamed(responseSerializer)) {
+                responseHandle[ByteString](responseHeader, response){ (responseBody, contentType) =>
+                  Strict(responseBody, contentType)
+                }
+              } else {
+                responseHandle[Source[ByteString, NotUsed]](responseHeader, response){ (responseBody, contentType) =>
+                  Streamed(responseBody, None, contentType)
+                }
+              }
+
+          }
+      }
+    }
+
+    if (!messageSerializerIsStreamed(requestSerializer)) {
+      requestHandle(inMemoryBodyParser)
+    } else {
+      requestHandle(sourceBodyParser)
     }
   }
 

@@ -68,6 +68,7 @@ trait ScaladslServiceApiBridge extends LagomServiceApiBridge {
   override def messageSerializerAcceptResponseProtocols(ms: MessageSerializer[_, _]): immutable.Seq[MessageProtocol] =
     ms.acceptResponseProtocols
   override def messageSerializerIsStreamed(ms: MessageSerializer[_, _]): Boolean = ms.isStreamed
+  override def messageSerializerIsWebSocket(ms: MessageSerializer[_, _]): Boolean = ms.isWebSocket
   override def messageSerializerIsUsed(ms: MessageSerializer[_, _]): Boolean = ms.isUsed
 
   override type NegotiatedSerializer[M, W] = deser.MessageSerializer.NegotiatedSerializer[M, W]

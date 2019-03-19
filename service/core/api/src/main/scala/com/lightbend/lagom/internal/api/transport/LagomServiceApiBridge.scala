@@ -61,6 +61,7 @@ trait LagomServiceApiBridge {
   def messageSerializerDeserializer[M, W](ms: MessageSerializer[M, W], mp: MessageProtocol): NegotiatedDeserializer[M, W]
   def messageSerializerAcceptResponseProtocols(ms: MessageSerializer[_, _]): immutable.Seq[MessageProtocol]
   def messageSerializerIsStreamed(ms: MessageSerializer[_, _]): Boolean
+  def messageSerializerIsWebSocket(ms: MessageSerializer[_, _]): Boolean
   def messageSerializerIsUsed(ms: MessageSerializer[_, _]): Boolean
 
   type NegotiatedSerializer[M, W]

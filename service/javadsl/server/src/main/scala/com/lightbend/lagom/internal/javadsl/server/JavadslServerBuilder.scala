@@ -188,8 +188,8 @@ class JavadslServiceRouter(
     call:               Call[Request, Response],
     descriptor:         Descriptor,
     serviceCall:        ServiceCall[Request, Response],
-    requestSerializer:  MessageSerializer[Request, ByteString],
-    responseSerializer: MessageSerializer[Response, ByteString]
+    requestSerializer:  MessageSerializer[Request, _],
+    responseSerializer: MessageSerializer[Response, _]
   ): EssentialAction = {
 
     serviceCall match {

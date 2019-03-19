@@ -157,7 +157,7 @@ private[lagom] class ScaladslServiceResolver(defaultExceptionSerializer: Excepti
       case _ =>
         // If either the request or the response serializers are streamed, then WebSockets will be used, in which case
         // the method must be GET
-        if (serviceCall.requestSerializer.isStreamed || serviceCall.responseSerializer.isStreamed) {
+        if (serviceCall.requestSerializer.isWebSocket || serviceCall.responseSerializer.isWebSocket) {
           Method.GET
           // Otherwise, if the request serializer is used, we default to POST
         } else if (serviceCall.requestSerializer.isUsed) {
