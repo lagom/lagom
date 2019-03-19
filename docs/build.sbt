@@ -56,6 +56,9 @@ lazy val docs = project
     // This is needed so that Java APIs that use immutables will typecheck by the Scala compiler
     compileOrder in Test := CompileOrder.JavaThenScala,
 
+    sourceDirectories in format in Test ++= (unmanagedSourceDirectories in Test).value,
+    sourceDirectories in format in Test ++= (unmanagedResourceDirectories in Test).value,
+
     markdownDocumentation := {
       val javaUnidocTarget = parentDir / "target" / "javaunidoc"
       val unidocTarget = parentDir / "target" / "unidoc"
@@ -135,7 +138,7 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // to avoid new JVM for each test, see https://www.scala-sbt.org/release/docs/Testing.html
   val javaOptions = Vector("-Xms256M", "-Xmx512M")
   tests map { test =>
-    new Tests.Group(
+    Tests.Group(
       name = test.name,
       tests = Seq(test),
       runPolicy = Tests.SubProcess(ForkOptions().withRunJVMOptions(javaOptions)),
