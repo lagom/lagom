@@ -27,9 +27,12 @@ bin/scalafmt --test || (
   echo "To fix, format your sources using bin/scalafmt before submitting a pull request."
   false
 )
+
+printMessage "VALIDATE JAVA CODE FORMATTING"
+runSbt javafmt
 git diff --exit-code || (
-  echo "ERROR: Scalariform check failed, see differences above."
-  echo "To fix, format your sources using sbt scalariformFormat test:scalariformFormat before submitting a    pull request."
+  echo "[error] ERROR: javafmt check failed, see differences above."
+  echo "[error] To fix, format your sources using sbt javafmt test:javafmt before submitting a pull request."
   false
 )
 
