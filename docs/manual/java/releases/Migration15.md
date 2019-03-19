@@ -122,12 +122,9 @@ When opting in to Akka Cluster Bootstrapping as a mechanism for Cluster formatio
 
 ## Upgrading a production system
 
-TODO
-
-### Rolling upgrade
-
-TODO
+There are no changes affecting a Production Upgrade. If you are running a Lagom 1.4 cluster you can perform a rolling upgrade, just make sure you are using the latest version on the 1.4.x series and, from that, you migrate to the latest version available of the 1.5.x series.
 
 ### Downtime upgrade
 
-TODO
+If you still haven't adopted `ddata` as the cluster sharding mode and your application can tolerate a *one time only* downtime upgrade, we recommend you to enable `ddata`. Taking advantage of that downtime we recommend you also enable the serializers for `akka.Done`, `akka.actor.Address` and `akka.remote.UniqueAddress`. Once this upgrade is complete, further downtime is not required. Read all the details of this migration on the [[1.4 Migration Guide|Migration14#Rolling-upgrade]]
+
