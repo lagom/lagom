@@ -7,5 +7,4 @@
 # +publishLocal will fail.
 checkIfShouldSkip "sbt 0.13"
 
-runSbt +publishLocal
 runSbtNoisy scripted
