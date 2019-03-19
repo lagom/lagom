@@ -7,7 +7,6 @@ import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys._
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
 import lagom.Protobuf
-import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import de.heikoseeberger.sbtheader.{ HeaderKey, HeaderPattern }
 import com.typesafe.tools.mima.core._
 import sbt.CrossVersion._
@@ -87,11 +86,7 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
     "-parameters",
     "-Xlint:unchecked",
     "-Xlint:deprecation"
-  ),
-
-  ScalariformKeys.preferences in Compile  := formattingPreferences,
-  ScalariformKeys.preferences in Test     := formattingPreferences,
-  ScalariformKeys.preferences in MultiJvm := formattingPreferences
+  )
 )
 
 def bintraySettings: Seq[Setting[_]] = Seq(
@@ -177,15 +172,6 @@ def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
   testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a")
 )
 
-def formattingPreferences = {
-  import scalariform.formatter.preferences._
-  FormattingPreferences()
-    .setPreference(RewriteArrowSymbols, false)
-    .setPreference(AlignParameters, true)
-    .setPreference(AlignSingleLineCaseStatements, true)
-    .setPreference(SpacesAroundMultiImports, true)
-}
-
 val defaultMultiJvmOptions: List[String] = {
   import scala.collection.JavaConverters._
   // multinode.D= and multinode.X= makes it possible to pass arbitrary
@@ -231,10 +217,6 @@ def multiJvmTestSettings: Seq[Setting[_]] = {
     // see https://github.com/sbt/sbt-header/issues/37
     HeaderPlugin.settingsFor(MultiJvm) ++
     AutomateHeaderPlugin.automateFor(MultiJvm) ++
-    inConfig(MultiJvm)(SbtScalariform.configScalariformSettings) ++
-    (compileInputs in(MultiJvm, compile) := {
-      (compileInputs in(MultiJvm, compile)) dependsOn (scalariformFormat in MultiJvm)
-    }.value) ++
     Seq(
       parallelExecution in Test := false,
       MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting :: defaultMultiJvmOptions,
