@@ -138,7 +138,7 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // to avoid new JVM for each test, see https://www.scala-sbt.org/release/docs/Testing.html
   val javaOptions = Vector("-Xms256M", "-Xmx512M")
   tests map { test =>
-    new Tests.Group(
+    Tests.Group(
       name = test.name,
       tests = Seq(test),
       runPolicy = Tests.SubProcess(ForkOptions().withRunJVMOptions(javaOptions)),
