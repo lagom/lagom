@@ -140,4 +140,4 @@ A pre-packaged solution for the downing problem is provided by [Split Brain Reso
 
 See [[Using Lightbend Platform with Lagom|LightbendPlatform]] and the [Split Brain Resolver documentation](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) for instructions on how to enable it in the build of your project.
 
-Even if you don't use the commercial Lightbend Platform, you should still read & understand the concepts behind [Split Brain Resolver](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) to ensure your solution handles the concerns described there.
+Even if you don't use the commercial Lightbend Platform, you should still read & understand the concepts behind [Split Brain Resolver](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) to ensure that your solution handles the concerns described there.

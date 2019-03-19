@@ -1,6 +1,6 @@
 # Using Lightbend Platform with Lagom
 
-Lagom is part of the [Lightbend Platform](https://www.lightbend.com/lightbend-platform) — an operationally robust solution for deploying Reactive Microservices, adding the ability to infuse your applications with intelligence based on real-time streaming and Machine Learning (ML). Lagom services can be developed, deployed and run in production using only open source components, however we recommend considering the advanced features provided by Lightbend Platform.
+Lagom is part of the [Lightbend Platform](https://www.lightbend.com/lightbend-platform) — an operationally robust solution for deploying Reactive Microservices. It gives you the ability to infuse your applications with intelligence based on real-time streaming and Machine Learning (ML). Lagom services can be developed, deployed and run in production using only open source components. However, we recommend considering the advanced features provided by Lightbend Platform.
 
 This page highlights the Lightbend Platform features that are especially useful for most Lagom users, but there are many more. You can find an overview on the [Lightbend web site](https://www.lightbend.com/lightbend-platform) or [contact Lightbend](https://www.lightbend.com/contact) to learn more.
 
