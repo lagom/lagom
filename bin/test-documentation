@@ -16,7 +16,7 @@ cd docs
 runSbt markdownValidateDocs test markdownEvaluateSbtFiles $EXTRA_TASK
 
 printMessage "VALIDATE JAVA CODE FORMATTING FOR DOCS SAMPLE CODE"
-runSbt javafmt
+runSbt test:javafmt
 git diff --exit-code || (
   echo "[error] ERROR: javafmt check failed, see differences above."
   echo "[error] To fix, before submitting a pull request, format your"
