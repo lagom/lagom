@@ -33,3 +33,14 @@ As of Lagom 1.5 it is possible to extend the routes exposed by your service. So 
 ## Deployment
 
 Neither ConductR not [Lightbend Orchestration](https://developer.lightbend.com/docs/lightbend-orchestration/current/) are supported in Lagom 1.5. See the [[Deployment|Migration15#Deployment]] section on the migration guide for more details.
+
+## Initial support for Java 11
+
+Lagom 1.5 introduces [Incubating][] support for Java 11, starting with a [change][lagom/lagom#1803] in the use
+of Java reflection in Lagom's Java DSL that removes a known obstacle for running on Java 11.  Running Lagom on
+Java 11 will be limited to the use of external services that either fully support Java 11 too or run as a
+separate process to the Lagom app's Java 11 VM.  For instance, Lagom dev mode may not be able to run an embedded
+Cassandra node, requiring it instead be run as a separate process.
+
+[Incubating]: https://developer.lightbend.com/docs/reactive-platform/2.0/support-terminology/index.html#incubating
+[lagom/lagom#1803]: https://github.com/lagom/lagom/pull/1803
