@@ -11,4 +11,5 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.4.0")
 addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.1.2")
 addSbtPlugin("com.typesafe.sbt" % "sbt-uglify" % "2.0.0")
 
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.0.0")
 addSbtPlugin("com.lightbend.sbt" % "sbt-java-formatter" % "0.4.3")
