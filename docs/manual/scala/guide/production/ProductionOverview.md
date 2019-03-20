@@ -4,7 +4,7 @@ Lagom can be set up to work with most production environments, ranging from basi
 
 The following information provides an overview of production considerations that apply to any environment. If you are deploying your service in OpenShift clusters, you can also refer to the [Deploying Lightbend applications to OpenShift](https://developer.lightbend.com/guides/openshift-deployment/) guide.
 
-The production considerations can be summed up as setting up and tunning some or all of the following:
+The production considerations can be summed up as setting up and tuning some or all of the following:
 
 * production of artifacts (ZIP archives, docker images, ...)
 * service location (other lagom services, external services, databases, etc...)
