@@ -15,6 +15,9 @@ fi
 cd docs
 runSbt markdownValidateDocs test markdownEvaluateSbtFiles $EXTRA_TASK
 
+printMessage "VALIDATE SCALA CODE FORMATTING"
+runSbt test:scalafmtCheckAll scalafmtSbtCheck
+
 printMessage "VALIDATE JAVA CODE FORMATTING FOR DOCS SAMPLE CODE"
 runSbt test:javafmt
 git diff --exit-code || (
