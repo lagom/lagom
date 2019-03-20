@@ -22,7 +22,7 @@ lazy val `hello-impl` = (project in file("hello-impl"))
   .enablePlugins(LagomJava)
   .settings(
     libraryDependencies ++= Seq(
-      "com.lightbend.lagom" %% "lagom-javadsl-akka-discovery-service-locator" % "0.1.0",
+      "com.lightbend.lagom" %% "lagom-javadsl-akka-discovery-service-locator" % "1.0.0",
 
       // for example, include Akka Discovery Kubernetes implementation
       // see https://doc.akka.io/docs/akka/2.5/discovery/index.html
@@ -37,7 +37,7 @@ For `maven` users, add the dependencies to your pom.xml
 <dependency>
     <groupId>com.lightbend.lagom</groupId>
     <artifactId>lagom-javadsl-akka-discovery-service-locator_2.12</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
 </dependency>
 
 <!--
@@ -67,7 +67,7 @@ lazy val `hello-impl` = (project in file("hello-impl"))
   .enablePlugins(LagomScala)
   .settings(
     libraryDependencies ++= Seq(
-      "com.lightbend.lagom" %% "lagom-scaladsl-akka-discovery-service-locator" % "0.1.0",
+      "com.lightbend.lagom" %% "lagom-scaladsl-akka-discovery-service-locator" % "1.0.0",
 
       // for example, include Akka Discovery Kubernetes implementation
       // see https://doc.akka.io/docs/akka/current/discovery/index.html
