@@ -8,13 +8,13 @@ This page highlights the Lightbend Platform features that are especially useful 
 
 Lagom is based on Akka, a set of open-source libraries for designing scalable, resilient systems that span processor cores and networks. [Akka Commercial Addons](https://developer.lightbend.com/docs/akka-commercial-addons/current/index.html) is a suite of useful components that complement Akka and Lagom. These can be included as dependencies of your Lagom services to enable their functionality. It includes:
 
-* [Split Brain Resolver](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html)
-* [Multi-DC Persistence](https://developer.lightbend.com/docs/akka-commercial-addons/current/persistence-dc/index.html)
-* [Fast Failover](https://developer.lightbend.com/docs/akka-commercial-addons/current/fast-failover.html)
-* [Configuration Checker](https://developer.lightbend.com/docs/akka-commercial-addons/current/config-checker.html)
-* [Diagnostics Recorder](https://developer.lightbend.com/docs/akka-commercial-addons/current/diagnostics-recorder.html)
-* [Thread Starvation Detector](https://developer.lightbend.com/docs/akka-commercial-addons/current/starvation-detector.html)
-* [GDPR for Akka Persistence](https://developer.lightbend.com/docs/akka-commercial-addons/current/gdpr/index.html)
+* [Split Brain Resolver](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) - Improved resilience for Akka Cluster applications.
+* [Kubernetes Lease](https://developer.lightbend.com/docs/akka-commercial-addons/current/kubernetes-lease.html) - Kubernetes enhanced failure-recovery for Lagom and Akka Cluster apps.
+* [Thread Starvation Detector](https://developer.lightbend.com/docs/akka-commercial-addons/current/starvation-detector.html) - Flag performance bottlenecks.
+* [Configuration Checker](https://developer.lightbend.com/docs/akka-commercial-addons/current/config-checker.html) - Validate configuration against known issues.
+* [Diagnostics Recorder](https://developer.lightbend.com/docs/akka-commercial-addons/current/diagnostics-recorder.html) - Facilitates enhanced support from Lightbend.
+* [Multi-DC Persistence](https://developer.lightbend.com/docs/akka-commercial-addons/current/persistence-dc/index.html) - Persistence across data centers.
+* [GDPR for Akka Persistence](https://developer.lightbend.com/docs/akka-commercial-addons/current/gdpr/index.html) - Safe deletion of confidential data.
 
 See the documentation for each of these to understand if they apply to your use of Lagom.
 
