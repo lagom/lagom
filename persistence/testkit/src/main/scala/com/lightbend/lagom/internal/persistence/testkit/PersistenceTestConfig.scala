@@ -20,6 +20,7 @@ private[lagom] object PersistenceTestConfig {
     "akka.remote.netty.tcp.hostname" -> "127.0.0.1",
     "akka.remote.netty.tcp.port" -> "0",
     "lagom.cluster.join-self" -> "on",
+    "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
     "lagom.cluster.bootstrap.enabled" -> "off"
   ) ++ BasicConfigMap
 
