@@ -6,10 +6,10 @@ The following information provides an overview of production considerations that
 
 The production considerations can be summed up as setting up and tunning some or all of the following:
 
-- production of artifacts (ZIP archives, docker images, ...)
-- service location (other lagom services, external services, databases, etc...)
-- Akka Cluster formation
-- expose lifecycle data (readiness, liveness)
+* production of artifacts (ZIP archives, docker images, ...)
+* service location (other lagom services, external services, databases, etc...)
+* Akka Cluster formation
+* expose lifecycle data (readiness, liveness)
 
 ## Production considerations
 
