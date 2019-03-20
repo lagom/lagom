@@ -16,7 +16,7 @@ import scala.reflect.ClassTag
 /**
  * Cassandra read side support.
  *
- * This should be used to build and register readside
+ * This should be used to build and register a read side processor.
  */
 object CassandraReadSide {
 
