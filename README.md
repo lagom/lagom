@@ -13,6 +13,10 @@ Additionally, you will need to choose one of the existing [Akka Discovery][] imp
 [`AkkaDiscoveryComponents`]: service-locator/scaladsl/src/main/scala/com/lightbend/lagom/scaladsl/akka/discovery/AkkaDiscoveryComponents.scala
 [Akka Discovery]: https://doc.akka.io/docs/akka/2.5/discovery/index.html
 
+## Project Status
+
+Version 1.0.0 or later of this library is ready to be used in production and its APIs are stable. It is [Supported](https://developer.lightbend.com/docs/lightbend-platform/2.0/support-terminology/index.html#supported) with a Lightbend Platform subscription.
+
 ## Configuration for Lagom Java
 
 For `sbt` users, add the dependencies to your `build.sbt` file:
