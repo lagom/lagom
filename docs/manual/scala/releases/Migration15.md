@@ -1,4 +1,4 @@
-# Lagom 1.5 Migration Guide
+#  Lagom 1.5 Migration Guide
 
 This guide explains how to migrate from Lagom 1.4 to Lagom 1.5. If you are upgrading from an earlier version, be sure to review previous migration guides.
 
@@ -126,6 +126,16 @@ my-database {
 ## Service Discovery
 
 When opting in to Akka Cluster Bootstrapping as a mechanism for Cluster formation you will have to setup a [[Service Discovery|Cluster#Akka-Discovery]]  method for nodes to locate each other.
+
+## Production Settings
+
+New defaults have been added to the Lagom clustering configuration. 
+
+The first deafult configuration concerns how long a node should try to join an cluster. This is configured by the setting `akka.cluster.shutdown-after-unsuccessful-join-seed-nodes`. This is an existing Akka Cluster setting that is by default set to `off`, but Lagom will redefine it to 60 seconds. After that period, the Actor System will shutdown if it fails to join a cluster.
+
+The second important change is the default value for settings key `lagom.cluster.exit-jvm-when-system-terminated`. This was previously `off`, but we always recommended it to be `on`  in production environments. As of Lagom 1.5.0, that setting defaults to `on`. When enabled, Lagom will exit the JVM when the application leave the cluster or fail to join the cluster. In Dev and Test mode, this setting is automatically set to `off`.
+
+These two properties together are very important for recovering applications in production environments like Kubernetes. Without them, a Lagom node could reach a zombie state in which it wouldn't provide any functionality but stay around consuming resources. The desired behavior for a node that is not participating on a cluster is to shut itsefl down and let the orchestration infrastructure re-start it.
 
 ## Upgrading a production system
 
