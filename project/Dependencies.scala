@@ -102,7 +102,7 @@ object Dependencies {
   private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
   private val akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % Versions.Akka excludeAll (excludeSlf4j: _*)
   private val akkaStream = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
-  private val akkaProfobuf = "com.typesafe.akka" %% "akka-protobuf" % Versions.Akka
+  private val akkaProtobuf = "com.typesafe.akka" %% "akka-protobuf" % Versions.Akka
 
   private val akkaManagement = "com.lightbend.akka.management" %% "akka-management" % Versions.AkkaManagement
   private val akkaManagementClusterHttp =  "com.lightbend.akka.management" %% "akka-management-cluster-http" % Versions.AkkaManagement
@@ -476,7 +476,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProfobuf
+    akkaProtobuf
   )
 
   val client = libraryDependencies ++= Seq(
@@ -598,7 +598,7 @@ object Dependencies {
     // Upgrades needed to match whitelist
     akkaStream,
     akkaActor,
-    akkaProfobuf,
+    akkaProtobuf,
     akkaSlf4j,
     scalaXml,
     akkaHttpCore,
@@ -836,7 +836,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProfobuf,
+    akkaProtobuf,
     scalaXml
   ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % Versions.Logback)
 
@@ -855,7 +855,7 @@ object Dependencies {
       akkaStream,
       akkaActor,
       akkaSlf4j,
-      akkaProfobuf
+      akkaProtobuf
 
     )
 
@@ -870,7 +870,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProfobuf
+    akkaProtobuf
   )
 
   val `build-tool-support` = libraryDependencies ++= Seq(
@@ -927,7 +927,7 @@ object Dependencies {
     // updates to match whitelist
     akkaActor,
     akkaStream,
-    akkaProfobuf,
+    akkaProtobuf,
     akkaSlf4j,
     typesafeConfig,
     sslConfig,
