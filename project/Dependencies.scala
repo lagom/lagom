@@ -75,7 +75,7 @@ object Dependencies {
     "log4j-api",
     "log4j-core",
     "log4j-slf4j-impl"
-  ).map("org.apache.logging.log4j" % _ % Versions.Log4j excludeAll (excludeSlf4j: _*))
+  ).map( artifactId => "org.apache.logging.log4j" % artifactId % Versions.Log4j excludeAll (excludeSlf4j: _*))
 
 
   // Specific libraries that get reused
