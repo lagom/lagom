@@ -25,7 +25,7 @@ object Dependencies {
     val PlayFileWatch = "1.1.8"
 
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.21")
-    val AkkaHttp = "10.1.7"
+    val AkkaHttp = "10.1.8"
     val Aeron = "1.15.1"
 
     val AkkaPersistenceCassandra = "0.61"
@@ -600,7 +600,11 @@ object Dependencies {
     akkaActor,
     akkaProfobuf,
     akkaSlf4j,
-    scalaXml
+    scalaXml,
+    akkaHttpCore,
+    akkaHttpRouteDsl,
+    akkaHttpSprayJson,
+    akkaParsing
   )
 
   val `akka-management-javadsl` = libraryDependencies ++= Seq.empty[ModuleID]
