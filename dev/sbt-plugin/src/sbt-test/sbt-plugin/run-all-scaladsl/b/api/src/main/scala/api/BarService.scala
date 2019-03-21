@@ -10,8 +10,10 @@ trait BarService extends Service {
 
   override def descriptor = {
     import Service._
-    named("b").withCalls(
-      restCall(Method.GET, "/bar", bar)
-    ).withAutoAcl(true)
+    named("b")
+      .withCalls(
+        restCall(Method.GET, "/bar", bar)
+      )
+      .withAutoAcl(true)
   }
 }

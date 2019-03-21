@@ -48,8 +48,12 @@ class ServiceDescriptorsSpec extends ServiceSupport {
     }
 
     "show configuring rest calls" in withServiceInstance[CallRest](new CallRest {
-      override def addItem(orderId: Long): ServiceCall[Item, NotUsed] = serviceCall { _ => ??? }
-      override def deleteItem(orderId: Long, itemId: String): ServiceCall[NotUsed, NotUsed] = serviceCall { _ => ???}
+      override def addItem(orderId: Long): ServiceCall[Item, NotUsed] = serviceCall { _ =>
+        ???
+      }
+      override def deleteItem(orderId: Long, itemId: String): ServiceCall[NotUsed, NotUsed] = serviceCall { _ =>
+        ???
+      }
       override def getItem(orderId: Long, itemId: String): ServiceCall[NotUsed, Item] = serviceCall { _ =>
         Future.successful(Item.of(itemId, orderId))
       }

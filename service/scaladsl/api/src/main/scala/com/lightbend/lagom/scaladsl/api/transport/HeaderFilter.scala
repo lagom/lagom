@@ -16,6 +16,7 @@ import scala.collection.immutable
  * negotiation, as well as authentication.
  */
 trait HeaderFilter {
+
   /**
    * Transform the given client request.
    *
@@ -62,12 +63,13 @@ trait HeaderFilter {
 }
 
 object HeaderFilter {
+
   /**
    * A noop header transformer, used to deconfigure specific transformers.
    */
   val NoHeaderFilter: HeaderFilter = new HeaderFilter() {
-    override def transformClientRequest(request: RequestHeader): RequestHeader = request
-    override def transformServerRequest(request: RequestHeader): RequestHeader = request
+    override def transformClientRequest(request: RequestHeader): RequestHeader                             = request
+    override def transformServerRequest(request: RequestHeader): RequestHeader                             = request
     override def transformServerResponse(response: ResponseHeader, request: RequestHeader): ResponseHeader = response
     override def transformClientResponse(response: ResponseHeader, request: RequestHeader): ResponseHeader = response
   }
@@ -140,13 +142,13 @@ object UserAgentHeaderFilter extends HeaderFilter {
   }
 
   override def transformServerResponse(
-    response: ResponseHeader,
-    request:  RequestHeader
+      response: ResponseHeader,
+      request: RequestHeader
   ): ResponseHeader = response
 
   override def transformClientResponse(
-    response: ResponseHeader,
-    request:  RequestHeader
+      response: ResponseHeader,
+      request: RequestHeader
   ): ResponseHeader = response
 }
 //#user-agent-header-filter

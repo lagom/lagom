@@ -6,14 +6,17 @@ package com.lightbend.lagom.internal.registry
 
 import java.net.URI
 
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import scala.collection.immutable
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Success }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Success
 
 private[lagom] abstract class AbstractLoggingServiceRegistryClient(implicit ec: ExecutionContext)
-  extends ServiceRegistryClient {
+    extends ServiceRegistryClient {
 
   protected val log: Logger = LoggerFactory.getLogger(getClass)
 

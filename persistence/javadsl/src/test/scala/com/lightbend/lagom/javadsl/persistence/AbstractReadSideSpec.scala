@@ -7,14 +7,19 @@ package com.lightbend.lagom.javadsl.persistence
 import java.util.Optional
 import java.util.concurrent.CompletionStage
 
-import akka.actor.{ Actor, ActorRef, Props, Status }
+import akka.actor.Actor
+import akka.actor.ActorRef
+import akka.actor.Props
+import akka.actor.Status
 import akka.pattern.pipe
 import akka.stream.ActorMaterializer
 import akka.stream.javadsl.Source
 import akka.testkit.ImplicitSender
 import akka.util.Timeout
-import akka.{ Done, NotUsed }
-import com.lightbend.lagom.internal.javadsl.persistence.{ PersistentEntityActor, ReadSideActor }
+import akka.Done
+import akka.NotUsed
+import com.lightbend.lagom.internal.javadsl.persistence.PersistentEntityActor
+import com.lightbend.lagom.internal.javadsl.persistence.ReadSideActor
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
@@ -22,7 +27,8 @@ import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Mode
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import org.scalatest.BeforeAndAfter
-import org.scalatest.concurrent.{ Eventually, ScalaFutures }
+import org.scalatest.concurrent.Eventually
+import org.scalatest.concurrent.ScalaFutures
 import akka.pattern._
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.duration._
@@ -33,15 +39,15 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   import system.dispatcher
 
   // patience config for all async code
-  override implicit val patienceConfig = PatienceConfig(20.seconds, 150.millis)
+  implicit override val patienceConfig = PatienceConfig(20.seconds, 150.millis)
 
   implicit val mat = ActorMaterializer()
 
   protected val persistentEntityRegistry: PersistentEntityRegistry
 
   def eventStream[Event <: AggregateEvent[Event]](
-    aggregateTag: AggregateEventTag[Event],
-    fromOffset:   Offset
+      aggregateTag: AggregateEventTag[Event],
+      fromOffset: Offset
   ): Source[akka.japi.Pair[Event, Offset], NotUsed] =
     persistentEntityRegistry.eventStream(aggregateTag, fromOffset)
 
@@ -75,11 +81,13 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
     def successMode: Receive = getStats.orElse {
       case Execute =>
-        processorFactory()
-          .buildHandler
+        processorFactory().buildHandler
           .globalPrepare()
           .toScala
-          .map { _ => Done } pipeTo sender()
+          .map { _ =>
+            Done
+          }
+          .pipeTo(sender())
 
         stats = stats.recordSuccess()
     }

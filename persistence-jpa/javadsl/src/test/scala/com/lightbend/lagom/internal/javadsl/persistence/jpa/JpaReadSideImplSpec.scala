@@ -10,14 +10,15 @@ import java.util.concurrent.CompletionStage
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc.JdbcPersistentEntityRegistry
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.javadsl.persistence._
-import com.lightbend.lagom.javadsl.persistence.jpa.{ JpaReadSide, TestEntityJpaReadSide }
+import com.lightbend.lagom.javadsl.persistence.jpa.JpaReadSide
+import com.lightbend.lagom.javadsl.persistence.jpa.TestEntityJpaReadSide
 import play.api.inject.guice.GuiceInjectorBuilder
 
 import scala.concurrent.duration._
 
 class JpaReadSideImplSpec extends JpaPersistenceSpec with AbstractReadSideSpec {
-  private lazy val injector = new GuiceInjectorBuilder().build()
-  override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, injector, slick)
+  private lazy val injector                            = new GuiceInjectorBuilder().build()
+  protected override lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, injector, slick)
 
   private lazy val jpaReadSide: JpaReadSide = new JpaReadSideImpl(jpa, offsetStore)
 

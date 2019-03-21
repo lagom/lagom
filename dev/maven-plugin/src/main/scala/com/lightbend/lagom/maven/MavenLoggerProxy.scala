@@ -4,7 +4,8 @@
 
 package com.lightbend.lagom.maven
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.Inject
+import javax.inject.Singleton
 
 import org.codehaus.plexus.logging.Logger
 import play.dev.filewatch.LoggerProxy
@@ -13,7 +14,7 @@ import play.dev.filewatch.LoggerProxy
  * Logger
  */
 @Singleton
-class MavenLoggerProxy @Inject() (logger: Logger) extends LoggerProxy {
+class MavenLoggerProxy @Inject()(logger: Logger) extends LoggerProxy {
   override def debug(message: => String): Unit = {
     if (logger.isDebugEnabled) {
       logger.debug(message)

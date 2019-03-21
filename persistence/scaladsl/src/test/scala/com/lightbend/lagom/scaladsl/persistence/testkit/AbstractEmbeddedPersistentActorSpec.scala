@@ -4,12 +4,17 @@
 
 package com.lightbend.lagom.scaladsl.persistence.testkit
 
-import akka.actor.{ ActorRef, ActorSystem, Props, actorRef2Scala }
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.Props
+import akka.actor.actorRef2Scala
 import akka.persistence.PersistentActor
-import akka.testkit.{ ImplicitSender, TestKitBase }
+import akka.testkit.ImplicitSender
+import akka.testkit.TestKitBase
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.persistence.PersistenceSpec
-import org.scalatest.{ Matchers, WordSpecLike }
+import org.scalatest.Matchers
+import org.scalatest.WordSpecLike
 
 import scala.concurrent.duration._
 

@@ -8,11 +8,15 @@ import java.io.File
 import javax.inject.Inject
 
 import com.lightbend.lagom.core.LagomVersion
-import com.lightbend.lagom.dev.{ Servers, StaticServiceLocations }
+import com.lightbend.lagom.dev.Servers
+import com.lightbend.lagom.dev.StaticServiceLocations
 import org.eclipse.aether.artifact.DefaultArtifact
-import java.util.{ Collections, List => JList, Map => JMap }
+import java.util.Collections
+import java.util.{ List => JList }
+import java.util.{ Map => JMap }
 
-import org.codehaus.plexus.logging.{ Logger, LoggerManager }
+import org.codehaus.plexus.logging.Logger
+import org.codehaus.plexus.logging.LoggerManager
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
@@ -20,8 +24,12 @@ import scala.beans.BeanProperty
 import org.apache.maven.execution.MavenSession
 import org.eclipse.aether.graph.Dependency
 
-class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, mavenLoggerManager: LoggerManager,
-                                    scalaClassLoaderManager: ScalaClassLoaderManager) extends LagomAbstractMojo {
+class StartCassandraMojo @Inject()(
+    facade: MavenFacade,
+    logger: MavenLoggerProxy,
+    mavenLoggerManager: LoggerManager,
+    scalaClassLoaderManager: ScalaClassLoaderManager
+) extends LagomAbstractMojo {
 
   @BeanProperty
   var cassandraMaxBootWaitingSeconds: Int = _
@@ -41,7 +49,9 @@ class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProx
       // Configure logging to quieten the Cassandra driver
       mavenLoggerManager.getLoggerForComponent("com.datastax").setThreshold(Logger.LEVEL_DISABLED)
 
-      val cp = facade.resolveArtifact(new DefaultArtifact("com.lightbend.lagom", "lagom-cassandra-server_2.12", "jar", LagomVersion.current))
+      val cp = facade.resolveArtifact(
+        new DefaultArtifact("com.lightbend.lagom", "lagom-cassandra-server_2.12", "jar", LagomVersion.current)
+      )
 
       val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
 
@@ -59,7 +69,7 @@ class StartCassandraMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProx
   }
 }
 
-class StopCassandraMojo @Inject() (logger: MavenLoggerProxy) extends LagomAbstractMojo {
+class StopCassandraMojo @Inject()(logger: MavenLoggerProxy) extends LagomAbstractMojo {
   @BeanProperty
   var cassandraEnabled: Boolean = _
 
@@ -70,7 +80,12 @@ class StopCassandraMojo @Inject() (logger: MavenLoggerProxy) extends LagomAbstra
   }
 }
 
-class StartKafkaMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, mavenLoggerManager: LoggerManager, session: MavenSession) extends LagomAbstractMojo {
+class StartKafkaMojo @Inject()(
+    facade: MavenFacade,
+    logger: MavenLoggerProxy,
+    mavenLoggerManager: LoggerManager,
+    session: MavenSession
+) extends LagomAbstractMojo {
 
   @BeanProperty
   var kafkaPort: Int = _
@@ -90,7 +105,8 @@ class StartKafkaMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, m
     if (kafkaEnabled) {
 
       val dependency = {
-        val artifact = new DefaultArtifact("com.lightbend.lagom", "lagom-kafka-server_2.12", "jar", LagomVersion.current)
+        val artifact =
+          new DefaultArtifact("com.lightbend.lagom", "lagom-kafka-server_2.12", "jar", LagomVersion.current)
         new Dependency(artifact, "runtime")
       }
       val cp = facade.resolveArtifact(dependency.getArtifact)
@@ -98,20 +114,23 @@ class StartKafkaMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, m
       logger.debug {
         val text = {
           cp.map { artifact =>
-            val groupId = artifact.getGroupId
-            val artifactId = artifact.getArtifactId
-            val version = artifact.getVersion
-            s"$groupId $artifactId $version"
-          }.mkString("\t", "\n\t", "")
+              val groupId    = artifact.getGroupId
+              val artifactId = artifact.getArtifactId
+              val version    = artifact.getVersion
+              s"$groupId $artifactId $version"
+            }
+            .mkString("\t", "\n\t", "")
         }
         "Classpath used to start Kafka:\n" + text
       }
 
-      val / = java.io.File.separator
-      val project = session.getTopLevelProject
+      val /                = java.io.File.separator
+      val project          = session.getTopLevelProject
       val projectTargetDir = project.getBuild.getDirectory // path is absolute
       // target directory matches the one used in the Lagom sbt plugin
-      val targetDir = new java.io.File(projectTargetDir + / + "lagom-dynamic-projects" + / + "lagom-internal-meta-project-kafka" + / + "target")
+      val targetDir = new java.io.File(
+        projectTargetDir + / + "lagom-dynamic-projects" + / + "lagom-internal-meta-project-kafka" + / + "target"
+      )
       // properties file doesn't need to be provided by users, in which case the default one included with Lagom will be used
       val kafkaPropertiesFile = Option(this.kafkaPropertiesFile)
 
@@ -129,7 +148,7 @@ class StartKafkaMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, m
   }
 }
 
-class StopKafkaMojo @Inject() (logger: MavenLoggerProxy) extends LagomAbstractMojo {
+class StopKafkaMojo @Inject()(logger: MavenLoggerProxy) extends LagomAbstractMojo {
   @BeanProperty
   var kafkaEnabled: Boolean = _
 
@@ -140,8 +159,11 @@ class StopKafkaMojo @Inject() (logger: MavenLoggerProxy) extends LagomAbstractMo
   }
 }
 
-class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: MavenFacade,
-                                         scalaClassLoaderManager: ScalaClassLoaderManager) extends LagomAbstractMojo {
+class StartServiceLocatorMojo @Inject()(
+    logger: MavenLoggerProxy,
+    facade: MavenFacade,
+    scalaClassLoaderManager: ScalaClassLoaderManager
+) extends LagomAbstractMojo {
 
   @BeanProperty
   var serviceLocatorEnabled: Boolean = _
@@ -172,7 +194,9 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
   override def execute(): Unit = {
 
     if (serviceLocatorEnabled) {
-      val cp = facade.resolveArtifact(new DefaultArtifact("com.lightbend.lagom", "lagom-service-locator_2.12", "jar", LagomVersion.current))
+      val cp = facade.resolveArtifact(
+        new DefaultArtifact("com.lightbend.lagom", "lagom-service-locator_2.12", "jar", LagomVersion.current)
+      )
 
       val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(cp)
 
@@ -196,7 +220,7 @@ class StartServiceLocatorMojo @Inject() (logger: MavenLoggerProxy, facade: Maven
   }
 }
 
-class StopServiceLocatorMojo @Inject() (logger: MavenLoggerProxy) extends LagomAbstractMojo {
+class StopServiceLocatorMojo @Inject()(logger: MavenLoggerProxy) extends LagomAbstractMojo {
 
   @BeanProperty
   var serviceLocatorEnabled: Boolean = _

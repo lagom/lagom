@@ -8,28 +8,31 @@ import sbt.Keys._
 import sbt.plugins.JvmPlugin
 
 import scala.util.Try
-import scala.xml.{Elem, NodeSeq, PrettyPrinter, XML}
+import scala.xml.Elem
+import scala.xml.NodeSeq
+import scala.xml.PrettyPrinter
+import scala.xml.XML
 
 /**
-  * Generates the maven plugin descriptor.
-  *
-  * This has two primary purposes:
-  *
-  * 1. Generate parts of the descriptor that can be determined from the build. This includes names, descriptions,
-  *   dependencies.
-  * 2. Reduce duplication. Mojos that depend on the same parameters end up having that parameter configuration
-  *   duplicated. This saves on duplication by defining all parameters in one place that can then be referenced.
-  */
+ * Generates the maven plugin descriptor.
+ *
+ * This has two primary purposes:
+ *
+ * 1. Generate parts of the descriptor that can be determined from the build. This includes names, descriptions,
+ *   dependencies.
+ * 2. Reduce duplication. Mojos that depend on the same parameters end up having that parameter configuration
+ *   duplicated. This saves on duplication by defining all parameters in one place that can then be referenced.
+ */
 object SbtMavenPlugin extends AutoPlugin {
 
-  override def trigger = noTrigger
+  override def trigger  = noTrigger
   override def requires = JvmPlugin
 
   object autoImport {
     val mavenGeneratePluginXml = taskKey[Seq[File]]("Generate the maven plugin xml")
-    val mavenTest = inputKey[Unit]("Run the maven tests")
-    val mavenTestArgs = settingKey[Seq[String]]("Maven test arguments")
-    val mavenClasspath = taskKey[Seq[File]]("The maven classpath")
+    val mavenTest              = inputKey[Unit]("Run the maven tests")
+    val mavenTestArgs          = settingKey[Seq[String]]("Maven test arguments")
+    val mavenClasspath         = taskKey[Seq[File]]("The maven classpath")
   }
 
   import autoImport._
@@ -40,24 +43,22 @@ object SbtMavenPlugin extends AutoPlugin {
     sourceDirectory in mavenGeneratePluginXml := sourceDirectory.value / "maven",
     sources in mavenGeneratePluginXml :=
       Seq((sourceDirectory in mavenGeneratePluginXml).value / "plugin.xml").filter(_.exists()),
-
     target in mavenGeneratePluginXml := target.value / "maven-plugin-xml",
     managedResourceDirectories += (target in mavenGeneratePluginXml).value,
-
     mavenGeneratePluginXml := {
-      val files = (sources in mavenGeneratePluginXml).value
+      val files  = (sources in mavenGeneratePluginXml).value
       val outDir = (target in mavenGeneratePluginXml).value / "META-INF" / "maven"
       IO.createDirectory(outDir)
 
-      val pid = projectID.value
-      val pi = projectInfo.value
+      val pid  = projectID.value
+      val pi   = projectInfo.value
       val deps = allDependencies.value
-      val sv = scalaVersion.value
-      val sbv = scalaBinaryVersion.value
-      val log = streams.value.log
+      val sv   = scalaVersion.value
+      val sbv  = scalaBinaryVersion.value
+      val log  = streams.value.log
 
       val configHash = Seq(pid.toString, pi.toString, deps.toString, sv, sbv).hashCode()
-      val cacheFile = streams.value.cacheDirectory / "maven.plugin.xml.cache"
+      val cacheFile  = streams.value.cacheDirectory / "maven.plugin.xml.cache"
       val cachedHash = Some(cacheFile).filter(_.exists()).flatMap { file =>
         Try(IO.read(file).toInt).toOption
       }
@@ -68,7 +69,7 @@ object SbtMavenPlugin extends AutoPlugin {
 
         if (file.lastModified() > outFile.lastModified() || configChanged) {
           log.info(s"Generating $outFile from template")
-          val template = XML.loadFile(file)
+          val template  = XML.loadFile(file)
           val processed = processTemplate(template, pid, pi, deps, CrossVersion(sv, sbv), log)
           IO.write(outFile, new PrettyPrinter(120, 2).format(processed))
         }
@@ -79,7 +80,6 @@ object SbtMavenPlugin extends AutoPlugin {
 
       outFiles
     },
-
     resourceGenerators += mavenGeneratePluginXml.taskValue
   )
 
@@ -90,12 +90,23 @@ object SbtMavenPlugin extends AutoPlugin {
 
       val toRun = (OptSpace ~> StringBasic).?.parsed
 
-      runMavenTests((sourceDirectory in mavenTest).value, mavenClasspath.value, mavenTestArgs.value, toRun,
-        streams.value.log)
+      runMavenTests(
+        (sourceDirectory in mavenTest).value,
+        mavenClasspath.value,
+        mavenTestArgs.value,
+        toRun,
+        streams.value.log
+      )
     }
   )
 
-  def runMavenTests(testDirectory: File, mavenClasspath: Seq[File], mavenTestArgs: Seq[String], toRun: Option[String], log: Logger) = {
+  def runMavenTests(
+      testDirectory: File,
+      mavenClasspath: Seq[File],
+      mavenTestArgs: Seq[String],
+      toRun: Option[String],
+      log: Logger
+  ) = {
     val testsToRun = toRun.fold(testDirectory.listFiles().toSeq.filter(_.isDirectory)) { dir =>
       Seq(testDirectory / dir)
     }
@@ -109,7 +120,9 @@ object SbtMavenPlugin extends AutoPlugin {
       try {
         IO.copyDirectory(test, testDir)
 
-        val args = Seq("-cp", mavenClasspath.map(_.getAbsolutePath).mkString(File.pathSeparator),
+        val args = Seq(
+          "-cp",
+          mavenClasspath.map(_.getAbsolutePath).mkString(File.pathSeparator),
           s"-Dmaven.multiModuleProjectDirectory=${testDir.getAbsolutePath}"
         ) ++
           mavenTestArgs ++
@@ -134,37 +147,45 @@ object SbtMavenPlugin extends AutoPlugin {
     results.collect {
       case (name, false) => name
     } match {
-      case Nil => // success
+      case Nil         => // success
       case failedTests => sys.error(failedTests.mkString("Maven tests failed: ", ",", ""))
     }
   }
 
-  def processTemplate(xml: Elem, moduleID: ModuleID, moduleInfo: ModuleInfo, dependencies: Seq[ModuleID],
-                      crossVersion: ModuleID => ModuleID, log: Logger) = {
+  def processTemplate(
+      xml: Elem,
+      moduleID: ModuleID,
+      moduleInfo: ModuleInfo,
+      dependencies: Seq[ModuleID],
+      crossVersion: ModuleID => ModuleID,
+      log: Logger
+  ) = {
 
     // Add project meta data
     val withProjectInfo = Seq(
-      "name" -> moduleInfo.nameFormal,
+      "name"        -> moduleInfo.nameFormal,
       "description" -> moduleInfo.description,
-      "groupId" -> moduleID.organization,
-      "artifactId" -> moduleID.name,
-      "version" -> moduleID.revision
+      "groupId"     -> moduleID.organization,
+      "artifactId"  -> moduleID.name,
+      "version"     -> moduleID.revision
     ).foldRight(xml) {
       case ((label, value), elem) => prependIfAbsent(elem, createElement(label, value))
     }
 
-    val withDependencies = addChild(withProjectInfo, {
-      val deps = dependencies.collect {
-        case dep if isRuntimeDep(dep.configurations) =>
-          val versioned = crossVersion(dep)
-          <dependency>
+    val withDependencies = addChild(
+      withProjectInfo, {
+        val deps = dependencies.collect {
+          case dep if isRuntimeDep(dep.configurations) =>
+            val versioned = crossVersion(dep)
+            <dependency>
             <groupId>{versioned.organization}</groupId>
             <artifactId>{versioned.name}</artifactId>
             <version>{versioned.revision}</version>
           </dependency>
+        }
+        <dependencies>{deps}</dependencies>
       }
-      <dependencies>{deps}</dependencies>
-    })
+    )
 
     val (withoutParameterManagement, parameterManagement) = parseParameterManagament(withDependencies)
 
@@ -175,10 +196,11 @@ object SbtMavenPlugin extends AutoPlugin {
           .collect(Function.unlift(parameterManagement.get))
 
         val configToAdd = parameters.flatMap(_.config)
-        val withConfig = addOrUpdateElement(mojo, "configuration",
+        val withConfig = addOrUpdateElement(
+          mojo,
+          "configuration",
           Some(configToAdd).filter(_.nonEmpty).map(cta => <configuration>{cta}</configuration>)
         ) { configuration =>
-
           mergeElements(configuration, configToAdd)
         }
 
@@ -209,22 +231,21 @@ object SbtMavenPlugin extends AutoPlugin {
   private def parseParameterManagament(xml: Elem): (Elem, Map[String, Parameter]) = {
     xml \ "parameterManagement" match {
       case Seq(parameterManagement) =>
-
         val parameters = (parameterManagement \ "parameter").collect {
           case elem: Elem =>
-            val name = (elem \ "name").text
+            val name                           = (elem \ "name").text
             val (configuration, withoutConfig) = elem.child.partition(_.label == "configuration")
             val config = configuration match {
               case Seq(c) => c.child
-              case Nil => NodeSeq.Empty
-              case _ => sys.error("Multiple configuration elements: " + elem)
+              case Nil    => NodeSeq.Empty
+              case _      => sys.error("Multiple configuration elements: " + elem)
             }
             name -> Parameter(elem.copy(child = withoutConfig), config)
         }.toMap
 
         (removeElement(xml, "parameterManagement"), parameters)
       case NodeSeq.Empty => (xml, Map.empty)
-      case _ => sys.error("Multiple parameterManagement elements")
+      case _             => sys.error("Multiple parameterManagement elements")
     }
   }
 
@@ -233,7 +254,7 @@ object SbtMavenPlugin extends AutoPlugin {
   private def updateElements(elem: Elem, label: String)(update: Elem => Elem) = {
     elem.copy(child = elem.child.map {
       case toUpdate: Elem if toUpdate.label == label => update(toUpdate)
-      case other => other
+      case other                                     => other
     })
   }
 
@@ -249,7 +270,7 @@ object SbtMavenPlugin extends AutoPlugin {
       case NodeSeq.Empty =>
         ifMissing match {
           case Some(child) => addChild(elem, child)
-          case None => elem
+          case None        => elem
         }
       case _ =>
         sys.error(s"Unexpected multiple $label elements in $elem")
@@ -261,21 +282,21 @@ object SbtMavenPlugin extends AutoPlugin {
   }
 
   /**
-    * Create an element.
-    *
-    * @param label The element label.
-    * @param value The element value.
-    */
+   * Create an element.
+   *
+   * @param label The element label.
+   * @param value The element value.
+   */
   private def createElement(label: String, value: String): Elem = {
-   <elem>{value}</elem>.copy(label = label)
+    <elem>{value}</elem>.copy(label = label)
   }
 
   /**
-    * Prepend the given element to the parent if it's absent.
-    *
-    * @param parent The parent to add it to.
-    * @param elem The element to add.
-    */
+   * Prepend the given element to the parent if it's absent.
+   *
+   * @param parent The parent to add it to.
+   * @param elem The element to add.
+   */
   private def prependIfAbsent(parent: Elem, elem: Elem) = {
     if (parent.child.exists(_.label == elem.label)) {
       parent

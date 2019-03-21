@@ -1,6 +1,7 @@
 import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 
-lazy val `my-project` = (project in file(".")).enablePlugins(LagomJava)
+lazy val `my-project` = (project in file("."))
+  .enablePlugins(LagomJava)
   .settings(
     libraryDependencies ++= Seq(lagomJavadslPersistenceCassandra, lagomSbtScriptedLibrary)
   )
@@ -16,13 +17,11 @@ val CassandraSnapshotStorePort     = "cassandra-snapshot-store.port"
 val LagomCassandraReadKeyspace     = "lagom.persistence.read-side.cassandra.keyspace"
 val LagomCassandraReadPort         = "lagom.persistence.read-side.cassandra.port";
 
-
-
 lazy val injectedCassandraConfig = Def.task { target.value / "injected-cassandra.conf" }
 
 def validate(configFile: java.io.File, key: String, expected: String) = {
   import com.typesafe.config._
-  if(!configFile.isFile) throw new RuntimeException(s"No file found at ${configFile.getPath}")
+  if (!configFile.isFile) throw new RuntimeException(s"No file found at ${configFile.getPath}")
   val config = ConfigFactory.parseFile(configFile)
   val actual = config.getString(key)
   if (expected == actual) {

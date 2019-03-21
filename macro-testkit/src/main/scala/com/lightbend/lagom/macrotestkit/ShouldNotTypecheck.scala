@@ -7,7 +7,8 @@ package com.lightbend.lagom.macrotestkit
 import scala.language.experimental.macros
 import java.util.regex.Pattern
 
-import scala.reflect.macros.{ TypecheckException, blackbox }
+import scala.reflect.macros.TypecheckException
+import scala.reflect.macros.blackbox
 import scala.reflect.macros.blackbox.Context
 
 /**
@@ -17,9 +18,12 @@ object ShouldNotTypecheck {
   def apply(name: String, code: String): Unit = macro applyImplNoExp
   def apply(name: String, code: String, expected: String): Unit = macro applyImpl
 
-  def applyImplNoExp(ctx: blackbox.Context)(name: ctx.Expr[String], code: ctx.Expr[String]): ctx.Expr[Unit] = applyImpl(ctx)(name, code, null)
+  def applyImplNoExp(ctx: blackbox.Context)(name: ctx.Expr[String], code: ctx.Expr[String]): ctx.Expr[Unit] =
+    applyImpl(ctx)(name, code, null)
 
-  def applyImpl(ctx: blackbox.Context)(name: ctx.Expr[String], code: ctx.Expr[String], expected: ctx.Expr[String]): ctx.Expr[Unit] = {
+  def applyImpl(
+      ctx: blackbox.Context
+  )(name: ctx.Expr[String], code: ctx.Expr[String], expected: ctx.Expr[String]): ctx.Expr[Unit] = {
     import ctx.universe._
 
     val Expr(Literal(Constant(codeStr: String))) = code
@@ -30,7 +34,8 @@ object ShouldNotTypecheck {
         (Pattern.compile(s, Pattern.CASE_INSENSITIVE), "Expected error matching: " + s)
     }
 
-    try ctx.typecheck(ctx.parse("{ " + codeStr + " }")) catch {
+    try ctx.typecheck(ctx.parse("{ " + codeStr + " }"))
+    catch {
       case e: TypecheckException =>
         val msg = e.getMessage
         if ((expected ne null) && !expPat.matcher(msg).matches) {

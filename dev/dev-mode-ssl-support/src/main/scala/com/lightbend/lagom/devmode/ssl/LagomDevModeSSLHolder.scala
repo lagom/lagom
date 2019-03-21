@@ -7,7 +7,8 @@ package com.lightbend.lagom.devmode.ssl
 import java.io.File
 import java.security.KeyStore
 
-import com.typesafe.sslconfig.ssl.{ FakeKeyStore, FakeSSLTools }
+import com.typesafe.sslconfig.ssl.FakeKeyStore
+import com.typesafe.sslconfig.ssl.FakeSSLTools
 import com.typesafe.sslconfig.util.NoopLogger
 import com.typesafe.sslconfig.{ ssl => sslconfig }
 import javax.net.ssl._
@@ -21,9 +22,9 @@ import play.api.Environment
  * @param storePassword password to open the store
  */
 case class KeyStoreMetadata(
-  storeFile:     File,
-  storeType:     String,
-  storePassword: Array[Char]
+    storeFile: File,
+    storeType: String,
+    storePassword: Array[Char]
 )
 
 class LagomDevModeSSLHolder(val rootLagomProjectFolder: File) {
@@ -32,7 +33,7 @@ class LagomDevModeSSLHolder(val rootLagomProjectFolder: File) {
   }
 
   private val fakeKeysStore = new sslconfig.FakeKeyStore(NoopLogger.factory())
-  val keyStore: KeyStore = fakeKeysStore.createKeyStore(rootLagomProjectFolder)
+  val keyStore: KeyStore    = fakeKeysStore.createKeyStore(rootLagomProjectFolder)
 
   val keyStoreMetadata: KeyStoreMetadata = KeyStoreMetadata(
     fakeKeysStore.getKeyStoreFilePath(rootLagomProjectFolder),

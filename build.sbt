@@ -15,7 +15,7 @@ ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
 
 def defineSbtVersion(scalaBinVer: String): String = scalaBinVer match {
   case "2.12" => "1.2.8"
-  case _ => "0.13.18"
+  case _      => "0.13.18"
 }
 
 def evictionSettings: Seq[Setting[_]] = Seq(
@@ -38,10 +38,11 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
   licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))),
   homepage := Some(url("https://www.lagomframework.com/")),
   sonatypeProfileName := "com.lightbend",
-  headerLicense := Some(HeaderLicense.Custom(
-    "Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>"
-  )),
-
+  headerLicense := Some(
+    HeaderLicense.Custom(
+      "Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>"
+    )
+  ),
   pomExtra := {
     <scm>
       <url>https://github.com/lagom/lagom</url>
@@ -55,25 +56,26 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
       </developer>
     </developers>
   },
-  pomIncludeRepository := { _ => false },
-
+  pomIncludeRepository := { _ =>
+    false
+  },
   concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
-
   scalacOptions in (Compile, doc) ++= (scalaBinaryVersion.value match {
     case "2.12" => Seq("-no-java-comments")
-    case _ => Seq.empty
+    case _      => Seq.empty
   }),
-
   // Setting javac options in common allows IntelliJ IDEA to import them automatically
   javacOptions in compile ++= Seq(
-    "-encoding", "UTF-8",
-    "-source", "1.8",
-    "-target", "1.8",
+    "-encoding",
+    "UTF-8",
+    "-source",
+    "1.8",
+    "-target",
+    "1.8",
     "-parameters",
     "-Xlint:unchecked",
     "-Xlint:deprecation"
   ),
-
   LagomPublish.validatePublishSettingsSetting
 )
 
@@ -118,12 +120,15 @@ def releaseStepCommandAndRemaining(command: String): State => State = { original
   def runCommand(command: String, state: State): State = {
     val newState = Parser.parse(command, state.combinedParser) match {
       case Right(cmd) => cmd()
-      case Left(msg) => throw sys.error(s"Invalid programmatic input:\n$msg")
+      case Left(msg)  => throw sys.error(s"Invalid programmatic input:\n$msg")
     }
     if (newState.remainingCommands.isEmpty) {
       newState
     } else {
-      runCommand(newState.remainingCommands.head.commandLine, newState.copy(remainingCommands = newState.remainingCommands.tail))
+      runCommand(
+        newState.remainingCommands.head.commandLine,
+        newState.copy(remainingCommands = newState.remainingCommands.tail)
+      )
     }
   }
 
@@ -137,7 +142,6 @@ def sonatypeSettings: Seq[Setting[_]] = Seq(
 def runtimeScalaSettings: Seq[Setting[_]] = Seq(
   crossScalaVersions := Dependencies.Versions.Scala,
   scalaVersion := Dependencies.Versions.Scala.head,
-
   // compile options
   scalacOptions in Compile ++= Seq(
     "-encoding",
@@ -154,7 +158,6 @@ def runtimeLibCommon: Seq[Setting[_]] = common ++ sonatypeSettings ++ runtimeSca
   Dependencies.validateDependenciesSetting,
   Dependencies.pruneWhitelistSetting,
   Dependencies.dependencyWhitelistSetting,
-
   // show full stack traces and test case durations
   testOptions in Test += Tests.Argument("-oDF"),
   // -v Log "test run started" / "test started" / "test run finished" events on log level "info" instead of "debug".
@@ -168,7 +171,7 @@ val defaultMultiJvmOptions: List[String] = {
   // -D or -X arguments to the forked jvm, e.g.
   // -Djava.net.preferIPv4Stack=true or -Dmultinode.Xmx512m
   val MultinodeJvmArgs = "multinode\\.(D|X)(.*)".r
-  val knownPrefix = Set("akka.", "lagom.")
+  val knownPrefix      = Set("akka.", "lagom.")
   val properties = System.getProperties.stringPropertyNames.asScala.toList.collect {
     case MultinodeJvmArgs(a, b) =>
       val value = System.getProperty("multinode." + a + b)
@@ -186,7 +189,6 @@ def databasePortSetting: String = {
   serverSocket.close()
   s"-Ddatabase.port=$port"
 }
-
 
 def multiJvmTestSettings: Seq[Setting[_]] = {
 
@@ -211,15 +213,17 @@ def multiJvmTestSettings: Seq[Setting[_]] = {
       parallelExecution in Test := false,
       MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting :: defaultMultiJvmOptions,
       // make sure that MultiJvm test are compiled by the default test compilation
-      compile in MultiJvm := ((compile in MultiJvm) triggeredBy (compile in Test)).value,
+      compile in MultiJvm := (compile in MultiJvm).triggeredBy(compile in Test).value,
       // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
-      executeTests in MultiJvm := ((executeTests in MultiJvm) tag Tags.Test).value,
+      executeTests in MultiJvm := (executeTests in MultiJvm).tag(Tags.Test).value,
       // make sure that MultiJvm tests are executed by the default test target,
       // and combine the results from ordinary test and multi-jvm tests
       executeTests in Test := {
-        val testResults = (executeTests in Test).value
+        val testResults      = (executeTests in Test).value
         val multiNodeResults = (executeTests in MultiJvm).value
-        import TestResult.{ Passed, Failed, Error }
+        import TestResult.Passed
+        import TestResult.Failed
+        import TestResult.Error
         val overall = (testResults.overall, multiNodeResults.overall) match {
           case (Passed, Passed)                    => Passed
           case (Failed, Failed)                    => Failed
@@ -228,9 +232,11 @@ def multiJvmTestSettings: Seq[Setting[_]] = {
           case (Passed, Error) | (Error, Passed)   => Error
           case (Failed, Error) | (Error, Failed)   => Error
         }
-        Tests.Output(overall,
+        Tests.Output(
+          overall,
           testResults.events ++ multiNodeResults.events,
-          testResults.summaries ++ multiNodeResults.summaries)
+          testResults.summaries ++ multiNodeResults.summaries
+        )
       },
       // change multi-jvm lib folder to reflect the scala version used during crossbuild
       multiRunCopiedClassLocation in MultiJvm := crossbuildMultiJvm.value
@@ -241,7 +247,9 @@ def macroCompileSettings: Seq[Setting[_]] = Seq(
   compile in Test ~= { a =>
     // Delete classes in "compile" packages after compiling.
     // These are used for compile-time tests and should be recompiled every time.
-    val products = (a.asInstanceOf[sbt.internal.inc.Analysis]).relations.allProducts.toSeq ** new SimpleFileFilter(_.getParentFile.getName == "compile")
+    val products = (a.asInstanceOf[sbt.internal.inc.Analysis]).relations.allProducts.toSeq ** new SimpleFileFilter(
+      _.getParentFile.getName == "compile"
+    )
     IO.delete(products.get)
     a
   }
@@ -267,7 +275,7 @@ def scalaVersionFilter(scalaBinaryVersion: String, versions: Seq[String]): Seq[S
   // parse version into (major, minor, patch) for comparison
   def Version(version: String): (String, String, String) = version.split(".", 3).toSeq match {
     case Seq(major, minor, patch) => (major, minor, patch)
-    case _ => throw new IllegalArgumentException("version does not match major.minor.patch format")
+    case _                        => throw new IllegalArgumentException("version does not match major.minor.patch format")
   }
   import scala.math.Ordering.Implicits._
   val sinceVersion = Version(scalaVersionSince.getOrElse(scalaBinaryVersion, "1.0.0"))
@@ -277,7 +285,6 @@ def scalaVersionFilter(scalaBinaryVersion: String, versions: Seq[String]): Seq[S
 def scalaVersionSince = Map(
   "2.12" -> "1.4.0"
 )
-
 
 val javadslProjects = Seq[Project](
   `api-javadsl`,
@@ -362,11 +369,16 @@ lazy val root = (project in file("."))
     publish := {}
   )
   .enablePlugins(lagom.UnidocRoot)
-  .settings(UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*)
-  .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects).map(Project.projectToRef): _*)
+  .settings(
+    UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*
+  )
+  .aggregate(
+    (javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects)
+      .map(Project.projectToRef): _*
+  )
 
 def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) && Unidoc
-def SbtPluginPlugins = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
+def SbtPluginPlugins  = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
 
 lazy val api = (project in file("service/core/api"))
   .settings(runtimeLibCommon: _*)
@@ -384,7 +396,8 @@ lazy val `api-javadsl` = (project in file("service/javadsl/api"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     Dependencies.`api-javadsl`
-  ).dependsOn(api)
+  )
+  .dependsOn(api)
 
 lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
   .settings(name := "lagom-scaladsl-api")
@@ -393,7 +406,8 @@ lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     Dependencies.`api-scaladsl`
-  ).dependsOn(api)
+  )
+  .dependsOn(api)
 
 lazy val immutables = (project in file("immutables"))
   .settings(name := "lagom-javadsl-immutables")
@@ -435,7 +449,7 @@ lazy val `api-tools` = (project in file("api-tools"))
   .settings(overridesScalaParserCombinators: _*)
   .dependsOn(
     spi,
-    `server-javadsl` % Test,
+    `server-javadsl`  % Test,
     `server-scaladsl` % Test
   )
 
@@ -445,7 +459,8 @@ lazy val client = (project in file("service/core/client"))
   .settings(
     name := "lagom-client",
     Dependencies.client
-  ).dependsOn(api, spi)
+  )
+  .dependsOn(api, spi)
 
 lazy val `client-javadsl` = (project in file("service/javadsl/client"))
   .settings(runtimeLibCommon: _*)
@@ -488,7 +503,6 @@ lazy val server = (project in file("service/core/server"))
   .settings(mimaSettings: _*)
   .dependsOn(client)
 
-
 lazy val `server-javadsl` = (project in file("service/javadsl/server"))
   .settings(
     name := "lagom-javadsl-server",
@@ -528,7 +542,6 @@ lazy val `testkit-core` = (project in file("testkit/core"))
     `persistence-testkit`
   )
 
-
 lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings: _*)
@@ -545,10 +558,10 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
     `pubsub-javadsl`,
     `broker-javadsl`,
     `dev-mode-ssl-support`, // TODO: remove this when SSLContext provider is promoted to play or ssl-config
-    `persistence-core` % "compile;test->test",
+    `persistence-core`              % "compile;test->test",
     `persistence-cassandra-javadsl` % "test->test",
-    `jackson` % "test->test",
-    `persistence-jdbc-javadsl` % Test
+    `jackson`                       % "test->test",
+    `persistence-jdbc-javadsl`      % Test
   )
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
@@ -567,10 +580,10 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
     `broker-scaladsl`,
     `kafka-broker-scaladsl`,
     `dev-mode-ssl-support`, // TODO: remove this when SSLContext provider is promoted to play or ssl-config
-    `persistence-core` % "compile;test->test",
-    `persistence-scaladsl` % "compile;test->test",
+    `persistence-core`               % "compile;test->test",
+    `persistence-scaladsl`           % "compile;test->test",
     `persistence-cassandra-scaladsl` % "compile;test->test",
-    `persistence-jdbc-scaladsl` % Test
+    `persistence-jdbc-scaladsl`      % Test
   )
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
@@ -617,7 +630,7 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // We could group non Cassandra tests into another group
   // to avoid new JVM for each test, see http://www.scala-sbt.org/release/docs/Testing.html
   val javaOptions = Vector("-Xms256M", "-Xmx512M")
-  tests map { test =>
+  tests.map { test =>
     Tests.Group(
       name = test.name,
       tests = Seq(test),
@@ -704,7 +717,8 @@ lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
   .settings(
     name := "lagom-javadsl-cluster",
     Dependencies.`cluster-javadsl`
-  ) configs (MultiJvm)
+  )
+  .configs(MultiJvm)
 
 lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
   .dependsOn(`akka-management-scaladsl`, `cluster-core`, `play-json`)
@@ -715,7 +729,8 @@ lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
   .settings(
     name := "lagom-scaladsl-cluster",
     Dependencies.`cluster-scaladsl`
-  ) configs (MultiJvm)
+  )
+  .configs(MultiJvm)
 
 lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
   .dependsOn(`cluster-javadsl`)
@@ -726,7 +741,8 @@ lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
   .settings(
     name := "lagom-javadsl-pubsub",
     Dependencies.`pubsub-javadsl`
-  ) configs (MultiJvm)
+  )
+  .configs(MultiJvm)
 
 lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
   .dependsOn(`cluster-scaladsl`)
@@ -737,7 +753,8 @@ lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
   .settings(
     name := "lagom-scaladsl-pubsub",
     Dependencies.`pubsub-scaladsl`
-  ) configs (MultiJvm)
+  )
+  .configs(MultiJvm)
 
 lazy val `persistence-core` = (project in file("persistence/core"))
   .dependsOn(`cluster-core`, logback % Test)
@@ -805,8 +822,8 @@ lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassand
     Dependencies.`persistence-cassandra-javadsl`
   )
   .dependsOn(
-    `persistence-core` % "compile;test->test",
-    `persistence-javadsl` % "compile;test->test",
+    `persistence-core`           % "compile;test->test",
+    `persistence-javadsl`        % "compile;test->test",
     `persistence-cassandra-core` % "compile;test->test",
     `api-javadsl`
   )
@@ -814,7 +831,8 @@ lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassand
   .settings(mimaSettings: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .settings() configs (MultiJvm)
+  .settings()
+  .configs(MultiJvm)
 
 lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassandra/scaladsl"))
   .settings(
@@ -822,8 +840,8 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
     Dependencies.`persistence-cassandra-scaladsl`
   )
   .dependsOn(
-    `persistence-core` % "compile;test->test",
-    `persistence-scaladsl` % "compile;test->test",
+    `persistence-core`           % "compile;test->test",
+    `persistence-scaladsl`       % "compile;test->test",
     `persistence-cassandra-core` % "compile;test->test",
     `api-scaladsl`
   )
@@ -831,8 +849,8 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
   .settings(mimaSettings: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .settings() configs (MultiJvm)
-
+  .settings()
+  .configs(MultiJvm)
 
 lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
   .dependsOn(
@@ -853,14 +871,15 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
   )
   .dependsOn(
     `persistence-jdbc-core` % "compile;test->test",
-    `persistence-core` % "compile;test->test",
-    `persistence-javadsl` % "compile;test->test"
+    `persistence-core`      % "compile;test->test",
+    `persistence-javadsl`   % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*) configs (MultiJvm)
+  .settings(forkedTests: _*)
+  .configs(MultiJvm)
 
 lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scaladsl"))
   .settings(
@@ -869,14 +888,15 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
   )
   .dependsOn(
     `persistence-jdbc-core` % "compile;test->test",
-    `persistence-core` % "compile;test->test",
-    `persistence-scaladsl` % "compile;test->test"
+    `persistence-core`      % "compile;test->test",
+    `persistence-scaladsl`  % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings: _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*) configs (MultiJvm)
+  .settings(forkedTests: _*)
+  .configs(MultiJvm)
 
 lazy val `persistence-jpa-javadsl` = (project in file("persistence-jpa/javadsl"))
   .dependsOn(`persistence-jdbc-javadsl` % "compile;test->test")
@@ -965,7 +985,7 @@ lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server
     `kafka-client-javadsl`,
     `server-javadsl`,
     `kafka-server` % Test,
-    logback % Test
+    logback        % Test
   )
 
 lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/server"))
@@ -985,7 +1005,7 @@ lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/serv
     `kafka-client-scaladsl`,
     `server-scaladsl`,
     `kafka-server` % Test,
-    logback % Test
+    logback        % Test
   )
 
 lazy val logback = (project in file("logback"))
@@ -1096,11 +1116,13 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     Dependencies.`sbt-plugin`,
     libraryDependencies ++= Seq(
-      Defaults.sbtPluginExtra(
-        "com.typesafe.play" % "sbt-plugin" % Dependencies.Versions.Play,
-        CrossVersion.binarySbtVersion((sbtVersion in pluginCrossBuild).value),
-        CrossVersion.binaryScalaVersion(scalaVersion.value)
-      ).exclude("org.slf4j", "slf4j-simple")
+      Defaults
+        .sbtPluginExtra(
+          "com.typesafe.play" % "sbt-plugin" % Dependencies.Versions.Play,
+          CrossVersion.binarySbtVersion((sbtVersion in pluginCrossBuild).value),
+          CrossVersion.binaryScalaVersion(scalaVersion.value)
+        )
+        .exclude("org.slf4j", "slf4j-simple")
     ),
     scriptedDependencies := {
       val () = scriptedDependencies.value
@@ -1159,7 +1181,8 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
       } else old
     },
     publishMavenStyle := isSnapshot.value
-  ).dependsOn(`sbt-build-tool-support`)
+  )
+  .dependsOn(`sbt-build-tool-support`)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .disablePlugins(BintrayPlugin)
@@ -1183,25 +1206,28 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
       "-Dorg.slf4j.simpleLogger.showLogName=false",
       "-Dorg.slf4j.simpleLogger.showThreadName=false"
     )
-  ).dependsOn(`build-tool-support`)
+  )
+  .dependsOn(`build-tool-support`)
 
 lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
-    .settings(
-      name := "lagom-maven-launcher",
-      description := "Dummy project, exists only to resolve the maven launcher classpath",
-      Dependencies.`maven-launcher`
-    )
+  .settings(
+    name := "lagom-maven-launcher",
+    description := "Dummy project, exists only to resolve the maven launcher classpath",
+    Dependencies.`maven-launcher`
+  )
 
 def scriptedSettings: Seq[Setting[_]] =
   Seq(scriptedLaunchOpts += s"-Dproject.version=${version.value}") ++
-  Seq(
-    scripted := scripted.tag(Tags.Test).evaluated,
-    scriptedLaunchOpts ++= Seq(
-      "-Xmx512m",
-      "-XX:MaxMetaspaceSize=512m",
-      "-Dscala.version=" + sys.props.get("scripted.scala.version").getOrElse((scalaVersion in `reloadable-server`).value)
+    Seq(
+      scripted := scripted.tag(Tags.Test).evaluated,
+      scriptedLaunchOpts ++= Seq(
+        "-Xmx512m",
+        "-XX:MaxMetaspaceSize=512m",
+        "-Dscala.version=" + sys.props
+          .get("scripted.scala.version")
+          .getOrElse((scalaVersion in `reloadable-server`).value)
+      )
     )
-  )
 
 def archetypeVariables(lagomVersion: String) = Map(
   "LAGOM-VERSION" -> lagomVersion
@@ -1223,21 +1249,23 @@ def archetypeProject(archetypeName: String) =
       copyResources in Compile := {
         val pomFile = (classDirectory in Compile).value / "archetype-resources" / "pom.xml"
         if (pomFile.exists()) {
-          val pomXml = IO.read(pomFile)
+          val pomXml    = IO.read(pomFile)
           val variables = archetypeVariables(version.value)
-          val newPomXml = ArchetypeVariablePattern.replaceAllIn(pomXml, m =>
-            variables.get(m.group(1)) match {
-              case Some(replacement) => replacement
-              case None => m.matched
-            }
+          val newPomXml = ArchetypeVariablePattern.replaceAllIn(
+            pomXml,
+            m =>
+              variables.get(m.group(1)) match {
+                case Some(replacement) => replacement
+                case None              => m.matched
+              }
           )
           IO.write(pomFile, newPomXml)
         }
         (copyResources in Compile).value
       },
       unmanagedResources in Compile := {
-        val gitIgnoreFiles = (unmanagedResourceDirectories in Compile).value flatMap { dirs =>
-          ( dirs ** (".gitignore") ).get
+        val gitIgnoreFiles = (unmanagedResourceDirectories in Compile).value.flatMap { dirs =>
+          (dirs ** (".gitignore")).get
         }
         (unmanagedResources in Compile).value ++ gitIgnoreFiles
       },
@@ -1250,83 +1278,86 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
   .disablePlugins(BintrayPlugin)
   .enablePlugins(AutomateHeaderPlugin && Sonatype)
   .settings(sonatypeSettings: _*)
-    .settings(common: _*)
-    .settings(
-      name := "lagom-maven-dependencies",
-      crossPaths := false,
-      autoScalaLibrary := false,
-      scalaVersion := Dependencies.Versions.Scala.head,
-      pomExtra := pomExtra.value :+
-        {
+  .settings(common: _*)
+  .settings(
+    name := "lagom-maven-dependencies",
+    crossPaths := false,
+    autoScalaLibrary := false,
+    scalaVersion := Dependencies.Versions.Scala.head,
+    pomExtra := pomExtra.value :+ {
 
-        val lagomDeps = Def.settingDyn {
+      val lagomDeps = Def.settingDyn {
 
-          // all Lagom artifacts are cross compiled
-          (javadslProjects ++ coreProjects).map { project =>
+        // all Lagom artifacts are cross compiled
+        (javadslProjects ++ coreProjects).map {
+          project =>
             Def.setting {
 
               val artifactName = (artifact in project).value.name
 
-              Dependencies.Versions.Scala.map { supportedVersion =>
-                // we are sure this won't be a None
-                val crossFunc =
-                  CrossVersion(Binary(), supportedVersion, CrossVersion.binaryScalaVersion(supportedVersion)).get
-                // convert artifactName to match the desired scala version
-                val artifactId = crossFunc(artifactName)
+              Dependencies.Versions.Scala.map {
+                supportedVersion =>
+                  // we are sure this won't be a None
+                  val crossFunc =
+                    CrossVersion(Binary(), supportedVersion, CrossVersion.binaryScalaVersion(supportedVersion)).get
+                  // convert artifactName to match the desired scala version
+                  val artifactId = crossFunc(artifactName)
 
-                <dependency>
+                  <dependency>
                   <groupId>{(organization in project).value}</groupId>
                   <artifactId>{artifactId}</artifactId>
                   <version>{(version in project).value}</version>
                 </dependency>
               }
             }
-          }.join
-        }.value
+        }.join
+      }.value
 
-        <dependencyManagement>
+      <dependencyManagement>
           <dependencies>
             {lagomDeps}
             {
-              // here we generate all non-Lagom dependencies
-              // some are cross compiled, others are simply java deps.
-              Dependencies.DependencyWhitelist.value
-                // remove any scala-lang deps, they must be included transitively
-                .filterNot(_.organization.startsWith("org.scala-lang"))
-                .map { dep =>
+        // here we generate all non-Lagom dependencies
+        // some are cross compiled, others are simply java deps.
+        Dependencies.DependencyWhitelist.value
+        // remove any scala-lang deps, they must be included transitively
+          .filterNot(_.organization.startsWith("org.scala-lang"))
+          .map {
+            dep =>
+              // bloody hack! We first need to discovery if a module is a scala deps or not
+              val moduleCrossVersion = CrossVersion(dep.crossVersion, scalaVersion.value, scalaBinaryVersion.value)
 
-                  // bloody hack! We first need to discovery if a module is a scala deps or not
-                  val moduleCrossVersion = CrossVersion(dep.crossVersion, scalaVersion.value, scalaBinaryVersion.value)
-
-                  if (moduleCrossVersion.isEmpty) {
-                      // if not a Scala dependency, add it as is
-                      <dependency>
+              if (moduleCrossVersion.isEmpty) {
+                // if not a Scala dependency, add it as is
+                <dependency>
                         <groupId>{dep.organization}</groupId>
                         <artifactId>{dep.name}</artifactId>
                         <version>{dep.revision}</version>
                       </dependency>
-                  } else {
-                    // if it's a Scala dependency,
-                    // generate <dependency> block for each supported scala version
-                    Dependencies.Versions.Scala.map { supportedVersion =>
-                      val crossDep = CrossVersion(supportedVersion, CrossVersion.binaryScalaVersion(supportedVersion))(dep)
-                        <dependency>
+              } else {
+                // if it's a Scala dependency,
+                // generate <dependency> block for each supported scala version
+                Dependencies.Versions.Scala.map {
+                  supportedVersion =>
+                    val crossDep =
+                      CrossVersion(supportedVersion, CrossVersion.binaryScalaVersion(supportedVersion))(dep)
+                    <dependency>
                           <groupId>{crossDep.organization}</groupId>
                           <artifactId>{crossDep.name}</artifactId>
                           <version>{crossDep.revision}</version>
                         </dependency>
-                    }
-                  }
+                }
               }
-            }
+          }
+      }
           </dependencies>
         </dependencyManagement>
-      },
-      // This disables creating jar, source jar and javadocs, and will cause the packaging type to be "pom" when the
-      // pom is created
-      Classpaths.defaultPackageKeys.map(key => publishArtifact in key := false),
-      publishMavenStyle := true, // Disable publishing ("delivering") the ivy.xml file
-    )
+    },
+    // This disables creating jar, source jar and javadocs, and will cause the packaging type to be "pom" when the
+    // pom is created
+    Classpaths.defaultPackageKeys.map(key => publishArtifact in key := false),
+    publishMavenStyle := true, // Disable publishing ("delivering") the ivy.xml file
+  )
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
@@ -1340,7 +1371,8 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value)
-  ).dependsOn(`sbt-plugin`)
+  )
+  .dependsOn(`sbt-plugin`)
 
 // This project also get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-library")
@@ -1378,12 +1410,12 @@ lazy val `service-locator` = (project in file("dev") / "service-registry" / "ser
     logback,
     `service-registry-client-javadsl`,
     `dev-mode-ssl-support`,
-    `play-json` % "compile -> test",
-    `jackson` % "compile -> test",
+    `play-json`        % "compile -> test",
+    `jackson`          % "compile -> test",
     `devmode-scaladsl` % "compile -> test"
   )
 
-lazy val `dev-mode-ssl-support` = (project in file("dev") / "dev-mode-ssl-support"  )
+lazy val `dev-mode-ssl-support` = (project in file("dev") / "dev-mode-ssl-support")
   .settings(
     name := "lagom-dev-mode-ssl-support",
     Dependencies.`dev-mode-ssl-support`
@@ -1464,7 +1496,7 @@ lazy val `kafka-server` = (project in file("dev") / "kafka-server")
 // When running broker tests, Kafka is started in process, and its logs need to be routed to logback, which requires
 // excluding slf4j-log4j12.
 def excludeLog4jFromKafkaServer: Seq[Setting[_]] = Seq(
-  libraryDependencies += (projectID in (`kafka-server`, Test)).value exclude("org.slf4j", "slf4j-log4j12")
+  libraryDependencies += (projectID in (`kafka-server`, Test)).value.exclude("org.slf4j", "slf4j-log4j12")
 )
 
 // Provides macros for testing macros. Is not published.
