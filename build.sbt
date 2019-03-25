@@ -1243,7 +1243,6 @@ lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
     .settings(
       name := "lagom-maven-launcher",
       description := "Dummy project, exists only to resolve the maven launcher classpath",
-      EclipseKeys.projectFlavor := EclipseProjectFlavor.Java,
       Dependencies.`maven-launcher`
     )
 
@@ -1298,7 +1297,7 @@ def archetypeProject(archetypeName: String) =
       },
       // Don't force copyright headers in Maven archetypes
       excludeFilter in headerResources := "*"
-    ).disablePlugins(EclipsePlugin)
+    )
 
 lazy val `maven-java-archetype` = archetypeProject("java")
 lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
