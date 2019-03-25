@@ -77,7 +77,13 @@ These new defaults may require at least two changes on your codebase. First, if 
 
 You no longer have a `ServiceLocator `provided by the tooling libraries so you will have to provide one of your choice. We recommend using the new [`lagom-akka-discovery-service-locator`](https://github.com/lagom/lagom-akka-discovery-service-locator) which is implemented using [Akka Service Discovery](https://doc.akka.io/docs/akka/current/discovery/index.html) implementations.
 
-This means you will have to change you `Loader` code:
+You first need to add the following dependency to each service implementation in your `build.sbt`.
+
+```scala
+"com.lightbend.lagom" %% "lagom-scaladsl-akka-discovery-service-locator" % "1.0.0"
+```
+
+Next you will have to change the `Loader` code in each service implementation:
 
 ```scala
 // before
