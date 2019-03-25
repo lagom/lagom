@@ -83,7 +83,7 @@ You first need to add the following dependancy to each service implementation in
 "com.lightbend.lagom" %% "lagom-scaladsl-akka-discovery-service-locator" % "1.0.0"
 ```
 
-Next you will have to change you `Loader` code:
+Next you will have to change the `Loader` code in each service implementation:
 
 ```scala
 // before
