@@ -15,7 +15,7 @@ object Dependencies {
     val Scala211 = "2.11.12"
     val Scala212 = "2.12.8"
     val Scala = Seq(Scala212, Scala211)
-    val SbtScala = Seq(Scala210, Scala212)
+    val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     val Play = "2.7.0"
@@ -165,7 +165,7 @@ object Dependencies {
       "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
     )
 
-  val scalaParserCombinatorOverrides = Set(scalaParserCombinators)
+  val scalaParserCombinatorOverrides = Seq(scalaParserCombinators)
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.

@@ -5,8 +5,9 @@
 package lagom
 
 import sbt._
-import Process._
-import Keys._
+import sbt.Keys._
+import sbt.util.CacheStoreFactory
+import scala.sys.process._
 
 import java.io.File
 import java.io.PrintWriter
@@ -98,7 +99,7 @@ object Protobuf {
     * Create a transformed version of all files in a directory, given a predicate and a transform function for each file.
     */
   def transformDirectory(sourceDir: File, targetDir: File, transformable: File => Boolean, transform: (File, File) => Unit, cache: File, log: Logger): File = {
-    val runTransform = FileFunction.cached(cache)(FilesInfo.hash, FilesInfo.exists) { (in, out) =>
+    val runTransform = FileFunction.cached(CacheStoreFactory(cache), FilesInfo.hash, FilesInfo.exists) { (in, out) =>
       val map = Path.rebase(sourceDir, targetDir)
       if (in.removed.nonEmpty || in.modified.nonEmpty) {
         log.info("Preprocessing directory %s..." format sourceDir)
@@ -116,7 +117,7 @@ object Protobuf {
         updated
       } else Set.empty
     }
-    val sources = (sourceDir ***).get.toSet
+    val sources = sourceDir.allPaths.get.toSet
     runTransform(sources)
     targetDir
   }

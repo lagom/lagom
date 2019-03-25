@@ -1,4 +1,4 @@
-# Lagom 1.5 Migration Guide
+#  Lagom 1.5 Migration Guide
 
 This guide explains how to migrate from Lagom 1.4 to Lagom 1.5. If you are upgrading from an earlier version, be sure to review previous migration guides.
 
@@ -67,20 +67,26 @@ In particular, ConductR tooling and Lightbend Orchestration handled some or all 
 
 #### Application extensions
 
-Starting with Lagom 1.5 your application will include [[Akka management HTTP|Cluster#Akka-Management]] out of the box with [[health checks|Cluster#Health-Checks]] enabled by default.  Akka management HTTP is a supporting tool for health checks, cluster bootstrap and a few other new features in Lagom 1.5. 
+Starting with Lagom 1.5 your application will include [[Akka management HTTP|Cluster#Akka-Management]] out of the box with [[health checks|Cluster#Health-Checks]] enabled by default.  Akka management HTTP is a supporting tool for health checks, cluster bootstrap and a few other new features in Lagom 1.5.
 
-Cluster formation now also supports [[Cluster Bootstrapping|Cluster#Joining-during-production-(Akka-Cluster-Bootstrap)]] as a new way to form a cluster. 
+Cluster formation now also supports [[Cluster Bootstrapping|Cluster#Joining-during-production-(Akka-Cluster-Bootstrap)]] as a new way to form a cluster.
 
-These new defaults may require at least two changes on your codebase. First, if you want to opt-in to cluster bootstrapping you must make sure you don't set `seed-nodes`. `seed-nodes` always takes precedence over any other cluster formation mechanism. Second, if you use Cluster Bootstrapping, you will have to setup a [discovery](https://doc.akka.io/docs/akka/2.5/discovery/index.html) mechanism (see the [[Lagom Cluster reference guide|Cluster#Akka-Discovery]] for more details). 
+These new defaults may require at least two changes on your codebase. First, if you want to opt-in to cluster bootstrapping you must make sure you don't set `seed-nodes`. `seed-nodes` always takes precedence over any other cluster formation mechanism. Second, if you use Cluster Bootstrapping, you will have to setup a [discovery](https://doc.akka.io/docs/akka/2.5/discovery/index.html) mechanism (see the [[Lagom Cluster reference guide|Cluster#Akka-Discovery]] for more details).
 
 #### Service Location
 
 You no longer have a `ServiceLocator `provided by the tooling libraries so you will have to provide one of your choice. We recommend using the new [`lagom-akka-discovery-service-locator`](https://github.com/lagom/lagom-akka-discovery-service-locator) which is implemented using [Akka Service Discovery](https://doc.akka.io/docs/akka/current/discovery/index.html) implementations.
 
-This means you will have to change you `Loader` code:
+You first need to add the following dependency to each service implementation in your `build.sbt`.
 
 ```scala
-// before 
+"com.lightbend.lagom" %% "lagom-scaladsl-akka-discovery-service-locator" % "1.0.0"
+```
+
+Next you will have to change the `Loader` code in each service implementation:
+
+```scala
+// before
   import com.lightbend.rp.servicediscovery.lagom.scaladsl.LagomServiceLocatorComponents
   override def load(context: LagomApplicationContext) =
     new MyApplication(context) with LagomServiceLocatorComponents
@@ -107,9 +113,9 @@ Read the [docs](https://github.com/lagom/lagom-akka-discovery-service-locator) o
 
 #### Docker images and deployment specs
 
-With the removal of ConductR or Lightbend Orchestration, the docker images and deployment specs will have to be maintained manually. Therefore the recommended migration is to take ownership of the `Dockerfile`, deployment scripts and orchestration specs.  
+With the removal of ConductR or Lightbend Orchestration, the docker images and deployment specs will have to be maintained manually. Therefore the recommended migration is to take ownership of the `Dockerfile`, deployment scripts and orchestration specs.
 
-We have written a [comprehensive guide](https://developer.lightbend.com/guides/openshift-deployment/lagom/index.html) on how to deploy a Lagom application in Kubernetes or OpenShift. 
+We have written a [comprehensive guide](https://developer.lightbend.com/guides/openshift-deployment/lagom/index.html) on how to deploy a Lagom application in Kubernetes or OpenShift.
 
 We also found that such maintenance can be made easier by using [kustomize](https://github.com/kubernetes-sigs/kustomize).
 
@@ -126,6 +132,16 @@ my-database {
 ## Service Discovery
 
 When opting in to Akka Cluster Bootstrapping as a mechanism for Cluster formation you will have to setup a [[Service Discovery|Cluster#Akka-Discovery]]  method for nodes to locate each other.
+
+## Production Settings
+
+New defaults have been added to the Lagom clustering configuration.
+
+The first default configuration concerns how long a node should try to join an cluster. This is configured by the setting `akka.cluster.shutdown-after-unsuccessful-join-seed-nodes`. Lagom will default this value to 60 seconds. After that period, the Actor System will shutdown if it fails to join a cluster.
+
+The second important change is the default value for `lagom.cluster.exit-jvm-when-system-terminated`. This was previously `off`, but we always recommended it to be `on` in production environments. As of Lagom 1.5.0, that setting defaults to `on`. When enabled, Lagom will exit the JVM when the application leave the cluster or fail to join the cluster. In Dev and Test mode, this setting is automatically set to `off`.
+
+These two properties together are essential for recovering applications in production environments like Kubernetes. Without them, a Lagom node could reach a zombie state in which it wouldn't provide any functionality but stay around consuming resources. The desired behavior for a node that is not participating on a cluster is to shut itself down and let the orchestration infrastructure re-start it.
 
 ## Upgrading a production system
 
