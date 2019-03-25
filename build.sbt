@@ -1179,28 +1179,47 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     scriptedDependencies := {
       val () = scriptedDependencies.value
 
-      // javadsl projects
+      // core projects
+      val () = (publishLocal in `akka-management-core`).value
+      val () = (publishLocal in `akka-management-javadsl`).value
+      val () = (publishLocal in `akka-management-scaladsl`).value
+      val () = (publishLocal in `api`).value
       val () = (publishLocal in `api-javadsl`).value
-      val () = (publishLocal in `server-javadsl`).value
+      val () = (publishLocal in `api-scaladsl`).value
+      val () = (publishLocal in `client`).value
       val () = (publishLocal in `client-javadsl`).value
+      val () = (publishLocal in `client-scaladsl`).value
+      val () = (publishLocal in `cluster-core`).value
+      val () = (publishLocal in `cluster-javadsl`).value
+      val () = (publishLocal in `immutables`).value
+      val () = (publishLocal in `jackson`).value
+      val () = (publishLocal in `logback`).value
+      val () = (publishLocal in `persistence-core`).value
+      val () = (publishLocal in `persistence-javadsl`).value
+      val () = (publishLocal in `persistence-testkit`).value
+      val () = (publishLocal in `persistence-cassandra-core`).value
+      val () = (publishLocal in `persistence-cassandra-javadsl`).value
+      val () = (publishLocal in `play-json`).value
+      val () = (publishLocal in `server`).value
+      val () = (publishLocal in `server-javadsl`).value
+      val () = (publishLocal in `server-scaladsl`).value
+      val () = (publishLocal in `spi`).value
+
+      // dev service registry
+      val () = (publishLocal in `devmode-scaladsl`).value
+      val () = (publishLocal in `play-integration-javadsl`).value
+      val () = (publishLocal in `service-locator`).value
       val () = (publishLocal in `service-registration-javadsl`).value
+      val () = (publishLocal in `service-registry-client-core`).value
       val () = (publishLocal in `service-registry-client-javadsl`).value
 
-      // core projects
-      val () = (publishLocal in api).value
-      val () = (publishLocal in spi).value
-      val () = (publishLocal in logback).value
-      val () = (publishLocal in client).value
-      val () = (publishLocal in server).value
-      val () = (publishLocal in jackson).value
-
       // dev environment projects
+      val () = (publishLocal in `cassandra-server`).value
+      val () = (publishLocal in `dev-mode-ssl-support`).value
+      val () = (publishLocal in `kafka-server`).value
       val () = (publishLocal in `reloadable-server`).value
       val () = (publishLocal in `sbt-build-tool-support`).value
       val () = publishLocal.value
-      val () = (publishLocal in `dev-mode-ssl-support`).value
-      val () = (publishLocal in `service-locator`).value
-      val () = (publishLocal in `service-registry-client-core`).value
 
       // sbt scripted projects
       val () = (publishLocal in `sbt-scripted-library`).value
