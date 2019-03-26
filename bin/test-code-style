@@ -16,13 +16,7 @@ runSbt  +headerCheck \
         +test:headerCheck \
         multi-jvm:headerCheck
 
-# only run versionSyncCheck if NOT a scheduled build
-if [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
-    EXTRA_TASK="versionSyncCheck"
-fi
-
-runSbt  $EXTRA_TASK \
-        validateDependencies \
+runSbt  validateDependencies \
         mimaReportBinaryIssues
 
 git diff --exit-code || (
