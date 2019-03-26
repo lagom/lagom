@@ -9,7 +9,6 @@ import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
 import lagom.Protobuf
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import com.typesafe.tools.mima.core._
-import sbt.CrossVersion._
 
 // Turn off "Resolving" log messages that clutter build logs
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
@@ -127,7 +126,7 @@ def releaseStepCommandAndRemaining(command: String): State => State = { original
     if (newState.remainingCommands.isEmpty) {
       newState
     } else {
-      runCommand(newState.remainingCommands.head, newState.copy(remainingCommands = newState.remainingCommands.tail))
+      runCommand(newState.remainingCommands.head.commandLine, newState.copy(remainingCommands = newState.remainingCommands.tail))
     }
   }
 
@@ -159,8 +158,6 @@ def runtimeLibCommon: Seq[Setting[_]] = common ++ sonatypeSettings ++ runtimeSca
   Dependencies.pruneWhitelistSetting,
   Dependencies.dependencyWhitelistSetting,
 
-  incOptions := incOptions.value.withNameHashing(true),
-
   // show full stack traces and test case durations
   testOptions in Test += Tests.Argument("-oDF"),
   // -v Log "test run started" / "test started" / "test run finished" events on log level "info" instead of "debug".
@@ -187,11 +184,11 @@ val defaultMultiJvmOptions: List[String] = {
   // -Djava.net.preferIPv4Stack=true or -Dmultinode.Xmx512m
   val MultinodeJvmArgs = "multinode\\.(D|X)(.*)".r
   val knownPrefix = Set("akka.", "lagom.")
-  val properties = System.getProperties.propertyNames.asScala.toList.collect {
+  val properties = System.getProperties.stringPropertyNames.asScala.toList.collect {
     case MultinodeJvmArgs(a, b) =>
       val value = System.getProperty("multinode." + a + b)
       "-" + a + b + (if (value == "") "" else "=" + value)
-    case key: String if knownPrefix.exists(pre => key.startsWith(pre)) => "-D" + key + "=" + System.getProperty(key)
+    case key if knownPrefix.exists(pre => key.startsWith(pre)) => "-D" + key + "=" + System.getProperty(key)
   }
 
   "-Xmx128m" :: properties
@@ -241,11 +238,15 @@ def multiJvmTestSettings: Seq[Setting[_]] = {
       executeTests in Test := {
         val testResults = (executeTests in Test).value
         val multiNodeResults = (executeTests in MultiJvm).value
-        val overall =
-          if (testResults.overall.id < multiNodeResults.overall.id)
-            multiNodeResults.overall
-          else
-            testResults.overall
+        import TestResult.{ Passed, Failed, Error }
+        val overall = (testResults.overall, multiNodeResults.overall) match {
+          case (Passed, Passed)                    => Passed
+          case (Failed, Failed)                    => Failed
+          case (Error, Error)                      => Error
+          case (Passed, Failed) | (Failed, Passed) => Failed
+          case (Passed, Error) | (Error, Passed)   => Error
+          case (Failed, Error) | (Error, Failed)   => Error
+        }
         Tests.Output(overall,
           testResults.events ++ multiNodeResults.events,
           testResults.summaries ++ multiNodeResults.summaries)
@@ -259,7 +260,7 @@ def macroCompileSettings: Seq[Setting[_]] = Seq(
   compile in Test ~= { a =>
     // Delete classes in "compile" packages after compiling.
     // These are used for compile-time tests and should be recompiled every time.
-    val products = a.relations.allProducts.toSeq ** new SimpleFileFilter(_.getParentFile.getName == "compile")
+    val products = (a.asInstanceOf[sbt.internal.inc.Analysis]).relations.allProducts.toSeq ** new SimpleFileFilter(_.getParentFile.getName == "compile")
     IO.delete(products.get)
     a
   }
@@ -372,9 +373,8 @@ val sbtScriptedProjects = Seq[Project](
 lazy val root = (project in file("."))
   .settings(name := "lagom")
   .settings(runtimeLibCommon: _*)
-  .enablePlugins(CrossPerProjectPlugin)
   .settings(
-    crossScalaVersions := Dependencies.Versions.Scala,
+    crossScalaVersions := Nil,
     scalaVersion := Dependencies.Versions.Scala.head,
     PgpKeys.publishSigned := {},
     publishLocal := {},
@@ -673,12 +673,12 @@ def forkedTests: Seq[Setting[_]] = Seq(
 def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // We could group non Cassandra tests into another group
   // to avoid new JVM for each test, see http://www.scala-sbt.org/release/docs/Testing.html
-  val javaOptions = Seq("-Xms256M", "-Xmx512M")
+  val javaOptions = Vector("-Xms256M", "-Xmx512M")
   tests map { test =>
     Tests.Group(
       name = test.name,
       tests = Seq(test),
-      runPolicy = Tests.SubProcess(ForkOptions(runJVMOptions = javaOptions))
+      runPolicy = Tests.SubProcess(ForkOptions().withRunJVMOptions(javaOptions))
     )
   }
 }
@@ -1160,10 +1160,9 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(common: _*)
   .settings(scriptedSettings: _*)
-  .enablePlugins(SbtPluginPlugins)
+  .enablePlugins(SbtPluginPlugins, SbtPlugin)
   .settings(
     name := "lagom-sbt-plugin",
-    sbtPlugin := true,
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
@@ -1178,38 +1177,58 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     scriptedDependencies := {
       val () = scriptedDependencies.value
 
-      // javadsl projects
+      // core projects
+      val () = (publishLocal in `akka-management-core`).value
+      val () = (publishLocal in `akka-management-javadsl`).value
+      val () = (publishLocal in `akka-management-scaladsl`).value
+      val () = (publishLocal in `api`).value
       val () = (publishLocal in `api-javadsl`).value
-      val () = (publishLocal in `server-javadsl`).value
+      val () = (publishLocal in `api-scaladsl`).value
+      val () = (publishLocal in `client`).value
       val () = (publishLocal in `client-javadsl`).value
+      val () = (publishLocal in `client-scaladsl`).value
+      val () = (publishLocal in `cluster-core`).value
+      val () = (publishLocal in `cluster-javadsl`).value
+      val () = (publishLocal in `immutables`).value
+      val () = (publishLocal in `jackson`).value
+      val () = (publishLocal in `logback`).value
+      val () = (publishLocal in `persistence-core`).value
+      val () = (publishLocal in `persistence-javadsl`).value
+      val () = (publishLocal in `persistence-testkit`).value
+      val () = (publishLocal in `persistence-cassandra-core`).value
+      val () = (publishLocal in `persistence-cassandra-javadsl`).value
+      val () = (publishLocal in `play-json`).value
+      val () = (publishLocal in `server`).value
+      val () = (publishLocal in `server-javadsl`).value
+      val () = (publishLocal in `server-scaladsl`).value
+      val () = (publishLocal in `spi`).value
+
+      // dev service registry
+      val () = (publishLocal in `devmode-scaladsl`).value
+      val () = (publishLocal in `play-integration-javadsl`).value
+      val () = (publishLocal in `service-locator`).value
       val () = (publishLocal in `service-registration-javadsl`).value
+      val () = (publishLocal in `service-registry-client-core`).value
       val () = (publishLocal in `service-registry-client-javadsl`).value
 
-      // core projects
-      val () = (publishLocal in api).value
-      val () = (publishLocal in spi).value
-      val () = (publishLocal in logback).value
-      val () = (publishLocal in client).value
-      val () = (publishLocal in server).value
-      val () = (publishLocal in jackson).value
-
       // dev environment projects
+      val () = (publishLocal in `cassandra-server`).value
+      val () = (publishLocal in `dev-mode-ssl-support`).value
+      val () = (publishLocal in `kafka-server`).value
       val () = (publishLocal in `reloadable-server`).value
       val () = (publishLocal in `sbt-build-tool-support`).value
       val () = publishLocal.value
-      val () = (publishLocal in `dev-mode-ssl-support`).value
-      val () = (publishLocal in `service-locator`).value
-      val () = (publishLocal in `service-registry-client-core`).value
 
       // sbt scripted projects
       val () = (publishLocal in `sbt-scripted-library`).value
       val () = (publishLocal in LocalProject("sbt-scripted-tools")).value
     },
     publishTo := {
+      val old = publishTo.value
       if (isSnapshot.value) {
         // Bintray doesn't support publishing snapshots, publish to Sonatype snapshots instead
         Some(Opts.resolver.sonatypeSnapshots)
-      } else publishTo.value
+      } else old
     },
     publishMavenStyle := isSnapshot.value
   ).dependsOn(`sbt-build-tool-support`)
@@ -1245,7 +1264,7 @@ lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
       Dependencies.`maven-launcher`
     )
 
-def scriptedSettings: Seq[Setting[_]] = ScriptedPlugin.scriptedSettings ++
+def scriptedSettings: Seq[Setting[_]] =
   Seq(scriptedLaunchOpts += s"-Dproject.version=${version.value}") ++
   Seq(
     scripted := scripted.tag(Tags.Test).evaluated,
@@ -1323,7 +1342,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
               Dependencies.Versions.Scala.map { supportedVersion =>
                 // we are sure this won't be a None
                 val crossFunc =
-                  CrossVersion(new Binary(binaryScalaVersion), supportedVersion, binaryScalaVersion(supportedVersion)).get
+                  CrossVersion(Binary(), supportedVersion, CrossVersion.binaryScalaVersion(supportedVersion)).get
                 // convert artifactName to match the desired scala version
                 val artifactId = crossFunc(artifactName)
 
@@ -1362,7 +1381,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
                     // if it's a Scala dependency,
                     // generate <dependency> block for each supported scala version
                     Dependencies.Versions.Scala.map { supportedVersion =>
-                      val crossDep = CrossVersion(supportedVersion, binaryScalaVersion(supportedVersion))(dep)
+                      val crossDep = CrossVersion(supportedVersion, CrossVersion.binaryScalaVersion(supportedVersion))(dep)
                         <dependency>
                           <groupId>{crossDep.organization}</groupId>
                           <artifactId>{crossDep.name}</artifactId>
@@ -1374,11 +1393,11 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
             }
           </dependencies>
         </dependencyManagement>
-      }
-    ).settings(
+      },
       // This disables creating jar, source jar and javadocs, and will cause the packaging type to be "pom" when the
       // pom is created
-      Classpaths.defaultPackageKeys.map(key => publishArtifact in key := false): _*
+      Classpaths.defaultPackageKeys.map(key => publishArtifact in key := false),
+      publishMavenStyle := true, // Disable publishing ("delivering") the ivy.xml file
     )
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
