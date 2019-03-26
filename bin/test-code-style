@@ -21,7 +21,7 @@ if [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
     EXTRA_TASK="versionSyncCheck"
 fi
 
-runSbt  $EXTRA_TASK \
+runSbtNoisy  $EXTRA_TASK \
         validateDependencies \
         mimaReportBinaryIssues
 
