@@ -171,8 +171,8 @@ object ServiceTest {
       jdbc = false,
       cluster = false,
       configureBuilder = new JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder] {
-      override def apply(b: GuiceApplicationBuilder): GuiceApplicationBuilder = b
-    }
+        override def apply(b: GuiceApplicationBuilder): GuiceApplicationBuilder = b
+      }
     )
 
     override def withCassandra(enabled: Boolean): Setup = {

@@ -59,7 +59,7 @@ object PortAssigner {
       @annotation.tailrec
       def loop(projectNames: Seq[ProjectName], assignedPort: Set[Port], unassigned: Vector[ProjectName], result: Map[ProjectName, Port]): Map[ProjectName, Port] = projectNames match {
         case Nil if unassigned.nonEmpty =>
-          // if we are here there are projects with colliding hash that still need to get their port assigned. As expected, this step is carried out after assigning 
+          // if we are here there are projects with colliding hash that still need to get their port assigned. As expected, this step is carried out after assigning
           // a port to all non-colliding projects.
           val proj = unassigned.head
           val projectedPort = projectedPortFor(proj)

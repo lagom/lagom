@@ -2,14 +2,15 @@
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-runSbt  scalariformFormat \
-        test:scalariformFormat \
-        multi-jvm:scalariformFormat \
-        checkHeaders \
-        test:checkHeaders \
-        multi-jvm:checkHeaders \
-        validateDependencies \
-        mimaCheckOneAtATime
+runSbt \
+  scalariformFormat \
+  test:scalariformFormat \
+  multi-jvm:scalariformFormat \
+  headerCheck \
+  test:headerCheck \
+  multi-jvm:headerCheck \
+  validateDependencies \
+  mimaReportBinaryIssues
 
 git diff --exit-code || (
   echo "ERROR: Scalariform check failed, see differences above."

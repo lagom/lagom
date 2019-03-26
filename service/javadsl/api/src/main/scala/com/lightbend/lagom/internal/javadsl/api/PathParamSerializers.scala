@@ -35,9 +35,9 @@ class UnresolvedOptionalPathParamSerializer[Param] extends UnresolvedPathParamSe
           wrappedType.getTypeName,
           (subTypeSerializer.deserialize _).compose((p: String) => TreePVector.singleton(p)).asJava,
           (subTypeSerializer.serialize _).andThen {
-          case single if single.size() == 1 => single.get(0)
-          case other                        => throw new IllegalStateException("Can only wrap an Optional serializer around a path param serializer that produces exactly one parameter")
-        }.asJava
+            case single if single.size() == 1 => single.get(0)
+            case other                        => throw new IllegalStateException("Can only wrap an Optional serializer around a path param serializer that produces exactly one parameter")
+          }.asJava
         )
       case _ => throw new IllegalArgumentException("Unresolved Optional path param serializer can only be resolved against ParamaterizedType descriptors for the Optional class. This serializer was resolved against: " + typeInfo)
     }

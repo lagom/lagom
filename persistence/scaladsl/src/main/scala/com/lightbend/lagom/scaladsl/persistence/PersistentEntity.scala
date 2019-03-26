@@ -104,8 +104,8 @@ abstract class PersistentEntity {
 
   type Behavior = State => Actions
   type EventHandler = PartialFunction[(Event, State), State]
-  private[lagom]type CommandHandler = PartialFunction[(Command, CommandContext[Any], State), Persist]
-  private[lagom]type ReadOnlyCommandHandler = PartialFunction[(Command, ReadOnlyCommandContext[Any], State), Unit]
+  private[lagom] type CommandHandler = PartialFunction[(Command, CommandContext[Any], State), Persist]
+  private[lagom] type ReadOnlyCommandHandler = PartialFunction[(Command, ReadOnlyCommandContext[Any], State), Unit]
 
   private var _entityId: String = _
 

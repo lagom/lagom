@@ -21,6 +21,7 @@ startElasticSearch in ThisBuild := {
     elasticsearch / "bin" / "elasticsearch"
   }
 
+  import scala.sys.process._
   val process = Process(binFile.getAbsolutePath, elasticsearch).run(log)
   log.info("Elastic search started on port 9200")
 

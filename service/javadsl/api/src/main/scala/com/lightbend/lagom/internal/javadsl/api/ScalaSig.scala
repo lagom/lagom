@@ -6,7 +6,7 @@ package com.lightbend.lagom.internal.javadsl.api
 import scala.util.matching.Regex
 
 // https://github.com/retronym/scalac-survival-guide/blob/master/src/main/scala/guide/_19_ScalaSig.scala
-// Jason warned me it may not be robust, but it seems to work fine for the specific purpose we have (i.e., 
+// Jason warned me it may not be robust, but it seems to work fine for the specific purpose we have (i.e.,
 // checking if a top-level Class was created with Scala).
 object ScalaSig {
   private val ModuleClassName: Regex = """(.*)\$""".r

@@ -18,7 +18,7 @@ object Dependencies {
   val AkkaHttpVersion = "10.0.15"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.8", "2.11.12")
-  val SbtScalaVersions = Seq("2.10.6", "2.12.8")
+  val SbtScalaVersions = Seq("2.12.8", "2.10.6")
   val AkkaPersistenceCassandraVersion = "0.61"
   val AkkaPersistenceJdbcVersion = "3.4.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
@@ -124,8 +124,7 @@ object Dependencies {
       "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
     )
 
-
-  val scalaParserCombinatorOverrides = Set(scalaParserCombinators)
+  val scalaParserCombinatorOverrides = Seq(scalaParserCombinators)
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.

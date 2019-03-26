@@ -119,7 +119,7 @@ object SbtMavenPlugin extends AutoPlugin {
         test.getName -> mavenExecutions.foldLeft(true) { (success, execution) =>
           if (success) {
             log.info(s"Executing mvn $execution")
-            val rc = Fork.java(ForkOptions(workingDirectory = Some(testDir)), args ++ execution.split(" +"))
+            val rc = Fork.java(ForkOptions().withWorkingDirectory(testDir), args ++ execution.split(" +"))
             rc == 0
           } else {
             false
