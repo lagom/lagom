@@ -1,6 +1,8 @@
 /**
  * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
+package lagom.build
+
 import sbt.Keys._
 import sbt._
 
@@ -16,26 +18,22 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    // Also be sure to update PlayVersion in docs/build.sbt.
     val Play = "2.7.0"
     val PlayJson = "2.7.0"
     val PlayStandaloneWs = "2.0.1"
     val Twirl = "1.4.0"
     val PlayFileWatch = "1.1.8"
 
-    // Also be sure to update AkkaVersion in docs/build.sbt.
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.21")
     val AkkaHttp = "10.1.8"
     val Aeron = "1.15.1"
 
-    // Also be sure to update ScalaVersion in docs/build.sbt.
     val AkkaPersistenceCassandra = "0.61"
     val AkkaPersistenceJdbc = "3.5.0"
     val AkkaManagement = "1.0.0"
 
     val Disruptor = "3.3.11"
 
-    // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest = "3.0.5"
     val Jackson = "2.9.8"
     val JacksonCore = Jackson
@@ -55,22 +53,16 @@ object Dependencies {
     val ScalaJava8Compat = "0.9.0"
     val ScalaXml = "1.1.1"
     val Slick = "3.3.0"
-    // Also be sure to update JUnitVersion in docs/build.sbt.
     val JUnit = "4.12"
-    // Also be sure to update JUnitInterfaceVersion in docs/build.sbt.
     val JUnitInterface = "0.11"
 
     val Slf4j = "1.7.25"
     val Logback = "1.2.3"
-    // Also be sure to update Log4jVersion in docs/build.sbt.
     val Log4j = "2.11.1"
 
     val jetty = "9.4.12.v20180830"
 
     val Selenium = "3.141.59"
-
-
-
   }
 
   // Some setup before we start creating ModuleID vals
