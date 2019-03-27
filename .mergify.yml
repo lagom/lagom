@@ -19,6 +19,8 @@ pull_request_rules:
       backport:
         branches:
           - 1.5.x
+      label:
+        remove: [status:needs-backport]
 
   - name: backport patches to 1.4.x branch
     conditions:
@@ -27,6 +29,8 @@ pull_request_rules:
       backport:
         branches:
           - 1.4.x
+      label:
+        remove: [status:needs-backport-1.4]
 
   - name: forward patches to master branch
     conditions:
@@ -35,6 +39,8 @@ pull_request_rules:
       backport:
         branches:
           - master
+      label:
+        remove: [status:needs-forwardport]
 
   - name: Delete the PR branch after merge
     conditions:
