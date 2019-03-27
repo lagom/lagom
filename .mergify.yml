@@ -3,15 +3,16 @@ pull_request_rules:
   - name: Merge PRs that are ready
     conditions:
       - status-success=Travis CI - Pull Request
+      - status-success=typesafe-cla-validator
       - "#approved-reviews-by>=1"
-      - "#changes-requested-reviews-by=0"
       - "#review-requested=0"
-      - label!=block-merge
+      - "#changes-requested-reviews-by=0"
+      - label!=status:block-merge
     actions:
       merge:
         method: squash
         strict: smart
-
+        
   - name: Delete the PR branch after merge
     conditions:
       - merged
@@ -24,4 +25,4 @@ pull_request_rules:
       - title~=^(\[wip\]( |:) |\[WIP\]( |:) |wip( |:) |WIP( |:)).*
     actions:
       label:
-        add: ["block-merge"]
+        add: ["status:block-merge"]
