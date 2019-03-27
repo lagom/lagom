@@ -37,8 +37,8 @@ See [Integrating Lagom with Lightbend Telemetry](https://github.com/lagom/lagom-
 
 Bintray credentials are required to build applications using the Lightbend Platform. Lightbend customers should log into the [support portal](https://portal.lightbend.com/ReactivePlatform/EnterpriseSuiteCredentials) to obtain their credentials. Follow the links below to see how to supply the credentials when using sbt or Maven.
 
-* [Lightbend Platform setup for sbt](https://developer.lightbend.com/docs/reactive-platform/2.0/setup/setup-sbt.html)
-* [Lightbend Platform setup for Maven](https://developer.lightbend.com/docs/reactive-platform/2.0/setup/setup-maven.html)
+* [Lightbend Platform setup for sbt](https://developer.lightbend.com/docs/lightbend-platform/2.0/setup/setup-maven.html)
+* [Lightbend Platform setup for Maven](https://developer.lightbend.com/docs/lightbend-platform/2.0/setup/setup-maven.html)
 
 
 [Contact Lightbend](https://www.lightbend.com/contact) to get started with Lightbend Platform.
