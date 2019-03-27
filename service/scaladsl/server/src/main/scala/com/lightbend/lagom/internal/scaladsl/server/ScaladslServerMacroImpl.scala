@@ -8,37 +8,28 @@ import com.lightbend.lagom.internal.scaladsl.client.ScaladslClientMacroImpl
 import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service }
 import com.lightbend.lagom.scaladsl.server.{ LagomServer, LagomServiceBinder }
 
-import scala.reflect.macros.blackbox.Context
+import scala.reflect.macros.blackbox
 
-private[lagom] object ScaladslServerMacroImpl {
+private[lagom] class ScaladslServerMacroImpl(override val c: blackbox.Context) extends ScaladslClientMacroImpl(c) {
+  import c.universe._
 
-  def simpleBind[T <: Service](c: Context)(serviceFactory: c.Tree)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[LagomServer] = {
-    import c.universe._
+  val server = q"_root_.com.lightbend.lagom.scaladsl.server"
 
-    val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
-    val server = q"$scaladsl.server"
-
-    val binder = createBinder[T](c)
+  def simpleBind[T <: Service](serviceFactory: Tree)(implicit serviceType: WeakTypeTag[T]): Expr[LagomServer] = {
+    val binder = createBinder[T]
     c.Expr[LagomServer](q"""{
       $server.LagomServer.forService(
         $binder.to($serviceFactory)
       )
     }
     """)
-
   }
 
   /**
    * Creates the binder for the service.
    */
-  def createBinder[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[LagomServiceBinder[T]] = {
-
-    import c.universe._
-
-    val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
-    val server = q"$scaladsl.server"
-
-    val descriptor = readDescriptor[T](c)
+  def createBinder[T <: Service](implicit serviceType: WeakTypeTag[T]): Expr[LagomServiceBinder[T]] = {
+    val descriptor = readDescriptor[T]
     c.Expr[LagomServiceBinder[T]](q"""
       $server.LagomServiceBinder[${weakTypeOf[T]}](lagomServerBuilder, $descriptor)
     """)
@@ -47,13 +38,10 @@ private[lagom] object ScaladslServerMacroImpl {
   /**
    * This macro provides a dummy implementation of the service so that it can read the service descriptor.
    */
-  def readDescriptor[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[Descriptor] = {
+  def readDescriptor[T <: Service](implicit serviceType: WeakTypeTag[T]): Expr[Descriptor] = {
+    val extracted = validateServiceInterface[T](serviceType)
 
-    import c.universe._
-
-    val extracted = ScaladslClientMacroImpl.validateServiceInterface[T](c)
-
-    val serviceMethodImpls: Seq[c.universe.Tree] = (extracted.serviceCalls ++ extracted.topics).map { serviceMethod =>
+    val serviceMethodImpls: Seq[Tree] = (extracted.serviceCalls ++ extracted.topics).map { serviceMethod =>
       val methodParams = serviceMethod.paramLists.map { paramList =>
         paramList.map(param => q"${param.name.toTermName}: ${param.typeSignature}")
       }
