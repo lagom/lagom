@@ -12,32 +12,10 @@ pull_request_rules:
         method: squash
         strict: smart
 
-  - name: backport patches to 1.5.x branch
-    conditions:
-      - label=status:needs-backport
-    actions:
-      backport:
-        branches:
-          - 1.5.x
-
-  - name: backport patches to 1.4.x branch
-    conditions:
-      - label=status:needs-backport-1.4
-    actions:
-      backport:
-        branches:
-          - 1.4.x
-
-  - name: forward patches to master branch
-    conditions:
-      - label=status:needs-forwardport
-    actions:
-      backport:
-        branches:
-          - master
-
   - name: Delete the PR branch after merge
     conditions:
       - merged
     actions:
       delete_head_branch: {}
+
+
