@@ -52,7 +52,7 @@ The server is by default running with [[pubsub|PubSub]], [[cluster|Cluster]] and
 
 @[enable-cluster](code/docs/services/test/EnablePersistenceCluster.java)
 
-If your service needs [[persistence|PersistentEntity]] you will need to enable it explicitly. This can be done by enabling Cassandra or JDBC, depending on which kind of persistence is used by your service. In any case, Lagom persistence requires clustering, so when when enabling one or another, cluster will also be enabled automatically.
+If your service needs [[persistence|PersistentEntity]] you will need to enable it explicitly. This can be done by enabling Cassandra or JDBC, depending on which kind of persistence is used by your service. In any case, Lagom persistence requires clustering, so when enabling one or another, cluster will also be enabled automatically.
 
 You can't enable both (Cassandra and JDBC) at the same time for testing, which could be a problem if you are mixing persistence for write and read side. If you are using Cassandra for write-side and JDBC for read-side, just enable Cassandra.
 
