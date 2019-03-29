@@ -600,6 +600,7 @@ object Dependencies {
     akkaActor,
     akkaProtobuf,
     akkaSlf4j,
+    playJson,
     scalaXml,
     akkaHttpCore,
     akkaHttpRouteDsl,
@@ -607,8 +608,14 @@ object Dependencies {
     akkaParsing
   )
 
-  val `akka-management-javadsl` = libraryDependencies ++= Seq.empty[ModuleID]
-  val `akka-management-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
+  val `akka-management-javadsl` = libraryDependencies ++= Seq(
+    // Upgrades needed to match whitelist
+    playJson
+  )
+  val `akka-management-scaladsl` = libraryDependencies ++= Seq(
+    // Upgrades needed to match whitelist
+    playJson
+  )
 
   val `cluster-core` = libraryDependencies ++= Seq(
     akkaCluster,
@@ -620,6 +627,7 @@ object Dependencies {
     "com.novocode" % "junit-interface" % "0.11" % Test,
 
     // Upgrades needed to match whitelist
+    playJson,
     sslConfig,
     scalaJava8Compat,
     scalaParserCombinators,
@@ -929,6 +937,7 @@ object Dependencies {
     akkaStream,
     akkaProtobuf,
     akkaSlf4j,
+    playJson,
     typesafeConfig,
     sslConfig,
     scalaXml
