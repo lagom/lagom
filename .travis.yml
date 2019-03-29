@@ -7,24 +7,12 @@ addons:
       - libxml2-utils
 
 env:
-  global:
-    - JABBA_HOME=$HOME/.jabba
   matrix:
-    - TRAVIS_JDK=adopt@1.8.192-12
-    - TRAVIS_JDK=adopt@1.11.0-1
+    - TRAVIS_JDK=adopt@1.8.202-08
+    - TRAVIS_JDK=adopt@1.11.0-2
 
-before_install:
-  - curl -sL https://github.com/shyiko/jabba/raw/master/install.sh | bash && . ~/.jabba/jabba.sh
-
-install:
-  - $JABBA_HOME/bin/jabba install $TRAVIS_JDK
-  - unset _JAVA_OPTIONS
-  - export JAVA_HOME="$JABBA_HOME/jdk/$TRAVIS_JDK" && export PATH="$JAVA_HOME/bin:$PATH" && java -Xmx32m -version
-
-matrix:
-  fast_finish: true
-  allow_failures:
-  - env: TRAVIS_JDK=adopt@1.11.0-1 # Nice to see what is failing but not required for now.
+before_install: curl -Ls https://git.io/jabba | bash && . ~/.jabba/jabba.sh
+install: jabba install "$TRAVIS_JDK" && jabba use "$_" && java -Xmx32m -version
 
 scala:
   - 2.12.8
@@ -56,6 +44,7 @@ stages:
 cache:
   directories:
     - $HOME/.ivy2/cache
+    - $HOME/.jabba/jdk
     - $HOME/.sbt
 
 before_cache:
