@@ -42,5 +42,5 @@ Java 11 will be limited to the use of external services that either fully suppor
 separate process to the Lagom app's Java 11 VM.  For instance, Lagom dev mode may not be able to run an embedded
 Cassandra node, requiring it instead be run as a separate process.
 
-[Incubating]: https://developer.lightbend.com/docs/reactive-platform/2.0/support-terminology/index.html#incubating
+[Incubating]: https://developer.lightbend.com/docs/lightbend-platform/2.0/support-terminology/index.html#incubating
 [lagom/lagom#1803]: https://github.com/lagom/lagom/pull/1803
