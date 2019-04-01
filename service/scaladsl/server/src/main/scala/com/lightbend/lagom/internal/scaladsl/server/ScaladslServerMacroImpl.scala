@@ -18,10 +18,10 @@ private[lagom] object ScaladslServerMacroImpl {
     val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
     val server = q"$scaladsl.server"
 
-    val descriptor = readDescriptor[T](c)
+    val binder = createBinder[T](c)
     c.Expr[LagomServer](q"""{
       $server.LagomServer.forService(
-        $server.LagomServiceBinder(lagomServerBuilder, $descriptor).to($serviceFactory)
+        $binder.to($serviceFactory)
       )
     }
     """)
@@ -40,7 +40,7 @@ private[lagom] object ScaladslServerMacroImpl {
 
     val descriptor = readDescriptor[T](c)
     c.Expr[LagomServiceBinder[T]](q"""
-      $server.LagomServiceBinder(lagomServerBuilder, $descriptor)
+      $server.LagomServiceBinder[${weakTypeOf[T]}](lagomServerBuilder, $descriptor)
     """)
   }
 
