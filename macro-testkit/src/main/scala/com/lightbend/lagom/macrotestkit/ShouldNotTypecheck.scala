@@ -7,40 +7,42 @@ package com.lightbend.lagom.macrotestkit
 import scala.language.experimental.macros
 import java.util.regex.Pattern
 
-import scala.reflect.macros.{ TypecheckException, blackbox }
-import scala.reflect.macros.blackbox.Context
+import scala.reflect.macros.TypecheckException
+import scala.reflect.macros.blackbox
 
 /**
  * A macro that ensures that a code snippet does not typecheck.
  */
 object ShouldNotTypecheck {
-  def apply(name: String, code: String): Unit = macro applyImplNoExp
-  def apply(name: String, code: String, expected: String): Unit = macro applyImpl
+  def apply(name: String, code: String): Unit = macro ShouldNotTypecheck.applyImplNoExp
+  def apply(name: String, code: String, expected: String): Unit = macro ShouldNotTypecheck.applyImpl
+}
 
-  def applyImplNoExp(ctx: blackbox.Context)(name: ctx.Expr[String], code: ctx.Expr[String]): ctx.Expr[Unit] = applyImpl(ctx)(name, code, null)
+final class ShouldNotTypecheck(val c: blackbox.Context) {
+  import c.universe._
 
-  def applyImpl(ctx: blackbox.Context)(name: ctx.Expr[String], code: ctx.Expr[String], expected: ctx.Expr[String]): ctx.Expr[Unit] = {
-    import ctx.universe._
+  def applyImplNoExp(name: Expr[String], code: Expr[String]): Expr[Unit] = applyImpl(name, code, c.Expr(EmptyTree))
 
+  def applyImpl(name: Expr[String], code: Expr[String], expected: Expr[String]): Expr[Unit] = {
     val Expr(Literal(Constant(codeStr: String))) = code
     val Expr(Literal(Constant(nameStr: String))) = name
-    val (expPat, expMsg) = expected match {
-      case null => (null, "Expected some error.")
-      case Expr(Literal(Constant(s: String))) =>
+    val (expPat, expMsg) = expected.tree match {
+      case EmptyTree => (Pattern.compile(".*"), "Expected some error.")
+      case Literal(Constant(s: String)) =>
         (Pattern.compile(s, Pattern.CASE_INSENSITIVE), "Expected error matching: " + s)
     }
 
-    try ctx.typecheck(ctx.parse("{ " + codeStr + " }")) catch {
+    try c.typecheck(c.parse("{ " + codeStr + " }")) catch {
       case e: TypecheckException =>
         val msg = e.getMessage
-        if ((expected ne null) && !expPat.matcher(msg).matches) {
-          ctx.abort(ctx.enclosingPosition, s"$nameStr failed in an unexpected way.\n$expMsg\nActual error: $msg")
+        if (!expPat.matcher(msg).matches) {
+          c.abort(c.enclosingPosition, s"$nameStr failed in an unexpected way.\n$expMsg\nActual error: $msg")
         } else {
           println(s"$nameStr passed.")
           return reify(())
         }
     }
 
-    ctx.abort(ctx.enclosingPosition, s"$nameStr succeeded unexpectedly.\n$expMsg")
+    c.abort(c.enclosingPosition, s"$nameStr succeeded unexpectedly.\n$expMsg")
   }
 }
