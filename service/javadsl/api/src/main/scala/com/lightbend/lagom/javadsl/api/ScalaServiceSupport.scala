@@ -11,7 +11,7 @@ import com.lightbend.lagom.javadsl.api.Descriptor.Call
 import scala.language.experimental.macros
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
-import scala.reflect.macros.blackbox.Context
+import scala.reflect.macros.blackbox
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.broker.Topic
 
@@ -92,7 +92,7 @@ object ScalaServiceSupport {
     new ScalaMethodCall[T](clazz.getMethods.find(_.getName == name).getOrElse(throw new NoSuchMethodException(name)))
   }
 
-  def methodForImpl[T](c: Context)(f: c.Expr[Any])(implicit tType: c.WeakTypeTag[T]): c.Expr[ScalaMethodCall[T]] = {
+  def methodForImpl[T](c: blackbox.Context)(f: c.Expr[Any])(implicit tType: c.WeakTypeTag[T]): c.Expr[ScalaMethodCall[T]] = {
     import c.universe._
 
     f match {

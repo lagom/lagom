@@ -8,20 +8,22 @@ import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 
-import scala.reflect.macros.blackbox.Context
+import scala.reflect.macros.blackbox
 
 private[lagom] object ScaladslClientMacroImpl {
+  final case class ExtractedMethods[MethodSymbol](serviceCalls: Seq[MethodSymbol], topics: Seq[MethodSymbol])
+}
 
-  case class ExtractedMethods[MethodSymbol](serviceCalls: Seq[MethodSymbol], topics: Seq[MethodSymbol])
+private[lagom] class ScaladslClientMacroImpl(val c: blackbox.Context) {
+  import ScaladslClientMacroImpl._
+  import c.universe._
+
+  val client = q"_root_.com.lightbend.lagom.scaladsl.client"
 
   /**
    * Do validation and extract the service call methods.
    */
-  def validateServiceInterface[T <: Service](
-      c: Context
-  )(implicit serviceType: c.WeakTypeTag[T]): ExtractedMethods[c.universe.MethodSymbol] = {
-    import c.universe._
-
+  def validateServiceInterface[T <: Service](implicit serviceType: WeakTypeTag[T]): ExtractedMethods[MethodSymbol] = {
     val serviceCallType = c.mirror.typeOf[ServiceCall[_, _]].erasure
     val topicType       = c.mirror.typeOf[Topic[_]].erasure
 
@@ -39,64 +41,45 @@ private[lagom] object ScaladslClientMacroImpl {
 
     // Check that descriptor is not abstract
     if (serviceMethods.exists(m => m.name.decodedName.toString == "descriptor" && m.paramLists.isEmpty)) {
-      c.abort(
-        c.enclosingPosition,
-        s"${serviceType.tpe}.descriptor must be implemented in order to generate a Lagom client."
-      )
+      abort(s"${serviceType.tpe}.descriptor must be implemented in order to generate a Lagom client.")
     }
 
     // Make sure there are no overloaded abstract methods. This limitation is due to us only looking up service calls
     // by method name, and could be removed in the future.
     val duplicates = serviceMethods.groupBy(_.name.decodedName.toString).mapValues(_.toSeq).filter(_._2.size > 1)
     if (duplicates.nonEmpty) {
-      c.abort(
-        c.enclosingPosition,
-        "Overloaded service methods are not allowed on a Lagom client, overloaded methods are: " + duplicates.keys
-          .mkString(", ")
-      )
+      abort("Overloaded service methods are not allowed on a Lagom client, overloaded methods are: " + duplicates.keys.mkString(", "))
     }
 
     // Validate that all the abstract methods are service call methods or topic methods
     val nonServiceCallOrTopicMethods = serviceMethods.toSet -- serviceCallMethods -- topicMethods
     if (nonServiceCallOrTopicMethods.nonEmpty) {
-      c.abort(
-        c.enclosingPosition,
-        s"Can't generate a Lagom client for ${serviceType.tpe} since the following abstract methods don't return service calls or topics:${nonServiceCallOrTopicMethods
-          .map(_.name)
-          .mkString("\n", "\n", "")}"
-      )
+      abort(s"Can't generate a Lagom client for ${serviceType.tpe} since the following abstract methods don't return service calls or topics:${nonServiceCallOrTopicMethods.map(_.name).mkString("\n", "\n", "")}")
     }
 
     // Validate that all topics have zero parameters
     topicMethods.foreach { topic =>
       if (topic.paramLists.flatten.nonEmpty) {
-        c.abort(c.enclosingPosition, s"Topic methods must have zero parameters")
+        abort(s"Topic methods must have zero parameters")
       }
     }
 
     ExtractedMethods(serviceCallMethods.toSeq, topicMethods.toSeq)
   }
 
-  def implementClient[T <: Service](c: Context)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[T] = {
-
-    import c.universe._
-
-    val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
-    val client   = q"$scaladsl.client"
-
-    val extractedMethods = validateServiceInterface[T](c)
+  def implementClient[T <: Service](implicit serviceType: WeakTypeTag[T]): Expr[T] = {
+    val extractedMethods = validateServiceInterface[T]
 
     // Extract the target that "implement" was invoked on, so we can invoke "doImplement" on it instead
     val serviceClient = c.macroApplication match {
       case TypeApply(Select(clientTarget, TermName("implement")), _) => clientTarget
-      case _ =>
-        c.abort(c.enclosingPosition, "Don't know how to find the service client from tree: " + c.macroApplication)
+      case _ => abort("Don't know how to find the service client from tree: " + c.macroApplication)
     }
 
     val implementationContext = TermName(c.freshName("implementationContext"))
     val serviceContext        = TermName(c.freshName("serviceContext"))
 
-    def createMethodParams(method: c.universe.MethodSymbol) = method.paramLists.map { paramList =>
+    def createMethodParams(method: MethodSymbol) = method.paramLists.map { paramList =>
       paramList.map(param => q"${param.name.toTermName}: ${param.typeSignature}")
     }
 
@@ -137,4 +120,5 @@ private[lagom] object ScaladslClientMacroImpl {
     """)
   }
 
+  private def abort(msg: String): Nothing = c.abort(c.enclosingPosition, msg)
 }
