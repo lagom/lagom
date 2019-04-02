@@ -14,7 +14,7 @@ object Dependencies {
 
   val akkaDiscovery = "com.typesafe.akka" %% "akka-discovery" % Versions.Akka
 
-  val slf4j = "org.slf4j" % "slf4j-api" % "1.7.25" % Provided
+  val slf4j = "org.slf4j" % "slf4j-api" % "1.7.26" % Provided
   val lagomJavadslClient = "com.lightbend.lagom" %% "lagom-javadsl-client" % Versions.Lagom14 % Provided
   val lagomScaladslClient = "com.lightbend.lagom" %% "lagom-scaladsl-client" % Versions.Lagom14 % Provided
 
