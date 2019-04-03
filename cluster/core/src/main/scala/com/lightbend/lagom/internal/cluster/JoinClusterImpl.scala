@@ -76,8 +76,13 @@ private[lagom] object JoinClusterImpl {
 
     CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseClusterShutdown, "exit-jvm-when-downed") {
       () =>
-        val reasonIsDowning = CoordinatedShutdown(system)
-          .shutdownReason().contains(CoordinatedShutdown.ClusterDowningReason)
+        val shutdownReason = CoordinatedShutdown(system).shutdownReason()
+
+        val reasons = Seq(CoordinatedShutdown.ClusterDowningReason,
+          CoordinatedShutdown.ClusterJoinUnsuccessfulReason,
+          CoordinatedShutdown.IncompatibleConfigurationDetectedReason)
+
+        val reasonIsDowning = shutdownReason.find(reasons.contains)
 
         // if 'exitJvm' is enabled and the trigger (aka Reason) for CoordinatedShutdown is ClusterDowning
         // we must exit the JVM. This can lead to the cluster closing before the `Application` but we're
