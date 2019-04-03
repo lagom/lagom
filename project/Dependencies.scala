@@ -8,7 +8,7 @@ object Dependencies {
 
   object Versions {
     val Lagom14 = "1.4.11"
-    val Akka = "2.5.21"
+    val Akka = "2.5.22"
     val ScalaTest = "3.0.7"
   }
 
