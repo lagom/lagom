@@ -96,6 +96,7 @@ object Dependencies {
   private val akkaCluster = "com.typesafe.akka" %% "akka-cluster" % Versions.Akka
   private val akkaClusterSharding = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
   private val akkaClusterTools = "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka
+  private val akkaCoordination = "com.typesafe.akka" %% "akka-coordination" % Versions.Akka
   private val akkaDistributedData = "com.typesafe.akka" %% "akka-distributed-data" % Versions.Akka
   private val akkaMultiNodeTestkit = "com.typesafe.akka" %% "akka-multi-node-testkit" % Versions.Akka
   private val akkaPersistence = "com.typesafe.akka" %% "akka-persistence" % Versions.Akka
@@ -202,6 +203,7 @@ object Dependencies {
       typesafeConfig,
       sslConfig,
       akkaDiscovery,
+      akkaCoordination,
       akkaHttpCore,
       akkaHttpRouteDsl,
       akkaHttpSprayJson,
@@ -627,7 +629,7 @@ object Dependencies {
     akkaSlf4j,
 
     // transitive dependencies from Akka Management,
-    // must be explicitly bumped to Akka 2.5.20
+    // must be explicitly bumped to Akka version in use
     akkaDiscovery,
     akkaClusterSharding,
     akkaDistributedData,
