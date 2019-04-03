@@ -626,8 +626,9 @@ object Dependencies {
     scalaXml,
     akkaSlf4j,
 
-    // transitive dependencies from Akka Management,
-    // must be explicitly bumped to Akka 2.5.20
+    // transitive dependencies from Akka Management 
+    // may not match the Akka version in use so 
+    // must be explicitly bumped
     akkaDiscovery,
     akkaClusterSharding,
     akkaDistributedData,
