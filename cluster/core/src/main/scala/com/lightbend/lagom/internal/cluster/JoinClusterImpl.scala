@@ -82,7 +82,8 @@ private[lagom] object JoinClusterImpl {
         val reasons: Seq[Reason] = Seq(
           ClusterDowningReason,
           ClusterJoinUnsuccessfulReason,
-          IncompatibleConfigurationDetectedReason)
+          IncompatibleConfigurationDetectedReason
+        )
 
         val reasonIsDowning: Boolean = shutdownReason.exists(reasons.contains)
 
