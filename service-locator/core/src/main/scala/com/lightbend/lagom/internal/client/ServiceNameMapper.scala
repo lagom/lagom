@@ -73,7 +73,7 @@ private[lagom] class ServiceNameMapper(config: Config) {
       .toMap
 
   private def parseSrv(name: String) =
-    if (LookupBuilder.isValidSrv(name)) LookupBuilder.parseSrv(name)
+    if (Lookup.isValidSrv(name)) Lookup.parseSrv(name)
     else Lookup(name, defaultPortName, defaultPortProtocol)
 
   private[lagom] def mapLookupQuery(name: String): ServiceLookup = {
