@@ -24,7 +24,7 @@ object Dependencies {
     val Twirl = "1.4.0"
     val PlayFileWatch = "1.1.8"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.21")
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.22")
     val AkkaHttp = "10.1.8"
     val Aeron = "1.15.1"
 
@@ -316,7 +316,7 @@ object Dependencies {
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
       "akka-actor", "akka-cluster", "akka-cluster-sharding", "akka-cluster-tools", "akka-distributed-data",
       "akka-multi-node-testkit", "akka-persistence", "akka-persistence-query", "akka-protobuf", "akka-remote",
-      "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit"
+      "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit", "akka-coordination"
 
     ) ++ libraryFamily("com.typesafe.play", Versions.Play)(
       "build-link", "play-exceptions", "play-netty-utils"
@@ -626,8 +626,9 @@ object Dependencies {
     scalaXml,
     akkaSlf4j,
 
-    // transitive dependencies from Akka Management,
-    // must be explicitly bumped to Akka 2.5.20
+    // transitive dependencies from Akka Management 
+    // may not match the Akka version in use so 
+    // must be explicitly bumped
     akkaDiscovery,
     akkaClusterSharding,
     akkaDistributedData,
