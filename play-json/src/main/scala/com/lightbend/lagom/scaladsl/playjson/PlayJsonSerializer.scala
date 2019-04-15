@@ -35,14 +35,14 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
   private val compressLargerThan: Long = conf.getBytes("compress-larger-than")
 
   /** maps a manifestClassName to a suitable play-json Format */
-  private val formatters: Map[String, Format[AnyRef]] = {
-    registry.serializers.map((entry: JsonSerializer[_]) =>
+  private lazy val formatters: Map[String, Format[AnyRef]] = {
+    serializers.values.map((entry: JsonSerializer[_]) =>
       (entry.entityClass.getName, entry.format.asInstanceOf[Format[AnyRef]])).toMap
   }
 
   /** maps a manifestClassName to the serializer provided by the user */
-  private val serializers: Map[String, JsonSerializer[_]] = {
-    registry.serializers.map {
+  private lazy val serializers: Map[String, JsonSerializer[_]] = {
+    (registry.serializers ++ registry.serializers(system)).map {
       entry => entry.entityClass.getName -> entry
     }.toMap
   }

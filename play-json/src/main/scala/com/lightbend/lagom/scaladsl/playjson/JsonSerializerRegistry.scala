@@ -4,7 +4,7 @@
 
 package com.lightbend.lagom.scaladsl.playjson
 
-import akka.actor.ExtendedActorSystem
+import akka.actor.{ ActorSystem, ExtendedActorSystem }
 import akka.actor.setup.ActorSystemSetup
 import akka.serialization.{ SerializationSetup, SerializerDetails }
 
@@ -18,6 +18,8 @@ abstract class JsonSerializerRegistry {
 
   def serializers: immutable.Seq[JsonSerializer[_]]
 
+  def serializers(actorSystem: ActorSystem): immutable.Seq[JsonSerializer[_]] = immutable.Seq.empty[JsonSerializer[_]]
+
   /**
    * A set of migrations keyed by the fully classified class name that the migration should be triggered for
    */
@@ -30,6 +32,7 @@ abstract class JsonSerializerRegistry {
     val self = this
     new JsonSerializerRegistry {
       override def serializers = self.serializers ++ other.serializers
+      override def serializers(actorSystem: ActorSystem) = self.serializers ++ other.serializers
       override def migrations = self.migrations ++ other.migrations
     }
   }
@@ -43,7 +46,7 @@ object JsonSerializerRegistry {
     SerializerDetails(
       "lagom-play-json",
       new PlayJsonSerializer(system, registry),
-      registry.serializers.map(_.entityClass)
+      registry.serializers.map(_.entityClass) ++ registry.serializers(system).map(_.entityClass)
     )
   }
 
