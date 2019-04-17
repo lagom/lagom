@@ -8,14 +8,12 @@ This project provides:
 
 Additionally, you will need to choose one of the existing [Akka Discovery][] implementations and configure it for production in your application.
 
-[`AkkaDiscoveryServiceLocatorModule`]: service-locator/javadsl/src/main/java/com/lightbend/lagom/javadsl/akka/discovery/AkkaDiscoveryServiceLocatorModule.java
-[`AkkaDiscoveryServiceLocator`]: service-locator/javadsl/src/main/java/com/lightbend/lagom/javadsl/akka/discovery/AkkaDiscoveryServiceLocator.java
-[`AkkaDiscoveryComponents`]: service-locator/scaladsl/src/main/scala/com/lightbend/lagom/scaladsl/akka/discovery/AkkaDiscoveryComponents.scala
-[Akka Discovery]: https://doc.akka.io/docs/akka/2.5/discovery/index.html
 
 ## Project Status
 
 Version 1.0.0 or later of this library is ready to be used in production and its APIs are stable. It is [Supported](https://developer.lightbend.com/docs/lightbend-platform/2.0/support-terminology/index.html#supported) with a Lightbend Platform subscription.
+
+This library is initially intended to be used with Lagom `1.5.x` series. However, since the `ServiceLocator` API didn't change between Lagom `1.4.x` and `1.5.x`,  using it with a Lagom `1.4.x` application should not present a problem. 
 
 ## Configuration for Lagom Java
 
@@ -97,3 +95,8 @@ class HelloServiceLoader extends LagomApplicationLoader {
 ```
 
 Next, you will need to configure Akka Discovery in your `application.conf` file. Consult the [Akka Discovery][] documentation for further instructions.
+
+[`AkkaDiscoveryServiceLocatorModule`]: service-locator/javadsl/src/main/java/com/lightbend/lagom/javadsl/akka/discovery/AkkaDiscoveryServiceLocatorModule.java
+[`AkkaDiscoveryServiceLocator`]: service-locator/javadsl/src/main/java/com/lightbend/lagom/javadsl/akka/discovery/AkkaDiscoveryServiceLocator.java
+[`AkkaDiscoveryComponents`]: service-locator/scaladsl/src/main/scala/com/lightbend/lagom/scaladsl/akka/discovery/AkkaDiscoveryComponents.scala
+[Akka Discovery]: https://doc.akka.io/docs/akka/2.5/discovery/index.html
