@@ -1,5 +1,8 @@
 language: scala
 
+# Only build PRs and tags: https://docs.travis-ci.com/user/conditional-builds-stages-jobs/
+if: type = pull_request OR tag IS present
+
 env:
   global:
     # the following `secure` is WHITESOURCE_PASSWORD which is the same for all branches.
@@ -27,6 +30,9 @@ jobs:
       name: "Run tests for Scala 2.11"
     - script: bin/test-2.12
       name: "Run tests for Scala 2.12"
+    - script: bin/test-2.12
+      env: TRAVIS_JDK=adopt@1.11.0-2
+      name: "Run tests for Scala 2.12 and Java 11"
     - script: bin/test-documentation
       name: "Documentation validations and tests"
     - stage: test-build-tools
@@ -34,15 +40,11 @@ jobs:
       name: "Scripted tests for sbt 0.13"
     - script: bin/test-sbt-1.0
       name: "Scripted tests for sbt 1"
-    - script: bin/test-maven
-      name: "PublishM2 and test Maven"
-    - stage: java-11
-      script: bin/test-2.12
-      env: TRAVIS_JDK=adopt@1.11.0-2
-      name: "Run tests for Scala 2.12 and Java 11"
     - script: bin/test-sbt-1.0
       env: TRAVIS_JDK=adopt@1.11.0-2
       name: "Scripted tests for sbt 1 and Java 11"
+    - script: bin/test-maven
+      name: "PublishM2 and test Maven"
 
 cache:
   directories:
