@@ -15,7 +15,7 @@ import com.typesafe.tools.mima.core._
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
 
 def defineSbtVersion(scalaBinVer: String): String = scalaBinVer match {
-  case "2.12" => "1.2.1"
+  case "2.12" => "1.2.8"
   case _ => "0.13.18"
 }
 
