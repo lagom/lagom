@@ -14,7 +14,7 @@ object Dependencies {
   val PlayFileWatchVersion = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.20"
+  val AkkaVersion = "2.5.22"
   val AkkaHttpVersion = "10.0.15"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions = Seq("2.12.8", "2.11.12")
@@ -187,8 +187,8 @@ object Dependencies {
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "com.zaxxer" % "HikariCP" % "2.7.9",
       "commons-codec" % "commons-codec" % "1.11",
-      "io.aeron" % "aeron-client" % "1.12.0",
-      "io.aeron" % "aeron-driver" % "1.12.0",
+      "io.aeron" % "aeron-client" % "1.15.1",
+      "io.aeron" % "aeron-driver" % "1.15.1",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.7.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
@@ -200,7 +200,7 @@ object Dependencies {
       "junit" % "junit" % JUnitVersion,
       "net.jodah" % "typetools" % "0.5.0",
       "net.jpountz.lz4" % "lz4" % "1.3.0",
-      "org.agrona" % "agrona" % "0.9.27",
+      "org.agrona" % "agrona" % "0.9.31",
       "org.apache.commons" % "commons-lang3" % "3.6",
       "org.apache.kafka" % "kafka-clients" % KafkaVersion,
       "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
@@ -227,7 +227,7 @@ object Dependencies {
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", AkkaVersion)(
       "akka-actor", "akka-cluster", "akka-cluster-sharding", "akka-cluster-tools", "akka-distributed-data",
       "akka-multi-node-testkit", "akka-persistence", "akka-persistence-query", "akka-protobuf", "akka-remote",
-      "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit"
+      "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit", "akka-coordination"
 
     ) ++ libraryFamily("com.typesafe.play", PlayVersion)(
       "build-link", "play-exceptions", "play-netty-utils"

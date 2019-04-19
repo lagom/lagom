@@ -1,6 +1,6 @@
 val ScalaVersion = "2.12.8"
 
-val AkkaVersion = "2.5.20"
+val AkkaVersion = "2.5.22"
 val JUnitVersion = "4.11"
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion = "3.0.4"
