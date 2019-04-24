@@ -102,10 +102,12 @@ class JavadslKafkaApiSpec extends WordSpecLike
         .subscribe()
         .withGroupId("testservice1")
         .atLeastOnce {
-          Flow[String].map { message =>
-            messageReceived.trySuccess(message)
-            Done
-          }.asJava
+          VarianceCompat.asJava {
+            Flow[String].map { message =>
+              messageReceived.trySuccess(message)
+              Done
+            }
+          }
         }
 
       val messageToPublish = "msg"
@@ -122,14 +124,16 @@ class JavadslKafkaApiSpec extends WordSpecLike
         .subscribe()
         .withGroupId("testservice2")
         .atLeastOnce {
-          Flow[String].map { message =>
-            if (!firstTimeReceived.isCompleted) {
-              firstTimeReceived.trySuccess(message)
-            } else if (!secondTimeReceived.isCompleted)
-              secondTimeReceived.trySuccess(message)
-            else ()
-            Done
-          }.asJava
+          VarianceCompat.asJava {
+            Flow[String].map { message =>
+              if (!firstTimeReceived.isCompleted) {
+                firstTimeReceived.trySuccess(message)
+              } else if (!secondTimeReceived.isCompleted)
+                secondTimeReceived.trySuccess(message)
+              else ()
+              Done
+            }
+          }
         }
 
       // Insert a mapping function into the producer flow that transforms each message
@@ -201,10 +205,12 @@ class JavadslKafkaApiSpec extends WordSpecLike
         .subscribe()
         .withGroupId("testservice3")
         .atLeastOnce {
-          Flow[String].map { _ =>
-            allMessagesReceived.countDown()
-            Done
-          }.asJava
+          VarianceCompat.asJava {
+            Flow[String].map { _ =>
+              allMessagesReceived.countDown()
+              Done
+            }
+          }
         }
       assert(allMessagesReceived.await(10, TimeUnit.SECONDS))
 
@@ -222,15 +228,17 @@ class JavadslKafkaApiSpec extends WordSpecLike
         .subscribe()
         .withGroupId("testservice4")
         .atLeastOnce {
-          Flow[String].map { _ =>
-            if (failOnMessageReceived) {
-              failOnMessageReceived = false
-              println("Expect to see an error below: Simulate consumer failure")
-              throw new IllegalStateException("Simulate consumer failure")
-            } else Done
-          }.mapMaterializedValue { _ =>
-            materialized.countDown()
-          }.asJava
+          VarianceCompat.asJava {
+            Flow[String].map { _ =>
+              if (failOnMessageReceived) {
+                failOnMessageReceived = false
+                println("Expect to see an error below: Simulate consumer failure")
+                throw new IllegalStateException("Simulate consumer failure")
+              } else Done
+            }.mapMaterializedValue { _ =>
+              materialized.countDown()
+            }
+          }
         }
 
       test4EventJournal.append("message")
@@ -272,12 +280,14 @@ class JavadslKafkaApiSpec extends WordSpecLike
         .subscribe()
         .withGroupId("testservice6")
         .atLeastOnce {
-          Flow[String].grouped(batchSize).mapConcat { messages =>
-            messages.map { _ =>
-              latch.countDown()
-              Done
+          VarianceCompat.asJava {
+            Flow[String].grouped(batchSize).mapConcat { messages =>
+              messages.map { _ =>
+                latch.countDown()
+                Done
+              }
             }
-          }.asJava
+          }
         }
       for (i <- 1 to batchSize) test6EventJournal.append(i.toString)
       assert(latch.await(10, TimeUnit.SECONDS))
@@ -316,6 +326,16 @@ class JavadslKafkaApiSpec extends WordSpecLike
 
   }
 
+}
+
+object VarianceCompat {
+  import akka.stream.{ javadsl, scaladsl }
+  // Akka 2.5.21 removed the variance of the return types, as a consequence the compiler
+  // no longer accepts an xx.asJava that returns a supertype. This implementation of asJava
+  // helps the compiler.
+  def asJava[T, Q, R](in: scaladsl.Flow[T, Q, R]): javadsl.Flow[T, Q, R] = {
+    in.asJava
+  }
 }
 
 object JavadslKafkaApiSpec {

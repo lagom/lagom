@@ -5,11 +5,12 @@ package com.lightbend.lagom.internal.javadsl.persistence.jdbc
 
 import java.sql.Connection
 import java.util.concurrent.CompletionStage
-import javax.inject.{ Inject, Singleton }
 
-import akka.Done
+import javax.inject.{ Inject, Singleton }
+import akka.{ Done, NotUsed }
 import akka.japi.Pair
 import akka.stream.javadsl.Flow
+import akka.stream.scaladsl
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
 import com.lightbend.lagom.internal.persistence.jdbc.SlickOffsetDao
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
@@ -96,7 +97,8 @@ private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetSto
 
     override def handle(): Flow[Pair[Event, Offset], Done, Any] = {
 
-      akka.stream.scaladsl.Flow[Pair[Event, Offset]]
+      //      val res: scaladsl.Flow[Pair[Event, Offset], Done.type, NotUsed]
+      val res: scaladsl.Flow[Pair[Event, Offset], Done, Any] = akka.stream.scaladsl.Flow[Pair[Event, Offset]]
         .mapAsync(parallelism = 1) { pair =>
 
           val dbAction = eventHandlers.get(pair.first.getClass)
@@ -118,7 +120,10 @@ private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetSto
 
           slick.db.run(dbAction.transactionally)
 
-        }.asJava
+        }
+
+      res.asJava
     }
   }
+
 }

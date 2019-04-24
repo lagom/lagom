@@ -379,9 +379,11 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
         override def invoke(request: Any): CompletionStage[JSource[Any, _]] = {
           CompletableFuture.completedFuture(request match {
             case stream: JSource[Any, _] =>
-              (stream.asScala via AkkaStreams.ignoreAfterCancellation map { _ =>
+              val sStream: Source[Any, _] = stream.asScala
+              val res: Source[Any, _] = sStream via AkkaStreams.ignoreAfterCancellation map { _ =>
                 throw new RuntimeException("service call failed")
-              }).asJava
+              }
+              res.asJava
             case _ =>
               JSource.failed(throw new RuntimeException("service call failed"))
           })
