@@ -24,6 +24,7 @@ import sbt.plugins.{ CorePlugin, IvyPlugin, JvmPlugin }
  */
 object Lagom extends AutoPlugin {
   override def requires = LagomReloadableService && JavaAppPackaging
+  override def trigger = noTrigger
   val autoImport = LagomImport
 }
 
@@ -110,7 +111,7 @@ object LagomScala extends AutoPlugin {
  * }}}
  */
 object LagomPlay extends AutoPlugin {
-  override def requires = LagomReloadableService && Play
+  override def requires = LagomReloadableService && PlayWeb
   override def trigger = noTrigger
 
   import LagomReloadableService.autoImport._
@@ -167,6 +168,7 @@ object LagomNettyServer extends AutoPlugin {
   // This plugin has not trigger. Lagom provides LagomNettyServer as an OptIn
   // backend but default to LagomAkkaHttpServer
   override def requires = Lagom
+  override def trigger = noTrigger
 
   override def projectSettings = Seq(
     libraryDependencies ++= {
@@ -700,6 +702,7 @@ object LagomLogback extends AutoPlugin {
 
 object LagomLog4j2 extends AutoPlugin {
   override def requires = LagomPlugin
+  override def trigger = noTrigger
 
   override def projectSettings = Seq(
     libraryDependencies += LagomImport.lagomLog4j2
