@@ -68,7 +68,7 @@ private[lagom] object Servers {
         }
       }
 
-      // use CompletionStage / Runable / Thread in case scala equivalent are not available on classloader.
+      // use CompletionStage / Runnable / Thread in case scala equivalent are not available on classloader.
       private val promise: CompletableFuture[Int] = new CompletableFuture[Int]()
       new Thread(new Runnable {
         override def run(): Unit = {
