@@ -14,6 +14,7 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
+import com.typesafe.config.Config;
 import scala.concurrent.ExecutionContext;
 
 import javax.inject.Inject;
@@ -26,24 +27,31 @@ public class KafkaTopicFactory implements TopicFactory {
     private final ActorSystem system;
     private final Materializer materializer;
     private final ExecutionContext executionContext;
-    private final KafkaConfig config;
+    private final KafkaConfig kafkaConfig;
     private final ServiceLocator serviceLocator;
+
+    /**
+     * @deprecated As of release 1.5.0. Use {@link #KafkaTopicFactory(ServiceInfo, ActorSystem, Materializer, ExecutionContext, ServiceLocator, Config)} instead.
+     */
+    @Deprecated
+    public KafkaTopicFactory(ServiceInfo serviceInfo, ActorSystem system, Materializer materializer,
+                             ExecutionContext executionContext, ServiceLocator serviceLocator) {
+        this(serviceInfo, system, materializer, executionContext, serviceLocator, system.settings().config());
+    }
 
     @Inject
     public KafkaTopicFactory(ServiceInfo serviceInfo, ActorSystem system, Materializer materializer,
-            ExecutionContext executionContext, ServiceLocator serviceLocator) {
+            ExecutionContext executionContext, ServiceLocator serviceLocator, Config config) {
         this.serviceInfo = serviceInfo;
         this.system = system;
         this.materializer = materializer;
         this.executionContext = executionContext;
-        // TODO: expose KafkaConfig as a constructor argument instead of building one from system.settings().config()
-        // https://github.com/lagom/lagom/issues/1255
-        this.config = KafkaConfig$.MODULE$.apply(system.settings().config());
+        this.kafkaConfig = KafkaConfig$.MODULE$.apply(config);
         this.serviceLocator = serviceLocator;
     }
 
     @Override
     public <Message> Topic<Message> create(Descriptor.TopicCall<Message> topicCall) {
-        return new JavadslKafkaTopic<>(config, topicCall, serviceInfo, system, serviceLocator, materializer, executionContext);
+        return new JavadslKafkaTopic<>(kafkaConfig, topicCall, serviceInfo, system, serviceLocator, materializer, executionContext);
     }
 }

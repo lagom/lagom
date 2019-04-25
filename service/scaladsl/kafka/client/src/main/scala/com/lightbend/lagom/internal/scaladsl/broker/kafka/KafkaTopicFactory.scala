@@ -11,17 +11,23 @@ import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
 import com.lightbend.lagom.scaladsl.api.broker.Topic
+import com.typesafe.config.Config
 
 import scala.concurrent.ExecutionContext
 
 /**
  * Factory for creating topics instances.
  */
-private[lagom] class KafkaTopicFactory(serviceInfo: ServiceInfo, system: ActorSystem, serviceLocator: ServiceLocator)(implicit materializer: Materializer, executionContext: ExecutionContext) extends TopicFactory {
+private[lagom] class KafkaTopicFactory(serviceInfo: ServiceInfo, system: ActorSystem, serviceLocator: ServiceLocator, config: Config)(implicit materializer: Materializer, executionContext: ExecutionContext) extends TopicFactory {
 
-  private val config = KafkaConfig(system.settings.config)
+  @deprecated("Use constructor that accepts a Config", "2.0.0")
+  def this(serviceInfo: ServiceInfo, system: ActorSystem, serviceLocator: ServiceLocator)(implicit materializer: Materializer, executionContext: ExecutionContext) = {
+    this(serviceInfo, system, serviceLocator, system.settings.config)
+  }
+
+  private val kafkaConfig = KafkaConfig(config)
 
   def create[Message](topicCall: TopicCall[Message]): Topic[Message] = {
-    new ScaladslKafkaTopic(config, topicCall, serviceInfo, system, serviceLocator)
+    new ScaladslKafkaTopic(kafkaConfig, topicCall, serviceInfo, system, serviceLocator)
   }
 }
