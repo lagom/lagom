@@ -307,6 +307,7 @@ val javadslProjects = Seq[Project](
   `kafka-client-javadsl`,
   `kafka-broker-javadsl`,
   `akka-management-javadsl`,
+  `akka-discovery-service-locator-javadsl`,
   `cluster-javadsl`,
   `persistence-javadsl`,
   `persistence-cassandra-javadsl`,
@@ -327,6 +328,7 @@ val scaladslProjects = Seq[Project](
   `kafka-broker-scaladsl`,
   `server-scaladsl`,
   `akka-management-scaladsl`,
+  `akka-discovery-service-locator-scaladsl`,
   `cluster-scaladsl`,
   `persistence-scaladsl`,
   `persistence-cassandra-scaladsl`,
@@ -344,6 +346,7 @@ val coreProjects = Seq[Project](
   server,
   spi,
   `akka-management-core`,
+  `akka-discovery-service-locator-core`,
   `cluster-core`,
   `kafka-client`,
   `kafka-broker`,
@@ -642,6 +645,33 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
     )
   }
 }
+
+lazy val `akka-discovery-service-locator-core` = (project in file("akka-service-locator/core"))
+  .settings(runtimeLibCommon: _*)
+  // .settings(mimaSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    name := "lagom-akka-discovery-service-locator-core",
+    Dependencies.`lagom-akka-discovery-service-locator-core`
+  )
+lazy val `akka-discovery-service-locator-javadsl` = (project in file("akka-service-locator/javadsl"))
+  .dependsOn(`akka-discovery-service-locator-core`)
+  .dependsOn(`client-javadsl`)
+  .settings(runtimeLibCommon: _*)
+  // .settings(mimaSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    name := "lagom-javadsl-akka-discovery-service-locator"
+  )
+lazy val `akka-discovery-service-locator-scaladsl` = (project in file("akka-service-locator/scaladsl"))
+  .dependsOn(`akka-discovery-service-locator-core`)
+  .dependsOn(`client-scaladsl`)
+  .settings(runtimeLibCommon: _*)
+  // .settings(mimaSettings: _*)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    name := "lagom-scaladsl-akka-discovery-service-locator"
+  )
 
 lazy val `akka-management-core` = (project in file("akka-management/core"))
   .settings(runtimeLibCommon: _*)
