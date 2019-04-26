@@ -668,6 +668,8 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
 
 lazy val `akka-discovery-service-locator-core` = (project in file("akka-service-locator/core"))
   .settings(runtimeLibCommon: _*)
+  // TODO: after this get released, we must enable the mima settings
+  // that artifact doesn't exist in previous jar, so it doesn't make sense to check it
   // .settings(mimaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -678,6 +680,8 @@ lazy val `akka-discovery-service-locator-javadsl` = (project in file("akka-servi
   .dependsOn(`akka-discovery-service-locator-core`)
   .dependsOn(`client-javadsl`)
   .settings(runtimeLibCommon: _*)
+  // TODO: after this get released, we must enable the mima settings
+  // that artifact doesn't exist in previous jar, so it doesn't make sense to check it
   // .settings(mimaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -687,6 +691,8 @@ lazy val `akka-discovery-service-locator-scaladsl` = (project in file("akka-serv
   .dependsOn(`akka-discovery-service-locator-core`)
   .dependsOn(`client-scaladsl`)
   .settings(runtimeLibCommon: _*)
+  // TODO: after this get released, we must enable the mima settings
+  // that artifact doesn't exist in previous jar, so it doesn't make sense to check it
   // .settings(mimaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
