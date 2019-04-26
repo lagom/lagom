@@ -9,6 +9,7 @@ import akka.stream.Materializer
 import com.lightbend.lagom.internal.scaladsl.api.broker.{ TopicFactory, TopicFactoryProvider }
 import com.lightbend.lagom.internal.scaladsl.broker.kafka.KafkaTopicFactory
 import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
+import com.typesafe.config.Config
 
 import scala.concurrent.ExecutionContext
 
@@ -18,7 +19,8 @@ trait LagomKafkaClientComponents extends TopicFactoryProvider {
   def materializer: Materializer
   def executionContext: ExecutionContext
   def serviceLocator: ServiceLocator
+  def config: Config
 
-  lazy val topicFactory: TopicFactory = new KafkaTopicFactory(serviceInfo, actorSystem, serviceLocator)(materializer, executionContext)
+  lazy val topicFactory: TopicFactory = new KafkaTopicFactory(serviceInfo, actorSystem, serviceLocator, config)(materializer, executionContext)
   override def optionalTopicFactory: Option[TopicFactory] = Some(topicFactory)
 }
