@@ -1,7 +1,6 @@
 /*
- * Copyright (C) 2018-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
-
 package com.lightbend.lagom.internal.client
 
 import akka.discovery.Lookup

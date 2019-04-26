@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
-
 package com.lightbend.lagom.javadsl.akka.discovery;
 
 import akka.actor.ActorSystem;

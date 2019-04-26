@@ -1,7 +1,6 @@
 /*
- * Copyright (C) 2018-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
-
 package com.lightbend.lagom.internal.client
 
 import java.net.URI
@@ -19,10 +18,12 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 /**
-  * Helper for implementing Akka Discovery based service locators in Lagom.
-  */
+ * Helper for implementing Akka Discovery based service locators in Lagom.
+ */
 private[lagom] class AkkaDiscoveryHelper(config: Config, serviceDiscovery: ServiceDiscovery)(
-    implicit ec: ExecutionContext) {
+  implicit
+  ec: ExecutionContext
+) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -48,13 +49,14 @@ private[lagom] class AkkaDiscoveryHelper(config: Config, serviceDiscovery: Servi
     val scheme = lookup.scheme.orNull
 
     try {
-      new URI(scheme, // scheme
-              null, // userInfo
-              resolvedTarget.host, // host
-              port, // port
-              null, // path
-              null, // query
-              null // fragment
+      new URI(
+        scheme, // scheme
+        null, // userInfo
+        resolvedTarget.host, // host
+        port, // port
+        null, // path
+        null, // query
+        null // fragment
       )
     } catch {
       case e: URISyntaxException => throw new RuntimeException(e)
