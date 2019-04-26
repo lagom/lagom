@@ -30,6 +30,8 @@ The production environment determines the methods for packaging your services, m
 
     * For simple deployments, Lagom includes a built-in service locator that uses addresses specified in the service configuration ([described below](#Using-static-values-for-services-and-Cassandra)).
 
+    * Since Lagom 1.4.12, you can use  [[Akka Discovery Service Locator|AkkaDiscoveryIntegration]] that integrates with the service discovery features of Kubernetes or DC/OS, or any other environment supported by [Akka's Service Discovery](https://doc.akka.io/docs/akka/2.5/discovery/index.html).
+
     * Lightbend Orchestration provides an open-source [`ServiceLocator` implementation](https://developer.lightbend.com/docs/lightbend-orchestration/current/features/service-location.html) that integrates with the service discovery features of Kubernetes or DC/OS, or any other environment that supports service discovery via DNS.
 
     * Otherwise, you can implement the interface yourself to integrate with a service registry of your choosing (such as [Consul](https://www.consul.io/), [ZooKeeper](https://zookeeper.apache.org/), or [etcd](https://coreos.com/etcd/)) or start with an open-source example implementation such as [`lagom-service-locator-consul`](https://github.com/jboner/lagom-service-locator-consul) or [`lagom-service-locator-zookeeper`](https://github.com/jboner/lagom-service-locator-zookeeper).
