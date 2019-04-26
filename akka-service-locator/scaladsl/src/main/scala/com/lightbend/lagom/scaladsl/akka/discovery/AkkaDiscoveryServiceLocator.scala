@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.akka.discovery
@@ -18,11 +18,13 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 /**
-  * Akka discovery based implementation of the [[ServiceLocator]].
-  */
+ * Akka discovery based implementation of the [[ServiceLocator]].
+ */
 class AkkaDiscoveryServiceLocator(circuitBreakers: CircuitBreakersPanel, actorSystem: ActorSystem)(
-    implicit ec: ExecutionContext)
-    extends CircuitBreakingServiceLocator(circuitBreakers) {
+  implicit
+  ec: ExecutionContext
+)
+  extends CircuitBreakingServiceLocator(circuitBreakers) {
 
   private val helper: AkkaDiscoveryHelper = new AkkaDiscoveryHelper(
     actorSystem.settings.config.getConfig("lagom.akka.discovery"),

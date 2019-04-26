@@ -49,7 +49,8 @@ private[lagom] class ServiceNameMapper(config: Config) {
       .map { entry =>
         if (entry.getValue.valueType != ConfigValueType.OBJECT) {
           throw new IllegalArgumentException(
-            s"Illegal value type in service-name-mappings: ${entry.getKey} - ${entry.getValue.valueType}")
+            s"Illegal value type in service-name-mappings: ${entry.getKey} - ${entry.getValue.valueType}"
+          )
         }
         val configEntry = entry.getValue.asInstanceOf[ConfigObject].toConfig
 
@@ -62,7 +63,7 @@ private[lagom] class ServiceNameMapper(config: Config) {
         // otherwise honour user settings.
         val scheme =
           readConfigValue(configEntry, "scheme") match {
-            case Undefined => defaultScheme
+            case Undefined       => defaultScheme
             // this is the case the user explicitly set the scheme to empty string
             case Empty           => None
             case NonEmpty(value) => Option(value)
