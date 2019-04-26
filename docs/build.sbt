@@ -92,6 +92,8 @@ lazy val docs = project
     kafkaBrokerScaladsl,
     playJson,
     pubsubScaladsl,
+    akkaDiscoveryJavadsl,
+    akkaDiscoveryScaladsl,
     immutables % "test->compile",
     theme % "run-markdown",
     devmodeScaladsl
@@ -112,6 +114,8 @@ lazy val playJson = ProjectRef(parentDir, "play-json")
 lazy val kafkaBrokerScaladsl = ProjectRef(parentDir, "kafka-broker-scaladsl")
 lazy val devmodeScaladsl = ProjectRef(parentDir, "devmode-scaladsl")
 lazy val pubsubScaladsl = ProjectRef(parentDir, "pubsub-scaladsl")
+lazy val akkaDiscoveryJavadsl = ProjectRef(parentDir, "akka-discovery-service-locator-javadsl")
+lazy val akkaDiscoveryScaladsl = ProjectRef(parentDir, "akka-discovery-service-locator-scaladsl")
 
 // Needed to compile test classes using immutables annotation
 lazy val immutables = ProjectRef(parentDir, "immutables")

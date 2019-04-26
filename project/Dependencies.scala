@@ -87,6 +87,8 @@ object Dependencies {
   private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
   private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.2"
 
+  private val akkaDiscovery = "com.typesafe.akka" %% "akka-discovery" % AkkaVersion
+
   private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % AkkaPersistenceJdbcVersion excludeAll (excludeSlf4j: _*)
 
   // latest version of APC depend on a Cassandra driver core that's not compatible with Lagom (newer netty/guava/etc... under the covers)
@@ -227,7 +229,7 @@ object Dependencies {
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", AkkaVersion)(
       "akka-actor", "akka-cluster", "akka-cluster-sharding", "akka-cluster-tools", "akka-distributed-data",
       "akka-multi-node-testkit", "akka-persistence", "akka-persistence-query", "akka-protobuf", "akka-remote",
-      "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit", "akka-coordination"
+      "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit", "akka-coordination", "akka-discovery"
 
     ) ++ libraryFamily("com.typesafe.play", PlayVersion)(
       "build-link", "play-exceptions", "play-netty-utils"
@@ -301,7 +303,7 @@ object Dependencies {
 
   // Dependencies for each module
   val api = libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
+    scalaParserCombinators,
     scalaXml,
     akkaActor,
     akkaSlf4j,
@@ -453,6 +455,16 @@ object Dependencies {
     playAkkaHttpServer,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest
+  )
+  val `lagom-akka-discovery-service-locator-core` = libraryDependencies ++= Seq(
+    akkaDiscovery,
+    slf4jApi,
+    scalaTest % Test,
+
+    // Upgrades needed to match whitelist
+    scalaParserCombinators,
+    scalaJava8Compat,
+    scalaXml
   )
 
   val `cluster-core` = libraryDependencies ++= Seq(
