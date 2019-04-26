@@ -64,6 +64,7 @@ class CassandraClusteredPersistentEntitySpec extends AbstractClusteredPersistent
       override def environment: Environment = Environment(new File("."), getClass.getClassLoader, Mode.Test)
       override def materializer: Materializer = ActorMaterializer()(system)
       override def configuration: Configuration = Configuration(system.settings.config)
+      override def config: Config = system.settings.config
       override def serviceLocator: ServiceLocator = NoServiceLocator
       override def jsonSerializerRegistry: JsonSerializerRegistry = ???
 

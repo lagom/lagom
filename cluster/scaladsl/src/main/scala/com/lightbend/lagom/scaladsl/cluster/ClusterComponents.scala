@@ -20,7 +20,7 @@ trait ClusterComponents extends RequiresJsonSerializerRegistry with AkkaManageme
 
   // eager initialization
   val cluster: Cluster = {
-    JoinClusterImpl.join(actorSystem, environment, akkaManagementTrigger)
+    JoinClusterImpl.join(actorSystem, environment, config, akkaManagementTrigger)
     Cluster(actorSystem)
   }
 }

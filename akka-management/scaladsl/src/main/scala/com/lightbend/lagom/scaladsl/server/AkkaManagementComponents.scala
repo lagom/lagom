@@ -6,13 +6,16 @@ package com.lightbend.lagom.scaladsl.server
 
 import akka.actor.{ ActorSystem, CoordinatedShutdown }
 import com.lightbend.lagom.internal.akka.management.AkkaManagementTrigger
-import play.api.{ Environment, Mode }
+import com.typesafe.config.Config
+import play.api.{ Configuration, Environment, Mode }
 
 import scala.concurrent.ExecutionContext
 
 trait AkkaManagementComponents {
 
-  def configuration: play.api.Configuration
+  @deprecated("Override config instead", "2.0.0")
+  def configuration: Configuration
+  def config: Config
   def actorSystem: ActorSystem
   def coordinatedShutdown: CoordinatedShutdown
   def environment: Environment
@@ -21,7 +24,7 @@ trait AkkaManagementComponents {
 
   // eager initialization
   private[lagom] val akkaManagementTrigger: AkkaManagementTrigger = {
-    val instance = new AkkaManagementTrigger(configuration.underlying, actorSystem, coordinatedShutdown)(executionContext)
+    val instance = new AkkaManagementTrigger(config, actorSystem, coordinatedShutdown)(executionContext)
     if (environment.mode == Mode.Prod) {
       instance.start()
     }

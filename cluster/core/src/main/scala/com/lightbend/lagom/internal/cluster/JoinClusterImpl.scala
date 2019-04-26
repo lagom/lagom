@@ -10,14 +10,19 @@ import akka.actor.CoordinatedShutdown._
 import akka.cluster.Cluster
 import akka.management.cluster.bootstrap.ClusterBootstrap
 import com.lightbend.lagom.internal.akka.management.AkkaManagementTrigger
+import com.typesafe.config.Config
 import play.api.{ Environment, Mode }
 
 import scala.concurrent.Future
 
 private[lagom] object JoinClusterImpl {
 
+  @deprecated("Use join(ActorSystem, Environment, Config, AkkaManagementTrigger) instead", "2.0.0")
   def join(system: ActorSystem, environment: Environment, akkaManagementTrigger: AkkaManagementTrigger): Unit = {
-    val config = system.settings.config
+    join(system, environment, system.settings.config, akkaManagementTrigger)
+  }
+
+  def join(system: ActorSystem, environment: Environment, config: Config, akkaManagementTrigger: AkkaManagementTrigger): Unit = {
     val joinSelf = config.getBoolean("lagom.cluster.join-self")
 
     val clusterBootstrapEnabled = config.getBoolean("lagom.cluster.bootstrap.enabled")

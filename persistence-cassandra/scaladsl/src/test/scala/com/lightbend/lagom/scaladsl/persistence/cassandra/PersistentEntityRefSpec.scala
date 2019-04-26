@@ -36,13 +36,13 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
 
   override implicit val patienceConfig = PatienceConfig(5.seconds, 150.millis)
 
-  val config: Config =
+  val testConfig: Config =
     ConfigFactory.parseString("akka.loglevel = INFO")
       .withFallback(ClusterConfig)
       .withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
 
   private val system: ActorSystem = ActorSystem("PersistentEntityRefSpec", ActorSystemSetup(
-    BootstrapSetup(config),
+    BootstrapSetup(testConfig),
     JsonSerializerRegistry.serializationSetupFor(TestEntitySerializerRegistry)
   ))
 
@@ -75,9 +75,9 @@ class PersistentEntityRefSpec extends WordSpecLike with Matchers with BeforeAndA
     override def actorSystem: ActorSystem = system
     override def executionContext: ExecutionContext = system.dispatcher
     override def coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(actorSystem)
-
+    override def config: Config = testConfig
     override def environment: Environment = Environment(new File("."), getClass.getClassLoader, PlayMode.Test)
-    override def configuration: play.api.Configuration = play.api.Configuration(config)
+    override def configuration: play.api.Configuration = play.api.Configuration(testConfig)
     override def materializer: Materializer = ActorMaterializer()(system)
     override def serviceLocator: ServiceLocator = NoServiceLocator
     override def jsonSerializerRegistry: JsonSerializerRegistry = TestEntitySerializerRegistry

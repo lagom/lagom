@@ -64,6 +64,7 @@ class JdbcClusteredPersistentEntitySpec extends AbstractClusteredPersistentEntit
 
       override lazy val materializer: Materializer = ActorMaterializer.create(system)
       override lazy val configuration: Configuration = Configuration(system.settings.config)
+      override def config: Config = system.settings.config
       override def environment: Environment = JdbcClusteredPersistentEntityConfig.environment
       override lazy val applicationLifecycle: ApplicationLifecycle = defaultApplicationLifecycle
       override def jsonSerializerRegistry: JsonSerializerRegistry = TestEntitySerializerRegistry
