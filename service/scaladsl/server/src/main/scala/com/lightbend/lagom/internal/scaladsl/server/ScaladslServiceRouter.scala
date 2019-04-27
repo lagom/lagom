@@ -37,8 +37,8 @@ class ScaladslServiceRouter(override protected val descriptor: Descriptor, servi
     }
     override val isWebSocket: Boolean =
 
-      messageSerializerIsStreamed(call.requestSerializer) ||
-        messageSerializerIsStreamed(call.responseSerializer)
+      messageSerializerIsWebSocket(call.requestSerializer) ||
+        messageSerializerIsWebSocket(call.responseSerializer)
 
     private val holder: ScalaMethodServiceCall[Any, Any] = call.serviceCallHolder match {
       case holder: ScalaMethodServiceCall[Any, Any] => holder

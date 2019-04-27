@@ -96,8 +96,8 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
                 route.call.asInstanceOf[Call[Any, Any]],
                 descriptor,
                 serviceCall,
-                requestSerializer.asInstanceOf[MessageSerializer[Any, ByteString]],
-                responseSerializer.asInstanceOf[MessageSerializer[Any, ByteString]]
+                requestSerializer,
+                responseSerializer
               )
             }
 

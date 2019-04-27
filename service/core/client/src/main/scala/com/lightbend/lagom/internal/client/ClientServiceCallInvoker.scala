@@ -14,7 +14,7 @@ import akka.util.ByteString
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
 import play.api.http.HeaderNames
 import play.api.libs.streams.AkkaStreams
-import play.api.libs.ws.{ InMemoryBody, WSClient }
+import play.api.libs.ws.{ BodyWritable, InMemoryBody, SourceBody, WSBody, WSClient, WSResponse }
 
 import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
@@ -46,17 +46,17 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       val requestHeader = requestHeaderHandler(newRequestHeader(method, URI.create(url), negotiatedSerializerProtocol(serializer),
         messageSerializerAcceptResponseProtocols(responseSerializer), Option(newServicePrincipal(serviceName)), Map.empty))
 
-      val requestSerializerStreamed = messageSerializerIsStreamed(requestSerializer)
-      val responseSerializerStreamed = messageSerializerIsStreamed(responseSerializer)
+      val requestSerializerWebSocket = messageSerializerIsWebSocket(requestSerializer)
+      val responseSerializerWebSocket = messageSerializerIsWebSocket(responseSerializer)
 
       val result: Future[(ResponseHeader, Response)] =
-        (requestSerializerStreamed, responseSerializerStreamed) match {
+        (requestSerializerWebSocket, responseSerializerWebSocket) match {
 
           case (false, false) =>
             makeStrictCall(
               headerFilterTransformClientRequest(headerFilter, requestHeader),
-              requestSerializer.asInstanceOf[MessageSerializer[Request, ByteString]],
-              responseSerializer.asInstanceOf[MessageSerializer[Response, ByteString]],
+              requestSerializer,
+              responseSerializer,
               request
             )
 
@@ -193,8 +193,8 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
    */
   private def makeStrictCall(
     requestHeader:      RequestHeader,
-    requestSerializer:  MessageSerializer[Request, ByteString],
-    responseSerializer: MessageSerializer[Response, ByteString],
+    requestSerializer:  MessageSerializer[Request, _],
+    responseSerializer: MessageSerializer[Response, _],
     request:            Request
   ): Future[(ResponseHeader, Response)] = {
 
@@ -211,7 +211,12 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
         val negotiatedSerializer = messageSerializerSerializerForRequest(requestSerializer)
         val body = negotiatedSerializerSerialize(negotiatedSerializer, request)
 
-        requestHolder.withBody(InMemoryBody(body))
+        val wsBody = if (!messageSerializerIsStreamed(requestSerializer)) {
+          InMemoryBody(body.asInstanceOf[ByteString])
+        } else {
+          SourceBody(body.asInstanceOf[Source[ByteString, NotUsed]])
+        }
+        requestHolder.withBody(wsBody)
       } else requestHolder
 
     val requestHeaders = messageHeaderHeaders(requestHeader).toSeq.collect {
@@ -242,8 +247,16 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
           response.status, protocol, response.bodyAsBytes
         )
       } else {
-        val negotiatedDeserializer = messageSerializerDeserializer(responseSerializer, messageHeaderProtocol(responseHeader))
-        responseHeader -> negotiatedDeserializerDeserialize(negotiatedDeserializer, response.bodyAsBytes)
+        val responseObject: Response = if (!messageSerializerIsStreamed(requestSerializer)) {
+          val negotiatedDeserializer = messageSerializerDeserializer(responseSerializer.asInstanceOf[MessageSerializer[Response, ByteString]], messageHeaderProtocol(responseHeader))
+          negotiatedDeserializerDeserialize(negotiatedDeserializer, response.bodyAsBytes)
+
+        } else {
+          val negotiatedDeserializer = messageSerializerDeserializer(responseSerializer.asInstanceOf[MessageSerializer[Response, Source[ByteString, NotUsed]]], messageHeaderProtocol(responseHeader))
+          negotiatedDeserializerDeserialize(negotiatedDeserializer, response.bodyAsSource.mapMaterializedValue(_ => NotUsed))
+        }
+
+        responseHeader -> responseObject
       }
     }
   }
