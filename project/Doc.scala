@@ -4,8 +4,13 @@
 package lagom
 
 import sbt._
-import sbtunidoc.Plugin.UnidocKeys._
-import sbtunidoc.Plugin.{Genjavadoc, JavaUnidoc, ScalaUnidoc, scalaJavaUnidocSettings}
+import sbtunidoc.{BaseUnidocPlugin, GenJavadocPlugin, JavaUnidocPlugin, ScalaUnidocPlugin}
+
+import sbtunidoc.BaseUnidocPlugin.autoImport._
+import sbtunidoc.JavaUnidocPlugin.autoImport._
+import sbtunidoc.GenJavadocPlugin.autoImport._
+import sbtunidoc.ScalaUnidocPlugin.autoImport._
+
 import sbt.Keys._
 import sbt.File
 import sbt.ScopeFilter.ProjectFilter
@@ -40,6 +45,8 @@ object Scaladoc extends AutoPlugin {
 object UnidocRoot extends AutoPlugin {
 
   override def trigger = noTrigger
+
+  override def requires = ScalaUnidocPlugin && JavaUnidocPlugin
 
   private def projectsAndDependencies(projects: Seq[ProjectReference]): ProjectFilter = {
     //projects.map(p => inDependencies(p, transitive = true, includeRoot = true)).reduce(_ || _)
@@ -88,7 +95,7 @@ object UnidocRoot extends AutoPlugin {
     case _ => Seq("--allow-script-in-comments")
   }
 
-  override lazy val projectSettings = scalaJavaUnidocSettings ++ Seq(
+  override lazy val projectSettings = Seq(
     unidocAllSources in (JavaUnidoc, unidoc) ++= allGenjavadocSources.value,
     unidocAllSources in (JavaUnidoc, unidoc) := {
       (unidocAllSources in (JavaUnidoc, unidoc)).value

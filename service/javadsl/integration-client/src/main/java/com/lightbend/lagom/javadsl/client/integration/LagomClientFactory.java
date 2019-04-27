@@ -259,7 +259,8 @@ public class LagomClientFactory implements Closeable {
                     actorSystem,
                     materializer,
                     actorSystem.dispatcher(),
-                    serviceLocator
+                    serviceLocator,
+                    configuration
                 );
 
             TopicFactoryProvider topicFactoryProvider = () -> Some.apply(kafkaTopicFactory);

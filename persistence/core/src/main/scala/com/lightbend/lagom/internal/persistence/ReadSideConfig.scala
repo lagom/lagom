@@ -7,7 +7,6 @@ package com.lightbend.lagom.internal.persistence
 import java.util.concurrent.TimeUnit
 
 import com.typesafe.config.Config
-import play.api.Configuration
 
 import scala.concurrent.duration._
 

@@ -68,7 +68,7 @@ private[lagom] object Servers {
         }
       }
 
-      // use CompletionStage / Runable / Thread in case scala equivalent are not available on classloader.
+      // use CompletionStage / Runnable / Thread in case scala equivalent are not available on classloader.
       private val promise: CompletableFuture[Int] = new CompletableFuture[Int]()
       new Thread(new Runnable {
         override def run(): Unit = {
@@ -119,7 +119,7 @@ private[lagom] object Servers {
         if (server == null) {
           withContextClassloader(new java.net.URLClassLoader(classpath, parentClassLoader)) { loader =>
             val serverClass = loader.loadClass("com.lightbend.lagom.registry.impl.ServiceLocatorServer")
-            server = serverClass.newInstance().asInstanceOf[Server]
+            server = serverClass.getDeclaredConstructor().newInstance().asInstanceOf[Server]
             try {
               server.start(serviceLocatorAddress, serviceLocatorPort, serviceGatewayAddress, serviceGatewayHttpPort, unmanagedServices.asJava, gatewayImpl)
             } catch {
@@ -194,7 +194,7 @@ private[lagom] object Servers {
           val loader = new java.net.URLClassLoader(classpath.map(_.toURI.toURL).toArray, parentClassLoader)
           val directory = new File("target/embedded-cassandra")
           val serverClass = loader.loadClass("com.lightbend.lagom.internal.cassandra.CassandraLauncher")
-          server = serverClass.newInstance().asInstanceOf[Server]
+          server = serverClass.getDeclaredConstructor().newInstance().asInstanceOf[Server]
 
           server.start(directory, yamlConfig, cleanOnStart, port, jvmOptions.toArray)
 

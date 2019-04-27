@@ -53,6 +53,7 @@ class ScaladslKafkaApiSpec extends WordSpecLike
           "akka.remote.netty.tcp.hostname" -> "127.0.0.1",
           "akka.persistence.journal.plugin" -> "akka.persistence.journal.inmem",
           "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local",
+          "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
           "lagom.cluster.bootstrap.enabled" -> "off",
           "lagom.services.kafka_native" -> s"tcp://localhost:${KafkaLocalServer.DefaultPort}"
         ).asJava)

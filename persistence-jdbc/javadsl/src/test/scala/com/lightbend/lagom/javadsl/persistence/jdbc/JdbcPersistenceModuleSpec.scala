@@ -35,6 +35,7 @@ class JdbcPersistenceModuleSpec
             // Correct configuration, but the database is not available
             "db.default.driver" -> "org.h2.Driver",
             "db.default.url" -> "jdbc:h2:tcp://localhost/~/notavailable",
+            "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
             "lagom.cluster.bootstrap.enabled" -> "off"
           )
           .build()
@@ -55,6 +56,7 @@ class JdbcPersistenceModuleSpec
             "db.default.url" -> "jdbc:h2:tcp://localhost/~/notavailable",
             // And it is configured to fail fast
             "play.db.prototype.hikaricp.initializationFailTimeout" -> "1",
+            "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
             "lagom.cluster.bootstrap.enabled" -> "off"
           )
           .build()

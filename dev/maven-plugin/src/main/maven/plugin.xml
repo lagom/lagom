@@ -296,17 +296,6 @@
         </parameter>
 
         <parameter>
-            <name>sourceConductRBundle</name>
-            <type>java.util.File</type>
-            <required>false</required>
-            <editable>true</editable>
-            <description>The source ConductR bundle to rename.</description>
-            <configuration>
-                <sourceConductRBundle implementation="java.util.File"
-                                      default-value="${project.build.directory}/${project.build.finalName}-conductr-bundle.zip"/>
-            </configuration>
-        </parameter>
-        <parameter>
             <name>outputDirectory</name>
             <type>java.util.File</type>
             <required>false</required>
@@ -642,25 +631,6 @@
             <parameters>
                 <parameter>
                     <name>externalProjects</name>
-                </parameter>
-            </parameters>
-        </mojo>
-
-        <mojo>
-            <goal>renameConductRBundle</goal>
-            <description>Renames a ConductR bundle to match ConductR requirements.</description>
-            <implementation>com.lightbend.lagom.maven.RenameConductRBundleMojo</implementation>
-            <instantiationStrategy>per-lookup</instantiationStrategy>
-            <phase>package</phase>
-            <parameters>
-                <parameter>
-                    <name>sourceConductRBundle</name>
-                </parameter>
-                <parameter>
-                    <name>bundleName</name>
-                </parameter>
-                <parameter>
-                    <name>outputDirectory</name>
                 </parameter>
             </parameters>
         </mojo>

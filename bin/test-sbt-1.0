@@ -4,5 +4,5 @@
 
 SCALA_VERSION="2.12.8"
 
-runSbt "+++ ${SCALA_VERSION} publishLocal"
-runSbtNoisy "++${SCALA_VERSION} scripted"
+# disable publishing javadoc for scripted
+runSbtNoisy ";set publishArtifact in (Compile, packageDoc) in ThisBuild := false ;++${SCALA_VERSION} scripted"

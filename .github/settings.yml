@@ -1,4 +1,4 @@
-# These settings are synced to GitHub by https://probot.github.io/apps/settings/
+# These settings are synced to GitHub by https://probot.github.io/apps/settings/.
 repository:
   topics: lagom, distributed-systems, akka, play, playframework, java, scala, microservices, reactive
   private: false
@@ -8,8 +8,8 @@ repository:
   has_wiki: false
   has_downloads: true
   default_branch: master
-  allow_squash_merge: true
-  allow_merge_commit: false
+  allow_squash_merge: false
+  allow_merge_commit: true
   allow_rebase_merge: false
 
 teams:

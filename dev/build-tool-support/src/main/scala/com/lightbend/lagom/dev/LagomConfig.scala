@@ -22,6 +22,7 @@ object LagomConfig {
     "lagom.akka.dev-mode.actor-system.name" -> s"$name-internal-dev-mode",
     "play.akka.actor-system" -> s"$name-application",
     "lagom.defaults.cluster.join-self" -> "on",
+    "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
     "lagom.cluster.bootstrap.enabled" -> "off",
     "akka.discovery.method" -> "com.lightbend.lagom.internal.registry.DevModeSimpleServiceDiscovery"
   )

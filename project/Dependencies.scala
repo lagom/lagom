@@ -15,7 +15,7 @@ object Dependencies {
     val Scala211 = "2.11.12"
     val Scala212 = "2.12.8"
     val Scala = Seq(Scala212, Scala211)
-    val SbtScala = Seq(Scala210, Scala212)
+    val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     val Play = "2.7.0"
@@ -24,8 +24,8 @@ object Dependencies {
     val Twirl = "1.4.0"
     val PlayFileWatch = "1.1.8"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.21")
-    val AkkaHttp = "10.1.7"
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.22")
+    val AkkaHttp = "10.1.8"
     val Aeron = "1.15.1"
 
     val AkkaPersistenceCassandra = "0.61"
@@ -102,7 +102,7 @@ object Dependencies {
   private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
   private val akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % Versions.Akka excludeAll (excludeSlf4j: _*)
   private val akkaStream = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
-  private val akkaProfobuf = "com.typesafe.akka" %% "akka-protobuf" % Versions.Akka
+  private val akkaProtobuf = "com.typesafe.akka" %% "akka-protobuf" % Versions.Akka
 
   private val akkaManagement = "com.lightbend.akka.management" %% "akka-management" % Versions.AkkaManagement
   private val akkaManagementClusterHttp =  "com.lightbend.akka.management" %% "akka-management-cluster-http" % Versions.AkkaManagement
@@ -147,10 +147,10 @@ object Dependencies {
   private val playFileWatch = "com.lightbend.play" %% "play-file-watch" % Versions.PlayFileWatch excludeAll (excludeSlf4j: _*)
 
   private val pcollections = "org.pcollections" % "pcollections" % Versions.PCollections
-
+  private val jsr250 = "javax.annotation" % "jsr250-api" % "1.0"
   private val junit = "junit" % "junit" % Versions.JUnit
   private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.8.1"
-
+  private val javaxAnnotationApi = "javax.annotation" % "javax.annotation-api" % "1.3.2"
   private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.6" excludeAll (excludeSlf4j: _*)
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
@@ -165,7 +165,7 @@ object Dependencies {
       "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
     )
 
-  val scalaParserCombinatorOverrides = Set(scalaParserCombinators)
+  val scalaParserCombinatorOverrides = Seq(scalaParserCombinators)
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.
@@ -264,7 +264,7 @@ object Dependencies {
       "org.eclipse.jetty" % "jetty-xml" % Versions.jetty,
       "org.eclipse.jetty.websocket" % "websocket-common" % Versions.jetty,
       "org.eclipse.jetty.websocket" % "websocket-api" % Versions.jetty,
-
+      jsr250,
       "com.typesafe.play" %% "twirl-api" % Versions.Twirl,
       "com.typesafe.slick" %% "slick" % Versions.Slick,
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
@@ -306,7 +306,7 @@ object Dependencies {
       "org.typelevel" %% "macro-compat" % "1.1.1",
       "org.xerial.snappy" % "snappy-java" % "1.1.7.2",
       "tyrex" % "tyrex" % "1.0.1",
-
+      javaxAnnotationApi,
       "org.scala-lang.modules" %% "scala-collection-compat" % "0.1.1",
       "com.google.guava" % "failureaccess" % "1.0",
       "com.google.guava" % "listenablefuture" % "9999.0-empty-to-avoid-conflict-with-guava",
@@ -316,7 +316,7 @@ object Dependencies {
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
       "akka-actor", "akka-cluster", "akka-cluster-sharding", "akka-cluster-tools", "akka-distributed-data",
       "akka-multi-node-testkit", "akka-persistence", "akka-persistence-query", "akka-protobuf", "akka-remote",
-      "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit"
+      "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit", "akka-coordination"
 
     ) ++ libraryFamily("com.typesafe.play", Versions.Play)(
       "build-link", "play-exceptions", "play-netty-utils"
@@ -353,7 +353,7 @@ object Dependencies {
     "antlr" % "antlr" % "2.7.7",
     "com.fasterxml" % "classmate" % "1.3.4",
     "org.dom4j" % "dom4j" % "2.1.1",
-    "javax.annotation" % "jsr250-api" % "1.0",
+    jsr250,
     "javax.el" % "el-api" % "2.2",
     "javax.enterprise" % "cdi-api" % "1.1",
     "org.apache.geronimo.specs" % "geronimo-jta_1.1_spec" % "1.1.1",
@@ -476,7 +476,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProfobuf
+    akkaProtobuf
   )
 
   val client = libraryDependencies ++= Seq(
@@ -515,7 +515,8 @@ object Dependencies {
   val `server-javadsl` = libraryDependencies ++= Seq(
     akkaManagement,
     slf4jApi,
-    commonsLang
+    commonsLang,
+    javaxAnnotationApi
   )
 
   val `server-scaladsl` = libraryDependencies ++= Seq(
@@ -597,9 +598,13 @@ object Dependencies {
     // Upgrades needed to match whitelist
     akkaStream,
     akkaActor,
-    akkaProfobuf,
+    akkaProtobuf,
     akkaSlf4j,
-    scalaXml
+    scalaXml,
+    akkaHttpCore,
+    akkaHttpRouteDsl,
+    akkaHttpSprayJson,
+    akkaParsing
   )
 
   val `akka-management-javadsl` = libraryDependencies ++= Seq.empty[ModuleID]
@@ -621,8 +626,9 @@ object Dependencies {
     scalaXml,
     akkaSlf4j,
 
-    // transitive dependencies from Akka Management,
-    // must be explicitly bumped to Akka 2.5.20
+    // transitive dependencies from Akka Management 
+    // may not match the Akka version in use so 
+    // must be explicitly bumped
     akkaDiscovery,
     akkaClusterSharding,
     akkaDistributedData,
@@ -734,6 +740,7 @@ object Dependencies {
 
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
     junit % Test,
+    jsr250,
     // Upgrades needed to match whitelist
     cassandraDriverCore
   )
@@ -830,7 +837,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProfobuf,
+    akkaProtobuf,
     scalaXml
   ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % Versions.Logback)
 
@@ -849,7 +856,7 @@ object Dependencies {
       akkaStream,
       akkaActor,
       akkaSlf4j,
-      akkaProfobuf
+      akkaProtobuf
 
     )
 
@@ -864,7 +871,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProfobuf
+    akkaProtobuf
   )
 
   val `build-tool-support` = libraryDependencies ++= Seq(
@@ -921,7 +928,7 @@ object Dependencies {
     // updates to match whitelist
     akkaActor,
     akkaStream,
-    akkaProfobuf,
+    akkaProtobuf,
     akkaSlf4j,
     typesafeConfig,
     sslConfig,
