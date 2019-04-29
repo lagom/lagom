@@ -11,7 +11,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.testkit.ImplicitSender
 import akka.{ Done, NotUsed }
-import com.lightbend.lagom.internal.persistence.ReadSideConfig
+import com.lightbend.lagom.internal.persistence.{ PersistenceConfig, ReadSideConfig }
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
@@ -36,6 +36,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
   implicit val mat = ActorMaterializer()
 
+  protected val persistenceConfig = PersistenceConfig(system.settings.config.getConfig("lagom.persistence"))
   protected val persistentEntityRegistry: PersistentEntityRegistry
 
   def eventStream[Event <: AggregateEvent[Event]](

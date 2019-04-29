@@ -81,7 +81,9 @@ private[lagom] class SlickOffsetStore(system: ActorSystem, val slick: SlickProvi
 
   private val offsets = TableQuery[OffsetStore]
 
-  private val startupTask = if (slick.autoCreateTables) {
+  // This must be lazy to ensure that the startup task doesn't run until something actually tries to use it.
+  // This ensures that we don't try and use any cluster features before the cluster is formed.
+  private lazy val startupTask = if (slick.autoCreateTables) {
     Some(
       ClusterStartupTask(
         system,

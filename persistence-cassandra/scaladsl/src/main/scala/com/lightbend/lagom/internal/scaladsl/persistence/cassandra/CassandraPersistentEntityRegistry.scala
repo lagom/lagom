@@ -7,16 +7,15 @@ package com.lightbend.lagom.internal.scaladsl.persistence.cassandra
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
-import akka.persistence.query.PersistenceQuery
-import akka.persistence.query.scaladsl.EventsByTagQuery
+import com.lightbend.lagom.internal.persistence.PersistenceConfig
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraKeyspaceConfig
 import com.lightbend.lagom.internal.scaladsl.persistence.AbstractPersistentEntityRegistry
 
 /**
  * Internal API
  */
-private[lagom] final class CassandraPersistentEntityRegistry(system: ActorSystem)
-  extends AbstractPersistentEntityRegistry(system) {
+private[lagom] final class CassandraPersistentEntityRegistry(system: ActorSystem, config: PersistenceConfig)
+  extends AbstractPersistentEntityRegistry(system, config) {
 
   private val log = Logging.getLogger(system, getClass)
 

@@ -54,8 +54,10 @@ private[lagom] class ReadSideImpl @Inject() (
     clazz:            Class[_]
   ) = {
 
+    val cluster = Cluster(system)
+
     // Only run if we're configured to run on this role
-    if (config.role.forall(Cluster(system).selfRoles.contains)) {
+    if (config.role.forall(cluster.selfRoles.contains)) {
       // try to create one instance to fail fast (e.g. wrong constructor)
       val dummyProcessor = try {
         processorFactory()
@@ -73,35 +75,37 @@ private[lagom] class ReadSideImpl @Inject() (
         case None      => throw new IllegalArgumentException(s"ReadSideProcessor ${clazz.getName} returned 0 tags")
       }
 
-      val globalPrepareTask: ClusterStartupTask =
-        ClusterStartupTask(
-          system,
-          s"readSideGlobalPrepare-$encodedReadSideName",
-          () => processorFactory().buildHandler().globalPrepare().toScala,
-          config.globalPrepareTimeout,
-          config.role,
-          config.minBackoff,
-          config.maxBackoff,
-          config.randomBackoffFactor
+      cluster.registerOnMemberUp {
+        val globalPrepareTask: ClusterStartupTask =
+          ClusterStartupTask(
+            system,
+            s"readSideGlobalPrepare-$encodedReadSideName",
+            () => processorFactory().buildHandler().globalPrepare().toScala,
+            config.globalPrepareTimeout,
+            config.role,
+            config.minBackoff,
+            config.maxBackoff,
+            config.randomBackoffFactor
+          )
+
+        val readSideProps =
+          ReadSideActor.props(
+            config,
+            eventClass,
+            globalPrepareTask,
+            registry.eventStream[Event],
+            processorFactory
+          )
+
+        val shardingSettings = ClusterShardingSettings(system).withRole(config.role)
+
+        ClusterDistribution(system).start(
+          readSideName,
+          readSideProps,
+          entityIds.toSet,
+          ClusterDistributionSettings(system).copy(clusterShardingSettings = shardingSettings)
         )
-
-      val readSideProps =
-        ReadSideActor.props(
-          config,
-          eventClass,
-          globalPrepareTask,
-          registry.eventStream[Event],
-          processorFactory
-        )
-
-      val shardingSettings = ClusterShardingSettings(system).withRole(config.role)
-
-      ClusterDistribution(system).start(
-        readSideName,
-        readSideProps,
-        entityIds.toSet,
-        ClusterDistributionSettings(system).copy(clusterShardingSettings = shardingSettings)
-      )
+      }
     }
 
   }

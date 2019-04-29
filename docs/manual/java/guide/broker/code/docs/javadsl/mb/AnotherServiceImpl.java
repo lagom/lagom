@@ -2,6 +2,8 @@ package docs.javadsl.mb;
 
 import akka.Done;
 import akka.NotUsed;
+import akka.actor.ActorSystem;
+import akka.cluster.Cluster;
 import akka.stream.FlowShape;
 import akka.stream.Graph;
 import akka.stream.UniformFanInShape;
@@ -76,5 +78,18 @@ public class AnotherServiceImpl implements AnotherService {
                 }
             }));
         //#subscribe-to-topic-skip-messages
+    }
+
+    private void delaySubscription() {
+        ActorSystem actorSystem = ActorSystem.create();
+        //#delay-subscription
+        Cluster.get(actorSystem).registerOnMemberUp(() -> {
+            helloService.greetingsTopic()
+                .subscribe()
+                .atLeastOnce(Flow.fromFunction((GreetingMessage message) -> {
+                    return doSomethingWithTheMessage(message);
+                }));
+        });
+        //#delay-subscription
     }
 }

@@ -6,7 +6,7 @@ package com.lightbend.lagom.scaladsl.persistence
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.persistence.ReadSideConfig
+import com.lightbend.lagom.internal.persistence.{ PersistenceConfig, ReadSideConfig }
 import com.lightbend.lagom.internal.scaladsl.persistence.ReadSideImpl
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import play.api.Configuration
@@ -23,6 +23,10 @@ trait PersistenceComponents extends ReadSidePersistenceComponents
  */
 trait WriteSidePersistenceComponents extends ClusterComponents {
   def persistentEntityRegistry: PersistentEntityRegistry
+  def configuration: Configuration
+
+  lazy val persistenceConfig: PersistenceConfig = PersistenceConfig(configuration.underlying.getConfig("lagom.persistence"))
+
 }
 
 /**
@@ -32,8 +36,6 @@ trait ReadSidePersistenceComponents extends WriteSidePersistenceComponents {
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext
   def materializer: Materializer
-
-  def configuration: Configuration
 
   lazy val readSideConfig: ReadSideConfig = ReadSideConfig(configuration.underlying.getConfig("lagom.persistence.read-side"))
   lazy val readSide: ReadSide = new ReadSideImpl(actorSystem, readSideConfig, persistentEntityRegistry, None)(

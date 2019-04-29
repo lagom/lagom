@@ -11,6 +11,7 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import com.lightbend.lagom.internal.javadsl.persistence.AbstractPersistentEntityRegistry
+import com.lightbend.lagom.internal.persistence.PersistenceConfig
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraKeyspaceConfig
 import play.api.inject.Injector
 
@@ -18,8 +19,8 @@ import play.api.inject.Injector
  * Internal API
  */
 @Singleton
-private[lagom] final class CassandraPersistentEntityRegistry @Inject() (system: ActorSystem, injector: Injector)
-  extends AbstractPersistentEntityRegistry(system, injector) {
+private[lagom] final class CassandraPersistentEntityRegistry @Inject() (system: ActorSystem, injector: Injector, config: PersistenceConfig)
+  extends AbstractPersistentEntityRegistry(system, injector, config) {
 
   private val log = Logging.getLogger(system, getClass)
 

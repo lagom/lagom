@@ -16,7 +16,7 @@ import scala.concurrent.duration._
 
 class JdbcReadSideSpec extends JdbcPersistenceSpec with AbstractReadSideSpec {
   private lazy val injector = new GuiceInjectorBuilder().build()
-  override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, injector, slick)
+  override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, injector, slick, persistenceConfig)
 
   override def processorFactory(): ReadSideProcessor[Evt] =
     new JdbcTestEntityReadSide.TestEntityReadSideProcessor(jdbcReadSide)

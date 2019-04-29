@@ -24,7 +24,7 @@ object CassandraReadSideSpec {
 class CassandraReadSideSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.defaultConfig, TestEntitySerializerRegistry) with AbstractReadSideSpec {
   import system.dispatcher
 
-  override protected lazy val persistentEntityRegistry = new CassandraPersistentEntityRegistry(system)
+  override protected lazy val persistentEntityRegistry = new CassandraPersistentEntityRegistry(system, persistenceConfig)
 
   private lazy val testCasReadSideSettings: CassandraReadSideSettings = new CassandraReadSideSettings(system)
   private lazy val testSession: CassandraSession = new CassandraSession(system)

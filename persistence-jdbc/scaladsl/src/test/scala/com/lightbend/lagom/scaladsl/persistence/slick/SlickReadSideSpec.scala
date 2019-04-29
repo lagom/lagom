@@ -17,7 +17,7 @@ class SlickReadSideSpec
 
   import system.dispatcher
 
-  override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, slick)
+  override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, slick, persistenceConfig)
 
   override def processorFactory(): ReadSideProcessor[Evt] =
     new SlickTestEntityReadSide.TestEntityReadSideProcessor(slickReadSide, slick.db, slick.profile)
