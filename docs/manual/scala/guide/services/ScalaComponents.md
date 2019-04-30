@@ -29,12 +29,12 @@ This is a list of available Components you may use to build your application cak
 | [ConfigurationServiceLocatorComponents](api/com/lightbend/lagom/scaladsl/client/ConfigurationServiceLocatorComponents.html)| provides a Service Locator based on `application.conf` files. See [[Using static values for services and Cassandra to simulate a managed runtime|ProductionOverview#Using-static-values-for-services-and-Cassandra]].|
 | [RoundRobinServiceLocatorComponents](api/com/lightbend/lagom/scaladsl/client/RoundRobinServiceLocatorComponents.html)| provides a Service Locator that applies a Round Robin over the passed in sequence of URI. |
 | [CircuitBreakerComponents](api/com/lightbend/lagom/scaladsl/client/CircuitBreakerComponents.html)| implementors of a Service Locator will need to extend this to reuse the Circuit Breaker config provided by Lagom.|
+| [AkkaDiscoveryComponents](api/com/lightbend/lagom/scaladsl/akka/discovery/AkkaDiscoveryComponents.html)| implementors of a Service Locator based on Akka Discovery. Available as [[opt-in dependency|AkkaDiscoveryIntegration]]. It is the recommended implementation for production specially for users targeting Kubernetes and DC/OS (Marathon).|
 
 ##### Third party Components
 
 You can mix in `Components` from other frameworks or libraries, for example:
 
- * [AkkaDiscoveryComponents](https://github.com/lagom/lagom-akka-discovery-service-locator): is defined by the `lagom-akka-discovery-service-locator` library and provides a Lagom `ServiceLocator` implementation built on [Akka Service Discovery](https://doc.akka.io/docs/akka/current/discovery/index.html). It is the recommended implementation for production specially for users targeting Kubernetes and DC/OS (Marathon).
  * [AhcWSComponents](https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.libs.ws.ahc.AhcWSComponents): provides a `WSClient` based on an Async HTTP Client.
  * [DBComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/DBComponents.html)
  * [HikariCPComponents](https://www.playframework.com/documentation/2.6.x/api/scala/play/api/db/HikariCPComponents.html)

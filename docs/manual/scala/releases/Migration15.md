@@ -8,14 +8,14 @@ For a detailed list of version upgrades of other libraries Lagom builds on such 
 
 ## Migrating from Lagom 1.4
 
-To migrate from Lagom 1.4 we recommend first migrating to latest version of Lagom 1.4 (currently `1.4.11`) before upgrading to Lagom 1.5. Refer to the [release notes](https://github.com/lagom/lagom/releases) for details upgrading to latest version of Lagom 1.4.
+To migrate from Lagom 1.4 we recommend first migrating to latest version of Lagom 1.4 before upgrading to Lagom 1.5. Refer to the [release notes](https://github.com/lagom/lagom/releases) for details upgrading to latest version of Lagom 1.4.
 
 ## Build changes
 
 The version of Lagom can be updated by editing the `project/plugins.sbt` file, and updating the version of the Lagom sbt plugin. For example:
 
 ```scala
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.5.0")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.5.1")
 ```
 
 We also recommend upgrading to sbt 1.2.8 or later, by updating the `sbt.version` in `project/build.properties`.
@@ -24,7 +24,7 @@ We also recommend upgrading to sbt 1.2.8 or later, by updating the `sbt.version`
 
 ### Service Ports
 
-Lagom 1.5.0 now has support for SSL calls for gRPC integration and a new build setting was introduced to configure the https port for a given service manually.
+Lagom 1.5 now has support for SSL calls for gRPC integration and a new build setting was introduced to configure the https port for a given service manually.
 
 In sbt, the new setting is called `lagomServiceHttpsPort`. To keep the names aligned, we are deprecating `lagomServicePort` in favour of `lagomServiceHttpPort`.
 
@@ -36,8 +36,7 @@ The following:
 * `com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil` (`lagom-scaladsl-persistence-jdbc`)
 * `com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil` (`lagom-scaladsl-persistence`)
 
-were never intended for public consumption, and therefore have been marked deprecated in 1.5.0 for removal in
-2.0.0.
+were never intended for public consumption, and therefore have been marked deprecated in 1.5 for removal in 2.0.0.
 
 ## ConductR
 
@@ -49,13 +48,13 @@ See Deployment below.
 
 ## Lightbend Orchestration
 
-[Lightbend Orchestration](https://developer.lightbend.com/docs/lightbend-orchestration/current/) is not supported with Lagom 1.5. If you used Lightbend Orchestration for your deployment you will have to migrate to a manual process. This migration may happen on the same commit where you upgrade to Lagom 1.5.0 or you can upgrade your deployment process on a first step (still using Lagom 1.4.x) and later upgrade to Lagom 1.5.0.
+[Lightbend Orchestration](https://developer.lightbend.com/docs/lightbend-orchestration/current/) is not supported with Lagom 1.5. If you used Lightbend Orchestration for your deployment you will have to migrate to a manual process. This migration may happen on the same commit where you upgrade to Lagom 1.5 or you can upgrade your deployment process on a first step (still using Lagom 1.4.x) and later upgrade to Lagom 1.5.
 
 See Deployment below.
 
 ## Deployment
 
-ConductR tooling and Lightbend Orchestration handled all the required pieces to deploy on ConductR and Kubernetes or DC/OS. Lagom 1.5.0 only supports a manually maintained deployment process.
+ConductR tooling and Lightbend Orchestration handled all the required pieces to deploy on ConductR and Kubernetes or DC/OS. Lagom 1.5 only supports a manually maintained deployment process.
 
 In particular, ConductR tooling and Lightbend Orchestration handled some or all of the following:
 
@@ -75,41 +74,9 @@ These new defaults may require at least two changes on your codebase. First, if 
 
 #### Service Location
 
-You no longer have a `ServiceLocator `provided by the tooling libraries so you will have to provide one of your choice. We recommend using the new [`lagom-akka-discovery-service-locator`](https://github.com/lagom/lagom-akka-discovery-service-locator) which is implemented using [Akka Service Discovery](https://doc.akka.io/docs/akka/current/discovery/index.html) implementations.
+You no longer have a `ServiceLocator` provided by the tooling libraries so you will have to provide one of your choice. We recommend using the new [[Akka Discovery Service Locator|AkkaDiscoveryIntegration]] which is implemented using [Akka Service Discovery](https://doc.akka.io/docs/akka/current/discovery/index.html) implementations.
 
-You first need to add the following dependency to each service implementation in your `build.sbt`.
-
-```scala
-"com.lightbend.lagom" %% "lagom-scaladsl-akka-discovery-service-locator" % "1.0.0"
-```
-
-Next you will have to change the `Loader` code in each service implementation:
-
-```scala
-// before
-  import com.lightbend.rp.servicediscovery.lagom.scaladsl.LagomServiceLocatorComponents
-  override def load(context: LagomApplicationContext) =
-    new MyApplication(context) with LagomServiceLocatorComponents
-```
-
-```scala
-// after
-  import com.lightbend.lagom.scaladsl.akka.discovery.AkkaDiscoveryComponents
-  override def load(context: LagomApplicationContext): LagomApplication =
-    new MyProxyApplication(context) with AkkaDiscoveryComponents
-```
-
-Once you enable `AkkaDiscoveryComponents` you will need to enable an Akka Service Discovery [method](https://doc.akka.io/docs/akka/current/discovery/index.html):
-
-```
-akka {
-  discovery {
-   method = akka-dns
-  }
-}
-```
-
-Read the [docs](https://github.com/lagom/lagom-akka-discovery-service-locator) of the new `lagom-akka-discovery-service-locator` for more details.
+Read [[Akka Discovery Service Locator|AkkaDiscoveryIntegration]] for details on how to setup the Akka Service Discovery [method](https://doc.akka.io/docs/akka/current/discovery/index.html).
 
 #### Docker images and deployment specs
 
@@ -139,7 +106,7 @@ New defaults have been added to the Lagom clustering configuration.
 
 The first default configuration concerns how long a node should try to join an cluster. This is configured by the setting `akka.cluster.shutdown-after-unsuccessful-join-seed-nodes`. Lagom will default this value to 60 seconds. After that period, the Actor System will shutdown if it fails to join a cluster.
 
-The second important change is the default value for `lagom.cluster.exit-jvm-when-system-terminated`. This was previously `off`, but we always recommended it to be `on` in production environments. As of Lagom 1.5.0, that setting defaults to `on`. When enabled, Lagom will exit the JVM when the application leave the cluster or fail to join the cluster. In Dev and Test mode, this setting is automatically set to `off`.
+The second important change is the default value for `lagom.cluster.exit-jvm-when-system-terminated`. This was previously `off`, but we always recommended it to be `on` in production environments. As of Lagom 1.5, that setting defaults to `on`. When enabled, Lagom will exit the JVM when the application leave the cluster or fail to join the cluster. In Dev and Test mode, this setting is automatically set to `off`.
 
 These two properties together are essential for recovering applications in production environments like Kubernetes. Without them, a Lagom node could reach a zombie state in which it wouldn't provide any functionality but stay around consuming resources. The desired behavior for a node that is not participating on a cluster is to shut itself down and let the orchestration infrastructure re-start it.
 

@@ -316,7 +316,7 @@ object Dependencies {
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
       "akka-actor", "akka-cluster", "akka-cluster-sharding", "akka-cluster-tools", "akka-distributed-data",
       "akka-multi-node-testkit", "akka-persistence", "akka-persistence-query", "akka-protobuf", "akka-remote",
-      "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit", "akka-coordination"
+      "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit", "akka-coordination", "akka-discovery"
 
     ) ++ libraryFamily("com.typesafe.play", Versions.Play)(
       "build-link", "play-exceptions", "play-netty-utils"
@@ -583,12 +583,20 @@ object Dependencies {
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest,
 
-    // Upgrades needed to match whitelist
     okio % Test,
     byteBuddy % Test,
     commonsLang % Test,
     "io.netty" % "netty-transport-native-epoll" % Versions.Netty,
     "io.netty" % "netty-transport-native-unix-common" % Versions.Netty
+  )
+  val `lagom-akka-discovery-service-locator-core` = libraryDependencies ++= Seq(
+    akkaDiscovery,
+    slf4jApi,
+    scalaTest % Test,
+
+    // Upgrades needed to match whitelist
+    scalaJava8Compat,
+    scalaXml
   )
 
   val `akka-management-core` = libraryDependencies ++= Seq(
@@ -626,8 +634,8 @@ object Dependencies {
     scalaXml,
     akkaSlf4j,
 
-    // transitive dependencies from Akka Management 
-    // may not match the Akka version in use so 
+    // transitive dependencies from Akka Management
+    // may not match the Akka version in use so
     // must be explicitly bumped
     akkaDiscovery,
     akkaClusterSharding,
