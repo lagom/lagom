@@ -1,3 +1,4 @@
 ProductionOverview:Production Overview
+AkkaDiscoveryIntegration:Akka Discovery Integration
 LightbendPlatform:Lightbend Platform
 
