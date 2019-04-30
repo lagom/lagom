@@ -29,10 +29,10 @@ checkIfShouldSkip() {
 }
 
 runSbt() {
-  sbt ${EXTRA_OPTS} --warn -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
+  sbt ${EXTRA_OPTS} --warn 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
 }
 
 runSbtNoisy() {
-  sbt ${EXTRA_OPTS} -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
+  sbt ${EXTRA_OPTS} 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
 }
 
