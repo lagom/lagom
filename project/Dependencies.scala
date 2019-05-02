@@ -7,7 +7,7 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.21"
+  val PlayVersion = "2.6.22"
   val PlayJsonVersion = "2.6.12"
   val PlayStandaloneWsVersion = "1.1.12"
   val TwirlVersion = "1.3.15"
@@ -29,7 +29,7 @@ object Dependencies {
   val JacksonDatabindVersion = "2.8.11.3"
   val GuavaVersion = "23.6.1-jre"
   val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.32.Final"
+  val NettyVersion = "4.1.34.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
   val KafkaVersion = "0.11.0.1"
   val AkkaStreamKafkaVersion = "0.18"
