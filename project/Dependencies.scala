@@ -18,9 +18,9 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play = "2.7.0"
-    val PlayJson = "2.7.0"
-    val PlayStandaloneWs = "2.0.1"
+    val Play = "2.7.2"
+    val PlayJson = "2.7.2"
+    val PlayStandaloneWs = "2.0.3"
     val Twirl = "1.4.0"
     val PlayFileWatch = "1.1.8"
 
@@ -39,10 +39,10 @@ object Dependencies {
     val JacksonCore = Jackson
     val JacksonDatatype = Jackson
     val JacksonDatabind = Jackson
-    val Guava = "27.0-jre"
+    val Guava = "27.1-jre"
     val Maven = "3.6.0"
-    val Netty = "4.1.32.Final"
-    val NettyReactiveStreams = "2.0.0"
+    val Netty = "4.1.34.Final"
+    val NettyReactiveStreams = "2.0.3"
     val Kafka = "2.1.1"
     val AlpakkaKafka = "1.0.1"
     val Curator = "2.12.0"
@@ -268,7 +268,7 @@ object Dependencies {
       "com.typesafe.play" %% "twirl-api" % Versions.Twirl,
       "com.typesafe.slick" %% "slick" % Versions.Slick,
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
-      "com.zaxxer" % "HikariCP" % "3.3.0",
+      "com.zaxxer" % "HikariCP" % "3.3.1",
       "commons-codec" % "commons-codec" % "1.10",
       "io.aeron" % "aeron-client" % Versions.Aeron,
       "io.aeron" % "aeron-driver" % Versions.Aeron,
@@ -308,7 +308,7 @@ object Dependencies {
       "tyrex" % "tyrex" % "1.0.1",
       javaxAnnotationApi,
       "org.scala-lang.modules" %% "scala-collection-compat" % "0.1.1",
-      "com.google.guava" % "failureaccess" % "1.0",
+      "com.google.guava" % "failureaccess" % "1.0.1",
       "com.google.guava" % "listenablefuture" % "9999.0-empty-to-avoid-conflict-with-guava",
       "javax.activation" % "javax.activation-api" % "1.2.0"
 
