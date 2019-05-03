@@ -11,6 +11,7 @@ import play.api.libs.json.Reads
 
 object AddOrder {
 
+  // format: off
   //#manualMapping
   case class AddOrder(productId: String, quantity: Int)
 
@@ -18,11 +19,13 @@ object AddOrder {
   import play.api.libs.json._
 
   object AddOrder {
-    implicit val format: Format[AddOrder] =
-      (JsPath \ "product_id").format[String].and((JsPath \ "quantity").format[Int])
-    (AddOrder.apply, unlift(AddOrder.unapply))
+    implicit val format: Format[AddOrder] = (
+        (JsPath \ "product_id").format[String] and
+          (JsPath \ "quantity").format[Int]
+        ) (AddOrder.apply, unlift(AddOrder.unapply))
   }
   //#manualMapping
+  // format: on
 
 }
 
