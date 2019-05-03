@@ -31,7 +31,7 @@ bin/scalafmt --test || (
 )
 
 printMessage "VALIDATE JAVA CODE FORMATTING"
-runSbt javafmt
+runSbt multi-jvm:javafmt
 git diff --exit-code || (
   echo "[error] ERROR: javafmt check failed, see differences above."
   echo "[error] To fix, format your sources using sbt javafmt test:javafmt before submitting a pull request."

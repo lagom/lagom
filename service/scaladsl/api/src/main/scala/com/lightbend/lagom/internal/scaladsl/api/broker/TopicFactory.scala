@@ -13,6 +13,7 @@ import com.lightbend.lagom.scaladsl.api.broker.Topic
  * Abstraction for topic factories.
  */
 trait TopicFactory {
+
   /**
    * Create a client topic for the given topic call.
    */

@@ -12,7 +12,7 @@ object Whitesource extends AutoPlugin {
     whitesourceProduct := "Lightbend Reactive Platform",
     whitesourceAggregateProjectName := {
       (moduleName in LocalRootProject).value + "-" +
-      whitesourceProjectSuffix(isSnapshot.value, currentBranch.value, (version in LocalRootProject).value)
+        whitesourceProjectSuffix(isSnapshot.value, currentBranch.value, (version in LocalRootProject).value)
     },
     whitesourceForceCheckAllDependencies := true,
     whitesourceFailOnError := true

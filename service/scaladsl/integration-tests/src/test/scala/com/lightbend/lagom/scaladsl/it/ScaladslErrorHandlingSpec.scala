@@ -6,26 +6,41 @@ package com.lightbend.lagom.scaladsl.it
 
 import akka.NotUsed
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Sink, Source }
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceClient
-import com.lightbend.lagom.scaladsl.api.{ AdditionalConfiguration, Descriptor, ServiceCall }
-import com.lightbend.lagom.scaladsl.api.Descriptor.{ Call, CallId, NamedCallId, RestCallId }
+import com.lightbend.lagom.scaladsl.api.AdditionalConfiguration
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.ServiceCall
+import com.lightbend.lagom.scaladsl.api.Descriptor.Call
+import com.lightbend.lagom.scaladsl.api.Descriptor.CallId
+import com.lightbend.lagom.scaladsl.api.Descriptor.NamedCallId
+import com.lightbend.lagom.scaladsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodServiceCall
-import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.{ NegotiatedDeserializer, NegotiatedSerializer }
-import com.lightbend.lagom.scaladsl.api.deser.{ MessageSerializer, StreamedMessageSerializer, StrictMessageSerializer }
+import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.NegotiatedDeserializer
+import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.NegotiatedSerializer
+import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer
+import com.lightbend.lagom.scaladsl.api.deser.StreamedMessageSerializer
+import com.lightbend.lagom.scaladsl.api.deser.StrictMessageSerializer
 import com.lightbend.lagom.scaladsl.api.transport._
 import com.lightbend.lagom.scaladsl.client.ServiceResolver
-import com.lightbend.lagom.scaladsl.it.mocks.{ MockRequestEntity, MockService, MockServiceImpl }
+import com.lightbend.lagom.scaladsl.it.mocks.MockRequestEntity
+import com.lightbend.lagom.scaladsl.it.mocks.MockService
+import com.lightbend.lagom.scaladsl.it.mocks.MockServiceImpl
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.Matchers
+import org.scalatest.WordSpec
 import play.api.libs.streams.AkkaStreams
-import play.api.{ Configuration, Environment, Mode }
+import play.api.Configuration
+import play.api.Environment
+import play.api.Mode
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.immutable
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.Await
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 
@@ -44,7 +59,6 @@ import scala.util.control.NonFatal
 class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
 
   List(AkkaHttp, Netty).foreach { implicit backend =>
-
     s"Service error handling (${backend.codeName})" when {
       "handling errors with plain HTTP calls" should {
         tests(RestCallId(Method.POST, "/mock/:id")) { implicit mat => client =>
@@ -101,16 +115,19 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
   }
 
   def tests(
-    callId: CallId
+      callId: CallId
   )(makeCall: Materializer => MockService => Throwable)(implicit httpBackend: HttpBackend) = {
-    "handle errors in request serialization" in withClient(changeClient = change(callId)(failingRequestSerializer)) { implicit mat => client =>
-      makeCall(mat)(client) match {
-        case e: SerializationException =>
-          e.errorCode should ===(TransportErrorCode.InternalServerError)
-          e.exceptionMessage.detail should ===("failed serialize")
-      }
+    "handle errors in request serialization" in withClient(changeClient = change(callId)(failingRequestSerializer)) {
+      implicit mat => client =>
+        makeCall(mat)(client) match {
+          case e: SerializationException =>
+            e.errorCode should ===(TransportErrorCode.InternalServerError)
+            e.exceptionMessage.detail should ===("failed serialize")
+        }
     }
-    "handle errors in request deserialization negotiation" in withClient(changeServer = change(callId)(failingRequestNegotiation)) { implicit mat => client =>
+    "handle errors in request deserialization negotiation" in withClient(
+      changeServer = change(callId)(failingRequestNegotiation)
+    ) { implicit mat => client =>
       makeCall(mat)(client) match {
         case e: UnsupportedMediaType =>
           e.errorCode should ===(TransportErrorCode.UnsupportedMediaType)
@@ -118,23 +135,27 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
           e.exceptionMessage.detail should include("unsupported")
       }
     }
-    "handle errors in request deserialization" in withClient(changeServer = change(callId)(failingRequestSerializer)) { implicit mat => client =>
-      makeCall(mat)(client) match {
-        case e: DeserializationException =>
-          e.errorCode should ===(TransportErrorCode.UnsupportedData)
-          e.exceptionMessage.detail should ===("failed deserialize")
-      }
+    "handle errors in request deserialization" in withClient(changeServer = change(callId)(failingRequestSerializer)) {
+      implicit mat => client =>
+        makeCall(mat)(client) match {
+          case e: DeserializationException =>
+            e.errorCode should ===(TransportErrorCode.UnsupportedData)
+            e.exceptionMessage.detail should ===("failed deserialize")
+        }
     }
-    "handle errors in service call invocation" in withClient(changeServer = change(callId)(failingServiceCall)) { implicit mat => client =>
-      makeCall(mat)(client) match {
-        case e: TransportException =>
-          // By default, we don't give out internal details of exceptions, for security reasons
-          e.exceptionMessage.name should ===("Exception")
-          e.exceptionMessage.detail should ===("")
-          e.errorCode should ===(TransportErrorCode.InternalServerError)
-      }
+    "handle errors in service call invocation" in withClient(changeServer = change(callId)(failingServiceCall)) {
+      implicit mat => client =>
+        makeCall(mat)(client) match {
+          case e: TransportException =>
+            // By default, we don't give out internal details of exceptions, for security reasons
+            e.exceptionMessage.name should ===("Exception")
+            e.exceptionMessage.detail should ===("")
+            e.errorCode should ===(TransportErrorCode.InternalServerError)
+        }
     }
-    "handle asynchronous errors in service call invocation" in withClient(changeServer = change(callId)(asyncFailingServiceCall)) { implicit mat => client =>
+    "handle asynchronous errors in service call invocation" in withClient(
+      changeServer = change(callId)(asyncFailingServiceCall)
+    ) { implicit mat => client =>
       makeCall(mat)(client) match {
         case e: TransportException =>
           e.exceptionMessage.name should ===("Exception")
@@ -143,7 +164,9 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
       }
     }
     "handle stream errors in service call invocation" when {
-      "in prod mode will not give out error information" in withClient(changeServer = change(callId)(failingStreamedServiceCall)) { implicit mat => client =>
+      "in prod mode will not give out error information" in withClient(
+        changeServer = change(callId)(failingStreamedServiceCall)
+      ) { implicit mat => client =>
         makeCall(mat)(client) match {
           case e: TransportException =>
             e.exceptionMessage.name should ===("Exception")
@@ -151,7 +174,10 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
             e.errorCode should ===(TransportErrorCode.InternalServerError)
         }
       }
-      "in dev mode will give out detailed exception information" in withClient(changeServer = change(callId)(failingStreamedServiceCall), mode = Mode.Dev) { implicit mat => client =>
+      "in dev mode will give out detailed exception information" in withClient(
+        changeServer = change(callId)(failingStreamedServiceCall),
+        mode = Mode.Dev
+      ) { implicit mat => client =>
         makeCall(mat)(client) match {
           case e: TransportException =>
             e.errorCode should ===(TransportErrorCode.InternalServerError)
@@ -167,7 +193,9 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
         }
       }
     }
-    "handle errors in response serialization negotiation" in withClient(changeServer = change(callId)(failingResponseNegotation)) { implicit mat => client =>
+    "handle errors in response serialization negotiation" in withClient(
+      changeServer = change(callId)(failingResponseNegotation)
+    ) { implicit mat => client =>
       makeCall(mat)(client) match {
         case e: NotAcceptable =>
           e.errorCode should ===(TransportErrorCode.NotAcceptable)
@@ -175,14 +203,17 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
           e.exceptionMessage.detail should include("not accepted")
       }
     }
-    "handle errors in response serialization" in withClient(changeServer = change(callId)(failingResponseSerializer)) { implicit mat => client =>
-      makeCall(mat)(client) match {
-        case e: SerializationException =>
-          e.errorCode should ===(TransportErrorCode.InternalServerError)
-          e.exceptionMessage.detail should ===("failed serialize")
-      }
+    "handle errors in response serialization" in withClient(changeServer = change(callId)(failingResponseSerializer)) {
+      implicit mat => client =>
+        makeCall(mat)(client) match {
+          case e: SerializationException =>
+            e.errorCode should ===(TransportErrorCode.InternalServerError)
+            e.exceptionMessage.detail should ===("failed serialize")
+        }
     }
-    "handle errors in response deserialization negotiation" in withClient(changeClient = change(callId)(failingResponseNegotation)) { implicit mat => client =>
+    "handle errors in response deserialization negotiation" in withClient(
+      changeClient = change(callId)(failingResponseNegotation)
+    ) { implicit mat => client =>
       makeCall(mat)(client) match {
         case e: UnsupportedMediaType =>
           e.errorCode should ===(TransportErrorCode.UnsupportedMediaType)
@@ -194,12 +225,13 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
           }
       }
     }
-    "handle errors in response deserialization" in withClient(changeClient = change(callId)(failingResponseSerializer)) { implicit mat => client =>
-      makeCall(mat)(client) match {
-        case e: DeserializationException =>
-          e.errorCode should ===(TransportErrorCode.UnsupportedData)
-          e.exceptionMessage.detail should ===("failed deserialize")
-      }
+    "handle errors in response deserialization" in withClient(changeClient = change(callId)(failingResponseSerializer)) {
+      implicit mat => client =>
+        makeCall(mat)(client) match {
+          case e: DeserializationException =>
+            e.errorCode should ===(TransportErrorCode.UnsupportedData)
+            e.exceptionMessage.detail should ===("failed deserialize")
+        }
     }
   }
 
@@ -207,9 +239,9 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
    * This sets up the server and the client, but allows them to be modified before actually creating them.
    */
   def withClient(
-    changeClient: Descriptor => Descriptor = identity,
-    changeServer: Descriptor => Descriptor = identity,
-    mode:         Mode                     = Mode.Prod
+      changeClient: Descriptor => Descriptor = identity,
+      changeServer: Descriptor => Descriptor = identity,
+      mode: Mode = Mode.Prod
   )(block: Materializer => MockService => Unit)(implicit httpBackend: HttpBackend): Unit = {
 
     ServiceTest.withServer(ServiceTest.defaultSetup) { ctx =>
@@ -218,20 +250,29 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
         override lazy val environment = Environment.simple(mode = mode)
 
         override def additionalConfiguration: AdditionalConfiguration =
-          super.additionalConfiguration ++ Configuration.from(Map(
-            "play.server.provider" -> httpBackend.provider
-          ))
+          super.additionalConfiguration ++ Configuration.from(
+            Map(
+              "play.server.provider" -> httpBackend.provider
+            )
+          )
 
         // Custom server builder to inject our changeServer callback
-        override lazy val lagomServerBuilder = new LagomServerBuilder(httpConfiguration, playBodyParsers, new ServiceResolver {
-          override def resolve(descriptor: Descriptor): Descriptor = changeServer(serviceResolver.resolve(descriptor))
-        })(materializer, executionContext)
+        override lazy val lagomServerBuilder =
+          new LagomServerBuilder(httpConfiguration, playBodyParsers, new ServiceResolver {
+            override def resolve(descriptor: Descriptor): Descriptor = changeServer(serviceResolver.resolve(descriptor))
+          })(materializer, executionContext)
 
         // Custom service client to inject our changeClient callback
-        override lazy val serviceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
-          serviceLocator, new ServiceResolver {
-          override def resolve(descriptor: Descriptor): Descriptor = changeClient(serviceResolver.resolve(descriptor))
-        }, None)(executionContext, materializer)
+        override lazy val serviceClient = new ScaladslServiceClient(
+          wsClient,
+          scaladslWebSocketClient,
+          serviceInfo,
+          serviceLocator,
+          new ServiceResolver {
+            override def resolve(descriptor: Descriptor): Descriptor = changeClient(serviceResolver.resolve(descriptor))
+          },
+          None
+        )(executionContext, materializer)
       }
     } { server =>
       val client = server.serviceClient.implement[MockService]
@@ -249,7 +290,8 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
 
   def failingRequestSerializer: Call[_, _] => Call[_, _] = { call =>
     if (call.requestSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      call.asInstanceOf[Call[Source[Any, NotUsed], Any]]
+      call
+        .asInstanceOf[Call[Source[Any, NotUsed], Any]]
         .withRequestSerializer(MessageSerializer.sourceMessageSerializer(failingSerializer))
     } else {
       call.asInstanceOf[Call[Any, Any]].withRequestSerializer(failingSerializer)
@@ -258,7 +300,8 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
 
   def failingResponseSerializer: Call[_, _] => Call[_, _] = { call =>
     if (call.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      call.asInstanceOf[Call[Any, Source[Any, NotUsed]]]
+      call
+        .asInstanceOf[Call[Any, Source[Any, NotUsed]]]
         .withResponseSerializer(MessageSerializer.sourceMessageSerializer(failingSerializer))
     } else {
       call.asInstanceOf[Call[Any, Any]].withResponseSerializer(failingSerializer)
@@ -273,12 +316,13 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
       override def deserialize(wire: ByteString): AnyRef = throw DeserializationException("failed deserialize")
     }
     override def serializerForResponse(acceptedMessageHeaders: immutable.Seq[MessageProtocol]) = failedSerializer
-    override def serializerForRequest = failedSerializer
+    override def serializerForRequest                                                          = failedSerializer
   }
 
   def failingRequestNegotiation: Call[_, _] => Call[_, _] = { call =>
     if (call.requestSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      call.asInstanceOf[Call[Source[Any, NotUsed], Any]]
+      call
+        .asInstanceOf[Call[Source[Any, NotUsed], Any]]
         .withRequestSerializer(MessageSerializer.sourceMessageSerializer(failingNegotiation))
     } else {
       call.asInstanceOf[Call[Any, Any]].withRequestSerializer(failingNegotiation)
@@ -287,7 +331,8 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
 
   def failingResponseNegotation: Call[_, _] => Call[_, _] = { call =>
     if (call.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]) {
-      call.asInstanceOf[Call[Any, Source[Any, NotUsed]]]
+      call
+        .asInstanceOf[Call[Any, Source[Any, NotUsed]]]
         .withResponseSerializer(MessageSerializer.sourceMessageSerializer(failingNegotiation))
     } else {
       call.asInstanceOf[Call[Any, Any]].withResponseSerializer(failingNegotiation)
@@ -301,7 +346,9 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
     override def deserializer(messageHeader: MessageProtocol): NegotiatedDeserializer[Any, ByteString] =
       throw UnsupportedMediaType(messageHeader, MessageProtocol.empty.withContentType("unsupported"))
 
-    override def serializerForResponse(acceptedMessageHeaders: immutable.Seq[MessageProtocol]): NegotiatedSerializer[Any, ByteString] = {
+    override def serializerForResponse(
+        acceptedMessageHeaders: immutable.Seq[MessageProtocol]
+    ): NegotiatedSerializer[Any, ByteString] = {
       throw NotAcceptable(acceptedMessageHeaders, MessageProtocol.empty.withContentType("not accepted"))
     }
   }
@@ -309,19 +356,25 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
   def overrideServiceCall(serviceCall: ServiceCall[_, _]): Call[_, _] => Call[_, _] = { call =>
     call.serviceCallHolder match {
       case scalaMethodCall: ScalaMethodServiceCall[_, _] =>
-        call.asInstanceOf[Call[Any, Any]].withServiceCallHolder(new ScalaMethodServiceCall[Any, Any](scalaMethodCall.method, scalaMethodCall.pathParamSerializers) {
-          override def invoke(service: Any, parameters: immutable.Seq[AnyRef]) = serviceCall
-        })
+        call
+          .asInstanceOf[Call[Any, Any]]
+          .withServiceCallHolder(
+            new ScalaMethodServiceCall[Any, Any](scalaMethodCall.method, scalaMethodCall.pathParamSerializers) {
+              override def invoke(service: Any, parameters: immutable.Seq[AnyRef]) = serviceCall
+            }
+          )
     }
   }
 
-  def failingServiceCall: Call[_, _] => Call[_, _] = overrideServiceCall(ServiceCall[Any, Any] { _ =>
-    throw new RuntimeException("service call failed")
-  })
+  def failingServiceCall: Call[_, _] => Call[_, _] =
+    overrideServiceCall(ServiceCall[Any, Any] { _ =>
+      throw new RuntimeException("service call failed")
+    })
 
-  def asyncFailingServiceCall: Call[_, _] => Call[_, _] = overrideServiceCall(ServiceCall[Any, Any] { _ =>
-    Future.failed[Any](new RuntimeException("service call failed"))
-  })
+  def asyncFailingServiceCall: Call[_, _] => Call[_, _] =
+    overrideServiceCall(ServiceCall[Any, Any] { _ =>
+      Future.failed[Any](new RuntimeException("service call failed"))
+    })
 
   def failingStreamedServiceCall: Call[_, _] => Call[_, _] = { call =>
     // If the response is not streamed, then just return a failing service call
@@ -329,7 +382,7 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
       overrideServiceCall(ServiceCall[Any, Any] { request =>
         Future.successful(request match {
           case stream: Source[Any, _] =>
-            stream via AkkaStreams.ignoreAfterCancellation map { _ =>
+            stream.via(AkkaStreams.ignoreAfterCancellation).map { _ =>
               throw new RuntimeException("service call failed")
             }
           case _ =>

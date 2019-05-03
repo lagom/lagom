@@ -8,9 +8,11 @@ import javax.naming.InitialContext
 import javax.sql.DataSource
 
 import com.typesafe.config.Config
-import play.api.db.{ DBApi, Database }
+import play.api.db.DBApi
+import play.api.db.Database
 import play.api.inject.ApplicationLifecycle
-import slick.jdbc.JdbcBackend.{ DatabaseDef, Database => SlickDatabase }
+import slick.jdbc.JdbcBackend.DatabaseDef
+import slick.jdbc.JdbcBackend.{ Database => SlickDatabase }
 import slick.util.AsyncExecutor
 
 import scala.util.Try
@@ -23,7 +25,7 @@ private[lagom] object SlickDbProvider {
       // each configured DB having an async-executor section
       // has a Slick DB configured and bound to a JNDI name
       for {
-        dbConfig <- Try(config.getConfig(s"db.$dbName"))
+        dbConfig        <- Try(config.getConfig(s"db.$dbName"))
         asyncExecConfig <- Try(AsyncExecutorConfig(dbConfig.getConfig("async-executor")))
       } yield {
         // a DB config with an async-executor is expected to have an associated jndiDbName
@@ -36,10 +38,10 @@ private[lagom] object SlickDbProvider {
   }
 
   def buildAndBindSlickDatabase(
-    playDb:          Database,
-    asyncExecConfig: AsyncExecutorConfig,
-    jndiDbName:      String,
-    lifecycle:       ApplicationLifecycle
+      playDb: Database,
+      asyncExecConfig: AsyncExecutorConfig,
+      jndiDbName: String,
+      lifecycle: ApplicationLifecycle
   ): Unit = {
     val slickDb =
       buildSlickDatabase(
@@ -94,12 +96,13 @@ private[lagom] object AsyncExecutorConfig {
 
   private final class AsyncExecutorConfigImpl(config: Config) extends AsyncExecutorConfig {
 
-    val numThreads: Int = config.getInt("numThreads")
-    val minConnections: Int = config.getInt("minConnections")
-    val maxConnections: Int = config.getInt("maxConnections")
-    val queueSize: Int = config.getInt("queueSize")
+    val numThreads: Int         = config.getInt("numThreads")
+    val minConnections: Int     = config.getInt("minConnections")
+    val maxConnections: Int     = config.getInt("maxConnections")
+    val queueSize: Int          = config.getInt("queueSize")
     val registerMbeans: Boolean = config.getBoolean("registerMbeans")
 
-    override def toString: String = s"AsyncExecutorConfig($numThreads, $minConnections, $maxConnections, $queueSize, $registerMbeans)"
+    override def toString: String =
+      s"AsyncExecutorConfig($numThreads, $minConnections, $maxConnections, $queueSize, $registerMbeans)"
   }
 }

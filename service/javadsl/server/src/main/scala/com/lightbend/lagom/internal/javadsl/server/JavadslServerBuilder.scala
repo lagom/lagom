@@ -4,9 +4,12 @@
 
 package com.lightbend.lagom.internal.javadsl.server
 
-import java.util.function.{ BiFunction, Function => JFunction }
+import java.util.function.BiFunction
+import java.util.function.{ Function => JFunction }
 
-import javax.inject.{ Inject, Provider, Singleton }
+import javax.inject.Inject
+import javax.inject.Provider
+import javax.inject.Singleton
 import akka.stream.Materializer
 import akka.util.ByteString
 import com.lightbend.lagom.internal.api._
@@ -16,32 +19,40 @@ import com.lightbend.lagom.internal.server.ServiceRouter
 import com.lightbend.lagom.javadsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.javadsl.api.deser.StreamedMessageSerializer
 import com.lightbend.lagom.javadsl.api.transport.{ RequestHeader => _, _ }
-import com.lightbend.lagom.javadsl.api.{ Descriptor, Service, ServiceInfo }
-import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
-import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.{ ClassServiceBinding, InstanceServiceBinding }
-import com.lightbend.lagom.javadsl.server.{ LagomServiceRouter, PlayServiceCall, ServiceGuiceSupport }
+import com.lightbend.lagom.javadsl.api.Descriptor
+import com.lightbend.lagom.javadsl.api.Service
+import com.lightbend.lagom.javadsl.api.ServiceInfo
+import com.lightbend.lagom.javadsl.jackson.JacksonExceptionSerializer
+import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory
+import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.ClassServiceBinding
+import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.InstanceServiceBinding
+import com.lightbend.lagom.javadsl.server.LagomServiceRouter
+import com.lightbend.lagom.javadsl.server.PlayServiceCall
+import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import org.pcollections.HashTreePMap
 import play.api.http.HttpConfiguration
 import play.api.inject.Injector
 import play.api.mvc.{ RequestHeader => PlayRequestHeader, ResponseHeader => _, _ }
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
-import play.api.{ Environment, Logger }
+import play.api.Environment
+import play.api.Logger
 import play.api.routing.Router
 import java.util.{ List => JList }
 
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 /**
  * Turns a service implementation and descriptor into a Play router
  */
-class JavadslServerBuilder @Inject() (
-  environment:                Environment,
-  httpConfiguration:          HttpConfiguration,
-  jacksonSerializerFactory:   JacksonSerializerFactory,
-  jacksonExceptionSerializer: JacksonExceptionSerializer
+class JavadslServerBuilder @Inject()(
+    environment: Environment,
+    httpConfiguration: HttpConfiguration,
+    jacksonSerializerFactory: JacksonSerializerFactory,
+    jacksonExceptionSerializer: JacksonExceptionSerializer
 )(implicit ec: ExecutionContext, mat: Materializer) {
 
   private val log = Logger(this.getClass)
@@ -70,9 +81,12 @@ class JavadslServerBuilder @Inject() (
    * Resolve the given descriptor to the implementation of the service.
    */
   def resolveDescriptor(descriptor: Descriptor): Descriptor = {
-    ServiceReader.resolveServiceDescriptor(descriptor, environment.classLoader,
-      Map(JacksonPlaceholderSerializerFactory -> jacksonSerializerFactory),
-      Map(JacksonPlaceholderExceptionSerializer -> jacksonExceptionSerializer))
+    ServiceReader.resolveServiceDescriptor(
+      descriptor,
+      environment.classLoader,
+      Map(JacksonPlaceholderSerializerFactory   -> jacksonSerializerFactory),
+      Map(JacksonPlaceholderExceptionSerializer -> jacksonExceptionSerializer)
+    )
   }
 
   /**
@@ -91,14 +105,18 @@ class JavadslServerBuilder @Inject() (
         .filter(_.locatableService())
         .map { descriptor =>
           descriptor.name() -> descriptor.acls()
-        }.toMap.asJava
+        }
+        .toMap
+        .asJava
       if (locatableServices.size() > 1) {
         log.warn("Bundling more than one locatable service descriptor inside a single LagomService is deprecated.")
       }
       // TODO: replace with factory method ServiceInfo#of when dropping support for multiple locatable services
       new ServiceInfo(descriptors.head.name, HashTreePMap.from(locatableServices))
     } else {
-      throw new IllegalArgumentException(s"Don't know how to load services that don't implement Service. Provided: ${interfaces.mkString("[", ", ", "]")}")
+      throw new IllegalArgumentException(
+        s"Don't know how to load services that don't implement Service. Provided: ${interfaces.mkString("[", ", ", "]")}"
+      )
     }
   }
 }
@@ -108,11 +126,12 @@ case class ResolvedServices(services: Seq[ResolvedService[_]])
 case class ResolvedService[T](interface: Class[T], service: T, descriptor: Descriptor)
 
 @Singleton
-class ResolvedServicesProvider(bindings: Seq[ServiceGuiceSupport.ServiceBinding[_]]) extends Provider[ResolvedServices] {
+class ResolvedServicesProvider(bindings: Seq[ServiceGuiceSupport.ServiceBinding[_]])
+    extends Provider[ResolvedServices] {
   def this(bindings: Array[ServiceGuiceSupport.ServiceBinding[_]]) = this(bindings.toSeq)
 
   @Inject var serverBuilder: JavadslServerBuilder = null
-  @Inject var injector: Injector = null
+  @Inject var injector: Injector                  = null
 
   lazy val get = {
     serverBuilder.resolveServices(bindings.map {
@@ -123,12 +142,14 @@ class ResolvedServicesProvider(bindings: Seq[ServiceGuiceSupport.ServiceBinding[
 }
 
 @Singleton
-class JavadslServicesRouter @Inject() (
-  resolvedServices:  ResolvedServices,
-  httpConfiguration: HttpConfiguration,
-  parsers:           PlayBodyParsers,
-  additionalRouters: JList[Router]
-)(implicit ec: ExecutionContext, mat: Materializer) extends SimpleRouter with LagomServiceRouter {
+class JavadslServicesRouter @Inject()(
+    resolvedServices: ResolvedServices,
+    httpConfiguration: HttpConfiguration,
+    parsers: PlayBodyParsers,
+    additionalRouters: JList[Router]
+)(implicit ec: ExecutionContext, mat: Materializer)
+    extends SimpleRouter
+    with LagomServiceRouter {
 
   private val serviceRouters = resolvedServices.services.map { service =>
     new JavadslServiceRouter(service.descriptor, service.service, httpConfiguration, parsers)
@@ -136,12 +157,12 @@ class JavadslServicesRouter @Inject() (
 
   override val routes: Routes = {
     val mergedRouters =
-      serviceRouters.foldLeft(PartialFunction.empty[PlayRequestHeader, Handler]) {
-        (routes, router) => routes.orElse(router.routes)
+      serviceRouters.foldLeft(PartialFunction.empty[PlayRequestHeader, Handler]) { (routes, router) =>
+        routes.orElse(router.routes)
       }
 
-    additionalRouters.asScala.foldLeft(mergedRouters) {
-      (routes, router) => routes.orElse(router.routes)
+    additionalRouters.asScala.foldLeft(mergedRouters) { (routes, router) =>
+      routes.orElse(router.routes)
     }
   }
 
@@ -149,22 +170,25 @@ class JavadslServicesRouter @Inject() (
 }
 
 class JavadslServiceRouter(
-  override protected val descriptor: Descriptor,
-  service:                           Any,
-  httpConfiguration:                 HttpConfiguration,
-  parsers:                           PlayBodyParsers
+    protected override val descriptor: Descriptor,
+    service: Any,
+    httpConfiguration: HttpConfiguration,
+    parsers: PlayBodyParsers
 )(implicit ec: ExecutionContext, mat: Materializer)
-  extends ServiceRouter(httpConfiguration, parsers) with JavadslServiceApiBridge with LagomServiceRouter {
+    extends ServiceRouter(httpConfiguration, parsers)
+    with JavadslServiceApiBridge
+    with LagomServiceRouter {
 
   private class JavadslServiceRoute(override val call: Call[Any, Any]) extends ServiceRoute {
     override val path: Path = JavadslPath.fromCallId(call.callId)
     override val method: Method = call.callId match {
       case rest: RestCallId => rest.method
-      case _ => if (call.requestSerializer.isUsed) {
-        Method.POST
-      } else {
-        Method.GET
-      }
+      case _ =>
+        if (call.requestSerializer.isUsed) {
+          Method.POST
+        } else {
+          Method.GET
+        }
     }
     override val isWebSocket: Boolean = call.requestSerializer.isInstanceOf[StreamedMessageSerializer[_]] ||
       call.responseSerializer.isInstanceOf[StreamedMessageSerializer[_]]
@@ -178,18 +202,18 @@ class JavadslServiceRouter(
     }
   }
 
-  override protected val serviceRoutes: Seq[ServiceRoute] =
+  protected override val serviceRoutes: Seq[ServiceRoute] =
     descriptor.calls.asScala.map(call => new JavadslServiceRoute(call.asInstanceOf[Call[Any, Any]]))
 
   /**
    * Create the action.
    */
-  override protected def action[Request, Response](
-    call:               Call[Request, Response],
-    descriptor:         Descriptor,
-    serviceCall:        ServiceCall[Request, Response],
-    requestSerializer:  MessageSerializer[Request, ByteString],
-    responseSerializer: MessageSerializer[Response, ByteString]
+  protected override def action[Request, Response](
+      call: Call[Request, Response],
+      descriptor: Descriptor,
+      serviceCall: ServiceCall[Request, Response],
+      requestSerializer: MessageSerializer[Request, ByteString],
+      responseSerializer: MessageSerializer[Response, ByteString]
   ): EssentialAction = {
 
     serviceCall match {
@@ -208,7 +232,7 @@ class JavadslServiceRouter(
     }
   }
 
-  override protected def maybeLogException(exc: Throwable, log: => Logger, call: Call[_, _]) = {
+  protected override def maybeLogException(exc: Throwable, log: => Logger, call: Call[_, _]) = {
     exc match {
       case _: NotFound | _: Forbidden | _: BadRequest => // no logging
       case e @ (_: UnsupportedMediaType | _: PayloadTooLarge | _: NotAcceptable) =>
@@ -218,19 +242,26 @@ class JavadslServiceRouter(
     }
   }
 
-  override protected def invokeServiceCall[Request, Response](
-    serviceCall:   ServiceCall[Request, Response],
-    requestHeader: RequestHeader, request: Request
+  protected override def invokeServiceCall[Request, Response](
+      serviceCall: ServiceCall[Request, Response],
+      requestHeader: RequestHeader,
+      request: Request
   ): Future[(ResponseHeader, Response)] = {
     serviceCall match {
       case play: PlayServiceCall[_, _] =>
-        throw new IllegalStateException("Can't invoke a Play service call for WebSockets or as a service call passed in by another Play service call: " + play)
+        throw new IllegalStateException(
+          "Can't invoke a Play service call for WebSockets or as a service call passed in by another Play service call: " + play
+        )
       case _ =>
-        serviceCall.handleRequestHeader(new JFunction[RequestHeader, RequestHeader] {
-          override def apply(t: RequestHeader) = requestHeader
-        }).handleResponseHeader(new BiFunction[ResponseHeader, Response, (ResponseHeader, Response)] {
-          override def apply(header: ResponseHeader, response: Response) = header -> response
-        }).invoke(request).toScala
+        serviceCall
+          .handleRequestHeader(new JFunction[RequestHeader, RequestHeader] {
+            override def apply(t: RequestHeader) = requestHeader
+          })
+          .handleResponseHeader(new BiFunction[ResponseHeader, Response, (ResponseHeader, Response)] {
+            override def apply(header: ResponseHeader, response: Response) = header -> response
+          })
+          .invoke(request)
+          .toScala
     }
   }
 

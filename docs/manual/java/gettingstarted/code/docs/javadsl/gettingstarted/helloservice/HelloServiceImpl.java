@@ -13,7 +13,7 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-//#helloservice-impl
+// #helloservice-impl
 public class HelloServiceImpl implements HelloService {
 
   private final PersistentEntityRegistry persistentEntityRegistry;
@@ -34,4 +34,4 @@ public class HelloServiceImpl implements HelloService {
     };
   }
 }
-//#helloservice-impl
+// #helloservice-impl

@@ -8,16 +8,24 @@ import java.io.File
 import java.lang.reflect.Type
 import java.util
 
-import com.google.inject.{ Binding, Module }
+import com.google.inject.Binding
+import com.google.inject.Module
 import com.google.inject.spi._
 import com.lightbend.lagom.internal.javadsl.api._
-import com.lightbend.lagom.internal.spi.{ ServiceAcl, ServiceDescription, ServiceDiscovery }
-import com.lightbend.lagom.javadsl.api.{ Descriptor, Service }
+import com.lightbend.lagom.internal.spi.ServiceAcl
+import com.lightbend.lagom.internal.spi.ServiceDescription
+import com.lightbend.lagom.internal.spi.ServiceDiscovery
+import com.lightbend.lagom.javadsl.api.Descriptor
+import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.deser._
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol
 import org.apache.commons.lang3.ClassUtils
-import play.api.inject.guice.{ BinderOption, GuiceableModule }
-import play.api.{ Configuration, Environment, Logger, Mode }
+import play.api.inject.guice.BinderOption
+import play.api.inject.guice.GuiceableModule
+import play.api.Configuration
+import play.api.Environment
+import play.api.Logger
+import play.api.Mode
 
 import scala.collection.mutable
 import scala.collection.JavaConverters._
@@ -38,7 +46,9 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
   override def discoverServices(classLoader: ClassLoader): util.List[ServiceDescription] = {
     val descriptions = doDiscovery(classLoader)
     if (descriptions.size > 1) {
-      log.warn(s"Found ServiceDescriptions: ${descriptions.map(_.name()).mkString("[", ",", "]")}. Support for multiple locatable services will be removed.")
+      log.warn(
+        s"Found ServiceDescriptions: ${descriptions.map(_.name()).mkString("[", ",", "]")}. Support for multiple locatable services will be removed."
+      )
     }
     descriptions.asJava
   }
@@ -47,7 +57,12 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
     val modules = loadModules(classLoader)
     resolveServiceInterfaces(modules).flatMap { serviceInterface =>
       val unresolvedDescriptor = ServiceReader.readServiceDescriptor(classLoader, serviceInterface)
-      val resolvedDescriptor = ServiceReader.resolveServiceDescriptor(unresolvedDescriptor, classLoader, serializerFactories, exceptionSerializers)
+      val resolvedDescriptor = ServiceReader.resolveServiceDescriptor(
+        unresolvedDescriptor,
+        classLoader,
+        serializerFactories,
+        exceptionSerializers
+      )
       if (resolvedDescriptor.locatableService)
         Some(createServiceDescription(resolvedDescriptor))
       else
@@ -56,12 +71,16 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
   }
 
   private def createServiceDescription(descriptor: Descriptor): ServiceDescription = {
-    val convertedAcls = descriptor.acls().asScala.map { acl =>
-      new ServiceAcl {
-        override def method() = acl.method.asScala.map(_.name).asJava
-        override def pathPattern() = acl.pathRegex()
-      }.asInstanceOf[ServiceAcl]
-    }.asJava
+    val convertedAcls = descriptor
+      .acls()
+      .asScala
+      .map { acl =>
+        new ServiceAcl {
+          override def method()      = acl.method.asScala.map(_.name).asJava
+          override def pathPattern() = acl.pathRegex()
+        }.asInstanceOf[ServiceAcl]
+      }
+      .asJava
 
     new ServiceDescription {
       override def acls() = convertedAcls
@@ -73,9 +92,9 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
    * Load Guice modules for a given class loader
    */
   private def loadModules(classLoader: ClassLoader): Seq[Module] = {
-    val env = Environment(new File("."), classLoader, Mode.Test)
-    val conf = Configuration.load(env)
-    val modules = GuiceableModule.loadModules(env, conf)
+    val env           = Environment(new File("."), classLoader, Mode.Test)
+    val conf          = Configuration.load(env)
+    val modules       = GuiceableModule.loadModules(env, conf)
     val binderOptions = BinderOption.defaults
     GuiceableModule.guiced(env, conf, binderOptions)(modules)
   }
@@ -124,11 +143,15 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
         if (method.getParameterCount == ExpectedDescriptorParamCount && method.getReturnType == ExpectedDescriptorReturnType)
           Right(serviceInterface.asSubclass(classOf[Service]))
         else
-          Left(s"Service interface $serviceInterface does contain expected method ${ServiceReader.DescriptorMethodName} with an invalid return type or parameter count. " +
-            s"Expected return type: $ExpectedDescriptorReturnType, actual: ${method.getReturnType}, Expected parameter count: $ExpectedDescriptorParamCount, actual: ${method.getParameterCount}")
+          Left(
+            s"Service interface $serviceInterface does contain expected method ${ServiceReader.DescriptorMethodName} with an invalid return type or parameter count. " +
+              s"Expected return type: $ExpectedDescriptorReturnType, actual: ${method.getReturnType}, Expected parameter count: $ExpectedDescriptorParamCount, actual: ${method.getParameterCount}"
+          )
       } catch {
         case _: NoSuchMethodException =>
-          Left(s"Service interface $serviceInterface does not contain expected method ${ServiceReader.DescriptorMethodName}().")
+          Left(
+            s"Service interface $serviceInterface does not contain expected method ${ServiceReader.DescriptorMethodName}()."
+          )
       }
 
     // Get interfaces of service implementation, e.g. HelloServiceImpl > HelloService
@@ -159,9 +182,9 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
     private def stub = throw new NotImplementedError("SerializerFactory is not provided in the api tools library.")
     override def messageSerializerFor[MessageEntity](`type`: Type): MessageSerializer[MessageEntity, _] =
       new StrictMessageSerializer[MessageEntity] {
-        override def deserializer(messageHeader: MessageProtocol) = stub
+        override def deserializer(messageHeader: MessageProtocol)                              = stub
         override def serializerForResponse(acceptedMessageHeaders: util.List[MessageProtocol]) = stub
-        override def serializerForRequest() = stub
+        override def serializerForRequest()                                                    = stub
       }
   }
 
@@ -171,9 +194,9 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
    * in the request or response body.
    */
   private class ExceptionSerializerStub extends ExceptionSerializer {
-    private def stub = throw new NotImplementedError("ExceptionSerializer is not provided in the api tools library.")
+    private def stub                                                                                            = throw new NotImplementedError("ExceptionSerializer is not provided in the api tools library.")
     override def serialize(exception: Throwable, accept: util.Collection[MessageProtocol]): RawExceptionMessage = stub
-    override def deserialize(message: RawExceptionMessage): Throwable = stub
+    override def deserialize(message: RawExceptionMessage): Throwable                                           = stub
   }
 
 }

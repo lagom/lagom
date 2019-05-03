@@ -6,20 +6,24 @@ package com.lightbend.lagom.javadsl.testkit
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.{ Function => JFunction }
-import javax.inject.{ Inject, Singleton }
+import javax.inject.Inject
+import javax.inject.Singleton
 
-import akka.actor.{ ActorRef, ActorSystem, Props }
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.Props
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.testkit.TopicStub
 import com.lightbend.lagom.internal.testkit.TopicBufferActor
-import com.lightbend.lagom.javadsl.api.broker.{ Message, Topic }
+import com.lightbend.lagom.javadsl.api.broker.Message
+import com.lightbend.lagom.javadsl.api.broker.Topic
 
 /**
  * Factors [[com.lightbend.lagom.javadsl.testkit.ProducerStub]]'s. This is a singleton that should be [[javax.inject.Inject]]ed
  * on the stubbed Services when writing tests.
  */
 @Singleton
-final class ProducerStubFactory @Inject() (actorSystem: ActorSystem, materializer: Materializer) {
+final class ProducerStubFactory @Inject()(actorSystem: ActorSystem, materializer: Materializer) {
 
   private val topics = new ConcurrentHashMap[String, ProducerStub[_]]
 

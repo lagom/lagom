@@ -4,10 +4,13 @@
 
 package com.lightbend.lagom.javadsl.persistence
 
-import com.lightbend.lagom.internal.javadsl.persistence.{ ReadSideConfigProvider, ReadSideImpl }
+import com.lightbend.lagom.internal.javadsl.persistence.ReadSideConfigProvider
+import com.lightbend.lagom.internal.javadsl.persistence.ReadSideImpl
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import play.api.{ Configuration, Environment }
-import play.api.inject.{ Binding, Module }
+import play.api.Configuration
+import play.api.Environment
+import play.api.inject.Binding
+import play.api.inject.Module
 
 /**
  * Guice module for the Persistence API.

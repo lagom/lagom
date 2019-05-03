@@ -120,8 +120,8 @@ package callrest {
       import Service._
       import com.lightbend.lagom.scaladsl.api.transport.Method
       named("orders").withCalls(
-        restCall(Method.POST,   "/order/:orderId/item",         addItem _),
-        restCall(Method.GET,    "/order/:orderId/item/:itemId", getItem _),
+        restCall(Method.POST, "/order/:orderId/item", addItem _),
+        restCall(Method.GET, "/order/:orderId/item/:itemId", getItem _),
         restCall(Method.DELETE, "/order/:orderId/item/:itemId", deleteItem _)
       )
     }
@@ -174,9 +174,9 @@ package jsonmessages {
 
   //#user-class
   case class User(
-    id: Long,
-    name: String,
-    email: Option[String]
+      id: Long,
+      name: String,
+      email: Option[String]
   )
   //#user-class
 

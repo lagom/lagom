@@ -18,14 +18,13 @@ import akka.pattern.{ ask => akkaAsk }
  * `PersistentEntityRef`. It is retrieved with [[PersistentEntityRegistry#refFor]].
  */
 final class PersistentEntityRef[Command](
-  val entityId: String,
-  region:       ActorRef,
-  system:       ActorSystem,
-  askTimeout:   FiniteDuration
-)
-  extends NoSerializationVerificationNeeded {
+    val entityId: String,
+    region: ActorRef,
+    system: ActorSystem,
+    askTimeout: FiniteDuration
+) extends NoSerializationVerificationNeeded {
 
-  implicit private val timeout = Timeout(askTimeout)
+  private implicit val timeout = Timeout(askTimeout)
 
   /**
    * Send the `command` to the [[PersistentEntity]]. The returned
@@ -39,12 +38,14 @@ final class PersistentEntityRef[Command](
   def ask[Cmd <: Command with PersistentEntity.ReplyType[_]](command: Cmd): Future[command.ReplyType] = {
     import scala.compat.java8.FutureConverters._
     import system.dispatcher
-    (region ? CommandEnvelope(entityId, command)).flatMap {
-      case exc: Throwable =>
-        // not using akka.actor.Status.Failure because it is using Java serialization
-        Future.failed(exc)
-      case result => Future.successful(result)
-    }.asInstanceOf[Future[command.ReplyType]]
+    (region ? CommandEnvelope(entityId, command))
+      .flatMap {
+        case exc: Throwable =>
+          // not using akka.actor.Status.Failure because it is using Java serialization
+          Future.failed(exc)
+        case result => Future.successful(result)
+      }
+      .asInstanceOf[Future[command.ReplyType]]
   }
 
   /**

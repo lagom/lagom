@@ -13,6 +13,7 @@ import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandle
 
 //#my-database
 trait MyDatabase {
+
   /**
    * Create the tables needed for this read side if not already created.
    */
@@ -31,9 +32,9 @@ trait MyDatabase {
 //#my-database
 
 object MyDatabase extends MyDatabase {
-  def createTables(): Future[Done] = Future.successful(Done)
+  def createTables(): Future[Done]                                  = Future.successful(Done)
   def loadOffset(tag: AggregateEventTag[BlogEvent]): Future[Offset] = Future.successful(NoOffset)
-  def handleEvent(event: BlogEvent, offset: Offset): Future[Done] = Future.successful(Done)
+  def handleEvent(event: BlogEvent, offset: Offset): Future[Done]   = Future.successful(Done)
 }
 
 class BlogEventProcessor(myDatabase: MyDatabase) extends ReadSideProcessor[BlogEvent] {

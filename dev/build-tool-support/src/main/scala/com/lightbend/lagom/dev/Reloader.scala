@@ -4,18 +4,24 @@
 
 package com.lightbend.lagom.dev
 
-import java.io.{ Closeable, File }
+import java.io.Closeable
+import java.io.File
 import java.net.URL
-import java.security.{ AccessController, PrivilegedAction }
+import java.security.AccessController
+import java.security.PrivilegedAction
 import java.time.Instant
 import java.util
-import java.util.{ Timer, TimerTask }
+import java.util.Timer
+import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicReference
 
 import play.api.PlayException
-import play.core.{ Build, BuildLink }
+import play.core.Build
+import play.core.BuildLink
 import play.core.server.ReloadableServer
-import play.dev.filewatch.{ FileWatchService, SourceModificationWatch, WatchState }
+import play.dev.filewatch.FileWatchService
+import play.dev.filewatch.SourceModificationWatch
+import play.dev.filewatch.WatchState
 
 import scala.collection.JavaConverters._
 import better.files.{ File => _, _ }
@@ -24,7 +30,7 @@ object Reloader {
 
   sealed trait CompileResult
   case class CompileSuccess(sources: Map[String, Source], classpath: Seq[File]) extends CompileResult
-  case class CompileFailure(exception: PlayException) extends CompileResult
+  case class CompileFailure(exception: PlayException)                           extends CompileResult
 
   case class Source(file: File, original: Option[File])
 
@@ -34,19 +40,22 @@ object Reloader {
    * Execute f with context ClassLoader of Reloader
    */
   private def withReloaderContextClassLoader[T](f: => T): T = {
-    val thread = Thread.currentThread
+    val thread    = Thread.currentThread
     val oldLoader = thread.getContextClassLoader
     // we use accessControlContext & AccessController to avoid a ClassLoader leak (ProtectionDomain class)
-    AccessController.doPrivileged(new PrivilegedAction[T]() {
-      def run: T = {
-        try {
-          thread.setContextClassLoader(classOf[Reloader].getClassLoader)
-          f
-        } finally {
-          thread.setContextClassLoader(oldLoader)
+    AccessController.doPrivileged(
+      new PrivilegedAction[T]() {
+        def run: T = {
+          try {
+            thread.setContextClassLoader(classOf[Reloader].getClassLoader)
+            f
+          } finally {
+            thread.setContextClassLoader(oldLoader)
+          }
         }
-      }
-    }, accessControlContext)
+      },
+      accessControlContext
+    )
   }
 
   private def urls(cp: Seq[File]): Array[URL] = cp.map(_.toURI.toURL).toArray
@@ -73,18 +82,18 @@ object Reloader {
    * Start the Lagom server in dev mode.
    */
   def startDevMode(
-    parentClassLoader:    ClassLoader,
-    dependencyClasspath:  Seq[File],
-    reloadCompile:        () => CompileResult,
-    classLoaderDecorator: ClassLoader => ClassLoader,
-    monitoredFiles:       Seq[File],
-    fileWatchService:     FileWatchService,
-    projectPath:          File,
-    devSettings:          Seq[(String, String)],
-    httpAddress:          String,
-    httpPort:             Int,
-    httpsPort:            Int,
-    reloadLock:           AnyRef
+      parentClassLoader: ClassLoader,
+      dependencyClasspath: Seq[File],
+      reloadCompile: () => CompileResult,
+      classLoaderDecorator: ClassLoader => ClassLoader,
+      monitoredFiles: Seq[File],
+      fileWatchService: FileWatchService,
+      projectPath: File,
+      devSettings: Seq[(String, String)],
+      httpAddress: String,
+      httpPort: Int,
+      httpsPort: Int,
+      reloadLock: AnyRef
   ): DevServer = {
     /*
      * We need to do a bit of classloader magic to run the Play application.
@@ -125,18 +134,26 @@ object Reloader {
     lazy val delegatingLoader: ClassLoader = buildDelegating(parentClassLoader, reloader.getClassLoader _)
 
     lazy val applicationLoader = buildForApplication(dependencyClasspath, delegatingLoader)
-    lazy val decoratedLoader = classLoaderDecorator(applicationLoader)
+    lazy val decoratedLoader   = classLoaderDecorator(applicationLoader)
 
-    lazy val reloader = new Reloader(reloadCompile, decoratedLoader, projectPath, devSettings, monitoredFiles, fileWatchService, reloadLock)
+    lazy val reloader = new Reloader(
+      reloadCompile,
+      decoratedLoader,
+      projectPath,
+      devSettings,
+      monitoredFiles,
+      fileWatchService,
+      reloadLock
+    )
 
     val server: ReloadableServer = mainDev(applicationLoader, reloader, httpAddress, httpPort, httpsPort)
 
     val _bindings = bindings(httpAddress, httpPort, httpsPort)
 
     new DevServer {
-      val buildLink: BuildLink = reloader
+      val buildLink: BuildLink                   = reloader
       def addChangeListener(f: () => Unit): Unit = reloader.addChangeListener(f)
-      def reload(): Unit = server.reload()
+      def reload(): Unit                         = server.reload()
       def close(): Unit = {
         server.stop()
         reloader.close()
@@ -148,11 +165,18 @@ object Reloader {
   /**
    * Start the Lagom server without hot reloading
    */
-  def startNoReload(parentClassLoader: ClassLoader, dependencyClasspath: Seq[File], buildProjectPath: File,
-                    devSettings: Seq[(String, String)], httpAddress: String, httpPort: Int, httpsPort: Int): DevServer = {
+  def startNoReload(
+      parentClassLoader: ClassLoader,
+      dependencyClasspath: Seq[File],
+      buildProjectPath: File,
+      devSettings: Seq[(String, String)],
+      httpAddress: String,
+      httpPort: Int,
+      httpsPort: Int
+  ): DevServer = {
 
     lazy val delegatingLoader: ClassLoader = buildDelegating(parentClassLoader, () => Some(applicationLoader))
-    lazy val applicationLoader = buildForApplication(dependencyClasspath, delegatingLoader)
+    lazy val applicationLoader             = buildForApplication(dependencyClasspath, delegatingLoader)
 
     val _buildLink = new BuildLink {
       private val initialized = new java.util.concurrent.atomic.AtomicBoolean(false)
@@ -160,9 +184,9 @@ object Reloader {
         if (initialized.compareAndSet(false, true)) applicationLoader
         else null // this means nothing to reload
       }
-      override def projectPath(): File = buildProjectPath
-      override def settings(): util.Map[String, String] = devSettings.toMap.asJava
-      override def forceReload(): Unit = ()
+      override def projectPath(): File                                         = buildProjectPath
+      override def settings(): util.Map[String, String]                        = devSettings.toMap.asJava
+      override def forceReload(): Unit                                         = ()
       override def findSource(className: String, line: Integer): Array[AnyRef] = null
     }
 
@@ -189,10 +213,10 @@ object Reloader {
   }
 
   private def buildDelegating(
-    parentClassLoader:      ClassLoader,
-    applicationClassLoader: () => Option[ClassLoader]
+      parentClassLoader: ClassLoader,
+      applicationClassLoader: () => Option[ClassLoader]
   ): ClassLoader = {
-    val buildLoader = this.getClass.getClassLoader
+    val buildLoader   = this.getClass.getClassLoader
     val sharedClasses = Build.sharedClasses.asScala.toSet
     new DelegatingClassLoader(parentClassLoader, sharedClasses, buildLoader, applicationClassLoader)
   }
@@ -201,15 +225,17 @@ object Reloader {
     new NamedURLClassLoader("LagomDependencyClassLoader", urls(dependencyClasspath), delegatingLoader)
 
   private def mainDev(
-    applicationLoader: ClassLoader,
-    buildLink:         BuildLink,
-    httpAddress:       String,
-    httpPort:          Int,
-    httpsPort:         Int
+      applicationLoader: ClassLoader,
+      buildLink: BuildLink,
+      httpAddress: String,
+      httpPort: Int,
+      httpsPort: Int
   ): ReloadableServer = {
     val mainClass = applicationLoader.loadClass("play.core.server.LagomReloadableDevServerStart")
-    val mainDev = mainClass.getMethod("mainDev", classOf[BuildLink], classOf[String], classOf[Int], classOf[Int])
-    mainDev.invoke(null, buildLink, httpAddress, httpPort: java.lang.Integer, httpsPort: java.lang.Integer).asInstanceOf[ReloadableServer]
+    val mainDev   = mainClass.getMethod("mainDev", classOf[BuildLink], classOf[String], classOf[Int], classOf[Int])
+    mainDev
+      .invoke(null, buildLink, httpAddress, httpPort: java.lang.Integer, httpsPort: java.lang.Integer)
+      .asInstanceOf[ReloadableServer]
   }
 
   private def bindings(httpAddress: String, httpPort: Int, httpsPort: Int): Seq[DevServerBinding] = {
@@ -228,13 +254,13 @@ object Reloader {
 import Reloader._
 
 class Reloader(
-  reloadCompile:    () => CompileResult,
-  baseLoader:       ClassLoader,
-  val projectPath:  File,
-  devSettings:      Seq[(String, String)],
-  monitoredFiles:   Seq[File],
-  fileWatchService: FileWatchService,
-  reloadLock:       AnyRef
+    reloadCompile: () => CompileResult,
+    baseLoader: ClassLoader,
+    val projectPath: File,
+    devSettings: Seq[(String, String)],
+    monitoredFiles: Seq[File],
+    fileWatchService: FileWatchService,
+    reloadLock: AnyRef
 ) extends BuildLink {
 
   // The current classloader for the application
@@ -266,7 +292,7 @@ class Reloader(
 
   private val listeners = new java.util.concurrent.CopyOnWriteArrayList[() => Unit]()
 
-  private val quietPeriodMs = 200l
+  private val quietPeriodMs = 200L
   private def onChange(): Unit = {
     val now = Instant.now()
     fileLastChanged.set(now)
@@ -317,14 +343,19 @@ class Reloader(
               exception
 
             case CompileSuccess(sourceMap, classpath) =>
-
               currentSourceMap = Some(sourceMap)
 
               // We only want to reload if the classpath has changed.  Assets don't live on the classpath, so
               // they won't trigger a reload.
               // Use the SBT watch service, passing true as the termination to force it to break after one check
-              val (_, newState) = SourceModificationWatch.watch(() => classpath.iterator
-                .filter(_.exists()).flatMap(_.toScala.listRecursively), 0, watchState)(true)
+              val (_, newState) = SourceModificationWatch.watch(
+                () =>
+                  classpath.iterator
+                    .filter(_.exists())
+                    .flatMap(_.toScala.listRecursively),
+                0,
+                watchState
+              )(true)
               // SBT has a quiet wait period, if that's set to true, sources were modified
               val triggered = newState.awaitingQuietPeriod
               watchState = newState
@@ -332,9 +363,9 @@ class Reloader(
               if (triggered || shouldReload || currentApplicationClassLoader.isEmpty) {
                 // Create a new classloader
                 val version = classLoaderVersion.incrementAndGet
-                val name = "ReloadableClassLoader(v" + version + ")"
-                val urls = Reloader.urls(classpath)
-                val loader = new DelegatedResourcesClassLoader(name, urls, baseLoader)
+                val name    = "ReloadableClassLoader(v" + version + ")"
+                val urls    = Reloader.urls(classpath)
+                val loader  = new DelegatedResourcesClassLoader(name, urls, baseLoader)
                 currentApplicationClassLoader = Some(loader)
                 loader
               } else {

@@ -17,8 +17,8 @@ trait SlickBlogEventProcessor {
   trait Initial {
     //#initial
     class BlogEventProcessor(
-      readSide: SlickReadSide,
-      postSummaryRepo: PostSummaryRepository
+        readSide: SlickReadSide,
+        postSummaryRepo: PostSummaryRepository
     ) extends ReadSideProcessor[BlogEvent] {
 
       override def buildHandler(): ReadSideProcessor.ReadSideHandler[BlogEvent] = {
@@ -37,8 +37,8 @@ trait SlickBlogEventProcessor {
   trait Final {
 
     class BlogEventProcessor(
-      readSide: SlickReadSide,
-      postSummaryRepo: PostSummaryRepository
+        readSide: SlickReadSide,
+        postSummaryRepo: PostSummaryRepository
     ) extends ReadSideProcessor[BlogEvent] {
 
       //#tag

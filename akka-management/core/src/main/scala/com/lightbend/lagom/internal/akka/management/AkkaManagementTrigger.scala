@@ -5,12 +5,15 @@
 package com.lightbend.lagom.internal.akka.management
 
 import akka.Done
-import akka.actor.{ ActorSystem, CoordinatedShutdown, ExtendedActorSystem }
+import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
+import akka.actor.ExtendedActorSystem
 import akka.management.scaladsl.AkkaManagement
 import com.typesafe.config.Config
 import play.api.Logger
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 /**
  * This class works as an entry point for Lagom to start AkkaManagement and register CoordinaterShutdown task for it.
@@ -22,14 +25,14 @@ import scala.concurrent.{ ExecutionContext, Future }
  * AkkaManagement.start is idempotent. This also explain why we don't keep any state in this class.
  */
 private[lagom] class AkkaManagementTrigger(
-  config:              Config,
-  system:              ActorSystem,
-  coordinatedShutdown: CoordinatedShutdown
+    config: Config,
+    system: ActorSystem,
+    coordinatedShutdown: CoordinatedShutdown
 )(implicit executionContext: ExecutionContext) {
 
-  private val enabledSetting = "lagom.akka.management.enabled"
+  private val enabledSetting       = "lagom.akka.management.enabled"
   private val enabledRenderedValue = config.getValue(enabledSetting).render()
-  private val enabled = config.getBoolean(enabledSetting)
+  private val enabled              = config.getBoolean(enabledSetting)
 
   private val logger = Logger(this.getClass)
 
@@ -67,16 +70,15 @@ private[lagom] class AkkaManagementTrigger(
   private def doStart(): Future[Done] = {
 
     val akkaManagement = AkkaManagement(system.asInstanceOf[ExtendedActorSystem])
-    akkaManagement.start().map {
-      _ =>
-        // add a task to stop
-        coordinatedShutdown.addTask(
-          CoordinatedShutdown.PhaseBeforeServiceUnbind,
-          "stop-akka-http-management"
-        ) { () =>
-            akkaManagement.stop()
-          }
-        Done
+    akkaManagement.start().map { _ =>
+      // add a task to stop
+      coordinatedShutdown.addTask(
+        CoordinatedShutdown.PhaseBeforeServiceUnbind,
+        "stop-akka-http-management"
+      ) { () =>
+        akkaManagement.stop()
+      }
+      Done
     }
   }
 }

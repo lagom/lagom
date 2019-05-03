@@ -8,7 +8,7 @@ interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMo
 
 InputKey[Unit]("verifyReloads") := {
   val expected = Def.spaceDelimited().parsed.head.toInt
-  val actual = IO.readLines(target.value / "reload.log").count(_.nonEmpty)
+  val actual   = IO.readLines(target.value / "reload.log").count(_.nonEmpty)
   if (expected == actual) {
     println(s"Expected and got $expected reloads")
   } else {

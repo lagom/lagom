@@ -21,15 +21,16 @@ object ActorServiceSpec {
     """)
 }
 
-class ActorServiceSpec extends TestKit(ActorSystem("ActorServiceSpec", ActorServiceSpec.config))
-  with ServiceSupport
-  with BeforeAndAfterAll
-  with TypeCheckedTripleEquals
-  with ImplicitSender {
+class ActorServiceSpec
+    extends TestKit(ActorSystem("ActorServiceSpec", ActorServiceSpec.config))
+    with ServiceSupport
+    with BeforeAndAfterAll
+    with TypeCheckedTripleEquals
+    with ImplicitSender {
 
   val workerRoleConfig = ConfigFactory.parseString("akka.cluster.roles = [worker-node]")
-  val node2 = ActorSystem("ActorServiceSpec", workerRoleConfig.withFallback(system.settings.config))
-  val node3 = ActorSystem("ActorServiceSpec", workerRoleConfig.withFallback(system.settings.config))
+  val node2            = ActorSystem("ActorServiceSpec", workerRoleConfig.withFallback(system.settings.config))
+  val node3            = ActorSystem("ActorServiceSpec", workerRoleConfig.withFallback(system.settings.config))
 
   override def beforeAll {
     Cluster(system).join(Cluster(system).selfAddress)
@@ -52,20 +53,20 @@ class ActorServiceSpec extends TestKit(ActorSystem("ActorServiceSpec", ActorServ
 
   "Integration with actors" must {
     "work with for example clustered consistent hashing" in withServiceInstance[WorkerService](
-      new WorkerServiceImpl(system)).apply { app =>
-        client => {
-          val job = Job.of("123", "compute", "abc")
+      new WorkerServiceImpl(system)
+    ).apply { app => client =>
+      {
+        val job = Job.of("123", "compute", "abc")
 
-          // might taka a while until cluster is formed and router knows about the nodes
-          within(15.seconds) {
-            awaitAssert {
-              client.doWork().invoke(job).toCompletableFuture.get(3, TimeUnit.SECONDS) should ===(JobAccepted.of("123"))
-            }
+        // might taka a while until cluster is formed and router knows about the nodes
+        within(15.seconds) {
+          awaitAssert {
+            client.doWork().invoke(job).toCompletableFuture.get(3, TimeUnit.SECONDS) should ===(JobAccepted.of("123"))
           }
         }
-
       }
+
+    }
   }
 
 }
-

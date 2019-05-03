@@ -4,9 +4,11 @@
 
 package com.lightbend.lagom.internal.javadsl.api
 
-import com.lightbend.lagom.internal.javadsl.api.broker.{ InjectorTopicFactoryProvider, TopicFactoryProvider }
+import com.lightbend.lagom.internal.javadsl.api.broker.InjectorTopicFactoryProvider
+import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactoryProvider
 import play.api.inject._
-import play.api.{ Configuration, Environment }
+import play.api.Configuration
+import play.api.Environment
 
 class JavadslApiModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {

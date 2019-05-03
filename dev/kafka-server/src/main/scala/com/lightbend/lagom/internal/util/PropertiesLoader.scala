@@ -4,7 +4,8 @@
 
 package com.lightbend.lagom.internal.util
 
-import java.io.{ File, FileInputStream }
+import java.io.File
+import java.io.FileInputStream
 import java.util.Properties
 
 object PropertiesLoader {

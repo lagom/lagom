@@ -50,7 +50,8 @@ object JsonSerializer {
     CompressedJsonSerializerImpl(implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]], format)
 
   private[lagom] case class JsonSerializerImpl[T](entityClass: Class[T], format: Format[T]) extends JsonSerializer[T]
-  private[lagom] case class CompressedJsonSerializerImpl[T](entityClass: Class[T], format: Format[T]) extends JsonSerializer[T]
+  private[lagom] case class CompressedJsonSerializerImpl[T](entityClass: Class[T], format: Format[T])
+      extends JsonSerializer[T]
 }
 
 /**
