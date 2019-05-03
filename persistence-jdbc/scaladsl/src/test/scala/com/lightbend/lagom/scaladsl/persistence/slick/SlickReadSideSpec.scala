@@ -11,13 +11,11 @@ import com.lightbend.lagom.scaladsl.persistence._
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
 
-class SlickReadSideSpec
-  extends SlickPersistenceSpec(TestEntitySerializerRegistry)
-  with AbstractReadSideSpec {
+class SlickReadSideSpec extends SlickPersistenceSpec(TestEntitySerializerRegistry) with AbstractReadSideSpec {
 
   import system.dispatcher
 
-  override protected lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, slick)
+  protected override lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, slick)
 
   override def processorFactory(): ReadSideProcessor[Evt] =
     new SlickTestEntityReadSide.TestEntityReadSideProcessor(slickReadSide, slick.db, slick.profile)

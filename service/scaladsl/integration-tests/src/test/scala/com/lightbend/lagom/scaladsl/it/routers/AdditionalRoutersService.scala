@@ -5,7 +5,8 @@
 package com.lightbend.lagom.scaladsl.it.routers
 
 import com.lightbend.lagom.scaladsl.api.Service.named
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service }
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.Service
 
 trait AdditionalRoutersService extends Service {
 

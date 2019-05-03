@@ -7,19 +7,27 @@ package com.lightbend.lagom.scaladsl.server.mocks
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.stream.Materializer
-import com.lightbend.lagom.scaladsl.api.transport.{ Forbidden, HeaderFilter, RequestHeader, ResponseHeader }
-import play.api.mvc.{ Filter, Result, RequestHeader => PlayRequestHeader, ResponseHeader => PlayResponseHeader }
+import com.lightbend.lagom.scaladsl.api.transport.Forbidden
+import com.lightbend.lagom.scaladsl.api.transport.HeaderFilter
+import com.lightbend.lagom.scaladsl.api.transport.RequestHeader
+import com.lightbend.lagom.scaladsl.api.transport.ResponseHeader
+import play.api.mvc.Filter
+import play.api.mvc.Result
+import play.api.mvc.{ RequestHeader => PlayRequestHeader }
+import play.api.mvc.{ ResponseHeader => PlayResponseHeader }
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 // ------------------------------------------------------------------------------------------------------------
 // This is a play filter that adds a header on the request and the adds a header on the response. Headers may only
 // be added once so invoking this Filter twice breaks the test.
-class VerboseHeaderPlayFilter(atomicInt: AtomicInteger, mt: Materializer)(implicit ctx: ExecutionContext) extends Filter {
+class VerboseHeaderPlayFilter(atomicInt: AtomicInteger, mt: Materializer)(implicit ctx: ExecutionContext)
+    extends Filter {
 
   import VerboseHeaderPlayFilter._
 
-  override implicit def mat: Materializer = mt
+  implicit override def mat: Materializer = mt
 
   override def apply(f: (PlayRequestHeader) => Future[Result])(rh: PlayRequestHeader): Future[Result] = {
     ensureMissing(rh.headers.toSimpleMap, addedOnRequest)
@@ -37,7 +45,7 @@ class VerboseHeaderPlayFilter(atomicInt: AtomicInteger, mt: Materializer)(implic
 }
 
 object VerboseHeaderPlayFilter {
-  val addedOnRequest = "addedOnRequest-play"
+  val addedOnRequest  = "addedOnRequest-play"
   val addedOnResponse = "addedOnResponse-play"
 }
 
@@ -51,10 +59,10 @@ class VerboseHeaderLagomFilter(atomicInteger: AtomicInteger) extends HeaderFilte
     response.addHeader(VerboseHeaderLagomFilter.addedOnResponse, atomicInteger.incrementAndGet().toString)
 
   override def transformClientResponse(response: ResponseHeader, request: RequestHeader): ResponseHeader = ???
-  override def transformClientRequest(request: RequestHeader): RequestHeader = ???
+  override def transformClientRequest(request: RequestHeader): RequestHeader                             = ???
 }
 
 object VerboseHeaderLagomFilter {
-  val addedOnRequest = "addedOnRequest-Lagom"
+  val addedOnRequest  = "addedOnRequest-Lagom"
   val addedOnResponse = "addedOnResponse-Lagom"
 }

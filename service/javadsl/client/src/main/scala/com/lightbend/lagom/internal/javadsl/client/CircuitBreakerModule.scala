@@ -4,13 +4,20 @@
 
 package com.lightbend.lagom.internal.javadsl.client
 
-import javax.inject.{ Inject, Provider, Singleton }
+import javax.inject.Inject
+import javax.inject.Provider
+import javax.inject.Singleton
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.client.{ CircuitBreakerConfig, CircuitBreakerMetricsProviderImpl, CircuitBreakerMetricsProviderProvider, CircuitBreakers }
+import com.lightbend.lagom.internal.client.CircuitBreakerConfig
+import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl
+import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderProvider
+import com.lightbend.lagom.internal.client.CircuitBreakers
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.javadsl.client.CircuitBreakersPanel
-import play.api.inject.{ Binding, Module }
-import play.api.{ Configuration, Environment }
+import play.api.inject.Binding
+import play.api.inject.Module
+import play.api.Configuration
+import play.api.Environment
 
 class CircuitBreakerModule extends Module {
 
@@ -27,10 +34,10 @@ class CircuitBreakerModule extends Module {
 }
 
 @Singleton
-class CircuitBreakersProvider @Inject() (
-  system:               ActorSystem,
-  circuitBreakerConfig: CircuitBreakerConfig,
-  metricsProvider:      CircuitBreakerMetricsProvider
+class CircuitBreakersProvider @Inject()(
+    system: ActorSystem,
+    circuitBreakerConfig: CircuitBreakerConfig,
+    metricsProvider: CircuitBreakerMetricsProvider
 ) extends Provider[CircuitBreakers] {
   lazy val get = {
 

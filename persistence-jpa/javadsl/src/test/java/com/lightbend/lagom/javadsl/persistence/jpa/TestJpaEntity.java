@@ -11,42 +11,43 @@ import javax.persistence.Id;
 
 @Entity
 public class TestJpaEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
-    private String parentId;
-    private String element;
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Integer id;
 
-    public TestJpaEntity(String parentId, String element) {
-        this.parentId = parentId;
-        this.element = element;
-    }
+  private String parentId;
+  private String element;
 
-    public TestJpaEntity() {
-        this(null, null);
-    }
+  public TestJpaEntity(String parentId, String element) {
+    this.parentId = parentId;
+    this.element = element;
+  }
 
-    public Integer getId() {
-        return id;
-    }
+  public TestJpaEntity() {
+    this(null, null);
+  }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+  public Integer getId() {
+    return id;
+  }
 
-    public String getParentId() {
-        return parentId;
-    }
+  public void setId(Integer id) {
+    this.id = id;
+  }
 
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
-    }
+  public String getParentId() {
+    return parentId;
+  }
 
-    public String getElement() {
-        return element;
-    }
+  public void setParentId(String parentId) {
+    this.parentId = parentId;
+  }
 
-    public void setElement(String element) {
-        this.element = element;
-    }
+  public String getElement() {
+    return element;
+  }
+
+  public void setElement(String element) {
+    this.element = element;
+  }
 }

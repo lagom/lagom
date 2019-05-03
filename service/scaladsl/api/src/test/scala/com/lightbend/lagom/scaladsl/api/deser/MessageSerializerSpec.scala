@@ -6,8 +6,10 @@ package com.lightbend.lagom.scaladsl.api.deser
 
 import MessageSerializer._
 import akka.util.ByteString
-import com.lightbend.lagom.scaladsl.api.transport.{ DeserializationException, MessageProtocol }
-import org.scalatest.{ Matchers, WordSpec }
+import com.lightbend.lagom.scaladsl.api.transport.DeserializationException
+import com.lightbend.lagom.scaladsl.api.transport.MessageProtocol
+import org.scalatest.Matchers
+import org.scalatest.WordSpec
 import play.api.libs.json._
 
 class MessageSerializerSpec extends WordSpec with Matchers {
@@ -47,13 +49,13 @@ class MessageSerializerSpec extends WordSpec with Matchers {
   "ByteString-to-RequestPayload (for JSON payloads, using jsValueFormatMessageSerializer)" should {
     "deserialize empty ByteString's to Option[T] as None" in {
       val serializer = jsValueFormatMessageSerializer(JsValueMessageSerializer, optionFormat[String])
-      val out = serializer.deserializer(MessageProtocol.empty).deserialize(ByteString.empty)
+      val out        = serializer.deserializer(MessageProtocol.empty).deserialize(ByteString.empty)
       out shouldBe None
     }
 
     "fail to deserialize empty ByteString to Dummy(prop: Option[T])" in {
       val format: Format[Dummy] = Json.format
-      val serializer = jsValueFormatMessageSerializer(JsValueMessageSerializer, format)
+      val serializer            = jsValueFormatMessageSerializer(JsValueMessageSerializer, format)
 
       intercept[DeserializationException] {
         serializer.deserializer(MessageProtocol.empty).deserialize(ByteString.empty)

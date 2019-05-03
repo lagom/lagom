@@ -7,9 +7,12 @@ package com.lightbend.lagom.scaladsl.pubsub
 import java.io.NotSerializableException
 
 import akka.NotUsed
-import akka.actor.{ ActorRef, ActorSystem, NoSerializationVerificationNeeded }
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.NoSerializationVerificationNeeded
 import akka.pattern.ask
-import akka.stream.scaladsl.{ Sink, Source }
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 import akka.stream.OverflowStrategy
 import akka.util.Timeout
 
@@ -42,15 +45,18 @@ import scala.concurrent.duration._
  * of the messages. When the buffer is full the oldest messages are dropped to make
  * room for new messages.
  */
-final class PubSubRef[T] private[lagom] (val topic: TopicId[T], mediator: ActorRef, system: ActorSystem,
-                                         bufferSize: Int)
-  extends NoSerializationVerificationNeeded {
+final class PubSubRef[T] private[lagom] (
+    val topic: TopicId[T],
+    mediator: ActorRef,
+    system: ActorSystem,
+    bufferSize: Int
+) extends NoSerializationVerificationNeeded {
   import akka.cluster.pubsub.DistributedPubSubMediator._
 
   private val hasAnySubscribersTimeout = Timeout(5.seconds)
 
-  private val publishFun: Any => Unit = {
-    message => mediator ! Publish(topic.name, message)
+  private val publishFun: Any => Unit = { message =>
+    mediator ! Publish(topic.name, message)
   }
 
   /*
@@ -77,7 +83,8 @@ final class PubSubRef[T] private[lagom] (val topic: TopicId[T], mediator: ActorR
    * this `Source` and then `run` the stream.
    */
   def subscriber: Source[T, NotUsed] = {
-    Source.actorRef[T](bufferSize, OverflowStrategy.dropHead)
+    Source
+      .actorRef[T](bufferSize, OverflowStrategy.dropHead)
       .mapMaterializedValue { ref =>
         mediator ! Subscribe(topic.name, ref)
         NotUsed
@@ -101,9 +108,11 @@ final class PubSubRef[T] private[lagom] (val topic: TopicId[T], mediator: ActorR
 
     import scala.compat.java8.FutureConverters._
     implicit val timeout = hasAnySubscribersTimeout
-    (mediator ? GetTopics).map {
-      case CurrentTopics(topics) => topics.contains(topic.name)
-    }.mapTo[Boolean]
+    (mediator ? GetTopics)
+      .map {
+        case CurrentTopics(topics) => topics.contains(topic.name)
+      }
+      .mapTo[Boolean]
   }
 
   @throws(classOf[java.io.ObjectStreamException])

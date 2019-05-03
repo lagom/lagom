@@ -9,7 +9,8 @@ import java.util
 
 import com.lightbend.lagom.api.tools.tests.scaladsl._
 import com.lightbend.lagom.internal.javadsl.server.JavadslServiceDiscovery
-import com.lightbend.lagom.javadsl.api.{ Descriptor, Service }
+import com.lightbend.lagom.javadsl.api.Descriptor
+import com.lightbend.lagom.javadsl.api.Service
 import org.scalatest._
 import play.api.libs.json.Json
 
@@ -38,8 +39,8 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
         """.stripMargin
 
       val javaServiceDiscovery = "com.lightbend.lagom.internal.javadsl.server.JavadslServiceDiscovery"
-      val decoratedCL = decorateWithConfig(this.getClass.getClassLoader, "application-acl.conf")
-      val actualJsonString = ServiceDetector.services(decoratedCL, javaServiceDiscovery)
+      val decoratedCL          = decorateWithConfig(this.getClass.getClassLoader, "application-acl.conf")
+      val actualJsonString     = ServiceDetector.services(decoratedCL, javaServiceDiscovery)
       Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
     }
 
@@ -55,8 +56,8 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
         """.stripMargin
 
       val javaServiceDiscovery = "com.lightbend.lagom.internal.javadsl.server.JavadslServiceDiscovery"
-      val decoratedCL = decorateWithConfig(this.getClass.getClassLoader, "application-noacl.conf")
-      val actualJsonString = ServiceDetector.services(decoratedCL, javaServiceDiscovery)
+      val decoratedCL          = decorateWithConfig(this.getClass.getClassLoader, "application-noacl.conf")
+      val actualJsonString     = ServiceDetector.services(decoratedCL, javaServiceDiscovery)
       Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
     }
 
@@ -119,7 +120,8 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
           |]
         """.stripMargin
 
-      val actualJsonString = ServiceDetector.services(this.getClass.getClassLoader, classOf[LegacyAclServiceLoader].getName)
+      val actualJsonString =
+        ServiceDetector.services(this.getClass.getClassLoader, classOf[LegacyAclServiceLoader].getName)
       Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
     }
 
@@ -141,14 +143,16 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
     "resolve the service descriptions for a LagomScala project using `describeService` (service is not locatable)" in {
       val expectedJsonString = "[]"
 
-      val actualJsonString = ServiceDetector.services(this.getClass.getClassLoader, classOf[UndescribedServiceLoader].getName)
+      val actualJsonString =
+        ServiceDetector.services(this.getClass.getClassLoader, classOf[UndescribedServiceLoader].getName)
       Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
     }
 
     "resolve the service descriptions for a LagomScala project using the deprecated `describeServices` (service is not locatable)" in {
       val expectedJsonString = "[]"
 
-      val actualJsonString = ServiceDetector.services(this.getClass.getClassLoader, classOf[LegacyUndescribedServiceLoader].getName)
+      val actualJsonString =
+        ServiceDetector.services(this.getClass.getClassLoader, classOf[LegacyUndescribedServiceLoader].getName)
       Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
     }
 
@@ -158,7 +162,9 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
       }
       class ServiceImpl extends ServiceInterface
 
-      new JavadslServiceDiscovery().serviceInterfaceResolver(classOf[ServiceImpl]) shouldBe Some(classOf[ServiceInterface])
+      new JavadslServiceDiscovery().serviceInterfaceResolver(classOf[ServiceImpl]) shouldBe Some(
+        classOf[ServiceInterface]
+      )
     }
 
     "resolve the parent service interface that has implemented the descriptor method" in {
@@ -166,9 +172,11 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
         override def descriptor(): Descriptor = null
       }
       trait ChildServiceInterface extends ParentServiceInterface
-      class ServiceImpl extends ChildServiceInterface
+      class ServiceImpl           extends ChildServiceInterface
 
-      new JavadslServiceDiscovery().serviceInterfaceResolver(classOf[ServiceImpl]) shouldBe Some(classOf[ParentServiceInterface])
+      new JavadslServiceDiscovery().serviceInterfaceResolver(classOf[ServiceImpl]) shouldBe Some(
+        classOf[ParentServiceInterface]
+      )
     }
 
     "resolve the child service interface that has implemented the descriptor method" in {
@@ -178,7 +186,9 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
       }
       class ServiceImpl extends ChildServiceInterface
 
-      new JavadslServiceDiscovery().serviceInterfaceResolver(classOf[ServiceImpl]) shouldBe Some(classOf[ChildServiceInterface])
+      new JavadslServiceDiscovery().serviceInterfaceResolver(classOf[ServiceImpl]) shouldBe Some(
+        classOf[ChildServiceInterface]
+      )
     }
 
     def minify(s: String) =

@@ -7,7 +7,9 @@ package com.lightbend.lagom.scaladsl.persistence.cassandra
 import akka.Done
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
-import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, AggregateEventTag, EventStreamElement }
+import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
+import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
+import com.lightbend.lagom.scaladsl.persistence.EventStreamElement
 
 import scala.collection.immutable
 import scala.concurrent.Future
@@ -24,6 +26,7 @@ object CassandraReadSide {
    * Builder for the handler.
    */
   trait ReadSideHandlerBuilder[Event <: AggregateEvent[Event]] {
+
     /**
      * Set a global prepare callback.
      *
@@ -51,7 +54,9 @@ object CassandraReadSide {
      * @param handler    The function to handle the events.
      * @return This builder for fluent invocation
      */
-    def setEventHandler[E <: Event: ClassTag](handler: EventStreamElement[E] => Future[immutable.Seq[BoundStatement]]): ReadSideHandlerBuilder[Event]
+    def setEventHandler[E <: Event: ClassTag](
+        handler: EventStreamElement[E] => Future[immutable.Seq[BoundStatement]]
+    ): ReadSideHandlerBuilder[Event]
 
     /**
      * Build the read side handler.
@@ -64,6 +69,7 @@ object CassandraReadSide {
 }
 
 trait CassandraReadSide {
+
   /**
    * Create a builder for a Cassandra read side event handler.
    *

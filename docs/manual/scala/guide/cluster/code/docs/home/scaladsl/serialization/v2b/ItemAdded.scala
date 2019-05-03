@@ -8,13 +8,8 @@ import com.lightbend.lagom.scaladsl.playjson._
 import scala.collection.immutable
 
 //#add-mandatory
-case class ItemAdded(
-    shoppingCartId: String,
-    productId: String,
-    quantity: Int,
-    discount: Double)
+case class ItemAdded(shoppingCartId: String, productId: String, quantity: Int, discount: Double)
 //#add-mandatory
-
 
 object ItemAddedMigration {
 
@@ -26,7 +21,6 @@ object ItemAddedMigration {
     val serializers = Vector.empty[JsonSerializer[_]]
   }
 
-
   //#imperative-migration
   class ShopSerializerRegistry extends JsonSerializerRegistry {
 
@@ -37,7 +31,7 @@ object ItemAddedMigration {
     private val itemAddedMigration = new JsonMigration(2) {
       override def transform(fromVersion: Int, json: JsObject): JsObject = {
         if (fromVersion < 2) {
-          json + ("discount" -> JsNumber(0.0D))
+          json + ("discount" -> JsNumber(0.0d))
         } else {
           json
         }
@@ -69,12 +63,14 @@ object ItemAddedMigrationTransformer {
 
     override val serializers = ShopCommands.serializers ++ ShopEvents.serializers
 
-    val addDefaultDiscount = JsPath.json.update((JsPath \ "discount").json.put(JsNumber(0.0D)))
+    val addDefaultDiscount = JsPath.json.update((JsPath \ "discount").json.put(JsNumber(0.0d)))
 
     override def migrations = Map[String, JsonMigration](
-      JsonMigrations.transform[ItemAdded](immutable.SortedMap(
-        1 -> addDefaultDiscount
-      ))
+      JsonMigrations.transform[ItemAdded](
+        immutable.SortedMap(
+          1 -> addDefaultDiscount
+        )
+      )
     )
   }
   //#transformer-migration

@@ -1,6 +1,7 @@
 package docs.scaladsl.mb
 
-import akka.{Done, NotUsed}
+import akka.Done
+import akka.NotUsed
 import akka.stream.FlowShape
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.GraphDSL
@@ -19,8 +20,8 @@ class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
     .greetingsTopic()
     .subscribe // <-- you get back a Subscriber instance
     .atLeastOnce(
-    Flow.fromFunction(doSomethingWithTheMessage)
-  )
+      Flow.fromFunction(doSomethingWithTheMessage)
+    )
   //#subscribe-to-topic
 
   var lastObservedMessage: String = _
@@ -32,8 +33,8 @@ class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  override def foo: ServiceCall[NotUsed, String] = ServiceCall {
-    req => scala.concurrent.Future.successful(lastObservedMessage)
+  override def foo: ServiceCall[NotUsed, String] = ServiceCall { req =>
+    scala.concurrent.Future.successful(lastObservedMessage)
   }
 
   def subscribeWithMetadata = {
@@ -41,13 +42,15 @@ class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
     import com.lightbend.lagom.scaladsl.api.broker.Message
     import com.lightbend.lagom.scaladsl.broker.kafka.KafkaMetadataKeys
 
-    helloService.greetingsTopic()
-      .subscribe.withMetadata
+    helloService
+      .greetingsTopic()
+      .subscribe
+      .withMetadata
       .atLeastOnce(
         Flow[Message[GreetingMessage]].map { msg =>
           val greetingMessage = msg.payload
-          val messageKey = msg.messageKeyAsString
-          val kafkaHeaders = msg.get(KafkaMetadataKeys.Headers)
+          val messageKey      = msg.messageKeyAsString
+          val kafkaHeaders    = msg.get(KafkaMetadataKeys.Headers)
           println(s"Message: $greetingMessage Key: $messageKey Headers: $kafkaHeaders")
           Done
         }
@@ -63,8 +66,8 @@ class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
       .subscribe
       .atLeastOnce(
         Flow[GreetingMessage].map {
-          case msg@GreetingMessage("Kia ora") => doSomethingWithTheMessage(msg)
-          case _ => Done // Skip all messages where the message is not "Kia ora".
+          case msg @ GreetingMessage("Kia ora") => doSomethingWithTheMessage(msg)
+          case _                                => Done // Skip all messages where the message is not "Kia ora".
         }
       )
     //#subscribe-to-topic-skip-messages

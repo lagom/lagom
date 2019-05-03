@@ -13,8 +13,8 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface AdditionalRoutersService extends Service {
 
-    @Override
-    default Descriptor descriptor() {
-        return named("additional-routers");
-    }
+  @Override
+  default Descriptor descriptor() {
+    return named("additional-routers");
+  }
 }

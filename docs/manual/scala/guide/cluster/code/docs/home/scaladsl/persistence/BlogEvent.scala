@@ -17,7 +17,8 @@ object BlogEvent {
   val serializers = Vector(
     JsonSerializer(Json.format[PostAdded]),
     JsonSerializer(Json.format[BodyChanged]),
-    JsonSerializer(Json.format[PostPublished]))
+    JsonSerializer(Json.format[PostPublished])
+  )
 }
 
 sealed trait BlogEvent extends AggregateEvent[BlogEvent] {

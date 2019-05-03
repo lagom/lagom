@@ -4,7 +4,8 @@
 package docs.home.scaladsl.serialization
 
 //#registry
-import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializer
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 
 object MyRegistry extends JsonSerializerRegistry {
   override val serializers = Vector(
@@ -19,7 +20,7 @@ import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 
 abstract class MyApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
+    extends LagomApplication(context)
     with ClusterComponents {
 
   override lazy val jsonSerializerRegistry = MyRegistry
@@ -33,9 +34,12 @@ object CreateActorSystem {
   import akka.actor.setup.ActorSystemSetup
   import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 
-  val system = ActorSystem("my-actor-system", ActorSystemSetup(
-    JsonSerializerRegistry.serializationSetupFor(MyRegistry)
-  ))
+  val system = ActorSystem(
+    "my-actor-system",
+    ActorSystemSetup(
+      JsonSerializerRegistry.serializationSetupFor(MyRegistry)
+    )
+  )
   //#create-actor-system
 
 }

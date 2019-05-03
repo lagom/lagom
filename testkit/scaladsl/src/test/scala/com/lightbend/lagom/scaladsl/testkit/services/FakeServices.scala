@@ -6,13 +6,16 @@ package com.lightbend.lagom.scaladsl.testkit.services
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
-import akka.{ Done, NotUsed }
+import akka.Done
+import akka.NotUsed
 import akka.stream.scaladsl.Flow
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.Service._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.playjson.{ JsonSerializer, JsonSerializerRegistry }
-import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext }
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializer
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
+import com.lightbend.lagom.scaladsl.server.LagomApplication
+import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import play.api.Configuration
@@ -56,19 +59,21 @@ object FakesSerializerRegistry extends JsonSerializerRegistry {
 // ------------------------------------------------------
 
 abstract class DownstreamApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
-  with CassandraPersistenceComponents
-  with ProvidesAdditionalConfiguration
-  with AhcWSComponents {
+    extends LagomApplication(context)
+    with CassandraPersistenceComponents
+    with ProvidesAdditionalConfiguration
+    with AhcWSComponents {
 
   // This is a hack so C* persistence in this Applicaiton doesn't complain. C* Persistence is only used
   // so intances of this Application can mix-in a TopicComponents implementation (Test or Kafka)
   override def additionalConfiguration: AdditionalConfiguration =
-    super.additionalConfiguration ++ Configuration.from(Map(
-      "cassandra-journal.keyspace" -> "asdf",
-      "cassandra-snapshot-store.keyspace" -> "asdf",
-      "lagom.persistence.read-side.cassandra.keyspace" -> "asdf"
-    ))
+    super.additionalConfiguration ++ Configuration.from(
+      Map(
+        "cassandra-journal.keyspace"                     -> "asdf",
+        "cassandra-snapshot-store.keyspace"              -> "asdf",
+        "lagom.persistence.read-side.cassandra.keyspace" -> "asdf"
+      )
+    )
 
   override lazy val jsonSerializerRegistry: FakesSerializerRegistry.type = FakesSerializerRegistry
 

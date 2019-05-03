@@ -5,26 +5,33 @@
 package com.lightbend.lagom.registry.impl
 
 import java.net.URI
-import java.util.{ Collections, Optional }
+import java.util.Collections
+import java.util.Optional
 
 import akka.actor.ActorSystem
 import akka.util.ByteString
-import com.lightbend.lagom.internal.javadsl.registry.{ RegisteredService => jRegisteredService, ServiceRegistryService => jServiceRegistryService }
-import com.lightbend.lagom.internal.scaladsl.registry.{ RegisteredService => sRegisteredService, ServiceRegistryService => sServiceRegistryService }
+import com.lightbend.lagom.internal.javadsl.registry.{ RegisteredService => jRegisteredService }
+import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistryService => jServiceRegistryService }
+import com.lightbend.lagom.internal.scaladsl.registry.{ RegisteredService => sRegisteredService }
+import com.lightbend.lagom.internal.scaladsl.registry.{ ServiceRegistryService => sServiceRegistryService }
 import com.lightbend.lagom.javadsl.api.ServiceAcl
-import com.lightbend.lagom.javadsl.api.deser.{ MessageSerializer, StrictMessageSerializer }
-import com.lightbend.lagom.javadsl.api.transport.{ MessageProtocol, Method }
+import com.lightbend.lagom.javadsl.api.deser.MessageSerializer
+import com.lightbend.lagom.javadsl.api.deser.StrictMessageSerializer
+import com.lightbend.lagom.javadsl.api.transport.MessageProtocol
+import com.lightbend.lagom.javadsl.api.transport.Method
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory
 import org.scalatest.concurrent.Futures
-import org.scalatest.{ FlatSpec, Matchers }
-import play.api.libs.json.{ Format, Json }
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
+import play.api.libs.json.Format
+import play.api.libs.json.Json
 
 class ServiceRegistryInteropSpec extends FlatSpec with Matchers with Futures {
 
-  val system = ActorSystem()
+  val system                   = ActorSystem()
   val jacksonSerializerFactory = new JacksonSerializerFactory(system)
 
-  behavior of "ServiceRegistry serializers"
+  behavior.of("ServiceRegistry serializers")
 
   it should "should interop between java and scala (RegisteredService)" in {
     val msg = jRegisteredService.of("inventory", URI.create("https://localhost:123/asdf"), Optional.of("https"))
@@ -37,7 +44,10 @@ class ServiceRegistryInteropSpec extends FlatSpec with Matchers with Futures {
   }
 
   it should "should interop between java and scala (ServiceRegistryService)" in {
-    val msg = jServiceRegistryService.of(URI.create("https://localhost:123/asdf"), Collections.singletonList(ServiceAcl.methodAndPath(Method.GET, "/items")))
+    val msg = jServiceRegistryService.of(
+      URI.create("https://localhost:123/asdf"),
+      Collections.singletonList(ServiceAcl.methodAndPath(Method.GET, "/items"))
+    )
     roundTrip(msg) should be(msg)
   }
 
@@ -63,15 +73,17 @@ class ServiceRegistryInteropSpec extends FlatSpec with Matchers with Futures {
   }
 
   private def roundTrip[J, S](
-    input:             J,
-    jacksonSerializer: StrictMessageSerializer[J],
-    playJsonFormatter: Format[S]
+      input: J,
+      jacksonSerializer: StrictMessageSerializer[J],
+      playJsonFormatter: Format[S]
   )(implicit format: Format[S]): J = {
     val byteString: ByteString = jacksonSerializer.serializerForRequest().serialize(input)
-    val scalaValue: S = playJsonFormatter.reads(Json.parse(byteString.toArray)).get
-    val str: String = playJsonFormatter.writes(scalaValue).toString()
+    val scalaValue: S          = playJsonFormatter.reads(Json.parse(byteString.toArray)).get
+    val str: String            = playJsonFormatter.writes(scalaValue).toString()
     val jacksonDeserializer: MessageSerializer.NegotiatedDeserializer[J, ByteString] =
-      jacksonSerializer.deserializer(new MessageProtocol(Optional.of("application/json"), Optional.empty[String], Optional.empty[String]))
+      jacksonSerializer.deserializer(
+        new MessageProtocol(Optional.of("application/json"), Optional.empty[String], Optional.empty[String])
+      )
     jacksonDeserializer.deserialize(ByteString(str))
   }
 

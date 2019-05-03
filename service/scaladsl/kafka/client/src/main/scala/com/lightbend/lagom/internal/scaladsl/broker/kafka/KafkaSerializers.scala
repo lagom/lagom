@@ -5,14 +5,17 @@
 package com.lightbend.lagom.internal.scaladsl.broker.kafka
 
 import akka.util.ByteString
-import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.{ NegotiatedDeserializer, NegotiatedSerializer }
-import org.apache.kafka.common.serialization.{ Deserializer, Serializer }
+import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.NegotiatedDeserializer
+import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.NegotiatedSerializer
+import org.apache.kafka.common.serialization.Deserializer
+import org.apache.kafka.common.serialization.Serializer
 
 /**
  * Adapts a Lagom NegotiatedDeserializer into a Kafka Deserializer so that messages
  * stored in Kafka can be deserialized into the expected application's type.
  */
-private[lagom] class ScaladslKafkaDeserializer[T](deserializer: NegotiatedDeserializer[T, ByteString]) extends Deserializer[T] {
+private[lagom] class ScaladslKafkaDeserializer[T](deserializer: NegotiatedDeserializer[T, ByteString])
+    extends Deserializer[T] {
 
   override def configure(configs: java.util.Map[String, _], isKey: Boolean): Unit = {
     () // ignore

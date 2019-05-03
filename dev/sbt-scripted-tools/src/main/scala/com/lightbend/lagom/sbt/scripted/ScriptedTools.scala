@@ -4,10 +4,13 @@
 
 package com.lightbend.lagom.sbt.scripted
 
-import java.io.{ BufferedReader, InputStreamReader }
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.net.HttpURLConnection
 
-import com.lightbend.lagom.sbt.{ Internal, LagomPlugin, NonBlockingInteractionMode }
+import com.lightbend.lagom.sbt.Internal
+import com.lightbend.lagom.sbt.LagomPlugin
+import com.lightbend.lagom.sbt.NonBlockingInteractionMode
 import com.lightbend.lagom.core.LagomVersion
 import sbt.Keys._
 import sbt._
@@ -18,7 +21,7 @@ import scala.util.control.NonFatal
 
 object ScriptedTools extends AutoPlugin {
   private val ConnectTimeout = 10000
-  private val ReadTimeout = 10000
+  private val ReadTimeout    = 10000
 
   override def trigger = allRequirements
 
@@ -26,7 +29,7 @@ object ScriptedTools extends AutoPlugin {
 
   object autoImport {
     val validateRequest = inputKey[Response]("Validate the given request")
-    val validateFile = inputKey[File]("Validate a file")
+    val validateFile    = inputKey[File]("Validate a file")
 
     val lagomSbtScriptedLibrary = "com.lightbend.lagom" %% "lagom-sbt-scripted-library" % LagomVersion.current
   }
@@ -35,7 +38,7 @@ object ScriptedTools extends AutoPlugin {
 
   override def buildSettings: Seq[Setting[_]] = Seq(
     validateRequest := {
-      val log = streams.value.log
+      val log             = streams.value.log
       val validateRequest = validateRequestParser.parsed
 
       def attempt(): Response = {
@@ -90,8 +93,8 @@ object ScriptedTools extends AutoPlugin {
     aggregate in validateRequest := false,
     validateFile := {
       val validateFile = validateFileParser.parsed
-      val file = baseDirectory.value / validateFile.file.get
-      val log = streams.value.log
+      val file         = baseDirectory.value / validateFile.file.get
+      val log          = streams.value.log
 
       def attempt() = {
         log.info("Validating file " + file)
@@ -134,11 +137,11 @@ object ScriptedTools extends AutoPlugin {
   case class Response(status: Int, body: String)
 
   private case class ValidateRequest(
-    uri:             Option[URI]    = None,
-    retry:           Boolean        = false,
-    shouldBeDown:    Boolean        = false,
-    statusAssertion: Int => Unit = _ => (),
-    bodyAssertion:   String => Unit = _ => ()
+      uri: Option[URI] = None,
+      retry: Boolean = false,
+      shouldBeDown: Boolean = false,
+      statusAssertion: Int => Unit = _ => (),
+      bodyAssertion: String => Unit = _ => ()
   )
 
   private val validateRequestParser: Parser[ValidateRequest] = {
@@ -154,64 +157,89 @@ object ScriptedTools extends AutoPlugin {
       literal(opt).map(_ => applyOption)
     }
 
-    def bodyAssertionOption(opt: String, description: String)(assertion: (String, String) => Boolean): Parser[ApplyOption] = {
-      optionArg(opt, StringBasic)(expected => v => {
-        val oldAssertion = v.bodyAssertion
-        v.copy(bodyAssertion = body => {
-          // First run the existing assertion
-          oldAssertion(body)
-          // Now run this assertion
-          if (!assertion(body, expected)) sys.error(s"Expected body to $description '$expected' but got '$body'")
-        })
-      })
+    def bodyAssertionOption(opt: String, description: String)(
+        assertion: (String, String) => Boolean
+    ): Parser[ApplyOption] = {
+      optionArg(opt, StringBasic)(
+        expected =>
+          v => {
+            val oldAssertion = v.bodyAssertion
+            v.copy(bodyAssertion = body => {
+              // First run the existing assertion
+              oldAssertion(body)
+              // Now run this assertion
+              if (!assertion(body, expected)) sys.error(s"Expected body to $description '$expected' but got '$body'")
+            })
+          }
+      )
     }
 
-    def statusAssertionOption(opt: String, description: String)(assertion: (Int, Int) => Boolean): Parser[ApplyOption] = {
-      optionArg(opt, NatBasic)(expected => v => {
-        val oldAssertion = v.statusAssertion
-        v.copy(statusAssertion = status => {
-          oldAssertion(status)
-          if (!assertion(status, expected)) sys.error(s"Expected status to $description $expected but got $status")
-        })
-      })
+    def statusAssertionOption(opt: String, description: String)(
+        assertion: (Int, Int) => Boolean
+    ): Parser[ApplyOption] = {
+      optionArg(opt, NatBasic)(
+        expected =>
+          v => {
+            val oldAssertion = v.statusAssertion
+            v.copy(statusAssertion = status => {
+              oldAssertion(status)
+              if (!assertion(status, expected)) sys.error(s"Expected status to $description $expected but got $status")
+            })
+          }
+      )
     }
 
-    val retry = option("retry-until-success")(_.copy(retry = true))
+    val retry        = option("retry-until-success")(_.copy(retry = true))
     val shouldBeDown = option("should-be-down")(_.copy(shouldBeDown = true))
 
-    val status = statusAssertionOption("status", "equal")(_ == _)
+    val status    = statusAssertionOption("status", "equal")(_ == _)
     val notStatus = statusAssertionOption("not-status", "not equal")(_ != _)
 
-    val contains = bodyAssertionOption("body-contains", "contain")(_.contains(_))
+    val contains    = bodyAssertionOption("body-contains", "contain")(_.contains(_))
     val notContains = bodyAssertionOption("body-not-contains", "not contain")(!_.contains(_))
-    val equals = bodyAssertionOption("body-equals", "equal")(_ == _)
-    val notEquals = bodyAssertionOption("body-not-equals", "not equal")(_ != _)
-    val matches = bodyAssertionOption("body-matches", "match")((body, regexp) => regexp.r.pattern.matcher(body).matches())
-    val notMatches = bodyAssertionOption("body-not-matches", "not match")((body, regexp) => !regexp.r.pattern.matcher(body).matches())
+    val equals      = bodyAssertionOption("body-equals", "equal")(_ == _)
+    val notEquals   = bodyAssertionOption("body-not-equals", "not equal")(_ != _)
+    val matches =
+      bodyAssertionOption("body-matches", "match")((body, regexp) => regexp.r.pattern.matcher(body).matches())
+    val notMatches =
+      bodyAssertionOption("body-not-matches", "not match")((body, regexp) => !regexp.r.pattern.matcher(body).matches())
 
     val uri = basicUri.map(uri => (validateRequest: ValidateRequest) => validateRequest.copy(uri = Some(uri)))
 
-    Space ~> repsep(retry | shouldBeDown | status | notStatus | contains | notContains | matches | notMatches | equals | notEquals | uri, Space).map { options =>
-      options.foldLeft(ValidateRequest())((validateRequest, applyOption) => applyOption(validateRequest))
-    }.filter(_.uri.isDefined, _ => "No URI supplied")
+    Space ~> repsep(
+      retry | shouldBeDown | status | notStatus | contains | notContains | matches | notMatches | equals | notEquals | uri,
+      Space
+    ).map { options =>
+        options.foldLeft(ValidateRequest())((validateRequest, applyOption) => applyOption(validateRequest))
+      }
+      .filter(_.uri.isDefined, _ => "No URI supplied")
 
   }
 
-  private case class ValidateFile(file: Option[String] = None, retry: Boolean = false, assertions: String => Unit = _ => ())
+  private case class ValidateFile(
+      file: Option[String] = None,
+      retry: Boolean = false,
+      assertions: String => Unit = _ => ()
+  )
 
   private val validateFileParser: Parser[ValidateFile] = {
     import complete.DefaultParsers._
 
-    def assertionOption[A](opt: String, parser: Parser[A])(assertion: (String, A) => Unit): Parser[ValidateFile => ValidateFile] = {
-      (literal(opt) ~> Space ~> parser).map(expected => (v: ValidateFile) => {
-        val oldAssertions = v.assertions
-        v.copy(assertions = contents => {
-          // First run the existing assertion
-          oldAssertions(contents)
-          // Now run this assertion
-          assertion(contents, expected)
-        })
-      })
+    def assertionOption[A](opt: String, parser: Parser[A])(
+        assertion: (String, A) => Unit
+    ): Parser[ValidateFile => ValidateFile] = {
+      (literal(opt) ~> Space ~> parser).map(
+        expected =>
+          (v: ValidateFile) => {
+            val oldAssertions = v.assertions
+            v.copy(assertions = contents => {
+              // First run the existing assertion
+              oldAssertions(contents)
+              // Now run this assertion
+              assertion(contents, expected)
+            })
+          }
+      )
     }
 
     val retry = literal("retry-until-success").map(_ => (v: ValidateFile) => v.copy(retry = true))
@@ -220,16 +248,22 @@ object ScriptedTools extends AutoPlugin {
       val count = contents.linesIterator.size
       if (count != expected) sys.error(s"Expected line count of $expected but got $count")
     }
-    val contains = assertionOption("contains", StringBasic)((contents, expected) =>
-      if (!contents.contains(expected)) sys.error(s"Expected file to contain '$expected' but got '$contents'"))
-    val notContains = assertionOption("not-contains", StringBasic)((contents, expected) =>
-      if (contents.contains(expected)) sys.error(s"Expected file to not contain '$expected' but got '$contents'"))
+    val contains = assertionOption("contains", StringBasic)(
+      (contents, expected) =>
+        if (!contents.contains(expected)) sys.error(s"Expected file to contain '$expected' but got '$contents'")
+    )
+    val notContains = assertionOption("not-contains", StringBasic)(
+      (contents, expected) =>
+        if (contents.contains(expected)) sys.error(s"Expected file to not contain '$expected' but got '$contents'")
+    )
 
     val file = StringBasic.map(fileName => (v: ValidateFile) => v.copy(file = Some(fileName)))
 
-    Space ~> repsep(retry | lineCount | contains | notContains | file, Space).map { options =>
-      options.foldLeft(ValidateFile())((v, applyOption) => applyOption(v))
-    }.filter(_.file.isDefined, _ => "No file supplied")
+    Space ~> repsep(retry | lineCount | contains | notContains | file, Space)
+      .map { options =>
+        options.foldLeft(ValidateFile())((v, applyOption) => applyOption(v))
+      }
+      .filter(_.file.isDefined, _ => "No file supplied")
 
   }
 

@@ -6,7 +6,8 @@ package com.lightbend.lagom.scaladsl.playjson
 
 import akka.actor.ExtendedActorSystem
 import akka.actor.setup.ActorSystemSetup
-import akka.serialization.{ SerializationSetup, SerializerDetails }
+import akka.serialization.SerializationSetup
+import akka.serialization.SerializerDetails
 
 import scala.collection.immutable
 
@@ -30,12 +31,13 @@ abstract class JsonSerializerRegistry {
     val self = this
     new JsonSerializerRegistry {
       override def serializers = self.serializers ++ other.serializers
-      override def migrations = self.migrations ++ other.migrations
+      override def migrations  = self.migrations ++ other.migrations
     }
   }
 }
 
 object JsonSerializerRegistry {
+
   /**
    * Create the serializer details for the given serializer registry.
    */
@@ -85,6 +87,7 @@ object EmptyJsonSerializerRegistry extends JsonSerializerRegistry {
  * The jsonSerializerFactory is intentionally abstract to force end users to provide one.
  */
 trait RequiresJsonSerializerRegistry extends ProvidesJsonSerializerRegistry {
+
   /**
    * The serializer registry.
    *

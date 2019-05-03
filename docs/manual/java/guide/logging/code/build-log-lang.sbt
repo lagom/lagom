@@ -1,6 +1,6 @@
 //#lagom-logback-plugin-lagomjava
 lazy val usersImpl = (project in file("usersImpl"))
-  // Lagom logging module is automatically added to the classpath
+// Lagom logging module is automatically added to the classpath
   .enablePlugins(LagomJava)
 //#lagom-logback-plugin-lagomjava
 
@@ -25,9 +25,9 @@ lazy val orderImpl = (project in file("orderImpl"))
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.8.2",
-      "org.apache.logging.log4j" % "log4j-api" % "2.8.2",
-      "org.apache.logging.log4j" % "log4j-core" % "2.8.2",
-      "com.lmax" % "disruptor" % "3.3.6"
+      "org.apache.logging.log4j" % "log4j-api"        % "2.8.2",
+      "org.apache.logging.log4j" % "log4j-core"       % "2.8.2",
+      "com.lmax"                 % "disruptor"        % "3.3.6"
     )
   )
 //#lagom-logback-plugin-disabled-log4j

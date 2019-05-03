@@ -6,8 +6,8 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 final class Post1 extends PersistentEntity {
 
   override type Command = BlogCommand
-  override type Event = BlogEvent
-  override type State = BlogState
+  override type Event   = BlogEvent
+  override type State   = BlogState
 
   override def initialState: BlogState = BlogState.empty
 

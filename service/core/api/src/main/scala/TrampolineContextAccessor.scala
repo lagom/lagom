@@ -17,4 +17,3 @@ package play.lagom {
 package com.lightbend.lagom.internal.api {
   private[lagom] object Execution extends play.lagom.Execution
 }
-

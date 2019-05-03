@@ -4,8 +4,10 @@
 
 package com.lightbend.lagom.javadsl.jackson
 
-import play.api.{ Configuration, Environment }
-import play.api.inject.{ Binding, Module }
+import play.api.Configuration
+import play.api.Environment
+import play.api.inject.Binding
+import play.api.inject.Module
 
 /**
  * Module that provides the default Jackson serializer factory.

@@ -12,13 +12,11 @@ import static com.lightbend.lagom.javadsl.api.Service.named;
 
 public interface PublisherService extends Service {
 
-    Topic<String> messages();
+  Topic<String> messages();
 
-    String TOPIC = "the-topic";
+  String TOPIC = "the-topic";
 
-    default Descriptor descriptor() {
-        return named("/publisher").withTopics(
-                Service.topic(TOPIC, this::messages)
-        );
-    }
+  default Descriptor descriptor() {
+    return named("/publisher").withTopics(Service.topic(TOPIC, this::messages));
+  }
 }

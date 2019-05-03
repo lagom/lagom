@@ -11,18 +11,22 @@ import akka.cluster.Cluster
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig._
-import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.lightbend.lagom.persistence.ActorSystemSpec
+import com.lightbend.lagom.persistence.PersistenceSpec
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 
 class CassandraPersistenceSpec(system: ActorSystem) extends ActorSystemSpec(system) {
 
   def this(testName: String, config: Config) =
-    this(ActorSystem(
-      testName,
-      config
-        .withFallback(cassandraConfig(testName, CassandraLauncher.randomPort))
-        .withFallback(ClusterConfig)
-    ))
+    this(
+      ActorSystem(
+        testName,
+        config
+          .withFallback(cassandraConfig(testName, CassandraLauncher.randomPort))
+          .withFallback(ClusterConfig)
+      )
+    )
 
   def this(config: Config) = this(PersistenceSpec.getCallerName(getClass), config)
 

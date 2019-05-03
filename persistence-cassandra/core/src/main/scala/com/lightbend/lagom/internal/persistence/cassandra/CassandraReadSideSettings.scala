@@ -10,7 +10,7 @@ import akka.actor.ActorSystem
 /**
  * Internal API
  */
-private[lagom] class CassandraReadSideSettings @Inject() (system: ActorSystem) {
+private[lagom] class CassandraReadSideSettings @Inject()(system: ActorSystem) {
   private val cassandraConfig = system.settings.config.getConfig("lagom.persistence.read-side.cassandra")
 
   val autoCreateTables: Boolean = cassandraConfig.getBoolean("tables-autocreate")

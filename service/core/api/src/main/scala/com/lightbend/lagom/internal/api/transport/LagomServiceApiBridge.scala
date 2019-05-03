@@ -11,7 +11,8 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 
 import scala.collection.immutable
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.language.higherKinds
 
 // INTERNAL API
@@ -45,20 +46,35 @@ trait LagomServiceApiBridge {
   def requestHeaderMethod(rh: RequestHeader): String
   def requestHeaderUri(rh: RequestHeader): URI
   def requestHeaderAcceptedResponseProtocols(rh: RequestHeader): immutable.Seq[MessageProtocol]
-  def newRequestHeader(method: Method, uri: URI, requestProtocol: MessageProtocol,
-                       acceptResponseProtocols: immutable.Seq[MessageProtocol], servicePrincipal: Option[Principal],
-                       headers: Map[String, immutable.Seq[(String, String)]]): RequestHeader
+  def newRequestHeader(
+      method: Method,
+      uri: URI,
+      requestProtocol: MessageProtocol,
+      acceptResponseProtocols: immutable.Seq[MessageProtocol],
+      servicePrincipal: Option[Principal],
+      headers: Map[String, immutable.Seq[(String, String)]]
+  ): RequestHeader
 
   type ResponseHeader <: MessageHeader
   def responseHeaderStatus(rh: ResponseHeader): Int
-  def newResponseHeader(code: Int, mp: MessageProtocol, headers: Map[String, immutable.Seq[(String, String)]]): ResponseHeader
+  def newResponseHeader(
+      code: Int,
+      mp: MessageProtocol,
+      headers: Map[String, immutable.Seq[(String, String)]]
+  ): ResponseHeader
   def responseHeaderWithProtocol(rh: ResponseHeader, mp: MessageProtocol): ResponseHeader
   def responseHeaderIsDefault(rh: ResponseHeader): Boolean
 
   type MessageSerializer[M, W]
   def messageSerializerSerializerForRequest[M, W](ms: MessageSerializer[M, W]): NegotiatedSerializer[M, W]
-  def messageSerializerSerializerForResponse[M, W](ms: MessageSerializer[M, W], ap: immutable.Seq[MessageProtocol]): NegotiatedSerializer[M, W]
-  def messageSerializerDeserializer[M, W](ms: MessageSerializer[M, W], mp: MessageProtocol): NegotiatedDeserializer[M, W]
+  def messageSerializerSerializerForResponse[M, W](
+      ms: MessageSerializer[M, W],
+      ap: immutable.Seq[MessageProtocol]
+  ): NegotiatedSerializer[M, W]
+  def messageSerializerDeserializer[M, W](
+      ms: MessageSerializer[M, W],
+      mp: MessageProtocol
+  ): NegotiatedDeserializer[M, W]
   def messageSerializerAcceptResponseProtocols(ms: MessageSerializer[_, _]): immutable.Seq[MessageProtocol]
   def messageSerializerIsStreamed(ms: MessageSerializer[_, _]): Boolean
   def messageSerializerIsUsed(ms: MessageSerializer[_, _]): Boolean
@@ -71,12 +87,23 @@ trait LagomServiceApiBridge {
   def negotiatedDeserializerDeserialize[M, W](ns: NegotiatedDeserializer[M, W], w: W): M
 
   type ExceptionSerializer
-  def exceptionSerializerDeserializeHttpException(es: ExceptionSerializer, code: Int, mp: MessageProtocol,
-                                                  bytes: ByteString): Throwable
-  def exceptionSerializerDeserializeWebSocketException(es: ExceptionSerializer, code: Int, mp: MessageProtocol,
-                                                       bytes: ByteString): Throwable
-  def exceptionSerializerSerialize(es: ExceptionSerializer, t: Throwable,
-                                   accept: immutable.Seq[MessageProtocol]): RawExceptionMessage
+  def exceptionSerializerDeserializeHttpException(
+      es: ExceptionSerializer,
+      code: Int,
+      mp: MessageProtocol,
+      bytes: ByteString
+  ): Throwable
+  def exceptionSerializerDeserializeWebSocketException(
+      es: ExceptionSerializer,
+      code: Int,
+      mp: MessageProtocol,
+      bytes: ByteString
+  ): Throwable
+  def exceptionSerializerSerialize(
+      es: ExceptionSerializer,
+      t: Throwable,
+      accept: immutable.Seq[MessageProtocol]
+  ): RawExceptionMessage
 
   type RawExceptionMessage
   def rawExceptionMessageErrorCode(rem: RawExceptionMessage): ErrorCode
@@ -111,8 +138,12 @@ trait LagomServiceApiBridge {
   def headerFilterTransformServerResponse(hf: HeaderFilter, resp: ResponseHeader, req: RequestHeader): ResponseHeader
 
   type ServiceLocator
-  def serviceLocatorDoWithService[T](serviceLocator: ServiceLocator, descriptor: Descriptor, call: Call[_, _],
-                                     block: URI => Future[T])(implicit ec: ExecutionContext): Future[Option[T]]
+  def serviceLocatorDoWithService[T](
+      serviceLocator: ServiceLocator,
+      descriptor: Descriptor,
+      call: Call[_, _],
+      block: URI => Future[T]
+  )(implicit ec: ExecutionContext): Future[Option[T]]
 
   // Exceptions
   def newPayloadTooLarge(msg: String): Throwable
