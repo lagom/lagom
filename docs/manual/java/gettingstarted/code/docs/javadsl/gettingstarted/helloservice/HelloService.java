@@ -12,16 +12,16 @@ import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 
- //#helloservice-interface
+// #helloservice-interface
 public interface HelloService extends Service {
 
   ServiceCall<NotUsed, String> hello(String id);
 
   @Override
   default Descriptor descriptor() {
-    return named("helloservice").withCalls(
-        restCall(Method.GET,  "/api/hello/:id", this::hello)
-      ).withAutoAcl(true);
+    return named("helloservice")
+        .withCalls(restCall(Method.GET, "/api/hello/:id", this::hello))
+        .withAutoAcl(true);
   }
 }
-//#helloservice-interface
+// #helloservice-interface

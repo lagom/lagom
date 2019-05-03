@@ -1,13 +1,15 @@
 package impl
 
-import java.nio.file.{Files, StandardOpenOption}
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
 import java.util.Date
 
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import play.api.libs.ws.ahc.AhcWSComponents
-import api.{BarService, FooService}
+import api.BarService
+import api.FooService
 import com.softwaremill.macwire._
 
 class BarLoader extends LagomApplicationLoader {
@@ -21,15 +23,16 @@ class BarLoader extends LagomApplicationLoader {
     new BarApplication(context) with LagomDevModeComponents
 }
 
-abstract class BarApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
-    with AhcWSComponents {
+abstract class BarApplication(context: LagomApplicationContext) extends LagomApplication(context) with AhcWSComponents {
 
   override lazy val lagomServer = serverFor[BarService](wire[BarServiceImpl])
 
-
   lazy val fooService = serviceClient.implement[FooService]
 
-  Files.write(environment.getFile("target/reload.log").toPath, s"${new Date()} - reloaded\n".getBytes("utf-8"),
-    StandardOpenOption.CREATE, StandardOpenOption.APPEND)
+  Files.write(
+    environment.getFile("target/reload.log").toPath,
+    s"${new Date()} - reloaded\n".getBytes("utf-8"),
+    StandardOpenOption.CREATE,
+    StandardOpenOption.APPEND
+  )
 }

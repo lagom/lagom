@@ -6,15 +6,19 @@ package com.lightbend.lagom.internal.testkit
 
 import akka.Done
 import akka.actor.ActorRef
-import akka.stream.{ Materializer, OverflowStrategy }
-import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
+import akka.stream.Materializer
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Keep
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 
 import scala.concurrent.Future
 import scala.language.higherKinds
 
 private[lagom] class InternalSubscriberStub[Payload, Message[_]](
-  groupId:     String,
-  topicBuffer: ActorRef
+    groupId: String,
+    topicBuffer: ActorRef
 )(implicit materializer: Materializer) {
 
   def mostOnceSource: Source[Message[Payload], _] = {

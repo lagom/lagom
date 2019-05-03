@@ -14,14 +14,14 @@ import java.util.Optional;
 
 public class Post4 extends PersistentEntity<BlogCommand, BlogEvent, BlogState> {
 
-  //#inject
+  // #inject
   private final PubSubRef<PostPublished> publishedTopic;
 
   @Inject
   public Post4(PubSubRegistry pubSub) {
     publishedTopic = pubSub.refFor(TopicId.of(PostPublished.class, ""));
   }
-  //#inject
+  // #inject
 
   @Override
   public Behavior initialBehavior(Optional<BlogState> snapshotState) {
@@ -34,22 +34,27 @@ public class Post4 extends PersistentEntity<BlogCommand, BlogEvent, BlogState> {
 
       // Command handlers are invoked for incoming messages (commands).
       // A command handler must "return" the events to be persisted (if any).
-      b.setCommandHandler(AddPost.class, (AddPost cmd, CommandContext<AddPostDone> ctx) -> {
-        if (cmd.getContent().getTitle() == null || cmd.getContent().getTitle().equals("")) {
-          ctx.invalidCommand("Title must be defined");
-          return ctx.done();
-        }
+      b.setCommandHandler(
+          AddPost.class,
+          (AddPost cmd, CommandContext<AddPostDone> ctx) -> {
+            if (cmd.getContent().getTitle() == null || cmd.getContent().getTitle().equals("")) {
+              ctx.invalidCommand("Title must be defined");
+              return ctx.done();
+            }
 
-        final PostAdded postAdded = new PostAdded(entityId(), cmd.getContent());
-        return ctx.thenPersist(postAdded, (PostAdded evt) ->
-        // After persist is done additional side effects can be performed
-            ctx.reply(new AddPostDone(entityId())));
-      });
+            final PostAdded postAdded = new PostAdded(entityId(), cmd.getContent());
+            return ctx.thenPersist(
+                postAdded,
+                (PostAdded evt) ->
+                    // After persist is done additional side effects can be performed
+                    ctx.reply(new AddPostDone(entityId())));
+          });
 
       // Event handlers are used both when when persisting new events and when replaying
       // events.
-      b.setEventHandlerChangingBehavior(PostAdded.class, evt ->
-        becomePostAdded(new BlogState(Optional.of(evt.getContent()), false)));
+      b.setEventHandlerChangingBehavior(
+          PostAdded.class,
+          evt -> becomePostAdded(new BlogState(Optional.of(evt.getContent()), false)));
 
       return b.build();
     }
@@ -59,24 +64,28 @@ public class Post4 extends PersistentEntity<BlogCommand, BlogEvent, BlogState> {
   private Behavior becomePostAdded(BlogState newState) {
     BehaviorBuilder b = newBehaviorBuilder(newState);
 
-    b.setCommandHandler(ChangeBody.class,
-        (cmd, ctx) -> ctx.thenPersist(new BodyChanged(entityId(), cmd.getBody()), evt ->
-          ctx.reply(Done.getInstance())));
+    b.setCommandHandler(
+        ChangeBody.class,
+        (cmd, ctx) ->
+            ctx.thenPersist(
+                new BodyChanged(entityId(), cmd.getBody()), evt -> ctx.reply(Done.getInstance())));
 
     b.setEventHandler(BodyChanged.class, evt -> state().withBody(evt.getBody()));
 
-    //#publish
-    b.setCommandHandler(Publish.class,
-        (cmd, ctx) -> ctx.thenPersist(new PostPublished(entityId()), evt -> {
-            ctx.reply(Done.getInstance());
-            publishedTopic.publish(evt);
-          }));
-    //#publish
+    // #publish
+    b.setCommandHandler(
+        Publish.class,
+        (cmd, ctx) ->
+            ctx.thenPersist(
+                new PostPublished(entityId()),
+                evt -> {
+                  ctx.reply(Done.getInstance());
+                  publishedTopic.publish(evt);
+                }));
+    // #publish
 
-    b.setEventHandler(PostPublished.class, evt ->
-      new BlogState(state().getContent(), true));
+    b.setEventHandler(PostPublished.class, evt -> new BlogState(state().getContent(), true));
 
     return b.build();
   }
-
 }

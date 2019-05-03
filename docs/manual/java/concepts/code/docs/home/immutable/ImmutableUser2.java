@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 
-//#immutable
+// #immutable
 public class ImmutableUser2 {
   private final String name;
   private final List<String> phoneNumbers;
@@ -22,6 +22,5 @@ public class ImmutableUser2 {
   public List<String> getPhoneNumbers() {
     return Collections.unmodifiableList(phoneNumbers);
   }
-
 }
-//#immutable
+// #immutable

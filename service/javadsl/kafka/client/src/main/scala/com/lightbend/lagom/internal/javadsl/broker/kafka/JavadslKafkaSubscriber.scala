@@ -9,31 +9,50 @@ import java.util.concurrent.CompletionStage
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.Done
-import akka.actor.{ ActorSystem, SupervisorStrategy }
-import akka.kafka.{ ConsumerSettings, Subscriptions }
+import akka.actor.ActorSystem
+import akka.actor.SupervisorStrategy
+import akka.kafka.ConsumerSettings
+import akka.kafka.Subscriptions
 import akka.kafka.scaladsl.Consumer
 import akka.pattern.BackoffSupervisor
 import akka.stream.Materializer
-import akka.stream.javadsl.{ Flow, Source }
+import akka.stream.javadsl.Flow
+import akka.stream.javadsl.Source
 import com.lightbend.lagom.internal.api.UriUtils
-import com.lightbend.lagom.internal.broker.kafka.{ ConsumerConfig, KafkaConfig, KafkaSubscriberActor, NoKafkaBrokersException }
+import com.lightbend.lagom.internal.broker.kafka.ConsumerConfig
+import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
+import com.lightbend.lagom.internal.broker.kafka.KafkaSubscriberActor
+import com.lightbend.lagom.internal.broker.kafka.NoKafkaBrokersException
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
-import com.lightbend.lagom.javadsl.api.{ ServiceInfo, ServiceLocator }
-import com.lightbend.lagom.javadsl.api.broker.{ Message, MetadataKey, Subscriber }
+import com.lightbend.lagom.javadsl.api.ServiceInfo
+import com.lightbend.lagom.javadsl.api.ServiceLocator
+import com.lightbend.lagom.javadsl.api.broker.Message
+import com.lightbend.lagom.javadsl.api.broker.MetadataKey
+import com.lightbend.lagom.javadsl.api.broker.Subscriber
 import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ ExecutionContext, Future, Promise }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.Promise
 import scala.compat.java8.FutureConverters._
 import scala.collection.JavaConverters._
+
 /**
  * A Consumer for consuming messages from Kafka using the Alpakka Kafka API.
  */
-private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](kafkaConfig: KafkaConfig, topicCall: TopicCall[Payload],
-                                                                        groupId: Subscriber.GroupId, info: ServiceInfo, system: ActorSystem,
-                                                                        serviceLocator: ServiceLocator, transform: ConsumerRecord[String, Payload] => SubscriberPayload)(implicit mat: Materializer, ec: ExecutionContext) extends Subscriber[SubscriberPayload] {
+private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](
+    kafkaConfig: KafkaConfig,
+    topicCall: TopicCall[Payload],
+    groupId: Subscriber.GroupId,
+    info: ServiceInfo,
+    system: ActorSystem,
+    serviceLocator: ServiceLocator,
+    transform: ConsumerRecord[String, Payload] => SubscriberPayload
+)(implicit mat: Materializer, ec: ExecutionContext)
+    extends Subscriber[SubscriberPayload] {
 
   private val log = LoggerFactory.getLogger(classOf[JavadslKafkaSubscriber[_, _]])
 
@@ -63,11 +82,18 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](kafkaCon
   }
 
   override def withMetadata() = new JavadslKafkaSubscriber(
-    kafkaConfig, topicCall, groupId, info, system, serviceLocator, wrapPayload
+    kafkaConfig,
+    topicCall,
+    groupId,
+    info,
+    system,
+    serviceLocator,
+    wrapPayload
   )
 
   private def wrapPayload(record: ConsumerRecord[String, Payload]): Message[SubscriberPayload] = {
-    Message.create(transform(record))
+    Message
+      .create(transform(record))
       .add(MetadataKey.messageKey[String], record.key())
       .add(KafkaMetadataKeys.OFFSET, record.offset().asInstanceOf[java.lang.Long])
       .add(KafkaMetadataKeys.PARTITION, record.partition().asInstanceOf[java.lang.Integer])
@@ -81,8 +107,8 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](kafkaCon
     val keyDeserializer = new StringDeserializer
     val valueDeserializer = {
       val messageSerializer = topicCall.messageSerializer()
-      val protocol = messageSerializer.serializerForRequest().protocol()
-      val deserializer = messageSerializer.deserializer(protocol)
+      val protocol          = messageSerializer.serializerForRequest().protocol()
+      val deserializer      = messageSerializer.deserializer(protocol)
       new JavadslKafkaDeserializer(deserializer)
     }
 
@@ -99,7 +125,8 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](kafkaCon
     kafkaConfig.serviceName match {
       case Some(name) =>
         log.debug("Creating at most once source using service locator to look up Kafka services at {}", name)
-        akka.stream.scaladsl.Source.single(())
+        akka.stream.scaladsl.Source
+          .single(())
           .mapAsync(1)(_ => serviceLocator.locateAll(name).toScala)
           .flatMapConcat {
 
@@ -109,17 +136,22 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](kafkaCon
             case uris =>
               val endpoints = UriUtils.hostAndPorts(uris.asScala)
               log.debug("Connecting to Kafka service named {} at {}", name: Any, endpoints)
-              Consumer.atMostOnceSource(
-                consumerSettings.withBootstrapServers(endpoints),
-                subscription
-              ).map(transform)
+              Consumer
+                .atMostOnceSource(
+                  consumerSettings.withBootstrapServers(endpoints),
+                  subscription
+                )
+                .map(transform)
 
-          }.asJava
+          }
+          .asJava
 
       case None =>
         log.debug("Creating at most once source with configured brokers: {}", kafkaConfig.brokers)
-        Consumer.atMostOnceSource(consumerSettings, subscription)
-          .map(transform).asJava
+        Consumer
+          .atMostOnceSource(consumerSettings, subscription)
+          .map(transform)
+          .asJava
     }
   }
 
@@ -164,10 +196,13 @@ private[lagom] object JavadslKafkaSubscriber {
 
   case class GroupId(groupId: String) extends Subscriber.GroupId {
     if (GroupId.isInvalidGroupId(groupId))
-      throw new IllegalArgumentException(s"Failed to create group because [groupId=$groupId] contains invalid character(s). Check the Kafka spec for creating a valid group id.")
+      throw new IllegalArgumentException(
+        s"Failed to create group because [groupId=$groupId] contains invalid character(s). Check the Kafka spec for creating a valid group id."
+      )
   }
   case object GroupId {
-    private val InvalidGroupIdChars = Set('/', '\\', ',', '\u0000', ':', '"', '\'', ';', '*', '?', ' ', '\t', '\r', '\n', '=')
+    private val InvalidGroupIdChars =
+      Set('/', '\\', ',', '\u0000', ':', '"', '\'', ';', '*', '?', ' ', '\t', '\r', '\n', '=')
     // based on https://github.com/apache/kafka/blob/623ab1e7c6497c000bc9c9978637f20542a3191c/core/src/test/scala/unit/kafka/common/ConfigTest.scala#L60
     private def isInvalidGroupId(groupId: String): Boolean = groupId.exists(InvalidGroupIdChars.apply)
 

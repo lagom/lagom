@@ -9,13 +9,17 @@ import java.net.URI
 import scala.concurrent.Future
 import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.javadsl.persistence.cassandra._
-import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraOffsetStore, CassandraReadSideSettings, ServiceLocatorAdapter, ServiceLocatorHolder }
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
+import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorAdapter
+import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorHolder
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import javax.annotation.PostConstruct
 import javax.inject.Inject
-import play.api.{ Configuration, Environment }
+import play.api.Configuration
+import play.api.Environment
 import play.api.inject._
 
 import scala.util.Try
@@ -39,7 +43,7 @@ class CassandraPersistenceModule extends Module {
 
 private[lagom] object CassandraPersistenceModule {
 
-  class InitServiceLocatorHolder @Inject() (system: ActorSystem, injector: Injector) {
+  class InitServiceLocatorHolder @Inject()(system: ActorSystem, injector: Injector) {
 
     // Guice doesn't support this, but other DI frameworks do.
     @PostConstruct

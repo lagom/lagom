@@ -6,7 +6,9 @@ package com.lightbend.lagom.api.tools.tests.scaladsl
 
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
-import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LagomApplicationLoader }
+import com.lightbend.lagom.scaladsl.server.LagomApplication
+import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
+import com.lightbend.lagom.scaladsl.server.LagomApplicationLoader
 import play.api.libs.ws.ahc.AhcWSComponents
 
 class AclServiceLoader extends LagomApplicationLoader {
@@ -37,8 +39,8 @@ class LegacyAclServiceLoader extends LagomApplicationLoader {
 }
 
 abstract class AclServiceApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
-  with AhcWSComponents {
+    extends LagomApplication(context)
+    with AhcWSComponents {
   override lazy val lagomServer = serverFor[AclService](new AclServiceImpl)
 }
 
@@ -59,8 +61,8 @@ class NoAclServiceLoader extends LagomApplicationLoader {
 }
 
 abstract class NoAclServiceApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
-  with AhcWSComponents {
+    extends LagomApplication(context)
+    with AhcWSComponents {
 
   override lazy val lagomServer = serverFor[NoAclService](new NoAclServiceImpl)
 }
@@ -91,8 +93,8 @@ class LegacyUndescribedServiceLoader extends LagomApplicationLoader {
 }
 
 abstract class UndescribedServiceApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
-  with AhcWSComponents {
+    extends LagomApplication(context)
+    with AhcWSComponents {
   override lazy val lagomServer = serverFor[UndescribedService](new UndescribedServiceImpl)
 }
 // ---------------------------------------

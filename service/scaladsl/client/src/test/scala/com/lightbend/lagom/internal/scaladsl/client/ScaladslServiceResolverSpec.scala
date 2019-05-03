@@ -6,13 +6,17 @@ package com.lightbend.lagom.internal.scaladsl.client
 
 import akka.NotUsed
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
-import com.lightbend.lagom.scaladsl.api.{ CircuitBreaker, Descriptor, Service, ServiceCall }
+import com.lightbend.lagom.scaladsl.api.CircuitBreaker
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.client.TestServiceClient
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
 
 class ScaladslServiceResolverSpec extends FlatSpec with Matchers {
 
-  behavior of "ScaladslServiceResolver"
+  behavior.of("ScaladslServiceResolver")
 
   it should "setup circuit-breakers for all method calls using default values when nothing is specified" in {
     assertCircuitBreaking(TestServiceClient.implement[Unspecified], CircuitBreaker.PerNode)

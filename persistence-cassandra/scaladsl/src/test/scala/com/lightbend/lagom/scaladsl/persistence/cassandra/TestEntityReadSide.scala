@@ -6,15 +6,20 @@ package com.lightbend.lagom.scaladsl.persistence.cassandra
 
 import akka.Done
 import akka.actor.ActorSystem
-import com.datastax.driver.core.{ BoundStatement, PreparedStatement }
+import com.datastax.driver.core.BoundStatement
+import com.datastax.driver.core.PreparedStatement
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
-import com.lightbend.lagom.scaladsl.persistence.{ AggregateEventTag, EventStreamElement, ReadSideProcessor, TestEntity }
+import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
+import com.lightbend.lagom.scaladsl.persistence.EventStreamElement
+import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
+import com.lightbend.lagom.scaladsl.persistence.TestEntity
 
 import scala.collection.immutable
 import scala.concurrent.Future
 
 object TestEntityReadSide {
-  class TestEntityReadSideProcessor(system: ActorSystem, readSide: CassandraReadSide, session: CassandraSession) extends ReadSideProcessor[TestEntity.Evt] {
+  class TestEntityReadSideProcessor(system: ActorSystem, readSide: CassandraReadSide, session: CassandraSession)
+      extends ReadSideProcessor[TestEntity.Evt] {
 
     def buildHandler: ReadSideHandler[TestEntity.Evt] = {
       import system.dispatcher
@@ -22,7 +27,9 @@ object TestEntityReadSide {
       @volatile var writeStmt: PreparedStatement = null
 
       def createTable(): Future[Done] = {
-        return session.executeCreateTable("CREATE TABLE IF NOT EXISTS testcounts (id text, count bigint, PRIMARY KEY (id))")
+        return session.executeCreateTable(
+          "CREATE TABLE IF NOT EXISTS testcounts (id text, count bigint, PRIMARY KEY (id))"
+        )
       }
 
       def prepareWriteStmt(): Future[Done] = {
@@ -43,7 +50,8 @@ object TestEntityReadSide {
         }
       }
 
-      readSide.builder[TestEntity.Evt]("testoffsets")
+      readSide
+        .builder[TestEntity.Evt]("testoffsets")
         .setGlobalPrepare(() => createTable())
         .setPrepare(tag => prepareWriteStmt())
         .setEventHandler[TestEntity.Appended](updateCount)

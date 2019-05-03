@@ -22,14 +22,14 @@ import scala.concurrent.duration._
  * Helper for implementing Akka Discovery based service locators in Lagom.
  */
 private[lagom] class AkkaDiscoveryHelper(config: Config, serviceDiscovery: ServiceDiscovery)(
-  implicit
-  ec: ExecutionContext
+    implicit
+    ec: ExecutionContext
 ) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val serviceNameMapper = new ServiceNameMapper(config)
-  private val lookupTimeout = config.getDuration("lookup-timeout", TimeUnit.MILLISECONDS).millis
+  private val lookupTimeout     = config.getDuration("lookup-timeout", TimeUnit.MILLISECONDS).millis
 
   def locateAll(name: String): Future[Seq[URI]] = {
     val serviceLookup = serviceNameMapper.mapLookupQuery(name)
@@ -51,13 +51,13 @@ private[lagom] class AkkaDiscoveryHelper(config: Config, serviceDiscovery: Servi
 
     try {
       new URI(
-        scheme, // scheme
-        null, // userInfo
+        scheme,              // scheme
+        null,                // userInfo
         resolvedTarget.host, // host
-        port, // port
-        null, // path
-        null, // query
-        null // fragment
+        port,                // port
+        null,                // path
+        null,                // query
+        null                 // fragment
       )
     } catch {
       case e: URISyntaxException => throw new RuntimeException(e)

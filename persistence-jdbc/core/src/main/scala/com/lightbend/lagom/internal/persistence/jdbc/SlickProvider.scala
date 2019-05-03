@@ -9,7 +9,8 @@ import java.util.concurrent.TimeUnit
 
 import akka.Done
 import akka.actor.ActorSystem
-import akka.persistence.jdbc.config.{ JournalTableConfiguration, SnapshotTableConfiguration }
+import akka.persistence.jdbc.config.JournalTableConfiguration
+import akka.persistence.jdbc.config.SnapshotTableConfiguration
 import akka.persistence.jdbc.journal.dao.JournalTables
 import akka.persistence.jdbc.snapshot.dao.SnapshotTables
 import akka.util.Timeout
@@ -19,19 +20,25 @@ import org.slf4j.LoggerFactory
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.meta.MTable
-import slick.jdbc.{ H2Profile, JdbcProfile, MySQLProfile, PostgresProfile }
+import slick.jdbc.H2Profile
+import slick.jdbc.JdbcProfile
+import slick.jdbc.MySQLProfile
+import slick.jdbc.PostgresProfile
 
 import scala.concurrent.duration._
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Success, Try }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val readSideConfig = system.settings.config.getConfig("lagom.persistence.read-side.jdbc")
-  private val jdbcConfig = system.settings.config.getConfig("lagom.persistence.jdbc")
-  private val createTables = jdbcConfig.getConfig("create-tables")
+  private val readSideConfig    = system.settings.config.getConfig("lagom.persistence.read-side.jdbc")
+  private val jdbcConfig        = system.settings.config.getConfig("lagom.persistence.jdbc")
+  private val createTables      = jdbcConfig.getConfig("create-tables")
   val autoCreateTables: Boolean = createTables.getBoolean("auto")
 
   // users can disable the usage of jndiDbName for userland read-side operations by
@@ -45,8 +52,10 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
     } else if (readSideConfig.hasPath("slick.db")) {
       Database.forConfig("slick.db", readSideConfig)
     } else {
-      throw new RuntimeException("Cannot start because read-side database configuration is missing. " +
-        "You must define either 'lagom.persistence.read-side.jdbc.slick.jndiDbName' or 'lagom.persistence.read-side.jdbc.slick.db' in your application.conf.")
+      throw new RuntimeException(
+        "Cannot start because read-side database configuration is missing. " +
+          "You must define either 'lagom.persistence.read-side.jdbc.slick.jndiDbName' or 'lagom.persistence.read-side.jdbc.slick.db' in your application.conf."
+      )
     }
   }
 
@@ -59,17 +68,17 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
   // This feature is somewhat limited, it assumes that the read side database is the same database as the journals and
   // snapshots
   private val createTablesTask: Option[ClusterStartupTask] = if (autoCreateTables) {
-    val journalCfg = new JournalTableConfiguration(system.settings.config.getConfig("jdbc-read-journal"))
+    val journalCfg  = new JournalTableConfiguration(system.settings.config.getConfig("jdbc-read-journal"))
     val snapshotCfg = new SnapshotTableConfiguration(system.settings.config.getConfig("jdbc-snapshot-store"))
 
     val journalTables = new JournalTables {
       override val journalTableCfg: JournalTableConfiguration = journalCfg
-      override val profile: JdbcProfile = SlickProvider.this.profile
+      override val profile: JdbcProfile                       = SlickProvider.this.profile
     }
 
     val snapshotTables = new SnapshotTables {
       override val snapshotTableCfg: SnapshotTableConfiguration = snapshotCfg
-      override val profile: JdbcProfile = SlickProvider.this.profile
+      override val profile: JdbcProfile                         = SlickProvider.this.profile
     }
 
     val journalStatements =
@@ -92,9 +101,9 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
 
     snapshotTables.SnapshotTable.schema.create
 
-    val conf = jdbcConfig.getConfig("create-tables")
-    val minBackoff = conf.getDuration("failure-exponential-backoff.min", TimeUnit.MILLISECONDS).millis
-    val maxBackoff = conf.getDuration("failure-exponential-backoff.max", TimeUnit.MILLISECONDS).millis
+    val conf                = jdbcConfig.getConfig("create-tables")
+    val minBackoff          = conf.getDuration("failure-exponential-backoff.min", TimeUnit.MILLISECONDS).millis
+    val maxBackoff          = conf.getDuration("failure-exponential-backoff.max", TimeUnit.MILLISECONDS).millis
     val randomBackoffFactor = conf.getDouble("failure-exponential-backoff.random-factor")
     val role = conf.getString("run-on-role") match {
       case "" => None
@@ -111,7 +120,14 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
     }
 
     val task = ClusterStartupTask(
-      system, "jdbcCreateTables", () => createTables, createTablesTimeout, role, minBackoff, maxBackoff, randomBackoffFactor
+      system,
+      "jdbcCreateTables",
+      () => createTables,
+      createTablesTimeout,
+      role,
+      minBackoff,
+      maxBackoff,
+      randomBackoffFactor
     )
     Some(task)
   } else {
@@ -125,13 +141,17 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
   def createTable(schemaStatements: Seq[String], tableExists: (Vector[MTable], Option[String]) => Boolean) = {
     for {
       currentSchema <- getCurrentSchema
-      tables <- getTables(currentSchema)
-      _ <- createTableInternal(tables, currentSchema, schemaStatements, tableExists)
+      tables        <- getTables(currentSchema)
+      _             <- createTableInternal(tables, currentSchema, schemaStatements, tableExists)
     } yield Done.getInstance()
   }
 
-  private def createTableInternal(tables: Vector[MTable], currentSchema: Option[String],
-                                  schemaStatements: Seq[String], tableExists: (Vector[MTable], Option[String]) => Boolean) = {
+  private def createTableInternal(
+      tables: Vector[MTable],
+      currentSchema: Option[String],
+      schemaStatements: Seq[String],
+      tableExists: (Vector[MTable], Option[String]) => Boolean
+  ) = {
 
     if (tableExists(tables, currentSchema)) {
       DBIO.successful(())
@@ -140,27 +160,30 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
         logger.debug("Creating table, executing: " + schemaStatements.mkString("; "))
       }
 
-      DBIO.sequence(schemaStatements.map { s =>
-        SimpleDBIO { ctx =>
-          val stmt = ctx.connection.createStatement()
-          try {
-            stmt.executeUpdate(s)
-          } finally {
-            stmt.close()
-          }
-        }
-      }).asTry.flatMap {
-        case Success(_) => DBIO.successful(())
-        case Failure(f) =>
-          getTables(currentSchema).map { tables =>
-            if (tableExists(tables, currentSchema)) {
-              logger.debug("Table creation failed, but table existed after it was created, ignoring failure", f)
-              ()
-            } else {
-              throw f
+      DBIO
+        .sequence(schemaStatements.map { s =>
+          SimpleDBIO { ctx =>
+            val stmt = ctx.connection.createStatement()
+            try {
+              stmt.executeUpdate(s)
+            } finally {
+              stmt.close()
             }
           }
-      }
+        })
+        .asTry
+        .flatMap {
+          case Success(_) => DBIO.successful(())
+          case Failure(f) =>
+            getTables(currentSchema).map { tables =>
+              if (tableExists(tables, currentSchema)) {
+                logger.debug("Table creation failed, but table existed after it was created, ignoring failure", f)
+                ()
+              } else {
+                throw f
+              }
+            }
+        }
     }
   }
 
@@ -202,11 +225,15 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
   // Because Try$.apply only catches NonFatal errors, and AbstractMethodError
   // is considered fatal, we need to construct the Try explicitly.
   private def tryGetSchema(connection: Connection): Try[String] =
-    try Success(connection.getSchema) catch {
+    try Success(connection.getSchema)
+    catch {
       case e: AbstractMethodError => Failure(e)
     }
 
-  def tableExists(schemaName: Option[String], tableName: String)(tables: Vector[MTable], currentSchema: Option[String]): Boolean = {
+  def tableExists(
+      schemaName: Option[String],
+      tableName: String
+  )(tables: Vector[MTable], currentSchema: Option[String]): Boolean = {
     tables.exists { t =>
       profile match {
         case _: MySQLProfile =>

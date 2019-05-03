@@ -1,6 +1,6 @@
 package docs.home.serialization.v2b;
 
-//#add
+// #add
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.DoubleNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -21,6 +21,5 @@ public class ItemAddedMigration extends JacksonJsonMigration {
     }
     return root;
   }
-
 }
-//#add
+// #add

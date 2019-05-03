@@ -24,11 +24,21 @@ object ScalaService {
 
   def call[Request, Response](method: ScalaMethodCall[ServiceCall[Request, Response]]): Call[Request, Response] =
     Service.call[Request, Response](method.method)
-  def namedCall[Request, Response](name: String, method: ScalaMethodCall[ServiceCall[Request, Response]]): Call[Request, Response] =
+  def namedCall[Request, Response](
+      name: String,
+      method: ScalaMethodCall[ServiceCall[Request, Response]]
+  ): Call[Request, Response] =
     Service.namedCall[Request, Response](name, method.method)
-  def pathCall[Request, Response](path: String, method: ScalaMethodCall[ServiceCall[Request, Response]]): Call[Request, Response] =
+  def pathCall[Request, Response](
+      path: String,
+      method: ScalaMethodCall[ServiceCall[Request, Response]]
+  ): Call[Request, Response] =
     Service.pathCall[Request, Response](path, method.method)
-  def restCall[Request, Response](restMethod: transport.Method, path: String, method: ScalaMethodCall[ServiceCall[Request, Response]]): Call[Request, Response] =
+  def restCall[Request, Response](
+      restMethod: transport.Method,
+      path: String,
+      method: ScalaMethodCall[ServiceCall[Request, Response]]
+  ): Call[Request, Response] =
     Service.restCall[Request, Response](restMethod, path, method.method)
   def topic[Message](topicId: String, method: ScalaMethodCall[Topic[Message]]): TopicCall[Message] =
     Service.topic[Message](topicId, method.method)
@@ -53,31 +63,51 @@ object ScalaServiceSupport {
     implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
     implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
     implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
-    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
-    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
-    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
-    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
-    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
-    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
-    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
-    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
-    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
-    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] = macro methodForImpl[T]
+    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] =
+      macro methodForImpl[T]
+    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] =
+      macro methodForImpl[T]
+    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] =
+      macro methodForImpl[T]
+    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] =
+      macro methodForImpl[T]
+    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] =
+      macro methodForImpl[T]
+    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] =
+      macro methodForImpl[T]
+    implicit def methodFor[T](f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T): ScalaMethodCall[T] =
+      macro methodForImpl[T]
+    implicit def methodFor[T](
+        f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T
+    ): ScalaMethodCall[T] = macro methodForImpl[T]
+    implicit def methodFor[T](
+        f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T
+    ): ScalaMethodCall[T] = macro methodForImpl[T]
+    implicit def methodFor[T](
+        f: (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => T
+    ): ScalaMethodCall[T] = macro methodForImpl[T]
   }
 
   def getMethodWithName[T](clazz: Class[_], name: String): ScalaMethodCall[T] = {
     new ScalaMethodCall[T](clazz.getMethods.find(_.getName == name).getOrElse(throw new NoSuchMethodException(name)))
   }
 
-  def methodForImpl[T](c: blackbox.Context)(f: c.Expr[Any])(implicit tType: c.WeakTypeTag[T]): c.Expr[ScalaMethodCall[T]] = {
+  def methodForImpl[T](
+      c: blackbox.Context
+  )(f: c.Expr[Any])(implicit tType: c.WeakTypeTag[T]): c.Expr[ScalaMethodCall[T]] = {
     import c.universe._
 
     f match {
       case Expr(Block((_, Function(_, Apply(Select(This(thisType), TermName(methodName)), _))))) =>
         val methodNameString = Literal(Constant(methodName))
-        c.Expr[ScalaMethodCall[T]](q"_root_.com.lightbend.lagom.javadsl.api.ScalaServiceSupport.getMethodWithName[${tType.tpe}](_root_.scala.Predef.classOf[$thisType], $methodNameString)")
+        c.Expr[ScalaMethodCall[T]](
+          q"_root_.com.lightbend.lagom.javadsl.api.ScalaServiceSupport.getMethodWithName[${tType.tpe}](_root_.scala.Predef.classOf[$thisType], $methodNameString)"
+        )
       case other =>
-        c.abort(c.enclosingPosition, "methodFor must only be invoked with a reference to a function on this, for example, methodFor(this.someFunction)")
+        c.abort(
+          c.enclosingPosition,
+          "methodFor must only be invoked with a reference to a function on this, for example, methodFor(this.someFunction)"
+        )
     }
   }
 }

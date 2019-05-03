@@ -12,7 +12,7 @@ public class ServiceClients {
     ServiceCall<NotUsed, String> sayHelloLagom();
   }
 
-  //#hello-consumer
+  // #hello-consumer
   public class MyServiceImpl implements MyService {
     private final HelloService helloService;
 
@@ -25,12 +25,10 @@ public class ServiceClients {
     public ServiceCall<NotUsed, String> sayHelloLagom() {
       return msg -> {
         CompletionStage<String> response = helloService.sayHello().invoke("Lagom");
-        return response.thenApply(answer ->
-            "Hello service said: " + answer
-        );
+        return response.thenApply(answer -> "Hello service said: " + answer);
       };
     }
   }
-  //#hello-consumer
+  // #hello-consumer
 
 }

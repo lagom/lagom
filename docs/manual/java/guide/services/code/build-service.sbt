@@ -1,9 +1,10 @@
-lazy val testkitProj = (project in file("")).enablePlugins(LagomJava)
+lazy val testkitProj = (project in file(""))
+  .enablePlugins(LagomJava)
 //#fork
   .settings(lagomForkedTestSettings: _*)
 //#fork
   .settings(
 //#testkit-dependency
-  libraryDependencies += lagomJavadslTestKit
+    libraryDependencies += lagomJavadslTestKit
 //#testkit-dependency
   )

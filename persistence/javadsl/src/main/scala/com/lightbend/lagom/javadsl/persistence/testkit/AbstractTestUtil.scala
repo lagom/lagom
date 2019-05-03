@@ -5,7 +5,8 @@
 package com.lightbend.lagom.javadsl.persistence.testkit
 
 import akka.actor.ActorSystem
-import com.lightbend.lagom.internal.persistence.testkit.{ PersistenceTestConfig, AwaitPersistenceInit => InternalAwaitPersistenceInit }
+import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig
+import com.lightbend.lagom.internal.persistence.testkit.{ AwaitPersistenceInit => InternalAwaitPersistenceInit }
 import com.typesafe.config.Config
 
 @deprecated("Internal class, not intended for direct use.", "1.5.0")

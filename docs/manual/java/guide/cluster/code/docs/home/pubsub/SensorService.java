@@ -7,7 +7,7 @@ import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.api.*;
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
-//#service-api
+// #service-api
 public interface SensorService extends Service {
 
   ServiceCall<Temperature, NotUsed> registerTemperature(String id);
@@ -16,10 +16,10 @@ public interface SensorService extends Service {
 
   @Override
   default Descriptor descriptor() {
-    return named("/sensorservice").withCalls(
-      pathCall("/device/:id/temperature", this::registerTemperature),
-      pathCall("/device/:id/temperature/stream", this::temperatureStream)
-    );
+    return named("/sensorservice")
+        .withCalls(
+            pathCall("/device/:id/temperature", this::registerTemperature),
+            pathCall("/device/:id/temperature/stream", this::temperatureStream));
   }
 }
-//#service-api
+// #service-api

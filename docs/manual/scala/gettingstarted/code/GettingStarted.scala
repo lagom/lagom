@@ -3,7 +3,8 @@ package docs.scaladsl.gettingstarted
 package helloservice {
 
   //#helloservice
-  import akka.{Done, NotUsed}
+  import akka.Done
+  import akka.NotUsed
   import com.lightbend.lagom.scaladsl.api._
   import play.api.libs.json._
 
@@ -13,12 +14,14 @@ package helloservice {
 
     def useGreeting(id: String): ServiceCall[GreetingMessage, Done]
 
-    override final def descriptor = {
+    final override def descriptor = {
       import Service._
-      named("hello").withCalls(
-        pathCall("/api/hello/:id", hello _),
-        pathCall("/api/hello/:id", useGreeting _)
-      ).withAutoAcl(true)
+      named("hello")
+        .withCalls(
+          pathCall("/api/hello/:id", hello _),
+          pathCall("/api/hello/:id", useGreeting _)
+        )
+        .withAutoAcl(true)
     }
   }
 
@@ -52,15 +55,15 @@ package helloservice {
 
   sealed trait HelloCommand
   case class Hello(id: String, timestamp: Option[String]) extends ReplyType[String] with HelloCommand
-  case class UseGreetingMessage(msg: String) extends ReplyType[Done] with HelloCommand
+  case class UseGreetingMessage(msg: String)              extends ReplyType[Done] with HelloCommand
   sealed trait HelloEvent
   case class HelloState()
   class HelloEntity extends PersistentEntity {
     override type Command = HelloCommand
-    override type Event = HelloEvent
-    override type State = HelloState
+    override type Event   = HelloEvent
+    override type State   = HelloState
     override def initialState = HelloState()
-    override def behavior = PartialFunction.empty
+    override def behavior     = PartialFunction.empty
   }
 
 }

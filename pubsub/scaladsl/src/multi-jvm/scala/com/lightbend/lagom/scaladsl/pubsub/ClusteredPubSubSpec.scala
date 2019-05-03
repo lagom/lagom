@@ -34,8 +34,7 @@ object ClusteredPubSubConfig extends MultiNodeConfig {
 class ClusteredPubSubSpecMultiJvmNode1 extends ClusteredPubSubSpec
 class ClusteredPubSubSpecMultiJvmNode2 extends ClusteredPubSubSpec
 
-class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig)
-  with STMultiNodeSpec with ImplicitSender {
+class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig) with STMultiNodeSpec with ImplicitSender {
 
   import ClusteredPubSubConfig._
 
@@ -43,20 +42,20 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig)
 
   def join(from: RoleName, to: RoleName): Unit = {
     runOn(from) {
-      Cluster(system) join node(to).address
+      Cluster(system).join(node(to).address)
     }
     enterBarrier(from.name + "-joined")
   }
 
-  override protected def atStartup() {
+  protected override def atStartup() {
     roles.foreach(n => join(n, node1))
 
     enterBarrier("startup")
   }
 
   implicit val mat = ActorMaterializer()
-  val topic1 = TopicId[Notification]("1")
-  val topic2 = TopicId[Notification]("2")
+  val topic1       = TopicId[Notification]("1")
+  val topic2       = TopicId[Notification]("2")
 
   val application = new PubSubComponents {
     override def actorSystem: ActorSystem = system
@@ -70,11 +69,12 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig)
       val ref1 = registry.refFor(topic1)
 
       runOn(node2) {
-        val sub = ref1.subscriber
+        val sub   = ref1.subscriber
         val probe = sub.runWith(TestSink.probe[Notification]).request(10)
         enterBarrier("subscription-established-1")
 
-        probe.expectNext(Notification("msg-1"))
+        probe
+          .expectNext(Notification("msg-1"))
           .expectNext(Notification("msg-2"))
       }
 
@@ -94,11 +94,14 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig)
 
       runOn(node2) {
         val sub = ref2.subscriber
-        val probe = sub.map(_.msg.toUpperCase(Locale.ENGLISH)).runWith(TestSink.probe[String])
+        val probe = sub
+          .map(_.msg.toUpperCase(Locale.ENGLISH))
+          .runWith(TestSink.probe[String])
           .request(2)
         enterBarrier("subscription-established-2")
 
-        probe.expectNext("A")
+        probe
+          .expectNext("A")
           .expectNext("B")
           .expectNoMessage(200.millis)
           .request(2)
@@ -123,4 +126,3 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig)
 
   }
 }
-

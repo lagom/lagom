@@ -10,14 +10,20 @@ import java.util.Optional
 import scala.util.control.NonFatal
 import akka.actor.ActorRef
 import akka.actor.Props
-import akka.persistence.{ PersistentActor, RecoveryCompleted, SaveSnapshotSuccess, SnapshotOffer }
+import akka.persistence.PersistentActor
+import akka.persistence.RecoveryCompleted
+import akka.persistence.SaveSnapshotSuccess
+import akka.persistence.SnapshotOffer
 import akka.util.ByteString
 
 import scala.concurrent.duration.Duration
 import akka.actor.ReceiveTimeout
 import akka.cluster.sharding.ShardRegion
 import akka.actor.actorRef2Scala
-import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventShards, AggregateEventTag, PersistentEntity }
+import com.lightbend.lagom.javadsl.persistence.AggregateEvent
+import com.lightbend.lagom.javadsl.persistence.AggregateEventShards
+import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
+import com.lightbend.lagom.javadsl.persistence.PersistentEntity
 import java.util.function.{ BiFunction => JBiFunction }
 import java.util.function.{ Function => JFunction }
 
@@ -26,16 +32,25 @@ import play.api.Logger
 
 private[lagom] object PersistentEntityActor {
   def props[C, E, S](
-    persistenceIdPrefix:       String,
-    entityId:                  Optional[String],
-    entityFactory:             () => PersistentEntity[C, E, S],
-    snapshotAfter:             Optional[Int],
-    passivateAfterIdleTimeout: Duration,
-    journalPluginId:           String,
-    snapshotPluginId:          String
+      persistenceIdPrefix: String,
+      entityId: Optional[String],
+      entityFactory: () => PersistentEntity[C, E, S],
+      snapshotAfter: Optional[Int],
+      passivateAfterIdleTimeout: Duration,
+      journalPluginId: String,
+      snapshotPluginId: String
   ): Props =
-    Props(new PersistentEntityActor(persistenceIdPrefix, entityId, entityFactory(), snapshotAfter.orElse(0),
-      passivateAfterIdleTimeout, journalPluginId, snapshotPluginId))
+    Props(
+      new PersistentEntityActor(
+        persistenceIdPrefix,
+        entityId,
+        entityFactory(),
+        snapshotAfter.orElse(0),
+        passivateAfterIdleTimeout,
+        journalPluginId,
+        snapshotPluginId
+      )
+    )
 
   /**
    * Stop the actor for passivation. `PoisonPill` does not work well
@@ -48,13 +63,13 @@ private[lagom] object PersistentEntityActor {
  * The `PersistentActor` that runs a [[com.lightbend.lagom.javadsl.persistence.PersistentEntity]].
  */
 private[lagom] class PersistentEntityActor[C, E, S](
-  persistenceIdPrefix:           String,
-  id:                            Optional[String],
-  entity:                        PersistentEntity[C, E, S],
-  snapshotAfter:                 Int,
-  passivateAfterIdleTimeout:     Duration,
-  override val journalPluginId:  String,
-  override val snapshotPluginId: String
+    persistenceIdPrefix: String,
+    id: Optional[String],
+    entity: PersistentEntity[C, E, S],
+    snapshotAfter: Int,
+    passivateAfterIdleTimeout: Duration,
+    override val journalPluginId: String,
+    override val snapshotPluginId: String
 ) extends PersistentActor {
   private val log = Logger(this.getClass)
 
@@ -87,7 +102,8 @@ private[lagom] class PersistentEntityActor[C, E, S](
     entity.behavior.eventHandlers.asInstanceOf[Map[Class[E], JFunction[E, entity.Behavior]]]
 
   private def commandHandlers: Map[Class[C], JBiFunction[C, entity.CommandContext[Any], entity.Persist[E]]] =
-    entity.behavior.commandHandlers.asInstanceOf[Map[Class[C], JBiFunction[C, entity.CommandContext[Any], entity.Persist[E]]]]
+    entity.behavior.commandHandlers
+      .asInstanceOf[Map[Class[C], JBiFunction[C, entity.CommandContext[Any], entity.Persist[E]]]]
 
   override def receiveRecover: Receive = {
 
@@ -137,7 +153,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
         case Some(handler) =>
           val ctx = newCtx()
           try handler.apply(cmd.asInstanceOf[C], ctx) match {
-            case _: entity.PersistNone[_] => // done
+            case _: entity.PersistNone[_]               => // done
             case entity.PersistOne(event, afterPersist) =>
               // apply the event before persist so that validation exception is handled before persisting
               // the invalid event, in case such validation is implemented in the event handler.
@@ -158,7 +174,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
             case entity.PersistAll(events, afterPersist) =>
               // if we trigger snapshot it makes sense to do it after handling all events
               var count = events.size
-              var snap = false
+              var snap  = false
               // apply the event before persist so that validation exception is handled before persisting
               // the invalid event, in case such validation is implemented in the event handler.
               events.foreach(applyEvent)
@@ -218,7 +234,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
     }
   }
 
-  override protected def onPersistFailure(cause: Throwable, event: Any, seqNr: Long): Unit = {
+  protected override def onPersistFailure(cause: Throwable, event: Any, seqNr: Long): Unit = {
     // not using akka.actor.Status.Failure because it is using Java serialization
     sender() ! PersistentEntity.PersistException(
       s"Persist of [${event.getClass.getName}] failed in [${entity.getClass.getName}] with id [${entityId}], " +
@@ -227,7 +243,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
     super.onPersistFailure(cause, event, seqNr)
   }
 
-  override protected def onPersistRejected(cause: Throwable, event: Any, seqNr: Long): Unit = {
+  protected override def onPersistRejected(cause: Throwable, event: Any, seqNr: Long): Unit = {
     // not using akka.actor.Status.Failure because it is using Java serialization
     sender() ! PersistentEntity.PersistException(
       s"Persist of [${event.getClass.getName}] rejected in [${entity.getClass.getName}] with id [${entityId}], " +

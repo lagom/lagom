@@ -2,7 +2,7 @@ package docs.home.immutable;
 
 import lombok.Value;
 
-//#lombok-immutable
+// #lombok-immutable
 @Value
 public class LombokUser {
 
@@ -10,4 +10,4 @@ public class LombokUser {
 
   String email;
 }
-//#lombok-immutable
+// #lombok-immutable

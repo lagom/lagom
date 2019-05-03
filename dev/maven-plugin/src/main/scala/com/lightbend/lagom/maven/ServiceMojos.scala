@@ -7,13 +7,17 @@ package com.lightbend.lagom.maven
 import java.io.File
 
 import javax.inject.Inject
-import com.lightbend.lagom.dev.{ Colors, ConsoleHelper, Reloader, ServiceBindingInfo }
+import com.lightbend.lagom.dev.Colors
+import com.lightbend.lagom.dev.ConsoleHelper
+import com.lightbend.lagom.dev.Reloader
+import com.lightbend.lagom.dev.ServiceBindingInfo
 import com.lightbend.lagom.dev.PortAssigner.ProjectName
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.model.Dependency
 
 import scala.beans.BeanProperty
-import java.util.{ Collections, List => JList }
+import java.util.Collections
+import java.util.{ List => JList }
 
 import org.apache.maven.RepositoryUtils
 
@@ -22,7 +26,7 @@ import scala.collection.JavaConverters._
 /**
  * Start a service.
  */
-class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
+class StartMojo @Inject()(serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
 
   @BeanProperty
   var lagomService: Boolean = _
@@ -75,11 +79,16 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
     if (servicePort != -1) {
       // this property is also marked as deprecated in
       // the plugin.xml descriptor, but somehow mvn is not printing anything. Therefore, we add a warning ourselves.
-      getLog.warn("Lagom's maven plugin property 'servicePort' is deprecated as of release 1.5.0. Use serviceHttpPort instead.")
+      getLog.warn(
+        "Lagom's maven plugin property 'servicePort' is deprecated as of release 1.5.0. Use serviceHttpPort instead."
+      )
       // for backward compatibility, we must set the http port to servicePort
       // if the later was configured by the user
       if (serviceHttpPort == -1) serviceHttpPort = servicePort
-      else getLog.warn(s"Both 'serviceHttpPort' ($serviceHttpPort) and 'servicePort' ($servicePort) are configured, 'servicePort' will be ignored")
+      else
+        getLog.warn(
+          s"Both 'serviceHttpPort' ($serviceHttpPort) and 'servicePort' ($servicePort) are configured, 'servicePort' will be ignored"
+        )
     }
 
     val project = session.getCurrentProject
@@ -146,7 +155,7 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
 /**
  * Stop a service.
  */
-class StopMojo @Inject() (serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
+class StopMojo @Inject()(serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
 
   @BeanProperty
   var lagomService: Boolean = _
@@ -165,7 +174,7 @@ class StopMojo @Inject() (serviceManager: ServiceManager, session: MavenSession)
   }
 }
 
-class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
+class StartExternalProjects @Inject()(serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
 
   @BeanProperty
   var externalProjects: JList[ExternalProject] = Collections.emptyList()
@@ -214,7 +223,7 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
 
     externalProjects.asScala.foreach { project =>
       if (project.artifact == null || project.artifact.getGroupId == null || project.artifact.getArtifactId == null ||
-        project.artifact.getVersion == null) {
+          project.artifact.getVersion == null) {
         sys.error("External projects must specify an artifact with a groupId, artifactId and version")
       }
 
@@ -242,7 +251,8 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
 
       val serviceCassandraPort = cassandraPort.filter(_ => project.cassandraEnabled)
 
-      val dependency = RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
+      val dependency =
+        RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
 
       serviceManager.startExternalProject(
         dependency,
@@ -258,14 +268,15 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
 
 }
 
-class StopExternalProjects @Inject() (serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
+class StopExternalProjects @Inject()(serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
 
   @BeanProperty
   var externalProjects: JList[ExternalProject] = Collections.emptyList()
 
   override def execute(): Unit = {
     externalProjects.asScala.foreach { project =>
-      val dependency = RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
+      val dependency =
+        RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
       serviceManager.stopExternalProject(dependency)
     }
   }
@@ -295,7 +306,8 @@ class ExternalProject {
 /**
  * Starts all services.
  */
-class StartAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends LagomAbstractMojo {
+class StartAllMojo @Inject()(facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession)
+    extends LagomAbstractMojo {
 
   private val consoleHelper: ConsoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
 
@@ -321,7 +333,7 @@ class StartAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, ses
 /**
  * Stops all services.
  */
-class StopAllMojo @Inject() (facade: MavenFacade, session: MavenSession) extends LagomAbstractMojo {
+class StopAllMojo @Inject()(facade: MavenFacade, session: MavenSession) extends LagomAbstractMojo {
 
   @BeanProperty
   var externalProjects: JList[Dependency] = Collections.emptyList()
@@ -347,7 +359,8 @@ class StopAllMojo @Inject() (facade: MavenFacade, session: MavenSession) extends
 /**
  * Run a service, blocking until the user hits enter before stopping it again.
  */
-class RunMojo @Inject() (mavenFacade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends LagomAbstractMojo {
+class RunMojo @Inject()(mavenFacade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession)
+    extends LagomAbstractMojo {
   // This Mojo shares a lot of code (duplicate) with RunAllMojo
   private val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
 
@@ -358,7 +371,9 @@ class RunMojo @Inject() (mavenFacade: MavenFacade, logger: MavenLoggerProxy, ses
     val bindingInfo: ServiceBindingInfo =
       LagomKeys.LagomServiceBindings
         .get(project)
-        .map { bindings => ServiceBindingInfo(project.getArtifactId, bindings) }
+        .map { bindings =>
+          ServiceBindingInfo(project.getArtifactId, bindings)
+        }
         .getOrElse {
           sys.error(s"Service ${project.getArtifactId} is not running?")
         }
@@ -372,7 +387,8 @@ class RunMojo @Inject() (mavenFacade: MavenFacade, logger: MavenLoggerProxy, ses
 /**
  * Run a service, blocking until the user hits enter before stopping it again.
  */
-class RunAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends LagomAbstractMojo {
+class RunAllMojo @Inject()(facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession)
+    extends LagomAbstractMojo {
 
   // This Mojo shares a lot of code (duplicate) with RunMojo
   val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
@@ -386,7 +402,9 @@ class RunAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, sessi
     val bindingInfos: Seq[ServiceBindingInfo] = services.map { project =>
       LagomKeys.LagomServiceBindings
         .get(project)
-        .map { bindings => ServiceBindingInfo(project.getArtifactId, bindings) }
+        .map { bindings =>
+          ServiceBindingInfo(project.getArtifactId, bindings)
+        }
         .getOrElse {
           sys.error(s"Service ${project.getArtifactId} is not running?")
         }
