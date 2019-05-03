@@ -12,11 +12,10 @@ import com.lightbend.lagom.javadsl.api.transport.Method;
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface InvalidMessageTypeService extends Service {
-    <Foo> ServiceCall<Foo, String> hello();
+  <Foo> ServiceCall<Foo, String> hello();
 
-    @Override
-    default Descriptor descriptor() {
-        return named("/invalid-service")
-            .withCalls(restCall(Method.POST, "/hello", this::hello));
-    }
+  @Override
+  default Descriptor descriptor() {
+    return named("/invalid-service").withCalls(restCall(Method.POST, "/hello", this::hello));
+  }
 }
