@@ -21,11 +21,15 @@ trait LagomKafkaComponents extends LagomKafkaClientComponents {
 
   override def topicPublisherName: Option[String] = super.topicPublisherName match {
     case Some(other) =>
-      sys.error(s"Cannot provide the kafka topic factory as the default topic publisher since a default topic publisher has already been mixed into this cake: $other")
+      sys.error(
+        s"Cannot provide the kafka topic factory as the default topic publisher since a default topic publisher has already been mixed into this cake: $other"
+      )
     case None => Some("kafka")
   }
 
   // Eagerly start topic producers
-  new ScaladslRegisterTopicProducers(lagomServer, topicFactory, serviceInfo, actorSystem,
-    offsetStore, serviceLocator)(executionContext, materializer)
+  new ScaladslRegisterTopicProducers(lagomServer, topicFactory, serviceInfo, actorSystem, offsetStore, serviceLocator)(
+    executionContext,
+    materializer
+  )
 }

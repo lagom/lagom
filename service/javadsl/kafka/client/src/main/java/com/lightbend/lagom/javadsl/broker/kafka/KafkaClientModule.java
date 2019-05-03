@@ -13,10 +13,8 @@ import java.util.List;
 
 public class KafkaClientModule extends Module {
 
-    @Override
-    public List<play.inject.Binding<?>> bindings(play.Environment environment, Config config) {
-        return Collections.singletonList(
-            bindClass(TopicFactory.class).to(KafkaTopicFactory.class)
-        );
-    }
+  @Override
+  public List<play.inject.Binding<?>> bindings(play.Environment environment, Config config) {
+    return Collections.singletonList(bindClass(TopicFactory.class).to(KafkaTopicFactory.class));
+  }
 }

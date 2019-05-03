@@ -30,7 +30,6 @@ public final class PostSummary {
 
     if (postId != null ? !postId.equals(that.postId) : that.postId != null) return false;
     return title != null ? title.equals(that.title) : that.title == null;
-
   }
 
   @Override

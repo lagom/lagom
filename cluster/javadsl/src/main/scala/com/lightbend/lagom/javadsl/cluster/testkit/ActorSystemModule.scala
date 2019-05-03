@@ -5,9 +5,12 @@
 package com.lightbend.lagom.javadsl.cluster.testkit
 
 import akka.actor.ActorSystem
-import akka.stream.{ ActorMaterializer, Materializer }
-import play.api.{ Configuration, Environment }
-import play.api.inject.{ Binding, Module }
+import akka.stream.ActorMaterializer
+import akka.stream.Materializer
+import play.api.Configuration
+import play.api.Environment
+import play.api.inject.Binding
+import play.api.inject.Module
 
 import scala.concurrent.ExecutionContext
 

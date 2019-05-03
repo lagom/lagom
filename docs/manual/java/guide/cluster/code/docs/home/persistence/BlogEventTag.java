@@ -6,7 +6,7 @@ import com.lightbend.lagom.serialization.Jsonable;
 
 public class BlogEventTag {
 
-  //#aggregate-tag
+  // #aggregate-tag
   public interface BlogEvent extends AggregateEvent<BlogEvent>, Jsonable {
 
     AggregateEventTag<BlogEvent> BLOG_EVENT_TAG = AggregateEventTag.of(BlogEvent.class);
@@ -16,6 +16,6 @@ public class BlogEventTag {
       return BLOG_EVENT_TAG;
     }
   }
-  //#aggregate-tag
+  // #aggregate-tag
 
 }

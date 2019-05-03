@@ -1,6 +1,6 @@
 package docs.home.serialization.v2c;
 
-//#rename
+// #rename
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lightbend.lagom.serialization.JacksonJsonMigration;
@@ -21,6 +21,5 @@ public class ItemAddedMigration extends JacksonJsonMigration {
     }
     return root;
   }
-
 }
-//#rename
+// #rename

@@ -29,5 +29,4 @@ public class TestEventMigration extends JacksonJsonMigration {
     root.set("field2", IntNode.valueOf(17));
     return root;
   }
-
 }

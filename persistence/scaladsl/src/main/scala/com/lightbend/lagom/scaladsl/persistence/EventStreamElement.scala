@@ -15,9 +15,9 @@ object EventStreamElement {
  * Envelope for events in the eventstream, provides additional data to the actual event
  */
 final class EventStreamElement[+Event](
-  val entityId: String,
-  val event:    Event,
-  val offset:   Offset
+    val entityId: String,
+    val event: Event,
+    val offset: Offset
 ) {
 
   override def equals(other: Any): Boolean = other match {

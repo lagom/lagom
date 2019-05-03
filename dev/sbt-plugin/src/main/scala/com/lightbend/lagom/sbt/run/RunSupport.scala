@@ -14,17 +14,18 @@ import sbt.Keys._
 private[sbt] object RunSupport extends RunSupportCompat {
 
   def reloadRunTask(
-    extraConfigs: Map[String, String]
+      extraConfigs: Map[String, String]
   ): Def.Initialize[Task[Reloader.DevServer]] = Def.task {
 
     val state = Keys.state.value
     val scope = resolvedScoped.value.scope
 
-    val reloadCompile = () => RunSupport.compile(
-      () => Project.runTask(lagomReload in scope, state).map(_._2).get,
-      () => Project.runTask(lagomReloaderClasspath in scope, state).map(_._2).get,
-      () => Project.runTask(streamsManager in scope, state).map(_._2).get.toEither.right.toOption
-    )
+    val reloadCompile = () =>
+      RunSupport.compile(
+        () => Project.runTask(lagomReload in scope, state).map(_._2).get,
+        () => Project.runTask(lagomReloaderClasspath in scope, state).map(_._2).get,
+        () => Project.runTask(streamsManager in scope, state).map(_._2).get.toEither.right.toOption
+      )
 
     val classpath = (devModeDependencies.value ++ (externalDependencyClasspath in Runtime).value).distinct.files
 
@@ -45,7 +46,7 @@ private[sbt] object RunSupport extends RunSupportCompat {
   }
 
   def nonReloadRunTask(
-    extraConfigs: Map[String, String]
+      extraConfigs: Map[String, String]
   ): Def.Initialize[Task[Reloader.DevServer]] = Def.task {
 
     val classpath = (devModeDependencies.value ++ (fullClasspath in Runtime).value).distinct
@@ -71,17 +72,19 @@ private[sbt] object RunSupport extends RunSupportCompat {
    */
   private def selectHttpPortToUse = Def.task {
 
-    val logger = Keys.sLog.value
+    val logger                = Keys.sLog.value
     val deprecatedServicePort = lagomServicePort.value
-    val serviceHttpPort = lagomServiceHttpPort.value
-    val generatedHttpPort = lagomGeneratedServiceHttpPortCache.value
-    val isUsingGeneratedPort = serviceHttpPort == generatedHttpPort
+    val serviceHttpPort       = lagomServiceHttpPort.value
+    val generatedHttpPort     = lagomGeneratedServiceHttpPortCache.value
+    val isUsingGeneratedPort  = serviceHttpPort == generatedHttpPort
 
     // deprecated setting was modified by user.
     if (deprecatedServicePort != -1 && isUsingGeneratedPort) {
       deprecatedServicePort
     } else if (deprecatedServicePort != -1 && !isUsingGeneratedPort) {
-      logger.warn(s"Both 'lagomServiceHttpPort' ($serviceHttpPort) and 'lagomServicePort' ($deprecatedServicePort) are configured, 'lagomServicePort' will be ignored")
+      logger.warn(
+        s"Both 'lagomServiceHttpPort' ($serviceHttpPort) and 'lagomServicePort' ($deprecatedServicePort) are configured, 'lagomServicePort' will be ignored"
+      )
       serviceHttpPort
     } else serviceHttpPort
   }

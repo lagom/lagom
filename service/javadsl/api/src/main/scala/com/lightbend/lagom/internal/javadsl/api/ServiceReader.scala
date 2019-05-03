@@ -7,7 +7,12 @@ package com.lightbend.lagom.internal.javadsl.api
 import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
-import java.lang.reflect.{ InvocationHandler, Method, Modifier, ParameterizedType, Type, Proxy => JProxy }
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
+import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
+import java.lang.reflect.{ Proxy => JProxy }
 
 import com.google.common.reflect.TypeToken
 import com.lightbend.lagom.javadsl.api._
@@ -40,26 +45,28 @@ object ServiceReader {
   private val defaultMethodHandleSupplier: Method => MethodHandle = {
     // Using different approaches for different Java versions: https://stackoverflow.com/a/49532492/463761
     if (isJava8) {
-      val methodHandlesLookupConstructor = classOf[MethodHandles.Lookup].getDeclaredConstructor(classOf[Class[_]], classOf[Int])
+      val methodHandlesLookupConstructor =
+        classOf[MethodHandles.Lookup].getDeclaredConstructor(classOf[Class[_]], classOf[Int])
       if (!methodHandlesLookupConstructor.isAccessible)
         methodHandlesLookupConstructor.setAccessible(true)
       method =>
         // We create a MethodHandles.Lookup that is allowed to look up private methods
-        methodHandlesLookupConstructor.newInstance(method.getDeclaringClass, Integer.valueOf(MethodHandles.Lookup.PRIVATE))
+        methodHandlesLookupConstructor
+          .newInstance(method.getDeclaringClass, Integer.valueOf(MethodHandles.Lookup.PRIVATE))
           // Now using unreflect special, we get the default method from the declaring class, rather than the proxy
           .unreflectSpecial(method, method.getDeclaringClass)
     } else {
-      val lookup = MethodHandles.lookup
+      val lookup     = MethodHandles.lookup
       val returnType = MethodType.methodType(classOf[Descriptor])
-      method =>
-        lookup.findSpecial(method.getDeclaringClass, method.getName, returnType, method.getDeclaringClass)
+      method => lookup.findSpecial(method.getDeclaringClass, method.getName, returnType, method.getDeclaringClass)
     }
   }
 
   def readServiceDescriptor(classLoader: ClassLoader, serviceInterface: Class[_ <: Service]): Descriptor = {
     if (Modifier.isPublic(serviceInterface.getModifiers)) {
       val invocationHandler = new ServiceInvocationHandler(classLoader, serviceInterface)
-      val serviceStub = JProxy.newProxyInstance(classLoader, Array(serviceInterface), invocationHandler).asInstanceOf[Service]
+      val serviceStub =
+        JProxy.newProxyInstance(classLoader, Array(serviceInterface), invocationHandler).asInstanceOf[Service]
       serviceStub.descriptor()
     } else {
       // If the default descriptor method is implemented in a non-public interface, throw an exception.
@@ -67,26 +74,29 @@ object ServiceReader {
     }
   }
 
-  def resolveServiceDescriptor(descriptor: Descriptor, classLoader: ClassLoader,
-                               builtInSerializerFactories:  Map[PlaceholderSerializerFactory, SerializerFactory],
-                               builtInExceptionSerializers: Map[PlaceholderExceptionSerializer, ExceptionSerializer]): Descriptor = {
+  def resolveServiceDescriptor(
+      descriptor: Descriptor,
+      classLoader: ClassLoader,
+      builtInSerializerFactories: Map[PlaceholderSerializerFactory, SerializerFactory],
+      builtInExceptionSerializers: Map[PlaceholderExceptionSerializer, ExceptionSerializer]
+  ): Descriptor = {
 
     val builtInIdSerializers: Map[Type, PathParamSerializer[_]] = Map(
-      classOf[String] -> PathParamSerializers.STRING,
-      classOf[java.lang.Long] -> PathParamSerializers.LONG,
-      classOf[java.lang.Integer] -> PathParamSerializers.INTEGER,
-      classOf[java.lang.Double] -> PathParamSerializers.DOUBLE,
-      classOf[java.lang.Boolean] -> PathParamSerializers.BOOLEAN,
-      classOf[java.util.Optional[_]] -> PathParamSerializers.OPTIONAL,
-      classOf[java.util.UUID] -> PathParamSerializers.UUID,
-      classOf[java.util.List[_]] -> PathParamSerializers.LIST,
-      classOf[java.util.Set[_]] -> PathParamSerializers.SET,
+      classOf[String]                  -> PathParamSerializers.STRING,
+      classOf[java.lang.Long]          -> PathParamSerializers.LONG,
+      classOf[java.lang.Integer]       -> PathParamSerializers.INTEGER,
+      classOf[java.lang.Double]        -> PathParamSerializers.DOUBLE,
+      classOf[java.lang.Boolean]       -> PathParamSerializers.BOOLEAN,
+      classOf[java.util.Optional[_]]   -> PathParamSerializers.OPTIONAL,
+      classOf[java.util.UUID]          -> PathParamSerializers.UUID,
+      classOf[java.util.List[_]]       -> PathParamSerializers.LIST,
+      classOf[java.util.Set[_]]        -> PathParamSerializers.SET,
       classOf[java.util.Collection[_]] -> PathParamSerializers.COLLECTION
     )
 
     val builtInMessageSerializers: Map[Type, MessageSerializer[_, _]] = Map(
       classOf[NotUsed] -> MessageSerializers.NOT_USED,
-      classOf[String] -> MessageSerializers.STRING
+      classOf[String]  -> MessageSerializers.STRING
     )
 
     val serializerFactory = descriptor.serializerFactory() match {
@@ -107,7 +117,8 @@ object ServiceReader {
 
     val serviceResolver = new ServiceCallResolver(
       builtInIdSerializers ++ descriptor.pathParamSerializers().asScala,
-      builtInMessageSerializers ++ descriptor.messageSerializers().asScala, serializerFactory
+      builtInMessageSerializers ++ descriptor.messageSerializers().asScala,
+      serializerFactory
     )
 
     val endpoints = descriptor.calls().asScala.map { ep =>
@@ -125,20 +136,24 @@ object ServiceReader {
             MethodRefResolver.resolveMethodRef(lambda)
           } catch {
             case NonFatal(e) =>
-              throw new IllegalStateException("Unable to resolve method for service call with ID " + ep.callId() +
-                ". Ensure that the you have passed a method reference (ie, this::someMethod). Passing anything else, " +
-                "for example lambdas, anonymous classes or actual implementation classes, is forbidden in declaring a " +
-                "service descriptor.", e)
+              throw new IllegalStateException(
+                "Unable to resolve method for service call with ID " + ep.callId() +
+                  ". Ensure that the you have passed a method reference (ie, this::someMethod). Passing anything else, " +
+                  "for example lambdas, anonymous classes or actual implementation classes, is forbidden in declaring a " +
+                  "service descriptor.",
+                e
+              )
           }
       }
 
-      val serviceCallType = TypeToken.of(method.getGenericReturnType)
+      val serviceCallType = TypeToken
+        .of(method.getGenericReturnType)
         .asInstanceOf[TypeToken[ServiceCall[_, _]]]
         .getSupertype(classOf[ServiceCall[_, _]])
         .getType match {
-          case param: ParameterizedType => param
-          case _                        => throw new IllegalStateException("ServiceCall is not a parameterized type?")
-        }
+        case param: ParameterizedType => param
+        case _                        => throw new IllegalStateException("ServiceCall is not a parameterized type?")
+      }
 
       // Now get the type arguments
       val (request, response) = serviceCallType.getActualTypeArguments match {
@@ -154,7 +169,8 @@ object ServiceReader {
       val serviceCallHolder = constructServiceCallHolder(serviceResolver, method)
 
       val endpointWithCallId = endpoint.callId() match {
-        case named: NamedCallId if named.name() == "__unresolved__" => endpoint.withCallId(new NamedCallId(method.getName))
+        case named: NamedCallId if named.name() == "__unresolved__" =>
+          endpoint.withCallId(new NamedCallId(method.getName))
         case other => endpoint // todo validate paths against method arguments
       }
 
@@ -167,7 +183,9 @@ object ServiceReader {
       endpointWithCircuitBreaker
         .withServiceCallHolder(serviceCallHolder)
         .withRequestSerializer(serviceResolver.resolveMessageSerializer(endpoint.requestSerializer(), request, method))
-        .withResponseSerializer(serviceResolver.resolveMessageSerializer(endpoint.responseSerializer(), response, method))
+        .withResponseSerializer(
+          serviceResolver.resolveMessageSerializer(endpoint.responseSerializer(), response, method)
+        )
     }
 
     val topicResolver = new TopicCallResolver(
@@ -179,7 +197,8 @@ object ServiceReader {
       val topicCall = tc.asInstanceOf[TopicCall[Any]]
       val methodRefTopicSourceHolder = topicCall.topicHolder match {
         case methodRef: MethodRefTopicHolder => methodRef
-        case other                           => throw new IllegalArgumentException(s"Unknown ${classOf[TopicHolder].getSimpleName} type: " + other)
+        case other =>
+          throw new IllegalArgumentException(s"Unknown ${classOf[TopicHolder].getSimpleName} type: " + other)
       }
 
       val method = methodRefTopicSourceHolder.methodReference match {
@@ -189,20 +208,24 @@ object ServiceReader {
             MethodRefResolver.resolveMethodRef(lambda)
           } catch {
             case NonFatal(e) =>
-              throw new IllegalStateException("Unable to resolve method for topic call with ID " + topicCall.topicId +
-                ". Ensure that the you have passed a method reference (ie, this::someMethod). Passing anything else, " +
-                "for example lambdas, anonymous classes or actual implementation classes, is forbidden in declaring a " +
-                "topic descriptor.", e)
+              throw new IllegalStateException(
+                "Unable to resolve method for topic call with ID " + topicCall.topicId +
+                  ". Ensure that the you have passed a method reference (ie, this::someMethod). Passing anything else, " +
+                  "for example lambdas, anonymous classes or actual implementation classes, is forbidden in declaring a " +
+                  "topic descriptor.",
+                e
+              )
           }
       }
 
-      val topicParametrizedType = TypeToken.of(method.getGenericReturnType)
+      val topicParametrizedType = TypeToken
+        .of(method.getGenericReturnType)
         .asInstanceOf[TypeToken[Topic[_]]]
         .getSupertype(classOf[Topic[_]])
         .getType match {
-          case param: ParameterizedType => param
-          case _                        => throw new IllegalStateException("Topic is not a parameterized type?")
-        }
+        case param: ParameterizedType => param
+        case _                        => throw new IllegalStateException("Topic is not a parameterized type?")
+      }
 
       // Now get the type arguments
       val topicMessageType = topicParametrizedType.getActualTypeArguments match {
@@ -217,7 +240,9 @@ object ServiceReader {
 
       val topicHolder = constructTopicHolder(serviceResolver, method, topicCall.topicId)
 
-      val resolvedMessageSerializer = topicResolver.resolveMessageSerializer(topicCall.messageSerializer, topicMessageType, method).asInstanceOf[MessageSerializer[Any, ByteString]]
+      val resolvedMessageSerializer = topicResolver
+        .resolveMessageSerializer(topicCall.messageSerializer, topicMessageType, method)
+        .asInstanceOf[MessageSerializer[Any, ByteString]]
 
       topicCall
         .withTopicHolder(topicHolder)
@@ -235,24 +260,31 @@ object ServiceReader {
         ServiceAcl.methodAndPath(method, pathSpec)
     }
 
-    descriptor.replaceAllCalls(TreePVector.from(endpoints.asJava.asInstanceOf[java.util.List[Call[_, _]]]))
+    descriptor
+      .replaceAllCalls(TreePVector.from(endpoints.asJava.asInstanceOf[java.util.List[Call[_, _]]]))
       .withExceptionSerializer(exceptionSerializer)
       .replaceAllAcls(TreePVector.from(acls.asJava))
       .replaceAllTopicCalls(TreePVector.from(topics.asJava.asInstanceOf[java.util.List[TopicCall[_]]]))
   }
 
-  private def constructServiceCallHolder[Request, Response](serviceCallResolver: ServiceCallResolver, method: Method): ServiceCallHolder = {
+  private def constructServiceCallHolder[Request, Response](
+      serviceCallResolver: ServiceCallResolver,
+      method: Method
+  ): ServiceCallHolder = {
 
     val serializers = method.getGenericParameterTypes.toSeq.map { arg =>
       try {
         serviceCallResolver.resolvePathParamSerializer(new UnresolvedTypePathParamSerializer[AnyRef], arg)
       } catch {
         case ex: IllegalArgumentException =>
-          throw new IllegalPathParameterException(s"Error encountered while resolving the ${method.getDeclaringClass + "." + method.getName}" +
-            s"service call: No path parameter serializer was found for the $arg path parameter. This can be fixed " +
-            "either by implementing and then explicitly registering a com.lightbend.lagom.javadsl.api.PathParamSerializer for " +
-            s"$arg on the ${method.getDeclaringClass} service descriptor, or perhaps this parameter is meant to be the " +
-            "request message declared in the ServiceCall, and not extracted out of the path?", ex)
+          throw new IllegalPathParameterException(
+            s"Error encountered while resolving the ${method.getDeclaringClass + "." + method.getName}" +
+              s"service call: No path parameter serializer was found for the $arg path parameter. This can be fixed " +
+              "either by implementing and then explicitly registering a com.lightbend.lagom.javadsl.api.PathParamSerializer for " +
+              s"$arg on the ${method.getDeclaringClass} service descriptor, or perhaps this parameter is meant to be the " +
+              "request message declared in the ServiceCall, and not extracted out of the path?",
+            ex
+          )
       }
     }
 
@@ -282,7 +314,11 @@ object ServiceReader {
 
   }
 
-  private def constructTopicHolder(serviceCallResolver: ServiceCallResolver, _method: Method, topicId: TopicId): TopicHolder = {
+  private def constructTopicHolder(
+      serviceCallResolver: ServiceCallResolver,
+      _method: Method,
+      topicId: TopicId
+  ): TopicHolder = {
     new MethodTopicHolder {
       override val method: Method = _method
       override def create(service: Any): Topic[_] = {
@@ -291,13 +327,14 @@ object ServiceReader {
     }
   }
 
-  class ServiceInvocationHandler(classLoader: ClassLoader, serviceInterface: Class[_ <: Service]) extends InvocationHandler {
+  class ServiceInvocationHandler(classLoader: ClassLoader, serviceInterface: Class[_ <: Service])
+      extends InvocationHandler {
     override def invoke(proxy: scala.Any, method: Method, args: Array[AnyRef]): AnyRef = {
       // If it's a default method, invoke it
       if (method.isDefault) {
         // This is the way to invoke default methods via reflection, using the JDK7 method handles API
         defaultMethodHandleSupplier(method)
-          // We bind to the proxy so that we end up invoking on the proxy
+        // We bind to the proxy so that we end up invoking on the proxy
           .bindTo(proxy)
           // And now we actually invoke it
           .invokeWithArguments(args: _*)
@@ -306,7 +343,7 @@ object ServiceReader {
         if (ScalaSig.isScala(serviceInterface)) {
           if (serviceInterface.isInterface()) {
             val implClass = Class.forName(serviceInterface.getName + "$class", false, classLoader)
-            val method = implClass.getMethod(DescriptorMethodName, serviceInterface)
+            val method    = implClass.getMethod(DescriptorMethodName, serviceInterface)
             method.invoke(null, proxy.asInstanceOf[AnyRef])
           } else {
             throw new IllegalArgumentException("Service.descriptor must be implemented in a trait")
@@ -316,16 +353,23 @@ object ServiceReader {
           throw new IllegalArgumentException("Service.descriptor must be implemented as a default method")
         }
       } else if (classOf[ServiceCall[_, _]].isAssignableFrom(method.getReturnType)) {
-        throw new IllegalStateException("Service call method " + method + " was invoked on self describing service " +
-          serviceInterface + " while loading descriptor, which is not allowed.")
+        throw new IllegalStateException(
+          "Service call method " + method + " was invoked on self describing service " +
+            serviceInterface + " while loading descriptor, which is not allowed."
+        )
       } else {
-        throw new IllegalStateException("Abstract method " + method + " invoked on self describing service " +
-          serviceInterface + " while loading descriptor, which is not allowed.")
+        throw new IllegalStateException(
+          "Abstract method " + method + " invoked on self describing service " +
+            serviceInterface + " while loading descriptor, which is not allowed."
+        )
       }
     }
   }
 
-  private def methodFromSerializer(requestSerializer: MessageSerializer[_, _], responseSerializer: MessageSerializer[_, _]) = {
+  private def methodFromSerializer(
+      requestSerializer: MessageSerializer[_, _],
+      responseSerializer: MessageSerializer[_, _]
+  ) = {
     if (requestSerializer.isStreamed || responseSerializer.isStreamed) {
       com.lightbend.lagom.javadsl.api.transport.Method.GET
     } else if (requestSerializer.isUsed) {

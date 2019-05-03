@@ -1,6 +1,6 @@
 package docs.home.actor;
 
-//#service-impl
+// #service-impl
 import static akka.pattern.Patterns.ask;
 
 import com.lightbend.lagom.javadsl.api.ServiceCall;
@@ -40,20 +40,23 @@ public class WorkerServiceImpl implements WorkerService {
     // the jobs by their task, i.e. jobs with same task will be
     // delegated to same worker node
     List<String> paths = Arrays.asList("/user/worker");
-    ConsistentHashingGroup groupConf = new ConsistentHashingGroup(paths)
-      .withHashMapper(msg -> {
-        if (msg instanceof Job) {
-          return ((Job) msg).getTask();
-        } else {
-          return null;
-        }
-      });
-      Set<String> useRoles = new TreeSet<>();
-      useRoles.add("worker-node");
+    ConsistentHashingGroup groupConf =
+        new ConsistentHashingGroup(paths)
+            .withHashMapper(
+                msg -> {
+                  if (msg instanceof Job) {
+                    return ((Job) msg).getTask();
+                  } else {
+                    return null;
+                  }
+                });
+    Set<String> useRoles = new TreeSet<>();
+    useRoles.add("worker-node");
 
-      Props routerProps = new ClusterRouterGroup(groupConf,
-        new ClusterRouterGroupSettings(1000, paths,
-          true, useRoles)).props();
+    Props routerProps =
+        new ClusterRouterGroup(
+                groupConf, new ClusterRouterGroupSettings(1000, paths, true, useRoles))
+            .props();
     this.workerRouter = system.actorOf(routerProps, "workerRouter");
   }
 
@@ -62,16 +65,13 @@ public class WorkerServiceImpl implements WorkerService {
     return job -> {
       // send the job to a worker, via the consistent hashing router
       CompletionStage<JobAccepted> reply =
-          ask(
-              workerRouter,
-              job,
-              Duration.ofSeconds(5)
-          )
-        .thenApply(ack -> {
-          return (JobAccepted) ack;
-        });
+          ask(workerRouter, job, Duration.ofSeconds(5))
+              .thenApply(
+                  ack -> {
+                    return (JobAccepted) ack;
+                  });
       return reply;
     };
   }
 }
-//#service-impl
+// #service-impl

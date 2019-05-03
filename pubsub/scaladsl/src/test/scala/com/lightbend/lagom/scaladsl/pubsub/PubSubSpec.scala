@@ -12,7 +12,9 @@ import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestKit
 import com.lightbend.lagom.internal.scaladsl.PubSubRegistryImpl
 import com.typesafe.config.ConfigFactory
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.Matchers
+import org.scalatest.WordSpec
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -33,7 +35,7 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
   val system = app.actorSystem
   Cluster.get(system).join(Cluster.get(system).selfAddress)
   implicit val mat = ActorMaterializer.create(system)
-  val registry = app.pubSubRegistry
+  val registry     = app.pubSubRegistry
 
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
@@ -47,8 +49,8 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
   "PubSub" should {
     "publish single messages" in {
       val topic = TopicId[Notification]
-      val ref = registry.refFor(topic)
-      val sub = ref.subscriber
+      val ref   = registry.refFor(topic)
+      val sub   = ref.subscriber
       val probe = sub.map(_.msg).runWith(TestSink.probe(system)).request(2)
 
       awaitHasSubscribers(ref, true)
@@ -61,8 +63,8 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 
     "publish streams of messages" in {
       val topic = TopicId[Notification]("1")
-      val ref = registry.refFor(topic)
-      val sub = ref.subscriber
+      val ref   = registry.refFor(topic)
+      val sub   = ref.subscriber
       val probe = sub.map(_.msg).runWith(TestSink.probe(system)).request(2)
 
       awaitHasSubscribers(ref, true)
@@ -77,9 +79,9 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
     }
 
     "publish to multiple subscribers" in {
-      val topic = TopicId[Notification]("2")
-      val ref = registry.refFor(topic)
-      val sub = ref.subscriber.map(_.msg)
+      val topic  = TopicId[Notification]("2")
+      val ref    = registry.refFor(topic)
+      val sub    = ref.subscriber.map(_.msg)
       val probe1 = sub.runWith(TestSink.probe(system)).request(2)
       val probe2 = sub.runWith(TestSink.probe(system)).request(2)
 
@@ -91,9 +93,9 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
     }
 
     "continue publishing after a subscriber has cancelled" in {
-      val topic = TopicId[Notification]("3")
-      val ref = registry.refFor(topic)
-      val sub = ref.subscriber.map(_.msg)
+      val topic  = TopicId[Notification]("3")
+      val ref    = registry.refFor(topic)
+      val sub    = ref.subscriber.map(_.msg)
       val probe1 = sub.runWith(TestSink.probe(system)).request(2)
 
       awaitHasSubscribers(ref, true)
@@ -110,8 +112,8 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 
     "publish multiple streams" in {
       val topic = TopicId[Notification]("4")
-      val ref = registry.refFor(topic)
-      val sub = ref.subscriber
+      val ref   = registry.refFor(topic)
+      val sub   = ref.subscriber
       val probe = sub.map(_.msg).runWith(TestSink.probe(system)).request(10)
       awaitHasSubscribers(ref, true)
 
@@ -123,9 +125,9 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 
     "continue publishing after publisher finishes" in {
       val topic = TopicId[Notification]("5")
-      val ref = registry.refFor(topic)
-      val sub = ref.subscriber.map(_.msg)
-      val pub = ref.publisher
+      val ref   = registry.refFor(topic)
+      val sub   = ref.subscriber.map(_.msg)
+      val pub   = ref.publisher
 
       val probe1 = sub.runWith(TestSink.probe(system)).request(10)
       awaitHasSubscribers(ref, true)
@@ -144,10 +146,12 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 
     "drop the oldest messages when the buffer overflows" in {
       val topic = TopicId[Notification]("6")
-      val config = ConfigFactory.parseString("subscriber-buffer-size = 3").withFallback(system.settings.config.getConfig("lagom.pubsub"))
+      val config = ConfigFactory
+        .parseString("subscriber-buffer-size = 3")
+        .withFallback(system.settings.config.getConfig("lagom.pubsub"))
       val registry = new PubSubRegistryImpl(system, config)
-      val ref = registry.refFor(topic)
-      val sub = ref.subscriber
+      val ref      = registry.refFor(topic)
+      val sub      = ref.subscriber
 
       // important to not use any intermediate stages (such as map) here, because then
       // internal buffering comes into play

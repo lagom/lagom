@@ -4,9 +4,7 @@
 
 package com.lightbend.lagom.javadsl.api.broker;
 
-/**
- * A metadata key.
- */
+/** A metadata key. */
 public final class MetadataKey<Metadata> {
   private final String name;
 
@@ -14,23 +12,17 @@ public final class MetadataKey<Metadata> {
     this.name = name;
   }
 
-  /**
-   * The name of the metadata key.
-   */
+  /** The name of the metadata key. */
   public String getName() {
     return name;
   }
 
-  /**
-   * Create a metadata key with the given name.
-   */
+  /** Create a metadata key with the given name. */
   public static <Metadata> MetadataKey<Metadata> named(String name) {
     return new MetadataKey<>(name);
   }
 
-  /**
-   * The message key metadata key.
-   */
+  /** The message key metadata key. */
   @SuppressWarnings("unchecked")
   public static <Key> MetadataKey<Key> messageKey() {
     return (MetadataKey) MESSAGE_KEY;
@@ -55,9 +47,6 @@ public final class MetadataKey<Metadata> {
 
   @Override
   public String toString() {
-    return "MetadataKey{" +
-        "name='" + name + '\'' +
-        '}';
+    return "MetadataKey{" + "name='" + name + '\'' + '}';
   }
 }
-

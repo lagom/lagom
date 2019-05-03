@@ -7,11 +7,15 @@ package com.lightbend.lagom.scaladsl.server
 import akka.NotUsed
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
-import com.lightbend.lagom.scaladsl.api.{ AdditionalConfiguration, ProvidesAdditionalConfiguration, Service, ServiceCall }
+import com.lightbend.lagom.scaladsl.api.AdditionalConfiguration
+import com.lightbend.lagom.scaladsl.api.ProvidesAdditionalConfiguration
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.typesafe.config.ConfigFactory
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.Matchers
+import org.scalatest.WordSpec
 import play.api.ApplicationLoader.Context
 import play.api.Environment
 import play.api.inject.DefaultApplicationLifecycle
@@ -28,8 +32,8 @@ class LagomApplicationSpec extends WordSpec with Matchers {
       a[LagomServerTopicFactoryVerifier.NoTopicPublisherException] should be thrownBy {
         new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents {
           override lazy val applicationLifecycle = lifecycle
-          override def lagomServer = serverFor[AppWithTopics](AppWithTopics)
-          override def serviceLocator = NoServiceLocator
+          override def lagomServer               = serverFor[AppWithTopics](AppWithTopics)
+          override def serviceLocator            = NoServiceLocator
         }
       }
       lifecycle.stop()
@@ -37,14 +41,14 @@ class LagomApplicationSpec extends WordSpec with Matchers {
 
     "start if there are topics to publish but and no topic publisher is provided" in {
       new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents {
-        override def lagomServer = serverFor[AppWithNoTopics](AppWithNoTopics)
+        override def lagomServer    = serverFor[AppWithNoTopics](AppWithNoTopics)
         override def serviceLocator = NoServiceLocator
       }.applicationLifecycle.stop()
     }
 
     "start if there are topics to publish and a topic publisher is provided" in {
       new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with MockTopicComponents {
-        override def lagomServer = serverFor[AppWithTopics](AppWithTopics)
+        override def lagomServer    = serverFor[AppWithTopics](AppWithTopics)
         override def serviceLocator = NoServiceLocator
       }.applicationLifecycle.stop()
     }
@@ -65,8 +69,9 @@ class LagomApplicationSpec extends WordSpec with Matchers {
   private val configKey = "akka.cluster.seed-nodes"
 
   trait FakeComponent extends ProvidesAdditionalConfiguration {
-    override def additionalConfiguration: AdditionalConfiguration = super.additionalConfiguration ++
-      ConfigFactory.parseString(configKey + "=\"via additional\"")
+    override def additionalConfiguration: AdditionalConfiguration =
+      super.additionalConfiguration ++
+        ConfigFactory.parseString(configKey + "=\"via additional\"")
   }
 
   trait MockTopicComponents extends TopicFactoryProvider {
@@ -89,7 +94,7 @@ class LagomApplicationSpec extends WordSpec with Matchers {
   }
 
   object MockTopic extends Topic[String] {
-    override def topicId = TopicId("foo")
+    override def topicId   = TopicId("foo")
     override def subscribe = ???
   }
 

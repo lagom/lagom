@@ -19,10 +19,7 @@ import play.api.inject.{ bind => playBind }
  * As of Play 2.7.0, it no longer fails on startup by default.
  * This test remains to ensure that Lagom doesn't introduce a startup failure.
  */
-class JdbcPersistenceModuleSpec
-  extends AsyncWordSpec
-  with Matchers
-  with BeforeAndAfterAll {
+class JdbcPersistenceModuleSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll {
 
   "The JdbcPersistenceModule" should {
     "should start the service when database is not available" in {
@@ -33,10 +30,10 @@ class JdbcPersistenceModuleSpec
           .bindings(playBind[DbWrapper].toSelf)
           .configure(
             // Correct configuration, but the database is not available
-            "db.default.driver" -> "org.h2.Driver",
-            "db.default.url" -> "jdbc:h2:tcp://localhost/~/notavailable",
+            "db.default.driver"                             -> "org.h2.Driver",
+            "db.default.url"                                -> "jdbc:h2:tcp://localhost/~/notavailable",
             "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
-            "lagom.cluster.bootstrap.enabled" -> "off"
+            "lagom.cluster.bootstrap.enabled"               -> "off"
           )
           .build()
 
@@ -53,11 +50,11 @@ class JdbcPersistenceModuleSpec
           .configure(
             // Correct configuration, but the database is not available
             "db.default.driver" -> "org.h2.Driver",
-            "db.default.url" -> "jdbc:h2:tcp://localhost/~/notavailable",
+            "db.default.url"    -> "jdbc:h2:tcp://localhost/~/notavailable",
             // And it is configured to fail fast
             "play.db.prototype.hikaricp.initializationFailTimeout" -> "1",
-            "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
-            "lagom.cluster.bootstrap.enabled" -> "off"
+            "lagom.cluster.exit-jvm-when-system-terminated"        -> "off",
+            "lagom.cluster.bootstrap.enabled"                      -> "off"
           )
           .build()
       }
@@ -67,4 +64,4 @@ class JdbcPersistenceModuleSpec
 }
 
 // So that we can confirm DBApi was created
-class DbWrapper @Inject() (val dbApi: DBApi)
+class DbWrapper @Inject()(val dbApi: DBApi)

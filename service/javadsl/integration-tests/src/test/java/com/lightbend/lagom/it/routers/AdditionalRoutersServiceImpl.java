@@ -4,5 +4,4 @@
 
 package com.lightbend.lagom.it.routers;
 
-public class AdditionalRoutersServiceImpl implements AdditionalRoutersService {
-}
+public class AdditionalRoutersServiceImpl implements AdditionalRoutersService {}

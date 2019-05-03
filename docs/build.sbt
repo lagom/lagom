@@ -1,15 +1,15 @@
 val ScalaVersion = "2.12.8"
 
-val AkkaVersion: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.22")
-val JUnitVersion = "4.12"
+val AkkaVersion: String   = sys.props.getOrElse("lagom.build.akka.version", "2.5.22")
+val JUnitVersion          = "4.12"
 val JUnitInterfaceVersion = "0.11"
-val ScalaTestVersion = "3.0.5"
-val PlayVersion = "2.7.2"
-val Log4jVersion = "2.11.1"
-val MacWireVersion = "2.3.0"
-val LombokVersion = "1.16.20"
-val HibernateVersion = "5.3.7.Final"
-val ValidationApiVersion = "2.0.1.Final"
+val ScalaTestVersion      = "3.0.5"
+val PlayVersion           = "2.7.2"
+val Log4jVersion          = "2.11.1"
+val MacWireVersion        = "2.3.0"
+val LombokVersion         = "1.16.20"
+val HibernateVersion      = "5.3.7.Final"
+val ValidationApiVersion  = "2.0.1.Final"
 
 val branch = {
   import scala.sys.process._
@@ -37,40 +37,66 @@ lazy val docs = project
     resolvers += Resolver.typesafeIvyRepo("releases"),
     scalaVersion := ScalaVersion,
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test",
-      "junit" % "junit" % JUnitVersion % "test",
-      "com.novocode" % "junit-interface" % JUnitInterfaceVersion % "test",
-      "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
-      "com.typesafe.play" %% "play-akka-http-server" % PlayVersion % Test,
-      "com.typesafe.play" %% "play-logback" % PlayVersion % Test,
-      "org.apache.logging.log4j" % "log4j-api" % Log4jVersion % "test",
-      "com.softwaremill.macwire" %% "macros" % MacWireVersion % "provided",
-      "org.projectlombok" % "lombok" % LombokVersion,
-      "org.hibernate" % "hibernate-core" % HibernateVersion,
-      "javax.validation" % "validation-api" % ValidationApiVersion
+      "com.typesafe.akka"        %% "akka-stream-testkit"   % AkkaVersion % "test",
+      "junit"                    % "junit"                  % JUnitVersion % "test",
+      "com.novocode"             % "junit-interface"        % JUnitInterfaceVersion % "test",
+      "org.scalatest"            %% "scalatest"             % ScalaTestVersion % Test,
+      "com.typesafe.play"        %% "play-akka-http-server" % PlayVersion % Test,
+      "com.typesafe.play"        %% "play-logback"          % PlayVersion % Test,
+      "org.apache.logging.log4j" % "log4j-api"              % Log4jVersion % "test",
+      "com.softwaremill.macwire" %% "macros"                % MacWireVersion % "provided",
+      "org.projectlombok"        % "lombok"                 % LombokVersion,
+      "org.hibernate"            % "hibernate-core"         % HibernateVersion,
+      "javax.validation"         % "validation-api"         % ValidationApiVersion
     ),
     scalacOptions ++= Seq("-deprecation", "-Xfatal-warnings"),
-    javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-parameters", "-Xlint:unchecked", "-Xlint:deprecation", "-Werror"),
+    javacOptions ++= Seq(
+      "-encoding",
+      "UTF-8",
+      "-source",
+      "1.8",
+      "-target",
+      "1.8",
+      "-parameters",
+      "-Xlint:unchecked",
+      "-Xlint:deprecation",
+      "-Werror"
+    ),
     testOptions in Test += Tests.Argument("-oDF"),
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
     // This is needed so that Java APIs that use immutables will typecheck by the Scala compiler
     compileOrder in Test := CompileOrder.JavaThenScala,
-
+    sourceDirectories in format in Test ++= (unmanagedSourceDirectories in Test).value,
+    sourceDirectories in format in Test ++= (unmanagedResourceDirectories in Test).value,
     markdownDocumentation := {
       val javaUnidocTarget = parentDir / "target" / "javaunidoc"
-      val unidocTarget = parentDir / "target" / "unidoc"
-      streams.value.log.info(s"Serving javadocs from $javaUnidocTarget and scaladocs from $unidocTarget. Rerun unidoc in root project to refresh")
+      val unidocTarget     = parentDir / "target" / "unidoc"
+      streams.value.log.info(
+        s"Serving javadocs from $javaUnidocTarget and scaladocs from $unidocTarget. Rerun unidoc in root project to refresh"
+      )
       Seq(
-        Documentation("java", Seq(
-          DocPath(baseDirectory.value / "manual" / "common", "."),
-          DocPath(baseDirectory.value / "manual" / "java", "."),
-          DocPath(javaUnidocTarget, "api")
-        ), "Home.html", "Java Home", Map("api/index.html" -> "API Documentation")),
-        Documentation("scala", Seq(
-          DocPath(baseDirectory.value / "manual" / "common", "."),
-          DocPath(baseDirectory.value / "manual" / "scala", "."),
-          DocPath(unidocTarget, "api")
-        ), "Home.html", "Scala Home", Map("api/index.html" -> "API Documentation"))
+        Documentation(
+          "java",
+          Seq(
+            DocPath(baseDirectory.value / "manual" / "common", "."),
+            DocPath(baseDirectory.value / "manual" / "java", "."),
+            DocPath(javaUnidocTarget, "api")
+          ),
+          "Home.html",
+          "Java Home",
+          Map("api/index.html" -> "API Documentation")
+        ),
+        Documentation(
+          "scala",
+          Seq(
+            DocPath(baseDirectory.value / "manual" / "common", "."),
+            DocPath(baseDirectory.value / "manual" / "scala", "."),
+            DocPath(unidocTarget, "api")
+          ),
+          "Home.html",
+          "Scala Home",
+          Map("api/index.html" -> "API Documentation")
+        )
       )
     },
     markdownUseBuiltinTheme := false,
@@ -79,7 +105,6 @@ lazy val docs = project
     markdownGenerateIndex := true,
     markdownStageIncludeWebJars := false,
     markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/"))
-
   )
   .dependsOn(
     serviceIntegrationTestsJavadsl,
@@ -96,27 +121,27 @@ lazy val docs = project
     akkaDiscoveryJavadsl,
     akkaDiscoveryScaladsl,
     immutables % "test->compile",
-    theme % "run-markdown",
+    theme      % "run-markdown",
     devmodeScaladsl
   )
 
 lazy val parentDir = Path.fileProperty("user.dir").getParentFile
 
 // Depend on the integration tests, they should bring everything else in
-lazy val serviceIntegrationTestsJavadsl = ProjectRef(parentDir, "integration-tests-javadsl")
+lazy val serviceIntegrationTestsJavadsl  = ProjectRef(parentDir, "integration-tests-javadsl")
 lazy val serviceIntegrationTestsScaladsl = ProjectRef(parentDir, "integration-tests-scaladsl")
-lazy val persistenceJdbcJavadsl = ProjectRef(parentDir, "persistence-jdbc-javadsl")
-lazy val persistenceJdbcScaladsl = ProjectRef(parentDir, "persistence-jdbc-scaladsl")
-lazy val persistenceJpaJavadsl = ProjectRef(parentDir, "persistence-jpa-javadsl")
-lazy val persistenceCassandraScaladsl = ProjectRef(parentDir, "persistence-cassandra-scaladsl")
-lazy val testkitJavadsl = ProjectRef(parentDir, "testkit-javadsl")
-lazy val testkitScaladsl = ProjectRef(parentDir, "testkit-scaladsl")
-lazy val playJson = ProjectRef(parentDir, "play-json")
-lazy val kafkaBrokerScaladsl = ProjectRef(parentDir, "kafka-broker-scaladsl")
-lazy val devmodeScaladsl = ProjectRef(parentDir, "devmode-scaladsl")
-lazy val pubsubScaladsl = ProjectRef(parentDir, "pubsub-scaladsl")
-lazy val akkaDiscoveryJavadsl = ProjectRef(parentDir, "akka-discovery-service-locator-javadsl")
-lazy val akkaDiscoveryScaladsl = ProjectRef(parentDir, "akka-discovery-service-locator-scaladsl")
+lazy val persistenceJdbcJavadsl          = ProjectRef(parentDir, "persistence-jdbc-javadsl")
+lazy val persistenceJdbcScaladsl         = ProjectRef(parentDir, "persistence-jdbc-scaladsl")
+lazy val persistenceJpaJavadsl           = ProjectRef(parentDir, "persistence-jpa-javadsl")
+lazy val persistenceCassandraScaladsl    = ProjectRef(parentDir, "persistence-cassandra-scaladsl")
+lazy val testkitJavadsl                  = ProjectRef(parentDir, "testkit-javadsl")
+lazy val testkitScaladsl                 = ProjectRef(parentDir, "testkit-scaladsl")
+lazy val playJson                        = ProjectRef(parentDir, "play-json")
+lazy val kafkaBrokerScaladsl             = ProjectRef(parentDir, "kafka-broker-scaladsl")
+lazy val devmodeScaladsl                 = ProjectRef(parentDir, "devmode-scaladsl")
+lazy val pubsubScaladsl                  = ProjectRef(parentDir, "pubsub-scaladsl")
+lazy val akkaDiscoveryJavadsl            = ProjectRef(parentDir, "akka-discovery-service-locator-javadsl")
+lazy val akkaDiscoveryScaladsl           = ProjectRef(parentDir, "akka-discovery-service-locator-scaladsl")
 
 // Needed to compile test classes using immutables annotation
 lazy val immutables = ProjectRef(parentDir, "immutables")
@@ -126,7 +151,7 @@ def forkedTests: Seq[Setting[_]] = Seq(
   fork in Test := true,
   concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
   javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M"),
-  testGrouping in Test := (definedTests in Test map singleTestsGrouping).value
+  testGrouping in Test := (definedTests in Test).map(singleTestsGrouping).value
 )
 
 // group tests, a single test per group
@@ -134,8 +159,8 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // We could group non Cassandra tests into another group
   // to avoid new JVM for each test, see https://www.scala-sbt.org/release/docs/Testing.html
   val javaOptions = Vector("-Xms256M", "-Xmx512M")
-  tests map { test =>
-    new Tests.Group(
+  tests.map { test =>
+    Tests.Group(
       name = test.name,
       tests = Seq(test),
       runPolicy = Tests.SubProcess(ForkOptions().withRunJVMOptions(javaOptions)),

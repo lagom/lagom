@@ -7,8 +7,7 @@ package com.lightbend.lagom.serialization;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class TestEntityMessages {
-  public static interface Cmd extends Jsonable {
-  }
+  public static interface Cmd extends Jsonable {}
 
   public static class Get implements Cmd {
 
@@ -20,8 +19,7 @@ public class TestEntityMessages {
       return Get.INSTANCE;
     }
 
-    private Get() {
-    }
+    private Get() {}
   }
 
   public static class Add implements Cmd {
@@ -60,20 +58,14 @@ public class TestEntityMessages {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
       Add other = (Add) obj;
       if (element == null) {
-        if (other.element != null)
-          return false;
-      } else if (!element.equals(other.element))
-        return false;
-      if (times != other.times)
-        return false;
+        if (other.element != null) return false;
+      } else if (!element.equals(other.element)) return false;
+      if (times != other.times) return false;
       return true;
     }
 
@@ -81,11 +73,11 @@ public class TestEntityMessages {
     public String toString() {
       return "Add [element=" + element + ", times=" + times + "]";
     }
-
   }
 
   public enum Mode {
-    PREPEND, APPEND
+    PREPEND,
+    APPEND
   }
 
   public static class ChangeMode implements Cmd {
@@ -113,15 +105,11 @@ public class TestEntityMessages {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
       ChangeMode other = (ChangeMode) obj;
-      if (mode != other.mode)
-        return false;
+      if (mode != other.mode) return false;
       return true;
     }
 
@@ -129,7 +117,6 @@ public class TestEntityMessages {
     public String toString() {
       return "ChangeMode [mode=" + mode + "]";
     }
-
   }
 
   public static class UndefinedCmd implements Cmd {
@@ -143,10 +130,8 @@ public class TestEntityMessages {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      else
-        return (getClass() == obj.getClass());
+      if (this == obj) return true;
+      else return (getClass() == obj.getClass());
     }
 
     @Override
@@ -155,7 +140,7 @@ public class TestEntityMessages {
     }
   }
 
-  public static abstract class Evt implements Jsonable {
+  public abstract static class Evt implements Jsonable {
     private static final long serialVersionUID = 1L;
   }
 
@@ -184,18 +169,13 @@ public class TestEntityMessages {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
       Appended other = (Appended) obj;
       if (element == null) {
-        if (other.element != null)
-          return false;
-      } else if (!element.equals(other.element))
-        return false;
+        if (other.element != null) return false;
+      } else if (!element.equals(other.element)) return false;
       return true;
     }
 
@@ -203,7 +183,6 @@ public class TestEntityMessages {
     public String toString() {
       return "Appended [element=" + element + "]";
     }
-
   }
 
   public static class InPrependMode extends Evt {
@@ -216,13 +195,11 @@ public class TestEntityMessages {
       return InPrependMode.instance;
     }
 
-    private InPrependMode() {
-    }
+    private InPrependMode() {}
 
     @Override
     public String toString() {
       return "InPrependMode";
     }
   }
-
 }

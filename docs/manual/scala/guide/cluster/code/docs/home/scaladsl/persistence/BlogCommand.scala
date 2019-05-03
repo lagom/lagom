@@ -18,7 +18,8 @@ object BlogCommand {
     JsonSerializer(Json.format[AddPostDone]),
     JsonSerializer(emptySingletonFormat(GetPost)),
     JsonSerializer(Json.format[ChangeBody]),
-    JsonSerializer(emptySingletonFormat(Publish)))
+    JsonSerializer(emptySingletonFormat(Publish))
+  )
 }
 
 //#AddPost

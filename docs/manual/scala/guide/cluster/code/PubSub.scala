@@ -4,8 +4,10 @@ package example {
 
   import akka.NotUsed
   import akka.stream.scaladsl.Source
-  import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
-  import play.api.libs.json.{Format, Json}
+  import com.lightbend.lagom.scaladsl.api.Service
+  import com.lightbend.lagom.scaladsl.api.ServiceCall
+  import play.api.libs.json.Format
+  import play.api.libs.json.Json
 
   import scala.concurrent.Future
 
@@ -57,12 +59,12 @@ package serviceimplstream {
   import akka.NotUsed
   import akka.stream.scaladsl.Source
   import com.lightbend.lagom.scaladsl.api.Service._
-  import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
+  import com.lightbend.lagom.scaladsl.api.Service
+  import com.lightbend.lagom.scaladsl.api.ServiceCall
   import com.lightbend.lagom.scaladsl.pubsub.PubSubRegistry
   import com.lightbend.lagom.scaladsl.pubsub.TopicId
 
   import scala.concurrent.Future
-
 
   trait SensorService extends Service {
     def registerTemperature(id: String): ServiceCall[Source[Temperature, NotUsed], NotUsed]
@@ -79,8 +81,7 @@ package serviceimplstream {
   //#service-impl-stream
   import akka.stream.Materializer
 
-  class SensorServiceImpl(pubSub: PubSubRegistry)
-    (implicit materializer: Materializer) extends SensorService {
+  class SensorServiceImpl(pubSub: PubSubRegistry)(implicit materializer: Materializer) extends SensorService {
 
     def registerTemperature(id: String) = ServiceCall { temperatures =>
       val topic = pubSub.refFor(TopicId[Temperature](id))
@@ -99,26 +100,30 @@ package serviceimplstream {
 
 package persistententity {
 
-  import akka.{Done, NotUsed}
+  import akka.Done
+  import akka.NotUsed
   import akka.stream.scaladsl.Source
   import com.lightbend.lagom.scaladsl.api.transport.Method
-  import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
+  import com.lightbend.lagom.scaladsl.api.Service
+  import com.lightbend.lagom.scaladsl.api.ServiceCall
   import docs.home.scaladsl.persistence._
-  import play.api.libs.json.{Format, Json}
+  import play.api.libs.json.Format
+  import play.api.libs.json.Json
 
   import scala.concurrent.Future
 
   //#persistent-entity-inject
   import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
-  import com.lightbend.lagom.scaladsl.pubsub.{PubSubRegistry, TopicId}
+  import com.lightbend.lagom.scaladsl.pubsub.PubSubRegistry
+  import com.lightbend.lagom.scaladsl.pubsub.TopicId
 
   final class Post(pubSubRegistry: PubSubRegistry) extends PersistentEntity {
     private val publishedTopic = pubSubRegistry.refFor(TopicId[PostPublished])
-  //#persistent-entity-inject
+    //#persistent-entity-inject
 
     override type Command = BlogCommand
-    override type Event = BlogEvent
-    override type State = BlogState
+    override type Event   = BlogEvent
+    override type State   = BlogState
 
     override def initialState: BlogState = BlogState.empty
 

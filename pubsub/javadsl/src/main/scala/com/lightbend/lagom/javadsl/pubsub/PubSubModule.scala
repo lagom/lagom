@@ -5,8 +5,10 @@
 package com.lightbend.lagom.javadsl.pubsub
 
 import com.lightbend.lagom.internal.javadsl.pubsub.PubSubRegistryImpl
-import play.api.{ Configuration, Environment }
-import play.api.inject.{ Binding, Module }
+import play.api.Configuration
+import play.api.Environment
+import play.api.inject.Binding
+import play.api.inject.Module
 
 /**
  * Guice module for the PubSub API.
