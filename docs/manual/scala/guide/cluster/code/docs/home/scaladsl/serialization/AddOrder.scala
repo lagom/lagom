@@ -19,8 +19,10 @@ object AddOrder {
 
   object AddOrder {
     implicit val format: Format[AddOrder] =
-      (JsPath \ "product_id").format[String].and((JsPath \ "quantity").format[Int])
-    (AddOrder.apply, unlift(AddOrder.unapply))
+      (JsPath \ "product_id")
+        .format[String]
+        .and((JsPath \ "quantity").format[Int])
+        .apply(AddOrder.apply, unlift(AddOrder.unapply))
   }
   //#manualMapping
 
@@ -30,7 +32,8 @@ object OrderCommands {
 
   //#singleton
   case object GetOrders {
-    implicit val format: Format[GetOrders.type] = JsonSerializer.emptySingletonFormat(GetOrders)
+    implicit val format: Format[GetOrders.type] =
+      JsonSerializer.emptySingletonFormat(GetOrders)
   }
   //#singleton
 

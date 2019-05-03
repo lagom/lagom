@@ -27,6 +27,7 @@ class CustomerMigration extends JsonSerializerRegistry {
 
   override def serializers = Seq.empty
 
+  // format: off
   //#structural-migration
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
@@ -35,13 +36,16 @@ class CustomerMigration extends JsonSerializerRegistry {
 
     // use arbitrary logic to parse an Address
     // out of the old schema
-    val readOldAddress: Reads[Address] =
+    val readOldAddress: Reads[Address] = {
       (JsPath \ "street")
         .read[String]
-        .and((JsPath \ "city").read[String])
-        .and((JsPath \ "zipCode").read[String])
-        .and((JsPath \ "country").read[String])
-    (Address)
+        .and(
+          (JsPath \ "city").read[String])
+        .and(
+          (JsPath \ "zipCode").read[String])
+        .and(
+          (JsPath \ "country").read[String])(Address)
+    }
 
     override def transform(fromVersion: Int, json: JsObject): JsObject = {
       if (fromVersion < 2) {
@@ -60,4 +64,5 @@ class CustomerMigration extends JsonSerializerRegistry {
     classOf[Customer].getName -> customerMigration
   )
   //#structural-migration
+  // format: on
 }

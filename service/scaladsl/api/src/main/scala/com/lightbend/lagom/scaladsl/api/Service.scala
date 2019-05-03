@@ -263,153 +263,32 @@ object ServiceSupport {
     implicit def methodFor[Q, R](f: => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl0[Q, R]
     implicit def methodFor0[Q, R](f: () => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl0[Q, R]
 
+    // format: off
     // Execute in REPL to generate:
     // (1 to 22).foreach { i => println(s"    implicit def methodFor$i[Q, R" + (1 to i).map(p => s", P$p: PPS").mkString("") + "](f: (" + (1 to i).map(p => s"P$p").mkString(", ") + s") => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl$i[Q, R]") }
-    implicit def methodFor1[Q, R, P1: PPS](f: (P1) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] =
-      macro methodForImpl1[Q, R]
-    implicit def methodFor2[Q, R, P1: PPS, P2: PPS](f: (P1, P2) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] =
-      macro methodForImpl2[Q, R]
-    implicit def methodFor3[Q, R, P1: PPS, P2: PPS, P3: PPS](
-        f: (P1, P2, P3) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl3[Q, R]
-    implicit def methodFor4[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS](
-        f: (P1, P2, P3, P4) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl4[Q, R]
-    implicit def methodFor5[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS](
-        f: (P1, P2, P3, P4, P5) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl5[Q, R]
-    implicit def methodFor6[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS](
-        f: (P1, P2, P3, P4, P5, P6) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl6[Q, R]
-    implicit def methodFor7[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS](
-        f: (P1, P2, P3, P4, P5, P6, P7) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl7[Q, R]
-    implicit def methodFor8[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS](
-        f: (P1, P2, P3, P4, P5, P6, P7, P8) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl8[Q, R]
-    implicit def methodFor9[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS](
-        f: (P1, P2, P3, P4, P5, P6, P7, P8, P9) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl9[Q, R]
-    implicit def methodFor10[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS
-    ](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] =
-      macro methodForImpl10[Q, R]
-    implicit def methodFor11[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS
-    ](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] =
-      macro methodForImpl11[Q, R]
-    implicit def methodFor12[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS,
-        P12: PPS
-    ](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] =
-      macro methodForImpl12[Q, R]
-    implicit def methodFor13[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS,
-        P12: PPS, P13: PPS
-    ](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] =
-      macro methodForImpl13[Q, R]
-    implicit def methodFor14[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS,
-        P12: PPS, P13: PPS, P14: PPS
-    ](
-        f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl14[Q, R]
-    implicit def methodFor15[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS,
-        P12: PPS, P13: PPS, P14: PPS, P15: PPS
-    ](
-        f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl15[Q, R]
-    implicit def methodFor16[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS,
-        P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS
-    ](
-        f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl16[Q, R]
-    implicit def methodFor17[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS,
-        P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS
-    ](
-        f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl17[Q, R]
-    implicit def methodFor18[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS,
-        P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS, P18: PPS
-    ](
-        f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl18[Q, R]
-    implicit def methodFor19[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS,
-        P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS, P18: PPS, P19: PPS
-    ](
-        f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl19[Q, R]
-    implicit def methodFor20[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS,
-        P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS, P18: PPS, P19: PPS, P20: PPS
-    ](
-        f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20) => ServiceCall[
-          Q,
-          R
-        ]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl20[Q, R]
-    implicit def methodFor21[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS,
-        P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS, P18: PPS, P19: PPS, P20: PPS, P21: PPS
-    ](
-        f: (
-            P1,
-            P2,
-            P3,
-            P4,
-            P5,
-            P6,
-            P7,
-            P8,
-            P9,
-            P10,
-            P11,
-            P12,
-            P13,
-            P14,
-            P15,
-            P16,
-            P17,
-            P18,
-            P19,
-            P20,
-            P21
-        ) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl21[Q, R]
-    implicit def methodFor22[
-        Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS,
-        P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS, P18: PPS, P19: PPS, P20: PPS, P21: PPS, P22: PPS
-    ](
-        f: (
-            P1,
-            P2,
-            P3,
-            P4,
-            P5,
-            P6,
-            P7,
-            P8,
-            P9,
-            P10,
-            P11,
-            P12,
-            P13,
-            P14,
-            P15,
-            P16,
-            P17,
-            P18,
-            P19,
-            P20,
-            P21,
-            P22
-        ) => ServiceCall[Q, R]
-    ): ScalaMethodServiceCall[Q, R] = macro methodForImpl22[Q, R]
+    implicit def methodFor1[Q, R, P1: PPS](f: (P1) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl1[Q, R]
+    implicit def methodFor2[Q, R, P1: PPS, P2: PPS](f: (P1, P2) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl2[Q, R]
+    implicit def methodFor3[Q, R, P1: PPS, P2: PPS, P3: PPS](f: (P1, P2, P3) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl3[Q, R]
+    implicit def methodFor4[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS](f: (P1, P2, P3, P4) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl4[Q, R]
+    implicit def methodFor5[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS](f: (P1, P2, P3, P4, P5) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl5[Q, R]
+    implicit def methodFor6[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS](f: (P1, P2, P3, P4, P5, P6) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl6[Q, R]
+    implicit def methodFor7[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS](f: (P1, P2, P3, P4, P5, P6, P7) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl7[Q, R]
+    implicit def methodFor8[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl8[Q, R]
+    implicit def methodFor9[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl9[Q, R]
+    implicit def methodFor10[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl10[Q, R]
+    implicit def methodFor11[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl11[Q, R]
+    implicit def methodFor12[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS, P12: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl12[Q, R]
+    implicit def methodFor13[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS, P12: PPS, P13: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl13[Q, R]
+    implicit def methodFor14[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS, P12: PPS, P13: PPS, P14: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl14[Q, R]
+    implicit def methodFor15[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS, P12: PPS, P13: PPS, P14: PPS, P15: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl15[Q, R]
+    implicit def methodFor16[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS, P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl16[Q, R]
+    implicit def methodFor17[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS, P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl17[Q, R]
+    implicit def methodFor18[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS, P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS, P18: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl18[Q, R]
+    implicit def methodFor19[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS, P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS, P18: PPS, P19: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl19[Q, R]
+    implicit def methodFor20[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS, P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS, P18: PPS, P19: PPS, P20: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl20[Q, R]
+    implicit def methodFor21[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS, P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS, P18: PPS, P19: PPS, P20: PPS, P21: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl21[Q, R]
+    implicit def methodFor22[Q, R, P1: PPS, P2: PPS, P3: PPS, P4: PPS, P5: PPS, P6: PPS, P7: PPS, P8: PPS, P9: PPS, P10: PPS, P11: PPS, P12: PPS, P13: PPS, P14: PPS, P15: PPS, P16: PPS, P17: PPS, P18: PPS, P19: PPS, P20: PPS, P21: PPS, P22: PPS](f: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22) => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl22[Q, R]
+    // format: on
   }
 
   private def locateMethod(clazz: Class[_], name: String): Method = {
@@ -468,369 +347,32 @@ object ServiceSupport {
   )(f: c.Tree)(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
     methodForImpl[Q, R](c)(f)
 
+  // format: off
   // Execute in REPL to generate:
   // (1 to 22).foreach { i => println(s"  def methodForImpl$i[Q, R](c: Context)(f: c.Tree)(" + (1 to i).map(p => s"p$p: c.Expr[PPS[_]]").mkString(", ") + s")(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f" + (1 to i).map(p => s", p$p").mkString("") + ")") }
-  def methodForImpl1[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1)
-  def methodForImpl2[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]])(
-      implicit qType: c.WeakTypeTag[Q],
-      rType: c.WeakTypeTag[R]
-  ): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2)
-  def methodForImpl3[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]])(
-      implicit qType: c.WeakTypeTag[Q],
-      rType: c.WeakTypeTag[R]
-  ): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3)
-  def methodForImpl4[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4)
-  def methodForImpl5[Q, R](
-      c: Context
-  )(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]])(
-      implicit qType: c.WeakTypeTag[Q],
-      rType: c.WeakTypeTag[R]
-  ): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5)
-  def methodForImpl6[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6)
-  def methodForImpl7[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7)
-  def methodForImpl8[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8)
-  def methodForImpl9[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9)
-  def methodForImpl10[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
-  def methodForImpl11[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]],
-      p11: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11)
-  def methodForImpl12[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]],
-      p11: c.Expr[PPS[_]],
-      p12: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12)
-  def methodForImpl13[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]],
-      p11: c.Expr[PPS[_]],
-      p12: c.Expr[PPS[_]],
-      p13: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13)
-  def methodForImpl14[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]],
-      p11: c.Expr[PPS[_]],
-      p12: c.Expr[PPS[_]],
-      p13: c.Expr[PPS[_]],
-      p14: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14)
-  def methodForImpl15[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]],
-      p11: c.Expr[PPS[_]],
-      p12: c.Expr[PPS[_]],
-      p13: c.Expr[PPS[_]],
-      p14: c.Expr[PPS[_]],
-      p15: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15)
-  def methodForImpl16[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]],
-      p11: c.Expr[PPS[_]],
-      p12: c.Expr[PPS[_]],
-      p13: c.Expr[PPS[_]],
-      p14: c.Expr[PPS[_]],
-      p15: c.Expr[PPS[_]],
-      p16: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16)
-  def methodForImpl17[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]],
-      p11: c.Expr[PPS[_]],
-      p12: c.Expr[PPS[_]],
-      p13: c.Expr[PPS[_]],
-      p14: c.Expr[PPS[_]],
-      p15: c.Expr[PPS[_]],
-      p16: c.Expr[PPS[_]],
-      p17: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17)
-  def methodForImpl18[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]],
-      p11: c.Expr[PPS[_]],
-      p12: c.Expr[PPS[_]],
-      p13: c.Expr[PPS[_]],
-      p14: c.Expr[PPS[_]],
-      p15: c.Expr[PPS[_]],
-      p16: c.Expr[PPS[_]],
-      p17: c.Expr[PPS[_]],
-      p18: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18)
-  def methodForImpl19[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]],
-      p11: c.Expr[PPS[_]],
-      p12: c.Expr[PPS[_]],
-      p13: c.Expr[PPS[_]],
-      p14: c.Expr[PPS[_]],
-      p15: c.Expr[PPS[_]],
-      p16: c.Expr[PPS[_]],
-      p17: c.Expr[PPS[_]],
-      p18: c.Expr[PPS[_]],
-      p19: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19)
-  def methodForImpl20[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]],
-      p11: c.Expr[PPS[_]],
-      p12: c.Expr[PPS[_]],
-      p13: c.Expr[PPS[_]],
-      p14: c.Expr[PPS[_]],
-      p15: c.Expr[PPS[_]],
-      p16: c.Expr[PPS[_]],
-      p17: c.Expr[PPS[_]],
-      p18: c.Expr[PPS[_]],
-      p19: c.Expr[PPS[_]],
-      p20: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20)
-  def methodForImpl21[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]],
-      p11: c.Expr[PPS[_]],
-      p12: c.Expr[PPS[_]],
-      p13: c.Expr[PPS[_]],
-      p14: c.Expr[PPS[_]],
-      p15: c.Expr[PPS[_]],
-      p16: c.Expr[PPS[_]],
-      p17: c.Expr[PPS[_]],
-      p18: c.Expr[PPS[_]],
-      p19: c.Expr[PPS[_]],
-      p20: c.Expr[PPS[_]],
-      p21: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(
-      f,
-      p1,
-      p2,
-      p3,
-      p4,
-      p5,
-      p6,
-      p7,
-      p8,
-      p9,
-      p10,
-      p11,
-      p12,
-      p13,
-      p14,
-      p15,
-      p16,
-      p17,
-      p18,
-      p19,
-      p20,
-      p21
-    )
-  def methodForImpl22[Q, R](c: Context)(f: c.Tree)(
-      p1: c.Expr[PPS[_]],
-      p2: c.Expr[PPS[_]],
-      p3: c.Expr[PPS[_]],
-      p4: c.Expr[PPS[_]],
-      p5: c.Expr[PPS[_]],
-      p6: c.Expr[PPS[_]],
-      p7: c.Expr[PPS[_]],
-      p8: c.Expr[PPS[_]],
-      p9: c.Expr[PPS[_]],
-      p10: c.Expr[PPS[_]],
-      p11: c.Expr[PPS[_]],
-      p12: c.Expr[PPS[_]],
-      p13: c.Expr[PPS[_]],
-      p14: c.Expr[PPS[_]],
-      p15: c.Expr[PPS[_]],
-      p16: c.Expr[PPS[_]],
-      p17: c.Expr[PPS[_]],
-      p18: c.Expr[PPS[_]],
-      p19: c.Expr[PPS[_]],
-      p20: c.Expr[PPS[_]],
-      p21: c.Expr[PPS[_]],
-      p22: c.Expr[PPS[_]]
-  )(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] =
-    methodForImpl[Q, R](c)(
-      f,
-      p1,
-      p2,
-      p3,
-      p4,
-      p5,
-      p6,
-      p7,
-      p8,
-      p9,
-      p10,
-      p11,
-      p12,
-      p13,
-      p14,
-      p15,
-      p16,
-      p17,
-      p18,
-      p19,
-      p20,
-      p21,
-      p22
-    )
+  def methodForImpl1[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1)
+  def methodForImpl2[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2)
+  def methodForImpl3[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3)
+  def methodForImpl4[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4)
+  def methodForImpl5[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5)
+  def methodForImpl6[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6)
+  def methodForImpl7[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7)
+  def methodForImpl8[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8)
+  def methodForImpl9[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9)
+  def methodForImpl10[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
+  def methodForImpl11[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]], p11: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11)
+  def methodForImpl12[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]], p11: c.Expr[PPS[_]], p12: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12)
+  def methodForImpl13[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]], p11: c.Expr[PPS[_]], p12: c.Expr[PPS[_]], p13: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13)
+  def methodForImpl14[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]], p11: c.Expr[PPS[_]], p12: c.Expr[PPS[_]], p13: c.Expr[PPS[_]], p14: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14)
+  def methodForImpl15[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]], p11: c.Expr[PPS[_]], p12: c.Expr[PPS[_]], p13: c.Expr[PPS[_]], p14: c.Expr[PPS[_]], p15: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15)
+  def methodForImpl16[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]], p11: c.Expr[PPS[_]], p12: c.Expr[PPS[_]], p13: c.Expr[PPS[_]], p14: c.Expr[PPS[_]], p15: c.Expr[PPS[_]], p16: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16)
+  def methodForImpl17[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]], p11: c.Expr[PPS[_]], p12: c.Expr[PPS[_]], p13: c.Expr[PPS[_]], p14: c.Expr[PPS[_]], p15: c.Expr[PPS[_]], p16: c.Expr[PPS[_]], p17: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17)
+  def methodForImpl18[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]], p11: c.Expr[PPS[_]], p12: c.Expr[PPS[_]], p13: c.Expr[PPS[_]], p14: c.Expr[PPS[_]], p15: c.Expr[PPS[_]], p16: c.Expr[PPS[_]], p17: c.Expr[PPS[_]], p18: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18)
+  def methodForImpl19[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]], p11: c.Expr[PPS[_]], p12: c.Expr[PPS[_]], p13: c.Expr[PPS[_]], p14: c.Expr[PPS[_]], p15: c.Expr[PPS[_]], p16: c.Expr[PPS[_]], p17: c.Expr[PPS[_]], p18: c.Expr[PPS[_]], p19: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19)
+  def methodForImpl20[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]], p11: c.Expr[PPS[_]], p12: c.Expr[PPS[_]], p13: c.Expr[PPS[_]], p14: c.Expr[PPS[_]], p15: c.Expr[PPS[_]], p16: c.Expr[PPS[_]], p17: c.Expr[PPS[_]], p18: c.Expr[PPS[_]], p19: c.Expr[PPS[_]], p20: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20)
+  def methodForImpl21[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]], p11: c.Expr[PPS[_]], p12: c.Expr[PPS[_]], p13: c.Expr[PPS[_]], p14: c.Expr[PPS[_]], p15: c.Expr[PPS[_]], p16: c.Expr[PPS[_]], p17: c.Expr[PPS[_]], p18: c.Expr[PPS[_]], p19: c.Expr[PPS[_]], p20: c.Expr[PPS[_]], p21: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21)
+  def methodForImpl22[Q, R](c: Context)(f: c.Tree)(p1: c.Expr[PPS[_]], p2: c.Expr[PPS[_]], p3: c.Expr[PPS[_]], p4: c.Expr[PPS[_]], p5: c.Expr[PPS[_]], p6: c.Expr[PPS[_]], p7: c.Expr[PPS[_]], p8: c.Expr[PPS[_]], p9: c.Expr[PPS[_]], p10: c.Expr[PPS[_]], p11: c.Expr[PPS[_]], p12: c.Expr[PPS[_]], p13: c.Expr[PPS[_]], p14: c.Expr[PPS[_]], p15: c.Expr[PPS[_]], p16: c.Expr[PPS[_]], p17: c.Expr[PPS[_]], p18: c.Expr[PPS[_]], p19: c.Expr[PPS[_]], p20: c.Expr[PPS[_]], p21: c.Expr[PPS[_]], p22: c.Expr[PPS[_]])(implicit qType: c.WeakTypeTag[Q], rType: c.WeakTypeTag[R]): c.Expr[ScalaMethodServiceCall[Q, R]] = methodForImpl[Q, R](c)(f, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22)
+  // format: on
 
   private def methodForImpl[Request, Response](c: Context)(f: c.Tree, ps: c.Expr[PathParamSerializer[_]]*)(
       implicit requestType: c.WeakTypeTag[Request],
