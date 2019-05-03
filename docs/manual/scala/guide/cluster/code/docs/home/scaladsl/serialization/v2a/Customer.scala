@@ -36,12 +36,16 @@ class CustomerMigration extends JsonSerializerRegistry {
 
     // use arbitrary logic to parse an Address
     // out of the old schema
-    val readOldAddress: Reads[Address] = (
-      (JsPath \ "street").read[String] and
-        (JsPath \ "city").read[String] and
-        (JsPath \ "zipCode").read[String] and
-        (JsPath \ "country").read[String]
-      )(Address)
+    val readOldAddress: Reads[Address] = {
+      (JsPath \ "street")
+        .read[String]
+        .and(
+          (JsPath \ "city").read[String])
+        .and(
+          (JsPath \ "zipCode").read[String])
+        .and(
+          (JsPath \ "country").read[String])(Address)
+    }
 
     override def transform(fromVersion: Int, json: JsObject): JsObject = {
       if (fromVersion < 2) {
