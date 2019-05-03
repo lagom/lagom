@@ -16,9 +16,6 @@ interface NotPublicInterfaceService extends Service {
   ServiceCall<String, String> helloA();
 
   default Descriptor descriptor() {
-    return named("/serviceA").withCalls(
-        call(this::helloA)
-    );
+    return named("/serviceA").withCalls(call(this::helloA));
   }
-
 }
