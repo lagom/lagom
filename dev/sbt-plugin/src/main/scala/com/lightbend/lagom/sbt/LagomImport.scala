@@ -17,7 +17,7 @@ object LagomImport extends LagomImportCompat {
 
   val lagomJavadslApi               = component("lagom-javadsl-api")
   val lagomJavadslClient            = component("lagom-javadsl-client")
-  val lagomJavadslAkkaDiscovery     = component("akka-discovery-service-locator-javadsl")
+  val lagomJavadslAkkaDiscovery     = component("lagom-javadsl-akka-discovery-service-locator")
   val lagomJavadslIntegrationClient = component("lagom-javadsl-integration-client")
   val lagomJavadslCluster           = component("lagom-javadsl-cluster")
   // Scoped to `Provided` because it's needed only at compile-time.
@@ -38,7 +38,7 @@ object LagomImport extends LagomImportCompat {
 
   val lagomScaladslApi                  = component("lagom-scaladsl-api")
   val lagomScaladslClient               = component("lagom-scaladsl-client")
-  val lagomScaladslAkkaDiscovery        = component("akka-discovery-service-locator-scaladsl")
+  val lagomScaladslAkkaDiscovery        = component("lagom-scaladsl-akka-discovery-service-locator")
   val lagomScaladslServer               = component("lagom-scaladsl-server")
   val lagomScaladslDevMode              = component("lagom-scaladsl-dev-mode")
   val lagomScaladslCluster              = component("lagom-scaladsl-cluster")
