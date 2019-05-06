@@ -267,8 +267,9 @@ def macroCompileSettings: Seq[Setting[_]] = Seq(
   }
 )
 
-def mimaSettings: Seq[Setting[_]] = {
-  val versions = Seq("1.5.1")
+def mimaSettings: Seq[Setting[_]] = mimaSettings("1.5.0")
+def mimaSettings(since: String): Seq[Setting[_]] = {
+  val versions = Seq(since)
   Seq(
     mimaPreviousArtifacts := {
       scalaVersionFilter(scalaBinaryVersion.value, versions).map { version =>
@@ -648,7 +649,7 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
 
 lazy val `akka-discovery-service-locator-core` = (project in file("akka-service-locator/core"))
   .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings: _*)
+  .settings(mimaSettings(since = "1.5.1"): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-akka-discovery-service-locator-core",
@@ -658,7 +659,7 @@ lazy val `akka-discovery-service-locator-javadsl` = (project in file("akka-servi
   .dependsOn(`akka-discovery-service-locator-core`)
   .dependsOn(`client-javadsl`)
   .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings: _*)
+  .settings(mimaSettings(since = "1.5.1"): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-javadsl-akka-discovery-service-locator"
@@ -667,7 +668,7 @@ lazy val `akka-discovery-service-locator-scaladsl` = (project in file("akka-serv
   .dependsOn(`akka-discovery-service-locator-core`)
   .dependsOn(`client-scaladsl`)
   .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings: _*)
+  .settings(mimaSettings(since = "1.5.1"): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-akka-discovery-service-locator"
