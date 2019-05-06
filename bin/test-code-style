@@ -24,9 +24,10 @@ runSbt  $EXTRA_TASK \
         mimaReportBinaryIssues
 
 printMessage "VALIDATE SCALA CODE FORMATTING"
-bin/scalafmt --test || (
-  echo "ERROR: Scalafmt test failed, see differences above."
-  echo "To fix, format your sources using bin/scalafmt before submitting a pull request."
+runSbt scalafmt test:scalafmt multi-jvm:scalafmt
+git diff --exit-code || (
+  echo "[error] ERROR: Scalafmt test failed for $1 source."
+  echo "[error] To fix, format your sources using 'sbt scalafmtAll scalafmtAll' before submitting a pull request."
   false
 )
 
