@@ -8,6 +8,8 @@ To use this feature add the following in your project's build:
 
 @[akka-discovery-dependency](code/akka-discovery-dependency.sbt)
 
+The example above uses `LagomVersion.current` in order to guarantee that dependency stays aligned with your current Lagom plugin version.
+
 ## Configuration
 
 Once you have it in your project you can add the component to your `LagomApplicationLoader`.

@@ -20,6 +20,8 @@ In sbt:
 
 @[akka-discovery-dependency](code/akka-discovery-dependency.sbt)
 
+The example above uses `LagomVersion.current` in order to guarantee that dependency stays aligned with your current Lagom plugin version.
+
 ## Configuration
 
 The Guice module [AkkaDiscoveryServiceLocatorModule](api/index.html?com/lightbend/lagom/javadsl/akka/discovery/AkkaDiscoveryServiceLocatorModule.html) will be added by default to your project, but will only wire in the [AkkaDiscoveryServiceLocator](api/index.html?com/lightbend/lagom/javadsl/akka/discovery/AkkaDiscoveryServiceLocator.html) when running in production mode.
