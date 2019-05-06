@@ -7,8 +7,8 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 final class Post extends PersistentEntity {
 
   override type Command = BlogCommand
-  override type Event = BlogEvent
-  override type State = BlogState
+  override type Event   = BlogEvent
+  override type State   = BlogState
 
   override def initialState: BlogState = BlogState.empty
 
@@ -19,8 +19,8 @@ final class Post extends PersistentEntity {
 
   private val initial: Actions = {
     Actions()
-      // Command handlers are invoked for incoming messages (commands).
-      // A command handler must "return" the events to be persisted (if any).
+    // Command handlers are invoked for incoming messages (commands).
+    // A command handler must "return" the events to be persisted (if any).
       .onCommand[AddPost, AddPostDone] {
         case (AddPost(content), ctx, state) =>
           if (content.title == null || content.title.equals("")) {

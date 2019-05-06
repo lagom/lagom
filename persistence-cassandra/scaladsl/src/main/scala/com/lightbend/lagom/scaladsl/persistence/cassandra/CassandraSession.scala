@@ -8,12 +8,15 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.persistence.cassandra.session.CassandraSessionSettings
 import akka.stream.scaladsl
-import akka.{ Done, NotUsed }
+import akka.Done
+import akka.NotUsed
 import com.datastax.driver.core._
-import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraKeyspaceConfig, CassandraReadSideSessionProvider }
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraKeyspaceConfig
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSessionProvider
 
 import scala.annotation.varargs
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 /**
  * Data Access Object for Cassandra. The statements are expressed in
@@ -25,17 +28,25 @@ import scala.concurrent.{ ExecutionContext, Future }
  *
  * All methods are non-blocking.
  */
-final class CassandraSession(system: ActorSystem, settings: CassandraSessionSettings, executionContext: ExecutionContext) {
+final class CassandraSession(
+    system: ActorSystem,
+    settings: CassandraSessionSettings,
+    executionContext: ExecutionContext
+) {
 
   def this(system: ActorSystem) =
     this(
       system,
-      settings = CassandraSessionSettings(system.settings.config.getConfig(
-        "lagom.persistence.read-side.cassandra"
-      )),
-      executionContext = system.dispatchers.lookup(system.settings.config.getString(
-        "lagom.persistence.read-side.use-dispatcher"
-      ))
+      settings = CassandraSessionSettings(
+        system.settings.config.getConfig(
+          "lagom.persistence.read-side.cassandra"
+        )
+      ),
+      executionContext = system.dispatchers.lookup(
+        system.settings.config.getString(
+          "lagom.persistence.read-side.use-dispatcher"
+        )
+      )
     )
 
   private val log = Logging.getLogger(system, getClass)

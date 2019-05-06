@@ -8,7 +8,8 @@ package helloservicespec {
   //#hello-service-spec
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
   import com.lightbend.lagom.scaladsl.testkit.ServiceTest
-  import org.scalatest.{AsyncWordSpec, Matchers}
+  import org.scalatest.AsyncWordSpec
+  import org.scalatest.Matchers
 
   class HelloServiceSpec extends AsyncWordSpec with Matchers {
 
@@ -36,7 +37,9 @@ package helloservicespecshared {
   //#hello-service-spec-shared
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
   import com.lightbend.lagom.scaladsl.testkit.ServiceTest
-  import org.scalatest.{AsyncWordSpec, Matchers, BeforeAndAfterAll}
+  import org.scalatest.AsyncWordSpec
+  import org.scalatest.Matchers
+  import org.scalatest.BeforeAndAfterAll
 
   class HelloServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll {
 
@@ -53,9 +56,9 @@ package helloservicespecshared {
       }
     }
 
-    override protected def beforeAll() = server
+    protected override def beforeAll() = server
 
-    override protected def afterAll() = server.stop()
+    protected override def afterAll() = server.stop()
   }
   //#hello-service-spec-shared
 }
@@ -63,7 +66,8 @@ package helloservicespecshared {
 package stubservices {
 
   import akka.NotUsed
-  import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
+  import com.lightbend.lagom.scaladsl.api.Service
+  import com.lightbend.lagom.scaladsl.api.ServiceCall
   import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
   import com.lightbend.lagom.scaladsl.testkit.ServiceTest
@@ -78,7 +82,8 @@ package stubservices {
     }
   }
 
-  abstract class HelloApplication(ctx: LagomApplicationContext) extends docs.scaladsl.services.lagomapplication.HelloApplication(ctx) {
+  abstract class HelloApplication(ctx: LagomApplicationContext)
+      extends docs.scaladsl.services.lagomapplication.HelloApplication(ctx) {
     lazy val greetingService: GreetingService = serviceClient.implement[GreetingService]
   }
 
@@ -117,7 +122,6 @@ package enablecassandra {
   }
 }
 
-
 package enablejdbc {
 
   import docs.scaladsl.services.lagomapplication.HelloApplication
@@ -135,7 +139,6 @@ package enablejdbc {
     //#enable-jdbc
   }
 }
-
 
 package enablecluster {
 
@@ -160,10 +163,15 @@ package streamedservices {
   import akka.NotUsed
   import akka.stream.scaladsl.Source
   import akka.stream.testkit.scaladsl.TestSink
-  import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
-  import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomServer, LocalServiceLocator}
+  import com.lightbend.lagom.scaladsl.api.Service
+  import com.lightbend.lagom.scaladsl.api.ServiceCall
+  import com.lightbend.lagom.scaladsl.server.LagomApplication
+  import com.lightbend.lagom.scaladsl.server.LagomServer
+  import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
   import com.lightbend.lagom.scaladsl.testkit.ServiceTest
-  import org.scalatest.{AsyncWordSpec, BeforeAndAfterAll, Matchers}
+  import org.scalatest.AsyncWordSpec
+  import org.scalatest.BeforeAndAfterAll
+  import org.scalatest.Matchers
   import play.api.libs.ws.ahc.AhcWSComponents
 
   import scala.concurrent.Future
@@ -215,8 +223,8 @@ package streamedservices {
     }
     //#echo-service-spec
 
-    override protected def beforeAll() = server
-    override protected def afterAll() = server.stop()
+    protected override def beforeAll() = server
+    protected override def afterAll()  = server.stop()
   }
 
 }

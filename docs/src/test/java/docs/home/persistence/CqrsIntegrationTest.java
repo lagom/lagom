@@ -31,23 +31,20 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertThat;
 
-
 public class CqrsIntegrationTest {
   private static TestServer server;
 
   @BeforeClass
   public static void setup() {
-    server = startServer(
-      defaultSetup()
-        .withCassandra()
-        .configureBuilder(b ->
-          b.configure(
-            "akka.test.single-expect-default",
-            ConfigValueFactory.fromAnyRef("19s")
-          )
-        )
-    );
-
+    server =
+        startServer(
+            defaultSetup()
+                .withCassandra()
+                .configureBuilder(
+                    b ->
+                        b.configure(
+                            "akka.test.single-expect-default",
+                            ConfigValueFactory.fromAnyRef("19s"))));
   }
 
   @AfterClass
@@ -71,21 +68,24 @@ public class CqrsIntegrationTest {
   private void eventually(Effect block) {
     new TestKit(server.system()) {
       {
-        awaitAssert(Duration.ofSeconds(20), () -> {
-          try {
-            block.apply();
-          } catch (RuntimeException e) {
-            throw e;
-          } catch (Exception e) {
-            throw new RuntimeException(e);
-          }
-          return null;
-        });
+        awaitAssert(
+            Duration.ofSeconds(20),
+            () -> {
+              try {
+                block.apply();
+              } catch (RuntimeException e) {
+                throw e;
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+              return null;
+            });
       }
     };
   }
 
-  // DISCLAIMER: This tests uses non-uniform timeout values (13s, 14s, 15s, ...) as a good practice to help isolate
+  // DISCLAIMER: This tests uses non-uniform timeout values (13s, 14s, 15s, ...) as a good practice
+  // to help isolate
   // the cause of a timeout in case of test failure.
 
   @Test
@@ -107,32 +107,39 @@ public class CqrsIntegrationTest {
 
     final CassandraSession cassandraSession = server.injector().instanceOf(CassandraSession.class);
 
-    // Eventually (when the BlogEventProcessor is ready), we can create a PreparedStatement to query the
+    // Eventually (when the BlogEventProcessor is ready), we can create a PreparedStatement to query
+    // the
     // blogsummary table via the CassandraSession,
     // e.g. a Service API request
-    eventually(() -> {
-      // the creation of this PreparedStatement will fail while `blogsummary` doesn't exist.
-      cassandraSession.prepare("SELECT id, title FROM blogsummary").toCompletableFuture().get(5, SECONDS);
-    });
+    eventually(
+        () -> {
+          // the creation of this PreparedStatement will fail while `blogsummary` doesn't exist.
+          cassandraSession
+              .prepare("SELECT id, title FROM blogsummary")
+              .toCompletableFuture()
+              .get(5, SECONDS);
+        });
 
-
-    final PreparedStatement selectStmt = cassandraSession.prepare("SELECT id, title FROM blogsummary")
-            .toCompletableFuture().get(15, SECONDS);
+    final PreparedStatement selectStmt =
+        cassandraSession
+            .prepare("SELECT id, title FROM blogsummary")
+            .toCompletableFuture()
+            .get(15, SECONDS);
     final BoundStatement boundSelectStmt = selectStmt.bind();
 
-    eventually(() -> {
-      // stream from a Cassandra select result set, e.g. response to a Service API request
-      final Source<String, ?> queryResult = cassandraSession.select(boundSelectStmt).map(row -> row.getString("title"));
+    eventually(
+        () -> {
+          // stream from a Cassandra select result set, e.g. response to a Service API request
+          final Source<String, ?> queryResult =
+              cassandraSession.select(boundSelectStmt).map(row -> row.getString("title"));
 
-      final TestSubscriber.Probe<String> probe =
-        queryResult
-          .runWith(TestSink.probe(server.system()), server.materializer())
-          .request(10);
-      probe.expectNextUnordered("Title 1", "Title 2");
-      probe.expectComplete();
-    });
-
-
+          final TestSubscriber.Probe<String> probe =
+              queryResult
+                  .runWith(TestSink.probe(server.system()), server.materializer())
+                  .request(10);
+          probe.expectNextUnordered("Title 1", "Title 2");
+          probe.expectComplete();
+        });
 
     // persist something more, the processor will consume the event
     // and update the blogsummary table
@@ -140,28 +147,30 @@ public class CqrsIntegrationTest {
     final AddPost cmd3 = new AddPost(new PostContent("Title 3", "Body"));
     ref3.ask(cmd3).toCompletableFuture().get(16, SECONDS);
 
-    eventually(() -> {
-      final Source<String, ?> queryResult = cassandraSession.select(boundSelectStmt).map(row -> row.getString("title"));
+    eventually(
+        () -> {
+          final Source<String, ?> queryResult =
+              cassandraSession.select(boundSelectStmt).map(row -> row.getString("title"));
 
-      final TestSubscriber.Probe<String> probe =
-        queryResult
-          .runWith(TestSink.probe(server.system()), server.materializer())
-          .request(10);
-      probe.expectNextUnordered("Title 1", "Title 2", "Title 3");
-      probe.expectComplete();
-    });
-
-
+          final TestSubscriber.Probe<String> probe =
+              queryResult
+                  .runWith(TestSink.probe(server.system()), server.materializer())
+                  .request(10);
+          probe.expectNextUnordered("Title 1", "Title 2", "Title 3");
+          probe.expectComplete();
+        });
 
     // For other use cases than updating a read-side table in Cassandra it is possible
     // to consume the events directly.
-    final Source<Pair<BlogEvent, Offset>, ?> eventStream = Source.from(BlogEvent.TAG.allTags())
-            .flatMapMerge(BlogEvent.TAG.numShards(), tag -> registry().eventStream(tag, Offset.NONE));
+    final Source<Pair<BlogEvent, Offset>, ?> eventStream =
+        Source.from(BlogEvent.TAG.allTags())
+            .flatMapMerge(
+                BlogEvent.TAG.numShards(), tag -> registry().eventStream(tag, Offset.NONE));
 
     final TestSubscriber.Probe<BlogEvent> eventProbe =
-      eventStream
-        .map(Pair::first)
-        .runWith(TestSink.probe(server.system()), server.materializer());
+        eventStream
+            .map(Pair::first)
+            .runWith(TestSink.probe(server.system()), server.materializer());
     eventProbe.request(4);
     List<BlogEvent> events = JavaConverters.seqAsJavaList(eventProbe.expectNextN(3));
 
@@ -174,10 +183,7 @@ public class CqrsIntegrationTest {
     ref4.ask(cmd4).toCompletableFuture().get(17, SECONDS);
 
     eventProbe.expectNext(
-      new FiniteDuration(18, TimeUnit.SECONDS),
-      new PostAdded("4", new PostContent("Title 4", "Body"))
-    );
-
+        new FiniteDuration(18, TimeUnit.SECONDS),
+        new PostAdded("4", new PostContent("Title 4", "Body")));
   }
-
 }

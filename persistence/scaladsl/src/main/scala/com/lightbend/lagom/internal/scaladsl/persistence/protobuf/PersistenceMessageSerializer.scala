@@ -21,7 +21,8 @@ import com.lightbend.lagom.internal.scaladsl.persistence.protobuf.msg.{ Persiste
  * messages.
  */
 private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSystem)
-  extends SerializerWithStringManifest with BaseSerializer {
+    extends SerializerWithStringManifest
+    with BaseSerializer {
 
   @volatile
   private var ser: Serialization = _
@@ -30,20 +31,20 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
     ser
   }
 
-  val CommandEnvelopeManifest = "A"
-  val InvalidCommandExceptionManifest = "B"
+  val CommandEnvelopeManifest           = "A"
+  val InvalidCommandExceptionManifest   = "B"
   val UnhandledCommandExceptionManifest = "C"
-  val PersistExceptionManifest = "D"
-  val EnsureActiveManifest = "E"
+  val PersistExceptionManifest          = "D"
+  val EnsureActiveManifest              = "E"
 
   private val emptyByteArray = Array.empty[Byte]
 
   private val fromBinaryMap = collection.immutable.HashMap[String, Array[Byte] ⇒ AnyRef](
-    CommandEnvelopeManifest -> commandEnvelopeFromBinary,
-    InvalidCommandExceptionManifest -> invalidCommandExceptionFromBinary,
+    CommandEnvelopeManifest           -> commandEnvelopeFromBinary,
+    InvalidCommandExceptionManifest   -> invalidCommandExceptionFromBinary,
     UnhandledCommandExceptionManifest -> unhandledCommandExceptionFromBinary,
-    PersistExceptionManifest -> persistExceptionFromBinary,
-    EnsureActiveManifest -> ensureActiveFromBinary
+    PersistExceptionManifest          -> persistExceptionFromBinary,
+    EnsureActiveManifest              -> ensureActiveFromBinary
   )
 
   override def manifest(obj: AnyRef): String = obj match {
@@ -69,15 +70,17 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
   override def fromBinary(bytes: Array[Byte], manifest: String): AnyRef =
     fromBinaryMap.get(manifest) match {
       case Some(f) ⇒ f(bytes)
-      case None ⇒ throw new IllegalArgumentException(
-        s"Unimplemented deserialization of message with manifest [$manifest] in [${getClass.getName}]"
-      )
+      case None ⇒
+        throw new IllegalArgumentException(
+          s"Unimplemented deserialization of message with manifest [$manifest] in [${getClass.getName}]"
+        )
     }
 
   private def commandEnvelopeToProto(commandEnvelope: CommandEnvelope): pm.CommandEnvelope = {
-    val payload = commandEnvelope.payload.asInstanceOf[AnyRef]
+    val payload       = commandEnvelope.payload.asInstanceOf[AnyRef]
     val msgSerializer = serialization.findSerializerFor(payload)
-    val builder = pm.CommandEnvelope.newBuilder()
+    val builder = pm.CommandEnvelope
+      .newBuilder()
       .setEntityId(commandEnvelope.entityId)
       .setEnclosedMessage(ByteString.copyFrom(msgSerializer.toBinary(payload)))
       .setSerializerId(msgSerializer.identifier)
@@ -100,11 +103,13 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
 
   private def commandEnvelopeFromProto(commandEnvelope: pm.CommandEnvelope): CommandEnvelope = {
     val manifest = if (commandEnvelope.hasMessageManifest) commandEnvelope.getMessageManifest.toStringUtf8 else ""
-    val payload = serialization.deserialize(
-      commandEnvelope.getEnclosedMessage.toByteArray,
-      commandEnvelope.getSerializerId,
-      manifest
-    ).get
+    val payload = serialization
+      .deserialize(
+        commandEnvelope.getEnclosedMessage.toByteArray,
+        commandEnvelope.getSerializerId,
+        manifest
+      )
+      .get
     CommandEnvelope(commandEnvelope.getEntityId, payload)
   }
 

@@ -6,20 +6,26 @@ package com.lightbend.lagom.scaladsl.devmode
 
 import java.net.URI
 
-import akka.actor.{ ActorSystem, CoordinatedShutdown }
+import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
 import akka.discovery.ServiceDiscovery
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.registry.{ DevModeServiceDiscovery, ServiceRegistryClient }
-import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
+import com.lightbend.lagom.internal.registry.DevModeServiceDiscovery
+import com.lightbend.lagom.internal.registry.ServiceRegistryClient
+import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceClient
+import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
+import com.lightbend.lagom.internal.scaladsl.client.ScaladslWebSocketClient
 import com.lightbend.lagom.internal.scaladsl.registry._
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
-import com.lightbend.lagom.scaladsl.api.{ ServiceInfo, ServiceLocator }
+import com.lightbend.lagom.scaladsl.api.ServiceInfo
+import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents
 import play.api.Environment
 import play.api.libs.ws.WSClient
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 /**
  * Provides the Lagom dev mode components.
@@ -54,6 +60,7 @@ trait LagomDevModeComponents extends LagomDevModeServiceLocatorComponents {
  * will be automatically provided to the service by Lagom's dev mode build plugins.
  */
 trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
+
   /**
    * If being used in a Lagom service, this will be implemented by
    * [[com.lightbend.lagom.scaladsl.server.LagomServerComponents]], however if it's being
@@ -72,7 +79,9 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
 
     // We need to create our own static service locator since the service locator will depend on this service registry.
     val staticServiceLocator = new ServiceLocator {
-      override def doWithService[T](name: String, serviceCall: Call[_, _])(block: (URI) => Future[T])(implicit ec: ExecutionContext): Future[Option[T]] = {
+      override def doWithService[T](name: String, serviceCall: Call[_, _])(
+          block: (URI) => Future[T]
+      )(implicit ec: ExecutionContext): Future[Option[T]] = {
         if (name == ServiceRegistryClient.ServiceName) {
           block(devModeServiceLocatorUrl).map(Some.apply)
         } else {
@@ -88,8 +97,14 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
       }
     }
 
-    val serviceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo, staticServiceLocator,
-      new ScaladslServiceResolver(new DefaultExceptionSerializer(environment)), None)(executionContext, materializer)
+    val serviceClient = new ScaladslServiceClient(
+      wsClient,
+      scaladslWebSocketClient,
+      serviceInfo,
+      staticServiceLocator,
+      new ScaladslServiceResolver(new DefaultExceptionSerializer(environment)),
+      None
+    )(executionContext, materializer)
 
     serviceClient.implement[ServiceRegistry]
   }

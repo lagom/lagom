@@ -6,7 +6,7 @@ import com.lightbend.lagom.javadsl.immutable.ImmutableStyle;
 import com.lightbend.lagom.serialization.Jsonable;
 import org.immutables.value.Value;
 
-//#add-optional
+// #add-optional
 @Value.Immutable
 @ImmutableStyle
 @JsonDeserialize(as = ItemAdded.class)
@@ -24,6 +24,5 @@ public interface AbstractItemAdded extends Jsonable {
   default String getNote() {
     return "";
   }
-
 }
-//#add-optional
+// #add-optional

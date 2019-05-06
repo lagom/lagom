@@ -19,10 +19,8 @@ trait BlogServiceImpl3 {
   }
 
   //#register-event-processor
-  class BlogServiceImpl(
-    persistentEntityRegistry: PersistentEntityRegistry,
-    readSide: ReadSide,
-    myDatabase: MyDatabase) extends BlogService {
+  class BlogServiceImpl(persistentEntityRegistry: PersistentEntityRegistry, readSide: ReadSide, myDatabase: MyDatabase)
+      extends BlogService {
 
     readSide.register[BlogEvent](new BlogEventProcessor(myDatabase))
     //#register-event-processor
@@ -31,7 +29,8 @@ trait BlogServiceImpl3 {
     override def newPosts(): ServiceCall[NotUsed, Source[PostSummary, _]] =
       ServiceCall { request =>
         val response: Source[PostSummary, NotUsed] =
-          persistentEntityRegistry.eventStream(BlogEvent.Tag.forEntityId(""), NoOffset)
+          persistentEntityRegistry
+            .eventStream(BlogEvent.Tag.forEntityId(""), NoOffset)
             .collect {
               case EventStreamElement(entityId, event: PostAdded, offset) =>
                 PostSummary(event.postId, event.content.title)

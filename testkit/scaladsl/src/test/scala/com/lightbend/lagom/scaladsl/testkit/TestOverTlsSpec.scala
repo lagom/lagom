@@ -8,14 +8,24 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.lightbend.lagom.scaladsl.api.transport.Method
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall }
-import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LagomServer, LocalServiceLocator }
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.ServiceCall
+import com.lightbend.lagom.scaladsl.server.LagomApplication
+import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
+import com.lightbend.lagom.scaladsl.server.LagomServer
+import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
 import com.typesafe.config.ConfigFactory
 import javax.net.ssl.SSLContext
-import org.scalatest.concurrent.{ PatienceConfiguration, ScalaFutures }
-import org.scalatest.time.{ Seconds, Span }
-import org.scalatest.{ Matchers, WordSpec }
-import play.api.libs.ws.ahc.{ AhcWSClientConfigFactory, AhcWSComponents, StandaloneAhcWSClient }
+import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.Seconds
+import org.scalatest.time.Span
+import org.scalatest.Matchers
+import org.scalatest.WordSpec
+import play.api.libs.ws.ahc.AhcWSClientConfigFactory
+import play.api.libs.ws.ahc.AhcWSComponents
+import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
 import scala.concurrent.Future
 
@@ -24,7 +34,7 @@ import scala.concurrent.Future
  */
 class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
 
-  val timeout = PatienceConfiguration.Timeout(Span(5, Seconds))
+  val timeout      = PatienceConfiguration.Timeout(Span(5, Seconds))
   val defaultSetup = ServiceTest.defaultSetup.withCluster(false)
 
   "TestOverTls" when {
@@ -52,7 +62,7 @@ class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
         ServiceTest.withServer(defaultSetup.withSsl())(new TestTlsApplication(_)) { server =>
           // The client's provided by Lagom's ServiceTest default to use HTTP
           val client: TestTlsService = server.serviceClient.implement[TestTlsService]
-          val response = client.sampleCall().invoke()
+          val response               = client.sampleCall().invoke()
           whenReady(response, timeout) { r =>
             r should be("sample response")
           }
@@ -88,7 +98,7 @@ class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
 
   private def buildCustomWS(sslContext: SSLContext) = {
     implicit val system = ActorSystem("test-client")
-    implicit val mat = ActorMaterializer()
+    implicit val mat    = ActorMaterializer()
     // This setting enables the use of `SSLContext.setDefault` on the following line.
     val sslConfig = ConfigFactory.parseString("play.ws.ssl.default = true").withFallback(ConfigFactory.load())
     SSLContext.setDefault(sslContext)
@@ -105,7 +115,7 @@ trait TestTlsService extends Service {
 
   def sampleCall(): ServiceCall[NotUsed, String]
 
-  override final def descriptor: Descriptor =
+  final override def descriptor: Descriptor =
     named("test-tls")
       .withCalls(
         restCall(Method.GET, "/api/sample", sampleCall _)
@@ -119,11 +129,11 @@ class TestTlsServiceImpl() extends TestTlsService {
   }
 }
 
-class TestTlsApplication(context: LagomApplicationContext) extends LagomApplication(context)
-  with LocalServiceLocator
-  with AhcWSComponents {
+class TestTlsApplication(context: LagomApplicationContext)
+    extends LagomApplication(context)
+    with LocalServiceLocator
+    with AhcWSComponents {
 
   override lazy val lagomServer: LagomServer = serverFor[TestTlsService](new TestTlsServiceImpl())
 
 }
-

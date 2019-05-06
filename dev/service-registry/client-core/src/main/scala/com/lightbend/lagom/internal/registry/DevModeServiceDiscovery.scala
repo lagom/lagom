@@ -4,26 +4,31 @@
 
 package com.lightbend.lagom.internal.registry
 
-import java.net.{ InetAddress, URI }
+import java.net.InetAddress
+import java.net.URI
 
 import akka.actor.ActorSystem
 import akka.discovery.ServiceDiscovery._
-import akka.discovery.{ Discovery, Lookup, ServiceDiscovery }
+import akka.discovery.Discovery
+import akka.discovery.Lookup
+import akka.discovery.ServiceDiscovery
 
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ ExecutionContext, Future, Promise }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.Promise
 
 private[lagom] class DevModeServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
   private val clientPromise = Promise[ServiceRegistryClient]
 
-  implicit private val ec: ExecutionContext = system.dispatcher
+  private implicit val ec: ExecutionContext = system.dispatcher
 
   def setServiceRegistryClient(client: ServiceRegistryClient): Unit = clientPromise.success(client)
 
   override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] =
     for {
       client <- clientPromise.future
-      uris <- client.locateAll(lookup.serviceName, lookup.portName)
+      uris   <- client.locateAll(lookup.serviceName, lookup.portName)
     } yield Resolved(lookup.serviceName, uris.map(toResolvedTarget))
 
   private def toResolvedTarget(uri: URI) =

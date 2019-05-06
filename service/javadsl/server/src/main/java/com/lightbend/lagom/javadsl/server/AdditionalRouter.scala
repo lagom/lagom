@@ -42,15 +42,18 @@ object AdditionalRouter {
       .map(oldPrefix => newPrefix + "/" + oldPrefix)
       .orElse(Option(newPrefix))
   }
-  private[lagom] def wireRouters(injector: Injector, additionalRouters: util.List[AdditionalRouter]): util.List[Router] = {
+  private[lagom] def wireRouters(
+      injector: Injector,
+      additionalRouters: util.List[AdditionalRouter]
+  ): util.List[Router] = {
 
     // modifies the Router in case a prefix is defined
     // otherwise returns the router as is
     def applyPrefix(router: Router, prefix: Option[String]): Router =
       prefix.map(router.withPrefix).getOrElse(router)
 
-    additionalRouters.asScala.foldLeft(immutable.Seq.empty[Router]) {
-      (routers, ar) =>
+    additionalRouters.asScala
+      .foldLeft(immutable.Seq.empty[Router]) { (routers, ar) =>
         ar match {
           case ar: InstanceBased =>
             routers :+ applyPrefix(ar.router, ar.prefix)
@@ -59,7 +62,7 @@ object AdditionalRouter {
             val ins = injector.instanceOf(ar.classType)
             routers :+ applyPrefix(ins, ar.prefix)
         }
-    }.asJava
+      }
+      .asJava
   }
 }
-

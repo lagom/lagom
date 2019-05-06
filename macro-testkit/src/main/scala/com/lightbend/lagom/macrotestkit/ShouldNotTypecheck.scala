@@ -32,7 +32,8 @@ final class ShouldNotTypecheck(val c: blackbox.Context) {
         (Pattern.compile(s, Pattern.CASE_INSENSITIVE), "Expected error matching: " + s)
     }
 
-    try c.typecheck(c.parse("{ " + codeStr + " }")) catch {
+    try c.typecheck(c.parse("{ " + codeStr + " }"))
+    catch {
       case e: TypecheckException =>
         val msg = e.getMessage
         if (!expPat.matcher(msg).matches) {

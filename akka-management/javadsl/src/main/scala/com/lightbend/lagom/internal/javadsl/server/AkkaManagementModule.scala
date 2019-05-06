@@ -4,12 +4,18 @@
 
 package com.lightbend.lagom.internal.javadsl.server
 
-import akka.actor.{ ActorSystem, CoordinatedShutdown }
+import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
 import com.lightbend.lagom.internal.akka.management.AkkaManagementTrigger
 import com.typesafe.config.Config
-import javax.inject.{ Inject, Provider, Singleton }
-import play.api.inject.{ Binding, Module }
-import play.api.{ Configuration, Environment, Mode }
+import javax.inject.Inject
+import javax.inject.Provider
+import javax.inject.Singleton
+import play.api.inject.Binding
+import play.api.inject.Module
+import play.api.Configuration
+import play.api.Environment
+import play.api.Mode
 
 import scala.concurrent.ExecutionContext
 
@@ -23,14 +29,13 @@ private[lagom] class AkkaManagementModule extends Module {
 }
 
 @Singleton
-private[lagom] class AkkaManagementProvider @Inject() (
-  config:              Config,
-  actorSystem:         ActorSystem,
-  coordinatedShutdown: CoordinatedShutdown,
-  environment:         Environment,
-  executionContext:    ExecutionContext
-)
-  extends Provider[AkkaManagementTrigger] {
+private[lagom] class AkkaManagementProvider @Inject()(
+    config: Config,
+    actorSystem: ActorSystem,
+    coordinatedShutdown: CoordinatedShutdown,
+    environment: Environment,
+    executionContext: ExecutionContext
+) extends Provider[AkkaManagementTrigger] {
 
   override def get(): AkkaManagementTrigger = {
     val instance = new AkkaManagementTrigger(config, actorSystem, coordinatedShutdown)(executionContext)
@@ -41,4 +46,3 @@ private[lagom] class AkkaManagementProvider @Inject() (
   }
 
 }
-

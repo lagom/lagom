@@ -8,4 +8,6 @@ import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceSp
 import com.lightbend.lagom.scaladsl.persistence.testkit.AbstractEmbeddedPersistentActorSpec
 import com.lightbend.lagom.scaladsl.playjson.EmptyJsonSerializerRegistry
 
-class EmbeddedCassandraPersistentActorSpec extends CassandraPersistenceSpec(EmptyJsonSerializerRegistry) with AbstractEmbeddedPersistentActorSpec
+class EmbeddedCassandraPersistentActorSpec
+    extends CassandraPersistenceSpec(EmptyJsonSerializerRegistry)
+    with AbstractEmbeddedPersistentActorSpec

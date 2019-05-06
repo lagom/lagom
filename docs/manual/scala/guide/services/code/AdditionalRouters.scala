@@ -1,13 +1,11 @@
 package docs.scaladsl.services
 
-
 import akka.NotUsed
 import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.ServiceAcl
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import play.api.routing.SimpleRouter
 import scala.concurrent.Future
-
 
 package additionalrouters {
 
@@ -18,7 +16,7 @@ package additionalrouters {
 
       def hello(id: String): ServiceCall[NotUsed, String]
 
-      override final def descriptor = {
+      final override def descriptor = {
         import Service._
         named("hello")
           .withCalls(
@@ -49,37 +47,38 @@ package additionalrouters {
     import play.api.libs.ws.ahc.AhcWSComponents
     import com.softwaremill.macwire._
 
-
     package sompeplayrouter {
 
       import play.api.routing.Router.Routes
 
-      class SomePlayRouter extends SimpleRouter{
+      class SomePlayRouter extends SimpleRouter {
         override def routes: Routes = ???
       }
 
       abstract class HelloApplication(context: LagomApplicationContext)
-        extends LagomApplication(context)
+          extends LagomApplication(context)
           with AhcWSComponents {
 
         //#lagom-application-some-play-router
         override lazy val lagomServer =
-            serverFor[HelloService](wire[HelloServiceImpl])
+          serverFor[HelloService](wire[HelloServiceImpl])
             .additionalRouter(wire[SomePlayRouter])
         //#lagom-application-some-play-router
       }
     }
 
-
     package fileuploadrouter {
       //#file-upload-router
-      import play.api.mvc.{DefaultActionBuilder, PlayBodyParsers, Results}
+      import play.api.mvc.DefaultActionBuilder
+      import play.api.mvc.PlayBodyParsers
+      import play.api.mvc.Results
       import play.api.routing.Router
       import play.api.routing.sird._
 
       class FileUploadRouter(action: DefaultActionBuilder, parser: PlayBodyParsers) {
         val router = Router.from {
-          case POST(p"/api/files") => action(parser.multipartFormData) { request =>
+          case POST(p"/api/files") =>
+            action(parser.multipartFormData) { request =>
               val filePaths = request.body.files.map(_.ref.getAbsolutePath)
               Results.Ok(filePaths.mkString("Uploaded[", ", ", "]"))
             }
@@ -87,19 +86,17 @@ package additionalrouters {
       }
       //#file-upload-router
 
-
       abstract class HelloApplication(context: LagomApplicationContext)
-        extends LagomApplication(context)
+          extends LagomApplication(context)
           with AhcWSComponents {
 
         //#lagom-application-file-upload
         override lazy val lagomServer =
-            serverFor[HelloService](wire[HelloServiceImpl])
-              .additionalRouter(wire[FileUploadRouter].router)
+          serverFor[HelloService](wire[HelloServiceImpl])
+            .additionalRouter(wire[FileUploadRouter].router)
         //#lagom-application-file-upload
       }
     }
 
   }
 }
-

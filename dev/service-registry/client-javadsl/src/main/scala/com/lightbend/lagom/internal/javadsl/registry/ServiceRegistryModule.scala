@@ -9,21 +9,33 @@ import java.util.Optional
 import java.util.concurrent.CompletionStage
 import java.util.function.{ Function => JFunction }
 
-import javax.inject.{ Inject, Provider, Singleton }
+import javax.inject.Inject
+import javax.inject.Provider
+import javax.inject.Singleton
 import akka.actor.ActorSystem
 import akka.discovery.ServiceDiscovery
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.javadsl.api.broker.NoTopicFactoryProvider
-import com.lightbend.lagom.internal.javadsl.client.{ JavadslServiceClientImplementor, JavadslWebSocketClient, ServiceClientLoader }
-import com.lightbend.lagom.internal.registry.{ DevModeServiceDiscovery, ServiceRegistryClient }
+import com.lightbend.lagom.internal.javadsl.client.JavadslServiceClientImplementor
+import com.lightbend.lagom.internal.javadsl.client.JavadslWebSocketClient
+import com.lightbend.lagom.internal.javadsl.client.ServiceClientLoader
+import com.lightbend.lagom.internal.registry.DevModeServiceDiscovery
+import com.lightbend.lagom.internal.registry.ServiceRegistryClient
 import com.lightbend.lagom.javadsl.api.Descriptor.Call
-import com.lightbend.lagom.javadsl.api.{ ServiceInfo, ServiceLocator }
-import com.lightbend.lagom.javadsl.jackson.{ JacksonExceptionSerializer, JacksonSerializerFactory }
-import play.api.inject.{ Binding, Module }
+import com.lightbend.lagom.javadsl.api.ServiceInfo
+import com.lightbend.lagom.javadsl.api.ServiceLocator
+import com.lightbend.lagom.javadsl.jackson.JacksonExceptionSerializer
+import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory
+import play.api.inject.Binding
+import play.api.inject.Module
 import play.api.libs.ws.WSClient
-import play.api.{ Configuration, Environment, Logger, Mode }
+import play.api.Configuration
+import play.api.Environment
+import play.api.Logger
+import play.api.Mode
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 class ServiceRegistryModule(environment: Environment, configuration: Configuration) extends Module {
   private val logger = Logger(this.getClass)
@@ -40,7 +52,6 @@ class ServiceRegistryModule(environment: Environment, configuration: Configurati
         bind[ServiceRegistry].to(new ServiceRegistryProvider),
         bind[ServiceRegistryClient].to[JavaServiceRegistryClient],
         bind[ServiceLocator].to[ServiceRegistryServiceLocator],
-
         // This needs to be instantiated eagerly to ensure it initializes for
         // Akka libraries that use service discovery without dependency injection.
         bind[ServiceDiscovery].toProvider[DevModeSimpleServiceDiscoveryProvider].eagerly()
@@ -57,8 +68,8 @@ class ServiceRegistryModule(environment: Environment, configuration: Configurati
 
   protected def createDevServiceLocatorConfig: ServiceLocatorConfig = {
     val serviceLocatorURLKey = "lagom.service-locator.url"
-    val config = configuration.underlying
-    val url = config.getString(serviceLocatorURLKey)
+    val config               = configuration.underlying
+    val url                  = config.getString(serviceLocatorURLKey)
     ServiceLocatorConfig(new URI(url))
   }
 }
@@ -68,21 +79,27 @@ class ServiceRegistryModule(environment: Environment, configuration: Configurati
  */
 @Singleton
 class ServiceRegistryProvider extends Provider[ServiceRegistry] {
-  @Inject private var config: ServiceLocatorConfig = _
-  @Inject private var ws: WSClient = _
+  @Inject private var config: ServiceLocatorConfig            = _
+  @Inject private var ws: WSClient                            = _
   @Inject private var webSocketClient: JavadslWebSocketClient = _
-  @Inject private var serviceInfo: ServiceInfo = _
-  @Inject private var environment: Environment = _
-  @Inject private var ec: ExecutionContext = _
-  @Inject private var mat: Materializer = _
+  @Inject private var serviceInfo: ServiceInfo                = _
+  @Inject private var environment: Environment                = _
+  @Inject private var ec: ExecutionContext                    = _
+  @Inject private var mat: Materializer                       = _
 
-  @Inject private var jacksonSerializerFactory: JacksonSerializerFactory = _
+  @Inject private var jacksonSerializerFactory: JacksonSerializerFactory     = _
   @Inject private var jacksonExceptionSerializer: JacksonExceptionSerializer = _
 
   lazy val get = {
     val serviceLocator = new ClientServiceLocator(config)
-    val implementor = new JavadslServiceClientImplementor(ws, webSocketClient, serviceInfo, serviceLocator, environment,
-      NoTopicFactoryProvider)(ec, mat)
+    val implementor = new JavadslServiceClientImplementor(
+      ws,
+      webSocketClient,
+      serviceInfo,
+      serviceLocator,
+      environment,
+      NoTopicFactoryProvider
+    )(ec, mat)
     val loader = new ServiceClientLoader(jacksonSerializerFactory, jacksonExceptionSerializer, environment, implementor)
     loader.loadServiceClient(classOf[ServiceRegistry])
   }
@@ -91,7 +108,7 @@ class ServiceRegistryProvider extends Provider[ServiceRegistry] {
    * The service locator implementation used by the ServiceRegistry's client implementation.
    */
   private class ClientServiceLocator(config: ServiceLocatorConfig) extends BaseServiceLocator {
-    override protected def lookup(name: String): Future[Optional[URI]] = {
+    protected override def lookup(name: String): Future[Optional[URI]] = {
       require(name == ServiceRegistry.SERVICE_NAME)
       Future.successful(Optional.of(config.url))
     }
@@ -106,21 +123,27 @@ abstract class BaseServiceLocator extends ServiceLocator {
 
   override def locate(name: String, serviceCall: Call[_, _]): CompletionStage[Optional[URI]] = lookup(name).toJava
 
-  override def doWithService[T](name: String, serviceCall: Call[_, _], block: JFunction[URI, CompletionStage[T]]): CompletionStage[Optional[T]] = {
+  override def doWithService[T](
+      name: String,
+      serviceCall: Call[_, _],
+      block: JFunction[URI, CompletionStage[T]]
+  ): CompletionStage[Optional[T]] = {
     val maybeLocation = lookup(name)
-    maybeLocation.flatMap(maybeURI => {
-      if (maybeURI.isPresent()) block.apply(maybeURI.get()).toScala.map(Optional.of(_))
-      else Future.successful(Optional.empty[T])
-    }).toJava
+    maybeLocation
+      .flatMap(maybeURI => {
+        if (maybeURI.isPresent()) block.apply(maybeURI.get()).toScala.map(Optional.of(_))
+        else Future.successful(Optional.empty[T])
+      })
+      .toJava
   }
 
   protected def lookup(name: String): Future[Optional[URI]]
 }
 
 @Singleton
-private final class DevModeSimpleServiceDiscoveryProvider @Inject() (
-  actorSystem:           ActorSystem,
-  serviceRegistryClient: ServiceRegistryClient
+private final class DevModeSimpleServiceDiscoveryProvider @Inject()(
+    actorSystem: ActorSystem,
+    serviceRegistryClient: ServiceRegistryClient
 ) extends Provider[DevModeServiceDiscovery] {
 
   override def get(): DevModeServiceDiscovery = {

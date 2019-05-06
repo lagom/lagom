@@ -31,72 +31,84 @@ import com.lightbend.lagom.internal.javadsl.registry.RegisteredService;
 
 public class ServiceRegistryImpl implements ServiceRegistry {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRegistryImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRegistryImpl.class);
 
-	private final Duration timeout = Duration.ofSeconds(5);
-	private final ActorRef registry;
+  private final Duration timeout = Duration.ofSeconds(5);
+  private final ActorRef registry;
 
-	@Inject
-	public ServiceRegistryImpl(@Named(ServiceRegistryModule.SERVICE_REGISTRY_ACTOR) ActorRef registry) {
-		this.registry = registry;
-	}
+  @Inject
+  public ServiceRegistryImpl(
+      @Named(ServiceRegistryModule.SERVICE_REGISTRY_ACTOR) ActorRef registry) {
+    this.registry = registry;
+  }
 
-	@Override
-	public ServiceCall<ServiceRegistryService, NotUsed> register(String name) {
-		return service -> {
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("register invoked, name=[" + name + "], request=[" + service + "]");
+  @Override
+  public ServiceCall<ServiceRegistryService, NotUsed> register(String name) {
+    return service -> {
+      if (LOGGER.isDebugEnabled())
+        LOGGER.debug("register invoked, name=[" + name + "], request=[" + service + "]");
       return Patterns.ask(registry, new Register(name, service), timeout)
-					.thenApply(done -> NotUsed.getInstance());
-		};
-	}
+          .thenApply(done -> NotUsed.getInstance());
+    };
+  }
 
-	@Override
-	public ServiceCall<NotUsed, NotUsed> unregister(String name) {
-		return request -> {
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("unregister invoked, name=[" + name + "], request=[" + request + "]");
-			registry.tell(new Remove(name), null);
-			return CompletableFuture.completedFuture(NotUsed.getInstance());
-		};
-	}
+  @Override
+  public ServiceCall<NotUsed, NotUsed> unregister(String name) {
+    return request -> {
+      if (LOGGER.isDebugEnabled())
+        LOGGER.debug("unregister invoked, name=[" + name + "], request=[" + request + "]");
+      registry.tell(new Remove(name), null);
+      return CompletableFuture.completedFuture(NotUsed.getInstance());
+    };
+  }
 
-	@Override
-    public ServiceCall<NotUsed, URI> lookup(String serviceName, Optional<String> portName){
-		return request -> {
-			if (LOGGER.isDebugEnabled())
-                LOGGER.debug("locate invoked, name=[" + serviceName + "] and portName=[" + portName + "] . request=[" + request + "]");
-			return Patterns.ask(registry, new Lookup(serviceName, OptionConverters.toScala(portName)), timeout).thenApply(result -> {
-				@SuppressWarnings("unchecked")
-				Optional<URI> location = OptionConverters.toJava((Option<URI>) result);
-				logServiceLookupResult(serviceName, location);
-				if (location.isPresent()) {
-					return location.get();
-				} else {
-                    throw new com.lightbend.lagom.javadsl.api.transport.NotFound("Can't find service " + serviceName + " with port" + portName);
-				}
-			});
-		};
-	}
+  @Override
+  public ServiceCall<NotUsed, URI> lookup(String serviceName, Optional<String> portName) {
+    return request -> {
+      if (LOGGER.isDebugEnabled())
+        LOGGER.debug(
+            "locate invoked, name=["
+                + serviceName
+                + "] and portName=["
+                + portName
+                + "] . request=["
+                + request
+                + "]");
+      return Patterns.ask(
+              registry, new Lookup(serviceName, OptionConverters.toScala(portName)), timeout)
+          .thenApply(
+              result -> {
+                @SuppressWarnings("unchecked")
+                Optional<URI> location = OptionConverters.toJava((Option<URI>) result);
+                logServiceLookupResult(serviceName, location);
+                if (location.isPresent()) {
+                  return location.get();
+                } else {
+                  throw new com.lightbend.lagom.javadsl.api.transport.NotFound(
+                      "Can't find service " + serviceName + " with port" + portName);
+                }
+              });
+    };
+  }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public ServiceCall<NotUsed, PSequence<RegisteredService>> registeredServices() {
-		return unusedRequest -> {
-			return Patterns.ask(registry, GetRegisteredServices$.MODULE$, timeout)
-					.thenApply( result -> {
-						RegisteredServices registeredServices = (RegisteredServices) result;
-						return registeredServices.services();
-				    });
-		};
-	}
+  @SuppressWarnings("unchecked")
+  @Override
+  public ServiceCall<NotUsed, PSequence<RegisteredService>> registeredServices() {
+    return unusedRequest -> {
+      return Patterns.ask(registry, GetRegisteredServices$.MODULE$, timeout)
+          .thenApply(
+              result -> {
+                RegisteredServices registeredServices = (RegisteredServices) result;
+                return registeredServices.services();
+              });
+    };
+  }
 
-	private void logServiceLookupResult(String name, Optional<URI> location) {
-		if (LOGGER.isDebugEnabled()) {
-			if (location.isPresent())
-				LOGGER.debug("Location of service name=[" + name + "] is " + location.get());
-			else
-				LOGGER.debug("Service name=[" + name + "] has not been registered");
-		}
-	}
+  private void logServiceLookupResult(String name, Optional<URI> location) {
+    if (LOGGER.isDebugEnabled()) {
+      if (location.isPresent())
+        LOGGER.debug("Location of service name=[" + name + "] is " + location.get());
+      else LOGGER.debug("Service name=[" + name + "] has not been registered");
+    }
+  }
 }

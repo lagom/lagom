@@ -12,11 +12,13 @@ import com.lightbend.lagom.persistence.ActorSystemSpec
 import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.{ Duration, DurationInt, FiniteDuration }
+import scala.concurrent.duration.Duration
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.FiniteDuration
 
 class RetrySpec extends ActorSystemSpec with ScalaFutures {
   implicit val executionContext: ExecutionContext = system.dispatcher
-  implicit val scheduler: Scheduler = system.scheduler
+  implicit val scheduler: Scheduler               = system.scheduler
 
   lazy val exception = new RuntimeException("fail")
 
@@ -60,7 +62,7 @@ class RetrySpec extends ActorSystemSpec with ScalaFutures {
       val retryCount = new AtomicInteger(0)
       val maxRetries = 3
       val retry = new Retry(10.milliseconds, 2.0, maxRetries) {
-        override protected def onRetry(throwable: Throwable, delay: FiniteDuration, remainingRetries: Int): Unit = {
+        protected override def onRetry(throwable: Throwable, delay: FiniteDuration, remainingRetries: Int): Unit = {
           val retries = retryCount.getAndIncrement()
           retries match {
             case 0 =>
@@ -84,11 +86,11 @@ class RetrySpec extends ActorSystemSpec with ScalaFutures {
     }
 
     "delay each retry" in {
-      val attemptCount = new AtomicInteger(0)
-      val maxRetries = 3
+      val attemptCount                         = new AtomicInteger(0)
+      val maxRetries                           = 3
       @volatile var lastAttemptTimestamp: Long = System.nanoTime
       val future = Retry(100.milliseconds, 2.0, maxRetries) {
-        val attempts = attemptCount.getAndIncrement()
+        val attempts                = attemptCount.getAndIncrement()
         val elapsedSinceLastAttempt = Duration.fromNanos(System.nanoTime - lastAttemptTimestamp)
         attempts match {
           case 0 => elapsedSinceLastAttempt should be < 100.milliseconds // more or less immediately

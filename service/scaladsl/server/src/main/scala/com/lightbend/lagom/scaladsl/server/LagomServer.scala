@@ -5,14 +5,20 @@
 package com.lightbend.lagom.scaladsl.server
 
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.scaladsl.server.{ ScaladslServerMacroImpl, ScaladslServiceRouter }
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceInfo }
+import com.lightbend.lagom.internal.scaladsl.server.ScaladslServerMacroImpl
+import com.lightbend.lagom.internal.scaladsl.server.ScaladslServiceRouter
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.ServiceInfo
 import com.lightbend.lagom.scaladsl.client.ServiceResolver
 import com.lightbend.lagom.scaladsl.server.status.MetricsServiceComponents
 import play.api.http.HttpConfiguration
-import play.api.mvc.{ Handler, PlayBodyParsers, RequestHeader }
+import play.api.mvc.Handler
+import play.api.mvc.PlayBodyParsers
+import play.api.mvc.RequestHeader
 import play.api.routing.Router.Routes
-import play.api.routing.{ Router, SimpleRouter }
+import play.api.routing.Router
+import play.api.routing.SimpleRouter
 
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
@@ -54,9 +60,9 @@ sealed trait LagomServer {
   final def additionalRouter(otherRouter: Router) = {
     val self = this
     new LagomServer {
-      override val name: String = self.name
+      override val name: String                                           = self.name
       override val serviceBindings: immutable.Seq[LagomServiceBinding[_]] = self.serviceBindings
-      override def router: LagomServiceRouter = self.router.additionalRouter(otherRouter)
+      override def router: LagomServiceRouter                             = self.router.additionalRouter(otherRouter)
     }
   }
 }
@@ -93,7 +99,10 @@ trait LagomServiceRouter extends Router {
 }
 
 object LagomServer {
-  @deprecated("Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Use LagomServerComponents.serverFor instead", "1.3.3")
+  @deprecated(
+    "Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Use LagomServerComponents.serverFor instead",
+    "1.3.3"
+  )
   def forServices(bindings: LagomServiceBinding[_]*): LagomServer = {
     new LagomServer {
       override val serviceBindings: immutable.Seq[LagomServiceBinding[_]] = bindings.to[immutable.Seq]
@@ -117,8 +126,8 @@ object LagomServer {
   def forService(binding: LagomServiceBinding[_]): LagomServer = {
     new LagomServer {
       override val serviceBindings = List[LagomServiceBinding[_]](binding)
-      override val name = binding.descriptor.name
-      override lazy val router = binding.router
+      override val name            = binding.descriptor.name
+      override lazy val router     = binding.router
     }
   }
 }
@@ -130,7 +139,8 @@ trait LagomServerComponents extends MetricsServiceComponents {
   def executionContext: ExecutionContext
   def serviceResolver: ServiceResolver
 
-  lazy val lagomServerBuilder: LagomServerBuilder = new LagomServerBuilder(httpConfiguration, playBodyParsers, serviceResolver)(materializer, executionContext)
+  lazy val lagomServerBuilder: LagomServerBuilder =
+    new LagomServerBuilder(httpConfiguration, playBodyParsers, serviceResolver)(materializer, executionContext)
 
   @deprecated("Use LagomServerComponents#serverFor instead", "1.5.0")
   protected def bindService[T <: Service]: LagomServiceBinder[T] = macro ScaladslServerMacroImpl.createBinder[T]
@@ -144,11 +154,14 @@ trait LagomServerComponents extends MetricsServiceComponents {
   protected def serverFor[T <: Service](serviceFactory: => T): LagomServer = macro ScaladslServerMacroImpl.simpleBind[T]
 
   lazy val serviceInfo: ServiceInfo = {
-    val locatableServices = lagomServer.serviceBindings.map(_.descriptor).collect {
-      case locatable if locatable.locatableService =>
-        val resolved = serviceResolver.resolve(locatable)
-        resolved.name -> resolved.acls
-    }.toMap
+    val locatableServices = lagomServer.serviceBindings
+      .map(_.descriptor)
+      .collect {
+        case locatable if locatable.locatableService =>
+          val resolved = serviceResolver.resolve(locatable)
+          resolved.name -> resolved.acls
+      }
+      .toMap
     ServiceInfo(lagomServer.name, locatableServices)
   }
   lazy val router: Router = lagomServer.router
@@ -156,9 +169,16 @@ trait LagomServerComponents extends MetricsServiceComponents {
   def lagomServer: LagomServer
 }
 
-final class LagomServerBuilder(httpConfiguration: HttpConfiguration, parsers: PlayBodyParsers, serviceResolver: ServiceResolver)(implicit materializer: Materializer, executionContext: ExecutionContext) {
+final class LagomServerBuilder(
+    httpConfiguration: HttpConfiguration,
+    parsers: PlayBodyParsers,
+    serviceResolver: ServiceResolver
+)(implicit materializer: Materializer, executionContext: ExecutionContext) {
   def buildRouter(service: Service): LagomServiceRouter = {
-    new ScaladslServiceRouter(serviceResolver.resolve(service.descriptor), service, httpConfiguration, parsers)(executionContext, materializer)
+    new ScaladslServiceRouter(serviceResolver.resolve(service.descriptor), service, httpConfiguration, parsers)(
+      executionContext,
+      materializer
+    )
   }
 }
 
@@ -173,14 +193,17 @@ sealed trait LagomServiceBinder[T <: Service] {
  * Internal API used by AST generated by the serverFor macro.
  */
 object LagomServiceBinder {
-  def apply[T <: Service: ClassTag](lagomServerBuilder: LagomServerBuilder, descriptor: Descriptor): LagomServiceBinder[T] = {
+  def apply[T <: Service: ClassTag](
+      lagomServerBuilder: LagomServerBuilder,
+      descriptor: Descriptor
+  ): LagomServiceBinder[T] = {
     val _descriptor = descriptor
     new LagomServiceBinder[T] {
       override def to(serviceFactory: => T): LagomServiceBinding[T] = {
         new LagomServiceBinding[T] {
           override lazy val router: LagomServiceRouter = lagomServerBuilder.buildRouter(service)
-          override lazy val service: T = serviceFactory
-          override val descriptor: Descriptor = _descriptor
+          override lazy val service: T                 = serviceFactory
+          override val descriptor: Descriptor          = _descriptor
         }
       }
     }

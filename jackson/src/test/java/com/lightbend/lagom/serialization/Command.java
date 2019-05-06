@@ -47,5 +47,4 @@ public interface Command extends Jsonable {
     @JsonProperty(value = "isPublished")
     boolean isPublished();
   }
-
 }

@@ -7,7 +7,7 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 public interface HelloEvent extends Jsonable, AggregateEvent<HelloEvent> {
 
   @Override
-  default public AggregateEventTag<HelloEvent> aggregateTag() {
+  public default AggregateEventTag<HelloEvent> aggregateTag() {
     return HelloEventTag.INSTANCE;
   }
 
