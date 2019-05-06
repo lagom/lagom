@@ -104,8 +104,7 @@ public class AdditionalRouters {
                     request -> {
                       Http.MultipartFormData<File> body = request.body().asMultipartFormData();
                       String response =
-                          body.getFiles()
-                              .stream()
+                          body.getFiles().stream()
                               .map(f -> f.getRef().getAbsolutePath())
                               .collect(joining(",", "Uploaded[", "]"));
                       return ok(response);
