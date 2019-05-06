@@ -35,7 +35,7 @@ class AkkaDiscoveryServiceLocatorSpec extends AsyncWordSpec with Matchers with B
     new LagomTestApplication(ctx)
   }
 
-  override protected def afterAll() = server.stop()
+  protected override def afterAll() = server.stop()
 
   class LagomTestApplication(ctx: LagomApplicationContext)
       extends LagomApplication(ctx)

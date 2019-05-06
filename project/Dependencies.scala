@@ -629,7 +629,6 @@ object Dependencies {
     scalaXml
   )
 
-
   val `lagom-akka-discovery-service-locator-scaladsl` = libraryDependencies ++= Seq(
     scalaTest % Test
   )
