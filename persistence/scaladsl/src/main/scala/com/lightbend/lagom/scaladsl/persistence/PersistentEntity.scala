@@ -13,6 +13,7 @@ import akka.actor.ActorRef
 import scala.reflect.ClassTag
 
 object PersistentEntity {
+
   /**
    * Commands to a `PersistentEntity` must implement this interface
    * to define the reply type.
@@ -33,7 +34,9 @@ object PersistentEntity {
   /**
    * Exception that is used when command is not handled
    */
-  final case class UnhandledCommandException(message: String) extends IllegalArgumentException(message) with NoStackTrace
+  final case class UnhandledCommandException(message: String)
+      extends IllegalArgumentException(message)
+      with NoStackTrace
 
   /**
    * Exception that is used when persist fails.
@@ -103,14 +106,14 @@ abstract class PersistentEntity {
   type Event
   type State
 
-  type Behavior = State => Actions
-  type EventHandler = PartialFunction[(Event, State), State]
-  private[lagom] type CommandHandler = PartialFunction[(Command, CommandContext[Any], State), Persist]
+  type Behavior                              = State => Actions
+  type EventHandler                          = PartialFunction[(Event, State), State]
+  private[lagom] type CommandHandler         = PartialFunction[(Command, CommandContext[Any], State), Persist]
   private[lagom] type ReadOnlyCommandHandler = PartialFunction[(Command, ReadOnlyCommandContext[Any], State), Unit]
 
   private var _entityId: String = _
 
-  final protected def entityId: String = _entityId
+  protected final def entityId: String = _entityId
 
   /**
    * INTERNAL API
@@ -143,7 +146,7 @@ abstract class PersistentEntity {
   def recoveryCompleted(state: State): State = state
 
   object Actions {
-    val empty = new Actions(PartialFunction.empty, Map.empty)
+    val empty            = new Actions(PartialFunction.empty, Map.empty)
     def apply(): Actions = empty
   }
 
@@ -152,8 +155,8 @@ abstract class PersistentEntity {
    * and persisted events. `Actions` is an immutable class.
    */
   class Actions(
-    val eventHandler:    EventHandler,
-    val commandHandlers: Map[Class[_], CommandHandler]
+      val eventHandler: EventHandler,
+      val commandHandlers: Map[Class[_], CommandHandler]
   ) extends (State => Actions) {
 
     /**
@@ -171,7 +174,7 @@ abstract class PersistentEntity {
      * [[#orElse]] method.
      */
     def onCommand[C <: Command with PersistentEntity.ReplyType[Reply]: ClassTag, Reply](
-      handler: PartialFunction[(Command, CommandContext[Reply], State), Persist]
+        handler: PartialFunction[(Command, CommandContext[Reply], State), Persist]
     ): Actions = {
       val commandClass = implicitly[ClassTag[C]].runtimeClass.asInstanceOf[Class[C]]
       new Actions(eventHandler, commandHandlers.updated(commandClass, handler.asInstanceOf[CommandHandler]))
@@ -186,7 +189,7 @@ abstract class PersistentEntity {
      * [[#orElse]] method.
      */
     def onReadOnlyCommand[C <: Command with PersistentEntity.ReplyType[Reply]: ClassTag, Reply](
-      handler: PartialFunction[(Command, ReadOnlyCommandContext[Reply], State), Unit]
+        handler: PartialFunction[(Command, ReadOnlyCommandContext[Reply], State), Unit]
     ): Actions = {
       val delegate: PartialFunction[(Command, CommandContext[Reply], State), Persist] = {
         case params @ (_, ctx, _) if handler.isDefinedAt(params) =>
@@ -216,7 +219,7 @@ abstract class PersistentEntity {
      * partial functions.
      */
     def orElse(b: Actions): Actions = {
-      val commandsInBoth = commandHandlers.keySet intersect b.commandHandlers.keySet
+      val commandsInBoth = commandHandlers.keySet.intersect(b.commandHandlers.keySet)
       val newCommandHandlers = commandHandlers ++ b.commandHandlers ++
         commandsInBoth.map(c => c -> commandHandlers(c).orElse(b.commandHandlers(c)))
       new Actions(eventHandler.orElse(b.eventHandler), newCommandHandlers)

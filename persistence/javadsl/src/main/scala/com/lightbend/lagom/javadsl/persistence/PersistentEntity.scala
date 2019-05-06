@@ -20,6 +20,7 @@ import akka.japi.Effect
 import akka.event.Logging
 
 object PersistentEntity {
+
   /**
    * Commands to a `PersistentEntity` must implement this interface
    * to define the reply type.
@@ -38,7 +39,9 @@ object PersistentEntity {
   /**
    * Exception that is used when command is not handled
    */
-  final case class UnhandledCommandException(message: String) extends IllegalArgumentException(message) with NoStackTrace
+  final case class UnhandledCommandException(message: String)
+      extends IllegalArgumentException(message)
+      with NoStackTrace
 
   /**
    * Exception that is used when persist fails.
@@ -120,7 +123,7 @@ abstract class PersistentEntity[Command, Event, State] {
 
   private var _entityId: String = _
 
-  final protected def entityId: String = _entityId
+  protected final def entityId: String = _entityId
 
   /**
    * INTERNAL API
@@ -181,9 +184,9 @@ abstract class PersistentEntity[Command, Event, State] {
    * for defining command and event handlers.
    */
   case class Behavior(
-    state:           State,
-    eventHandlers:   Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
-    commandHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]]
+      state: State,
+      eventHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
+      commandHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]]
   ) {
 
     /**
@@ -203,16 +206,17 @@ abstract class PersistentEntity[Command, Event, State] {
   // in order to keep all the constructors protected but still generate javadocs this class
   // extends a public sealed trait where documentation is provided.
   private final class BehaviorBuilderImpl(
-    state:       State,
-    evtHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
-    cmdHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]]
+      state: State,
+      evtHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
+      cmdHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]]
   ) extends BehaviorBuilder {
 
     def this(state: State) = this(state, Map.empty, Map.empty)
 
-    private var _state = state
+    private var _state                                                                 = state
     private var eventHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]] = evtHandlers
-    private var commandHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]] =
+    private var commandHandlers
+        : Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]] =
       cmdHandlers
 
     @scala.deprecated("The method is deprecated because it was deemed obsolete", since = "1.5.0")
@@ -235,8 +239,8 @@ abstract class PersistentEntity[Command, Event, State] {
       eventHandlers -= eventClass
 
     def setCommandHandler[R, A <: Command with ReplyType[R]](
-      commandClass: Class[A],
-      handler:      JBiFunction[A, CommandContext[R], Persist[_ <: Event]]
+        commandClass: Class[A],
+        handler: JBiFunction[A, CommandContext[R], Persist[_ <: Event]]
     ): Unit = {
       commandHandlers = commandHandlers.updated(
         commandClass,
@@ -248,15 +252,18 @@ abstract class PersistentEntity[Command, Event, State] {
       commandHandlers -= commandClass
 
     def setReadOnlyCommandHandler[R, A <: Command with ReplyType[R]](
-      commandClass: Class[A],
-      handler:      JBiConsumer[A, ReadOnlyCommandContext[R]]
+        commandClass: Class[A],
+        handler: JBiConsumer[A, ReadOnlyCommandContext[R]]
     ): Unit = {
-      setCommandHandler[R, A](commandClass, new JBiFunction[A, CommandContext[R], Persist[_ <: Event]] {
-        override def apply(cmd: A, ctx: CommandContext[R]): Persist[Event] = {
-          handler.accept(cmd, ctx)
-          ctx.done()
+      setCommandHandler[R, A](
+        commandClass,
+        new JBiFunction[A, CommandContext[R], Persist[_ <: Event]] {
+          override def apply(cmd: A, ctx: CommandContext[R]): Persist[Event] = {
+            handler.accept(cmd, ctx)
+            ctx.done()
+          }
         }
-      });
+      );
     }
 
     def build(): Behavior =
@@ -278,6 +285,7 @@ abstract class PersistentEntity[Command, Event, State] {
     def getState(): State
     @scala.deprecated("The method is deprecated because it was deemed obsolete", since = "1.5.0")
     def setState(state: State): Unit
+
     /**
      * Register an event handler for a given event class. The `handler` function
      * is supposed to return the new state after applying the event to the current state.
@@ -322,8 +330,8 @@ abstract class PersistentEntity[Command, Event, State] {
      * Invoking this method a second time for the same `commandClass` will override the existing `handler`.
      */
     def setCommandHandler[R, A <: Command with ReplyType[R]](
-      commandClass: Class[A],
-      handler:      JBiFunction[A, CommandContext[R], Persist[_ <: Event]]
+        commandClass: Class[A],
+        handler: JBiFunction[A, CommandContext[R], Persist[_ <: Event]]
     ): Unit
 
     /**
@@ -340,8 +348,8 @@ abstract class PersistentEntity[Command, Event, State] {
      * Invoking this method a second time for the same `commandClass` will override the existing `handler`.
      */
     def setReadOnlyCommandHandler[R, A <: Command with ReplyType[R]](
-      commandClass: Class[A],
-      handler:      JBiConsumer[A, ReadOnlyCommandContext[R]]
+        commandClass: Class[A],
+        handler: JBiConsumer[A, ReadOnlyCommandContext[R]]
     ): Unit
 
     /**
@@ -448,7 +456,8 @@ abstract class PersistentEntity[Command, Event, State] {
   /**
    * INTERNAL API
    */
-  private[lagom] case class PersistAll[B <: Event](val events: immutable.Seq[B], val afterPersist: Effect) extends Persist[B]
+  private[lagom] case class PersistAll[B <: Event](val events: immutable.Seq[B], val afterPersist: Effect)
+      extends Persist[B]
 
   /**
    * INTERNAL API

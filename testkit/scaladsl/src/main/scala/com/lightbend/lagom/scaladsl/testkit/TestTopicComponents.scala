@@ -7,14 +7,19 @@ package com.lightbend.lagom.scaladsl.testkit
 import akka.Done
 import akka.persistence.query.Offset
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Flow, Sink, Source }
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
-import com.lightbend.lagom.internal.scaladsl.api.broker.{ TopicFactory, TopicFactoryProvider }
+import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
+import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodTopic
 import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId
-import com.lightbend.lagom.scaladsl.api.broker.{ Message, Subscriber, Topic }
+import com.lightbend.lagom.scaladsl.api.broker.Message
+import com.lightbend.lagom.scaladsl.api.broker.Subscriber
+import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
 import com.lightbend.lagom.scaladsl.server.LagomServer
 
@@ -29,7 +34,9 @@ trait TestTopicComponents extends TopicFactoryProvider {
 
   override def topicPublisherName: Option[String] = super.topicPublisherName match {
     case Some(other) =>
-      sys.error(s"Cannot provide the test topic factory as the default topic publisher since a default topic publisher has already been mixed into this cake: $other")
+      sys.error(
+        s"Cannot provide the test topic factory as the default topic publisher since a default topic publisher has already been mixed into this cake: $other"
+      )
     case None => Some("test")
   }
 
@@ -37,7 +44,8 @@ trait TestTopicComponents extends TopicFactoryProvider {
 
 }
 
-private[lagom] class TestTopicFactory(lagomServer: LagomServer)(implicit materializer: Materializer) extends TopicFactory {
+private[lagom] class TestTopicFactory(lagomServer: LagomServer)(implicit materializer: Materializer)
+    extends TopicFactory {
 
   private val topics: Map[TopicId, Service] =
     lagomServer.serviceBindings.flatMap { binding =>
@@ -52,9 +60,12 @@ private[lagom] class TestTopicFactory(lagomServer: LagomServer)(implicit materia
         topicCall.topicHolder match {
           case method: ScalaMethodTopic[Message] =>
             method.method.invoke(service) match {
-              case topicProducer: TaggedOffsetTopicProducer[Message, _] => new TestTopic(topicCall, topicProducer)(materializer)
+              case topicProducer: TaggedOffsetTopicProducer[Message, _] =>
+                new TestTopic(topicCall, topicProducer)(materializer)
               case _ =>
-                throw new IllegalArgumentException(s"Testkit does not know how to handle the topic type for ${topicCall.topicId}")
+                throw new IllegalArgumentException(
+                  s"Testkit does not know how to handle the topic type for ${topicCall.topicId}"
+                )
             }
           case _ =>
             throw new IllegalArgumentException(s"Testkit does not know how to handle topic ${topicCall.topicId}")
@@ -65,15 +76,17 @@ private[lagom] class TestTopicFactory(lagomServer: LagomServer)(implicit materia
 }
 
 private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
-  topicCall:     TopicCall[Payload],
-  topicProducer: TaggedOffsetTopicProducer[Payload, Event]
-)(implicit materializer: Materializer) extends Topic[Payload] {
+    topicCall: TopicCall[Payload],
+    topicProducer: TaggedOffsetTopicProducer[Payload, Event]
+)(implicit materializer: Materializer)
+    extends Topic[Payload] {
 
   override def topicId: TopicId = topicCall.topicId
 
   override def subscribe: Subscriber[Payload] = new TestSubscriber[Payload](identity)
 
-  private class TestSubscriber[WrappedPayload](transform: Payload => WrappedPayload) extends Subscriber[WrappedPayload] {
+  private class TestSubscriber[WrappedPayload](transform: Payload => WrappedPayload)
+      extends Subscriber[WrappedPayload] {
 
     override def withGroupId(groupId: String): Subscriber[WrappedPayload] = this
 
@@ -82,13 +95,17 @@ private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
     override def atMostOnceSource: Source[WrappedPayload, _] = {
 
       val serializer = topicCall.messageSerializer
-      Source(topicProducer.tags).flatMapMerge(topicProducer.tags.size, { tag =>
-        topicProducer.readSideStream.apply(tag, Offset.noOffset).map(_._1)
-      }).map { evt =>
-        serializer.serializerForRequest.serialize(evt)
-      }.map { bytes =>
-        serializer.deserializer(serializer.acceptResponseProtocols.head).deserialize(bytes)
-      }.map(transform)
+      Source(topicProducer.tags)
+        .flatMapMerge(topicProducer.tags.size, { tag =>
+          topicProducer.readSideStream.apply(tag, Offset.noOffset).map(_._1)
+        })
+        .map { evt =>
+          serializer.serializerForRequest.serialize(evt)
+        }
+        .map { bytes =>
+          serializer.deserializer(serializer.acceptResponseProtocols.head).deserialize(bytes)
+        }
+        .map(transform)
     }
 
     override def atLeastOnce(flow: Flow[WrappedPayload, Done, _]): Future[Done] =

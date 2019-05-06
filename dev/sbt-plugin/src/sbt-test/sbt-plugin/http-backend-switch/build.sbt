@@ -5,10 +5,7 @@ version in ThisBuild := "1.0-SNAPSHOT"
 scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.8")
 
 lazy val `server-backend-switch` = (project in file("."))
-  .aggregate(
-    `apis`,
-    `netty-impl`,
-    `akka-http-impl`)
+  .aggregate(`apis`, `netty-impl`, `akka-http-impl`)
 
 lazy val `apis` = (project in file("apis"))
   .settings(

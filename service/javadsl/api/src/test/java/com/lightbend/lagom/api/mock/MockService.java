@@ -15,10 +15,10 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface MockService extends Service {
 
-    ServiceCall<UUID, String> hello(String name);
+  ServiceCall<UUID, String> hello(String name);
 
-    @Override
-    default Descriptor descriptor() {
-        return named("/mock").withCalls(restCall(Method.GET, "/hello/:name", this::hello));
-    }
+  @Override
+  default Descriptor descriptor() {
+    return named("/mock").withCalls(restCall(Method.GET, "/hello/:name", this::hello));
+  }
 }

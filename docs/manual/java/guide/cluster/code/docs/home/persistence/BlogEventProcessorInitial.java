@@ -6,7 +6,7 @@ import org.pcollections.PSequence;
 
 public interface BlogEventProcessorInitial {
 
-  //#processor
+  // #processor
   public class BlogEventProcessor extends ReadSideProcessor<BlogEvent> {
 
     @Override
@@ -21,5 +21,5 @@ public interface BlogEventProcessorInitial {
       return null;
     }
   }
-  //#processor
+  // #processor
 }

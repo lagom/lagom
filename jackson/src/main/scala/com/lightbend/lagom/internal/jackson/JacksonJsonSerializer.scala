@@ -32,20 +32,27 @@ import com.lightbend.lagom.serialization.JacksonJsonMigration
  * value.
  */
 private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
-  extends SerializerWithStringManifest with BaseSerializer {
+    extends SerializerWithStringManifest
+    with BaseSerializer {
 
-  private val log = Logging.getLogger(system, getClass)
-  private val conf = system.settings.config.getConfig("lagom.serialization.json")
-  private val isDebugEnabled = log.isDebugEnabled
-  private val objectMapper = JacksonObjectMapperProvider(system).objectMapper
+  private val log              = Logging.getLogger(system, getClass)
+  private val conf             = system.settings.config.getConfig("lagom.serialization.json")
+  private val isDebugEnabled   = log.isDebugEnabled
+  private val objectMapper     = JacksonObjectMapperProvider(system).objectMapper
   private final val BufferSize = 1024 * 4
   private val migrations: Map[String, JacksonJsonMigration] = {
     import scala.collection.JavaConverters._
-    conf.getConfig("migrations").root.unwrapped.asScala.toMap.map {
-      case (k, v) ⇒
-        val transformer = system.dynamicAccess.createInstanceFor[JacksonJsonMigration](v.toString, Nil).get
-        k -> transformer
-    }(collection.breakOut)
+    conf
+      .getConfig("migrations")
+      .root
+      .unwrapped
+      .asScala
+      .toMap
+      .map {
+        case (k, v) ⇒
+          val transformer = system.dynamicAccess.createInstanceFor[JacksonJsonMigration](v.toString, Nil).get
+          k -> transformer
+      }(collection.breakOut)
   }
 
   private val compressLargerThan: Long = conf.getBytes("compress-larger-than")
@@ -60,10 +67,10 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
 
   override def toBinary(obj: AnyRef): Array[Byte] = {
     val startTime = if (isDebugEnabled) System.nanoTime else 0L
-    val bytes = objectMapper.writeValueAsBytes(obj)
+    val bytes     = objectMapper.writeValueAsBytes(obj)
     val result = obj match {
       case _: CompressedJsonable if bytes.length > compressLargerThan => compress(bytes)
-      case _ => bytes
+      case _                                                          => bytes
     }
 
     if (isDebugEnabled) {
@@ -71,12 +78,17 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
       if (bytes.length == result.length)
         log.debug(
           "Serialization of [{}] took [{}] µs, size [{}] bytes",
-          obj.getClass.getName, durationMicros, result.length
+          obj.getClass.getName,
+          durationMicros,
+          result.length
         )
       else
         log.debug(
           "Serialization of [{}] took [{}] µs, compressed size [{}] bytes, uncompressed size [{}] bytes",
-          obj.getClass.getName, durationMicros, result.length, bytes.length
+          obj.getClass.getName,
+          durationMicros,
+          result.length,
+          bytes.length
         )
     }
 
@@ -84,7 +96,7 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
   }
 
   override def fromBinary(bytes: Array[Byte], manifest: String): AnyRef = {
-    val startTime = if (isDebugEnabled) System.nanoTime else 0L
+    val startTime  = if (isDebugEnabled) System.nanoTime else 0L
     val compressed = isGZipped(bytes)
 
     val (fromVersion, manifestClassName) = parseManifest(manifest)
@@ -95,8 +107,10 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
       case Some(transformer) if fromVersion < transformer.currentVersion =>
         transformer.transformClassName(fromVersion, manifestClassName)
       case Some(transformer) if fromVersion > transformer.currentVersion =>
-        throw new IllegalStateException(s"Migration version ${transformer.currentVersion} is " +
-          s"behind version $fromVersion of deserialized type [$manifestClassName]")
+        throw new IllegalStateException(
+          s"Migration version ${transformer.currentVersion} is " +
+            s"behind version $fromVersion of deserialized type [$manifestClassName]"
+        )
       case _ => manifestClassName
     }
 
@@ -115,18 +129,23 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
       if (bytes.length == decompressBytes.length)
         log.debug(
           "Deserialization of [{}] took [{}] µs, size [{}] bytes",
-          clazz.getName, durationMicros, decompressBytes.length
+          clazz.getName,
+          durationMicros,
+          decompressBytes.length
         )
       else
         log.debug(
           "Deserialization of [{}] took [{}] µs, compressed size [{}] bytes, uncompressed size [{}] bytes",
-          clazz.getName, durationMicros, decompressBytes.length, bytes.length
+          clazz.getName,
+          durationMicros,
+          decompressBytes.length,
+          bytes.length
         )
     }
 
     migration match {
       case Some(transformer) if fromVersion < transformer.currentVersion =>
-        val jsonTree = objectMapper.readTree(decompressBytes)
+        val jsonTree    = objectMapper.readTree(decompressBytes)
         val newJsonTree = transformer.transform(fromVersion, jsonTree)
         objectMapper.treeToValue(newJsonTree, clazz)
       case _ =>
@@ -135,8 +154,8 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
   }
 
   private def parseManifest(manifest: String) = {
-    val i = manifest.lastIndexOf('#')
-    val fromVersion = if (i == -1) 1 else manifest.substring(i + 1).toInt
+    val i                 = manifest.lastIndexOf('#')
+    val fromVersion       = if (i == -1) 1 else manifest.substring(i + 1).toInt
     val manifestClassName = if (i == -1) manifest else manifest.substring(0, i)
     (fromVersion, manifestClassName)
   }
@@ -150,8 +169,8 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
   }
 
   def decompress(bytes: Array[Byte]): Array[Byte] = {
-    val in = new GZIPInputStream(new ByteArrayInputStream(bytes))
-    val out = new ByteArrayOutputStream()
+    val in     = new GZIPInputStream(new ByteArrayInputStream(bytes))
+    val out    = new ByteArrayOutputStream()
     val buffer = new Array[Byte](BufferSize)
 
     @tailrec def readChunk(): Unit = in.read(buffer) match {
@@ -168,7 +187,7 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
 
   def isGZipped(bytes: Array[Byte]): Boolean = {
     (bytes != null) && (bytes.length >= 2) &&
-      (bytes(0) == GZIPInputStream.GZIP_MAGIC.toByte) &&
-      (bytes(1) == (GZIPInputStream.GZIP_MAGIC >> 8).toByte)
+    (bytes(0) == GZIPInputStream.GZIP_MAGIC.toByte) &&
+    (bytes(1) == (GZIPInputStream.GZIP_MAGIC >> 8).toByte)
   }
 }

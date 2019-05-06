@@ -12,7 +12,8 @@ import java.util.function.{ Function => JFunction }
 
 import akka.actor.ActorSystem
 import akka.annotation.ApiMayChange
-import akka.japi.function.{ Effect, Procedure }
+import akka.japi.function.Effect
+import akka.japi.function.Procedure
 import akka.stream.Materializer
 import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLHolder
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
@@ -21,15 +22,23 @@ import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awa
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig._
 import com.lightbend.lagom.internal.testkit.TestkitSslSetup.Disabled
 import com.lightbend.lagom.internal.testkit._
-import com.lightbend.lagom.javadsl.api.{ Service, ServiceLocator }
+import com.lightbend.lagom.javadsl.api.Service
+import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.persistence.PersistenceModule
 import com.lightbend.lagom.javadsl.pubsub.PubSubModule
-import com.lightbend.lagom.spi.persistence.{ InMemoryOffsetStore, OffsetStore }
+import com.lightbend.lagom.spi.persistence.InMemoryOffsetStore
+import com.lightbend.lagom.spi.persistence.OffsetStore
 import javax.net.ssl.SSLContext
 import play.Application
-import play.api.inject.{ ApplicationLifecycle, BindingKey, DefaultApplicationLifecycle, bind => sBind }
-import play.api.{ Configuration, Play }
-import play.core.server.{ Server, ServerConfig, ServerProvider }
+import play.api.inject.ApplicationLifecycle
+import play.api.inject.BindingKey
+import play.api.inject.DefaultApplicationLifecycle
+import play.api.inject.{ bind => sBind }
+import play.api.Configuration
+import play.api.Play
+import play.core.server.Server
+import play.core.server.ServerConfig
+import play.core.server.ServerProvider
 import play.inject.Injector
 import play.inject.guice.GuiceApplicationBuilder
 
@@ -61,7 +70,8 @@ object ServiceTest {
 
   // These are all specified as strings so that we can say they are disabled without having a dependency on them.
   private val JdbcPersistenceModule = "com.lightbend.lagom.javadsl.persistence.jdbc.JdbcPersistenceModule"
-  private val CassandraPersistenceModule = "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule"
+  private val CassandraPersistenceModule =
+    "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceModule"
   private val KafkaBrokerModule = "com.lightbend.lagom.internal.javadsl.broker.kafka.KafkaBrokerModule"
   private val KafkaClientModule = "com.lightbend.lagom.javadsl.broker.kafka.KafkaClientModule"
 
@@ -190,11 +200,11 @@ object ServiceTest {
   }
 
   private case class SetupImpl(
-    cassandra:        Boolean,
-    jdbc:             Boolean,
-    cluster:          Boolean,
-    ssl:              Boolean,
-    configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]
+      cassandra: Boolean,
+      jdbc: Boolean,
+      cluster: Boolean,
+      ssl: Boolean,
+      configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]
   ) extends Setup {
 
     def this() = this(
@@ -234,7 +244,9 @@ object ServiceTest {
       copy(ssl = enabled)
     }
 
-    override def configureBuilder(configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]): Setup = {
+    override def configureBuilder(
+        configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]
+    ): Setup = {
       copy(configureBuilder = configureBuilder)
     }
 
@@ -250,10 +262,10 @@ object ServiceTest {
    * Guice bindings here.
    */
   class TestServer(
-    val port:                           Int,
-    val app:                            Application,
-    server:                             Server,
-    @ApiMayChange val clientSslContext: Optional[SSLContext] = Optional.empty()
+      val port: Int,
+      val app: Application,
+      server: Server,
+      @ApiMayChange val clientSslContext: Optional[SSLContext] = Optional.empty()
   ) {
 
     @ApiMayChange val portSsl: Optional[Integer] = Optional.ofNullable(server.httpsPort.map(Integer.valueOf).orNull)
@@ -303,8 +315,8 @@ object ServiceTest {
    * to the `block`.
    */
   def withServer(
-    setup: Setup,
-    block: Procedure[TestServer]
+      setup: Setup,
+      block: Procedure[TestServer]
   ): Unit = {
     // using Procedure instead of Consumer to support throwing Exception
     val testServer = startServer(setup)
@@ -327,10 +339,10 @@ object ServiceTest {
    * You can get the service client from the returned `TestServer`.
    */
   def startServer(setup: Setup): TestServer = {
-    val port = Promise[Int]()
+    val port                   = Promise[Int]()
     val testServiceLocatorPort = TestServiceLocatorPort(port.future)
 
-    val now = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
+    val now      = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
     val testName = s"ServiceTest_$now"
 
     val lifecycle = new DefaultApplicationLifecycle
@@ -381,7 +393,7 @@ object ServiceTest {
     Play.start(application.asScala())
 
     val sslSetup: TestkitSslSetup.TestkitSslSetup = if (setup.ssl) {
-      val sslHolder = new LagomDevModeSSLHolder(application.environment().asScala())
+      val sslHolder                    = new LagomDevModeSSLHolder(application.environment().asScala())
       val clientSslContext: SSLContext = sslHolder.sslContext
       // In tests we're using a self-signed certificate so we use the same keyStore for both
       // the server and the client trustStore.
@@ -391,7 +403,8 @@ object ServiceTest {
     }
 
     val props = System.getProperties
-    val sslConfig: Configuration = Configuration.load(this.getClass.getClassLoader, props, sslSetup.sslSettings, allowMissingApplicationConf = true)
+    val sslConfig: Configuration =
+      Configuration.load(this.getClass.getClassLoader, props, sslSetup.sslSettings, allowMissingApplicationConf = true)
     val serverConfig: ServerConfig = new ServerConfig(
       port = Some(0),
       sslPort = sslSetup.sslPort,
@@ -401,7 +414,7 @@ object ServiceTest {
       address = "0.0.0.0",
       properties = props
     )
-    val srv = ServerProvider.defaultServerProvider.createServer(serverConfig, application.asScala())
+    val srv          = ServerProvider.defaultServerProvider.createServer(serverConfig, application.asScala())
     val assignedPort = srv.httpPort.orElse(srv.httpsPort).get
     port.success(assignedPort)
 
@@ -449,24 +462,26 @@ object ServiceTest {
    * is thrown. The `block` is retried with the given `interval`.
    */
   def eventually(max: FiniteDuration, interval: FiniteDuration, block: Effect): Unit = {
-    def now = System.nanoTime.nanos
+    def now  = System.nanoTime.nanos
     val stop = now + max
 
     @tailrec
     def poll(t: Duration): Unit = {
       val failed =
-        try { block(); false } catch {
+        try {
+          block(); false
+        } catch {
           case NonFatal(e) ⇒
             if ((now + t) >= stop) throw e
             true
         }
       if (failed) {
         Thread.sleep(t.toMillis)
-        poll((stop - now) min interval)
+        poll((stop - now).min(interval))
       }
     }
 
-    poll(max min interval)
+    poll(max.min(interval))
   }
 
   /**

@@ -8,19 +8,24 @@ import java.io.File
 import java.net.InetAddress
 
 import akka.Done
-import akka.actor.{ ActorSystem, CoordinatedShutdown }
+import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
 import akka.stream.ActorMaterializer
 import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLHolder
 import com.typesafe.sslconfig.ssl.FakeKeyStore
 import play.api.ApplicationLoader.DevContext
 import play.api._
-import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
+import play.core.ApplicationProvider
+import play.core.BuildLink
+import play.core.SourceMapper
 import play.utils.Threads
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.util.control.NonFatal
-import scala.util.{ Failure, Success, Try }
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 /**
  * Used to start servers in 'dev' mode, a mode where the application
@@ -38,15 +43,15 @@ object LagomReloadableDevServerStart {
   private val startupWarningThreshold = 1000L
 
   def mainDev(
-    buildLink:   BuildLink,
-    httpAddress: String,
-    httpPort:    Int,
-    httpsPort:   Int
+      buildLink: BuildLink,
+      httpAddress: String,
+      httpPort: Int,
+      httpsPort: Int
   ): ReloadableServer = {
     val classLoader = getClass.getClassLoader
     Threads.withContextClassLoader(classLoader) {
       try {
-        val process = new RealServerProcess(args = Seq.empty)
+        val process    = new RealServerProcess(args = Seq.empty)
         val path: File = buildLink.projectPath
 
         val enableSsl = httpsPort > 0
@@ -57,23 +62,23 @@ object LagomReloadableDevServerStart {
           if (enableSsl) {
             // in Dev mode we hardcode the keystoreBaseFolder to File(".").
             val keystoreBaseFolder = new File(".")
-            val sslHolder = new LagomDevModeSSLHolder(keystoreBaseFolder)
+            val sslHolder          = new LagomDevModeSSLHolder(keystoreBaseFolder)
 
             Map(
               // In dev mode, `play.server.https.address` and `play.server.http.address` are assigned the same value
               // but both settings are set in case some code specifically read one config setting or the other.
               "play.server.https.address" -> httpAddress, // there's no httpsAddress
-              "play.server.https.port" -> httpsPort.toString,
+              "play.server.https.port"    -> httpsPort.toString,
               // See also com/lightbend/lagom/scaladsl/testkit/ServiceTest.scala
               // These configure the server
-              "play.server.https.keyStore.path" -> sslHolder.keyStoreMetadata.storeFile.getAbsolutePath,
-              "play.server.https.keyStore.type" -> sslHolder.keyStoreMetadata.storeType,
+              "play.server.https.keyStore.path"     -> sslHolder.keyStoreMetadata.storeFile.getAbsolutePath,
+              "play.server.https.keyStore.type"     -> sslHolder.keyStoreMetadata.storeType,
               "play.server.https.keyStore.password" -> String.valueOf(sslHolder.keyStoreMetadata.storePassword),
               // These configure the clients (play-ws and akka-grpc)
               "ssl-config.loose.disableHostnameVerification" -> "true",
-              "ssl-config.trustManager.stores.0.path" -> sslHolder.trustStoreMetadata.storeFile.getAbsolutePath,
-              "ssl-config.trustManager.stores.0.type" -> sslHolder.trustStoreMetadata.storeType,
-              "ssl-config.trustManager.stores.0.password" -> String.valueOf(sslHolder.trustStoreMetadata.storePassword)
+              "ssl-config.trustManager.stores.0.path"        -> sslHolder.trustStoreMetadata.storeFile.getAbsolutePath,
+              "ssl-config.trustManager.stores.0.type"        -> sslHolder.trustStoreMetadata.storeType,
+              "ssl-config.trustManager.stores.0.password"    -> String.valueOf(sslHolder.trustStoreMetadata.storePassword)
             )
           } else Map.empty
 
@@ -82,7 +87,7 @@ object LagomReloadableDevServerStart {
             // The pairs play.server.httpx.{address,port} are read from PlayRegisterWithServiceRegistry
             // to register the service
             "play.server.http.address" -> httpAddress,
-            "play.server.http.port" -> httpPort.toString
+            "play.server.http.port"    -> httpPort.toString
           )
 
         // each user service needs to tune its "play.filters.hosts.allowed" so that Play's
@@ -90,7 +95,7 @@ object LagomReloadableDevServerStart {
         // doesn't block request with header "Host: " with a value "localhost:<someport>". The following
         // setting whitelists 'localhost` for both http/s ports and also 'httpAddress' for both ports too.
         val allowHostsSetting = "play.filters.hosts.allowed" -> {
-          val http = List(s"$httpAddress:$httpPort", s"localhost:$httpPort")
+          val http  = List(s"$httpAddress:$httpPort", s"localhost:$httpPort")
           val https = if (enableSsl) List(s"$httpAddress:$httpsPort", s"localhost:$httpsPort") else Nil
           (http ++ https).asJavaCollection
         }
@@ -117,12 +122,19 @@ object LagomReloadableDevServerStart {
           }
         }
 
-        val before = System.currentTimeMillis()
+        val before  = System.currentTimeMillis()
         val address = InetAddress.getLocalHost
-        val after = System.currentTimeMillis()
+        val after   = System.currentTimeMillis()
         if (after - before > startupWarningThreshold) {
-          println(play.utils.Colors.red(s"WARNING: Retrieving local host name ${address} took more than ${startupWarningThreshold}ms, this can create problems at startup with Lagom"))
-          println(play.utils.Colors.red("If you are using macOS, see https://thoeni.io/post/macos-sierra-java/ for a potential solution"))
+          println(
+            play.utils.Colors.red(
+              s"WARNING: Retrieving local host name ${address} took more than ${startupWarningThreshold}ms, this can create problems at startup with Lagom"
+            )
+          )
+          println(
+            play.utils.Colors
+              .red("If you are using macOS, see https://thoeni.io/post/macos-sierra-java/ for a potential solution")
+          )
         }
 
         // First delete the default log file for a fresh start (only in Dev Mode)
@@ -161,7 +173,6 @@ object LagomReloadableDevServerStart {
               }
 
               reloaded.flatMap { maybeClassLoader =>
-
                 val maybeApplication: Option[Try[Application]] = maybeClassLoader.map { projectClassloader =>
                   try {
 
@@ -178,11 +189,12 @@ object LagomReloadableDevServerStart {
                     val environment = Environment(path, projectClassloader, Mode.Dev)
                     val sourceMapper = new SourceMapper {
                       def sourceOf(className: String, line: Option[Int]) = {
-                        Option(buildLink.findSource(className, line.map(_.asInstanceOf[java.lang.Integer]).orNull)).flatMap {
-                          case Array(file: java.io.File, null) => Some((file, None))
-                          case Array(file: java.io.File, line: java.lang.Integer) => Some((file, Some(line)))
-                          case _ => None
-                        }
+                        Option(buildLink.findSource(className, line.map(_.asInstanceOf[java.lang.Integer]).orNull))
+                          .flatMap {
+                            case Array(file: java.io.File, null)                    => Some((file, None))
+                            case Array(file: java.io.File, line: java.lang.Integer) => Some((file, Some(line)))
+                            case _                                                  => None
+                          }
                       }
                     }
 
@@ -196,13 +208,14 @@ object LagomReloadableDevServerStart {
                       loader.load(context)
                     }
 
-                    newApplication.coordinatedShutdown.addTask(CoordinatedShutdown.PhaseBeforeActorSystemTerminate, "force-reload") { () =>
-                      // We'll only force a reload if the reason for shutdown is not an Application.stop
-                      if (!newApplication.coordinatedShutdown.shutdownReason().contains(ApplicationStoppedReason)) {
-                        buildLink.forceReload()
+                    newApplication.coordinatedShutdown
+                      .addTask(CoordinatedShutdown.PhaseBeforeActorSystemTerminate, "force-reload") { () =>
+                        // We'll only force a reload if the reason for shutdown is not an Application.stop
+                        if (!newApplication.coordinatedShutdown.shutdownReason().contains(ApplicationStoppedReason)) {
+                          buildLink.forceReload()
+                        }
+                        Future.successful(Done)
                       }
-                      Future.successful(Done)
-                    }
 
                     Play.start(newApplication)
 
@@ -211,7 +224,8 @@ object LagomReloadableDevServerStart {
                     // No binary dependency on play-guice
                     case e if e.getClass.getName == "com.google.inject.CreationException" =>
                       lastState = Failure(e)
-                      val hint = "Hint: Maybe you have forgot to enable your service Module class via `play.modules.enabled`? (check in your project's application.conf)"
+                      val hint =
+                        "Hint: Maybe you have forgot to enable your service Module class via `play.modules.enabled`? (check in your project's application.conf)"
                       logExceptionAndGetResult(path, e, hint)
                       lastState
 
@@ -245,7 +259,11 @@ object LagomReloadableDevServerStart {
           private def logExceptionAndGetResult(path: File, e: Throwable, hint: String = ""): Unit = {
             e.printStackTrace()
             println()
-            println(play.utils.Colors.red(s"Stacktrace caused by project ${path.getName} (filesystem path to project is ${path.getAbsolutePath}).\n${hint}"))
+            println(
+              play.utils.Colors.red(
+                s"Stacktrace caused by project ${path.getName} (filesystem path to project is ${path.getAbsolutePath}).\n${hint}"
+              )
+            )
           }
 
           override def handleWebCommand(request: play.api.mvc.RequestHeader) = None
@@ -259,26 +277,32 @@ object LagomReloadableDevServerStart {
           address = httpAddress,
           mode = Mode.Dev,
           properties = process.properties,
-          configuration = Configuration.load(classLoader, System.getProperties, dirAndDevSettings, allowMissingApplicationConf = true)
+          configuration =
+            Configuration.load(classLoader, System.getProperties, dirAndDevSettings, allowMissingApplicationConf = true)
         )
         // We *must* use a different Akka configuration in dev mode, since loading two actor systems from the same
         // config will lead to resource conflicts, for example, if the actor system is configured to open a remote port,
         // then both the dev mode and the application actor system will attempt to open that remote port, and one of
         // them will fail.
-        val devModeAkkaConfig = serverConfig.configuration.underlying.getConfig("lagom.akka.dev-mode.config")
-        val actorSystemName = serverConfig.configuration.underlying.getString("lagom.akka.dev-mode.actor-system.name")
-        val actorSystem: ActorSystem = ActorSystem(actorSystemName, devModeAkkaConfig)
+        val devModeAkkaConfig         = serverConfig.configuration.underlying.getConfig("lagom.akka.dev-mode.config")
+        val actorSystemName           = serverConfig.configuration.underlying.getString("lagom.akka.dev-mode.actor-system.name")
+        val actorSystem: ActorSystem  = ActorSystem(actorSystemName, devModeAkkaConfig)
         val serverCoordinatedShutdown = CoordinatedShutdown(actorSystem)
 
         // Registering a task that invokes `Play.stop` is necessary for the scenarios where
         // the Application and the Server use separate ActorSystems (e.g. DevMode).
-        serverCoordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceStop, "shutdown-application-dev-mode") {
-          () =>
-            implicit val ctx = actorSystem.dispatcher
-            val stoppedApp = appProvider.get.map(Play.stop)
-            Future.fromTry(stoppedApp).map(_ => Done)
+        serverCoordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceStop, "shutdown-application-dev-mode") { () =>
+          implicit val ctx = actorSystem.dispatcher
+          val stoppedApp   = appProvider.get.map(Play.stop)
+          Future.fromTry(stoppedApp).map(_ => Done)
         }
-        val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem, ActorMaterializer()(actorSystem), () => Future.successful(()))
+        val serverContext = ServerProvider.Context(
+          serverConfig,
+          appProvider,
+          actorSystem,
+          ActorMaterializer()(actorSystem),
+          () => Future.successful(())
+        )
         val serverProvider = ServerProvider.fromConfiguration(classLoader, serverConfig.configuration)
         serverProvider.createServer(serverContext)
       } catch {

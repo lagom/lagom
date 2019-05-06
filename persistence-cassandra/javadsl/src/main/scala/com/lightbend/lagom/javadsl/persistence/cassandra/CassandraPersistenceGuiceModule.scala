@@ -5,8 +5,11 @@
 package com.lightbend.lagom.javadsl.persistence.cassandra
 
 import com.google.inject.matcher.AbstractMatcher
-import com.google.inject.spi.{ InjectionListener, TypeEncounter, TypeListener }
-import com.google.inject.{ AbstractModule, TypeLiteral }
+import com.google.inject.spi.InjectionListener
+import com.google.inject.spi.TypeEncounter
+import com.google.inject.spi.TypeListener
+import com.google.inject.AbstractModule
+import com.google.inject.TypeLiteral
 
 /**
  * Guice module for the Cassandra Persistence API.
@@ -38,4 +41,3 @@ class CassandraPersistenceGuiceModule extends AbstractModule {
     binder.bindListener(matcher, listener)
   }
 }
-

@@ -16,4 +16,3 @@ public interface AbstractTemperature extends Jsonable {
   @Value.Parameter
   TemeratureUnit getUnit();
 }
-

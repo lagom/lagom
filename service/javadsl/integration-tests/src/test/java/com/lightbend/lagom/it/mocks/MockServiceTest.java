@@ -9,7 +9,6 @@ import static org.junit.Assert.assertTrue;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.*;
 
-
 import com.lightbend.lagom.javadsl.testkit.ServiceTest.TestServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -25,8 +24,11 @@ public class MockServiceTest {
 
   @BeforeClass
   public static void setUp() {
-    server = startServer(defaultSetup().withCluster(false)
-        .configureBuilder(b -> b.bindings(new MockServiceModule())));
+    server =
+        startServer(
+            defaultSetup()
+                .withCluster(false)
+                .configureBuilder(b -> b.bindings(new MockServiceModule())));
     client = server.client(MockService.class);
   }
 
@@ -42,7 +44,8 @@ public class MockServiceTest {
   @Test
   public void testInvoke() throws Exception {
     MockRequestEntity req = new MockRequestEntity("bar", 20);
-    MockResponseEntity response = client.mockCall(10).invoke(req).toCompletableFuture().get(10, SECONDS);
+    MockResponseEntity response =
+        client.mockCall(10).invoke(req).toCompletableFuture().get(10, SECONDS);
     assertEquals(10, response.incomingId());
     assertEquals(req, response.incomingRequest());
   }
@@ -58,12 +61,11 @@ public class MockServiceTest {
   @Test
   public void testInvokeForDoneParameters() throws Exception {
     MockServiceImpl.invoked.set(false);
-    Done reply = client.doneCall().invoke(Done.getInstance())
-        .toCompletableFuture().get(10, SECONDS);
+    Done reply =
+        client.doneCall().invoke(Done.getInstance()).toCompletableFuture().get(10, SECONDS);
     assertEquals(Done.getInstance(), reply);
   }
 
   // many more tests are written in MockServiceSpec and ErrorHandlingSpec
-
 
 }

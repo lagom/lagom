@@ -8,14 +8,19 @@ import java.util.UUID
 
 import akka.Done
 import akka.actor.ActorSystem
-import akka.persistence.query.{ NoOffset, Offset, TimeBasedUUID, Sequence => AkkaSequence }
+import akka.persistence.query.NoOffset
+import akka.persistence.query.Offset
+import akka.persistence.query.TimeBasedUUID
+import akka.persistence.query.{ Sequence => AkkaSequence }
 import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
-import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
+import com.lightbend.lagom.spi.persistence.OffsetDao
+import com.lightbend.lagom.spi.persistence.OffsetStore
 import com.typesafe.config.Config
 
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.util.Try
 
 /**
@@ -39,23 +44,28 @@ private[lagom] trait SlickOffsetStoreConfiguration {
 /**
  * INTERNAL API
  */
-private[lagom] abstract class AbstractSlickOffsetStoreConfiguration(config: Config) extends SlickOffsetStoreConfiguration {
+private[lagom] abstract class AbstractSlickOffsetStoreConfiguration(config: Config)
+    extends SlickOffsetStoreConfiguration {
 
-  private val cfg = config.getConfig("lagom.persistence.read-side.jdbc.tables.offset")
-  val tableName: String = cfg.getString("tableName")
-  val schemaName: Option[String] = Option(cfg.getString("schemaName")).filter(_.trim != "")
-  private val columnsCfg = cfg.getConfig("columnNames")
-  val idColumnName: String = columnsCfg.getString("readSideId")
-  val tagColumnName: String = columnsCfg.getString("tag")
+  private val cfg                      = config.getConfig("lagom.persistence.read-side.jdbc.tables.offset")
+  val tableName: String                = cfg.getString("tableName")
+  val schemaName: Option[String]       = Option(cfg.getString("schemaName")).filter(_.trim != "")
+  private val columnsCfg               = cfg.getConfig("columnNames")
+  val idColumnName: String             = columnsCfg.getString("readSideId")
+  val tagColumnName: String            = columnsCfg.getString("tag")
   val sequenceOffsetColumnName: String = columnsCfg.getString("sequenceOffset")
   val timeUuidOffsetColumnName: String = columnsCfg.getString("timeUuidOffset")
-  override def toString: String = s"OffsetTableConfiguration($tableName,$schemaName)"
+  override def toString: String        = s"OffsetTableConfiguration($tableName,$schemaName)"
 }
 
 /**
  * INTERNAL API
  */
-private[lagom] class SlickOffsetStore(system: ActorSystem, val slick: SlickProvider, config: SlickOffsetStoreConfiguration) extends OffsetStore {
+private[lagom] class SlickOffsetStore(
+    system: ActorSystem,
+    val slick: SlickProvider,
+    config: SlickOffsetStoreConfiguration
+) extends OffsetStore {
 
   case class OffsetRow(id: String, tag: String, sequenceOffset: Option[Long], timeUuidOffset: Option[String])
 
@@ -63,20 +73,20 @@ private[lagom] class SlickOffsetStore(system: ActorSystem, val slick: SlickProvi
   import system.dispatcher
 
   override def prepare(eventProcessorId: String, tag: String): Future[SlickOffsetDao] = {
-    runPreparations(eventProcessorId, tag).map(offset =>
-      new SlickOffsetDao(this, eventProcessorId, tag, offset))
+    runPreparations(eventProcessorId, tag).map(offset => new SlickOffsetDao(this, eventProcessorId, tag, offset))
   }
 
-  private class OffsetStore(_tag: Tag) extends Table[OffsetRow](_tag, _schemaName = config.schemaName, _tableName = config.tableName) {
+  private class OffsetStore(_tag: Tag)
+      extends Table[OffsetRow](_tag, _schemaName = config.schemaName, _tableName = config.tableName) {
     def * = (id, tag, sequenceOffset, timeUuidOffset) <> (OffsetRow.tupled, OffsetRow.unapply)
 
     // Technically these two columns shouldn't have the primary key options, but they need it to work around
     // https://github.com/slick/slick/issues/966
-    val id = column[String](config.idColumnName, O.Length(255, varying = true), O.PrimaryKey)
-    val tag = column[String](config.tagColumnName, O.Length(255, varying = true), O.PrimaryKey)
+    val id             = column[String](config.idColumnName, O.Length(255, varying = true), O.PrimaryKey)
+    val tag            = column[String](config.tagColumnName, O.Length(255, varying = true), O.PrimaryKey)
     val sequenceOffset = column[Option[Long]](config.sequenceOffsetColumnName)
     val timeUuidOffset = column[Option[String]](config.timeUuidOffsetColumnName, O.Length(36, varying = false))
-    val pk = primaryKey(s"${config.tableName}_pk", (id, tag))
+    val pk             = primaryKey(s"${config.tableName}_pk", (id, tag))
   }
 
   private val offsets = TableQuery[OffsetStore]
@@ -99,7 +109,7 @@ private[lagom] class SlickOffsetStore(system: ActorSystem, val slick: SlickProvi
   def runPreparations(eventProcessorId: String, tag: String): Future[Offset] = {
     implicit val timeout = Timeout(config.globalPrepareTimeout)
     for {
-      _ <- startupTask.fold(Future.successful[Done](Done))(_.askExecute())
+      _      <- startupTask.fold(Future.successful[Done](Done))(_.askExecute())
       offset <- slick.db.run(getOffsetQuery(eventProcessorId, tag))
     } yield offset
   }
@@ -125,29 +135,48 @@ private[lagom] class SlickOffsetStore(system: ActorSystem, val slick: SlickProvi
   }
 
   private def offsetRowToOffset(row: Option[OffsetRow]): Offset = {
-    row.flatMap(row => row.sequenceOffset.map(AkkaSequence).orElse(
-      row.timeUuidOffset.flatMap(uuid => Try(UUID.fromString(uuid)).toOption)
-        .filter(_.version == 1)
-        .map(TimeBasedUUID)
-    )).getOrElse(NoOffset)
+    row
+      .flatMap(
+        row =>
+          row.sequenceOffset
+            .map(AkkaSequence)
+            .orElse(
+              row.timeUuidOffset
+                .flatMap(uuid => Try(UUID.fromString(uuid)).toOption)
+                .filter(_.version == 1)
+                .map(TimeBasedUUID)
+            )
+      )
+      .getOrElse(NoOffset)
   }
 
   private def createTables() = {
     // The schema will be wrong due to our work around for https://github.com/slick/slick/issues/966 above, so need to
     // remove the primary key declarations from those columns
     val statements = offsets.schema.createStatements.map(_.replace(" PRIMARY KEY,", ",")).toSeq
-    slick.db.run(slick.createTable(statements, slick.tableExists(config.schemaName, config.tableName))
-      .map(_ => Done.getInstance()))
+    slick.db.run(
+      slick
+        .createTable(statements, slick.tableExists(config.schemaName, config.tableName))
+        .map(_ => Done.getInstance())
+    )
   }
 
 }
 
-private[lagom] class SlickOffsetDao(slickOffsetStore: SlickOffsetStore, readSideId: String, tag: String,
-                                    override val loadedOffset: Offset)(implicit ec: ExecutionContext) extends OffsetDao {
+private[lagom] class SlickOffsetDao(
+    slickOffsetStore: SlickOffsetStore,
+    readSideId: String,
+    tag: String,
+    override val loadedOffset: Offset
+)(implicit ec: ExecutionContext)
+    extends OffsetDao {
 
   override def saveOffset(offset: Offset): Future[Done] = {
-    slickOffsetStore.slick.db.run(slickOffsetStore.updateOffsetQuery(readSideId, tag, offset)
-      .map(_ => Done.getInstance()))
+    slickOffsetStore.slick.db.run(
+      slickOffsetStore
+        .updateOffsetQuery(readSideId, tag, offset)
+        .map(_ => Done.getInstance())
+    )
   }
 
   def updateOffsetQuery(offset: Offset) = {

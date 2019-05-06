@@ -8,7 +8,9 @@ import java.util
 import java.util.Collections
 
 import akka.annotation.InternalApi
-import com.google.inject.{ Binder, Module, TypeLiteral }
+import com.google.inject.Binder
+import com.google.inject.Module
+import com.google.inject.TypeLiteral
 import com.lightbend.lagom.javadsl.testkit.ServiceTest
 import play.api.routing.Router
 

@@ -10,68 +10,69 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * A service to be registered by the service registry
- */
+/** A service to be registered by the service registry */
 public class ServiceRegistryService {
-    private final List<URI> uris;
-    private final List<ServiceAcl> acls;
+  private final List<URI> uris;
+  private final List<ServiceAcl> acls;
 
-    public static ServiceRegistryService of(URI uri, List<com.lightbend.lagom.javadsl.api.ServiceAcl> acls) {
-        return of(Collections.singletonList(uri), acls);
-    }
-    public static ServiceRegistryService of(List<URI> uris, List<com.lightbend.lagom.javadsl.api.ServiceAcl> acls) {
-        List<ServiceAcl> internalAcls =
-            acls.stream().map(acl -> {
-                    Optional<Method> method = acl.method().map(m -> new Method(m.name()));
-                    return new ServiceAcl(method, acl.pathRegex());
-                }
-            ).collect(Collectors.toList());
-        return new ServiceRegistryService(uris, internalAcls);
-    }
+  public static ServiceRegistryService of(
+      URI uri, List<com.lightbend.lagom.javadsl.api.ServiceAcl> acls) {
+    return of(Collections.singletonList(uri), acls);
+  }
 
-    public ServiceRegistryService(URI uri) {
-        this(uri, Collections.emptyList());
-    }
-    public ServiceRegistryService(URI uri, List<ServiceAcl> acls) {
-        this(Arrays.asList(uri), acls);
-    }
-    @JsonCreator
-    public ServiceRegistryService(List<URI> uris, List<ServiceAcl> acls) {
-        this.uris = uris;
-        this.acls = acls;
-    }
+  public static ServiceRegistryService of(
+      List<URI> uris, List<com.lightbend.lagom.javadsl.api.ServiceAcl> acls) {
+    List<ServiceAcl> internalAcls =
+        acls.stream()
+            .map(
+                acl -> {
+                  Optional<Method> method = acl.method().map(m -> new Method(m.name()));
+                  return new ServiceAcl(method, acl.pathRegex());
+                })
+            .collect(Collectors.toList());
+    return new ServiceRegistryService(uris, internalAcls);
+  }
 
-    public List<URI> uris() {
-        return uris;
-    }
+  public ServiceRegistryService(URI uri) {
+    this(uri, Collections.emptyList());
+  }
 
-    public List<ServiceAcl> acls() {
-        return acls;
-    }
+  public ServiceRegistryService(URI uri, List<ServiceAcl> acls) {
+    this(Arrays.asList(uri), acls);
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ServiceRegistryService)) return false;
+  @JsonCreator
+  public ServiceRegistryService(List<URI> uris, List<ServiceAcl> acls) {
+    this.uris = uris;
+    this.acls = acls;
+  }
 
-        ServiceRegistryService that = (ServiceRegistryService) o;
+  public List<URI> uris() {
+    return uris;
+  }
 
-        if (!uris.equals(that.uris)) return false;
-        return acls.equals(that.acls);
+  public List<ServiceAcl> acls() {
+    return acls;
+  }
 
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof ServiceRegistryService)) return false;
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(uris, acls);
-    }
+    ServiceRegistryService that = (ServiceRegistryService) o;
 
-    @Override
-    public String toString() {
-        return "ServiceRegistryService{" +
-            "uri='" + uris + '\'' +
-            ", acls=" + acls +
-            '}';
-    }
+    if (!uris.equals(that.uris)) return false;
+    return acls.equals(that.acls);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(uris, acls);
+  }
+
+  @Override
+  public String toString() {
+    return "ServiceRegistryService{" + "uri='" + uris + '\'' + ", acls=" + acls + '}';
+  }
 }

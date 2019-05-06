@@ -9,15 +9,21 @@ import java.util.function.{ Function => JFunction }
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import org.scalatest.{ Inside, Matchers, WordSpecLike }
-import play.api.{ Application, Configuration, Environment }
+import org.scalatest.Inside
+import org.scalatest.Matchers
+import org.scalatest.WordSpecLike
+import play.api.Application
+import play.api.Configuration
+import play.api.Environment
 import play.inject.guice.GuiceApplicationBuilder
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import akka.japi.function.Procedure
-import com.google.inject.{ Binder, Module, TypeLiteral }
+import com.google.inject.Binder
+import com.google.inject.Module
+import com.google.inject.TypeLiteral
 import com.lightbend.lagom.javadsl.testkit.ServiceTest
 import com.lightbend.lagom.javadsl.testkit.ServiceTest.TestServer
 import play.api.routing.Router
@@ -41,7 +47,7 @@ case object Netty extends HttpBackend {
 trait ServiceSupport extends WordSpecLike with Matchers with Inside {
 
   def withServer(
-    configureBuilder: GuiceApplicationBuilder => GuiceApplicationBuilder
+      configureBuilder: GuiceApplicationBuilder => GuiceApplicationBuilder
   )(block: Application => Unit)(implicit httpBackend: HttpBackend): Unit = {
     val jConfigureBuilder = new JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder] {
       override def apply(b: GuiceApplicationBuilder): GuiceApplicationBuilder = {
@@ -60,7 +66,7 @@ trait ServiceSupport extends WordSpecLike with Matchers with Inside {
   }
 
   def withClient[T: ClassTag](
-    configureBuilder: GuiceApplicationBuilder => GuiceApplicationBuilder
+      configureBuilder: GuiceApplicationBuilder => GuiceApplicationBuilder
   )(block: Application => T => Unit)(implicit httpBackend: HttpBackend): Unit = {
     withServer(configureBuilder) { application =>
       val client = application.injector.instanceOf[T]

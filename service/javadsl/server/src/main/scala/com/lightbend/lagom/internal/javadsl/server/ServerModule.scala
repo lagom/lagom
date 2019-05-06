@@ -4,8 +4,10 @@
 
 package com.lightbend.lagom.internal.javadsl.server
 
-import play.api.{ Configuration, Environment }
-import play.api.inject.{ Binding, Module }
+import play.api.Configuration
+import play.api.Environment
+import play.api.inject.Binding
+import play.api.inject.Module
 
 class ServerModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(

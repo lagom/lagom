@@ -9,7 +9,7 @@ import scala.collection.JavaConverters._
 
 import javax.inject.Inject
 
-class Application @Inject() (app: play.api.Application, configuration: Configuration) extends Controller {
+class Application @Inject()(app: play.api.Application, configuration: Configuration) extends Controller {
 
   def index = Action {
     Ok(views.html.index("Your new application is ready."))

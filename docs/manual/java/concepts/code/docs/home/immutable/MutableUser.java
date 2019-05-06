@@ -1,6 +1,6 @@
 package docs.home.immutable;
 
-//#mutable
+// #mutable
 public class MutableUser {
   private String name;
   private String email;
@@ -20,6 +20,5 @@ public class MutableUser {
   public void setEmail(String email) {
     this.email = email;
   }
-
 }
-//#mutable
+// #mutable
