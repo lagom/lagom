@@ -3,17 +3,18 @@
  */
 package docs.home.scaladsl.persistence
 
-import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomApplicationContext, LagomServer}
+import com.lightbend.lagom.scaladsl.server.LagomApplication
+import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
+import com.lightbend.lagom.scaladsl.server.LagomServer
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.db.HikariCPComponents
 import com.softwaremill.macwire._
 import com.lightbend.lagom.scaladsl.persistence.jdbc._
 import com.lightbend.lagom.scaladsl.persistence.slick._
 
-
 //#load-components
 abstract class SlickBlogApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
+    extends LagomApplication(context)
     with JdbcPersistenceComponents
     with SlickPersistenceComponents
     with HikariCPComponents

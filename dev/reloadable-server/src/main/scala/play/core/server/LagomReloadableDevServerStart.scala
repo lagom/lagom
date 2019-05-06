@@ -9,15 +9,20 @@ import java.net.InetAddress
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import play.api._
-import play.core.{ ApplicationProvider, BuildLink, SourceMapper }
+import play.core.ApplicationProvider
+import play.core.BuildLink
+import play.core.SourceMapper
 import play.core.server.ReloadableServer
 import play.utils.Threads
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.Await
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
-import scala.util.{ Failure, Success, Try }
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 /**
  * Used to start servers in 'dev' mode, a mode where the application
@@ -41,9 +46,9 @@ object LagomReloadableDevServerStart {
    * compiled with different versions of Scala.
    */
   def mainDevOnlyHttpsMode(
-    buildLink:   BuildLink,
-    httpsPort:   Int,
-    httpAddress: String
+      buildLink: BuildLink,
+      httpsPort: Int,
+      httpAddress: String
   ): ReloadableServer = {
     mainDev(buildLink, None, Some(httpsPort), httpAddress)
   }
@@ -55,33 +60,32 @@ object LagomReloadableDevServerStart {
    * compiled with different versions of Scala.
    */
   def mainDevHttpMode(
-    buildLink: BuildLink,
-    httpPort:  Int
+      buildLink: BuildLink,
+      httpPort: Int
   ): ReloadableServer = {
     mainDev(buildLink, Some(httpPort), None, "0.0.0.0")
   }
 
   private def mainDev(
-    buildLink:   BuildLink,
-    httpPort:    Option[Int],
-    httpsPort:   Option[Int],
-    httpAddress: String
+      buildLink: BuildLink,
+      httpPort: Option[Int],
+      httpsPort: Option[Int],
+      httpAddress: String
   ): ReloadableServer = {
     val classLoader = getClass.getClassLoader
     Threads.withContextClassLoader(classLoader) {
       try {
-        val process = new RealServerProcess(args = Seq.empty)
+        val process    = new RealServerProcess(args = Seq.empty)
         val path: File = buildLink.projectPath
 
         val dirAndDevSettings: Map[String, String] =
           ServerConfig.rootDirConfig(path) ++
             buildLink.settings.asScala.toMap ++
             httpPort.toList.map("play.server.http.port" -> _.toString).toMap +
-            ("play.server.http.address" -> httpAddress) +
-            {
-              // on dev-mode, we often have more than one cluster on the same jvm
-              "akka.cluster.jmx.multi-mbeans-in-same-jvm" -> "on"
-            }
+            ("play.server.http.address" -> httpAddress) + {
+            // on dev-mode, we often have more than one cluster on the same jvm
+            "akka.cluster.jmx.multi-mbeans-in-same-jvm" -> "on"
+          }
 
         // Use plain Java call here in case of scala classloader mess
         {
@@ -93,12 +97,19 @@ object LagomReloadableDevServerStart {
           }
         }
 
-        val before = System.currentTimeMillis()
+        val before  = System.currentTimeMillis()
         val address = InetAddress.getLocalHost
-        val after = System.currentTimeMillis()
+        val after   = System.currentTimeMillis()
         if (after - before > startupWarningThreshold) {
-          println(play.utils.Colors.red(s"WARNING: Retrieving local host name ${address} took more than ${startupWarningThreshold}ms, this can create problems at startup with Lagom"))
-          println(play.utils.Colors.red("If you are using macOS, see https://thoeni.io/post/macos-sierra-java/ for a potential solution"))
+          println(
+            play.utils.Colors.red(
+              s"WARNING: Retrieving local host name ${address} took more than ${startupWarningThreshold}ms, this can create problems at startup with Lagom"
+            )
+          )
+          println(
+            play.utils.Colors
+              .red("If you are using macOS, see https://thoeni.io/post/macos-sierra-java/ for a potential solution")
+          )
         }
 
         // First delete the default log file for a fresh start (only in Dev Mode)
@@ -136,90 +147,102 @@ object LagomReloadableDevServerStart {
               // Because we are on DEV mode here, it doesn't really matter
               // but it's more coherent with the way it works in PROD mode.
               implicit val ec = play.core.Execution.internalContext
-              Await.result(scala.concurrent.Future {
+              Await.result(
+                scala.concurrent.Future {
 
-                val reloaded = buildLink.reload match {
-                  case NonFatal(t)     => Failure(t)
-                  case cl: ClassLoader => Success(Some(cl))
-                  case null            => Success(None)
-                }
+                  val reloaded = buildLink.reload match {
+                    case NonFatal(t)     => Failure(t)
+                    case cl: ClassLoader => Success(Some(cl))
+                    case null            => Success(None)
+                  }
 
-                reloaded.flatMap { maybeClassLoader =>
+                  reloaded.flatMap {
+                    maybeClassLoader =>
+                      val maybeApplication: Option[Try[Application]] = maybeClassLoader.map {
+                        projectClassloader =>
+                          try {
 
-                  val maybeApplication: Option[Try[Application]] = maybeClassLoader.map { projectClassloader =>
-                    try {
+                            if (lastState.isSuccess) {
+                              println()
+                              println(play.utils.Colors.magenta("--- (RELOAD) ---"))
+                              println()
+                            }
 
-                      if (lastState.isSuccess) {
-                        println()
-                        println(play.utils.Colors.magenta("--- (RELOAD) ---"))
-                        println()
-                      }
+                            // First, stop the old application if it exists
+                            lastState.foreach(Play.stop)
 
-                      // First, stop the old application if it exists
-                      lastState.foreach(Play.stop)
+                            // Create the new environment
+                            val environment = Environment(path, projectClassloader, Mode.Dev)
+                            val sourceMapper = new SourceMapper {
+                              def sourceOf(className: String, line: Option[Int]) = {
+                                Option(
+                                  buildLink.findSource(className, line.map(_.asInstanceOf[java.lang.Integer]).orNull)
+                                ).flatMap {
+                                  case Array(file: java.io.File, null)                    => Some((file, None))
+                                  case Array(file: java.io.File, line: java.lang.Integer) => Some((file, Some(line)))
+                                  case _                                                  => None
+                                }
+                              }
+                            }
 
-                      // Create the new environment
-                      val environment = Environment(path, projectClassloader, Mode.Dev)
-                      val sourceMapper = new SourceMapper {
-                        def sourceOf(className: String, line: Option[Int]) = {
-                          Option(buildLink.findSource(className, line.map(_.asInstanceOf[java.lang.Integer]).orNull)).flatMap {
-                            case Array(file: java.io.File, null) => Some((file, None))
-                            case Array(file: java.io.File, line: java.lang.Integer) => Some((file, Some(line)))
-                            case _ => None
+                            val newApplication = Threads.withContextClassLoader(projectClassloader) {
+                              val context =
+                                ApplicationLoader.createContext(environment, dirAndDevSettings, Some(sourceMapper))
+                              val loader = ApplicationLoader(context)
+                              loader.load(context)
+                            }
+
+                            Play.start(newApplication)
+
+                            Success(newApplication)
+                          } catch {
+                            // No binary dependency on play-guice
+                            case e if e.getClass.getName == "com.google.inject.CreationException" =>
+                              lastState = Failure(e)
+                              val hint =
+                                "Hint: Maybe you have forgot to enable your service Module class via `play.modules.enabled`? (check in your project's application.conf)"
+                              logExceptionAndGetResult(path, e, hint)
+                              lastState
+
+                            case e: PlayException => {
+                              lastState = Failure(e)
+                              logExceptionAndGetResult(path, e)
+                              lastState
+                            }
+                            case NonFatal(e) => {
+                              lastState = Failure(UnexpectedException(unexpected = Some(e)))
+                              logExceptionAndGetResult(path, e)
+                              lastState
+                            }
+                            case e: LinkageError => {
+                              lastState = Failure(UnexpectedException(unexpected = Some(e)))
+                              logExceptionAndGetResult(path, e)
+                              lastState
+                            }
                           }
-                        }
                       }
 
-                      val newApplication = Threads.withContextClassLoader(projectClassloader) {
-                        val context = ApplicationLoader.createContext(environment, dirAndDevSettings, Some(sourceMapper))
-                        val loader = ApplicationLoader(context)
-                        loader.load(context)
+                      maybeApplication.flatMap(_.toOption).foreach { app =>
+                        lastState = Success(app)
                       }
 
-                      Play.start(newApplication)
-
-                      Success(newApplication)
-                    } catch {
-                      // No binary dependency on play-guice
-                      case e if e.getClass.getName == "com.google.inject.CreationException" =>
-                        lastState = Failure(e)
-                        val hint = "Hint: Maybe you have forgot to enable your service Module class via `play.modules.enabled`? (check in your project's application.conf)"
-                        logExceptionAndGetResult(path, e, hint)
-                        lastState
-
-                      case e: PlayException => {
-                        lastState = Failure(e)
-                        logExceptionAndGetResult(path, e)
-                        lastState
-                      }
-                      case NonFatal(e) => {
-                        lastState = Failure(UnexpectedException(unexpected = Some(e)))
-                        logExceptionAndGetResult(path, e)
-                        lastState
-                      }
-                      case e: LinkageError => {
-                        lastState = Failure(UnexpectedException(unexpected = Some(e)))
-                        logExceptionAndGetResult(path, e)
-                        lastState
-                      }
-                    }
+                      maybeApplication.getOrElse(lastState)
                   }
 
-                  maybeApplication.flatMap(_.toOption).foreach { app =>
-                    lastState = Success(app)
-                  }
-
-                  maybeApplication.getOrElse(lastState)
-                }
-
-              }, Duration.Inf)
+                },
+                Duration.Inf
+              )
             }
           }
 
           private def logExceptionAndGetResult(path: File, e: Throwable, hint: String = ""): Unit = {
             e.printStackTrace()
             println()
-            println(play.utils.Colors.red(s"Stacktrace caused by project ${path.getName} (filesystem path to project is ${path.getAbsolutePath}).\n${hint}"))
+            println(
+              play.utils.Colors.red(
+                s"Stacktrace caused by project ${path.getName} (filesystem path to project is ${path.getAbsolutePath}).\n${hint}"
+              )
+            )
           }
 
           override def handleWebCommand(request: play.api.mvc.RequestHeader) = None
@@ -233,17 +256,23 @@ object LagomReloadableDevServerStart {
           address = httpAddress,
           mode = Mode.Dev,
           properties = process.properties,
-          configuration = Configuration.load(classLoader, System.getProperties, dirAndDevSettings, allowMissingApplicationConf = true)
+          configuration =
+            Configuration.load(classLoader, System.getProperties, dirAndDevSettings, allowMissingApplicationConf = true)
         )
         // We *must* use a different Akka configuration in dev mode, since loading two actor systems from the same
         // config will lead to resource conflicts, for example, if the actor system is configured to open a remote port,
         // then both the dev mode and the application actor system will attempt to open that remote port, and one of
         // them will fail.
         val devModeAkkaConfig = serverConfig.configuration.underlying.getConfig("lagom.akka.dev-mode.config")
-        val actorSystemName = serverConfig.configuration.underlying.getString("lagom.akka.dev-mode.actor-system.name")
-        val actorSystem = ActorSystem(actorSystemName, devModeAkkaConfig)
-        val serverContext = ServerProvider.Context(serverConfig, appProvider, actorSystem, ActorMaterializer()(actorSystem),
-          () => actorSystem.terminate())
+        val actorSystemName   = serverConfig.configuration.underlying.getString("lagom.akka.dev-mode.actor-system.name")
+        val actorSystem       = ActorSystem(actorSystemName, devModeAkkaConfig)
+        val serverContext = ServerProvider.Context(
+          serverConfig,
+          appProvider,
+          actorSystem,
+          ActorMaterializer()(actorSystem),
+          () => actorSystem.terminate()
+        )
         val serverProvider = ServerProvider.fromConfiguration(classLoader, serverConfig.configuration)
         serverProvider.createServer(serverContext)
       } catch {

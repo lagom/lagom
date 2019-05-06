@@ -3,13 +3,18 @@
  */
 package com.lightbend.lagom.scaladsl.api.deser
 
-import java.io.{ CharArrayWriter, PrintWriter }
+import java.io.CharArrayWriter
+import java.io.PrintWriter
 import java.util.Base64
 
 import akka.util.ByteString
-import com.lightbend.lagom.scaladsl.api.transport.{ ExceptionMessage, MessageProtocol, TransportErrorCode, TransportException }
+import com.lightbend.lagom.scaladsl.api.transport.ExceptionMessage
+import com.lightbend.lagom.scaladsl.api.transport.MessageProtocol
+import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import com.lightbend.lagom.scaladsl.api.transport.TransportException
 import play.api.libs.json._
-import play.api.{ Environment, Mode }
+import play.api.Environment
+import play.api.Mode
 
 import scala.collection.immutable
 import scala.collection.immutable.Seq
@@ -19,6 +24,7 @@ import scala.util.control.NonFatal
  * Handles the serialization and deserialization of exceptions.
  */
 trait ExceptionSerializer {
+
   /**
    * Serialize the given exception to an exception message.
    *
@@ -68,13 +74,20 @@ class DefaultExceptionSerializer(environment: Environment) extends ExceptionSeri
         val writer = new CharArrayWriter
         e.printStackTrace(new PrintWriter(writer))
         val detail = writer.toString
-        (TransportErrorCode.InternalServerError, new ExceptionMessage(s"${exception.getClass.getName}: ${exception.getMessage}", detail))
+        (
+          TransportErrorCode.InternalServerError,
+          new ExceptionMessage(s"${exception.getClass.getName}: ${exception.getMessage}", detail)
+        )
     }
 
-    val messageBytes = ByteString.fromString(Json.stringify(Json.obj(
-      "name" -> message.name,
-      "detail" -> message.detail
-    )))
+    val messageBytes = ByteString.fromString(
+      Json.stringify(
+        Json.obj(
+          "name"   -> message.name,
+          "detail" -> message.detail
+        )
+      )
+    )
 
     RawExceptionMessage(errorCode, MessageProtocol(Some("application/json"), None, None), messageBytes)
   }
@@ -88,7 +101,7 @@ class DefaultExceptionSerializer(environment: Environment) extends ExceptionSeri
     }
 
     val jsonParseResult = for {
-      name <- (messageJson \ "name").validate[String]
+      name   <- (messageJson \ "name").validate[String]
       detail <- (messageJson \ "detail").validate[String]
     } yield new ExceptionMessage(name, detail)
 
@@ -110,7 +123,10 @@ class DefaultExceptionSerializer(environment: Environment) extends ExceptionSeri
    * @param exceptionMessage The exception message.
    * @return The exception.
    */
-  protected def fromCodeAndMessage(transportErrorCode: TransportErrorCode, exceptionMessage: ExceptionMessage): Throwable = {
+  protected def fromCodeAndMessage(
+      transportErrorCode: TransportErrorCode,
+      exceptionMessage: ExceptionMessage
+  ): Throwable = {
     TransportException.fromCodeAndMessage(transportErrorCode, exceptionMessage)
   }
 }
@@ -167,9 +183,9 @@ sealed trait RawExceptionMessage {
    */
   def messageAsText: String = {
     protocol.charset match {
-      case Some(charset) => message.decodeString(charset)
+      case Some(charset)                                             => message.decodeString(charset)
       case None if protocol.contentType.contains("application/json") => message.decodeString("utf-8")
-      case None => Base64.getEncoder.encodeToString(message.toArray)
+      case None                                                      => Base64.getEncoder.encodeToString(message.toArray)
     }
   }
 }
@@ -179,5 +195,9 @@ object RawExceptionMessage {
   def apply(errorCode: TransportErrorCode, protocol: MessageProtocol, message: ByteString): RawExceptionMessage =
     RawExceptionMessageImpl(errorCode, protocol, message)
 
-  private case class RawExceptionMessageImpl(errorCode: TransportErrorCode, protocol: MessageProtocol, message: ByteString) extends RawExceptionMessage
+  private case class RawExceptionMessageImpl(
+      errorCode: TransportErrorCode,
+      protocol: MessageProtocol,
+      message: ByteString
+  ) extends RawExceptionMessage
 }

@@ -4,18 +4,22 @@
 package com.lightbend.lagom.internal.scaladsl.server
 
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslClientMacroImpl
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service }
-import com.lightbend.lagom.scaladsl.server.{ LagomServer, LagomServiceBinder }
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.server.LagomServer
+import com.lightbend.lagom.scaladsl.server.LagomServiceBinder
 
 import scala.reflect.macros.blackbox.Context
 
 private[lagom] object ScaladslServerMacroImpl {
 
-  def simpleBind[T <: Service](c: Context)(serviceFactory: c.Tree)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[LagomServer] = {
+  def simpleBind[T <: Service](
+      c: Context
+  )(serviceFactory: c.Tree)(implicit serviceType: c.WeakTypeTag[T]): c.Expr[LagomServer] = {
     import c.universe._
 
     val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
-    val server = q"$scaladsl.server"
+    val server   = q"$scaladsl.server"
 
     val descriptor = readDescriptor[T](c)
     c.Expr[LagomServer](q"""{
@@ -35,7 +39,7 @@ private[lagom] object ScaladslServerMacroImpl {
     import c.universe._
 
     val scaladsl = q"_root_.com.lightbend.lagom.scaladsl"
-    val server = q"$scaladsl.server"
+    val server   = q"$scaladsl.server"
 
     val descriptor = readDescriptor[T](c)
     c.Expr[LagomServiceBinder[T]](q"""

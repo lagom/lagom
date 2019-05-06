@@ -21,6 +21,7 @@ import org.apache.maven.project.MavenProject
  * wrong.
  */
 object LagomKeys {
+
   /** Whether this project is a lagom service */
   val LagomService = new LagomKey[Boolean]("lagomService")
 

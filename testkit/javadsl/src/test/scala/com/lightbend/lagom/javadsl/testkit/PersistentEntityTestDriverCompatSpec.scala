@@ -17,8 +17,17 @@ class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec {
   "PersistentEntityActor and PersistentEntityTestDriver" must {
     "produce same events and state" in {
       val probe1 = TestProbe()
-      val p = system.actorOf(PersistentEntityActor.props("test", Optional.of("1"),
-        () => new TestEntity(system, probe1.ref), Optional.empty(), 10.seconds, "", ""))
+      val p = system.actorOf(
+        PersistentEntityActor.props(
+          "test",
+          Optional.of("1"),
+          () => new TestEntity(system, probe1.ref),
+          Optional.empty(),
+          10.seconds,
+          "",
+          ""
+        )
+      )
       val probe2 = TestProbe()
       val driver = new PersistentEntityTestDriver(system, new TestEntity(system, probe2.ref), "1")
 

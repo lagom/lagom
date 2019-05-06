@@ -9,10 +9,14 @@ import com.lightbend.lagom.internal.javadsl.persistence.jdbc._
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.jdbc.SlickDbTestProvider
 import com.lightbend.lagom.javadsl.persistence.jdbc.testkit.TestUtil
-import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
-import com.typesafe.config.{ Config, ConfigFactory }
-import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
-import play.api.{ Configuration, Environment }
+import com.lightbend.lagom.persistence.ActorSystemSpec
+import com.lightbend.lagom.persistence.PersistenceSpec
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
+import play.api.inject.ApplicationLifecycle
+import play.api.inject.DefaultApplicationLifecycle
+import play.api.Configuration
+import play.api.Environment
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -20,7 +24,12 @@ import scala.concurrent.duration._
 abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec(_system) {
 
   def this(testName: String, config: Config) =
-    this(ActorSystem(testName, config.withFallback(TestUtil.clusterConfig()).withFallback(Configuration.load(Environment.simple()).underlying)))
+    this(
+      ActorSystem(
+        testName,
+        config.withFallback(TestUtil.clusterConfig()).withFallback(Configuration.load(Environment.simple()).underlying)
+      )
+    )
 
   def this(config: Config) = this(PersistenceSpec.getCallerName(getClass), config)
 

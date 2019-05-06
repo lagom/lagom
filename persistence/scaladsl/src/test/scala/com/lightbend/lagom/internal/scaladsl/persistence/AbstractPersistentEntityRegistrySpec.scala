@@ -5,16 +5,15 @@ package com.lightbend.lagom.internal.scaladsl.persistence
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import com.lightbend.lagom.scaladsl.persistence.{ NamedEntity, TestEntity }
+import com.lightbend.lagom.scaladsl.persistence.NamedEntity
+import com.lightbend.lagom.scaladsl.persistence.TestEntity
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{ BeforeAndAfterAll, FlatSpec, Matchers }
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
 
-class AbstractPersistentEntityRegistrySpec
-  extends FlatSpec
-  with Matchers
-  with BeforeAndAfterAll
-  with ScalaFutures {
+class AbstractPersistentEntityRegistrySpec extends FlatSpec with Matchers with BeforeAndAfterAll with ScalaFutures {
 
   @volatile var system: ActorSystem = _
 
@@ -44,16 +43,17 @@ class AbstractPersistentEntityRegistrySpec
 
   // ------------------------------------------------------------
 
-  behavior of "AbstractPersistentEntityRegistry"
+  behavior.of("AbstractPersistentEntityRegistry")
 
   it should "register and refFor given a class type" in withRegistry { registry =>
     registry.register(new TestEntity(system))
     registry.refFor[TestEntity](uselessId)
   }
 
-  it should "register and refFor given a class type for a Persistent Entity with overridden name" in withRegistry { registry =>
-    registry.register(new NamedEntity())
-    registry.refFor[NamedEntity](uselessId)
+  it should "register and refFor given a class type for a Persistent Entity with overridden name" in withRegistry {
+    registry =>
+      registry.register(new NamedEntity())
+      registry.refFor[NamedEntity](uselessId)
   }
 
   it should "throw IAE if refFor  before registering" in withRegistry { registry =>

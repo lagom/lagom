@@ -7,20 +7,29 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.{ Flow, Sink, Source }
-import akka.stream.{ ActorMaterializer, Materializer }
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
+import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServiceRouter
 import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.transport._
 import com.lightbend.lagom.scaladsl.server.mocks._
 import com.lightbend.lagom.scaladsl.server.testkit.FakeRequest
-import org.scalatest.{ Assertion, AsyncFlatSpec, BeforeAndAfterAll, Matchers }
+import org.scalatest.Assertion
+import org.scalatest.AsyncFlatSpec
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.Matchers
 import play.api.http.HttpConfiguration
-import play.api.http.websocket.{ Message, TextMessage }
+import play.api.http.websocket.Message
+import play.api.http.websocket.TextMessage
 import play.api.mvc
-import play.api.mvc.{ Handler, PlayBodyParsers }
+import play.api.mvc.Handler
+import play.api.mvc.PlayBodyParsers
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 /**
  * This test relies on DefaultExceptionSerializer so in case of failure some information is lost on de/ser. Check the
@@ -28,24 +37,25 @@ import scala.concurrent.{ ExecutionContext, Future }
  */
 class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeAndAfterAll {
 
-  private val system = ActorSystem("ScaladslServiceRouterSpec")
+  private val system                        = ActorSystem("ScaladslServiceRouterSpec")
   private implicit val ec: ExecutionContext = system.dispatcher
-  private implicit val mat: Materializer = ActorMaterializer.create(system)
+  private implicit val mat: Materializer    = ActorMaterializer.create(system)
 
-  override protected def afterAll(): Unit = {
+  protected override def afterAll(): Unit = {
     system.terminate()
     super.afterAll()
   }
 
-  behavior of "ScaladslServiceRouter"
+  behavior.of("ScaladslServiceRouter")
 
   it should "serve a non-filtered Streamed request" in {
     val atomicBoolean = new AtomicBoolean(false)
     // this test is canary
     val service = new SimpleStreamedService {
-      override def streamed(): ServerServiceCall[Source[String, NotUsed], Source[String, NotUsed]] = ServerServiceCall { (headers, _) =>
-        atomicBoolean.compareAndSet(false, true)
-        Future.successful((ResponseHeader.Ok, Source.single("unused")))
+      override def streamed(): ServerServiceCall[Source[String, NotUsed], Source[String, NotUsed]] = ServerServiceCall {
+        (headers, _) =>
+          atomicBoolean.compareAndSet(false, true)
+          Future.successful((ResponseHeader.Ok, Source.single("unused")))
       }
     }
 
@@ -73,21 +83,22 @@ class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with
 
   // ---------------------------------------------------------------------------------------------------
 
-  private def runRequest(service: Service)(x: mvc.WebSocket => mvc.RequestHeader => Future[WSFlow])(block: => Assertion): Future[Assertion] = {
-    val httpConfig = HttpConfiguration.createWithDefaults()
-    val parsers = PlayBodyParsers()
-    val router = new ScaladslServiceRouter(service.descriptor, service, httpConfig, parsers)
+  private def runRequest(
+      service: Service
+  )(x: mvc.WebSocket => mvc.RequestHeader => Future[WSFlow])(block: => Assertion): Future[Assertion] = {
+    val httpConfig                = HttpConfiguration.createWithDefaults()
+    val parsers                   = PlayBodyParsers()
+    val router                    = new ScaladslServiceRouter(service.descriptor, service, httpConfig, parsers)
     val req: mvc.Request[NotUsed] = new FakeRequest(method = "GET", path = PathProvider.PATH)
-    val handler = router.routes(req)
+    val handler                   = router.routes(req)
     val futureResult: Future[WSFlow] = Handler.applyStages(req, handler) match {
       case (_, action: mvc.WebSocket) => x(action)(req)
       case _                          => Future.failed(new AssertionError("Not a WebSocket."))
     }
-    futureResult flatMap {
-      _.runWith(Source.single(TextMessage("41")), Sink.ignore)._2.map {
-        _ => block
+    futureResult.flatMap {
+      _.runWith(Source.single(TextMessage("41")), Sink.ignore)._2.map { _ =>
+        block
       }
     }
   }
 }
-

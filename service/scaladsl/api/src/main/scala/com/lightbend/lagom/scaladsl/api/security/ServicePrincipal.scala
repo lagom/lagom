@@ -12,6 +12,7 @@ import java.security.Principal
  * on behalf of.
  */
 trait ServicePrincipal extends Principal {
+
   /**
    * The service name.
    *

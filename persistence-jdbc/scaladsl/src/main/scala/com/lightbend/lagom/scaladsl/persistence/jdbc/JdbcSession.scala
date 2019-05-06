@@ -8,6 +8,7 @@ import java.sql.Connection
 import scala.concurrent.Future
 
 object JdbcSession {
+
   /**
    * Closes this resource after the block has finished.
    */
@@ -21,6 +22,7 @@ object JdbcSession {
 }
 
 trait JdbcSession {
+
   /**
    * Execute the given function with a connection.
    *

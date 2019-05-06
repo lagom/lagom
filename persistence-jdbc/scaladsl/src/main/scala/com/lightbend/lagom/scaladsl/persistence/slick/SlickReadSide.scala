@@ -3,7 +3,8 @@
  */
 package com.lightbend.lagom.scaladsl.persistence.slick
 
-import slick.dbio.{ DBIOAction, NoStream }
+import slick.dbio.DBIOAction
+import slick.dbio.NoStream
 import slick.jdbc.JdbcProfile
 import slick.jdbc.JdbcBackend.Database
 import com.lightbend.lagom.scaladsl.persistence._
@@ -22,7 +23,7 @@ import scala.reflect.ClassTag
  */
 trait SlickReadSide {
 
-  implicit protected val executionContext: ExecutionContext
+  protected implicit val executionContext: ExecutionContext
 
   /**
    * Create a builder for a Slick read side event handler.
@@ -53,7 +54,9 @@ trait SlickReadSide {
      * @return This builder for fluent invocation.
      * @see ReadSideHandler#prepare(AggregateEventTag)
      */
-    def setPrepare(dbio: (AggregateEventTag[Event]) => DBIOAction[Any, NoStream, Nothing]): ReadSideHandlerBuilder[Event]
+    def setPrepare(
+        dbio: (AggregateEventTag[Event]) => DBIOAction[Any, NoStream, Nothing]
+    ): ReadSideHandlerBuilder[Event]
 
     /**
      * Define the event handler that will be used for events of a given class.
@@ -62,7 +65,9 @@ trait SlickReadSide {
      * @tparam E The event class to handle.
      * @return This builder for fluent invocation
      */
-    def setEventHandler[E <: Event: ClassTag](handler: (EventStreamElement[E]) => DBIOAction[Any, NoStream, Nothing]): ReadSideHandlerBuilder[Event]
+    def setEventHandler[E <: Event: ClassTag](
+        handler: (EventStreamElement[E]) => DBIOAction[Any, NoStream, Nothing]
+    ): ReadSideHandlerBuilder[Event]
 
     /**
      * Build the read side handler.

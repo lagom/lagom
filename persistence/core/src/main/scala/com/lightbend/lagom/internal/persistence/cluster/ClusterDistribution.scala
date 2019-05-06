@@ -6,10 +6,21 @@ package com.lightbend.lagom.internal.persistence.cluster
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
-import akka.actor.{ Actor, ActorRef, ActorSystem, DeadLetterSuppression, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider, Props, Terminated }
+import akka.actor.Actor
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.DeadLetterSuppression
+import akka.actor.ExtendedActorSystem
+import akka.actor.Extension
+import akka.actor.ExtensionId
+import akka.actor.ExtensionIdProvider
+import akka.actor.Props
+import akka.actor.Terminated
 import akka.cluster.Cluster
 import akka.cluster.sharding.ShardRegion.EntityId
-import akka.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
+import akka.cluster.sharding.ClusterSharding
+import akka.cluster.sharding.ClusterShardingSettings
+import akka.cluster.sharding.ShardRegion
 import com.typesafe.config.Config
 
 import scala.concurrent.duration._
@@ -21,14 +32,14 @@ import scala.concurrent.duration._
  * @param ensureActiveInterval The interval at which entities are ensured to be active.
  */
 case class ClusterDistributionSettings(
-  clusterShardingSettings: ClusterShardingSettings,
-  ensureActiveInterval:    FiniteDuration
+    clusterShardingSettings: ClusterShardingSettings,
+    ensureActiveInterval: FiniteDuration
 )
 
 object ClusterDistributionSettings {
   def apply(system: ActorSystem): ClusterDistributionSettings = {
     val clusterShardingSettings = ClusterShardingSettings(system)
-    val config = system.settings.config.getConfig("lagom.persistence.cluster.distribution")
+    val config                  = system.settings.config.getConfig("lagom.persistence.cluster.distribution")
     ClusterDistributionSettings(config, clusterShardingSettings)
   }
 
@@ -82,10 +93,10 @@ class ClusterDistribution(system: ExtendedActorSystem) extends Extension {
    * @return the actor ref of the [[ShardRegion]] that is to be responsible for the shard
    */
   def start(
-    typeName:    String,
-    entityProps: Props,
-    entityIds:   Set[EntityId],
-    settings:    ClusterDistributionSettings
+      typeName: String,
+      entityProps: Props,
+      entityIds: Set[EntityId],
+      settings: ClusterDistributionSettings
   ): ActorRef = {
 
     val extractEntityId: ShardRegion.ExtractEntityId = {
@@ -100,10 +111,13 @@ class ClusterDistribution(system: ExtendedActorSystem) extends Extension {
     val sharding = ClusterSharding(system)
 
     if (settings.clusterShardingSettings.role.forall(Cluster(system).getSelfRoles.contains)) {
-      val shardRegion = sharding.start(typeName, entityProps, settings.clusterShardingSettings,
-        extractEntityId, extractShardId)
+      val shardRegion =
+        sharding.start(typeName, entityProps, settings.clusterShardingSettings, extractEntityId, extractShardId)
 
-      system.systemActorOf(EnsureActiveActor.props(entityIds, shardRegion, settings.ensureActiveInterval), "cluster-distribution-" + URLEncoder.encode(typeName, "utf-8"))
+      system.systemActorOf(
+        EnsureActiveActor.props(entityIds, shardRegion, settings.ensureActiveInterval),
+        "cluster-distribution-" + URLEncoder.encode(typeName, "utf-8")
+      )
 
       shardRegion
     } else {
@@ -120,8 +134,11 @@ private[cluster] object EnsureActiveActor {
     Props(classOf[EnsureActiveActor], entityIds, shardRegion, ensureActiveInterval)
 }
 
-private[cluster] class EnsureActiveActor(entityIds: Set[EntityId], shardRegion: ActorRef,
-                                         ensureActiveInterval: FiniteDuration) extends Actor {
+private[cluster] class EnsureActiveActor(
+    entityIds: Set[EntityId],
+    shardRegion: ActorRef,
+    ensureActiveInterval: FiniteDuration
+) extends Actor {
 
   import EnsureActiveActor._
   import ClusterDistribution._

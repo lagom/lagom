@@ -3,10 +3,14 @@
  */
 package com.lightbend.lagom.internal
 
-import io.netty.channel.{ Channel, ChannelFuture, ChannelFutureListener }
-import io.netty.util.concurrent.{ GenericFutureListener, Future => NettyFuture }
+import io.netty.channel.Channel
+import io.netty.channel.ChannelFuture
+import io.netty.channel.ChannelFutureListener
+import io.netty.util.concurrent.GenericFutureListener
+import io.netty.util.concurrent.{ Future => NettyFuture }
 
-import scala.concurrent.{ Future, Promise }
+import scala.concurrent.Future
+import scala.concurrent.Promise
 
 object NettyFutureConverters {
 

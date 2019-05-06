@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode
  * current class name.
  */
 abstract class JacksonJsonMigration {
+
   /**
    * Define current version. The first version, when no migration was used,
    * is always 1.

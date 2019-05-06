@@ -3,8 +3,11 @@
  */
 package com.lightbend.lagom.scaladsl.client.compile
 
-import com.lightbend.lagom.scaladsl.api.{ Service, ServiceCall }
-import com.lightbend.lagom.scaladsl.client.{ ServiceClient, ServiceClientConstructor, ServiceClientImplementationContext }
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.ServiceCall
+import com.lightbend.lagom.scaladsl.client.ServiceClient
+import com.lightbend.lagom.scaladsl.client.ServiceClientConstructor
+import com.lightbend.lagom.scaladsl.client.ServiceClientImplementationContext
 import com.lightbend.lagom.macrotestkit.ShouldNotTypecheck
 import Service._
 
@@ -40,8 +43,7 @@ trait AbstractNonServiceCall extends Service {
   override def descriptor = named("foo")
 }
 
-trait AbstractDescriptor extends Service {
-}
+trait AbstractDescriptor extends Service {}
 
 trait OverloadedMethods extends Service {
   def foo(arg: String): ServiceCall[String, String]

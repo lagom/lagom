@@ -28,8 +28,8 @@ class KafkaLocalServer private (kafkaProperties: Properties, zooKeeperServer: Ka
 
   def start(): Unit = {
     if (kafkaServerRef.get == null) {
-      // There is a possible race condition here. However, instead of attempting to avoid it 
-      // by using a lock, we are working with it and do the necessary clean up if indeed we 
+      // There is a possible race condition here. However, instead of attempting to avoid it
+      // by using a lock, we are working with it and do the necessary clean up if indeed we
       // end up creating two Kafka server instances.
       val newKafkaServer = KafkaServerStartable.fromProps(kafkaProperties)
       if (kafkaServerRef.compareAndSet(null, newKafkaServer)) {
@@ -59,7 +59,8 @@ class KafkaLocalServer private (kafkaProperties: Properties, zooKeeperServer: Ka
       }
       try zooKeeperServer.stop()
       catch {
-        case _: InstanceNotFoundException => () // swallow, see https://github.com/Netflix/curator/issues/121 for why it's ok to do so
+        case _: InstanceNotFoundException =>
+          () // swallow, see https://github.com/Netflix/curator/issues/121 for why it's ok to do so
       }
     }
     // else it's already stopped
@@ -68,9 +69,9 @@ class KafkaLocalServer private (kafkaProperties: Properties, zooKeeperServer: Ka
 }
 
 object KafkaLocalServer {
-  final val DefaultPort = 9092
+  final val DefaultPort           = 9092
   final val DefaultPropertiesFile = "/kafka-server.properties"
-  final val DefaultResetOnStart = true
+  final val DefaultResetOnStart   = true
 
   private final val KafkaDataFolderName = "kafka_data"
 
@@ -78,9 +79,16 @@ object KafkaLocalServer {
 
   private lazy val tempDir = System.getProperty("java.io.tmpdir")
 
-  def apply(cleanOnStart: Boolean): KafkaLocalServer = this(DefaultPort, ZooKeeperLocalServer.DefaultPort, DefaultPropertiesFile, Some(tempDir), cleanOnStart)
+  def apply(cleanOnStart: Boolean): KafkaLocalServer =
+    this(DefaultPort, ZooKeeperLocalServer.DefaultPort, DefaultPropertiesFile, Some(tempDir), cleanOnStart)
 
-  def apply(kafkaPort: Int, zookeeperServerPort: Int, kafkaPropertiesFile: String, targetDir: Option[String], cleanOnStart: Boolean): KafkaLocalServer = {
+  def apply(
+      kafkaPort: Int,
+      zookeeperServerPort: Int,
+      kafkaPropertiesFile: String,
+      targetDir: Option[String],
+      cleanOnStart: Boolean
+  ): KafkaLocalServer = {
     val kafkaDataDir = dataDirectory(targetDir, KafkaDataFolderName)
     Log.info(s"Kafka data directory is $kafkaDataDir.")
 
@@ -94,7 +102,12 @@ object KafkaLocalServer {
   /**
    * Creates a Properties instance for Kafka customized with values passed in argument.
    */
-  private def createKafkaProperties(kafkaPropertiesFile: String, kafkaPort: Int, zookeeperServerPort: Int, dataDir: File): Properties = {
+  private def createKafkaProperties(
+      kafkaPropertiesFile: String,
+      kafkaPort: Int,
+      zookeeperServerPort: Int,
+      dataDir: File
+  ): Properties = {
     val kafkaProperties = PropertiesLoader.from(kafkaPropertiesFile)
     kafkaProperties.setProperty("log.dirs", dataDir.getAbsolutePath)
     kafkaProperties.setProperty("listeners", s"PLAINTEXT://:$kafkaPort")
@@ -106,7 +119,8 @@ object KafkaLocalServer {
     if (directory.exists()) try {
       val rootPath = Paths.get(directory.getAbsolutePath)
 
-      val files = Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).iterator().asScala
+      val files =
+        Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).iterator().asScala
       files.foreach(Files.delete)
       Log.debug(s"Deleted ${directory.getAbsolutePath}.")
     } catch {
@@ -126,7 +140,8 @@ object KafkaLocalServer {
    * @return A file directory that points to either `baseDirPath/directoryName` or `tempDir/directoryName`.
    */
   private def dataDirectory(baseDirPath: Option[String], directoryName: String): File = {
-    lazy val tempDirMessage = s"Will attempt to create folder $directoryName in the system temporary directory: $tempDir"
+    lazy val tempDirMessage =
+      s"Will attempt to create folder $directoryName in the system temporary directory: $tempDir"
 
     val maybeBaseDir = baseDirPath.map(new File(_)).filter(f => f.exists())
 
@@ -148,7 +163,9 @@ object KafkaLocalServer {
 
     val dataDirectory = new File(baseDir, directoryName)
     if (dataDirectory.exists() && !dataDirectory.isDirectory())
-      throw new IllegalArgumentException(s"Cannot use $directoryName as a directory name because a file with that name already exists in $dataDirectory.")
+      throw new IllegalArgumentException(
+        s"Cannot use $directoryName as a directory name because a file with that name already exists in $dataDirectory."
+      )
 
     dataDirectory
   }
@@ -181,7 +198,7 @@ object KafkaLocalServer {
   }
 
   object ZooKeeperLocalServer {
-    final val DefaultPort = 2181
+    final val DefaultPort                     = 2181
     private final val ZookeeperDataFolderName = "zookeeper_data"
   }
 }

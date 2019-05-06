@@ -4,19 +4,26 @@
 package com.lightbend.lagom.scaladsl.persistence.multinode
 
 import akka.actor.setup.ActorSystemSetup
-import akka.actor.{ ActorRef, ActorSystem, Address, BootstrapSetup }
-import akka.cluster.{ Cluster, MemberStatus }
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.Address
+import akka.actor.BootstrapSetup
+import akka.cluster.Cluster
+import akka.cluster.MemberStatus
 import akka.pattern.pipe
 import akka.remote.testconductor.RoleName
-import akka.remote.testkit.{ MultiNodeConfig, MultiNodeSpec }
+import akka.remote.testkit.MultiNodeConfig
+import akka.remote.testkit.MultiNodeSpec
 import akka.testkit.ImplicitSender
 import com.lightbend.lagom.scaladsl.persistence._
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 import play.api.Environment
 
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.Await
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
@@ -26,10 +33,13 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
   val node3 = role("node3")
 
   val databasePort = System.getProperty("database.port").toInt
-  val environment = Environment.simple()
+  val environment  = Environment.simple()
 
-  commonConfig(additionalCommonConfig(databasePort).withFallback(ConfigFactory.parseString(
-    """
+  commonConfig(
+    additionalCommonConfig(databasePort).withFallback(
+      ConfigFactory
+        .parseString(
+          """
       akka.loglevel = INFO
       lagom.persistence.run-entities-on-role = "backend"
       lagom.persistence.read-side.run-on-role = "read-side"
@@ -51,7 +61,10 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       akka.coordinated-shutdown.run-by-jvm-shutdown-hook = off
       akka.cluster.run-coordinated-shutdown-when-down = off
     """
-  ).withFallback(ConfigFactory.parseResources("play/reference-overrides.conf"))))
+        )
+        .withFallback(ConfigFactory.parseResources("play/reference-overrides.conf"))
+    )
+  )
 
   def additionalCommonConfig(databasePort: Int): Config
 
@@ -72,10 +85,10 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
 object AbstractClusteredPersistentEntitySpec {
   // Copied from MultiNodeSpec
   private def getCallerName(clazz: Class[_]): String = {
-    val s = Thread.currentThread.getStackTrace map (_.getClassName) drop 1 dropWhile (_ matches ".*MultiNodeSpec.?$")
+    val s = Thread.currentThread.getStackTrace.map(_.getClassName).drop(1).dropWhile(_.matches(".*MultiNodeSpec.?$"))
     val reduced = s.lastIndexWhere(_ == clazz.getName) match {
       case -1 => s
-      case z  => s drop (z + 1)
+      case z  => s.drop(z + 1)
     }
     reduced.head.replaceFirst(""".*\.""", "").replaceAll("[^a-zA-Z_0-9]", "_")
   }
@@ -91,8 +104,9 @@ object AbstractClusteredPersistentEntitySpec {
 }
 
 abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPersistentEntityConfig)
-  extends MultiNodeSpec(config, AbstractClusteredPersistentEntitySpec.createActorSystem(TestEntitySerializerRegistry))
-  with STMultiNodeSpec with ImplicitSender {
+    extends MultiNodeSpec(config, AbstractClusteredPersistentEntitySpec.createActorSystem(TestEntitySerializerRegistry))
+    with STMultiNodeSpec
+    with ImplicitSender {
 
   import config._
   // implicit EC needed for pipeTo
@@ -102,7 +116,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
   def join(from: RoleName, to: RoleName): Unit = {
     runOn(from) {
-      Cluster(system) join node(to).address
+      Cluster(system).join(node(to).address)
     }
     enterBarrier(from.name + "-joined")
   }
@@ -111,7 +125,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     if (ref.path.address.hasLocalScope) Cluster(system).selfAddress
     else ref.path.address
 
-  override protected def atStartup() {
+  protected override def atStartup() {
     // Initialize components
     registry.register(new TestEntity(system))
     components.readSide.register(readSideProcessor())
@@ -201,12 +215,11 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       // i.e. no entities on node3
 
       val entities = for (n <- 10 to 29) yield registry.refFor[TestEntity](n.toString)
-      val addresses = entities.map {
-        ent =>
-          val r = ent.ask(TestEntity.GetAddress)
-          val h: Future[String] = r.map(_.hostPort) // compile check that the reply type is inferred correctly
-          r.pipeTo(testActor)
-          expectMsgType[Address]
+      val addresses = entities.map { ent =>
+        val r                 = ent.ask(TestEntity.GetAddress)
+        val h: Future[String] = r.map(_.hostPort) // compile check that the reply type is inferred correctly
+        r.pipeTo(testActor)
+        expectMsgType[Address]
       }.toSet
 
       addresses should not contain (node(node3).address)
@@ -224,12 +237,12 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
       runOn(node1) {
         within(35.seconds) {
-          val ref1 = registry.refFor[TestEntity]("1")
+          val ref1                       = registry.refFor[TestEntity]("1")
           val r1: Future[TestEntity.Evt] = ref1.ask(TestEntity.Add("a"))
           r1.pipeTo(testActor)
           expectMsg(TestEntity.Appended("A"))
 
-          val ref2 = registry.refFor[TestEntity]("2")
+          val ref2                       = registry.refFor[TestEntity]("2")
           val r2: Future[TestEntity.Evt] = ref2.ask(TestEntity.Add("b"))
           r2.pipeTo(testActor)
           expectMsg(TestEntity.Appended("B"))

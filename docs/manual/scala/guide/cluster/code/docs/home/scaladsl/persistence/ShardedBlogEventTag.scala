@@ -9,7 +9,7 @@ class ShardedBlogEventTag {
   //#sharded-tags
   object BlogEvent {
     val NumShards = 20
-    val Tag = AggregateEventTag.sharded[BlogEvent](NumShards)
+    val Tag       = AggregateEventTag.sharded[BlogEvent](NumShards)
   }
 
   sealed trait BlogEvent extends AggregateEvent[BlogEvent] {

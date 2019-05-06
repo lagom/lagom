@@ -3,9 +3,13 @@
  */
 package com.lightbend.lagom.dev
 
-import java.io.{ Closeable, File }
-import java.net.{ URI, URL }
-import java.util.concurrent.{ CompletableFuture, CompletionStage, TimeUnit }
+import java.io.Closeable
+import java.io.File
+import java.net.URI
+import java.net.URL
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionStage
+import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.{ Map => JMap }
 
@@ -13,7 +17,8 @@ import com.datastax.driver.core.Cluster
 import play.dev.filewatch.LoggerProxy
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 import scala.language.reflectiveCalls
@@ -49,7 +54,7 @@ private[lagom] object Servers {
       })
 
       // Needed to make sure the spawned process is killed when the current process (i.e., the sbt console) is shut down
-      private[Servers] def enableKillOnExit(): Unit = Runtime.getRuntime.addShutdownHook(killOnExitCallback)
+      private[Servers] def enableKillOnExit(): Unit  = Runtime.getRuntime.addShutdownHook(killOnExitCallback)
       private[Servers] def disableKillOnExit(): Unit = Runtime.getRuntime.removeShutdownHook(killOnExitCallback)
       private[Servers] def kill(): Unit = {
         // Note, don't use scala.util.Try, since it may have not been loaded yet, and the classloader that has it may
@@ -90,13 +95,25 @@ private[lagom] object Servers {
 
   object ServiceLocator extends ServerContainer {
     protected type Server = Closeable {
-      def start(serviceLocatorPort: Int, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit
+      def start(
+          serviceLocatorPort: Int,
+          serviceGatewayPort: Int,
+          unmanagedServices: JMap[String, String],
+          gatewayImpl: String
+      ): Unit
       def serviceLocatorAddress: URI
       def serviceGatewayAddress: URI
     }
 
-    def start(log: LoggerProxy, parentClassLoader: ClassLoader, classpath: Array[URL], serviceLocatorPort: Int,
-              serviceGatewayPort: Int, unmanagedServices: Map[String, String], gatewayImpl: String): Closeable = synchronized {
+    def start(
+        log: LoggerProxy,
+        parentClassLoader: ClassLoader,
+        classpath: Array[URL],
+        serviceLocatorPort: Int,
+        serviceGatewayPort: Int,
+        unmanagedServices: Map[String, String],
+        gatewayImpl: String
+    ): Closeable = synchronized {
       if (server == null) {
         withContextClassloader(new java.net.URLClassLoader(classpath, parentClassLoader)) { loader =>
           val serverClass = loader.loadClass("com.lightbend.lagom.discovery.ServiceLocatorServer")
@@ -141,8 +158,7 @@ private[lagom] object Servers {
 
     private def stop(): Unit = synchronized {
       try server.close()
-      catch { case _: Exception => () }
-      finally server = null
+      catch { case _: Exception => () } finally server = null
     }
   }
 
@@ -156,21 +172,21 @@ private[lagom] object Servers {
     }
 
     def start(
-      log:               LoggerProxy,
-      parentClassLoader: ClassLoader,
-      classpath:         Seq[File],
-      port:              Int,
-      cleanOnStart:      Boolean,
-      jvmOptions:        Seq[String],
-      yamlConfig:        File,
-      maxWaiting:        FiniteDuration
+        log: LoggerProxy,
+        parentClassLoader: ClassLoader,
+        classpath: Seq[File],
+        port: Int,
+        cleanOnStart: Boolean,
+        jvmOptions: Seq[String],
+        yamlConfig: File,
+        maxWaiting: FiniteDuration
     ): Closeable = synchronized {
 
       if (server != null) {
         log.info(s"Cassandra is running at ${server.address}")
       } else {
-        val loader = new java.net.URLClassLoader(classpath.map(_.toURI.toURL).toArray, parentClassLoader)
-        val directory = new File("target/embedded-cassandra")
+        val loader      = new java.net.URLClassLoader(classpath.map(_.toURI.toURL).toArray, parentClassLoader)
+        val directory   = new File("target/embedded-cassandra")
         val serverClass = loader.loadClass("com.lightbend.lagom.internal.cassandra.CassandraLauncher")
         server = serverClass.newInstance().asInstanceOf[Server]
 
@@ -184,7 +200,7 @@ private[lagom] object Servers {
     }
 
     private def waitForRunningCassandra(log: LoggerProxy, server: Server, maxWaiting: FiniteDuration): Unit = {
-      val contactPoint = Seq(new java.net.InetSocketAddress(server.hostname, server.port)).asJava
+      val contactPoint   = Seq(new java.net.InetSocketAddress(server.hostname, server.port)).asJava
       val clusterBuilder = Cluster.builder.addContactPointsWithPorts(contactPoint)
 
       @annotation.tailrec
@@ -243,14 +259,14 @@ private[lagom] object Servers {
     protected type Server = KafkaProcess
 
     def start(
-      log:                 LoggerProxy,
-      cp:                  Seq[File],
-      kafkaPort:           Int,
-      zooKeeperPort:       Int,
-      kafkaPropertiesFile: Option[File],
-      jvmOptions:          Seq[String],
-      targetDir:           File,
-      cleanOnStart:        Boolean
+        log: LoggerProxy,
+        cp: Seq[File],
+        kafkaPort: Int,
+        zooKeeperPort: Int,
+        kafkaPropertiesFile: Option[File],
+        jvmOptions: Seq[String],
+        targetDir: File,
+        cleanOnStart: Boolean
     ): Closeable = {
 
       val args =
@@ -260,9 +276,14 @@ private[lagom] object Servers {
           cleanOnStart.toString ::
           kafkaPropertiesFile.toList.map(_.getAbsolutePath)
 
-      val log4jOutput = targetDir.getAbsolutePath + java.io.File.separator + "log4j_output"
+      val log4jOutput   = targetDir.getAbsolutePath + java.io.File.separator + "log4j_output"
       val sysProperties = List(s"-Dkafka.logs.dir=$log4jOutput")
-      val process = LagomProcess.runJava(jvmOptions.toList ::: sysProperties, cp, "com.lightbend.lagom.internal.kafka.KafkaLauncher", args)
+      val process = LagomProcess.runJava(
+        jvmOptions.toList ::: sysProperties,
+        cp,
+        "com.lightbend.lagom.internal.kafka.KafkaLauncher",
+        args
+      )
       server = new KafkaProcess(process)
       server.completionHook.thenAccept(
         new Consumer[Int] {
@@ -300,7 +321,7 @@ private[lagom] object Servers {
 private[lagom] object StaticServiceLocations {
   def staticServiceLocations(lagomCassandraPort: Int, lagomKafkaAddress: String): Map[String, String] = {
     Map(
-      "cas_native" -> s"tcp://127.0.0.1:$lagomCassandraPort/cas_native",
+      "cas_native"   -> s"tcp://127.0.0.1:$lagomCassandraPort/cas_native",
       "kafka_native" -> s"tcp://$lagomKafkaAddress/kafka_native"
     )
   }

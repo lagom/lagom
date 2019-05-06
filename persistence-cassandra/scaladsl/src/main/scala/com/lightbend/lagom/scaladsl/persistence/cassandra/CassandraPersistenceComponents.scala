@@ -6,17 +6,27 @@ package com.lightbend.lagom.scaladsl.persistence.cassandra
 import scala.concurrent.Future
 import java.net.URI
 
-import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.{ CassandraPersistentEntityRegistry, CassandraReadSideImpl, ScaladslCassandraOffsetStore }
+import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.CassandraPersistentEntityRegistry
+import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.CassandraReadSideImpl
+import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.ScaladslCassandraOffsetStore
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
-import com.lightbend.lagom.scaladsl.persistence.{ PersistenceComponents, PersistentEntityRegistry, ReadSidePersistenceComponents, WriteSidePersistenceComponents }
-import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraReadSideSettings, CassandraOffsetStore, ServiceLocatorAdapter, ServiceLocatorHolder }
+import com.lightbend.lagom.scaladsl.persistence.PersistenceComponents
+import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
+import com.lightbend.lagom.scaladsl.persistence.ReadSidePersistenceComponents
+import com.lightbend.lagom.scaladsl.persistence.WriteSidePersistenceComponents
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
+import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorAdapter
+import com.lightbend.lagom.internal.persistence.cassandra.ServiceLocatorHolder
 import com.lightbend.lagom.spi.persistence.OffsetStore
+
 /**
  * Persistence Cassandra components (for compile-time injection).
  */
-trait CassandraPersistenceComponents extends PersistenceComponents
-  with ReadSideCassandraPersistenceComponents
-  with WriteSideCassandraPersistenceComponents
+trait CassandraPersistenceComponents
+    extends PersistenceComponents
+    with ReadSideCassandraPersistenceComponents
+    with WriteSideCassandraPersistenceComponents
 
 /**
  * Write-side persistence Cassandra components (for compile-time injection).
@@ -43,12 +53,15 @@ trait WriteSideCassandraPersistenceComponents extends WriteSidePersistenceCompon
  * Read-side persistence Cassandra components (for compile-time injection).
  */
 trait ReadSideCassandraPersistenceComponents extends ReadSidePersistenceComponents {
-  lazy val cassandraSession: CassandraSession = new CassandraSession(actorSystem)
+  lazy val cassandraSession: CassandraSession                 = new CassandraSession(actorSystem)
   lazy val testCasReadSideSettings: CassandraReadSideSettings = new CassandraReadSideSettings(actorSystem)
 
   private[lagom] lazy val cassandraOffsetStore: CassandraOffsetStore =
-    new ScaladslCassandraOffsetStore(actorSystem, cassandraSession, testCasReadSideSettings, readSideConfig)(executionContext)
+    new ScaladslCassandraOffsetStore(actorSystem, cassandraSession, testCasReadSideSettings, readSideConfig)(
+      executionContext
+    )
   lazy val offsetStore: OffsetStore = cassandraOffsetStore
 
-  lazy val cassandraReadSide: CassandraReadSide = new CassandraReadSideImpl(actorSystem, cassandraSession, cassandraOffsetStore)
+  lazy val cassandraReadSide: CassandraReadSide =
+    new CassandraReadSideImpl(actorSystem, cassandraSession, cassandraOffsetStore)
 }

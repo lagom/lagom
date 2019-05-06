@@ -14,8 +14,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
 
-class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll
-  with TypeCheckedTripleEquals {
+class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with TypeCheckedTripleEquals {
 
   val system = ActorSystem("PostSpec", JsonSerializerRegistry.actorSystemSetupFor(BlogPostSerializerRegistry))
 
@@ -25,7 +24,7 @@ class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll
 
   "Blog Post entity" must {
     "handle AddPost" in {
-      val driver = new PersistentEntityTestDriver(system, new Post, "post-1")
+      val driver  = new PersistentEntityTestDriver(system, new Post, "post-1")
       val content = PostContent("Title", "Body")
       val outcome = driver.run(AddPost(content))
       outcome.events should ===(List(PostAdded("post-1", content)))
@@ -36,7 +35,7 @@ class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll
     }
 
     "validate title" in {
-      val driver = new PersistentEntityTestDriver(system, new Post, "post-1")
+      val driver  = new PersistentEntityTestDriver(system, new Post, "post-1")
       val outcome = driver.run(AddPost(PostContent("", "Body")))
       outcome.replies.head.getClass should be(classOf[InvalidCommandException])
       outcome.events.size should ===(0)
@@ -48,9 +47,7 @@ class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll
       driver.run(AddPost(PostContent("Title", "Body")))
 
       val outcome = driver.run(ChangeBody("New body 1"), ChangeBody("New body 2"))
-      outcome.events should ===(List(
-        BodyChanged("post-1", "New body 1"),
-        BodyChanged("post-1", "New body 2")))
+      outcome.events should ===(List(BodyChanged("post-1", "New body 1"), BodyChanged("post-1", "New body 2")))
       outcome.state.published should ===(false)
       outcome.state.content.get.body should ===("New body 2")
       outcome.replies should ===(List(Done, Done))

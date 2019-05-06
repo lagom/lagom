@@ -5,7 +5,9 @@ package com.lightbend.lagom.api.tools.tests.scaladsl
 
 import akka.NotUsed
 import com.lightbend.lagom.scaladsl.api.transport.Method
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall }
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.Service._
 
 import scala.concurrent.Future
@@ -20,5 +22,7 @@ trait UndescribedService extends Service {
 }
 
 class UndescribedServiceImpl extends UndescribedService {
-  def getMock(id: String) = ServiceCall { _ => Future.successful(NotUsed) }
+  def getMock(id: String) = ServiceCall { _ =>
+    Future.successful(NotUsed)
+  }
 }

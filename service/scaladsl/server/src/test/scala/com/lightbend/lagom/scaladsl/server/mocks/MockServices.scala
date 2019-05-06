@@ -7,11 +7,16 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.NotUsed
 import akka.stream.scaladsl.Source
-import com.lightbend.lagom.scaladsl.api.Service.{ pathCall, named, restCall }
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service, ServiceCall }
+import com.lightbend.lagom.scaladsl.api.Service.pathCall
+import com.lightbend.lagom.scaladsl.api.Service.named
+import com.lightbend.lagom.scaladsl.api.Service.restCall
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.transport.Method
-import play.api.{ Environment, Mode }
+import play.api.Environment
+import play.api.Mode
 
 object PathProvider {
   val PATH = "/some-path"

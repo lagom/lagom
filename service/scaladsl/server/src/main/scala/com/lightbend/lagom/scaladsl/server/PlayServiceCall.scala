@@ -13,7 +13,8 @@ import scala.concurrent.Future
  */
 trait PlayServiceCall[Request, Response] extends ServiceCall[Request, Response] {
 
-  def invoke(request: Request): Future[Response] = throw new UnsupportedOperationException("Play service call must be invoked using Play specific methods")
+  def invoke(request: Request): Future[Response] =
+    throw new UnsupportedOperationException("Play service call must be invoked using Play specific methods")
 
   /**
    * Low level hook for implementing service calls directly in Play.
@@ -60,9 +61,12 @@ object PlayServiceCall {
    * }
    * ```
    */
-  def apply[Request, Response](serviceCall: (ServiceCall[Request, Response] => EssentialAction) => EssentialAction): PlayServiceCall[Request, Response] = {
+  def apply[Request, Response](
+      serviceCall: (ServiceCall[Request, Response] => EssentialAction) => EssentialAction
+  ): PlayServiceCall[Request, Response] = {
     new PlayServiceCall[Request, Response] {
-      override def invoke(wrapCall: (ServiceCall[Request, Response]) => EssentialAction): EssentialAction = serviceCall(wrapCall)
+      override def invoke(wrapCall: (ServiceCall[Request, Response]) => EssentialAction): EssentialAction =
+        serviceCall(wrapCall)
     }
   }
 

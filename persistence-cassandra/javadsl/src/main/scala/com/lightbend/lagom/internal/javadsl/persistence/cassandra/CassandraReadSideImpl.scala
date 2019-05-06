@@ -4,9 +4,13 @@
 package com.lightbend.lagom.internal.javadsl.persistence.cassandra
 
 import java.util
-import java.util.concurrent.{ CompletableFuture, CompletionStage }
-import java.util.function.{ BiFunction, Function, Supplier }
-import javax.inject.{ Inject, Singleton }
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionStage
+import java.util.function.BiFunction
+import java.util.function.Function
+import java.util.function.Supplier
+import javax.inject.Inject
+import javax.inject.Singleton
 
 import akka.Done
 import akka.actor.ActorSystem
@@ -18,22 +22,29 @@ import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide.ReadSideHandlerBuilder
-import com.lightbend.lagom.javadsl.persistence.cassandra.{ CassandraReadSide, CassandraReadSideProcessor, CassandraSession }
-import org.pcollections.{ PSequence, TreePVector }
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession
+import org.pcollections.PSequence
+import org.pcollections.TreePVector
 
 /**
  * Internal API
  */
 @Singleton
-private[lagom] final class CassandraReadSideImpl @Inject() (
-  system: ActorSystem, session: CassandraSession, offsetStore: CassandraOffsetStore, readSide: ReadSideImpl, injector: Injector
+private[lagom] final class CassandraReadSideImpl @Inject()(
+    system: ActorSystem,
+    session: CassandraSession,
+    offsetStore: CassandraOffsetStore,
+    readSide: ReadSideImpl,
+    injector: Injector
 ) extends CassandraReadSide {
 
   private val dispatcher = system.settings.config.getString("lagom.persistence.read-side.use-dispatcher")
-  implicit val ec = system.dispatchers.lookup(dispatcher)
+  implicit val ec        = system.dispatchers.lookup(dispatcher)
 
   override def register[Event <: AggregateEvent[Event]](
-    processorClass: Class[_ <: CassandraReadSideProcessor[Event]]
+      processorClass: Class[_ <: CassandraReadSideProcessor[Event]]
   ): Unit = {
 
     readSide.registerFactory(
@@ -52,7 +63,8 @@ private[lagom] final class CassandraReadSideImpl @Inject() (
 
           override def readSideName(): String = Logging.simpleName(processorClass)
         }
-      }, processorClass
+      },
+      processorClass
     )
   }
 
@@ -70,14 +82,16 @@ private[lagom] final class CassandraReadSideImpl @Inject() (
         this
       }
 
-      override def setPrepare(callback: Function[AggregateEventTag[Event], CompletionStage[Done]]): ReadSideHandlerBuilder[Event] = {
+      override def setPrepare(
+          callback: Function[AggregateEventTag[Event], CompletionStage[Done]]
+      ): ReadSideHandlerBuilder[Event] = {
         prepareCallback = callback.apply
         this
       }
 
       override def setEventHandler[E <: Event](
-        eventClass: Class[E],
-        handler:    Function[E, CompletionStage[util.List[BoundStatement]]]
+          eventClass: Class[E],
+          handler: Function[E, CompletionStage[util.List[BoundStatement]]]
       ): ReadSideHandlerBuilder[Event] = {
 
         handlers += (eventClass -> ((event: E, offset: Offset) => handler(event)))
@@ -85,8 +99,8 @@ private[lagom] final class CassandraReadSideImpl @Inject() (
       }
 
       override def setEventHandler[E <: Event](
-        eventClass: Class[E],
-        handler:    BiFunction[E, Offset, CompletionStage[util.List[BoundStatement]]]
+          eventClass: Class[E],
+          handler: BiFunction[E, Offset, CompletionStage[util.List[BoundStatement]]]
       ): ReadSideHandlerBuilder[Event] = {
 
         handlers += (eventClass -> handler.apply _)
@@ -94,7 +108,15 @@ private[lagom] final class CassandraReadSideImpl @Inject() (
       }
 
       override def build(): ReadSideHandler[Event] = {
-        new CassandraAutoReadSideHandler[Event](session, offsetStore, handlers, globalPrepareCallback, prepareCallback, eventProcessorId, dispatcher)
+        new CassandraAutoReadSideHandler[Event](
+          session,
+          offsetStore,
+          handlers,
+          globalPrepareCallback,
+          prepareCallback,
+          eventProcessorId,
+          dispatcher
+        )
       }
     }
   }

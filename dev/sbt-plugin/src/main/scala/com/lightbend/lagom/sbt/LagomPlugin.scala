@@ -5,9 +5,11 @@ package com.lightbend.lagom.sbt
 
 import java.io.Closeable
 
-import com.lightbend.lagom.dev.PortAssigner.{ Port, ProjectName }
+import com.lightbend.lagom.dev.PortAssigner.Port
+import com.lightbend.lagom.dev.PortAssigner.ProjectName
 import com.lightbend.lagom.dev.Reloader.DevServer
-import com.lightbend.lagom.dev.{ Colors, _ }
+import com.lightbend.lagom.dev.Colors
+import com.lightbend.lagom.dev._
 import com.lightbend.lagom.sbt.run.RunSupport
 import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 import play.dev.filewatch.FileWatchService
@@ -16,14 +18,16 @@ import play.sbt._
 import sbt.Def.Initialize
 import sbt.Keys._
 import sbt._
-import sbt.plugins.{ CorePlugin, IvyPlugin, JvmPlugin }
+import sbt.plugins.CorePlugin
+import sbt.plugins.IvyPlugin
+import sbt.plugins.JvmPlugin
 
 /**
  * Base plugin for Lagom projects. Declares common settings for both Java and Scala based Lagom projects.
  */
 object Lagom extends AutoPlugin {
   override def requires = LagomReloadableService && JavaAppPackaging
-  val autoImport = LagomImport
+  val autoImport        = LagomImport
 }
 
 /**
@@ -35,14 +39,14 @@ object Lagom extends AutoPlugin {
  */
 object LagomJava extends AutoPlugin {
   override def requires = Lagom
-  override def trigger = noTrigger
+  override def trigger  = noTrigger
 
   import LagomPlugin.autoImport._
 
   override def projectSettings = LagomSettings.defaultSettings ++ Seq(
     Keys.run in Compile := {
       val service = lagomRun.value
-      val log = state.value.log
+      val log     = state.value.log
       SbtConsoleHelper.printStartScreen(log, service)
       SbtConsoleHelper.blockUntilExit(log, Internal.Keys.interactionMode.value, Seq(service._2), Nil)
     },
@@ -79,14 +83,14 @@ object LagomJava extends AutoPlugin {
  */
 object LagomScala extends AutoPlugin {
   override def requires = Lagom
-  override def trigger = noTrigger
+  override def trigger  = noTrigger
 
   import LagomPlugin.autoImport._
 
   override def projectSettings = LagomSettings.defaultSettings ++ Seq(
     Keys.run in Compile := {
       val service = lagomRun.value
-      val log = state.value.log
+      val log     = state.value.log
       SbtConsoleHelper.printStartScreen(log, service)
       SbtConsoleHelper.blockUntilExit(log, Internal.Keys.interactionMode.value, Seq(service._2), Nil)
     },
@@ -110,17 +114,15 @@ object LagomScala extends AutoPlugin {
  */
 object LagomPlay extends AutoPlugin {
   override def requires = LagomReloadableService && Play
-  override def trigger = noTrigger
+  override def trigger  = noTrigger
 
   import LagomReloadableService.autoImport._
 
   override def projectSettings = Seq(
     // Run the Play reload task when Lagom requests a reload
     lagomReload := PlayInternalKeys.playReload.value,
-
     // Play wants to add the assets classloader to the application classloader
     lagomClassLoaderDecorator := PlayInternalKeys.playAssetsClassLoader.value,
-
     // Watch the files that Play wants to watch
     lagomWatchDirectories := PlayKeys.playMonitoredFiles.value
   )
@@ -131,7 +133,7 @@ object LagomPlay extends AutoPlugin {
  */
 object LagomPlayJava extends AutoPlugin {
   override def requires = LagomPlay && PlayJava
-  override def trigger = allRequirements
+  override def trigger  = allRequirements
 
   override def projectSettings = Seq(
     libraryDependencies ++= (
@@ -152,7 +154,7 @@ object LagomPlayJava extends AutoPlugin {
  */
 object LagomPlayScala extends AutoPlugin {
   override def requires = LagomPlay && PlayScala
-  override def trigger = allRequirements
+  override def trigger  = allRequirements
 
   override def projectSettings = Seq(
     libraryDependencies += LagomImport.lagomScaladslDevMode
@@ -180,7 +182,7 @@ object LagomNettyServer extends AutoPlugin {
 object LagomAkkaHttpServer extends AutoPlugin {
   // Set Akka HTTP as default (when all required plugins are available this AutoPlugin is enabled).
   // Users may Opt out of LagomAkkaHttpServer disabling the plugin and enabling LagomNettyServer
-  override def trigger = allRequirements
+  override def trigger  = allRequirements
   override def requires = Lagom
 
   override def projectSettings = Seq(
@@ -193,14 +195,14 @@ object LagomAkkaHttpServer extends AutoPlugin {
  */
 object LagomExternalProject extends AutoPlugin {
   override def requires = LagomPlugin
-  override def trigger = noTrigger
+  override def trigger  = noTrigger
 
   import LagomPlugin.autoImport._
 
   override def projectSettings = Seq(
     Keys.run in Compile := {
       val service = lagomRun.value
-      val log = state.value.log
+      val log     = state.value.log
       SbtConsoleHelper.printStartScreen(log, service)
       SbtConsoleHelper.blockUntilExit(log, Internal.Keys.interactionMode.value, Seq(service._2), Nil)
     },
@@ -215,11 +217,13 @@ object LagomExternalProject extends AutoPlugin {
  */
 object LagomReloadableService extends AutoPlugin {
   override def requires = LagomPlugin
-  override def trigger = noTrigger
+  override def trigger  = noTrigger
 
   object autoImport extends LagomReloadableServiceCompat.autoImport {
     val lagomReloaderClasspath = taskKey[Classpath]("The classpath that gets used to create the reloaded classloader")
-    val lagomClassLoaderDecorator = taskKey[ClassLoader => ClassLoader]("Function that decorates the Lagom classloader. Can be used to inject things into the classpath.")
+    val lagomClassLoaderDecorator = taskKey[ClassLoader => ClassLoader](
+      "Function that decorates the Lagom classloader. Can be used to inject things into the classpath."
+    )
     val lagomWatchDirectories = taskKey[Seq[File]]("The directories that Lagom should be watching")
   }
 
@@ -236,19 +240,21 @@ object LagomReloadableService extends AutoPlugin {
       (name.value, service)
     },
     lagomReload := Def.taskDyn {
-      (compile in Compile).all(
-        ScopeFilter(
-          inDependencies(thisProjectRef.value)
+      (compile in Compile)
+        .all(
+          ScopeFilter(
+            inDependencies(thisProjectRef.value)
+          )
         )
-      ).map(LagomReloadableServiceCompat.joinAnalysis)
+        .map(LagomReloadableServiceCompat.joinAnalysis)
     }.value,
-
-    lagomReloaderClasspath := Classpaths.concatDistinct(
-      exportedProducts in Runtime,
-      internalDependencyClasspath in Runtime
-    ).value,
+    lagomReloaderClasspath := Classpaths
+      .concatDistinct(
+        exportedProducts in Runtime,
+        internalDependencyClasspath in Runtime
+      )
+      .value,
     lagomClassLoaderDecorator := identity,
-
     lagomWatchDirectories := Def.taskDyn {
       val projectRef = thisProjectRef.value
 
@@ -274,7 +280,7 @@ object LagomReloadableService extends AutoPlugin {
           .foldLeft(List.empty[Path]) { (result, next) =>
             result.headOption match {
               case Some(previous) if next.startsWith(previous) => result
-              case _ => next :: result
+              case _                                           => next :: result
             }
           }
 
@@ -306,57 +312,62 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     }
 
     val lagomRun = taskKey[(String, DevServer)]("Run a Lagom service")
-    val runAll = taskKey[Unit]("Run all Lagom services")
+    val runAll   = taskKey[Unit]("Run all Lagom services")
 
-    val lagomServicesPortRange = settingKey[PortRange]("Port range used to assign a port to each Lagom service in the build")
+    val lagomServicesPortRange =
+      settingKey[PortRange]("Port range used to assign a port to each Lagom service in the build")
 
     val lagomFileWatchService = settingKey[FileWatchService]("The file watch service to use")
-    val lagomDevSettings = settingKey[Seq[(String, String)]]("Settings that should be passed to a Lagom app in dev mode")
+    val lagomDevSettings =
+      settingKey[Seq[(String, String)]]("Settings that should be passed to a Lagom app in dev mode")
     val lagomServicePort = taskKey[Int]("The port that the Lagom service should run on")
 
-    val lagomInfrastructureServices = taskKey[Seq[Task[Closeable]]]("The infrastructure services that should be run when runAll is invoked.")
+    val lagomInfrastructureServices =
+      taskKey[Seq[Task[Closeable]]]("The infrastructure services that should be run when runAll is invoked.")
 
     // service locator tasks and settings
-    val lagomUnmanagedServices = settingKey[Map[String, String]]("External services name and address known by the service location")
-    val lagomServiceLocatorUrl = settingKey[String]("URL of the service locator")
+    val lagomUnmanagedServices =
+      settingKey[Map[String, String]]("External services name and address known by the service location")
+    val lagomServiceLocatorUrl  = settingKey[String]("URL of the service locator")
     val lagomServiceLocatorPort = settingKey[Int]("Port used by the service locator")
     val lagomServiceGatewayPort = settingKey[Int]("Port used by the service gateway")
-    val lagomServiceGatewayImpl = settingKey[String]("Implementation of the service gateway: \"akka-http\" (default) or \"netty\"")
+    val lagomServiceGatewayImpl =
+      settingKey[String]("Implementation of the service gateway: \"akka-http\" (default) or \"netty\"")
     val lagomServiceLocatorEnabled = settingKey[Boolean]("Enable/Disable the service locator")
-    val lagomServiceLocatorStart = taskKey[Closeable]("Start the service locator")
-    val lagomServiceLocatorStop = taskKey[Unit]("Stop the service locator")
+    val lagomServiceLocatorStart   = taskKey[Closeable]("Start the service locator")
+    val lagomServiceLocatorStop    = taskKey[Unit]("Stop the service locator")
 
     // cassandra tasks and settings
-    val lagomCassandraStart = taskKey[Closeable]("Start the local cassandra server")
-    val lagomCassandraStop = taskKey[Unit]("Stop the local cassandra server")
-    val lagomCassandraPort = settingKey[Int]("Port used by the local cassandra server")
-    val lagomCassandraEnabled = settingKey[Boolean]("Enable/Disable the cassandra server")
-    val lagomCassandraCleanOnStart = settingKey[Boolean]("Wipe the cassandra database before starting")
-    val lagomCassandraJvmOptions = settingKey[Seq[String]]("JVM options used by the forked cassandra process")
-    val lagomCassandraYamlFile = settingKey[Option[File]]("YAML file used by the local cassandra server")
+    val lagomCassandraStart              = taskKey[Closeable]("Start the local cassandra server")
+    val lagomCassandraStop               = taskKey[Unit]("Stop the local cassandra server")
+    val lagomCassandraPort               = settingKey[Int]("Port used by the local cassandra server")
+    val lagomCassandraEnabled            = settingKey[Boolean]("Enable/Disable the cassandra server")
+    val lagomCassandraCleanOnStart       = settingKey[Boolean]("Wipe the cassandra database before starting")
+    val lagomCassandraJvmOptions         = settingKey[Seq[String]]("JVM options used by the forked cassandra process")
+    val lagomCassandraYamlFile           = settingKey[Option[File]]("YAML file used by the local cassandra server")
     val lagomCassandraMaxBootWaitingTime = settingKey[FiniteDuration]("Max waiting time to start cassandra")
 
     // kafka tasks and settings
-    val lagomKafkaStart = taskKey[Closeable]("Start the local kafka server")
-    val lagomKafkaStop = taskKey[Unit]("Stop the local kafka server")
+    val lagomKafkaStart          = taskKey[Closeable]("Start the local kafka server")
+    val lagomKafkaStop           = taskKey[Unit]("Stop the local kafka server")
     val lagomKafkaPropertiesFile = settingKey[Option[File]]("Properties file used by the local kafka broker")
-    val lagomKafkaEnabled = settingKey[Boolean]("Enable/Disable the kafka server")
-    val lagomKafkaCleanOnStart = settingKey[Boolean]("Wipe the kafka log before starting")
-    val lagomKafkaJvmOptions = settingKey[Seq[String]]("JVM options used by the forked kafka process")
+    val lagomKafkaEnabled        = settingKey[Boolean]("Enable/Disable the kafka server")
+    val lagomKafkaCleanOnStart   = settingKey[Boolean]("Wipe the kafka log before starting")
+    val lagomKafkaJvmOptions     = settingKey[Seq[String]]("JVM options used by the forked kafka process")
     @deprecated("Use lagomKafkaZookeeperPort instead", "1.3.6")
-    val lagomKafkaZookeperPort = settingKey[Int]("Port used by the local zookeeper server (kafka requires zookeeper)")
+    val lagomKafkaZookeperPort  = settingKey[Int]("Port used by the local zookeeper server (kafka requires zookeeper)")
     val lagomKafkaZookeeperPort = settingKey[Int]("Port used by the local zookeeper server (kafka requires zookeeper)")
-    val lagomKafkaPort = settingKey[Int]("Port used by the local kafka broker")
-    val lagomKafkaAddress = settingKey[String]("Address of the kafka brokers (comma-separated list)")
+    val lagomKafkaPort          = settingKey[Int]("Port used by the local kafka broker")
+    val lagomKafkaAddress       = settingKey[String]("Address of the kafka brokers (comma-separated list)")
 
     @deprecated("Use lagomExternalJavadslProject or lagomExternalScaladslProject instead", "1.3.0")
     def lagomExternalProject(name: String, module: ModuleID): Project = lagomExternalJavadslProject(name, module)
 
     /** Allows to integrate an external Lagom scaladsl project in the current build, so that when runAll is run, this service is also started.*/
     def lagomExternalScaladslProject(name: String, module: ModuleID): Project =
-      Project(name, file("target") / "lagom-external-projects" / name).
-        enablePlugins(LagomExternalProject).
-        settings(Seq(libraryDependencies += module))
+      Project(name, file("target") / "lagom-external-projects" / name)
+        .enablePlugins(LagomExternalProject)
+        .settings(Seq(libraryDependencies += module))
 
     /** Allows to integrate an external Lagom javadsl project in the current build, so that when runAll is run, this service is also started.*/
     def lagomExternalJavadslProject(name: String, module: ModuleID): Project = {
@@ -405,18 +416,21 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
       lagomKafkaStop in ThisBuild := Servers.KafkaServer.tryStop(new SbtLoggerProxy(state.value.log))
     )
 
-  private val projectPortMap = AttributeKey[Map[ProjectName, Port]]("lagomProjectPortMap")
+  private val projectPortMap   = AttributeKey[Map[ProjectName, Port]]("lagomProjectPortMap")
   private val defaultPortRange = PortRange(0xc000, 0xffff)
 
   override def globalSettings = Seq(
-    onLoad := onLoad.value andThen assignProjectsPort andThen DynamicProjectAdder.addProjects(serviceLocatorProject, cassandraProject, kafkaServerProject)
+    onLoad := onLoad.value
+      .andThen(assignProjectsPort)
+      .andThen(DynamicProjectAdder.addProjects(serviceLocatorProject, cassandraProject, kafkaServerProject))
   )
 
   private def assignProjectsPort(state: State): State = {
     val extracted = Project.extract(state)
 
     val scope = Scope(Select(ThisBuild), Zero, Zero, Zero)
-    val portRange = extracted.structure.data.get(scope, lagomServicesPortRange.key)
+    val portRange = extracted.structure.data
+      .get(scope, lagomServicesPortRange.key)
       .getOrElse(defaultPortRange)
     val oldPortMap = state.get(projectPortMap).getOrElse(Map.empty)
 
@@ -435,66 +449,67 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
 
   private def assignedPortFor(name: ProjectName, state: State): Port = {
     (for {
-      map <- state.get(projectPortMap)
+      map  <- state.get(projectPortMap)
       port <- map.get(name)
     } yield port).getOrElse(Port.Unassigned)
   }
 
   private def dontAggregate(keys: Scoped*): Seq[Setting[_]] = keys.map(aggregate in _ := false)
 
-  override def buildSettings = super.buildSettings ++ Seq(
-    lagomUnmanagedServices := Map.empty,
-    lagomInfrastructureServices := lagomInfrastructureServicesTask.value,
-    lagomServicesPortRange := defaultPortRange,
-    lagomServiceLocatorEnabled := true,
-    lagomServiceLocatorPort := 9008,
-    lagomServiceGatewayPort := 9000,
-    lagomServiceGatewayImpl := "akka-http",
-    lagomServiceLocatorUrl := s"http://localhost:${lagomServiceLocatorPort.value}",
-    lagomCassandraEnabled := true,
-    lagomCassandraPort := 4000, // If you change the default make sure to also update the play/reference-overrides.conf in the persistence project
-    lagomCassandraCleanOnStart := false,
-    lagomCassandraJvmOptions := Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099"),
-    lagomCassandraMaxBootWaitingTime := 20.seconds,
-    lagomCassandraYamlFile := None,
-    lagomKafkaEnabled := true,
-    lagomKafkaPropertiesFile := None,
-    lagomKafkaZookeperPort := 2181,
-    lagomKafkaZookeeperPort := lagomKafkaZookeperPort.value,
-    lagomKafkaPort := 9092,
-    lagomKafkaCleanOnStart := false,
-    lagomKafkaAddress := s"localhost:${lagomKafkaPort.value}",
-    lagomKafkaJvmOptions := Seq("-Xms256m", "-Xmx1024m"),
-    runAll := runAllMicroservicesTask.value,
-    Internal.Keys.interactionMode := PlayConsoleInteractionMode,
-    lagomDevSettings := Nil
-  ) ++
-    // This is important as we want to evaluate these tasks exactly once.
-    // Without it, we could be evaluating the same task multiple times, for each aggregated project.
-    dontAggregate(
-      runAll,
-      lagomServiceLocatorStart,
-      lagomServiceLocatorStop,
-      lagomCassandraStart,
-      lagomCassandraStop,
-      lagomKafkaStart,
-      lagomKafkaStop
-    )
+  override def buildSettings =
+    super.buildSettings ++ Seq(
+      lagomUnmanagedServices := Map.empty,
+      lagomInfrastructureServices := lagomInfrastructureServicesTask.value,
+      lagomServicesPortRange := defaultPortRange,
+      lagomServiceLocatorEnabled := true,
+      lagomServiceLocatorPort := 9008,
+      lagomServiceGatewayPort := 9000,
+      lagomServiceGatewayImpl := "akka-http",
+      lagomServiceLocatorUrl := s"http://localhost:${lagomServiceLocatorPort.value}",
+      lagomCassandraEnabled := true,
+      lagomCassandraPort := 4000, // If you change the default make sure to also update the play/reference-overrides.conf in the persistence project
+      lagomCassandraCleanOnStart := false,
+      lagomCassandraJvmOptions := Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099"),
+      lagomCassandraMaxBootWaitingTime := 20.seconds,
+      lagomCassandraYamlFile := None,
+      lagomKafkaEnabled := true,
+      lagomKafkaPropertiesFile := None,
+      lagomKafkaZookeperPort := 2181,
+      lagomKafkaZookeeperPort := lagomKafkaZookeperPort.value,
+      lagomKafkaPort := 9092,
+      lagomKafkaCleanOnStart := false,
+      lagomKafkaAddress := s"localhost:${lagomKafkaPort.value}",
+      lagomKafkaJvmOptions := Seq("-Xms256m", "-Xmx1024m"),
+      runAll := runAllMicroservicesTask.value,
+      Internal.Keys.interactionMode := PlayConsoleInteractionMode,
+      lagomDevSettings := Nil
+    ) ++
+      // This is important as we want to evaluate these tasks exactly once.
+      // Without it, we could be evaluating the same task multiple times, for each aggregated project.
+      dontAggregate(
+        runAll,
+        lagomServiceLocatorStart,
+        lagomServiceLocatorStop,
+        lagomCassandraStart,
+        lagomCassandraStop,
+        lagomKafkaStart,
+        lagomKafkaStop
+      )
 
   override def projectSettings = Seq(
     lagomFileWatchService := {
-      FileWatchService.defaultWatchService(target.value, getPollInterval(pollInterval.value), new SbtLoggerProxy(sLog.value))
+      FileWatchService
+        .defaultWatchService(target.value, getPollInterval(pollInterval.value), new SbtLoggerProxy(sLog.value))
     },
     lagomServicePort := LagomPlugin.assignedPortFor(ProjectName(name.value), state.value).value,
     Internal.Keys.stop := {
       Internal.Keys.interactionMode.value match {
         case nonBlocking: PlayNonBlockingInteractionMode => nonBlocking.stop()
-        case _ => throw new RuntimeException("Play interaction mode must be non blocking to stop it")
+        case _                                           => throw new RuntimeException("Play interaction mode must be non blocking to stop it")
       }
     },
     ivyConfigurations ++= Seq(Internal.Configs.DevRuntime),
     PlaySettings.manageClasspath(Internal.Configs.DevRuntime),
-
     libraryDependencies +=
       LagomImport.component("lagom-reloadable-server") % Internal.Configs.DevRuntime
   )
@@ -506,38 +521,64 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val serviceLocatorPort = lagomServiceLocatorPort.value
     val serviceGatewayPort = lagomServiceGatewayPort.value
     val serivceGatewayImpl = lagomServiceGatewayImpl.value
-    val urls = (managedClasspath in Compile).value.files.map(_.toURI.toURL).toArray
-    val scala211 = scalaInstance.value
-    val log = new SbtLoggerProxy(state.value.log)
-    Servers.ServiceLocator.start(log, scala211.loader, urls, serviceLocatorPort, serviceGatewayPort, unmanagedServices, serivceGatewayImpl)
+    val urls               = (managedClasspath in Compile).value.files.map(_.toURI.toURL).toArray
+    val scala211           = scalaInstance.value
+    val log                = new SbtLoggerProxy(state.value.log)
+    Servers.ServiceLocator.start(
+      log,
+      scala211.loader,
+      urls,
+      serviceLocatorPort,
+      serviceGatewayPort,
+      unmanagedServices,
+      serivceGatewayImpl
+    )
   }
 
   private lazy val startCassandraServerTask = Def.task {
-    val port = lagomCassandraPort.value
+    val port         = lagomCassandraPort.value
     val cleanOnStart = lagomCassandraCleanOnStart.value
-    val classpath = (managedClasspath in Compile).value.files
-    val jvmOptions = lagomCassandraJvmOptions.value
-    val maxWaiting = lagomCassandraMaxBootWaitingTime.value
-    val scala211 = scalaInstance.value
+    val classpath    = (managedClasspath in Compile).value.files
+    val jvmOptions   = lagomCassandraJvmOptions.value
+    val maxWaiting   = lagomCassandraMaxBootWaitingTime.value
+    val scala211     = scalaInstance.value
     // NOTE: lagomCassandraYamlFile will be None when not explicitly configured by user
     // we don't use an Option for it because this class will be dynamically loaded
     // and called using structural typing (reflection) by sbt thus on a classloader with scala 2.10
     val yamlConfig = lagomCassandraYamlFile.value.orNull
-    val log = new SbtLoggerProxy(state.value.log)
-    Servers.CassandraServer.start(log, scala211.loader, classpath, port, cleanOnStart, jvmOptions, yamlConfig, maxWaiting)
+    val log        = new SbtLoggerProxy(state.value.log)
+    Servers.CassandraServer.start(
+      log,
+      scala211.loader,
+      classpath,
+      port,
+      cleanOnStart,
+      jvmOptions,
+      yamlConfig,
+      maxWaiting
+    )
   }
 
   private lazy val startKafkaServerTask = Def.task {
-    val log = new SbtLoggerProxy(state.value.log)
-    val zooKeeperPort = lagomKafkaZookeeperPort.value
-    val kafkaPort = lagomKafkaPort.value
+    val log                 = new SbtLoggerProxy(state.value.log)
+    val zooKeeperPort       = lagomKafkaZookeeperPort.value
+    val kafkaPort           = lagomKafkaPort.value
     val kafkaPropertiesFile = lagomKafkaPropertiesFile.value
-    val classpath = (managedClasspath in Compile).value.map(_.data)
-    val jvmOptions = lagomKafkaJvmOptions.value
-    val targetDir = target.value
-    val cleanOnStart = lagomKafkaCleanOnStart.value
+    val classpath           = (managedClasspath in Compile).value.map(_.data)
+    val jvmOptions          = lagomKafkaJvmOptions.value
+    val targetDir           = target.value
+    val cleanOnStart        = lagomKafkaCleanOnStart.value
 
-    Servers.KafkaServer.start(log, classpath, kafkaPort, zooKeeperPort, kafkaPropertiesFile, jvmOptions, targetDir, cleanOnStart)
+    Servers.KafkaServer.start(
+      log,
+      classpath,
+      kafkaPort,
+      zooKeeperPort,
+      kafkaPropertiesFile,
+      jvmOptions,
+      targetDir,
+      cleanOnStart
+    )
   }
 
   private def sequential(tasks: Seq[Task[Closeable]]): Initialize[Task[Seq[Closeable]]] =
@@ -573,19 +614,23 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
       Def.taskDyn {
         // Now start the project services
         val projects = microservicesProjects.value
-        val filter = ScopeFilter(inProjects(projects: _*))
+        val filter   = ScopeFilter(inProjects(projects: _*))
         // Services are going to be started without a specific order. Whether we will need to take into consideration
         // services' dependencies is not something clear yet.
         val runningServiceTasks = lagomRun.all(filter)
 
         Def.task {
-          val log = state.value.log
+          val log             = state.value.log
           val runningServices = runningServiceTasks.value
           if (runningServices.isEmpty) log.info("There are no Lagom projects to run")
           else {
             SbtConsoleHelper.printStartScreen(log, runningServices: _*)
-            SbtConsoleHelper.blockUntilExit(log, Internal.Keys.interactionMode.value,
-              runningServices.map(_._2), infrastructureServices)
+            SbtConsoleHelper.blockUntilExit(
+              log,
+              Internal.Keys.interactionMode.value,
+              runningServices.map(_._2),
+              infrastructureServices
+            )
           }
         }
       }
@@ -595,10 +640,10 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
   /** Projects that have the Microservice plugin enabled. */
   private lazy val microservicesProjects: Initialize[Task[Seq[ProjectRef]]] = Def.task {
     val structure = buildStructure.value
-    val projects = structure.allProjectRefs
+    val projects  = structure.allProjectRefs
     for {
-      projRef <- projects
-      proj <- Project.getProject(projRef, structure).toList
+      projRef    <- projects
+      proj       <- Project.getProject(projRef, structure).toList
       autoPlugin <- proj.autoPlugins if autoPlugin == LagomPlugin
     } yield projRef
   }
@@ -654,7 +699,12 @@ private[sbt] object SbtConsoleHelper {
       case (name, service) => name -> service.url()
     })
 
-  def blockUntilExit(log: Logger, interaction: play.sbt.PlayInteractionMode, services: Seq[Closeable], infrastructureServices: Seq[Closeable]): Unit = {
+  def blockUntilExit(
+      log: Logger,
+      interaction: play.sbt.PlayInteractionMode,
+      services: Seq[Closeable],
+      infrastructureServices: Seq[Closeable]
+  ): Unit = {
     interaction match {
       case nonBlocking: PlayNonBlockingInteractionMode =>
         // If we are running in non blocking mode then the running services will be closed when executing the `playStop` task.
@@ -674,8 +724,8 @@ private[sbt] object SbtConsoleHelper {
  */
 object NonBlockingInteractionMode extends PlayNonBlockingInteractionMode {
   object NullLogger extends Logger {
-    def trace(t: => Throwable): Unit = ()
-    def success(message: => String): Unit = ()
+    def trace(t: => Throwable): Unit                      = ()
+    def success(message: => String): Unit                 = ()
     def log(level: Level.Value, message: => String): Unit = ()
   }
 

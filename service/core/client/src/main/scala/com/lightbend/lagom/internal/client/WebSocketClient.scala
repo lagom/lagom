@@ -11,10 +11,12 @@ import akka.stream.scaladsl._
 import akka.stream.stage._
 import akka.util.ByteString
 import com.typesafe.config.Config
-import com.typesafe.netty.{ HandlerPublisher, HandlerSubscriber }
+import com.typesafe.netty.HandlerPublisher
+import com.typesafe.netty.HandlerSubscriber
 import com.lightbend.lagom.internal.NettyFutureConverters._
 import io.netty.bootstrap.Bootstrap
-import io.netty.buffer.{ ByteBufHolder, Unpooled }
+import io.netty.buffer.ByteBufHolder
+import io.netty.buffer.Unpooled
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
@@ -27,13 +29,18 @@ import play.api.Environment
 import play.api.http.HeaderNames
 import play.api.inject.ApplicationLifecycle
 
-import scala.concurrent.{ ExecutionContext, Future, Promise }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.Promise
 import scala.util.control.NonFatal
 import scala.collection.JavaConverters._
 import java.util.concurrent.atomic.AtomicReference
 
 import akka.NotUsed
-import akka.stream.{ Attributes, FlowShape, Inlet, Outlet }
+import akka.stream.Attributes
+import akka.stream.FlowShape
+import akka.stream.Inlet
+import akka.stream.Outlet
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
 import io.netty.channel.group.DefaultChannelGroup
 import io.netty.util.concurrent.GlobalEventExecutor
@@ -43,8 +50,13 @@ import scala.collection.immutable
 /**
  * A WebSocket client
  */
-private[lagom] abstract class WebSocketClient(environment: Environment, config: WebSocketClientConfig, eventLoop: EventLoopGroup,
-                                              lifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) extends LagomServiceApiBridge {
+private[lagom] abstract class WebSocketClient(
+    environment: Environment,
+    config: WebSocketClientConfig,
+    eventLoop: EventLoopGroup,
+    lifecycle: ApplicationLifecycle
+)(implicit ec: ExecutionContext)
+    extends LagomServiceApiBridge {
 
   lifecycle.addStopHook(() => shutdown())
 
@@ -65,8 +77,12 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
   /**
    * Connect to the given URI
    */
-  def connect(exceptionSerializer: ExceptionSerializer, version: WebSocketVersion, requestHeader: RequestHeader,
-              outgoing: Source[ByteString, NotUsed]): Future[(ResponseHeader, Source[ByteString, NotUsed])] = {
+  def connect(
+      exceptionSerializer: ExceptionSerializer,
+      version: WebSocketVersion,
+      requestHeader: RequestHeader,
+      outgoing: Source[ByteString, NotUsed]
+  ): Future[(ResponseHeader, Source[ByteString, NotUsed])] = {
 
     val normalized = requestHeaderUri(requestHeader).normalize()
     val tgt = if (normalized.getPath == null || normalized.getPath.trim().isEmpty) {
@@ -77,9 +93,11 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
     messageProtocolToContentTypeHeader(messageHeaderProtocol(requestHeader)).foreach { ct =>
       headers.add(HeaderNames.CONTENT_TYPE, ct)
     }
-    val accept = requestHeaderAcceptedResponseProtocols(requestHeader).flatMap { accept =>
-      messageProtocolToContentTypeHeader(accept)
-    }.mkString(", ")
+    val accept = requestHeaderAcceptedResponseProtocols(requestHeader)
+      .flatMap { accept =>
+        messageProtocolToContentTypeHeader(accept)
+      }
+      .mkString(", ")
     if (accept.nonEmpty) {
       headers.add(HeaderNames.ACCEPT, accept)
     }
@@ -94,11 +112,28 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
     for {
       _ <- channelFuture.toScala
       channel = channelFuture.channel()
-      handshaker = WebSocketClientHandshakerFactory.newHandshaker(tgt, version, null, false, headers, config.maxFrameLength)
+      handshaker = WebSocketClientHandshakerFactory.newHandshaker(
+        tgt,
+        version,
+        null,
+        false,
+        headers,
+        config.maxFrameLength
+      )
       _ <- handshaker.handshake(channel).toScala
       incomingPromise = Promise[(ResponseHeader, Source[ByteString, NotUsed])]()
-      _ = channel.pipeline().addLast("supervisor", new WebSocketSupervisor(exceptionSerializer, handshaker, outgoing,
-        incomingPromise, messageHeaderProtocol(requestHeader)))
+      _ = channel
+        .pipeline()
+        .addLast(
+          "supervisor",
+          new WebSocketSupervisor(
+            exceptionSerializer,
+            handshaker,
+            outgoing,
+            incomingPromise,
+            messageHeaderProtocol(requestHeader)
+          )
+        )
       _ = channel.read()
       incoming <- incomingPromise.future
     } yield incoming
@@ -108,21 +143,25 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
     Future.sequence(channelGroup.close().asScala.map(_.toScala).toSeq)
   }
 
-  private class WebSocketSupervisor(exceptionSerializer: ExceptionSerializer, handshaker: WebSocketClientHandshaker,
-                                    outgoing: Source[ByteString, NotUsed], incomingPromise: Promise[(ResponseHeader, Source[ByteString, NotUsed])],
-                                    requestProtocol: MessageProtocol) extends ChannelDuplexHandler {
+  private class WebSocketSupervisor(
+      exceptionSerializer: ExceptionSerializer,
+      handshaker: WebSocketClientHandshaker,
+      outgoing: Source[ByteString, NotUsed],
+      incomingPromise: Promise[(ResponseHeader, Source[ByteString, NotUsed])],
+      requestProtocol: MessageProtocol
+  ) extends ChannelDuplexHandler {
 
     private val NormalClosure = 1000
 
     private sealed trait State
-    private case object Handshake extends State
-    private case object Open extends State
+    private case object Handshake            extends State
+    private case object Open                 extends State
     private case object ClientInitiatedClose extends State
-    private case object Closed extends State
+    private case object Closed               extends State
 
     private val outgoingStreamError = new AtomicReference[Throwable]()
 
-    private var state: State = Handshake
+    private var state: State                              = Handshake
     private var responseProtocol: Option[MessageProtocol] = None
 
     override def channelRead(ctx: ChannelHandlerContext, msg: Object) = {
@@ -131,18 +170,27 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
           try {
             val rp = messageProtocolFromContentTypeHeader(Option(resp.headers().get(HeaderNames.CONTENT_TYPE)))
             responseProtocol = Some(rp)
-            val headers = resp.headers().asScala.map { header =>
-              header.getKey -> header.getValue
-            }.groupBy(_._1.toLowerCase(Locale.ENGLISH)).map {
-              case (key, values) => key -> values.to[immutable.Seq]
-            }
+            val headers = resp
+              .headers()
+              .asScala
+              .map { header =>
+                header.getKey -> header.getValue
+              }
+              .groupBy(_._1.toLowerCase(Locale.ENGLISH))
+              .map {
+                case (key, values) => key -> values.to[immutable.Seq]
+              }
 
             // See if the response is an error response
             if (resp.status.code >= 400 && resp.status.code < 599) {
-              incomingPromise.failure(exceptionSerializerDeserializeHttpException(
-                exceptionSerializer,
-                resp.status.code, rp, toByteString(resp)
-              ))
+              incomingPromise.failure(
+                exceptionSerializerDeserializeHttpException(
+                  exceptionSerializer,
+                  resp.status.code,
+                  rp,
+                  toByteString(resp)
+                )
+              )
               ctx.close()
 
             } else {
@@ -157,10 +205,13 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
                   outgoingStreamError.set(error)
 
                   val rawExceptionMessage = exceptionSerializerSerialize(exceptionSerializer, error, Nil)
-                  clientInitiatedClose(ctx, new CloseWebSocketFrame(
-                    rawExceptionMessageWebSocketCode(rawExceptionMessage),
-                    rawExceptionMessageMessageAsText(rawExceptionMessage)
-                  ))
+                  clientInitiatedClose(
+                    ctx,
+                    new CloseWebSocketFrame(
+                      rawExceptionMessageWebSocketCode(rawExceptionMessage),
+                      rawExceptionMessageMessageAsText(rawExceptionMessage)
+                    )
+                  )
                 }
                 override def complete() = clientInitiatedClose(ctx)
               }
@@ -179,7 +230,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
                   Sink.fromSubscriber(channelSubscriber),
                   Source.fromPublisher(channelPublisher)
                 )
-                val incoming = outgoing via clientConnection
+                val incoming = outgoing.via(clientConnection)
 
                 // This flow replaces any upstream signal with any errors caught by the outgoing stream (ie, produced on
                 // the client) to the incoming stream, so that the client can handle them appropriately.
@@ -188,9 +239,9 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
                 // close this stream, which is what will trigger that error to be published.
                 val injectOutgoingStreamError = Flow[ByteString].via(new GraphStage[FlowShape[ByteString, ByteString]] {
 
-                  val in: Inlet[ByteString] = Inlet("BytesIn")
+                  val in: Inlet[ByteString]   = Inlet("BytesIn")
                   val out: Outlet[ByteString] = Outlet("BytesOut")
-                  override val shape = FlowShape(in, out)
+                  override val shape          = FlowShape(in, out)
 
                   override def createLogic(inheritedAttributes: Attributes): GraphStageLogic =
                     new GraphStageLogic(shape) {
@@ -219,7 +270,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
                     }
                 })
                 val responseHeader = newResponseHeader(resp.status.code, rp, headers)
-                incomingPromise.success((responseHeader, incoming via injectOutgoingStreamError))
+                incomingPromise.success((responseHeader, incoming.via(injectOutgoingStreamError)))
               } catch {
                 case NonFatal(e) =>
                   state = Closed
@@ -254,10 +305,14 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
             ctx.pipeline().remove("websocket-publisher")
           } else {
             // The WebSocket closed in error, publish an exception caught message so the publisher publishes the error
-            ctx.fireExceptionCaught(exceptionSerializerDeserializeWebSocketException(
-              exceptionSerializer,
-              frame.statusCode(), requestProtocol, ByteString(frame.reasonText())
-            ))
+            ctx.fireExceptionCaught(
+              exceptionSerializerDeserializeWebSocketException(
+                exceptionSerializer,
+                frame.statusCode(),
+                requestProtocol,
+                ByteString(frame.reasonText())
+              )
+            )
           }
           ctx.writeAndFlush(frame)
           ctx.pipeline().remove("websocket-subscriber")
@@ -286,7 +341,7 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
           // Even if the client has closed, we still want to send it any remaining messages from the sender,
           // since it may be the source that closed, the sink may still want to receive messages.
           val message = msg.asInstanceOf[WebSocketFrame]
-          val bytes = toByteString(message)
+          val bytes   = toByteString(message)
           ReferenceCountUtil.release(message)
           ctx.fireChannelRead(bytes)
 
@@ -335,10 +390,13 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
     private def protocolError(ctx: ChannelHandlerContext, error: Throwable) = {
       // todo accept headers
       val rawExceptionMessage = exceptionSerializerSerialize(exceptionSerializer, error, Nil)
-      doClientInitiatedClose(ctx, new CloseWebSocketFrame(
-        rawExceptionMessageWebSocketCode(rawExceptionMessage),
-        rawExceptionMessageMessageAsText(rawExceptionMessage)
-      ))
+      doClientInitiatedClose(
+        ctx,
+        new CloseWebSocketFrame(
+          rawExceptionMessageWebSocketCode(rawExceptionMessage),
+          rawExceptionMessageMessageAsText(rawExceptionMessage)
+        )
+      )
       // Send the error to the publisher to be published
       ctx.fireExceptionCaught(error)
     }
@@ -365,9 +423,11 @@ private[lagom] abstract class WebSocketClient(environment: Environment, config: 
       if (ctx.executor().inEventLoop()) {
         doClientInitiatedClose(ctx, msg)
       } else {
-        ctx.executor().execute(new Runnable {
-          override def run() = doClientInitiatedClose(ctx, msg)
-        })
+        ctx
+          .executor()
+          .execute(new Runnable {
+            override def run() = doClientInitiatedClose(ctx, msg)
+          })
       }
     }
 
@@ -405,7 +465,8 @@ private[lagom] sealed trait WebSocketClientConfig {
 
 private[lagom] object WebSocketClientConfig {
 
-  def apply(conf: Config): WebSocketClientConfig = new WebSocketClientConfigImpl(conf.getConfig("lagom.client.websocket"))
+  def apply(conf: Config): WebSocketClientConfig =
+    new WebSocketClientConfigImpl(conf.getConfig("lagom.client.websocket"))
 
   class WebSocketClientConfigImpl(conf: Config) extends WebSocketClientConfig {
     val maxFrameLength = math.min(Int.MaxValue.toLong, conf.getBytes("frame.maxLength")).toInt

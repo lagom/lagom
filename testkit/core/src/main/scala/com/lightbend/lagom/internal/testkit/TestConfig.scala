@@ -3,7 +3,8 @@
  */
 package com.lightbend.lagom.internal.testkit
 
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 
 private[lagom] object TestConfig {
   private lazy val values =

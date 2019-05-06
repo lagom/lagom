@@ -27,14 +27,17 @@ object KafkaLauncher {
 
       if (args.length > 3) castOrDefault(args(3), KafkaLocalServer.DefaultResetOnStart)
       else
-        Option(System.getProperty("Kafka.cleanOnStart")).map(castOrDefault(_, KafkaLocalServer.DefaultResetOnStart)).getOrElse(KafkaLocalServer.DefaultResetOnStart)
+        Option(System.getProperty("Kafka.cleanOnStart"))
+          .map(castOrDefault(_, KafkaLocalServer.DefaultResetOnStart))
+          .getOrElse(KafkaLocalServer.DefaultResetOnStart)
     }
 
     val kafkaPropertiesFile: String =
       if (args.length > 4) args(4)
       else System.getProperty("Kafka.propertiesFile", KafkaLocalServer.DefaultPropertiesFile)
 
-    val kafkaServer = KafkaLocalServer(kafkaServerPort, zookeeperServerPort, kafkaPropertiesFile, targetDir, kafkaCleanOnStart)
+    val kafkaServer =
+      KafkaLocalServer(kafkaServerPort, zookeeperServerPort, kafkaPropertiesFile, targetDir, kafkaCleanOnStart)
 
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run(): Unit = {

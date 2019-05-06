@@ -1,10 +1,10 @@
 package docs.home.scaladsl.persistence
 
 import akka.Done
-import slick.dbio.{DBIOAction, Effect}
+import slick.dbio.DBIOAction
+import slick.dbio.Effect
 import slick.dbio.Effect.All
 import slick.sql.FixedSqlAction
-
 
 object SlickRepos {
 
@@ -15,12 +15,11 @@ object SlickRepos {
 
     class PostSummaryRepository {
 
-      class PostSummaryTable(tag: Tag)
-        extends Table[PostSummary](tag, "post_summary") {
+      class PostSummaryTable(tag: Tag) extends Table[PostSummary](tag, "post_summary") {
 
-        def * = (postId, title) <> (PostSummary.tupled, PostSummary.unapply)
+        def *      = (postId, title) <> (PostSummary.tupled, PostSummary.unapply)
         def postId = column[String]("post_id", O.PrimaryKey)
-        def title = column[String]("title")
+        def title  = column[String]("title")
       }
 
       val postSummaries = TableQuery[PostSummaryTable]
@@ -31,7 +30,6 @@ object SlickRepos {
     // #slick-mapping-initial
   }
 
-
   object WithCreateTable {
 
     // need to import it first to make table compile
@@ -39,12 +37,11 @@ object SlickRepos {
     import slick.jdbc.H2Profile.api._
     import slick.jdbc.meta.MTable
 
-    class PostSummaryTable(tag: Tag)
-      extends Table[PostSummary](tag, "post_summary") {
+    class PostSummaryTable(tag: Tag) extends Table[PostSummary](tag, "post_summary") {
 
-      def * = (postId, title) <> (PostSummary.tupled, PostSummary.unapply)
+      def *      = (postId, title) <> (PostSummary.tupled, PostSummary.unapply)
       def postId = column[String]("post_id", O.PrimaryKey)
-      def title = column[String]("title")
+      def title  = column[String]("title")
     }
 
     // import again, for documentation purpose
@@ -70,7 +67,6 @@ object SlickRepos {
     // #slick-mapping-schema
   }
 
-
   object Full {
 
     import scala.concurrent.ExecutionContext.Implicits.global
@@ -78,12 +74,11 @@ object SlickRepos {
     import slick.jdbc.meta.MTable
 
     class PostSummaryRepository {
-      class PostSummaryTable(tag: Tag)
-        extends Table[PostSummary](tag, "post_summary") {
+      class PostSummaryTable(tag: Tag) extends Table[PostSummary](tag, "post_summary") {
 
-        def * = (postId, title) <> (PostSummary.tupled, PostSummary.unapply)
+        def *      = (postId, title) <> (PostSummary.tupled, PostSummary.unapply)
         def postId = column[String]("post_id", O.PrimaryKey)
-        def title = column[String]("title")
+        def title  = column[String]("title")
       }
 
       val postSummaries = TableQuery[PostSummaryTable]

@@ -8,17 +8,26 @@ import java.io.File
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.persistence.cassandra.testkit.CassandraLauncher
-import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
+import com.lightbend.lagom.persistence.ActorSystemSpec
+import com.lightbend.lagom.persistence.PersistenceSpec
 import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 
 class CassandraPersistenceSpec(system: ActorSystem) extends ActorSystemSpec(system) {
 
   def this(testName: String, config: Config) =
-    this(ActorSystem(testName, config.withFallback(TestUtil.persistenceConfig(
-      testName,
-      CassandraLauncher.randomPort
-    ))))
+    this(
+      ActorSystem(
+        testName,
+        config.withFallback(
+          TestUtil.persistenceConfig(
+            testName,
+            CassandraLauncher.randomPort
+          )
+        )
+      )
+    )
 
   def this(config: Config) = this(PersistenceSpec.getCallerName(getClass), config)
 

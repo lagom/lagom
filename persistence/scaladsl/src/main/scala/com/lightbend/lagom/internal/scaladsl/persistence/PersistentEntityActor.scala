@@ -5,12 +5,19 @@ package com.lightbend.lagom.internal.scaladsl.persistence
 
 import java.net.URLDecoder
 
-import akka.actor.{ Props, ReceiveTimeout }
+import akka.actor.Props
+import akka.actor.ReceiveTimeout
 import akka.cluster.sharding.ShardRegion
-import akka.persistence.{ PersistentActor, RecoveryCompleted, SaveSnapshotSuccess, SnapshotOffer }
+import akka.persistence.PersistentActor
+import akka.persistence.RecoveryCompleted
+import akka.persistence.SaveSnapshotSuccess
+import akka.persistence.SnapshotOffer
 import akka.persistence.journal.Tagged
 import akka.util.ByteString
-import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, AggregateEventShards, AggregateEventTag, PersistentEntity }
+import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
+import com.lightbend.lagom.scaladsl.persistence.AggregateEventShards
+import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
+import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 import play.api.Logger
 
 import scala.concurrent.duration.Duration
@@ -19,18 +26,25 @@ import scala.util.control.NonFatal
 
 private[lagom] object PersistentEntityActor {
   def props(
-    persistenceIdPrefix:       String,
-    entityId:                  Option[String],
-    entityFactory:             () => PersistentEntity,
-    snapshotAfter:             Option[Int],
-    passivateAfterIdleTimeout: Duration,
-    journalPluginId:           String,
-    snapshotPluginId:          String
+      persistenceIdPrefix: String,
+      entityId: Option[String],
+      entityFactory: () => PersistentEntity,
+      snapshotAfter: Option[Int],
+      passivateAfterIdleTimeout: Duration,
+      journalPluginId: String,
+      snapshotPluginId: String
   ): Props =
-    Props(new PersistentEntityActor(persistenceIdPrefix, entityId,
-      entityFactory(),
-      snapshotAfter.getOrElse(0), passivateAfterIdleTimeout,
-      journalPluginId, snapshotPluginId))
+    Props(
+      new PersistentEntityActor(
+        persistenceIdPrefix,
+        entityId,
+        entityFactory(),
+        snapshotAfter.getOrElse(0),
+        passivateAfterIdleTimeout,
+        journalPluginId,
+        snapshotPluginId
+      )
+    )
 
   /**
    * Stop the actor for passivation. `PoisonPill` does not work well
@@ -47,10 +61,11 @@ private[lagom] object PersistentEntityActor {
     val idx = persistenceId.indexOf(EntityIdSeparator)
     if (idx > 0) {
       persistenceId.substring(idx + 1)
-    } else throw new IllegalArgumentException(
-      s"Cannot split '$persistenceId' into persistenceIdPrefix and entityId " +
-        s"because there is no separator character ('$EntityIdSeparator')"
-    )
+    } else
+      throw new IllegalArgumentException(
+        s"Cannot split '$persistenceId' into persistenceIdPrefix and entityId " +
+          s"because there is no separator character ('$EntityIdSeparator')"
+      )
   }
 
 }
@@ -59,13 +74,13 @@ private[lagom] object PersistentEntityActor {
  * The `PersistentActor` that runs a [[com.lightbend.lagom.scaladsl.persistence.PersistentEntity]].
  */
 private[lagom] class PersistentEntityActor(
-  persistenceIdPrefix:           String,
-  id:                            Option[String],
-  entity:                        PersistentEntity,
-  snapshotAfter:                 Int,
-  passivateAfterIdleTimeout:     Duration,
-  override val journalPluginId:  String,
-  override val snapshotPluginId: String
+    persistenceIdPrefix: String,
+    id: Option[String],
+    entity: PersistentEntity,
+    snapshotAfter: Int,
+    passivateAfterIdleTimeout: Duration,
+    override val journalPluginId: String,
+    override val snapshotPluginId: String
 ) extends PersistentActor {
 
   import PersistentEntityActor.EntityIdSeparator
@@ -88,7 +103,7 @@ private[lagom] class PersistentEntityActor(
   override val persistenceId: String = persistenceIdPrefix + EntityIdSeparator + entityId
 
   entity.internalSetEntityId(entityId)
-  private var state: S = entity.initialState
+  private var state: S                  = entity.initialState
   private val behavior: entity.Behavior = entity.behavior
 
   private var eventCount = 0L
@@ -114,13 +129,15 @@ private[lagom] class PersistentEntityActor(
   }
 
   private val unhandledState: Catcher[Nothing] = {
-    case e: MatchError ⇒ throw new IllegalStateException(
-      s"Undefined state [${state.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"
-    )
+    case e: MatchError ⇒
+      throw new IllegalStateException(
+        s"Undefined state [${state.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"
+      )
   }
 
   private def applyEvent(event: E): Unit = {
-    val actions = try behavior(state) catch unhandledState
+    val actions = try behavior(state)
+    catch unhandledState
     state = actions.eventHandler.applyOrElse((event, state), unhandledEvent)
   }
 
@@ -146,14 +163,15 @@ private[lagom] class PersistentEntityActor(
       }
 
       try {
-        val actions = try behavior(state) catch unhandledState
+        val actions = try behavior(state)
+        catch unhandledState
         val commandHandler = actions.commandHandlers.get(cmd.getClass) match {
           case Some(h) => h
           case None    => PartialFunction.empty
         }
         val result = commandHandler.applyOrElse((cmd.asInstanceOf[C], ctx, state), unhandledCommand)
         result match {
-          case entity.PersistNone => // done
+          case entity.PersistNone                     => // done
           case entity.PersistOne(event, afterPersist) =>
             // apply the event before persist so that validation exception is handled before persisting
             // the invalid event, in case such validation is implemented in the event handler.
@@ -174,7 +192,7 @@ private[lagom] class PersistentEntityActor(
           case entity.PersistAll(events, afterPersist) =>
             // if we trigger snapshot it makes sense to do it after handling all events
             var count = events.size
-            var snap = false
+            var snap  = false
             // apply the event before persist so that validation exception is handled before persisting
             // the invalid event, in case such validation is implemented in the event handler.
             events.foreach(e => applyEvent(e.asInstanceOf[E]))
@@ -227,7 +245,7 @@ private[lagom] class PersistentEntityActor(
     }
   }
 
-  override protected def onPersistFailure(cause: Throwable, event: Any, seqNr: Long): Unit = {
+  protected override def onPersistFailure(cause: Throwable, event: Any, seqNr: Long): Unit = {
     // not using akka.actor.Status.Failure because it is using Java serialization
     sender() ! PersistentEntity.PersistException(
       s"Persist of [${event.getClass.getName}] failed in [${entity.getClass.getName}] with id [${entityId}], " +
@@ -236,7 +254,7 @@ private[lagom] class PersistentEntityActor(
     super.onPersistFailure(cause, event, seqNr)
   }
 
-  override protected def onPersistRejected(cause: Throwable, event: Any, seqNr: Long): Unit = {
+  protected override def onPersistRejected(cause: Throwable, event: Any, seqNr: Long): Unit = {
     // not using akka.actor.Status.Failure because it is using Java serialization
     sender() ! PersistentEntity.PersistException(
       s"Persist of [${event.getClass.getName}] rejected in [${entity.getClass.getName}] with id [${entityId}], " +

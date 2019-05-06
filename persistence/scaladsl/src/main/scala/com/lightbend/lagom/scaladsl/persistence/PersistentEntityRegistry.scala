@@ -5,7 +5,8 @@ package com.lightbend.lagom.scaladsl.persistence
 
 import akka.persistence.query.Offset
 import akka.stream.scaladsl
-import akka.{ Done, NotUsed }
+import akka.Done
+import akka.NotUsed
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -57,8 +58,8 @@ trait PersistentEntityRegistry {
    *   by this journal.
    */
   def eventStream[Event <: AggregateEvent[Event]](
-    aggregateTag: AggregateEventTag[Event],
-    fromOffset:   Offset
+      aggregateTag: AggregateEventTag[Event],
+      fromOffset: Offset
   ): scaladsl.Source[EventStreamElement[Event], NotUsed]
 
   /**

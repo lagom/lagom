@@ -7,8 +7,10 @@ import java.net.URI
 
 import scala.concurrent.Future
 import akka.actor.ActorSystem
-import com.google.inject.{ Inject, TypeLiteral }
-import com.google.inject.{ AbstractModule, Key }
+import com.google.inject.Inject
+import com.google.inject.TypeLiteral
+import com.google.inject.AbstractModule
+import com.google.inject.Key
 import com.google.inject.matcher.AbstractMatcher
 import com.google.inject.spi.InjectionListener
 import com.google.inject.spi.TypeEncounter
@@ -56,10 +58,10 @@ class CassandraPersistenceModule extends AbstractModule {
 
 private object CassandraPersistenceModule {
 
-  private class InitServiceLocatorHolder @Inject() (system: ActorSystem) {
+  private class InitServiceLocatorHolder @Inject()(system: ActorSystem) {
 
     @volatile private var serviceLocator: Option[ServiceLocator] = None
-    @volatile private var env: Option[play.Environment] = None
+    @volatile private var env: Option[play.Environment]          = None
 
     @Inject(optional = true)
     def setServiceLocator(_serviceLocator: ServiceLocator): Unit = {

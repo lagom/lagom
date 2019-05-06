@@ -7,4 +7,6 @@ import com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
 import com.lightbend.lagom.scaladsl.persistence.jdbc.JdbcPersistenceSpec
 import com.lightbend.lagom.scaladsl.persistence.testkit.AbstractEmbeddedPersistentActorSpec
 
-class EmbeddedJdbcPersistentActorSpec extends JdbcPersistenceSpec(TestEntitySerializerRegistry) with AbstractEmbeddedPersistentActorSpec
+class EmbeddedJdbcPersistentActorSpec
+    extends JdbcPersistenceSpec(TestEntitySerializerRegistry)
+    with AbstractEmbeddedPersistentActorSpec

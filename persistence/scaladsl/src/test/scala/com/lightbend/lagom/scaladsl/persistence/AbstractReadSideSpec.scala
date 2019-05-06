@@ -3,22 +3,28 @@
  */
 package com.lightbend.lagom.scaladsl.persistence
 
-import akka.actor.{ Actor, ActorRef, Props, Status }
+import akka.actor.Actor
+import akka.actor.ActorRef
+import akka.actor.Props
+import akka.actor.Status
 import akka.pattern.pipe
 import akka.persistence.query.Offset
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.testkit.ImplicitSender
-import akka.{ Done, NotUsed }
+import akka.Done
+import akka.NotUsed
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
-import com.lightbend.lagom.internal.scaladsl.persistence.{ PersistentEntityActor, ReadSideActor }
+import com.lightbend.lagom.internal.scaladsl.persistence.PersistentEntityActor
+import com.lightbend.lagom.internal.scaladsl.persistence.ReadSideActor
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Mode
 import org.scalatest.BeforeAndAfter
-import org.scalatest.concurrent.{ Eventually, ScalaFutures }
+import org.scalatest.concurrent.Eventually
+import org.scalatest.concurrent.ScalaFutures
 import akka.pattern._
 import akka.util.Timeout
 
@@ -31,15 +37,15 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   import system.dispatcher
 
   // patience config for all async code
-  override implicit val patienceConfig = PatienceConfig(8.seconds, 150.millis)
+  implicit override val patienceConfig = PatienceConfig(8.seconds, 150.millis)
 
   implicit val mat = ActorMaterializer()
 
   protected val persistentEntityRegistry: PersistentEntityRegistry
 
   def eventStream[Event <: AggregateEvent[Event]](
-    aggregateTag: AggregateEventTag[Event],
-    fromOffset:   Offset
+      aggregateTag: AggregateEventTag[Event],
+      fromOffset: Offset
   ): Source[EventStreamElement[Event], NotUsed] =
     persistentEntityRegistry.eventStream(aggregateTag, fromOffset)
 
@@ -76,7 +82,10 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
         processorFactory()
           .buildHandler()
           .globalPrepare()
-          .map { _ => Done } pipeTo sender()
+          .map { _ =>
+            Done
+          }
+          .pipeTo(sender())
         stats = stats.recordSuccess()
 
       case Mock.BecomeSuccessful => context.become(failureMode)

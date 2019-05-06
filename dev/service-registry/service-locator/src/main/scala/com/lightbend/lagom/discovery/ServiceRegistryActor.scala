@@ -7,11 +7,15 @@ import java.net.InetSocketAddress
 import java.util.regex.Pattern
 
 import akka.Done
-import akka.actor.{ Actor, Status }
+import akka.actor.Actor
+import akka.actor.Status
 import com.google.inject.Inject
-import com.lightbend.lagom.internal.javadsl.registry.{ RegisteredService, ServiceRegistryService }
-import com.lightbend.lagom.javadsl.api.transport.{ TransportErrorCode, TransportException }
-import org.pcollections.{ PSequence, TreePVector }
+import com.lightbend.lagom.internal.javadsl.registry.RegisteredService
+import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
+import com.lightbend.lagom.javadsl.api.transport.TransportErrorCode
+import com.lightbend.lagom.javadsl.api.transport.TransportException
+import org.pcollections.PSequence
+import org.pcollections.TreePVector
 import play.api.Logger
 
 import scala.collection.JavaConverters._
@@ -25,19 +29,19 @@ object ServiceRegistryActor {
   case object GetRegisteredServices
   case class RegisteredServices(services: PSequence[RegisteredService])
   sealed trait RouteResult
-  case class Found(address: InetSocketAddress) extends RouteResult
+  case class Found(address: InetSocketAddress)                       extends RouteResult
   case class NotFound(registry: Map[String, ServiceRegistryService]) extends RouteResult
 }
 
-class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) extends Actor {
+class ServiceRegistryActor @Inject()(unmanagedServices: UnmanagedServices) extends Actor {
 
   private val logger: Logger = Logger(classOf[ServiceLocatorServer])
 
   import ServiceRegistryActor._
 
   private var registry: Map[String, ServiceRegistryService] = unmanagedServices.services
-  private var router = PartialFunction.empty[Route, InetSocketAddress]
-  private var routerFunctions = Seq.empty[PartialFunction[Route, InetSocketAddress]]
+  private var router                                        = PartialFunction.empty[Route, InetSocketAddress]
+  private var routerFunctions                               = Seq.empty[PartialFunction[Route, InetSocketAddress]]
 
   override def preStart(): Unit = {
     rebuildRouter()
@@ -52,7 +56,13 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
       registry.get(name) match {
         case None =>
           if (logger.isDebugEnabled) {
-            logger.debug(s"Registering service [$name] with ACLs [${service.acls().asScala.map { acl => acl.toString }.mkString(", ")}] on ${service.uri()}).")
+            logger.debug(s"Registering service [$name] with ACLs [${service
+              .acls()
+              .asScala
+              .map { acl =>
+                acl.toString
+              }
+              .mkString(", ")}] on ${service.uri()}).")
           }
           registry += (name -> service)
           rebuildRouter()
@@ -79,7 +89,10 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
       val servingRoutes = routerFunctions.filter(_.isDefinedAt(route))
       if (servingRoutes.size > 1) {
         val servers = servingRoutes.map(_.apply(route))
-        logger.warn(s"Ambiguous route resolution serving route: $route. Route served by ${servers.head} but also matches ${servers.tail.mkString("[", ",", "]")}.")
+        logger.warn(
+          s"Ambiguous route resolution serving route: $route. Route served by ${servers.head} but also matches ${servers.tail
+            .mkString("[", ",", "]")}."
+        )
       }
     }
   }
@@ -89,34 +102,40 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
     // lazy because if there's no ACLs, then there's no need to create an InetSocketAddress, and hence no need to fail
     // if the port can't be calculated.
     lazy val address = (addressUri.getScheme, addressUri.getHost, addressUri.getPort) match {
-      case (_, null, _)        => throw new IllegalArgumentException("Cannot register a URI that doesn't have a host: " + addressUri)
+      case (_, null, _) =>
+        throw new IllegalArgumentException("Cannot register a URI that doesn't have a host: " + addressUri)
       case ("http", host, -1)  => new InetSocketAddress(host, 80)
       case ("https", host, -1) => new InetSocketAddress(host, 443)
-      case (_, _, -1)          => throw new IllegalArgumentException("Cannot register a URI that does not specify a port: " + addressUri)
-      case (_, host, port)     => new InetSocketAddress(host, port)
+      case (_, _, -1) =>
+        throw new IllegalArgumentException("Cannot register a URI that does not specify a port: " + addressUri)
+      case (_, host, port) => new InetSocketAddress(host, port)
     }
-    val routerFunctions: Seq[PartialFunction[Route, InetSocketAddress]] = service.acls.asScala.map {
-      case acl =>
-        acl.method().asScala -> acl.pathRegex().asScala.map(Pattern.compile)
-    }.map {
-      case (aclMethod, pathRegex) =>
-        val pf: PartialFunction[Route, InetSocketAddress] = {
-          case Route(method, path) if aclMethod.forall(_.name == method) && pathRegex.forall(_.matcher(path).matches()) =>
-            address
-        }
-        pf
-    }
+    val routerFunctions: Seq[PartialFunction[Route, InetSocketAddress]] = service.acls.asScala
+      .map {
+        case acl =>
+          acl.method().asScala -> acl.pathRegex().asScala.map(Pattern.compile)
+      }
+      .map {
+        case (aclMethod, pathRegex) =>
+          val pf: PartialFunction[Route, InetSocketAddress] = {
+            case Route(method, path)
+                if aclMethod.forall(_.name == method) && pathRegex.forall(_.matcher(path).matches()) =>
+              address
+          }
+          pf
+      }
     routerFunctions
   }
 
   private def rebuildRouter() = {
     routerFunctions = registry.values.flatMap(serviceRouter).toSeq
-    router = routerFunctions.foldLeft(PartialFunction.empty[Route, InetSocketAddress])(_ orElse _)
+    router = routerFunctions.foldLeft(PartialFunction.empty[Route, InetSocketAddress])(_.orElse(_))
   }
 
 }
 
-private class ServiceAlreadyRegistered(serviceName: String) extends TransportException(
-  TransportErrorCode.PolicyViolation, s"A service with the same name=[$serviceName] was already registered"
-) {
-}
+private class ServiceAlreadyRegistered(serviceName: String)
+    extends TransportException(
+      TransportErrorCode.PolicyViolation,
+      s"A service with the same name=[$serviceName] was already registered"
+    ) {}
