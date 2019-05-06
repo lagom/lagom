@@ -5,14 +5,16 @@ scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.8")
 
 interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 
-lazy val lagomProj = (project in file("lagomProj")).enablePlugins(LagomJava)
+lazy val lagomProj = (project in file("lagomProj"))
+  .enablePlugins(LagomJava)
   .settings(
     name := "lagom-dist-proj",
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(lagomJavadslPersistenceCassandra, lagomSbtScriptedLibrary)
   )
 
-lazy val playProj = (project in file("playProj")).enablePlugins(PlayJava, LagomPlay)
+lazy val playProj = (project in file("playProj"))
+  .enablePlugins(PlayJava, LagomPlay)
   .settings(
     name := "play-dist-proj",
     version := "1.0-SNAPSHOT",
@@ -20,7 +22,7 @@ lazy val playProj = (project in file("playProj")).enablePlugins(PlayJava, LagomP
   )
 
 val checkStartScriptLagomProj = taskKey[Unit]("checkStartScriptLagomProj")
-val checkStartScriptPlayProj = taskKey[Unit]("checkStartScriptPlayProj")
+val checkStartScriptPlayProj  = taskKey[Unit]("checkStartScriptPlayProj")
 
 checkStartScriptLagomProj := checkStartScriptTask(lagomProj).value
 checkStartScriptPlayProj := checkStartScriptTask(playProj).value
@@ -33,12 +35,14 @@ def checkStartScriptTask(p: Project) = Def.task {
     sys.error(msg)
   }
   val contents = IO.read(startScript)
-  val lines = IO.readLines(startScript)
+  val lines    = IO.readLines(startScript)
   // For sbt 0.13, the main class name is declared between double quotes. For sbt 1.2.x it is not.
-  if (contents.contains("app_mainclass=(play.core.server.ProdServerStart)") || contents.contains( """app_mainclass=("play.core.server.ProdServerStart")""")) {
+  if (contents.contains("app_mainclass=(play.core.server.ProdServerStart)") || contents
+        .contains("""app_mainclass=("play.core.server.ProdServerStart")""")) {
     // Also check for classpath declaration
-    lines.find(_ startsWith "declare -r app_classpath")
-      .getOrElse( startScriptError(contents, "Start script doesn't declare app_classpath"))
+    lines
+      .find(_.startsWith("declare -r app_classpath"))
+      .getOrElse(startScriptError(contents, "Start script doesn't declare app_classpath"))
   } else {
     startScriptError(contents, "Cannot find the declaration of the main class in the script")
   }
@@ -49,9 +53,9 @@ InputKey[Unit]("absence") := {
   import java.nio.file.Files
   import java.nio.file.Paths
   import scala.collection.JavaConversions._
-  val path = Paths.get(pathRegex)
+  val path  = Paths.get(pathRegex)
   val files = Files.newDirectoryStream(path.getParent(), path.getFileName().toString()).iterator.toList
-  if(files.nonEmpty)
+  if (files.nonEmpty)
     throw new RuntimeException(s"Found a file matching the provided file pattern `$pathRegex`!")
 }
 
@@ -60,15 +64,15 @@ lazy val checkDevRuntimeClasspath = inputKey[Unit]("Checks presence of a jar in 
 checkDevRuntimeClasspath := checkDevClasspathTask(Internal.Configs.DevRuntime).evaluated
 
 def checkDevClasspathTask(config: Configuration): Def.Initialize[InputTask[Unit]] = Def.inputTaskDyn {
-  val parsed = Def.spaceDelimited().parsed
+  val parsed   = Def.spaceDelimited().parsed
   val projName = parsed.head
-  val name = parsed.last
+  val name     = parsed.last
   checkClasspath(projName, name, config)
 }
 
 def checkClasspath(projName: String, name: String, config: Configuration): Def.Initialize[Task[Unit]] = Def.task {
-  val cp = classpathOf(projName, config).value
-  val names = cp.files.map(_.getName)
+  val cp      = classpathOf(projName, config).value
+  val names   = cp.files.map(_.getName)
   val matches = names.filter(_ contains name)
   if (matches.isEmpty)
     throw new RuntimeException(s"No match in the ${config.name} classpath for jar `$name`")
@@ -76,6 +80,6 @@ def checkClasspath(projName: String, name: String, config: Configuration): Def.I
 
 def classpathOf(projName: String, config: Configuration) = Def.taskDyn {
   val structure = buildStructure.value
-  val projRef = ProjectRef(structure.root, projName)
+  val projRef   = ProjectRef(structure.root, projName)
   managedClasspath in projRef in config
 }

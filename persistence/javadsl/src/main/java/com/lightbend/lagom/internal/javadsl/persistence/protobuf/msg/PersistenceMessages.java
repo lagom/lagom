@@ -9,59 +9,39 @@ package com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg;
 
 public final class PersistenceMessages {
   private PersistenceMessages() {}
-  public static void registerAllExtensions(
-      akka.protobuf.ExtensionRegistry registry) {
-  }
-  public interface CommandEnvelopeOrBuilder extends
+
+  public static void registerAllExtensions(akka.protobuf.ExtensionRegistry registry) {}
+
+  public interface CommandEnvelopeOrBuilder
+      extends
       // @@protoc_insertion_point(interface_extends:com.lightbend.lagom.internal.javadsl.persistence.CommandEnvelope)
       akka.protobuf.MessageOrBuilder {
 
-    /**
-     * <code>required string entityId = 1;</code>
-     */
+    /** <code>required string entityId = 1;</code> */
     boolean hasEntityId();
-    /**
-     * <code>required string entityId = 1;</code>
-     */
+    /** <code>required string entityId = 1;</code> */
     java.lang.String getEntityId();
-    /**
-     * <code>required string entityId = 1;</code>
-     */
-    akka.protobuf.ByteString
-        getEntityIdBytes();
+    /** <code>required string entityId = 1;</code> */
+    akka.protobuf.ByteString getEntityIdBytes();
 
-    /**
-     * <code>required bytes enclosedMessage = 2;</code>
-     */
+    /** <code>required bytes enclosedMessage = 2;</code> */
     boolean hasEnclosedMessage();
-    /**
-     * <code>required bytes enclosedMessage = 2;</code>
-     */
+    /** <code>required bytes enclosedMessage = 2;</code> */
     akka.protobuf.ByteString getEnclosedMessage();
 
-    /**
-     * <code>required int32 serializerId = 3;</code>
-     */
+    /** <code>required int32 serializerId = 3;</code> */
     boolean hasSerializerId();
-    /**
-     * <code>required int32 serializerId = 3;</code>
-     */
+    /** <code>required int32 serializerId = 3;</code> */
     int getSerializerId();
 
-    /**
-     * <code>optional bytes messageManifest = 4;</code>
-     */
+    /** <code>optional bytes messageManifest = 4;</code> */
     boolean hasMessageManifest();
-    /**
-     * <code>optional bytes messageManifest = 4;</code>
-     */
+    /** <code>optional bytes messageManifest = 4;</code> */
     akka.protobuf.ByteString getMessageManifest();
   }
-  /**
-   * Protobuf type {@code com.lightbend.lagom.internal.javadsl.persistence.CommandEnvelope}
-   */
-  public static final class CommandEnvelope extends
-      akka.protobuf.GeneratedMessage implements
+  /** Protobuf type {@code com.lightbend.lagom.internal.javadsl.persistence.CommandEnvelope} */
+  public static final class CommandEnvelope extends akka.protobuf.GeneratedMessage
+      implements
       // @@protoc_insertion_point(message_implements:com.lightbend.lagom.internal.javadsl.persistence.CommandEnvelope)
       CommandEnvelopeOrBuilder {
     // Use CommandEnvelope.newBuilder() to construct.
@@ -69,9 +49,13 @@ public final class PersistenceMessages {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private CommandEnvelope(boolean noInit) { this.unknownFields = akka.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private CommandEnvelope(boolean noInit) {
+      this.unknownFields = akka.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
 
     private static final CommandEnvelope defaultInstance;
+
     public static CommandEnvelope getDefaultInstance() {
       return defaultInstance;
     }
@@ -81,14 +65,14 @@ public final class PersistenceMessages {
     }
 
     private final akka.protobuf.UnknownFieldSet unknownFields;
+
     @java.lang.Override
-    public final akka.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    public final akka.protobuf.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
     }
+
     private CommandEnvelope(
-        akka.protobuf.CodedInputStream input,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
+        akka.protobuf.CodedInputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
         throws akka.protobuf.InvalidProtocolBufferException {
       initFields();
       int mutable_bitField0_ = 0;
@@ -102,67 +86,77 @@ public final class PersistenceMessages {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
+            default:
+              {
+                if (!parseUnknownField(
+                    input, unknownFields,
+                    extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
               }
-              break;
-            }
-            case 10: {
-              akka.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000001;
-              entityId_ = bs;
-              break;
-            }
-            case 18: {
-              bitField0_ |= 0x00000002;
-              enclosedMessage_ = input.readBytes();
-              break;
-            }
-            case 24: {
-              bitField0_ |= 0x00000004;
-              serializerId_ = input.readInt32();
-              break;
-            }
-            case 34: {
-              bitField0_ |= 0x00000008;
-              messageManifest_ = input.readBytes();
-              break;
-            }
+            case 10:
+              {
+                akka.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000001;
+                entityId_ = bs;
+                break;
+              }
+            case 18:
+              {
+                bitField0_ |= 0x00000002;
+                enclosedMessage_ = input.readBytes();
+                break;
+              }
+            case 24:
+              {
+                bitField0_ |= 0x00000004;
+                serializerId_ = input.readInt32();
+                break;
+              }
+            case 34:
+              {
+                bitField0_ |= 0x00000008;
+                messageManifest_ = input.readBytes();
+                break;
+              }
           }
         }
       } catch (akka.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
-        throw new akka.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+        throw new akka.protobuf.InvalidProtocolBufferException(e.getMessage())
+            .setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
-    public static final akka.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_descriptor;
+
+    public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+      return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+          .internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_descriptor;
     }
 
-    protected akka.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_fieldAccessorTable
+    protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+      return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+          .internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope.class, com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope.Builder.class);
+              com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                  .CommandEnvelope.class,
+              com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                  .CommandEnvelope.Builder.class);
     }
 
     public static akka.protobuf.Parser<CommandEnvelope> PARSER =
         new akka.protobuf.AbstractParser<CommandEnvelope>() {
-      public CommandEnvelope parsePartialFrom(
-          akka.protobuf.CodedInputStream input,
-          akka.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws akka.protobuf.InvalidProtocolBufferException {
-        return new CommandEnvelope(input, extensionRegistry);
-      }
-    };
+          public CommandEnvelope parsePartialFrom(
+              akka.protobuf.CodedInputStream input,
+              akka.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws akka.protobuf.InvalidProtocolBufferException {
+            return new CommandEnvelope(input, extensionRegistry);
+          }
+        };
 
     @java.lang.Override
     public akka.protobuf.Parser<CommandEnvelope> getParserForType() {
@@ -172,22 +166,17 @@ public final class PersistenceMessages {
     private int bitField0_;
     public static final int ENTITYID_FIELD_NUMBER = 1;
     private java.lang.Object entityId_;
-    /**
-     * <code>required string entityId = 1;</code>
-     */
+    /** <code>required string entityId = 1;</code> */
     public boolean hasEntityId() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
-    /**
-     * <code>required string entityId = 1;</code>
-     */
+    /** <code>required string entityId = 1;</code> */
     public java.lang.String getEntityId() {
       java.lang.Object ref = entityId_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        akka.protobuf.ByteString bs = 
-            (akka.protobuf.ByteString) ref;
+        akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           entityId_ = s;
@@ -195,16 +184,11 @@ public final class PersistenceMessages {
         return s;
       }
     }
-    /**
-     * <code>required string entityId = 1;</code>
-     */
-    public akka.protobuf.ByteString
-        getEntityIdBytes() {
+    /** <code>required string entityId = 1;</code> */
+    public akka.protobuf.ByteString getEntityIdBytes() {
       java.lang.Object ref = entityId_;
       if (ref instanceof java.lang.String) {
-        akka.protobuf.ByteString b = 
-            akka.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        akka.protobuf.ByteString b = akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         entityId_ = b;
         return b;
       } else {
@@ -214,45 +198,33 @@ public final class PersistenceMessages {
 
     public static final int ENCLOSEDMESSAGE_FIELD_NUMBER = 2;
     private akka.protobuf.ByteString enclosedMessage_;
-    /**
-     * <code>required bytes enclosedMessage = 2;</code>
-     */
+    /** <code>required bytes enclosedMessage = 2;</code> */
     public boolean hasEnclosedMessage() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
-    /**
-     * <code>required bytes enclosedMessage = 2;</code>
-     */
+    /** <code>required bytes enclosedMessage = 2;</code> */
     public akka.protobuf.ByteString getEnclosedMessage() {
       return enclosedMessage_;
     }
 
     public static final int SERIALIZERID_FIELD_NUMBER = 3;
     private int serializerId_;
-    /**
-     * <code>required int32 serializerId = 3;</code>
-     */
+    /** <code>required int32 serializerId = 3;</code> */
     public boolean hasSerializerId() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
-    /**
-     * <code>required int32 serializerId = 3;</code>
-     */
+    /** <code>required int32 serializerId = 3;</code> */
     public int getSerializerId() {
       return serializerId_;
     }
 
     public static final int MESSAGEMANIFEST_FIELD_NUMBER = 4;
     private akka.protobuf.ByteString messageManifest_;
-    /**
-     * <code>optional bytes messageManifest = 4;</code>
-     */
+    /** <code>optional bytes messageManifest = 4;</code> */
     public boolean hasMessageManifest() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
-    /**
-     * <code>optional bytes messageManifest = 4;</code>
-     */
+    /** <code>optional bytes messageManifest = 4;</code> */
     public akka.protobuf.ByteString getMessageManifest() {
       return messageManifest_;
     }
@@ -263,7 +235,9 @@ public final class PersistenceMessages {
       serializerId_ = 0;
       messageManifest_ = akka.protobuf.ByteString.EMPTY;
     }
+
     private byte memoizedIsInitialized = -1;
+
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -285,8 +259,7 @@ public final class PersistenceMessages {
       return true;
     }
 
-    public void writeTo(akka.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+    public void writeTo(akka.protobuf.CodedOutputStream output) throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getEntityIdBytes());
@@ -304,26 +277,23 @@ public final class PersistenceMessages {
     }
 
     private int memoizedSerializedSize = -1;
+
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += akka.protobuf.CodedOutputStream
-          .computeBytesSize(1, getEntityIdBytes());
+        size += akka.protobuf.CodedOutputStream.computeBytesSize(1, getEntityIdBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += akka.protobuf.CodedOutputStream
-          .computeBytesSize(2, enclosedMessage_);
+        size += akka.protobuf.CodedOutputStream.computeBytesSize(2, enclosedMessage_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += akka.protobuf.CodedOutputStream
-          .computeInt32Size(3, serializerId_);
+        size += akka.protobuf.CodedOutputStream.computeInt32Size(3, serializerId_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += akka.protobuf.CodedOutputStream
-          .computeBytesSize(4, messageManifest_);
+        size += akka.protobuf.CodedOutputStream.computeBytesSize(4, messageManifest_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -331,111 +301,142 @@ public final class PersistenceMessages {
     }
 
     private static final long serialVersionUID = 0L;
+
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
+    protected java.lang.Object writeReplace() throws java.io.ObjectStreamException {
       return super.writeReplace();
     }
 
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope parseFrom(
-        akka.protobuf.ByteString data)
-        throws akka.protobuf.InvalidProtocolBufferException {
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .CommandEnvelope
+        parseFrom(akka.protobuf.ByteString data)
+            throws akka.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope parseFrom(
-        akka.protobuf.ByteString data,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws akka.protobuf.InvalidProtocolBufferException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .CommandEnvelope
+        parseFrom(
+            akka.protobuf.ByteString data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope parseFrom(byte[] data)
-        throws akka.protobuf.InvalidProtocolBufferException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .CommandEnvelope
+        parseFrom(byte[] data) throws akka.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope parseFrom(
-        byte[] data,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws akka.protobuf.InvalidProtocolBufferException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .CommandEnvelope
+        parseFrom(byte[] data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .CommandEnvelope
+        parseFrom(java.io.InputStream input) throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope parseFrom(
-        java.io.InputStream input,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .CommandEnvelope
+        parseFrom(java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .CommandEnvelope
+        parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope parseDelimitedFrom(
-        java.io.InputStream input,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .CommandEnvelope
+        parseDelimitedFrom(
+            java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope parseFrom(
-        akka.protobuf.CodedInputStream input)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .CommandEnvelope
+        parseFrom(akka.protobuf.CodedInputStream input) throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope parseFrom(
-        akka.protobuf.CodedInputStream input,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .CommandEnvelope
+        parseFrom(
+            akka.protobuf.CodedInputStream input,
+            akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope prototype) {
+    public static Builder newBuilder() {
+      return Builder.create();
+    }
+
+    public Builder newBuilderForType() {
+      return newBuilder();
+    }
+
+    public static Builder newBuilder(
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .CommandEnvelope
+            prototype) {
       return newBuilder().mergeFrom(prototype);
     }
-    public Builder toBuilder() { return newBuilder(this); }
+
+    public Builder toBuilder() {
+      return newBuilder(this);
+    }
 
     @java.lang.Override
-    protected Builder newBuilderForType(
-        akka.protobuf.GeneratedMessage.BuilderParent parent) {
+    protected Builder newBuilderForType(akka.protobuf.GeneratedMessage.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
-    /**
-     * Protobuf type {@code com.lightbend.lagom.internal.javadsl.persistence.CommandEnvelope}
-     */
-    public static final class Builder extends
-        akka.protobuf.GeneratedMessage.Builder<Builder> implements
+    /** Protobuf type {@code com.lightbend.lagom.internal.javadsl.persistence.CommandEnvelope} */
+    public static final class Builder extends akka.protobuf.GeneratedMessage.Builder<Builder>
+        implements
         // @@protoc_insertion_point(builder_implements:com.lightbend.lagom.internal.javadsl.persistence.CommandEnvelope)
-        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelopeOrBuilder {
-      public static final akka.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_descriptor;
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .CommandEnvelopeOrBuilder {
+      public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_descriptor;
       }
 
-      protected akka.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_fieldAccessorTable
+      protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope.class, com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope.Builder.class);
+                com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                    .CommandEnvelope.class,
+                com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                    .CommandEnvelope.Builder.class);
       }
 
-      // Construct using com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope.newBuilder()
+      // Construct using
+      // com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
-      private Builder(
-          akka.protobuf.GeneratedMessage.BuilderParent parent) {
+      private Builder(akka.protobuf.GeneratedMessage.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
+
       private void maybeForceBuilderInitialization() {
-        if (akka.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
+        if (akka.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {}
       }
+
       private static Builder create() {
         return new Builder();
       }
@@ -457,25 +458,38 @@ public final class PersistenceMessages {
         return create().mergeFrom(buildPartial());
       }
 
-      public akka.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_descriptor;
+      public akka.protobuf.Descriptors.Descriptor getDescriptorForType() {
+        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_descriptor;
       }
 
-      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope getDefaultInstanceForType() {
-        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope.getDefaultInstance();
+      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+              .CommandEnvelope
+          getDefaultInstanceForType() {
+        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .CommandEnvelope.getDefaultInstance();
       }
 
-      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope build() {
-        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope result = buildPartial();
+      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+              .CommandEnvelope
+          build() {
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .CommandEnvelope
+            result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope buildPartial() {
-        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope result = new com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope(this);
+      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+              .CommandEnvelope
+          buildPartial() {
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .CommandEnvelope
+            result =
+                new com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg
+                    .PersistenceMessages.CommandEnvelope(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -500,16 +514,27 @@ public final class PersistenceMessages {
       }
 
       public Builder mergeFrom(akka.protobuf.Message other) {
-        if (other instanceof com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope) {
-          return mergeFrom((com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope)other);
+        if (other
+            instanceof
+            com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .CommandEnvelope) {
+          return mergeFrom(
+              (com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                      .CommandEnvelope)
+                  other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope other) {
-        if (other == com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope.getDefaultInstance()) return this;
+      public Builder mergeFrom(
+          com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                  .CommandEnvelope
+              other) {
+        if (other
+            == com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .CommandEnvelope.getDefaultInstance()) return this;
         if (other.hasEntityId()) {
           bitField0_ |= 0x00000001;
           entityId_ = other.entityId_;
@@ -530,15 +555,15 @@ public final class PersistenceMessages {
 
       public final boolean isInitialized() {
         if (!hasEntityId()) {
-          
+
           return false;
         }
         if (!hasEnclosedMessage()) {
-          
+
           return false;
         }
         if (!hasSerializerId()) {
-          
+
           return false;
         }
         return true;
@@ -548,11 +573,16 @@ public final class PersistenceMessages {
           akka.protobuf.CodedInputStream input,
           akka.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope parsedMessage = null;
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .CommandEnvelope
+            parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (akka.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.CommandEnvelope) e.getUnfinishedMessage();
+          parsedMessage =
+              (com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                      .CommandEnvelope)
+                  e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -561,23 +591,19 @@ public final class PersistenceMessages {
         }
         return this;
       }
+
       private int bitField0_;
 
       private java.lang.Object entityId_ = "";
-      /**
-       * <code>required string entityId = 1;</code>
-       */
+      /** <code>required string entityId = 1;</code> */
       public boolean hasEntityId() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
-      /**
-       * <code>required string entityId = 1;</code>
-       */
+      /** <code>required string entityId = 1;</code> */
       public java.lang.String getEntityId() {
         java.lang.Object ref = entityId_;
         if (!(ref instanceof java.lang.String)) {
-          akka.protobuf.ByteString bs =
-              (akka.protobuf.ByteString) ref;
+          akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             entityId_ = s;
@@ -587,86 +613,66 @@ public final class PersistenceMessages {
           return (java.lang.String) ref;
         }
       }
-      /**
-       * <code>required string entityId = 1;</code>
-       */
-      public akka.protobuf.ByteString
-          getEntityIdBytes() {
+      /** <code>required string entityId = 1;</code> */
+      public akka.protobuf.ByteString getEntityIdBytes() {
         java.lang.Object ref = entityId_;
         if (ref instanceof String) {
-          akka.protobuf.ByteString b = 
-              akka.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+          akka.protobuf.ByteString b =
+              akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
           entityId_ = b;
           return b;
         } else {
           return (akka.protobuf.ByteString) ref;
         }
       }
-      /**
-       * <code>required string entityId = 1;</code>
-       */
-      public Builder setEntityId(
-          java.lang.String value) {
+      /** <code>required string entityId = 1;</code> */
+      public Builder setEntityId(java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
         entityId_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>required string entityId = 1;</code>
-       */
+      /** <code>required string entityId = 1;</code> */
       public Builder clearEntityId() {
         bitField0_ = (bitField0_ & ~0x00000001);
         entityId_ = getDefaultInstance().getEntityId();
         onChanged();
         return this;
       }
-      /**
-       * <code>required string entityId = 1;</code>
-       */
-      public Builder setEntityIdBytes(
-          akka.protobuf.ByteString value) {
+      /** <code>required string entityId = 1;</code> */
+      public Builder setEntityIdBytes(akka.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
         entityId_ = value;
         onChanged();
         return this;
       }
 
       private akka.protobuf.ByteString enclosedMessage_ = akka.protobuf.ByteString.EMPTY;
-      /**
-       * <code>required bytes enclosedMessage = 2;</code>
-       */
+      /** <code>required bytes enclosedMessage = 2;</code> */
       public boolean hasEnclosedMessage() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
-      /**
-       * <code>required bytes enclosedMessage = 2;</code>
-       */
+      /** <code>required bytes enclosedMessage = 2;</code> */
       public akka.protobuf.ByteString getEnclosedMessage() {
         return enclosedMessage_;
       }
-      /**
-       * <code>required bytes enclosedMessage = 2;</code>
-       */
+      /** <code>required bytes enclosedMessage = 2;</code> */
       public Builder setEnclosedMessage(akka.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000002;
         enclosedMessage_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>required bytes enclosedMessage = 2;</code>
-       */
+      /** <code>required bytes enclosedMessage = 2;</code> */
       public Builder clearEnclosedMessage() {
         bitField0_ = (bitField0_ & ~0x00000002);
         enclosedMessage_ = getDefaultInstance().getEnclosedMessage();
@@ -674,31 +680,23 @@ public final class PersistenceMessages {
         return this;
       }
 
-      private int serializerId_ ;
-      /**
-       * <code>required int32 serializerId = 3;</code>
-       */
+      private int serializerId_;
+      /** <code>required int32 serializerId = 3;</code> */
       public boolean hasSerializerId() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
-      /**
-       * <code>required int32 serializerId = 3;</code>
-       */
+      /** <code>required int32 serializerId = 3;</code> */
       public int getSerializerId() {
         return serializerId_;
       }
-      /**
-       * <code>required int32 serializerId = 3;</code>
-       */
+      /** <code>required int32 serializerId = 3;</code> */
       public Builder setSerializerId(int value) {
         bitField0_ |= 0x00000004;
         serializerId_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>required int32 serializerId = 3;</code>
-       */
+      /** <code>required int32 serializerId = 3;</code> */
       public Builder clearSerializerId() {
         bitField0_ = (bitField0_ & ~0x00000004);
         serializerId_ = 0;
@@ -707,33 +705,25 @@ public final class PersistenceMessages {
       }
 
       private akka.protobuf.ByteString messageManifest_ = akka.protobuf.ByteString.EMPTY;
-      /**
-       * <code>optional bytes messageManifest = 4;</code>
-       */
+      /** <code>optional bytes messageManifest = 4;</code> */
       public boolean hasMessageManifest() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
-      /**
-       * <code>optional bytes messageManifest = 4;</code>
-       */
+      /** <code>optional bytes messageManifest = 4;</code> */
       public akka.protobuf.ByteString getMessageManifest() {
         return messageManifest_;
       }
-      /**
-       * <code>optional bytes messageManifest = 4;</code>
-       */
+      /** <code>optional bytes messageManifest = 4;</code> */
       public Builder setMessageManifest(akka.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000008;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000008;
         messageManifest_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>optional bytes messageManifest = 4;</code>
-       */
+      /** <code>optional bytes messageManifest = 4;</code> */
       public Builder clearMessageManifest() {
         bitField0_ = (bitField0_ & ~0x00000008);
         messageManifest_ = getDefaultInstance().getMessageManifest();
@@ -752,29 +742,21 @@ public final class PersistenceMessages {
     // @@protoc_insertion_point(class_scope:com.lightbend.lagom.internal.javadsl.persistence.CommandEnvelope)
   }
 
-  public interface ExceptionOrBuilder extends
+  public interface ExceptionOrBuilder
+      extends
       // @@protoc_insertion_point(interface_extends:com.lightbend.lagom.internal.javadsl.persistence.Exception)
       akka.protobuf.MessageOrBuilder {
 
-    /**
-     * <code>optional string message = 1;</code>
-     */
+    /** <code>optional string message = 1;</code> */
     boolean hasMessage();
-    /**
-     * <code>optional string message = 1;</code>
-     */
+    /** <code>optional string message = 1;</code> */
     java.lang.String getMessage();
-    /**
-     * <code>optional string message = 1;</code>
-     */
-    akka.protobuf.ByteString
-        getMessageBytes();
+    /** <code>optional string message = 1;</code> */
+    akka.protobuf.ByteString getMessageBytes();
   }
-  /**
-   * Protobuf type {@code com.lightbend.lagom.internal.javadsl.persistence.Exception}
-   */
-  public static final class Exception extends
-      akka.protobuf.GeneratedMessage implements
+  /** Protobuf type {@code com.lightbend.lagom.internal.javadsl.persistence.Exception} */
+  public static final class Exception extends akka.protobuf.GeneratedMessage
+      implements
       // @@protoc_insertion_point(message_implements:com.lightbend.lagom.internal.javadsl.persistence.Exception)
       ExceptionOrBuilder {
     // Use Exception.newBuilder() to construct.
@@ -782,9 +764,13 @@ public final class PersistenceMessages {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private Exception(boolean noInit) { this.unknownFields = akka.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private Exception(boolean noInit) {
+      this.unknownFields = akka.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
 
     private static final Exception defaultInstance;
+
     public static Exception getDefaultInstance() {
       return defaultInstance;
     }
@@ -794,14 +780,14 @@ public final class PersistenceMessages {
     }
 
     private final akka.protobuf.UnknownFieldSet unknownFields;
+
     @java.lang.Override
-    public final akka.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    public final akka.protobuf.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
     }
+
     private Exception(
-        akka.protobuf.CodedInputStream input,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
+        akka.protobuf.CodedInputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
         throws akka.protobuf.InvalidProtocolBufferException {
       initFields();
       int mutable_bitField0_ = 0;
@@ -815,52 +801,59 @@ public final class PersistenceMessages {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
+            default:
+              {
+                if (!parseUnknownField(
+                    input, unknownFields,
+                    extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
               }
-              break;
-            }
-            case 10: {
-              akka.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000001;
-              message_ = bs;
-              break;
-            }
+            case 10:
+              {
+                akka.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000001;
+                message_ = bs;
+                break;
+              }
           }
         }
       } catch (akka.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
-        throw new akka.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+        throw new akka.protobuf.InvalidProtocolBufferException(e.getMessage())
+            .setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
-    public static final akka.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_descriptor;
+
+    public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+      return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+          .internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_descriptor;
     }
 
-    protected akka.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_fieldAccessorTable
+    protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+      return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+          .internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception.class, com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception.Builder.class);
+              com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                  .Exception.class,
+              com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                  .Exception.Builder.class);
     }
 
     public static akka.protobuf.Parser<Exception> PARSER =
         new akka.protobuf.AbstractParser<Exception>() {
-      public Exception parsePartialFrom(
-          akka.protobuf.CodedInputStream input,
-          akka.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws akka.protobuf.InvalidProtocolBufferException {
-        return new Exception(input, extensionRegistry);
-      }
-    };
+          public Exception parsePartialFrom(
+              akka.protobuf.CodedInputStream input,
+              akka.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws akka.protobuf.InvalidProtocolBufferException {
+            return new Exception(input, extensionRegistry);
+          }
+        };
 
     @java.lang.Override
     public akka.protobuf.Parser<Exception> getParserForType() {
@@ -870,22 +863,17 @@ public final class PersistenceMessages {
     private int bitField0_;
     public static final int MESSAGE_FIELD_NUMBER = 1;
     private java.lang.Object message_;
-    /**
-     * <code>optional string message = 1;</code>
-     */
+    /** <code>optional string message = 1;</code> */
     public boolean hasMessage() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
-    /**
-     * <code>optional string message = 1;</code>
-     */
+    /** <code>optional string message = 1;</code> */
     public java.lang.String getMessage() {
       java.lang.Object ref = message_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        akka.protobuf.ByteString bs = 
-            (akka.protobuf.ByteString) ref;
+        akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           message_ = s;
@@ -893,16 +881,11 @@ public final class PersistenceMessages {
         return s;
       }
     }
-    /**
-     * <code>optional string message = 1;</code>
-     */
-    public akka.protobuf.ByteString
-        getMessageBytes() {
+    /** <code>optional string message = 1;</code> */
+    public akka.protobuf.ByteString getMessageBytes() {
       java.lang.Object ref = message_;
       if (ref instanceof java.lang.String) {
-        akka.protobuf.ByteString b = 
-            akka.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        akka.protobuf.ByteString b = akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         message_ = b;
         return b;
       } else {
@@ -913,7 +896,9 @@ public final class PersistenceMessages {
     private void initFields() {
       message_ = "";
     }
+
     private byte memoizedIsInitialized = -1;
+
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -923,8 +908,7 @@ public final class PersistenceMessages {
       return true;
     }
 
-    public void writeTo(akka.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+    public void writeTo(akka.protobuf.CodedOutputStream output) throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getMessageBytes());
@@ -933,14 +917,14 @@ public final class PersistenceMessages {
     }
 
     private int memoizedSerializedSize = -1;
+
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += akka.protobuf.CodedOutputStream
-          .computeBytesSize(1, getMessageBytes());
+        size += akka.protobuf.CodedOutputStream.computeBytesSize(1, getMessageBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -948,111 +932,141 @@ public final class PersistenceMessages {
     }
 
     private static final long serialVersionUID = 0L;
+
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
+    protected java.lang.Object writeReplace() throws java.io.ObjectStreamException {
       return super.writeReplace();
     }
 
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception parseFrom(
-        akka.protobuf.ByteString data)
-        throws akka.protobuf.InvalidProtocolBufferException {
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .Exception
+        parseFrom(akka.protobuf.ByteString data)
+            throws akka.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception parseFrom(
-        akka.protobuf.ByteString data,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws akka.protobuf.InvalidProtocolBufferException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .Exception
+        parseFrom(
+            akka.protobuf.ByteString data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception parseFrom(byte[] data)
-        throws akka.protobuf.InvalidProtocolBufferException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .Exception
+        parseFrom(byte[] data) throws akka.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception parseFrom(
-        byte[] data,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws akka.protobuf.InvalidProtocolBufferException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .Exception
+        parseFrom(byte[] data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .Exception
+        parseFrom(java.io.InputStream input) throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception parseFrom(
-        java.io.InputStream input,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .Exception
+        parseFrom(java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .Exception
+        parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception parseDelimitedFrom(
-        java.io.InputStream input,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .Exception
+        parseDelimitedFrom(
+            java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception parseFrom(
-        akka.protobuf.CodedInputStream input)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .Exception
+        parseFrom(akka.protobuf.CodedInputStream input) throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception parseFrom(
-        akka.protobuf.CodedInputStream input,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .Exception
+        parseFrom(
+            akka.protobuf.CodedInputStream input,
+            akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception prototype) {
+    public static Builder newBuilder() {
+      return Builder.create();
+    }
+
+    public Builder newBuilderForType() {
+      return newBuilder();
+    }
+
+    public static Builder newBuilder(
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception
+            prototype) {
       return newBuilder().mergeFrom(prototype);
     }
-    public Builder toBuilder() { return newBuilder(this); }
+
+    public Builder toBuilder() {
+      return newBuilder(this);
+    }
 
     @java.lang.Override
-    protected Builder newBuilderForType(
-        akka.protobuf.GeneratedMessage.BuilderParent parent) {
+    protected Builder newBuilderForType(akka.protobuf.GeneratedMessage.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
-    /**
-     * Protobuf type {@code com.lightbend.lagom.internal.javadsl.persistence.Exception}
-     */
-    public static final class Builder extends
-        akka.protobuf.GeneratedMessage.Builder<Builder> implements
+    /** Protobuf type {@code com.lightbend.lagom.internal.javadsl.persistence.Exception} */
+    public static final class Builder extends akka.protobuf.GeneratedMessage.Builder<Builder>
+        implements
         // @@protoc_insertion_point(builder_implements:com.lightbend.lagom.internal.javadsl.persistence.Exception)
-        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.ExceptionOrBuilder {
-      public static final akka.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_descriptor;
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .ExceptionOrBuilder {
+      public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_descriptor;
       }
 
-      protected akka.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_fieldAccessorTable
+      protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception.class, com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception.Builder.class);
+                com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                    .Exception.class,
+                com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                    .Exception.Builder.class);
       }
 
-      // Construct using com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception.newBuilder()
+      // Construct using
+      // com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
-      private Builder(
-          akka.protobuf.GeneratedMessage.BuilderParent parent) {
+      private Builder(akka.protobuf.GeneratedMessage.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
+
       private void maybeForceBuilderInitialization() {
-        if (akka.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
+        if (akka.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {}
       }
+
       private static Builder create() {
         return new Builder();
       }
@@ -1068,25 +1082,36 @@ public final class PersistenceMessages {
         return create().mergeFrom(buildPartial());
       }
 
-      public akka.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_descriptor;
+      public akka.protobuf.Descriptors.Descriptor getDescriptorForType() {
+        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_descriptor;
       }
 
-      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception getDefaultInstanceForType() {
-        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception.getDefaultInstance();
+      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+              .Exception
+          getDefaultInstanceForType() {
+        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .Exception.getDefaultInstance();
       }
 
-      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception build() {
-        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception result = buildPartial();
+      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+              .Exception
+          build() {
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception
+            result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception buildPartial() {
-        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception result = new com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception(this);
+      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+              .Exception
+          buildPartial() {
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception
+            result =
+                new com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg
+                    .PersistenceMessages.Exception(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -1099,16 +1124,27 @@ public final class PersistenceMessages {
       }
 
       public Builder mergeFrom(akka.protobuf.Message other) {
-        if (other instanceof com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception) {
-          return mergeFrom((com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception)other);
+        if (other
+            instanceof
+            com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .Exception) {
+          return mergeFrom(
+              (com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                      .Exception)
+                  other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception other) {
-        if (other == com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception.getDefaultInstance()) return this;
+      public Builder mergeFrom(
+          com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                  .Exception
+              other) {
+        if (other
+            == com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .Exception.getDefaultInstance()) return this;
         if (other.hasMessage()) {
           bitField0_ |= 0x00000001;
           message_ = other.message_;
@@ -1126,11 +1162,15 @@ public final class PersistenceMessages {
           akka.protobuf.CodedInputStream input,
           akka.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception parsedMessage = null;
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception
+            parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (akka.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.Exception) e.getUnfinishedMessage();
+          parsedMessage =
+              (com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                      .Exception)
+                  e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -1139,23 +1179,19 @@ public final class PersistenceMessages {
         }
         return this;
       }
+
       private int bitField0_;
 
       private java.lang.Object message_ = "";
-      /**
-       * <code>optional string message = 1;</code>
-       */
+      /** <code>optional string message = 1;</code> */
       public boolean hasMessage() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
-      /**
-       * <code>optional string message = 1;</code>
-       */
+      /** <code>optional string message = 1;</code> */
       public java.lang.String getMessage() {
         java.lang.Object ref = message_;
         if (!(ref instanceof java.lang.String)) {
-          akka.protobuf.ByteString bs =
-              (akka.protobuf.ByteString) ref;
+          akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             message_ = s;
@@ -1165,53 +1201,41 @@ public final class PersistenceMessages {
           return (java.lang.String) ref;
         }
       }
-      /**
-       * <code>optional string message = 1;</code>
-       */
-      public akka.protobuf.ByteString
-          getMessageBytes() {
+      /** <code>optional string message = 1;</code> */
+      public akka.protobuf.ByteString getMessageBytes() {
         java.lang.Object ref = message_;
         if (ref instanceof String) {
-          akka.protobuf.ByteString b = 
-              akka.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+          akka.protobuf.ByteString b =
+              akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
           message_ = b;
           return b;
         } else {
           return (akka.protobuf.ByteString) ref;
         }
       }
-      /**
-       * <code>optional string message = 1;</code>
-       */
-      public Builder setMessage(
-          java.lang.String value) {
+      /** <code>optional string message = 1;</code> */
+      public Builder setMessage(java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
         message_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>optional string message = 1;</code>
-       */
+      /** <code>optional string message = 1;</code> */
       public Builder clearMessage() {
         bitField0_ = (bitField0_ & ~0x00000001);
         message_ = getDefaultInstance().getMessage();
         onChanged();
         return this;
       }
-      /**
-       * <code>optional string message = 1;</code>
-       */
-      public Builder setMessageBytes(
-          akka.protobuf.ByteString value) {
+      /** <code>optional string message = 1;</code> */
+      public Builder setMessageBytes(akka.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
         message_ = value;
         onChanged();
         return this;
@@ -1228,29 +1252,21 @@ public final class PersistenceMessages {
     // @@protoc_insertion_point(class_scope:com.lightbend.lagom.internal.javadsl.persistence.Exception)
   }
 
-  public interface EnsureActiveOrBuilder extends
+  public interface EnsureActiveOrBuilder
+      extends
       // @@protoc_insertion_point(interface_extends:com.lightbend.lagom.internal.javadsl.persistence.EnsureActive)
       akka.protobuf.MessageOrBuilder {
 
-    /**
-     * <code>required string entityId = 1;</code>
-     */
+    /** <code>required string entityId = 1;</code> */
     boolean hasEntityId();
-    /**
-     * <code>required string entityId = 1;</code>
-     */
+    /** <code>required string entityId = 1;</code> */
     java.lang.String getEntityId();
-    /**
-     * <code>required string entityId = 1;</code>
-     */
-    akka.protobuf.ByteString
-        getEntityIdBytes();
+    /** <code>required string entityId = 1;</code> */
+    akka.protobuf.ByteString getEntityIdBytes();
   }
-  /**
-   * Protobuf type {@code com.lightbend.lagom.internal.javadsl.persistence.EnsureActive}
-   */
-  public static final class EnsureActive extends
-      akka.protobuf.GeneratedMessage implements
+  /** Protobuf type {@code com.lightbend.lagom.internal.javadsl.persistence.EnsureActive} */
+  public static final class EnsureActive extends akka.protobuf.GeneratedMessage
+      implements
       // @@protoc_insertion_point(message_implements:com.lightbend.lagom.internal.javadsl.persistence.EnsureActive)
       EnsureActiveOrBuilder {
     // Use EnsureActive.newBuilder() to construct.
@@ -1258,9 +1274,13 @@ public final class PersistenceMessages {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private EnsureActive(boolean noInit) { this.unknownFields = akka.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private EnsureActive(boolean noInit) {
+      this.unknownFields = akka.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
 
     private static final EnsureActive defaultInstance;
+
     public static EnsureActive getDefaultInstance() {
       return defaultInstance;
     }
@@ -1270,14 +1290,14 @@ public final class PersistenceMessages {
     }
 
     private final akka.protobuf.UnknownFieldSet unknownFields;
+
     @java.lang.Override
-    public final akka.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    public final akka.protobuf.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
     }
+
     private EnsureActive(
-        akka.protobuf.CodedInputStream input,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
+        akka.protobuf.CodedInputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
         throws akka.protobuf.InvalidProtocolBufferException {
       initFields();
       int mutable_bitField0_ = 0;
@@ -1291,52 +1311,59 @@ public final class PersistenceMessages {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
+            default:
+              {
+                if (!parseUnknownField(
+                    input, unknownFields,
+                    extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
               }
-              break;
-            }
-            case 10: {
-              akka.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000001;
-              entityId_ = bs;
-              break;
-            }
+            case 10:
+              {
+                akka.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000001;
+                entityId_ = bs;
+                break;
+              }
           }
         }
       } catch (akka.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
-        throw new akka.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+        throw new akka.protobuf.InvalidProtocolBufferException(e.getMessage())
+            .setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
-    public static final akka.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_descriptor;
+
+    public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+      return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+          .internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_descriptor;
     }
 
-    protected akka.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_fieldAccessorTable
+    protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+      return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+          .internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive.class, com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive.Builder.class);
+              com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                  .EnsureActive.class,
+              com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                  .EnsureActive.Builder.class);
     }
 
     public static akka.protobuf.Parser<EnsureActive> PARSER =
         new akka.protobuf.AbstractParser<EnsureActive>() {
-      public EnsureActive parsePartialFrom(
-          akka.protobuf.CodedInputStream input,
-          akka.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws akka.protobuf.InvalidProtocolBufferException {
-        return new EnsureActive(input, extensionRegistry);
-      }
-    };
+          public EnsureActive parsePartialFrom(
+              akka.protobuf.CodedInputStream input,
+              akka.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws akka.protobuf.InvalidProtocolBufferException {
+            return new EnsureActive(input, extensionRegistry);
+          }
+        };
 
     @java.lang.Override
     public akka.protobuf.Parser<EnsureActive> getParserForType() {
@@ -1346,22 +1373,17 @@ public final class PersistenceMessages {
     private int bitField0_;
     public static final int ENTITYID_FIELD_NUMBER = 1;
     private java.lang.Object entityId_;
-    /**
-     * <code>required string entityId = 1;</code>
-     */
+    /** <code>required string entityId = 1;</code> */
     public boolean hasEntityId() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
-    /**
-     * <code>required string entityId = 1;</code>
-     */
+    /** <code>required string entityId = 1;</code> */
     public java.lang.String getEntityId() {
       java.lang.Object ref = entityId_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        akka.protobuf.ByteString bs = 
-            (akka.protobuf.ByteString) ref;
+        akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           entityId_ = s;
@@ -1369,16 +1391,11 @@ public final class PersistenceMessages {
         return s;
       }
     }
-    /**
-     * <code>required string entityId = 1;</code>
-     */
-    public akka.protobuf.ByteString
-        getEntityIdBytes() {
+    /** <code>required string entityId = 1;</code> */
+    public akka.protobuf.ByteString getEntityIdBytes() {
       java.lang.Object ref = entityId_;
       if (ref instanceof java.lang.String) {
-        akka.protobuf.ByteString b = 
-            akka.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        akka.protobuf.ByteString b = akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         entityId_ = b;
         return b;
       } else {
@@ -1389,7 +1406,9 @@ public final class PersistenceMessages {
     private void initFields() {
       entityId_ = "";
     }
+
     private byte memoizedIsInitialized = -1;
+
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1403,8 +1422,7 @@ public final class PersistenceMessages {
       return true;
     }
 
-    public void writeTo(akka.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+    public void writeTo(akka.protobuf.CodedOutputStream output) throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getEntityIdBytes());
@@ -1413,14 +1431,14 @@ public final class PersistenceMessages {
     }
 
     private int memoizedSerializedSize = -1;
+
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += akka.protobuf.CodedOutputStream
-          .computeBytesSize(1, getEntityIdBytes());
+        size += akka.protobuf.CodedOutputStream.computeBytesSize(1, getEntityIdBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1428,111 +1446,142 @@ public final class PersistenceMessages {
     }
 
     private static final long serialVersionUID = 0L;
+
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
+    protected java.lang.Object writeReplace() throws java.io.ObjectStreamException {
       return super.writeReplace();
     }
 
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive parseFrom(
-        akka.protobuf.ByteString data)
-        throws akka.protobuf.InvalidProtocolBufferException {
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .EnsureActive
+        parseFrom(akka.protobuf.ByteString data)
+            throws akka.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive parseFrom(
-        akka.protobuf.ByteString data,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws akka.protobuf.InvalidProtocolBufferException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .EnsureActive
+        parseFrom(
+            akka.protobuf.ByteString data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive parseFrom(byte[] data)
-        throws akka.protobuf.InvalidProtocolBufferException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .EnsureActive
+        parseFrom(byte[] data) throws akka.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive parseFrom(
-        byte[] data,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws akka.protobuf.InvalidProtocolBufferException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .EnsureActive
+        parseFrom(byte[] data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .EnsureActive
+        parseFrom(java.io.InputStream input) throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive parseFrom(
-        java.io.InputStream input,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .EnsureActive
+        parseFrom(java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .EnsureActive
+        parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive parseDelimitedFrom(
-        java.io.InputStream input,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .EnsureActive
+        parseDelimitedFrom(
+            java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive parseFrom(
-        akka.protobuf.CodedInputStream input)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .EnsureActive
+        parseFrom(akka.protobuf.CodedInputStream input) throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive parseFrom(
-        akka.protobuf.CodedInputStream input,
-        akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+
+    public static com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .EnsureActive
+        parseFrom(
+            akka.protobuf.CodedInputStream input,
+            akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive prototype) {
+    public static Builder newBuilder() {
+      return Builder.create();
+    }
+
+    public Builder newBuilderForType() {
+      return newBuilder();
+    }
+
+    public static Builder newBuilder(
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .EnsureActive
+            prototype) {
       return newBuilder().mergeFrom(prototype);
     }
-    public Builder toBuilder() { return newBuilder(this); }
+
+    public Builder toBuilder() {
+      return newBuilder(this);
+    }
 
     @java.lang.Override
-    protected Builder newBuilderForType(
-        akka.protobuf.GeneratedMessage.BuilderParent parent) {
+    protected Builder newBuilderForType(akka.protobuf.GeneratedMessage.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
-    /**
-     * Protobuf type {@code com.lightbend.lagom.internal.javadsl.persistence.EnsureActive}
-     */
-    public static final class Builder extends
-        akka.protobuf.GeneratedMessage.Builder<Builder> implements
+    /** Protobuf type {@code com.lightbend.lagom.internal.javadsl.persistence.EnsureActive} */
+    public static final class Builder extends akka.protobuf.GeneratedMessage.Builder<Builder>
+        implements
         // @@protoc_insertion_point(builder_implements:com.lightbend.lagom.internal.javadsl.persistence.EnsureActive)
-        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActiveOrBuilder {
-      public static final akka.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_descriptor;
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .EnsureActiveOrBuilder {
+      public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_descriptor;
       }
 
-      protected akka.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_fieldAccessorTable
+      protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive.class, com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive.Builder.class);
+                com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                    .EnsureActive.class,
+                com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                    .EnsureActive.Builder.class);
       }
 
-      // Construct using com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive.newBuilder()
+      // Construct using
+      // com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
-      private Builder(
-          akka.protobuf.GeneratedMessage.BuilderParent parent) {
+      private Builder(akka.protobuf.GeneratedMessage.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
+
       private void maybeForceBuilderInitialization() {
-        if (akka.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
+        if (akka.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {}
       }
+
       private static Builder create() {
         return new Builder();
       }
@@ -1548,25 +1597,38 @@ public final class PersistenceMessages {
         return create().mergeFrom(buildPartial());
       }
 
-      public akka.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_descriptor;
+      public akka.protobuf.Descriptors.Descriptor getDescriptorForType() {
+        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_descriptor;
       }
 
-      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive getDefaultInstanceForType() {
-        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive.getDefaultInstance();
+      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+              .EnsureActive
+          getDefaultInstanceForType() {
+        return com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+            .EnsureActive.getDefaultInstance();
       }
 
-      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive build() {
-        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive result = buildPartial();
+      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+              .EnsureActive
+          build() {
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .EnsureActive
+            result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive buildPartial() {
-        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive result = new com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive(this);
+      public com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+              .EnsureActive
+          buildPartial() {
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .EnsureActive
+            result =
+                new com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg
+                    .PersistenceMessages.EnsureActive(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -1579,16 +1641,27 @@ public final class PersistenceMessages {
       }
 
       public Builder mergeFrom(akka.protobuf.Message other) {
-        if (other instanceof com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive) {
-          return mergeFrom((com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive)other);
+        if (other
+            instanceof
+            com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .EnsureActive) {
+          return mergeFrom(
+              (com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                      .EnsureActive)
+                  other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive other) {
-        if (other == com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive.getDefaultInstance()) return this;
+      public Builder mergeFrom(
+          com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                  .EnsureActive
+              other) {
+        if (other
+            == com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .EnsureActive.getDefaultInstance()) return this;
         if (other.hasEntityId()) {
           bitField0_ |= 0x00000001;
           entityId_ = other.entityId_;
@@ -1600,7 +1673,7 @@ public final class PersistenceMessages {
 
       public final boolean isInitialized() {
         if (!hasEntityId()) {
-          
+
           return false;
         }
         return true;
@@ -1610,11 +1683,16 @@ public final class PersistenceMessages {
           akka.protobuf.CodedInputStream input,
           akka.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive parsedMessage = null;
+        com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                .EnsureActive
+            parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (akka.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages.EnsureActive) e.getUnfinishedMessage();
+          parsedMessage =
+              (com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.PersistenceMessages
+                      .EnsureActive)
+                  e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -1623,23 +1701,19 @@ public final class PersistenceMessages {
         }
         return this;
       }
+
       private int bitField0_;
 
       private java.lang.Object entityId_ = "";
-      /**
-       * <code>required string entityId = 1;</code>
-       */
+      /** <code>required string entityId = 1;</code> */
       public boolean hasEntityId() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
-      /**
-       * <code>required string entityId = 1;</code>
-       */
+      /** <code>required string entityId = 1;</code> */
       public java.lang.String getEntityId() {
         java.lang.Object ref = entityId_;
         if (!(ref instanceof java.lang.String)) {
-          akka.protobuf.ByteString bs =
-              (akka.protobuf.ByteString) ref;
+          akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             entityId_ = s;
@@ -1649,53 +1723,41 @@ public final class PersistenceMessages {
           return (java.lang.String) ref;
         }
       }
-      /**
-       * <code>required string entityId = 1;</code>
-       */
-      public akka.protobuf.ByteString
-          getEntityIdBytes() {
+      /** <code>required string entityId = 1;</code> */
+      public akka.protobuf.ByteString getEntityIdBytes() {
         java.lang.Object ref = entityId_;
         if (ref instanceof String) {
-          akka.protobuf.ByteString b = 
-              akka.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+          akka.protobuf.ByteString b =
+              akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
           entityId_ = b;
           return b;
         } else {
           return (akka.protobuf.ByteString) ref;
         }
       }
-      /**
-       * <code>required string entityId = 1;</code>
-       */
-      public Builder setEntityId(
-          java.lang.String value) {
+      /** <code>required string entityId = 1;</code> */
+      public Builder setEntityId(java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
         entityId_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>required string entityId = 1;</code>
-       */
+      /** <code>required string entityId = 1;</code> */
       public Builder clearEntityId() {
         bitField0_ = (bitField0_ & ~0x00000001);
         entityId_ = getDefaultInstance().getEntityId();
         onChanged();
         return this;
       }
-      /**
-       * <code>required string entityId = 1;</code>
-       */
-      public Builder setEntityIdBytes(
-          akka.protobuf.ByteString value) {
+      /** <code>required string entityId = 1;</code> */
+      public Builder setEntityIdBytes(akka.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
         entityId_ = value;
         onChanged();
         return this;
@@ -1713,68 +1775,69 @@ public final class PersistenceMessages {
   }
 
   private static final akka.protobuf.Descriptors.Descriptor
-    internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_descriptor;
-  private static
-    akka.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_descriptor;
+  private static akka.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_fieldAccessorTable;
   private static final akka.protobuf.Descriptors.Descriptor
-    internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_descriptor;
-  private static
-    akka.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_descriptor;
+  private static akka.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_fieldAccessorTable;
   private static final akka.protobuf.Descriptors.Descriptor
-    internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_descriptor;
-  private static
-    akka.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_descriptor;
+  private static akka.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_fieldAccessorTable;
 
-  public static akka.protobuf.Descriptors.FileDescriptor
-      getDescriptor() {
+  public static akka.protobuf.Descriptors.FileDescriptor getDescriptor() {
     return descriptor;
   }
-  private static akka.protobuf.Descriptors.FileDescriptor
-      descriptor;
+
+  private static akka.protobuf.Descriptors.FileDescriptor descriptor;
+
   static {
     java.lang.String[] descriptorData = {
-      "\n\031PersistenceMessages.proto\0220com.lightbe" +
-      "nd.lagom.internal.javadsl.persistence\"k\n" +
-      "\017CommandEnvelope\022\020\n\010entityId\030\001 \002(\t\022\027\n\017en" +
-      "closedMessage\030\002 \002(\014\022\024\n\014serializerId\030\003 \002(" +
-      "\005\022\027\n\017messageManifest\030\004 \001(\014\"\034\n\tException\022" +
-      "\017\n\007message\030\001 \001(\t\" \n\014EnsureActive\022\020\n\010enti" +
-      "tyId\030\001 \002(\tBA\n=com.lightbend.lagom.intern" +
-      "al.javadsl.persistence.protobuf.msgH\001"
+      "\n\031PersistenceMessages.proto\0220com.lightbe"
+          + "nd.lagom.internal.javadsl.persistence\"k\n"
+          + "\017CommandEnvelope\022\020\n\010entityId\030\001 \002(\t\022\027\n\017en"
+          + "closedMessage\030\002 \002(\014\022\024\n\014serializerId\030\003 \002("
+          + "\005\022\027\n\017messageManifest\030\004 \001(\014\"\034\n\tException\022"
+          + "\017\n\007message\030\001 \001(\t\" \n\014EnsureActive\022\020\n\010enti"
+          + "tyId\030\001 \002(\tBA\n=com.lightbend.lagom.intern"
+          + "al.javadsl.persistence.protobuf.msgH\001"
     };
     akka.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-        new akka.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
+        new akka.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
           public akka.protobuf.ExtensionRegistry assignDescriptors(
               akka.protobuf.Descriptors.FileDescriptor root) {
             descriptor = root;
             return null;
           }
         };
-    akka.protobuf.Descriptors.FileDescriptor
-      .internalBuildGeneratedFileFrom(descriptorData,
-        new akka.protobuf.Descriptors.FileDescriptor[] {
-        }, assigner);
+    akka.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
+        descriptorData, new akka.protobuf.Descriptors.FileDescriptor[] {}, assigner);
     internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_descriptor =
-      getDescriptor().getMessageTypes().get(0);
-    internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_fieldAccessorTable = new
-      akka.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_descriptor,
-        new java.lang.String[] { "EntityId", "EnclosedMessage", "SerializerId", "MessageManifest", });
+        getDescriptor().getMessageTypes().get(0);
+    internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_fieldAccessorTable =
+        new akka.protobuf.GeneratedMessage.FieldAccessorTable(
+            internal_static_com_lightbend_lagom_internal_javadsl_persistence_CommandEnvelope_descriptor,
+            new java.lang.String[] {
+              "EntityId", "EnclosedMessage", "SerializerId", "MessageManifest",
+            });
     internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_descriptor =
-      getDescriptor().getMessageTypes().get(1);
-    internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_fieldAccessorTable = new
-      akka.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_descriptor,
-        new java.lang.String[] { "Message", });
+        getDescriptor().getMessageTypes().get(1);
+    internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_fieldAccessorTable =
+        new akka.protobuf.GeneratedMessage.FieldAccessorTable(
+            internal_static_com_lightbend_lagom_internal_javadsl_persistence_Exception_descriptor,
+            new java.lang.String[] {
+              "Message",
+            });
     internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_descriptor =
-      getDescriptor().getMessageTypes().get(2);
-    internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_fieldAccessorTable = new
-      akka.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_descriptor,
-        new java.lang.String[] { "EntityId", });
+        getDescriptor().getMessageTypes().get(2);
+    internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_fieldAccessorTable =
+        new akka.protobuf.GeneratedMessage.FieldAccessorTable(
+            internal_static_com_lightbend_lagom_internal_javadsl_persistence_EnsureActive_descriptor,
+            new java.lang.String[] {
+              "EntityId",
+            });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

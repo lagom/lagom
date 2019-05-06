@@ -9,17 +9,17 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface SensorService2 extends Service {
 
-  //#service-api
+  // #service-api
   ServiceCall<Source<Temperature, ?>, NotUsed> registerTemperatures(String id);
-  //#service-api
+  // #service-api
 
   ServiceCall<NotUsed, Source<Temperature, ?>> temperatureStream(String id);
 
   @Override
   default Descriptor descriptor() {
-    return named("/sensorservice").withCalls(
-        pathCall("/device/:id/temperature/stream", this::registerTemperatures),
-        pathCall("/device/:id/temperature/stream", this::temperatureStream)
-    );
+    return named("/sensorservice")
+        .withCalls(
+            pathCall("/device/:id/temperature/stream", this::registerTemperatures),
+            pathCall("/device/:id/temperature/stream", this::temperatureStream));
   }
 }

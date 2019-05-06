@@ -10,13 +10,16 @@ import com.lightbend.lagom.internal.registry.AbstractLoggingServiceRegistryClien
 import com.lightbend.lagom.scaladsl.api.transport.NotFound
 
 import scala.collection.immutable
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 private[lagom] class ScalaServiceRegistryClient(registry: ServiceRegistry)(implicit ec: ExecutionContext)
-  extends AbstractLoggingServiceRegistryClient {
+    extends AbstractLoggingServiceRegistryClient {
 
-  override protected def internalLocateAll(serviceName: String, portName: Option[String]): Future[immutable.Seq[URI]] =
-    registry.lookup(serviceName, portName).invoke()
+  protected override def internalLocateAll(serviceName: String, portName: Option[String]): Future[immutable.Seq[URI]] =
+    registry
+      .lookup(serviceName, portName)
+      .invoke()
       .map(immutable.Seq[URI](_))
       .recover {
         case _: NotFound => Nil

@@ -15,116 +15,112 @@ import java.sql.SQLException;
 /**
  * JDBC read side support.
  *
- * This should be used to build and register a read side processor.
+ * <p>This should be used to build and register a read side processor.
  *
- * All callbacks are executed in a transaction and are automatically committed
- * or rolled back based on whether they fail or succeed.
+ * <p>All callbacks are executed in a transaction and are automatically committed or rolled back
+ * based on whether they fail or succeed.
  *
- * Offsets are automatically handled.
+ * <p>Offsets are automatically handled.
  */
 public interface JdbcReadSide {
 
+  /**
+   * Create a builder for a JDBC read side event handler.
+   *
+   * @param readSideId An identifier for this read side. This will be used to store offsets in the
+   *     offset store.
+   * @return The builder.
+   */
+  <Event extends AggregateEvent<Event>> ReadSideHandlerBuilder<Event> builder(String readSideId);
+
+  /** Builder for the handler. */
+  interface ReadSideHandlerBuilder<Event extends AggregateEvent<Event>> {
+
     /**
-     * Create a builder for a JDBC read side event handler.
+     * Set a global prepare callback.
      *
-     * @param readSideId An identifier for this read side. This will be used to store offsets in the offset store.
-     * @return The builder.
+     * @param callback The callback.
+     * @return This builder for fluent invocation.
+     * @see ReadSideHandler#globalPrepare()
      */
-    <Event extends AggregateEvent<Event>> ReadSideHandlerBuilder<Event> builder(String readSideId);
+    ReadSideHandlerBuilder<Event> setGlobalPrepare(ConnectionConsumer callback);
 
     /**
-     * Builder for the handler.
+     * Set a prepare callback.
+     *
+     * @param callback The callback.
+     * @return This builder for fluent invocation.
+     * @see ReadSideHandler#prepare(AggregateEventTag)
      */
-    interface ReadSideHandlerBuilder<Event extends AggregateEvent<Event>> {
-
-        /**
-         * Set a global prepare callback.
-         *
-         * @param callback The callback.
-         * @return This builder for fluent invocation.
-         * @see ReadSideHandler#globalPrepare()
-         */
-        ReadSideHandlerBuilder<Event> setGlobalPrepare(ConnectionConsumer callback);
-
-        /**
-         * Set a prepare callback.
-         *
-         * @param callback The callback.
-         * @return This builder for fluent invocation.
-         * @see ReadSideHandler#prepare(AggregateEventTag)
-         */
-        ReadSideHandlerBuilder<Event> setPrepare(ConnectionBiConsumer<AggregateEventTag<Event>> callback);
-
-        /**
-         * Define the event handler that will be used for events of a given class.
-         *
-         * @param eventClass The event class to handle.
-         * @param handler The function to handle the events.
-         * @return This builder for fluent invocation
-         */
-        <E extends Event> ReadSideHandlerBuilder<Event> setEventHandler(Class<E> eventClass, ConnectionBiConsumer<E> handler);
-
-        /**
-         * Define the event handler that will be used for events of a given class.
-         *
-         * This variant allows for offsets to be consumed as well as their events.
-         *
-         * @param eventClass The event class to handle.
-         * @param handler The function to handle the events.
-         * @return This builder for fluent invocation
-         */
-        <E extends Event> ReadSideHandlerBuilder<Event> setEventHandler(Class<E> eventClass, ConnectionTriConsumer<E, Offset> handler);
-
-        /**
-         * Build the read side handler.
-         *
-         * @return The read side handler.
-         */
-        ReadSideHandler<Event> build();
-    }
+    ReadSideHandlerBuilder<Event> setPrepare(
+        ConnectionBiConsumer<AggregateEventTag<Event>> callback);
 
     /**
-     * SAM for consuming a connection.
+     * Define the event handler that will be used for events of a given class.
+     *
+     * @param eventClass The event class to handle.
+     * @param handler The function to handle the events.
+     * @return This builder for fluent invocation
      */
-    @FunctionalInterface
-    interface ConnectionConsumer {
-
-        /**
-         * Accept the connection.
-         *
-         * @param connection The connection
-         */
-        void accept(Connection connection) throws SQLException;
-    }
+    <E extends Event> ReadSideHandlerBuilder<Event> setEventHandler(
+        Class<E> eventClass, ConnectionBiConsumer<E> handler);
 
     /**
-     * SAM for consuming a connection and a parameter
+     * Define the event handler that will be used for events of a given class.
+     *
+     * <p>This variant allows for offsets to be consumed as well as their events.
+     *
+     * @param eventClass The event class to handle.
+     * @param handler The function to handle the events.
+     * @return This builder for fluent invocation
      */
-    @FunctionalInterface
-    interface ConnectionBiConsumer<T> {
-
-        /**
-         * Accept the connection and a parameter.
-         *
-         * @param connection The connection
-         * @param t The first parameter.
-         */
-        void accept(Connection connection, T t) throws SQLException;
-    }
+    <E extends Event> ReadSideHandlerBuilder<Event> setEventHandler(
+        Class<E> eventClass, ConnectionTriConsumer<E, Offset> handler);
 
     /**
-     * SAM for consuming a connection and two other parameters
+     * Build the read side handler.
+     *
+     * @return The read side handler.
      */
-    @FunctionalInterface
-    interface ConnectionTriConsumer<T, U> {
+    ReadSideHandler<Event> build();
+  }
 
-        /**
-         * Accept the connection and two parameters.
-         *
-         * @param connection The connection
-         * @param t The first parameter.
-         * @param u The second parameter.
-         */
-        void accept(Connection connection, T t, U u) throws SQLException;
-    }
+  /** SAM for consuming a connection. */
+  @FunctionalInterface
+  interface ConnectionConsumer {
+
+    /**
+     * Accept the connection.
+     *
+     * @param connection The connection
+     */
+    void accept(Connection connection) throws SQLException;
+  }
+
+  /** SAM for consuming a connection and a parameter */
+  @FunctionalInterface
+  interface ConnectionBiConsumer<T> {
+
+    /**
+     * Accept the connection and a parameter.
+     *
+     * @param connection The connection
+     * @param t The first parameter.
+     */
+    void accept(Connection connection, T t) throws SQLException;
+  }
+
+  /** SAM for consuming a connection and two other parameters */
+  @FunctionalInterface
+  interface ConnectionTriConsumer<T, U> {
+
+    /**
+     * Accept the connection and two parameters.
+     *
+     * @param connection The connection
+     * @param t The first parameter.
+     * @param u The second parameter.
+     */
+    void accept(Connection connection, T t, U u) throws SQLException;
+  }
 }

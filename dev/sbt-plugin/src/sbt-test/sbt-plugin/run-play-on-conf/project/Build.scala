@@ -1,15 +1,17 @@
 /*
-   * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
 import java.net.HttpURLConnection
-import java.io.{BufferedReader, InputStreamReader}
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
-import sbt.{IO, File}
+import sbt.IO
+import sbt.File
 
 object DevModeBuild {
 
   val ConnectTimeout = 10000
-  val ReadTimeout = 10000
+  val ReadTimeout    = 10000
 
   def waitForRequestToContain(uri: String, toContain: String): Unit = {
     waitFor[String](
@@ -29,8 +31,7 @@ object DevModeBuild {
       conn.getResponseCode // we make this call just to block until a response is returned.
       val br = new BufferedReader(new InputStreamReader((conn.getInputStream())))
       Stream.continually(br.readLine()).takeWhile(_ != null).mkString("\n").trim()
-    }
-    finally if(conn != null) conn.disconnect()
+    } finally if (conn != null) conn.disconnect()
   }
 
   def waitForReloads(file: File, count: Int): Unit = {

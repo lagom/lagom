@@ -9,17 +9,15 @@ import javax.inject.Inject;
 
 public class ServiceAImpl implements ServiceA {
 
-    private final ServiceB serviceB;
+  private final ServiceB serviceB;
 
-    @Inject
-    public ServiceAImpl(ServiceB serviceB) {
-      this.serviceB = serviceB;
-    }
+  @Inject
+  public ServiceAImpl(ServiceB serviceB) {
+    this.serviceB = serviceB;
+  }
 
-    @Override
-    public ServiceCall<String, String> helloA() {
-        return req -> serviceB.helloB().invoke(req);
-    }
-
-
+  @Override
+  public ServiceCall<String, String> helloA() {
+    return req -> serviceB.helloB().invoke(req);
+  }
 }

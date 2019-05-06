@@ -2,7 +2,7 @@ package docs.services.test;
 
 import docs.services.HelloService;
 
-//#test
+// #test
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
@@ -41,6 +41,5 @@ public class AdvancedHelloServiceTest {
     String msg = service.sayHello().invoke("Bob").toCompletableFuture().get(5, SECONDS);
     assertEquals("Hello Bob", msg);
   }
-
 }
-//#test
+// #test

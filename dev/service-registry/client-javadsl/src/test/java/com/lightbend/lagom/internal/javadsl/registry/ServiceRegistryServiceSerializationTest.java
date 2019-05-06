@@ -28,42 +28,40 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-/**
- *
- */
+/** */
 public class ServiceRegistryServiceSerializationTest {
 
-    static ActorSystem system;
+  static ActorSystem system;
 
-    @BeforeClass
-    public static void setup() {
-        // @formatter:off
-        Config conf = ConfigFactory.parseString("");
-        // @formatter:on
-        system = ActorSystem.create("SerializationTest", conf);
-    }
+  @BeforeClass
+  public static void setup() {
+    // @formatter:off
+    Config conf = ConfigFactory.parseString("");
+    // @formatter:on
+    system = ActorSystem.create("SerializationTest", conf);
+  }
 
-    @AfterClass
-    public static void teardown() {
-        TestKit.shutdownActorSystem(system);
-        system = null;
-    }
+  @AfterClass
+  public static void teardown() {
+    TestKit.shutdownActorSystem(system);
+    system = null;
+  }
 
-    @Test
-    public void serializationRoundTrip() throws URISyntaxException {
-        List<ServiceAcl> acls = Arrays.asList(ServiceAcl.methodAndPath(Method.GET, "/.*"));
-        ServiceRegistryService x = ServiceRegistryService.of(new URI("http://localhost/asdf"), acls);
+  @Test
+  public void serializationRoundTrip() throws URISyntaxException {
+    List<ServiceAcl> acls = Arrays.asList(ServiceAcl.methodAndPath(Method.GET, "/.*"));
+    ServiceRegistryService x = ServiceRegistryService.of(new URI("http://localhost/asdf"), acls);
 
-        MessageProtocol protocol = new MessageProtocol(Optional.of("application/json"), Optional.empty(),
-            Optional.empty());
-        JacksonSerializerFactory factory = new JacksonSerializerFactory(system);
-        StrictMessageSerializer<ServiceRegistryService> serializer =
-            factory.messageSerializerFor(x.getClass());
-        MessageSerializer.NegotiatedSerializer<ServiceRegistryService, ByteString> serializerForRequest =
-            serializer.serializerForRequest();
-        MessageSerializer.NegotiatedDeserializer<ServiceRegistryService, ByteString> deserializer =
-            serializer.deserializer(protocol);
+    MessageProtocol protocol =
+        new MessageProtocol(Optional.of("application/json"), Optional.empty(), Optional.empty());
+    JacksonSerializerFactory factory = new JacksonSerializerFactory(system);
+    StrictMessageSerializer<ServiceRegistryService> serializer =
+        factory.messageSerializerFor(x.getClass());
+    MessageSerializer.NegotiatedSerializer<ServiceRegistryService, ByteString>
+        serializerForRequest = serializer.serializerForRequest();
+    MessageSerializer.NegotiatedDeserializer<ServiceRegistryService, ByteString> deserializer =
+        serializer.deserializer(protocol);
 
-        Assert.assertEquals(x, deserializer.deserialize(serializerForRequest.serialize(x)));
-    }
+    Assert.assertEquals(x, deserializer.deserialize(serializerForRequest.serialize(x)));
+  }
 }

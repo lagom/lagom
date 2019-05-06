@@ -41,9 +41,9 @@ object JacksonObjectMapperProvider extends ExtensionId[JacksonObjectMapperProvid
  * in `lagom.serialization.json.jackson-modules`.
  */
 class JacksonObjectMapperProvider(
-  config:        Config,
-  dynamicAccess: DynamicAccess,
-  log:           Option[LoggingAdapter]
+    config: Config,
+    dynamicAccess: DynamicAccess,
+    log: Option[LoggingAdapter]
 ) extends Extension {
 
   val objectMapper: ObjectMapper = {
@@ -54,9 +54,11 @@ class JacksonObjectMapperProvider(
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
 
-    val configuredModules = config.getStringList(
-      "lagom.serialization.json.jackson-modules"
-    ).asScala
+    val configuredModules = config
+      .getStringList(
+        "lagom.serialization.json.jackson-modules"
+      )
+      .asScala
     val modules: Seq[Module] =
       if (configuredModules.contains("*"))
         ObjectMapper.findModules(dynamicAccess.classLoader).asScala
@@ -65,10 +67,15 @@ class JacksonObjectMapperProvider(
           dynamicAccess.createInstanceFor[Module](fqcn, Nil) match {
             case Success(m) => Some(m)
             case Failure(e) =>
-              log.foreach(_.error(e, s"Could not load configured Jackson module [$fqcn], " +
-                "please verify classpath dependencies or amend the configuration " +
-                "[lagom.serialization.json.jackson-modules]. Continuing " +
-                "without this module."))
+              log.foreach(
+                _.error(
+                  e,
+                  s"Could not load configured Jackson module [$fqcn], " +
+                    "please verify classpath dependencies or amend the configuration " +
+                    "[lagom.serialization.json.jackson-modules]. Continuing " +
+                    "without this module."
+                )
+              )
               None
           }
         }

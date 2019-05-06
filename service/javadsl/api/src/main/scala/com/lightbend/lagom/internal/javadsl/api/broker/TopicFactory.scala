@@ -4,7 +4,8 @@
 
 package com.lightbend.lagom.internal.javadsl.api.broker
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.Inject
+import javax.inject.Singleton
 
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.broker.Topic
@@ -33,7 +34,7 @@ trait TopicFactoryProvider {
 }
 
 @Singleton
-class InjectorTopicFactoryProvider @Inject() (injector: Injector) extends TopicFactoryProvider {
+class InjectorTopicFactoryProvider @Inject()(injector: Injector) extends TopicFactoryProvider {
   override lazy val get: Option[TopicFactory] = try {
     Some(injector.instanceOf[TopicFactory])
   } catch {

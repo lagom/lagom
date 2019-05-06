@@ -3,7 +3,8 @@
  */
 package docs.home.scaladsl.serialization
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.Format
+import play.api.libs.json.Json
 
 //#complexMembers
 case class UserMetadata(twitterHandle: String)

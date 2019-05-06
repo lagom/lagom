@@ -1,6 +1,7 @@
 package docs.scaladsl.logging
 
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class LoggingExample {
   private final val log: Logger =

@@ -4,6 +4,4 @@
 
 package com.lightbend.lagom.scaladsl.it.routers
 
-class AdditionalRoutersServiceImpl extends AdditionalRoutersService {
-
-}
+class AdditionalRoutersServiceImpl extends AdditionalRoutersService {}

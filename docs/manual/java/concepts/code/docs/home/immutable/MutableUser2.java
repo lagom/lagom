@@ -2,7 +2,7 @@ package docs.home.immutable;
 
 import java.util.List;
 
-//#mutable
+// #mutable
 public class MutableUser2 {
   private final String name;
   private final List<String> phoneNumbers;
@@ -19,6 +19,5 @@ public class MutableUser2 {
   public List<String> getPhoneNumbers() {
     return phoneNumbers;
   }
-
 }
-//#mutable
+// #mutable

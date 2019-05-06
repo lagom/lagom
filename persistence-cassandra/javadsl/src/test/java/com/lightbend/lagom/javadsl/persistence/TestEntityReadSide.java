@@ -26,20 +26,23 @@ public class TestEntityReadSide {
   }
 
   public CompletionStage<Long> getAppendCount(String entityId) {
-    return session.selectOne("SELECT count FROM testcounts WHERE id = ?", entityId).thenApply(maybeRow -> {
-      if (maybeRow.isPresent()) {
-        return maybeRow.get().getLong("count");
-      } else {
-        return 0L;
-      }
-    });
+    return session
+        .selectOne("SELECT count FROM testcounts WHERE id = ?", entityId)
+        .thenApply(
+            maybeRow -> {
+              if (maybeRow.isPresent()) {
+                return maybeRow.get().getLong("count");
+              } else {
+                return 0L;
+              }
+            });
   }
 
   public static class TestEntityReadSideProcessor extends ReadSideProcessor<TestEntity.Evt> {
     private final CassandraReadSide readSide;
     private final CassandraSession session;
 
-    volatile private PreparedStatement writeStmt;
+    private volatile PreparedStatement writeStmt;
 
     @Inject
     public TestEntityReadSideProcessor(CassandraReadSide readSide, CassandraSession session) {
@@ -49,36 +52,42 @@ public class TestEntityReadSide {
 
     @Override
     public ReadSideProcessor.ReadSideHandler<TestEntity.Evt> buildHandler() {
-      return readSide.<TestEntity.Evt>builder("testoffsets")
-              .setGlobalPrepare(this::createTable)
-              .setPrepare(tag -> prepareWriteStmt())
-              .setEventHandler(TestEntity.Appended.class, this::updateCount)
-              .build();
+      return readSide
+          .<TestEntity.Evt>builder("testoffsets")
+          .setGlobalPrepare(this::createTable)
+          .setPrepare(tag -> prepareWriteStmt())
+          .setEventHandler(TestEntity.Appended.class, this::updateCount)
+          .build();
     }
 
     private CompletionStage<List<BoundStatement>> updateCount(TestEntity.Appended event) {
-      return session.selectOne("SELECT count FROM testcounts WHERE id = ?", event.getEntityId()).thenApply(maybeRow -> {
-        long count;
-        if (maybeRow.isPresent()) {
-          count = maybeRow.get().getLong("count");
-        } else {
-          count = 0;
-        }
-        return Collections.singletonList(writeStmt.bind(count + 1, event.getEntityId()));
-      });
+      return session
+          .selectOne("SELECT count FROM testcounts WHERE id = ?", event.getEntityId())
+          .thenApply(
+              maybeRow -> {
+                long count;
+                if (maybeRow.isPresent()) {
+                  count = maybeRow.get().getLong("count");
+                } else {
+                  count = 0;
+                }
+                return Collections.singletonList(writeStmt.bind(count + 1, event.getEntityId()));
+              });
     }
 
     private CompletionStage<Done> createTable() {
       return session.executeCreateTable(
-              "CREATE TABLE IF NOT EXISTS testcounts ( " +
-                      "id text, count bigint, PRIMARY KEY (id))");
+          "CREATE TABLE IF NOT EXISTS testcounts ( " + "id text, count bigint, PRIMARY KEY (id))");
     }
 
     private CompletionStage<Done> prepareWriteStmt() {
-      return session.prepare("UPDATE testcounts SET count = ? WHERE id = ?").thenApply(ws -> {
-        writeStmt = ws;
-        return Done.getInstance();
-      });
+      return session
+          .prepare("UPDATE testcounts SET count = ? WHERE id = ?")
+          .thenApply(
+              ws -> {
+                writeStmt = ws;
+                return Done.getInstance();
+              });
     }
 
     @Override
@@ -86,5 +95,4 @@ public class TestEntityReadSide {
       return TestEntity.Evt.AGGREGATE_EVENT_SHARDS.allTags();
     }
   }
-
 }

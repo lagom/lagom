@@ -38,9 +38,10 @@ import java.util.function.{ Function => JFunction }
 
 object PersistentEntityTestDriver {
   final case class Outcome[E, S](
-    events: JList[E], state: S,
-    sideEffects: JList[SideEffect],
-    issues:      JList[Issue]
+      events: JList[E],
+      state: S,
+      sideEffects: JList[SideEffect],
+      issues: JList[Issue]
   ) {
 
     /**
@@ -94,10 +95,10 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
 
   private val serialization = SerializationExtension(system)
 
-  private var initialized = false
+  private var initialized                     = false
   private var sideEffects: Vector[SideEffect] = Vector.empty
-  private var issues: Vector[Issue] = Vector.empty
-  private var allIssues: Vector[Issue] = Vector.empty
+  private var issues: Vector[Issue]           = Vector.empty
+  private var allIssues: Vector[Issue]        = Vector.empty
 
   private val ctx: entity.CommandContext[Any] = new entity.CommandContext[Any] {
     override def reply(msg: Any): Unit = {
@@ -114,7 +115,8 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
     entity.behavior.eventHandlers.asInstanceOf[Map[Class[E], JFunction[E, entity.Behavior]]]
 
   private def commandHandlers: Map[Class[C], JBiFunction[C, entity.CommandContext[Any], entity.Persist[E]]] =
-    entity.behavior.commandHandlers.asInstanceOf[Map[Class[C], JBiFunction[C, entity.CommandContext[Any], entity.Persist[E]]]]
+    entity.behavior.commandHandlers
+      .asInstanceOf[Map[Class[C], JBiFunction[C, entity.CommandContext[Any], entity.Persist[E]]]]
 
   /**
    * Initialize the entity.
@@ -246,7 +248,7 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
       val obj1 = obj.asInstanceOf[AnyRef]
       // check that it is configured
       Try(serialization.findSerializerFor(obj1)) match {
-        case Failure(e) => Some(NoSerializer(obj, e))
+        case Failure(e)          => Some(NoSerializer(obj, e))
         case Success(serializer) =>
           // verify serialization-deserialization round trip
           Try(serializer.toBinary(obj1)) match {
@@ -257,9 +259,13 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
                 case Failure(e) => Some(NotDeserializable(obj, e))
                 case Success(obj2) =>
                   if (obj != obj2) {
-                    Some(NotEqualAfterSerialization(
-                      s"Object [$obj] does not equal [$obj2] after serialization/deserialization", obj1, obj2
-                    ))
+                    Some(
+                      NotEqualAfterSerialization(
+                        s"Object [$obj] does not equal [$obj2] after serialization/deserialization",
+                        obj1,
+                        obj2
+                      )
+                    )
                   } else if (serializer.isInstanceOf[JavaSerializer] && !isOkForJavaSerialization(obj1.getClass))
                     Some(UsingJavaSerializer(obj1))
                   else
@@ -273,7 +279,7 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
   private def isOkForJavaSerialization(clazz: Class[_]): Boolean = {
     // e.g. String
     clazz.getName.startsWith("java.lang.") ||
-      clazz.getName.startsWith("akka.")
+    clazz.getName.startsWith("akka.")
   }
 
 }

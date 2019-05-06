@@ -9,7 +9,9 @@ import sbt.inc.Analysis
 
 object LagomReloadableServiceCompat {
   trait autoImport {
-    val lagomReload = taskKey[sbt.inc.Analysis]("Task executed to recompile (and possibly reload) the app when there are changes in sources")
+    val lagomReload = taskKey[sbt.inc.Analysis](
+      "Task executed to recompile (and possibly reload) the app when there are changes in sources"
+    )
   }
 
   def joinAnalysis(analysisSeq: Seq[Analysis]) = analysisSeq.reduceLeft(_ ++ _)

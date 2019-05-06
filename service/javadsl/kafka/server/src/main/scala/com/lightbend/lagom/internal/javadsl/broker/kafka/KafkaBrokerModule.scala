@@ -4,8 +4,10 @@
 
 package com.lightbend.lagom.internal.javadsl.broker.kafka
 
-import play.api.{ Configuration, Environment }
-import play.api.inject.{ Binding, Module }
+import play.api.Configuration
+import play.api.Environment
+import play.api.inject.Binding
+import play.api.inject.Module
 
 class KafkaBrokerModule extends Module {
 

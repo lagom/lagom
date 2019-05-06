@@ -4,15 +4,21 @@
 
 package com.lightbend.lagom.javadsl.persistence.jdbc
 
-import javax.inject.{ Inject, Provider, Singleton }
+import javax.inject.Inject
+import javax.inject.Provider
+import javax.inject.Singleton
 import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc._
-import com.lightbend.lagom.internal.persistence.jdbc.{ SlickDbProvider, SlickOffsetStore }
+import com.lightbend.lagom.internal.persistence.jdbc.SlickDbProvider
+import com.lightbend.lagom.internal.persistence.jdbc.SlickOffsetStore
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
 import com.lightbend.lagom.spi.persistence.OffsetStore
-import play.api.{ Configuration, Environment }
+import play.api.Configuration
+import play.api.Environment
 import play.api.db.DBApi
-import play.api.inject.{ ApplicationLifecycle, Binding, Module }
+import play.api.inject.ApplicationLifecycle
+import play.api.inject.Binding
+import play.api.inject.Module
 
 import scala.concurrent.ExecutionContext
 
@@ -29,8 +35,9 @@ class JdbcPersistenceModule extends Module {
 }
 
 @Singleton
-class GuiceSlickProvider @Inject() (dbApi: DBApi, actorSystem: ActorSystem, applicationLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext)
-  extends Provider[SlickProvider] {
+class GuiceSlickProvider @Inject()(dbApi: DBApi, actorSystem: ActorSystem, applicationLifecycle: ApplicationLifecycle)(
+    implicit ec: ExecutionContext
+) extends Provider[SlickProvider] {
 
   lazy val get = {
     // Ensures JNDI bindings are made before we build the SlickProvider

@@ -11,4 +11,3 @@ trait BlogService extends Service {
 
   override def descriptor = ???
 }
-

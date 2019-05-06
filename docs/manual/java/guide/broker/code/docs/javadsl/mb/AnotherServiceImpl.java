@@ -22,59 +22,68 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public class AnotherServiceImpl implements AnotherService {
 
-    //#inject-service
-    private final HelloService helloService;
+  // #inject-service
+  private final HelloService helloService;
 
-    @Inject
-    public AnotherServiceImpl(HelloService helloService) {
-        this.helloService = helloService;
-    }
-    //#inject-service
+  @Inject
+  public AnotherServiceImpl(HelloService helloService) {
+    this.helloService = helloService;
+  }
+  // #inject-service
 
-    public ServiceCall<NotUsed, NotUsed> audit() {
-        //#subscribe-to-topic
-        helloService.greetingsTopic()
-            .subscribe() // <-- you get back a Subscriber instance
-            .atLeastOnce(Flow.fromFunction((GreetingMessage message) -> {
-                return doSomethingWithTheMessage(message);
-            }));
-        //#subscribe-to-topic
-        return name -> completedFuture(NotUsed.getInstance());
-    }
+  public ServiceCall<NotUsed, NotUsed> audit() {
+    // #subscribe-to-topic
+    helloService
+        .greetingsTopic()
+        .subscribe() // <-- you get back a Subscriber instance
+        .atLeastOnce(
+            Flow.fromFunction(
+                (GreetingMessage message) -> {
+                  return doSomethingWithTheMessage(message);
+                }));
+    // #subscribe-to-topic
+    return name -> completedFuture(NotUsed.getInstance());
+  }
 
-    private Done doSomethingWithTheMessage(GreetingMessage message) {
-        throw new UnsupportedOperationException("Missing implementation");
-    }
+  private Done doSomethingWithTheMessage(GreetingMessage message) {
+    throw new UnsupportedOperationException("Missing implementation");
+  }
 
-    private void subscribeWithMetadata() {
-        //#subscribe-to-topic-with-metadata
-        helloService.greetingsTopic()
-            .subscribe().withMetadata()
-            .atLeastOnce(Flow.fromFunction((Message<GreetingMessage> msg) -> {
-                GreetingMessage payload = msg.getPayload();
-                String messageKey = msg.messageKeyAsString();
-                Optional<Headers> kafkaHeaders = msg.get(KafkaMetadataKeys.HEADERS);
-                System.out.println("Message: " + payload +
-                    " Key: " + messageKey +
-                    " Headers: " + kafkaHeaders);
-                return Done.getInstance();
-            }));
-        //#subscribe-to-topic-with-metadata
+  private void subscribeWithMetadata() {
+    // #subscribe-to-topic-with-metadata
+    helloService
+        .greetingsTopic()
+        .subscribe()
+        .withMetadata()
+        .atLeastOnce(
+            Flow.fromFunction(
+                (Message<GreetingMessage> msg) -> {
+                  GreetingMessage payload = msg.getPayload();
+                  String messageKey = msg.messageKeyAsString();
+                  Optional<Headers> kafkaHeaders = msg.get(KafkaMetadataKeys.HEADERS);
+                  System.out.println(
+                      "Message: " + payload + " Key: " + messageKey + " Headers: " + kafkaHeaders);
+                  return Done.getInstance();
+                }));
+    // #subscribe-to-topic-with-metadata
 
-    }
+  }
 
-    private void skipMessages() {
-        //#subscribe-to-topic-skip-messages
-        helloService.greetingsTopic()
-            .subscribe()
-            .atLeastOnce(Flow.fromFunction((GreetingMessage message) -> {
-                if (message.getMessage().equals("Kia ora")) {
+  private void skipMessages() {
+    // #subscribe-to-topic-skip-messages
+    helloService
+        .greetingsTopic()
+        .subscribe()
+        .atLeastOnce(
+            Flow.fromFunction(
+                (GreetingMessage message) -> {
+                  if (message.getMessage().equals("Kia ora")) {
                     return doSomethingWithTheMessage(message);
-                } else {
+                  } else {
                     // Skip all messages where the message is not "Kia ora".
                     return Done.getInstance();
-                }
-            }));
-        //#subscribe-to-topic-skip-messages
-    }
+                  }
+                }));
+    // #subscribe-to-topic-skip-messages
+  }
 }

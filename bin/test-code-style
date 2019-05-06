@@ -1,4 +1,6 @@
-#! /bin/bash
+#!/usr/bin/env bash
+
+# Copyright (C) 2009-2019 Lightbend Inc. <https://www.lightbend.com>
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
@@ -7,10 +9,6 @@
 ## trying to run all tasks in a single session caused "GC overhead limit exceeded" (both in
 ## Travis and locally).
 ## See https://github.com/lagom/lagom/pull/1482
-
-runSbt  +scalariformFormat \
-        +test:scalariformFormat \
-        multi-jvm:scalariformFormat
 
 runSbt  +headerCheck \
         +test:headerCheck \
@@ -25,9 +23,18 @@ runSbt  $EXTRA_TASK \
         validateDependencies \
         mimaReportBinaryIssues
 
+printMessage "VALIDATE SCALA CODE FORMATTING"
+bin/scalafmt --test || (
+  echo "ERROR: Scalafmt test failed, see differences above."
+  echo "To fix, format your sources using bin/scalafmt before submitting a pull request."
+  false
+)
+
+printMessage "VALIDATE JAVA CODE FORMATTING"
+runSbt javafmt
 git diff --exit-code || (
-  echo "ERROR: Scalariform check failed, see differences above."
-  echo "To fix, format your sources using sbt scalariformFormat test:scalariformFormat before submitting a    pull request."
+  echo "[error] ERROR: javafmt check failed, see differences above."
+  echo "[error] To fix, format your sources using sbt javafmt test:javafmt before submitting a pull request."
   false
 )
 

@@ -15,8 +15,8 @@ import org.slf4j.impl.StaticLoggerBinder
 import play.api._
 
 object Log4j2LoggerConfigurator {
-  final private val DevLog4j2Config: String = "log4j2-lagom-dev.xml"
-  final private val DefaultLog4j2Config: String = "log4j2-lagom-default.xml"
+  private final val DevLog4j2Config: String     = "log4j2-lagom-dev.xml"
+  private final val DefaultLog4j2Config: String = "log4j2-lagom-default.xml"
 }
 
 class Log4j2LoggerConfigurator extends LoggerConfigurator {
@@ -28,16 +28,20 @@ class Log4j2LoggerConfigurator extends LoggerConfigurator {
   }
 
   override def init(rootPath: File, mode: Mode): Unit = {
-    val properties = Map("application.home" -> rootPath.getAbsolutePath)
+    val properties   = Map("application.home" -> rootPath.getAbsolutePath)
     val resourceName = if (mode == Mode.Dev) DevLog4j2Config else DefaultLog4j2Config
-    val resourceUrl = Option(this.getClass.getClassLoader.getResource(resourceName))
+    val resourceUrl  = Option(this.getClass.getClassLoader.getResource(resourceName))
     configure(properties, resourceUrl)
   }
 
   override def configure(env: Environment): Unit =
     configure(env, Configuration.empty, Map.empty)
 
-  override def configure(env: Environment, configuration: Configuration, optionalProperties: Map[String, String]): Unit = {
+  override def configure(
+      env: Environment,
+      configuration: Configuration,
+      optionalProperties: Map[String, String]
+  ): Unit = {
     val properties = LoggerConfigurator.generateProperties(env, configuration, optionalProperties)
     configure(properties, configUrl(env))
   }
@@ -65,12 +69,16 @@ class Log4j2LoggerConfigurator extends LoggerConfigurator {
 
     // log4j2.xml is the documented method, log4j2-lagom-default.xml is the fallback that Lagom uses
     // if no other file is found
-    def resourceUrl = env.resource("log4j2.xml")
-      .orElse(env.resource(
-        if (env.mode == Mode.Dev) DevLog4j2Config else DefaultLog4j2Config
-      ))
+    def resourceUrl =
+      env
+        .resource("log4j2.xml")
+        .orElse(
+          env.resource(
+            if (env.mode == Mode.Dev) DevLog4j2Config else DefaultLog4j2Config
+          )
+        )
 
-    explicitResourceUrl orElse explicitFileUrl orElse resourceUrl
+    explicitResourceUrl.orElse(explicitFileUrl).orElse(resourceUrl)
   }
 
   override def shutdown(): Unit = LogManager.shutdown()

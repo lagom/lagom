@@ -5,7 +5,8 @@
 package com.lightbend.lagom.scaladsl.api.broker
 
 import akka.Done
-import akka.stream.scaladsl.{ Flow, Source }
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Source
 
 import scala.concurrent.Future
 
