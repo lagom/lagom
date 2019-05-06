@@ -39,8 +39,7 @@ public class ConfigurationServiceLocator extends CircuitBreakingServiceLocator {
         try {
 
           List<URI> uris =
-              ConfigExtensions.getStringList(configServices, key)
-                  .stream()
+              ConfigExtensions.getStringList(configServices, key).stream()
                   .map(URI::create)
                   .collect(Collectors.toList());
 
