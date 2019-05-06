@@ -619,6 +619,7 @@ object Dependencies {
     "io.netty"  % "netty-transport-native-epoll" % Versions.Netty,
     "io.netty"  % "netty-transport-native-unix-common" % Versions.Netty
   )
+
   val `lagom-akka-discovery-service-locator-core` = libraryDependencies ++= Seq(
     akkaDiscovery,
     slf4jApi,
@@ -626,6 +627,11 @@ object Dependencies {
     // Upgrades needed to match whitelist
     scalaJava8Compat,
     scalaXml
+  )
+
+
+  val `lagom-akka-discovery-service-locator-scaladsl` = libraryDependencies ++= Seq(
+    scalaTest % Test
   )
 
   val `akka-management-core` = libraryDependencies ++= Seq(

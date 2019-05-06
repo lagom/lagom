@@ -649,6 +649,7 @@ lazy val `akka-discovery-service-locator-core` = (project in file("akka-service-
     name := "lagom-akka-discovery-service-locator-core",
     Dependencies.`lagom-akka-discovery-service-locator-core`
   )
+
 lazy val `akka-discovery-service-locator-javadsl` = (project in file("akka-service-locator/javadsl"))
   .dependsOn(`akka-discovery-service-locator-core`)
   .dependsOn(`client-javadsl`)
@@ -660,6 +661,7 @@ lazy val `akka-discovery-service-locator-javadsl` = (project in file("akka-servi
   .settings(
     name := "lagom-javadsl-akka-discovery-service-locator"
   )
+
 lazy val `akka-discovery-service-locator-scaladsl` = (project in file("akka-service-locator/scaladsl"))
   .dependsOn(`akka-discovery-service-locator-core`)
   .dependsOn(`client-scaladsl`)
@@ -669,8 +671,10 @@ lazy val `akka-discovery-service-locator-scaladsl` = (project in file("akka-serv
   // .settings(mimaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
-    name := "lagom-scaladsl-akka-discovery-service-locator"
+    name := "lagom-scaladsl-akka-discovery-service-locator",
+    Dependencies.`lagom-akka-discovery-service-locator-scaladsl`
   )
+  .dependsOn(`testkit-scaladsl`)
 
 lazy val `akka-management-core` = (project in file("akka-management/core"))
   .settings(runtimeLibCommon: _*)
