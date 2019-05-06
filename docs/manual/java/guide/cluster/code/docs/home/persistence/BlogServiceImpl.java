@@ -1,6 +1,6 @@
 package docs.home.persistence;
 
-//#service-impl
+// #service-impl
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 
 import javax.inject.Inject;
@@ -21,10 +21,9 @@ public class BlogServiceImpl implements BlogService {
   @Override
   public ServiceCall<BlogCommand.AddPost, String> addPost(String id) {
     return request -> {
-      PersistentEntityRef<BlogCommand> ref =
-        persistentEntities.refFor(Post.class, id);
+      PersistentEntityRef<BlogCommand> ref = persistentEntities.refFor(Post.class, id);
       return ref.ask(request).thenApply(ack -> "OK");
     };
   }
 }
-//#service-impl
+// #service-impl

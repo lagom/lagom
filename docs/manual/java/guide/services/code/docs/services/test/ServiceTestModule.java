@@ -22,23 +22,23 @@ public class ServiceTestModule extends AbstractModule implements ServiceGuiceSup
   @Override
   protected void configure() {
     bindServices(
-      serviceBinding(EchoService.class, EchoServiceImpl.class),
-      serviceBinding(HelloService.class, HelloServiceImpl.class)
-    );
+        serviceBinding(EchoService.class, EchoServiceImpl.class),
+        serviceBinding(HelloService.class, HelloServiceImpl.class));
   }
-
 
   // ------------------------------
 
   /**
-   * This is a copy of {@link com.lightbend.lagom.javadsl.server.ServiceGuiceSupport#bindServices(ServiceGuiceSupport.ServiceBinding[])}
-   * that should survive deprecation. When removing the method from the superclass this should inherit the removed code.
+   * This is a copy of {@link
+   * com.lightbend.lagom.javadsl.server.ServiceGuiceSupport#bindServices(ServiceGuiceSupport.ServiceBinding[])}
+   * that should survive deprecation. When removing the method from the superclass this should
+   * inherit the removed code.
    *
-   * This method is used in docs/ so that many tests can share a single Guice module.
+   * <p>This method is used in docs/ so that many tests can share a single Guice module.
    */
-   @Override
-   @SuppressWarnings({"deprecation", "unchecked"})
-   public void bindServices(ServiceBinding<?>... serviceBindings) {
+  @Override
+  @SuppressWarnings({"deprecation", "unchecked"})
+  public void bindServices(ServiceBinding<?>... serviceBindings) {
     Binder binder = BinderAccessor.binder(this);
 
     for (ServiceBinding binding : serviceBindings) {
@@ -56,28 +56,31 @@ public class ServiceTestModule extends AbstractModule implements ServiceGuiceSup
 
     ServiceBinding<?> primaryServiceBinding = serviceBindings[0];
     // Bind the service info for the first one passed in
-    binder.bind(ServiceInfo.class).toProvider(
+    binder
+        .bind(ServiceInfo.class)
+        .toProvider(
             new ServiceInfoProvider(
-                    primaryServiceBinding.serviceInterface(),
-                    Arrays
-                            .stream(serviceBindings)
-                            .map(ServiceBinding::serviceInterface)
-                            .toArray(Class[]::new)
-            ));
+                primaryServiceBinding.serviceInterface(),
+                Arrays.stream(serviceBindings)
+                    .map(ServiceBinding::serviceInterface)
+                    .toArray(Class[]::new)));
 
     // Bind the metrics
-    ServiceBinding<MetricsService> metricsServiceBinding = serviceBinding(MetricsService.class, MetricsServiceImpl.class);
-    binder.bind(((ClassServiceBinding<?>) metricsServiceBinding).serviceImplementation()).asEagerSingleton();
+    ServiceBinding<MetricsService> metricsServiceBinding =
+        serviceBinding(MetricsService.class, MetricsServiceImpl.class);
+    binder
+        .bind(((ClassServiceBinding<?>) metricsServiceBinding).serviceImplementation())
+        .asEagerSingleton();
     ServiceBinding<?>[] allServiceBindings = new ServiceBinding<?>[serviceBindings.length + 1];
     System.arraycopy(serviceBindings, 0, allServiceBindings, 0, serviceBindings.length);
     allServiceBindings[allServiceBindings.length - 1] = metricsServiceBinding;
 
     // Bind the resolved services
-    binder.bind(ResolvedServices.class).toProvider(new ResolvedServicesProvider(allServiceBindings));
+    binder
+        .bind(ResolvedServices.class)
+        .toProvider(new ResolvedServicesProvider(allServiceBindings));
 
     // And bind the router
     binder.bind(LagomServiceRouter.class).to(JavadslServicesRouter.class);
   }
-
-
 }

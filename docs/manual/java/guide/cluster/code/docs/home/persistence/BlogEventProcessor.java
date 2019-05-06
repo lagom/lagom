@@ -11,27 +11,20 @@ import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor;
 import java.util.concurrent.CompletionStage;
 import org.pcollections.PSequence;
 
-
 public class BlogEventProcessor extends ReadSideProcessor<BlogEvent> {
 
-  //#my-database
+  // #my-database
   public interface MyDatabase {
-    /**
-     * Create the tables needed for this read side if not already created.
-     */
+    /** Create the tables needed for this read side if not already created. */
     CompletionStage<Done> createTables();
 
-    /**
-     * Load the offset of the last event processed.
-     */
+    /** Load the offset of the last event processed. */
     CompletionStage<Offset> loadOffset(AggregateEventTag<BlogEvent> tag);
 
-    /**
-     * Handle the post added event.
-     */
+    /** Handle the post added event. */
     CompletionStage<Done> handleEvent(BlogEvent event, Offset offset);
   }
-  //#my-database
+  // #my-database
 
   private final MyDatabase myDatabase;
 
@@ -39,15 +32,14 @@ public class BlogEventProcessor extends ReadSideProcessor<BlogEvent> {
     this.myDatabase = myDatabase;
   }
 
-  //#tag
+  // #tag
   @Override
   public PSequence<AggregateEventTag<BlogEvent>> aggregateTags() {
     return BlogEvent.TAG.allTags();
   }
-  //#tag
+  // #tag
 
-
-  //#build-handler
+  // #build-handler
   @Override
   public ReadSideHandler<BlogEvent> buildHandler() {
 
@@ -66,13 +58,13 @@ public class BlogEventProcessor extends ReadSideProcessor<BlogEvent> {
       @Override
       public Flow<Pair<BlogEvent, Offset>, Done, ?> handle() {
         return Flow.<Pair<BlogEvent, Offset>>create()
-                .mapAsync(1, eventAndOffset ->
-                        myDatabase.handleEvent(eventAndOffset.first(),
-                                eventAndOffset.second())
-                );
+            .mapAsync(
+                1,
+                eventAndOffset ->
+                    myDatabase.handleEvent(eventAndOffset.first(), eventAndOffset.second()));
       }
     };
   }
-  //#build-handler
+  // #build-handler
 
 }

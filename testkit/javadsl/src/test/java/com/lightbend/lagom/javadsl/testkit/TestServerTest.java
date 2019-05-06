@@ -17,24 +17,26 @@ import static org.junit.Assert.assertEquals;
 
 public class TestServerTest {
 
-    @Test
-    public void testTestingTopics() {
-        ServiceTest.withServer(ServiceTest.defaultSetup()
-                        .configureBuilder(builder ->
-                                builder.bindings(new TestTopicServiceModule())), server -> {
+  @Test
+  public void testTestingTopics() {
+    ServiceTest.withServer(
+        ServiceTest.defaultSetup()
+            .configureBuilder(builder -> builder.bindings(new TestTopicServiceModule())),
+        server -> {
+          Source<String, ?> source =
+              server.client(TestTopicService.class).testTopic().subscribe().atMostOnceSource();
 
-            Source<String, ?> source = server.client(TestTopicService.class).testTopic().subscribe().atMostOnceSource();
+          List<String> messages =
+              source.runWith(Sink.seq(), server.materializer()).toCompletableFuture().get();
 
-            List<String> messages = source.runWith(Sink.seq(), server.materializer()).toCompletableFuture().get();
-
-            assertEquals(Arrays.asList("message1", "message2"), messages);
+          assertEquals(Arrays.asList("message1", "message2"), messages);
         });
-    }
+  }
 
-    public static class TestTopicServiceModule extends AbstractModule implements ServiceGuiceSupport {
-        @Override
-        protected void configure() {
-            bindService(TestTopicService.class, TestTopicService.Impl.class);
-        }
+  public static class TestTopicServiceModule extends AbstractModule implements ServiceGuiceSupport {
+    @Override
+    protected void configure() {
+      bindService(TestTopicService.class, TestTopicService.Impl.class);
     }
+  }
 }

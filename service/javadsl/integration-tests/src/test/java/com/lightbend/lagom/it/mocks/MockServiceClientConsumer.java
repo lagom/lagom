@@ -12,29 +12,33 @@ import java.util.Collection;
 import java.util.concurrent.CompletionStage;
 
 public class MockServiceClientConsumer {
-    private final MockService client;
+  private final MockService client;
 
-    @Inject
-    public MockServiceClientConsumer(MockService client) {
-        this.client = client;
-    }
+  @Inject
+  public MockServiceClientConsumer(MockService client) {
+    this.client = client;
+  }
 
-    public CompletionStage<Pair<ResponseHeader, String>> invokeCustomHeaders(String headerName, String headerValue) {
-        return client.customHeaders()
-                .handleRequestHeader(rh -> rh.withHeader(headerName, headerValue))
-                .withResponseHeader()
-                .invoke(headerName);
-    }
+  public CompletionStage<Pair<ResponseHeader, String>> invokeCustomHeaders(
+      String headerName, String headerValue) {
+    return client
+        .customHeaders()
+        .handleRequestHeader(rh -> rh.withHeader(headerName, headerValue))
+        .withResponseHeader()
+        .invoke(headerName);
+  }
 
-    public CompletionStage<Source<String, ?>> invokeStreamCustomHeaders(Collection<Pair<String, String>> headers) {
-        return client.streamCustomHeaders()
-                .handleRequestHeader(rh -> {
-                    for (Pair<String, String> header: headers) {
-                        rh = rh.withHeader(header.first(), header.second());
-                    }
-                    return rh;
-                })
-                .invoke(Source.from(headers).map(Pair::first).concat(Source.maybe()));
-    }
-
+  public CompletionStage<Source<String, ?>> invokeStreamCustomHeaders(
+      Collection<Pair<String, String>> headers) {
+    return client
+        .streamCustomHeaders()
+        .handleRequestHeader(
+            rh -> {
+              for (Pair<String, String> header : headers) {
+                rh = rh.withHeader(header.first(), header.second());
+              }
+              return rh;
+            })
+        .invoke(Source.from(headers).map(Pair::first).concat(Source.maybe()));
+  }
 }

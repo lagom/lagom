@@ -12,11 +12,9 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 
 public interface ServiceB extends Service {
 
-    ServiceCall<String, String> helloB();
+  ServiceCall<String, String> helloB();
 
-    default Descriptor descriptor() {
-        return named("serviceB").withCalls(
-            call(this::helloB)
-        );
-    }
+  default Descriptor descriptor() {
+    return named("serviceB").withCalls(call(this::helloB));
+  }
 }

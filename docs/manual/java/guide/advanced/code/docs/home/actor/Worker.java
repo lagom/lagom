@@ -1,6 +1,6 @@
 package docs.home.actor;
 
-//#actor
+// #actor
 import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.event.Logging;
@@ -16,9 +16,7 @@ public class Worker extends AbstractActor {
 
   @Override
   public Receive createReceive() {
-    return receiveBuilder()
-        .match(Job.class, this::perform)
-        .build();
+    return receiveBuilder().match(Job.class, this::perform).build();
   }
 
   private void perform(Job job) {
@@ -27,6 +25,5 @@ public class Worker extends AbstractActor {
     // perform the work...
     context().stop(self());
   }
-
 }
-//#actor
+// #actor

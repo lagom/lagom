@@ -10,6 +10,6 @@ import org.immutables.value.Value;
 @JsonSerialize(as = ItemHistory.class)
 @JsonDeserialize(as = ItemHistory.class)
 public interface AbstractItemHistory {
-    @Value.Parameter
-    long id();
+  @Value.Parameter
+  long id();
 }

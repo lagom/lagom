@@ -21,10 +21,11 @@ public class PersistenceServiceTest {
 
   @BeforeClass
   public static void setUp() {
-    server = startServer(defaultSetup()
-                    .withCassandra()
-                    .configureBuilder(b -> b.bindings(new PersistenceServiceModule()))
-    );
+    server =
+        startServer(
+            defaultSetup()
+                .withCassandra()
+                .configureBuilder(b -> b.bindings(new PersistenceServiceModule())));
     client = server.client(PersistenceService.class);
   }
 
@@ -44,9 +45,7 @@ public class PersistenceServiceTest {
 
   @Test
   public void shouldHaveAWorkingCassandraSession() throws Exception {
-    assertEquals("ok", client.checkCassandraSession().invoke().toCompletableFuture().get(20, SECONDS));
+    assertEquals(
+        "ok", client.checkCassandraSession().invoke().toCompletableFuture().get(20, SECONDS));
   }
-
-
-
 }
