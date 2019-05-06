@@ -1,6 +1,6 @@
 package docs.services.test;
 
-//#test
+// #test
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -18,6 +18,5 @@ public class SimpleTest {
     String str = "Hello world";
     assertFalse(str.isEmpty());
   }
-
 }
-//#test
+// #test

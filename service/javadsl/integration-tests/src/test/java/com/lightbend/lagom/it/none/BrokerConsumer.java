@@ -11,17 +11,18 @@ import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-/**
- *
- */
+/** */
 public class BrokerConsumer {
 
-    @Inject
-    public BrokerConsumer(PublisherService publisherService) {
-        publisherService.messages().subscribe().atLeastOnce(Flow.<String>create().mapAsync(1, this::doNothing));
-    }
+  @Inject
+  public BrokerConsumer(PublisherService publisherService) {
+    publisherService
+        .messages()
+        .subscribe()
+        .atLeastOnce(Flow.<String>create().mapAsync(1, this::doNothing));
+  }
 
-    private CompletionStage<Done> doNothing(String msg) {
-        return CompletableFuture.completedFuture(Done.getInstance());
-    }
+  private CompletionStage<Done> doNothing(String msg) {
+    return CompletableFuture.completedFuture(Done.getInstance());
+  }
 }

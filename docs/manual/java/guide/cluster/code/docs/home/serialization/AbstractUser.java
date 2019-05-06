@@ -1,6 +1,6 @@
 package docs.home.serialization;
 
-//#jsonable
+// #jsonable
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.lightbend.lagom.javadsl.immutable.ImmutableStyle;
 import com.lightbend.lagom.serialization.Jsonable;
@@ -15,4 +15,4 @@ public interface AbstractUser extends Jsonable {
 
   String getEmail();
 }
-//#jsonable
+// #jsonable

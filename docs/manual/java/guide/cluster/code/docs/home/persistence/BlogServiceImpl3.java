@@ -18,32 +18,33 @@ public interface BlogServiceImpl3 {
 
     private final PersistentEntityRegistry persistentEntityRegistry;
 
-    //#register-event-processor
+    // #register-event-processor
     @Inject
-    public BlogServiceImpl(
-            PersistentEntityRegistry persistentEntityRegistry,
-            ReadSide readSide) {
+    public BlogServiceImpl(PersistentEntityRegistry persistentEntityRegistry, ReadSide readSide) {
       this.persistentEntityRegistry = persistentEntityRegistry;
 
       readSide.register(BlogEventProcessor.class);
     }
-    //#register-event-processor
+    // #register-event-processor
 
-    //#event-stream
+    // #event-stream
     public ServiceCall<NotUsed, Source<PostSummary, ?>> newPosts() {
       final PartialFunction<BlogEvent, PostSummary> collectFunction =
-              new PFBuilder<BlogEvent, PostSummary>()
-                      .match(BlogEvent.PostAdded.class, evt ->
-                              new PostSummary(evt.getPostId(), evt.getContent().getTitle()))
-                      .build();
+          new PFBuilder<BlogEvent, PostSummary>()
+              .match(
+                  BlogEvent.PostAdded.class,
+                  evt -> new PostSummary(evt.getPostId(), evt.getContent().getTitle()))
+              .build();
 
       return request -> {
-        Source<PostSummary, ?> stream = persistentEntityRegistry
+        Source<PostSummary, ?> stream =
+            persistentEntityRegistry
                 .eventStream(BlogEvent.TAG.forEntityId(""), Offset.NONE)
-                .map(pair -> pair.first()).collect(collectFunction);
+                .map(pair -> pair.first())
+                .collect(collectFunction);
         return CompletableFuture.completedFuture(stream);
       };
     }
-    //#event-stream
+    // #event-stream
   }
 }

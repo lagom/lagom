@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lightbend.lagom.serialization.Jsonable;
 import java.util.Optional;
 
-//#full-example
+// #full-example
 public final class BlogState implements Jsonable {
 
   public static final BlogState EMPTY = new BlogState(Optional.empty(), false);
@@ -20,8 +20,7 @@ public final class BlogState implements Jsonable {
   }
 
   public BlogState withBody(String body) {
-    if (isEmpty())
-      throw new IllegalStateException("Can't set body without content");
+    if (isEmpty()) throw new IllegalStateException("Can't set body without content");
     PostContent c = content.get();
     return new BlogState(Optional.of(new PostContent(c.getTitle(), body)), published);
   }
@@ -48,7 +47,6 @@ public final class BlogState implements Jsonable {
 
     if (published != blogState.published) return false;
     return content.equals(blogState.content);
-
   }
 
   @Override
@@ -58,4 +56,4 @@ public final class BlogState implements Jsonable {
     return result;
   }
 }
-//#full-example
+// #full-example

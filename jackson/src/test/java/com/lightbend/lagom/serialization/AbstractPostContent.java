@@ -26,6 +26,4 @@ public interface AbstractPostContent extends Jsonable {
   default PVector<Comment> getComments() {
     return TreePVector.empty();
   }
-
-
 }
