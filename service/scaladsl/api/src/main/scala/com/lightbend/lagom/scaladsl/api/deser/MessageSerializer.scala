@@ -3,7 +3,8 @@
  */
 package com.lightbend.lagom.scaladsl.api.deser
 
-import akka.{ Done, NotUsed }
+import akka.Done
+import akka.NotUsed
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.lightbend.lagom.scaladsl.api.transport._
@@ -13,6 +14,7 @@ import scala.collection.immutable
 import scala.util.control.NonFatal
 
 trait MessageSerializer[Message, WireFormat] {
+
   /**
    * The message headers that will be accepted for response serialization.
    */
@@ -63,7 +65,9 @@ trait MessageSerializer[Message, WireFormat] {
    * @throws NotAcceptable If the serializer can't meet the requirements of any of the accept headers.
    */
   @throws[NotAcceptable]
-  def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]): MessageSerializer.NegotiatedSerializer[Message, WireFormat]
+  def serializerForResponse(
+      acceptedMessageProtocols: immutable.Seq[MessageProtocol]
+  ): MessageSerializer.NegotiatedSerializer[Message, WireFormat]
 }
 
 /**
@@ -77,7 +81,8 @@ trait StrictMessageSerializer[Message] extends MessageSerializer[Message, ByteSt
 /**
  * A streamed message serializer, for streams of messages.
  */
-trait StreamedMessageSerializer[Message] extends MessageSerializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] {
+trait StreamedMessageSerializer[Message]
+    extends MessageSerializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] {
   override def isStreamed: Boolean = true
 }
 
@@ -125,40 +130,50 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
   }
 
   implicit val JsValueMessageSerializer: StrictMessageSerializer[JsValue] = new StrictMessageSerializer[JsValue] {
-    private val defaultProtocol = MessageProtocol(Some("application/json"), None, None)
+    private val defaultProtocol                                          = MessageProtocol(Some("application/json"), None, None)
     override val acceptResponseProtocols: immutable.Seq[MessageProtocol] = immutable.Seq(defaultProtocol)
 
-    private class JsValueSerializer(override val protocol: MessageProtocol) extends NegotiatedSerializer[JsValue, ByteString] {
-      override def serialize(message: JsValue): ByteString = try {
-        ByteString.fromString(Json.stringify(message), protocol.charset.getOrElse("utf-8"))
-      } catch {
-        case NonFatal(e) => throw SerializationException(e)
-      }
+    private class JsValueSerializer(override val protocol: MessageProtocol)
+        extends NegotiatedSerializer[JsValue, ByteString] {
+      override def serialize(message: JsValue): ByteString =
+        try {
+          ByteString.fromString(Json.stringify(message), protocol.charset.getOrElse("utf-8"))
+        } catch {
+          case NonFatal(e) => throw SerializationException(e)
+        }
     }
 
     private object JsValueDeserializer extends NegotiatedDeserializer[JsValue, ByteString] {
-      override def deserialize(wire: ByteString): JsValue = try {
-        Json.parse(wire.iterator.asInputStream)
-      } catch {
-        case NonFatal(e) => throw DeserializationException(e)
-      }
+      override def deserialize(wire: ByteString): JsValue =
+        try {
+          Json.parse(wire.iterator.asInputStream)
+        } catch {
+          case NonFatal(e) => throw DeserializationException(e)
+        }
     }
 
-    override def deserializer(protocol: MessageProtocol): NegotiatedDeserializer[JsValue, ByteString] = JsValueDeserializer
+    override def deserializer(protocol: MessageProtocol): NegotiatedDeserializer[JsValue, ByteString] =
+      JsValueDeserializer
 
-    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]): NegotiatedSerializer[JsValue, ByteString] = {
-      new JsValueSerializer(acceptedMessageProtocols.find(_.contentType.contains("application/json")).getOrElse(defaultProtocol))
+    override def serializerForResponse(
+        acceptedMessageProtocols: immutable.Seq[MessageProtocol]
+    ): NegotiatedSerializer[JsValue, ByteString] = {
+      new JsValueSerializer(
+        acceptedMessageProtocols.find(_.contentType.contains("application/json")).getOrElse(defaultProtocol)
+      )
     }
 
-    override def serializerForRequest: NegotiatedSerializer[JsValue, ByteString] = new JsValueSerializer(defaultProtocol)
+    override def serializerForRequest: NegotiatedSerializer[JsValue, ByteString] =
+      new JsValueSerializer(defaultProtocol)
 
   }
 
   implicit val StringMessageSerializer: StrictMessageSerializer[String] = new StrictMessageSerializer[String] {
-    private val defaultProtocol = MessageProtocol(Some("text/plain"), Some("utf-8"), None)
+    private val defaultProtocol                                          = MessageProtocol(Some("text/plain"), Some("utf-8"), None)
     override val acceptResponseProtocols: immutable.Seq[MessageProtocol] = immutable.Seq(defaultProtocol)
 
-    private class StringSerializer(override val protocol: MessageProtocol) extends NegotiatedSerializer[String, ByteString] {
+    private class StringSerializer(override val protocol: MessageProtocol)
+        extends NegotiatedSerializer[String, ByteString] {
       override def serialize(s: String) = ByteString.fromString(s, protocol.charset.getOrElse("utf-8"))
     }
 
@@ -176,7 +191,9 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
       }
     }
 
-    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]): NegotiatedSerializer[String, ByteString] = {
+    override def serializerForResponse(
+        acceptedMessageProtocols: immutable.Seq[MessageProtocol]
+    ): NegotiatedSerializer[String, ByteString] = {
       if (acceptedMessageProtocols.isEmpty) {
         serializerForRequest
       } else {
@@ -202,9 +219,10 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
       override def deserialize(wire: ByteString) = NotUsed
     }
 
-    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]) = new NegotiatedSerializer[NotUsed, ByteString] {
-      override def serialize(message: NotUsed): ByteString = ByteString.empty
-    }
+    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]) =
+      new NegotiatedSerializer[NotUsed, ByteString] {
+        override def serialize(message: NotUsed): ByteString = ByteString.empty
+      }
 
     override def isUsed: Boolean = false
   }
@@ -218,9 +236,10 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
       override def deserialize(wire: ByteString) = Done
     }
 
-    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]) = new NegotiatedSerializer[Done, ByteString] {
-      override def serialize(message: Done): ByteString = ByteString.empty
-    }
+    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]) =
+      new NegotiatedSerializer[Done, ByteString] {
+        override def serialize(message: Done): ByteString = ByteString.empty
+      }
   }
 }
 
@@ -228,8 +247,12 @@ trait LowPriorityMessageSerializerImplicits {
 
   import MessageSerializer._
 
-  implicit def jsValueFormatMessageSerializer[Message](implicit jsValueMessageSerializer: MessageSerializer[JsValue, ByteString], format: Format[Message]): StrictMessageSerializer[Message] = new StrictMessageSerializer[Message] {
-    private class JsValueFormatSerializer(jsValueSerializer: NegotiatedSerializer[JsValue, ByteString]) extends NegotiatedSerializer[Message, ByteString] {
+  implicit def jsValueFormatMessageSerializer[Message](
+      implicit jsValueMessageSerializer: MessageSerializer[JsValue, ByteString],
+      format: Format[Message]
+  ): StrictMessageSerializer[Message] = new StrictMessageSerializer[Message] {
+    private class JsValueFormatSerializer(jsValueSerializer: NegotiatedSerializer[JsValue, ByteString])
+        extends NegotiatedSerializer[Message, ByteString] {
       override def protocol: MessageProtocol = jsValueSerializer.protocol
 
       override def serialize(message: Message): ByteString = {
@@ -242,7 +265,8 @@ trait LowPriorityMessageSerializerImplicits {
       }
     }
 
-    private class JsValueFormatDeserializer(jsValueDeserializer: NegotiatedDeserializer[JsValue, ByteString]) extends NegotiatedDeserializer[Message, ByteString] {
+    private class JsValueFormatDeserializer(jsValueDeserializer: NegotiatedDeserializer[JsValue, ByteString])
+        extends NegotiatedDeserializer[Message, ByteString] {
       override def deserialize(wire: ByteString): Message = {
         val jsValue = jsValueDeserializer.deserialize(wire)
         jsValue.validate[Message] match {
@@ -252,33 +276,44 @@ trait LowPriorityMessageSerializerImplicits {
       }
     }
 
-    override def acceptResponseProtocols: immutable.Seq[MessageProtocol] = jsValueMessageSerializer.acceptResponseProtocols
+    override def acceptResponseProtocols: immutable.Seq[MessageProtocol] =
+      jsValueMessageSerializer.acceptResponseProtocols
 
     override def deserializer(protocol: MessageProtocol): NegotiatedDeserializer[Message, ByteString] =
       new JsValueFormatDeserializer(jsValueMessageSerializer.deserializer(protocol))
 
-    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]): NegotiatedSerializer[Message, ByteString] =
+    override def serializerForResponse(
+        acceptedMessageProtocols: immutable.Seq[MessageProtocol]
+    ): NegotiatedSerializer[Message, ByteString] =
       new JsValueFormatSerializer(jsValueMessageSerializer.serializerForResponse(acceptedMessageProtocols))
 
     override def serializerForRequest: NegotiatedSerializer[Message, ByteString] =
       new JsValueFormatSerializer(jsValueMessageSerializer.serializerForRequest)
   }
 
-  implicit def sourceMessageSerializer[Message](implicit delegate: MessageSerializer[Message, ByteString]): StreamedMessageSerializer[Message] = new StreamedMessageSerializer[Message] {
-    private class SourceSerializer(delegate: NegotiatedSerializer[Message, ByteString]) extends NegotiatedSerializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] {
-      override def protocol: MessageProtocol = delegate.protocol
+  implicit def sourceMessageSerializer[Message](
+      implicit delegate: MessageSerializer[Message, ByteString]
+  ): StreamedMessageSerializer[Message] = new StreamedMessageSerializer[Message] {
+    private class SourceSerializer(delegate: NegotiatedSerializer[Message, ByteString])
+        extends NegotiatedSerializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] {
+      override def protocol: MessageProtocol                     = delegate.protocol
       override def serialize(messages: Source[Message, NotUsed]) = messages.map(delegate.serialize)
     }
 
-    private class SourceDeserializer(delegate: NegotiatedDeserializer[Message, ByteString]) extends NegotiatedDeserializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] {
+    private class SourceDeserializer(delegate: NegotiatedDeserializer[Message, ByteString])
+        extends NegotiatedDeserializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] {
       override def deserialize(wire: Source[ByteString, NotUsed]) = wire.map(delegate.deserialize)
     }
 
     override def acceptResponseProtocols: immutable.Seq[MessageProtocol] = delegate.acceptResponseProtocols
 
-    override def deserializer(protocol: MessageProtocol): NegotiatedDeserializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] =
+    override def deserializer(
+        protocol: MessageProtocol
+    ): NegotiatedDeserializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] =
       new SourceDeserializer(delegate.deserializer(protocol))
-    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]): NegotiatedSerializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] =
+    override def serializerForResponse(
+        acceptedMessageProtocols: immutable.Seq[MessageProtocol]
+    ): NegotiatedSerializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] =
       new SourceSerializer(delegate.serializerForResponse(acceptedMessageProtocols))
     override def serializerForRequest: NegotiatedSerializer[Source[Message, NotUsed], Source[ByteString, NotUsed]] =
       new SourceSerializer(delegate.serializerForRequest)

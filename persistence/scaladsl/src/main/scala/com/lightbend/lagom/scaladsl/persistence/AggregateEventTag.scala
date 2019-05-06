@@ -6,6 +6,7 @@ package com.lightbend.lagom.scaladsl.persistence
 import scala.reflect.ClassTag
 
 object AggregateEventTag {
+
   /**
    * Convenience factory method of [[AggregateEventTag]] that uses the
    * class name of the event type as `tag`. Note that it is needed to
@@ -59,11 +60,13 @@ object AggregateEventTag {
    * @return The aggregate event shards tagger.
    */
   def sharded[Event <: AggregateEvent[Event]: ClassTag](
-    baseTagName: String, numShards: Int
+      baseTagName: String,
+      numShards: Int
   ): AggregateEventShards[Event] = {
     new AggregateEventShards[Event](
       implicitly[ClassTag[Event]].runtimeClass.asInstanceOf[Class[Event]],
-      baseTagName, numShards
+      baseTagName,
+      numShards
     )
   }
 
@@ -110,8 +113,8 @@ sealed trait AggregateEventTagger[Event <: AggregateEvent[Event]] {
  * the tag is part of the store event data.
  */
 final class AggregateEventTag[Event <: AggregateEvent[Event]](
-  val eventType: Class[Event],
-  val tag:       String
+    val eventType: Class[Event],
+    val tag: String
 ) extends AggregateEventTagger[Event] {
 
   override def toString: String = s"AggregateEventTag($eventType, $tag)"
@@ -137,9 +140,9 @@ final class AggregateEventTag[Event <: AggregateEvent[Event]](
  * the tag is part of the store event data.
  */
 final class AggregateEventShards[Event <: AggregateEvent[Event]](
-  val eventType: Class[Event],
-  val tag:       String,
-  val numShards: Int
+    val eventType: Class[Event],
+    val tag: String,
+    val numShards: Int
 ) extends AggregateEventTagger[Event] {
 
   /**
@@ -157,10 +160,12 @@ final class AggregateEventShards[Event <: AggregateEvent[Event]](
    * @return all the tags that this app will use according to the `numShards` and the `eventType`
    */
   val allTags: Set[AggregateEventTag[Event]] = {
-    (for (shardNo <- 0 until numShards) yield new AggregateEventTag(
-      eventType,
-      AggregateEventTag.shardTag(tag, shardNo)
-    )).toSet
+    (for (shardNo <- 0 until numShards)
+      yield
+        new AggregateEventTag(
+          eventType,
+          AggregateEventTag.shardTag(tag, shardNo)
+        )).toSet
   }
 
   override def toString: String = s"AggregateEventShards($eventType, $tag)"

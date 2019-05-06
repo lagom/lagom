@@ -25,9 +25,10 @@ public class CircuitBreakersPanelImpl implements CircuitBreakersPanel {
   private final CircuitBreakersPanelInternal circuitBreakersPanelInternal;
 
   @Inject()
-  public CircuitBreakersPanelImpl(ActorSystem system,
-                                  CircuitBreakerConfig config,
-                                  CircuitBreakerMetricsProvider metricsProvider) {
+  public CircuitBreakersPanelImpl(
+      ActorSystem system,
+      CircuitBreakerConfig config,
+      CircuitBreakerMetricsProvider metricsProvider) {
 
     this(new CircuitBreakersPanelInternal(system, config, metricsProvider));
   }
@@ -40,8 +41,7 @@ public class CircuitBreakersPanelImpl implements CircuitBreakersPanel {
   public <T> CompletionStage<T> withCircuitBreaker(String id, Supplier<CompletionStage<T>> body) {
 
     return FutureConverters.toJava(
-            circuitBreakersPanelInternal.withCircuitBreaker(id,
-                    (JFunction0<Future<T>>) () -> FutureConverters.toScala(body.get()))
-    );
+        circuitBreakersPanelInternal.withCircuitBreaker(
+            id, (JFunction0<Future<T>>) () -> FutureConverters.toScala(body.get())));
   }
 }

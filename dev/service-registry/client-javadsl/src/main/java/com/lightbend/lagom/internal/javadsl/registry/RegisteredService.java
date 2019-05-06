@@ -15,16 +15,13 @@ import javax.annotation.Generated;
 
 /**
  * Immutable implementation of {@link AbstractRegisteredService}.
- * <p>
- * Use the builder to create immutable instances:
- * {@code RegisteredService.builder()}.
- * Use the static factory method to create immutable instances:
- * {@code RegisteredService.of()}.
+ *
+ * <p>Use the builder to create immutable instances: {@code RegisteredService.builder()}. Use the
+ * static factory method to create immutable instances: {@code RegisteredService.of()}.
  */
 @SuppressWarnings("all")
 @Generated({"Immutables.generator", "AbstractRegisteredService"})
-public final class RegisteredService
-    implements AbstractRegisteredService {
+public final class RegisteredService implements AbstractRegisteredService {
   private final String name;
   private final URI url;
 
@@ -38,18 +35,14 @@ public final class RegisteredService
     this.url = url;
   }
 
-  /**
-   * @return The value of the {@code name} attribute
-   */
+  /** @return The value of the {@code name} attribute */
   @JsonProperty
   @Override
   public String name() {
     return name;
   }
 
-  /**
-   * @return The value of the {@code url} attribute
-   */
+  /** @return The value of the {@code url} attribute */
   @JsonProperty
   @Override
   public URI url() {
@@ -57,8 +50,10 @@ public final class RegisteredService
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractRegisteredService#name() name} attribute.
-   * A shallow reference equality check is used to prevent copying of the same value by returning {@code this}.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractRegisteredService#name() name} attribute. A shallow reference equality check is used to
+   * prevent copying of the same value by returning {@code this}.
+   *
    * @param value A new value for name
    * @return A modified copy of the {@code this} object
    */
@@ -69,8 +64,10 @@ public final class RegisteredService
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractRegisteredService#url() url} attribute.
-   * A shallow reference equality check is used to prevent copying of the same value by returning {@code this}.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractRegisteredService#url() url} attribute. A shallow reference equality check is used to
+   * prevent copying of the same value by returning {@code this}.
+   *
    * @param value A new value for url
    * @return A modified copy of the {@code this} object
    */
@@ -81,22 +78,24 @@ public final class RegisteredService
   }
 
   /**
-   * This instance is equal to all instances of {@code RegisteredService} that have equal attribute values.
+   * This instance is equal to all instances of {@code RegisteredService} that have equal attribute
+   * values.
+   *
    * @return {@code true} if {@code this} is equal to {@code another} instance
    */
   @Override
   public boolean equals(Object another) {
-    return this == another || another instanceof RegisteredService
-        && equalTo((RegisteredService) another);
+    return this == another
+        || another instanceof RegisteredService && equalTo((RegisteredService) another);
   }
 
   private boolean equalTo(RegisteredService another) {
-    return name.equals(another.name)
-        && url.equals(another.url);
+    return name.equals(another.name) && url.equals(another.url);
   }
 
   /**
    * Computes a hash code from attributes: {@code name}, {@code url}.
+   *
    * @return hashCode value
    */
   @Override
@@ -108,8 +107,9 @@ public final class RegisteredService
   }
 
   /**
-   * Prints the immutable value {@code RegisteredService...} with all non-generated
-   * and non-auxiliary attribute values.
+   * Prints the immutable value {@code RegisteredService...} with all non-generated and
+   * non-auxiliary attribute values.
+   *
    * @return A string representation of the value
    */
   @Override
@@ -122,7 +122,9 @@ public final class RegisteredService
 
   /**
    * Utility type used to correctly read immutable object from JSON representation.
-   * @deprecated Do not use this type directly, it exists only for the <em>Jackson</em>-binding infrastructure
+   *
+   * @deprecated Do not use this type directly, it exists only for the <em>Jackson</em>-binding
+   *     infrastructure
    */
   @Deprecated
   @JsonDeserialize
@@ -137,16 +139,23 @@ public final class RegisteredService
     public void setUrl(URI url) {
       this.url = url;
     }
+
     @Override
-    public String name() { throw new UnsupportedOperationException(); }
+    public String name() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public URI url() { throw new UnsupportedOperationException(); }
+    public URI url() {
+      throw new UnsupportedOperationException();
+    }
   }
 
   /**
    * @param json A JSON-bindable data structure
    * @return An immutable value type
-   * @deprecated Do not use this method directly, it exists only for the <em>Jackson</em>-binding infrastructure
+   * @deprecated Do not use this method directly, it exists only for the <em>Jackson</em>-binding
+   *     infrastructure
    */
   @Deprecated
   @JsonCreator
@@ -163,6 +172,7 @@ public final class RegisteredService
 
   /**
    * Construct a new immutable {@code RegisteredService} instance.
+   *
    * @param name The value for the {@code name} attribute
    * @param url The value for the {@code url} attribute
    * @return An immutable RegisteredService instance
@@ -172,9 +182,10 @@ public final class RegisteredService
   }
 
   /**
-   * Creates an immutable copy of a {@link AbstractRegisteredService} value.
-   * Uses accessors to get values to initialize the new immutable instance.
-   * If an instance is already immutable, it is returned as is.
+   * Creates an immutable copy of a {@link AbstractRegisteredService} value. Uses accessors to get
+   * values to initialize the new immutable instance. If an instance is already immutable, it is
+   * returned as is.
+   *
    * @param instance The instance to copy
    * @return A copied immutable RegisteredService instance
    */
@@ -182,13 +193,12 @@ public final class RegisteredService
     if (instance instanceof RegisteredService) {
       return (RegisteredService) instance;
     }
-    return RegisteredService.builder()
-        .from(instance)
-        .build();
+    return RegisteredService.builder().from(instance).build();
   }
 
   /**
    * Creates a builder for {@link RegisteredService RegisteredService}.
+   *
    * @return A new RegisteredService builder
    */
   public static RegisteredService.Builder builder() {
@@ -196,11 +206,11 @@ public final class RegisteredService
   }
 
   /**
-   * Builds instances of type {@link RegisteredService RegisteredService}.
-   * Initialize attributes and then invoke the {@link #build()} method to create an
-   * immutable instance.
-   * <p><em>{@code Builder} is not thread-safe and generally should not be stored in a field or collection,
-   * but instead used immediately to create instances.</em>
+   * Builds instances of type {@link RegisteredService RegisteredService}. Initialize attributes and
+   * then invoke the {@link #build()} method to create an immutable instance.
+   *
+   * <p><em>{@code Builder} is not thread-safe and generally should not be stored in a field or
+   * collection, but instead used immediately to create instances.</em>
    */
   public static final class Builder {
     private static final long INIT_BIT_NAME = 0x1L;
@@ -213,9 +223,10 @@ public final class RegisteredService
     private Builder() {}
 
     /**
-     * Fill a builder with attribute values from the provided {@link AbstractRegisteredService} instance.
-     * Regular attribute values will be replaced with those from the given instance.
+     * Fill a builder with attribute values from the provided {@link AbstractRegisteredService}
+     * instance. Regular attribute values will be replaced with those from the given instance.
      * Absent optional values will not replace present values.
+     *
      * @param instance The instance from which to copy values
      * @return {@code this} builder for use in a chained invocation
      */
@@ -228,7 +239,8 @@ public final class RegisteredService
 
     /**
      * Initializes the value for the {@link AbstractRegisteredService#name() name} attribute.
-     * @param name The value for name 
+     *
+     * @param name The value for name
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder name(String name) {
@@ -239,7 +251,8 @@ public final class RegisteredService
 
     /**
      * Initializes the value for the {@link AbstractRegisteredService#url() url} attribute.
-     * @param url The value for url 
+     *
+     * @param url The value for url
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder url(URI url) {
@@ -249,12 +262,13 @@ public final class RegisteredService
     }
     /**
      * Builds a new {@link RegisteredService RegisteredService}.
+     *
      * @return An immutable instance of RegisteredService
      * @throws java.lang.IllegalStateException if any required attributes are missing
      */
-    public RegisteredService build()
-        throws IllegalStateException {
-      checkRequiredAttributes(); return new RegisteredService(null, name, url);
+    public RegisteredService build() throws IllegalStateException {
+      checkRequiredAttributes();
+      return new RegisteredService(null, name, url);
     }
 
     private boolean nameIsSet() {
@@ -270,11 +284,13 @@ public final class RegisteredService
         throw new IllegalStateException(formatRequiredAttributesMessage());
       }
     }
+
     private String formatRequiredAttributesMessage() {
       List<String> attributes = Lists.newArrayList();
       if (!nameIsSet()) attributes.add("name");
       if (!urlIsSet()) attributes.add("url");
-      return "Cannot build RegisteredService, some of required attributes are not set " + attributes;
+      return "Cannot build RegisteredService, some of required attributes are not set "
+          + attributes;
     }
   }
 }

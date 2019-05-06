@@ -2,8 +2,10 @@ package docs.scaladsl.advanced.akka
 
 package workerservice {
 
-  import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
-  import docs.scaladsl.advanced.akka.dataobjects.{Job, JobAccepted}
+  import com.lightbend.lagom.scaladsl.api.Service
+  import com.lightbend.lagom.scaladsl.api.ServiceCall
+  import docs.scaladsl.advanced.akka.dataobjects.Job
+  import docs.scaladsl.advanced.akka.dataobjects.JobAccepted
 
   trait WorkerService extends Service {
     def doWork: ServiceCall[Job, JobAccepted]
@@ -17,7 +19,8 @@ package workerservice {
 package dataobjects {
 
   //#dataobjects
-  import play.api.libs.json.{Format, Json}
+  import play.api.libs.json.Format
+  import play.api.libs.json.Json
 
   case class Job(jobId: String, task: String, payload: String)
   object Job {
@@ -33,14 +36,16 @@ package dataobjects {
 
 package workerserviceimpl {
 
-  import dataobjects.{Job, JobAccepted}
+  import dataobjects.Job
+  import dataobjects.JobAccepted
   import worker.Worker
   import workerservice.WorkerService
 
   //#service-impl
   import akka.actor.ActorSystem
   import akka.cluster.Cluster
-  import akka.cluster.routing.{ClusterRouterGroup, ClusterRouterGroupSettings}
+  import akka.cluster.routing.ClusterRouterGroup
+  import akka.cluster.routing.ClusterRouterGroupSettings
   import akka.routing.ConsistentHashingGroup
   import akka.pattern.ask
   import akka.util.Timeout
@@ -62,7 +67,8 @@ package workerserviceimpl {
       val groupConf = ConsistentHashingGroup(paths, hashMapping = {
         case Job(_, task, _) => task
       })
-      val routerProps = ClusterRouterGroup(groupConf,
+      val routerProps = ClusterRouterGroup(
+        groupConf,
         ClusterRouterGroupSettings(
           totalInstances = 1000,
           routeesPaths = paths,
@@ -83,10 +89,12 @@ package workerserviceimpl {
 
 package worker {
 
-  import dataobjects.{Job, JobAccepted}
+  import dataobjects.Job
+  import dataobjects.JobAccepted
 
   //#actor
-  import akka.actor.{Actor, Props}
+  import akka.actor.Actor
+  import akka.actor.Props
   import akka.event.Logging
 
   object Worker {

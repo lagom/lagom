@@ -4,7 +4,8 @@
 package com.lightbend.lagom.maven
 
 import java.net.URLClassLoader
-import javax.inject.{ Inject, Singleton }
+import javax.inject.Inject
+import javax.inject.Singleton
 
 import org.eclipse.aether.artifact.Artifact
 
@@ -12,7 +13,7 @@ import org.eclipse.aether.artifact.Artifact
  * Implements sharing of Scala classloaders, to save on memory
  */
 @Singleton
-class ScalaClassLoaderManager @Inject() (logger: MavenLoggerProxy) {
+class ScalaClassLoaderManager @Inject()(logger: MavenLoggerProxy) {
 
   /**
    * The list of Scala libraries. None of these libraries may have a dependency outside of this list, otherwise there
@@ -23,21 +24,24 @@ class ScalaClassLoaderManager @Inject() (logger: MavenLoggerProxy) {
    * in what can be shared.
    */
   private val ScalaLibs = Set(
-    "org.scala-lang" -> "scala-library",
-    "org.scala-lang" -> "scala-reflect",
+    "org.scala-lang"         -> "scala-library",
+    "org.scala-lang"         -> "scala-reflect",
     "org.scala-lang.modules" -> "scala-xml",
     "org.scala-lang.modules" -> "scala-parser-combinators",
     "org.scala-lang.modules" -> "scala-java8-compat"
   )
 
-  private val ScalaVersionPattern = "_\\d+\\.\\d+.*$".r
+  private val ScalaVersionPattern                   = "_\\d+\\.\\d+.*$".r
   private def stripScalaVersion(artifactId: String) = ScalaVersionPattern.replaceFirstIn(artifactId, "")
 
   private def createCacheKey(artifacts: Seq[Artifact]): String = {
-    artifacts.map { artifact =>
-      import artifact._
-      s"$getGroupId:$getArtifactId:$getVersion"
-    }.sorted.mkString(",")
+    artifacts
+      .map { artifact =>
+        import artifact._
+        s"$getGroupId:$getArtifactId:$getVersion"
+      }
+      .sorted
+      .mkString(",")
   }
 
   private var cache = Map.empty[String, ClassLoader]

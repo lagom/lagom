@@ -5,10 +5,12 @@ package com.lightbend.lagom.scaladsl.persistence.testkit
 
 import java.util.concurrent.TimeUnit
 
-import akka.actor.{ ActorSystem, Props }
+import akka.actor.ActorSystem
+import akka.actor.Props
 import akka.persistence.PersistentActor
 import akka.testkit.TestProbe
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
@@ -41,15 +43,19 @@ trait AbstractTestUtil {
 
   def awaitPersistenceInit(system: ActorSystem): Unit = {
     val probe = TestProbe()(system)
-    val log = LoggerFactory.getLogger(getClass)
-    val t0 = System.nanoTime()
-    var n = 0
+    val log   = LoggerFactory.getLogger(getClass)
+    val t0    = System.nanoTime()
+    var n     = 0
     probe.within(45.seconds) {
       probe.awaitAssert {
         n += 1
         system.actorOf(Props[AbstractTestUtil.AwaitPersistenceInit], "persistenceInit" + n).tell("hello", probe.ref)
         probe.expectMsg(5.seconds, "hello")
-        log.debug("awaitPersistenceInit took {} ms {}", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0), system.name)
+        log.debug(
+          "awaitPersistenceInit took {} ms {}",
+          TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0),
+          system.name
+        )
       }
     }
   }

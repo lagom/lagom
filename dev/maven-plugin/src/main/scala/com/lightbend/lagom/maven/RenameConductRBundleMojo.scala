@@ -16,7 +16,7 @@ import scala.collection.JavaConverters._
 /**
  * Converts a zip artifact to one named according to ConductR's conventions.
  */
-class RenameConductRBundleMojo @Inject() (logger: MavenLoggerProxy) extends LagomAbstractMojo {
+class RenameConductRBundleMojo @Inject()(logger: MavenLoggerProxy) extends LagomAbstractMojo {
 
   @BeanProperty
   var sourceConductRBundle: File = _
@@ -29,38 +29,42 @@ class RenameConductRBundleMojo @Inject() (logger: MavenLoggerProxy) extends Lago
 
   override def execute(): Unit = {
     if (!sourceConductRBundle.exists()) {
-      logger.error(s"The source ConductR bundle, ${sourceConductRBundle.getAbsolutePath}, does not exist. Make sure you have " +
-        s"configured your build to produce a ConductR zip artifact before running lagom:renameConductRBundle, and " +
-        s"that either that artifact is located at ${sourceConductRBundle.getAbsolutePath}, or you have configured " +
-        s"sourceConductRBundle to point to it. If you are using the maven assembly plugin to produce the artifact, " +
-        s"ensure it is declared in your POM before the lagom plugin, as Maven executions for the same phase are " +
-        s"executed in the order that they appear in the POM.")
+      logger.error(
+        s"The source ConductR bundle, ${sourceConductRBundle.getAbsolutePath}, does not exist. Make sure you have " +
+          s"configured your build to produce a ConductR zip artifact before running lagom:renameConductRBundle, and " +
+          s"that either that artifact is located at ${sourceConductRBundle.getAbsolutePath}, or you have configured " +
+          s"sourceConductRBundle to point to it. If you are using the maven assembly plugin to produce the artifact, " +
+          s"ensure it is declared in your POM before the lagom plugin, as Maven executions for the same phase are " +
+          s"executed in the order that they appear in the POM."
+      )
       sys.error(s"The source ConductR bundle, ${sourceConductRBundle.getAbsolutePath}, does not exist.")
     }
 
     // We could do some validation here if we wanted - eg verify that bundle.conf exists, that it has the right service
     // name.
 
-    val name = Option(bundleName).orElse {
-      // Use the name of the first directory in the structure as the name of the bundle
-      val zipFile = new ZipFile(sourceConductRBundle)
-      try {
-        zipFile.entries().asScala.take(1).foldLeft(Option.empty[String]) {
-          case (_, entry) =>
-            val rootDir = entry.getName.takeWhile(c => c != '/' && c != '\\')
-            logger.debug(s"First entry in zip file was ${entry.getName}, using $rootDir as the bundle name")
-            Some(rootDir)
+    val name = Option(bundleName)
+      .orElse {
+        // Use the name of the first directory in the structure as the name of the bundle
+        val zipFile = new ZipFile(sourceConductRBundle)
+        try {
+          zipFile.entries().asScala.take(1).foldLeft(Option.empty[String]) {
+            case (_, entry) =>
+              val rootDir = entry.getName.takeWhile(c => c != '/' && c != '\\')
+              logger.debug(s"First entry in zip file was ${entry.getName}, using $rootDir as the bundle name")
+              Some(rootDir)
+          }
+        } finally {
+          zipFile.close()
         }
-      } finally {
-        zipFile.close()
       }
-    }.getOrElse {
-      sys.error(s"${sourceConductRBundle.getAbsolutePath} is an empty zip file.")
-    }
+      .getOrElse {
+        sys.error(s"${sourceConductRBundle.getAbsolutePath} is an empty zip file.")
+      }
 
-    val bundleHash = sourceConductRBundle.toScala.checksum("SHA-256").toLowerCase(Locale.ENGLISH)
+    val bundleHash     = sourceConductRBundle.toScala.checksum("SHA-256").toLowerCase(Locale.ENGLISH)
     val bundleFileName = s"$name-$bundleHash.zip"
-    val outputDir = outputDirectory.toScala
+    val outputDir      = outputDirectory.toScala
     outputDir.createIfNotExists(asDirectory = true)
     val bundleFile = outputDir / bundleFileName
 

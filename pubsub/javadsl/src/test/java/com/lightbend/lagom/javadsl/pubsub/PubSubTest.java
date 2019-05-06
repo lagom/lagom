@@ -35,11 +35,12 @@ public class PubSubTest {
 
   @BeforeClass
   public static void setup() {
-    Config config = ConfigFactory.parseString(
-        "akka.actor.provider = akka.cluster.ClusterActorRefProvider \n" +
-        "akka.remote.netty.tcp.port = 0 \n" +
-        "akka.remote.netty.tcp.hostname = 127.0.0.1 \n" +
-        "akka.loglevel = INFO \n");
+    Config config =
+        ConfigFactory.parseString(
+            "akka.actor.provider = akka.cluster.ClusterActorRefProvider \n"
+                + "akka.remote.netty.tcp.port = 0 \n"
+                + "akka.remote.netty.tcp.hostname = 127.0.0.1 \n"
+                + "akka.loglevel = INFO \n");
 
     system = ActorSystem.create("PubSubTest", config);
 
@@ -49,17 +50,18 @@ public class PubSubTest {
   private void awaitHasSubscribers(PubSubRef<?> ref, boolean expected) {
     new TestKit(system) {
       {
-        awaitCond(java.time.Duration.ofSeconds(10), () -> {
-          try {
-            return expected == ref.hasAnySubscribers().toCompletableFuture().get();
-          } catch (Exception e) {
-            return false;
-          }
-        });
+        awaitCond(
+            java.time.Duration.ofSeconds(10),
+            () -> {
+              try {
+                return expected == ref.hasAnySubscribers().toCompletableFuture().get();
+              } catch (Exception e) {
+                return false;
+              }
+            });
       }
     };
   }
-
 
   @AfterClass
   public static void teardown() {
@@ -67,7 +69,8 @@ public class PubSubTest {
     system = null;
   }
 
-  private final Injector injector = Guice.createInjector(new ActorSystemModule(system), new PubSubModule());
+  private final Injector injector =
+      Guice.createInjector(new ActorSystemModule(system), new PubSubModule());
 
   private PubSubRegistry registry() {
     return injector.getInstance(PubSubRegistry.class);
@@ -80,11 +83,10 @@ public class PubSubTest {
     final PubSubRef<Notification> ref = registry().refFor(topic);
 
     final Source<Notification, ?> sub = ref.subscriber();
-    final TestSubscriber.Probe<String> probe = sub
-      .map(notification -> notification.getMsg())
-      .runWith(TestSink.probe(system), mat)
-      .request(2);
-
+    final TestSubscriber.Probe<String> probe =
+        sub.map(notification -> notification.getMsg())
+            .runWith(TestSink.probe(system), mat)
+            .request(2);
 
     awaitHasSubscribers(ref, true);
 
@@ -102,14 +104,19 @@ public class PubSubTest {
     final PubSubRef<Notification> ref = registry().refFor(topic);
 
     final Source<Notification, ?> sub = ref.subscriber();
-    final TestSubscriber.Probe<String> probe = sub.map(notification -> notification.getMsg())
-        .runWith(TestSink.probe(system), mat).request(2);
+    final TestSubscriber.Probe<String> probe =
+        sub.map(notification -> notification.getMsg())
+            .runWith(TestSink.probe(system), mat)
+            .request(2);
 
     awaitHasSubscribers(ref, true);
 
     final Sink<Notification, ?> pub = ref.publisher();
     Source.from(
-        Arrays.asList(new Notification("hello-1"), new Notification("hello-2"), new Notification("hello-3")))
+            Arrays.asList(
+                new Notification("hello-1"),
+                new Notification("hello-2"),
+                new Notification("hello-3")))
         .runWith(pub, mat);
 
     probe.expectNext("hello-1");
@@ -126,14 +133,9 @@ public class PubSubTest {
     final TopicId<Notification> topic = new TopicId<>(Notification.class, "2");
     final PubSubRef<Notification> ref = registry().refFor(topic);
 
-    final Source<String, ?> src = ref.subscriber()
-        .map(notification -> notification.getMsg());
-    final TestSubscriber.Probe<String> probe1 = src
-      .runWith(TestSink.probe(system), mat)
-      .request(2);
-    final TestSubscriber.Probe<String> probe2 = src
-        .runWith(TestSink.probe(system), mat)
-        .request(2);
+    final Source<String, ?> src = ref.subscriber().map(notification -> notification.getMsg());
+    final TestSubscriber.Probe<String> probe1 = src.runWith(TestSink.probe(system), mat).request(2);
+    final TestSubscriber.Probe<String> probe2 = src.runWith(TestSink.probe(system), mat).request(2);
 
     awaitHasSubscribers(ref, true);
 
@@ -149,8 +151,7 @@ public class PubSubTest {
     final TopicId<Notification> topic = new TopicId<>(Notification.class, "3");
     final PubSubRef<Notification> ref = registry().refFor(topic);
 
-    final Source<String, ?> src = ref.subscriber()
-        .map(notification -> notification.getMsg());
+    final Source<String, ?> src = ref.subscriber().map(notification -> notification.getMsg());
     final TestSubscriber.Probe<String> probe1 = src.runWith(TestSink.probe(system), mat).request(2);
 
     awaitHasSubscribers(ref, true);
@@ -172,20 +173,29 @@ public class PubSubTest {
     final PubSubRef<Notification> ref = registry().refFor(topic);
 
     final Source<Notification, ?> sub = ref.subscriber();
-    TestSubscriber.Probe<String> subProbe = sub.map(notification -> notification.getMsg())
-        .runWith(TestSink.probe(system), mat).request(10);
+    TestSubscriber.Probe<String> subProbe =
+        sub.map(notification -> notification.getMsg())
+            .runWith(TestSink.probe(system), mat)
+            .request(10);
 
     awaitHasSubscribers(ref, true);
 
     final Sink<Notification, ?> pub = ref.publisher();
-    Source
-        .from(Arrays.asList(new Notification("hello-1a"), new Notification("hello-2a"), new Notification("hello-3a")))
+    Source.from(
+            Arrays.asList(
+                new Notification("hello-1a"),
+                new Notification("hello-2a"),
+                new Notification("hello-3a")))
         .runWith(pub, mat);
-    Source
-        .from(Arrays.asList(new Notification("hello-1b"), new Notification("hello-2b"), new Notification("hello-3b")))
+    Source.from(
+            Arrays.asList(
+                new Notification("hello-1b"),
+                new Notification("hello-2b"),
+                new Notification("hello-3b")))
         .runWith(pub, mat);
 
-    subProbe.expectNextUnordered("hello-1a", "hello-1b", "hello-2a", "hello-2b", "hello-3a", "hello-3b");
+    subProbe.expectNextUnordered(
+        "hello-1a", "hello-1b", "hello-2a", "hello-2b", "hello-3a", "hello-3b");
   }
 
   @Test
@@ -195,14 +205,19 @@ public class PubSubTest {
     final PubSubRef<Notification> ref = registry().refFor(topic);
 
     final Source<Notification, ?> sub = ref.subscriber();
-    final TestSubscriber.Probe<String> probe1 = sub.map(notification -> notification.getMsg())
-        .runWith(TestSink.probe(system), mat).request(10);
+    final TestSubscriber.Probe<String> probe1 =
+        sub.map(notification -> notification.getMsg())
+            .runWith(TestSink.probe(system), mat)
+            .request(10);
 
     awaitHasSubscribers(ref, true);
 
     final Sink<Notification, ?> pub = ref.publisher();
-    Source
-        .from(Arrays.asList(new Notification("hello-1a"), new Notification("hello-2a"), new Notification("hello-3a")))
+    Source.from(
+            Arrays.asList(
+                new Notification("hello-1a"),
+                new Notification("hello-2a"),
+                new Notification("hello-3a")))
         .runWith(pub, mat);
 
     probe1.expectNext("hello-1a");
@@ -210,10 +225,15 @@ public class PubSubTest {
     probe1.expectNext("hello-3a");
     probe1.cancel();
 
-    final TestSubscriber.Probe<String> probe2 = sub.map(notification -> notification.getMsg())
-        .runWith(TestSink.probe(system), mat).request(10);
-    Source
-        .from(Arrays.asList(new Notification("hello-1b"), new Notification("hello-2b"), new Notification("hello-3b")))
+    final TestSubscriber.Probe<String> probe2 =
+        sub.map(notification -> notification.getMsg())
+            .runWith(TestSink.probe(system), mat)
+            .request(10);
+    Source.from(
+            Arrays.asList(
+                new Notification("hello-1b"),
+                new Notification("hello-2b"),
+                new Notification("hello-3b")))
         .runWith(pub, mat);
     probe2.expectNext("hello-1b");
     probe2.expectNext("hello-2b");
@@ -224,15 +244,17 @@ public class PubSubTest {
   public void testDropOldestWhenBufferOverflow() throws Exception {
     final Materializer mat = ActorMaterializer.create(system);
     final TopicId<Notification> topic = new TopicId<>(Notification.class, "7");
-    final Config conf = ConfigFactory.parseString("subscriber-buffer-size = 3").withFallback(
-        system.settings().config().getConfig("lagom.pubsub"));
+    final Config conf =
+        ConfigFactory.parseString("subscriber-buffer-size = 3")
+            .withFallback(system.settings().config().getConfig("lagom.pubsub"));
     final PubSubRegistry registry = new PubSubRegistryImpl(system, conf);
     final PubSubRef<Notification> ref = registry.refFor(topic);
 
     final Source<Notification, ?> src = ref.subscriber();
     // important to not use any intermediate stages (such as map) here, because then
     // internal buffering comes into play
-    final TestSubscriber.Probe<Notification> probe = src.runWith(TestSink.probe(system), mat).request(2);
+    final TestSubscriber.Probe<Notification> probe =
+        src.runWith(TestSink.probe(system), mat).request(2);
 
     awaitHasSubscribers(ref, true);
 
@@ -249,5 +271,4 @@ public class PubSubTest {
     probe.expectNext(new Notification("hello-10"));
     probe.expectNoMessage(Duration.create(100, TimeUnit.MILLISECONDS));
   }
-
 }

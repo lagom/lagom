@@ -1,18 +1,24 @@
 package docs.scaladsl.mb
 
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomApplicationContext, LagomServer, LocalServiceLocator}
-import com.lightbend.lagom.scaladsl.testkit.{ServiceTest, TestTopicComponents}
+import com.lightbend.lagom.scaladsl.server.LagomApplication
+import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
+import com.lightbend.lagom.scaladsl.server.LagomServer
+import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
+import com.lightbend.lagom.scaladsl.testkit.ServiceTest
+import com.lightbend.lagom.scaladsl.testkit.TestTopicComponents
 import play.api.libs.ws.ahc.AhcWSComponents
-import org.scalatest.{AsyncWordSpec, Matchers}
-import akka.{NotUsed, Done}
+import org.scalatest.AsyncWordSpec
+import org.scalatest.Matchers
+import akka.NotUsed
+import akka.Done
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
 import akka.stream.testkit.TestSubscriber
 import akka.stream.testkit.TestSubscriber.Probe
 
 abstract class PublishApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
+    extends LagomApplication(context)
     with AhcWSComponents {
 
   override lazy val lagomServer = serverFor[service.PublishService](new service.PublishServiceImpl())
@@ -28,10 +34,11 @@ package service {
   }
 
   trait PublishService extends Service {
-    override final def descriptor = {
+    final override def descriptor = {
       import Service._
       named("brokerdocs")
-        .withTopics(topic(PublishService.TOPIC_NAME, events)).withAutoAcl(true)
+        .withTopics(topic(PublishService.TOPIC_NAME, events))
+        .withAutoAcl(true)
     }
 
     def events(): Topic[PubMessage]
@@ -40,7 +47,8 @@ package service {
   case class PubMessage(message: String)
 
   object PubMessage {
-    import play.api.libs.json.{Format, Json}
+    import play.api.libs.json.Format
+    import play.api.libs.json.Json
     implicit val format: Format[PubMessage] = Json.format[PubMessage]
   }
 
@@ -60,16 +68,15 @@ class PublishServiceSpec extends AsyncWordSpec with Matchers {
   //#topic-test-publishing-into-a-topic
   "The PublishService" should {
     "publish events on the topic" in ServiceTest.withServer(ServiceTest.defaultSetup) { ctx =>
-      new PublishApplication(ctx) with LocalServiceLocator
-        with TestTopicComponents
+      new PublishApplication(ctx) with LocalServiceLocator with TestTopicComponents
     } { server =>
-
       implicit val system = server.actorSystem
-      implicit val mat = server.materializer
+      implicit val mat    = server.materializer
 
       val client: PublishService = server.serviceClient.implement[PublishService]
-      val source = client.events().subscribe.atMostOnceSource
-      source.runWith(TestSink.probe[PubMessage])
+      val source                 = client.events().subscribe.atMostOnceSource
+      source
+        .runWith(TestSink.probe[PubMessage])
         .request(1)
         .expectNext should ===(PubMessage("msg 1"))
 

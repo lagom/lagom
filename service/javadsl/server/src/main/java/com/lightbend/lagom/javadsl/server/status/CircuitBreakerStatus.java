@@ -17,14 +17,12 @@ import javax.annotation.Generated;
 
 /**
  * Immutable implementation of {@link AbstractCircuitBreakerStatus}.
- * <p>
- * Use the builder to create immutable instances:
- * {@code CircuitBreakerStatus.builder()}.
+ *
+ * <p>Use the builder to create immutable instances: {@code CircuitBreakerStatus.builder()}.
  */
 @SuppressWarnings("all")
 @Generated({"Immutables.generator", "AbstractCircuitBreakerStatus"})
-public final class CircuitBreakerStatus
-    implements AbstractCircuitBreakerStatus {
+public final class CircuitBreakerStatus implements AbstractCircuitBreakerStatus {
   private final String id;
   private final Instant timestamp;
   private final String state;
@@ -42,9 +40,11 @@ public final class CircuitBreakerStatus
     this.latencyMicros = builder.latencyMicros;
     this.throughputOneMinute = builder.throughputOneMinute;
     this.failedThroughputOneMinute = builder.failedThroughputOneMinute;
-    this.timestamp = builder.timestamp != null
-        ? builder.timestamp
-        : Preconditions.checkNotNull(AbstractCircuitBreakerStatus.super.getTimestamp(), "timestamp");
+    this.timestamp =
+        builder.timestamp != null
+            ? builder.timestamp
+            : Preconditions.checkNotNull(
+                AbstractCircuitBreakerStatus.super.getTimestamp(), "timestamp");
   }
 
   private CircuitBreakerStatus(
@@ -66,73 +66,56 @@ public final class CircuitBreakerStatus
     this.failedThroughputOneMinute = failedThroughputOneMinute;
   }
 
-  /**
-   * Circuit breaker identifier.
-   */
+  /** Circuit breaker identifier. */
   @JsonProperty
   @Override
   public String getId() {
     return id;
   }
 
-  /**
-   * @return The value of the {@code timestamp} attribute
-   */
+  /** @return The value of the {@code timestamp} attribute */
   @JsonProperty
   @Override
   public Instant getTimestamp() {
     return timestamp;
   }
 
-  /**
-   * Circuit breaker state; closed, open, half-open.
-   */
+  /** Circuit breaker state; closed, open, half-open. */
   @JsonProperty
   @Override
   public String getState() {
     return state;
   }
 
-  /**
-   * Total number of successful calls.
-   */
+  /** Total number of successful calls. */
   @JsonProperty
   @Override
   public long getTotalSuccessCount() {
     return totalSuccessCount;
   }
 
-  /**
-   * Total number of failed calls.
-   */
+  /** Total number of failed calls. */
   @JsonProperty
   @Override
   public long getTotalFailureCount() {
     return totalFailureCount;
   }
 
-  /**
-   * Latency distribution for Exponentially Decaying Reservoir. Time unit is
-   * microseconds.
-   */
+  /** Latency distribution for Exponentially Decaying Reservoir. Time unit is microseconds. */
   @JsonProperty
   @Override
   public Latency getLatencyMicros() {
     return latencyMicros;
   }
 
-  /**
-   * Total (successful + failed) calls per second for the last minute.
-   */
+  /** Total (successful + failed) calls per second for the last minute. */
   @JsonProperty
   @Override
   public double getThroughputOneMinute() {
     return throughputOneMinute;
   }
 
-  /**
-   * Failed calls per second for the last minute.
-   */
+  /** Failed calls per second for the last minute. */
   @JsonProperty
   @Override
   public double getFailedThroughputOneMinute() {
@@ -140,8 +123,10 @@ public final class CircuitBreakerStatus
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractCircuitBreakerStatus#getId() id} attribute.
-   * A shallow reference equality check is used to prevent copying of the same value by returning {@code this}.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractCircuitBreakerStatus#getId() id} attribute. A shallow reference equality check is used
+   * to prevent copying of the same value by returning {@code this}.
+   *
    * @param value A new value for id
    * @return A modified copy of the {@code this} object
    */
@@ -160,8 +145,10 @@ public final class CircuitBreakerStatus
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractCircuitBreakerStatus#getTimestamp() timestamp} attribute.
-   * A shallow reference equality check is used to prevent copying of the same value by returning {@code this}.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractCircuitBreakerStatus#getTimestamp() timestamp} attribute. A shallow reference equality
+   * check is used to prevent copying of the same value by returning {@code this}.
+   *
    * @param value A new value for timestamp
    * @return A modified copy of the {@code this} object
    */
@@ -180,8 +167,10 @@ public final class CircuitBreakerStatus
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractCircuitBreakerStatus#getState() state} attribute.
-   * A shallow reference equality check is used to prevent copying of the same value by returning {@code this}.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractCircuitBreakerStatus#getState() state} attribute. A shallow reference equality check is
+   * used to prevent copying of the same value by returning {@code this}.
+   *
    * @param value A new value for state
    * @return A modified copy of the {@code this} object
    */
@@ -200,8 +189,10 @@ public final class CircuitBreakerStatus
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractCircuitBreakerStatus#getTotalSuccessCount() totalSuccessCount} attribute.
-   * A value equality check is used to prevent copying of the same value by returning {@code this}.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractCircuitBreakerStatus#getTotalSuccessCount() totalSuccessCount} attribute. A value
+   * equality check is used to prevent copying of the same value by returning {@code this}.
+   *
    * @param value A new value for totalSuccessCount
    * @return A modified copy of the {@code this} object
    */
@@ -220,8 +211,10 @@ public final class CircuitBreakerStatus
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractCircuitBreakerStatus#getTotalFailureCount() totalFailureCount} attribute.
-   * A value equality check is used to prevent copying of the same value by returning {@code this}.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractCircuitBreakerStatus#getTotalFailureCount() totalFailureCount} attribute. A value
+   * equality check is used to prevent copying of the same value by returning {@code this}.
+   *
    * @param value A new value for totalFailureCount
    * @return A modified copy of the {@code this} object
    */
@@ -240,8 +233,10 @@ public final class CircuitBreakerStatus
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractCircuitBreakerStatus#getLatencyMicros() latencyMicros} attribute.
-   * A shallow reference equality check is used to prevent copying of the same value by returning {@code this}.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractCircuitBreakerStatus#getLatencyMicros() latencyMicros} attribute. A shallow reference
+   * equality check is used to prevent copying of the same value by returning {@code this}.
+   *
    * @param value A new value for latencyMicros
    * @return A modified copy of the {@code this} object
    */
@@ -260,7 +255,9 @@ public final class CircuitBreakerStatus
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractCircuitBreakerStatus#getThroughputOneMinute() throughputOneMinute} attribute.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractCircuitBreakerStatus#getThroughputOneMinute() throughputOneMinute} attribute.
+   *
    * @param value A new value for throughputOneMinute
    * @return A modified copy of the {@code this} object
    */
@@ -278,7 +275,10 @@ public final class CircuitBreakerStatus
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractCircuitBreakerStatus#getFailedThroughputOneMinute() failedThroughputOneMinute} attribute.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractCircuitBreakerStatus#getFailedThroughputOneMinute() failedThroughputOneMinute}
+   * attribute.
+   *
    * @param value A new value for failedThroughputOneMinute
    * @return A modified copy of the {@code this} object
    */
@@ -296,13 +296,15 @@ public final class CircuitBreakerStatus
   }
 
   /**
-   * This instance is equal to all instances of {@code CircuitBreakerStatus} that have equal attribute values.
+   * This instance is equal to all instances of {@code CircuitBreakerStatus} that have equal
+   * attribute values.
+   *
    * @return {@code true} if {@code this} is equal to {@code another} instance
    */
   @Override
   public boolean equals(Object another) {
-    return this == another || another instanceof CircuitBreakerStatus
-        && equalTo((CircuitBreakerStatus) another);
+    return this == another
+        || another instanceof CircuitBreakerStatus && equalTo((CircuitBreakerStatus) another);
   }
 
   private boolean equalTo(CircuitBreakerStatus another) {
@@ -312,12 +314,17 @@ public final class CircuitBreakerStatus
         && totalSuccessCount == another.totalSuccessCount
         && totalFailureCount == another.totalFailureCount
         && latencyMicros.equals(another.latencyMicros)
-        && Double.doubleToLongBits(throughputOneMinute) == Double.doubleToLongBits(another.throughputOneMinute)
-        && Double.doubleToLongBits(failedThroughputOneMinute) == Double.doubleToLongBits(another.failedThroughputOneMinute);
+        && Double.doubleToLongBits(throughputOneMinute)
+            == Double.doubleToLongBits(another.throughputOneMinute)
+        && Double.doubleToLongBits(failedThroughputOneMinute)
+            == Double.doubleToLongBits(another.failedThroughputOneMinute);
   }
 
   /**
-   * Computes a hash code from attributes: {@code id}, {@code timestamp}, {@code state}, {@code totalSuccessCount}, {@code totalFailureCount}, {@code latencyMicros}, {@code throughputOneMinute}, {@code failedThroughputOneMinute}.
+   * Computes a hash code from attributes: {@code id}, {@code timestamp}, {@code state}, {@code
+   * totalSuccessCount}, {@code totalFailureCount}, {@code latencyMicros}, {@code
+   * throughputOneMinute}, {@code failedThroughputOneMinute}.
+   *
    * @return hashCode value
    */
   @Override
@@ -335,8 +342,9 @@ public final class CircuitBreakerStatus
   }
 
   /**
-   * Prints the immutable value {@code CircuitBreakerStatus...} with all non-generated
-   * and non-auxiliary attribute values.
+   * Prints the immutable value {@code CircuitBreakerStatus...} with all non-generated and
+   * non-auxiliary attribute values.
+   *
    * @return A string representation of the value
    */
   @Override
@@ -355,7 +363,9 @@ public final class CircuitBreakerStatus
 
   /**
    * Utility type used to correctly read immutable object from JSON representation.
-   * @deprecated Do not use this type directly, it exists only for the <em>Jackson</em>-binding infrastructure
+   *
+   * @deprecated Do not use this type directly, it exists only for the <em>Jackson</em>-binding
+   *     infrastructure
    */
   @Deprecated
   @JsonDeserialize
@@ -400,26 +410,48 @@ public final class CircuitBreakerStatus
     public void setFailedThroughputOneMinute(double failedThroughputOneMinute) {
       this.failedThroughputOneMinute = failedThroughputOneMinute;
     }
+
     @Override
-    public String getId() { throw new UnsupportedOperationException(); }
+    public String getId() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public String getState() { throw new UnsupportedOperationException(); }
+    public String getState() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public long getTotalSuccessCount() { throw new UnsupportedOperationException(); }
+    public long getTotalSuccessCount() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public long getTotalFailureCount() { throw new UnsupportedOperationException(); }
+    public long getTotalFailureCount() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public Latency getLatencyMicros() { throw new UnsupportedOperationException(); }
+    public Latency getLatencyMicros() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public double getThroughputOneMinute() { throw new UnsupportedOperationException(); }
+    public double getThroughputOneMinute() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public double getFailedThroughputOneMinute() { throw new UnsupportedOperationException(); }
+    public double getFailedThroughputOneMinute() {
+      throw new UnsupportedOperationException();
+    }
   }
 
   /**
    * @param json A JSON-bindable data structure
    * @return An immutable value type
-   * @deprecated Do not use this method directly, it exists only for the <em>Jackson</em>-binding infrastructure
+   * @deprecated Do not use this method directly, it exists only for the <em>Jackson</em>-binding
+   *     infrastructure
    */
   @Deprecated
   @JsonCreator
@@ -453,9 +485,10 @@ public final class CircuitBreakerStatus
   }
 
   /**
-   * Creates an immutable copy of a {@link AbstractCircuitBreakerStatus} value.
-   * Uses accessors to get values to initialize the new immutable instance.
-   * If an instance is already immutable, it is returned as is.
+   * Creates an immutable copy of a {@link AbstractCircuitBreakerStatus} value. Uses accessors to
+   * get values to initialize the new immutable instance. If an instance is already immutable, it is
+   * returned as is.
+   *
    * @param instance The instance to copy
    * @return A copied immutable CircuitBreakerStatus instance
    */
@@ -463,13 +496,13 @@ public final class CircuitBreakerStatus
     if (instance instanceof CircuitBreakerStatus) {
       return (CircuitBreakerStatus) instance;
     }
-    return CircuitBreakerStatus.builder()
-        .from(instance)
-        .build();
+    return CircuitBreakerStatus.builder().from(instance).build();
   }
 
   /**
-   * Creates a builder for {@link com.lightbend.lagom.javadsl.server.status.CircuitBreakerStatus CircuitBreakerStatus}.
+   * Creates a builder for {@link com.lightbend.lagom.javadsl.server.status.CircuitBreakerStatus
+   * CircuitBreakerStatus}.
+   *
    * @return A new CircuitBreakerStatus builder
    */
   public static CircuitBreakerStatus.Builder builder() {
@@ -477,13 +510,14 @@ public final class CircuitBreakerStatus
   }
 
   /**
-   * Builds instances of type {@link com.lightbend.lagom.javadsl.server.status.CircuitBreakerStatus CircuitBreakerStatus}.
-   * Initialize attributes and then invoke the {@link #build()} method to create an
-   * immutable instance.
-   * <p><em>{@code Builder} is not thread-safe and generally should not be stored in a field or collection,
-   * but instead used immediately to create instances.</em>
+   * Builds instances of type {@link com.lightbend.lagom.javadsl.server.status.CircuitBreakerStatus
+   * CircuitBreakerStatus}. Initialize attributes and then invoke the {@link #build()} method to
+   * create an immutable instance.
+   *
+   * <p><em>{@code Builder} is not thread-safe and generally should not be stored in a field or
+   * collection, but instead used immediately to create instances.</em>
    */
-    public static final class Builder {
+  public static final class Builder {
     private static final long INIT_BIT_ID = 0x1L;
     private static final long INIT_BIT_STATE = 0x2L;
     private static final long INIT_BIT_TOTAL_SUCCESS_COUNT = 0x4L;
@@ -505,9 +539,10 @@ public final class CircuitBreakerStatus
     private Builder() {}
 
     /**
-     * Fill a builder with attribute values from the provided {@link AbstractCircuitBreakerStatus} instance.
-     * Regular attribute values will be replaced with those from the given instance.
+     * Fill a builder with attribute values from the provided {@link AbstractCircuitBreakerStatus}
+     * instance. Regular attribute values will be replaced with those from the given instance.
      * Absent optional values will not replace present values.
+     *
      * @param instance The instance from which to copy values
      * @return {@code this} builder for use in a chained invocation
      */
@@ -526,7 +561,8 @@ public final class CircuitBreakerStatus
 
     /**
      * Initializes the value for the {@link AbstractCircuitBreakerStatus#getId() id} attribute.
-     * @param id The value for id 
+     *
+     * @param id The value for id
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder id(String id) {
@@ -536,9 +572,13 @@ public final class CircuitBreakerStatus
     }
 
     /**
-     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getTimestamp() timestamp} attribute.
-     * <p><em>If not set, this attribute will have a default value as returned by the initializer of {@link AbstractCircuitBreakerStatus#getTimestamp() timestamp}.</em>
-     * @param timestamp The value for timestamp 
+     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getTimestamp() timestamp}
+     * attribute.
+     *
+     * <p><em>If not set, this attribute will have a default value as returned by the initializer of
+     * {@link AbstractCircuitBreakerStatus#getTimestamp() timestamp}.</em>
+     *
+     * @param timestamp The value for timestamp
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder timestamp(Instant timestamp) {
@@ -547,8 +587,10 @@ public final class CircuitBreakerStatus
     }
 
     /**
-     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getState() state} attribute.
-     * @param state The value for state 
+     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getState() state}
+     * attribute.
+     *
+     * @param state The value for state
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder state(String state) {
@@ -558,8 +600,10 @@ public final class CircuitBreakerStatus
     }
 
     /**
-     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getTotalSuccessCount() totalSuccessCount} attribute.
-     * @param totalSuccessCount The value for totalSuccessCount 
+     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getTotalSuccessCount()
+     * totalSuccessCount} attribute.
+     *
+     * @param totalSuccessCount The value for totalSuccessCount
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder totalSuccessCount(long totalSuccessCount) {
@@ -569,8 +613,10 @@ public final class CircuitBreakerStatus
     }
 
     /**
-     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getTotalFailureCount() totalFailureCount} attribute.
-     * @param totalFailureCount The value for totalFailureCount 
+     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getTotalFailureCount()
+     * totalFailureCount} attribute.
+     *
+     * @param totalFailureCount The value for totalFailureCount
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder totalFailureCount(long totalFailureCount) {
@@ -580,8 +626,10 @@ public final class CircuitBreakerStatus
     }
 
     /**
-     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getLatencyMicros() latencyMicros} attribute.
-     * @param latencyMicros The value for latencyMicros 
+     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getLatencyMicros()
+     * latencyMicros} attribute.
+     *
+     * @param latencyMicros The value for latencyMicros
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder latencyMicros(Latency latencyMicros) {
@@ -591,8 +639,10 @@ public final class CircuitBreakerStatus
     }
 
     /**
-     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getThroughputOneMinute() throughputOneMinute} attribute.
-     * @param throughputOneMinute The value for throughputOneMinute 
+     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getThroughputOneMinute()
+     * throughputOneMinute} attribute.
+     *
+     * @param throughputOneMinute The value for throughputOneMinute
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder throughputOneMinute(double throughputOneMinute) {
@@ -602,8 +652,11 @@ public final class CircuitBreakerStatus
     }
 
     /**
-     * Initializes the value for the {@link AbstractCircuitBreakerStatus#getFailedThroughputOneMinute() failedThroughputOneMinute} attribute.
-     * @param failedThroughputOneMinute The value for failedThroughputOneMinute 
+     * Initializes the value for the {@link
+     * AbstractCircuitBreakerStatus#getFailedThroughputOneMinute() failedThroughputOneMinute}
+     * attribute.
+     *
+     * @param failedThroughputOneMinute The value for failedThroughputOneMinute
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder failedThroughputOneMinute(double failedThroughputOneMinute) {
@@ -612,13 +665,15 @@ public final class CircuitBreakerStatus
       return this;
     }
     /**
-     * Builds a new {@link com.lightbend.lagom.javadsl.server.status.CircuitBreakerStatus CircuitBreakerStatus}.
+     * Builds a new {@link com.lightbend.lagom.javadsl.server.status.CircuitBreakerStatus
+     * CircuitBreakerStatus}.
+     *
      * @return An immutable instance of CircuitBreakerStatus
      * @throws java.lang.IllegalStateException if any required attributes are missing
      */
-    public CircuitBreakerStatus build()
-        throws IllegalStateException {
-      checkRequiredAttributes(); return new CircuitBreakerStatus(this);
+    public CircuitBreakerStatus build() throws IllegalStateException {
+      checkRequiredAttributes();
+      return new CircuitBreakerStatus(this);
     }
 
     private boolean idIsSet() {
@@ -654,6 +709,7 @@ public final class CircuitBreakerStatus
         throw new IllegalStateException(formatRequiredAttributesMessage());
       }
     }
+
     private String formatRequiredAttributesMessage() {
       List<String> attributes = Lists.newArrayList();
       if (!idIsSet()) attributes.add("id");
@@ -663,7 +719,8 @@ public final class CircuitBreakerStatus
       if (!latencyMicrosIsSet()) attributes.add("latencyMicros");
       if (!throughputOneMinuteIsSet()) attributes.add("throughputOneMinute");
       if (!failedThroughputOneMinuteIsSet()) attributes.add("failedThroughputOneMinute");
-      return "Cannot build CircuitBreakerStatus, some of required attributes are not set " + attributes;
+      return "Cannot build CircuitBreakerStatus, some of required attributes are not set "
+          + attributes;
     }
   }
 }

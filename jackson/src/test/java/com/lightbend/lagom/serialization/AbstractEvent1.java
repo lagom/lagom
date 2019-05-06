@@ -15,5 +15,4 @@ public interface AbstractEvent1 extends Jsonable {
 
   @Parameter
   String getField1();
-
 }

@@ -6,8 +6,8 @@ package com.lightbend.lagom.scaladsl.persistence
 class NamedEntity() extends PersistentEntity {
 
   override type Command = String
-  override type Event = String
-  override type State = String
+  override type Event   = String
+  override type State   = String
 
   override def entityTypeName: String = "some-name"
 

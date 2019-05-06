@@ -8,20 +8,30 @@ import java.util.concurrent.CompletionStage
 import akka.Done
 import akka.actor.ActorRef
 import akka.stream.Materializer
-import akka.stream.javadsl.{ Flow, Source }
+import akka.stream.javadsl.Flow
+import akka.stream.javadsl.Source
 import akka.stream.scaladsl.{ Flow => ScalaFlow }
 import com.lightbend.lagom.internal.testkit.InternalSubscriberStub
-import com.lightbend.lagom.javadsl.api.broker.{ Message, Subscriber, Topic }
+import com.lightbend.lagom.javadsl.api.broker.Message
+import com.lightbend.lagom.javadsl.api.broker.Subscriber
+import com.lightbend.lagom.javadsl.api.broker.Topic
 
 import scala.compat.java8.FutureConverters.toJava
 
-private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: ActorRef)(implicit materializer: Materializer) extends Topic[T] {
+private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: ActorRef)(
+    implicit materializer: Materializer
+) extends Topic[T] {
 
   // TODO: use ServiceInfo's name as a default value.
   def subscribe = new SubscriberStub("default", topicBuffer, _.getPayload)
 
-  class SubscriberStub[SubscriberPayload](groupId: String, topicBuffer: ActorRef, transform: Message[T] => SubscriberPayload)(implicit materializer: Materializer)
-    extends InternalSubscriberStub[T, Message](groupId, topicBuffer)(materializer) with Subscriber[SubscriberPayload] {
+  class SubscriberStub[SubscriberPayload](
+      groupId: String,
+      topicBuffer: ActorRef,
+      transform: Message[T] => SubscriberPayload
+  )(implicit materializer: Materializer)
+      extends InternalSubscriberStub[T, Message](groupId, topicBuffer)(materializer)
+      with Subscriber[SubscriberPayload] {
 
     override def withGroupId(groupId: String): Subscriber[SubscriberPayload] =
       new SubscriberStub(groupId, topicBuffer, transform)

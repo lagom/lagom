@@ -5,18 +5,30 @@ package com.lightbend.lagom.gateway
 
 import java.net.URI
 
-import akka.actor.{ ActorSystem, Props }
+import akka.actor.ActorSystem
+import akka.actor.Props
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.ws.{ Message, TextMessage, UpgradeToWebSocket, WebSocketRequest }
-import akka.http.scaladsl.model.{ HttpEntity, HttpRequest, HttpResponse, Uri }
+import akka.http.scaladsl.model.ws.Message
+import akka.http.scaladsl.model.ws.TextMessage
+import akka.http.scaladsl.model.ws.UpgradeToWebSocket
+import akka.http.scaladsl.model.ws.WebSocketRequest
+import akka.http.scaladsl.model.HttpEntity
+import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.model.Uri
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{ Flow, Sink, Source }
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import com.lightbend.lagom.discovery.{ ServiceRegistryActor, UnmanagedServices }
+import com.lightbend.lagom.discovery.ServiceRegistryActor
+import com.lightbend.lagom.discovery.UnmanagedServices
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.transport.Method
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.Matchers
+import org.scalatest.WordSpec
 import play.api.inject.DefaultApplicationLifecycle
 
 import scala.concurrent.Await
@@ -28,52 +40,77 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
   implicit val actorSystem = ActorSystem()
   import actorSystem.dispatcher
   implicit val mat = ActorMaterializer()
-  val http = Http()
+  val http         = Http()
 
   var serviceBinding: Http.ServerBinding = _
-  var gateway: AkkaHttpServiceGateway = _
+  var gateway: AkkaHttpServiceGateway    = _
 
-  override protected def beforeAll(): Unit = {
-    serviceBinding = Await.result(http.bindAndHandle(Flow[HttpRequest].map {
-      case hello if hello.uri.path.toString() == "/hello" => HttpResponse(entity = HttpEntity("Hello!"))
-      case stream if stream.uri.path.toString() == "/stream" =>
-        stream.header[UpgradeToWebSocket].get.handleMessages(Flow[Message])
-    }, "localhost", port = 0), 10.seconds)
+  protected override def beforeAll(): Unit = {
+    serviceBinding = Await.result(
+      http.bindAndHandle(
+        Flow[HttpRequest].map {
+          case hello if hello.uri.path.toString() == "/hello" => HttpResponse(entity = HttpEntity("Hello!"))
+          case stream if stream.uri.path.toString() == "/stream" =>
+            stream.header[UpgradeToWebSocket].get.handleMessages(Flow[Message])
+        },
+        "localhost",
+        port = 0
+      ),
+      10.seconds
+    )
 
-    val serviceRegistry = actorSystem.actorOf(Props(new ServiceRegistryActor(new UnmanagedServices(
-      Map("service" -> new ServiceRegistryService(
-        URI.create(s"http://localhost:${serviceBinding.localAddress.getPort}"),
-        Seq(
-          ServiceAcl.methodAndPath(Method.GET, "/hello"),
-          ServiceAcl.methodAndPath(Method.GET, "/stream")
-        ).asJava
-      ))
-    ))))
+    val serviceRegistry = actorSystem.actorOf(
+      Props(
+        new ServiceRegistryActor(
+          new UnmanagedServices(
+            Map(
+              "service" -> new ServiceRegistryService(
+                URI.create(s"http://localhost:${serviceBinding.localAddress.getPort}"),
+                Seq(
+                  ServiceAcl.methodAndPath(Method.GET, "/hello"),
+                  ServiceAcl.methodAndPath(Method.GET, "/stream")
+                ).asJava
+              )
+            )
+          )
+        )
+      )
+    )
 
     gateway = new AkkaHttpServiceGateway(new DefaultApplicationLifecycle, ServiceGatewayConfig(0), serviceRegistry)
   }
 
-  def gatewayUri = "http://localhost:" + gateway.address.getPort
+  def gatewayUri   = "http://localhost:" + gateway.address.getPort
   def gatewayWsUri = "ws://localhost:" + gateway.address.getPort
 
   "The Akka HTTP service gateway" should {
 
     "serve simple requests" in {
-      val answer = Await.result(for {
-        response <- http.singleRequest(HttpRequest(uri = s"$gatewayUri/hello"))
-        data <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
-      } yield data.utf8String, 10.seconds)
+      val answer = Await.result(
+        for {
+          response <- http.singleRequest(HttpRequest(uri = s"$gatewayUri/hello"))
+          data     <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
+        } yield data.utf8String,
+        10.seconds
+      )
 
       answer should ===("Hello!")
     }
 
     "serve websocket requests" in {
       val flow = http.webSocketClientFlow(WebSocketRequest(s"$gatewayWsUri/stream"))
-      val result = Await.result(Source(List("Hello", "world")).map(TextMessage(_)).via(flow).collect {
-        case TextMessage.Strict(text) => text
-      }.runWith(Sink.seq), 10.seconds)
+      val result = Await.result(
+        Source(List("Hello", "world"))
+          .map(TextMessage(_))
+          .via(flow)
+          .collect {
+            case TextMessage.Strict(text) => text
+          }
+          .runWith(Sink.seq),
+        10.seconds
+      )
 
-      result should contain inOrderOnly ("Hello", "world")
+      (result should contain).inOrderOnly("Hello", "world")
     }
 
     "serve not found when no ACL matches" in {
@@ -83,7 +120,7 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
 
   }
 
-  override protected def afterAll(): Unit = {
+  protected override def afterAll(): Unit = {
     actorSystem.terminate()
   }
 }

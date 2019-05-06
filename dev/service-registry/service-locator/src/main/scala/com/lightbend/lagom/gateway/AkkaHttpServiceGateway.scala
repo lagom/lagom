@@ -5,17 +5,25 @@ package com.lightbend.lagom.gateway
 
 import java.net.InetSocketAddress
 import java.util.Locale
-import javax.inject.{ Inject, Named }
+import javax.inject.Inject
+import javax.inject.Named
 
-import akka.actor.{ ActorRef, ActorSystem }
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.ws._
 import akka.pattern.ask
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Keep
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
-import com.lightbend.lagom.discovery.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
+import com.lightbend.lagom.discovery.ServiceRegistryActor.Found
+import com.lightbend.lagom.discovery.ServiceRegistryActor.NotFound
+import com.lightbend.lagom.discovery.ServiceRegistryActor.Route
+import com.lightbend.lagom.discovery.ServiceRegistryActor.RouteResult
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 import org.slf4j.LoggerFactory
 import play.api.inject.ApplicationLifecycle
@@ -23,24 +31,31 @@ import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 
 import scala.collection.immutable
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.Await
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class AkkaHttpServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
-                                               @Named("serviceRegistryActor") registry: ActorRef)(implicit actorSystem: ActorSystem, mat: Materializer) {
+class AkkaHttpServiceGatewayFactory @Inject()(
+    lifecycle: ApplicationLifecycle,
+    config: ServiceGatewayConfig,
+    @Named("serviceRegistryActor") registry: ActorRef
+)(implicit actorSystem: ActorSystem, mat: Materializer) {
 
   def start(): InetSocketAddress = {
     new AkkaHttpServiceGateway(lifecycle, config, registry).address
   }
 }
 
-class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef)(implicit actorSystem: ActorSystem, mat: Materializer) {
+class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef)(
+    implicit actorSystem: ActorSystem,
+    mat: Materializer
+) {
 
   private val log = LoggerFactory.getLogger(classOf[AkkaHttpServiceGateway])
 
   import actorSystem.dispatcher
   private implicit val timeout = Timeout(5.seconds)
-  val http = Http()
+  val http                     = Http()
 
   private val handler = Flow[HttpRequest].mapAsync(1) { request =>
     log.debug("Routing request {}", request)
@@ -65,11 +80,11 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
   private def handleWebSocketRequest(request: HttpRequest, uri: Uri, upgrade: UpgradeToWebSocket) = {
     log.debug("Switching to WebSocket protocol")
     val wsUri = uri.withScheme("ws")
-    val flow = Flow.fromSinkAndSourceMat(Sink.asPublisher[Message](fanout = false), Source.asSubscriber[Message])(Keep.both)
+    val flow =
+      Flow.fromSinkAndSourceMat(Sink.asPublisher[Message](fanout = false), Source.asSubscriber[Message])(Keep.both)
 
     val (responseFuture, (publisher, subscriber)) = http.singleWebSocketRequest(
-      WebSocketRequest(wsUri, extraHeaders = filterHeaders(request.headers),
-        upgrade.requestedProtocols.headOption),
+      WebSocketRequest(wsUri, extraHeaders = filterHeaders(request.headers), upgrade.requestedProtocols.headOption),
       flow
     )
 
@@ -88,7 +103,11 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
     }
   }
 
-  private def renderNotFound(request: HttpRequest, path: String, registry: Map[String, ServiceRegistryService]): HttpResponse = {
+  private def renderNotFound(
+      request: HttpRequest,
+      path: String,
+      registry: Map[String, ServiceRegistryService]
+  ): HttpResponse = {
     import scala.collection.JavaConverters._
     import scala.compat.java8.OptionConverters._
     // We're reusing Play's not found error page here, which lists the routes, we need to convert the service registry
@@ -100,7 +119,7 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
           val call = s"Service: $serviceName (${service.uri})"
           service.acls().asScala.map { acl =>
             val method = acl.method.asScala.fold("*")(_.name)
-            val path = acl.pathRegex.orElse(".*")
+            val path   = acl.pathRegex.orElse(".*")
             (method, path, call)
           }
       }
@@ -134,7 +153,7 @@ class AkkaHttpServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGat
   lifecycle.addStopHook(() => {
     for {
       binding <- bindingFuture
-      unbind <- binding.unbind()
+      unbind  <- binding.unbind()
     } yield unbind
   })
 

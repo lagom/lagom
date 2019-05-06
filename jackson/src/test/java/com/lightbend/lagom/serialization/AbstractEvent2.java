@@ -18,5 +18,4 @@ public interface AbstractEvent2 extends Jsonable {
 
   @Parameter
   int getField2(); // new mandatory field
-
 }

@@ -43,17 +43,18 @@ public class PersistentEntityRefTest {
 
   @BeforeClass
   public static void setup() {
-    Config config = ConfigFactory.parseString(
-        "akka.actor.provider = akka.cluster.ClusterActorRefProvider \n" +
-        "akka.remote.netty.tcp.port = 0 \n" +
-        "akka.remote.netty.tcp.hostname = 127.0.0.1 \n" +
-        "akka.loglevel = INFO \n" +
-        "akka.cluster.sharding.distributed-data.durable.keys = [] \n")
-        .withFallback(TestUtil.persistenceConfig("PersistentEntityRefTest", CassandraLauncher.randomPort()));
+    Config config =
+        ConfigFactory.parseString(
+                "akka.actor.provider = akka.cluster.ClusterActorRefProvider \n"
+                    + "akka.remote.netty.tcp.port = 0 \n"
+                    + "akka.remote.netty.tcp.hostname = 127.0.0.1 \n"
+                    + "akka.loglevel = INFO \n"
+                    + "akka.cluster.sharding.distributed-data.durable.keys = [] \n")
+            .withFallback(
+                TestUtil.persistenceConfig(
+                    "PersistentEntityRefTest", CassandraLauncher.randomPort()));
 
-    application = new GuiceApplicationBuilder()
-            .configure(config)
-            .build();
+    application = new GuiceApplicationBuilder().configure(config).build();
     injector = application.injector();
 
     ActorSystem system = injector.instanceOf(ActorSystem.class);
@@ -63,9 +64,7 @@ public class PersistentEntityRefTest {
     File cassandraDirectory = new File("target/PersistentEntityRefTest");
     CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", true, 0);
     TestUtil.awaitPersistenceInit(system);
-
   }
-
 
   @AfterClass
   public static void teardown() {
@@ -108,8 +107,10 @@ public class PersistentEntityRefTest {
 
   @Test(expected = AskTimeoutException.class)
   public void testAskTimeout() throws Throwable {
-    PersistentEntityRef<Cmd> ref = registry().refFor(TestEntity.class, "10").withAskTimeout(
-        FiniteDuration.create(1, MILLISECONDS));
+    PersistentEntityRef<Cmd> ref =
+        registry()
+            .refFor(TestEntity.class, "10")
+            .withAskTimeout(FiniteDuration.create(1, MILLISECONDS));
 
     List<CompletionStage<Evt>> replies = new ArrayList<>();
     for (int i = 0; i < 100; i++) {
@@ -165,5 +166,4 @@ public class PersistentEntityRefTest {
   public void testUnregistered() throws Throwable {
     registry().refFor(AnotherEntity.class, "1");
   }
-
 }

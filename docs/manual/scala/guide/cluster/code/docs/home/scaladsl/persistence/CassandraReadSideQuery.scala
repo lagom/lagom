@@ -23,7 +23,8 @@ trait CassandraReadSideQuery {
 
     override def getPostSummaries() = ServiceCall { request =>
       val response: Source[PostSummary, NotUsed] =
-        cassandraSession.select("SELECT id, title FROM blogsummary")
+        cassandraSession
+          .select("SELECT id, title FROM blogsummary")
           .map(row => PostSummary(row.getString("id"), row.getString("title")))
       Future.successful(response)
     }

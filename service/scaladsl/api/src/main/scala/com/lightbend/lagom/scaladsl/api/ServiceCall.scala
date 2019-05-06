@@ -5,7 +5,8 @@ package com.lightbend.lagom.scaladsl.api
 
 import akka.NotUsed
 import com.lightbend.lagom.internal.api.Execution
-import com.lightbend.lagom.scaladsl.api.transport.{ RequestHeader, ResponseHeader }
+import com.lightbend.lagom.scaladsl.api.transport.RequestHeader
+import com.lightbend.lagom.scaladsl.api.transport.ResponseHeader
 
 import scala.concurrent.Future
 
@@ -18,6 +19,7 @@ import scala.concurrent.Future
  * using json.
  */
 trait ServiceCall[Request, Response] {
+
   /**
    * Invoke the service call.
    *
@@ -95,6 +97,7 @@ trait ServiceCall[Request, Response] {
 }
 
 object ServiceCall {
+
   /**
    * Create a service call from a function to handle it.
    */

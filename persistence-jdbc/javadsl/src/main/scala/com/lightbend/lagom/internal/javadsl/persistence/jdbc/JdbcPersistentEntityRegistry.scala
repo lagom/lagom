@@ -4,22 +4,30 @@
 package com.lightbend.lagom.internal.javadsl.persistence.jdbc
 
 import java.util.Optional
-import javax.inject.{ Inject, Singleton }
+import javax.inject.Inject
+import javax.inject.Singleton
 
 import akka.actor.ActorSystem
 import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
 import akka.persistence.query.scaladsl.EventsByTagQuery
-import akka.persistence.query.{ NoOffset, PersistenceQuery, Sequence, Offset => AkkaOffset }
+import akka.persistence.query.NoOffset
+import akka.persistence.query.PersistenceQuery
+import akka.persistence.query.Sequence
+import akka.persistence.query.{ Offset => AkkaOffset }
 import com.google.inject.Injector
 import com.lightbend.lagom.internal.javadsl.persistence.AbstractPersistentEntityRegistry
-import com.lightbend.lagom.javadsl.persistence.{ Offset, PersistentEntity }
+import com.lightbend.lagom.javadsl.persistence.Offset
+import com.lightbend.lagom.javadsl.persistence.PersistentEntity
 
 /**
  * INTERNAL API
  */
 @Singleton
-private[lagom] final class JdbcPersistentEntityRegistry @Inject() (system: ActorSystem, injector: Injector, slickProvider: SlickProvider)
-  extends AbstractPersistentEntityRegistry(system, injector) {
+private[lagom] final class JdbcPersistentEntityRegistry @Inject()(
+    system: ActorSystem,
+    injector: Injector,
+    slickProvider: SlickProvider
+) extends AbstractPersistentEntityRegistry(system, injector) {
 
   private lazy val ensureTablesCreated = slickProvider.ensureTablesCreated()
 
@@ -28,6 +36,6 @@ private[lagom] final class JdbcPersistentEntityRegistry @Inject() (system: Actor
     super.register(entityClass)
   }
 
-  override protected val queryPluginId = Optional.of(JdbcReadJournal.Identifier)
+  protected override val queryPluginId = Optional.of(JdbcReadJournal.Identifier)
 
 }

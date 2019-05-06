@@ -16,9 +16,8 @@ import javax.annotation.Generated;
 
 /**
  * Immutable implementation of {@link AbstractLatency}.
- * <p>
- * Use the builder to create immutable instances:
- * {@code Latency.builder()}.
+ *
+ * <p>Use the builder to create immutable instances: {@code Latency.builder()}.
  */
 @SuppressWarnings("all")
 @Generated({"Immutables.generator", "AbstractLatency"})
@@ -48,63 +47,49 @@ public final class Latency implements AbstractLatency {
     this.max = max;
   }
 
-  /**
-   * @return the median value in the distribution
-   */
+  /** @return the median value in the distribution */
   @JsonProperty
   @Override
   public double getMedian() {
     return median;
   }
 
-  /**
-   * @return the value at the 98th percentile
-   */
+  /** @return the value at the 98th percentile */
   @JsonProperty
   @Override
   public double getPercentile98th() {
     return percentile98th;
   }
 
-  /**
-   * @return the value at the 99th percentile
-   */
+  /** @return the value at the 99th percentile */
   @JsonProperty
   @Override
   public double getPercentile99th() {
     return percentile99th;
   }
 
-  /**
-   * @return the value at the 99.9th percentile
-   */
+  /** @return the value at the 99.9th percentile */
   @JsonProperty
   @Override
   public double getPercentile999th() {
     return percentile999th;
   }
 
-  /**
-   * @return the arithmetic mean
-   */
+  /** @return the arithmetic mean */
   @JsonProperty
   @Override
   public double getMean() {
     return mean;
   }
 
-  /**
-   * @return the lowest value
-   */
+  /** @return the lowest value */
   @JsonProperty
   @Override
   public long getMin() {
     return min;
   }
 
-  /**
-   * @return the highest value
-   */
+  /** @return the highest value */
   @JsonProperty
   @Override
   public long getMax() {
@@ -112,7 +97,9 @@ public final class Latency implements AbstractLatency {
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractLatency#getMedian() median} attribute.
+   * Copy the current immutable object by setting a value for the {@link AbstractLatency#getMedian()
+   * median} attribute.
+   *
    * @param value A new value for median
    * @return A modified copy of the {@code this} object
    */
@@ -129,37 +116,66 @@ public final class Latency implements AbstractLatency {
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractLatency#getPercentile98th() percentile98th} attribute.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractLatency#getPercentile98th() percentile98th} attribute.
+   *
    * @param value A new value for percentile98th
    * @return A modified copy of the {@code this} object
    */
   public final Latency withPercentile98th(double value) {
     double newValue = value;
-    return new Latency(this.median, newValue, this.percentile99th, this.percentile999th, this.mean, this.min, this.max);
+    return new Latency(
+        this.median,
+        newValue,
+        this.percentile99th,
+        this.percentile999th,
+        this.mean,
+        this.min,
+        this.max);
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractLatency#getPercentile99th() percentile99th} attribute.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractLatency#getPercentile99th() percentile99th} attribute.
+   *
    * @param value A new value for percentile99th
    * @return A modified copy of the {@code this} object
    */
   public final Latency withPercentile99th(double value) {
     double newValue = value;
-    return new Latency(this.median, this.percentile98th, newValue, this.percentile999th, this.mean, this.min, this.max);
+    return new Latency(
+        this.median,
+        this.percentile98th,
+        newValue,
+        this.percentile999th,
+        this.mean,
+        this.min,
+        this.max);
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractLatency#getPercentile999th() percentile999th} attribute.
+   * Copy the current immutable object by setting a value for the {@link
+   * AbstractLatency#getPercentile999th() percentile999th} attribute.
+   *
    * @param value A new value for percentile999th
    * @return A modified copy of the {@code this} object
    */
   public final Latency withPercentile999th(double value) {
     double newValue = value;
-    return new Latency(this.median, this.percentile98th, this.percentile99th, newValue, this.mean, this.min, this.max);
+    return new Latency(
+        this.median,
+        this.percentile98th,
+        this.percentile99th,
+        newValue,
+        this.mean,
+        this.min,
+        this.max);
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractLatency#getMean() mean} attribute.
+   * Copy the current immutable object by setting a value for the {@link AbstractLatency#getMean()
+   * mean} attribute.
+   *
    * @param value A new value for mean
    * @return A modified copy of the {@code this} object
    */
@@ -176,8 +192,10 @@ public final class Latency implements AbstractLatency {
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractLatency#getMin() min} attribute.
-   * A value equality check is used to prevent copying of the same value by returning {@code this}.
+   * Copy the current immutable object by setting a value for the {@link AbstractLatency#getMin()
+   * min} attribute. A value equality check is used to prevent copying of the same value by
+   * returning {@code this}.
+   *
    * @param value A new value for min
    * @return A modified copy of the {@code this} object
    */
@@ -195,8 +213,10 @@ public final class Latency implements AbstractLatency {
   }
 
   /**
-   * Copy the current immutable object by setting a value for the {@link AbstractLatency#getMax() max} attribute.
-   * A value equality check is used to prevent copying of the same value by returning {@code this}.
+   * Copy the current immutable object by setting a value for the {@link AbstractLatency#getMax()
+   * max} attribute. A value equality check is used to prevent copying of the same value by
+   * returning {@code this}.
+   *
    * @param value A new value for max
    * @return A modified copy of the {@code this} object
    */
@@ -215,26 +235,31 @@ public final class Latency implements AbstractLatency {
 
   /**
    * This instance is equal to all instances of {@code Latency} that have equal attribute values.
+   *
    * @return {@code true} if {@code this} is equal to {@code another} instance
    */
   @Override
   public boolean equals(Object another) {
-    return this == another || another instanceof Latency
-        && equalTo((Latency) another);
+    return this == another || another instanceof Latency && equalTo((Latency) another);
   }
 
   private boolean equalTo(Latency another) {
     return Double.doubleToLongBits(median) == Double.doubleToLongBits(another.median)
-        && Double.doubleToLongBits(percentile98th) == Double.doubleToLongBits(another.percentile98th)
-        && Double.doubleToLongBits(percentile99th) == Double.doubleToLongBits(another.percentile99th)
-        && Double.doubleToLongBits(percentile999th) == Double.doubleToLongBits(another.percentile999th)
+        && Double.doubleToLongBits(percentile98th)
+            == Double.doubleToLongBits(another.percentile98th)
+        && Double.doubleToLongBits(percentile99th)
+            == Double.doubleToLongBits(another.percentile99th)
+        && Double.doubleToLongBits(percentile999th)
+            == Double.doubleToLongBits(another.percentile999th)
         && Double.doubleToLongBits(mean) == Double.doubleToLongBits(another.mean)
         && min == another.min
         && max == another.max;
   }
 
   /**
-   * Computes a hash code from attributes: {@code median}, {@code percentile98th}, {@code percentile99th}, {@code percentile999th}, {@code mean}, {@code min}, {@code max}.
+   * Computes a hash code from attributes: {@code median}, {@code percentile98th}, {@code
+   * percentile99th}, {@code percentile999th}, {@code mean}, {@code min}, {@code max}.
+   *
    * @return hashCode value
    */
   @Override
@@ -251,8 +276,9 @@ public final class Latency implements AbstractLatency {
   }
 
   /**
-   * Prints the immutable value {@code Latency...} with all non-generated
-   * and non-auxiliary attribute values.
+   * Prints the immutable value {@code Latency...} with all non-generated and non-auxiliary
+   * attribute values.
+   *
    * @return A string representation of the value
    */
   @Override
@@ -270,7 +296,9 @@ public final class Latency implements AbstractLatency {
 
   /**
    * Utility type used to correctly read immutable object from JSON representation.
-   * @deprecated Do not use this type directly, it exists only for the <em>Jackson</em>-binding infrastructure
+   *
+   * @deprecated Do not use this type directly, it exists only for the <em>Jackson</em>-binding
+   *     infrastructure
    */
   @Deprecated
   @JsonDeserialize
@@ -310,26 +338,48 @@ public final class Latency implements AbstractLatency {
     public void setMax(long max) {
       this.max = max;
     }
+
     @Override
-    public double getMedian() { throw new UnsupportedOperationException(); }
+    public double getMedian() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public double getPercentile98th() { throw new UnsupportedOperationException(); }
+    public double getPercentile98th() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public double getPercentile99th() { throw new UnsupportedOperationException(); }
+    public double getPercentile99th() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public double getPercentile999th() { throw new UnsupportedOperationException(); }
+    public double getPercentile999th() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public double getMean() { throw new UnsupportedOperationException(); }
+    public double getMean() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public long getMin() { throw new UnsupportedOperationException(); }
+    public long getMin() {
+      throw new UnsupportedOperationException();
+    }
+
     @Override
-    public long getMax() { throw new UnsupportedOperationException(); }
+    public long getMax() {
+      throw new UnsupportedOperationException();
+    }
   }
 
   /**
    * @param json A JSON-bindable data structure
    * @return An immutable value type
-   * @deprecated Do not use this method directly, it exists only for the <em>Jackson</em>-binding infrastructure
+   * @deprecated Do not use this method directly, it exists only for the <em>Jackson</em>-binding
+   *     infrastructure
    */
   @Deprecated
   @JsonCreator
@@ -360,9 +410,10 @@ public final class Latency implements AbstractLatency {
   }
 
   /**
-   * Creates an immutable copy of a {@link AbstractLatency} value.
-   * Uses accessors to get values to initialize the new immutable instance.
-   * If an instance is already immutable, it is returned as is.
+   * Creates an immutable copy of a {@link AbstractLatency} value. Uses accessors to get values to
+   * initialize the new immutable instance. If an instance is already immutable, it is returned as
+   * is.
+   *
    * @param instance The instance to copy
    * @return A copied immutable Latency instance
    */
@@ -370,13 +421,12 @@ public final class Latency implements AbstractLatency {
     if (instance instanceof Latency) {
       return (Latency) instance;
     }
-    return Latency.builder()
-        .from(instance)
-        .build();
+    return Latency.builder().from(instance).build();
   }
 
   /**
    * Creates a builder for {@link com.lightbend.lagom.javadsl.server.status.Latency Latency}.
+   *
    * @return A new Latency builder
    */
   public static Latency.Builder builder() {
@@ -385,10 +435,11 @@ public final class Latency implements AbstractLatency {
 
   /**
    * Builds instances of type {@link com.lightbend.lagom.javadsl.server.status.Latency Latency}.
-   * Initialize attributes and then invoke the {@link #build()} method to create an
-   * immutable instance.
-   * <p><em>{@code Builder} is not thread-safe and generally should not be stored in a field or collection,
-   * but instead used immediately to create instances.</em>
+   * Initialize attributes and then invoke the {@link #build()} method to create an immutable
+   * instance.
+   *
+   * <p><em>{@code Builder} is not thread-safe and generally should not be stored in a field or
+   * collection, but instead used immediately to create instances.</em>
    */
   public static final class Builder {
     private static final long INIT_BIT_MEDIAN = 0x1L;
@@ -412,8 +463,9 @@ public final class Latency implements AbstractLatency {
 
     /**
      * Fill a builder with attribute values from the provided {@link AbstractLatency} instance.
-     * Regular attribute values will be replaced with those from the given instance.
-     * Absent optional values will not replace present values.
+     * Regular attribute values will be replaced with those from the given instance. Absent optional
+     * values will not replace present values.
+     *
      * @param instance The instance from which to copy values
      * @return {@code this} builder for use in a chained invocation
      */
@@ -431,7 +483,8 @@ public final class Latency implements AbstractLatency {
 
     /**
      * Initializes the value for the {@link AbstractLatency#getMedian() median} attribute.
-     * @param median The value for median 
+     *
+     * @param median The value for median
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder median(double median) {
@@ -441,8 +494,10 @@ public final class Latency implements AbstractLatency {
     }
 
     /**
-     * Initializes the value for the {@link AbstractLatency#getPercentile98th() percentile98th} attribute.
-     * @param percentile98th The value for percentile98th 
+     * Initializes the value for the {@link AbstractLatency#getPercentile98th() percentile98th}
+     * attribute.
+     *
+     * @param percentile98th The value for percentile98th
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder percentile98th(double percentile98th) {
@@ -452,8 +507,10 @@ public final class Latency implements AbstractLatency {
     }
 
     /**
-     * Initializes the value for the {@link AbstractLatency#getPercentile99th() percentile99th} attribute.
-     * @param percentile99th The value for percentile99th 
+     * Initializes the value for the {@link AbstractLatency#getPercentile99th() percentile99th}
+     * attribute.
+     *
+     * @param percentile99th The value for percentile99th
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder percentile99th(double percentile99th) {
@@ -463,8 +520,10 @@ public final class Latency implements AbstractLatency {
     }
 
     /**
-     * Initializes the value for the {@link AbstractLatency#getPercentile999th() percentile999th} attribute.
-     * @param percentile999th The value for percentile999th 
+     * Initializes the value for the {@link AbstractLatency#getPercentile999th() percentile999th}
+     * attribute.
+     *
+     * @param percentile999th The value for percentile999th
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder percentile999th(double percentile999th) {
@@ -475,7 +534,8 @@ public final class Latency implements AbstractLatency {
 
     /**
      * Initializes the value for the {@link AbstractLatency#getMean() mean} attribute.
-     * @param mean The value for mean 
+     *
+     * @param mean The value for mean
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder mean(double mean) {
@@ -486,7 +546,8 @@ public final class Latency implements AbstractLatency {
 
     /**
      * Initializes the value for the {@link AbstractLatency#getMin() min} attribute.
-     * @param min The value for min 
+     *
+     * @param min The value for min
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder min(long min) {
@@ -497,7 +558,8 @@ public final class Latency implements AbstractLatency {
 
     /**
      * Initializes the value for the {@link AbstractLatency#getMax() max} attribute.
-     * @param max The value for max 
+     *
+     * @param max The value for max
      * @return {@code this} builder for use in a chained invocation
      */
     public final Builder max(long max) {
@@ -507,11 +569,11 @@ public final class Latency implements AbstractLatency {
     }
     /**
      * Builds a new {@link com.lightbend.lagom.javadsl.server.status.Latency Latency}.
+     *
      * @return An immutable instance of Latency
      * @throws java.lang.IllegalStateException if any required attributes are missing
      */
-    public Latency build()
-        throws IllegalStateException {
+    public Latency build() throws IllegalStateException {
       checkRequiredAttributes();
       return new Latency(median, percentile98th, percentile99th, percentile999th, mean, min, max);
     }
@@ -549,6 +611,7 @@ public final class Latency implements AbstractLatency {
         throw new IllegalStateException(formatRequiredAttributesMessage());
       }
     }
+
     private String formatRequiredAttributesMessage() {
       List<String> attributes = Lists.newArrayList();
       if (!medianIsSet()) attributes.add("median");

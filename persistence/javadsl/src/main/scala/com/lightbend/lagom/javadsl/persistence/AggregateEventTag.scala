@@ -3,11 +3,13 @@
  */
 package com.lightbend.lagom.javadsl.persistence
 
-import org.pcollections.{ PSequence, TreePVector }
+import org.pcollections.PSequence
+import org.pcollections.TreePVector
 
 import scala.collection.JavaConverters._
 
 object AggregateEventTag {
+
   /**
    * Convenience factory method of [[AggregateEventTag]] that uses the
    * class name of the event type as `tag`. Note that it is needed to
@@ -58,7 +60,11 @@ object AggregateEventTag {
    * @param numShards The number of shards.
    * @return The aggregate event shards tagger.
    */
-  def sharded[Event <: AggregateEvent[Event]](eventType: Class[Event], baseTagName: String, numShards: Int): AggregateEventShards[Event] = {
+  def sharded[Event <: AggregateEvent[Event]](
+      eventType: Class[Event],
+      baseTagName: String,
+      numShards: Int
+  ): AggregateEventShards[Event] = {
     new AggregateEventShards[Event](eventType, baseTagName, numShards)
   }
 
@@ -105,8 +111,8 @@ sealed trait AggregateEventTagger[Event <: AggregateEvent[Event]] {
  * the tag is part of the store event data.
  */
 final class AggregateEventTag[Event <: AggregateEvent[Event]](
-  val eventType: Class[Event],
-  val tag:       String
+    val eventType: Class[Event],
+    val tag: String
 ) extends AggregateEventTagger[Event] {
 
   override def toString: String = s"AggregateEventTag($eventType, $tag)"
@@ -132,9 +138,9 @@ final class AggregateEventTag[Event <: AggregateEvent[Event]](
  * the tag is part of the store event data.
  */
 final class AggregateEventShards[Event <: AggregateEvent[Event]](
-  val eventType: Class[Event],
-  val tag:       String,
-  val numShards: Int
+    val eventType: Class[Event],
+    val tag: String,
+    val numShards: Int
 ) extends AggregateEventTagger[Event] {
 
   /**
@@ -152,10 +158,12 @@ final class AggregateEventShards[Event <: AggregateEvent[Event]](
    * @return all the tags that this app will use according to the `numShards` and the `eventType`
    */
   val allTags: PSequence[AggregateEventTag[Event]] = {
-    val shardTags = for (shardNo <- 0 until numShards) yield AggregateEventTag.of(
-      eventType,
-      AggregateEventTag.shardTag(tag, shardNo)
-    )
+    val shardTags = for (shardNo <- 0 until numShards)
+      yield
+        AggregateEventTag.of(
+          eventType,
+          AggregateEventTag.shardTag(tag, shardNo)
+        )
     TreePVector.from(shardTags.asJava)
   }
 

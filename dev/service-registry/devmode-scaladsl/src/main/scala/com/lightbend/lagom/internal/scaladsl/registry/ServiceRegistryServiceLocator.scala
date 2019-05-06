@@ -11,13 +11,15 @@ import com.lightbend.lagom.scaladsl.api.transport.NotFound
 import com.lightbend.lagom.scaladsl.client.CircuitBreakingServiceLocator
 import play.api.Logger
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Success }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Success
 
 class ServiceRegistryServiceLocator(
-  circuitBreakers: CircuitBreakersPanel,
-  registry:        ServiceRegistry,
-  implicit val ec: ExecutionContext
+    circuitBreakers: CircuitBreakersPanel,
+    registry: ServiceRegistry,
+    implicit val ec: ExecutionContext
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {
 
   private val logger: Logger = Logger(this.getClass())

@@ -9,8 +9,10 @@ import java.util.concurrent.CompletionStage
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil
-import com.lightbend.lagom.javadsl.persistence.multinode.{ AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec }
-import com.lightbend.lagom.javadsl.persistence.{ ReadSideProcessor, TestEntityReadSide }
+import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersistentEntityConfig
+import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersistentEntitySpec
+import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor
+import com.lightbend.lagom.javadsl.persistence.TestEntityReadSide
 import com.typesafe.config.Config
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
@@ -22,14 +24,20 @@ class CassandraClusteredPersistentEntitySpecMultiJvmNode1 extends CassandraClust
 class CassandraClusteredPersistentEntitySpecMultiJvmNode2 extends CassandraClusteredPersistentEntitySpec
 class CassandraClusteredPersistentEntitySpecMultiJvmNode3 extends CassandraClusteredPersistentEntitySpec
 
-class CassandraClusteredPersistentEntitySpec extends AbstractClusteredPersistentEntitySpec(CassandraClusteredPersistentEntityConfig) {
+class CassandraClusteredPersistentEntitySpec
+    extends AbstractClusteredPersistentEntitySpec(CassandraClusteredPersistentEntityConfig) {
 
   import CassandraClusteredPersistentEntityConfig._
 
-  override protected def atStartup() {
+  protected override def atStartup() {
     runOn(node1) {
       val cassandraDirectory = new File("target/" + system.name)
-      CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", clean = true, port = databasePort)
+      CassandraLauncher.start(
+        cassandraDirectory,
+        "lagom-test-embedded-cassandra.yaml",
+        clean = true,
+        port = databasePort
+      )
       TestUtil.awaitPersistenceInit(system)
     }
     enterBarrier("cassandra-started")
@@ -37,7 +45,7 @@ class CassandraClusteredPersistentEntitySpec extends AbstractClusteredPersistent
     super.atStartup()
   }
 
-  override protected def afterTermination() {
+  protected override def afterTermination() {
     super.afterTermination()
 
     CassandraLauncher.stop()
@@ -45,9 +53,9 @@ class CassandraClusteredPersistentEntitySpec extends AbstractClusteredPersistent
 
   def testEntityReadSide = injector.instanceOf[TestEntityReadSide]
 
-  override protected def getAppendCount(id: String): CompletionStage[java.lang.Long] =
+  protected override def getAppendCount(id: String): CompletionStage[java.lang.Long] =
     testEntityReadSide.getAppendCount(id)
 
-  override protected def readSideProcessor: Class[_ <: ReadSideProcessor[Evt]] = classOf[TestEntityReadSide.TestEntityReadSideProcessor]
+  protected override def readSideProcessor: Class[_ <: ReadSideProcessor[Evt]] =
+    classOf[TestEntityReadSide.TestEntityReadSideProcessor]
 }
-

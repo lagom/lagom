@@ -9,9 +9,11 @@ import akka.stream.scaladsl.Flow
 
 import scala.concurrent.Future
 import akka.NotUsed
-import akka.persistence.query.{ NoOffset, Offset }
+import akka.persistence.query.NoOffset
+import akka.persistence.query.Offset
 
 object ReadSideProcessor {
+
   /**
    * An read side offset processor.
    *

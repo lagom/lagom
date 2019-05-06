@@ -4,7 +4,8 @@
 package com.lightbend.lagom.spi.persistence
 
 import akka.Done
-import akka.persistence.query.{ NoOffset, Offset }
+import akka.persistence.query.NoOffset
+import akka.persistence.query.Offset
 
 import scala.concurrent.Future
 import scala.collection.concurrent

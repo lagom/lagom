@@ -35,15 +35,13 @@ public class MetricsServiceImpl implements MetricsService {
     boolean statusEnabled = system.settings().config().getBoolean("lagom.status-endpoint.enabled");
     if (statusEnabled && metricsProvider instanceof CircuitBreakerMetricsProviderImpl)
       provider = Optional.of((CircuitBreakerMetricsProviderImpl) metricsProvider);
-    else
-      provider = Optional.empty();
+    else provider = Optional.empty();
   }
 
   @Override
   public ServiceCall<NotUsed, List<CircuitBreakerStatus>> currentCircuitBreakers() {
     return request -> {
-      if (!provider.isPresent())
-        throw new NotFound("No metrics");
+      if (!provider.isPresent()) throw new NotFound("No metrics");
       return CompletableFuture.completedFuture(allCircuitBreakerStatus());
     };
   }
@@ -51,11 +49,10 @@ public class MetricsServiceImpl implements MetricsService {
   @Override
   public ServiceCall<NotUsed, Source<List<CircuitBreakerStatus>, ?>> circuitBreakers() {
     return request -> {
-      if (!provider.isPresent())
-        throw new NotFound("No metrics");
-      Source<List<CircuitBreakerStatus>, ?> source = 
-        Source.tick(Duration.ofMillis(100), Duration.ofSeconds(2), "tick")
-          .map(tick -> allCircuitBreakerStatus());
+      if (!provider.isPresent()) throw new NotFound("No metrics");
+      Source<List<CircuitBreakerStatus>, ?> source =
+          Source.tick(Duration.ofMillis(100), Duration.ofSeconds(2), "tick")
+              .map(tick -> allCircuitBreakerStatus());
       return CompletableFuture.completedFuture(source);
     };
   }
@@ -74,25 +71,25 @@ public class MetricsServiceImpl implements MetricsService {
 
   private CircuitBreakerStatus circuitBreakerStatus(CircuitBreakerMetricsImpl m) {
     Snapshot latencyHistogram = m.latency().getSnapshot();
-    Latency latency = Latency.builder()
-      .median(latencyHistogram.getMedian())
-      .percentile98th(latencyHistogram.get98thPercentile())
-      .percentile99th(latencyHistogram.get99thPercentile())
-      .percentile999th(latencyHistogram.get999thPercentile())
-      .min(latencyHistogram.getMin())
-      .max(latencyHistogram.getMax())
-      .mean(latencyHistogram.getMean())
-      .build();
+    Latency latency =
+        Latency.builder()
+            .median(latencyHistogram.getMedian())
+            .percentile98th(latencyHistogram.get98thPercentile())
+            .percentile99th(latencyHistogram.get99thPercentile())
+            .percentile999th(latencyHistogram.get999thPercentile())
+            .min(latencyHistogram.getMin())
+            .max(latencyHistogram.getMax())
+            .mean(latencyHistogram.getMean())
+            .build();
 
-    return CircuitBreakerStatus.builder().
-      id(m.breakerId())
-      .state(m.state().getValue())
-      .totalSuccessCount(m.successCount().getCount())
-      .totalFailureCount(m.failureCount().getCount())
-      .throughputOneMinute(m.throughput().getOneMinuteRate())
-      .failedThroughputOneMinute(m.failureThroughput().getOneMinuteRate())
-      .latencyMicros(latency)
-      .build();
+    return CircuitBreakerStatus.builder()
+        .id(m.breakerId())
+        .state(m.state().getValue())
+        .totalSuccessCount(m.successCount().getCount())
+        .totalFailureCount(m.failureCount().getCount())
+        .throughputOneMinute(m.throughput().getOneMinuteRate())
+        .failedThroughputOneMinute(m.failureThroughput().getOneMinuteRate())
+        .latencyMicros(latency)
+        .build();
   }
-
 }

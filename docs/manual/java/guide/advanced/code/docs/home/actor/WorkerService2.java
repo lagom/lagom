@@ -16,9 +16,6 @@ public interface WorkerService2 extends Service {
 
   @Override
   default Descriptor descriptor() {
-    return named("/worker").withCalls(
-      call(this::doWork),
-      call(this::status)
-    );
+    return named("/worker").withCalls(call(this::doWork), call(this::status));
   }
 }

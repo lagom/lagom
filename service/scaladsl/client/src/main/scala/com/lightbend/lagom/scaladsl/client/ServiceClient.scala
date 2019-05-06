@@ -7,24 +7,36 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 import akka.Done
-import akka.actor.{ ActorSystem, CoordinatedShutdown }
-import akka.stream.{ ActorMaterializer, Materializer }
-import com.lightbend.lagom.internal.client.{ CircuitBreakerMetricsProviderImpl, WebSocketClientConfig }
+import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
+import akka.stream.ActorMaterializer
+import akka.stream.Materializer
+import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl
+import com.lightbend.lagom.internal.client.WebSocketClientConfig
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
-import com.lightbend.lagom.internal.scaladsl.client.{ ScaladslClientMacroImpl, ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient }
+import com.lightbend.lagom.internal.scaladsl.client.ScaladslClientMacroImpl
+import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceClient
+import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
+import com.lightbend.lagom.internal.scaladsl.client.ScaladslWebSocketClient
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.api.deser.{ DefaultExceptionSerializer, ExceptionSerializer }
+import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
+import com.lightbend.lagom.scaladsl.api.deser.ExceptionSerializer
 import org.slf4j.LoggerFactory
-import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
+import play.api.inject.ApplicationLifecycle
+import play.api.inject.DefaultApplicationLifecycle
 import play.api.libs.concurrent.ActorSystemProvider
 import play.api.libs.ws.WSClient
-import play.api.{ Configuration, Environment, Mode }
+import play.api.Configuration
+import play.api.Environment
+import play.api.Mode
 
 import scala.collection.immutable
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.language.experimental.macros
 import scala.util.control.NonFatal
 
@@ -96,10 +108,14 @@ trait ServiceClientImplementationContext {
  * cause end users to have a binary dependency on this class, which is why it's in the `scaladsl` package.
  */
 trait ServiceClientContext {
+
   /**
    * Create a service call for the given method name and passed in parameters.
    */
-  def createServiceCall[Request, Response](methodName: String, params: immutable.Seq[Any]): ServiceCall[Request, Response]
+  def createServiceCall[Request, Response](
+      methodName: String,
+      params: immutable.Seq[Any]
+  ): ServiceCall[Request, Response]
 
   /**
    * Create a topic for the given method name.
@@ -125,9 +141,11 @@ trait LagomServiceClientComponents extends TopicFactoryProvider { self: LagomCon
   def environment: Environment
   def applicationLifecycle: ApplicationLifecycle
 
-  lazy val circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider = new CircuitBreakerMetricsProviderImpl(actorSystem)
+  lazy val circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider = new CircuitBreakerMetricsProviderImpl(
+    actorSystem
+  )
 
-  lazy val serviceResolver: ServiceResolver = new ScaladslServiceResolver(defaultExceptionSerializer)
+  lazy val serviceResolver: ServiceResolver                = new ScaladslServiceResolver(defaultExceptionSerializer)
   lazy val defaultExceptionSerializer: ExceptionSerializer = new DefaultExceptionSerializer(environment)
 
   lazy val scaladslWebSocketClient: ScaladslWebSocketClient =
@@ -137,8 +155,14 @@ trait LagomServiceClientComponents extends TopicFactoryProvider { self: LagomCon
       applicationLifecycle
     )(executionContext)
 
-  lazy val serviceClient: ServiceClient = new ScaladslServiceClient(wsClient, scaladslWebSocketClient, serviceInfo,
-    serviceLocator, serviceResolver, optionalTopicFactory)(executionContext, materializer)
+  lazy val serviceClient: ServiceClient = new ScaladslServiceClient(
+    wsClient,
+    scaladslWebSocketClient,
+    serviceInfo,
+    serviceLocator,
+    serviceResolver,
+    optionalTopicFactory
+  )(executionContext, materializer)
 }
 
 /**
@@ -149,8 +173,8 @@ trait LagomServiceClientComponents extends TopicFactoryProvider { self: LagomCon
  */
 @deprecated(message = "Use StandaloneLagomClientFactory instead", since = "1.4.9")
 abstract class LagomClientApplication(
-  clientName:  String,
-  classLoader: ClassLoader = classOf[LagomClientApplication].getClassLoader
+    clientName: String,
+    classLoader: ClassLoader = classOf[LagomClientApplication].getClassLoader
 ) extends StandaloneLagomClientFactory(clientName, classLoader)
 
 /**
@@ -190,11 +214,11 @@ abstract class LagomClientApplication(
  * @param classLoader A classloader, it will be used to create the service proxy and needs to have the API for the client in it.
  */
 abstract class StandaloneLagomClientFactory(
-  clientName:  String,
-  classLoader: ClassLoader = classOf[StandaloneLagomClientFactory].getClassLoader
+    clientName: String,
+    classLoader: ClassLoader = classOf[StandaloneLagomClientFactory].getClassLoader
 ) extends LagomClientFactory(clientName, classLoader) {
 
-  lazy val actorSystem: ActorSystem = new ActorSystemProvider(environment, configuration, applicationLifecycle).get
+  lazy val actorSystem: ActorSystem            = new ActorSystemProvider(environment, configuration, applicationLifecycle).get
   override lazy val materializer: Materializer = ActorMaterializer.create(actorSystem)
 
   private val log = LoggerFactory.getLogger(this.getClass)
@@ -213,7 +237,7 @@ abstract class StandaloneLagomClientFactory(
     // but we can't know if the ActorSystem is going to be shutdown together with this Factory
     val stopped =
       releaseInternalResources()
-        // we don't want to fail the Future if we can't close the internal resources
+      // we don't want to fail the Future if we can't close the internal resources
         .map(_ => Right[Throwable, Done](Done))
         .recover {
           case NonFatal(ex) =>
@@ -224,12 +248,13 @@ abstract class StandaloneLagomClientFactory(
             Left(fatal)
         }
         .flatMap {
-          case Right(_) => actorSystem.terminate()
+          case Right(_)    => actorSystem.terminate()
           case Left(fatal) =>
             // if releaseInternalResources throws a fatal exception
             // we still try to stop the actor system, but fail the final Future
             // using the fatal exception we got from above
-            actorSystem.terminate()
+            actorSystem
+              .terminate()
               .recover { case NonFatal(_) => throw fatal }
               .flatMap(_ => throw fatal)
         }
@@ -288,9 +313,10 @@ case object ClientStoppedReason extends CoordinatedShutdown.Reason
  * @param classLoader A classloader, it will be used to create the service proxy and needs to have the API for the client in it.
  */
 abstract class LagomClientFactory(
-  clientName:  String,
-  classLoader: ClassLoader = classOf[LagomClientFactory].getClassLoader
-) extends LagomServiceClientComponents with LagomConfigComponent {
+    clientName: String,
+    classLoader: ClassLoader = classOf[LagomClientFactory].getClassLoader
+) extends LagomServiceClientComponents
+    with LagomConfigComponent {
 
   private val defaultApplicationLifecycle = new DefaultApplicationLifecycle
 
@@ -305,7 +331,7 @@ abstract class LagomClientFactory(
   )
 
   override lazy val applicationLifecycle: ApplicationLifecycle = defaultApplicationLifecycle
-  override lazy val executionContext: ExecutionContext = actorSystem.dispatcher
+  override lazy val executionContext: ExecutionContext         = actorSystem.dispatcher
 
   /**
    * Override this method if your [[LagomClientFactory]] implementation needs to free any resource.
@@ -328,7 +354,6 @@ abstract class LagomClientFactory(
    * Releases the internal resources manages by this LagomClientFactory.
    * @return
    */
-  final protected def releaseInternalResources(): Future[Done] =
+  protected final def releaseInternalResources(): Future[Done] =
     applicationLifecycle.stop().map(_ => Done)(executionContext)
 }
-

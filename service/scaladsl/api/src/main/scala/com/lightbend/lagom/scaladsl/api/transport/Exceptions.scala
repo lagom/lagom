@@ -29,6 +29,7 @@ import scala.collection.immutable
  * class uses the generic HTTP 404 error code.
  */
 sealed trait TransportErrorCode extends Serializable {
+
   /**
    * The HTTP status code for this error.
    */
@@ -59,63 +60,87 @@ object TransportErrorCode {
    * A protocol error, or bad request.
    */
   val ProtocolError: TransportErrorCode = TransportErrorCode(400, 1002, "Protocol Error/Bad Request")
+
   /**
    * An application level protocol error, such as when a client or server sent data that can't be deserialized.
    */
   val UnsupportedData: TransportErrorCode = TransportErrorCode(400, 1003, "Unsupported Data/Bad Request")
+
   /**
    * A bad request, most often this will be equivalent to unsupported data.
    */
   val BadRequest: TransportErrorCode = UnsupportedData
+
   /**
    * A particular operation was forbidden.
    */
   val Forbidden: TransportErrorCode = TransportErrorCode(403, 4403, "Forbidden")
+
   /**
    * A generic error to used to indicate that the end receiving the error message violated the remote ends policy.
    */
   val PolicyViolation: TransportErrorCode = TransportErrorCode(404, 1008, "Policy Violation/Not Found")
+
   /**
    * A resource was not found, equivalent to policy violation.
    */
   val NotFound: TransportErrorCode = PolicyViolation
+
   /**
    * The method being used is not allowed.
    */
   val MethodNotAllowed: TransportErrorCode = TransportErrorCode(405, 4405, "Method Not Allowed")
+
   /**
    * The server can't generate a response that meets the clients accepted response types.
    */
   val NotAcceptable: TransportErrorCode = TransportErrorCode(406, 4406, "Not Acceptable")
+
   /**
    * The payload of a message is too large.
    */
   val PayloadTooLarge: TransportErrorCode = TransportErrorCode(413, 1009, "Payload Too Large")
+
   /**
    * The client or server doesn't know how to deserialize the request or response.
    */
   val UnsupportedMediaType: TransportErrorCode = TransportErrorCode(415, 4415, "Unsupported Media Type")
+
   /**
    * A generic error used to indicate that the end sending the error message because it encountered an unexpected
    * condition.
    */
-  val UnexpectedCondition: TransportErrorCode = TransportErrorCode(500, 1011, "Unexpected Condition/Internal Server Error")
+  val UnexpectedCondition: TransportErrorCode =
+    TransportErrorCode(500, 1011, "Unexpected Condition/Internal Server Error")
+
   /**
    * An internal server error, equivalent to Unexpected Condition.
    */
   val InternalServerError: TransportErrorCode = UnexpectedCondition
+
   /**
    * Service unavailable, thrown when the service is unavailable or going away.
    */
   val ServiceUnavailable: TransportErrorCode = TransportErrorCode(503, 1001, "Going Away/Service Unavailable")
+
   /**
    * Going away, thrown when the service is unavailable or going away.
    */
   val GoingAway: TransportErrorCode = ServiceUnavailable
 
-  private val allErrorCodes = Seq(ProtocolError, UnsupportedData, Forbidden, PolicyViolation, MethodNotAllowed, NotAcceptable,
-    PayloadTooLarge, UnsupportedMediaType, UnexpectedCondition, ServiceUnavailable)
-  private val HttpErrorCodeMap = allErrorCodes.map(code => code.http -> code).toMap
+  private val allErrorCodes = Seq(
+    ProtocolError,
+    UnsupportedData,
+    Forbidden,
+    PolicyViolation,
+    MethodNotAllowed,
+    NotAcceptable,
+    PayloadTooLarge,
+    UnsupportedMediaType,
+    UnexpectedCondition,
+    ServiceUnavailable
+  )
+  private val HttpErrorCodeMap      = allErrorCodes.map(code => code.http      -> code).toMap
   private val WebSocketErrorCodeMap = allErrorCodes.map(code => code.webSocket -> code).toMap
 
   /**
@@ -190,7 +215,8 @@ final class ExceptionMessage(val name: String, val detail: String) extends Seria
  * details, as well as to identify the exception, so that the right type of exception can be deserialized at the other
  * end.
  */
-class TransportException(val errorCode: TransportErrorCode, val exceptionMessage: ExceptionMessage, cause: Throwable) extends RuntimeException(exceptionMessage.detail, cause) {
+class TransportException(val errorCode: TransportErrorCode, val exceptionMessage: ExceptionMessage, cause: Throwable)
+    extends RuntimeException(exceptionMessage.detail, cause) {
 
   def this(errorCode: TransportErrorCode, message: String) =
     this(errorCode, new ExceptionMessage(classOf[TransportException].getSimpleName, message), null)
@@ -218,35 +244,41 @@ object TransportException {
    * @return A built in TransportException that best matches the given error code and exception message.
    */
   def fromCodeAndMessage(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage): TransportException = {
-    ByNameTransportExceptions.get(exceptionMessage.name).orElse {
-      ByCodeTransportExceptions.get(errorCode)
-    }.fold(new TransportException(errorCode, exceptionMessage))(_.apply(errorCode, exceptionMessage))
+    ByNameTransportExceptions
+      .get(exceptionMessage.name)
+      .orElse {
+        ByCodeTransportExceptions.get(errorCode)
+      }
+      .fold(new TransportException(errorCode, exceptionMessage))(_.apply(errorCode, exceptionMessage))
   }
 
-  private val ByNameTransportExceptions: Map[String, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
-    classOf[DeserializationException].getSimpleName -> ((tec, em) => new DeserializationException(tec, em)),
-    classOf[BadRequest].getSimpleName -> ((tec, em) => new BadRequest(tec, em)),
-    classOf[Forbidden].getSimpleName -> ((tec, em) => new Forbidden(tec, em)),
-    classOf[PolicyViolation].getSimpleName -> ((tec, em) => new PolicyViolation(tec, em)),
-    classOf[NotFound].getSimpleName -> ((tec, em) => new NotFound(tec, em)),
-    classOf[NotAcceptable].getSimpleName -> ((tec, em) => new NotAcceptable(tec, em)),
-    classOf[PayloadTooLarge].getSimpleName -> ((tec, em) => new PayloadTooLarge(tec, em)),
-    classOf[SerializationException].getSimpleName -> ((tec, em) => new SerializationException(tec, em)),
-    classOf[UnsupportedMediaType].getSimpleName -> ((tec, em) => new UnsupportedMediaType(tec, em))
-  )
+  private val ByNameTransportExceptions: Map[String, (TransportErrorCode, ExceptionMessage) => TransportException] =
+    Map(
+      classOf[DeserializationException].getSimpleName -> ((tec, em) => new DeserializationException(tec, em)),
+      classOf[BadRequest].getSimpleName               -> ((tec, em) => new BadRequest(tec, em)),
+      classOf[Forbidden].getSimpleName                -> ((tec, em) => new Forbidden(tec, em)),
+      classOf[PolicyViolation].getSimpleName          -> ((tec, em) => new PolicyViolation(tec, em)),
+      classOf[NotFound].getSimpleName                 -> ((tec, em) => new NotFound(tec, em)),
+      classOf[NotAcceptable].getSimpleName            -> ((tec, em) => new NotAcceptable(tec, em)),
+      classOf[PayloadTooLarge].getSimpleName          -> ((tec, em) => new PayloadTooLarge(tec, em)),
+      classOf[SerializationException].getSimpleName   -> ((tec, em) => new SerializationException(tec, em)),
+      classOf[UnsupportedMediaType].getSimpleName     -> ((tec, em) => new UnsupportedMediaType(tec, em))
+    )
 
-  private val ByCodeTransportExceptions: Map[TransportErrorCode, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
+  private val ByCodeTransportExceptions
+      : Map[TransportErrorCode, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
     DeserializationException.ErrorCode -> ((tec, em) => new DeserializationException(tec, em)),
-    Forbidden.ErrorCode -> ((tec, em) => new Forbidden(tec, em)),
-    PolicyViolation.ErrorCode -> ((tec, em) => new PolicyViolation(tec, em)),
-    NotAcceptable.ErrorCode -> ((tec, em) => new NotAcceptable(tec, em)),
-    PayloadTooLarge.ErrorCode -> ((tec, em) => new PayloadTooLarge(tec, em)),
-    UnsupportedMediaType.ErrorCode -> ((tec, em) => new UnsupportedMediaType(tec, em))
+    Forbidden.ErrorCode                -> ((tec, em) => new Forbidden(tec, em)),
+    PolicyViolation.ErrorCode          -> ((tec, em) => new PolicyViolation(tec, em)),
+    NotAcceptable.ErrorCode            -> ((tec, em) => new NotAcceptable(tec, em)),
+    PayloadTooLarge.ErrorCode          -> ((tec, em) => new PayloadTooLarge(tec, em)),
+    UnsupportedMediaType.ErrorCode     -> ((tec, em) => new UnsupportedMediaType(tec, em))
   )
 
 }
 
-final class UnsupportedMediaType(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) extends TransportException(errorCode, exceptionMessage)
+final class UnsupportedMediaType(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage)
+    extends TransportException(errorCode, exceptionMessage)
 
 object UnsupportedMediaType {
   val ErrorCode = TransportErrorCode.UnsupportedMediaType
@@ -261,19 +293,24 @@ object UnsupportedMediaType {
     )
 }
 
-final class NotAcceptable(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) extends TransportException(errorCode, exceptionMessage)
+final class NotAcceptable(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage)
+    extends TransportException(errorCode, exceptionMessage)
 
 object NotAcceptable {
   val ErrorCode = TransportErrorCode.NotAcceptable
 
   def apply(requested: immutable.Seq[MessageProtocol], supported: MessageProtocol) =
-    new NotAcceptable(ErrorCode, new ExceptionMessage(
-      classOf[NotAcceptable].getSimpleName,
-      s"The requested protocol type/versions: (${requested.mkString(", ")}) could not be satisfied by the server, the default that the server uses is: $supported"
-    ))
+    new NotAcceptable(
+      ErrorCode,
+      new ExceptionMessage(
+        classOf[NotAcceptable].getSimpleName,
+        s"The requested protocol type/versions: (${requested.mkString(", ")}) could not be satisfied by the server, the default that the server uses is: $supported"
+      )
+    )
 }
 
-final class SerializationException(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable) extends TransportException(errorCode, exceptionMessage, cause) {
+final class SerializationException(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable)
+    extends TransportException(errorCode, exceptionMessage, cause) {
   def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
 }
 
@@ -282,16 +319,22 @@ object SerializationException {
 
   def apply(message: String) = new SerializationException(
     ErrorCode,
-    new ExceptionMessage(classOf[SerializationException].getSimpleName, message), null
+    new ExceptionMessage(classOf[SerializationException].getSimpleName, message),
+    null
   )
 
   def apply(cause: Throwable) = new SerializationException(
     ErrorCode,
-    new ExceptionMessage(classOf[SerializationException].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[SerializationException].getSimpleName, cause.getMessage),
+    cause
   )
 }
 
-final class DeserializationException(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable) extends TransportException(errorCode, exceptionMessage, cause) {
+final class DeserializationException(
+    errorCode: TransportErrorCode,
+    exceptionMessage: ExceptionMessage,
+    cause: Throwable
+) extends TransportException(errorCode, exceptionMessage, cause) {
   def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
 }
 
@@ -300,16 +343,19 @@ object DeserializationException {
 
   def apply(message: String) = new DeserializationException(
     ErrorCode,
-    new ExceptionMessage(classOf[DeserializationException].getSimpleName, message), null
+    new ExceptionMessage(classOf[DeserializationException].getSimpleName, message),
+    null
   )
 
   def apply(cause: Throwable) = new DeserializationException(
     ErrorCode,
-    new ExceptionMessage(classOf[DeserializationException].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[DeserializationException].getSimpleName, cause.getMessage),
+    cause
   )
 }
 
-final class PolicyViolation(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable) extends TransportException(errorCode, exceptionMessage, cause) {
+final class PolicyViolation(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable)
+    extends TransportException(errorCode, exceptionMessage, cause) {
   def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
 }
 
@@ -318,16 +364,19 @@ object PolicyViolation {
 
   def apply(message: String) = new PolicyViolation(
     ErrorCode,
-    new ExceptionMessage(classOf[PolicyViolation].getSimpleName, message), null
+    new ExceptionMessage(classOf[PolicyViolation].getSimpleName, message),
+    null
   )
 
   def apply(cause: Throwable) = new PolicyViolation(
     ErrorCode,
-    new ExceptionMessage(classOf[PolicyViolation].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[PolicyViolation].getSimpleName, cause.getMessage),
+    cause
   )
 }
 
-final class NotFound(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable) extends TransportException(errorCode, exceptionMessage, cause) {
+final class NotFound(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable)
+    extends TransportException(errorCode, exceptionMessage, cause) {
   def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
 }
 
@@ -336,16 +385,19 @@ object NotFound {
 
   def apply(message: String) = new NotFound(
     ErrorCode,
-    new ExceptionMessage(classOf[NotFound].getSimpleName, message), null
+    new ExceptionMessage(classOf[NotFound].getSimpleName, message),
+    null
   )
 
   def apply(cause: Throwable) = new NotFound(
     ErrorCode,
-    new ExceptionMessage(classOf[NotFound].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[NotFound].getSimpleName, cause.getMessage),
+    cause
   )
 }
 
-final class Forbidden(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable) extends TransportException(errorCode, exceptionMessage, cause) {
+final class Forbidden(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable)
+    extends TransportException(errorCode, exceptionMessage, cause) {
   def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
 }
 
@@ -354,16 +406,19 @@ object Forbidden {
 
   def apply(message: String) = new Forbidden(
     ErrorCode,
-    new ExceptionMessage(classOf[Forbidden].getSimpleName, message), null
+    new ExceptionMessage(classOf[Forbidden].getSimpleName, message),
+    null
   )
 
   def apply(cause: Throwable) = new Forbidden(
     ErrorCode,
-    new ExceptionMessage(classOf[Forbidden].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[Forbidden].getSimpleName, cause.getMessage),
+    cause
   )
 }
 
-final class PayloadTooLarge(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable) extends TransportException(errorCode, exceptionMessage, cause) {
+final class PayloadTooLarge(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable)
+    extends TransportException(errorCode, exceptionMessage, cause) {
   def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
 }
 
@@ -372,16 +427,19 @@ object PayloadTooLarge {
 
   def apply(message: String) = new PayloadTooLarge(
     ErrorCode,
-    new ExceptionMessage(classOf[PayloadTooLarge].getSimpleName, message), null
+    new ExceptionMessage(classOf[PayloadTooLarge].getSimpleName, message),
+    null
   )
 
   def apply(cause: Throwable) = new PayloadTooLarge(
     ErrorCode,
-    new ExceptionMessage(classOf[PayloadTooLarge].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[PayloadTooLarge].getSimpleName, cause.getMessage),
+    cause
   )
 }
 
-final class BadRequest(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable) extends TransportException(errorCode, exceptionMessage, cause) {
+final class BadRequest(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable)
+    extends TransportException(errorCode, exceptionMessage, cause) {
   def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
 }
 
@@ -390,11 +448,13 @@ object BadRequest {
 
   def apply(message: String) = new BadRequest(
     ErrorCode,
-    new ExceptionMessage(classOf[BadRequest].getSimpleName, message), null
+    new ExceptionMessage(classOf[BadRequest].getSimpleName, message),
+    null
   )
 
   def apply(cause: Throwable) = new BadRequest(
     ErrorCode,
-    new ExceptionMessage(classOf[BadRequest].getSimpleName, cause.getMessage), cause
+    new ExceptionMessage(classOf[BadRequest].getSimpleName, cause.getMessage),
+    cause
   )
 }

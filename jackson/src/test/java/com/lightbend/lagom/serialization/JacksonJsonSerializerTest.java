@@ -33,11 +33,12 @@ public class JacksonJsonSerializerTest {
   @BeforeClass
   public static void setup() {
     // @formatter:off
-    Config conf = ConfigFactory.parseString(
-      "lagom.serialization.json.migrations {\n" +
-      "  \"com.lightbend.lagom.serialization.Event1\" = \"com.lightbend.lagom.serialization.TestEventMigration\" \n" +
-      "  \"com.lightbend.lagom.serialization.Event2\" = \"com.lightbend.lagom.serialization.TestEventMigration\" \n" +
-      "}\n");
+    Config conf =
+        ConfigFactory.parseString(
+            "lagom.serialization.json.migrations {\n"
+                + "  \"com.lightbend.lagom.serialization.Event1\" = \"com.lightbend.lagom.serialization.TestEventMigration\" \n"
+                + "  \"com.lightbend.lagom.serialization.Event2\" = \"com.lightbend.lagom.serialization.TestEventMigration\" \n"
+                + "}\n");
     // @formatter:on
     system = ActorSystem.create("HelloWorldTest", conf);
   }
@@ -48,31 +49,30 @@ public class JacksonJsonSerializerTest {
     system = null;
   }
 
-  private final JacksonJsonSerializer serializer = new JacksonJsonSerializer((ExtendedActorSystem) system);
+  private final JacksonJsonSerializer serializer =
+      new JacksonJsonSerializer((ExtendedActorSystem) system);
 
   private void checkSerialization(Object obj, boolean expectedCompression) {
     try {
 
-        // check that it is configured
-        assertEquals(JacksonJsonSerializer.class,
-            SerializationExtension.get(system).serializerFor(obj.getClass()).getClass()
-        );
+      // check that it is configured
+      assertEquals(
+          JacksonJsonSerializer.class,
+          SerializationExtension.get(system).serializerFor(obj.getClass()).getClass());
 
-        // verify serialization-deserialization round trip
-        byte[] blob = serializer.toBinary(obj);
+      // verify serialization-deserialization round trip
+      byte[] blob = serializer.toBinary(obj);
 
+      if (!serializer.isGZipped(blob)) System.out.println(obj + " -> " + new String(blob, "utf-8"));
 
-        if (!serializer.isGZipped(blob))
-            System.out.println(obj + " -> " + new String(blob, "utf-8"));
-
-        assertEquals(expectedCompression, serializer.isGZipped(blob));
-        Object obj2 = serializer.fromBinary(blob, serializer.manifest(obj));
-        assertEquals(obj, obj2);
+      assertEquals(expectedCompression, serializer.isGZipped(blob));
+      Object obj2 = serializer.fromBinary(blob, serializer.manifest(obj));
+      assertEquals(obj, obj2);
 
     } catch (UnsupportedEncodingException | NotSerializableException e) {
-        // that should not happen in testing,
-        // but we need to make the compiler happy
-        throw new RuntimeException(e);
+      // that should not happen in testing,
+      // but we need to make the compiler happy
+      throw new RuntimeException(e);
     }
   }
 
@@ -138,7 +138,8 @@ public class JacksonJsonSerializerTest {
 
   @Test
   public void testSerializeOptionalField() {
-    OptionalCommand msg = OptionalCommand.builder().name("Bob").maybe(Optional.of("SomeOrg")).build();
+    OptionalCommand msg =
+        OptionalCommand.builder().name("Bob").maybe(Optional.of("SomeOrg")).build();
     checkSerialization(msg, false);
   }
 
@@ -174,12 +175,14 @@ public class JacksonJsonSerializerTest {
 
   @Test
   public void testImmutablesWithCollection() {
-    PVector<Comment> comments = TreePVector.<Comment>empty().plus(Comment.of("user1", "+1"))
-        .plus(Comment.of("user2", "-1"));
-    PostContent content = PostContent.builder().title("Some Title").body("Content...").comments(comments).build();
+    PVector<Comment> comments =
+        TreePVector.<Comment>empty()
+            .plus(Comment.of("user1", "+1"))
+            .plus(Comment.of("user2", "-1"));
+    PostContent content =
+        PostContent.builder().title("Some Title").body("Content...").comments(comments).build();
     checkSerialization(content, false);
   }
-
 
   @Test
   public void testDeserializeWithMigration() {
@@ -203,11 +206,8 @@ public class JacksonJsonSerializerTest {
 
   @Test
   public void testSerializeDone() {
-    OptionalCommand msg = OptionalCommand.builder().name("Bob").maybe(Optional.of("SomeOrg")).build();
+    OptionalCommand msg =
+        OptionalCommand.builder().name("Bob").maybe(Optional.of("SomeOrg")).build();
     checkSerialization(msg, false);
   }
-
-
-
-
 }

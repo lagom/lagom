@@ -3,7 +3,9 @@
  */
 package com.lightbend.lagom.internal.api.tools
 
-import com.lightbend.lagom.internal.spi.{ ServiceAcl, ServiceDescription, ServiceDiscovery }
+import com.lightbend.lagom.internal.spi.ServiceAcl
+import com.lightbend.lagom.internal.spi.ServiceDescription
+import com.lightbend.lagom.internal.spi.ServiceDiscovery
 import com.typesafe.config.ConfigFactory
 import play.api._
 import play.api.libs.functional.syntax._
@@ -18,20 +20,22 @@ import scala.compat.java8.OptionConverters._
  */
 object ServiceDetector {
 
-  private val ServiceDiscoveryKey = "lagom.tools.service-discovery"
+  private val ServiceDiscoveryKey  = "lagom.tools.service-discovery"
   private val ApplicationLoaderKey = "play.application.loader"
 
   val log = Logger(this.getClass)
 
-  implicit val serviceAclsWrites: Writes[ServiceAcl] = (
-    (__ \ "method").writeNullable[String] and
-    (__ \ "pathPattern").writeNullable[String]
-  ).apply(sa => (sa.method().asScala, sa.pathPattern().asScala))
+  implicit val serviceAclsWrites: Writes[ServiceAcl] =
+    (__ \ "method")
+      .writeNullable[String]
+      .and((__ \ "pathPattern").writeNullable[String])
+      .apply(sa => (sa.method().asScala, sa.pathPattern().asScala))
 
-  implicit val serviceDescriptionWrites: Writes[ServiceDescription] = (
-    (__ \ "name").write[String] and
-    (__ \ "acls").write[immutable.Seq[ServiceAcl]]
-  ).apply(sd => (sd.name, sd.acls.asScala.to[immutable.Seq]))
+  implicit val serviceDescriptionWrites: Writes[ServiceDescription] =
+    (__ \ "name")
+      .write[String]
+      .and((__ \ "acls").write[immutable.Seq[ServiceAcl]])
+      .apply(sd => (sd.name, sd.acls.asScala.to[immutable.Seq]))
 
   /**
    * Retrieves the service names and acls for the current Lagom project
@@ -54,10 +58,10 @@ object ServiceDetector {
   private[tools] def services(classLoader: ClassLoader, serviceDiscoveryClassName: String): String = {
     log.debug("Loading service discovery class: " + serviceDiscoveryClassName)
 
-    val serviceDiscoverClass = classLoader.loadClass(serviceDiscoveryClassName)
+    val serviceDiscoverClass      = classLoader.loadClass(serviceDiscoveryClassName)
     val castServiceDiscoveryClass = serviceDiscoverClass.asSubclass(classOf[ServiceDiscovery])
-    val serviceDiscovery = castServiceDiscoveryClass.newInstance()
-    val services = serviceDiscovery.discoverServices(classLoader).asScala.to[immutable.Seq]
+    val serviceDiscovery          = castServiceDiscoveryClass.newInstance()
+    val services                  = serviceDiscovery.discoverServices(classLoader).asScala.to[immutable.Seq]
     Json.stringify(Json.toJson(services))
   }
 }

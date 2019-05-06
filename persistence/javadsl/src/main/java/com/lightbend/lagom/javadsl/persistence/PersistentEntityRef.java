@@ -16,9 +16,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 /**
- * Commands are sent to a {@link PersistentEntity} using a
- * <code>PersistentEntityRef</code>. It is retrieved with
- * {@link PersistentEntityRegistry#refFor(Class, String)}.
+ * Commands are sent to a {@link PersistentEntity} using a <code>PersistentEntityRef</code>. It is
+ * retrieved with {@link PersistentEntityRegistry#refFor(Class, String)}.
  */
 public final class PersistentEntityRef<Command> implements NoSerializationVerificationNeeded {
   private final String entityId;
@@ -31,11 +30,10 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
     this.timeout = Timeout.apply(askTimeout);
   }
 
-  /**
-   * @deprecated Use {@link #PersistentEntityRef(String, ActorRef, FiniteDuration)} instead.
-   */
+  /** @deprecated Use {@link #PersistentEntityRef(String, ActorRef, FiniteDuration)} instead. */
   @Deprecated
-  public PersistentEntityRef(String entityId, ActorRef region, ActorSystem system, FiniteDuration askTimeout) {
+  public PersistentEntityRef(
+      String entityId, ActorRef region, ActorSystem system, FiniteDuration askTimeout) {
     this(entityId, region, askTimeout);
   }
 
@@ -44,35 +42,38 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
   }
 
   /**
-   * Send the <code>command</code> to the {@link PersistentEntity}. The returned
-   * <code>CompletionStage</code> will be completed with the reply from the <code>PersistentEntity</code>.
+   * Send the <code>command</code> to the {@link PersistentEntity}. The returned <code>
+   * CompletionStage</code> will be completed with the reply from the <code>PersistentEntity</code>.
    * The type of the reply is defined by the command (see {@link PersistentEntity.ReplyType}).
-   * <p>
-   * The <code>CompletionStage</code> may also be completed with failure, sent by the <code>PersistentEntity</code>
-   * or a <code>akka.pattern.AskTimeoutException</code> if there is no reply within a timeout.
-   * The timeout can defined in configuration or overridden using {@link #withAskTimeout(FiniteDuration)}.
+   *
+   * <p>The <code>CompletionStage</code> may also be completed with failure, sent by the <code>
+   * PersistentEntity</code> or a <code>akka.pattern.AskTimeoutException</code> if there is no reply
+   * within a timeout. The timeout can defined in configuration or overridden using {@link
+   * #withAskTimeout(FiniteDuration)}.
    */
   @SuppressWarnings("unchecked")
-  public <Reply, Cmd extends Object & PersistentEntity.ReplyType<Reply>> CompletionStage<Reply> ask(Cmd command) {
-    CompletionStage<Object> future = PatternsCS.ask(region, new CommandEnvelope(entityId, command), timeout);
+  public <Reply, Cmd extends Object & PersistentEntity.ReplyType<Reply>> CompletionStage<Reply> ask(
+      Cmd command) {
+    CompletionStage<Object> future =
+        PatternsCS.ask(region, new CommandEnvelope(entityId, command), timeout);
 
-    return future.thenCompose(result -> {
-      if (result instanceof Throwable) {
-        CompletableFuture<Reply> failed = new CompletableFuture<>();
-        failed.completeExceptionally((Throwable) result);
-        return failed;
-      } else {
-        return CompletableFuture.completedFuture((Reply) result);
-      }
-    });
-
+    return future.thenCompose(
+        result -> {
+          if (result instanceof Throwable) {
+            CompletableFuture<Reply> failed = new CompletableFuture<>();
+            failed.completeExceptionally((Throwable) result);
+            return failed;
+          } else {
+            return CompletableFuture.completedFuture((Reply) result);
+          }
+        });
   }
 
   /**
-   * The timeout for {@link #ask(Object)}. The timeout is by default defined in configuration
-   * but it can be adjusted for a specific <code>PersistentEntityRef</code> using this method.
-   * Note that this returns a new <code>PersistentEntityRef</code> instance with the given timeout
-   * (<code>PersistentEntityRef</code> is immutable).
+   * The timeout for {@link #ask(Object)}. The timeout is by default defined in configuration but it
+   * can be adjusted for a specific <code>PersistentEntityRef</code> using this method. Note that
+   * this returns a new <code>PersistentEntityRef</code> instance with the given timeout (<code>
+   * PersistentEntityRef</code> is immutable).
    */
   public PersistentEntityRef<Command> withAskTimeout(FiniteDuration timeout) {
     return new PersistentEntityRef<>(entityId, region, timeout);
@@ -86,7 +87,8 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
   //  - serializing/embedding the entityId String in other messages is simple
   //  - might be issues with the type `Command`?
   private Object writeReplace() throws ObjectStreamException {
-    throw new NotSerializableException(getClass().getName() + " is not serializable. Send the entityId instead.");
+    throw new NotSerializableException(
+        getClass().getName() + " is not serializable. Send the entityId instead.");
   }
 
   @Override

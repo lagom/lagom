@@ -13,17 +13,18 @@ import sbt.Keys._
 private[sbt] object RunSupport extends RunSupportCompat {
 
   def reloadRunTask(
-    extraConfigs: Map[String, String]
+      extraConfigs: Map[String, String]
   ): Def.Initialize[Task[Reloader.DevServer]] = Def.task {
 
     val state = Keys.state.value
     val scope = resolvedScoped.value.scope
 
-    val reloadCompile = () => RunSupport.compile(
-      () => Project.runTask(lagomReload in scope, state).map(_._2).get,
-      () => Project.runTask(lagomReloaderClasspath in scope, state).map(_._2).get,
-      () => Project.runTask(streamsManager in scope, state).map(_._2).get.toEither.right.toOption
-    )
+    val reloadCompile = () =>
+      RunSupport.compile(
+        () => Project.runTask(lagomReload in scope, state).map(_._2).get,
+        () => Project.runTask(lagomReloaderClasspath in scope, state).map(_._2).get,
+        () => Project.runTask(streamsManager in scope, state).map(_._2).get.toEither.right.toOption
+      )
 
     val classpath = (devModeDependencies.value ++ (externalDependencyClasspath in Runtime).value).distinct.files
 
@@ -42,15 +43,20 @@ private[sbt] object RunSupport extends RunSupportCompat {
   }
 
   def nonReloadRunTask(
-    extraConfigs: Map[String, String]
+      extraConfigs: Map[String, String]
   ): Def.Initialize[Task[Reloader.DevServer]] = Def.task {
 
     val classpath = (devModeDependencies.value ++ (fullClasspath in Runtime).value).distinct
 
     val buildLinkSettings = extraConfigs.toSeq ++ lagomDevSettings.value
 
-    Reloader.startNoReload(scalaInstance.value.loader, classpath.map(_.data), baseDirectory.value, buildLinkSettings,
-      lagomServicePort.value)
+    Reloader.startNoReload(
+      scalaInstance.value.loader,
+      classpath.map(_.data),
+      baseDirectory.value,
+      buildLinkSettings,
+      lagomServicePort.value
+    )
   }
 
   private def devModeDependencies = Def.task {

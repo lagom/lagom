@@ -3,12 +3,17 @@
  */
 package com.lightbend.lagom.javadsl.persistence.cassandra
 
-import java.util.concurrent.{ CompletableFuture, CompletionStage }
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionStage
 import java.util.function.BiFunction
-import java.util.{ Collections, Optional, UUID, List => JList }
+import java.util.Collections
+import java.util.Optional
+import java.util.UUID
+import java.util.{ List => JList }
 
 import com.datastax.driver.core.BoundStatement
-import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventTag }
+import com.lightbend.lagom.javadsl.persistence.AggregateEvent
+import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
 
 /**
  * Consume events produced by [[com.lightbend.lagom.javadsl.persistence.PersistentEntity]]
@@ -19,18 +24,24 @@ import com.lightbend.lagom.javadsl.persistence.{ AggregateEvent, AggregateEventT
 @deprecated("Use ReadSideProcessor instead with CassandraReadSide builder", "1.2.0")
 abstract class CassandraReadSideProcessor[Event <: AggregateEvent[Event]] {
 
-  case class EventHandlers(handlers: Map[Class[_ <: Event], BiFunction[_ <: Event, UUID, CompletionStage[JList[BoundStatement]]]])
+  case class EventHandlers(
+      handlers: Map[Class[_ <: Event], BiFunction[_ <: Event, UUID, CompletionStage[JList[BoundStatement]]]]
+  )
 
   /**
    * Mutable builder for defining event handlers.
    */
   class EventHandlersBuilder {
-    private var handlers: Map[Class[_ <: Event], BiFunction[_ <: Event, UUID, CompletionStage[JList[BoundStatement]]]] = Map.empty
+    private var handlers: Map[Class[_ <: Event], BiFunction[_ <: Event, UUID, CompletionStage[JList[BoundStatement]]]] =
+      Map.empty
 
     /**
      * Define the event handler that will be used for events of a given class.
      */
-    def setEventHandler[E <: Event](eventClass: Class[E], handler: BiFunction[E, UUID, CompletionStage[JList[BoundStatement]]]): Unit =
+    def setEventHandler[E <: Event](
+        eventClass: Class[E],
+        handler: BiFunction[E, UUID, CompletionStage[JList[BoundStatement]]]
+    ): Unit =
       handlers = handlers.updated(eventClass, handler)
 
     /**

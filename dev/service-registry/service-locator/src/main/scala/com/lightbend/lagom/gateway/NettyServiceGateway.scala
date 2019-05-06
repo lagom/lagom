@@ -3,30 +3,43 @@
  */
 package com.lightbend.lagom.gateway
 
-import java.net.{ InetSocketAddress, URI }
+import java.net.InetSocketAddress
+import java.net.URI
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import javax.inject.{ Inject, Named, Singleton }
+import javax.inject.Inject
+import javax.inject.Named
+import javax.inject.Singleton
 
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
 import com.lightbend.lagom.internal.NettyFutureConverters
 import NettyFutureConverters._
-import com.lightbend.lagom.discovery.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
+import com.lightbend.lagom.discovery.ServiceRegistryActor.Found
+import com.lightbend.lagom.discovery.ServiceRegistryActor.NotFound
+import com.lightbend.lagom.discovery.ServiceRegistryActor.Route
+import com.lightbend.lagom.discovery.ServiceRegistryActor.RouteResult
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
-import io.netty.bootstrap.{ Bootstrap, ServerBootstrap }
-import io.netty.buffer.{ ByteBuf, Unpooled }
+import io.netty.bootstrap.Bootstrap
+import io.netty.bootstrap.ServerBootstrap
+import io.netty.buffer.ByteBuf
+import io.netty.buffer.Unpooled
 import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.pool.{ AbstractChannelPoolHandler, AbstractChannelPoolMap, ChannelPool, SimpleChannelPool }
+import io.netty.channel.pool.AbstractChannelPoolHandler
+import io.netty.channel.pool.AbstractChannelPoolMap
+import io.netty.channel.pool.ChannelPool
+import io.netty.channel.pool.SimpleChannelPool
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel._
-import io.netty.channel.socket.nio.{ NioServerSocketChannel, NioSocketChannel }
+import io.netty.channel.socket.nio.NioServerSocketChannel
+import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.EventExecutor
 import org.slf4j.LoggerFactory
-import play.api.{ PlayException, UsefulException }
+import play.api.PlayException
+import play.api.UsefulException
 import play.api.inject.ApplicationLifecycle
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
@@ -34,20 +47,25 @@ import play.api.routing.SimpleRouter
 import scala.language.implicitConversions
 import scala.collection.JavaConverters._
 import scala.collection.immutable.Queue
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.compat.java8.OptionConverters._
-import scala.util.{ Failure, Success }
+import scala.util.Failure
+import scala.util.Success
 
 import com.lightbend.lagom.internal.api.Execution.trampoline
 
 case class ServiceGatewayConfig(
-  port: Int
+    port: Int
 )
 
 @Singleton
-class NettyServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig,
-                                            @Named("serviceRegistryActor") registry: ActorRef) {
+class NettyServiceGatewayFactory @Inject()(
+    lifecycle: ApplicationLifecycle,
+    config: ServiceGatewayConfig,
+    @Named("serviceRegistryActor") registry: ActorRef
+) {
   def start(): NettyServiceGateway = {
     new NettyServiceGateway(lifecycle, config, registry)
   }
@@ -59,8 +77,8 @@ class NettyServiceGatewayFactory @Inject() (lifecycle: ApplicationLifecycle, con
 class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewayConfig, registry: ActorRef) {
 
   private implicit val timeout = Timeout(5.seconds)
-  private val log = LoggerFactory.getLogger(classOf[NettyServiceGateway])
-  private val eventLoop = new NioEventLoopGroup
+  private val log              = LoggerFactory.getLogger(classOf[NettyServiceGateway])
+  private val eventLoop        = new NioEventLoopGroup
 
   private val server = new ServerBootstrap()
     .group(eventLoop)
@@ -75,9 +93,10 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
       }
     })
 
-  private def client = new Bootstrap()
-    .group(eventLoop)
-    .channel(classOf[NioSocketChannel])
+  private def client =
+    new Bootstrap()
+      .group(eventLoop)
+      .channel(classOf[NioSocketChannel])
 
   private val poolMap = new AbstractChannelPoolMap[InetSocketAddress, SimpleChannelPool] {
     override def newPool(key: InetSocketAddress) = {
@@ -98,12 +117,12 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
 
   private class ProxyHandler(serverChannel: Channel) extends ChannelInboundHandlerAdapter {
     var context: ChannelHandlerContext = null
-    var pipeline = Queue.empty[Any]
-    var currentPool: ChannelPool = null
-    var currentChannel: Channel = null
-    var currentRequest: HttpRequest = null
-    var websocket = false
-    var closeClientChannel = false
+    var pipeline                       = Queue.empty[Any]
+    var currentPool: ChannelPool       = null
+    var currentChannel: Channel        = null
+    var currentRequest: HttpRequest    = null
+    var websocket                      = false
+    var closeClientChannel             = false
 
     override def handlerAdded(ctx: ChannelHandlerContext) = context = ctx
 
@@ -116,52 +135,62 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
             val path = URI.create(request.uri).getPath
 
             implicit val ec = ctx.executor
-            (registry ? Route(request.method.name, path)).mapTo[RouteResult].map {
-              case Found(serviceAddress) =>
-                log.debug("Request is to be routed to {}, getting connection from pool", serviceAddress)
-                val pool = poolMap.get(serviceAddress)
-                currentPool = pool
-                currentPool.acquire().toScala.onComplete {
-                  case Success(channel) =>
-                    log.debug("Received connection from pool for {}", serviceAddress)
-                    // Connection was closed before we got a channel to talk to, release it immediately
-                    if (currentPool == null) {
-                      log.debug("Connection closed before channel received from pool, releasing channel")
-                      pool.release(channel)
-                    } else {
-                      channel.pipeline().addLast(ctx.executor, clientHandler)
-                      currentChannel = channel
+            (registry ? Route(request.method.name, path))
+              .mapTo[RouteResult]
+              .map {
+                case Found(serviceAddress) =>
+                  log.debug("Request is to be routed to {}, getting connection from pool", serviceAddress)
+                  val pool = poolMap.get(serviceAddress)
+                  currentPool = pool
+                  currentPool.acquire().toScala.onComplete {
+                    case Success(channel) =>
+                      log.debug("Received connection from pool for {}", serviceAddress)
+                      // Connection was closed before we got a channel to talk to, release it immediately
+                      if (currentPool == null) {
+                        log.debug("Connection closed before channel received from pool, releasing channel")
+                        pool.release(channel)
+                      } else {
+                        channel.pipeline().addLast(ctx.executor, clientHandler)
+                        currentChannel = channel
 
-                      val proxyRequest = prepareProxyRequest(request)
+                        val proxyRequest = prepareProxyRequest(request)
 
-                      channel.writeAndFlush(proxyRequest)
+                        channel.writeAndFlush(proxyRequest)
+                        flushPipeline()
+                      }
+                    case Failure(e) =>
+                      log.debug("Unable to get connection to service")
+                      ReferenceCountUtil.release(currentRequest)
+                      currentRequest = null
+                      ctx.writeAndFlush(
+                        renderError(
+                          request,
+                          new PlayException(
+                            "Bad gateway",
+                            "The gateway could not establish a connection to the service"
+                          ),
+                          HttpResponseStatus.BAD_GATEWAY
+                        )
+                      )
                       flushPipeline()
-                    }
-                  case Failure(e) =>
-                    log.debug("Unable to get connection to service")
-                    ReferenceCountUtil.release(currentRequest)
-                    currentRequest = null
-                    ctx.writeAndFlush(renderError(request, new PlayException(
-                      "Bad gateway",
-                      "The gateway could not establish a connection to the service"
-                    ), HttpResponseStatus.BAD_GATEWAY))
-                    flushPipeline()
-                }
-              case NotFound(registryMap) =>
-                log.debug("Sending not found response")
-                ReferenceCountUtil.release(currentRequest)
-                currentRequest = null
-                ctx.writeAndFlush(renderNotFound(request, path, registryMap))
-                flushPipeline()
-            }.recover {
-              case t =>
-                ReferenceCountUtil.release(currentRequest)
-                currentRequest = null
-                log.error("Error routing request", t)
-                val response = new DefaultFullHttpResponse(request.protocolVersion, HttpResponseStatus.INTERNAL_SERVER_ERROR)
-                HttpUtil.setContentLength(response, 0)
-                ctx.writeAndFlush(response)
-            }
+                  }
+                case NotFound(registryMap) =>
+                  log.debug("Sending not found response")
+                  ReferenceCountUtil.release(currentRequest)
+                  currentRequest = null
+                  ctx.writeAndFlush(renderNotFound(request, path, registryMap))
+                  flushPipeline()
+              }
+              .recover {
+                case t =>
+                  ReferenceCountUtil.release(currentRequest)
+                  currentRequest = null
+                  log.error("Error routing request", t)
+                  val response =
+                    new DefaultFullHttpResponse(request.protocolVersion, HttpResponseStatus.INTERNAL_SERVER_ERROR)
+                  HttpUtil.setContentLength(response, 0)
+                  ctx.writeAndFlush(response)
+              }
 
           } else {
             log.debug("Enqueuing pipelined request")
@@ -361,7 +390,7 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
   lifecycle.addStopHook(() => {
     for {
       channel <- bindFuture
-      closed <- channel.close().channelFutureToScala
+      closed  <- channel.close().channelFutureToScala
     } yield {
       eventLoop.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS)
       poolMap.asScala.foreach(_.getValue.close())
@@ -374,7 +403,11 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
     address
   }
 
-  private def renderNotFound(request: HttpRequest, path: String, registry: Map[String, ServiceRegistryService]): HttpResponse = {
+  private def renderNotFound(
+      request: HttpRequest,
+      path: String,
+      registry: Map[String, ServiceRegistryService]
+  ): HttpResponse = {
     // We're reusing Play's not found error page here, which lists the routes, we need to convert the service registry
     // to a Play router with all the acls in the documentation variable so that it can render it
     val router = new SimpleRouter {
@@ -384,15 +417,15 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
           val call = s"Service: $serviceName (${service.uri})"
           service.acls().asScala.map { acl =>
             val method = acl.method.asScala.fold("*")(_.name)
-            val path = acl.pathRegex.orElse(".*")
+            val path   = acl.pathRegex.orElse(".*")
             (method, path, call)
           }
       }
     }
 
     val html = views.html.defaultpages.devNotFound(request.method.name, path, Some(router)).body.getBytes("utf-8")
-    val response = new DefaultFullHttpResponse(request.protocolVersion, HttpResponseStatus.NOT_FOUND,
-      Unpooled.wrappedBuffer(html))
+    val response =
+      new DefaultFullHttpResponse(request.protocolVersion, HttpResponseStatus.NOT_FOUND, Unpooled.wrappedBuffer(html))
     response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=utf8")
     response.headers().set(HttpHeaderNames.DATE, new Date())
     HttpUtil.setContentLength(response, html.length)
@@ -400,10 +433,13 @@ class NettyServiceGateway(lifecycle: ApplicationLifecycle, config: ServiceGatewa
     response
   }
 
-  private def renderError(request: HttpRequest, exception: UsefulException, status: HttpResponseStatus): HttpResponse = {
-    val html = views.html.defaultpages.devError(None, exception).body.getBytes("utf-8")
-    val response = new DefaultFullHttpResponse(request.protocolVersion, status,
-      Unpooled.wrappedBuffer(html))
+  private def renderError(
+      request: HttpRequest,
+      exception: UsefulException,
+      status: HttpResponseStatus
+  ): HttpResponse = {
+    val html     = views.html.defaultpages.devError(None, exception).body.getBytes("utf-8")
+    val response = new DefaultFullHttpResponse(request.protocolVersion, status, Unpooled.wrappedBuffer(html))
     response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=utf8")
     response.headers().set(HttpHeaderNames.DATE, new Date())
     HttpUtil.setContentLength(response, html.length)

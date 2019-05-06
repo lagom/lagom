@@ -9,18 +9,22 @@ import static com.lightbend.lagom.javadsl.testkit.ServiceTest.*;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
-public class ServiceABTest{
-  
+public class ServiceABTest {
+
   @Test
   public void testInvoke() throws Exception {
-    withServer(defaultSetup().withCluster(false).configureBuilder(b ->
-      b.bindings(new ServiceAModule())
-      .overrides(bind(ServiceB.class).to(ServiceBTestStub.class))), server -> {
-    
-      ServiceA client = server.client(ServiceA.class);
-      String response = client.helloA().invoke("a").toCompletableFuture().get(10, TimeUnit.SECONDS); 
-      assertEquals("hello: a", response);
-    });
+    withServer(
+        defaultSetup()
+            .withCluster(false)
+            .configureBuilder(
+                b ->
+                    b.bindings(new ServiceAModule())
+                        .overrides(bind(ServiceB.class).to(ServiceBTestStub.class))),
+        server -> {
+          ServiceA client = server.client(ServiceA.class);
+          String response =
+              client.helloA().invoke("a").toCompletableFuture().get(10, TimeUnit.SECONDS);
+          assertEquals("hello: a", response);
+        });
   }
-
 }

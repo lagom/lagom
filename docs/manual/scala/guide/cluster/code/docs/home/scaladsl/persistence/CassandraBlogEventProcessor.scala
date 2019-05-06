@@ -20,7 +20,7 @@ trait CassandraBlogEventProcessor {
   trait Initial {
     //#initial
     class BlogEventProcessor(session: CassandraSession, readSide: CassandraReadSide)(implicit ec: ExecutionContext)
-      extends ReadSideProcessor[BlogEvent] {
+        extends ReadSideProcessor[BlogEvent] {
 
       override def buildHandler(): ReadSideProcessor.ReadSideHandler[BlogEvent] = {
         // TODO build read side handler
@@ -36,7 +36,7 @@ trait CassandraBlogEventProcessor {
   }
 
   class BlogEventProcessor(session: CassandraSession, readSide: CassandraReadSide)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[BlogEvent] {
+      extends ReadSideProcessor[BlogEvent] {
 
     //#tag
     override def aggregateTags: Set[AggregateEventTag[BlogEvent]] =
@@ -45,12 +45,14 @@ trait CassandraBlogEventProcessor {
 
     //#create-table
     private def createTable(): Future[Done] =
-      session.executeCreateTable("CREATE TABLE IF NOT EXISTS blogsummary ( " +
-        "id TEXT, title TEXT, PRIMARY KEY (id))")
+      session.executeCreateTable(
+        "CREATE TABLE IF NOT EXISTS blogsummary ( " +
+          "id TEXT, title TEXT, PRIMARY KEY (id))"
+      )
     //#create-table
 
     //#prepare-statements
-    private val writeTitlePromise = Promise[PreparedStatement] // initialized in prepare
+    private val writeTitlePromise                     = Promise[PreparedStatement] // initialized in prepare
     private def writeTitle: Future[PreparedStatement] = writeTitlePromise.future
 
     private def prepareWriteTitle(): Future[Done] = {

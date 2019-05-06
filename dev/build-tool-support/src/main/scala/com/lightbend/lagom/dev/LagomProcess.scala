@@ -29,7 +29,11 @@ object LagomProcess {
 
     val command = javaBin :: jvmArgs ::: "-classpath" :: classpathString :: main :: args
 
-    new ProcessBuilder().redirectOutput(Redirect.INHERIT).redirectError(Redirect.INHERIT).command(command.asJava).start()
+    new ProcessBuilder()
+      .redirectOutput(Redirect.INHERIT)
+      .redirectError(Redirect.INHERIT)
+      .command(command.asJava)
+      .start()
   }
 
 }

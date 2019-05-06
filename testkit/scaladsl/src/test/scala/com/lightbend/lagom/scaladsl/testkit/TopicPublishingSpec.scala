@@ -10,16 +10,21 @@ import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import com.lightbend.lagom.scaladsl.playjson.EmptyJsonSerializerRegistry
-import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, LagomServer, LocalServiceLocator }
-import com.lightbend.lagom.scaladsl.testkit.services.{ AlphaEvent, AlphaService }
-import org.scalatest.{ AsyncWordSpec, Matchers }
+import com.lightbend.lagom.scaladsl.server.LagomApplication
+import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
+import com.lightbend.lagom.scaladsl.server.LagomServer
+import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
+import com.lightbend.lagom.scaladsl.testkit.services.AlphaEvent
+import com.lightbend.lagom.scaladsl.testkit.services.AlphaService
+import org.scalatest.AsyncWordSpec
+import org.scalatest.Matchers
 import play.api.libs.ws.ahc.AhcWSComponents
 
 abstract class AlphaApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
-  with CassandraPersistenceComponents
-  with TestTopicComponents
-  with AhcWSComponents {
+    extends LagomApplication(context)
+    with CassandraPersistenceComponents
+    with TestTopicComponents
+    with AhcWSComponents {
 
   override lazy val lagomServer = serverFor[AlphaService](new AlphaServiceImpl())
 
@@ -40,14 +45,14 @@ class TopicPublishingSpec extends AsyncWordSpec with Matchers {
     "publish events on alpha topic" in ServiceTest.withServer(ServiceTest.defaultSetup) { ctx =>
       new AlphaApplication(ctx) with LocalServiceLocator
     } { server =>
-
       implicit val system = server.actorSystem
-      implicit val mat = server.materializer
+      implicit val mat    = server.materializer
 
       val client: AlphaService = server.serviceClient.implement[AlphaService]
-      val source = client.messages.subscribe.atMostOnceSource
+      val source               = client.messages.subscribe.atMostOnceSource
 
-      source.runWith(TestSink.probe[AlphaEvent])
+      source
+        .runWith(TestSink.probe[AlphaEvent])
         .request(1)
         .expectNext should ===(AlphaEvent(2))
 

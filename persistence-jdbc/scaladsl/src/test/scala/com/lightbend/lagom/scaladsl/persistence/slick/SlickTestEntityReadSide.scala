@@ -5,9 +5,13 @@ package com.lightbend.lagom.scaladsl.persistence.slick
 
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
-import com.lightbend.lagom.scaladsl.persistence.{ AggregateEventTag, EventStreamElement, ReadSideProcessor, TestEntity }
+import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
+import com.lightbend.lagom.scaladsl.persistence.EventStreamElement
+import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
+import com.lightbend.lagom.scaladsl.persistence.TestEntity
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable
@@ -20,9 +24,9 @@ trait Tables {
 
   case class TestCount(id: String, count: Long)
   class TestCounts(tag: Tag) extends Table[TestCount](tag, "testcounts") {
-    def id = column[String]("id", O.PrimaryKey)
+    def id    = column[String]("id", O.PrimaryKey)
     def count = column[Long]("count")
-    def * = (id, count) <> (TestCount.tupled, TestCount.unapply)
+    def *     = (id, count) <> (TestCount.tupled, TestCount.unapply)
   }
   lazy val testCounts: TableQuery[TestCounts] = TableQuery[TestCounts]
 
@@ -55,15 +59,17 @@ trait Tables {
 
 object SlickTestEntityReadSide {
 
-  class TestEntityReadSideProcessor(readSide: SlickReadSide, db: Database, val profile: JdbcProfile)(implicit val ec: ExecutionContext)
-    extends ReadSideProcessor[TestEntity.Evt]
-    with Tables {
+  class TestEntityReadSideProcessor(readSide: SlickReadSide, db: Database, val profile: JdbcProfile)(
+      implicit val ec: ExecutionContext
+  ) extends ReadSideProcessor[TestEntity.Evt]
+      with Tables {
 
-    def buildHandler(): ReadSideHandler[TestEntity.Evt] = readSide
-      .builder[TestEntity.Evt]("test-entity-read-side")
-      .setGlobalPrepare(createTable)
-      .setEventHandler(updateCount)
-      .build()
+    def buildHandler(): ReadSideHandler[TestEntity.Evt] =
+      readSide
+        .builder[TestEntity.Evt]("test-entity-read-side")
+        .setGlobalPrepare(createTable)
+        .setEventHandler(updateCount)
+        .build()
 
     def aggregateTags: Set[AggregateEventTag[Evt]] = TestEntity.Evt.aggregateEventShards.allTags
 
@@ -72,15 +78,16 @@ object SlickTestEntityReadSide {
 }
 
 class SlickTestEntityReadSide(db: Database, val profile: JdbcProfile)(implicit val ec: ExecutionContext)
-  extends Tables {
+    extends Tables {
 
   import profile.api._
 
   def getAppendCount(id: String): Future[Long] = db.run {
-    testCounts.filter(_.id === id)
+    testCounts
+      .filter(_.id === id)
       .map(_.count)
       .result
       .headOption
-      .map(_.getOrElse(0l))
+      .map(_.getOrElse(0L))
   }
 }

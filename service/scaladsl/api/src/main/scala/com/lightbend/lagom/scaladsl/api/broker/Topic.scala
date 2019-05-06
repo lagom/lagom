@@ -7,6 +7,7 @@ package com.lightbend.lagom.scaladsl.api.broker
  * A topic can be used to publish/subscribe messages to/from a message broker.
  */
 trait Topic[Payload] {
+
   /**
    * The topic identifier.
    *
@@ -29,6 +30,7 @@ object Topic {
    * A topic identifier.
    */
   sealed trait TopicId {
+
     /**
      * The name of this topic
      */

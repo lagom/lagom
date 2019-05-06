@@ -1,6 +1,6 @@
 package docs.home.persistence;
 
-//#full-example
+// #full-example
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.lightbend.lagom.serialization.Jsonable;
@@ -8,7 +8,7 @@ import akka.Done;
 
 public interface BlogCommand extends Jsonable {
 
-  //#AddPost
+  // #AddPost
   final class AddPost implements BlogCommand, PersistentEntity.ReplyType<AddPostDone> {
     private final PostContent content;
 
@@ -29,7 +29,6 @@ public interface BlogCommand extends Jsonable {
       AddPost addPost = (AddPost) o;
 
       return content.equals(addPost.content);
-
     }
 
     @Override
@@ -37,7 +36,7 @@ public interface BlogCommand extends Jsonable {
       return content.hashCode();
     }
   }
-  //#AddPost
+  // #AddPost
 
   final class AddPostDone implements Jsonable {
     private final String postId;
@@ -59,7 +58,6 @@ public interface BlogCommand extends Jsonable {
       AddPostDone that = (AddPostDone) o;
 
       return postId.equals(that.postId);
-
     }
 
     @Override
@@ -92,7 +90,6 @@ public interface BlogCommand extends Jsonable {
       ChangeBody that = (ChangeBody) o;
 
       return body.equals(that.body);
-
     }
 
     @Override
@@ -104,6 +101,5 @@ public interface BlogCommand extends Jsonable {
   enum Publish implements BlogCommand, PersistentEntity.ReplyType<Done> {
     INSTANCE
   }
-
 }
-//#full-example
+// #full-example

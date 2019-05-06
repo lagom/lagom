@@ -10,30 +10,36 @@ import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings, ClusterStartupTask }
+import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution
+import com.lightbend.lagom.internal.persistence.cluster.ClusterDistributionSettings
+import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.scaladsl.persistence._
 
 import scala.concurrent.ExecutionContext
 
 private[lagom] class ReadSideImpl(
-  system: ActorSystem, config: ReadSideConfig, registry: PersistentEntityRegistry, name: Option[String]
-)(implicit ec: ExecutionContext, mat: Materializer) extends ReadSide {
+    system: ActorSystem,
+    config: ReadSideConfig,
+    registry: PersistentEntityRegistry,
+    name: Option[String]
+)(implicit ec: ExecutionContext, mat: Materializer)
+    extends ReadSide {
 
   override def register[Event <: AggregateEvent[Event]](processorFactory: => ReadSideProcessor[Event]): Unit =
     registerFactory(() => processorFactory)
 
   private[lagom] def registerFactory[Event <: AggregateEvent[Event]](
-    processorFactory: () => ReadSideProcessor[Event]
+      processorFactory: () => ReadSideProcessor[Event]
   ) = {
 
     // Only run if we're configured to run on this role
     if (config.role.forall(Cluster(system).selfRoles.contains)) {
       // try to create one instance to fail fast
-      val proto = processorFactory()
-      val readSideName = name.fold("")(_ + "-") + proto.readSideName
+      val proto               = processorFactory()
+      val readSideName        = name.fold("")(_ + "-") + proto.readSideName
       val encodedReadSideName = URLEncoder.encode(readSideName, "utf-8")
-      val tags = proto.aggregateTags
-      val entityIds = tags.map(_.tag)
+      val tags                = proto.aggregateTags
+      val entityIds           = tags.map(_.tag)
       val eventClass = tags.headOption match {
         case Some(tag) => tag.eventType
         case None      => throw new IllegalArgumentException(s"ReadSideProcessor ${proto.getClass.getName} returned 0 tags")

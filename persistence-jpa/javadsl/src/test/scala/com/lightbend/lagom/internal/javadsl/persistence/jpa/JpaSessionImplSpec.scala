@@ -3,16 +3,20 @@
  */
 package com.lightbend.lagom.internal.javadsl.persistence.jpa
 
-import javax.persistence.{ EntityManager, EntityTransaction, Persistence }
+import javax.persistence.EntityManager
+import javax.persistence.EntityTransaction
+import javax.persistence.Persistence
 
 import com.google.common.collect.ImmutableMap
 import com.lightbend.lagom.javadsl.persistence.jpa.TestJpaEntity
-import org.scalatest.matchers.{ BePropertyMatchResult, BePropertyMatcher }
+import org.scalatest.matchers.BePropertyMatchResult
+import org.scalatest.matchers.BePropertyMatcher
 
 import scala.compat.java8.FunctionConverters._
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.Await
+import scala.concurrent.Future
 
 class JpaSessionImplSpec extends JpaPersistenceSpec {
   private val open = BePropertyMatcher[EntityManager] { entityManager =>
@@ -55,11 +59,14 @@ class JpaSessionImplSpec extends JpaPersistenceSpec {
       Await.ready(withTransaction(_.persist(entity)), 10.seconds)
 
       // Note that the retrieval runs in a new transaction
-      val retrievedEntity = Await.result(withTransaction {
-        _.createQuery("SELECT test FROM TestJpaEntity test WHERE parentId = :parentId", classOf[TestJpaEntity])
-          .setParameter("parentId", "1")
-          .getSingleResult
-      }, 10.seconds)
+      val retrievedEntity = Await.result(
+        withTransaction {
+          _.createQuery("SELECT test FROM TestJpaEntity test WHERE parentId = :parentId", classOf[TestJpaEntity])
+            .setParameter("parentId", "1")
+            .getSingleResult
+        },
+        10.seconds
+      )
       retrievedEntity.getId should not be null
       retrievedEntity.getParentId should equal("1")
       retrievedEntity.getElement should equal("test saving and reading entities")

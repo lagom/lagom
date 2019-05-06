@@ -5,6 +5,4 @@ package com.lightbend.lagom.javadsl.persistence.jdbc.testkit
 
 import com.lightbend.lagom.javadsl.persistence.testkit.AbstractTestUtil
 
-object TestUtil extends AbstractTestUtil {
-
-}
+object TestUtil extends AbstractTestUtil {}

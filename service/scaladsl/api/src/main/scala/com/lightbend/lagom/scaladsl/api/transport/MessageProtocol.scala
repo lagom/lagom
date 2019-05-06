@@ -51,7 +51,8 @@ sealed trait MessageProtocol {
    *
    * @return true if this message protocol is text based.
    */
-  def isText: Boolean = charset.isDefined || contentType.contains("application/json") || contentType.contains("text/plain")
+  def isText: Boolean =
+    charset.isDefined || contentType.contains("application/json") || contentType.contains("text/plain")
 
   /**
    * Whether the protocol uses UTF-8.
@@ -59,7 +60,10 @@ sealed trait MessageProtocol {
    * @return true if the charset used by this protocol is UTF-8, false if it's some other encoding or if no charset is
    *         defined.
    */
-  def isUtf8: Boolean = charset.exists(cs => Charset.forName(cs) == Codec.UTF8.charSet) || charset.isEmpty && contentType.contains("application/json")
+  def isUtf8: Boolean =
+    charset.exists(cs => Charset.forName(cs) == Codec.UTF8.charSet) || charset.isEmpty && contentType.contains(
+      "application/json"
+    )
 
   /**
    * Convert this message protocol to a content type header, if the content type is defined.
@@ -73,7 +77,7 @@ sealed trait MessageProtocol {
 object MessageProtocol {
   def fromContentTypeHeader(contentType: Option[String]): MessageProtocol = {
     contentType.fold(MessageProtocol.empty) { ct =>
-      val parts = ct.split(";")
+      val parts           = ct.split(";")
       val justContentType = parts(0)
       val charset = parts.collectFirst {
         case charsetPart if charsetPart.startsWith("charset=") => charsetPart.split("=", 2)(1)
@@ -86,7 +90,11 @@ object MessageProtocol {
     MessageProtocolImpl(None, None, None)
   }
 
-  def apply(contentType: Option[String] = None, charset: Option[String] = None, version: Option[String] = None): MessageProtocol = {
+  def apply(
+      contentType: Option[String] = None,
+      charset: Option[String] = None,
+      version: Option[String] = None
+  ): MessageProtocol = {
     MessageProtocolImpl(contentType, charset, version)
   }
 
@@ -94,7 +102,8 @@ object MessageProtocol {
     Some((messageProtocol.contentType, messageProtocol.charset, messageProtocol.version))
   }
 
-  private case class MessageProtocolImpl(contentType: Option[String], charset: Option[String], version: Option[String]) extends MessageProtocol {
+  private case class MessageProtocolImpl(contentType: Option[String], charset: Option[String], version: Option[String])
+      extends MessageProtocol {
     override def withContentType(contentType: String): MessageProtocol = copy(contentType = Some(contentType))
 
     override def withCharset(charset: String): MessageProtocol = copy(charset = Some(charset))
