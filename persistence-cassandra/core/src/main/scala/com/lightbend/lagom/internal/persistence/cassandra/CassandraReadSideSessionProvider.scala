@@ -4,17 +4,17 @@
 package com.lightbend.lagom.internal.persistence.cassandra
 
 import akka.Done
-import akka.actor.ActorSystem
 import akka.actor.ExtendedActorSystem
+import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.persistence.cassandra.session.CassandraSessionSettings
 import akka.persistence.cassandra.session.scaladsl.{ CassandraSession => AkkaScaladslCassandraSession }
-import akka.persistence.cassandra.CassandraPluginConfig
 import akka.persistence.cassandra.SessionProvider
+import akka.persistence.cassandra.CassandraPluginConfig
 import com.datastax.driver.core.Session
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 /**
  * Internal API
@@ -47,15 +47,31 @@ private[lagom] object CassandraReadSideSessionProvider {
         "'keyspace' configuration must be defined, or use keyspace-autocreate=off"
       )
 
+    def createKeyspace(ssn: Session, kspc: String, repStrat: String)(
+        implicit executionContext: ExecutionContext
+    ): Future[Done] = {
+      def create(): Future[Done] =
+        ssn
+          .executeAsync(
+            s"""
+            CREATE KEYSPACE IF NOT EXISTS $kspc
+            WITH REPLICATION = { 'class' : $repStrat }
+            """
+          )
+          .asScala
+          .map(_ => Done)
+
+      akka.lagom.internal.SerializedExecutionAccessor.serializedExecution(
+        recur = () => createKeyspace(ssn, kspc, repStrat),
+        exec = () => create()
+      )
+    }
+
     def init(session: Session): Future[Done] = {
       implicit val ec = executionContext
       if (keyspaceAutoCreate) {
-        val result1 =
-          session.executeAsync(s"""
-            CREATE KEYSPACE IF NOT EXISTS $keyspace
-            WITH REPLICATION = { 'class' : $replicationStrategy }
-            """).asScala
-        result1
+        val keyspaceCreationResult: Future[Done] = createKeyspace(session, keyspace, replicationStrategy)
+        keyspaceCreationResult
           .flatMap { _ =>
             session.executeAsync(s"USE $keyspace;").asScala
           }
