@@ -20,11 +20,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm" % "0.3.8")
 addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "0.3.0")
 addSbtPlugin("com.eed3si9n" % "sbt-doge"        % "0.1.5")
 
-<<<<<<< HEAD
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
 addSbtPlugin("com.lightbend"    % "sbt-whitesource"      % "0.1.14")
-=======
-addSbtPlugin("com.lightbend.sbt" % "sbt-java-formatter" % "0.4.4")
->>>>>>> d20376aba... Update sbt-java-formatter to 0.4.4
 
 addSbtPlugin("com.lightbend.sbt" % "sbt-java-formatter" % "0.4.4")
