@@ -5,11 +5,13 @@ package com.lightbend.lagom.scaladsl.persistence.cassandra.testkit
 
 import akka.persistence.PersistentActor
 import com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 
 object TestUtil extends AbstractTestUtil {
 
-  def persistenceConfig(testName: String, cassandraPort: Int, useServiceLocator: Boolean) = ConfigFactory.parseString(s"""
+  def persistenceConfig(testName: String, cassandraPort: Int, useServiceLocator: Boolean) =
+    ConfigFactory.parseString(s"""
     cassandra-journal.session-provider = akka.persistence.cassandra.ConfigSessionProvider
     cassandra-snapshot-store.session-provider = akka.persistence.cassandra.ConfigSessionProvider
     lagom.persistence.read-side.cassandra.session-provider = akka.persistence.cassandra.ConfigSessionProvider

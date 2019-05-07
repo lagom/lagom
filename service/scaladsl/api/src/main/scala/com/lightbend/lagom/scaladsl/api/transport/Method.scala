@@ -8,11 +8,11 @@ final class Method(val name: String) extends AnyVal {
 }
 
 object Method {
-  val GET = new Method("GET")
-  val POST = new Method("POST")
-  val PUT = new Method("PUT")
-  val DELETE = new Method("DELETE")
-  val HEAD = new Method("HEAD")
+  val GET     = new Method("GET")
+  val POST    = new Method("POST")
+  val PUT     = new Method("PUT")
+  val DELETE  = new Method("DELETE")
+  val HEAD    = new Method("HEAD")
   val OPTIONS = new Method("OPTIONS")
-  val PATCH = new Method("PATCH")
+  val PATCH   = new Method("PATCH")
 }

@@ -11,7 +11,7 @@ import java.util.Optional;
 /**
  * A message broker message.
  *
- * This provides access to both the message payload, and the metadata.
+ * <p>This provides access to both the message payload, and the metadata.
  */
 public final class Message<Payload> {
 
@@ -23,9 +23,7 @@ public final class Message<Payload> {
     this.metadataMap = metadataMap;
   }
 
-  /**
-   * The payload of the message.
-   */
+  /** The payload of the message. */
   public Payload getPayload() {
     return payload;
   }
@@ -64,10 +62,10 @@ public final class Message<Payload> {
 
   /**
    * Get the message key as a String.
-   * <p>
-   * If the key is not a String, it will be converted to a String using <code>toString</code>.
-   * <p>
-   * If the underlying message broker doesn't support keys, the empty string will be returned.
+   *
+   * <p>If the key is not a String, it will be converted to a String using <code>toString</code>.
+   *
+   * <p>If the underlying message broker doesn't support keys, the empty string will be returned.
    *
    * @return A string representation of the message key.
    */
@@ -75,11 +73,8 @@ public final class Message<Payload> {
     return get(MetadataKey.messageKey()).map(Object::toString).orElse("");
   }
 
-  /**
-   * Create a message with the given payload.
-   */
+  /** Create a message with the given payload. */
   public static <Payload> Message<Payload> create(Payload payload) {
     return new Message<>(payload, HashTreePMap.empty());
   }
-
 }

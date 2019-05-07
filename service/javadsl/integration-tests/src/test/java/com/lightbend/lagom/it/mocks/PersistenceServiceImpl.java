@@ -20,8 +20,11 @@ public class PersistenceServiceImpl implements PersistenceService {
   private final CassandraSession db;
 
   @Inject
-  public PersistenceServiceImpl(PersistentEntityRegistry persistentEntityRegistry, PubSubRegistry pubSubRegistry, 
-    CassandraReadSide readSide, CassandraSession db) {
+  public PersistenceServiceImpl(
+      PersistentEntityRegistry persistentEntityRegistry,
+      PubSubRegistry pubSubRegistry,
+      CassandraReadSide readSide,
+      CassandraSession db) {
     this.persistentEntityRegistry = persistentEntityRegistry;
     this.pubSubRegistry = pubSubRegistry;
     this.readSide = readSide;
@@ -31,28 +34,24 @@ public class PersistenceServiceImpl implements PersistenceService {
   @Override
   public ServiceCall<NotUsed, String> checkInjected() {
     return request -> {
-      if (persistentEntityRegistry == null)
-          throw new NullPointerException();
-      if (pubSubRegistry == null)
-          throw new NullPointerException();
-      if (readSide == null)
-        throw new NullPointerException();
-      if (db == null)
-        throw new NullPointerException();
+      if (persistentEntityRegistry == null) throw new NullPointerException();
+      if (pubSubRegistry == null) throw new NullPointerException();
+      if (readSide == null) throw new NullPointerException();
+      if (db == null) throw new NullPointerException();
       return CompletableFuture.completedFuture("ok");
     };
   }
-  
+
   @Override
   public ServiceCall<NotUsed, String> checkCassandraSession() {
     return request -> {
       return db.executeCreateTable(
-          "CREATE TABLE IF NOT EXISTS testcounts ( " +
-          "  partition text, " +
-          "  key text," +
-          "  count bigint, " +
-          "  PRIMARY KEY (partition, key)) ")
-      .thenApply(session -> "ok");
+              "CREATE TABLE IF NOT EXISTS testcounts ( "
+                  + "  partition text, "
+                  + "  key text,"
+                  + "  count bigint, "
+                  + "  PRIMARY KEY (partition, key)) ")
+          .thenApply(session -> "ok");
     };
   }
 }

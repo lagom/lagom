@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lightbend.lagom.serialization.JacksonJsonMigration;
 
-//#structural
+// #structural
 public class CustomerMigration extends JacksonJsonMigration {
 
   @Override
@@ -28,6 +28,5 @@ public class CustomerMigration extends JacksonJsonMigration {
     }
     return root;
   }
-
 }
-//#structural
+// #structural

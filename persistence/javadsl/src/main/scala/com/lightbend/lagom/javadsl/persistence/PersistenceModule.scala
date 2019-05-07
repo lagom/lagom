@@ -4,7 +4,8 @@
 package com.lightbend.lagom.javadsl.persistence
 
 import com.google.inject.AbstractModule
-import com.lightbend.lagom.internal.javadsl.persistence.{ ReadSideConfigProvider, ReadSideImpl }
+import com.lightbend.lagom.internal.javadsl.persistence.ReadSideConfigProvider
+import com.lightbend.lagom.internal.javadsl.persistence.ReadSideImpl
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 
 /**

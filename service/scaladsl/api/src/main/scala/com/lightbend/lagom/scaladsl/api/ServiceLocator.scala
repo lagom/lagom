@@ -7,7 +7,8 @@ import java.net.URI
 
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 /**
  * Locates services.
@@ -21,6 +22,7 @@ import scala.concurrent.{ ExecutionContext, Future }
  * routing pool, or it may decide to notify some up stream service registry that that node is no longer responding.
  */
 trait ServiceLocator {
+
   /**
    * Locate a service's URI for the given name.
    *
@@ -73,7 +75,9 @@ trait ServiceLocator {
    *              service. This will only be executed if the service was found.
    * @return The result of the executed block, if the service was found.
    */
-  def doWithService[T](name: String, serviceCall: Descriptor.Call[_, _])(block: URI => Future[T])(implicit ec: ExecutionContext): Future[Option[T]]
+  def doWithService[T](name: String, serviceCall: Descriptor.Call[_, _])(block: URI => Future[T])(
+      implicit ec: ExecutionContext
+  ): Future[Option[T]]
 }
 
 object ServiceLocator {
@@ -83,6 +87,8 @@ object ServiceLocator {
    */
   object NoServiceLocator extends ServiceLocator {
     override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = Future.successful(None)
-    override def doWithService[T](name: String, serviceCall: Call[_, _])(block: (URI) => Future[T])(implicit ec: ExecutionContext): Future[Option[T]] = Future.successful(None)
+    override def doWithService[T](name: String, serviceCall: Call[_, _])(block: (URI) => Future[T])(
+        implicit ec: ExecutionContext
+    ): Future[Option[T]] = Future.successful(None)
   }
 }

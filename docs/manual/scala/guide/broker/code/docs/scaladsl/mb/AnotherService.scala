@@ -1,21 +1,22 @@
 package docs.scaladsl.mb
 
 import akka.NotUsed
-import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
-
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.ServiceCall
 
 trait AnotherService extends Service {
 
-  override final def descriptor = {
+  final override def descriptor = {
     import Service._
 
-    named("another-service").withCalls(
-      namedCall("/api/foo", foo)
-    ).withAutoAcl(true)
+    named("another-service")
+      .withCalls(
+        namedCall("/api/foo", foo)
+      )
+      .withAutoAcl(true)
 
   }
 
   def foo: ServiceCall[NotUsed, String]
 
 }
-

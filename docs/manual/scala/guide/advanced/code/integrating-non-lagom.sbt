@@ -5,4 +5,3 @@ libraryDependencies += lagomScaladslClient
 //#dev-mode-dependency
 libraryDependencies += lagomScaladslDevMode
 //#dev-mode-dependency
-

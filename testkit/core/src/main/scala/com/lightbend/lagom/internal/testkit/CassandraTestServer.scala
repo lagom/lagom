@@ -7,7 +7,8 @@ import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 
 import akka.persistence.cassandra.testkit.CassandraLauncher
-import com.google.common.io.{ MoreFiles, RecursiveDeleteOption }
+import com.google.common.io.MoreFiles
+import com.google.common.io.RecursiveDeleteOption
 import play.api.Logger
 import play.api.inject.ApplicationLifecycle
 
@@ -20,7 +21,7 @@ private[lagom] object CassandraTestServer {
   private lazy val log = Logger(getClass)
 
   def run(cassandraDirectoryPrefix: String, lifecycle: ApplicationLifecycle): Int = {
-    val cassandraPort = CassandraLauncher.randomPort
+    val cassandraPort      = CassandraLauncher.randomPort
     val cassandraDirectory = Files.createTempDirectory(cassandraDirectoryPrefix)
 
     // Shut down Cassandra and delete its temporary directory when the application shuts down

@@ -16,23 +16,22 @@ import java.util.Arrays;
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface TestTopicService extends Service {
-    Topic<String> testTopic();
+  Topic<String> testTopic();
 
+  @Override
+  default Descriptor descriptor() {
+    return named("testtopicservice").withTopics(topic("testtopic", this::testTopic));
+  }
+
+  class Impl implements TestTopicService {
     @Override
-    default Descriptor descriptor() {
-        return named("testtopicservice")
-                .withTopics(topic("testtopic", this::testTopic));
+    public Topic<String> testTopic() {
+      return TopicProducer.singleStreamWithOffset(
+          offset ->
+              Source.from(
+                  Arrays.asList(
+                      Pair.create("message1", new Offset.Sequence(1)),
+                      Pair.create("message2", new Offset.Sequence(2)))));
     }
-
-    class Impl implements TestTopicService {
-        @Override
-        public Topic<String> testTopic() {
-            return TopicProducer.singleStreamWithOffset(offset ->
-                    Source.from(Arrays.asList(
-                            Pair.create("message1", new Offset.Sequence(1)),
-                            Pair.create("message2", new Offset.Sequence(2))
-                    ))
-            );
-        }
-    }
+  }
 }

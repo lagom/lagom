@@ -16,10 +16,7 @@ import play.api.inject.{ bind => playBind }
  * It tests that Lagom correctly overrides Play's configuration to
  * fail fast when database is not available.
  */
-class JdbcPersistenceModuleSpec
-  extends AsyncWordSpec
-  with Matchers
-  with BeforeAndAfterAll {
+class JdbcPersistenceModuleSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll {
 
   "The JdbcPersistenceModule" should {
     "should start the service when database is not available" in {
@@ -31,7 +28,7 @@ class JdbcPersistenceModuleSpec
           .configure(
             // Correct configuration, but the database is not available
             "db.default.driver" -> "org.h2.Driver",
-            "db.default.url" -> "jdbc:h2:tcp://localhost/~/notavailable"
+            "db.default.url"    -> "jdbc:h2:tcp://localhost/~/notavailable"
           )
           .build()
 
@@ -48,7 +45,7 @@ class JdbcPersistenceModuleSpec
           .configure(
             // Correct configuration, but the database is not available
             "db.default.driver" -> "org.h2.Driver",
-            "db.default.url" -> "jdbc:h2:tcp://localhost/~/notavailable",
+            "db.default.url"    -> "jdbc:h2:tcp://localhost/~/notavailable",
             // And it is configured to fail fast
             "play.db.prototype.hikaricp.initializationFailTimeout" -> "1"
           )
@@ -60,4 +57,4 @@ class JdbcPersistenceModuleSpec
 }
 
 // So that we can confirm DBApi was created
-class DbWrapper @Inject() (val dbApi: DBApi)
+class DbWrapper @Inject()(val dbApi: DBApi)

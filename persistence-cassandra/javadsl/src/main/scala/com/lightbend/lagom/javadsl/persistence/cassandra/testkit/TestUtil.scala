@@ -9,6 +9,7 @@ import com.typesafe.config.Config
 
 object TestUtil extends AbstractTestUtil {
 
-  def persistenceConfig(testName: String, cassandraPort: Int): Config = CassandraTestConfig.persistenceConfig(testName, cassandraPort)
+  def persistenceConfig(testName: String, cassandraPort: Int): Config =
+    CassandraTestConfig.persistenceConfig(testName, cassandraPort)
 
 }

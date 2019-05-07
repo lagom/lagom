@@ -23,102 +23,110 @@ import java.util.function.Supplier;
 /**
  * Cassandra read side support.
  *
- * This should be used to build and register a read side processor.
+ * <p>This should be used to build and register a read side processor.
  */
 public interface CassandraReadSide {
+  /**
+   * At system startup all {@link CassandraReadSideProcessor} classes must be registered with this
+   * method.
+   *
+   * @deprecated Use the builder method to create and register a Cassandra read side processor.
+   */
+  @Deprecated
+  <Event extends AggregateEvent<Event>> void register(
+      Class<? extends CassandraReadSideProcessor<Event>> processorClass);
+
+  /**
+   * Create a builder for a Cassandra read side event handler.
+   *
+   * @param readSideId An identifier for this read side. This will be used to store offsets in the
+   *     offset store.
+   * @return The builder.
+   */
+  <Event extends AggregateEvent<Event>> ReadSideHandlerBuilder<Event> builder(String readSideId);
+
+  /** Builder for the handler. */
+  interface ReadSideHandlerBuilder<Event extends AggregateEvent<Event>> {
+
     /**
-     * At system startup all {@link CassandraReadSideProcessor} classes must be registered
-     * with this method.
+     * Set a global prepare callback.
      *
-     * @deprecated Use the builder method to create and register a Cassandra read side processor.
+     * @param callback The callback.
+     * @return This builder for fluent invocation.
+     * @see ReadSideHandler#globalPrepare()
      */
-    @Deprecated
-    <Event extends AggregateEvent<Event>> void register(Class<? extends CassandraReadSideProcessor<Event>> processorClass);
+    ReadSideHandlerBuilder<Event> setGlobalPrepare(Supplier<CompletionStage<Done>> callback);
 
     /**
-     * Create a builder for a Cassandra read side event handler.
+     * Set a prepare callback.
      *
-     * @param readSideId An identifier for this read side. This will be used to store offsets in the offset store.
-     * @return The builder.
+     * @param callback The callback.
+     * @return This builder for fluent invocation.
+     * @see ReadSideHandler#prepare(AggregateEventTag)
      */
-    <Event extends AggregateEvent<Event>> ReadSideHandlerBuilder<Event> builder(String readSideId);
+    ReadSideHandlerBuilder<Event> setPrepare(
+        Function<AggregateEventTag<Event>, CompletionStage<Done>> callback);
 
     /**
-     * Builder for the handler.
+     * Define the event handler that will be used for events of a given class.
+     *
+     * @param eventClass The event class to handle.
+     * @param handler The function to handle the events.
+     * @return This builder for fluent invocation
      */
-    interface ReadSideHandlerBuilder<Event extends AggregateEvent<Event>> {
-
-        /**
-         * Set a global prepare callback.
-         *
-         * @param callback The callback.
-         * @return This builder for fluent invocation.
-         * @see ReadSideHandler#globalPrepare()
-         */
-        ReadSideHandlerBuilder<Event> setGlobalPrepare(Supplier<CompletionStage<Done>> callback);
-
-        /**
-         * Set a prepare callback.
-         *
-         * @param callback The callback.
-         * @return This builder for fluent invocation.
-         * @see ReadSideHandler#prepare(AggregateEventTag)
-         */
-        ReadSideHandlerBuilder<Event> setPrepare(Function<AggregateEventTag<Event>, CompletionStage<Done>> callback);
-
-        /**
-         * Define the event handler that will be used for events of a given class.
-         *
-         * @param eventClass The event class to handle.
-         * @param handler The function to handle the events.
-         * @return This builder for fluent invocation
-         */
-        <E extends Event> ReadSideHandlerBuilder<Event> setEventHandler(Class<E> eventClass, Function<E, CompletionStage<List<BoundStatement>>> handler);
-
-        /**
-         * Define the event handler that will be used for events of a given class.
-         *
-         * This variant allows for offsets to be consumed as well as their events.
-         *
-         * @param eventClass The event class to handle.
-         * @param handler The function to handle the events.
-         * @return This builder for fluent invocation
-         */
-        <E extends Event> ReadSideHandlerBuilder<Event> setEventHandler(Class<E> eventClass, BiFunction<E, Offset, CompletionStage<List<BoundStatement>>> handler);
-
-        /**
-         * Build the read side handler.
-         *
-         * @return The read side handler.
-         */
-        ReadSideHandler<Event> build();
-    }
+    <E extends Event> ReadSideHandlerBuilder<Event> setEventHandler(
+        Class<E> eventClass, Function<E, CompletionStage<List<BoundStatement>>> handler);
 
     /**
-     * Convenience method to create an already completed <code>CompletionStage</code> with one <code>BoundStatement</code>.
+     * Define the event handler that will be used for events of a given class.
+     *
+     * <p>This variant allows for offsets to be consumed as well as their events.
+     *
+     * @param eventClass The event class to handle.
+     * @param handler The function to handle the events.
+     * @return This builder for fluent invocation
      */
-    static CompletionStage<List<BoundStatement>> completedStatement(BoundStatement statement) {
-        return CompletableFuture.completedFuture(Collections.singletonList(statement));
-    }
+    <E extends Event> ReadSideHandlerBuilder<Event> setEventHandler(
+        Class<E> eventClass, BiFunction<E, Offset, CompletionStage<List<BoundStatement>>> handler);
 
     /**
-     * Convenience method to create an already completed <code>CompletionStage</code> with several <code>BoundStatement</code>.
+     * Build the read side handler.
+     *
+     * @return The read side handler.
      */
-    static CompletionStage<List<BoundStatement>> completedStatements(List<BoundStatement> statements) {
-        return CompletableFuture.completedFuture(statements);
-    }
+    ReadSideHandler<Event> build();
+  }
 
-    /**
-     * Convenience method to create an already completed <code>CompletionStage</code> with several <code>BoundStatement</code>.
-     */
-    static CompletionStage<List<BoundStatement>> completedStatements(BoundStatement... statements) {
-        return completedStatements(Arrays.asList(statements));
-    }
+  /**
+   * Convenience method to create an already completed <code>CompletionStage</code> with one <code>
+   * BoundStatement</code>.
+   */
+  static CompletionStage<List<BoundStatement>> completedStatement(BoundStatement statement) {
+    return CompletableFuture.completedFuture(Collections.singletonList(statement));
+  }
 
-    /**
-     * Convenience method to create an already completed <code>CompletionStage</code> with no <code>BoundStatement</code>.
-     */
-    static CompletionStage<List<BoundStatement>> completedStatements() {
-        return CompletableFuture.completedFuture(Collections.emptyList());
-    }
+  /**
+   * Convenience method to create an already completed <code>CompletionStage</code> with several
+   * <code>BoundStatement</code>.
+   */
+  static CompletionStage<List<BoundStatement>> completedStatements(
+      List<BoundStatement> statements) {
+    return CompletableFuture.completedFuture(statements);
+  }
+
+  /**
+   * Convenience method to create an already completed <code>CompletionStage</code> with several
+   * <code>BoundStatement</code>.
+   */
+  static CompletionStage<List<BoundStatement>> completedStatements(BoundStatement... statements) {
+    return completedStatements(Arrays.asList(statements));
+  }
+
+  /**
+   * Convenience method to create an already completed <code>CompletionStage</code> with no <code>
+   * BoundStatement</code>.
+   */
+  static CompletionStage<List<BoundStatement>> completedStatements() {
+    return CompletableFuture.completedFuture(Collections.emptyList());
+  }
 }

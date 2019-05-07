@@ -4,7 +4,8 @@
 package com.lightbend.lagom.internal.persistence.cassandra
 
 import akka.actor.ActorSystem
-import org.scalatest.{ MustMatchers, WordSpec }
+import org.scalatest.MustMatchers
+import org.scalatest.WordSpec
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

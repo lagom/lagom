@@ -10,12 +10,12 @@ import com.typesafe.config.Config
 import scala.concurrent.duration._
 
 case class ReadSideConfig(
-  offsetTimeout:        FiniteDuration = 5.seconds,
-  minBackoff:           FiniteDuration = 3.seconds,
-  maxBackoff:           FiniteDuration = 30.seconds,
-  randomBackoffFactor:  Double         = 0.2,
-  globalPrepareTimeout: FiniteDuration = 20.seconds,
-  role:                 Option[String] = None
+    offsetTimeout: FiniteDuration = 5.seconds,
+    minBackoff: FiniteDuration = 3.seconds,
+    maxBackoff: FiniteDuration = 30.seconds,
+    randomBackoffFactor: Double = 0.2,
+    globalPrepareTimeout: FiniteDuration = 20.seconds,
+    role: Option[String] = None
 )
 
 object ReadSideConfig {

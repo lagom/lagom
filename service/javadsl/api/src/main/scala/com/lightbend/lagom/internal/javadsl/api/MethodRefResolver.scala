@@ -18,6 +18,7 @@ import java.lang.reflect.Method
  * The SAM that the lambda implements must be Serializable for this to work.
  */
 private[api] object MethodRefResolver {
+
   /**
    * Resolve the method ref for a lambda.
    */
@@ -25,14 +26,19 @@ private[api] object MethodRefResolver {
     val lambdaType = lambda.getClass
 
     if (!classOf[java.io.Serializable].isInstance(lambda)) {
-      throw new IllegalArgumentException("Can only resolve method references from serializable SAMs, class was: " + lambdaType)
+      throw new IllegalArgumentException(
+        "Can only resolve method references from serializable SAMs, class was: " + lambdaType
+      )
     }
 
     val writeReplace = try {
       lambda.getClass.getDeclaredMethod("writeReplace")
     } catch {
       case e: NoSuchMethodError =>
-        throw new IllegalArgumentException("Passed in object does not provide a writeReplace method, hence it can't be a Java 8 method reference.", e)
+        throw new IllegalArgumentException(
+          "Passed in object does not provide a writeReplace method, hence it can't be a Java 8 method reference.",
+          e
+        )
     }
 
     writeReplace.setAccessible(true)
@@ -40,7 +46,9 @@ private[api] object MethodRefResolver {
     val serializedLambda = writeReplace.invoke(lambda) match {
       case s: SerializedLambda => s
       case other =>
-        throw new IllegalArgumentException("Passed in object does not writeReplace itself with SerializedLambda, hence it can't be a Java 8 method reference.")
+        throw new IllegalArgumentException(
+          "Passed in object does not writeReplace itself with SerializedLambda, hence it can't be a Java 8 method reference."
+        )
     }
 
     // Try to load the class that the method ref is defined on

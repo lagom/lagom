@@ -12,7 +12,7 @@ import java.net.URI
 
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 
-case class UnmanagedServices @Inject() (services: Map[String, ServiceRegistryService])
+case class UnmanagedServices @Inject()(services: Map[String, ServiceRegistryService])
 object UnmanagedServices {
   def apply(services: JMap[String, String]): UnmanagedServices = {
     val convertedServices = for ((name, url) <- services.asScala.toMap) yield {

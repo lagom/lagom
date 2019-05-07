@@ -3,7 +3,8 @@
  */
 package com.lightbend.lagom.scaladsl.api
 
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import play.api.Configuration
 
 /**
@@ -13,6 +14,7 @@ import play.api.Configuration
  * can control which order this configuration gets applied by changing the order in which traits are mixed together.
  */
 trait ProvidesAdditionalConfiguration {
+
   /**
    * Define the additional configuration to add to the application.
    *

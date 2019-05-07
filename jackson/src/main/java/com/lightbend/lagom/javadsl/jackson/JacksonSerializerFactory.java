@@ -29,118 +29,44 @@ import akka.util.ByteString;
 import akka.util.ByteString$;
 import akka.util.ByteStringBuilder;
 
-/**
- * A Jackson Serializer Factory
- */
+/** A Jackson Serializer Factory */
 @Singleton
 public class JacksonSerializerFactory implements SerializerFactory {
 
-    private final ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
-    @Inject
-    public JacksonSerializerFactory(ActorSystem system) {
-        this(JacksonObjectMapperProvider.get(system).objectMapper());
+  @Inject
+  public JacksonSerializerFactory(ActorSystem system) {
+    this(JacksonObjectMapperProvider.get(system).objectMapper());
+  }
+
+  /** For testing purposes */
+  public JacksonSerializerFactory(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
+  }
+
+  @Override
+  public <MessageEntity> StrictMessageSerializer<MessageEntity> messageSerializerFor(Type type) {
+    if (type == Done.class) return new DoneMessageSerializer<>();
+    else return new JacksonMessageSerializer<>(type);
+  }
+
+  private class JacksonMessageSerializer<MessageEntity>
+      implements StrictMessageSerializer<MessageEntity> {
+
+    private final NegotiatedSerializer<MessageEntity, ByteString> serializer;
+    private final NegotiatedDeserializer<MessageEntity, ByteString> deserializer;
+
+    public JacksonMessageSerializer(Type type) {
+      JavaType javaType = objectMapper.constructType(type);
+      serializer = new JacksonSerializer(objectMapper.writerFor(javaType));
+      deserializer = new JacksonDeserializer(objectMapper.readerFor(javaType));
     }
-
-    /**
-     * For testing purposes
-     */
-    public JacksonSerializerFactory(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
-
-
-    @Override
-    public <MessageEntity> StrictMessageSerializer<MessageEntity> messageSerializerFor(Type type) {
-        if (type == Done.class)
-          return new DoneMessageSerializer<>();
-        else
-          return new JacksonMessageSerializer<>(type);
-    }
-
-    private class JacksonMessageSerializer<MessageEntity> implements StrictMessageSerializer<MessageEntity> {
-
-        private final NegotiatedSerializer<MessageEntity, ByteString> serializer;
-        private final NegotiatedDeserializer<MessageEntity, ByteString> deserializer;
-
-        public JacksonMessageSerializer(Type type) {
-            JavaType javaType = objectMapper.constructType(type);
-            serializer = new JacksonSerializer(objectMapper.writerFor(javaType));
-            deserializer = new JacksonDeserializer(objectMapper.readerFor(javaType));
-        }
-
-        @Override
-        public PSequence<MessageProtocol> acceptResponseProtocols() {
-            return TreePVector.singleton(new MessageProtocol(Optional.of("application/json"), Optional.empty(),
-                    Optional.empty()));
-        }
-
-        @Override
-        public NegotiatedSerializer<MessageEntity, ByteString> serializerForRequest() {
-            return serializer;
-        }
-
-        @Override
-        public NegotiatedDeserializer<MessageEntity, ByteString> deserializer(MessageProtocol messageProtocol) throws SerializationException {
-            return deserializer;
-        }
-
-        @Override
-        public NegotiatedSerializer<MessageEntity, ByteString> serializerForResponse(List<MessageProtocol> acceptedMessageProtocols) {
-            return serializer;
-        }
-
-        private class JacksonSerializer implements NegotiatedSerializer<MessageEntity, ByteString> {
-            private final ObjectWriter writer;
-
-            public JacksonSerializer(ObjectWriter writer) {
-                this.writer = writer;
-            }
-
-            @Override
-            public MessageProtocol protocol() {
-                return new MessageProtocol(Optional.of("application/json"), Optional.of("utf-8"), Optional.empty());
-            }
-
-            @Override
-            public ByteString serialize(MessageEntity messageEntity) {
-                ByteStringBuilder builder = ByteString$.MODULE$.newBuilder();
-                try {
-                    writer.writeValue(builder.asOutputStream(), messageEntity);
-                } catch (Exception e) {
-                    throw new SerializationException(e);
-                }
-                return builder.result();
-            }
-        }
-
-        private class JacksonDeserializer implements NegotiatedDeserializer<MessageEntity, ByteString> {
-            private final ObjectReader reader;
-
-            public JacksonDeserializer(ObjectReader reader) {
-                this.reader = reader;
-            }
-
-            @Override
-            public MessageEntity deserialize(ByteString bytes) {
-                try {
-                    return reader.readValue(bytes.iterator().asInputStream());
-                } catch (Exception e) {
-                    throw new DeserializationException(e);
-                }
-            }
-        }
-    }
-
-  private class DoneMessageSerializer<MessageEntity> implements StrictMessageSerializer<MessageEntity> {
-
-    private final NegotiatedSerializer<MessageEntity, ByteString> serializer = new DoneSerializer();
-    private final NegotiatedDeserializer<MessageEntity, ByteString> deserializer = new DoneDeserializer();
 
     @Override
     public PSequence<MessageProtocol> acceptResponseProtocols() {
-      return TreePVector.singleton(new MessageProtocol(Optional.of("application/json"), Optional.empty(), Optional
-          .empty()));
+      return TreePVector.singleton(
+          new MessageProtocol(Optional.of("application/json"), Optional.empty(), Optional.empty()));
     }
 
     @Override
@@ -149,8 +75,81 @@ public class JacksonSerializerFactory implements SerializerFactory {
     }
 
     @Override
-    public NegotiatedDeserializer<MessageEntity, ByteString> deserializer(MessageProtocol messageProtocol)
-        throws SerializationException {
+    public NegotiatedDeserializer<MessageEntity, ByteString> deserializer(
+        MessageProtocol messageProtocol) throws SerializationException {
+      return deserializer;
+    }
+
+    @Override
+    public NegotiatedSerializer<MessageEntity, ByteString> serializerForResponse(
+        List<MessageProtocol> acceptedMessageProtocols) {
+      return serializer;
+    }
+
+    private class JacksonSerializer implements NegotiatedSerializer<MessageEntity, ByteString> {
+      private final ObjectWriter writer;
+
+      public JacksonSerializer(ObjectWriter writer) {
+        this.writer = writer;
+      }
+
+      @Override
+      public MessageProtocol protocol() {
+        return new MessageProtocol(
+            Optional.of("application/json"), Optional.of("utf-8"), Optional.empty());
+      }
+
+      @Override
+      public ByteString serialize(MessageEntity messageEntity) {
+        ByteStringBuilder builder = ByteString$.MODULE$.newBuilder();
+        try {
+          writer.writeValue(builder.asOutputStream(), messageEntity);
+        } catch (Exception e) {
+          throw new SerializationException(e);
+        }
+        return builder.result();
+      }
+    }
+
+    private class JacksonDeserializer implements NegotiatedDeserializer<MessageEntity, ByteString> {
+      private final ObjectReader reader;
+
+      public JacksonDeserializer(ObjectReader reader) {
+        this.reader = reader;
+      }
+
+      @Override
+      public MessageEntity deserialize(ByteString bytes) {
+        try {
+          return reader.readValue(bytes.iterator().asInputStream());
+        } catch (Exception e) {
+          throw new DeserializationException(e);
+        }
+      }
+    }
+  }
+
+  private class DoneMessageSerializer<MessageEntity>
+      implements StrictMessageSerializer<MessageEntity> {
+
+    private final NegotiatedSerializer<MessageEntity, ByteString> serializer = new DoneSerializer();
+    private final NegotiatedDeserializer<MessageEntity, ByteString> deserializer =
+        new DoneDeserializer();
+
+    @Override
+    public PSequence<MessageProtocol> acceptResponseProtocols() {
+      return TreePVector.singleton(
+          new MessageProtocol(Optional.of("application/json"), Optional.empty(), Optional.empty()));
+    }
+
+    @Override
+    public NegotiatedSerializer<MessageEntity, ByteString> serializerForRequest() {
+      return serializer;
+    }
+
+    @Override
+    public NegotiatedDeserializer<MessageEntity, ByteString> deserializer(
+        MessageProtocol messageProtocol) throws SerializationException {
       return deserializer;
     }
 
@@ -166,7 +165,8 @@ public class JacksonSerializerFactory implements SerializerFactory {
 
       @Override
       public MessageProtocol protocol() {
-        return new MessageProtocol(Optional.of("application/json"), Optional.of("utf-8"), Optional.empty());
+        return new MessageProtocol(
+            Optional.of("application/json"), Optional.of("utf-8"), Optional.empty());
       }
 
       @Override

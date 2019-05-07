@@ -13,7 +13,7 @@ import scala.beans.BeanProperty
  * Internal goal, invoked by other Lagom mojos that work with multiple projects at once, to read plugin configuration
  * for a project and set up the projects context values.
  */
-class ConfigureMojo @Inject() (session: MavenSession) extends LagomAbstractMojo {
+class ConfigureMojo @Inject()(session: MavenSession) extends LagomAbstractMojo {
 
   @BeanProperty
   var lagomService: Boolean = _

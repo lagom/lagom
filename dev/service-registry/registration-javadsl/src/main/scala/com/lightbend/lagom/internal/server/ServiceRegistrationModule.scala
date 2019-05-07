@@ -14,7 +14,8 @@ import akka.NotUsed
 import javax.inject.Inject
 import javax.inject.Singleton
 
-import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistry, ServiceRegistryService }
+import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry
+import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
 import com.typesafe.config.Config
 import play.api.Configuration
@@ -33,12 +34,12 @@ class ServiceRegistrationModule extends Module {
 
 object ServiceRegistrationModule {
 
-  class ServiceConfigProvider @Inject() (config: Config) extends Provider[ServiceConfig] {
+  class ServiceConfigProvider @Inject()(config: Config) extends Provider[ServiceConfig] {
 
     override lazy val get = {
       val httpAddress = config.getString("play.server.http.address")
-      val httpPort = config.getString("play.server.http.port")
-      val url = new URI(s"http://$httpAddress:$httpPort")
+      val httpPort    = config.getString("play.server.http.port")
+      val url         = new URI(s"http://$httpAddress:$httpPort")
 
       ServiceConfig(url)
     }
@@ -50,11 +51,11 @@ object ServiceRegistrationModule {
    * Automatically registers the service on start, and also unregister it on stop.
    */
   @Singleton
-  private class RegisterWithServiceRegistry @Inject() (
-    lifecycle:        ApplicationLifecycle,
-    resolvedServices: ResolvedServices,
-    config:           ServiceConfig,
-    registry:         ServiceRegistry
+  private class RegisterWithServiceRegistry @Inject()(
+      lifecycle: ApplicationLifecycle,
+      resolvedServices: ResolvedServices,
+      config: ServiceConfig,
+      registry: ServiceRegistry
   )(implicit ec: ExecutionContext) {
 
     private lazy val logger: Logger = Logger(this.getClass())
@@ -62,18 +63,24 @@ object ServiceRegistrationModule {
     private val locatableServices = resolvedServices.services.filter(_.descriptor.locatableService)
 
     lifecycle.addStopHook { () =>
-      Future.sequence(locatableServices.map { service =>
-        registry.unregister(service.descriptor.name).invoke().toScala
-      }).map(_ => ())
+      Future
+        .sequence(locatableServices.map { service =>
+          registry.unregister(service.descriptor.name).invoke().toScala
+        })
+        .map(_ => ())
     }
 
     locatableServices.foreach { service =>
-      registry.register(service.descriptor.name).invoke(new ServiceRegistryService(config.url, service.descriptor.acls)).exceptionally(new JFunction[Throwable, NotUsed] {
-        def apply(t: Throwable) = {
-          logger.error(s"Service name=[${service.descriptor.name}] couldn't register itself to the service locator.", t)
-          NotUsed.getInstance()
-        }
-      })
+      registry
+        .register(service.descriptor.name)
+        .invoke(new ServiceRegistryService(config.url, service.descriptor.acls))
+        .exceptionally(new JFunction[Throwable, NotUsed] {
+          def apply(t: Throwable) = {
+            logger
+              .error(s"Service name=[${service.descriptor.name}] couldn't register itself to the service locator.", t)
+            NotUsed.getInstance()
+          }
+        })
     }
   }
 }

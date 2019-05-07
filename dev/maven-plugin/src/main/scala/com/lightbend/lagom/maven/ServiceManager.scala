@@ -4,17 +4,26 @@
 package com.lightbend.lagom.maven
 
 import java.io.File
-import javax.inject.{ Inject, Singleton }
+import javax.inject.Inject
+import javax.inject.Singleton
 
 import com.lightbend.lagom.core.LagomVersion
-import com.lightbend.lagom.dev.PortAssigner.{ Port, PortRange, ProjectName }
-import com.lightbend.lagom.dev.Reloader.{ CompileFailure, CompileResult, CompileSuccess, DevServer }
-import com.lightbend.lagom.dev.{ LagomConfig, PortAssigner, Reloader }
+import com.lightbend.lagom.dev.PortAssigner.Port
+import com.lightbend.lagom.dev.PortAssigner.PortRange
+import com.lightbend.lagom.dev.PortAssigner.ProjectName
+import com.lightbend.lagom.dev.Reloader.CompileFailure
+import com.lightbend.lagom.dev.Reloader.CompileResult
+import com.lightbend.lagom.dev.Reloader.CompileSuccess
+import com.lightbend.lagom.dev.Reloader.DevServer
+import com.lightbend.lagom.dev.LagomConfig
+import com.lightbend.lagom.dev.PortAssigner
+import com.lightbend.lagom.dev.Reloader
 import org.apache.maven.Maven
 import org.apache.maven.artifact.ArtifactUtils
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.project.MavenProject
-import org.eclipse.aether.artifact.{ Artifact, DefaultArtifact }
+import org.eclipse.aether.artifact.Artifact
+import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.graph.Dependency
 import play.api.PlayException
 import play.dev.filewatch.FileWatchService
@@ -26,34 +35,48 @@ import scala.util.control.NonFatal
  * Manages services
  */
 @Singleton
-class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession, facade: MavenFacade,
-                                scalaClassLoaderManager: ScalaClassLoaderManager) {
+class ServiceManager @Inject()(
+    logger: MavenLoggerProxy,
+    session: MavenSession,
+    facade: MavenFacade,
+    scalaClassLoaderManager: ScalaClassLoaderManager
+) {
 
-  private var runningServices = Map.empty[MavenProject, DevServer]
-  private var runningExternalProjects = Map.empty[Dependency, DevServer]
+  private var runningServices                         = Map.empty[MavenProject, DevServer]
+  private var runningExternalProjects                 = Map.empty[Dependency, DevServer]
   private var portMap: Option[Map[ProjectName, Port]] = None
 
   private def detectScalaBinaryVersion(artifacts: Seq[Artifact]) = {
-    artifacts.collectFirst {
-      case scala if scala.getGroupId == "org.scala-lang" && scala.getArtifactId == "scala-library" =>
-        ServiceManager.scalaBinaryVersion(scala.getVersion)
-    } getOrElse ServiceManager.DefaultScalaBinaryVersion
+    artifacts
+      .collectFirst {
+        case scala if scala.getGroupId == "org.scala-lang" && scala.getArtifactId == "scala-library" =>
+          ServiceManager.scalaBinaryVersion(scala.getVersion)
+      }
+      .getOrElse(ServiceManager.DefaultScalaBinaryVersion)
   }
 
   private def devModeDependencies(scalaBinaryVersion: String, artifacts: Seq[String]) = artifacts.map { dep =>
-    new Dependency(new DefaultArtifact(s"com.lightbend.lagom:${dep}_$scalaBinaryVersion:${LagomVersion.current}"), "runtime")
+    new Dependency(
+      new DefaultArtifact(s"com.lightbend.lagom:${dep}_$scalaBinaryVersion:${LagomVersion.current}"),
+      "runtime"
+    )
   }
 
-  private def calculateDevModeDependencies(scalaBinaryVersion: String, playService: Boolean,
-                                           serviceLocatorUrl: Option[String], cassandraPort: Option[Int]): Seq[Dependency] = {
+  private def calculateDevModeDependencies(
+      scalaBinaryVersion: String,
+      playService: Boolean,
+      serviceLocatorUrl: Option[String],
+      cassandraPort: Option[Int]
+  ): Seq[Dependency] = {
     if (playService) {
       devModeDependencies(scalaBinaryVersion, Seq("lagom-javadsl-play-integration", "lagom-reloadable-server"))
     } else {
       devModeDependencies(
         scalaBinaryVersion,
         Seq("lagom-reloadable-server") ++
-          serviceLocatorUrl.fold(Seq.empty[String])(_ =>
-            Seq("lagom-service-registry-client", "lagom-service-registration"))
+          serviceLocatorUrl.fold(Seq.empty[String])(
+            _ => Seq("lagom-service-registry-client", "lagom-service-registration")
+          )
       )
     }
   }
@@ -73,12 +96,18 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
     }
   }
 
-  def startServiceDevMode(project: MavenProject, port: Int, serviceLocatorUrl: Option[String], cassandraPort: Option[Int], playService: Boolean, additionalWatchDirs: Seq[File]): Unit = synchronized {
+  def startServiceDevMode(
+      project: MavenProject,
+      port: Int,
+      serviceLocatorUrl: Option[String],
+      cassandraPort: Option[Int],
+      playService: Boolean,
+      additionalWatchDirs: Seq[File]
+  ): Unit = synchronized {
     runningServices.get(project) match {
       case Some(service) =>
         logger.info("Service " + project.getArtifactId + " already running!")
       case None =>
-
         try {
           // First, resolve the project. We need to do this so that we can find out the Scala version.
           val plainDeps = facade.resolveProject(project, Nil)
@@ -109,7 +138,8 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
 
           val watchService = FileWatchService.defaultWatchService(
             new File(session.getTopLevelProject.getBuild.getDirectory, "target"),
-            200, logger
+            200,
+            logger
           )
 
           val serviceClassPath = projects.map { project =>
@@ -181,12 +211,17 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
     }
   }
 
-  def startExternalProject(dependency: Dependency, port: Int, serviceLocatorUrl: Option[String], cassandraPort: Option[Int], playService: Boolean): Unit = synchronized {
+  def startExternalProject(
+      dependency: Dependency,
+      port: Int,
+      serviceLocatorUrl: Option[String],
+      cassandraPort: Option[Int],
+      playService: Boolean
+  ): Unit = synchronized {
     runningExternalProjects.get(dependency) match {
       case Some(service) =>
         logger.info("External project " + dependency.getArtifact.getArtifactId + " already running!")
       case None =>
-
         // First resolve to find out the scala binary version
         val plainDeps = facade.resolveDependency(dependency, Nil)
 
@@ -205,8 +240,13 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
 
         val scalaClassLoader = scalaClassLoaderManager.extractScalaClassLoader(dependencies)
 
-        val service = Reloader.startNoReload(scalaClassLoader, dependencies.map(_.getFile),
-          new File(session.getCurrentProject.getBuild.getDirectory), devSettings.toSeq, port)
+        val service = Reloader.startNoReload(
+          scalaClassLoader,
+          dependencies.map(_.getFile),
+          new File(session.getCurrentProject.getBuild.getDirectory),
+          devSettings.toSeq,
+          port
+        )
 
         runningExternalProjects += (dependency -> service)
     }
@@ -219,20 +259,23 @@ class ServiceManager @Inject() (logger: MavenLoggerProxy, session: MavenSession,
     }
   }
 
-  private def resolveDependencies(project: MavenProject, additionalDependencies: Seq[Dependency]): ProjectDependencies = {
+  private def resolveDependencies(
+      project: MavenProject,
+      additionalDependencies: Seq[Dependency]
+  ): ProjectDependencies = {
 
     val dependencies = facade.resolveProject(project, additionalDependencies)
 
     val runtimeDependencies = dependencies.filter(d => RuntimeScopes(d.getScope))
     val eitherDepsOrProjects = runtimeDependencies.map { dep =>
-      val artifact = dep.getArtifact
+      val artifact   = dep.getArtifact
       val projectKey = ArtifactUtils.key(artifact.getGroupId, artifact.getArtifactId, artifact.getVersion)
       session.getProjectMap.get(projectKey) match {
         case null       => Left(dep)
         case projectDep => Right(projectDep)
       }
     }
-    val external = eitherDepsOrProjects.collect { case Left(dep) => dep.getArtifact }
+    val external = eitherDepsOrProjects.collect { case Left(dep)         => dep.getArtifact }
     val internal = eitherDepsOrProjects.collect { case Right(projectDep) => projectDep }
 
     ProjectDependencies(external, internal)
@@ -248,15 +291,15 @@ object ServiceManager {
   // These regexps are pulled from sbt's CrossVersionUtil
   private val ScalaReleaseVersion =
     """(\d+\.\d+)\.\d+(?:-\d+)?""".r
-  private val ScalaBinCompatVersion = """(\d+\.\d+)\.\d+-bin(?:-.*)?""".r
+  private val ScalaBinCompatVersion  = """(\d+\.\d+)\.\d+-bin(?:-.*)?""".r
   private val ScalaNonReleaseVersion = """(\d+\.\d+)\.(\d+)-\w+""".r
 
   def scalaBinaryVersion(version: String) = {
     version match {
-      case ScalaReleaseVersion(binaryVersion) => binaryVersion
-      case ScalaBinCompatVersion(binaryVersion) => binaryVersion
+      case ScalaReleaseVersion(binaryVersion)                              => binaryVersion
+      case ScalaBinCompatVersion(binaryVersion)                            => binaryVersion
       case ScalaNonReleaseVersion(binaryVersion, patch) if patch.toInt > 0 => binaryVersion
-      case _ => version
+      case _                                                               => version
     }
   }
 }

@@ -29,18 +29,13 @@ public class Notification implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
     Notification other = (Notification) obj;
     if (msg == null) {
-      if (other.msg != null)
-        return false;
-    } else if (!msg.equals(other.msg))
-      return false;
+      if (other.msg != null) return false;
+    } else if (!msg.equals(other.msg)) return false;
     return true;
   }
 
@@ -48,5 +43,4 @@ public class Notification implements Serializable {
   public String toString() {
     return "Notification [msg=" + msg + "]";
   }
-
 }

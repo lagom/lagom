@@ -1,7 +1,6 @@
 /**
  * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
-
 package lagom
 
 import sbt._
@@ -13,10 +12,11 @@ import java.io.File
 
 object Protobuf {
   val paths = SettingKey[Seq[File]]("protobuf-paths", "The paths that contain *.proto files.")
-  val outputPaths = SettingKey[Seq[File]]("protobuf-output-paths", "The paths where to save the generated *.java files.")
-  val protoc = SettingKey[String]("protobuf-protoc", "The path and name of the protoc executable.")
+  val outputPaths =
+    SettingKey[Seq[File]]("protobuf-output-paths", "The paths where to save the generated *.java files.")
+  val protoc        = SettingKey[String]("protobuf-protoc", "The path and name of the protoc executable.")
   val protocVersion = SettingKey[String]("protobuf-protoc-version", "The version of the protoc executable.")
-  val generate = TaskKey[Unit]("protobuf-generate", "Compile the protobuf sources and do all processing.")
+  val generate      = TaskKey[Unit]("protobuf-generate", "Compile the protobuf sources and do all processing.")
 
   lazy val settings: Seq[Setting[_]] = Seq(
     paths := Seq((sourceDirectory in Compile).value, (sourceDirectory in Test).value).map(_ / "protobuf"),
@@ -28,24 +28,37 @@ object Protobuf {
       val targetDirs = outputPaths.value
 
       if (sourceDirs.size != targetDirs.size)
-        sys.error(s"Unbalanced number of paths and destination paths!\nPaths: $sourceDirs\nDestination Paths: $targetDirs")
+        sys.error(
+          s"Unbalanced number of paths and destination paths!\nPaths: $sourceDirs\nDestination Paths: $targetDirs"
+        )
 
-      if (sourceDirs exists (_.exists)) {
+      if (sourceDirs.exists(_.exists)) {
         val cmd = protoc.value
         val log = streams.value.log
         checkProtocVersion(cmd, protocVersion.value, log)
 
-        val base = baseDirectory.value
+        val base    = baseDirectory.value
         val sources = base / "src"
         val targets = target.value
-        val cache = targets / "protoc" / "cache"
+        val cache   = targets / "protoc" / "cache"
 
-        (sourceDirs zip targetDirs) map { case (src, dst) =>
-          val relative = src.relativeTo(sources).getOrElse(throw new Exception(s"path $src is not a in source tree $sources")).toString
-          val tmp = targets / "protoc" / relative
-          IO.delete(tmp)
-          generate(cmd, src, tmp, log)
-          transformDirectory(tmp, dst, _ => true, transformFile(_.replace("com.google.protobuf", "akka.protobuf")), cache, log)
+        (sourceDirs.zip(targetDirs)).map {
+          case (src, dst) =>
+            val relative = src
+              .relativeTo(sources)
+              .getOrElse(throw new Exception(s"path $src is not a in source tree $sources"))
+              .toString
+            val tmp = targets / "protoc" / relative
+            IO.delete(tmp)
+            generate(cmd, src, tmp, log)
+            transformDirectory(
+              tmp,
+              dst,
+              _ => true,
+              transformFile(_.replace("com.google.protobuf", "akka.protobuf")),
+              cache,
+              log
+            )
         }
       }
     }
@@ -55,15 +68,18 @@ object Protobuf {
     try {
       val proc = Process(protoc, args)
       thunk(proc, log)
-    } catch { case e: Exception =>
-      throw new RuntimeException("error while executing '%s' with args: %s" format(protoc, args.mkString(" ")), e)
+    } catch {
+      case e: Exception =>
+        throw new RuntimeException("error while executing '%s' with args: %s".format(protoc, args.mkString(" ")), e)
     }
 
   private def checkProtocVersion(protoc: String, protocVersion: String, log: Logger): Unit = {
-    val res = callProtoc(protoc, Seq("--version"), log, { (p, l) => p !! l })
+    val res = callProtoc(protoc, Seq("--version"), log, { (p, l) =>
+      p !! l
+    })
     val version = res.split(" ").last.trim
     if (version != protocVersion) {
-      sys.error("Wrong protoc version! Expected %s but got %s" format (protocVersion, version))
+      sys.error("Wrong protoc version! Expected %s but got %s".format(protocVersion, version))
     }
   }
 
@@ -71,17 +87,25 @@ object Protobuf {
     val protoFiles = (srcDir ** "*.proto").get
     if (srcDir.exists)
       if (protoFiles.isEmpty)
-        log.info("Skipping empty source directory %s" format srcDir)
+        log.info("Skipping empty source directory %s".format(srcDir))
       else {
         targetDir.mkdirs()
 
         log.info("Generating %d protobuf files from %s to %s".format(protoFiles.size, srcDir, targetDir))
-        protoFiles.foreach { proto => log.info("Compiling %s" format proto) }
+        protoFiles.foreach { proto =>
+          log.info("Compiling %s".format(proto))
+        }
 
-        val exitCode = callProtoc(protoc, Seq("-I" + srcDir.absolutePath, "--java_out=%s" format targetDir.absolutePath) ++
-          protoFiles.map(_.absolutePath), log, { (p, l) => p ! l })
+        val exitCode = callProtoc(
+          protoc,
+          Seq("-I" + srcDir.absolutePath, "--java_out=%s".format(targetDir.absolutePath)) ++
+            protoFiles.map(_.absolutePath),
+          log, { (p, l) =>
+            p ! l
+          }
+        )
         if (exitCode != 0)
-          sys.error("protoc returned exit code: %d" format exitCode)
+          sys.error("protoc returned exit code: %d".format(exitCode))
       }
   }
 }

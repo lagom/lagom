@@ -11,17 +11,14 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface UsersService extends Service {
 
-    ServiceCall<String, String> login();
+  ServiceCall<String, String> login();
 
-    @Override
-//#with-auto-acl
-    default Descriptor descriptor() {
-        return named("users")
-                .withCalls(
-                        restCall(Method.POST, "/api/users/login", this::login)
-                )
-                .withAutoAcl(true);
-//#with-auto-acl
-    }
-
+  @Override
+  // #with-auto-acl
+  default Descriptor descriptor() {
+    return named("users")
+        .withCalls(restCall(Method.POST, "/api/users/login", this::login))
+        .withAutoAcl(true);
+    // #with-auto-acl
+  }
 }

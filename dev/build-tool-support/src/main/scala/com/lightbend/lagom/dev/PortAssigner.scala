@@ -19,7 +19,7 @@ object PortAssigner {
     require(max < Integer.MAX_VALUE, "Upper port range must be smaller than " + Integer.MAX_VALUE)
     require(min <= max, "Bottom port range must be smaller than the upper port range")
 
-    val delta: Int = max - min + 1
+    val delta: Int                    = max - min + 1
     def includes(value: Int): Boolean = value >= min && value <= max
   }
 
@@ -33,7 +33,7 @@ object PortAssigner {
 
   def computeProjectsPort(range: PortRange, projectNames: Seq[ProjectName]): Map[ProjectName, Port] = {
     val lagomProjects = projectNames.to[immutable.SortedSet]
-    val mapBuilder = new Project2PortMapBuilder(range)
+    val mapBuilder    = new Project2PortMapBuilder(range)
     mapBuilder.build(lagomProjects)
   }
 
@@ -43,8 +43,8 @@ object PortAssigner {
       require(
         projects.size <= range.delta,
         s"""A larger port range is needed, as you have ${projects.size} Lagom projects and only ${range.delta} 
-             |ports available. You should increase the range passed for the 
-             |lagomPortRange build setting
+           |ports available. You should increase the range passed for the 
+           |lagomPortRange build setting
          """.stripMargin
       )
 
@@ -57,13 +57,18 @@ object PortAssigner {
       }
 
       @annotation.tailrec
-      def loop(projectNames: Seq[ProjectName], assignedPort: Set[Port], unassigned: Vector[ProjectName], result: Map[ProjectName, Port]): Map[ProjectName, Port] = projectNames match {
+      def loop(
+          projectNames: Seq[ProjectName],
+          assignedPort: Set[Port],
+          unassigned: Vector[ProjectName],
+          result: Map[ProjectName, Port]
+      ): Map[ProjectName, Port] = projectNames match {
         case Nil if unassigned.nonEmpty =>
-          // if we are here there are projects with colliding hash that still need to get their port assigned. As expected, this step is carried out after assigning 
+          // if we are here there are projects with colliding hash that still need to get their port assigned. As expected, this step is carried out after assigning
           // a port to all non-colliding projects.
-          val proj = unassigned.head
+          val proj          = unassigned.head
           val projectedPort = projectedPortFor(proj)
-          val port = findFirstAvailablePort(projectedPort, assignedPort)
+          val port          = findFirstAvailablePort(projectedPort, assignedPort)
           loop(projectNames, assignedPort + port, unassigned.tail, result + (proj -> port))
         case Nil => result
         case proj +: rest =>
@@ -76,7 +81,7 @@ object PortAssigner {
     }
 
     private def projectedPortFor(name: ProjectName): Port = {
-      val hash = Math.abs(name.hashCode())
+      val hash      = Math.abs(name.hashCode())
       val portDelta = hash % range.delta
       Port(range.min + portDelta)
     }

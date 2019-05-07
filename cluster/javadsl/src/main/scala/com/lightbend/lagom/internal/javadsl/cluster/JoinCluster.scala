@@ -4,7 +4,8 @@
 package com.lightbend.lagom.internal.javadsl.cluster
 
 import akka.actor.ActorSystem
-import com.google.inject.{ AbstractModule, Inject }
+import com.google.inject.AbstractModule
+import com.google.inject.Inject
 import com.lightbend.lagom.internal.cluster.JoinClusterImpl
 import play.api.Environment
 
@@ -14,6 +15,6 @@ class JoinClusterModule extends AbstractModule {
   }
 }
 
-private[lagom] class JoinCluster @Inject() (system: ActorSystem, environment: Environment) {
+private[lagom] class JoinCluster @Inject()(system: ActorSystem, environment: Environment) {
   JoinClusterImpl.join(system, environment)
 }

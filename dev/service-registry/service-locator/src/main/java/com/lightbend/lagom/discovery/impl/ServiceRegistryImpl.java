@@ -32,72 +32,75 @@ import com.lightbend.lagom.internal.javadsl.registry.RegisteredService;
 
 public class ServiceRegistryImpl implements ServiceRegistry {
 
-	private static final ALogger LOGGER = Logger.of(ServiceRegistryImpl.class);
+  private static final ALogger LOGGER = Logger.of(ServiceRegistryImpl.class);
 
-	private final Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
-	private final ActorRef registry;
+  private final Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
+  private final ActorRef registry;
 
-	@Inject
-	public ServiceRegistryImpl(@Named(ServiceRegistryModule.SERVICE_REGISTRY_ACTOR) ActorRef registry) {
-		this.registry = registry;
-	}
+  @Inject
+  public ServiceRegistryImpl(
+      @Named(ServiceRegistryModule.SERVICE_REGISTRY_ACTOR) ActorRef registry) {
+    this.registry = registry;
+  }
 
-	@Override
-	public ServiceCall<ServiceRegistryService, NotUsed> register(String name) {
-		return service -> {
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("register invoked, name=[" + name + "], request=[" + service + "]");
+  @Override
+  public ServiceCall<ServiceRegistryService, NotUsed> register(String name) {
+    return service -> {
+      if (LOGGER.isDebugEnabled())
+        LOGGER.debug("register invoked, name=[" + name + "], request=[" + service + "]");
       return PatternsCS.ask(registry, new Register(name, service), timeout)
-					.thenApply(done -> NotUsed.getInstance());
-		};
-	}
+          .thenApply(done -> NotUsed.getInstance());
+    };
+  }
 
-	@Override
-	public ServiceCall<NotUsed, NotUsed> unregister(String name) {
-		return request -> {
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("unregister invoked, name=[" + name + "], request=[" + request + "]");
-			registry.tell(new Remove(name), null);
-			return CompletableFuture.completedFuture(NotUsed.getInstance());
-		};
-	}
+  @Override
+  public ServiceCall<NotUsed, NotUsed> unregister(String name) {
+    return request -> {
+      if (LOGGER.isDebugEnabled())
+        LOGGER.debug("unregister invoked, name=[" + name + "], request=[" + request + "]");
+      registry.tell(new Remove(name), null);
+      return CompletableFuture.completedFuture(NotUsed.getInstance());
+    };
+  }
 
-	@Override
-	public ServiceCall<NotUsed, URI> lookup(String name) {
-		return request -> {
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("locate invoked, name=[" + name + "], request=[" + request + "]");
-			return PatternsCS.ask(registry, new Lookup(name), timeout).thenApply(result -> {
-				@SuppressWarnings("unchecked")
-				Optional<URI> location = OptionConverters.toJava((Option<URI>) result);
-				logServiceLookupResult(name, location);
-				if (location.isPresent()) {
-					return location.get();
-				} else {
-					throw new com.lightbend.lagom.javadsl.api.transport.NotFound(name);
-				}
-			});
-		};
-	}
+  @Override
+  public ServiceCall<NotUsed, URI> lookup(String name) {
+    return request -> {
+      if (LOGGER.isDebugEnabled())
+        LOGGER.debug("locate invoked, name=[" + name + "], request=[" + request + "]");
+      return PatternsCS.ask(registry, new Lookup(name), timeout)
+          .thenApply(
+              result -> {
+                @SuppressWarnings("unchecked")
+                Optional<URI> location = OptionConverters.toJava((Option<URI>) result);
+                logServiceLookupResult(name, location);
+                if (location.isPresent()) {
+                  return location.get();
+                } else {
+                  throw new com.lightbend.lagom.javadsl.api.transport.NotFound(name);
+                }
+              });
+    };
+  }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public ServiceCall<NotUsed, PSequence<RegisteredService>> registeredServices() {
-		return unusedRequest -> {
-			return PatternsCS.ask(registry, GetRegisteredServices$.MODULE$, timeout)
-					.thenApply( result -> {
-						RegisteredServices registeredServices = (RegisteredServices) result;
-						return registeredServices.services();
-				    });
-		};
-	}
+  @SuppressWarnings("unchecked")
+  @Override
+  public ServiceCall<NotUsed, PSequence<RegisteredService>> registeredServices() {
+    return unusedRequest -> {
+      return PatternsCS.ask(registry, GetRegisteredServices$.MODULE$, timeout)
+          .thenApply(
+              result -> {
+                RegisteredServices registeredServices = (RegisteredServices) result;
+                return registeredServices.services();
+              });
+    };
+  }
 
-	private void logServiceLookupResult(String name, Optional<URI> location) {
-		if (LOGGER.isDebugEnabled()) {
-			if (location.isPresent())
-				LOGGER.debug("Location of service name=[" + name + "] is " + location.get());
-			else
-				LOGGER.debug("Service name=[" + name + "] has not been registered");
-		}
-	}
+  private void logServiceLookupResult(String name, Optional<URI> location) {
+    if (LOGGER.isDebugEnabled()) {
+      if (location.isPresent())
+        LOGGER.debug("Location of service name=[" + name + "] is " + location.get());
+      else LOGGER.debug("Service name=[" + name + "] has not been registered");
+    }
+  }
 }

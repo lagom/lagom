@@ -3,7 +3,9 @@
  */
 package com.lightbend.lagom.javadsl.api
 
-import org.scalatest.{ Inside, Matchers, WordSpec }
+import org.scalatest.Inside
+import org.scalatest.Matchers
+import org.scalatest.WordSpec
 
 class ScalaSupportSpec extends WordSpec with Matchers with Inside {
 

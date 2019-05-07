@@ -12,98 +12,105 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-/**
- * An exception that can be translated down to a specific error in the transport.
- */
+/** An exception that can be translated down to a specific error in the transport. */
 public class TransportException extends RuntimeException {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    private final TransportErrorCode errorCode;
-    private final ExceptionMessage exceptionMessage;
+  private final TransportErrorCode errorCode;
+  private final ExceptionMessage exceptionMessage;
 
-    protected TransportException(TransportErrorCode errorCode, String message) {
-        super(message);
-        this.errorCode = errorCode;
-        this.exceptionMessage = new ExceptionMessage(this.getClass().getSimpleName(), message);
+  protected TransportException(TransportErrorCode errorCode, String message) {
+    super(message);
+    this.errorCode = errorCode;
+    this.exceptionMessage = new ExceptionMessage(this.getClass().getSimpleName(), message);
+  }
+
+  protected TransportException(TransportErrorCode errorCode, Throwable cause) {
+    super(cause.getMessage(), cause);
+    this.errorCode = errorCode;
+    this.exceptionMessage =
+        new ExceptionMessage(this.getClass().getSimpleName(), cause.getMessage());
+  }
+
+  public TransportException(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
+    super(exceptionMessage.detail());
+    this.errorCode = errorCode;
+    this.exceptionMessage = exceptionMessage;
+  }
+
+  public static TransportException fromCodeAndMessage(
+      TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
+    BiFunction<TransportErrorCode, ExceptionMessage, TransportException> creator =
+        BY_NAME_TRANSPORT_EXCEPTIONS.get(exceptionMessage.name());
+    if (creator != null) {
+      return creator.apply(errorCode, exceptionMessage);
+    } else {
+      creator = BY_CODE_TRANSPORT_EXCEPTIONS.get(errorCode);
+      if (creator != null) {
+        return creator.apply(errorCode, exceptionMessage);
+      } else {
+        return new TransportException(errorCode, exceptionMessage);
+      }
     }
+  }
 
-    protected TransportException(TransportErrorCode errorCode, Throwable cause) {
-        super(cause.getMessage(), cause);
-        this.errorCode = errorCode;
-        this.exceptionMessage = new ExceptionMessage(this.getClass().getSimpleName(), cause.getMessage());
-    }
+  /**
+   * The error code that should be sent to the transport.
+   *
+   * @return The error code.
+   */
+  public TransportErrorCode errorCode() {
+    return errorCode;
+  }
 
-    public TransportException(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
-        super(exceptionMessage.detail());
-        this.errorCode = errorCode;
-        this.exceptionMessage = exceptionMessage;
-    }
+  /**
+   * The message that should be sent to the transport.
+   *
+   * @return The message.
+   */
+  public ExceptionMessage exceptionMessage() {
+    return exceptionMessage;
+  }
 
-    public static TransportException fromCodeAndMessage(TransportErrorCode errorCode, ExceptionMessage exceptionMessage) {
-        BiFunction<TransportErrorCode, ExceptionMessage, TransportException> creator = BY_NAME_TRANSPORT_EXCEPTIONS.get(exceptionMessage.name());
-        if (creator != null) {
-            return creator.apply(errorCode, exceptionMessage);
-        } else {
-            creator = BY_CODE_TRANSPORT_EXCEPTIONS.get(errorCode);
-            if (creator != null) {
-                return creator.apply(errorCode, exceptionMessage);
-            } else {
-                return new TransportException(errorCode, exceptionMessage);
-            }
-        }
-    }
+  private static final Map<
+          String, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>>
+      BY_NAME_TRANSPORT_EXCEPTIONS;
+  private static final Map<
+          TransportErrorCode, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>>
+      BY_CODE_TRANSPORT_EXCEPTIONS;
 
-    /**
-     * The error code that should be sent to the transport.
-     *
-     * @return The error code.
-     */
-    public TransportErrorCode errorCode() {
-        return errorCode;
-    }
+  static {
+    // this map keeps a more strict relation between exception message and exception instances.
+    // Some exceptions reuse the same status code on certain transports so deserialization should
+    // try to reconstruct the exception by name first and fallback to reconstructing by code.
+    Map<String, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> byName =
+        new HashMap<>();
+    byName.put(DeserializationException.class.getSimpleName(), DeserializationException::new);
+    byName.put(BadRequest.class.getSimpleName(), BadRequest::new);
+    byName.put(Forbidden.class.getSimpleName(), Forbidden::new);
+    byName.put(PolicyViolation.class.getSimpleName(), PolicyViolation::new);
+    byName.put(NotFound.class.getSimpleName(), NotFound::new);
+    byName.put(NotAcceptable.class.getSimpleName(), NotAcceptable::new);
+    byName.put(PayloadTooLarge.class.getSimpleName(), PayloadTooLarge::new);
+    byName.put(SerializationException.class.getSimpleName(), SerializationException::new);
+    byName.put(UnsupportedMediaType.class.getSimpleName(), UnsupportedMediaType::new);
 
-    /**
-     * The message that should be sent to the transport.
-     *
-     * @return The message.
-     */
-    public ExceptionMessage exceptionMessage() {
-        return exceptionMessage;
-    }
+    Map<TransportErrorCode, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>>
+        byCode = new HashMap<>();
+    byCode.put(DeserializationException.ERROR_CODE, DeserializationException::new);
+    byCode.put(Forbidden.ERROR_CODE, Forbidden::new);
+    byCode.put(PolicyViolation.ERROR_CODE, PolicyViolation::new);
+    byCode.put(NotAcceptable.ERROR_CODE, NotAcceptable::new);
+    byCode.put(PayloadTooLarge.ERROR_CODE, PayloadTooLarge::new);
+    byCode.put(UnsupportedMediaType.ERROR_CODE, UnsupportedMediaType::new);
 
-    private static final Map<String, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> BY_NAME_TRANSPORT_EXCEPTIONS;
-    private static final Map<TransportErrorCode, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> BY_CODE_TRANSPORT_EXCEPTIONS;
+    BY_NAME_TRANSPORT_EXCEPTIONS = Collections.unmodifiableMap(byName);
+    BY_CODE_TRANSPORT_EXCEPTIONS = Collections.unmodifiableMap(byCode);
+  }
 
-    static {
-        // this map keeps a more strict relation between exception message and exception instances.
-        // Some exceptions reuse the same status code on certain transports so deserialization should
-        // try to reconstruct the exception by name first and fallback to reconstructing by code.
-        Map<String, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> byName = new HashMap<>();
-        byName.put(DeserializationException.class.getSimpleName(), DeserializationException::new);
-        byName.put(BadRequest.class.getSimpleName(), BadRequest::new);
-        byName.put(Forbidden.class.getSimpleName(), Forbidden::new);
-        byName.put(PolicyViolation.class.getSimpleName(), PolicyViolation::new);
-        byName.put(NotFound.class.getSimpleName(), NotFound::new);
-        byName.put(NotAcceptable.class.getSimpleName(), NotAcceptable::new);
-        byName.put(PayloadTooLarge.class.getSimpleName(), PayloadTooLarge::new);
-        byName.put(SerializationException.class.getSimpleName(), SerializationException::new);
-        byName.put(UnsupportedMediaType.class.getSimpleName(), UnsupportedMediaType::new);
-
-        Map<TransportErrorCode, BiFunction<TransportErrorCode, ExceptionMessage, TransportException>> byCode = new HashMap<>();
-        byCode.put(DeserializationException.ERROR_CODE, DeserializationException::new);
-        byCode.put(Forbidden.ERROR_CODE, Forbidden::new);
-        byCode.put(PolicyViolation.ERROR_CODE, PolicyViolation::new);
-        byCode.put(NotAcceptable.ERROR_CODE, NotAcceptable::new);
-        byCode.put(PayloadTooLarge.ERROR_CODE, PayloadTooLarge::new);
-        byCode.put(UnsupportedMediaType.ERROR_CODE, UnsupportedMediaType::new);
-
-        BY_NAME_TRANSPORT_EXCEPTIONS = Collections.unmodifiableMap(byName);
-        BY_CODE_TRANSPORT_EXCEPTIONS = Collections.unmodifiableMap(byCode);
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + " (" + errorCode + ")";
-    }
+  @Override
+  public String toString() {
+    return super.toString() + " (" + errorCode + ")";
+  }
 }

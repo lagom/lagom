@@ -6,9 +6,11 @@ package com.lightbend.lagom.internal.javadsl.broker.kafka
 import java.net.URI
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import org.slf4j.LoggerFactory
-import com.lightbend.lagom.javadsl.api.{ ServiceInfo, ServiceLocator }
+import com.lightbend.lagom.javadsl.api.ServiceInfo
+import com.lightbend.lagom.javadsl.api.ServiceLocator
 import akka.stream.Materializer
 import javax.inject.Inject
 
@@ -16,7 +18,8 @@ import akka.actor.ActorSystem
 import akka.persistence.query.Offset
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
-import com.lightbend.lagom.internal.broker.kafka.{ KafkaConfig, Producer }
+import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
+import com.lightbend.lagom.internal.broker.kafka.Producer
 import com.lightbend.lagom.internal.javadsl.api.MethodTopicHolder
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
@@ -29,41 +32,48 @@ import scala.collection.immutable
 import scala.compat.java8.FutureConverters._
 import scala.compat.java8.OptionConverters._
 
-class JavadslRegisterTopicProducers @Inject() (resolvedServices: ResolvedServices, topicFactory: TopicFactory,
-                                               info: ServiceInfo, actorSystem: ActorSystem, offsetStore: OffsetStore,
-                                               serviceLocator: ServiceLocator)(implicit ec: ExecutionContext, mat: Materializer) {
+class JavadslRegisterTopicProducers @Inject()(
+    resolvedServices: ResolvedServices,
+    topicFactory: TopicFactory,
+    info: ServiceInfo,
+    actorSystem: ActorSystem,
+    offsetStore: OffsetStore,
+    serviceLocator: ServiceLocator
+)(implicit ec: ExecutionContext, mat: Materializer) {
 
-  private val log = LoggerFactory.getLogger(classOf[JavadslRegisterTopicProducers])
+  private val log         = LoggerFactory.getLogger(classOf[JavadslRegisterTopicProducers])
   private val kafkaConfig = KafkaConfig(actorSystem.settings.config)
 
   // Goes through the services' descriptors and publishes the streams registered in
   // each of the service's topic method implementation.
   for {
     service <- resolvedServices.services
-    tc <- service.descriptor.topicCalls().asScala
+    tc      <- service.descriptor.topicCalls().asScala
     topicCall = tc.asInstanceOf[TopicCall[AnyRef]]
   } {
     topicCall.topicHolder match {
       case holder: MethodTopicHolder =>
         val topicProducer = holder.create(service.service)
-        val topicId = topicCall.topicId
+        val topicId       = topicCall.topicId
 
         topicFactory.create(topicCall) match {
           case topicImpl: JavadslKafkaTopic[AnyRef] =>
-
             topicProducer match {
               case tagged: TaggedOffsetTopicProducer[AnyRef, _] =>
-
                 val tags = tagged.tags.asScala.to[immutable.Seq]
 
                 val eventStreamFactory: (String, Offset) => Source[(AnyRef, Offset), _] = { (tag, offset) =>
                   tags.find(_.tag == tag) match {
-                    case Some(aggregateTag) => tagged.readSideStream(
-                      aggregateTag,
-                      OffsetAdapter.offsetToDslOffset(offset)
-                    ).asScala.map { pair =>
-                        pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
-                      }
+                    case Some(aggregateTag) =>
+                      tagged
+                        .readSideStream(
+                          aggregateTag,
+                          OffsetAdapter.offsetToDslOffset(offset)
+                        )
+                        .asScala
+                        .map { pair =>
+                          pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
+                        }
                     case None => throw new RuntimeException("Unknown tag: " + tag)
                   }
                 }
@@ -87,16 +97,18 @@ class JavadslRegisterTopicProducers @Inject() (resolvedServices: ResolvedService
                   offsetStore
                 )
 
-              case other => log.warn {
-                s"Unknown topic producer ${other.getClass.getName}. " +
-                  s"This will likely result in no events published to topic ${topicId.value} by service ${info.serviceName}."
-              }
+              case other =>
+                log.warn {
+                  s"Unknown topic producer ${other.getClass.getName}. " +
+                    s"This will likely result in no events published to topic ${topicId.value} by service ${info.serviceName}."
+                }
             }
 
-          case otherTopicImpl => log.warn {
-            s"Expected Topic type ${classOf[JavadslKafkaTopic[_]].getName}, but found incompatible type ${otherTopicImpl.getClass.getName}." +
-              s"This will likely result in no events published to topic ${topicId.value} by service ${info.serviceName}."
-          }
+          case otherTopicImpl =>
+            log.warn {
+              s"Expected Topic type ${classOf[JavadslKafkaTopic[_]].getName}, but found incompatible type ${otherTopicImpl.getClass.getName}." +
+                s"This will likely result in no events published to topic ${topicId.value} by service ${info.serviceName}."
+            }
         }
 
       case other =>

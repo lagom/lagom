@@ -4,7 +4,8 @@
 package com.lightbend.lagom.internal.javadsl.persistence.testkit
 
 import com.lightbend.lagom.javadsl.persistence.testkit.AbstractTestUtil
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 
 /**
  * This lives in persistence rather than persistence-javadsl so that both persistence-cassandra-javadsl, and
@@ -12,8 +13,9 @@ import com.typesafe.config.{ Config, ConfigFactory }
  */
 private[lagom] object CassandraTestConfig extends AbstractTestUtil {
   def persistenceConfig(testName: String, cassandraPort: Int): Config = {
-    ConfigFactory.parseString(
-      s"""
+    ConfigFactory
+      .parseString(
+        s"""
       cassandra-journal.session-provider = akka.persistence.cassandra.ConfigSessionProvider
       cassandra-snapshot-store.session-provider = akka.persistence.cassandra.ConfigSessionProvider
       lagom.persistence.read-side.cassandra.session-provider = akka.persistence.cassandra.ConfigSessionProvider
@@ -38,6 +40,7 @@ private[lagom] object CassandraTestConfig extends AbstractTestUtil {
 
       akka.test.single-expect-default = 5s
    """
-    ).withFallback(clusterConfig())
+      )
+      .withFallback(clusterConfig())
   }
 }

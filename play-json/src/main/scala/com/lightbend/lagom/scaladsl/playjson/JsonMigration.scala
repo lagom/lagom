@@ -14,14 +14,15 @@ import scala.reflect.ClassTag
 object JsonMigrations {
 
   def apply(
-    currentVersion:          Int,
-    transformation:          (Int, JsValue) => JsValue,
-    classNameTransformation: (Int, String) => String
+      currentVersion: Int,
+      transformation: (Int, JsValue) => JsValue,
+      classNameTransformation: (Int, String) => String
   ): JsonMigration =
     new JsonMigration(currentVersion) {
-      override def transform(fromVersion: Int, json: JsObject): JsValue = transformation(fromVersion, json)
+      override def transform(fromVersion: Int, json: JsObject): JsValue     = transformation(fromVersion, json)
       override def transformValue(fromVersion: Int, json: JsValue): JsValue = transformation(fromVersion, json)
-      override def transformClassName(fromVersion: Int, className: String): String = classNameTransformation(fromVersion, className)
+      override def transformClassName(fromVersion: Int, className: String): String =
+        classNameTransformation(fromVersion, className)
     }
 
   /**

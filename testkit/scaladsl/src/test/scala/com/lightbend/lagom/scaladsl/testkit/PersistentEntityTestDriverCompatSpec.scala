@@ -5,7 +5,8 @@ package com.lightbend.lagom.scaladsl.testkit
 
 import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.scaladsl.persistence.PersistentEntityActor
-import com.lightbend.lagom.scaladsl.persistence.{ TestEntity, TestEntitySerializerRegistry }
+import com.lightbend.lagom.scaladsl.persistence.TestEntity
+import com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceSpec
 
 import scala.concurrent.duration._
@@ -15,8 +16,10 @@ class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec(Test
   "PersistentEntityActor and PersistentEntityTestDriver" must {
     "produce same events and state" in {
       val probe1 = TestProbe()
-      val p = system.actorOf(PersistentEntityActor.props("test", Some("1"),
-        () => new TestEntity(system, Some(probe1.ref)), None, 10.seconds, "", ""))
+      val p = system.actorOf(
+        PersistentEntityActor
+          .props("test", Some("1"), () => new TestEntity(system, Some(probe1.ref)), None, 10.seconds, "", "")
+      )
       val probe2 = TestProbe()
       val driver = new PersistentEntityTestDriver(system, new TestEntity(system, Some(probe2.ref)), "1")
 

@@ -18,5 +18,4 @@ public interface AbstractComment extends Jsonable {
 
   @Value.Parameter
   String getContent();
-
 }

@@ -4,7 +4,8 @@ interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMo
 
 scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.8")
 
-lazy val p = (project in file("p")).enablePlugins(PlayJava && LagomPlay)
+lazy val p = (project in file("p"))
+  .enablePlugins(PlayJava && LagomPlay)
   .settings(
     lagomServicePort := 9001,
     routesGenerator := InjectedRoutesGenerator,
@@ -12,9 +13,9 @@ lazy val p = (project in file("p")).enablePlugins(PlayJava && LagomPlay)
   )
 
 InputKey[Unit]("assertRequest") := {
-  val args = Def.spaceDelimited().parsed
-  val port = args(0)
-  val path = args(1)
+  val args   = Def.spaceDelimited().parsed
+  val port   = args(0)
+  val path   = args(1)
   val expect = args.drop(2).mkString(" ")
 
   DevModeBuild.waitForRequestToContain(s"http://localhost:${port}${path}", expect)

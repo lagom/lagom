@@ -6,13 +6,15 @@ package com.lightbend.lagom.maven
 import java.io.File
 import javax.inject.Inject
 
-import com.lightbend.lagom.dev.{ Colors, ConsoleHelper }
+import com.lightbend.lagom.dev.Colors
+import com.lightbend.lagom.dev.ConsoleHelper
 import com.lightbend.lagom.dev.PortAssigner.ProjectName
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.model.Dependency
 
 import scala.beans.BeanProperty
-import java.util.{ Collections, List => JList }
+import java.util.Collections
+import java.util.{ List => JList }
 
 import org.apache.maven.RepositoryUtils
 
@@ -21,7 +23,8 @@ import scala.collection.JavaConverters._
 /**
  * Run a service, blocking until the user hits enter before stopping it again.
  */
-class RunMojo @Inject() (mavenFacade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends LagomAbstractMojo {
+class RunMojo @Inject()(mavenFacade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession)
+    extends LagomAbstractMojo {
 
   private val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
 
@@ -44,7 +47,7 @@ class RunMojo @Inject() (mavenFacade: MavenFacade, logger: MavenLoggerProxy, ses
 /**
  * Start a service.
  */
-class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
+class StartMojo @Inject()(serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
 
   @BeanProperty
   var lagomService: Boolean = _
@@ -117,14 +120,21 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
       Some(this.cassandraPort)
     } else None
 
-    serviceManager.startServiceDevMode(project, selectedPort, serviceLocatorUrl, cassandraPort, playService = playService, resolvedWatchDirs)
+    serviceManager.startServiceDevMode(
+      project,
+      selectedPort,
+      serviceLocatorUrl,
+      cassandraPort,
+      playService = playService,
+      resolvedWatchDirs
+    )
   }
 }
 
 /**
  * Stop a service.
  */
-class StopMojo @Inject() (serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
+class StopMojo @Inject()(serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
 
   @BeanProperty
   var lagomService: Boolean = _
@@ -143,7 +153,7 @@ class StopMojo @Inject() (serviceManager: ServiceManager, session: MavenSession)
   }
 }
 
-class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
+class StartExternalProjects @Inject()(serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
 
   @BeanProperty
   var externalProjects: JList[ExternalProject] = Collections.emptyList()
@@ -185,7 +195,7 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
 
     externalProjects.asScala.foreach { project =>
       if (project.artifact == null || project.artifact.getGroupId == null || project.artifact.getArtifactId == null ||
-        project.artifact.getVersion == null) {
+          project.artifact.getVersion == null) {
         sys.error("External projects must specify an artifact with a groupId, artifactId and version")
       }
 
@@ -200,22 +210,30 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
 
       val serviceCassandraPort = cassandraPort.filter(_ => project.cassandraEnabled)
 
-      val dependency = RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
+      val dependency =
+        RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
 
-      serviceManager.startExternalProject(dependency, selectedPort, serviceLocatorUrl, serviceCassandraPort, playService = project.playService)
+      serviceManager.startExternalProject(
+        dependency,
+        selectedPort,
+        serviceLocatorUrl,
+        serviceCassandraPort,
+        playService = project.playService
+      )
     }
   }
 
 }
 
-class StopExternalProjects @Inject() (serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
+class StopExternalProjects @Inject()(serviceManager: ServiceManager, session: MavenSession) extends LagomAbstractMojo {
 
   @BeanProperty
   var externalProjects: JList[ExternalProject] = Collections.emptyList()
 
   override def execute(): Unit = {
     externalProjects.asScala.foreach { project =>
-      val dependency = RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
+      val dependency =
+        RepositoryUtils.toDependency(project.artifact, session.getRepositorySession.getArtifactTypeRegistry)
       serviceManager.stopExternalProject(dependency)
     }
   }
@@ -238,7 +256,8 @@ class ExternalProject {
 /**
  * Starts all services.
  */
-class StartAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends LagomAbstractMojo {
+class StartAllMojo @Inject()(facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession)
+    extends LagomAbstractMojo {
 
   private val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
 
@@ -264,7 +283,7 @@ class StartAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, ses
 /**
  * Stops all services.
  */
-class StopAllMojo @Inject() (facade: MavenFacade, session: MavenSession) extends LagomAbstractMojo {
+class StopAllMojo @Inject()(facade: MavenFacade, session: MavenSession) extends LagomAbstractMojo {
 
   @BeanProperty
   var externalProjects: JList[Dependency] = Collections.emptyList()
@@ -290,7 +309,8 @@ class StopAllMojo @Inject() (facade: MavenFacade, session: MavenSession) extends
 /**
  * Run a service, blocking until the user hits enter before stopping it again.
  */
-class RunAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends LagomAbstractMojo {
+class RunAllMojo @Inject()(facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession)
+    extends LagomAbstractMojo {
 
   val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
 

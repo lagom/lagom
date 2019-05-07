@@ -12,21 +12,36 @@ import com.lightbend.lagom.internal.client.ClientServiceCallInvoker
 import com.lightbend.lagom.internal.scaladsl.api.ScaladslPath
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
 import com.lightbend.lagom.scaladsl.api._
-import com.lightbend.lagom.scaladsl.api.Descriptor.{ Call, RestCallId, TopicCall }
-import com.lightbend.lagom.scaladsl.api.ServiceSupport.{ ScalaMethodServiceCall, ScalaMethodTopic }
+import com.lightbend.lagom.scaladsl.api.Descriptor.Call
+import com.lightbend.lagom.scaladsl.api.Descriptor.RestCallId
+import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
+import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodServiceCall
+import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodTopic
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.deser._
-import com.lightbend.lagom.scaladsl.api.transport.{ Method, RequestHeader, ResponseHeader }
-import com.lightbend.lagom.scaladsl.client.{ ServiceClientConstructor, ServiceClientContext, ServiceClientImplementationContext, ServiceResolver }
+import com.lightbend.lagom.scaladsl.api.transport.Method
+import com.lightbend.lagom.scaladsl.api.transport.RequestHeader
+import com.lightbend.lagom.scaladsl.api.transport.ResponseHeader
+import com.lightbend.lagom.scaladsl.client.ServiceClientConstructor
+import com.lightbend.lagom.scaladsl.client.ServiceClientContext
+import com.lightbend.lagom.scaladsl.client.ServiceClientImplementationContext
+import com.lightbend.lagom.scaladsl.client.ServiceResolver
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import play.api.libs.ws.WSClient
 
 import scala.collection.immutable
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
-private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: ScaladslWebSocketClient, serviceInfo: ServiceInfo,
-                                           serviceLocator: ServiceLocator, serviceResolver: ServiceResolver,
-                                           topicFactory: Option[TopicFactory])(implicit ec: ExecutionContext, mat: Materializer) extends ServiceClientConstructor {
+private[lagom] class ScaladslServiceClient(
+    ws: WSClient,
+    webSocketClient: ScaladslWebSocketClient,
+    serviceInfo: ServiceInfo,
+    serviceLocator: ServiceLocator,
+    serviceResolver: ServiceResolver,
+    topicFactory: Option[TopicFactory]
+)(implicit ec: ExecutionContext, mat: Materializer)
+    extends ServiceClientConstructor {
 
   private val ctx: ServiceClientImplementationContext = new ServiceClientImplementationContext {
     override def resolve(unresolvedDescriptor: Descriptor): ServiceClientContext = new ServiceClientContext {
@@ -48,7 +63,10 @@ private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: Scalad
         }
       }.toMap
 
-      override def createServiceCall[Request, Response](methodName: String, params: immutable.Seq[Any]): ServiceCall[Request, Response] = {
+      override def createServiceCall[Request, Response](
+          methodName: String,
+          params: immutable.Seq[Any]
+      ): ServiceCall[Request, Response] = {
         serviceCalls.get(methodName) match {
           case Some(ScalaServiceCall(call, pathSpec, pathParamSerializers)) =>
             val serializedParams = pathParamSerializers.zip(params).map {
@@ -56,8 +74,16 @@ private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: Scalad
             }
             val (path, queryParams) = pathSpec.format(serializedParams)
 
-            val invoker = new ScaladslClientServiceCallInvoker[Request, Response](ws, webSocketClient, serviceInfo,
-              serviceLocator, descriptor, call.asInstanceOf[Call[Request, Response]], path, queryParams)
+            val invoker = new ScaladslClientServiceCallInvoker[Request, Response](
+              ws,
+              webSocketClient,
+              serviceInfo,
+              serviceLocator,
+              descriptor,
+              call.asInstanceOf[Call[Request, Response]],
+              path,
+              queryParams
+            )
 
             new ScaladslClientServiceCall[Request, Response, Response](invoker, identity, (header, message) => message)
 
@@ -73,7 +99,9 @@ private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: Scalad
               case None                                => throw new RuntimeException("No descriptor for topic method: " + methodName)
             }
           case None =>
-            throw new RuntimeException("No message broker implementation to create topic from. Did you forget to include com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents in your application?")
+            throw new RuntimeException(
+              "No message broker implementation to create topic from. Did you forget to include com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents in your application?"
+            )
         }
       }
     }
@@ -81,7 +109,11 @@ private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: Scalad
 
   override def construct[S <: Service](constructor: (ServiceClientImplementationContext) => S): S = constructor(ctx)
 
-  private case class ScalaServiceCall(call: Call[_, _], pathSpec: Path, pathParamSerializers: immutable.Seq[PathParamSerializer[_]])
+  private case class ScalaServiceCall(
+      call: Call[_, _],
+      pathSpec: Path,
+      pathParamSerializers: immutable.Seq[PathParamSerializer[_]]
+  )
 }
 
 /**
@@ -89,47 +121,64 @@ private[lagom] class ScaladslServiceClient(ws: WSClient, webSocketClient: Scalad
  * the request header and a transformer function for the response.
  */
 private class ScaladslClientServiceCall[Request, ResponseMessage, ServiceCallResponse](
-  invoker: ScaladslClientServiceCallInvoker[Request, ResponseMessage], requestHeaderHandler: RequestHeader => RequestHeader,
-  responseHandler: (ResponseHeader, ResponseMessage) => ServiceCallResponse
-)(implicit ec: ExecutionContext) extends ServiceCall[Request, ServiceCallResponse] {
+    invoker: ScaladslClientServiceCallInvoker[Request, ResponseMessage],
+    requestHeaderHandler: RequestHeader => RequestHeader,
+    responseHandler: (ResponseHeader, ResponseMessage) => ServiceCallResponse
+)(implicit ec: ExecutionContext)
+    extends ServiceCall[Request, ServiceCallResponse] {
 
   override def invoke(request: Request): Future[ServiceCallResponse] = {
     invoker.doInvoke(request, requestHeaderHandler).map(responseHandler.tupled)
   }
 
-  override def handleRequestHeader(handler: RequestHeader => RequestHeader): ServiceCall[Request, ServiceCallResponse] = {
+  override def handleRequestHeader(
+      handler: RequestHeader => RequestHeader
+  ): ServiceCall[Request, ServiceCallResponse] = {
     new ScaladslClientServiceCall(invoker, requestHeaderHandler.andThen(handler), responseHandler)
   }
 
   override def handleResponseHeader[T](handler: (ResponseHeader, ServiceCallResponse) => T): ServiceCall[Request, T] = {
-    new ScaladslClientServiceCall[Request, ResponseMessage, T](invoker, requestHeaderHandler,
-      (header, message) => handler.apply(header, responseHandler(header, message)))
+    new ScaladslClientServiceCall[Request, ResponseMessage, T](
+      invoker,
+      requestHeaderHandler,
+      (header, message) => handler.apply(header, responseHandler(header, message))
+    )
   }
 }
 
 private class ScaladslClientServiceCallInvoker[Request, Response](
-  ws: WSClient, webSocketClient: ScaladslWebSocketClient, serviceInfo: ServiceInfo, override val serviceLocator: ServiceLocator,
-  override val descriptor: Descriptor, override val call: Call[Request, Response], path: String, queryParams: Map[String, Seq[String]]
-)(implicit ec: ExecutionContext, mat: Materializer) extends ClientServiceCallInvoker[Request, Response](ws, serviceInfo.serviceName, path, queryParams) with ScaladslServiceApiBridge {
+    ws: WSClient,
+    webSocketClient: ScaladslWebSocketClient,
+    serviceInfo: ServiceInfo,
+    override val serviceLocator: ServiceLocator,
+    override val descriptor: Descriptor,
+    override val call: Call[Request, Response],
+    path: String,
+    queryParams: Map[String, Seq[String]]
+)(implicit ec: ExecutionContext, mat: Materializer)
+    extends ClientServiceCallInvoker[Request, Response](ws, serviceInfo.serviceName, path, queryParams)
+    with ScaladslServiceApiBridge {
 
-  override protected def doMakeStreamedCall(
-    requestStream:     Source[ByteString, NotUsed],
-    requestSerializer: NegotiatedSerializer[_, _], requestHeader: RequestHeader
+  protected override def doMakeStreamedCall(
+      requestStream: Source[ByteString, NotUsed],
+      requestSerializer: NegotiatedSerializer[_, _],
+      requestHeader: RequestHeader
   ): Future[(ResponseHeader, Source[ByteString, NotUsed])] =
     webSocketClient.connect(descriptor.exceptionSerializer, WebSocketVersion.V13, requestHeader, requestStream)
 }
 
 private[lagom] class ScaladslServiceResolver(defaultExceptionSerializer: ExceptionSerializer) extends ServiceResolver {
   override def resolve(descriptor: Descriptor): Descriptor = {
-    val withExceptionSerializer: Descriptor = if (descriptor.exceptionSerializer == DefaultExceptionSerializer.Unresolved) {
-      descriptor.withExceptionSerializer(defaultExceptionSerializer)
-    } else descriptor
+    val withExceptionSerializer: Descriptor =
+      if (descriptor.exceptionSerializer == DefaultExceptionSerializer.Unresolved) {
+        descriptor.withExceptionSerializer(defaultExceptionSerializer)
+      } else descriptor
 
     val withAcls: Descriptor = {
       val acls = descriptor.calls.collect {
         case callWithAutoAcl if callWithAutoAcl.autoAcl.getOrElse(descriptor.autoAcl) =>
           val pathSpec = ScaladslPath.fromCallId(callWithAutoAcl.callId).regex.regex
-          val method = calculateMethod(callWithAutoAcl)
+          val method   = calculateMethod(callWithAutoAcl)
           ServiceAcl(Some(method), Some(pathSpec))
       }
 
@@ -153,7 +202,7 @@ private[lagom] class ScaladslServiceResolver(defaultExceptionSerializer: Excepti
   private def calculateMethod(serviceCall: Descriptor.Call[_, _]): Method = {
     serviceCall.callId match {
       case rest: RestCallId => rest.method
-      case _ =>
+      case _                =>
         // If either the request or the response serializers are streamed, then WebSockets will be used, in which case
         // the method must be GET
         if (serviceCall.requestSerializer.isStreamed || serviceCall.responseSerializer.isStreamed) {

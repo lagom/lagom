@@ -9,8 +9,10 @@ import com.lightbend.lagom.internal.javadsl.persistence.jdbc.SlickProvider
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.javadsl.persistence.jdbc.testkit.TestUtil
-import com.lightbend.lagom.javadsl.persistence.multinode.{ AbstractClusteredPersistentEntityConfig, AbstractClusteredPersistentEntitySpec }
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersistentEntityConfig
+import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersistentEntitySpec
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import org.h2.tools.Server
 import play.api.db.DBApi
 
@@ -27,13 +29,14 @@ class JdbcClusteredPersistentEntitySpecMultiJvmNode1 extends JdbcClusteredPersis
 class JdbcClusteredPersistentEntitySpecMultiJvmNode2 extends JdbcClusteredPersistentEntitySpec
 class JdbcClusteredPersistentEntitySpecMultiJvmNode3 extends JdbcClusteredPersistentEntitySpec
 
-class JdbcClusteredPersistentEntitySpec extends AbstractClusteredPersistentEntitySpec(JdbcClusteredPersistentEntityConfig) {
+class JdbcClusteredPersistentEntitySpec
+    extends AbstractClusteredPersistentEntitySpec(JdbcClusteredPersistentEntityConfig) {
 
   import JdbcClusteredPersistentEntityConfig._
 
   var h2: Server = _
 
-  override protected def atStartup() {
+  protected override def atStartup() {
     runOn(node1) {
       h2 = Server.createTcpServer("-tcpPort", databasePort.toString).start()
 
@@ -44,7 +47,7 @@ class JdbcClusteredPersistentEntitySpec extends AbstractClusteredPersistentEntit
     super.atStartup()
   }
 
-  override protected def afterTermination() {
+  protected override def afterTermination() {
     super.afterTermination()
 
     Option(h2).foreach(_.stop())
@@ -52,9 +55,9 @@ class JdbcClusteredPersistentEntitySpec extends AbstractClusteredPersistentEntit
 
   def testEntityReadSide = injector.instanceOf[JdbcTestEntityReadSide]
 
-  override protected def getAppendCount(id: String): CompletionStage[java.lang.Long] =
+  protected override def getAppendCount(id: String): CompletionStage[java.lang.Long] =
     testEntityReadSide.getAppendCount(id)
 
-  override protected def readSideProcessor: Class[_ <: ReadSideProcessor[Evt]] = classOf[JdbcTestEntityReadSide.TestEntityReadSideProcessor]
+  protected override def readSideProcessor: Class[_ <: ReadSideProcessor[Evt]] =
+    classOf[JdbcTestEntityReadSide.TestEntityReadSideProcessor]
 }
-

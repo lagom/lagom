@@ -1,12 +1,11 @@
-
 //#start-elastic-search
 import java.io.Closeable
 
 val startElasticSearch = taskKey[Closeable]("Starts elastic search")
 
 startElasticSearch in ThisBuild := {
-  val esVersion = "5.4.0"
-  val log = streams.value.log
+  val esVersion     = "5.4.0"
+  val log           = streams.value.log
   val elasticsearch = target.value / s"elasticsearch-$esVersion"
 
   if (!elasticsearch.exists()) {

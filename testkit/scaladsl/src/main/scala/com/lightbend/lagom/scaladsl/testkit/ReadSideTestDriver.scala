@@ -6,11 +6,16 @@ package com.lightbend.lagom.scaladsl.testkit
 import akka.Done
 import akka.persistence.query.Offset
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Sink, Source }
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
-import com.lightbend.lagom.scaladsl.persistence.{ AggregateEvent, EventStreamElement, ReadSide, ReadSideProcessor }
+import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
+import com.lightbend.lagom.scaladsl.persistence.EventStreamElement
+import com.lightbend.lagom.scaladsl.persistence.ReadSide
+import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 class ReadSideTestDriver(implicit val materializer: Materializer, ec: ExecutionContext) extends ReadSide {
   private var processors = Map.empty[Class[_], Seq[Future[(ReadSideHandler[_], Offset)]]]
@@ -18,9 +23,9 @@ class ReadSideTestDriver(implicit val materializer: Materializer, ec: ExecutionC
   override def register[Event <: AggregateEvent[Event]](processorFactory: => ReadSideProcessor[Event]): Unit = {
     val processor = processorFactory
     val eventTags = processor.aggregateTags
-    val handler = processor.buildHandler()
+    val handler   = processor.buildHandler()
     val future = for {
-      _ <- handler.globalPrepare()
+      _      <- handler.globalPrepare()
       offset <- handler.prepare(eventTags.head)
     } yield {
       handler -> offset
@@ -39,7 +44,8 @@ class ReadSideTestDriver(implicit val materializer: Materializer, ec: ExecutionC
           handlers <- Future.sequence(handlerFutures)
           _ <- Future.sequence(handlers.map {
             case (handler: ReadSideHandler[Event], _) =>
-              Source.single(new EventStreamElement(entityId, event, offset))
+              Source
+                .single(new EventStreamElement(entityId, event, offset))
                 .via(handler.handle())
                 .runWith(Sink.ignore)
           })

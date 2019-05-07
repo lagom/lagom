@@ -7,125 +7,132 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion = "2.6.22"
-  val PlayJsonVersion = "2.6.12"
+  val PlayVersion             = "2.6.22"
+  val PlayJsonVersion         = "2.6.12"
   val PlayStandaloneWsVersion = "1.1.12"
-  val TwirlVersion = "1.3.15"
-  val PlayFileWatchVersion = "1.1.7"
+  val TwirlVersion            = "1.3.15"
+  val PlayFileWatchVersion    = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion = "2.5.22"
+  val AkkaVersion     = "2.5.22"
   val AkkaHttpVersion = "10.0.15"
   // Also be sure to update ScalaVersion in docs/build.sbt.
-  val ScalaVersions = Seq("2.12.8", "2.11.12")
-  val SbtScalaVersions = Seq("2.10.6", "2.12.8")
+  val ScalaVersions                   = Seq("2.12.8", "2.11.12")
+  val SbtScalaVersions                = Seq("2.10.6", "2.12.8")
   val AkkaPersistenceCassandraVersion = "0.61"
-  val AkkaPersistenceJdbcVersion = "3.4.0"
+  val AkkaPersistenceJdbcVersion      = "3.4.0"
   // Also be sure to update ScalaTestVersion in docs/build.sbt.
-  val ScalaTestVersion = "3.0.4"
-  val JacksonVersion = "2.8.11"
-  val JacksonCoreVersion = JacksonVersion
-  val JacksonDatatypeVersion = JacksonVersion
-  val JacksonDatabindVersion = "2.8.11.3"
-  val GuavaVersion = "23.6.1-jre"
-  val MavenVersion = "3.3.9"
-  val NettyVersion = "4.1.34.Final"
+  val ScalaTestVersion            = "3.0.4"
+  val JacksonVersion              = "2.8.11"
+  val JacksonCoreVersion          = JacksonVersion
+  val JacksonDatatypeVersion      = JacksonVersion
+  val JacksonDatabindVersion      = "2.8.11.3"
+  val GuavaVersion                = "23.6.1-jre"
+  val MavenVersion                = "3.3.9"
+  val NettyVersion                = "4.1.34.Final"
   val NettyReactiveStreamsVersion = "2.0.0"
-  val KafkaVersion = "0.11.0.1"
-  val AkkaStreamKafkaVersion = "0.18"
+  val KafkaVersion                = "0.11.0.1"
+  val AkkaStreamKafkaVersion      = "0.18"
 
   val ScalaJava8CompatVersion = "0.8.0"
-  val ScalaXmlVersion = "1.0.6"
-  val SlickVersion = "3.2.3"
+  val ScalaXmlVersion         = "1.0.6"
+  val SlickVersion            = "3.2.3"
   // Also be sure to update JUnitVersion in docs/build.sbt.
   val JUnitVersion = "4.11"
   // Also be sure to update JUnitInterfaceVersion in docs/build.sbt.
   val JUnitInterfaceVersion = "0.11"
 
-  val Slf4jVersion = "1.7.25"
+  val Slf4jVersion   = "1.7.25"
   val LogbackVersion = "1.2.3"
   // Also be sure to update Log4jVersion in docs/build.sbt.
   val Log4jVersion = "2.10.0"
-
 
   // Some setup before we start creating ModuleID vals
   private val slf4jApi = "org.slf4j" % "slf4j-api" % Slf4jVersion
   private val slf4j: Seq[ModuleID] = Seq("jcl-over-slf4j", "jul-to-slf4j", "log4j-over-slf4j").map {
     "org.slf4j" % _ % Slf4jVersion
   } ++ Seq(slf4jApi)
-  private val excludeSlf4j = slf4j.map { moduleId => ExclusionRule(moduleId.organization, moduleId.name) }
+  private val excludeSlf4j = slf4j.map { moduleId =>
+    ExclusionRule(moduleId.organization, moduleId.name)
+  }
   private val log4jModules = Seq(
     "log4j-api",
     "log4j-core",
     "log4j-slf4j-impl"
-  ).map("org.apache.logging.log4j" % _ % Log4jVersion excludeAll (excludeSlf4j: _*))
-
+  ).map(artifactId => ("org.apache.logging.log4j" % artifactId % Log4jVersion).excludeAll(excludeSlf4j: _*))
 
   // Specific libraries that get reused
-  private val scalaTest: ModuleID = "org.scalatest" %% "scalatest" % ScalaTestVersion excludeAll (excludeSlf4j: _*)
-  private val guava = "com.google.guava" % "guava" % GuavaVersion
-  private val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
-  private val scalaXml = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
-  private val javassist = "org.javassist" % "javassist" % "3.21.0-GA"
+  private val scalaTest: ModuleID    = ("org.scalatest" %% "scalatest" % ScalaTestVersion).excludeAll(excludeSlf4j: _*)
+  private val guava                  = "com.google.guava" % "guava" % GuavaVersion
+  private val scalaJava8Compat       = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
+  private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
+  private val javassist              = "org.javassist" % "javassist" % "3.21.0-GA"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
-  private val typesafeConfig = "com.typesafe" % "config" % "1.3.3"
-  private val sslConfig = "com.typesafe" %% "ssl-config-core" % "0.3.7"
-  private val h2 = "com.h2database" % "h2" % "1.4.192"
-  private val cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0" excludeAll (excludeSlf4j: _*)
+  private val typesafeConfig         = "com.typesafe" % "config" % "1.3.3"
+  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.3.7"
+  private val h2                     = "com.h2database" % "h2" % "1.4.192"
+  private val cassandraDriverCore =
+    ("com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0").excludeAll(excludeSlf4j: _*)
 
-  private val akkaActor = "com.typesafe.akka" %% "akka-actor" % AkkaVersion
-  private val akkaRemote = "com.typesafe.akka" %% "akka-remote" % AkkaVersion
-  private val akkaCluster = "com.typesafe.akka" %% "akka-cluster" % AkkaVersion
-  private val akkaClusterSharding = "com.typesafe.akka" %% "akka-cluster-sharding" % AkkaVersion
-  private val akkaClusterTools = "com.typesafe.akka" %% "akka-cluster-tools" % AkkaVersion
+  private val akkaActor            = "com.typesafe.akka" %% "akka-actor" % AkkaVersion
+  private val akkaRemote           = "com.typesafe.akka" %% "akka-remote" % AkkaVersion
+  private val akkaCluster          = "com.typesafe.akka" %% "akka-cluster" % AkkaVersion
+  private val akkaClusterSharding  = "com.typesafe.akka" %% "akka-cluster-sharding" % AkkaVersion
+  private val akkaClusterTools     = "com.typesafe.akka" %% "akka-cluster-tools" % AkkaVersion
   private val akkaMultiNodeTestkit = "com.typesafe.akka" %% "akka-multi-node-testkit" % AkkaVersion
-  private val akkaPersistence = "com.typesafe.akka" %% "akka-persistence" % AkkaVersion
+  private val akkaPersistence      = "com.typesafe.akka" %% "akka-persistence" % AkkaVersion
   private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % AkkaVersion
-  private val akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion excludeAll (excludeSlf4j: _*)
-  private val akkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
-  private val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
-  private val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
-  private val reactiveStreams = "org.reactivestreams" % "reactive-streams" % "1.0.2"
+  private val akkaSlf4j            = ("com.typesafe.akka" %% "akka-slf4j" % AkkaVersion).excludeAll(excludeSlf4j: _*)
+  private val akkaStream           = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
+  private val akkaStreamTestkit    = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
+  private val akkaTestkit          = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
+  private val reactiveStreams      = "org.reactivestreams" % "reactive-streams" % "1.0.2"
 
   private val akkaDiscovery = "com.typesafe.akka" %% "akka-discovery" % AkkaVersion
 
-  private val akkaPersistenceJdbc = "com.github.dnvriend" %% "akka-persistence-jdbc" % AkkaPersistenceJdbcVersion excludeAll (excludeSlf4j: _*)
+  private val akkaPersistenceJdbc =
+    ("com.github.dnvriend" %% "akka-persistence-jdbc" % AkkaPersistenceJdbcVersion).excludeAll(excludeSlf4j: _*)
 
   // latest version of APC depend on a Cassandra driver core that's not compatible with Lagom (newer netty/guava/etc... under the covers)
-  private val akkaPersistenceCassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % AkkaPersistenceCassandraVersion
+  private val akkaPersistenceCassandra         = "com.typesafe.akka" %% "akka-persistence-cassandra"          % AkkaPersistenceCassandraVersion
   private val akkaPersistenceCassandraLauncher = "com.typesafe.akka" %% "akka-persistence-cassandra-launcher" % AkkaPersistenceCassandraVersion
-  private val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafkaVersion
+  private val akkaStreamKafka                  = "com.typesafe.akka" %% "akka-stream-kafka"                   % AkkaStreamKafkaVersion
 
   private val akkaHttpCore = "com.typesafe.akka" %% "akka-http-core" % AkkaHttpVersion
-  private val akkaParsing = "com.typesafe.akka" %% "akka-parsing" % AkkaHttpVersion
+  private val akkaParsing  = "com.typesafe.akka" %% "akka-parsing"   % AkkaHttpVersion
 
-  private val play = "com.typesafe.play" %% "play" % PlayVersion excludeAll (excludeSlf4j: _*)
-  private val playBuildLink = "com.typesafe.play" % "build-link" % PlayVersion excludeAll (excludeSlf4j: _*)
-  private val playExceptions = "com.typesafe.play" % "play-exceptions" % PlayVersion excludeAll (excludeSlf4j: _*)
-  private val playGuice = "com.typesafe.play" %% "play-guice" % PlayVersion excludeAll (excludeSlf4j: _*)
-  private val playJava = "com.typesafe.play" %% "play-java" % PlayVersion excludeAll (excludeSlf4j: _*)
-  private val playJdbc = "com.typesafe.play" %% "play-jdbc" % PlayVersion excludeAll (excludeSlf4j: _*)
-  private val playNettyServer = "com.typesafe.play" %% "play-netty-server" % PlayVersion excludeAll (excludeSlf4j: _*)
-  private val playAkkaHttpServer = "com.typesafe.play" %% "play-akka-http-server" % PlayVersion excludeAll (excludeSlf4j: _*)
-  private val playServer = "com.typesafe.play" %% "play-server" % PlayVersion excludeAll (excludeSlf4j: _*)
+  private val play            = ("com.typesafe.play" %% "play"              % PlayVersion).excludeAll(excludeSlf4j: _*)
+  private val playBuildLink   = ("com.typesafe.play" % "build-link"         % PlayVersion).excludeAll(excludeSlf4j: _*)
+  private val playExceptions  = ("com.typesafe.play" % "play-exceptions"    % PlayVersion).excludeAll(excludeSlf4j: _*)
+  private val playGuice       = ("com.typesafe.play" %% "play-guice"        % PlayVersion).excludeAll(excludeSlf4j: _*)
+  private val playJava        = ("com.typesafe.play" %% "play-java"         % PlayVersion).excludeAll(excludeSlf4j: _*)
+  private val playJdbc        = ("com.typesafe.play" %% "play-jdbc"         % PlayVersion).excludeAll(excludeSlf4j: _*)
+  private val playNettyServer = ("com.typesafe.play" %% "play-netty-server" % PlayVersion).excludeAll(excludeSlf4j: _*)
+  private val playAkkaHttpServer =
+    ("com.typesafe.play" %% "play-akka-http-server" % PlayVersion).excludeAll(excludeSlf4j: _*)
+  private val playServer = ("com.typesafe.play" %% "play-server" % PlayVersion).excludeAll(excludeSlf4j: _*)
 
-  private val playWs = "com.typesafe.play" %% "play-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
-  private val playAhcWs = "com.typesafe.play" %% "play-ahc-ws" % PlayVersion excludeAll (excludeSlf4j: _*)
-  private val playJson = "com.typesafe.play" %% "play-json" % PlayJsonVersion excludeAll (excludeSlf4j: _*)
-  private val playFunctional = "com.typesafe.play" %% "play-functional" % PlayJsonVersion excludeAll (excludeSlf4j: _*)
-  private val playFileWatch = "com.lightbend.play" %% "play-file-watch" % PlayFileWatchVersion excludeAll (excludeSlf4j: _*)
+  private val playWs         = ("com.typesafe.play" %% "play-ws"         % PlayVersion).excludeAll(excludeSlf4j: _*)
+  private val playAhcWs      = ("com.typesafe.play" %% "play-ahc-ws"     % PlayVersion).excludeAll(excludeSlf4j: _*)
+  private val playJson       = ("com.typesafe.play" %% "play-json"       % PlayJsonVersion).excludeAll(excludeSlf4j: _*)
+  private val playFunctional = ("com.typesafe.play" %% "play-functional" % PlayJsonVersion).excludeAll(excludeSlf4j: _*)
+  private val playFileWatch =
+    ("com.lightbend.play" %% "play-file-watch" % PlayFileWatchVersion).excludeAll(excludeSlf4j: _*)
 
-  private val dropwizardMetricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.2" excludeAll (excludeSlf4j: _*)
+  private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.2").excludeAll(excludeSlf4j: _*)
 
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", JacksonCoreVersion)(
-      "jackson-annotations", "jackson-core"
+      "jackson-annotations",
+      "jackson-core"
     ) ++ libraryFamily("com.fasterxml.jackson.core", JacksonDatabindVersion)(
       "jackson-databind"
     ) ++ libraryFamily("com.fasterxml.jackson.datatype", JacksonDatatypeVersion)(
-      "jackson-datatype-jdk8", "jackson-datatype-jsr310", "jackson-datatype-guava", "jackson-datatype-pcollections"
+      "jackson-datatype-jdk8",
+      "jackson-datatype-jsr310",
+      "jackson-datatype-guava",
+      "jackson-datatype-pcollections"
     )
-
 
   val scalaParserCombinatorOverrides = Set(scalaParserCombinators)
 
@@ -143,24 +150,24 @@ object Dependencies {
       cassandraDriverCore,
       "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
       akkaPersistenceJdbc,
-      "com.github.jnr" % "jffi" % "1.2.16",
-      "com.github.jnr" % "jnr-constants" % "0.9.9",
-      "com.github.jnr" % "jnr-ffi" % "2.1.7",
-      "com.github.jnr" % "jnr-posix" % "3.0.27",
-      "com.github.jnr" % "jnr-x86asm" % "1.0.2",
-      "com.google.code.findbugs" % "jsr305" % "1.3.9",
-      "com.google.errorprone" % "error_prone_annotations" % "2.1.3",
-      "com.google.guava" % "guava" % GuavaVersion,
-      "com.google.j2objc" % "j2objc-annotations" % "1.1",
-      "com.google.inject" % "guice" % "4.1.0",
-      "com.google.inject.extensions" % "guice-assistedinject" % "4.1.0",
-      "com.googlecode.usc" % "jdbcdslog" % "1.0.6.2",
-      "org.checkerframework" % "checker-compat-qual" % "2.0.0",
-      "javax.xml.bind" % "jaxb-api" % "2.3.1",
-      "javax.activation" % "javax.activation-api" % "1.2.0",
+      "com.github.jnr"               % "jffi"                    % "1.2.16",
+      "com.github.jnr"               % "jnr-constants"           % "0.9.9",
+      "com.github.jnr"               % "jnr-ffi"                 % "2.1.7",
+      "com.github.jnr"               % "jnr-posix"               % "3.0.27",
+      "com.github.jnr"               % "jnr-x86asm"              % "1.0.2",
+      "com.google.code.findbugs"     % "jsr305"                  % "1.3.9",
+      "com.google.errorprone"        % "error_prone_annotations" % "2.1.3",
+      "com.google.guava"             % "guava"                   % GuavaVersion,
+      "com.google.j2objc"            % "j2objc-annotations"      % "1.1",
+      "com.google.inject"            % "guice"                   % "4.1.0",
+      "com.google.inject.extensions" % "guice-assistedinject"    % "4.1.0",
+      "com.googlecode.usc"           % "jdbcdslog"               % "1.0.6.2",
+      "org.checkerframework"         % "checker-compat-qual"     % "2.0.0",
+      "javax.xml.bind"               % "jaxb-api"                % "2.3.1",
+      "javax.activation"             % "javax.activation-api"    % "1.2.0",
       h2,
-      "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
-      "com.lmax" % "disruptor" % "3.3.6",
+      "com.jolbox"   % "bonecp"          % "0.8.0.RELEASE",
+      "com.lmax"     % "disruptor"       % "3.3.6",
       "com.novocode" % "junit-interface" % JUnitInterfaceVersion,
       typesafeConfig,
       sslConfig,
@@ -169,128 +176,161 @@ object Dependencies {
       akkaParsing,
       akkaPersistenceCassandra,
       akkaPersistenceCassandraLauncher,
-      "com.typesafe.netty" % "netty-reactive-streams" % NettyReactiveStreamsVersion,
+      "com.typesafe.netty" % "netty-reactive-streams"      % NettyReactiveStreamsVersion,
       "com.typesafe.netty" % "netty-reactive-streams-http" % NettyReactiveStreamsVersion,
-      "com.typesafe.play" %% "cachecontrol" % "1.1.4",
+      "com.typesafe.play"  %% "cachecontrol"               % "1.1.4",
       playJson,
       playFunctional,
       // play client libs
       playWs,
       playAhcWs,
-      "com.typesafe.play" %% "play-ws-standalone" % PlayStandaloneWsVersion,
-      "com.typesafe.play" %% "play-ws-standalone-xml" % PlayStandaloneWsVersion,
-      "com.typesafe.play" %% "play-ws-standalone-json" % PlayStandaloneWsVersion,
-      "com.typesafe.play" %% "play-ahc-ws-standalone" % PlayStandaloneWsVersion,
-      "com.typesafe.play" % "shaded-asynchttpclient" % PlayStandaloneWsVersion,
-      "com.typesafe.play" % "shaded-oauth" % PlayStandaloneWsVersion,
-
-      "com.typesafe.play" %% "twirl-api" % TwirlVersion,
-      "com.typesafe.slick" %% "slick" % SlickVersion,
-      "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-      "com.zaxxer" % "HikariCP" % "2.7.9",
-      "commons-codec" % "commons-codec" % "1.11",
-      "io.aeron" % "aeron-client" % "1.15.1",
-      "io.aeron" % "aeron-driver" % "1.15.1",
+      "com.typesafe.play"  %% "play-ws-standalone"      % PlayStandaloneWsVersion,
+      "com.typesafe.play"  %% "play-ws-standalone-xml"  % PlayStandaloneWsVersion,
+      "com.typesafe.play"  %% "play-ws-standalone-json" % PlayStandaloneWsVersion,
+      "com.typesafe.play"  %% "play-ahc-ws-standalone"  % PlayStandaloneWsVersion,
+      "com.typesafe.play"  % "shaded-asynchttpclient"   % PlayStandaloneWsVersion,
+      "com.typesafe.play"  % "shaded-oauth"             % PlayStandaloneWsVersion,
+      "com.typesafe.play"  %% "twirl-api"               % TwirlVersion,
+      "com.typesafe.slick" %% "slick"                   % SlickVersion,
+      "com.typesafe.slick" %% "slick-hikaricp"          % SlickVersion,
+      "com.zaxxer"         % "HikariCP"                 % "2.7.9",
+      "commons-codec"      % "commons-codec"            % "1.11",
+      "io.aeron"           % "aeron-client"             % "1.15.1",
+      "io.aeron"           % "aeron-driver"             % "1.15.1",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.7.0",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
-      "io.netty" % "netty" % "3.10.6.Final",
-      "javax.cache" % "cache-api" % "1.0.0",
-      "javax.inject" % "javax.inject" % "1",
-      "javax.transaction" % "jta" % "1.1",
-      "joda-time" % "joda-time" % "2.9.9",
-      "junit" % "junit" % JUnitVersion,
-      "net.jodah" % "typetools" % "0.5.0",
-      "net.jpountz.lz4" % "lz4" % "1.3.0",
-      "org.agrona" % "agrona" % "0.9.31",
-      "org.apache.commons" % "commons-lang3" % "3.6",
-      "org.apache.kafka" % "kafka-clients" % KafkaVersion,
-      "org.codehaus.mojo" % "animal-sniffer-annotations" % "1.14",
-      "org.hibernate" % "hibernate-validator" % "5.2.4.Final",
-      "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final",
-      "org.immutables" % "value" % "2.3.2",
+      "io.netty"                        % "netty"                      % "3.10.6.Final",
+      "javax.cache"                     % "cache-api"                  % "1.0.0",
+      "javax.inject"                    % "javax.inject"               % "1",
+      "javax.transaction"               % "jta"                        % "1.1",
+      "joda-time"                       % "joda-time"                  % "2.9.9",
+      "junit"                           % "junit"                      % JUnitVersion,
+      "net.jodah"                       % "typetools"                  % "0.5.0",
+      "net.jpountz.lz4"                 % "lz4"                        % "1.3.0",
+      "org.agrona"                      % "agrona"                     % "0.9.31",
+      "org.apache.commons"              % "commons-lang3"              % "3.6",
+      "org.apache.kafka"                % "kafka-clients"              % KafkaVersion,
+      "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.14",
+      "org.hibernate"                   % "hibernate-validator"        % "5.2.4.Final",
+      "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api"      % "1.0.0.Final",
+      "org.immutables"                  % "value"                      % "2.3.2",
       javassist,
-      "org.joda" % "joda-convert" % "1.9.2",
-      "org.hamcrest" % "hamcrest-core" % "1.3",
-      "org.lmdbjava" % "lmdbjava" % "0.6.1",
-      "org.pcollections" % "pcollections" % "2.1.2",
+      "org.joda"         % "joda-convert"  % "1.9.2",
+      "org.hamcrest"     % "hamcrest-core" % "1.3",
+      "org.lmdbjava"     % "lmdbjava"      % "0.6.1",
+      "org.pcollections" % "pcollections"  % "2.1.2",
       reactiveStreams,
-      "org.reflections" % "reflections" % "0.9.11",
-      "org.scalactic" %% "scalactic" % ScalaTestVersion,
-      "org.scalatest" %% "scalatest" % ScalaTestVersion,
+      "org.reflections"        % "reflections"         % "0.9.11",
+      "org.scalactic"          %% "scalactic"          % ScalaTestVersion,
+      "org.scalatest"          %% "scalatest"          % ScalaTestVersion,
       "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion,
       scalaParserCombinators,
       scalaXml,
-      "org.scala-sbt" % "test-interface" % "1.0",
-      "org.typelevel" %% "macro-compat" % "1.1.1",
-      "org.xerial.snappy" % "snappy-java" % "1.1.2.6",
-      "tyrex" % "tyrex" % "1.0.1"
-
+      "org.scala-sbt"     % "test-interface" % "1.0",
+      "org.typelevel"     %% "macro-compat"  % "1.1.1",
+      "org.xerial.snappy" % "snappy-java"    % "1.1.2.6",
+      "tyrex"             % "tyrex"          % "1.0.1"
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", AkkaVersion)(
-      "akka-actor", "akka-cluster", "akka-cluster-sharding", "akka-cluster-tools", "akka-distributed-data",
-      "akka-multi-node-testkit", "akka-persistence", "akka-persistence-query", "akka-protobuf", "akka-remote",
-      "akka-slf4j", "akka-stream", "akka-stream-testkit", "akka-testkit", "akka-coordination", "akka-discovery"
-
+      "akka-actor",
+      "akka-cluster",
+      "akka-cluster-sharding",
+      "akka-cluster-tools",
+      "akka-distributed-data",
+      "akka-multi-node-testkit",
+      "akka-persistence",
+      "akka-persistence-query",
+      "akka-protobuf",
+      "akka-remote",
+      "akka-slf4j",
+      "akka-stream",
+      "akka-stream-testkit",
+      "akka-testkit",
+      "akka-coordination",
+      "akka-discovery"
     ) ++ libraryFamily("com.typesafe.play", PlayVersion)(
-      "build-link", "play-exceptions", "play-netty-utils"
-
+      "build-link",
+      "play-exceptions",
+      "play-netty-utils"
     ) ++ crossLibraryFamily("com.typesafe.play", PlayVersion)(
-      "play", "play-guice", "play-java", "play-jdbc", "play-jdbc-api",
-      "play-netty-server", "play-akka-http-server", "play-server", "play-streams", "play-ws", "play-ahc-ws"
-
+      "play",
+      "play-guice",
+      "play-java",
+      "play-jdbc",
+      "play-jdbc-api",
+      "play-netty-server",
+      "play-akka-http-server",
+      "play-server",
+      "play-streams",
+      "play-ws",
+      "play-ahc-ws"
     ) ++ libraryFamily("ch.qos.logback", LogbackVersion)(
-      "logback-classic", "logback-core"
-
+      "logback-classic",
+      "logback-core"
     ) ++ libraryFamily("io.netty", NettyVersion)(
-      "netty-buffer", "netty-codec", "netty-codec-http", "netty-common", "netty-handler", "netty-resolver",
-      "netty-transport", "netty-transport-native-epoll", "netty-transport-native-unix-common"
-
+      "netty-buffer",
+      "netty-codec",
+      "netty-codec-http",
+      "netty-common",
+      "netty-handler",
+      "netty-resolver",
+      "netty-transport",
+      "netty-transport-native-epoll",
+      "netty-transport-native-unix-common"
     ) ++ libraryFamily("org.apache.logging.log4j", Log4jVersion)(
-      "log4j-api", "log4j-core", "log4j-slf4j-impl"
-
+      "log4j-api",
+      "log4j-core",
+      "log4j-slf4j-impl"
     ) ++ libraryFamily("org.ow2.asm", "5.0.3")(
-      "asm", "asm-analysis", "asm-commons", "asm-tree", "asm-util"
-
+      "asm",
+      "asm-analysis",
+      "asm-commons",
+      "asm-tree",
+      "asm-util"
     ) ++ libraryFamily("org.scala-lang", scalaVersion)(
-      "scala-library", "scala-reflect"
-
+      "scala-library",
+      "scala-reflect"
     ) ++ libraryFamily("org.slf4j", Slf4jVersion)(
-      "jcl-over-slf4j", "jul-to-slf4j", "log4j-over-slf4j", "slf4j-api", "slf4j-nop", "slf4j-log4j12"
+      "jcl-over-slf4j",
+      "jul-to-slf4j",
+      "log4j-over-slf4j",
+      "slf4j-api",
+      "slf4j-nop",
+      "slf4j-log4j12"
     )
   }
-
 
   // These dependencies are used by JPA to test, but we don't want to export them as part of our regular whitelist,
   // so we maintain it separately.
   val JpaTestWhitelist = Seq(
-    "antlr" % "antlr" % "2.7.7",
-    "com.fasterxml" % "classmate" % "1.3.0",
-    "dom4j" % "dom4j" % "1.6.1",
-    "javax.annotation" % "jsr250-api" % "1.0",
-    "javax.el" % "el-api" % "2.2",
-    "javax.enterprise" % "cdi-api" % "1.1",
-    "org.apache.geronimo.specs" % "geronimo-jta_1.1_spec" % "1.1.1",
-    "org.hibernate" % "hibernate-core" % "5.2.5.Final",
-    "org.hibernate.common" % "hibernate-commons-annotations" % "5.0.1.Final",
-    "org.jboss" % "jandex" % "2.0.3.Final",
-    "org.jboss.logging" % "jboss-logging" % "3.3.0.Final",
+    "antlr"                            % "antlr"                           % "2.7.7",
+    "com.fasterxml"                    % "classmate"                       % "1.3.0",
+    "dom4j"                            % "dom4j"                           % "1.6.1",
+    "javax.annotation"                 % "jsr250-api"                      % "1.0",
+    "javax.el"                         % "el-api"                          % "2.2",
+    "javax.enterprise"                 % "cdi-api"                         % "1.1",
+    "org.apache.geronimo.specs"        % "geronimo-jta_1.1_spec"           % "1.1.1",
+    "org.hibernate"                    % "hibernate-core"                  % "5.2.5.Final",
+    "org.hibernate.common"             % "hibernate-commons-annotations"   % "5.0.1.Final",
+    "org.jboss"                        % "jandex"                          % "2.0.3.Final",
+    "org.jboss.logging"                % "jboss-logging"                   % "3.3.0.Final",
     "org.jboss.spec.javax.interceptor" % "jboss-interceptors-api_1.1_spec" % "1.0.0.Beta1"
   )
 
   // These dependencies are used by the Kafka tests, but we don't want to export them as part of our regular
   // whitelist, so we maintain it separately.
   val KafkaTestWhitelist = Seq(
-    "com.101tec" % "zkclient" % "0.10",
-    "com.yammer.metrics" % "metrics-core" % "2.2.0",
-    "jline" % "jline" % "0.9.94",
-    "log4j" % "log4j" % "1.2.17",
-    "net.sf.jopt-simple" % "jopt-simple" % "5.0.3",
-    "org.apache.commons" % "commons-math" % "2.2",
-    "org.apache.curator" % "curator-client" % "2.10.0",
-    "org.apache.curator" % "curator-framework" % "2.10.0",
-    "org.apache.curator" % "curator-test" % "2.10.0",
-    "org.apache.kafka" %% "kafka" % KafkaVersion,
-    "org.apache.zookeeper" % "zookeeper" % "3.4.10"
+    "com.101tec"           % "zkclient"          % "0.10",
+    "com.yammer.metrics"   % "metrics-core"      % "2.2.0",
+    "jline"                % "jline"             % "0.9.94",
+    "log4j"                % "log4j"             % "1.2.17",
+    "net.sf.jopt-simple"   % "jopt-simple"       % "5.0.3",
+    "org.apache.commons"   % "commons-math"      % "2.2",
+    "org.apache.curator"   % "curator-client"    % "2.10.0",
+    "org.apache.curator"   % "curator-framework" % "2.10.0",
+    "org.apache.curator"   % "curator-test"      % "2.10.0",
+    "org.apache.kafka"     %% "kafka"            % KafkaVersion,
+    "org.apache.zookeeper" % "zookeeper"         % "3.4.10"
   )
 
   private def crossLibraryFamily(groupId: String, version: String)(artifactIds: String*) = {
@@ -310,7 +350,6 @@ object Dependencies {
     akkaStream,
     play,
     guava,
-
     // Upgrades needed to match whitelist
     playJson
   )
@@ -318,8 +357,8 @@ object Dependencies {
   val `api-javadsl` = libraryDependencies ++= Seq(
     playJava,
     playGuice,
-    "org.pcollections" % "pcollections" % "2.1.2",
-    scalaTest % Test,
+    "org.pcollections"             % "pcollections" % "2.1.2",
+    scalaTest                      % Test,
     "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion % Test
   )
 
@@ -330,25 +369,24 @@ object Dependencies {
   val immutables = libraryDependencies += "org.immutables" % "value" % "2.3.2"
 
   val jackson = libraryDependencies ++= Seq(
-    "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion,
+    "com.fasterxml.jackson.module"   % "jackson-module-parameter-names" % JacksonVersion,
     "com.fasterxml.jackson.datatype" % "jackson-datatype-pcollections" % JacksonDatatypeVersion,
     "com.fasterxml.jackson.datatype" % "jackson-datatype-guava" % JacksonDatatypeVersion,
     "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % JacksonDatatypeVersion,
     "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % JacksonDatatypeVersion,
-    akkaTestkit % Test,
-    scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test
+    akkaTestkit                      % Test,
+    scalaTest                        % Test,
+    "com.novocode"                   % "junit-interface" % "0.11" % Test
   )
 
   val `play-json` = libraryDependencies ++= Seq(
     playJson,
     akkaActor,
     akkaTestkit % Test,
-    scalaTest % Test,
-
+    scalaTest   % Test,
     // Upgrades needed to match whitelist
     scalaJava8Compat,
-    scalaXml % Test,
+    scalaXml               % Test,
     scalaParserCombinators % Test
     // explicitly depend on particular versions of jackson
   ) ++ jacksonFamily ++ Seq(
@@ -359,7 +397,6 @@ object Dependencies {
   val `api-tools` = libraryDependencies ++= Seq(
     play,
     scalaTest % Test,
-
     // Upgrades needed to match whitelist
     reactiveStreams,
     playJson,
@@ -376,9 +413,8 @@ object Dependencies {
     playAhcWs,
     dropwizardMetricsCore,
     "com.typesafe.netty" % "netty-reactive-streams" % NettyReactiveStreamsVersion,
-    "io.netty" % "netty-codec-http" % NettyVersion,
-    scalaTest % Test,
-
+    "io.netty"           % "netty-codec-http" % NettyVersion,
+    scalaTest            % Test,
     // Upgrades needed to match whitelist versions
     "io.netty" % "netty-handler" % NettyVersion
   )
@@ -397,7 +433,7 @@ object Dependencies {
     // we need to explicitly add akka-remote in test scope
     // because the test for LagomClientFactory needs it
     akkaRemote % Test,
-    scalaTest % Test
+    scalaTest  % Test
   )
 
   val server = libraryDependencies ++= Nil
@@ -416,7 +452,6 @@ object Dependencies {
     akkaStream,
     play,
     akkaPersistenceCassandraLauncher,
-
     // Upgrades needed to match whitelist
     playJson,
     akkaSlf4j
@@ -426,9 +461,8 @@ object Dependencies {
     playAkkaHttpServer,
     akkaStreamTestkit,
     scalaTest % Test,
-    "junit" % "junit" % JUnitVersion,
-    h2 % Test,
-
+    "junit"   % "junit" % JUnitVersion,
+    h2        % Test,
     // Without any binding, slf4j will print warnings when running tests
     "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test
   )
@@ -437,9 +471,8 @@ object Dependencies {
     playAkkaHttpServer,
     akkaStreamTestkit,
     scalaTest % Test,
-    "junit" % "junit" % JUnitVersion,
-    h2 % Test,
-
+    "junit"   % "junit" % JUnitVersion,
+    h2        % Test,
     // Without any binding, slf4j will print warnings when running tests
     "org.slf4j" % "slf4j-nop" % Slf4jVersion % Test
   )
@@ -460,7 +493,6 @@ object Dependencies {
     akkaDiscovery,
     slf4jApi,
     scalaTest % Test,
-
     // Upgrades needed to match whitelist
     scalaParserCombinators,
     scalaJava8Compat,
@@ -470,10 +502,9 @@ object Dependencies {
   val `cluster-core` = libraryDependencies ++= Seq(
     akkaCluster,
     akkaTestkit % Test,
-    scalaTest % Test,
+    scalaTest   % Test,
     play,
     "com.novocode" % "junit-interface" % "0.11" % Test,
-
     // Upgrades needed to match whitelist
     scalaJava8Compat,
     scalaParserCombinators,
@@ -482,18 +513,17 @@ object Dependencies {
   )
 
   val `cluster-javadsl` = libraryDependencies ++= Seq(
-    akkaTestkit % Test,
+    akkaTestkit          % Test,
     akkaMultiNodeTestkit % Test,
-    scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test
+    scalaTest            % Test,
+    "com.novocode"       % "junit-interface" % "0.11" % Test
   )
 
   val `cluster-scaladsl` = libraryDependencies ++= Seq(
-    akkaTestkit % Test,
+    akkaTestkit          % Test,
     akkaMultiNodeTestkit % Test,
-    scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test,
-
+    scalaTest            % Test,
+    "com.novocode"       % "junit-interface" % "0.11" % Test,
     // Upgrades needed to match whitelist
     scalaXml % Test,
     akkaSlf4j
@@ -505,11 +535,11 @@ object Dependencies {
 
   val `pubsub-javadsl` = libraryDependencies ++= Seq(
     akkaClusterTools,
-    akkaTestkit % Test,
+    akkaTestkit          % Test,
     akkaMultiNodeTestkit % Test,
-    akkaStreamTestkit % Test,
-    scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test
+    akkaStreamTestkit    % Test,
+    scalaTest            % Test,
+    "com.novocode"       % "junit-interface" % "0.11" % Test
     // explicitly depend on particular versions of jackson
   ) ++ jacksonFamily ++ Seq(
     // explicitly depend on particular versions of guava
@@ -518,11 +548,10 @@ object Dependencies {
 
   val `pubsub-scaladsl` = libraryDependencies ++= Seq(
     akkaClusterTools,
-    akkaTestkit % Test,
+    akkaTestkit          % Test,
     akkaMultiNodeTestkit % Test,
-    akkaStreamTestkit % Test,
-    scalaTest % Test,
-
+    akkaStreamTestkit    % Test,
+    scalaTest            % Test,
     // Upgrades needed to match whitelist
     scalaXml % Test,
     akkaSlf4j
@@ -534,12 +563,11 @@ object Dependencies {
     akkaClusterSharding,
     akkaSlf4j,
     play,
-    akkaTestkit % Test,
+    akkaTestkit          % Test,
     akkaMultiNodeTestkit % Test,
-    akkaStreamTestkit % Test,
-    scalaTest % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test,
-
+    akkaStreamTestkit    % Test,
+    scalaTest            % Test,
+    "com.novocode"       % "junit-interface" % "0.11" % Test,
     // Upgrades needed to match whitelist
     playJson
   )
@@ -559,7 +587,6 @@ object Dependencies {
     slf4jApi,
     akkaPersistenceCassandra,
     akkaPersistenceCassandraLauncher % Test,
-
     // Upgrades needed to match whitelist
     dropwizardMetricsCore,
     "io.netty" % "netty-handler" % NettyVersion
@@ -573,7 +600,6 @@ object Dependencies {
     slf4jApi,
     akkaPersistenceJdbc,
     playJdbc,
-
     h2 % Test
   )
 
@@ -587,8 +613,8 @@ object Dependencies {
 
   val `persistence-jpa-javadsl` = libraryDependencies ++= Seq(
     "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final" % Provided,
-    "org.hibernate" % "hibernate-core" % "5.2.5.Final" % Test,
-    h2 % Test
+    "org.hibernate"                   % "hibernate-core" % "5.2.5.Final" % Test,
+    h2                                % Test
   )
 
   val `broker-javadsl` = libraryDependencies ++= Nil
@@ -597,7 +623,7 @@ object Dependencies {
 
   val `kafka-client` = libraryDependencies ++= Seq(
     "org.slf4j" % "log4j-over-slf4j" % Slf4jVersion,
-    akkaStreamKafka exclude("org.slf4j", "slf4j-log4j12"),
+    akkaStreamKafka.exclude("org.slf4j", "slf4j-log4j12"),
     scalaTest % Test
   )
 
@@ -611,23 +637,22 @@ object Dependencies {
 
   val `kafka-broker` = libraryDependencies ++= Nil
 
-  val `kafka-broker-javadsl` = libraryDependencies ++=  Seq(
+  val `kafka-broker-javadsl` = libraryDependencies ++= Seq(
     slf4jApi,
-    "log4j" % "log4j" % "1.2.17",
+    "log4j"   % "log4j" % "1.2.17",
     scalaTest % Test,
-    "junit" % "junit" % JUnitVersion % Test
+    "junit"   % "junit" % JUnitVersion % Test
   )
 
   val `kafka-broker-scaladsl` = libraryDependencies ++= Seq(
-    "log4j" % "log4j" % "1.2.17",
+    "log4j"   % "log4j" % "1.2.17",
     scalaTest % Test,
-    "junit" % "junit" % JUnitVersion % Test
+    "junit"   % "junit" % JUnitVersion % Test
   )
 
   val logback = libraryDependencies ++= slf4j ++ Seq(
     // needed only because we use play.utils.Colors
     play,
-
     // Upgrades needed to match whitelist versions
     reactiveStreams,
     playJson,
@@ -635,15 +660,14 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
-  ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % LogbackVersion)
+    "com.typesafe.akka"                                            %% "akka-protobuf" % AkkaVersion
+  ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _                % LogbackVersion)
 
   val log4j2 = libraryDependencies ++= Seq(slf4jApi) ++
     log4jModules ++
     Seq(
       "com.lmax" % "disruptor" % "3.3.6",
       play,
-
       // Upgrades needed to match whitelist versions
       reactiveStreams,
       playJson,
@@ -652,12 +676,10 @@ object Dependencies {
       akkaActor,
       akkaSlf4j,
       "com.typesafe.akka" %% "akka-protobuf" % AkkaVersion
-
     )
 
   val `reloadable-server` = libraryDependencies ++= Seq(
     playServer,
-
     // Upgrades needed to match whitelist versions
     reactiveStreams,
     playJson,
@@ -680,12 +702,12 @@ object Dependencies {
   val `sbt-plugin` = libraryDependencies ++= Seq(
     // And this is needed to silence the datastax driver logging
     "org.slf4j" % "slf4j-nop" % "1.7.14",
-    scalaTest % Test
+    scalaTest   % Test
   )
 
   val `maven-plugin` = libraryDependencies ++= Seq(
-    "org.apache.maven" % "maven-plugin-api" % MavenVersion,
-    "org.apache.maven" % "maven-core" % MavenVersion,
+    "org.apache.maven"                % "maven-plugin-api"             % MavenVersion,
+    "org.apache.maven"                % "maven-core"                   % MavenVersion,
     "org.apache.maven.plugin-testing" % "maven-plugin-testing-harness" % "3.3.0" % Test,
     slf4jApi,
     scalaTest % Test
@@ -700,10 +722,10 @@ object Dependencies {
       .exclude("org.apache.maven.wagon", "wagon-http-shared4")
       .exclude("org.apache.httpcomponents", "httpclient")
       .exclude("org.apache.httpcomponents", "httpcore"),
-    "org.apache.maven.wagon" % "wagon-file" % "2.10",
-    "org.eclipse.aether" % "aether-connector-basic" % "1.0.2.v20150114",
-    "org.eclipse.aether" % "aether-transport-wagon" % "1.0.2.v20150114",
-    "org.slf4j" % "slf4j-simple" % "1.7.21"
+    "org.apache.maven.wagon" % "wagon-file"             % "2.10",
+    "org.eclipse.aether"     % "aether-connector-basic" % "1.0.2.v20150114",
+    "org.eclipse.aether"     % "aether-transport-wagon" % "1.0.2.v20150114",
+    "org.slf4j"              % "slf4j-simple"           % "1.7.21"
   )
 
   val `service-locator` = libraryDependencies ++= Seq(
@@ -731,27 +753,27 @@ object Dependencies {
     // to use curator 2.x, which is compatible with zookeeper 3.4 (see the notice in
     // http://curator.apache.org/index.html - make sure to scroll to the bottom)
     "org.apache.curator" % "curator-framework" % "2.10.0",
-    "org.apache.curator" % "curator-test" % "2.10.0",
+    "org.apache.curator" % "curator-test"      % "2.10.0",
     javassist,
     scalaJava8Compat,
     scalaTest % Test
   )
 
   val validateDependencies = taskKey[Unit]("Validate Lagom dependencies to ensure they are whitelisted")
-  val dependencyWhitelist = settingKey[Seq[ModuleID]]("The whitelist of dependencies")
-  val pruneWhitelist = taskKey[Unit]("List items that can be pruned from the whitelist ")
+  val dependencyWhitelist  = settingKey[Seq[ModuleID]]("The whitelist of dependencies")
+  val pruneWhitelist       = taskKey[Unit]("List items that can be pruned from the whitelist ")
 
   val validateDependenciesTask: Def.Initialize[Task[Unit]] = Def.task {
     // We validate compile dependencies to ensure that whatever we are exporting, we are exporting the right
     // versions. We validate test dependencies to ensure that our tests run against the same versions that we are
     // exporting
     val compileClasspath = (managedClasspath in Compile).value
-    val testClasspath = (managedClasspath in Test).value
-    val cross = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
-    val log = streams.value.log
-    val svb = scalaBinaryVersion.value
+    val testClasspath    = (managedClasspath in Test).value
+    val cross            = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
+    val log              = streams.value.log
+    val svb              = scalaBinaryVersion.value
 
-    val whitelist = (dependencyWhitelist.value++KafkaTestWhitelist).map { moduleId =>
+    val whitelist = (dependencyWhitelist.value ++ KafkaTestWhitelist).map { moduleId =>
       val crossModuleId = cross(moduleId)
       (crossModuleId.organization, crossModuleId.name) -> crossModuleId.revision
     }.toMap
@@ -766,7 +788,9 @@ object Dependencies {
           case None =>
             Some(moduleId -> s"[${name.value}] $scope dependency not in whitelist: $moduleId")
           case Some(unmatched) if moduleId.revision != unmatched =>
-            Some(moduleId -> s"[${name.value}] $scope dependency ${moduleId.organization}:${moduleId.name} version ${moduleId.revision} doesn't match whitelist version $unmatched")
+            Some(
+              moduleId -> s"[${name.value}] $scope dependency ${moduleId.organization}:${moduleId.name} version ${moduleId.revision} doesn't match whitelist version $unmatched"
+            )
           case _ => None
         }
       })
@@ -779,17 +803,20 @@ object Dependencies {
 
       log.debug {
         // This makes it very easy to fix the problem, by outputting a formatted list of dependencies to add.
-        problems.map { problem =>
-          val mid = problem._1
-          val cross = mid.name.endsWith("_" + svb)
-          val m = if (cross) "%%" else "%"
-          val name = if (cross) mid.name.dropRight(svb.length + 1) else mid.name
-          s""""${mid.organization}" $m "$name" % "${mid.revision}""""
-        }.sorted.mkString(
-          "The following dependencies need to be added to the whitelist:\n",
-          ",\n",
-          ""
-        )
+        problems
+          .map { problem =>
+            val mid   = problem._1
+            val cross = mid.name.endsWith("_" + svb)
+            val m     = if (cross) "%%" else "%"
+            val name  = if (cross) mid.name.dropRight(svb.length + 1) else mid.name
+            s""""${mid.organization}" $m "$name" % "${mid.revision}""""
+          }
+          .sorted
+          .mkString(
+            "The following dependencies need to be added to the whitelist:\n",
+            ",\n",
+            ""
+          )
       }
       throw new DependencyWhitelistValidationFailed
     }
@@ -797,10 +824,10 @@ object Dependencies {
 
   val pruneWhitelistTask: Def.Initialize[Task[Unit]] = Def.task {
     val compileClasspath = (managedClasspath in Compile).value
-    val testClasspath = (managedClasspath in Test).value
-    val cross = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
-    val log = streams.value.log
-    val svb = scalaBinaryVersion.value
+    val testClasspath    = (managedClasspath in Test).value
+    val cross            = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
+    val log              = streams.value.log
+    val svb              = scalaBinaryVersion.value
 
     val whitelist: Map[(String, String), String] = dependencyWhitelist.value.map { moduleId =>
       val crossModuleId = cross(moduleId)
@@ -808,7 +835,8 @@ object Dependencies {
     }.toMap
 
     def collectProblems(scope: String, classpath: Classpath): Set[(String, String)] = {
-      val modules: Set[(String, String)] = classpath.toSet[Attributed[File]].flatMap(_.get(moduleID.key)).map(mod => (mod.organization, mod.name))
+      val modules: Set[(String, String)] =
+        classpath.toSet[Attributed[File]].flatMap(_.get(moduleID.key)).map(mod => (mod.organization, mod.name))
       whitelist.keySet -- modules
     }
 
@@ -823,9 +851,8 @@ object Dependencies {
   }
   val pruneWhitelistSetting = pruneWhitelist := pruneWhitelistTask.value
 
-
   val validateDependenciesSetting = validateDependencies := validateDependenciesTask.value
-  val dependencyWhitelistSetting = dependencyWhitelist := DependencyWhitelist.value
+  val dependencyWhitelistSetting  = dependencyWhitelist := DependencyWhitelist.value
 
   private class DependencyWhitelistValidationFailed extends RuntimeException with FeedbackProvidedException {
     override def toString = "Dependency whitelist validation failed!"

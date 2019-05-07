@@ -4,7 +4,8 @@
 package com.lightbend.lagom.discovery
 
 import java.io.Closeable
-import java.net.{ InetSocketAddress, URI }
+import java.net.InetSocketAddress
+import java.net.URI
 import java.util.{ Map => JMap }
 
 import com.lightbend.lagom.discovery.impl.ServiceRegistryModule
@@ -24,10 +25,15 @@ import scala.util.control.NonFatal
 class ServiceLocatorServer extends Closeable {
   private val logger: Logger = Logger(this.getClass())
 
-  @volatile private var server: ReloadableServer = _
+  @volatile private var server: ReloadableServer          = _
   @volatile private var gatewayAddress: InetSocketAddress = _
 
-  def start(serviceLocatorPort: Int, serviceGatewayPort: Int, unmanagedServices: JMap[String, String], gatewayImpl: String): Unit = synchronized {
+  def start(
+      serviceLocatorPort: Int,
+      serviceGatewayPort: Int,
+      unmanagedServices: JMap[String, String],
+      gatewayImpl: String
+  ): Unit = synchronized {
     require(server == null, "Service locator is already running on " + server.mainAddress)
 
     val application = createApplication(ServiceGatewayConfig(serviceGatewayPort), unmanagedServices)
@@ -52,14 +58,17 @@ class ServiceLocatorServer extends Closeable {
     logger.info("Service gateway can be reached at " + serviceGatewayAddress)
   }
 
-  private def createApplication(serviceGatewayConfig: ServiceGatewayConfig, unmanagedServices: JMap[String, String]): Application = {
+  private def createApplication(
+      serviceGatewayConfig: ServiceGatewayConfig,
+      unmanagedServices: JMap[String, String]
+  ): Application = {
     new GuiceApplicationBuilder()
       .overrides(new ServiceRegistryModule(serviceGatewayConfig, unmanagedServices))
       .build()
   }
 
   private def createServer(application: Application, port: Int): ReloadableServer = {
-    val config = ServerConfig(port = Some(port), mode = Mode.Test)
+    val config   = ServerConfig(port = Some(port), mode = Mode.Test)
     val provider = implicitly[ServerProvider]
     provider.createServer(config, application)
   }
@@ -75,8 +84,8 @@ class ServiceLocatorServer extends Closeable {
   }
 
   def serviceLocatorAddress: URI = {
-    // Converting InetSocketAddress into URL is not that simple. 
-    // Because we know the service locator is running locally, I'm hardcoding the hostname and protocol. 
+    // Converting InetSocketAddress into URL is not that simple.
+    // Because we know the service locator is running locally, I'm hardcoding the hostname and protocol.
     new URI(s"http://localhost:${server.mainAddress.getPort}")
   }
 

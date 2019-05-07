@@ -1,4 +1,6 @@
-#! /bin/bash
+#!/usr/bin/env bash
+
+# Copyright (C) 2009-2019 Lightbend Inc. <https://www.lightbend.com>
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
@@ -6,3 +8,12 @@ runSbt unidoc
 
 cd docs
 runSbt markdownValidateDocs test markdownEvaluateSbtFiles
+
+printMessage "VALIDATE JAVA CODE FORMATTING FOR DOCS SAMPLE CODE"
+runSbt javafmt test:javafmt
+git diff --exit-code || (
+  echo "[error] ERROR: javafmt check failed, see differences above."
+  echo "[error] To fix, before submitting a pull request, format your"
+  echo "[error] sources using sbt javafmt test:javafmt inside docs folder."
+  false
+)

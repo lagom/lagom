@@ -9,42 +9,40 @@ import com.lightbend.lagom.serialization.Jsonable;
 import javax.inject.Inject;
 import java.util.Optional;
 
-public class NamedEntity extends PersistentEntity<NamedEntity.Cmd, NamedEntity.Evt, NamedEntity.State> {
+public class NamedEntity
+    extends PersistentEntity<NamedEntity.Cmd, NamedEntity.Evt, NamedEntity.State> {
+
+  @Override
+  public String entityTypeName() {
+    return "some-name";
+  }
+
+  public static interface Cmd extends Jsonable {}
+
+  public abstract static class Evt implements AggregateEvent<Evt>, Jsonable {
+    private static final long serialVersionUID = 1L;
+    public static final AggregateEventTag<Evt> AGGREGATE_EVENT_SHARDS =
+        AggregateEventTag.of(Evt.class);
 
     @Override
-    public String entityTypeName() {
-        return "some-name";
+    public AggregateEventTagger<Evt> aggregateTag() {
+      return AGGREGATE_EVENT_SHARDS;
     }
+  }
 
-    public static interface Cmd extends Jsonable {
-    }
+  public static class State implements Jsonable {
+    private static final long serialVersionUID = 1L;
 
-    public static abstract class Evt implements AggregateEvent<Evt>, Jsonable {
-        private static final long serialVersionUID = 1L;
-        public static final AggregateEventTag<Evt> AGGREGATE_EVENT_SHARDS = AggregateEventTag.of(Evt.class);
+    @JsonCreator
+    public State() {}
+  }
 
-        @Override
-        public AggregateEventTagger<Evt> aggregateTag() {
-            return AGGREGATE_EVENT_SHARDS;
-        }
-    }
+  @Inject
+  public NamedEntity() {}
 
-    public static class State implements Jsonable {
-        private static final long serialVersionUID = 1L;
-
-        @JsonCreator
-        public State() {
-        }
-    }
-
-    @Inject
-    public NamedEntity() {
-    }
-
-    @Override
-    public Behavior initialBehavior(Optional<State> snapshotState) {
-        BehaviorBuilder b = newBehaviorBuilder(new State());
-        return b.build();
-    }
-
+  @Override
+  public Behavior initialBehavior(Optional<State> snapshotState) {
+    BehaviorBuilder b = newBehaviorBuilder(new State());
+    return b.build();
+  }
 }

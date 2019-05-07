@@ -4,21 +4,32 @@
 package com.lightbend.lagom.internal.client
 
 import java.util.concurrent.atomic.AtomicReference
-import java.util.concurrent.{ CopyOnWriteArrayList, TimeUnit }
-import javax.inject.{ Inject, Provider, Singleton }
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Provider
+import javax.inject.Singleton
 
-import akka.actor.{ ActorSystem, ExtendedActorSystem }
+import akka.actor.ActorSystem
+import akka.actor.ExtendedActorSystem
 import com.codahale.metrics._
-import com.lightbend.lagom.internal.spi.{ CircuitBreakerMetrics, CircuitBreakerMetricsProvider }
-import play.api.inject.{ Binding, Injector, Module }
-import play.api.{ Configuration, Environment, Logger }
+import com.lightbend.lagom.internal.spi.CircuitBreakerMetrics
+import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
+import play.api.inject.Binding
+import play.api.inject.Injector
+import play.api.inject.Module
+import play.api.Configuration
+import play.api.Environment
+import play.api.Logger
 
 @Singleton
-class CircuitBreakerMetricsProviderProvider @Inject() (system: ActorSystem, injector: Injector) extends Provider[CircuitBreakerMetricsProvider] {
+class CircuitBreakerMetricsProviderProvider @Inject()(system: ActorSystem, injector: Injector)
+    extends Provider[CircuitBreakerMetricsProvider] {
   lazy val get = {
     val implClass = system.settings.config.getString("lagom.spi.circuit-breaker-metrics-class") match {
-      case ""        => classOf[CircuitBreakerMetricsProviderImpl]
-      case className => system.asInstanceOf[ExtendedActorSystem].dynamicAccess.getClassFor[CircuitBreakerMetricsProvider](className).get
+      case "" => classOf[CircuitBreakerMetricsProviderImpl]
+      case className =>
+        system.asInstanceOf[ExtendedActorSystem].dynamicAccess.getClassFor[CircuitBreakerMetricsProvider](className).get
     }
 
     injector.instanceOf(implClass)
@@ -26,9 +37,9 @@ class CircuitBreakerMetricsProviderProvider @Inject() (system: ActorSystem, inje
 }
 
 @Singleton
-class CircuitBreakerMetricsProviderImpl @Inject() (val system: ActorSystem) extends CircuitBreakerMetricsProvider {
+class CircuitBreakerMetricsProviderImpl @Inject()(val system: ActorSystem) extends CircuitBreakerMetricsProvider {
   private[lagom] val registry = new MetricRegistry
-  private val metrics = new CopyOnWriteArrayList[CircuitBreakerMetricsImpl]
+  private val metrics         = new CopyOnWriteArrayList[CircuitBreakerMetricsImpl]
 
   override def start(breakerId: String): CircuitBreakerMetrics = {
     val m = new CircuitBreakerMetricsImpl(breakerId, this)
@@ -44,32 +55,34 @@ class CircuitBreakerMetricsProviderImpl @Inject() (val system: ActorSystem) exte
 }
 
 object CircuitBreakerMetricsImpl {
-  final val Closed = "closed"
-  final val Open = "open"
+  final val Closed   = "closed"
+  final val Open     = "open"
   final val HalfOpen = "half-open"
 
   private final def stateName(breakerId: String) = MetricRegistry.name("CircuitBreaker", "state", breakerId)
-  private final def successCountName(breakerId: String) = MetricRegistry.name("CircuitBreaker", "successCount", breakerId)
-  private final def failureCountName(breakerId: String) = MetricRegistry.name("CircuitBreaker", "failureCount", breakerId)
-  private final def latencyName(breakerId: String) = MetricRegistry.name("CircuitBreaker", "latency", breakerId)
+  private final def successCountName(breakerId: String) =
+    MetricRegistry.name("CircuitBreaker", "successCount", breakerId)
+  private final def failureCountName(breakerId: String) =
+    MetricRegistry.name("CircuitBreaker", "failureCount", breakerId)
+  private final def latencyName(breakerId: String)    = MetricRegistry.name("CircuitBreaker", "latency", breakerId)
   private final def throughputName(breakerId: String) = MetricRegistry.name("CircuitBreaker", "throughput", breakerId)
   private final def failureThroughputName(breakerId: String) =
     MetricRegistry.name("CircuitBreaker", "failureThroughput", breakerId)
 }
 
 class CircuitBreakerMetricsImpl(val breakerId: String, provider: CircuitBreakerMetricsProviderImpl)
-  extends CircuitBreakerMetrics {
+    extends CircuitBreakerMetrics {
   import CircuitBreakerMetricsImpl._
 
-  private val log = Logger(getClass)
+  private val log        = Logger(getClass)
   private val stateValue = new AtomicReference[String](Closed)
 
   private def registry = provider.registry
 
-  val successCount: Counter = registry.counter(successCountName(breakerId))
-  val failureCount: Counter = registry.counter(failureCountName(breakerId))
-  val latency: Histogram = registry.histogram(latencyName(breakerId)) //using ExponentiallyDecayingReservoir
-  val throughput: Meter = registry.meter(throughputName(breakerId))
+  val successCount: Counter    = registry.counter(successCountName(breakerId))
+  val failureCount: Counter    = registry.counter(failureCountName(breakerId))
+  val latency: Histogram       = registry.histogram(latencyName(breakerId)) //using ExponentiallyDecayingReservoir
+  val throughput: Meter        = registry.meter(throughputName(breakerId))
   val failureThroughput: Meter = registry.meter(failureThroughputName(breakerId))
   val state: Gauge[String] = registry.register(stateName(breakerId), new Gauge[String] {
     override def getValue: String = stateValue.get

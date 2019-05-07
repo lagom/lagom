@@ -4,7 +4,8 @@
 package com.lightbend.lagom.dev
 
 import java.lang.reflect.Method
-import java.net.{ URL, URLClassLoader }
+import java.net.URL
+import java.net.URLClassLoader
 import java.util
 import java.util.Collections
 
@@ -15,8 +16,12 @@ class NamedURLClassLoader(name: String, urls: Array[URL], parent: ClassLoader) e
   override def toString: String = name + "{" + getURLs.map(_.toString).mkString(", ") + "}"
 }
 
-class DelegatingClassLoader(commonLoader: ClassLoader, sharedClasses: Set[String], buildLoader: ClassLoader,
-                            applicationClassLoader: () => Option[ClassLoader]) extends ClassLoader(commonLoader) {
+class DelegatingClassLoader(
+    commonLoader: ClassLoader,
+    sharedClasses: Set[String],
+    buildLoader: ClassLoader,
+    applicationClassLoader: () => Option[ClassLoader]
+) extends ClassLoader(commonLoader) {
 
   lazy val findResourceMethod: Method = {
     val method = classOf[ClassLoader].getDeclaredMethod("findResource", classOf[String])
@@ -71,7 +76,8 @@ class DelegatingClassLoader(commonLoader: ClassLoader, sharedClasses: Set[String
  * this classloaders findResources method to locate the resources provided by this ClassLoader, and so our parent
  * will already be returning our resources. Only pulling from the parent ensures we don't duplicate this.
  */
-class DelegatedResourcesClassLoader(name: String, urls: Array[URL], parent: ClassLoader) extends NamedURLClassLoader(name, urls, parent) {
+class DelegatedResourcesClassLoader(name: String, urls: Array[URL], parent: ClassLoader)
+    extends NamedURLClassLoader(name, urls, parent) {
   require(parent ne null)
   override def getResources(name: String): java.util.Enumeration[java.net.URL] = getParent.getResources(name)
 }
