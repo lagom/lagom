@@ -93,9 +93,7 @@ public final class ServiceInfo {
   /** @return a complete flattened list of ACLs listing all ACLs in this service info. */
   public PSequence<ServiceAcl> getAcls() {
     return TreePVector.from(
-        locatableServices
-            .values()
-            .stream()
+        locatableServices.values().stream()
             .flatMap(Collection::stream)
             .collect(Collectors.toList()));
   }

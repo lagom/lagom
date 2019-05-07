@@ -174,13 +174,11 @@ public class ProducerStubTest {
 
                 // messages incoming from Alpha and Beta could be received interlaced.
                 List<ReceivedMessage> messagesOnCFromA =
-                    messagesOnC
-                        .stream()
+                    messagesOnC.stream()
                         .filter(m -> m.getSource().equals("A"))
                         .collect(Collectors.toList());
                 List<ReceivedMessage> messagesOnCFromB =
-                    messagesOnC
-                        .stream()
+                    messagesOnC.stream()
                         .filter(m -> m.getSource().equals("B"))
                         .collect(Collectors.toList());
                 assertEquals(Arrays.asList(a1, a2), messagesOnCFromA);
