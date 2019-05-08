@@ -5,7 +5,8 @@
 package com.lightbend.lagom.internal.scaladsl.client
 
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.api.{ Service, ServiceCall }
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.ServiceCall
 
 import scala.reflect.macros.blackbox
 
@@ -24,7 +25,7 @@ private[lagom] class ScaladslClientMacroImpl(val c: blackbox.Context) {
    */
   def validateServiceInterface[T <: Service](implicit serviceType: WeakTypeTag[T]): ExtractedMethods[MethodSymbol] = {
     val serviceCallType = c.mirror.typeOf[ServiceCall[_, _]].erasure
-    val topicType = c.mirror.typeOf[Topic[_]].erasure
+    val topicType       = c.mirror.typeOf[Topic[_]].erasure
 
     val serviceMethods = serviceType.tpe.members.collect {
       case method if method.isAbstract && method.isMethod => method.asMethod
@@ -47,13 +48,20 @@ private[lagom] class ScaladslClientMacroImpl(val c: blackbox.Context) {
     // by method name, and could be removed in the future.
     val duplicates = serviceMethods.groupBy(_.name.decodedName.toString).mapValues(_.toSeq).filter(_._2.size > 1)
     if (duplicates.nonEmpty) {
-      abort("Overloaded service methods are not allowed on a Lagom client, overloaded methods are: " + duplicates.keys.mkString(", "))
+      abort(
+        "Overloaded service methods are not allowed on a Lagom client, overloaded methods are: " + duplicates.keys
+          .mkString(", ")
+      )
     }
 
     // Validate that all the abstract methods are service call methods or topic methods
     val nonServiceCallOrTopicMethods = serviceMethods.toSet -- serviceCallMethods -- topicMethods
     if (nonServiceCallOrTopicMethods.nonEmpty) {
-      abort(s"Can't generate a Lagom client for ${serviceType.tpe} since the following abstract methods don't return service calls or topics:${nonServiceCallOrTopicMethods.map(_.name).mkString("\n", "\n", "")}")
+      abort(
+        s"Can't generate a Lagom client for ${serviceType.tpe} since the following abstract methods don't return service calls or topics:${nonServiceCallOrTopicMethods
+          .map(_.name)
+          .mkString("\n", "\n", "")}"
+      )
     }
 
     // Validate that all topics have zero parameters
@@ -72,18 +80,18 @@ private[lagom] class ScaladslClientMacroImpl(val c: blackbox.Context) {
     // Extract the target that "implement" was invoked on, so we can invoke "doImplement" on it instead
     val serviceClient = c.macroApplication match {
       case TypeApply(Select(clientTarget, TermName("implement")), _) => clientTarget
-      case _ => abort("Don't know how to find the service client from tree: " + c.macroApplication)
+      case _                                                         => abort("Don't know how to find the service client from tree: " + c.macroApplication)
     }
 
     val implementationContext = TermName(c.freshName("implementationContext"))
-    val serviceContext = TermName(c.freshName("serviceContext"))
+    val serviceContext        = TermName(c.freshName("serviceContext"))
 
     def createMethodParams(method: MethodSymbol) = method.paramLists.map { paramList =>
       paramList.map(param => q"${param.name.toTermName}: ${param.typeSignature}")
     }
 
     val serviceMethodImpls = extractedMethods.serviceCalls.map { serviceMethod =>
-      val methodParams = createMethodParams(serviceMethod)
+      val methodParams     = createMethodParams(serviceMethod)
       val methodParamNames = serviceMethod.paramLists.flatten.map(_.name)
 
       q"""

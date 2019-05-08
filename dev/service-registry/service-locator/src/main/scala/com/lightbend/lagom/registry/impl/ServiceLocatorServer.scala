@@ -5,30 +5,33 @@
 package com.lightbend.lagom.registry.impl
 
 import java.io.Closeable
-import java.net.{ InetSocketAddress, URI }
+import java.net.InetSocketAddress
+import java.net.URI
 import java.util.{ Map => JMap }
 
 import com.lightbend.lagom.gateway._
 import play.api._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.guice.GuiceableModule.fromGuiceModule
-import play.core.server.{ Server, ServerConfig, ServerProvider }
+import play.core.server.Server
+import play.core.server.ServerConfig
+import play.core.server.ServerProvider
 
 import scala.util.control.NonFatal
 
 class ServiceLocatorServer extends Closeable {
   private val logger: Logger = Logger(this.getClass())
 
-  @volatile private var server: Server = _
+  @volatile private var server: Server                    = _
   @volatile private var gatewayAddress: InetSocketAddress = _
 
   def start(
-    serviceLocatorAddress:  String,
-    serviceLocatorPort:     Int,
-    serviceGatewayAddress:  String,
-    serviceGatewayHttpPort: Int,
-    unmanagedServices:      JMap[String, String],
-    gatewayImpl:            String
+      serviceLocatorAddress: String,
+      serviceLocatorPort: Int,
+      serviceGatewayAddress: String,
+      serviceGatewayHttpPort: Int,
+      unmanagedServices: JMap[String, String],
+      gatewayImpl: String
   ): Unit =
     synchronized {
       require(server == null, "Service locator is already running on " + server.mainAddress)
@@ -38,7 +41,8 @@ class ServiceLocatorServer extends Closeable {
         ServiceGatewayConfig(
           serviceGatewayAddress,
           serviceGatewayHttpPort
-        ), unmanagedServices
+        ),
+        unmanagedServices
       )
 
       // the service locator is a play app
@@ -65,7 +69,10 @@ class ServiceLocatorServer extends Closeable {
       logger.info("Service gateway can be reached at " + serviceGatewayAddress)
     }
 
-  private def createApplication(serviceGatewayConfig: ServiceGatewayConfig, unmanagedServices: JMap[String, String]): Application = {
+  private def createApplication(
+      serviceGatewayConfig: ServiceGatewayConfig,
+      unmanagedServices: JMap[String, String]
+  ): Application = {
 
     val initialSettings: Map[String, AnyRef] = Map(
       "ssl-config.loose.disableHostnameVerification" -> "true"
@@ -77,7 +84,7 @@ class ServiceLocatorServer extends Closeable {
   }
 
   private def createServer(application: Application, host: String, port: Int): Server = {
-    val config = ServerConfig(address = host, port = Some(port), mode = Mode.Test)
+    val config   = ServerConfig(address = host, port = Some(port), mode = Mode.Test)
     val provider = implicitly[ServerProvider]
     provider.createServer(config, application)
   }

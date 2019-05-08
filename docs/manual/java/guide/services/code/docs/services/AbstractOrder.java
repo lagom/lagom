@@ -10,6 +10,6 @@ import org.immutables.value.Value;
 @JsonSerialize(as = Order.class)
 @JsonDeserialize(as = Order.class)
 public interface AbstractOrder {
-    @Value.Parameter
-    Long id();
+  @Value.Parameter
+  Long id();
 }

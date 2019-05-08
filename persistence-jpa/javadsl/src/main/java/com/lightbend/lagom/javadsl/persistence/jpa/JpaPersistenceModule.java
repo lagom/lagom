@@ -13,11 +13,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class JpaPersistenceModule extends Module {
-    @Override
-    public List<play.inject.Binding<?>> bindings(play.Environment environment, Config config) {
-        return Arrays.asList(
-            bindClass(JpaSession.class).to(JpaSessionImpl.class),
-            bindClass(JpaReadSide.class).to(JpaReadSideImpl.class)
-        );
-    }
+  @Override
+  public List<play.inject.Binding<?>> bindings(play.Environment environment, Config config) {
+    return Arrays.asList(
+        bindClass(JpaSession.class).to(JpaSessionImpl.class),
+        bindClass(JpaReadSide.class).to(JpaReadSideImpl.class));
+  }
 }

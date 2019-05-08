@@ -6,12 +6,19 @@ package com.lightbend.lagom.internal.broker.kafka
 
 import java.net.URI
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.serialization.{ Serializer, StringSerializer }
+import org.apache.kafka.common.serialization.Serializer
+import org.apache.kafka.common.serialization.StringSerializer
 import akka.Done
 import akka.NotUsed
-import akka.actor.{ Actor, ActorLogging, ActorSystem, Props, Status, SupervisorStrategy }
+import akka.actor.Actor
+import akka.actor.ActorLogging
+import akka.actor.ActorSystem
+import akka.actor.Props
+import akka.actor.Status
+import akka.actor.SupervisorStrategy
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.kafka.ProducerMessage
 import akka.kafka.ProducerSettings
@@ -25,9 +32,11 @@ import akka.stream.KillSwitches
 import akka.stream.Materializer
 import akka.stream.scaladsl._
 import com.lightbend.lagom.internal.api.UriUtils
-import com.lightbend.lagom.internal.persistence.cluster.{ ClusterDistribution, ClusterDistributionSettings }
+import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution
+import com.lightbend.lagom.internal.persistence.cluster.ClusterDistributionSettings
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
-import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
+import com.lightbend.lagom.spi.persistence.OffsetDao
+import com.lightbend.lagom.spi.persistence.OffsetStore
 
 import scala.collection.immutable
 
@@ -37,24 +46,35 @@ import scala.collection.immutable
 private[lagom] object Producer {
 
   def startTaggedOffsetProducer[Message](
-    system:               ActorSystem,
-    tags:                 immutable.Seq[String],
-    kafkaConfig:          KafkaConfig,
-    locateService:        String => Future[Seq[URI]],
-    topicId:              String,
-    eventStreamFactory:   (String, Offset) => Source[(Message, Offset), _],
-    partitionKeyStrategy: Option[Message => String],
-    serializer:           Serializer[Message],
-    offsetStore:          OffsetStore
+      system: ActorSystem,
+      tags: immutable.Seq[String],
+      kafkaConfig: KafkaConfig,
+      locateService: String => Future[Seq[URI]],
+      topicId: String,
+      eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+      partitionKeyStrategy: Option[Message => String],
+      serializer: Serializer[Message],
+      offsetStore: OffsetStore
   )(implicit mat: Materializer, ec: ExecutionContext): Unit = {
 
     val producerConfig = ProducerConfig(system.settings.config)
-    val publisherProps = TaggedOffsetProducerActor.props(kafkaConfig, locateService, topicId, eventStreamFactory,
-      partitionKeyStrategy, serializer, offsetStore)
+    val publisherProps = TaggedOffsetProducerActor.props(
+      kafkaConfig,
+      locateService,
+      topicId,
+      eventStreamFactory,
+      partitionKeyStrategy,
+      serializer,
+      offsetStore
+    )
 
     val backoffPublisherProps = BackoffSupervisor.propsWithSupervisorStrategy(
-      publisherProps, s"producer", producerConfig.minBackoff, producerConfig.maxBackoff,
-      producerConfig.randomBackoffFactor, SupervisorStrategy.stoppingStrategy
+      publisherProps,
+      s"producer",
+      producerConfig.minBackoff,
+      producerConfig.maxBackoff,
+      producerConfig.randomBackoffFactor,
+      SupervisorStrategy.stoppingStrategy
     )
     val clusterShardingSettings = ClusterShardingSettings(system).withRole(producerConfig.role)
 
@@ -67,14 +87,16 @@ private[lagom] object Producer {
   }
 
   private class TaggedOffsetProducerActor[Message](
-    kafkaConfig:          KafkaConfig,
-    locateService:        String => Future[Seq[URI]],
-    topicId:              String,
-    eventStreamFactory:   (String, Offset) => Source[(Message, Offset), _],
-    partitionKeyStrategy: Option[Message => String],
-    serializer:           Serializer[Message],
-    offsetStore:          OffsetStore
-  )(implicit mat: Materializer, ec: ExecutionContext) extends Actor with ActorLogging {
+      kafkaConfig: KafkaConfig,
+      locateService: String => Future[Seq[URI]],
+      topicId: String,
+      eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+      partitionKeyStrategy: Option[Message => String],
+      serializer: Serializer[Message],
+      offsetStore: OffsetStore
+  )(implicit mat: Materializer, ec: ExecutionContext)
+      extends Actor
+      with ActorLogging {
 
     /** Switch used to terminate the on-going Kafka publishing stream when this actor fails.*/
     private var shutdown: Option[KillSwitch] = None
@@ -95,13 +117,15 @@ private[lagom] object Producer {
           kafkaConfig.serviceName match {
             case Some(name) =>
               locateService(name)
-                .map { uris => strToOpt(UriUtils.hostAndPorts(uris)) }
+                .map { uris =>
+                  strToOpt(UriUtils.hostAndPorts(uris))
+                }
 
             case None =>
               Future.successful(strToOpt(kafkaConfig.brokers))
           }
 
-        serviceLookupFuture.zip(daoFuture) pipeTo self
+        serviceLookupFuture.zip(daoFuture).pipeTo(self)
 
         context.become(initializing(tag))
     }
@@ -145,7 +169,7 @@ private[lagom] object Producer {
         .run()
 
       shutdown = Some(killSwitch)
-      streamDone pipeTo self
+      streamDone.pipeTo(self)
       context.become(active)
     }
 
@@ -153,7 +177,7 @@ private[lagom] object Producer {
       Flow.fromGraph(GraphDSL.create(kafkaFlowPublisher(endpoints)) { implicit builder => publishFlow =>
         import GraphDSL.Implicits._
         val unzip = builder.add(Unzip[Message, Offset])
-        val zip = builder.add(Zip[Any, Offset])
+        val zip   = builder.add(Zip[Any, Offset])
         val offsetCommitter = builder.add(Flow.fromFunction { e: (Any, Offset) =>
           offsetDao.saveOffset(e._2)
         })
@@ -172,11 +196,13 @@ private[lagom] object Producer {
         }
       }
 
-      Flow[Message].map { message =>
-        ProducerMessage.Message(new ProducerRecord[String, Message](topicId, keyOf(message), message), NotUsed)
-      } via {
-        ReactiveProducer.flow(producerSettings(endpoints))
-      }
+      Flow[Message]
+        .map { message =>
+          ProducerMessage.Message(new ProducerRecord[String, Message](topicId, keyOf(message), message), NotUsed)
+        }
+        .via {
+          ReactiveProducer.flow(producerSettings(endpoints))
+        }
     }
 
     private def producerSettings(endpoints: String): ProducerSettings[String, Message] = {
@@ -192,15 +218,24 @@ private[lagom] object Producer {
 
   private object TaggedOffsetProducerActor {
     def props[Message](
-      kafkaConfig:          KafkaConfig,
-      locateService:        String => Future[Seq[URI]],
-      topicId:              String,
-      eventStreamFactory:   (String, Offset) => Source[(Message, Offset), _],
-      partitionKeyStrategy: Option[Message => String],
-      serializer:           Serializer[Message],
-      offsetStore:          OffsetStore
+        kafkaConfig: KafkaConfig,
+        locateService: String => Future[Seq[URI]],
+        topicId: String,
+        eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+        partitionKeyStrategy: Option[Message => String],
+        serializer: Serializer[Message],
+        offsetStore: OffsetStore
     )(implicit mat: Materializer, ec: ExecutionContext) =
-      Props(new TaggedOffsetProducerActor[Message](kafkaConfig, locateService, topicId, eventStreamFactory,
-        partitionKeyStrategy, serializer, offsetStore))
+      Props(
+        new TaggedOffsetProducerActor[Message](
+          kafkaConfig,
+          locateService,
+          topicId,
+          eventStreamFactory,
+          partitionKeyStrategy,
+          serializer,
+          offsetStore
+        )
+      )
   }
 }

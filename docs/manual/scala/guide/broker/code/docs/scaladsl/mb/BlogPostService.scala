@@ -1,19 +1,20 @@
 package docs.scaladsl.mb
 
 import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.api.broker.kafka.{KafkaProperties, PartitionKeyStrategy}
-import com.lightbend.lagom.scaladsl.api.{Descriptor, Service}
+import com.lightbend.lagom.scaladsl.api.broker.kafka.KafkaProperties
+import com.lightbend.lagom.scaladsl.api.broker.kafka.PartitionKeyStrategy
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.Service
 import play.api.libs.json._
 
 import scala.collection.immutable.Seq
 
 /**
-  *
-  */
+ *
+ */
 trait BlogPostService extends Service {
 
-
-  override final def descriptor: Descriptor = {
+  final override def descriptor: Descriptor = {
     import Service._
 
     //#withTopics
@@ -51,19 +52,18 @@ case object BlogPostPublished {
 }
 //#content-formatters
 
-
 //#polymorphic-play-json
 object BlogPostEvent {
   implicit val reads: Reads[BlogPostEvent] = {
     (__ \ "event_type").read[String].flatMap {
-      case "postCreated" => implicitly[Reads[BlogPostCreated]].map(identity)
+      case "postCreated"   => implicitly[Reads[BlogPostCreated]].map(identity)
       case "postPublished" => implicitly[Reads[BlogPostPublished]].map(identity)
-      case other => Reads(_ => JsError(s"Unknown event type $other"))
+      case other           => Reads(_ => JsError(s"Unknown event type $other"))
     }
   }
   implicit val writes: Writes[BlogPostEvent] = Writes { event =>
     val (jsValue, eventType) = event match {
-      case m: BlogPostCreated => (Json.toJson(m)(BlogPostCreated.blogPostCreatedFormat), "postCreated")
+      case m: BlogPostCreated   => (Json.toJson(m)(BlogPostCreated.blogPostCreatedFormat), "postCreated")
       case m: BlogPostPublished => (Json.toJson(m)(BlogPostPublished.blogPostPublishedFormat), "postPublished")
     }
     jsValue.transform(__.json.update((__ \ 'event_type).json.put(JsString(eventType)))).get

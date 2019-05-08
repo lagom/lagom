@@ -1,4 +1,6 @@
-#! /bin/bash
+#!/usr/bin/env bash
+
+# Copyright (C) 2009-2019 Lightbend Inc. <https://www.lightbend.com>
 
 # Lib for CI scripts
 
@@ -36,3 +38,9 @@ runSbtNoisy() {
   sbt ${EXTRA_OPTS} 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
 }
 
+
+printMessage() {
+  echo "[info]"
+  echo "[info] ---- $1"
+  echo "[info]"
+}

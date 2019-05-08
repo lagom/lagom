@@ -1,6 +1,6 @@
 package docs.home.immutable;
 
-//#immutable
+// #immutable
 public class ImmutableUser {
   private final String name;
   private final String email;
@@ -17,6 +17,5 @@ public class ImmutableUser {
   public String getEmail() {
     return email;
   }
-
 }
-//#immutable
+// #immutable

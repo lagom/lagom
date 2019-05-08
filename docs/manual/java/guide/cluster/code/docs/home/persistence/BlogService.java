@@ -11,8 +11,6 @@ public interface BlogService extends Service {
 
   @Override
   default Descriptor descriptor() {
-    return named("/blogservice").withCalls(
-      restCall(Method.POST, "/blogs/:id", this::addPost)
-    );
+    return named("/blogservice").withCalls(restCall(Method.POST, "/blogs/:id", this::addPost));
   }
 }

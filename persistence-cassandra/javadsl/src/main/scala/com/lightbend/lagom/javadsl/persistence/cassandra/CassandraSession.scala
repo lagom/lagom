@@ -5,8 +5,10 @@
 package com.lightbend.lagom.javadsl.persistence.cassandra
 
 import java.util.concurrent.CompletionStage
-import java.util.{ Optional, List => JList }
-import javax.inject.{ Inject, Singleton }
+import java.util.Optional
+import java.util.{ List => JList }
+import javax.inject.Inject
+import javax.inject.Singleton
 
 import akka.actor.ActorSystem
 import akka.event.Logging
@@ -14,9 +16,11 @@ import akka.persistence.cassandra.session.CassandraSessionSettings
 import akka.persistence.cassandra.session.scaladsl.{ CassandraSession => AkkaScalaCassandraSession }
 import akka.persistence.cassandra.session.javadsl.{ CassandraSession => AkkaJavaCassandraSession }
 import akka.stream.javadsl
-import akka.{ Done, NotUsed }
+import akka.Done
+import akka.NotUsed
 import com.datastax.driver.core._
-import com.lightbend.lagom.internal.persistence.cassandra.{ CassandraKeyspaceConfig, CassandraReadSideSessionProvider }
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraKeyspaceConfig
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSessionProvider
 
 import scala.annotation.varargs
 import scala.concurrent.ExecutionContext
@@ -32,18 +36,26 @@ import scala.concurrent.ExecutionContext
  * All methods are non-blocking.
  */
 @Singleton
-final class CassandraSession(system: ActorSystem, settings: CassandraSessionSettings, executionContext: ExecutionContext) {
+final class CassandraSession(
+    system: ActorSystem,
+    settings: CassandraSessionSettings,
+    executionContext: ExecutionContext
+) {
 
   @Inject
   def this(system: ActorSystem) =
     this(
       system,
-      settings = CassandraSessionSettings(system.settings.config.getConfig(
-        "lagom.persistence.read-side.cassandra"
-      )),
-      executionContext = system.dispatchers.lookup(system.settings.config.getString(
-        "lagom.persistence.read-side.use-dispatcher"
-      ))
+      settings = CassandraSessionSettings(
+        system.settings.config.getConfig(
+          "lagom.persistence.read-side.cassandra"
+        )
+      ),
+      executionContext = system.dispatchers.lookup(
+        system.settings.config.getString(
+          "lagom.persistence.read-side.use-dispatcher"
+        )
+      )
     )
 
   private val log = Logging.getLogger(system, getClass)
@@ -53,7 +65,8 @@ final class CassandraSession(system: ActorSystem, settings: CassandraSessionSett
   /**
    * Internal API
    */
-  private[lagom] val scalaDelegate: AkkaScalaCassandraSession = CassandraReadSideSessionProvider(system, settings, executionContext)
+  private[lagom] val scalaDelegate: AkkaScalaCassandraSession =
+    CassandraReadSideSessionProvider(system, settings, executionContext)
   private val delegate = new AkkaJavaCassandraSession(scalaDelegate)
 
   /**

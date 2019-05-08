@@ -8,7 +8,8 @@ import java.util
 
 import akka.annotation.InternalApi
 import com.lightbend.lagom.javadsl.server.AdditionalRouter
-import javax.inject.{ Inject, Provider }
+import javax.inject.Inject
+import javax.inject.Provider
 import play.api.inject.Injector
 import play.api.routing.Router
 
@@ -19,9 +20,9 @@ import play.api.routing.Router
  * @param additionalRouters
  */
 @InternalApi
-private[lagom] class AdditionalRoutersProvider @Inject() (
-  injector:          Injector,
-  additionalRouters: util.List[AdditionalRouter]
+private[lagom] class AdditionalRoutersProvider @Inject()(
+    injector: Injector,
+    additionalRouters: util.List[AdditionalRouter]
 ) extends Provider[util.List[Router]] {
 
   override def get(): util.List[Router] =

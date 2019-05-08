@@ -4,15 +4,21 @@
 
 package com.lightbend.lagom.scaladsl.testkit
 
-import java.nio.file.{ Files, Path, Paths }
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service }
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import com.lightbend.lagom.scaladsl.persistence.jdbc.JdbcPersistenceComponents
-import com.lightbend.lagom.scaladsl.persistence.{ PersistenceComponents, PersistentEntityRegistry }
-import com.lightbend.lagom.scaladsl.playjson.{ EmptyJsonSerializerRegistry, JsonSerializerRegistry }
+import com.lightbend.lagom.scaladsl.persistence.PersistenceComponents
+import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
+import com.lightbend.lagom.scaladsl.playjson.EmptyJsonSerializerRegistry
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.lightbend.lagom.scaladsl.server._
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.Matchers
+import org.scalatest.WordSpec
 import play.api.db.HikariCPComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 
@@ -37,7 +43,9 @@ class ServiceTestSpec extends WordSpec with Matchers {
       "remove its temporary directory" in {
         val temporaryFileCountBeforeRun = listTemporaryFiles().size
 
-        ServiceTest.withServer(ServiceTest.defaultSetup.withCassandra())(new CassandraTestApplication(_)) { _ => () }
+        ServiceTest.withServer(ServiceTest.defaultSetup.withCassandra())(new CassandraTestApplication(_)) { _ =>
+          ()
+        }
 
         val temporaryFilesAfterRun = listTemporaryFiles()
 
@@ -47,7 +55,9 @@ class ServiceTestSpec extends WordSpec with Matchers {
 
     "started with JDBC" should {
       "start successfully" in {
-        ServiceTest.withServer(ServiceTest.defaultSetup.withJdbc())(new JdbcTestApplication(_)) { _ => () }
+        ServiceTest.withServer(ServiceTest.defaultSetup.withJdbc())(new JdbcTestApplication(_)) { _ =>
+          ()
+        }
       }
     }
   }
@@ -65,15 +75,16 @@ trait TestService extends Service {
 
   import Service._
 
-  override final def descriptor: Descriptor = named("test")
+  final override def descriptor: Descriptor = named("test")
 
 }
 
 class TestServiceImpl(persistentEntityRegistry: PersistentEntityRegistry) extends TestService
 
-class TestApplication(context: LagomApplicationContext) extends LagomApplication(context)
-  with LocalServiceLocator
-  with AhcWSComponents { self: PersistenceComponents =>
+class TestApplication(context: LagomApplicationContext)
+    extends LagomApplication(context)
+    with LocalServiceLocator
+    with AhcWSComponents { self: PersistenceComponents =>
 
   override lazy val jsonSerializerRegistry: JsonSerializerRegistry = EmptyJsonSerializerRegistry
 
@@ -81,9 +92,11 @@ class TestApplication(context: LagomApplicationContext) extends LagomApplication
 
 }
 
-class CassandraTestApplication(context: LagomApplicationContext) extends TestApplication(context)
-  with CassandraPersistenceComponents
+class CassandraTestApplication(context: LagomApplicationContext)
+    extends TestApplication(context)
+    with CassandraPersistenceComponents
 
-class JdbcTestApplication(context: LagomApplicationContext) extends TestApplication(context)
-  with JdbcPersistenceComponents
-  with HikariCPComponents
+class JdbcTestApplication(context: LagomApplicationContext)
+    extends TestApplication(context)
+    with JdbcPersistenceComponents
+    with HikariCPComponents

@@ -12,14 +12,15 @@ import akka.pattern.after
 
 import scala.concurrent.duration.Duration.fromNanos
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 // With thanks to https://gist.github.com/viktorklang/9414163
 private[lagom] class Retry(delay: FiniteDuration, delayFactor: Double, maxRetries: Int) {
   def apply[T](op: => T)(implicit ec: ExecutionContext, s: Scheduler): Future[T] = {
     def iterate(nextDelay: FiniteDuration, remainingRetries: Int): Future[T] =
-      Future(op) recoverWith {
+      Future(op).recoverWith {
         case NonFatal(throwable) if remainingRetries > 0 => {
           onRetry(throwable, nextDelay, remainingRetries)
           after(nextDelay, s)(iterate(finiteMultiply(nextDelay, delayFactor), remainingRetries - 1))
@@ -43,6 +44,8 @@ private[lagom] class Retry(delay: FiniteDuration, delayFactor: Double, maxRetrie
 }
 
 private[lagom] object Retry {
-  def apply[T](delay: FiniteDuration, delayFactor: Double, maxRetries: Int)(op: => T)(implicit ec: ExecutionContext, s: Scheduler): Future[T] =
+  def apply[T](delay: FiniteDuration, delayFactor: Double, maxRetries: Int)(
+      op: => T
+  )(implicit ec: ExecutionContext, s: Scheduler): Future[T] =
     (new Retry(delay, delayFactor, maxRetries))(op)
 }

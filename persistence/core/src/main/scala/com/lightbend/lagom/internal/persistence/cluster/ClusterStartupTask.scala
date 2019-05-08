@@ -6,8 +6,17 @@ package com.lightbend.lagom.internal.persistence.cluster
 
 import akka.Done
 import akka.actor.Status.Failure
-import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props, SupervisorStrategy }
-import akka.cluster.singleton.{ ClusterSingletonManager, ClusterSingletonManagerSettings, ClusterSingletonProxy, ClusterSingletonProxySettings }
+import akka.actor.Actor
+import akka.actor.ActorLogging
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.PoisonPill
+import akka.actor.Props
+import akka.actor.SupervisorStrategy
+import akka.cluster.singleton.ClusterSingletonManager
+import akka.cluster.singleton.ClusterSingletonManagerSettings
+import akka.cluster.singleton.ClusterSingletonProxy
+import akka.cluster.singleton.ClusterSingletonProxySettings
 import akka.pattern.BackoffSupervisor
 import akka.util.Timeout
 
@@ -28,24 +37,29 @@ import scala.concurrent.duration.FiniteDuration
 object ClusterStartupTask {
 
   def apply(
-    system:              ActorSystem,
-    taskName:            String,
-    task:                () => Future[Done],
-    taskTimeout:         FiniteDuration,
-    role:                Option[String],
-    minBackoff:          FiniteDuration,
-    maxBackoff:          FiniteDuration,
-    randomBackoffFactor: Double
+      system: ActorSystem,
+      taskName: String,
+      task: () => Future[Done],
+      taskTimeout: FiniteDuration,
+      role: Option[String],
+      minBackoff: FiniteDuration,
+      maxBackoff: FiniteDuration,
+      randomBackoffFactor: Double
   ): ClusterStartupTask = {
 
     val startupTaskProps = Props(classOf[ClusterStartupTaskActor], task, taskTimeout)
 
     val backoffProps = BackoffSupervisor.propsWithSupervisorStrategy(
-      startupTaskProps, taskName, minBackoff, maxBackoff, randomBackoffFactor, SupervisorStrategy.stoppingStrategy
+      startupTaskProps,
+      taskName,
+      minBackoff,
+      maxBackoff,
+      randomBackoffFactor,
+      SupervisorStrategy.stoppingStrategy
     )
 
-    val singletonProps = ClusterSingletonManager.props(backoffProps, PoisonPill,
-      ClusterSingletonManagerSettings(system))
+    val singletonProps =
+      ClusterSingletonManager.props(backoffProps, PoisonPill, ClusterSingletonManagerSettings(system))
 
     val singleton = system.actorOf(singletonProps, s"$taskName-singleton")
 
@@ -53,7 +67,8 @@ object ClusterStartupTask {
       ClusterSingletonProxy.props(
         singletonManagerPath = singleton.path.toStringWithoutAddress,
         settings = ClusterSingletonProxySettings(system).withRole(role)
-      ), s"$taskName-singletonProxy"
+      ),
+      s"$taskName-singletonProxy"
     )
 
     new ClusterStartupTask(singletonProxy)
@@ -92,7 +107,9 @@ private[lagom] object ClusterStartupTaskActor {
 
 }
 
-private[lagom] class ClusterStartupTaskActor(task: () => Future[Done], timeout: FiniteDuration) extends Actor with ActorLogging {
+private[lagom] class ClusterStartupTaskActor(task: () => Future[Done], timeout: FiniteDuration)
+    extends Actor
+    with ActorLogging {
 
   import ClusterStartupTaskActor._
 
@@ -105,29 +122,29 @@ private[lagom] class ClusterStartupTaskActor(task: () => Future[Done], timeout: 
     // We let the ask pattern handle the timeout, by asking ourselves to execute the task and piping the result back to
     // ourselves
     implicit val askTimeout = Timeout(timeout)
-    self ? Execute pipeTo self
+    (self ? Execute).pipeTo(self)
   }
 
   def receive = {
     case Execute =>
       log.info(s"Executing cluster start task ${self.path.name}.")
-      task() pipeTo self
-      context become executing(List(sender()))
+      task().pipeTo(self)
+      context.become(executing(List(sender())))
   }
 
   def executing(outstandingRequests: List[ActorRef]): Receive = {
     case Execute =>
-      context become executing(sender() :: outstandingRequests)
+      context.become(executing(sender() :: outstandingRequests))
 
     case Done =>
       log.info(s"Cluster start task ${self.path.name} done.")
-      outstandingRequests foreach { requester =>
+      outstandingRequests.foreach { requester =>
         requester ! Done
       }
-      context become executed
+      context.become(executed)
 
     case failure @ Failure(e) =>
-      outstandingRequests foreach { requester =>
+      outstandingRequests.foreach { requester =>
         requester ! failure
       }
       // If we failed to prepare, crash

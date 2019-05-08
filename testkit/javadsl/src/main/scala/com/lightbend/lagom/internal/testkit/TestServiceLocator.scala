@@ -15,13 +15,14 @@ import com.lightbend.lagom.javadsl.api.Descriptor
 import javax.inject.Inject
 import javax.inject.Singleton
 
-import com.lightbend.lagom.javadsl.client.{ CircuitBreakersPanel, CircuitBreakingServiceLocator }
+import com.lightbend.lagom.javadsl.client.CircuitBreakersPanel
+import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator
 
 @Singleton
-private[lagom] class TestServiceLocator @Inject() (
-  circuitBreakers: CircuitBreakersPanel,
-  port:            TestServiceLocatorPort,
-  implicit val ec: ExecutionContext
+private[lagom] class TestServiceLocator @Inject()(
+    circuitBreakers: CircuitBreakersPanel,
+    port: TestServiceLocatorPort,
+    implicit val ec: ExecutionContext
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {
 
   private val futureUri = port.port.map(p => URI.create("http://localhost:" + p))

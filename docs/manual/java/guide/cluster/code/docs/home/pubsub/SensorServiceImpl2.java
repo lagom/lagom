@@ -1,6 +1,6 @@
 package docs.home.pubsub;
 
-//#service-impl
+// #service-impl
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.pubsub.PubSubRef;
@@ -25,8 +25,7 @@ public class SensorServiceImpl2 implements SensorService2 {
   @Override
   public ServiceCall<Source<Temperature, ?>, NotUsed> registerTemperatures(String id) {
     return request -> {
-      final PubSubRef<Temperature> topic =
-          pubSub.refFor(TopicId.of(Temperature.class, id));
+      final PubSubRef<Temperature> topic = pubSub.refFor(TopicId.of(Temperature.class, id));
       request.runWith(topic.publisher(), materializer);
       return CompletableFuture.completedFuture(NotUsed.getInstance());
     };
@@ -35,10 +34,9 @@ public class SensorServiceImpl2 implements SensorService2 {
   @Override
   public ServiceCall<NotUsed, Source<Temperature, ?>> temperatureStream(String id) {
     return request -> {
-      final PubSubRef<Temperature> topic =
-          pubSub.refFor(TopicId.of(Temperature.class, id));
+      final PubSubRef<Temperature> topic = pubSub.refFor(TopicId.of(Temperature.class, id));
       return CompletableFuture.completedFuture(topic.subscriber());
     };
   }
 }
-//#service-impl
+// #service-impl

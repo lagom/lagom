@@ -18,9 +18,8 @@ trait BlogServiceImpl {
   }
 
   //#service-impl
-  class BlogServiceImpl(
-    persistentEntities: PersistentEntityRegistry)(implicit ec: ExecutionContext)
-    extends BlogService {
+  class BlogServiceImpl(persistentEntities: PersistentEntityRegistry)(implicit ec: ExecutionContext)
+      extends BlogService {
 
     persistentEntities.register(new Post)
 
@@ -34,9 +33,8 @@ trait BlogServiceImpl {
   }
   //#service-impl
 
-  class BlogServiceImpl2(
-    persistentEntities: PersistentEntityRegistry)(implicit ec: ExecutionContext)
-    extends BlogService {
+  class BlogServiceImpl2(persistentEntities: PersistentEntityRegistry)(implicit ec: ExecutionContext)
+      extends BlogService {
 
     persistentEntities.register(new Post)
 

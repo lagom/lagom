@@ -21,10 +21,9 @@ import scala.concurrent.Future
  * Akka discovery based implementation of the [[ServiceLocator]].
  */
 class AkkaDiscoveryServiceLocator(circuitBreakers: CircuitBreakersPanel, actorSystem: ActorSystem)(
-  implicit
-  ec: ExecutionContext
-)
-  extends CircuitBreakingServiceLocator(circuitBreakers) {
+    implicit
+    ec: ExecutionContext
+) extends CircuitBreakingServiceLocator(circuitBreakers) {
 
   private val helper: AkkaDiscoveryHelper = new AkkaDiscoveryHelper(
     actorSystem.settings.config.getConfig("lagom.akka.discovery"),

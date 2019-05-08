@@ -24,7 +24,7 @@ class JdbcBlogApplicationLoader extends LagomApplicationLoader {
 
 //#load-components
 abstract class BlogApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
+    extends LagomApplication(context)
     with JdbcPersistenceComponents
     with HikariCPComponents
     with AhcWSComponents {
@@ -39,4 +39,3 @@ abstract class BlogApplication(context: LagomApplicationContext)
   // Register the Blog application persistent entity
   persistentEntityRegistry.register(wire[Post])
 }
-

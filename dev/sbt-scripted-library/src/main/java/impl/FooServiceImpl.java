@@ -11,8 +11,8 @@ import api.FooService;
 
 public class FooServiceImpl implements FooService {
 
-    @Override
-    public ServiceCall<NotUsed, NotUsed> foo() {
-        return request -> CompletableFuture.completedFuture(NotUsed.getInstance());
-    }
+  @Override
+  public ServiceCall<NotUsed, NotUsed> foo() {
+    return request -> CompletableFuture.completedFuture(NotUsed.getInstance());
+  }
 }

@@ -5,13 +5,16 @@
 package com.lightbend.lagom.javadsl.persistence
 
 import java.util.concurrent.CompletionStage
-import java.util.{ Optional, UUID }
+import java.util.Optional
+import java.util.UUID
 
 import akka.japi.Pair
 import akka.japi.function.Creator
 import akka.stream.javadsl
-import akka.{ Done, NotUsed }
-import com.lightbend.lagom.javadsl.persistence.Offset.{ Sequence, TimeBasedUUID }
+import akka.Done
+import akka.NotUsed
+import com.lightbend.lagom.javadsl.persistence.Offset.Sequence
+import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
 
 import scala.concurrent.duration._
 
@@ -54,8 +57,8 @@ trait PersistentEntityRegistry {
    *   by this journal.
    */
   def eventStream[Event <: AggregateEvent[Event]](
-    aggregateTag: AggregateEventTag[Event],
-    fromOffset:   Offset
+      aggregateTag: AggregateEventTag[Event],
+      fromOffset: Offset
   ): javadsl.Source[Pair[Event, Offset], NotUsed]
 
   /**
@@ -67,8 +70,8 @@ trait PersistentEntityRegistry {
    */
   @deprecated("Use eventStream(AggregateEventTag, Offset) instead", "1.2.0")
   def eventStream[Event <: AggregateEvent[Event]](
-    aggregateTag: AggregateEventTag[Event],
-    fromOffset:   Optional[UUID]
+      aggregateTag: AggregateEventTag[Event],
+      fromOffset: Optional[UUID]
   ): javadsl.Source[Pair[Event, UUID], NotUsed] = {
     val offset = if (fromOffset.isPresent) {
       Offset.timeBasedUUID(fromOffset.get())
@@ -76,7 +79,7 @@ trait PersistentEntityRegistry {
     eventStream(aggregateTag, offset).asScala.map { pair =>
       val uuid = pair.second match {
         case timeBased: TimeBasedUUID => timeBased.value()
-        case sequence: Sequence =>
+        case sequence: Sequence       =>
           // While we *could* translate the sequence number to a time-based UUID, this would be very bad, since the UUID
           // would either be non unique (violating the fundamental aim of UUIDs), or it would change every time the
           // event was loaded. Also, a sequence number is not a timestamp.

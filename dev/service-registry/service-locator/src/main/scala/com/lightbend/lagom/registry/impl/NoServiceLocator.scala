@@ -21,6 +21,10 @@ class NoServiceLocator extends ServiceLocator {
   override def locate(name: String, serviceCall: Call[_, _]): CompletionStage[Optional[URI]] =
     CompletableFuture.completedFuture(Optional.empty())
 
-  override def doWithService[T](name: String, serviceCall: Call[_, _], block: JFunction[URI, CompletionStage[T]]): CompletionStage[Optional[T]] =
+  override def doWithService[T](
+      name: String,
+      serviceCall: Call[_, _],
+      block: JFunction[URI, CompletionStage[T]]
+  ): CompletionStage[Optional[T]] =
     CompletableFuture.completedFuture(Optional.empty())
 }

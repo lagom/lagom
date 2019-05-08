@@ -5,7 +5,7 @@ import java.util.List;
 import com.lightbend.lagom.javadsl.immutable.ImmutableStyle;
 import org.immutables.value.Value;
 
-//#immutable
+// #immutable
 @Value.Immutable
 @ImmutableStyle
 public interface AbstractUser2 {
@@ -14,4 +14,4 @@ public interface AbstractUser2 {
 
   List<String> getPhoneNumbers();
 }
-//#immutable
+// #immutable
