@@ -11,8 +11,8 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 final class Post2 extends PersistentEntity {
 
   override type Command = BlogCommand
-  override type Event = BlogEvent
-  override type State = BlogState
+  override type Event   = BlogEvent
+  override type State   = BlogState
 
   override def initialState: BlogState = BlogState.empty
 
@@ -70,7 +70,7 @@ final class Post2 extends PersistentEntity {
   private val postAdded: Actions = {
     //#postAdded-actions
     Actions()
-      //#reply
+    //#reply
       .onCommand[ChangeBody, Done] {
         case (ChangeBody(body), ctx, state) =>
           ctx.thenPersist(BodyChanged(entityId, body))(_ => ctx.reply(Done))

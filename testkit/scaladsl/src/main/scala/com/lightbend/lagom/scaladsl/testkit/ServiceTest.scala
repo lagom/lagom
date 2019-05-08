@@ -13,13 +13,20 @@ import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLHolder
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig._
 import com.lightbend.lagom.internal.testkit.TestkitSslSetup.Disabled
-import com.lightbend.lagom.internal.testkit.{ CassandraTestServer, TestkitSslSetup }
-import com.lightbend.lagom.scaladsl.server.{ LagomApplication, LagomApplicationContext, RequiresLagomServicePort }
+import com.lightbend.lagom.internal.testkit.CassandraTestServer
+import com.lightbend.lagom.internal.testkit.TestkitSslSetup
+import com.lightbend.lagom.scaladsl.server.LagomApplication
+import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
+import com.lightbend.lagom.scaladsl.server.RequiresLagomServicePort
 import javax.net.ssl.SSLContext
 import play.api.ApplicationLoader.Context
 import play.api.inject.DefaultApplicationLifecycle
-import play.api.{ Configuration, Environment, Play }
-import play.core.server.{ Server, ServerConfig, ServerProvider }
+import play.api.Configuration
+import play.api.Environment
+import play.api.Play
+import play.core.server.Server
+import play.core.server.ServerConfig
+import play.core.server.ServerProvider
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -40,6 +47,7 @@ import scala.util.control.NonFatal
 object ServiceTest {
 
   sealed trait Setup {
+
     /**
      * Enable or disable Cassandra.
      *
@@ -138,10 +146,10 @@ object ServiceTest {
   }
 
   private case class SetupImpl(
-    cassandra: Boolean = false,
-    jdbc:      Boolean = false,
-    cluster:   Boolean = false,
-    ssl:       Boolean = false
+      cassandra: Boolean = false,
+      jdbc: Boolean = false,
+      cluster: Boolean = false,
+      ssl: Boolean = false
   ) extends Setup {
 
     override def withCassandra(enabled: Boolean): Setup = {
@@ -182,9 +190,9 @@ object ServiceTest {
    * Guice bindings here.
    */
   final class TestServer[A <: LagomApplication] private[testkit] (
-    val application:                    A,
-    val playServer:                     Server,
-    @ApiMayChange val clientSslContext: Option[SSLContext] = None
+      val application: A,
+      val playServer: Server,
+      @ApiMayChange val clientSslContext: Option[SSLContext] = None
   ) {
 
     /**
@@ -229,7 +237,9 @@ object ServiceTest {
    * You can get the service client from the `TestServer` that is passed as parameter
    * to the `block`.
    */
-  def withServer[T <: LagomApplication, R](setup: Setup)(applicationConstructor: LagomApplicationContext => T)(block: TestServer[T] => R): R = {
+  def withServer[T <: LagomApplication, R](
+      setup: Setup
+  )(applicationConstructor: LagomApplicationContext => T)(block: TestServer[T] => R): R = {
     val testServer = startServer(setup)(applicationConstructor)
     try {
       val result = block(testServer)
@@ -240,12 +250,14 @@ object ServiceTest {
         case asyncResult: Future[_] =>
           import testServer.executionContext
           // whether the future `asyncResult` was successful or failed, stop the server.
-          asyncResult.andThen {
-            case theResult => {
-              testServer.stop()
-              theResult
+          asyncResult
+            .andThen {
+              case theResult => {
+                testServer.stop()
+                theResult
+              }
             }
-          }.asInstanceOf[R]
+            .asInstanceOf[R]
         case syncResult =>
           testServer.stop()
           syncResult
@@ -268,13 +280,15 @@ object ServiceTest {
    *
    * You can get the service client from the returned `TestServer`.
    */
-  def startServer[T <: LagomApplication](setup: Setup)(applicationConstructor: LagomApplicationContext => T): TestServer[T] = {
+  def startServer[T <: LagomApplication](
+      setup: Setup
+  )(applicationConstructor: LagomApplicationContext => T): TestServer[T] = {
 
     val lifecycle = new DefaultApplicationLifecycle
 
     val config: Map[String, AnyRef] =
       if (setup.cassandra) {
-        val now = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
+        val now      = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
         val testName = s"ServiceTest_$now"
 
         val cassandraPort = CassandraTestServer.run(testName, lifecycle)
@@ -303,7 +317,7 @@ object ServiceTest {
     Play.start(lagomApplication.application)
 
     val sslSetup: TestkitSslSetup.TestkitSslSetup = if (setup.ssl) {
-      val sslHolder = new LagomDevModeSSLHolder(environment)
+      val sslHolder                    = new LagomDevModeSSLHolder(environment)
       val clientSslContext: SSLContext = sslHolder.sslContext
       // In tests we're using a self-signed certificate so we use the same keyStore for both
       // the server and the client trustStore.
@@ -313,7 +327,8 @@ object ServiceTest {
     }
 
     val props = System.getProperties
-    val sslConfig: Configuration = Configuration.load(this.getClass.getClassLoader, props, sslSetup.sslSettings, allowMissingApplicationConf = true)
+    val sslConfig: Configuration =
+      Configuration.load(this.getClass.getClassLoader, props, sslSetup.sslSettings, allowMissingApplicationConf = true)
 
     val serverConfig: ServerConfig = new ServerConfig(
       port = Some(0),

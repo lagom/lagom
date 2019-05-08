@@ -5,32 +5,37 @@
 package com.lightbend.lagom.internal.cluster
 
 import akka.Done
-import akka.actor.{ ActorSystem, CoordinatedShutdown, ExtendedActorSystem }
+import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
+import akka.actor.ExtendedActorSystem
 import akka.actor.CoordinatedShutdown._
 import akka.cluster.Cluster
 import akka.management.cluster.bootstrap.ClusterBootstrap
 import com.lightbend.lagom.internal.akka.management.AkkaManagementTrigger
-import play.api.{ Environment, Mode }
+import play.api.Environment
+import play.api.Mode
 
 import scala.concurrent.Future
 
 private[lagom] object JoinClusterImpl {
 
   def join(system: ActorSystem, environment: Environment, akkaManagementTrigger: AkkaManagementTrigger): Unit = {
-    val config = system.settings.config
+    val config   = system.settings.config
     val joinSelf = config.getBoolean("lagom.cluster.join-self")
 
     val clusterBootstrapEnabled = config.getBoolean("lagom.cluster.bootstrap.enabled")
-    val exitJvm = config.getBoolean("lagom.cluster.exit-jvm-when-system-terminated")
-    val isProd: Boolean = environment.mode == Mode.Prod
+    val exitJvm                 = config.getBoolean("lagom.cluster.exit-jvm-when-system-terminated")
+    val isProd: Boolean         = environment.mode == Mode.Prod
 
     // join self if seed-nodes are not configured in dev-mode,
     // otherwise it will join the seed-nodes automatically
     val cluster = Cluster(system)
 
     if (isProd && joinSelf) {
-      system.log.warning("The \"lagom.cluster.join-self\" setting should not be enabled in production, because it can " +
-        "conflict with Akka Cluster Bootstrap or cause split-brain clusters.")
+      system.log.warning(
+        "The \"lagom.cluster.join-self\" setting should not be enabled in production, because it can " +
+          "conflict with Akka Cluster Bootstrap or cause split-brain clusters."
+      )
     }
 
     if (clusterBootstrapEnabled && joinSelf) {
@@ -75,50 +80,49 @@ private[lagom] object JoinClusterImpl {
 
     }
 
-    CoordinatedShutdown(system).addTask(PhaseClusterShutdown, "exit-jvm-when-downed") {
-      () =>
-        val shutdownReason: Option[Reason] = CoordinatedShutdown(system).shutdownReason()
+    CoordinatedShutdown(system).addTask(PhaseClusterShutdown, "exit-jvm-when-downed") { () =>
+      val shutdownReason: Option[Reason] = CoordinatedShutdown(system).shutdownReason()
 
-        val reasons: Seq[Reason] = Seq(
-          ClusterDowningReason,
-          ClusterJoinUnsuccessfulReason,
-          IncompatibleConfigurationDetectedReason
-        )
+      val reasons: Seq[Reason] = Seq(
+        ClusterDowningReason,
+        ClusterJoinUnsuccessfulReason,
+        IncompatibleConfigurationDetectedReason
+      )
 
-        val reasonIsDowning: Boolean = shutdownReason.exists(reasons.contains)
+      val reasonIsDowning: Boolean = shutdownReason.exists(reasons.contains)
 
-        // if 'exitJvm' is enabled and the trigger (aka Reason) for CoordinatedShutdown is ClusterDowning,
-        // JoinUnsuccessful, etc... we must exit the JVM. This can lead to the cluster closing before
-        // the `Application` but we're out of the cluster (downed) already so the impact is acceptable.
-        if (exitJvm && reasonIsDowning) {
+      // if 'exitJvm' is enabled and the trigger (aka Reason) for CoordinatedShutdown is ClusterDowning,
+      // JoinUnsuccessful, etc... we must exit the JVM. This can lead to the cluster closing before
+      // the `Application` but we're out of the cluster (downed) already so the impact is acceptable.
+      if (exitJvm && reasonIsDowning) {
 
-          // If this code is running, it means CoordinatedShutdown was triggered. CoordinatedShutdown of
-          // a given actor system can only be invoked once: further invocations block until the initial
-          // one completes. The code below works as following:
-          //   - create a new Thread and invoke System.exit(-1)
-          //   - terminate the "exit-jvm-when-downed" task
-          //   - in parallel, the invocation of System.exit(-1) has triggered the execution of the JVM shutdown Hooks
-          //   - Play's JVM shutdown hooks proceed to stop Play which means stopping the Server and the
-          //     Application. That also involves Play's ApplicationLifecycle. In a particular step of that stop
-          //     process Play must stop its Actor System so it invokes CoordinatedShutdown. Since the
-          //     CoordinatedShutdown is already running, that operation blocks.
-          // !! At this point, there's a CoordinatedShutdown running (triggered by a Downing event) and a
-          //    reference to a CoordinatedShutdown blocked until the run completes. The thread blocked is the
-          //    JVM shutdown thread.
-          //  - When the main CoordinatedShutdown completes, the JVM keeps running because Play (and Lagom)
-          //    tune Akka's `exit-jvm=off`.
-          //  - When the main CoordinatedShutdown completes, the thread blocked on the main CoordinatedShutdown
-          //    unblocks and completes the execution of `System.exit`.
-          val t = new Thread(new Runnable {
-            override def run(): Unit = {
-              // exit code when shutting down because of a cluster Downing event must be non-zero
-              System.exit(-1)
-            }
-          })
-          t.setDaemon(true)
-          t.start()
-        }
-        Future.successful(Done)
+        // If this code is running, it means CoordinatedShutdown was triggered. CoordinatedShutdown of
+        // a given actor system can only be invoked once: further invocations block until the initial
+        // one completes. The code below works as following:
+        //   - create a new Thread and invoke System.exit(-1)
+        //   - terminate the "exit-jvm-when-downed" task
+        //   - in parallel, the invocation of System.exit(-1) has triggered the execution of the JVM shutdown Hooks
+        //   - Play's JVM shutdown hooks proceed to stop Play which means stopping the Server and the
+        //     Application. That also involves Play's ApplicationLifecycle. In a particular step of that stop
+        //     process Play must stop its Actor System so it invokes CoordinatedShutdown. Since the
+        //     CoordinatedShutdown is already running, that operation blocks.
+        // !! At this point, there's a CoordinatedShutdown running (triggered by a Downing event) and a
+        //    reference to a CoordinatedShutdown blocked until the run completes. The thread blocked is the
+        //    JVM shutdown thread.
+        //  - When the main CoordinatedShutdown completes, the JVM keeps running because Play (and Lagom)
+        //    tune Akka's `exit-jvm=off`.
+        //  - When the main CoordinatedShutdown completes, the thread blocked on the main CoordinatedShutdown
+        //    unblocks and completes the execution of `System.exit`.
+        val t = new Thread(new Runnable {
+          override def run(): Unit = {
+            // exit code when shutting down because of a cluster Downing event must be non-zero
+            System.exit(-1)
+          }
+        })
+        t.setDaemon(true)
+        t.start()
+      }
+      Future.successful(Done)
     }
   }
 

@@ -2,7 +2,8 @@ package docs.home.scaladsl.persistence
 
 import akka.NotUsed
 //#imports
-import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.ServiceCall
 import slick.jdbc.JdbcBackend.Database
 //#imports
 import docs.home.scaladsl.persistence.SlickRepos.Initial.PostSummaryRepository
@@ -20,7 +21,7 @@ trait SlickReadSideQuery {
     override def getPostSummaries() = ServiceCall { request =>
       db.run(postSummaryRepo.selectPostSummaries())
     }
-  //#service-impl
+    //#service-impl
 
   }
 }

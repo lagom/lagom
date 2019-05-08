@@ -1,24 +1,24 @@
 import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 
-lazy val `my-project` = (project in file(".")).enablePlugins(LagomJava)
+lazy val `my-project` = (project in file("."))
+  .enablePlugins(LagomJava)
   .settings(libraryDependencies ++= Seq(lagomJavadslPersistenceCassandra, lagomSbtScriptedLibrary))
 
 scalaVersion := sys.props.get("scala.version").getOrElse("2.12.8")
 
 interactionMode := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 
-val CassandraJournalPort           = "cassandra-journal.port"
-val CassandraSnapshotStorePort     = "cassandra-snapshot-store.port"
-val LagomCassandraReadPort         = "lagom.persistence.read-side.cassandra.port"
-val InternalActorSystemName        = "lagom.akka.dev-mode.actor-system.name"
-val ApplicationActorSystemName     = "play.akka.actor-system"
-
+val CassandraJournalPort       = "cassandra-journal.port"
+val CassandraSnapshotStorePort = "cassandra-snapshot-store.port"
+val LagomCassandraReadPort     = "lagom.persistence.read-side.cassandra.port"
+val InternalActorSystemName    = "lagom.akka.dev-mode.actor-system.name"
+val ApplicationActorSystemName = "play.akka.actor-system"
 
 lazy val injectedCassandraConfig = Def.task { target.value / "injected-config.conf" }
 
 def validate(configFile: java.io.File, key: String, expected: String) = {
   import com.typesafe.config._
-  if(!configFile.isFile) throw new RuntimeException(s"No file found at ${configFile.getPath}")
+  if (!configFile.isFile) throw new RuntimeException(s"No file found at ${configFile.getPath}")
   val config = ConfigFactory.parseFile(configFile)
   val actual = config.getString(key)
   if (expected == actual) {

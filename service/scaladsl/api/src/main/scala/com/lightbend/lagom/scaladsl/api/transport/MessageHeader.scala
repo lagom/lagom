@@ -115,6 +115,7 @@ sealed trait MessageHeader {
  * The headers are however still provided, in case information needs to be extracted out of non standard headers.
  */
 sealed trait RequestHeader extends MessageHeader {
+
   /**
    * The method used to make this request.
    */
@@ -184,40 +185,47 @@ sealed trait RequestHeader extends MessageHeader {
 object RequestHeader {
 
   def apply(
-    method:                    Method,
-    uri:                       URI,
-    protocol:                  MessageProtocol,
-    acceptedResponseProtocols: immutable.Seq[MessageProtocol],
-    principal:                 Option[Principal],
-    headers:                   immutable.Seq[(String, String)]
-  ): RequestHeader = RequestHeaderImpl(method, uri, protocol, acceptedResponseProtocols, principal,
-    headers.groupBy(_._1.toLowerCase(Locale.ENGLISH)))
+      method: Method,
+      uri: URI,
+      protocol: MessageProtocol,
+      acceptedResponseProtocols: immutable.Seq[MessageProtocol],
+      principal: Option[Principal],
+      headers: immutable.Seq[(String, String)]
+  ): RequestHeader =
+    RequestHeaderImpl(
+      method,
+      uri,
+      protocol,
+      acceptedResponseProtocols,
+      principal,
+      headers.groupBy(_._1.toLowerCase(Locale.ENGLISH))
+    )
 
   val Default = RequestHeader(Method.GET, URI.create("/"), MessageProtocol.empty, Nil, None, Nil)
 
   private[lagom] def apply(
-    method:                    Method,
-    uri:                       URI,
-    protocol:                  MessageProtocol,
-    acceptedResponseProtocols: immutable.Seq[MessageProtocol],
-    principal:                 Option[Principal],
-    headerMap:                 Map[String, immutable.Seq[(String, String)]]
+      method: Method,
+      uri: URI,
+      protocol: MessageProtocol,
+      acceptedResponseProtocols: immutable.Seq[MessageProtocol],
+      principal: Option[Principal],
+      headerMap: Map[String, immutable.Seq[(String, String)]]
   ): RequestHeader = RequestHeaderImpl(method, uri, protocol, acceptedResponseProtocols, principal, headerMap)
 
   private case class RequestHeaderImpl(
-    method:                    Method,
-    uri:                       URI,
-    protocol:                  MessageProtocol,
-    acceptedResponseProtocols: immutable.Seq[MessageProtocol],
-    principal:                 Option[Principal],
-    headerMap:                 Map[String, immutable.Seq[(String, String)]]
+      method: Method,
+      uri: URI,
+      protocol: MessageProtocol,
+      acceptedResponseProtocols: immutable.Seq[MessageProtocol],
+      principal: Option[Principal],
+      headerMap: Map[String, immutable.Seq[(String, String)]]
   ) extends RequestHeader {
     override def withMethod(method: Method): RequestHeaderImpl = copy(method = method)
-    override def withUri(uri: URI): RequestHeaderImpl = copy(uri = uri)
+    override def withUri(uri: URI): RequestHeaderImpl          = copy(uri = uri)
     override def withAcceptedResponseProtocols(acceptedResponseProtocols: Seq[MessageProtocol]): RequestHeaderImpl =
       copy(acceptedResponseProtocols = acceptedResponseProtocols)
-    override def withPrincipal(principal: Principal): RequestHeaderImpl = copy(principal = Some(principal))
-    override def clearPrincipal: RequestHeaderImpl = copy(principal = None)
+    override def withPrincipal(principal: Principal): RequestHeaderImpl     = copy(principal = Some(principal))
+    override def clearPrincipal: RequestHeaderImpl                          = copy(principal = None)
     override def withProtocol(protocol: MessageProtocol): RequestHeaderImpl = copy(protocol = protocol)
     override def withHeaders(headers: immutable.Seq[(String, String)]): RequestHeaderImpl =
       copy(headerMap = headers.groupBy(_._1.toLowerCase(Locale.ENGLISH)))
@@ -264,25 +272,25 @@ sealed trait ResponseHeader extends MessageHeader {
 
 object ResponseHeader {
   def apply(
-    status:   Int,
-    protocol: MessageProtocol,
-    headers:  immutable.Seq[(String, String)]
+      status: Int,
+      protocol: MessageProtocol,
+      headers: immutable.Seq[(String, String)]
   ): ResponseHeader = ResponseHeaderImpl(status, protocol, headers.groupBy(_._1.toLowerCase(Locale.ENGLISH)))
 
   private[lagom] def apply(
-    status:    Int,
-    protocol:  MessageProtocol,
-    headerMap: Map[String, immutable.Seq[(String, String)]]
+      status: Int,
+      protocol: MessageProtocol,
+      headerMap: Map[String, immutable.Seq[(String, String)]]
   ): ResponseHeader = ResponseHeaderImpl(status, protocol, headerMap)
 
   val Ok: ResponseHeader = ResponseHeaderImpl(200, MessageProtocol.empty, Map.empty)
 
   private case class ResponseHeaderImpl(
-    status:    Int,
-    protocol:  MessageProtocol,
-    headerMap: Map[String, immutable.Seq[(String, String)]]
+      status: Int,
+      protocol: MessageProtocol,
+      headerMap: Map[String, immutable.Seq[(String, String)]]
   ) extends ResponseHeader {
-    override def withStatus(status: Int): ResponseHeader = copy(status = status)
+    override def withStatus(status: Int): ResponseHeader                 = copy(status = status)
     override def withProtocol(protocol: MessageProtocol): ResponseHeader = copy(protocol = protocol)
     override def withHeaders(headers: immutable.Seq[(String, String)]): ResponseHeaderImpl =
       copy(headerMap = headers.groupBy(_._1.toLowerCase(Locale.ENGLISH)))

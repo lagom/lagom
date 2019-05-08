@@ -15,11 +15,11 @@ import scala.collection.JavaConverters._
 private[lagom] class ServiceNameMapper(config: Config) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val defaultPortName = readConfigValue(config, "defaults.port-name").toOption
+  private val defaultPortName     = readConfigValue(config, "defaults.port-name").toOption
   private val defaultPortProtocol = readConfigValue(config, "defaults.port-protocol").toOption
-  private val defaultScheme = readConfigValue(config, "defaults.scheme").toOption
+  private val defaultScheme       = readConfigValue(config, "defaults.scheme").toOption
 
-  sealed private trait ConfigValue {
+  private sealed trait ConfigValue {
     def toOption =
       this match {
         case NonEmpty(v) => Some(v)
@@ -31,8 +31,8 @@ private[lagom] class ServiceNameMapper(config: Config) {
       if (value.trim.isEmpty) Empty
       else NonEmpty(value.trim)
   }
-  private case object Undefined extends ConfigValue
-  private case object Empty extends ConfigValue
+  private case object Undefined              extends ConfigValue
+  private case object Empty                  extends ConfigValue
   private case class NonEmpty(value: String) extends ConfigValue
 
   private def readConfigValue(config: Config, name: String) =
@@ -63,7 +63,7 @@ private[lagom] class ServiceNameMapper(config: Config) {
         // otherwise honour user settings.
         val scheme =
           readConfigValue(configEntry, "scheme") match {
-            case Undefined       => defaultScheme
+            case Undefined => defaultScheme
             // this is the case the user explicitly set the scheme to empty string
             case Empty           => None
             case NonEmpty(value) => Option(value)

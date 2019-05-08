@@ -11,29 +11,37 @@ import com.lightbend.lagom.scaladsl.api.ServiceInfo
 import com.typesafe.config.Config
 import play.api.Logger
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Success }
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Success
 
 class ServiceRegistration(
-  serviceInfo:         ServiceInfo,
-  coordinatedShutdown: CoordinatedShutdown,
-  config:              Config,
-  registry:            ServiceRegistry
+    serviceInfo: ServiceInfo,
+    coordinatedShutdown: CoordinatedShutdown,
+    config: Config,
+    registry: ServiceRegistry
 )(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(this.getClass)
 
   private val uris = serviceDnsRecords(config)
 
-  coordinatedShutdown.addTask(CoordinatedShutdown.PhaseBeforeServiceUnbind, "unregister-services-from-service-locator-scaladsl") { () =>
-    Future.sequence(serviceInfo.locatableServices.map {
-      case (service, _) => registry.unregister(service).invoke()
-    }).map(_ => Done)
+  coordinatedShutdown.addTask(
+    CoordinatedShutdown.PhaseBeforeServiceUnbind,
+    "unregister-services-from-service-locator-scaladsl"
+  ) { () =>
+    Future
+      .sequence(serviceInfo.locatableServices.map {
+        case (service, _) => registry.unregister(service).invoke()
+      })
+      .map(_ => Done)
   }
 
   serviceInfo.locatableServices.foreach {
     case (service, acls) =>
-      registry.register(service)
+      registry
+        .register(service)
         .invoke(ServiceRegistryService(uris, acls))
         .onComplete {
           case Success(_) =>

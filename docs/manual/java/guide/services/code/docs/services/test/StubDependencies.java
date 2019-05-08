@@ -10,7 +10,7 @@ import akka.NotUsed;
 @SuppressWarnings("unused")
 public class StubDependencies {
 
-  //#stub
+  // #stub
   static class GreetingStub implements GreetingService {
     @Override
     public ServiceCall<String, String> greeting() {
@@ -18,10 +18,9 @@ public class StubDependencies {
     }
   }
 
-  private final Setup setup = defaultSetup()
-      .configureBuilder(b -> b.overrides(
-          bind(GreetingService.class).to(GreetingStub.class)));
+  private final Setup setup =
+      defaultSetup()
+          .configureBuilder(b -> b.overrides(bind(GreetingService.class).to(GreetingStub.class)));
 
-
-  //#stub
+  // #stub
 }

@@ -20,6 +20,7 @@ import scala.language.higherKinds
  * values for query string parameters.
  */
 trait PathParamSerializer[Param] {
+
   /**
    * Serialize the given `parameter` into path parameters.
    */
@@ -40,7 +41,9 @@ trait DefaultPathParamSerializers extends LowPriorityPathParamSerializers {
   /**
    * Create a PathParamSerializer for required parameters.
    */
-  def required[Param](name: String)(deserializeFunction: String => Param)(serializeFunction: Param => String): PathParamSerializer[Param] = new NamedPathParamSerializer[Param](name) {
+  def required[Param](name: String)(
+      deserializeFunction: String => Param
+  )(serializeFunction: Param => String): PathParamSerializer[Param] = new NamedPathParamSerializer[Param](name) {
     def serialize(parameter: Param): immutable.Seq[String] = immutable.Seq(serializeFunction(parameter))
 
     def deserialize(parameters: immutable.Seq[String]): Param = parameters.headOption match {
@@ -82,7 +85,9 @@ trait DefaultPathParamSerializers extends LowPriorityPathParamSerializers {
   /**
    * An option path param serializer
    */
-  implicit def optionPathParamSerializer[Param](implicit delegate: PathParamSerializer[Param]): PathParamSerializer[Option[Param]] = {
+  implicit def optionPathParamSerializer[Param](
+      implicit delegate: PathParamSerializer[Param]
+  ): PathParamSerializer[Option[Param]] = {
 
     val name = delegate match {
       case named: NamedPathParamSerializer[_] => s"Option[${named.name}]"
@@ -112,7 +117,10 @@ trait LowPriorityPathParamSerializers {
   /**
    * A traversable path param serializer
    */
-  implicit def traversablePathParamSerializer[CC[X] <: Traversable[X], Param: PathParamSerializer](implicit delegate: PathParamSerializer[Param], bf: CanBuildFrom[CC[_], Param, CC[Param]]): PathParamSerializer[CC[Param]] = {
+  implicit def traversablePathParamSerializer[CC[X] <: Traversable[X], Param: PathParamSerializer](
+      implicit delegate: PathParamSerializer[Param],
+      bf: CanBuildFrom[CC[_], Param, CC[Param]]
+  ): PathParamSerializer[CC[Param]] = {
 
     val name = delegate match {
       case named: NamedPathParamSerializer[_] => s"Traversable[${named.name}]"

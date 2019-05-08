@@ -4,7 +4,10 @@
 
 package com.lightbend.lagom.internal.javadsl.persistence
 
-import akka.persistence.query.{ NoOffset, Offset, Sequence, TimeBasedUUID }
+import akka.persistence.query.NoOffset
+import akka.persistence.query.Offset
+import akka.persistence.query.Sequence
+import akka.persistence.query.TimeBasedUUID
 import com.lightbend.lagom.javadsl.persistence.{ Offset => LagomJavaDslOffset }
 
 /**

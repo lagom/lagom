@@ -4,10 +4,16 @@
 
 package com.lightbend.lagom.javadsl.client.integration
 
-import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
+import akka.actor.Actor
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.Props
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{ BeforeAndAfterEach, FlatSpec, Matchers, WordSpec }
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
+import org.scalatest.WordSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.Await
@@ -19,7 +25,7 @@ class LagomClientFactorySpec extends FlatSpec with Matchers with BeforeAndAfterE
 
   private var system: ActorSystem = _
   private var echoActor: ActorRef = _
-  implicit val timeout = Timeout(5.seconds)
+  implicit val timeout            = Timeout(5.seconds)
 
   /**
    * This test checks that a LagomClientFactory created while passing an external ActorSystem
@@ -31,7 +37,7 @@ class LagomClientFactorySpec extends FlatSpec with Matchers with BeforeAndAfterE
     (echoActor ? "hey").mapTo[String].futureValue shouldBe "hey"
 
     LagomClientFactory
-      // create a factory by passing an existing ActorSystem
+    // create a factory by passing an existing ActorSystem
       .create(
         "test",
         this.getClass.getClassLoader,
@@ -45,7 +51,7 @@ class LagomClientFactorySpec extends FlatSpec with Matchers with BeforeAndAfterE
     (echoActor ? "hey").mapTo[String].futureValue shouldBe "hey"
   }
 
-  override protected def beforeEach(): Unit = {
+  protected override def beforeEach(): Unit = {
     system = ActorSystem("test", ConfigFactory.load())
     echoActor = system.actorOf(Props(new EchoActor), "echo")
   }
@@ -55,7 +61,7 @@ class LagomClientFactorySpec extends FlatSpec with Matchers with BeforeAndAfterE
       case s: String => sender() ! s
     }
   }
-  override protected def afterEach(): Unit = {
+  protected override def afterEach(): Unit = {
     Await.ready(system.terminate(), 5.seconds)
   }
 }

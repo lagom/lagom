@@ -7,12 +7,18 @@ package com.lightbend.lagom.internal.persistence.cassandra
 import akka.Done
 import akka.actor.ActorSystem
 import akka.persistence.cassandra.session.scaladsl.CassandraSession
-import akka.persistence.query.{ NoOffset, Offset, Sequence, TimeBasedUUID }
+import akka.persistence.query.NoOffset
+import akka.persistence.query.Offset
+import akka.persistence.query.Sequence
+import akka.persistence.query.TimeBasedUUID
 import akka.util.Timeout
-import com.datastax.driver.core.{ BoundStatement, PreparedStatement, Row }
+import com.datastax.driver.core.BoundStatement
+import com.datastax.driver.core.PreparedStatement
+import com.datastax.driver.core.Row
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
-import com.lightbend.lagom.spi.persistence.{ OffsetDao, OffsetStore }
+import com.lightbend.lagom.spi.persistence.OffsetDao
+import com.lightbend.lagom.spi.persistence.OffsetStore
 
 import scala.concurrent.Future
 
@@ -20,10 +26,10 @@ import scala.concurrent.Future
  * Internal API
  */
 private[lagom] abstract class CassandraOffsetStore(
-  system:                    ActorSystem,
-  session:                   CassandraSession,
-  cassandraReadSideSettings: CassandraReadSideSettings,
-  config:                    ReadSideConfig
+    system: ActorSystem,
+    session: CassandraSession,
+    cassandraReadSideSettings: CassandraReadSideSettings,
+    config: ReadSideConfig
 ) extends OffsetStore {
 
   import system.dispatcher
@@ -53,17 +59,17 @@ private[lagom] abstract class CassandraOffsetStore(
 
   private def createTable(): Future[Done] = {
     session.executeCreateTable(s"""
-      |CREATE TABLE IF NOT EXISTS offsetStore (
-      |  eventProcessorId text, tag text, timeUuidOffset timeuuid, sequenceOffset bigint,
-      |  PRIMARY KEY (eventProcessorId, tag)
-      |)""".stripMargin)
+                                  |CREATE TABLE IF NOT EXISTS offsetStore (
+                                  |  eventProcessorId text, tag text, timeUuidOffset timeuuid, sequenceOffset bigint,
+                                  |  PRIMARY KEY (eventProcessorId, tag)
+                                  |)""".stripMargin)
   }
 
   protected def doPrepare(eventProcessorId: String, tag: String): Future[(Offset, PreparedStatement)] = {
     implicit val timeout = Timeout(config.globalPrepareTimeout)
     for {
-      _ <- startupTask.fold(Future.successful[Done](Done))(task => task.askExecute)
-      offset <- readOffset(eventProcessorId, tag)
+      _         <- startupTask.fold(Future.successful[Done](Done))(task => task.askExecute)
+      offset    <- readOffset(eventProcessorId, tag)
       statement <- prepareWriteOffset
     } yield {
       (offset, statement)
@@ -71,15 +77,20 @@ private[lagom] abstract class CassandraOffsetStore(
   }
 
   private def prepareWriteOffset: Future[PreparedStatement] = {
-    session.prepare("INSERT INTO offsetStore (eventProcessorId, tag, timeUuidOffset, sequenceOffset) VALUES (?, ?, ?, ?)")
+    session.prepare(
+      "INSERT INTO offsetStore (eventProcessorId, tag, timeUuidOffset, sequenceOffset) VALUES (?, ?, ?, ?)"
+    )
 
   }
 
   private def readOffset(eventProcessorId: String, tag: String): Future[Offset] = {
-    session.selectOne(
-      s"SELECT timeUuidOffset, sequenceOffset FROM offsetStore WHERE eventProcessorId = ? AND tag = ?",
-      eventProcessorId, tag
-    ).map(extractOffset)
+    session
+      .selectOne(
+        s"SELECT timeUuidOffset, sequenceOffset FROM offsetStore WHERE eventProcessorId = ? AND tag = ?",
+        eventProcessorId,
+        tag
+      )
+      .map(extractOffset)
   }
 
   protected def extractOffset(maybeRow: Option[Row]): Offset = {
@@ -104,8 +115,13 @@ private[lagom] abstract class CassandraOffsetStore(
 /**
  * Internal API
  */
-private[lagom] final class CassandraOffsetDao(session: CassandraSession, statement: PreparedStatement,
-                                              eventProcessorId: String, tag: String, override val loadedOffset: Offset) extends OffsetDao {
+private[lagom] final class CassandraOffsetDao(
+    session: CassandraSession,
+    statement: PreparedStatement,
+    eventProcessorId: String,
+    tag: String,
+    override val loadedOffset: Offset
+) extends OffsetDao {
   override def saveOffset(offset: Offset): Future[Done] = {
     session.executeWrite(bindSaveOffset(offset))
   }

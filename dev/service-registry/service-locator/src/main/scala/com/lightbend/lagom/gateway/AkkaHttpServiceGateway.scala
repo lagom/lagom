@@ -8,32 +8,46 @@ import java.net.InetSocketAddress
 import java.util.Locale
 
 import akka.Done
-import akka.actor.{ ActorRef, ActorSystem, CoordinatedShutdown }
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.{ Host, `X-Forwarded-Host` }
+import akka.http.scaladsl.model.headers.Host
+import akka.http.scaladsl.model.headers.`X-Forwarded-Host`
 import akka.http.scaladsl.model.ws._
 import akka.pattern.ask
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Keep
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
-import com.lightbend.lagom.registry.impl.ServiceRegistryActor.{ Found, NotFound, Route, RouteResult }
-import javax.inject.{ Inject, Named }
+import com.lightbend.lagom.registry.impl.ServiceRegistryActor.Found
+import com.lightbend.lagom.registry.impl.ServiceRegistryActor.NotFound
+import com.lightbend.lagom.registry.impl.ServiceRegistryActor.Route
+import com.lightbend.lagom.registry.impl.ServiceRegistryActor.RouteResult
+import javax.inject.Inject
+import javax.inject.Named
 import org.slf4j.LoggerFactory
 import play.api.libs.typedmap.TypedMap
-import play.api.mvc.request.{ RemoteConnection, RequestAttrKey, RequestTarget }
-import play.api.mvc.{ Headers, RequestHeader }
+import play.api.mvc.request.RemoteConnection
+import play.api.mvc.request.RequestAttrKey
+import play.api.mvc.request.RequestTarget
+import play.api.mvc.Headers
+import play.api.mvc.RequestHeader
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 
 import scala.collection.immutable
 import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.Await
+import scala.concurrent.Future
 
-class AkkaHttpServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig)
-  (@Named("serviceRegistryActor") registry: ActorRef)
-  (implicit actorSystem: ActorSystem, mat: Materializer) {
+class AkkaHttpServiceGatewayFactory @Inject()(coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig)(
+    @Named("serviceRegistryActor") registry: ActorRef
+)(implicit actorSystem: ActorSystem, mat: Materializer) {
 
   def start(): InetSocketAddress = {
     new AkkaHttpServiceGateway(coordinatedShutdown, config, registry).address
@@ -41,16 +55,16 @@ class AkkaHttpServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedS
 }
 
 class AkkaHttpServiceGateway(
-  coordinatedShutdown: CoordinatedShutdown,
-  config:              ServiceGatewayConfig,
-  registry:            ActorRef
+    coordinatedShutdown: CoordinatedShutdown,
+    config: ServiceGatewayConfig,
+    registry: ActorRef
 )(implicit actorSystem: ActorSystem, mat: Materializer) {
 
   private val log = LoggerFactory.getLogger(classOf[AkkaHttpServiceGateway])
 
   import actorSystem.dispatcher
   private implicit val timeout = Timeout(5.seconds)
-  val http = Http()
+  val http                     = Http()
 
   private val handler = Flow[HttpRequest].mapAsync(1) { request =>
     log.debug("Routing request {}", request)
@@ -64,8 +78,9 @@ class AkkaHttpServiceGateway(
           case Some(upgrade) =>
             handleWebSocketRequest(request, newUri, upgrade)
           case None =>
-
-            val xForwardedHost = request.header[Host].to[Set].map { h => `X-Forwarded-Host`(h.host) }
+            val xForwardedHost = request.header[Host].to[Set].map { h =>
+              `X-Forwarded-Host`(h.host)
+            }
             val newHostHeader = Set(Host(newUri.authority))
             val headers =
               filterHeaders(request.headers) ++
@@ -87,11 +102,11 @@ class AkkaHttpServiceGateway(
   private def handleWebSocketRequest(request: HttpRequest, uri: Uri, upgrade: UpgradeToWebSocket) = {
     log.debug("Switching to WebSocket protocol")
     val wsUri = uri.withScheme("ws")
-    val flow = Flow.fromSinkAndSourceMat(Sink.asPublisher[Message](fanout = false), Source.asSubscriber[Message])(Keep.both)
+    val flow =
+      Flow.fromSinkAndSourceMat(Sink.asPublisher[Message](fanout = false), Source.asSubscriber[Message])(Keep.both)
 
     val (responseFuture, (publisher, subscriber)) = http.singleWebSocketRequest(
-      WebSocketRequest(wsUri, extraHeaders = filterHeaders(request.headers),
-        upgrade.requestedProtocols.headOption),
+      WebSocketRequest(wsUri, extraHeaders = filterHeaders(request.headers), upgrade.requestedProtocols.headOption),
       flow
     )
 
@@ -110,7 +125,11 @@ class AkkaHttpServiceGateway(
     }
   }
 
-  private def renderNotFound(request: HttpRequest, path: String, registry: Map[String, ServiceRegistryService]): HttpResponse = {
+  private def renderNotFound(
+      request: HttpRequest,
+      path: String,
+      registry: Map[String, ServiceRegistryService]
+  ): HttpResponse = {
     import scala.collection.JavaConverters._
     import scala.compat.java8.OptionConverters._
     // We're reusing Play's not found error page here, which lists the routes, we need to convert the service registry
@@ -122,7 +141,7 @@ class AkkaHttpServiceGateway(
           val call = s"Service: $serviceName (${service.uris})"
           service.acls().asScala.map { acl =>
             val method = acl.method.asScala.fold("*")(_.name)
-            val path = acl.pathRegex.orElse(".*")
+            val path   = acl.pathRegex.orElse(".*")
             (method, path, call)
           }
       }
@@ -150,16 +169,16 @@ class AkkaHttpServiceGateway(
   private def createRequestHeader(request: HttpRequest): RequestHeader = {
     new RequestHeader {
       override def connection: RemoteConnection = ???
-      override def method: String = request.method.name()
-      override def target: RequestTarget = ???
-      override def version: String = request.protocol.value
-      override def headers: Headers = new AkkaHeadersWrapper(request.headers)
-      override def attrs: TypedMap = TypedMap(RequestAttrKey.Server -> "akka-http")
+      override def method: String               = request.method.name()
+      override def target: RequestTarget        = ???
+      override def version: String              = request.protocol.value
+      override def headers: Headers             = new AkkaHeadersWrapper(request.headers)
+      override def attrs: TypedMap              = TypedMap(RequestAttrKey.Server -> "akka-http")
     }
   }
 
   private class AkkaHeadersWrapper(akkaHeaders: Seq[HttpHeader])
-    extends Headers(akkaHeaders.map(h => (h.name, h.value)))
+      extends Headers(akkaHeaders.map(h => (h.name, h.value)))
 
   private val HeadersToFilter = Set(
     "Timeout-Access",
@@ -181,7 +200,7 @@ class AkkaHttpServiceGateway(
   coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-akka-http-service-gateway") { () =>
     for {
       binding <- bindingFuture
-      _ <- binding.unbind()
+      _       <- binding.unbind()
     } yield Done
   }
 

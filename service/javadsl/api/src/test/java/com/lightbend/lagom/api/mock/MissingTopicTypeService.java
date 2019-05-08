@@ -14,11 +14,10 @@ import static com.lightbend.lagom.javadsl.api.Service.named;
 import static com.lightbend.lagom.javadsl.api.Service.restCall;
 
 public interface MissingTopicTypeService extends Service {
-    Topic myTopic();
+  Topic myTopic();
 
-    @Override
-    default Descriptor descriptor() {
-        return named("/missing-topic-type")
-            .withTopics(Service.topic("topicName", this::myTopic));
-    }
+  @Override
+  default Descriptor descriptor() {
+    return named("/missing-topic-type").withTopics(Service.topic("topicName", this::myTopic));
+  }
 }

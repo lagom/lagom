@@ -1,6 +1,7 @@
 package impl
 
-import java.nio.file.{Files, StandardOpenOption}
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
 import java.util.Date
 
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
@@ -21,14 +22,14 @@ class BazLoader extends LagomApplicationLoader {
     new BazApplication(context) with LagomDevModeComponents
 }
 
-abstract class BazApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
-    with AhcWSComponents {
+abstract class BazApplication(context: LagomApplicationContext) extends LagomApplication(context) with AhcWSComponents {
 
-  override lazy val lagomServer =serverFor[BazService](wire[BazServiceImpl])
+  override lazy val lagomServer = serverFor[BazService](wire[BazServiceImpl])
 
-
-  Files.write(environment.getFile("target/reload.log").toPath, s"${new Date()} - reloaded\n".getBytes("utf-8"),
-    StandardOpenOption.CREATE, StandardOpenOption.APPEND)
+  Files.write(
+    environment.getFile("target/reload.log").toPath,
+    s"${new Date()} - reloaded\n".getBytes("utf-8"),
+    StandardOpenOption.CREATE,
+    StandardOpenOption.APPEND
+  )
 }
-

@@ -6,7 +6,7 @@ import com.lightbend.lagom.javadsl.testkit.ServiceTest.Setup;
 
 @SuppressWarnings("unused")
 public class EnablePersistenceCluster {
-    //#enable-cluster
-    private final Setup setup = defaultSetup().withCluster();
-    //#enable-cluster
+  // #enable-cluster
+  private final Setup setup = defaultSetup().withCluster();
+  // #enable-cluster
 }

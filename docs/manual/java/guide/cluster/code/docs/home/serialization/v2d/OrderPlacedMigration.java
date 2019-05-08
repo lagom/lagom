@@ -2,7 +2,7 @@ package docs.home.serialization.v2d;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lightbend.lagom.serialization.JacksonJsonMigration;
-//#rename-class
+// #rename-class
 
 public class OrderPlacedMigration extends JacksonJsonMigration {
 
@@ -20,6 +20,5 @@ public class OrderPlacedMigration extends JacksonJsonMigration {
   public JsonNode transform(int fromVersion, JsonNode json) {
     return json;
   }
-
 }
-//#rename-class
+// #rename-class

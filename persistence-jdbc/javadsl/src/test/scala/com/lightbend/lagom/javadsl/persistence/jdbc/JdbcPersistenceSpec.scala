@@ -10,10 +10,14 @@ import com.lightbend.lagom.internal.javadsl.persistence.jdbc._
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.jdbc.SlickDbTestProvider
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
-import com.lightbend.lagom.persistence.{ ActorSystemSpec, PersistenceSpec }
-import com.typesafe.config.{ Config, ConfigFactory }
-import play.api.inject.{ ApplicationLifecycle, DefaultApplicationLifecycle }
-import play.api.{ Configuration, Environment }
+import com.lightbend.lagom.persistence.ActorSystemSpec
+import com.lightbend.lagom.persistence.PersistenceSpec
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
+import play.api.inject.ApplicationLifecycle
+import play.api.inject.DefaultApplicationLifecycle
+import play.api.Configuration
+import play.api.Environment
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

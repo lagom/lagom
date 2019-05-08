@@ -9,7 +9,7 @@ interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMo
 lagomServiceEnableSsl in ThisBuild := true
 
 InputKey[Unit]("makeRequest") := {
-  val args = Def.spaceDelimited("<url> <status> ...").parsed
+  val args                      = Def.spaceDelimited("<url> <status> ...").parsed
   val path :: status :: headers = args
   DevModeBuild.verifyResourceContains(path, status.toInt, Seq.empty, 0)
 }

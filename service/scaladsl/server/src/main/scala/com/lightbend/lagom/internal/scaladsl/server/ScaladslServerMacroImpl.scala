@@ -5,8 +5,10 @@
 package com.lightbend.lagom.internal.scaladsl.server
 
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslClientMacroImpl
-import com.lightbend.lagom.scaladsl.api.{ Descriptor, Service }
-import com.lightbend.lagom.scaladsl.server.{ LagomServer, LagomServiceBinder }
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.server.LagomServer
+import com.lightbend.lagom.scaladsl.server.LagomServiceBinder
 
 import scala.reflect.macros.blackbox
 
