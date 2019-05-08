@@ -29,7 +29,7 @@ public class KafkaTopicFactory implements TopicFactory {
   private final ServiceLocator serviceLocator;
 
   /**
-   * @deprecated As of release 1.5.0. Use {@link #KafkaTopicFactory(ServiceInfo, ActorSystem,
+   * @deprecated As of release 1.6.0. Use {@link #KafkaTopicFactory(ServiceInfo, ActorSystem,
    *     Materializer, ExecutionContext, ServiceLocator, Config)} instead.
    */
   @Deprecated
