@@ -172,8 +172,7 @@ public class JacksonSerializerFactory implements SerializerFactory {
 
       @Override
       public MessageProtocol protocol() {
-        return new MessageProtocol(
-            Optional.of("application/json"), Optional.of("utf-8"), Optional.empty());
+        return defaultProtocol;
       }
 
       @Override
