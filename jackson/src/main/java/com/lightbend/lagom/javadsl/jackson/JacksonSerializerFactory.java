@@ -193,11 +193,11 @@ public class JacksonSerializerFactory implements SerializerFactory {
   private class NoopMessageSerializer<MessageEntity>
       implements StrictMessageSerializer<MessageEntity> {
 
-    private final NegotiatedSerializer<MessageEntity, ByteString> serializer = new NOPSerializer();
+    private final NegotiatedSerializer<MessageEntity, ByteString> serializer = new NoopSerializer();
     private final NegotiatedDeserializer<MessageEntity, ByteString> deserializer =
-        new NOPDeserializer();
+        new NoopDeserializer();
 
-    private class NOPSerializer implements NegotiatedSerializer<MessageEntity, ByteString> {
+    private class NoopSerializer implements NegotiatedSerializer<MessageEntity, ByteString> {
 
       @Override
       public MessageProtocol protocol() {
@@ -210,7 +210,7 @@ public class JacksonSerializerFactory implements SerializerFactory {
       }
     }
 
-    private class NOPDeserializer implements NegotiatedDeserializer<MessageEntity, ByteString> {
+    private class NoopDeserializer implements NegotiatedDeserializer<MessageEntity, ByteString> {
       @Override
       @SuppressWarnings("unchecked")
       public MessageEntity deserialize(ByteString bytes) {
