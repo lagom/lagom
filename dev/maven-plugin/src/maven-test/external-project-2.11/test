@@ -1,2 +1,0 @@
--Pexternal-project install -e
--Pintegration-test verify -e
