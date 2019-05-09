@@ -67,19 +67,19 @@ class MessageSerializerSpec extends WordSpec with Matchers {
   "ByteString-to-ByteString" should {
     "serialize any request of type ByteString to the same ByteSting" in {
       val serializer = NoopMessageSerializer.serializerForRequest
-      val out = serializer.serialize(ByteString("sample string"))
+      val out        = serializer.serialize(ByteString("sample string"))
       out shouldBe ByteString("sample string")
     }
 
     "serialize any response of type ByteString to the same ByteSting" in {
       val serializer = NoopMessageSerializer.serializerForResponse(Seq(MessageProtocol.empty))
-      val out = serializer.serialize(ByteString("sample string"))
+      val out        = serializer.serialize(ByteString("sample string"))
       out shouldBe ByteString("sample string")
     }
 
     "deserialize any ByteString's to the same ByteSting" in {
       val deserializer = NoopMessageSerializer.deserializer(MessageProtocol.empty)
-      val out = deserializer.deserialize(ByteString("sample string"))
+      val out          = deserializer.deserialize(ByteString("sample string"))
       out shouldBe ByteString("sample string")
     }
   }

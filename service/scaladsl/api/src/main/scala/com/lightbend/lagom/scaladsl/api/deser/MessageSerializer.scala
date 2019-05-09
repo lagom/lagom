@@ -256,9 +256,10 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
       override def deserialize(wire: ByteString): ByteString = wire
     }
 
-    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]) = new NegotiatedSerializer[ByteString, ByteString] {
-      override def serialize(message: ByteString): ByteString = message
-    }
+    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]) =
+      new NegotiatedSerializer[ByteString, ByteString] {
+        override def serialize(message: ByteString): ByteString = message
+      }
   }
 }
 

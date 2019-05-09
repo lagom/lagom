@@ -83,6 +83,7 @@ trait MockService extends Service {
   def listResults: ServiceCall[MockRequestEntity, List[MockResponseEntity]]
   def customContentType: ServiceCall[MockRequestEntity, MockResponseEntity]
   def noContentType: ServiceCall[MockRequestEntity, MockResponseEntity]
+  def echoByteString: ServiceCall[ByteString, ByteString]
 
   override def descriptor = {
     named("mockservice").withCalls(
@@ -108,7 +109,8 @@ trait MockService extends Service {
       call(noContentType _)(
         MockRequestEntity.customSerializer(None),
         implicitly[MessageSerializer[MockResponseEntity, _]]
-      )
+      ),
+      call(echoByteString _)
     )
   }
 }
@@ -206,6 +208,10 @@ class MockServiceImpl(implicit mat: Materializer, ec: ExecutionContext) extends 
 
   override def noContentType = ServiceCall { req =>
     Future.successful(MockResponseEntity(req.field2, req))
+  }
+
+  override def echoByteString = ServiceCall { req =>
+    Future.successful(req)
   }
 
   private def withServiceName[Request, Response](
