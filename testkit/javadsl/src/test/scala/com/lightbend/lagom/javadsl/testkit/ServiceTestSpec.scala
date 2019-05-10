@@ -63,13 +63,7 @@ class ServiceTestSpec extends WordSpec with Matchers {
   }
 
   def withServer(setup: Setup)(block: TestServer => Unit): Unit = {
-    ServiceTest.withServer(
-      setup.configureBuilder((registerService _).asJava),
-      // We can't use a Single Abstract Method lambda until we drop Scala 2.11 support
-      new Procedure[TestServer] {
-        override def apply(server: TestServer): Unit = block(server)
-      }
-    )
+    ServiceTest.withServer(setup.configureBuilder((registerService _).asJava), block(_))
   }
 
   def registerService(builder: GuiceApplicationBuilder): GuiceApplicationBuilder =
