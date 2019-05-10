@@ -71,6 +71,37 @@ private[lagom] class SlickOffsetStore(
   import slick.profile.api._
   import system.dispatcher
 
+  implicit val timeout = Timeout(config.globalPrepareTimeout)
+
+  private def createTables() = {
+    // The schema will be wrong due to our work around for https://github.com/slick/slick/issues/966 above, so need to
+    // remove the primary key declarations from those columns
+    val statements = offsets.schema.createStatements.map(_.replace(" PRIMARY KEY,", ",")).toSeq
+    slick.db.run(
+      slick
+        .createTable(statements, slick.tableExists(config.schemaName, config.tableName))
+        .map(_ => Done.getInstance())
+    )
+  }
+
+  private val startupTask = if (slick.autoCreateTables) {
+    Some(
+      ClusterStartupTask(
+        system,
+        "slickOffsetStorePrepare",
+        () => createTables,
+        config.globalPrepareTimeout,
+        config.role,
+        config.minBackoff,
+        config.maxBackoff,
+        config.randomBackoffFactor
+      )
+    )
+  } else None
+
+  override def globalPrepare(): Future[Done] =
+    startupTask.fold(Future.successful[Done](Done))(_.askExecute())
+
   override def prepare(eventProcessorId: String, tag: String): Future[SlickOffsetDao] = {
     runPreparations(eventProcessorId, tag).map(offset => new SlickOffsetDao(this, eventProcessorId, tag, offset))
   }
@@ -90,25 +121,11 @@ private[lagom] class SlickOffsetStore(
 
   private val offsets = TableQuery[OffsetStore]
 
-  private val startupTask = if (slick.autoCreateTables) {
-    Some(
-      ClusterStartupTask(
-        system,
-        "slickOffsetStorePrepare",
-        () => createTables,
-        config.globalPrepareTimeout,
-        config.role,
-        config.minBackoff,
-        config.maxBackoff,
-        config.randomBackoffFactor
-      )
-    )
-  } else None
-
   def runPreparations(eventProcessorId: String, tag: String): Future[Offset] = {
-    implicit val timeout = Timeout(config.globalPrepareTimeout)
     for {
-      _      <- startupTask.fold(Future.successful[Done](Done))(_.askExecute())
+      // globalPrepare is idempotent so invoking it on `prepare` will
+      // be a noop if it has already been invoked.
+      _      <- globalPrepare()
       offset <- slick.db.run(getOffsetQuery(eventProcessorId, tag))
     } yield offset
   }
@@ -148,18 +165,6 @@ private[lagom] class SlickOffsetStore(
       )
       .getOrElse(NoOffset)
   }
-
-  private def createTables() = {
-    // The schema will be wrong due to our work around for https://github.com/slick/slick/issues/966 above, so need to
-    // remove the primary key declarations from those columns
-    val statements = offsets.schema.createStatements.map(_.replace(" PRIMARY KEY,", ",")).toSeq
-    slick.db.run(
-      slick
-        .createTable(statements, slick.tableExists(config.schemaName, config.tableName))
-        .map(_ => Done.getInstance())
-    )
-  }
-
 }
 
 private[lagom] class SlickOffsetDao(

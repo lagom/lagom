@@ -234,7 +234,7 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
   }
 
   /**
-   * Ensure the tables are created if configured.
+   * Ensure the Journal and Snapshot tables are created if configured.
    */
   def ensureTablesCreated(): Future[Done] = {
     createTablesTask match {

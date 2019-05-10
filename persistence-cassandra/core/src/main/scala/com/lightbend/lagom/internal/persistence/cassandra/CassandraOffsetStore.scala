@@ -33,15 +33,17 @@ private[lagom] abstract class CassandraOffsetStore(
 
   import system.dispatcher
 
-  override def prepare(eventProcessorId: String, tag: String): Future[CassandraOffsetDao] = {
-    implicit val timeout = Timeout(config.globalPrepareTimeout)
-    doPrepare(eventProcessorId, tag).map {
-      case (offset, statement) =>
-        new CassandraOffsetDao(session, statement, eventProcessorId, tag, offset)
-    }
-  }
+  private implicit val timeout = Timeout(config.globalPrepareTimeout)
 
-  val startupTask = if (cassandraReadSideSettings.autoCreateTables) {
+  private def createTable(): Future[Done] = {
+    session.executeCreateTable(s"""
+                                  |CREATE TABLE IF NOT EXISTS offsetStore (
+                                  |  eventProcessorId text, tag text, timeUuidOffset timeuuid, sequenceOffset bigint,
+                                  |  PRIMARY KEY (eventProcessorId, tag)
+                                  |)""".stripMargin)
+  }
+  // this is not private because tests
+  val startupTask: Option[ClusterStartupTask] = if (cassandraReadSideSettings.autoCreateTables) {
     Some(
       ClusterStartupTask(
         system,
@@ -56,18 +58,22 @@ private[lagom] abstract class CassandraOffsetStore(
     )
   } else None
 
-  private def createTable(): Future[Done] = {
-    session.executeCreateTable(s"""
-                                  |CREATE TABLE IF NOT EXISTS offsetStore (
-                                  |  eventProcessorId text, tag text, timeUuidOffset timeuuid, sequenceOffset bigint,
-                                  |  PRIMARY KEY (eventProcessorId, tag)
-                                  |)""".stripMargin)
+  override def globalPrepare(): Future[Done] =
+    startupTask.fold(Future.successful[Done](Done))(task => task.askExecute)
+
+  override def prepare(eventProcessorId: String, tag: String): Future[CassandraOffsetDao] = {
+    doPrepare(eventProcessorId, tag).map {
+      case (offset, statement) =>
+        new CassandraOffsetDao(session, statement, eventProcessorId, tag, offset)
+    }
   }
 
   protected def doPrepare(eventProcessorId: String, tag: String): Future[(Offset, PreparedStatement)] = {
     implicit val timeout = Timeout(config.globalPrepareTimeout)
     for {
-      _         <- startupTask.fold(Future.successful[Done](Done))(task => task.askExecute)
+      // globalPrepare is idempotent so invoking it on `prepare` will
+      // be a noop if it has already been invoked.
+      _         <- globalPrepare()
       offset    <- readOffset(eventProcessorId, tag)
       statement <- prepareWriteOffset
     } yield {

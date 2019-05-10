@@ -16,6 +16,13 @@ import scala.collection.concurrent
 trait OffsetStore {
 
   /**
+   * Globally prepare the Offset Store. This usually means ensuring the backing table exists.
+   *
+   * @return Done when completed
+   */
+  def globalPrepare(): Future[Done]
+
+  /**
    * Prepare this offset store to process the given ID and tag.
    *
    * @param eventProcessorId The ID of the event processor.
@@ -50,6 +57,8 @@ trait OffsetDao {
 class InMemoryOffsetStore extends OffsetStore {
   private final val store: concurrent.Map[String, Offset] = concurrent.TrieMap.empty
 
+  override def globalPrepare(): Future[Done] = Future.successful(Done)
+
   override def prepare(eventProcessorId: String, tag: String): Future[OffsetDao] = {
     val key = s"$eventProcessorId-$tag"
     Future.successful(new OffsetDao {
@@ -60,4 +69,5 @@ class InMemoryOffsetStore extends OffsetStore {
       override val loadedOffset: Offset = store.getOrElse(key, NoOffset)
     })
   }
+
 }

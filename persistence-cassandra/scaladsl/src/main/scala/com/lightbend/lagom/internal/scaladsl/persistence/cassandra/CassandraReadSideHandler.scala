@@ -116,9 +116,15 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
   protected def offsetStatement(offset: Offset): immutable.Seq[BoundStatement] =
     immutable.Seq(offsetDao.bindSaveOffset(offset))
 
-  override def globalPrepare(): Future[Done] = {
-    globalPrepareCallback.apply()
-  }
+  override def globalPrepare(): Future[Done] =
+    for {
+      // offsetStore.globalPrepare is an idempotent ClusterStartupTask, serializing it with
+      // globalPrepareCallback means no user code is run until the offsetStore
+      // is ready. This order is important: all modules depending on offsetStore
+      // should only proceed when offsetStore is globally prepared.
+      _ <- offsetStore.globalPrepare()
+      _ <- globalPrepareCallback.apply()
+    } yield Done
 
   override def prepare(tag: AggregateEventTag[Event]): Future[Offset] = {
     for {

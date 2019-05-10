@@ -79,16 +79,26 @@ private[lagom] class SlickReadSideImpl(slick: SlickProvider, offsetStore: SlickO
     private var offsetDao: SlickOffsetDao = _
 
     override def globalPrepare(): Future[Done] =
-      slick.ensureTablesCreated().flatMap { _ =>
-        slick.db.run {
+      for {
+        // prepare offsetStore
+        _ <- offsetStore.globalPrepare()
+        // prepare journal and snapshot tables
+        _ <- slick.ensureTablesCreated()
+        // userland global prepare
+        d <- slick.db.run {
           globalPrepareCallback.map(_ => Done.getInstance())
         }
-      }
+      } yield d
 
     override def prepare(tag: AggregateEventTag[Event]): Future[Offset] =
       for {
-        _   <- slick.db.run { prepareCallback(tag) }
+        // offsetStore.globalPrepare is an idempotent ClusterStartupTask, serializing it with
+        // user's prepareCallback means no user code is run until the offsetStore
+        // is ready. This order is important: all modules depending on offsetStore
+        // should only proceed when offsetStore is globally prepared.
+        _   <- offsetStore.globalPrepare()
         dao <- offsetStore.prepare(readSideId, tag.tag)
+        _   <- slick.db.run { prepareCallback(tag) }
       } yield {
         offsetDao = dao
         dao.loadedOffset
