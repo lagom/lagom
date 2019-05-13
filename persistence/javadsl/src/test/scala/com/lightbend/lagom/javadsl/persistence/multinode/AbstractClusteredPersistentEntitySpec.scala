@@ -51,11 +51,11 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       # increase default timeouts to leave wider margin for Travis.
       # 30s to 60s
       akka.testconductor.barrier-timeout=60s
-      # 5s to 10s
-      lagom.persistence.ask-timeout = 9s
-      # 5s to 10s
+      # 5s to 17s // 9s proved too aggressive for Travis.
+      lagom.persistence.ask-timeout = 17s
+      # 5s to 11s
       akka.test.single-expect-default = 11s
-      ## use 9s and 11s for the above timeout because it's coprime values and it'll be easier to spot interferences.
+      ## use 17s and 11s for the above timeout because it's coprime values and it'll be easier to spot interferences.
       ## Also, make the Akka expect() timeouts higher since this tests often expect over an ask operation.
 
       # Don't terminate the actor system when doing a coordinated shutdown
