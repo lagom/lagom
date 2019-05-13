@@ -4,13 +4,11 @@
 
 package com.lightbend.lagom.it.mocks;
 
+import akka.Done;
+import akka.NotUsed;
+import akka.stream.javadsl.Source;
 import akka.util.ByteString;
 import com.lightbend.lagom.javadsl.api.CircuitBreaker;
-
-import akka.Done;
-import akka.stream.javadsl.Source;
-import akka.NotUsed;
-
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
@@ -21,11 +19,11 @@ import com.lightbend.lagom.javadsl.api.transport.Method;
 import com.lightbend.lagom.javadsl.api.transport.NotAcceptable;
 import com.lightbend.lagom.javadsl.api.transport.UnsupportedMediaType;
 
-import static com.lightbend.lagom.javadsl.api.Service.*;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+
+import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface MockService extends Service {
 
@@ -63,6 +61,8 @@ public interface MockService extends Service {
 
   ServiceCall<MockRequestEntity, MockResponseEntity> noContentType();
 
+  ServiceCall<ByteString, ByteString> echoByteString();
+
   default Descriptor descriptor() {
     return named("mockservice")
         .withCalls(
@@ -84,7 +84,8 @@ public interface MockService extends Service {
             call(this::customContentType)
                 .withRequestSerializer(
                     new MockRequestEntitySerializer("application/mock-request-entity")),
-            call(this::noContentType).withRequestSerializer(new MockRequestEntitySerializer()));
+            call(this::noContentType).withRequestSerializer(new MockRequestEntitySerializer()),
+            call(this::echoByteString));
   }
 
   class MockRequestEntitySerializer implements StrictMessageSerializer<MockRequestEntity> {

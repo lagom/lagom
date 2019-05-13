@@ -90,4 +90,20 @@ public class JacksonSerializerFactoryTest {
             .deserialize(ByteString.fromString("{\"opt\":\"abc\"}"));
     assertEquals(Optional.of("abc"), deserialize.opt);
   }
+
+  @Test
+  public void shouldDeserializeByteStringToByteString() {
+    StrictMessageSerializer<ByteString> serializer = factory.messageSerializerFor(ByteString.class);
+    ByteString byteString = ByteString.fromString("{\"opt\":\"abc\"}");
+    ByteString deserialize = serializer.deserializer(new MessageProtocol()).deserialize(byteString);
+    assertEquals(byteString, deserialize);
+  }
+
+  @Test
+  public void shouldSerializeByteStringToByteString() {
+    StrictMessageSerializer<ByteString> serializer = factory.messageSerializerFor(ByteString.class);
+    ByteString byteString = ByteString.fromString("{\"opt\":\"abc\"}");
+    ByteString deserialize = serializer.serializerForRequest().serialize(byteString);
+    assertEquals(byteString, deserialize);
+  }
 }
