@@ -11,6 +11,7 @@ import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import akka.NotUsed;
 
+import akka.util.ByteString;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.transport.NotFound;
 import com.lightbend.lagom.javadsl.api.transport.ResponseHeader;
@@ -179,6 +180,11 @@ public class MockServiceImpl implements MockService {
   public ServiceCall<MockRequestEntity, MockResponseEntity> noContentType() {
     return request ->
         CompletableFuture.completedFuture(new MockResponseEntity(request.field2(), request));
+  }
+
+  @Override
+  public ServiceCall<ByteString, ByteString> echoByteString() {
+    return CompletableFuture::completedFuture;
   }
 
   /** Shows example service call composition. */

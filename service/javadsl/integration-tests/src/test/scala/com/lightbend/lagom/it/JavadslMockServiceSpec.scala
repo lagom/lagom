@@ -6,6 +6,7 @@ package com.lightbend.lagom.it
 
 import java.util.Optional
 import java.util.concurrent.TimeUnit
+
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Source
@@ -14,6 +15,7 @@ import akka.Done
 import akka.NotUsed
 import play.api.Application
 import play.api.libs.streams.AkkaStreams
+
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.Promise
@@ -24,6 +26,8 @@ import scala.util.Success
 import scala.util.Try
 import akka.pattern.CircuitBreakerOpenException
 import java.util.concurrent.ExecutionException
+
+import akka.util.ByteString
 
 class JavadslMockServiceSpec extends ServiceSupport {
 
@@ -46,9 +50,14 @@ class JavadslMockServiceSpec extends ServiceSupport {
         client.doNothing().invoke().toCompletableFuture.get(10, TimeUnit.SECONDS) should ===(NotUsed)
         MockServiceImpl.invoked.get() should ===(true)
       }
-      "be possible to invoke for Done parameters and resonse" in withMockServiceClient { implicit app => client =>
+      "be possible to invoke for Done parameters and response" in withMockServiceClient { implicit app => client =>
         val response = client.doneCall.invoke(Done.getInstance()).toCompletableFuture.get(10, TimeUnit.SECONDS)
         response should ===(Done.getInstance)
+      }
+      "be possible to invoke for ByteString parameters and response" in withMockServiceClient {
+        implicit app => client =>
+          val request = ByteString.fromString("raw ByteString")
+          client.echoByteString().invoke(request).toCompletableFuture.get(10, TimeUnit.SECONDS) should ===(request)
       }
 
       "work with streamed responses" in withMockServiceClient { implicit app => client =>
