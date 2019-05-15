@@ -28,6 +28,13 @@ The Guice module [AkkaDiscoveryServiceLocatorModule](api/index.html?com/lightben
 
 In development, your Lagom application will keep using the Lagom's dev-mode [ServiceLocator](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html).
 
-Next, you will need to choose one of the available Akka Discovery implementations and configure it in your `application.conf` file. Consult the [Akka Discovery](https://doc.akka.io/docs/akka/2.5/discovery/index.html) documentation for further instructions.
+By default, Lagom uses [Aggregate multiple discovery methods](https://doc.akka.io/docs/akka/2.5/discovery/index.html#discovery-method-aggregate-multiple-discovery-methods). The first discovery method is set to Configuration and the second is set to DNS. 
+So the static definition of service endpoins has a priority over DNS discovery.
+
+To statically configure service endpoints in your `application.conf` file consult the [Aggregate multiple discovery methods](https://doc.akka.io/docs/akka/2.5/discovery/index.html#discovery-method-aggregate-multiple-discovery-methods) documentation.
+
+To configure service discovery with DNS Lagom provides some configuration settings. The default settings are in
+
+@[lagom-akka-discovery-reference-conf](../../../../../akka-service-locator/core/src/main/resources/reference.conf)
 
 Note: this component was [previous published](https://github.com/lagom/lagom-akka-discovery-service-locator) as an independent library. If you have it on your classpath it's recommended to remove it and use the one being provided by Lagom directly.
