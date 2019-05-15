@@ -253,7 +253,7 @@ def macroCompileSettings: Seq[Setting[_]] = Seq(
   }
 )
 
-val version140 = "1.4.0"
+val version140  = "1.4.0"
 val version1412 = "1.4.12"
 
 def mimaSettings(since: String): Seq[Setting[_]] = {
@@ -286,7 +286,6 @@ def scalaVersionFilter(scalaBinaryVersion: String, versions: Seq[String]): Seq[S
 def scalaVersionSince = Map(
   "2.12" -> "1.4.0"
 )
-
 
 val javadslProjects = Seq[Project](
   `api-javadsl`,
@@ -404,7 +403,8 @@ lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     Dependencies.`api-scaladsl`
-  ).dependsOn(api)
+  )
+  .dependsOn(api)
 
 lazy val immutables = (project in file("immutables"))
   .settings(name := "lagom-javadsl-immutables")
@@ -683,7 +683,8 @@ lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
   .settings(
     name := "lagom-scaladsl-cluster",
     Dependencies.`cluster-scaladsl`
-  ) configs (MultiJvm)
+  )
+  .configs(MultiJvm)
 
 lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
   .dependsOn(`cluster-javadsl`)
@@ -725,10 +726,18 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
     mimaBinaryIssueFilters ++= Seq(
       // See https://github.com/lagom/lagom/pull/1302 and https://github.com/lagom/lagom/pull/1395
       // change introduced in 1.4.7 (backward incompatible with 1.4.6)
-      ProblemFilters.exclude[AbstractClassProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity$BehaviorBuilder"),
-      ProblemFilters.exclude[DirectAbstractMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity#BehaviorBuilder.*"),
-      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity#BehaviorBuilder.this"),
-      ProblemFilters.exclude[ReversedAbstractMethodProblem]("com.lightbend.lagom.javadsl.persistence.PersistentEntity#BehaviorBuilder.*")
+      ProblemFilters.exclude[AbstractClassProblem](
+        "com.lightbend.lagom.javadsl.persistence.PersistentEntity$BehaviorBuilder"
+      ),
+      ProblemFilters.exclude[DirectAbstractMethodProblem](
+        "com.lightbend.lagom.javadsl.persistence.PersistentEntity#BehaviorBuilder.*"
+      ),
+      ProblemFilters.exclude[DirectMissingMethodProblem](
+        "com.lightbend.lagom.javadsl.persistence.PersistentEntity#BehaviorBuilder.this"
+      ),
+      ProblemFilters.exclude[ReversedAbstractMethodProblem](
+        "com.lightbend.lagom.javadsl.persistence.PersistentEntity#BehaviorBuilder.*"
+      )
     ),
     Dependencies.`persistence-javadsl`
   )
