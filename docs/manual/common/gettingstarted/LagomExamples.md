@@ -16,7 +16,7 @@ How streaming service calls work | Y | N
 How to develop a Play app with Lagom | Y | Y
 How to consume Lagom services from a front-end Play app | N | Y
 
-For focused examples, check the [lagom-recipes](https://github.com/lagom/lagom-recipes) repository on GitHub. Each recipe describes how to achieve a particular goal, such as:
+For focused examples, check the [lagom-samples](https://github.com/lagom/lagom-samples) repository on GitHub. Each sample describes how to achieve a particular goal, such as:
 
 * How do I enable CORS? (using Lagom's javadsl or scaladsl)
 * How do I create a Subscriber only service? (also referred to as consumer service)
