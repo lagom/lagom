@@ -1,2 +1,0 @@
-archetype:generate -DarchetypeGroupId=com.lightbend.lagom -DarchetypeArtifactId=maven-archetype-lagom-java -DgroupId=com.example -DartifactId=my-lagom-system -Dpackage=com.example -Dversion=1.0-SNAPSHOT -Dscala-binary-version=2.11 -B
--Parchetype verify -e

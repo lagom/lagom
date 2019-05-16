@@ -12,9 +12,8 @@ object Dependencies {
     // Version numbers
 
     val Scala210 = "2.10.7"
-    val Scala211 = "2.11.12"
     val Scala212 = "2.12.8"
-    val Scala    = Seq(Scala212, Scala211)
+    val Scala    = Seq(Scala212)
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
@@ -44,7 +43,7 @@ object Dependencies {
     val Netty                = "4.1.34.Final"
     val NettyReactiveStreams = "2.0.3"
     val Kafka                = "2.1.1"
-    val AlpakkaKafka         = "1.0.2"
+    val AlpakkaKafka         = "1.0.3"
     val Curator              = "2.12.0"
     val Immutables           = "2.3.10"
     val HibernateCore        = "5.3.7.Final"

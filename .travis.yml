@@ -1,7 +1,8 @@
 language: scala
 
-# Only build PRs, tags, and forks: https://docs.travis-ci.com/user/conditional-builds-stages-jobs/
-if: type = pull_request OR tag IS present OR repo != lagom/lagom
+# Only build non-pushes (so PRs, API requests & cron jobs) OR tags OR forks
+# https://docs.travis-ci.com/user/conditional-builds-stages-jobs/
+if: type != push OR tag IS present OR repo != lagom/lagom
 
 env:
   global:
@@ -26,8 +27,6 @@ jobs:
     - stage: validations-and-test
       script: bin/test-code-style
       name: "Code validations (format, binary compatibilty, whitesource, etc.)"
-    - script: bin/test-2.11
-      name: "Run tests for Scala 2.11"
     - script: bin/test-2.12
       name: "Run tests for Scala 2.12"
     - script: bin/test-2.12

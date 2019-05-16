@@ -554,12 +554,12 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val serviceGatewayHttpPort = lagomServiceGatewayPort.value
     val serivceGatewayImpl     = lagomServiceGatewayImpl.value
     val classpathUrls          = (managedClasspath in Compile).value.files.map(_.toURI.toURL).toArray
-    val scala211               = scalaInstance.value
+    val scalaInstance          = Keys.scalaInstance.value
     val log                    = new SbtLoggerProxy(state.value.log)
 
     Servers.ServiceLocator.start(
       log,
-      scala211.loader,
+      scalaInstance.loader,
       classpathUrls,
       serviceLocatorAddress,
       serviceLocatorPort,
@@ -571,12 +571,12 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
   }
 
   private lazy val startCassandraServerTask = Def.task {
-    val port         = lagomCassandraPort.value
-    val cleanOnStart = lagomCassandraCleanOnStart.value
-    val classpath    = (managedClasspath in Compile).value.files
-    val jvmOptions   = lagomCassandraJvmOptions.value
-    val maxWaiting   = lagomCassandraMaxBootWaitingTime.value
-    val scala211     = scalaInstance.value
+    val port          = lagomCassandraPort.value
+    val cleanOnStart  = lagomCassandraCleanOnStart.value
+    val classpath     = (managedClasspath in Compile).value.files
+    val jvmOptions    = lagomCassandraJvmOptions.value
+    val maxWaiting    = lagomCassandraMaxBootWaitingTime.value
+    val scalaInstance = Keys.scalaInstance.value
     // NOTE: lagomCassandraYamlFile will be None when not explicitly configured by user
     // we don't use an Option for it because this class will be dynamically loaded
     // and called using structural typing (reflection) by sbt thus on a classloader with scala 2.10
@@ -585,7 +585,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
 
     Servers.CassandraServer.start(
       log,
-      scala211.loader,
+      scalaInstance.loader,
       classpath,
       port,
       cleanOnStart,
