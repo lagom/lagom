@@ -246,6 +246,21 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
         override def serialize(message: Done): ByteString = ByteString.empty
       }
   }
+
+  implicit val NoopMessageSerializer: StrictMessageSerializer[ByteString] = new StrictMessageSerializer[ByteString] {
+    override def serializerForRequest = new NegotiatedSerializer[ByteString, ByteString] {
+      override def serialize(message: ByteString): ByteString = message
+    }
+
+    override def deserializer(protocol: MessageProtocol) = new NegotiatedDeserializer[ByteString, ByteString] {
+      override def deserialize(wire: ByteString): ByteString = wire
+    }
+
+    override def serializerForResponse(acceptedMessageProtocols: immutable.Seq[MessageProtocol]) =
+      new NegotiatedSerializer[ByteString, ByteString] {
+        override def serialize(message: ByteString): ByteString = message
+      }
+  }
 }
 
 trait LowPriorityMessageSerializerImplicits {

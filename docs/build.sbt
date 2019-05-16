@@ -66,8 +66,8 @@ lazy val docs = project
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
     // This is needed so that Java APIs that use immutables will typecheck by the Scala compiler
     compileOrder in Test := CompileOrder.JavaThenScala,
-    sourceDirectories in format in Test ++= (unmanagedSourceDirectories in Test).value,
-    sourceDirectories in format in Test ++= (unmanagedResourceDirectories in Test).value,
+    sourceDirectories in javafmt in Test ++= (unmanagedSourceDirectories in Test).value,
+    sourceDirectories in javafmt in Test ++= (unmanagedResourceDirectories in Test).value,
     markdownDocumentation := {
       val javaUnidocTarget = parentDir / "target" / "javaunidoc"
       val unidocTarget     = parentDir / "target" / "unidoc"

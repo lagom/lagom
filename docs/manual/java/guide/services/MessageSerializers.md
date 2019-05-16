@@ -16,9 +16,9 @@ This can be overridden when defining the service call in the descriptor:
 
 ### Per type message serializers
 
-If no message serializer has been provided at the service call level, Lagom then checks whether a serializer has been registered at the service level for that type.  Each service maintains a map of types to serializers for that type, and these are used as appropriate for service calls that match the types in the map.
+If no message serializer has been provided at the service call level, Lagom then checks whether a serializer has been registered at the service level for that type. Each service maintains a map of types to serializers for that type, and these are used as appropriate for service calls that match the types in the map.
 
-Lagom provides a number of serializers out of the box at this level, including serializers for `String` and `NotUsed`.  Custom type level serializers can also be supplied in the descriptor using the [`Descriptor.with`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html#with-java.lang.reflect.Type-com.lightbend.lagom.javadsl.api.deser.MessageSerializer-) method:
+Lagom provides a number of serializers out of the box at this level, including serializers for `String`, `Done`, `NotUsed` and `ByteString`. Note that serializer for `ByteString` doesn't modify data and sends `ByteString` as is. Custom type level serializers can also be supplied in the descriptor using the [`Descriptor.with`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html#with-java.lang.reflect.Type-com.lightbend.lagom.javadsl.api.deser.MessageSerializer-) method:
 
 @[type-serializer](code/docs/services/MessageSerializers.java)
 

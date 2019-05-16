@@ -4,10 +4,5 @@
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-# We are not running maven tests job for scheduled builds because they use
-# Akka snapshots which aren't being published for Scala 2.11 anymore. So
-# +publishM2 will fail.
-checkIfShouldSkip "mavenTest"
-
 runSbt +publishM2
 runSbtNoisy mavenTest

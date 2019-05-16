@@ -11,6 +11,7 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.Done
 import akka.NotUsed
+import akka.util.ByteString
 import com.lightbend.lagom.scaladsl.api.AdditionalConfiguration
 import com.lightbend.lagom.scaladsl.it.mocks.MockRequestEntity
 import com.lightbend.lagom.scaladsl.it.mocks.MockResponseEntity
@@ -50,9 +51,13 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers {
         Await.result(client.doNothing.invoke(), 10.seconds) should ===(NotUsed)
         MockService.invoked.get() should ===(true)
       }
-      "be possible to invoke for Done parameters and resonse" in withServer { implicit mat => client =>
+      "be possible to invoke for Done parameters and response" in withServer { implicit mat => client =>
         val response = Await.result(client.doneCall.invoke(Done), 10.seconds)
         response should ===(Done)
+      }
+      "be possible to invoke for ByteString parameters and response" in withServer { implicit mat => client =>
+        val request = ByteString.fromString("raw ByteString")
+        Await.result(client.echoByteString.invoke(request), 10.seconds) should ===(request)
       }
 
       "work with streamed responses" in withServer { implicit mat => client =>
