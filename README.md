@@ -7,7 +7,7 @@
 
 Lagom is a Swedish word meaning *just right, sufficient*. Microservices are about creating services that are just the right size, that is, they have just the right level of functionality and isolation to be able to adequately implement a scalable and resilient system.
 
-Lagom focuses on ensuring that your application realises the full potential of the [Reactive Manifesto](http://reactivemanifesto.org), while delivering a high productivity development environment, and seamless production deployment experience.
+Lagom focuses on ensuring that your application realizes the full potential of the [Reactive Manifesto](http://reactivemanifesto.org) while delivering a high productivity development environment, and seamless production deployment experience.
 
 ## Learn More
 
