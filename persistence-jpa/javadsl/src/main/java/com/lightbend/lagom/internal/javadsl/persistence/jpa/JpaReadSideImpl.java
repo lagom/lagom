@@ -217,11 +217,13 @@ public class JpaReadSideImpl implements JpaReadSide {
         if (profile instanceof PostgresProfile) {
           postgresqlBindUpdateOffsetQuery(updateOffsetQuery, sequenceOffset, timeUuidOffset);
         } else if (profile instanceof OracleProfile) {
-            // Hibernate ignore the type of parameter in NativeQuery if the value of a parameter is null
-            // WA for Oracle. See https://github.com/lagom/lagom/issues/1772
-            defaultBindUpdateOffsetQuery(updateOffsetQuery,
-                sequenceOffset == null ? "" : sequenceOffset,
-                timeUuidOffset == null ? "" : timeUuidOffset);
+          // Hibernate ignore the type of parameter in NativeQuery if the value of a parameter is
+          // null
+          // WA for Oracle. See https://github.com/lagom/lagom/issues/1772
+          defaultBindUpdateOffsetQuery(
+              updateOffsetQuery,
+              sequenceOffset == null ? "" : sequenceOffset,
+              timeUuidOffset == null ? "" : timeUuidOffset);
         } else {
           defaultBindUpdateOffsetQuery(updateOffsetQuery, sequenceOffset, timeUuidOffset);
         }
