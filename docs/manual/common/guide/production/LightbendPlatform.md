@@ -36,7 +36,7 @@ To use these with Lagom, the Lightbend Telemetry agent must be included as a dep
 * [Java example project](https://developer.lightbend.com/docs/telemetry/current/getting-started/lagom_java.html)
 * [Scala example project](https://developer.lightbend.com/docs/telemetry/current/getting-started/lagom_scala.html)
 
-See [Integrating Lagom with Lightbend Telemetry](https://github.com/lagom/lagom-recipes/blob/master/lightbend-telemetry/lightbend-telemetry-java-mvn/README.md) for a Java example of integrating Telemetry into a Lagom service.
+See [Integrating Lagom with Lightbend Telemetry](https://github.com/lagom/lagom-samples/blob/1.5.x/lightbend-telemetry/lightbend-telemetry-java-mvn/README.md) for a Java example of integrating Telemetry into a Lagom service.
 
 ## Configuring a Lagom build for Lightbend Platform
 
