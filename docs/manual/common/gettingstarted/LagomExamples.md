@@ -1,11 +1,12 @@
 # Learning more from Lagom examples
 
-After getting started with Hello World, you can learn more about Lagom by downloading and running one of the examples from GitHub:
+After getting started with Lagom's Hello World example, you can learn more about Lagom by downloading and
+running Lagom's "Shopping Cart" example (either [shopping-cart-scala][] or [shopping-cart-java][]).
 
-* [Chirper](https://github.com/search?utf8=%E2%9C%93&q=Lagom+chirper) demonstrates a Twitter-like application and is available for Java and Scala, with Java variations that demonstrate use of JPA and JDBC.
-* [Online Auction](https://github.com/search?utf8=%E2%9C%93&q=lagom%2Fonline+auction&type=Repositories&ref=searchresults) demonstrates an eBay-like application and is also available for both Java and Scala.
+[shopping-cart-scala]: https://github.com/lagom/lagom-samples/tree/1.5.x/shopping-cart/shopping-cart-scala
+[shopping-cart-java]: https://github.com/lagom/lagom-samples/tree/1.5.x/shopping-cart/shopping-cart-java
 
-The following table outlines some of the Lagom features you can observe in each of the examples.
+Some of the Lagom features you can observe include:
 
 Feature |Chirper| Online Auction |
 --------|:--------:|:-------------:|
