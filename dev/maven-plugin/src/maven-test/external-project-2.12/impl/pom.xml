@@ -29,4 +29,14 @@
             <artifactId>play-netty-server_${scala.binary.version}</artifactId>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>akka-snapshots</id>
+            <name>Akka Snapshots</name>
+            <url>https://repo.akka.io/snapshots/</url>
+            <layout>default</layout>
+            <snapshots><enabled>false</enabled></snapshots> <!-- as in, no -SNAPSHOT dependencies -->
+        </repository>
+    </repositories>
 </project>
