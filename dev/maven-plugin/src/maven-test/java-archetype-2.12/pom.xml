@@ -6,6 +6,16 @@
 
     <packaging>pom</packaging>
 
+    <repositories>
+        <repository>
+            <id>akka-snapshots</id>
+            <name>Akka Snapshots</name>
+            <url>https://repo.akka.io/snapshots/</url>
+            <layout>default</layout>
+            <snapshots><enabled>false</enabled></snapshots> <!-- as in, no -SNAPSHOT dependencies -->
+        </repository>
+    </repositories>
+
     <profiles>
         <!-- The my-lagom-system module doesn't exist until after running the archetype:generate, so we need to activate
          it in a profile -->
