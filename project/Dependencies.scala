@@ -1021,10 +1021,13 @@ object Dependencies {
     val log              = streams.value.log
     val svb              = scalaBinaryVersion.value
 
-    val whitelist = (dependencyWhitelist.value ++ KafkaTestWhitelist).map { moduleId =>
-      val crossModuleId = cross(moduleId)
-      (crossModuleId.organization, crossModuleId.name) -> crossModuleId.revision
-    }.toMap
+    val whitelist = (dependencyWhitelist.value ++ KafkaTestWhitelist).iterator
+      .map(cross)
+      .toTraversable
+      .groupBy(crossModuleId => (crossModuleId.organization, crossModuleId.name))
+      .iterator
+      .map { case (key, crossModuleIds) => key -> crossModuleIds.map(_.revision) }
+      .toMap
 
     def collectProblems(scope: String, classpath: Classpath) = {
       classpath.collect(Function.unlift { dep =>
@@ -1035,9 +1038,10 @@ object Dependencies {
         whitelist.get((moduleId.organization, moduleId.name)) match {
           case None =>
             Some(moduleId -> s"[${name.value}] $scope dependency not in whitelist: $moduleId")
-          case Some(unmatched) if moduleId.revision != unmatched =>
+          case Some(revs) if revs.forall(moduleId.revision != _) =>
+            val unmatched = revs.mkString("[", ", ", "]")
             Some(
-              moduleId -> s"[${name.value}] $scope dependency ${moduleId.organization}:${moduleId.name} version ${moduleId.revision} doesn't match whitelist version $unmatched"
+              moduleId -> s"[${name.value}] $scope dependency ${moduleId.organization}:${moduleId.name} version ${moduleId.revision} doesn't match whitelist versions $unmatched"
             )
           case _ => None
         }
