@@ -4,6 +4,8 @@
 
 package com.lightbend.lagom.scaladsl.playjson
 
+import scala.collection.Seq
+
 import play.api.libs.json.JsPath
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json

@@ -18,9 +18,9 @@ object Dependencies {
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     val Play             = "2.7.2"
-    val PlayJson         = "2.7.2"
+    val PlayJson         = "2.7.3"
     val PlayStandaloneWs = "2.0.3"
-    val Twirl            = "1.4.0"
+    val Twirl            = "1.4.1"
     val PlayFileWatch    = "1.1.8"
 
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.22")
@@ -33,7 +33,8 @@ object Dependencies {
 
     val Disruptor = "3.3.11"
 
-    val ScalaTest            = "3.0.5"
+    // Also be sure to update ScalaTestVersion in docs/build.sbt.
+    val ScalaTest            = "3.0.8-RC2"
     val Jackson              = "2.9.8"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
@@ -50,7 +51,7 @@ object Dependencies {
     val PCollections         = "2.2.0"
 
     val ScalaJava8Compat = "0.9.0"
-    val ScalaXml         = "1.1.1"
+    val ScalaXml         = "1.2.0"
     val Slick            = "3.3.0"
     val JUnit            = "4.12"
     val JUnitInterface   = "0.11"
@@ -85,9 +86,9 @@ object Dependencies {
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.8.17"
-  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
+  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.3.3"
-  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.3.7"
+  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.0"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
     ("com.datastax.cassandra" % "cassandra-driver-core" % "3.6.0").excludeAll(excludeSlf4j: _*)
@@ -211,6 +212,7 @@ object Dependencies {
       "com.novocode" % "junit-interface" % Versions.JUnitInterface,
       typesafeConfig,
       sslConfig,
+      "com.typesafe" %% "ssl-config-core" % "0.3.7",
       akkaDiscovery,
       akkaHttpCore,
       akkaHttpRouteDsl,
@@ -228,6 +230,8 @@ object Dependencies {
       "com.typesafe.play"  %% "cachecontrol"               % "1.1.5",
       playJson,
       playFunctional,
+      "com.typesafe.play" %% "play-json"       % "2.7.2",
+      "com.typesafe.play" %% "play-functional" % "2.7.2",
       // play client libs
       playWs,
       playAhcWs,
@@ -275,6 +279,7 @@ object Dependencies {
       "org.eclipse.jetty.websocket" % "websocket-common"   % Versions.jetty,
       "org.eclipse.jetty.websocket" % "websocket-api"      % Versions.jetty,
       jsr250,
+      "com.typesafe.play"  %% "twirl-api"      % "1.4.0",
       "com.typesafe.play"  %% "twirl-api"      % Versions.Twirl,
       "com.typesafe.slick" %% "slick"          % Versions.Slick,
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
@@ -311,6 +316,7 @@ object Dependencies {
       scalaTest,
       "org.scala-lang.modules" %% "scala-java8-compat" % Versions.ScalaJava8Compat,
       scalaParserCombinators,
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
       scalaXml,
       "org.scala-sbt"     % "test-interface" % "1.0",
       "org.typelevel"     %% "macro-compat"  % "1.1.1",
@@ -664,6 +670,8 @@ object Dependencies {
     scalaParserCombinators,
     scalaXml,
     akkaSlf4j,
+    playJson,
+    sprayJson,
     // transitive dependencies from Akka Management
     // may not match the Akka version in use so
     // must be explicitly bumped
@@ -955,7 +963,8 @@ object Dependencies {
     akkaSlf4j,
     typesafeConfig,
     sslConfig,
-    scalaXml
+    scalaXml,
+    playJson,
   )
 
   val `service-registry-client-core` =
