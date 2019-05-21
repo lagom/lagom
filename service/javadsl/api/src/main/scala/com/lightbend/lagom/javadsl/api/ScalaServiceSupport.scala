@@ -95,17 +95,19 @@ object ScalaServiceSupport {
   def methodForImpl[T](c: blackbox.Context)(f: c.Expr[Any])(implicit tType: c.WeakTypeTag[T]): c.Expr[ScalaMethodCall[T]] = {
     import c.universe._
 
-    f match {
+    val (thisType, methodName) = f match {
       case Expr(Block((_, Function(_, Apply(Select(This(thisType), TermName(methodName)), _))))) =>
-        val methodNameString = Literal(Constant(methodName))
-        c.Expr[ScalaMethodCall[T]](
-          q"_root_.com.lightbend.lagom.javadsl.api.ScalaServiceSupport.getMethodWithName[${tType.tpe}](_root_.scala.Predef.classOf[$thisType], $methodNameString)"
-        )
+        (thisType, methodName)
+      case Expr(Function(_, Apply(Select(This(thisType), TermName(methodName)), _))) => (thisType, methodName)
       case other =>
         c.abort(
           c.enclosingPosition,
           "methodFor must only be invoked with a reference to a function on this, for example, methodFor(this.someFunction)"
         )
     }
+    val methodNameString = Literal(Constant(methodName))
+    c.Expr[ScalaMethodCall[T]](
+      q"_root_.com.lightbend.lagom.javadsl.api.ScalaServiceSupport.getMethodWithName[${tType.tpe}](_root_.scala.Predef.classOf[$thisType], $methodNameString)"
+    )
   }
 }

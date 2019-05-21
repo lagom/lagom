@@ -7,6 +7,7 @@ package com.lightbend.lagom.serialization;
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
 import akka.util.ByteString;
+import akka.util.ByteString$;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lightbend.lagom.javadsl.api.deser.DeserializationException;
@@ -53,7 +54,7 @@ public class JacksonSerializerFactoryTest {
     StrictMessageSerializer<Optional<String>> serializer =
         factory.messageSerializerFor(Optional.class);
     Optional<String> out =
-        serializer.deserializer(new MessageProtocol()).deserialize(ByteString.empty());
+        serializer.deserializer(new MessageProtocol()).deserialize(ByteString$.MODULE$.empty());
     assertEquals(Optional.empty(), out);
   }
 

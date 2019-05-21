@@ -415,7 +415,35 @@ object ServiceSupport {
       c.Expr[ScalaMethodTopic[Message]](q"""
       $serviceSupport.getTopicMethodWithName[${messageType.tpe}]($thisClassExpr, $methodNameLiteral)
     """)
+  }
+
+  /**
+   * Given a passed in AST that should be a reference to a method call on this, generate AST to resolve the type of
+   * this and the name of the method.
+   *
+   * @param c The macro context
+   * @param methodDescription A description of the method that is being invoked, for error reporting.
+   * @param f The AST.
+   * @return A tuple of the AST to resolve the type of this, and a literal that contains the name of the method.
+   */
+  private def resolveThisClassExpressionAndMethodName(
+      c: Context
+  )(methodDescription: String, f: c.Tree): (c.Tree, c.universe.Literal) = {
+    import c.universe._
+
+    // Recurse on the tree so no combinations are missed (e.g. Block(_, Function(_, Select(..))))
+    def extract(f: Tree): (TypeName, String) = f match {
+      case Select(This(tt), TermName(tn)) => (tt, tn)   // a method, just selected b/c no parameters
+      case Apply(t, _)                    => extract(t) // a method with parameter lists, applied
+      case Function(_, t)                 => extract(t) // a function
+      case Block(_, t)                    => extract(t) // a block
+      case other =>
+        c.abort(
+          c.enclosingPosition,
+          s"$methodDescription must only be invoked with a reference to a function on this, for example, $methodDescription(this.someFunction _)"
+        )
     }
+    val (thisType, methodName) = extract(f)
 
     /**
      * Given a passed in AST that should be a reference to a method call on this, generate AST to resolve the type of
