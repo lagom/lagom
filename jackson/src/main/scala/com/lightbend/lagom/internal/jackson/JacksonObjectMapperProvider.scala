@@ -59,7 +59,7 @@ class JacksonObjectMapperProvider(
         "lagom.serialization.json.jackson-modules"
       )
       .asScala
-    val modules: Seq[Module] =
+    val modules: scala.collection.Seq[Module] =
       if (configuredModules.contains("*"))
         ObjectMapper.findModules(dynamicAccess.classLoader).asScala
       else {

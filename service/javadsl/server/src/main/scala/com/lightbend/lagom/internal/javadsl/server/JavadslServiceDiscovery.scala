@@ -53,7 +53,7 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
     descriptions.asJava
   }
 
-  private def doDiscovery(classLoader: ClassLoader): Seq[ServiceDescription] = {
+  private def doDiscovery(classLoader: ClassLoader): scala.collection.Seq[ServiceDescription] = {
     val modules = loadModules(classLoader)
     resolveServiceInterfaces(modules).flatMap { serviceInterface =>
       val unresolvedDescriptor = ServiceReader.readServiceDescriptor(classLoader, serviceInterface)
@@ -102,7 +102,7 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
   /**
    * Scans the given Guice modules to find and return the service interfaces.
    */
-  private def resolveServiceInterfaces(modules: Seq[Module]): Seq[Class[_ <: Service]] = {
+  private def resolveServiceInterfaces(modules: Seq[Module]): scala.collection.Seq[Class[_ <: Service]] = {
     val serviceInterfaces = mutable.ListBuffer.empty[Class[_ <: Service]]
 
     // Iterates through all bindings of a module to find and add the service interfaces to the `serviceInterfaces` buffer
