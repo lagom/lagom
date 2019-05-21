@@ -203,7 +203,7 @@ class JavadslServiceRouter(
   }
 
   protected override val serviceRoutes: Seq[ServiceRoute] =
-    descriptor.calls.asScala.map(call => new JavadslServiceRoute(call.asInstanceOf[Call[Any, Any]]))
+    descriptor.calls.asScala.map(call => new JavadslServiceRoute(call.asInstanceOf[Call[Any, Any]])).toSeq
 
   /**
    * Create the action.

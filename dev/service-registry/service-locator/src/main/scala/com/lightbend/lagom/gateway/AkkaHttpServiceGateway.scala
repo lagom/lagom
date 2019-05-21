@@ -94,7 +94,7 @@ class AkkaHttpServiceGateway(
         }
       case NotFound(registryMap) =>
         log.debug("Sending not found response")
-        Future.successful(renderNotFound(request, path, registryMap.mapValues(_.serviceRegistryService)))
+        Future.successful(renderNotFound(request, path, registryMap.mapValues(_.serviceRegistryService).toMap))
     }
 
   }
