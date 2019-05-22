@@ -20,4 +20,4 @@ trait Jsonable extends Serializable
  * marker interface and the payload is larger than the configured
  * `compress-larger-than` value.
  */
-trait CompressedJsonable extends Jsonable
+trait CompressedJsonable extends Jsonable // FIXME this might change

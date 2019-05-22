@@ -6,15 +6,23 @@ package docs.home.serialization;
 
 import static org.junit.Assert.assertEquals;
 
+import akka.serialization.Serialization;
+import akka.serialization.SerializationExtension;
+import akka.serialization.Serializer;
+import akka.serialization.SerializerWithStringManifest;
+import akka.serialization.Serializers;
 import docs.home.serialization.v1.OrderAdded;
 
 import docs.home.serialization.v2d.OrderPlaced;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import com.lightbend.lagom.internal.jackson.JacksonJsonSerializer;
 import docs.home.serialization.v2a.Customer;
 import docs.home.serialization.v2a.ItemAdded;
+
+import java.io.NotSerializableException;
 import java.util.Optional;
+import java.util.zip.GZIPInputStream;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,7 +40,7 @@ public class EventMigrationTest {
     // @formatter:off
     Config conf =
         ConfigFactory.parseString(
-            "lagom.serialization.json.migrations {\n"
+            "akka.serialization.jackson.migrations {\n"
                 + "  \"docs.home.serialization.v2b.ItemAdded\" = \"docs.home.serialization.v2b.ItemAddedMigration\" \n"
                 + "  \"docs.home.serialization.v2c.ItemAdded\" = \"docs.home.serialization.v2c.ItemAddedMigration\" \n"
                 + "  \"docs.home.serialization.v2a.Customer\" = \"docs.home.serialization.v2a.CustomerMigration\" \n"
@@ -48,25 +56,45 @@ public class EventMigrationTest {
     system = null;
   }
 
-  private final JacksonJsonSerializer serializer =
-      new JacksonJsonSerializer((ExtendedActorSystem) system);
+  private final Serialization serialization = SerializationExtension.get(system);
 
   private void checkSerialization(Object obj, boolean expectedCompression) {
-    // verify serialization-deserialization round trip
-    byte[] blob = serializer.toBinary(obj);
-    assertEquals(expectedCompression, serializer.isGZipped(blob));
-    Object obj2 = serializer.fromBinary(blob, serializer.manifest(obj));
-    assertEquals(obj, obj2);
+    try {
+      // verify serialization-deserialization round trip
+      Serializer serializer = serialization.serializerFor(obj.getClass());
+      String manifest = Serializers.manifestFor(serializer, obj);
+      int serializerId = serializer.identifier();
+
+      byte[] blob = serializer.toBinary(obj);
+      assertEquals(expectedCompression, isGZipped(blob));
+
+      Object obj2 = serialization.deserialize(blob, serializerId, manifest).get();
+      assertEquals(obj, obj2);
+    } catch (NotSerializableException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private SerializerWithStringManifest serializerFor(Object obj) throws NotSerializableException {
+    return (SerializerWithStringManifest) serialization.serializerFor(obj.getClass());
+  }
+
+  private boolean isGZipped(byte[] bytes) {
+    return (bytes != null)
+        && (bytes.length >= 2)
+        && (bytes[0] == (byte) GZIPInputStream.GZIP_MAGIC)
+        && (bytes[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8));
   }
 
   @Test
-  public void testAddOptionalField() {
+  public void testAddOptionalField() throws NotSerializableException {
     docs.home.serialization.v1.ItemAdded event1 =
         docs.home.serialization.v1.ItemAdded.builder()
             .shoppingCartId("123")
             .productId("ab123")
             .quantity(2)
             .build();
+    SerializerWithStringManifest serializer = serializerFor(event1);
     byte[] blob = serializer.toBinary(event1);
     ItemAdded event2 = (ItemAdded) serializer.fromBinary(blob, ItemAdded.class.getName());
     assertEquals(event1.getQuantity(), event2.getQuantity());
@@ -85,13 +113,14 @@ public class EventMigrationTest {
   }
 
   @Test
-  public void testAddMandatoryField() {
+  public void testAddMandatoryField() throws NotSerializableException {
     docs.home.serialization.v1.ItemAdded event1 =
         docs.home.serialization.v1.ItemAdded.builder()
             .shoppingCartId("123")
             .productId("ab123")
             .quantity(2)
             .build();
+    SerializerWithStringManifest serializer = serializerFor(event1);
     byte[] blob = serializer.toBinary(event1);
     docs.home.serialization.v2b.ItemAdded event2 =
         (docs.home.serialization.v2b.ItemAdded)
@@ -110,13 +139,14 @@ public class EventMigrationTest {
   }
 
   @Test
-  public void testRenameField() {
+  public void testRenameField() throws NotSerializableException {
     docs.home.serialization.v1.ItemAdded event1 =
         docs.home.serialization.v1.ItemAdded.builder()
             .shoppingCartId("123")
             .productId("ab123")
             .quantity(2)
             .build();
+    SerializerWithStringManifest serializer = serializerFor(event1);
     byte[] blob = serializer.toBinary(event1);
     docs.home.serialization.v2c.ItemAdded event2 =
         (docs.home.serialization.v2c.ItemAdded)
@@ -126,7 +156,7 @@ public class EventMigrationTest {
   }
 
   @Test
-  public void testStructuralChanges() {
+  public void testStructuralChanges() throws NotSerializableException {
     docs.home.serialization.v1.Customer cust1 =
         docs.home.serialization.v1.Customer.builder()
             .name("A")
@@ -135,6 +165,7 @@ public class EventMigrationTest {
             .zipCode("D")
             .country("E")
             .build();
+    SerializerWithStringManifest serializer = serializerFor(cust1);
     byte[] blob = serializer.toBinary(cust1);
     Customer cust2 = (Customer) serializer.fromBinary(blob, Customer.class.getName());
     assertEquals(cust1.getName(), cust2.getName());
@@ -145,8 +176,9 @@ public class EventMigrationTest {
   }
 
   @Test
-  public void testRenameClass() {
+  public void testRenameClass() throws NotSerializableException {
     OrderAdded order1 = OrderAdded.builder().shoppingCartId("1234").build();
+    SerializerWithStringManifest serializer = serializerFor(order1);
     byte[] blob = serializer.toBinary(order1);
     OrderPlaced order2 = (OrderPlaced) serializer.fromBinary(blob, OrderAdded.class.getName());
     assertEquals(order1.getShoppingCartId(), order2.getShoppingCartId());

@@ -99,6 +99,7 @@ object Dependencies {
   private val akkaClusterSharding  = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
   private val akkaClusterTools     = "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka
   private val akkaDistributedData  = "com.typesafe.akka" %% "akka-distributed-data" % Versions.Akka
+  private val akkaJackson          = "com.typesafe.akka" %% "akka-serialization-jackson" % Versions.Akka
   private val akkaMultiNodeTestkit = "com.typesafe.akka" %% "akka-multi-node-testkit" % Versions.Akka
   private val akkaPersistence      = "com.typesafe.akka" %% "akka-persistence" % Versions.Akka
   private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
@@ -173,7 +174,7 @@ object Dependencies {
       "jackson-datatype-jdk8",
       "jackson-datatype-jsr310",
       "jackson-datatype-guava",
-      "jackson-datatype-pcollections"
+      "jackson-datatype-pcollections",
     )
 
   val scalaParserCombinatorOverrides = Seq(scalaParserCombinators)
@@ -487,6 +488,7 @@ object Dependencies {
     // Upgrades needed to match whitelist
     sslConfig,
     pcollections,
+    akkaJackson,
     akkaTestkit    % Test,
     scalaTest      % Test,
     junit          % Test,
