@@ -41,7 +41,7 @@ object VersionSyncCheckPlugin extends AutoPlugin {
 
     val result = for (entry <- entries) yield {
       val Entry(name, expectedVersion, valName) = entry
-      val Regex                                 = raw"""val $valName[: ].*"(\d+\.\d+(?:\.\d+)?)"""".r.unanchored
+      val Regex                                 = raw"""val $valName[: ].*"(\d+\.\d+(?:\.\d+)?(?:-(?:M|RC)\d+)?)"""".r.unanchored
 
       val unexpectedVersions = (for (Regex(version) <- docsBuildLines) yield version) match {
         case Stream(version) => if (version == expectedVersion) "" else version

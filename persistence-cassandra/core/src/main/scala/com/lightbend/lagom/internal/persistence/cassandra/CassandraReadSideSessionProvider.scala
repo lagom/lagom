@@ -37,7 +37,7 @@ private[lagom] object CassandraReadSideSessionProvider {
     val replicationStrategy: String = CassandraPluginConfig.getReplicationStrategy(
       cfg.getString("replication-strategy"),
       cfg.getInt("replication-factor"),
-      cfg.getStringList("data-center-replication-factors").asScala
+      cfg.getStringList("data-center-replication-factors").asScala.toSeq
     )
 
     val keyspaceAutoCreate: Boolean = cfg.getBoolean("keyspace-autocreate")

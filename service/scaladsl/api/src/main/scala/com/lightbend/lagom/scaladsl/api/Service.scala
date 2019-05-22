@@ -432,21 +432,19 @@ object ServiceSupport {
   )(methodDescription: String, f: c.Tree): (c.Tree, c.universe.Literal) = {
     import c.universe._
 
-    val (thisType, methodName) = f match {
-      // Functions references with parameter lists
-      case Block((_, Function(_, Apply(Select(This(tt), TermName(tn)), _)))) => (tt, tn)
-      // Functions references with no parameter lists
-      case Function(_, Select(This(tt), TermName(tn))) => (tt, tn)
-      // Pass in the result of a function with a parameter list
-      case Apply(Select(This(tt), TermName(tn)), _) => (tt, tn)
-      // Pass in the result of a function with no parameter list
-      case Select(This(tt), TermName(tn)) => (tt, tn)
+    // Recurse on the tree so no combinations are missed (e.g. Block(_, Function(_, Select(..))))
+    def extract(f: Tree): (TypeName, String) = f match {
+      case Select(This(tt), TermName(tn)) => (tt, tn)   // a method, just selected b/c no parameters
+      case Apply(t, _)                    => extract(t) // a method with parameter lists, applied
+      case Function(_, t)                 => extract(t) // a function
+      case Block(_, t)                    => extract(t) // a block
       case other =>
         c.abort(
           c.enclosingPosition,
           s"$methodDescription must only be invoked with a reference to a function on this, for example, $methodDescription(this.someFunction _)"
         )
     }
+    val (thisType, methodName) = extract(f)
 
     val methodNameLiteral = Literal(Constant(methodName))
 

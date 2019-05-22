@@ -78,7 +78,7 @@ class LagomPlayModule extends Module {
         Optional.of(aclConfig.getString("path-regex"))
       } else Optional.empty[String]
       new ServiceAcl(method, pathRegex)
-    }
+    }.toSeq
   }
 }
 
