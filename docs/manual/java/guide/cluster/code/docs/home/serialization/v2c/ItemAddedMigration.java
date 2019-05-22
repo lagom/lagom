@@ -7,9 +7,9 @@ package docs.home.serialization.v2c;
 // #rename
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.lightbend.lagom.serialization.JacksonJsonMigration;
+import akka.serialization.jackson.JacksonMigration;
 
-public class ItemAddedMigration extends JacksonJsonMigration {
+public class ItemAddedMigration extends JacksonMigration {
 
   @Override
   public int currentVersion() {

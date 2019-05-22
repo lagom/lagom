@@ -7,7 +7,6 @@ package com.lightbend.lagom.internal.javadsl.registry;
 import akka.actor.ActorSystem;
 import akka.actor.ExtendedActorSystem;
 import akka.util.ByteString;
-import com.lightbend.lagom.internal.jackson.JacksonJsonSerializer;
 import com.lightbend.lagom.javadsl.api.ServiceAcl;
 import com.lightbend.lagom.javadsl.api.deser.MessageSerializer;
 import com.lightbend.lagom.javadsl.api.deser.StrictMessageSerializer;
