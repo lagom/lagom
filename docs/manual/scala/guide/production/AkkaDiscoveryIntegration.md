@@ -10,6 +10,10 @@ To use this feature add the following in your project's build:
 
 The example above uses `LagomVersion.current` in order to guarantee that dependency stays aligned with your current Lagom plugin version.
 
+Another alternative to use this feature would be using the `lagomScaladslAkkaDiscovery` variable declared in [LagomImport](https://github.com/lagom/lagom/blob/master/dev/sbt-plugin/src/main/scala/com/lightbend/lagom/sbt/LagomImport.scala) object where the dependency is imported via ID.
+
+@[akka-discovery-dependency](code/akka-discovery-dependency-using-module-id.sbt)
+
 ## Configuration
 
 Once you have it in your project you can add the component to your `LagomApplicationLoader`.
