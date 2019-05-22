@@ -5,8 +5,8 @@
 package com.lightbend.lagom.maven
 
 import java.io.File
-import javax.inject.Inject
 
+import javax.inject.Inject
 import com.lightbend.lagom.core.LagomVersion
 import com.lightbend.lagom.dev.Servers
 import com.lightbend.lagom.dev.StaticServiceLocations
@@ -22,6 +22,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.beans.BeanProperty
 import org.apache.maven.execution.MavenSession
+import org.apache.maven.plugin.AbstractMojo
 import org.eclipse.aether.graph.Dependency
 
 class StartCassandraMojo @Inject()(
@@ -29,7 +30,7 @@ class StartCassandraMojo @Inject()(
     logger: MavenLoggerProxy,
     mavenLoggerManager: LoggerManager,
     scalaClassLoaderManager: ScalaClassLoaderManager
-) extends LagomAbstractMojo {
+) extends AbstractMojo {
 
   @BeanProperty
   var cassandraMaxBootWaitingSeconds: Int = _
@@ -69,7 +70,7 @@ class StartCassandraMojo @Inject()(
   }
 }
 
-class StopCassandraMojo @Inject()(logger: MavenLoggerProxy) extends LagomAbstractMojo {
+class StopCassandraMojo @Inject()(logger: MavenLoggerProxy) extends AbstractMojo {
   @BeanProperty
   var cassandraEnabled: Boolean = _
 
@@ -85,7 +86,7 @@ class StartKafkaMojo @Inject()(
     logger: MavenLoggerProxy,
     mavenLoggerManager: LoggerManager,
     session: MavenSession
-) extends LagomAbstractMojo {
+) extends AbstractMojo {
 
   @BeanProperty
   var kafkaPort: Int = _
@@ -148,7 +149,7 @@ class StartKafkaMojo @Inject()(
   }
 }
 
-class StopKafkaMojo @Inject()(logger: MavenLoggerProxy) extends LagomAbstractMojo {
+class StopKafkaMojo @Inject()(logger: MavenLoggerProxy) extends AbstractMojo {
   @BeanProperty
   var kafkaEnabled: Boolean = _
 
@@ -163,7 +164,7 @@ class StartServiceLocatorMojo @Inject()(
     logger: MavenLoggerProxy,
     facade: MavenFacade,
     scalaClassLoaderManager: ScalaClassLoaderManager
-) extends LagomAbstractMojo {
+) extends AbstractMojo {
 
   @BeanProperty
   var serviceLocatorEnabled: Boolean = _
@@ -220,7 +221,7 @@ class StartServiceLocatorMojo @Inject()(
   }
 }
 
-class StopServiceLocatorMojo @Inject()(logger: MavenLoggerProxy) extends LagomAbstractMojo {
+class StopServiceLocatorMojo @Inject()(logger: MavenLoggerProxy) extends AbstractMojo {
 
   @BeanProperty
   var serviceLocatorEnabled: Boolean = _

@@ -5,6 +5,7 @@
 package com.lightbend.lagom.javadsl.api.deser;
 
 import akka.util.ByteString;
+import akka.util.ByteString$;
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol;
 import com.lightbend.lagom.javadsl.api.transport.NotAcceptable;
@@ -23,7 +24,7 @@ public class MessageSerializers {
       new StrictMessageSerializer<NotUsed>() {
         @Override
         public NegotiatedSerializer<NotUsed, ByteString> serializerForRequest() {
-          return aUnit -> ByteString.empty();
+          return aUnit -> ByteString$.MODULE$.empty();
         }
 
         @Override
@@ -35,7 +36,7 @@ public class MessageSerializers {
         @Override
         public NegotiatedSerializer<NotUsed, ByteString> serializerForResponse(
             List<MessageProtocol> acceptedMessageProtocols) {
-          return aUnit -> ByteString.empty();
+          return aUnit -> ByteString$.MODULE$.empty();
         }
 
         @Override

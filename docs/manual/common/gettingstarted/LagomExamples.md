@@ -1,11 +1,12 @@
 # Learning more from Lagom examples
 
-After getting started with Hello World, you can learn more about Lagom by downloading and running one of the following examples from GitHub:
+After getting started with Lagom's Hello World example, you can learn more about Lagom by downloading and
+running Lagom's "Shopping Cart" example (either [shopping-cart-scala][] or [shopping-cart-java][]).
 
-* [Chirper](https://github.com/search?utf8=%E2%9C%93&q=Lagom+chirper) demonstrates a Twitter-like application and is available for Java and Scala, with Java variations that demonstrate use of JPA and JDBC.
-* [Online Auction](https://github.com/search?utf8=%E2%9C%93&q=lagom%2Fonline+auction&type=Repositories&ref=searchresults) demonstrates an eBay-like application and is also available for both Java and Scala.
+[shopping-cart-scala]: https://github.com/lagom/lagom-samples/tree/1.5.x/shopping-cart/shopping-cart-scala
+[shopping-cart-java]: https://github.com/lagom/lagom-samples/tree/1.5.x/shopping-cart/shopping-cart-java
 
-Some of the Lagom features you can observe in these examples include:
+Some of the Lagom features you can observe include:
 
 Feature |Chirper| Online Auction |
 --------|:--------:|:-------------:|
@@ -16,7 +17,7 @@ How streaming service calls work | Y | N
 How to develop a Play app with Lagom | Y | Y
 How to consume Lagom services from a front-end Play app | N | Y
 
-For focused examples, check the [lagom-recipes](https://github.com/lagom/lagom-recipes) repository on GitHub. Each recipe describes how to achieve a particular goal, such as:
+For focused examples, check the [lagom-samples](https://github.com/lagom/lagom-samples) repository on GitHub. Each sample describes how to achieve a particular goal, such as:
 
 * How do I enable CORS? (using Lagom's javadsl or scaladsl)
 * How do I create a Subscriber only service? (also referred to as consumer service)
@@ -29,6 +30,3 @@ For focused examples, check the [lagom-recipes](https://github.com/lagom/lagom-r
 * How do I configure the Circuit Breaker Panel for a Lagom Java application? (Java/Maven example)
 * How do I deploy a Lagom Maven application in Kubernetes? (Java/Maven example)
 * How do I use Lagom with Couchbase both write-side and read-side? Java Maven and Scala Sbt) (Couchbase Persistence is NOT production ready yet)
-
-
-

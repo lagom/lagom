@@ -47,12 +47,13 @@ private[lagom] class JacksonJsonSerializer(val system: ExtendedActorSystem)
       .root
       .unwrapped
       .asScala
-      .toMap
+      .iterator
       .map {
         case (k, v) ⇒
           val transformer = system.dynamicAccess.createInstanceFor[JacksonJsonMigration](v.toString, Nil).get
           k -> transformer
-      }(collection.breakOut)
+      }
+      .toMap
   }
 
   private val compressLargerThan: Long = conf.getBytes("compress-larger-than")
