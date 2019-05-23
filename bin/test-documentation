@@ -17,6 +17,15 @@ fi
 cd docs
 runSbt markdownValidateDocs test markdownEvaluateSbtFiles $EXTRA_TASK
 
+
+printMessage "VALIDATE SCALA CODE FORMATTING"
+runSbt scalafmtAll scalafmtSbt
+git diff --exit-code || (
+  echo "[error] ERROR: scalafmt check failed, see differences above."
+  echo "[error] To fix, format your sources using 'sbt scalafmtAll scalafmtSbt' before submitting a pull request."
+  false
+)
+
 printMessage "VALIDATE JAVA CODE FORMATTING FOR DOCS SAMPLE CODE"
 runSbt javafmt test:javafmt
 git diff --exit-code || (
