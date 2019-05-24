@@ -18,3 +18,4 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.0")
 addSbtPlugin("com.lightbend"    % "sbt-whitesource"      % "0.1.14")
 
 addSbtPlugin("com.lightbend.sbt" % "sbt-java-formatter" % "0.4.4")
+addSbtPlugin("org.scalameta"     % "sbt-scalafmt"       % "2.0.0")

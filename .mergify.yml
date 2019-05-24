@@ -12,7 +12,6 @@ pull_request_rules:
         method: merge
         strict: smart
 
-
   - name: backport patches to 1.5.x branch
     conditions:
       - merged
@@ -59,4 +58,3 @@ pull_request_rules:
     actions:
       label:
         add: ["status:block-merge"]
-
