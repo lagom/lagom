@@ -17,13 +17,13 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.7.2"
-    val PlayJson         = "2.7.3"
-    val PlayStandaloneWs = "2.0.3"
-    val Twirl            = "1.4.1"
+    val Play             = "2.8.0-M1"
+    val PlayJson         = "2.8.0-M1"
+    val PlayStandaloneWs = "2.1.0-M2"
+    val Twirl            = "1.4.1-M1"
     val PlayFileWatch    = "1.1.8"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M1")
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M2")
     val AkkaHttp     = "10.1.8"
     val Aeron        = "1.15.1"
 
@@ -35,13 +35,13 @@ object Dependencies {
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest            = "3.0.8-RC2"
-    val Jackson              = "2.9.8"
+    val Jackson              = "2.9.9"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
     val JacksonDatabind      = Jackson
     val Guava                = "27.1-jre"
     val Maven                = "3.6.0"
-    val Netty                = "4.1.34.Final"
+    val Netty                = "4.1.36.Final"
     val NettyReactiveStreams = "2.0.3"
     val Kafka                = "2.1.1"
     val AlpakkaKafka         = "1.0.3"
@@ -60,7 +60,7 @@ object Dependencies {
     val Logback = "1.2.3"
     val Log4j   = "2.11.1"
 
-    val jetty = "9.4.12.v20180830"
+    val jetty = "9.4.16.v20190411"
 
     val Selenium = "3.141.59"
   }
@@ -87,7 +87,7 @@ object Dependencies {
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.8.17"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
-  private val typesafeConfig         = "com.typesafe" % "config" % "1.3.3"
+  private val typesafeConfig         = "com.typesafe" % "config" % "1.3.4"
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.0"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
@@ -156,7 +156,7 @@ object Dependencies {
   private val pcollections          = "org.pcollections" % "pcollections" % Versions.PCollections
   private val jsr250                = "javax.annotation" % "jsr250-api" % "1.0"
   private val junit                 = "junit" % "junit" % Versions.JUnit
-  private val commonsLang           = "org.apache.commons" % "commons-lang3" % "3.8.1"
+  private val commonsLang           = "org.apache.commons" % "commons-lang3" % "3.9"
   private val javaxAnnotationApi    = "javax.annotation" % "javax.annotation-api" % "1.3.2"
   private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
 
@@ -227,7 +227,7 @@ object Dependencies {
       sprayJson,
       "com.typesafe.netty" % "netty-reactive-streams"      % Versions.NettyReactiveStreams,
       "com.typesafe.netty" % "netty-reactive-streams-http" % Versions.NettyReactiveStreams,
-      "com.typesafe.play"  %% "cachecontrol"               % "1.1.5",
+      "com.typesafe.play"  %% "cachecontrol"               % "2.0.0-M1",
       playJson,
       playFunctional,
       "com.typesafe.play" %% "play-json"       % "2.7.2",
@@ -255,19 +255,19 @@ object Dependencies {
       okhttp3,
       okio,
       "org.atteo.classindex"        % "classindex"         % "3.4",
-      "org.seleniumhq.selenium"     % "htmlunit-driver"    % "2.33.3",
+      "org.seleniumhq.selenium"     % "htmlunit-driver"    % "2.35.1",
       "xalan"                       % "xalan"              % "2.7.2",
       "xalan"                       % "serializer"         % "2.7.2",
-      "org.apache.commons"          % "commons-text"       % "1.4",
-      "org.apache.httpcomponents"   % "httpmime"           % "4.5.6",
-      "org.apache.httpcomponents"   % "httpclient"         % "4.5.6",
-      "org.apache.httpcomponents"   % "httpcore"           % "4.4.10",
-      "net.sourceforge.htmlunit"    % "htmlunit"           % "2.33",
-      "net.sourceforge.htmlunit"    % "htmlunit-core-js"   % "2.33",
-      "net.sourceforge.htmlunit"    % "neko-htmlunit"      % "2.33",
+      "org.apache.commons"          % "commons-text"       % "1.6",
+      "org.apache.httpcomponents"   % "httpmime"           % "4.5.8",
+      "org.apache.httpcomponents"   % "httpclient"         % "4.5.8",
+      "org.apache.httpcomponents"   % "httpcore"           % "4.4.11",
+      "net.sourceforge.htmlunit"    % "htmlunit"           % "2.35.0",
+      "net.sourceforge.htmlunit"    % "htmlunit-core-js"   % "2.35.0",
+      "net.sourceforge.htmlunit"    % "neko-htmlunit"      % "2.35.0",
       "xerces"                      % "xercesImpl"         % "2.12.0",
       "xml-apis"                    % "xml-apis"           % "1.4.01",
-      "net.sourceforge.htmlunit"    % "htmlunit-cssparser" % "1.2.0",
+      "net.sourceforge.htmlunit"    % "htmlunit-cssparser" % "1.4.0",
       "commons-io"                  % "commons-io"         % "2.6",
       "commons-net"                 % "commons-net"        % "3.6",
       "org.eclipse.jetty.websocket" % "websocket-client"   % Versions.jetty,
@@ -284,17 +284,17 @@ object Dependencies {
       "com.typesafe.slick" %% "slick"          % Versions.Slick,
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
       "com.zaxxer"         % "HikariCP"        % "3.3.1",
-      "commons-codec"      % "commons-codec"   % "1.10",
+      "commons-codec"      % "commons-codec"   % "1.11",
       "io.aeron"           % "aeron-client"    % Versions.Aeron,
       "io.aeron"           % "aeron-driver"    % Versions.Aeron,
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.9.1",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
       "io.netty"          % "netty"        % "3.10.6.Final",
-      "javax.cache"       % "cache-api"    % "1.0.0",
+      "javax.cache"       % "cache-api"    % "1.1.1",
       "javax.inject"      % "javax.inject" % "1",
       "javax.transaction" % "jta"          % "1.1",
-      "joda-time"         % "joda-time"    % "2.10.1",
+      "joda-time"         % "joda-time"    % "2.10.2",
       "junit"             % "junit"        % Versions.JUnit,
       "net.jodah"         % "typetools"    % "0.5.0",
       "org.lz4"           % "lz4-java"     % "1.5.0",
