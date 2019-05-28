@@ -101,6 +101,8 @@ labels:
     name: "topic:service-client"
   - color: c5def5
     name: "topic:testkit"
+  - color: 652b7c
+    name: "type:community"
   - color: b60205
     name: "type:defect"
   - color: 0052cc
