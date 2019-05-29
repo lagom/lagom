@@ -38,8 +38,8 @@ public class PubSubTest {
     Config config =
         ConfigFactory.parseString(
             "akka.actor.provider = akka.cluster.ClusterActorRefProvider \n"
-                + "akka.remote.netty.tcp.port = 0 \n"
-                + "akka.remote.netty.tcp.hostname = 127.0.0.1 \n"
+                + "akka.remote.artery.canonical.port = 0 \n"
+                + "akka.remote.artery.canonical.hostname = 127.0.0.1 \n"
                 + "akka.loglevel = INFO \n");
 
     system = ActorSystem.create("PubSubTest", config);

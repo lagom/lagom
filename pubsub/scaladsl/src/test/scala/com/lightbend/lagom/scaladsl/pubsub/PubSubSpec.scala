@@ -25,8 +25,8 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
     override lazy val actorSystem = {
       val config = ConfigFactory.parseString("""
       akka.actor.provider = akka.cluster.ClusterActorRefProvider
-      akka.remote.netty.tcp.port = 0
-      akka.remote.netty.tcp.hostname = 127.0.0.1
+      akka.remote.artery.canonical.port = 0
+      akka.remote.artery.canonical.hostname = "127.0.0.1"
       akka.loglevel = INFO
     """)
       ActorSystem("PubSubTest", config)
