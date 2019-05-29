@@ -37,7 +37,7 @@ public class PubSubTest {
   public static void setup() {
     Config config =
         ConfigFactory.parseString(
-            "akka.actor.provider = akka.cluster.ClusterActorRefProvider \n"
+            "akka.actor.provider = cluster \n"
                 + "akka.remote.artery.canonical.port = 0 \n"
                 + "akka.remote.artery.canonical.hostname = 127.0.0.1 \n"
                 + "akka.loglevel = INFO \n");
