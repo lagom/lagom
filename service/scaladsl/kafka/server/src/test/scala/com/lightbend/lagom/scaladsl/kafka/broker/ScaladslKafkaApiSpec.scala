@@ -65,8 +65,8 @@ class ScaladslKafkaApiSpec
         import scala.collection.JavaConverters._
         super.additionalConfiguration ++ ConfigFactory.parseMap(
           Map(
-            "akka.remote.netty.tcp.port"                    -> "0",
-            "akka.remote.netty.tcp.hostname"                -> "127.0.0.1",
+            "akka.remote.artery.canonical.port"             -> "0",
+            "akka.remote.artery.canonical.hostname"         -> "127.0.0.1",
             "akka.persistence.journal.plugin"               -> "akka.persistence.journal.inmem",
             "akka.persistence.snapshot-store.plugin"        -> "akka.persistence.snapshot-store.local",
             "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
