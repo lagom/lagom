@@ -10,7 +10,6 @@ For a detailed list of version upgrades of other libraries Lagom builds on such 
 
 To migrate from Lagom 1.4 we recommend first migrating to latest version of Lagom 1.4 before upgrading to Lagom 1.5. Refer to the [release notes](https://github.com/lagom/lagom/releases) for details upgrading to latest version of Lagom 1.4.
 
-
 ## Build changes
 
 ### Maven
