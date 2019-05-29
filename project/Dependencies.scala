@@ -34,7 +34,7 @@ object Dependencies {
     val Disruptor = "3.3.11"
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
-    val ScalaTest            = "3.0.8-RC2"
+    val ScalaTest            = "3.0.8-RC4"
     val Jackson              = "2.9.9"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
@@ -47,7 +47,7 @@ object Dependencies {
     val AlpakkaKafka         = "1.0.3"
     val Curator              = "2.12.0"
     val Immutables           = "2.3.10"
-    val HibernateCore        = "5.3.7.Final"
+    val HibernateCore        = "5.4.2.Final"
     val PCollections         = "2.2.0"
 
     val ScalaJava8Compat = "0.9.0"
@@ -58,7 +58,7 @@ object Dependencies {
 
     val Slf4j   = "1.7.25"
     val Logback = "1.2.3"
-    val Log4j   = "2.11.1"
+    val Log4j   = "2.11.2"
 
     val jetty = "9.4.16.v20190411"
 
@@ -85,7 +85,7 @@ object Dependencies {
   private val scalaJava8Compat       = "org.scala-lang.modules" %% "scala-java8-compat" % Versions.ScalaJava8Compat
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
-  private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.8.17"
+  private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.9.10"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.3.4"
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.0"
@@ -407,12 +407,17 @@ object Dependencies {
     "javax.enterprise"                 % "cdi-api"                         % "1.1",
     "org.apache.geronimo.specs"        % "geronimo-jta_1.1_spec"           % "1.1.1",
     "org.hibernate"                    % "hibernate-core"                  % Versions.HibernateCore,
-    "org.hibernate.common"             % "hibernate-commons-annotations"   % "5.0.4.Final",
+    "org.hibernate.common"             % "hibernate-commons-annotations"   % "5.1.0.Final",
     "org.jboss"                        % "jandex"                          % "2.0.5.Final",
     "org.jboss.logging"                % "jboss-logging"                   % "3.3.2.Final",
     "org.jboss.spec.javax.interceptor" % "jboss-interceptors-api_1.1_spec" % "1.0.0.Beta1",
     "javax.persistence"                % "javax.persistence-api"           % "2.2",
-    "org.jboss.spec.javax.transaction" % "jboss-transaction-api_1.2_spec"  % "1.1.1.Final"
+    "org.jboss.spec.javax.transaction" % "jboss-transaction-api_1.2_spec"  % "1.1.1.Final",
+    "org.glassfish.jaxb"               % "jaxb-runtime"                    % "2.3.1",
+    "org.glassfish.jaxb"               % "txw2"                            % "2.3.1",
+    "com.sun.istack"                   % "istack-commons-runtime"          % "3.0.7",
+    "org.jvnet.staxex"                 % "stax-ex"                         % "1.8",
+    "com.sun.xml.fastinfoset"          % "FastInfoset"                     % "1.2.15"
   )
 
   // These dependencies are used by the Kafka tests, but we don't want to export them as part of our regular
