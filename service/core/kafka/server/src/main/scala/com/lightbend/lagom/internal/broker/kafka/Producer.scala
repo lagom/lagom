@@ -6,11 +6,6 @@ package com.lightbend.lagom.internal.broker.kafka
 
 import java.net.URI
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.serialization.Serializer
-import org.apache.kafka.common.serialization.StringSerializer
 import akka.Done
 import akka.NotUsed
 import akka.actor.Actor
@@ -18,11 +13,11 @@ import akka.actor.ActorLogging
 import akka.actor.ActorSystem
 import akka.actor.Props
 import akka.actor.Status
-import akka.actor.SupervisorStrategy
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.kafka.ProducerMessage
 import akka.kafka.ProducerSettings
 import akka.kafka.scaladsl.{ Producer => ReactiveProducer }
+import akka.pattern.BackoffOpts
 import akka.pattern.BackoffSupervisor
 import akka.pattern.pipe
 import akka.persistence.query.Offset
@@ -32,13 +27,18 @@ import akka.stream.KillSwitches
 import akka.stream.Materializer
 import akka.stream.scaladsl._
 import com.lightbend.lagom.internal.api.UriUtils
+import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistributionSettings
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.spi.persistence.OffsetDao
 import com.lightbend.lagom.spi.persistence.OffsetStore
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.serialization.Serializer
+import org.apache.kafka.common.serialization.StringSerializer
 
 import scala.collection.immutable
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 /**
  * A Producer for publishing messages in Kafka using the Alpakka Kafka API.
@@ -68,19 +68,21 @@ private[lagom] object Producer {
       offsetStore
     )
 
-    val backoffPublisherProps = BackoffSupervisor.propsWithSupervisorStrategy(
-      publisherProps,
-      s"producer",
-      producerConfig.minBackoff,
-      producerConfig.maxBackoff,
-      producerConfig.randomBackoffFactor,
-      SupervisorStrategy.stoppingStrategy
-    )
+    val backoffPublisherProps = BackoffOpts
+      .onStop(
+        publisherProps,
+        s"producer",
+        producerConfig.minBackoff,
+        producerConfig.maxBackoff,
+        producerConfig.randomBackoffFactor
+      )
+      .withDefaultStoppingStrategy
+
     val clusterShardingSettings = ClusterShardingSettings(system).withRole(producerConfig.role)
 
     ClusterDistribution(system).start(
       s"kafkaProducer-$topicId",
-      backoffPublisherProps,
+      BackoffSupervisor.props(backoffPublisherProps),
       tags.toSet,
       ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
     )
@@ -201,7 +203,7 @@ private[lagom] object Producer {
           ProducerMessage.Message(new ProducerRecord[String, Message](topicId, keyOf(message), message), NotUsed)
         }
         .via {
-          ReactiveProducer.flow(producerSettings(endpoints))
+          ReactiveProducer.flexiFlow(producerSettings(endpoints))
         }
     }
 
