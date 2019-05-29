@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit
 object ActorServiceSpec {
   def config = ConfigFactory.parseString("""
     akka.actor.provider = akka.cluster.ClusterActorRefProvider
-    akka.remote.netty.tcp.port = 0
-    akka.remote.netty.tcp.hostname = 127.0.0.1
+    akka.remote.artery.canonical.port = 0
+    akka.remote.artery.canonical.hostname = 127.0.0.1
     """)
 }
 
@@ -58,7 +58,7 @@ class ActorServiceSpec
       {
         val job = Job.of("123", "compute", "abc")
 
-        // might taka a while until cluster is formed and router knows about the nodes
+        // might take a while until cluster is formed and router knows about the nodes
         within(15.seconds) {
           awaitAssert {
             client.doWork().invoke(job).toCompletableFuture.get(3, TimeUnit.SECONDS) should ===(JobAccepted.of("123"))
