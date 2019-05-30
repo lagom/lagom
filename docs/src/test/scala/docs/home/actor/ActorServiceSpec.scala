@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 
 object ActorServiceSpec {
   def config = ConfigFactory.parseString("""
-    akka.actor.provider = akka.cluster.ClusterActorRefProvider
+    akka.actor.provider = cluster
     akka.remote.artery.canonical.port = 0
     akka.remote.artery.canonical.hostname = 127.0.0.1
     """)
