@@ -18,6 +18,7 @@ import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodTopic
 import com.lightbend.lagom.scaladsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.scaladsl.server.LagomServer
+import com.lightbend.lagom.scaladsl.server.LagomServiceBinding
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import org.slf4j.LoggerFactory
 
@@ -37,9 +38,10 @@ class ScaladslRegisterTopicProducers(
 
   // Goes through the services' descriptors and publishes the streams registered in
   // each of the service's topic method implementation.
+
+  val service: LagomServiceBinding[_] = lagomServer.serviceBinding
   for {
-    service <- lagomServer.serviceBindings
-    tc      <- service.descriptor.topics
+    tc <- service.descriptor.topics
     topicCall = tc.asInstanceOf[TopicCall[Any]]
   } {
     topicCall.topicHolder match {
