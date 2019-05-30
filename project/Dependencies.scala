@@ -718,7 +718,8 @@ object Dependencies {
     akkaStreamTestkit    % Test,
     scalaTest            % Test,
     junit                % Test,
-    "com.novocode"       % "junit-interface" % "0.11" % Test
+    "com.novocode"       % "junit-interface" % "0.11" % Test,
+    slf4jApi             % Test,
     // explicitly depend on particular versions of jackson
   ) ++ jacksonFamily ++ Seq(
     // explicitly depend on particular versions of guava
