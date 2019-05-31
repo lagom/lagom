@@ -18,7 +18,7 @@ cd docs
 runSbt markdownValidateDocs test markdownEvaluateSbtFiles $EXTRA_TASK
 
 
-printMessage "VALIDATE SCALA CODE FORMATTING"
+printMessage "VALIDATE SCALA CODE FORMATTING FOR DOCS SAMPLE CODE"
 runSbt scalafmtAll scalafmtSbt
 git diff --exit-code || (
   echo "[error] ERROR: scalafmt check failed, see differences above."
