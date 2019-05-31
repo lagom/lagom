@@ -5,18 +5,18 @@
 package com.lightbend.lagom.internal.persistence.cluster
 
 import akka.Done
-import akka.actor.Status.Failure
 import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.actor.PoisonPill
 import akka.actor.Props
-import akka.actor.SupervisorStrategy
+import akka.actor.Status.Failure
 import akka.cluster.singleton.ClusterSingletonManager
 import akka.cluster.singleton.ClusterSingletonManagerSettings
 import akka.cluster.singleton.ClusterSingletonProxy
 import akka.cluster.singleton.ClusterSingletonProxySettings
+import akka.pattern.BackoffOpts
 import akka.pattern.BackoffSupervisor
 import akka.util.Timeout
 
@@ -49,17 +49,16 @@ object ClusterStartupTask {
 
     val startupTaskProps = Props(classOf[ClusterStartupTaskActor], task, taskTimeout)
 
-    val backoffProps = BackoffSupervisor.propsWithSupervisorStrategy(
-      startupTaskProps,
-      taskName,
-      minBackoff,
-      maxBackoff,
-      randomBackoffFactor,
-      SupervisorStrategy.stoppingStrategy
-    )
+    val backoffProps = BackoffOpts
+      .onStop(startupTaskProps, taskName, minBackoff, maxBackoff, randomBackoffFactor)
+      .withDefaultStoppingStrategy
 
     val singletonProps =
-      ClusterSingletonManager.props(backoffProps, PoisonPill, ClusterSingletonManagerSettings(system))
+      ClusterSingletonManager.props(
+        BackoffSupervisor.props(backoffProps),
+        PoisonPill,
+        ClusterSingletonManagerSettings(system)
+      )
 
     val singleton = system.actorOf(singletonProps, s"$taskName-singleton")
 
@@ -112,10 +111,8 @@ private[lagom] class ClusterStartupTaskActor(task: () => Future[Done], timeout: 
     with ActorLogging {
 
   import ClusterStartupTaskActor._
-
   import akka.pattern.ask
   import akka.pattern.pipe
-
   import context.dispatcher
 
   override def preStart(): Unit = {
