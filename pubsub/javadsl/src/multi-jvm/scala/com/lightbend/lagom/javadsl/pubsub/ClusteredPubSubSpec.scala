@@ -23,7 +23,7 @@ object ClusteredPubSubConfig extends MultiNodeConfig {
 
   commonConfig(ConfigFactory.parseString(s"""
     akka.loglevel = INFO
-    akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
+    akka.actor.provider = "cluster"
     """))
 
 }

@@ -17,9 +17,9 @@ private[lagom] object PersistenceTestConfig {
   lazy val BasicConfig: Config = ConfigFactory.parseMap(BasicConfigMap.asJava)
 
   lazy val ClusterConfigMap: Map[String, AnyRef] = Map(
-    "akka.actor.provider"                           -> "akka.cluster.ClusterActorRefProvider",
-    "akka.remote.netty.tcp.hostname"                -> "127.0.0.1",
-    "akka.remote.netty.tcp.port"                    -> "0",
+    "akka.actor.provider"                           -> "cluster",
+    "akka.remote.artery.canonical.port"             -> "0",
+    "akka.remote.artery.canonical.hostname"         -> "127.0.0.1",
     "lagom.cluster.join-self"                       -> "on",
     "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
     "lagom.cluster.bootstrap.enabled"               -> "off"

@@ -80,8 +80,8 @@ class JavadslKafkaApiSpec
         bind[ServiceLocator].to[ConfigurationServiceLocator]
       )
       .configure(
-        "akka.remote.netty.tcp.port"                    -> "0",
-        "akka.remote.netty.tcp.hostname"                -> "127.0.0.1",
+        "akka.remote.artery.canonical.port"             -> "0",
+        "akka.remote.artery.canonical.hostname"         -> "127.0.0.1",
         "akka.persistence.journal.plugin"               -> "akka.persistence.journal.inmem",
         "akka.persistence.snapshot-store.plugin"        -> "akka.persistence.snapshot-store.local",
         "lagom.cluster.join-self"                       -> "on",
