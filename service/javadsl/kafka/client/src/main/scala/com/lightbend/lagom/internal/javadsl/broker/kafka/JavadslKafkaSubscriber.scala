@@ -10,10 +10,10 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.Done
 import akka.actor.ActorSystem
-import akka.actor.SupervisorStrategy
 import akka.kafka.ConsumerSettings
 import akka.kafka.Subscriptions
 import akka.kafka.scaladsl.Consumer
+import akka.pattern.BackoffOpts
 import akka.pattern.BackoffSupervisor
 import akka.stream.Materializer
 import akka.stream.javadsl.Flow
@@ -34,11 +34,11 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
 
+import scala.collection.JavaConverters._
+import scala.compat.java8.FutureConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
-import scala.compat.java8.FutureConverters._
-import scala.collection.JavaConverters._
 
 /**
  * A Consumer for consuming messages from Kafka using the Alpakka Kafka API.
@@ -175,16 +175,20 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](
       )
 
     val backoffConsumerProps =
-      BackoffSupervisor.propsWithSupervisorStrategy(
-        consumerProps,
-        s"KafkaConsumerActor$consumerId-${topicCall.topicId().value}",
-        consumerConfig.minBackoff,
-        consumerConfig.maxBackoff,
-        consumerConfig.randomBackoffFactor,
-        SupervisorStrategy.stoppingStrategy
-      )
+      BackoffOpts
+        .onStop(
+          consumerProps,
+          s"KafkaConsumerActor$consumerId-${topicCall.topicId().value}",
+          consumerConfig.minBackoff,
+          consumerConfig.maxBackoff,
+          consumerConfig.randomBackoffFactor
+        )
+        .withDefaultStoppingStrategy
 
-    system.actorOf(backoffConsumerProps, s"KafkaBackoffConsumer$consumerId-${topicCall.topicId().value}")
+    system.actorOf(
+      BackoffSupervisor.props(backoffConsumerProps),
+      s"KafkaBackoffConsumer$consumerId-${topicCall.topicId().value}"
+    )
 
     streamCompleted.future.toJava
   }
