@@ -90,7 +90,7 @@ class ServiceLocatorServer extends Closeable {
   }
 
   override def close(): Unit = synchronized {
-    if (server == null) Logger.logger.debug("Service locator was already stopped")
+    if (server == null) logger.debug("Service locator was already stopped")
     else {
       logger.debug("Stopping service locator...")
       server.stop()
