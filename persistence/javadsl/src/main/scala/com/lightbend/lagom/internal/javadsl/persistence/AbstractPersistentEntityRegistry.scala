@@ -181,7 +181,4 @@ class AbstractPersistentEntityRegistry(system: ActorSystem, injector: Injector) 
    */
   protected def mapStartingOffset(storedOffset: Offset): AkkaOffset = OffsetAdapter.dslOffsetToOffset(storedOffset)
 
-  override def gracefulShutdown(timeout: FiniteDuration): CompletionStage[Done] =
-    CompletableFuture.completedFuture(Done.getInstance())
-
 }

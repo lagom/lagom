@@ -239,9 +239,6 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       // beginning of the test to ensure it's run.
       enterBarrier("before-3")
 
-      runOn(node2) {
-        registry.gracefulShutdown(20.seconds).toCompletableFuture().get(20, SECONDS)
-      }
       enterBarrier("node2-left")
 
       runOn(node1) {

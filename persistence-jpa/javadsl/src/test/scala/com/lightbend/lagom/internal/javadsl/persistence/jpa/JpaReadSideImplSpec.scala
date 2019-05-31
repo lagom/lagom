@@ -30,7 +30,6 @@ class JpaReadSideImplSpec extends JpaPersistenceSpec with AbstractReadSideSpec {
   def getAppendCount(id: String): CompletionStage[Long] = readSide.getAppendCount(id)
 
   override def afterAll(): Unit = {
-    persistentEntityRegistry.gracefulShutdown(5.seconds)
     super.afterAll()
   }
 
