@@ -101,12 +101,18 @@ class JavadslServerBuilder @Inject()(
         )
       }
 
-      val serviceInfo: ServiceInfo = descriptors.find(_.locatableService()) match {
-        case Some(descriptor) => ServiceInfo.of(descriptor.name(), descriptor.acls())
-        case None             => throw new IllegalArgumentException("No locatable service present")
+      import org.pcollections._
+      import com.lightbend.lagom.javadsl.api._
+      val acls: PSequence[ServiceAcl] = descriptors
+        .filter(_.locatableService())
+        .map(_.acls())
+        .fold(TreePVector.empty[ServiceAcl]())(_.plusAll(_))
+
+      if (acls.isEmpty()) {
+        log.debug(s"No ACLs found for service ${descriptors.head.name()}")
       }
 
-      serviceInfo
+      ServiceInfo.of(descriptors.head.name(), acls)
     } else {
       throw new IllegalArgumentException(
         s"Don't know how to load services that don't implement Service. Provided: ${interfaces.mkString("[", ", ", "]")}"
