@@ -1209,10 +1209,12 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
       "-Dorg.slf4j.simpleLogger.showLogName=false",
       "-Dorg.slf4j.simpleLogger.showThreadName=false"
     ),
-    pomExtra :=
-      <prerequisites>
+    pomExtra ~= (existingPomExtra => {
+      existingPomExtra ++
+        <prerequisites>
         <maven>{Dependencies.Versions.Maven}</maven>
       </prerequisites>
+    })
   )
   .dependsOn(`build-tool-support`)
 
