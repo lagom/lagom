@@ -1134,7 +1134,17 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
       s"-DarchetypeVersion=${version.value}",
       "-Dorg.slf4j.simpleLogger.showLogName=false",
       "-Dorg.slf4j.simpleLogger.showThreadName=false"
+<<<<<<< HEAD
     )
+=======
+    ),
+    pomExtra ~= (existingPomExtra => {
+      existingPomExtra ++
+        <prerequisites>
+        <maven>{Dependencies.Versions.Maven}</maven>
+      </prerequisites>
+    })
+>>>>>>> 656ad6043... Fix maven-plugin pom file generation
   )
   .dependsOn(`build-tool-support`)
 
