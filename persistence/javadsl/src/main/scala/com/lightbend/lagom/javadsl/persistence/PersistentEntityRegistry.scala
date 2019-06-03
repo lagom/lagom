@@ -89,16 +89,4 @@ trait PersistentEntityRegistry {
     }.asJava
   }
 
-  /**
-   * No-op method that exists only for backward-compatibility reasons.
-   * Lagom now uses Akka's CoordinatedShutdown to gracefully shut down all sharded entities,
-   * including Persistent Entities.
-   *
-   * @return a completed `CompletionStage`
-   * @deprecated As of Lagom 1.4, this method has no effect and no longer needs to be called
-   *
-   */
-  @deprecated("This method has no effect and no longer needs to be called", "1.4.0")
-  def gracefulShutdown(timeout: FiniteDuration): CompletionStage[Done]
-
 }

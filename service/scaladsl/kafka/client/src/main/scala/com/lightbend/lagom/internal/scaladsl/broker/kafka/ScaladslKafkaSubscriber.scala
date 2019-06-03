@@ -8,10 +8,10 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.Done
 import akka.actor.ActorSystem
-import akka.actor.SupervisorStrategy
-import akka.kafka.scaladsl.Consumer
 import akka.kafka.ConsumerSettings
 import akka.kafka.Subscriptions
+import akka.kafka.scaladsl.Consumer
+import akka.pattern.BackoffOpts
 import akka.pattern.BackoffSupervisor
 import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
@@ -22,11 +22,11 @@ import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.KafkaSubscriberActor
 import com.lightbend.lagom.internal.broker.kafka.NoKafkaBrokersException
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
+import com.lightbend.lagom.scaladsl.api.ServiceInfo
+import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.broker.Message
 import com.lightbend.lagom.scaladsl.api.broker.MetadataKey
 import com.lightbend.lagom.scaladsl.api.broker.Subscriber
-import com.lightbend.lagom.scaladsl.api.ServiceInfo
-import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.broker.kafka.KafkaMetadataKeys
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -164,16 +164,20 @@ private[lagom] class ScaladslKafkaSubscriber[Payload, SubscriberPayload](
       )
 
     val backoffConsumerProps =
-      BackoffSupervisor.propsWithSupervisorStrategy(
-        consumerProps,
-        s"KafkaConsumerActor$consumerId-${topicCall.topicId.name}",
-        consumerConfig.minBackoff,
-        consumerConfig.maxBackoff,
-        consumerConfig.randomBackoffFactor,
-        SupervisorStrategy.stoppingStrategy
-      )
+      BackoffOpts
+        .onStop(
+          consumerProps,
+          s"KafkaConsumerActor$consumerId-${topicCall.topicId.name}",
+          consumerConfig.minBackoff,
+          consumerConfig.maxBackoff,
+          consumerConfig.randomBackoffFactor
+        )
+        .withDefaultStoppingStrategy
 
-    system.actorOf(backoffConsumerProps, s"KafkaBackoffConsumer$consumerId-${topicCall.topicId.name}")
+    system.actorOf(
+      BackoffSupervisor.props(backoffConsumerProps),
+      s"KafkaBackoffConsumer$consumerId-${topicCall.topicId.name}"
+    )
 
     streamCompleted.future
   }

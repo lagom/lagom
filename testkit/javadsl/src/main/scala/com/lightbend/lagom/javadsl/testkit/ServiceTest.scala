@@ -381,7 +381,7 @@ object ServiceTest {
       } else {
 
         initialBuilder
-          .configure("akka.actor.provider", "akka.actor.LocalActorRefProvider")
+          .configure("akka.actor.provider", "local")
           .configure(BasicConfig)
           .disable(classOf[PersistenceModule], classOf[PubSubModule], classOf[JoinClusterModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])

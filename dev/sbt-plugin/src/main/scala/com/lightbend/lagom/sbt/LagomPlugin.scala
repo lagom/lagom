@@ -369,11 +369,9 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val lagomKafkaEnabled        = settingKey[Boolean]("Enable/Disable the kafka server")
     val lagomKafkaCleanOnStart   = settingKey[Boolean]("Wipe the kafka log before starting")
     val lagomKafkaJvmOptions     = settingKey[Seq[String]]("JVM options used by the forked kafka process")
-    @deprecated("Use lagomKafkaZookeeperPort instead", "1.3.6")
-    val lagomKafkaZookeperPort  = settingKey[Int]("Port used by the local zookeeper server (kafka requires zookeeper)")
-    val lagomKafkaZookeeperPort = settingKey[Int]("Port used by the local zookeeper server (kafka requires zookeeper)")
-    val lagomKafkaPort          = settingKey[Int]("Port used by the local kafka broker")
-    val lagomKafkaAddress       = settingKey[String]("Address of the kafka brokers (comma-separated list)")
+    val lagomKafkaZookeeperPort  = settingKey[Int]("Port used by the local zookeeper server (kafka requires zookeeper)")
+    val lagomKafkaPort           = settingKey[Int]("Port used by the local kafka broker")
+    val lagomKafkaAddress        = settingKey[String]("Address of the kafka brokers (comma-separated list)")
 
     @deprecated("Use lagomExternalJavadslProject or lagomExternalScaladslProject instead", "1.3.0")
     def lagomExternalProject(name: String, module: ModuleID): Project = lagomExternalJavadslProject(name, module)
@@ -493,8 +491,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
       lagomCassandraYamlFile := None,
       lagomKafkaEnabled := true,
       lagomKafkaPropertiesFile := None,
-      lagomKafkaZookeperPort := 2181,
-      lagomKafkaZookeeperPort := lagomKafkaZookeperPort.value,
+      lagomKafkaZookeeperPort := 2181,
       lagomKafkaPort := 9092,
       lagomKafkaCleanOnStart := false,
       lagomKafkaAddress := s"localhost:${lagomKafkaPort.value}",
