@@ -46,7 +46,7 @@ The sections below cover the two options for Cluster Joining during Production i
 
 ### Joining during production (Akka Cluster Bootstrap)
 
-Starting from version 1.5.0, Lagom offers support for [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0/bootstrap/). Akka Cluster Bootstrap is enabled by default in production mode and disabled in development and test mode.
+Starting from version 1.5.0, Lagom offers support for [Akka Cluster Bootstrap](https://doc.akka.io/docs/akka-management/1.0/bootstrap/). Akka Cluster Bootstrap is enabled by default in production mode and disabled in development and test mode.
 
 Akka Cluster Bootstrap helps forming (or joining to) a cluster by using [Akka Discovery](https://doc.akka.io/docs/akka/2.5/discovery/index.html) to discover peer nodes. It is an alternative to configuring static seed-nodes in dynamic deployment environments such as on Kubernetes or AWS.
 
@@ -69,20 +69,20 @@ akka.management.cluster.bootstrap {
   }
 }
 ```
-[Other existing implementations](https://developer.lightbend.com/docs/akka-management/1.0/discovery/index.html) are DNS, AWS, Consul, Marathon API, and Static Configuration. It's also possible to provide your own Akka Discovery implementation if needed.
+[Other existing implementations](https://doc.akka.io/docs/akka-management/1.0/discovery/index.html) are DNS, AWS, Consul, Marathon API, and Static Configuration. It's also possible to provide your own Akka Discovery implementation if needed.
 
-For more detailed and advanced configurations options, please consult the [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0/bootstrap/) documentation and its [reference.conf](https://github.com/akka/akka-management/blob/v1.0.0-RC2/cluster-bootstrap/src/main/resources/reference.conf) file.
+For more detailed and advanced configurations options, please consult the [Akka Cluster Bootstrap](https://doc.akka.io/docs/akka-management/1.0/bootstrap/) documentation and its [reference.conf](https://github.com/akka/akka-management/blob/v1.0.0-RC2/cluster-bootstrap/src/main/resources/reference.conf) file.
 
 
 #### Akka Management
 
-[Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0/bootstrap/) relies on [Akka Management](https://developer.lightbend.com/docs/akka-management/1.0/akka-management.html) to form a cluster.
+[Akka Cluster Bootstrap](https://doc.akka.io/docs/akka-management/1.0/bootstrap/) relies on [Akka Management](https://doc.akka.io/docs/akka-management/1.0/akka-management.html) to form a cluster.
 
-[Akka Management](https://developer.lightbend.com/docs/akka-management/1.0/akka-management.html) is an extension that opens a dedicated HTTP interface. This management extension allows dedicated plugins to include their routes. Akka Cluster Bootstrap uses this mechanism to expose a route. Akka Management will be enabled when the cluster joining mechanism is Cluster Http Management and it will run on http port `8558`. You can configure it to another port by setting property `akka.management.http.port` in your `application.conf` file.
+[Akka Management](https://doc.akka.io/docs/akka-management/1.0/akka-management.html) is an extension that opens a dedicated HTTP interface. This management extension allows dedicated plugins to include their routes. Akka Cluster Bootstrap uses this mechanism to expose a route. Akka Management will be enabled when the cluster joining mechanism is Cluster Http Management and it will run on http port `8558`. You can configure it to another port by setting property `akka.management.http.port` in your `application.conf` file.
 
 #### Health Checks
 
-Akka Management supports two kinds of [health checks](https://developer.lightbend.com/docs/akka-management/1.0/healthchecks.html):
+Akka Management supports two kinds of [health checks](https://doc.akka.io/docs/akka-management/1.0/healthchecks.html):
 
   * Readiness checks: should the application receive external traffic, for example waiting for the cluster to form.
   * Liveness checks: should the application be left running
@@ -100,9 +100,9 @@ akka.management.health-checks {
 }
 ```
 For further information on Akka Cluster Bootstrap and Health Checks, consult Akka Managment documentation:
- * [Akka Cluster Bootstrap](https://developer.lightbend.com/docs/akka-management/1.0/bootstrap/)
- * [Http Cluster Management](https://developer.lightbend.com/docs/akka-management/1.0/cluster-http-management.html)
- * [Health Checks](https://developer.lightbend.com/docs/akka-management/1.0/healthchecks.html)
+ * [Akka Cluster Bootstrap](https://doc.akka.io/docs/akka-management/1.0/bootstrap/)
+ * [Http Cluster Management](https://doc.akka.io/docs/akka-management/1.0/cluster-http-management.html)
+ * [Health Checks](https://doc.akka.io/docs/akka-management/1.0/healthchecks.html)
 
 ### Joining during production (Manual Cluster Formation)
 
