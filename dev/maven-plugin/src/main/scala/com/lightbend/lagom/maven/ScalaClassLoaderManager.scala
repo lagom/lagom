@@ -62,7 +62,11 @@ class ScalaClassLoaderManager @Inject()(logger: MavenLoggerProxy) {
         classLoader
       case None =>
         logger.debug(s"ScalaClassLoader cache miss - $cacheKey")
-        val classLoader = new URLClassLoader(scalaArtifacts.map(_.getFile.toURI.toURL).toArray, null)
+        // Use this on Java 11
+        val parent: ClassLoader = ClassLoader.getPlatformClassLoader()
+        // Use this on Java 8
+        // val parent: ClassLoader = null
+        val classLoader = new URLClassLoader(scalaArtifacts.map(_.getFile.toURI.toURL).toArray, parent)
         cache += (cacheKey -> classLoader)
         classLoader
     }
