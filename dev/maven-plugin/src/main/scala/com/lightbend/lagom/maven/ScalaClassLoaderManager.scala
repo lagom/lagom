@@ -72,7 +72,7 @@ class ScalaClassLoaderManager @Inject()(logger: MavenLoggerProxy) {
         //   means the boostrap class loader is used.
         // - For Java9+: the parent is the platform class loader is a parent or an ancestor
         //   of the system class loader that all platform classes are visible to it.
-        val parent = ClassLoader.getSystemClassLoader().getParent()
+        val parent      = ClassLoader.getSystemClassLoader().getParent()
         val classLoader = new URLClassLoader(scalaArtifacts.map(_.getFile.toURI.toURL).toArray, parent)
         cache += (cacheKey -> classLoader)
         classLoader
