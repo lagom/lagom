@@ -138,8 +138,8 @@ The naïve approach is to remove an unreachable node from the cluster membership
 
 **We strongly recommend against using the auto-down feature of Akka Cluster.**
 
-A pre-packaged solution for the downing problem is provided by [Split Brain Resolver](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html), which is part of the [Lightbend Platform](https://www.lightbend.com/lightbend-platform). The `keep-majority` strategy is configured to be enabled by default if you use Lagom with the Split Brain Resolver.
+A pre-packaged solution for the downing problem is provided by [Split Brain Resolver](https://doc.akka.io/docs/akka-enhancements/1.1/split-brain-resolver.html), which is part of the [Lightbend Platform](https://www.lightbend.com/lightbend-platform). The `keep-majority` strategy is configured to be enabled by default if you use Lagom with the Split Brain Resolver.
 
-See [[Using Lightbend Platform with Lagom|LightbendPlatform]] and the [Split Brain Resolver documentation](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) for instructions on how to enable it in the build of your project.
+See [[Using Lightbend Platform with Lagom|LightbendPlatform]] and the [Split Brain Resolver documentation](https://doc.akka.io/docs/akka-enhancements/1.1/split-brain-resolver.html) for instructions on how to enable it in the build of your project.
 
-Even if you don't use the commercial Lightbend Platform, you should still read & understand the concepts behind [Split Brain Resolver](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) to ensure that your solution handles the concerns described there.
+Even if you don't use the commercial Lightbend Platform, you should still read & understand the concepts behind [Split Brain Resolver](https://doc.akka.io/docs/akka-enhancements/1.1/split-brain-resolver.html) to ensure that your solution handles the concerns described there.
