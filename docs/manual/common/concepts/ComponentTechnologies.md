@@ -12,7 +12,7 @@ As a complete microservices platform, Lagom assembles a collection of technologi
 
 * [Lightbend Platform](https://www.lightbend.com/lightbend-platform) subscribers can use additional components to operationalize and production-harden their systems.
 
-    * Akka [Split Brain Resolver](https://developer.lightbend.com/docs/akka-commercial-addons/current/split-brain-resolver.html) handles network failures and system crashes.
+    * Akka [Split Brain Resolver](https://doc.akka.io/docs/akka-enhancements/current/split-brain-resolver.html) handles network failures and system crashes.
 
     * [Lightbend Telemetry](https://developer.lightbend.com/docs/telemetry/current/home.html) and [Lightbend Console](https://developer.lightbend.com/docs/console/current/) give you visibility into system health, availability and performance.
 
