@@ -53,6 +53,9 @@ jobs:
       name: "Scripted tests for sbt 1 and Java 11"
     - script: bin/test-maven
       name: "PublishM2 and test Maven"
+    - script: bin/test-maven
+      name: "PublishM2 and test Maven using Java 11"
+      env: TRAVIS_JDK=adopt@1.11.0-2
 
 cache:
   directories:
