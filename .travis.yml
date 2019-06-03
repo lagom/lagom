@@ -4,6 +4,15 @@ language: scala
 # https://docs.travis-ci.com/user/conditional-builds-stages-jobs/
 if: type != push OR tag IS present OR repo != lagom/lagom
 
+addons:
+  apt:
+    packages:
+      # Needed for `xmllint` which is used to validate pom files
+      - libxml2-utils
+      - xmlstarlet
+      # Used to download maven xsd file
+      - wget
+
 env:
   global:
     # the following `secure` is WHITESOURCE_PASSWORD which is the same for all branches.
