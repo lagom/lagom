@@ -62,10 +62,17 @@ class ScalaClassLoaderManager @Inject()(logger: MavenLoggerProxy) {
         classLoader
       case None =>
         logger.debug(s"ScalaClassLoader cache miss - $cacheKey")
-        // Use this on Java 11
-        val parent: ClassLoader = ClassLoader.getPlatformClassLoader()
-        // Use this on Java 8
-        // val parent: ClassLoader = null
+        // Use System classloader parent as documented here:
+        // https://svn.apache.org/repos/infra/websites/production/maven/content/reference/maven-classloading.html#Maven_API_classloader
+        // Keep in mind this does not contain any contain any application or javaagent classes, which will
+        // be added in the classLoader below.
+        //
+        // This behaves a little different depending on the Java version used:
+        // - For Java 8: the parent is the boostrap class loader (or null), which in the end
+        //   means the boostrap class loader is used.
+        // - For Java9+: the parent is the platform class loader is a parent or an ancestor
+        //   of the system class loader that all platform classes are visible to it.
+        val parent = ClassLoader.getSystemClassLoader().getParent()
         val classLoader = new URLClassLoader(scalaArtifacts.map(_.getFile.toURI.toURL).toArray, parent)
         cache += (cacheKey -> classLoader)
         classLoader
