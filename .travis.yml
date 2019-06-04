@@ -29,7 +29,6 @@ install: jabba install "$TRAVIS_JDK" && jabba use $_ && java -Xmx32m -version
 stages:
   - validations-and-test
   - test-build-tools
-  - java-11
 
 jobs:
   include:
@@ -43,6 +42,9 @@ jobs:
       name: "Run tests for Scala 2.12 and Java 11"
     - script: bin/test-documentation
       name: "Documentation validations and tests"
+    - script: bin/test-docs-code-only
+      env: TRAVIS_JDK=adopt@1.11.0-2
+      name: "Documentation tests (Java 11)"
     - stage: test-build-tools
       script: bin/test-sbt-0.13
       name: "Scripted tests for sbt 0.13"
@@ -53,6 +55,9 @@ jobs:
       name: "Scripted tests for sbt 1 and Java 11"
     - script: bin/test-maven
       name: "PublishM2 and test Maven"
+    - script: bin/test-maven
+      name: "PublishM2 and test Maven using Java 11"
+      env: TRAVIS_JDK=adopt@1.11.0-2
 
 cache:
   directories:
