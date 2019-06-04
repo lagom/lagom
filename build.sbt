@@ -272,6 +272,33 @@ def mimaSettings(since: String): Seq[Setting[_]] = {
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.*Module*"),
       ProblemFilters
         .exclude[DirectMissingMethodProblem]("*lagom.*dsl.persistence.PersistentEntityRegistry.gracefulShutdown"),
+      // Remove APIs deprecated in Lagom 1.3.x: https://github.com/lagom/lagom/pull/1967
+      ProblemFilters
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.api.ServiceInfo.getLocatableServices"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.api.ServiceInfo.this"),
+      ProblemFilters.exclude[IncompatibleResultTypeProblem](
+        "com.lightbend.lagom.scaladsl.api.ServiceInfo#ServiceInfoImpl.copy$default$2"
+      ),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.ServiceInfo#ServiceInfoImpl.copy"),
+      ProblemFilters.exclude[DirectMissingMethodProblem](
+        "com.lightbend.lagom.scaladsl.api.ServiceInfo#ServiceInfoImpl.locatableServices"
+      ),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.ServiceInfo#ServiceInfoImpl.this"),
+      ProblemFilters
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.ServiceInfo.locatableServices"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.ServiceInfo#ServiceInfoImpl.apply"),
+      ProblemFilters.exclude[DirectMissingMethodProblem](
+        "com.lightbend.lagom.scaladsl.server.LagomApplicationLoader.describeServices"
+      ),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.forServices"),
+      ProblemFilters
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.serviceBindings"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem](
+        "com.lightbend.lagom.scaladsl.server.LagomServer.serviceBinding"
+      )
     )
   )
 }

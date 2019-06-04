@@ -100,31 +100,6 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
       Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
     }
 
-    "resolve the service descriptions for a LagomScala project using the deprecated `describeServices` (with ACLs)" in {
-      val expectedJsonString =
-        """
-          |[
-          |  {
-          |    "name": "/aclservice",
-          |    "acls": [
-          |      {
-          |        "method": "GET",
-          |        "pathPattern": "\\Q/scala-mocks/\\E([^/]+)"
-          |      },
-          |      {
-          |        "method": "POST",
-          |        "pathPattern": "\\Q/scala-mocks\\E"
-          |      }
-          |    ]
-          |  }
-          |]
-        """.stripMargin
-
-      val actualJsonString =
-        ServiceDetector.services(this.getClass.getClassLoader, classOf[LegacyAclServiceLoader].getName)
-      Json.parse(actualJsonString) shouldBe Json.parse(expectedJsonString)
-    }
-
     "resolve the service descriptions for a LagomScala project using `describeService` (without ACLs)" in {
       val expectedJsonString =
         """

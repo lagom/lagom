@@ -6,10 +6,8 @@ package com.lightbend.lagom.internal.javadsl.server
 
 import java.util.function.BiFunction
 import java.util.function.{ Function => JFunction }
+import java.util.{ List => JList }
 
-import javax.inject.Inject
-import javax.inject.Provider
-import javax.inject.Singleton
 import akka.stream.Materializer
 import akka.util.ByteString
 import com.lightbend.lagom.internal.api._
@@ -17,28 +15,29 @@ import com.lightbend.lagom.internal.javadsl.api._
 import com.lightbend.lagom.internal.javadsl.client.JavadslServiceApiBridge
 import com.lightbend.lagom.internal.server.ServiceRouter
 import com.lightbend.lagom.javadsl.api.Descriptor.RestCallId
-import com.lightbend.lagom.javadsl.api.deser.StreamedMessageSerializer
-import com.lightbend.lagom.javadsl.api.transport.{ RequestHeader => _, _ }
 import com.lightbend.lagom.javadsl.api.Descriptor
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceInfo
+import com.lightbend.lagom.javadsl.api.deser.StreamedMessageSerializer
+import com.lightbend.lagom.javadsl.api.transport.{ RequestHeader => _, _ }
 import com.lightbend.lagom.javadsl.jackson.JacksonExceptionSerializer
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory
-import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.ClassServiceBinding
-import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.InstanceServiceBinding
 import com.lightbend.lagom.javadsl.server.LagomServiceRouter
 import com.lightbend.lagom.javadsl.server.PlayServiceCall
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
-import org.pcollections.HashTreePMap
+import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.ClassServiceBinding
+import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport.InstanceServiceBinding
+import javax.inject.Inject
+import javax.inject.Provider
+import javax.inject.Singleton
+import play.api.Environment
+import play.api.Logger
 import play.api.http.HttpConfiguration
 import play.api.inject.Injector
 import play.api.mvc.{ RequestHeader => PlayRequestHeader, ResponseHeader => _, _ }
 import play.api.routing.Router.Routes
-import play.api.routing.SimpleRouter
-import play.api.Environment
-import play.api.Logger
 import play.api.routing.Router
-import java.util.{ List => JList }
+import play.api.routing.SimpleRouter
 
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
@@ -101,18 +100,19 @@ class JavadslServerBuilder @Inject()(
           serviceInterface.asSubclass(classOf[Service])
         )
       }
-      val locatableServices = descriptors
+
+      import org.pcollections._
+      import com.lightbend.lagom.javadsl.api._
+      val acls: PSequence[ServiceAcl] = descriptors
         .filter(_.locatableService())
-        .map { descriptor =>
-          descriptor.name() -> descriptor.acls()
-        }
-        .toMap
-        .asJava
-      if (locatableServices.size() > 1) {
-        log.warn("Bundling more than one locatable service descriptor inside a single LagomService is deprecated.")
+        .map(_.acls())
+        .fold(TreePVector.empty[ServiceAcl]())(_.plusAll(_))
+
+      if (acls.isEmpty()) {
+        log.debug(s"No ACLs found for service ${descriptors.head.name()}")
       }
-      // TODO: replace with factory method ServiceInfo#of when dropping support for multiple locatable services
-      new ServiceInfo(descriptors.head.name, HashTreePMap.from(locatableServices))
+
+      ServiceInfo.of(descriptors.head.name(), acls)
     } else {
       throw new IllegalArgumentException(
         s"Don't know how to load services that don't implement Service. Provided: ${interfaces.mkString("[", ", ", "]")}"
