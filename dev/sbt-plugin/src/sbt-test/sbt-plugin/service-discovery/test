@@ -1,0 +1,12 @@
+# Structure of this test:
+# =======================
+
+# Here we test that the dev mode service discovery is correct configured.
+# The test is extremely simple, the /foo endpoint do a lookup using Akka Service Discovery to itself.
+# The request must succeed and return the name of the service, ie: 'foo-service'.
+# If Akka Service Discovery is wrongly configured this call will throw an exception.
+
+> runAll
+> assertRequest 10000 /foo foo-service
+
+> stop
