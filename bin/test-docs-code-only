@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2009-2019 Lightbend Inc. <https://www.lightbend.com>
+
+. "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
+
+## This is a simplified version of ./bin/test-documentation to only run `sbt test`
+## This won't generate API docs or check markdown links or validate code formatting.
+## This is meant to run docs tests in Java 11 (or scala 2.13)
+cd docs
+runSbt test
