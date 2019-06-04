@@ -5,10 +5,10 @@
 package com.lightbend.lagom.scaladsl.server
 
 import java.net.URI
+import java.util
+import java.util.Optional
 
 import akka.actor.ActorSystem
-import akka.actor.CoordinatedShutdown
-import akka.event.Logging
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServerMacroImpl
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
@@ -28,11 +28,8 @@ import com.typesafe.config.Config
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.inject.DefaultApplicationLifecycle
-import play.api.libs.concurrent.ActorSystemProvider.StopHook
 import play.api.mvc.EssentialFilter
-import play.core.DefaultWebCommands
 
-import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
@@ -53,24 +50,6 @@ import scala.language.experimental.macros
 abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDiscovery {
 
   val logger = Logger(classOf[LagomApplicationLoader])
-
-  if (logger.isWarnEnabled && describeService.isEmpty) {
-    describeServices match {
-      case Seq(_) =>
-        logger.warn(
-          s"${Logging.simpleName(this)}: overriding LagomApplicationLoader.describeServices is deprecated: " +
-            "override LagomApplicationLoader.describeService instead"
-        )
-      case Seq(_, _*) =>
-        logger.warn(
-          s"${Logging.simpleName(this)}: overriding LagomApplicationLoader.describeServices is deprecated: " +
-            "combine your Service interfaces or split them into multiple projects, " +
-            "and override LagomApplicationLoader.describeService instead"
-        )
-      // otherwise there are no services defined at all, which is OK
-      case _ => ()
-    }
-  }
 
   /**
    * Implementation of Play's load method.
@@ -132,55 +111,37 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
    */
   def describeService: Option[Descriptor] = None
 
-  /**
-   * Deprecated: implement describeService instead. Multiple service interfaces should either be combined into a single
-   * service, or split into multiple service projects.
-   */
-  @deprecated(
-    "Binding multiple locatable ServiceDescriptors per Lagom service is unsupported. Override LagomApplicationLoader.describeService() instead",
-    "1.3.3"
-  )
-  def describeServices: immutable.Seq[Descriptor] = describeService.to[immutable.Seq]
-
-  final override def discoverServices(classLoader: ClassLoader) = {
+  final override def discoverServices(classLoader: ClassLoader): util.List[ServiceDescription] = {
     import scala.collection.JavaConverters._
-    val descriptions = doDiscovery(classLoader)
-    if (descriptions.size > 1) {
-      logger.warn(
-        s"Found ServiceDescriptions: ${descriptions.map(_.name()).mkString("[", ",", "]")}. Support for multiple locatable services will be removed."
-      )
-    }
-    descriptions.asJava
+    doDiscovery(classLoader).asJava
   }
 
-  private final def doDiscovery(classLoader: ClassLoader) = {
+  private final def doDiscovery(classLoader: ClassLoader): Seq[ServiceDescription] = {
     import scala.collection.JavaConverters._
     import scala.compat.java8.OptionConverters._
 
     val serviceResolver = new ScaladslServiceResolver(DefaultExceptionSerializer.Unresolved)
-    describeServices.map { descriptor =>
+    describeService.map { descriptor =>
       val resolved = serviceResolver.resolve(descriptor)
       val convertedAcls = resolved.acls.map { acl =>
         new ServiceAcl {
-          override def method() = acl.method.map(_.name).asJava
+          override def method(): Optional[String] = acl.method.map(_.name).asJava
 
-          override def pathPattern() = acl.pathRegex.asJava
-        }.asInstanceOf[ServiceAcl]
+          override def pathPattern(): Optional[String] = acl.pathRegex.asJava
+        }
       }.asJava
       new ServiceDescription {
-        override def acls() = convertedAcls
+        override def acls(): util.List[ServiceAcl] = convertedAcls
 
-        override def name() = resolved.name
-      }.asInstanceOf[ServiceDescription]
-    }
+        override def name(): String = resolved.name
+      }
+    }.toSeq
   }
 
   /**
    * Fix for https://github.com/lagom/lagom/issues/534
-   *
-   * @param environment
    */
-  private def loadCustomLoggerConfiguration(environment: Environment) = {
+  private def loadCustomLoggerConfiguration(environment: Environment): Unit = {
     LoggerConfigurator(environment.classLoader).foreach {
       _.configure(environment)
     }
@@ -335,12 +296,12 @@ trait LocalServiceLocator extends RequiresLagomServicePort with CircuitBreakerCo
 
   lazy val serviceLocator: ServiceLocator =
     new CircuitBreakingServiceLocator(circuitBreakersPanel)(executionContext) {
-      val services = lagomServer.serviceBindings.map(_.descriptor.name).toSet
+      val serviceName: String = lagomServer.serviceBinding.descriptor.name
 
       def getUri(name: String): Future[Option[URI]] =
         lagomServicePort.map {
-          case port if services(name) => Some(URI.create(s"http://localhost:$port"))
-          case _                      => None
+          case port if serviceName.equals(name) => Some(URI.create(s"http://localhost:$port"))
+          case _                                => None
         }(executionContext)
 
       override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] =
@@ -357,17 +318,19 @@ private[lagom] object LagomServerTopicFactoryVerifier {
     topicPublisherName match {
       case None =>
         // No topic publisher has been provided, make sure there are no topics to publish
-        lagomServer.serviceBindings.flatMap(_.descriptor.topics) match {
+        lagomServer.serviceBinding.descriptor.topics match {
           case Nil =>
           // No problemo
           case some =>
             // Uh oh
             throw new NoTopicPublisherException(
-              "The bound Lagom server provides topics, but no topic publisher has been provided. " +
-                "This can be resolved by mixing in a topic publisher trait, such as " +
-                "com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents or " +
-                "com.lightbend.lagom.scaladsl.testkit.TestTopicComponents into your application cake. " +
-                "The topics published are " + some.mkString(", ")
+              s"""
+                 |The bound Lagom server provides topics, but no topic publisher has been provided.
+                 |This can be resolved by mixing in a topic publisher trait, such as
+                 |com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents or
+                 |com.lightbend.lagom.scaladsl.testkit.TestTopicComponents into your application cake.
+                 |The topics published are: ${some.mkString(", ")}
+              """.stripMargin
             )
         }
       case Some(_) =>
