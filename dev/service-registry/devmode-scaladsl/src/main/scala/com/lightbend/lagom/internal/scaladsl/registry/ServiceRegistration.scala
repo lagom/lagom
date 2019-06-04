@@ -12,9 +12,10 @@ import com.typesafe.config.Config
 import play.api.Logger
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
 import scala.util.Failure
 import scala.util.Success
+
+import scala.collection._
 
 class ServiceRegistration(
     serviceInfo: ServiceInfo,
@@ -31,24 +32,17 @@ class ServiceRegistration(
     CoordinatedShutdown.PhaseBeforeServiceUnbind,
     "unregister-services-from-service-locator-scaladsl"
   ) { () =>
-    Future
-      .sequence(serviceInfo.locatableServices.map {
-        case (service, _) => registry.unregister(service).invoke()
-      })
-      .map(_ => Done)
+    registry.unregister(serviceInfo.serviceName).invoke().map(_ => Done)
   }
 
-  serviceInfo.locatableServices.foreach {
-    case (service, acls) =>
-      registry
-        .register(service)
-        .invoke(ServiceRegistryService(uris, acls))
-        .onComplete {
-          case Success(_) =>
-            logger.debug(s"Service name=[$service] successfully registered with service locator.")
-          case Failure(e) =>
-            logger.error(s"Service name=[$service}] couldn't register itself to the service locator.", e)
-        }
-  }
+  registry
+    .register(serviceInfo.serviceName)
+    .invoke(new ServiceRegistryService(uris, immutable.Seq(serviceInfo.acls.toSeq: _*)))
+    .onComplete {
+      case Success(_) =>
+        logger.debug(s"Service name=[${serviceInfo.serviceName}] successfully registered with service locator.")
+      case Failure(e) =>
+        logger.error(s"Service name=[${serviceInfo.serviceName}] couldn't register itself to the service locator.", e)
+    }
 
 }

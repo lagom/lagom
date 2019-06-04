@@ -24,20 +24,6 @@ class AclServiceLoader extends LagomApplicationLoader {
   override def describeService = Some(readDescriptor[AclService])
 }
 
-// Just like AclServiceLoader but overriding the deprecated describeServices method instead of describeService
-class LegacyAclServiceLoader extends LagomApplicationLoader {
-  override def load(context: LagomApplicationContext): LagomApplication =
-    new AclServiceApplication(context) {
-      override def serviceLocator: ServiceLocator = NoServiceLocator
-    }
-  override def loadDevMode(context: LagomApplicationContext): LagomApplication =
-    new AclServiceApplication(context) {
-      override def serviceLocator: ServiceLocator = NoServiceLocator
-    }
-
-  override def describeServices = List(readDescriptor[AclService])
-}
-
 abstract class AclServiceApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
     with AhcWSComponents {
@@ -89,7 +75,6 @@ class LegacyUndescribedServiceLoader extends LagomApplicationLoader {
     new NoAclServiceApplication(context) {
       override def serviceLocator: ServiceLocator = NoServiceLocator
     }
-  override def describeServices = Nil
 }
 
 abstract class UndescribedServiceApplication(context: LagomApplicationContext)
