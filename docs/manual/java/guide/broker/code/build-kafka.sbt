@@ -1,5 +1,5 @@
 //#kafka-broker-dependency
-libraryDependencies += lagomJavadslKafkaBroker
+//libraryDependencies += lagomJavadslKafkaBroker
 //#kafka-broker-dependency
 
 //#kafka-client-dependency
