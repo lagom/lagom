@@ -59,8 +59,13 @@ lazy val docs = project
       "1.8",
       "-parameters",
       "-Xlint:unchecked",
-      "-Xlint:deprecation",
-      "-Werror"
+      "-Xlint:deprecation"
+      // Enabling '-Werror' causes the build to fail on Java 11 because
+      // of "bootstrap class path not set in conjunction with -source 8".
+      // The problem is using JDK N to compile for '-source M' whithout
+      // specifying '-bootclasspath /path/to/jdk-M/jre/lib/rt.jar' (note
+      // it's M's rt.jar that's needed)
+//      "-Werror"
     ),
     testOptions in Test += Tests.Argument("-oDF"),
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
