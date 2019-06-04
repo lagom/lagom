@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ */
+
 import play.api.Application
 import play.api.ApplicationLoader
 import play.api.BuiltInComponentsFromContext
