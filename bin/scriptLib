@@ -11,7 +11,7 @@ set -o pipefail
 # CURRENT_BRANCH is used when updating Whitesource to determine the correct project name
 export CURRENT_BRANCH=${TRAVIS_BRANCH}
 
-EXTRA_OPTS=""
+EXTRA_OPTS="-Dakka.test.timefactor=10"
 
 # Check if it is a scheduled build
 if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
@@ -20,7 +20,7 @@ if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
 
     echo "Using Akka SNAPSHOT ${AKKA_VERSION}"
 
-    EXTRA_OPTS="-Dlagom.build.akka.version=${AKKA_VERSION}"
+    EXTRA_OPTS="${EXTRA_OPTS} -Dlagom.build.akka.version=${AKKA_VERSION}"
 fi
 
 checkIfShouldSkip() {
