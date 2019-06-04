@@ -64,7 +64,7 @@ class ScalaClassLoaderManager @Inject()(logger: MavenLoggerProxy) {
         logger.debug(s"ScalaClassLoader cache miss - $cacheKey")
         // Use System classloader parent as documented here:
         // https://svn.apache.org/repos/infra/websites/production/maven/content/reference/maven-classloading.html#Maven_API_classloader
-        // Keep in mind this does not contain any contain any application or javaagent classes, which will
+        // Keep in mind this does not contain any application or javaagent classes, which will
         // be added in the classLoader below.
         //
         // This behaves a little different depending on the Java version used:
