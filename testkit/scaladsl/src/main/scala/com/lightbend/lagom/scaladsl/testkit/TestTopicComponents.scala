@@ -47,12 +47,12 @@ trait TestTopicComponents extends TopicFactoryProvider {
 private[lagom] class TestTopicFactory(lagomServer: LagomServer)(implicit materializer: Materializer)
     extends TopicFactory {
 
-  private val topics: Map[TopicId, Service] =
-    lagomServer.serviceBindings.flatMap { binding =>
-      binding.descriptor.topics.map { topic =>
-        topic.topicId -> binding.service.asInstanceOf[Service]
-      }
+  private val topics: Map[TopicId, Service] = {
+    val binding = lagomServer.serviceBinding
+    binding.descriptor.topics.map { topic =>
+      topic.topicId -> binding.service.asInstanceOf[Service]
     }.toMap
+  }
 
   override def create[Message](topicCall: TopicCall[Message]): Topic[Message] =
     topics.get(topicCall.topicId) match {
