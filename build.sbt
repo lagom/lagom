@@ -1,14 +1,13 @@
 import java.net.InetSocketAddress
 import java.nio.channels.ServerSocketChannel
 
-import sbt.ScriptedPlugin
 import com.typesafe.sbt.SbtMultiJvm
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys
-import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys._
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
+import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys._
+import com.typesafe.tools.mima.core._
 import lagom.Protobuf
 import lagom.build._
-import com.typesafe.tools.mima.core._
 
 // Turn off "Resolving" log messages that clutter build logs
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
@@ -221,9 +220,9 @@ def multiJvmTestSettings: Seq[Setting[_]] = {
       executeTests in Test := {
         val testResults      = (executeTests in Test).value
         val multiNodeResults = (executeTests in MultiJvm).value
-        import TestResult.Passed
-        import TestResult.Failed
         import TestResult.Error
+        import TestResult.Failed
+        import TestResult.Passed
         val overall = (testResults.overall, multiNodeResults.overall) match {
           case (Passed, Passed)                    => Passed
           case (Failed, Failed)                    => Failed
@@ -1154,6 +1153,8 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
         )
         .exclude("org.slf4j", "slf4j-simple")
     ),
+    // This ensure that files in sbt-test are also included
+    headerSources in Compile ++= (sbtTestDirectory.value ** ("*.scala" || "*.java")).get(),
     scriptedDependencies := {
       val () = scriptedDependencies.value
 
@@ -1228,6 +1229,8 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
     scalaVersion := Dependencies.Versions.Scala.head,
     crossPaths := false,
     mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
+    // This ensure that files in maven-test are also included
+    headerSources in Compile ++= (sourceDirectory.value / "maven-test" ** ("*.scala" || "*.java")).get(),
     mavenTestArgs := Seq(
       "-Xmx768m",
       "-XX:MaxMetaspaceSize=384m",
