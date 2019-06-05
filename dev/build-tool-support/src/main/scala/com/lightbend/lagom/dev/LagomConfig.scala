@@ -24,7 +24,7 @@ object LagomConfig {
     "lagom.defaults.cluster.join-self"              -> "on",
     "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
     "lagom.cluster.bootstrap.enabled"               -> "off",
-    "akka.discovery.method"                         -> "com.lightbend.lagom.internal.registry.DevModeSimpleServiceDiscovery"
+    "akka.discovery.method"                         -> "lagom-dev-mode"
   )
 
 }
