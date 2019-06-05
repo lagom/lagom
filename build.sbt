@@ -1154,7 +1154,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
         .exclude("org.slf4j", "slf4j-simple")
     ),
     // This ensure that files in sbt-test are also included
-    headerSources in Compile ++= (sbtTestDirectory.value ** ("*.scala" || "*.java")).get(),
+    headerSources in Compile ++= (sbtTestDirectory.value ** ("*.scala" || "*.java")).get,
     scriptedDependencies := {
       val () = scriptedDependencies.value
 
@@ -1230,7 +1230,7 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
     crossPaths := false,
     mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
     // This ensure that files in maven-test are also included
-    headerSources in Compile ++= (sourceDirectory.value / "maven-test" ** ("*.scala" || "*.java")).get(),
+    headerSources in Compile ++= (sourceDirectory.value / "maven-test" ** ("*.scala" || "*.java")).get,
     mavenTestArgs := Seq(
       "-Xmx768m",
       "-XX:MaxMetaspaceSize=384m",
