@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package sample.hellostream.api;
 
 import static com.lightbend.lagom.javadsl.api.Service.named;

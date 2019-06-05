@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ */
+
 package sample.helloworld.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
