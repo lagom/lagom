@@ -40,7 +40,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   import system.dispatcher
 
   // patience config for all async code
-  implicit override val patienceConfig = PatienceConfig(8.seconds, 150.millis)
+  implicit override val patienceConfig = PatienceConfig(60.seconds, 150.millis)
 
   implicit val mat = ActorMaterializer()
 
