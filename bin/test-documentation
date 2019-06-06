@@ -17,6 +17,9 @@ fi
 cd docs
 runSbt markdownValidateDocs test markdownEvaluateSbtFiles $EXTRA_TASK
 
+runSbt +headerCheck \
+       +test:headerCheck \
+       multi-jvm:headerCheck
 
 printMessage "VALIDATE SCALA CODE FORMATTING FOR DOCS SAMPLE CODE"
 runSbt scalafmtAll scalafmtSbt
