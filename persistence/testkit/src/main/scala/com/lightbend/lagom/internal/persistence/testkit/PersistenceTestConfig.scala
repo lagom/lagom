@@ -20,6 +20,9 @@ private[lagom] object PersistenceTestConfig {
     "akka.actor.provider"                           -> "cluster",
     "akka.remote.artery.canonical.port"             -> "0",
     "akka.remote.artery.canonical.hostname"         -> "127.0.0.1",
+    // needed when users opt-out from Artery
+    "akka.remote.classic.netty.tcp.port"            -> "0",
+    "akka.remote.classic.netty.tcp.hostname"        -> "127.0.0.1",
     "lagom.cluster.join-self"                       -> "on",
     "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
     "lagom.cluster.bootstrap.enabled"               -> "off"
