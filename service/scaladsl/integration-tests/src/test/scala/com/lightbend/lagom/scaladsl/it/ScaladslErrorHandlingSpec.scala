@@ -30,6 +30,7 @@ import com.lightbend.lagom.scaladsl.it.mocks.MockService
 import com.lightbend.lagom.scaladsl.it.mocks.MockServiceImpl
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
+import com.typesafe.config.ConfigFactory;
 import org.scalatest.Matchers
 import org.scalatest.WordSpec
 import play.api.libs.streams.AkkaStreams
@@ -249,12 +250,14 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
         override lazy val lagomServer = serverFor[MockService](new MockServiceImpl)
         override lazy val environment = Environment.simple(mode = mode)
 
-        override def additionalConfiguration: AdditionalConfiguration =
-          super.additionalConfiguration ++ Configuration.from(
+        override def additionalConfiguration: AdditionalConfiguration = {
+          import scala.collection.JavaConverters._
+          super.additionalConfiguration ++ ConfigFactory.parseMap(
             Map(
               "play.server.provider" -> httpBackend.provider
-            )
+            ).asJava
           )
+        }
 
         // Custom server builder to inject our changeServer callback
         override lazy val lagomServerBuilder =
