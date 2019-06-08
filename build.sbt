@@ -95,7 +95,7 @@ def releaseSettings: Seq[Setting[_]] = Seq(
       checkSnapshotDependencies,
       releaseStepCommandAndRemaining("+publishSigned"),
       releaseStepTask(bintrayRelease in thisProjectRef.value),
-      // releaseStepCommand("sonatypeRelease"),
+      releaseStepCommand("sonatypeRelease"),
       pushChanges
     )
   }
