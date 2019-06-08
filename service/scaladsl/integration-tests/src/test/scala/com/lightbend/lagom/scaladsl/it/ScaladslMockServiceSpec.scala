@@ -22,6 +22,7 @@ import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
 import com.lightbend.lagom.scaladsl.server.LagomServer
 import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
+import com.typesafe.config.ConfigFactory
 import org.scalatest.Matchers
 import org.scalatest.WordSpec
 import play.api.Configuration
@@ -225,12 +226,14 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers {
       new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LocalServiceLocator {
         override lazy val lagomServer = serverFor[MockService](new MockServiceImpl)
 
-        override def additionalConfiguration: AdditionalConfiguration =
-          super.additionalConfiguration ++ Configuration.from(
+        override def additionalConfiguration: AdditionalConfiguration = {
+          import scala.collection.JavaConverters._
+          super.additionalConfiguration ++ ConfigFactory.parseMap(
             Map(
               "play.server.provider" -> httpBackend.provider
-            )
+            ).asJava
           )
+        }
       }
     } { server =>
       block(server.materializer)(server.serviceClient.implement[MockService])
