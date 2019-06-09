@@ -19,3 +19,4 @@ addSbtPlugin("com.lightbend"    % "sbt-whitesource"      % "0.1.14")
 
 addSbtPlugin("com.lightbend.sbt" % "sbt-java-formatter" % "0.4.4")
 addSbtPlugin("org.scalameta"     % "sbt-scalafmt"       % "2.0.0")
+addSbtPlugin("com.dwijnand"      % "sbt-dynver"         % "3.3.0")
