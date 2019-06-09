@@ -30,7 +30,7 @@ def evictionSettings: Seq[Setting[_]] = Seq(
 
 lazy val docs = project
   .in(file("."))
-  .enablePlugins(LightbendMarkdown)
+  .enablePlugins(LightbendMarkdown, AutomateHeaderPlugin)
   .settings(forkedTests: _*)
   .settings(evictionSettings: _*)
   .settings(
@@ -65,7 +65,7 @@ lazy val docs = project
       // The problem is using JDK N to compile for '-source M' whithout
       // specifying '-bootclasspath /path/to/jdk-M/jre/lib/rt.jar' (note
       // it's M's rt.jar that's needed)
-//      "-Werror"
+      // "-Werror"
     ),
     testOptions in Test += Tests.Argument("-oDF"),
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
@@ -109,7 +109,12 @@ lazy val docs = project
     markdownGenerateTheme := Some("bare"),
     markdownGenerateIndex := true,
     markdownStageIncludeWebJars := false,
-    markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/"))
+    markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/")),
+    headerLicense := Some(
+      HeaderLicense.Custom(
+        "Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>"
+      )
+    ),
   )
   .dependsOn(
     serviceIntegrationTestsJavadsl,
