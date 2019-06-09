@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ */
+
 package docs.home.serialization.v2d;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
