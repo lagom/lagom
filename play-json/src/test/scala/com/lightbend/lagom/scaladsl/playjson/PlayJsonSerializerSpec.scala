@@ -136,7 +136,7 @@ case class Box(surprise: Option[String])
 
 class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
-  // this is a magic number. I know longContent will compress well under this 1024.
+  // this is a magic number copied from src/main/reference.conf.
   val COMPRESSION_THRESHOLD = 32 * 1024
 
   "The PlayJsonSerializer" should {
