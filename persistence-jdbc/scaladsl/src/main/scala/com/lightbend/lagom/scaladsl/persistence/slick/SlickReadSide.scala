@@ -6,8 +6,6 @@ package com.lightbend.lagom.scaladsl.persistence.slick
 
 import slick.dbio.DBIOAction
 import slick.dbio.NoStream
-import slick.jdbc.JdbcProfile
-import slick.jdbc.JdbcBackend.Database
 import com.lightbend.lagom.scaladsl.persistence._
 
 import scala.concurrent.ExecutionContext

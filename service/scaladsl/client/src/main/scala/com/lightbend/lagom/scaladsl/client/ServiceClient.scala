@@ -30,7 +30,6 @@ import play.api.inject.DefaultApplicationLifecycle
 import play.api.libs.concurrent.ActorSystemProvider
 import play.api.libs.concurrent.CoordinatedShutdownProvider
 import play.api.internal.libs.concurrent.CoordinatedShutdownSupport
-import play.api.internal.libs.concurrent.CoordinatedShutdownSupport.asyncShutdown
 import play.api.libs.ws.WSClient
 import play.api.Configuration
 import play.api.Environment

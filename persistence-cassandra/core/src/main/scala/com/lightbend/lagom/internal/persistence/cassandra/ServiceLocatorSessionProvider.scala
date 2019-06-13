@@ -5,13 +5,10 @@
 package com.lightbend.lagom.internal.persistence.cassandra
 
 import java.net.InetSocketAddress
-import java.net.URI
 
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import scala.concurrent.Promise
-import scala.concurrent.duration._
 import scala.util.control.NoStackTrace
 
 import akka.actor.ActorSystem

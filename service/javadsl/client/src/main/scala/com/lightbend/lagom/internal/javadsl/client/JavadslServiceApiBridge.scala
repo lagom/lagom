@@ -17,8 +17,6 @@ import com.lightbend.lagom.javadsl.api
 import com.lightbend.lagom.javadsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.javadsl.api.deser.ExceptionMessage
 import com.lightbend.lagom.javadsl.api.security.ServicePrincipal
-import com.lightbend.lagom.javadsl.api.deser
-import com.lightbend.lagom.javadsl.api.transport
 import org.pcollections.HashTreePMap
 import org.pcollections.PSequence
 import org.pcollections.TreePVector

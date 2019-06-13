@@ -6,7 +6,6 @@ package com.lightbend.lagom.internal.scaladsl.client
 
 import com.lightbend.lagom.internal.client.WebSocketClient
 import com.lightbend.lagom.internal.client.WebSocketClientConfig
-import com.typesafe.config.Config
 import io.netty.channel.EventLoopGroup
 import play.api.Environment
 import play.api.inject.ApplicationLifecycle

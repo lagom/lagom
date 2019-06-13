@@ -10,7 +10,6 @@ import java.util.concurrent.CompletionStage
 import javax.inject.Inject
 import javax.inject.Singleton
 import akka.Done
-import akka.NotUsed
 import akka.japi.Pair
 import akka.stream.javadsl.Flow
 import akka.stream.scaladsl
@@ -18,7 +17,6 @@ import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
 import com.lightbend.lagom.internal.persistence.jdbc.SlickOffsetDao
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcReadSide
-import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcReadSide._
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
 import com.lightbend.lagom.javadsl.persistence.Offset
@@ -26,7 +24,6 @@ import org.slf4j.LoggerFactory
 
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
 
 /**
  * INTERNAL API

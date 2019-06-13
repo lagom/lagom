@@ -16,11 +16,7 @@ import akka.actor.ExtendedActorSystem
 import com.codahale.metrics._
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetrics
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
-import play.api.inject.Binding
 import play.api.inject.Injector
-import play.api.inject.Module
-import play.api.Configuration
-import play.api.Environment
 import play.api.Logger
 
 @Singleton

@@ -6,11 +6,6 @@ package com.lightbend.lagom.internal.scaladsl.persistence.jdbc
 
 import akka.actor.ActorSystem
 import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
-import akka.persistence.query.scaladsl.EventsByTagQuery
-import akka.persistence.query.NoOffset
-import akka.persistence.query.Offset
-import akka.persistence.query.PersistenceQuery
-import akka.persistence.query.Sequence
 import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
 import com.lightbend.lagom.internal.scaladsl.persistence.AbstractPersistentEntityRegistry
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity

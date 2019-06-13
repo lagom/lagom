@@ -35,7 +35,6 @@ final class PersistentEntityRef[Command](
    * The timeout can defined in configuration or overridden using [[#withAskTimeout]].
    */
   def ask[Cmd <: Command with PersistentEntity.ReplyType[_]](command: Cmd): Future[command.ReplyType] = {
-    import scala.compat.java8.FutureConverters._
     import system.dispatcher
     (region ? CommandEnvelope(entityId, command))
       .flatMap {

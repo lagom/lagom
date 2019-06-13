@@ -7,7 +7,6 @@ package com.lightbend.lagom.internal.scaladsl.persistence.jdbc
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.jdbc.AbstractSlickOffsetStoreConfiguration
 import com.typesafe.config.Config
-import play.api.Configuration
 
 import scala.concurrent.duration.FiniteDuration
 

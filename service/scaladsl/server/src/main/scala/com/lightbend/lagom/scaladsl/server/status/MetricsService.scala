@@ -15,7 +15,6 @@ import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.server.LagomServerBuilder
-import com.lightbend.lagom.scaladsl.server.LagomServerComponents
 import com.lightbend.lagom.scaladsl.server.LagomServiceBinder
 import com.lightbend.lagom.scaladsl.server.LagomServiceBinding
 import play.api.libs.json.Format

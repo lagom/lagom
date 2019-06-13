@@ -4,7 +4,6 @@
 
 package com.lightbend.lagom.gateway
 
-import java.io.File
 import java.net.InetSocketAddress
 import java.net.URI
 import java.util.Date

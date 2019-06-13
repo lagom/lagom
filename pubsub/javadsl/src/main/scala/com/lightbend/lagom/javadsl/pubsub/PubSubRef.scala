@@ -7,18 +7,15 @@ package com.lightbend.lagom.javadsl.pubsub
 import java.io.NotSerializableException
 import java.util.concurrent.CompletionStage
 import scala.concurrent.duration._
-import scala.concurrent.duration.FiniteDuration
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.actor.NoSerializationVerificationNeeded
-import akka.cluster.pubsub.DistributedPubSubMediator
 import akka.stream.OverflowStrategy
 import akka.stream.javadsl.Sink
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl
 import akka.util.Timeout
 import akka.pattern.ask
-import akka.japi.function.Procedure
 import akka.NotUsed
 
 /**

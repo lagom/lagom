@@ -14,8 +14,6 @@ import scala.collection.JavaConverters._
 
 import akka.actor.ActorSystem
 import akka.actor.ExtendedActorSystem
-import akka.event.Logging
-import akka.event.LoggingAdapter
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity
 import java.util.{ List => JList }
 import java.util.function.{ BiFunction => JBiFunction }
@@ -30,7 +28,6 @@ import scala.util.Try
 import scala.util.Failure
 import scala.util.Success
 
-import akka.serialization.SerializerWithStringManifest
 import akka.serialization.JavaSerializer
 import java.util.{ List => JList }
 import java.util.function.{ BiFunction => JBiFunction }

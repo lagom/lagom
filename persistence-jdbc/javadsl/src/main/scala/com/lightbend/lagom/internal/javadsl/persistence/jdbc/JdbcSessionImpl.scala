@@ -9,7 +9,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcSession
-import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcSession.ConnectionFunction
 
 import scala.compat.java8.FutureConverters._
 
