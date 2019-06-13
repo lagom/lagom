@@ -19,8 +19,6 @@ import com.lightbend.lagom.scaladsl.persistence.EventStreamElement
 import org.slf4j.LoggerFactory
 import slick.dbio.DBIOAction
 import slick.dbio.NoStream
-import slick.jdbc.JdbcProfile
-import slick.jdbc.JdbcBackend.Database
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future

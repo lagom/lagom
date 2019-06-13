@@ -9,7 +9,6 @@ import java.net.URL
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LoggerContext
-import org.apache.logging.log4j.core.config.Configurator
 import org.slf4j.ILoggerFactory
 import org.slf4j.impl.StaticLoggerBinder
 import play.api._

@@ -12,7 +12,6 @@ import akka.actor.ActorSystem
 import akka.actor.CoordinatedShutdown
 import akka.stream.ActorMaterializer
 import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLHolder
-import com.typesafe.sslconfig.ssl.FakeKeyStore
 import play.api.ApplicationLoader.DevContext
 import play.api._
 import play.core.ApplicationProvider

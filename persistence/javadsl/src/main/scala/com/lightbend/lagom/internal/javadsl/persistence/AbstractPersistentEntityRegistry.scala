@@ -5,8 +5,6 @@
 package com.lightbend.lagom.internal.javadsl.persistence
 
 import java.util.Optional
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionStage
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
@@ -15,13 +13,11 @@ import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterSharding
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.cluster.sharding.ShardRegion
-import akka.event.Logging
 import akka.japi.Pair
 import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.persistence.query.PersistenceQuery
 import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.javadsl
-import akka.Done
 import akka.NotUsed
 import com.lightbend.lagom.javadsl.persistence._
 import play.api.inject.Injector

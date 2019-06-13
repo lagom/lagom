@@ -10,7 +10,6 @@ import com.lightbend.lagom.javadsl.api.Descriptor.Call
 
 import scala.language.experimental.macros
 import scala.language.implicitConversions
-import scala.reflect.ClassTag
 import scala.reflect.macros.blackbox
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.broker.Topic

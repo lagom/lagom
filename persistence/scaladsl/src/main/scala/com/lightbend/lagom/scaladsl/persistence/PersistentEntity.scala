@@ -5,11 +5,8 @@
 package com.lightbend.lagom.scaladsl.persistence
 
 import scala.collection.immutable
-import akka.event.LoggingAdapter
 import scala.util.control.NoStackTrace
-import scala.annotation.tailrec
 import akka.event.Logging
-import akka.actor.ActorRef
 import scala.reflect.ClassTag
 
 object PersistentEntity {

@@ -25,7 +25,6 @@ import io.netty.channel._
 import io.netty.handler.codec.http.websocketx._
 import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
-import play.api.Configuration
 import play.api.Environment
 import play.api.http.HeaderNames
 import play.api.inject.ApplicationLifecycle

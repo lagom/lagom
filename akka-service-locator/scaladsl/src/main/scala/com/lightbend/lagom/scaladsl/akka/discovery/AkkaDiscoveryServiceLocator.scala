@@ -10,7 +10,6 @@ import akka.actor.ActorSystem
 import akka.discovery.Discovery
 import com.lightbend.lagom.internal.client.AkkaDiscoveryHelper
 import com.lightbend.lagom.scaladsl.api.Descriptor
-import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel
 import com.lightbend.lagom.scaladsl.client.CircuitBreakingServiceLocator
 

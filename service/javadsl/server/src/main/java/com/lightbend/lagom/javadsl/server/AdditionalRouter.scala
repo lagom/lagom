@@ -8,7 +8,6 @@ import java.util
 
 import play.api.inject.Injector
 import play.api.routing.Router
-import play.core.j.JavaRouterAdapter
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable

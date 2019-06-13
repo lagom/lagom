@@ -4,7 +4,6 @@
 
 package com.lightbend.lagom.javadsl.testkit
 
-import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Optional

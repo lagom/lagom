@@ -106,7 +106,6 @@ final class PubSubRef[T] private[lagom] (
   def hasAnySubscribers(): Future[Boolean] = {
     import system.dispatcher
 
-    import scala.compat.java8.FutureConverters._
     implicit val timeout = hasAnySubscribersTimeout
     (mediator ? GetTopics)
       .map {

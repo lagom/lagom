@@ -18,7 +18,6 @@ import akka.serialization.Serialization
 import akka.serialization.SerializationExtension
 import akka.serialization.Serializers
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 
 object PersistentEntityTestDriver {
   final case class Outcome[E, S](

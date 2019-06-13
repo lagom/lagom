@@ -8,7 +8,6 @@ import java.net.URI
 import java.security.Principal
 import java.util.Locale
 
-import com.lightbend.lagom.scaladsl.api.transport.RequestHeader.RequestHeaderImpl
 
 import scala.collection.immutable
 import scala.collection.immutable.Seq

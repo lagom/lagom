@@ -9,10 +9,7 @@ import javax.inject.Singleton
 
 import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
-import com.typesafe.config.Config
-import play.api.Configuration
 
-import scala.concurrent.Future
 
 @deprecated(
   message =

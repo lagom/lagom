@@ -12,10 +12,8 @@ import java.util.function.{ BiConsumer => JBiConsumer }
 import java.util.function.{ Function => JFunction }
 import java.util.{ List => JList }
 import java.util.Optional
-import akka.event.LoggingAdapter
 import scala.annotation.varargs
 import scala.util.control.NoStackTrace
-import scala.annotation.tailrec
 import akka.japi.Effect
 import akka.event.Logging
 

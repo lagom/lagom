@@ -12,7 +12,6 @@ import akka.serialization.SerializationExtension
 import akka.serialization.SerializerWithStringManifest
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.javadsl.persistence.CommandEnvelope
-import com.lightbend.lagom.javadsl.persistence.PersistentEntity
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity._
 import com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.{ PersistenceMessages => pm }
 

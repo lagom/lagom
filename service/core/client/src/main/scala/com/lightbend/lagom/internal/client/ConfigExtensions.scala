@@ -7,7 +7,6 @@ package com.lightbend.lagom.internal.client
 import java.util
 
 import com.typesafe.config.Config
-import com.typesafe.config.ConfigException
 
 object ConfigExtensions {
 

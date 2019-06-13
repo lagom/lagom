@@ -5,7 +5,6 @@
 package com.lightbend.lagom.scaladsl.client
 
 import java.net.URI
-import java.net.URISyntaxException
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.ActorSystem

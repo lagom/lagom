@@ -4,28 +4,21 @@
 
 package com.lightbend.lagom.internal.scaladsl.persistence
 
-import java.util.Optional
-import java.util.concurrent.CompletionStage
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 import akka.actor.ActorSystem
-import akka.actor.CoordinatedShutdown
 import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterSharding
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.cluster.sharding.ShardRegion
 import akka.event.Logging
-import akka.pattern.ask
 import akka.persistence.query.Offset
 import akka.persistence.query.PersistenceQuery
 import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.stream.scaladsl
-import akka.util.Timeout
-import akka.Done
 import akka.NotUsed
 import com.lightbend.lagom.scaladsl.persistence._
-import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 

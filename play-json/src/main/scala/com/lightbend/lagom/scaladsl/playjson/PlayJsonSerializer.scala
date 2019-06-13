@@ -17,7 +17,6 @@ import akka.serialization.SerializerWithStringManifest
 import play.api.libs.json._
 
 import scala.annotation.tailrec
-import scala.collection.immutable
 
 /**
  * Internal API
