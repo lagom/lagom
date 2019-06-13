@@ -137,6 +137,7 @@ def runtimeScalaSettings: Seq[Setting[_]] = Seq(
   crossScalaVersions := Dependencies.Versions.Scala,
   scalaVersion := Dependencies.Versions.Scala.head,
   // compile options
+  addCompilerPlugin(scalafixSemanticdb),
   scalacOptions in Compile ++= Seq(
     "-encoding",
     "UTF-8",
@@ -144,7 +145,9 @@ def runtimeScalaSettings: Seq[Setting[_]] = Seq(
     "-feature",
     "-unchecked",
     "-Xlog-reflective-calls",
-    "-deprecation"
+    "-deprecation",
+    "-Yrangepos",          // required by SemanticDB compiler plugin
+    "-Ywarn-unused-import" // required by `RemoveUnused` rule
   )
 )
 
