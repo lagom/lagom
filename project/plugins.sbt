@@ -22,3 +22,5 @@ addSbtPlugin("com.lightbend"    % "sbt-whitesource"      % "0.1.18")
 addSbtPlugin("com.lightbend.sbt" % "sbt-java-formatter" % "0.4.4")
 addSbtPlugin("org.scalameta"     % "sbt-scalafmt"       % "2.2.1")
 addSbtPlugin("com.dwijnand"      % "sbt-dynver"         % "4.0.0")
+
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.9.5")
