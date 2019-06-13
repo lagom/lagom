@@ -89,6 +89,17 @@ def bintraySettings: Seq[Setting[_]] = Seq(
 // Customise sbt-dynver's behaviour to make it work with Lagom's tags (which aren't v-prefixed)
 dynverVTagPrefix in ThisBuild := false
 
+// Sanity-check: assert that version comes from a tag (e.g. not a too-shallow clone)
+// https://github.com/dwijnand/sbt-dynver/#sanity-checking-the-version
+Global / onLoad := (Global / onLoad).value.andThen { s =>
+  val v = version.value
+  if (dynverGitDescribeOutput.value.hasNoTags)
+    throw new MessageOnlyException(
+      s"Failed to derive version from git tags. Maybe run `git fetch --unshallow`? Version: $v"
+    )
+  s
+}
+
 def releaseSettings: Seq[Setting[_]] = Seq(
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   releaseTagName := (version in ThisBuild).value,
