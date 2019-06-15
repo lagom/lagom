@@ -23,7 +23,7 @@ object Dependencies {
     val Twirl            = "1.4.1-M1"
     val PlayFileWatch    = "1.1.8"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M2")
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M3")
     val AkkaHttp     = "10.1.8"
     val Aeron        = "1.15.1"
 
