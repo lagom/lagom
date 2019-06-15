@@ -14,7 +14,6 @@ import com.lightbend.lagom.javadsl.api.transport.Method
 import com.lightbend.lagom.registry.impl.ServiceRegistryActor.Found
 import com.lightbend.lagom.registry.impl.ServiceRegistryActor.Route
 import org.scalatest.FlatSpec
-import org.scalatest.FunSuite
 import org.scalatest.Matchers
 
 class InternalRouterSpec extends FlatSpec with Matchers {

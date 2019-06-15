@@ -7,14 +7,11 @@ package com.lightbend.lagom.scaladsl.akka.discovery
 import akka.NotUsed
 import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.ServiceCall
-import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.server.LagomApplication
 import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
 import com.lightbend.lagom.scaladsl.server.LagomServer
-import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import org.scalatest._
-import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.concurrent.Future

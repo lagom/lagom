@@ -14,7 +14,6 @@ import com.lightbend.lagom.javadsl.persistence.jpa.JpaReadSide
 import com.lightbend.lagom.javadsl.persistence.jpa.TestEntityJpaReadSide
 import play.api.inject.guice.GuiceInjectorBuilder
 
-import scala.concurrent.duration._
 
 class JpaReadSideImplSpec extends JpaPersistenceSpec with AbstractReadSideSpec {
   private lazy val injector                            = new GuiceInjectorBuilder().build()

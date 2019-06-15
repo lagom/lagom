@@ -9,7 +9,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 import javax.inject.Inject
-import akka.japi.function.Procedure
 import com.google.inject.AbstractModule
 import com.lightbend.lagom.javadsl.api.Descriptor
 import com.lightbend.lagom.javadsl.api.Service

@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableList
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.javadsl.persistence.TestEntity
 
-import scala.annotation.varargs
 
 class PersistentEntityTestDriverSpec extends ActorSystemSpec {
   def newDriver() = new PersistentEntityTestDriver(system, new TestEntity(system, TestProbe().ref), "1")

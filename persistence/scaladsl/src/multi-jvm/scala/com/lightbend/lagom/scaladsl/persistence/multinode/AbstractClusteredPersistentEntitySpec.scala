@@ -233,7 +233,11 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       val entities = for (n <- 10 to 29) yield registry.refFor[TestEntity](n.toString)
       val addresses = entities.map { ent =>
         val r                 = ent.ask(TestEntity.GetAddress)
-        val _: Future[String] = r.map(_.hostPort) // compile check that the reply type is inferred correctly
+        // scalafix:off
+        // The `val h` is unused but is the key of the test: we are checking the inferred type is
+        // `Future[String]`. Then, we need to disable scalafix so it doesn't remove this unused variable.
+        val h: Future[String] = r.map(_.hostPort) // compile check that the reply type is inferred correctly
+        // scalafix:on
         r.pipeTo(testActor)
         expectMsgType[Address]
       }.toSet

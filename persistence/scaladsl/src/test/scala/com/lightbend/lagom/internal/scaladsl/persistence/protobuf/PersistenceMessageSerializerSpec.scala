@@ -17,8 +17,13 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.PersistExceptio
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.UnhandledCommandException
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRef
 import com.lightbend.lagom.scaladsl.persistence.TestEntity
+<<<<<<< HEAD
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
+=======
+
+class PersistenceMessageSerializerSpec extends ActorSystemSpec {
+>>>>>>> test:scalafix RemovedUnused (any)
 
 class PersistenceMessageSerializerSpec
     extends ActorSystemSpec(JsonSerializerRegistry.actorSystemSetupFor(TestEntitySerializerRegistry)) {

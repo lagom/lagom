@@ -5,7 +5,6 @@
 package com.lightbend.lagom.it
 
 import java.util
-import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.ExecutionException
@@ -18,8 +17,6 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.stream.javadsl.{ Source => JSource }
 import akka.util.ByteString
-import com.lightbend.lagom.internal.api._
-import com.lightbend.lagom.internal.server._
 import com.lightbend.lagom.it.mocks._
 import com.lightbend.lagom.javadsl.api.Descriptor.Call
 import com.lightbend.lagom.javadsl.api.Descriptor.CallId

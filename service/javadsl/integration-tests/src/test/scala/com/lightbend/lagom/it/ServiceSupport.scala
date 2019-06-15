@@ -4,7 +4,6 @@
 
 package com.lightbend.lagom.it
 
-import java.util.Collections
 import java.util.function.{ Function => JFunction }
 
 import akka.stream.Materializer
@@ -13,21 +12,14 @@ import org.scalatest.Inside
 import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
 import play.api.Application
-import play.api.Configuration
-import play.api.Environment
 import play.inject.guice.GuiceApplicationBuilder
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import akka.japi.function.Procedure
-import com.google.inject.Binder
-import com.google.inject.Module
-import com.google.inject.TypeLiteral
 import com.lightbend.lagom.javadsl.testkit.ServiceTest
 import com.lightbend.lagom.javadsl.testkit.ServiceTest.TestServer
-import play.api.routing.Router
-import java.util
 
 import com.lightbend.lagom.internal.testkit.EmptyAdditionalRoutersModule
 

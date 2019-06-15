@@ -19,7 +19,6 @@ import com.lightbend.lagom.scaladsl.it.mocks.MockService
 import com.lightbend.lagom.scaladsl.it.mocks.MockServiceImpl
 import com.lightbend.lagom.scaladsl.server.LagomApplication
 import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
-import com.lightbend.lagom.scaladsl.server.LagomServer
 import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import com.typesafe.config.ConfigFactory

@@ -77,7 +77,6 @@ object TestEntity {
 
     import play.api.libs.json._
     import JsonSerializer.emptySingletonFormat
-    import SharedFormats._
 
     val serializers = Vector(
       // events
@@ -110,7 +109,6 @@ object TestEntity {
     val empty: State = State(Mode.Append, Nil)
 
     import play.api.libs.json._
-    import JsonSerializer.emptySingletonFormat
     import SharedFormats._
     val serializers = Vector(
       JsonSerializer(Json.format[State])

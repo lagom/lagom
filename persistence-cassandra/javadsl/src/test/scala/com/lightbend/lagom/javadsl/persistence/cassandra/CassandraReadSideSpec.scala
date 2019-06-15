@@ -7,13 +7,11 @@ package com.lightbend.lagom.javadsl.persistence.cassandra
 import java.util.concurrent.CompletionStage
 
 import akka.Done
-import com.google.inject.Guice
 import com.lightbend.lagom.internal.javadsl.persistence.cassandra.CassandraPersistentEntityRegistry
 import com.lightbend.lagom.internal.javadsl.persistence.cassandra.CassandraReadSideImpl
 import com.lightbend.lagom.internal.javadsl.persistence.cassandra.JavadslCassandraOffsetStore
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
-import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
 import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.ConfigFactory
 import play.api.inject.guice.GuiceInjectorBuilder

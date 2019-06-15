@@ -14,7 +14,6 @@ import com.lightbend.lagom.scaladsl.api.transport.ResponseHeader
 import play.api.mvc.Filter
 import play.api.mvc.Result
 import play.api.mvc.{ RequestHeader => PlayRequestHeader }
-import play.api.mvc.{ ResponseHeader => PlayResponseHeader }
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future

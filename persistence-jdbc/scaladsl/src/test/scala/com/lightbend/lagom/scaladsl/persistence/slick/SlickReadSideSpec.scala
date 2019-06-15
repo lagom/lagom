@@ -9,7 +9,6 @@ import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence._
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationDouble
 
 class SlickReadSideSpec extends SlickPersistenceSpec(TestEntitySerializerRegistry) with AbstractReadSideSpec {
   import system.dispatcher

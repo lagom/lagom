@@ -6,7 +6,6 @@ package com.lightbend.lagom.scaladsl.client.compile
 
 import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.ServiceCall
-import com.lightbend.lagom.scaladsl.client.ServiceClient
 import com.lightbend.lagom.scaladsl.client.ServiceClientConstructor
 import com.lightbend.lagom.scaladsl.client.ServiceClientImplementationContext
 import com.lightbend.lagom.macrotestkit.ShouldNotTypecheck

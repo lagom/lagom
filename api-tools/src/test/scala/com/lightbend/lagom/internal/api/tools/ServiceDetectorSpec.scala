@@ -163,7 +163,6 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
       )
     }
 
-    def minify(s: String) =
-      s.replace(" ", "").replace("\n", "")
+    
   }
 }

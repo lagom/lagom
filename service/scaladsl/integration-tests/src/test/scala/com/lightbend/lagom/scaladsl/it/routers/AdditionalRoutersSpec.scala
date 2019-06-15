@@ -4,8 +4,6 @@
 
 package com.lightbend.lagom.scaladsl.it.routers
 
-import akka.NotUsed
-import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.server.LagomApplication
 import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
 import com.lightbend.lagom.scaladsl.server.LagomServer
@@ -15,17 +13,12 @@ import com.lightbend.lagom.scaladsl.testkit.ServiceTest.TestServer
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.Matchers
 import org.scalatest.WordSpec
-import play.api.http.DefaultWriteables
-import play.api.http.HeaderNames
-import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc
 import play.api.mvc._
 import play.api.routing.SimpleRouterImpl
-import play.api.test.FakeHeaders
 import play.api.test.FakeRequest
 import play.api.test.Helpers
-import play.core.j.JavaRouterAdapter
 import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext

@@ -102,7 +102,7 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
 
     "notify when recovery is completed" in {
       val probe = TestProbe()
-      val p = system.actorOf(
+      system.actorOf(
         PersistentEntityActor
           .props("test", Some("3"), () => new TestEntity(system, Some(probe.ref)), None, 10.seconds, "", "")
       )
@@ -130,7 +130,7 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
       within(10.seconds) {
         awaitAssert {
           val probe2 = TestProbe()
-          val p2 = system.actorOf(
+          system.actorOf(
             PersistentEntityActor
               .props("test", Some("4"), () => new TestEntity(system, Some(probe2.ref)), Some(3), 10.seconds, "", "")
           )

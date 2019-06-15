@@ -14,7 +14,6 @@ import org.scalatest.Inside
 import org.scalatest.Matchers
 import org.scalatest.WordSpec
 
-import scala.collection.immutable
 import scala.concurrent.Future
 
 class ServiceClientSpec extends WordSpec with Matchers with Inside {

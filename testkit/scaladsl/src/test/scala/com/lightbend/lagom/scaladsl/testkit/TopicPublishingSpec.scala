@@ -13,7 +13,6 @@ import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceCo
 import com.lightbend.lagom.scaladsl.playjson.EmptyJsonSerializerRegistry
 import com.lightbend.lagom.scaladsl.server.LagomApplication
 import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
-import com.lightbend.lagom.scaladsl.server.LagomServer
 import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
 import com.lightbend.lagom.scaladsl.testkit.services.AlphaEvent
 import com.lightbend.lagom.scaladsl.testkit.services.AlphaService

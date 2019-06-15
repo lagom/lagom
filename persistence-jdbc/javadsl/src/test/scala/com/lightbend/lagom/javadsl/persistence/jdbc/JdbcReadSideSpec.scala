@@ -13,7 +13,6 @@ import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.javadsl.persistence._
 import play.api.inject.guice.GuiceInjectorBuilder
 
-import scala.concurrent.duration._
 
 class JdbcReadSideSpec extends JdbcPersistenceSpec with AbstractReadSideSpec {
   private lazy val injector                            = new GuiceInjectorBuilder().build()

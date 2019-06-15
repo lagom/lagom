@@ -46,7 +46,7 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
 
     "fail to read a Java service descriptor from a public interface because the path parameter could not be serialized" in {
       intercept[IllegalPathParameterException] {
-        val descriptor = serviceDescriptor[InvalidPathParameterService]
+        serviceDescriptor[InvalidPathParameterService]
       }
     }
 
