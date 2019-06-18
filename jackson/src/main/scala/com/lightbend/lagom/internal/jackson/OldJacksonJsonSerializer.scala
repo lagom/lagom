@@ -9,8 +9,8 @@ import akka.event.Logging
 import akka.serialization.BaseSerializer
 import akka.serialization.SerializationExtension
 import akka.serialization.SerializerWithStringManifest
-import akka.serialization.jackson.JacksonJsonSerializer
 import akka.serialization.jackson.JacksonMigration
+import com.lightbend.lagom.serialization.Jsonable
 
 /**
  * Placeholder for Lagom 1.5.x JacksonSerializer.
@@ -24,7 +24,7 @@ private[lagom] class OldJacksonJsonSerializer(val system: ExtendedActorSystem)
   private val log = Logging.getLogger(system, getClass)
   private lazy val jacksonJsonSerializer: SerializerWithStringManifest = {
     SerializationExtension(system)
-      .serializerByIdentity(JacksonJsonSerializer.Identifier)
+      .serializerFor(classOf[Jsonable])
       .asInstanceOf[SerializerWithStringManifest]
   }
 

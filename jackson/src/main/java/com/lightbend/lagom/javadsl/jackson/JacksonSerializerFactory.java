@@ -42,9 +42,7 @@ public class JacksonSerializerFactory implements SerializerFactory {
   @Inject
   public JacksonSerializerFactory(ActorSystem system) {
     // FIXME missing javadsl, Optional
-    this(
-        JacksonObjectMapperProvider.get(system)
-            .getOrCreate(JacksonJsonSerializer.Identifier(), Option.empty()));
+    this(JacksonObjectMapperProvider.get(system).getOrCreate("jackson-json", Option.empty()));
   }
 
   /** For testing purposes */

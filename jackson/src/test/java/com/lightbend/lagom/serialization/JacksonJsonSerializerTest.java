@@ -92,7 +92,8 @@ public class JacksonJsonSerializerTest {
       int serializerId = serializer.identifier();
 
       // check that it is configured to the Akka JacksonJsonSerializer
-      assertEquals(JacksonJsonSerializer.Identifier(), serializerId);
+      assertEquals(
+          "akka.serialization.jackson.JacksonJsonSerializer", serializer.getClass().getName());
 
       // verify serialization-deserialization round trip
       byte[] blob = serializer.toBinary(obj);
@@ -151,7 +152,7 @@ public class JacksonJsonSerializerTest {
   @Test
   public void testBigCompressedJsonableMessage() {
     StringBuilder b = new StringBuilder();
-    for (int i = 0; i < 10 * 1024; i++) {
+    for (int i = 0; i < 32 * 1024; i++) {
       b.append("a");
     }
     LargeCommand msg = LargeCommand.of(b.toString());
@@ -341,7 +342,7 @@ public class JacksonJsonSerializerTest {
                 "com.lightbend.lagom.serialization.Greeting",
                 "{'message':'Hello','timestamp':[2019,5,23,9,54,32,174000000]}",
                 Greeting.of("Hello", LocalDateTime.of(2019, 5, 23, 9, 54, 32, 174000000)),
-                true),
+                false), // different date format
             new CompatData(
                 oldSerializerId,
                 "com.lightbend.lagom.serialization.LargeCommand",

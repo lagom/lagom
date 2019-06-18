@@ -290,12 +290,14 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
   )(block: Application => MockService => Unit)(implicit httpBackend: HttpBackend): Unit = {
 
     val environment = Environment.simple(mode = mode)
+
+    val jacksonConfig = JacksonObjectMapperProvider.configForBinding("jackson-json", ConfigFactory.load())
     val jacksonSerializerFactory = new JacksonSerializerFactory(
       JacksonObjectMapperProvider.createObjectMapper(
-        serializerIdentifier = JacksonJsonSerializer.Identifier,
+        bindingName = "jackson-json",
         jsonFactory = None,
         objectMapperFactory = new JacksonObjectMapperFactory,
-        ConfigFactory.load(),
+        jacksonConfig,
         new ReflectiveDynamicAccess(environment.classLoader),
         None
       )
