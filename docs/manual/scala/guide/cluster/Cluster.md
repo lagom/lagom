@@ -110,16 +110,16 @@ You can define some initial contact points of the cluster, so-called seed nodes 
 
 ```
 akka.cluster.seed-nodes = [
-  "akka://MyService@host1:2552",
-  "akka://MyService@host2:2552"]
+  "akka://MyService@host1:25520",
+  "akka://MyService@host2:25520"]
 ```
 
 Alternatively, this can be defined as Java system properties when starting the JVM:
 
 ```
 -Dlagom.cluster.bootstrap.enabled=false
--Dakka.cluster.seed-nodes.0=akka://MyService@host1:2552
--Dakka.cluster.seed-nodes.1=akka://MyService@host2:2552
+-Dakka.cluster.seed-nodes.0=akka://MyService@host1:25520
+-Dakka.cluster.seed-nodes.1=akka://MyService@host2:25520
 ```
 
 The node that is configured first in the list of `seed-nodes` is special. Only that node that will join itself. It is used for bootstrapping the cluster.
