@@ -93,7 +93,8 @@ public class JacksonJsonSerializerTest {
       // verify serialization-deserialization round trip
       byte[] blob = serializer.toBinary(obj);
 
-      if (!isGZipped(blob)) System.out.println(obj + " -> " + new String(blob, "utf-8"));
+      if (!isGZipped(blob) && blob.length <= 200)
+        System.out.println(obj + " -> " + new String(blob, "utf-8"));
 
       assertEquals(expectedCompression, isGZipped(blob));
       Object obj2 = serialization.deserialize(blob, serializerId, manifest).get();
@@ -147,12 +148,22 @@ public class JacksonJsonSerializerTest {
   @Test
   public void testBigCompressedJsonableMessage() {
     StringBuilder b = new StringBuilder();
-    for (int i = 0; i < 32 * 1024; i++) {
+    for (int i = 0; i < 1024; i++) {
       b.append("a");
     }
     LargeCommand msg = LargeCommand.of(b.toString());
     assertEquals(true, msg instanceof CompressedJsonable);
     checkSerialization(msg, true);
+  }
+
+  @Test
+  public void testBigJsonableMessage() {
+    StringBuilder b = new StringBuilder();
+    for (int i = 0; i < 32 * 1024; i++) {
+      b.append("a");
+    }
+    LargeNoCompressionCommand msg = LargeNoCompressionCommand.of(b.toString());
+    checkSerialization(msg, false);
   }
 
   @Test
