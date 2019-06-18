@@ -34,6 +34,8 @@ import java.util.Optional;
 @Singleton
 public class JacksonSerializerFactory implements SerializerFactory {
 
+  public static String BINDING_NAME = "jackson-json-serviceapi";
+
   private final MessageProtocol defaultProtocol =
       new MessageProtocol(Optional.of("application/json"), Optional.of("utf-8"), Optional.empty());
 
@@ -42,7 +44,7 @@ public class JacksonSerializerFactory implements SerializerFactory {
   @Inject
   public JacksonSerializerFactory(ActorSystem system) {
     // FIXME missing javadsl, Optional
-    this(JacksonObjectMapperProvider.get(system).getOrCreate("jackson-json", Option.empty()));
+    this(JacksonObjectMapperProvider.get(system).getOrCreate(BINDING_NAME, Option.empty()));
   }
 
   /** For testing purposes */
