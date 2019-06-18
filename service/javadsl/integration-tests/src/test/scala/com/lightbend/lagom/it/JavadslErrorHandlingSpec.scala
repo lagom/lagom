@@ -291,7 +291,8 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
 
     val environment = Environment.simple(mode = mode)
 
-    val jacksonConfig = JacksonObjectMapperProvider.configForBinding("jackson-json", ConfigFactory.load())
+    val jacksonConfig =
+      JacksonObjectMapperProvider.configForBinding(JacksonSerializerFactory.BINDING_NAME, ConfigFactory.load())
     val jacksonSerializerFactory = new JacksonSerializerFactory(
       JacksonObjectMapperProvider.createObjectMapper(
         bindingName = "jackson-json",
