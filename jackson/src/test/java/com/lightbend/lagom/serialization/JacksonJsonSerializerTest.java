@@ -6,13 +6,10 @@ package com.lightbend.lagom.serialization;
 
 import static org.junit.Assert.assertEquals;
 
-import akka.actor.ExtendedActorSystem;
 import akka.serialization.Serialization;
 import akka.serialization.Serializer;
 import akka.serialization.SerializerWithStringManifest;
 import akka.serialization.Serializers;
-import akka.serialization.jackson.JacksonJsonSerializer;
-import com.lightbend.lagom.internal.jackson.OldJacksonJsonSerializer;
 import org.pcollections.TreePVector;
 
 import org.pcollections.PVector;
@@ -60,8 +57,6 @@ public class JacksonJsonSerializerTest {
 
   private final Serialization serialization = SerializationExtension.get(system);
 
-  private final OldJacksonJsonSerializer oldSerializer =
-      new OldJacksonJsonSerializer((ExtendedActorSystem) system);
   private final int oldSerializerId = 1000002;
 
   static class CompatData {
