@@ -86,6 +86,9 @@ def bintraySettings: Seq[Setting[_]] = Seq(
   bintrayReleaseOnPublish := false
 )
 
+// Customise sbt-dynver's behaviour to make it work with Lagom's tags (which aren't v-prefixed)
+dynverVTagPrefix in ThisBuild := false
+
 def releaseSettings: Seq[Setting[_]] = Seq(
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   releaseTagName := (version in ThisBuild).value,
