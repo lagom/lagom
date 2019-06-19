@@ -26,6 +26,9 @@ before_install:
   - curl -Ls https://git.io/jabba | bash && . ~/.jabba/jabba.sh
 install: jabba install "$TRAVIS_JDK" && jabba use $_ && java -Xmx32m -version
 
+git:
+  depth: false # Avoid sbt-dynver not seeing the tag
+
 stages:
   - validations-and-test
   - test-build-tools

@@ -1,3 +1,6 @@
+import akka.JavaVersion
+import akka.CrossJava
+
 val ScalaVersion = "2.12.8"
 
 val AkkaVersion: String   = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M3")
@@ -53,20 +56,11 @@ lazy val docs = project
     javacOptions ++= Seq(
       "-encoding",
       "UTF-8",
-      "-source",
-      "1.8",
-      "-target",
-      "1.8",
       "-parameters",
       "-Xlint:unchecked",
-      "-Xlint:deprecation"
-      // Enabling '-Werror' causes the build to fail on Java 11 because
-      // of "bootstrap class path not set in conjunction with -source 8".
-      // The problem is using JDK N to compile for '-source M' whithout
-      // specifying '-bootclasspath /path/to/jdk-M/jre/lib/rt.jar' (note
-      // it's M's rt.jar that's needed)
-      // "-Werror"
-    ),
+      "-Xlint:deprecation",
+      "-Werror"
+    ) ++ JavaVersion.sourceAndTarget(CrossJava.Keys.fullJavaHomes.value("8")),
     testOptions in Test += Tests.Argument("-oDF"),
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
     // This is needed so that Java APIs that use immutables will typecheck by the Scala compiler
