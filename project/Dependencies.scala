@@ -299,7 +299,7 @@ object Dependencies {
       "net.jodah"         % "typetools"    % "0.5.0",
       "org.lz4"           % "lz4-java"     % "1.5.0",
       "com.github.luben"  % "zstd-jni"     % "1.3.7-1",
-      "org.agrona"        % "agrona"       % "0.9.31",
+      "org.agrona"        % "agrona"       % "1.0.1",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.17",
