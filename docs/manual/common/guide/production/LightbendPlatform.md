@@ -4,15 +4,20 @@ Lagom is part of the [Lightbend Platform](https://www.lightbend.com/lightbend-pl
 
 This page highlights the Lightbend Platform features that are especially useful for most Lagom users, but there are many more. You can find an overview on the [Lightbend web site](https://www.lightbend.com/lightbend-platform) or [contact Lightbend](https://www.lightbend.com/contact) to learn more.
 
-## Akka Commercial Addons
+## Akka Enhancements
 
-Lagom is based on Akka, a set of open-source libraries for designing scalable, resilient systems that span processor cores and networks. [Akka Commercial Addons](https://doc.akka.io/docs/akka-enhancements/current/index.html) is a suite of useful components that complement Akka and Lagom. These can be included as dependencies of your Lagom services to enable their functionality. It includes:
+Lagom is based on Akka, a set of open-source libraries for designing scalable, resilient systems that span processor cores and networks. [Akka Enhancements](https://doc.akka.io/docs/akka-enhancements/current/) is a suite of useful components that complement Akka and Lagom, available as part of the [Lightbend Platform Subscription](https://www.lightbend.com/lightbend-platform-subscription). These can be included as dependencies of your Lagom services to enable their functionality. It includes:
+
+### Akka Resilience Enhancements
 
 * [Split Brain Resolver](https://doc.akka.io/docs/akka-enhancements/current/split-brain-resolver.html) - Improved resilience for Akka Cluster applications.
 * [Kubernetes Lease](https://doc.akka.io/docs/akka-enhancements/current/kubernetes-lease.html) - Kubernetes enhanced failure-recovery for Lagom and Akka Cluster apps.
 * [Thread Starvation Detector](https://doc.akka.io/docs/akka-enhancements/current/starvation-detector.html) - Flag performance bottlenecks.
 * [Configuration Checker](https://doc.akka.io/docs/akka-enhancements/current/config-checker.html) - Validate configuration against known issues.
 * [Diagnostics Recorder](https://doc.akka.io/docs/akka-enhancements/current/diagnostics-recorder.html) - Facilitates enhanced support from Lightbend.
+
+### Akka Persistence Enhancements
+
 * [Multi-DC Persistence](https://doc.akka.io/docs/akka-enhancements/current/persistence-dc/index.html) - Persistence across data centers.
 * [GDPR for Akka Persistence](https://doc.akka.io/docs/akka-enhancements/current/gdpr/index.html) - Safe deletion of confidential data.
 
