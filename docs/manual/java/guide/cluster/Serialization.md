@@ -14,13 +14,13 @@ Note that we're using the [[Immutables|Immutable]] library here, so this will ge
 
 ### Jackson Modules
 
-The following Jackson modules are enabled by default:
+The enabled Jackson modules are listed in the [Akka documentation](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html#jackson-modules), and additionally following Jackson modules are enabled by default:
 
 @[jackson-modules](../../../../../jackson/src/main/resources/reference.conf)
 
-You can amend the configuration `lagom.serialization.json.jackson-modules` to enable other modules.
+You can amend the configuration `akka.serialization.jackson.jackson-modules` to enable other modules.
 
-The [ParameterNamesModule](https://github.com/FasterXML/jackson-module-parameter-names) requires that the `-parameters` Java compiler option is enabled.
+The [ParameterNamesModule](https://github.com/FasterXML/jackson-modules-java8/tree/master/parameter-names) requires that the `-parameters` Java compiler option is enabled.
 
 The section [[Immutable Objects|Immutable]] contains more examples of classes that are `Jsonable`.
 
@@ -34,7 +34,7 @@ JSON can be rather verbose and for large messages it can be beneficial to enable
 
 @[compressed-jsonable](code/docs/home/serialization/AbstractAuthor.java)
 
-The serializer will by default only compress messages that are larger than 1024 bytes. This threshold can be changed with configuration property `lagom.serialization.json.compress-larger-than`.
+The serializer will by default only compress messages that are larger than 1024 bytes. This threshold can be changed with configuration property `akka.serialization.jackson.jackson-json-gzip.compress-larger-than`.
 
 ## Schema Evolution
 
@@ -64,7 +64,7 @@ Let's say we want to have a mandatory `discount` property without default value 
 
 @[add-mandatory](code/docs/home/serialization/v2b/AbstractItemAdded.java)
 
-To add a new mandatory field we have to use a JSON migration class and set the default value in the migration code, which extends the `JacksonJsonMigration`.
+To add a new mandatory field we have to use a JSON migration class and set the default value in the migration code, which extends the `JacksonMigration`.
 
 This is how a migration class would look like for adding a `discount` field:
 
@@ -76,7 +76,7 @@ Implement the transformation of the old JSON structure to the new JSON structure
 
 The migration class must be defined in configuration file:
 
-    lagom.serialization.json.migrations {
+    akka.serialization.jackson.migrations {
       "com.myservice.event.ItemAdded" = "com.myservice.event.ItemAddedMigration"
     }
 
@@ -130,6 +130,6 @@ Note the override of the `transformClassName` method to define the new class nam
 
 That type of migration must be configured with the old class name as key. The actual class can be removed.
 
-    lagom.serialization.json.migrations {
+    akka.serialization.jackson.migrations {
       "com.myservice.event.OrderAdded" = "com.myservice.event.OrderPlacedMigration"
     }

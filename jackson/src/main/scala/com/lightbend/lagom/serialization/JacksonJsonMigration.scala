@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode
  * class name you should override [[#transformClassName]] and return
  * current class name.
  */
+@deprecated("Use akka.serialization.jackson.JacksonMigration instead", "1.6.0")
 abstract class JacksonJsonMigration {
 
   /**
