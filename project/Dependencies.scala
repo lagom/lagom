@@ -175,6 +175,11 @@ object Dependencies {
       "jackson-datatype-jsr310",
       "jackson-datatype-guava",
       "jackson-datatype-pcollections",
+    ) ++ libraryFamily("com.fasterxml.jackson.module", Versions.JacksonDatatype)(
+      "jackson-module-parameter-names",
+      "jackson-module-paranamer"
+    ) ++ libraryFamily("com.fasterxml.jackson.dataformat", Versions.JacksonDatatype)(
+      "jackson-dataformat-cbor",
     )
 
   val scalaParserCombinatorOverrides = Seq(scalaParserCombinators)
@@ -191,7 +196,6 @@ object Dependencies {
     Seq(
       "aopalliance" % "aopalliance" % "1.0",
       cassandraDriverCore,
-      "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % Versions.Jackson,
       akkaPersistenceJdbc,
       "com.github.jnr"           % "jffi"                    % "1.2.16",
       "com.github.jnr"           % "jnr-constants"           % "0.9.9",
@@ -219,6 +223,7 @@ object Dependencies {
       akkaHttpRouteDsl,
       akkaHttpSprayJson,
       akkaStreamKafka,
+      akkaJackson,
       akkaParsing,
       akkaManagement,
       akkaManagementClusterHttp,
@@ -324,10 +329,12 @@ object Dependencies {
       "org.xerial.snappy" % "snappy-java"    % "1.1.7.2",
       "tyrex"             % "tyrex"          % "1.0.1",
       javaxAnnotationApi,
-      "org.scala-lang.modules" %% "scala-collection-compat" % "0.1.1",
-      "com.google.guava"       % "failureaccess"            % "1.0.1",
-      "com.google.guava"       % "listenablefuture"         % "9999.0-empty-to-avoid-conflict-with-guava",
-      "javax.activation"       % "javax.activation-api"     % "1.2.0"
+      "org.scala-lang.modules"       %% "scala-collection-compat" % "0.1.1",
+      "com.google.guava"             % "failureaccess"            % "1.0.1",
+      "com.google.guava"             % "listenablefuture"         % "9999.0-empty-to-avoid-conflict-with-guava",
+      "javax.activation"             % "javax.activation-api"     % "1.2.0",
+      "com.thoughtworks.paranamer"   % "paranamer"                % "2.8",
+      "com.fasterxml.jackson.module" %% "jackson-module-scala"    % Versions.JacksonDatatype,
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
       "akka-actor",
       "akka-cluster",
@@ -480,11 +487,13 @@ object Dependencies {
   val immutables = libraryDependencies += "org.immutables" % "value" % Versions.Immutables
 
   val jackson = libraryDependencies ++= Seq(
-    "com.fasterxml.jackson.module"   % "jackson-module-parameter-names" % Versions.Jackson,
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-pcollections"  % Versions.JacksonDatatype,
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-guava"         % Versions.JacksonDatatype,
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"          % Versions.JacksonDatatype,
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310"        % Versions.JacksonDatatype,
+    "com.fasterxml.jackson.module"     % "jackson-module-parameter-names" % Versions.Jackson,
+    "com.fasterxml.jackson.datatype"   % "jackson-datatype-pcollections"  % Versions.JacksonDatatype,
+    "com.fasterxml.jackson.datatype"   % "jackson-datatype-guava"         % Versions.JacksonDatatype,
+    "com.fasterxml.jackson.datatype"   % "jackson-datatype-jdk8"          % Versions.JacksonDatatype,
+    "com.fasterxml.jackson.datatype"   % "jackson-datatype-jsr310"        % Versions.JacksonDatatype,
+    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor"        % Versions.JacksonDatatype,
+    "com.fasterxml.jackson.module"     %% "jackson-module-scala"          % Versions.JacksonDatatype,
     // Upgrades needed to match whitelist
     sslConfig,
     pcollections,
