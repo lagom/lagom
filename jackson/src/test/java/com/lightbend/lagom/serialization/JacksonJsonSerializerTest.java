@@ -34,6 +34,9 @@ import akka.testkit.javadsl.TestKit;
 
 public class JacksonJsonSerializerTest {
 
+  // Keep this number in sync with the value set up in `reference.conf`
+  private static int COMPRESSION_THRESHOLD = 32 * 1024;
+
   static ActorSystem system;
 
   @BeforeClass
@@ -148,7 +151,7 @@ public class JacksonJsonSerializerTest {
   @Test
   public void testBigCompressedJsonableMessage() {
     StringBuilder b = new StringBuilder();
-    for (int i = 0; i < 1024; i++) {
+    for (int i = 0; i < COMPRESSION_THRESHOLD; i++) {
       b.append("a");
     }
     LargeCommand msg = LargeCommand.of(b.toString());
@@ -159,7 +162,7 @@ public class JacksonJsonSerializerTest {
   @Test
   public void testBigJsonableMessage() {
     StringBuilder b = new StringBuilder();
-    for (int i = 0; i < 32 * 1024; i++) {
+    for (int i = 0; i < COMPRESSION_THRESHOLD; i++) {
       b.append("a");
     }
     LargeNoCompressionCommand msg = LargeNoCompressionCommand.of(b.toString());
