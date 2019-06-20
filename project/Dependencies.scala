@@ -25,7 +25,6 @@ object Dependencies {
 
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M3")
     val AkkaHttp     = "10.1.8"
-    val Aeron        = "1.15.1"
 
     val AkkaPersistenceCassandra = "0.61"
     val AkkaPersistenceJdbc      = "3.5.0"
@@ -291,8 +290,6 @@ object Dependencies {
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
       "com.zaxxer"         % "HikariCP"        % "3.3.1",
       "commons-codec"      % "commons-codec"   % "1.11",
-      "io.aeron"           % "aeron-client"    % Versions.Aeron,
-      "io.aeron"           % "aeron-driver"    % Versions.Aeron,
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.9.1",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
@@ -305,7 +302,7 @@ object Dependencies {
       "net.jodah"         % "typetools"    % "0.5.0",
       "org.lz4"           % "lz4-java"     % "1.5.0",
       "com.github.luben"  % "zstd-jni"     % "1.3.7-1",
-      "org.agrona"        % "agrona"       % "0.9.31",
+      "org.agrona"        % "agrona"       % "1.0.1",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.17",
