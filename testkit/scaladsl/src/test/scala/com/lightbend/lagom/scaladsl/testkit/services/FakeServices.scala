@@ -18,6 +18,7 @@ import com.lightbend.lagom.scaladsl.server.LagomApplication
 import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
+import com.typesafe.config.ConfigFactory
 import play.api.Configuration
 import play.api.libs.ws.ahc.AhcWSComponents
 
@@ -66,14 +67,16 @@ abstract class DownstreamApplication(context: LagomApplicationContext)
 
   // This is a hack so C* persistence in this Applicaiton doesn't complain. C* Persistence is only used
   // so intances of this Application can mix-in a TopicComponents implementation (Test or Kafka)
-  override def additionalConfiguration: AdditionalConfiguration =
-    super.additionalConfiguration ++ Configuration.from(
+  override def additionalConfiguration: AdditionalConfiguration = {
+    import scala.collection.JavaConverters._
+    super.additionalConfiguration ++ ConfigFactory.parseMap(
       Map(
         "cassandra-journal.keyspace"                     -> "asdf",
         "cassandra-snapshot-store.keyspace"              -> "asdf",
         "lagom.persistence.read-side.cassandra.keyspace" -> "asdf"
-      )
+      ).asJava
     )
+  }
 
   override lazy val jsonSerializerRegistry: FakesSerializerRegistry.type = FakesSerializerRegistry
 

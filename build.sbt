@@ -306,7 +306,30 @@ def mimaSettings(since: String): Seq[Setting[_]] = {
         .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.serviceBindings"),
       ProblemFilters.exclude[ReversedMissingMethodProblem](
         "com.lightbend.lagom.scaladsl.server.LagomServer.serviceBinding"
-      )
+      ),
+      // Remove APIs deprecated in Lagom 1.4.x: https://github.com/lagom/lagom/pull/1987
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.++"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.this"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocator.this"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakingServiceLocator.this"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.RoundRobinServiceLocator.this"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.StaticServiceLocator.this"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator.this"),
+      ProblemFilters
+        .exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraContactPoint"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraConfig"),
+      ProblemFilters
+        .exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraContactPoint$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig"),
+      ProblemFilters
+        .exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint"),
     )
   )
 }

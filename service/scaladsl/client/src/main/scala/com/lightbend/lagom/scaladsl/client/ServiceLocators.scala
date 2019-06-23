@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.client.CircuitBreakerConfig
-import com.lightbend.lagom.internal.client.CircuitBreakers
 import com.lightbend.lagom.internal.client.ConfigExtensions
 import com.lightbend.lagom.internal.scaladsl.client.CircuitBreakersPanelImpl
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
@@ -36,10 +35,6 @@ import scala.concurrent.Future
  */
 abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext)
     extends ServiceLocator {
-
-  @deprecated(message = "Use constructor accepting CircuitBreakersPanel instead", since = "1.4.0")
-  def this(circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
-    this(new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
   /**
    * Do the given block with the given service looked up.
@@ -96,19 +91,6 @@ trait CircuitBreakerComponents extends LagomConfigComponent {
 
   lazy val circuitBreakerConfig: CircuitBreakerConfig = new CircuitBreakerConfig(config)
 
-  // for backward compatibility we still need to provide it for wiring
-  lazy val circuitBreakers: CircuitBreakers = {
-
-    // only in case some 3rd party lib are still wiring the old one.
-    actorSystem.log.warning(
-      "CircuitBreakers is deprecated, use CircuitBreakersPanel instead. This warning is probably caused by your " +
-        "service locator. If you are using a 3rd party service locator, upgrade your dependencies, otherwise this " +
-        "service locator could become incompatible with Lagom in future versions."
-    )
-
-    new CircuitBreakers(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
-  }
-
   lazy val circuitBreakersPanel: CircuitBreakersPanel =
     new CircuitBreakersPanelImpl(actorSystem, circuitBreakerConfig, circuitBreakerMetricsProvider)
 }
@@ -126,10 +108,6 @@ trait ConfigurationServiceLocatorComponents extends CircuitBreakerComponents {
  */
 class ConfigurationServiceLocator(config: Config, circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext)
     extends CircuitBreakingServiceLocator(circuitBreakers) {
-
-  @deprecated(message = "Use constructor accepting Config and CircuitBreakersPanel instead", since = "1.4.0")
-  def this(configuration: Configuration, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
-    this(configuration.underlying, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
   private val LagomServicesKey: String = "lagom.services"
 
@@ -189,10 +167,6 @@ trait StaticServiceLocatorComponents extends CircuitBreakerComponents {
 class StaticServiceLocator(uri: URI, circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext)
     extends CircuitBreakingServiceLocator(circuitBreakers) {
 
-  @deprecated(message = "Use constructor accepting CircuitBreakersPanel instead", since = "1.4.0")
-  def this(uri: URI, circuitBreakers: CircuitBreakers)(implicit ec: ExecutionContext) =
-    this(uri, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
-
   override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = Future.successful(Some(uri))
 }
 
@@ -212,12 +186,6 @@ trait RoundRobinServiceLocatorComponents extends CircuitBreakerComponents {
 class RoundRobinServiceLocator(uris: immutable.Seq[URI], circuitBreakers: CircuitBreakersPanel)(
     implicit ec: ExecutionContext
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {
-
-  @deprecated(message = "Use constructor accepting CircuitBreakersPanel instead", since = "1.4.0")
-  def this(uris: immutable.Seq[URI], circuitBreakers: com.lightbend.lagom.internal.client.CircuitBreakers)(
-      implicit ec: ExecutionContext
-  ) =
-    this(uris, new CircuitBreakersPanelImpl(circuitBreakers))(ec)
 
   private val counter = new AtomicInteger(0)
 
