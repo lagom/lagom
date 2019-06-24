@@ -39,7 +39,7 @@ JSON can be rather verbose and for large messages it can be beneficial to enable
 
 @[registry-compressed](code/docs/home/scaladsl/serialization/RegistryWithCompression.scala)
 
-The serializer will by default only compress messages that are larger than 1024 bytes. This threshold can be changed with configuration property:
+The serializer will by default only compress messages that are larger than 32Kb. This threshold can be changed with configuration property:
 
 @[compress-larger-than](../../../../../play-json/src/main/resources/reference.conf)
 
