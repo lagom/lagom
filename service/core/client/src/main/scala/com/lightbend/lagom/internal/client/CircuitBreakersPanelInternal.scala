@@ -116,10 +116,6 @@ private[lagom] class CircuitBreakersPanelInternal(
 
 @Singleton
 class CircuitBreakerConfig @Inject()(val configuration: Config) {
-
-  @deprecated(message = "prefer `config` using typesafe Config instead", since = "1.4.0")
-  def this(configuration: Configuration) = this(configuration.underlying)
-
   val config: Config  = configuration.getConfig("lagom.circuit-breaker")
   val default: Config = config.getConfig("default")
 }

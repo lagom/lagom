@@ -136,6 +136,9 @@ case class Box(surprise: Option[String])
 
 class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
+  // this is a magic number copied from src/main/reference.conf.
+  val COMPRESSION_THRESHOLD = 32 * 1024
+
   "The PlayJsonSerializer" should {
 
     "pick up serializers from configured registry" in withActorSystem(TestRegistry1) { system =>
@@ -284,7 +287,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
     "use compression when enabled and payload is bigger than threshold" in withActorSystem(TestRegistryWithCompression) {
       system =>
         val serializeExt = SerializationExtension(system)
-        val longContent  = "test" * 1024
+        val longContent  = "t" * COMPRESSION_THRESHOLD
         val bigEvent1    = Event1(longContent, 1)
         val bigEvent2    = Event2(longContent, Inner(on = true))
         val shortContent = "clearText-short"
@@ -294,7 +297,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
           val serializer = serializeExt.findSerializerFor(event).asInstanceOf[SerializerWithStringManifest]
 
           val bytes = serializer.toBinary(event)
-          bytes.length should be < 1024 // this is a magic number. I know longContent will compress well under this 1024.
+          bytes.length should be < COMPRESSION_THRESHOLD
           Compression.isGZipped(bytes) should be(true)
           val manifest = serializer.manifest(event)
 

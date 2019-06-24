@@ -86,6 +86,20 @@ def bintraySettings: Seq[Setting[_]] = Seq(
   bintrayReleaseOnPublish := false
 )
 
+// Customise sbt-dynver's behaviour to make it work with Lagom's tags (which aren't v-prefixed)
+dynverVTagPrefix in ThisBuild := false
+
+// Sanity-check: assert that version comes from a tag (e.g. not a too-shallow clone)
+// https://github.com/dwijnand/sbt-dynver/#sanity-checking-the-version
+Global / onLoad := (Global / onLoad).value.andThen { s =>
+  val v = version.value
+  if (dynverGitDescribeOutput.value.hasNoTags)
+    throw new MessageOnlyException(
+      s"Failed to derive version from git tags. Maybe run `git fetch --unshallow`? Version: $v"
+    )
+  s
+}
+
 def releaseSettings: Seq[Setting[_]] = Seq(
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   releaseTagName := (version in ThisBuild).value,
@@ -292,7 +306,30 @@ def mimaSettings(since: String): Seq[Setting[_]] = {
         .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.server.LagomServer.serviceBindings"),
       ProblemFilters.exclude[ReversedMissingMethodProblem](
         "com.lightbend.lagom.scaladsl.server.LagomServer.serviceBinding"
-      )
+      ),
+      // Remove APIs deprecated in Lagom 1.4.x: https://github.com/lagom/lagom/pull/1987
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.++"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.this"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocator.this"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakingServiceLocator.this"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.RoundRobinServiceLocator.this"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.StaticServiceLocator.this"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator.this"),
+      ProblemFilters
+        .exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraContactPoint"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraConfig"),
+      ProblemFilters
+        .exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraContactPoint$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig"),
+      ProblemFilters
+        .exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint"),
     )
   )
 }

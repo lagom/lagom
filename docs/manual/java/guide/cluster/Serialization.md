@@ -34,7 +34,7 @@ JSON can be rather verbose and for large messages it can be beneficial to enable
 
 @[compressed-jsonable](code/docs/home/serialization/AbstractAuthor.java)
 
-The serializer will by default only compress messages that are larger than 1024 bytes. This threshold can be changed with configuration property `akka.serialization.jackson.jackson-json-gzip.compress-larger-than`.
+The serializer will by default only compress messages that are larger than 32 Kb. This threshold can be changed with configuration property `akka.serialization.jackson.jackson-json-gzip.compress-larger-than`.
 
 ## Schema Evolution
 
