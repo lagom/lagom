@@ -89,15 +89,6 @@ class PlayRegisterWithServiceRegistry @Inject()(
     applicationLifecycle: ApplicationLifecycle
 ) {
 
-  @deprecated(message = "prefer constructor using typesafe Config instead", since = "1.4.0")
-  def this(
-      config: Configuration,
-      serviceInfo: ServiceInfo,
-      serviceRegistry: ServiceRegistry,
-      applicationLifecycle: ApplicationLifecycle
-  ) =
-    this(config.underlying, serviceInfo, serviceRegistry, applicationLifecycle)
-
   val uris = serviceDnsRecords(config)
 
   private val serviceAcls = serviceInfo.getAcls

@@ -58,3 +58,7 @@ akka.serialization.jackson {
 
 * `lagom.serialization.json.compress-larger-than` is now configured with `akka.serialization.jackson.jackson-json-gzip.compress-larger-than`
 * `lagom.serialization.json.jackson-modules` is now configured in `akka.serialization.jackson.jackson-modules`
+
+#### JSON Compression threshold
+
+When marking a serializable class with `CompressedJsonable` compression will only kick in when the serialized representation goes past a threshold. The default value for `akka.serialization.jackson.jackson-json-gzip.compress-larger-than` is 32 Kilobytes. As mentioned above, this setting was previously configure by `lagom.serialization.json.compress-larger-than` and defaulted to 1024 bytes. (See [#1983](https://github.com/lagom/lagom/pull/1983))

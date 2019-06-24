@@ -33,19 +33,11 @@ trait ProvidesAdditionalConfiguration {
  */
 final class AdditionalConfiguration private (private[lagom] val configuration: Config) {
 
-  @deprecated(message = "prefer constructor using typesafe Config instead", since = "1.4.0")
-  def this(configuration: Configuration) = this(configuration.underlying)
-
   /**
    * Add configuration to the additional configuration.
    */
   def ++(configurationToAdd: Config): AdditionalConfiguration = {
     new AdditionalConfiguration(configuration.withFallback(configurationToAdd))
-  }
-
-  @deprecated(message = "prefer method using typesafe Config instead", since = "1.4.0")
-  def ++(configurationToAdd: Configuration): AdditionalConfiguration = {
-    this.++(configurationToAdd.underlying)
   }
 
 }
