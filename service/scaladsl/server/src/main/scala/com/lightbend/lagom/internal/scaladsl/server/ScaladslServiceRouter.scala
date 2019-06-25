@@ -59,9 +59,9 @@ class ScaladslServiceRouter(
       val args = params
         .zip(holder.pathParamSerializers)
         .map {
-          case (params, serializer) => serializer.deserialize(params.to[immutable.Seq])
+          case (params, serializer) => serializer.deserialize(params.toIndexedSeq)
         }
-        .to[immutable.Seq]
+        .toIndexedSeq
 
       holder.invoke(service, args.asInstanceOf[immutable.Seq[AnyRef]]).asInstanceOf[ServiceCall[Any, Any]]
     }

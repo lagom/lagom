@@ -111,7 +111,7 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
    */
   def describeService: Option[Descriptor] = None
 
-  final override def discoverServices(classLoader: ClassLoader): util.List[ServiceDescription] = {
+  final override def discoverServices(classLoader: ClassLoader) = {
     import scala.collection.JavaConverters._
     doDiscovery(classLoader).asJava
   }

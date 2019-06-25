@@ -107,9 +107,11 @@ object SbtMavenPlugin extends AutoPlugin {
       toRun: Option[String],
       log: Logger
   ) = {
-    val testsToRun = toRun.fold(testDirectory.listFiles().toSeq.filter(_.isDirectory)) { dir =>
-      Seq(testDirectory / dir)
-    }
+    val testsToRun: Seq[File] = toRun
+      .fold(testDirectory.listFiles().toSeq.filter(_.isDirectory)) { dir =>
+        Seq(testDirectory / dir)
+      }
+      .filter(testDir => (testDir / "test").exists)
 
     val results = testsToRun.map { test =>
       log.info(s"${scala.Console.BOLD} Executing: ${test} ${scala.Console.RESET}")
