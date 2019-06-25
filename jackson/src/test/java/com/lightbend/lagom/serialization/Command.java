@@ -31,6 +31,14 @@ public interface Command extends Jsonable {
 
   @Value.Immutable
   @ImmutableStyle
+  @JsonDeserialize(as = LargeNoCompressionCommand.class)
+  public interface AbstractLargeNoCompressionCommand extends Command, Jsonable {
+    @Value.Parameter
+    String getPayload();
+  }
+
+  @Value.Immutable
+  @ImmutableStyle
   @JsonDeserialize(as = OptionalCommand.class)
   public interface AbstractOptionalCommand extends Command {
     @Value.Parameter

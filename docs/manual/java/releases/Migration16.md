@@ -29,8 +29,36 @@ addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.0")
 
 We also recommend upgrading to sbt 1.2.8 or later, by updating the `sbt.version` in `project/build.properties`.
 
-## Minor changes
+### Jackson serialization
 
-### JSON Compression threshold
+Lagom is now using the Jackson serializer from Akka, which is an improved version of the serializer in Lagom 1.5. You can find more information about the Akka Jackson serializer in the [Akka documentation](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html). It is compatible with Lagom 1.5 in both directions.
 
-When marking a serializable class with `CompressedJsonable` compression will only kick in when the serialized representation goes past a threshold. The default value for `lagom.serialization.json.compress-larger-than` has been increased from 1024 bytes to 32 Kilobytes. (See [#1983](https://github.com/lagom/lagom/pull/1983))
+#### JacksonJsonMigration
+
+If you have used `JacksonJsonMigration` classes they must be changed to extend `akka.serialization.jackson.JacksonMigration` instead. It has the same method signatures as the deprecated `JacksonJsonMigration`.
+
+The configuration in `lagom.serialization.json.migrations` must be moved to `akka.serialization.jackson.migrations`.
+It has the same structure.
+
+#### Service API
+
+The default settings for the `ObjectMapper` that is used for JSON serialization in the Service API now uses `ISO-8601` date formats. The default in previous versions of Lagom was to use Jackson private format which can be more time and/or space efficient. The reason for this change is that the ISO format is a better default for interoperability.
+
+If you want your Service API to produce the same output for types like `java.time.Instant`or `java.time.LocalDateTime` adjust the configuration for the `ObjectMapper` in your `application.conf`:
+
+```
+akka.serialization.jackson {
+  # Configuration of the ObjectMapper for external service api
+  jackson-json-serviceapi {
+     WRITE_DATES_AS_TIMESTAMPS = on # Serializes dates using Jackson custom formats
+  }
+}
+
+#### Configuration changes
+
+* `lagom.serialization.json.compress-larger-than` is now configured with `akka.serialization.jackson.jackson-json-gzip.compress-larger-than`
+* `lagom.serialization.json.jackson-modules` is now configured in `akka.serialization.jackson.jackson-modules`
+
+#### JSON Compression threshold
+
+When marking a serializable class with `CompressedJsonable` compression will only kick in when the serialized representation goes past a threshold. The default value for `akka.serialization.jackson.jackson-json-gzip.compress-larger-than` is 32 Kilobytes. As mentioned above, this setting was previously configure by `lagom.serialization.json.compress-larger-than` and defaulted to 1024 bytes. (See [#1983](https://github.com/lagom/lagom/pull/1983))

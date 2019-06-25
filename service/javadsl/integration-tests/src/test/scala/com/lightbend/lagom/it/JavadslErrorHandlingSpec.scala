@@ -10,10 +10,10 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+
 import javax.inject.Singleton
 import javax.inject.Inject
 import javax.inject.Provider
-
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.stream.javadsl.{ Source => JSource }
@@ -41,16 +41,18 @@ import play.api.Application
 import play.api.Environment
 import play.api.Mode
 import play.api.inject._
-
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.Await
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.collection.JavaConverters._
 import scala.util.control.NonFatal
+
 import com.typesafe.config.ConfigFactory
 import akka.actor.ReflectiveDynamicAccess
-import com.lightbend.lagom.internal.jackson.JacksonObjectMapperProvider
+import akka.serialization.jackson.JacksonJsonSerializer
+import akka.serialization.jackson.JacksonObjectMapperFactory
+import akka.serialization.jackson.JacksonObjectMapperProvider
 import com.lightbend.lagom.internal.javadsl.api._
 import com.lightbend.lagom.internal.javadsl.client.JavadslServiceClientImplementor
 import com.lightbend.lagom.internal.javadsl.server._
@@ -288,12 +290,18 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
   )(block: Application => MockService => Unit)(implicit httpBackend: HttpBackend): Unit = {
 
     val environment = Environment.simple(mode = mode)
+
+    val jacksonConfig =
+      JacksonObjectMapperProvider.configForBinding(JacksonSerializerFactory.BINDING_NAME, ConfigFactory.load())
     val jacksonSerializerFactory = new JacksonSerializerFactory(
-      new JacksonObjectMapperProvider(
-        ConfigFactory.load(),
+      JacksonObjectMapperProvider.createObjectMapper(
+        bindingName = "jackson-json",
+        jsonFactory = None,
+        objectMapperFactory = new JacksonObjectMapperFactory,
+        jacksonConfig,
         new ReflectiveDynamicAccess(environment.classLoader),
         None
-      ).objectMapper
+      )
     )
     val jacksonExceptionSerializer = new JacksonExceptionSerializer(new play.Environment(environment))
     val descriptor                 = ServiceReader.readServiceDescriptor(environment.classLoader, classOf[MockService])

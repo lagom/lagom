@@ -6,6 +6,8 @@ package com.lightbend.lagom.javadsl.jackson;
 
 import akka.Done;
 import akka.actor.ActorSystem;
+import akka.serialization.jackson.JacksonJsonSerializer;
+import akka.serialization.jackson.JacksonObjectMapperProvider;
 import akka.util.ByteString;
 import akka.util.ByteString$;
 import akka.util.ByteStringBuilder;
@@ -13,7 +15,6 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.lightbend.lagom.internal.jackson.JacksonObjectMapperProvider;
 import com.lightbend.lagom.javadsl.api.deser.DeserializationException;
 import com.lightbend.lagom.javadsl.api.deser.SerializationException;
 import com.lightbend.lagom.javadsl.api.deser.SerializerFactory;
@@ -21,6 +22,7 @@ import com.lightbend.lagom.javadsl.api.deser.StrictMessageSerializer;
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol;
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
+import scala.Option;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -32,6 +34,8 @@ import java.util.Optional;
 @Singleton
 public class JacksonSerializerFactory implements SerializerFactory {
 
+  public static String BINDING_NAME = "jackson-json-serviceapi";
+
   private final MessageProtocol defaultProtocol =
       new MessageProtocol(Optional.of("application/json"), Optional.of("utf-8"), Optional.empty());
 
@@ -39,7 +43,8 @@ public class JacksonSerializerFactory implements SerializerFactory {
 
   @Inject
   public JacksonSerializerFactory(ActorSystem system) {
-    this(JacksonObjectMapperProvider.get(system).objectMapper());
+    // FIXME missing javadsl, Optional
+    this(JacksonObjectMapperProvider.get(system).getOrCreate(BINDING_NAME, Option.empty()));
   }
 
   /** For testing purposes */
