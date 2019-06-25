@@ -359,12 +359,12 @@ object Descriptor {
       locatableService: Boolean = true,
       circuitBreaker: CircuitBreaker = CircuitBreaker.PerNode
   ) extends Descriptor {
-    override def withCalls(calls: Call[_, _]*): Descriptor     = copy(calls = calls.to[immutable.Seq])
-    override def withTopics(topics: TopicCall[_]*): Descriptor = copy(topics = topics.to[immutable.Seq])
+    override def withCalls(calls: Call[_, _]*): Descriptor     = copy(calls = calls.toIndexedSeq)
+    override def withTopics(topics: TopicCall[_]*): Descriptor = copy(topics = topics.toIndexedSeq)
     override def withExceptionSerializer(exceptionSerializer: ExceptionSerializer): Descriptor =
       copy(exceptionSerializer = exceptionSerializer)
     override def withAutoAcl(autoAcl: Boolean): Descriptor                      = copy(autoAcl = autoAcl)
-    override def withAcls(acls: ServiceAcl*): Descriptor                        = copy(acls = acls.to[immutable.Seq])
+    override def withAcls(acls: ServiceAcl*): Descriptor                        = copy(acls = acls.toIndexedSeq)
     override def withHeaderFilter(headerFilter: HeaderFilter): Descriptor       = copy(headerFilter = headerFilter)
     override def withLocatableService(locatableService: Boolean): Descriptor    = copy(locatableService = locatableService)
     override def withCircuitBreaker(circuitBreaker: CircuitBreaker): Descriptor = copy(circuitBreaker = circuitBreaker)

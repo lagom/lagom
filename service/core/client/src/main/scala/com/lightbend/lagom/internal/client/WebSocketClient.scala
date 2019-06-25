@@ -179,7 +179,7 @@ private[lagom] abstract class WebSocketClient(
               }
               .groupBy(_._1.toLowerCase(Locale.ENGLISH))
               .map {
-                case (key, values) => key -> values.to[immutable.Seq]
+                case (key, values) => key -> values.toIndexedSeq
               }
 
             // See if the response is an error response

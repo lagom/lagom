@@ -4,12 +4,13 @@
 
 package com.lightbend.lagom.scaladsl.api.deser
 
+import scala.language.higherKinds
+
 import java.util.UUID
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.immutable
 import scala.collection.immutable.Seq
-import scala.language.higherKinds
 
 /**
  * A path param serializer is responsible for serializing and deserializing parameters that are extracted from and
@@ -128,7 +129,7 @@ trait LowPriorityPathParamSerializers {
     }
 
     new NamedPathParamSerializer[CC[Param]](name) {
-      override def serialize(parameter: CC[Param]): Seq[String] = parameter.flatMap(delegate.serialize).to[Seq]
+      override def serialize(parameter: CC[Param]): Seq[String] = parameter.flatMap(delegate.serialize).toIndexedSeq
       override def deserialize(parameters: Seq[String]): CC[Param] = {
         val builder = bf()
         builder.sizeHint(parameters)
