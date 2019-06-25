@@ -15,7 +15,6 @@ import akka.stream.javadsl.Flow;
 import com.lightbend.lagom.javadsl.client.integration.LagomClientFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import sample.hellostream.api.HelloStream;
 import sample.helloworld.api.GreetingMessage;
@@ -107,7 +106,6 @@ public class StartAllIT {
         );
     }
 
-    @Ignore
     @Test
     public void kafkaIsStarted() throws Exception {
         String topicName = "greetings";

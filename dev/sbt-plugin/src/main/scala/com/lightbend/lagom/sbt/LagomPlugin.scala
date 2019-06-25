@@ -436,7 +436,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     lagomServiceEnableSsl := false,
     onLoad := onLoad.value
       .andThen(assignProjectsPort)
-      .andThen(DynamicProjectAdder.addProjects(serviceLocatorProject, cassandraProject /* , kafkaServerProject */ ))
+      .andThen(DynamicProjectAdder.addProjects(serviceLocatorProject, cassandraProject, kafkaServerProject))
   )
 
   private def assignProjectsPort(state: State): State = {
@@ -633,8 +633,8 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     }
 
     Def.task {
-      // maybeService(lagomKafkaEnabled.value, lagomKafkaStart.taskValue) ++
-      maybeService(lagomCassandraEnabled.value, lagomCassandraStart.taskValue) ++
+      maybeService(lagomKafkaEnabled.value, lagomKafkaStart.taskValue) ++
+        maybeService(lagomCassandraEnabled.value, lagomCassandraStart.taskValue) ++
         maybeService(lagomServiceLocatorEnabled.value, lagomServiceLocatorStart.taskValue)
     }
   }

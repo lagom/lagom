@@ -44,7 +44,7 @@ class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
   def subscribeWithMetadata = {
     //#subscribe-to-topic-with-metadata
     import com.lightbend.lagom.scaladsl.api.broker.Message
-    // import com.lightbend.lagom.scaladsl.broker.kafka.KafkaMetadataKeys
+    import com.lightbend.lagom.scaladsl.broker.kafka.KafkaMetadataKeys
 
     helloService
       .greetingsTopic()
@@ -52,10 +52,10 @@ class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
       .withMetadata
       .atLeastOnce(
         Flow[Message[GreetingMessage]].map { msg =>
-          // val greetingMessage = msg.payload
-          // val messageKey      = msg.messageKeyAsString
-          // val kafkaHeaders    = msg.get(KafkaMetadataKeys.Headers)
-          // println(s"Message: $greetingMessage Key: $messageKey Headers: $kafkaHeaders")
+          val greetingMessage = msg.payload
+          val messageKey      = msg.messageKeyAsString
+          val kafkaHeaders    = msg.get(KafkaMetadataKeys.Headers)
+          println(s"Message: $greetingMessage Key: $messageKey Headers: $kafkaHeaders")
           Done
         }
       )

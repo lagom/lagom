@@ -361,7 +361,7 @@ val javadslProjects = Seq[Project](
   `client-javadsl`,
   `broker-javadsl`,
   `kafka-client-javadsl`,
-//  `kafka-broker-javadsl`,
+  `kafka-broker-javadsl`,
   `akka-management-javadsl`,
   `akka-discovery-service-locator-javadsl`,
   `cluster-javadsl`,
@@ -381,7 +381,7 @@ val scaladslProjects = Seq[Project](
   `client-scaladsl`,
   `broker-scaladsl`,
   `kafka-client-scaladsl`,
-//  `kafka-broker-scaladsl`,
+  `kafka-broker-scaladsl`,
   `server-scaladsl`,
   `akka-management-scaladsl`,
   `akka-discovery-service-locator-scaladsl`,
@@ -647,7 +647,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
     `testkit-core`,
     `server-scaladsl`,
     `broker-scaladsl`,
-//    `kafka-broker-scaladsl`,
+    `kafka-broker-scaladsl`,
     `dev-mode-ssl-support`, // TODO: remove this when SSLContext provider is promoted to play or ssl-config
     `persistence-core`               % "compile;test->test",
     `persistence-scaladsl`           % "compile;test->test",
@@ -1035,45 +1035,45 @@ lazy val `kafka-broker` = (project in file("service/core/kafka/server"))
   .settings(runtimeLibCommon: _*)
   .dependsOn(`api`, `persistence-core`, `kafka-client`)
 
-//lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server"))
-//  .enablePlugins(RuntimeLibPlugins)
-//  .settings(runtimeLibCommon: _*)
-//  .settings(mimaSettings(since = version150): _*)
-//  .settings(forkedTests: _*)
-//  .settings(excludeLog4jFromKafkaServer: _*)
-//  .settings(
-//    name := "lagom-javadsl-kafka-broker",
-//    Dependencies.`kafka-broker-javadsl`,
-//    Dependencies.dependencyWhitelist ++= Dependencies.KafkaTestWhitelist
-//  )
-//  .dependsOn(
-//    `broker-javadsl`,
-//    `kafka-broker`,
-//    `kafka-client-javadsl`,
-//    `server-javadsl`,
-//    `kafka-server` % Test,
-//    logback        % Test
-//  )
-//
-//lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/server"))
-//  .enablePlugins(RuntimeLibPlugins)
-//  .settings(runtimeLibCommon: _*)
-//  .settings(mimaSettings(since = version150): _*)
-//  .settings(forkedTests: _*)
-//  .settings(excludeLog4jFromKafkaServer: _*)
-//  .settings(
-//    name := "lagom-scaladsl-kafka-broker",
-//    Dependencies.`kafka-broker-scaladsl`,
-//    Dependencies.dependencyWhitelist ++= Dependencies.KafkaTestWhitelist
-//  )
-//  .dependsOn(
-//    `broker-scaladsl`,
-//    `kafka-broker`,
-//    `kafka-client-scaladsl`,
-//    `server-scaladsl`,
-//    `kafka-server` % Test,
-//    logback        % Test
-//  )
+lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server"))
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since = version150): _*)
+  .settings(forkedTests: _*)
+  .settings(excludeLog4jFromKafkaServer: _*)
+  .settings(
+    name := "lagom-javadsl-kafka-broker",
+    Dependencies.`kafka-broker-javadsl`,
+    Dependencies.dependencyWhitelist ++= Dependencies.KafkaTestWhitelist,
+    libraryDependencies += organization.value % s"${(moduleName in `kafka-server`).value}_2.12" % version.value % Test,
+  )
+  .dependsOn(
+    `broker-javadsl`,
+    `kafka-broker`,
+    `kafka-client-javadsl`,
+    `server-javadsl`,
+    logback % Test,
+  )
+
+lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/server"))
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since = version150): _*)
+  .settings(forkedTests: _*)
+  .settings(excludeLog4jFromKafkaServer: _*)
+  .settings(
+    name := "lagom-scaladsl-kafka-broker",
+    Dependencies.`kafka-broker-scaladsl`,
+    Dependencies.dependencyWhitelist ++= Dependencies.KafkaTestWhitelist,
+    libraryDependencies += organization.value % s"${(moduleName in `kafka-server`).value}_2.12" % version.value % Test,
+  )
+  .dependsOn(
+    `broker-scaladsl`,
+    `kafka-broker`,
+    `kafka-client-scaladsl`,
+    `server-scaladsl`,
+    logback % Test,
+  )
 
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
@@ -1109,7 +1109,7 @@ lazy val devEnvironmentProjects = Seq[Project](
   `service-registry-client-javadsl`,
   `maven-java-archetype`,
   `maven-dependencies`,
-//  `kafka-server`,
+  `kafka-server`
 )
 
 lazy val `dev-environment` = (project in file("dev"))
@@ -1234,7 +1234,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
       // dev environment projects
       val () = (publishLocal in `cassandra-server`).value
       val () = (publishLocal in `dev-mode-ssl-support`).value
-//      val () = (publishLocal in `kafka-server`).value
+      val () = (publishLocal in `kafka-server`).value
       val () = (publishLocal in `reloadable-server`).value
       val () = (publishLocal in `sbt-build-tool-support`).value
       val () = publishLocal.value
@@ -1559,23 +1559,24 @@ lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
     Dependencies.`cassandra-server`
   )
 
-//lazy val `kafka-server` = (project in file("dev") / "kafka-server")
-//  .settings(common: _*)
-//  .settings(runtimeScalaSettings: _*)
-//  .settings(sonatypeSettings)
-//  .enablePlugins(RuntimeLibPlugins)
-//  .settings(
-//    name := "lagom-kafka-server",
-//    Dependencies.`kafka-server`
-//  )
-//
-//// kafka-server has a transitive dependency on slf4j-log4j12.
-//// This is required for running Kafka in development mode, where it runs in its own process and uses log4j 1.2.
-//// When running broker tests, Kafka is started in process, and its logs need to be routed to logback, which requires
-//// excluding slf4j-log4j12.
-//def excludeLog4jFromKafkaServer: Seq[Setting[_]] = Seq(
-//  libraryDependencies += (projectID in (`kafka-server`, Test)).value.exclude("org.slf4j", "slf4j-log4j12")
-//)
+lazy val `kafka-server` = (project in file("dev") / "kafka-server")
+  .settings(common: _*)
+  .settings(runtimeScalaSettings: _*)
+  .settings(sonatypeSettings)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    name := "lagom-kafka-server",
+    crossScalaVersions -= Dependencies.Versions.Scala213, // No Kafka for Scala 2.13, use Kafka for Scala 2.12
+    Dependencies.`kafka-server`
+  )
+
+// kafka-server has a transitive dependency on slf4j-log4j12.
+// This is required for running Kafka in development mode, where it runs in its own process and uses log4j 1.2.
+// When running broker tests, Kafka is started in process, and its logs need to be routed to logback, which requires
+// excluding slf4j-log4j12.
+def excludeLog4jFromKafkaServer: Seq[Setting[_]] = Seq(
+  libraryDependencies += (projectID in (`kafka-server`, Test)).value.exclude("org.slf4j", "slf4j-log4j12")
+)
 
 // Provides macros for testing macros. Is not published.
 lazy val `macro-testkit` = (project in file("macro-testkit"))

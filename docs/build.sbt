@@ -119,7 +119,7 @@ lazy val docs = project
     persistenceJdbcScaladsl,
     testkitJavadsl,
     testkitScaladsl,
-    // kafkaBrokerScaladsl,
+    kafkaBrokerScaladsl,
     playJson,
     pubsubScaladsl,
     akkaDiscoveryJavadsl,

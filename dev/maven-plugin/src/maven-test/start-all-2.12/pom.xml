@@ -25,7 +25,8 @@
                     <serviceLocatorPort>16101</serviceLocatorPort>
                     <serviceGatewayPort>16102</serviceGatewayPort>
                     <cassandraPort>16103</cassandraPort>
-                    <kafkaEnabled>false</kafkaEnabled>
+                    <kafkaPort>16104</kafkaPort>
+                    <zookeeperPort>16105</zookeeperPort>
                 </configuration>
             </plugin>
             <plugin>
