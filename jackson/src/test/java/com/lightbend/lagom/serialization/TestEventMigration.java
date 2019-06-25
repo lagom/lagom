@@ -9,7 +9,9 @@ import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class TestEventMigration extends JacksonJsonMigration {
+import akka.serialization.jackson.JacksonMigration;
+
+public class TestEventMigration extends JacksonMigration {
 
   @Override
   public int currentVersion() {
