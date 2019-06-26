@@ -1,0 +1,30 @@
+# Structure of this test:
+# =======================
+
+# Here we test that akka remote uses non-conflicting ports for each service (2 services more precisely).
+# Services a configured with akka-remote enabled (through Lagom Cluster).
+# We also test that the behavior is the same when using Artery or Classical remote.
+
+
+
+# First we start the services using Artery (default in 1.6.x) and
+# we call endpoints in both services to prove they are up and running.
+# `runAll` tests
+# --------------
+> runAll
+> assertRequest 10000 /foo ack foo
+> assertRequest 10001 /bar ack bar
+> stop
+
+
+# Next, we change each service configuration to use Remote Classical and we run the same test.
+
+# Change configuration files (enable remote classical)
+$ copy-file changes/a-application.conf a/impl/src/main/resources/application.conf
+$ copy-file changes/b-application.conf b/impl/src/main/resources/application.conf
+
+# re-run the same test using akka remote classical
+> runAll
+> assertRequest 10000 /foo ack foo
+> assertRequest 10001 /bar ack bar
+> stop
