@@ -1,9 +1,8 @@
-
 # Lagom 1.6 Migration Guide
 
 This guide explains how to migrate from Lagom 1.5 to Lagom 1.6. If you are upgrading from an earlier version, be sure to review previous migration guides.
 
-Lagom 1.6 updates to the latest major versions of Play (2.8), Akka (2.6) and Akka HTTP (10.1). We have highlighted the changes that are relevant to most Lagom users, but you may need to change code in your services that uses Play APIs directly. You'll also need to update any Play services in your Lagom project repositories to be compatible with Play 2.8. Please refer to the [Play 2.8 migration guide](https://www.playframework.com/documentation/2.8.0-M1/Migration28), [Akka Migration Guide 2.5.x to 2.6.x](https://doc.akka.io/docs/akka/2.6.0-M1/project/migration-guide-2.5.x-2.6.x.html) and the [Akka HTTP 10.1.x release announcements](https://akka.io/blog/news-archive.html) for more details.
+Lagom 1.6 updates to the latest major versions of Play (2.8), Akka (2.6) and Akka HTTP (10.1). We have highlighted the changes that are relevant to most Lagom users, but you may need to change code in your services that uses Play APIs directly. You'll also need to update any Play services in your Lagom project repositories to be compatible with Play 2.8. Please refer to the [Play 2.8 migration guide](https://www.playframework.com/documentation/2.8.0-M1/Migration28), [Akka Migration Guide 2.5.x to 2.6.x](https://doc.akka.io/docs/akka/2.6/project/migration-guide-2.5.x-2.6.x.html) and the [Akka HTTP 10.1.x release announcements](https://akka.io/blog/news-archive.html) for more details.
 
 For a detailed list of version upgrades of other libraries Lagom builds on such as for Slick, Kafka and others, refer to the [release notes](https://github.com/lagom/lagom/releases).
 
@@ -69,24 +68,17 @@ When marking a serializable class with `CompressedJsonable` compression will onl
 
 ### Shard Coordination
 
-Since Lagom `1.4.0` users might opt into the `ddata` coordination of shards while `persistence`-based shard coordination remained the default. Lagom `1.6.0` changes this default. This means that if you had:
+In Lagom 1.4 and 1.5 users could use the `akka.cluster.sharding.store-state-mode` configuration key to switch from the default `persistence`-based shard coordination to the `ddata`-based coordination.  As of Lagom 1.6 `ddata` is the new default.
+
+Switching from `persistence` to `ddata`, such as if your cluster relies of Lagom's default configuration, will require a full cluster shutdown. Therefore, if you want to avoid the full service shutdown when migrating to Lagom 1.6 you need to explicitly opt-back to `persistence`, as such:
 
 ```HOCON
-# Using 'ddata' before Lagom 1.6.0
-akka.cluster.sharding.state-store-mode = ddata
-```
-
-You no longer need the setting and can simply use Lagom's default.
-
-If your cluster is currently using Lagom defaults (`persistence`) then upgrading to `ddata` will require a full cluster shutdown. If you want to avoid the full service shutdown when doing the upgrade you can still use `persistence` if you enable it explicitly using:
-
-```HOCON
-# Opting out of 'ddata' to use 'persistence' since Lagom 1.6.0
+# Opt-back to Lagom 1.5's 'persistence' instead of Lagom 1.6's default of 'ddata'.
 akka.cluster.sharding.state-store-mode = persistence
 ```
 
 ## Cluster Shutdown changes
 
-This is a summary of changes in Lagom that would require a full cluster shutdown.
+This is a summary of changes in Lagom 1.6 that would require a full cluster shutdown rather than a rolling upgrade:
 
-* Lagom 1.6 changed the shard coordination strategy default. Read the [[Shard Coordination|Migration16#Shard-Coordination] section for details on how to opt back to Lagom 1.5 behavior to support rolling upgrades.
+* The change in default [[Shard Coordination|Migration16#Shard-Coordination] strategy.
