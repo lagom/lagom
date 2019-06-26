@@ -140,7 +140,7 @@ private class MetricsServiceImpl(circuitBreakerMetricsProvider: CircuitBreakerMe
             Nil
         }
       }
-      .to[immutable.Seq]
+      .toIndexedSeq
   }
 
   private def circuitBreakerStatus(m: CircuitBreakerMetricsImpl): CircuitBreakerStatus = {

@@ -36,7 +36,7 @@ object MockRequestEntity {
   def customSerializer(contentType: Option[String]): MessageSerializer[MockRequestEntity, ByteString] =
     new StrictMessageSerializer[MockRequestEntity] {
       override def acceptResponseProtocols =
-        contentType.map(MessageProtocol.empty.withContentType).to[immutable.Seq]
+        contentType.map(MessageProtocol.empty.withContentType).toIndexedSeq
 
       object Serializer extends NegotiatedSerializer[MockRequestEntity, ByteString] {
         override def protocol =
@@ -198,8 +198,8 @@ class MockServiceImpl(implicit mat: Materializer, ec: ExecutionContext) extends 
     Future.successful(query.getOrElse("none"))
   }
 
-  override def listResults = ServiceCall { req =>
-    Future.successful((for (i <- 1 to req.field2) yield MockResponseEntity(i, req)).to[List])
+  override def listResults: ServiceCall[MockRequestEntity, List[MockResponseEntity]] = ServiceCall { req =>
+    Future.successful((for (i <- 1 to req.field2) yield MockResponseEntity(i, req)).toList)
   }
 
   override def customContentType = ServiceCall { req =>

@@ -1075,6 +1075,7 @@ object Dependencies {
 
     if (problems.nonEmpty) {
       problems.foreach(p => log.error(p._2))
+      log.error(s"Found ${problems.length} errors.")
 
       log.debug {
         // This makes it very easy to fix the problem, by outputting a formatted list of dependencies to add.
