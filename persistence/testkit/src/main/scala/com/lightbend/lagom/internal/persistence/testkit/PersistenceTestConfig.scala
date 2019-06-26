@@ -17,9 +17,9 @@ private[lagom] object PersistenceTestConfig {
   lazy val BasicConfig: Config = ConfigFactory.parseMap(BasicConfigMap.asJava)
 
   lazy val ClusterConfigMap: Map[String, AnyRef] = Map(
-    "akka.actor.provider"                           -> "cluster",
-    "akka.remote.artery.canonical.port"             -> "0",
-    "akka.remote.artery.canonical.hostname"         -> "127.0.0.1",
+    "akka.actor.provider"                   -> "cluster",
+    "akka.remote.artery.canonical.port"     -> "0",
+    "akka.remote.artery.canonical.hostname" -> "127.0.0.1",
     // needed when users opt-out from Artery
     "akka.remote.classic.netty.tcp.port"            -> "0",
     "akka.remote.classic.netty.tcp.hostname"        -> "127.0.0.1",
