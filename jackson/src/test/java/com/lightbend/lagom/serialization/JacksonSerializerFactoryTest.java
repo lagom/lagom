@@ -54,14 +54,14 @@ public class JacksonSerializerFactoryTest {
     StrictMessageSerializer<Optional<String>> serializer =
         factory.messageSerializerFor(Optional.class);
     Optional<String> out =
-        serializer.deserializer(new MessageProtocol()).deserialize(ByteString$.MODULE$.empty());
+        serializer.deserializer(new MessageProtocol()).deserialize(ByteString.emptyByteString());
     assertEquals(Optional.empty(), out);
   }
 
   @Test(expected = DeserializationException.class)
   public void shouldFailToDeserializeEmptyByteStringToDummy() {
     StrictMessageSerializer<Dummy> serializer = factory.messageSerializerFor(Dummy.class);
-    serializer.deserializer(new MessageProtocol()).deserialize(ByteString.empty());
+    serializer.deserializer(new MessageProtocol()).deserialize(ByteString.emptyByteString());
   }
 
   @Test

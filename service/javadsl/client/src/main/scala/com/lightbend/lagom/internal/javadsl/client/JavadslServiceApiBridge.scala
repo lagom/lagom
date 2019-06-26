@@ -60,13 +60,13 @@ trait JavadslServiceApiBridge extends LagomServiceApiBridge {
       }
       .groupBy(_._1.toLowerCase(Locale.ENGLISH))
       .map {
-        case (key, values) => key -> values.to[immutable.Seq]
+        case (key, values) => key -> values.toIndexedSeq
       }
 
   override type RequestHeader = transport.RequestHeader
   override def requestHeaderUri(rh: RequestHeader): URI = rh.uri()
   override def requestHeaderAcceptedResponseProtocols(rh: RequestHeader): immutable.Seq[MessageProtocol] =
-    rh.acceptedResponseProtocols().asScala.to[immutable.Seq]
+    rh.acceptedResponseProtocols().asScala.toIndexedSeq
   override def requestHeaderMethod(rh: RequestHeader): String = rh.method().name()
   override def newRequestHeader(
       method: Method,
@@ -118,7 +118,7 @@ trait JavadslServiceApiBridge extends LagomServiceApiBridge {
   ): NegotiatedDeserializer[M, W] =
     ms.deserializer(mp)
   override def messageSerializerAcceptResponseProtocols(ms: MessageSerializer[_, _]): immutable.Seq[MessageProtocol] =
-    ms.acceptResponseProtocols().asScala.to[immutable.Seq]
+    ms.acceptResponseProtocols().asScala.toIndexedSeq
   override def messageSerializerIsStreamed(ms: MessageSerializer[_, _]): Boolean = ms.isStreamed
   override def messageSerializerIsUsed(ms: MessageSerializer[_, _]): Boolean     = ms.isUsed
 
