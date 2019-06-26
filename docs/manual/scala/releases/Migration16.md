@@ -24,19 +24,12 @@ We also recommend upgrading to sbt 1.2.8 or later, by updating the `sbt.version`
 
 ### Shard Coordination
 
-Since Lagom `1.4.0` users might opt into the `ddata` coordination of shards while `persistence`-based shard coordination remained the default. Lagom `1.6.0` changes this default. This means that if you had:
+In Lagom 1.4 and 1.5 users could use the `akka.cluster.sharding.store-state-mode` configuration key to switch from the default `persistence`-based shard coordination to the `ddata`-based coordination.  As of Lagom 1.6 `ddata` is the new default.
+
+Switching from `persistence` to `ddata`, such as if your cluster relies of Lagom's default configuration, will require a full cluster shutdown. Therefore, if you want to avoid the full service shutdown when migrating to Lagom 1.6 you need to explicitly opt-back to `persistence`, as such:
 
 ```HOCON
-# Using 'ddata' before Lagom 1.6.0
-akka.cluster.sharding.state-store-mode = ddata
-```
-
-You no longer need the setting and can simply use Lagom's default.
-
-If your cluster is currently using Lagom defaults (`persistence`) then upgrading to `ddata` will require a full cluster shutdown. If you want to avoid the full service shutdown when doing the upgrade you can still use `persistence` if you enable it explicitly using:
-
-```HOCON
-# Opting out of 'ddata' to use 'persistence' since Lagom 1.6.0
+# Opt-back to Lagom 1.5's 'persistence' instead of Lagom 1.6's default of 'ddata'.
 akka.cluster.sharding.state-store-mode = persistence
 ```
 
@@ -48,7 +41,6 @@ When creating a serializer with `JsonSerializer.compressed[T]` compression will 
 
 ## Cluster Shutdown changes
 
-This is a summary of changes in Lagom that would require a full cluster shutdown.
+This is a summary of changes in Lagom 1.6 that would require a full cluster shutdown rather than a rolling upgrade:
 
-- Lagom 1.6 changed the shard coordination strategy default. Read the [[Shard Coordination|Migration16#Shard-Coordination] section for details on how to opt back to Lagom 1.5 behavior to support rolling upgrades.
-
+* The change in default [[Shard Coordination|Migration16#Shard-Coordination] strategy.
