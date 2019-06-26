@@ -16,7 +16,6 @@ import com.lightbend.lagom.scaladsl.playjson.JsonSerializer
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.lightbend.lagom.scaladsl.server.LagomApplication
 import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
-import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import play.api.Configuration
 import play.api.libs.ws.ahc.AhcWSComponents

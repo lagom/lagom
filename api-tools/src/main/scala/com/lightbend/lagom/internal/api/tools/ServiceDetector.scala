@@ -36,7 +36,7 @@ object ServiceDetector {
     (__ \ "name")
       .write[String]
       .and((__ \ "acls").write[immutable.Seq[ServiceAcl]])
-      .apply(sd => (sd.name, sd.acls.asScala.to[immutable.Seq]))
+      .apply(sd => (sd.name, sd.acls.asScala.toIndexedSeq))
 
   /**
    * Retrieves the service names and acls for the current Lagom project
@@ -62,7 +62,7 @@ object ServiceDetector {
     val serviceDiscoverClass      = classLoader.loadClass(serviceDiscoveryClassName)
     val castServiceDiscoveryClass = serviceDiscoverClass.asSubclass(classOf[ServiceDiscovery])
     val serviceDiscovery          = castServiceDiscoveryClass.newInstance()
-    val services                  = serviceDiscovery.discoverServices(classLoader).asScala.to[immutable.Seq]
+    val services                  = serviceDiscovery.discoverServices(classLoader).asScala.toIndexedSeq
     Json.stringify(Json.toJson(services))
   }
 }

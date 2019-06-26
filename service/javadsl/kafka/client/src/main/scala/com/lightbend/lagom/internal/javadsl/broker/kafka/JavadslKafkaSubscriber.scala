@@ -127,22 +127,19 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](
         log.debug("Creating at most once source using service locator to look up Kafka services at {}", name)
         akka.stream.scaladsl.Source
           .single(())
-          .mapAsync(1)(_ => serviceLocator.locateAll(name).toScala)
-          .flatMapConcat {
-
-            case uris if uris.isEmpty =>
+          .mapAsync(1)(_ => locateService(name))
+          .flatMapConcat { uris =>
+            if (uris.isEmpty)
               throw new NoKafkaBrokersException(name)
 
-            case uris =>
-              val endpoints = UriUtils.hostAndPorts(uris.asScala)
-              log.debug("Connecting to Kafka service named {} at {}", name: Any, endpoints)
-              Consumer
-                .atMostOnceSource(
-                  consumerSettings.withBootstrapServers(endpoints),
-                  subscription
-                )
-                .map(transform)
-
+            val endpoints = UriUtils.hostAndPorts(uris)
+            log.debug("Connecting to Kafka service named {} at {}", name: Any, endpoints)
+            Consumer
+              .atMostOnceSource(
+                consumerSettings.withBootstrapServers(endpoints),
+                subscription
+              )
+              .map(transform)
           }
           .asJava
 
@@ -156,7 +153,7 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](
   }
 
   private def locateService(name: String): Future[Seq[URI]] =
-    serviceLocator.locateAll(name).toScala.map(_.asScala)
+    serviceLocator.locateAll(name).toScala.map(_.asScala.toIndexedSeq)
 
   override def atLeastOnce(flow: Flow[SubscriberPayload, Done, _]): CompletionStage[Done] = {
 

@@ -121,7 +121,9 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     roles.foreach(n => join(n, node1))
     within(15.seconds) {
       awaitAssert(Cluster(system).state.members.size should be(3))
-      awaitAssert(Cluster(system).state.members.map(_.status) should be(Set(MemberStatus.Up)))
+      awaitAssert(
+        Cluster(system).state.members.toIndexedSeq.map(_.status).distinct should be(IndexedSeq(MemberStatus.Up))
+      )
     }
 
     enterBarrier("startup")

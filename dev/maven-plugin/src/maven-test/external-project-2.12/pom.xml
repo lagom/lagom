@@ -38,6 +38,8 @@
                             </artifact>
                         </externalProject>
                     </externalProjects>
+                    <!-- kafka is not needed  -->
+                    <kafkaEnabled>false</kafkaEnabled>
                 </configuration>
             </plugin>
             <plugin>

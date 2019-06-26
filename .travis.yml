@@ -38,7 +38,7 @@ jobs:
       name: "Code validations (format, binary compatibilty, whitesource, etc.)"
     - script: bin/test-2.11
       name: "Run tests for Scala 2.11"
-    - script: bin/test-2.12
+    - script: SCALA_VERSION=2.12.8 bin/test-2.1x
       name: "Run tests for Scala 2.12"
     - script: bin/test-documentation
       name: "Documentation validations and tests"
