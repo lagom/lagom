@@ -29,6 +29,8 @@ addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.0")
 
 We also recommend upgrading to sbt 1.2.8 or later, by updating the `sbt.version` in `project/build.properties`.
 
+## Main changes
+
 ### Jackson serialization
 
 Lagom is now using the Jackson serializer from Akka, which is an improved version of the serializer in Lagom 1.5. You can find more information about the Akka Jackson serializer in the [Akka documentation](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html). It is compatible with Lagom 1.5 in both directions.
@@ -46,13 +48,15 @@ The default settings for the `ObjectMapper` that is used for JSON serialization 
 
 If you want your Service API to produce the same output for types like `java.time.Instant`or `java.time.LocalDateTime` adjust the configuration for the `ObjectMapper` in your `application.conf`:
 
-```
+```json
 akka.serialization.jackson {
   # Configuration of the ObjectMapper for external service api
   jackson-json-serviceapi {
-     WRITE_DATES_AS_TIMESTAMPS = on # Serializes dates using Jackson custom formats
+     # Serializes dates using Jackson custom formats
+     WRITE_DATES_AS_TIMESTAMPS = on 
   }
 }
+```
 
 #### Configuration changes
 
@@ -62,3 +66,27 @@ akka.serialization.jackson {
 #### JSON Compression threshold
 
 When marking a serializable class with `CompressedJsonable` compression will only kick in when the serialized representation goes past a threshold. The default value for `akka.serialization.jackson.jackson-json-gzip.compress-larger-than` is 32 Kilobytes. As mentioned above, this setting was previously configure by `lagom.serialization.json.compress-larger-than` and defaulted to 1024 bytes. (See [#1983](https://github.com/lagom/lagom/pull/1983))
+
+### Shard Coordination
+
+Since Lagom `1.4.0` users might opt into the `ddata` coordination of shards while `persistence`-based shard coordination remained the default. Lagom `1.6.0` changes this default. This means that if you had:
+
+```HOCON
+# Using 'ddata' before Lagom 1.6.0
+akka.cluster.sharding.state-store-mode = ddata
+```
+
+You no longer need the setting and can simply use Lagom's default.
+
+If your cluster is currently using Lagom defaults (`persistence`) then upgrading to `ddata` will require a full cluster shutdown. If you want to avoid the full service shutdown when doing the upgrade you can still use `persistence` if you enable it explicitly using:
+
+```HOCON
+# Opting out of 'ddata' to use 'persistence' since Lagom 1.6.0
+akka.cluster.sharding.state-store-mode = persistence
+```
+
+## Cluster Shutdown changes
+
+This is a summary of changes in Lagom that would require a full cluster shutdown.
+
+* Lagom 1.6 changed the shard coordination strategy default. Read the [[Shard Coordination|Migration16#Shard-Coordination] section for details on how to opt back to Lagom 1.5 behavior to support rolling upgrades.
