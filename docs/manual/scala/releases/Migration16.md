@@ -20,8 +20,27 @@ addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.0")
 
 We also recommend upgrading to sbt 1.2.8 or later, by updating the `sbt.version` in `project/build.properties`.
 
+## Main changes
+
+### Shard Coordination
+
+In Lagom 1.4 and 1.5 users could use the `akka.cluster.sharding.store-state-mode` configuration key to switch from the default `persistence`-based shard coordination to the `ddata`-based coordination.  As of Lagom 1.6 `ddata` is the new default.
+
+Switching from `persistence` to `ddata`, such as if your cluster relies of Lagom's default configuration, will require a full cluster shutdown. Therefore, if you want to avoid the full service shutdown when migrating to Lagom 1.6 you need to explicitly opt-back to `persistence`, as such:
+
+```HOCON
+# Opt-back to Lagom 1.5's 'persistence' instead of Lagom 1.6's default of 'ddata'.
+akka.cluster.sharding.state-store-mode = persistence
+```
+
 ## Minor changes
 
 ### JSON Compression threshold
 
 When creating a serializer with `JsonSerializer.compressed[T]` compression will only kick in when the serialized representation is biger than a threshold. The default value for `lagom.serialization.json.compress-larger-than` has been increased from 1024 bytes to 32 Kilobytes. (See [#1983](https://github.com/lagom/lagom/pull/1983))
+
+## Cluster Shutdown changes
+
+This is a summary of changes in Lagom 1.6 that would require a full cluster shutdown rather than a rolling upgrade:
+
+* The change in default [[Shard Coordination|Migration16#Shard-Coordination] strategy.
