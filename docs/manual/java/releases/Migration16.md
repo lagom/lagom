@@ -1,9 +1,8 @@
-
 # Lagom 1.6 Migration Guide
 
 This guide explains how to migrate from Lagom 1.5 to Lagom 1.6. If you are upgrading from an earlier version, be sure to review previous migration guides.
 
-Lagom 1.6 updates to the latest major versions of Play (2.8), Akka (2.6) and Akka HTTP (10.1). We have highlighted the changes that are relevant to most Lagom users, but you may need to change code in your services that uses Play APIs directly. You'll also need to update any Play services in your Lagom project repositories to be compatible with Play 2.8. Please refer to the [Play 2.8 migration guide](https://www.playframework.com/documentation/2.8.0-M1/Migration28), [Akka Migration Guide 2.5.x to 2.6.x](https://doc.akka.io/docs/akka/2.6.0-M1/project/migration-guide-2.5.x-2.6.x.html) and the [Akka HTTP 10.1.x release announcements](https://akka.io/blog/news-archive.html) for more details.
+Lagom 1.6 updates to the latest major versions of Play (2.8), Akka (2.6) and Akka HTTP (10.1). We have highlighted the changes that are relevant to most Lagom users, but you may need to change code in your services that uses Play APIs directly. You'll also need to update any Play services in your Lagom project repositories to be compatible with Play 2.8. Please refer to the [Play 2.8 migration guide](https://www.playframework.com/documentation/2.8.0-M1/Migration28), [Akka Migration Guide 2.5.x to 2.6.x](https://doc.akka.io/docs/akka/2.6/project/migration-guide-2.5.x-2.6.x.html) and the [Akka HTTP 10.1.x release announcements](https://akka.io/blog/news-archive.html) for more details.
 
 For a detailed list of version upgrades of other libraries Lagom builds on such as for Slick, Kafka and others, refer to the [release notes](https://github.com/lagom/lagom/releases).
 
@@ -29,6 +28,8 @@ addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.0")
 
 We also recommend upgrading to sbt 1.2.8 or later, by updating the `sbt.version` in `project/build.properties`.
 
+## Main changes
+
 ### Jackson serialization
 
 Lagom is now using the Jackson serializer from Akka, which is an improved version of the serializer in Lagom 1.5. You can find more information about the Akka Jackson serializer in the [Akka documentation](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html). It is compatible with Lagom 1.5 in both directions.
@@ -46,13 +47,15 @@ The default settings for the `ObjectMapper` that is used for JSON serialization 
 
 If you want your Service API to produce the same output for types like `java.time.Instant`or `java.time.LocalDateTime` adjust the configuration for the `ObjectMapper` in your `application.conf`:
 
-```
+```json
 akka.serialization.jackson {
   # Configuration of the ObjectMapper for external service api
   jackson-json-serviceapi {
-     WRITE_DATES_AS_TIMESTAMPS = on # Serializes dates using Jackson custom formats
+     # Serializes dates using Jackson custom formats
+     WRITE_DATES_AS_TIMESTAMPS = on 
   }
 }
+```
 
 #### Configuration changes
 
@@ -62,3 +65,20 @@ akka.serialization.jackson {
 #### JSON Compression threshold
 
 When marking a serializable class with `CompressedJsonable` compression will only kick in when the serialized representation goes past a threshold. The default value for `akka.serialization.jackson.jackson-json-gzip.compress-larger-than` is 32 Kilobytes. As mentioned above, this setting was previously configure by `lagom.serialization.json.compress-larger-than` and defaulted to 1024 bytes. (See [#1983](https://github.com/lagom/lagom/pull/1983))
+
+### Shard Coordination
+
+In Lagom 1.4 and 1.5 users could use the `akka.cluster.sharding.store-state-mode` configuration key to switch from the default `persistence`-based shard coordination to the `ddata`-based coordination.  As of Lagom 1.6 `ddata` is the new default.
+
+Switching from `persistence` to `ddata`, such as if your cluster relies of Lagom's default configuration, will require a full cluster shutdown. Therefore, if you want to avoid the full service shutdown when migrating to Lagom 1.6 you need to explicitly opt-back to `persistence`, as such:
+
+```HOCON
+# Opt-back to Lagom 1.5's 'persistence' instead of Lagom 1.6's default of 'ddata'.
+akka.cluster.sharding.state-store-mode = persistence
+```
+
+## Cluster Shutdown changes
+
+This is a summary of changes in Lagom 1.6 that would require a full cluster shutdown rather than a rolling upgrade:
+
+* The change in default [[Shard Coordination|Migration16#Shard-Coordination] strategy.
