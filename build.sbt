@@ -33,7 +33,7 @@ def overridesScalaParserCombinators = Seq(
   dependencyOverrides ++= Dependencies.scalaParserCombinatorOverrides
 )
 
-def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSettings ++ Seq(
+def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSettings ++ scalafixSettings ++ Seq(
   organization := "com.lightbend.lagom",
   // Must be "Apache-2.0", because bintray requires that it is a license that it knows about
   licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))),
@@ -159,8 +159,6 @@ def sonatypeSettings: Seq[Setting[_]] = Seq(
 def runtimeScalaSettings: Seq[Setting[_]] = Seq(
   crossScalaVersions := Dependencies.Versions.Scala,
   scalaVersion := Dependencies.Versions.Scala.head,
-  // compile options
-  addCompilerPlugin(scalafixSemanticdb),
   scalacOptions in Compile ++= Seq(
     "-encoding",
     "UTF-8",
@@ -169,10 +167,23 @@ def runtimeScalaSettings: Seq[Setting[_]] = Seq(
     "-unchecked",
     "-Xlog-reflective-calls",
     "-deprecation",
-    "-Yrangepos",          // required by SemanticDB compiler plugin
-    "-Ywarn-unused-import" // required by `RemoveUnused` rule
-  )
-)
+  ) 
+) 
+
+def scalafixSettings: Seq[Setting[_]] = {
+  if (sys.env.getOrElse("ENABLE_SCALAFIX", "false").toBoolean) {
+    Seq(
+      // compile options
+      addCompilerPlugin(scalafixSemanticdb),
+      scalacOptions in Compile ++= Seq(
+        "-Yrangepos", // required by SemanticDB compiler plugin
+        "-Ywarn-unused" // required by `RemoveUnused` rule
+      )
+    )
+  } else {
+    Seq.empty[Setting[_]]
+  }
+}
 
 def sbtScalaSettings: Seq[Setting[_]] = Seq(
   crossScalaVersions := Dependencies.Versions.Scala,
