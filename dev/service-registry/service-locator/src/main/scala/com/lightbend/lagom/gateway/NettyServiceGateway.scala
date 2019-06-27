@@ -39,7 +39,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http._
 import io.netty.util.ReferenceCountUtil
-import io.netty.util.concurrent.EventExecutor
 import org.slf4j.LoggerFactory
 import play.api.libs.typedmap.TypedMap
 import play.api.mvc.request.RemoteConnection
@@ -57,8 +56,6 @@ import scala.collection.immutable.Queue
 import scala.compat.java8.OptionConverters._
 import scala.concurrent.duration._
 import scala.concurrent.Await
-import scala.concurrent.ExecutionContext
-import scala.language.implicitConversions
 import scala.util.Failure
 import scala.util.Success
 import com.lightbend.lagom.internal.api.Execution.trampoline
@@ -115,13 +112,7 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
     }
   }
 
-  private implicit def ecFromNettyExecutor(executor: EventExecutor): ExecutionContext = new ExecutionContext {
-    override def reportFailure(cause: Throwable): Unit = {
-      log.error("Error caught in Netty executor", cause)
-    }
-
-    override def execute(runnable: Runnable): Unit = executor.execute(runnable)
-  }
+  
 
   private class ProxyHandler(serverChannel: Channel) extends ChannelInboundHandlerAdapter {
     var context: ChannelHandlerContext = null

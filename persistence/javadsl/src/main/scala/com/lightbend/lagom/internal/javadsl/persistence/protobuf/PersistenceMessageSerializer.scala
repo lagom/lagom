@@ -35,7 +35,7 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
   val PersistExceptionManifest          = "D"
   val EnsureActiveManifest              = "E"
 
-  private val emptyByteArray = Array.empty[Byte]
+  Array.empty[Byte]
 
   private val fromBinaryMap = collection.immutable.HashMap[String, Array[Byte] => AnyRef](
     CommandEnvelopeManifest           -> commandEnvelopeFromBinary,

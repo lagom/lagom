@@ -299,7 +299,6 @@ class ExternalProject {
  */
 class StartAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession)
     extends AbstractMojo {
-  private val consoleHelper: ConsoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
 
   override def execute(): Unit = {
     val services = facade.locateServices

@@ -193,7 +193,6 @@ class InternalRouter {
 }
 
 class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) extends Actor {
-  private val logger: Logger = Logger(classOf[ServiceLocatorServer])
 
   import ServiceRegistryActor._
 

@@ -14,7 +14,6 @@ import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import org.slf4j.LoggerFactory
 import com.lightbend.lagom.javadsl.api.Descriptor
 import com.lightbend.lagom.javadsl.api.ServiceCall
 import com.lightbend.lagom.javadsl.api.ServiceInfo
@@ -50,7 +49,6 @@ class JavadslServiceClientImplementor @Inject() (
     environment: Environment,
     topicFactoryProvider: TopicFactoryProvider
 )(implicit ec: ExecutionContext, mat: Materializer) {
-  private val log = LoggerFactory.getLogger(classOf[JavadslServiceClientImplementor])
 
   def implement[T](interface: Class[T], descriptor: Descriptor): T = {
     java.lang.reflect.Proxy

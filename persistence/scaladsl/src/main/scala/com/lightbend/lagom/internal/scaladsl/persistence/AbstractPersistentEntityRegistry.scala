@@ -12,7 +12,6 @@ import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterSharding
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.cluster.sharding.ShardRegion
-import akka.event.Logging
 import akka.persistence.query.Offset
 import akka.persistence.query.PersistenceQuery
 import akka.persistence.query.scaladsl.EventsByTagQuery
@@ -116,7 +115,7 @@ class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEn
     new PersistentEntityRef(entityId, sharding.shardRegion(prependName(entityName)), system, askTimeout)
   }
 
-  private def entityTypeName(entityClass: Class[_]): String = Logging.simpleName(entityClass)
+  
 
   override def eventStream[Event <: AggregateEvent[Event]](
       aggregateTag: AggregateEventTag[Event],

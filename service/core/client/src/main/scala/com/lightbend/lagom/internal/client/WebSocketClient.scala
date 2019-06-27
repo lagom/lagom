@@ -155,7 +155,7 @@ private[lagom] abstract class WebSocketClient(
     private val outgoingStreamError = new AtomicReference[Throwable]()
 
     private var state: State                              = Handshake
-    private var responseProtocol: Option[MessageProtocol] = None
+    private var responseProtocol: Option[MessageProtocol] = None // scalafix:ok ; RemoveUnused tries to delete it.
 
     override def channelRead(ctx: ChannelHandlerContext, msg: Object) = {
       msg match {

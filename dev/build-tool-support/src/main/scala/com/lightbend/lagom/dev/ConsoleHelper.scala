@@ -5,11 +5,9 @@
 package com.lightbend.lagom.dev
 
 import java.io.Closeable
-import java.net.URL
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-import com.lightbend.lagom.dev.Reloader.DevServer
 import com.lightbend.lagom.dev.Reloader.DevServerBinding
 import play.dev.filewatch.LoggerProxy
 
