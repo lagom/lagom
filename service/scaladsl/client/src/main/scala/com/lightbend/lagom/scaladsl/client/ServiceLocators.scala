@@ -19,7 +19,6 @@ import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigException
-import play.api.Configuration
 
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext

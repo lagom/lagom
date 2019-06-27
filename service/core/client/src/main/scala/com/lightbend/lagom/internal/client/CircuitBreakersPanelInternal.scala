@@ -17,7 +17,6 @@ import akka.pattern.{ CircuitBreaker => AkkaCircuitBreaker }
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetrics
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.typesafe.config.Config
-import play.api.Configuration
 
 import scala.concurrent.Future
 import scala.concurrent.duration._

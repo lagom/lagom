@@ -6,7 +6,6 @@ package com.lightbend.lagom.scaladsl.api
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import play.api.Configuration
 
 /**
  * This trait allows Lagom integrations to define additional configuration that gets mixed into the application trait.

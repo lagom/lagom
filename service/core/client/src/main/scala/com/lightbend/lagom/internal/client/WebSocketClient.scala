@@ -6,19 +6,12 @@ package com.lightbend.lagom.internal.client
 
 import java.net.URI
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicReference
 
-import akka.NotUsed
-import akka.stream.Attributes
-import akka.stream.FlowShape
-import akka.stream.Inlet
-import akka.stream.Outlet
 import akka.stream.scaladsl._
 import akka.stream.stage._
 import akka.util.ByteString
 import com.lightbend.lagom.internal.NettyFutureConverters._
 import com.lightbend.lagom.internal.api.HeaderUtils
-import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
 import com.typesafe.config.Config
 import com.typesafe.netty.HandlerPublisher
 import com.typesafe.netty.HandlerSubscriber
@@ -26,7 +19,6 @@ import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBufHolder
 import io.netty.buffer.Unpooled
 import io.netty.channel._
-import io.netty.channel.group.DefaultChannelGroup
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
@@ -37,11 +29,22 @@ import play.api.Environment
 import play.api.http.HeaderNames
 import play.api.inject.ApplicationLifecycle
 
-import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.util.control.NonFatal
+import scala.collection.JavaConverters._
+import java.util.concurrent.atomic.AtomicReference
+
+import akka.NotUsed
+import akka.stream.Attributes
+import akka.stream.FlowShape
+import akka.stream.Inlet
+import akka.stream.Outlet
+import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
+import io.netty.channel.group.DefaultChannelGroup
+import io.netty.util.concurrent.GlobalEventExecutor
+
 
 /**
  * A WebSocket client

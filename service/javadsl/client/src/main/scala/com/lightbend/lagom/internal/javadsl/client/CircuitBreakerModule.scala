@@ -4,10 +4,6 @@
 
 package com.lightbend.lagom.internal.javadsl.client
 
-import javax.inject.Inject
-import javax.inject.Provider
-import javax.inject.Singleton
-import akka.actor.ActorSystem
 import com.lightbend.lagom.internal.client.CircuitBreakerConfig
 import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl
 import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderProvider
