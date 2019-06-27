@@ -13,7 +13,6 @@ import akka.NotUsed
 import com.lightbend.lagom.javadsl.persistence.Offset.Sequence
 import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
 
-
 /**
  * At system startup all [[PersistentEntity]] classes must be registered here
  * with [[PersistentEntityRegistry#register]].

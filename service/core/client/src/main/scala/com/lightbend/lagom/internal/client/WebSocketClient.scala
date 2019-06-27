@@ -45,7 +45,6 @@ import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
 import io.netty.channel.group.DefaultChannelGroup
 import io.netty.util.concurrent.GlobalEventExecutor
 
-
 /**
  * A WebSocket client
  */

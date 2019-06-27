@@ -4,7 +4,6 @@
 
 package com.lightbend.lagom.scaladsl.api
 
-
 import akka.util.ByteString
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.deser.ExceptionSerializer

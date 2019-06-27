@@ -115,8 +115,6 @@ class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEn
     new PersistentEntityRef(entityId, sharding.shardRegion(prependName(entityName)), system, askTimeout)
   }
 
-  
-
   override def eventStream[Event <: AggregateEvent[Event]](
       aggregateTag: AggregateEventTag[Event],
       fromOffset: Offset

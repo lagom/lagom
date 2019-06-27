@@ -14,7 +14,6 @@ import com.lightbend.lagom.javadsl.persistence.jpa.JpaReadSide
 import com.lightbend.lagom.javadsl.persistence.jpa.TestEntityJpaReadSide
 import play.api.inject.guice.GuiceInjectorBuilder
 
-
 class JpaReadSideImplSpec extends JpaPersistenceSpec with AbstractReadSideSpec {
   private lazy val injector                            = new GuiceInjectorBuilder().build()
   protected override lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, injector, slick)

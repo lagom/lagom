@@ -163,6 +163,5 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
       )
     }
 
-    
   }
 }

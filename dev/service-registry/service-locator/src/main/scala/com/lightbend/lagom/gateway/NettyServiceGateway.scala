@@ -112,8 +112,6 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
     }
   }
 
-  
-
   private class ProxyHandler(serverChannel: Channel) extends ChannelInboundHandlerAdapter {
     var context: ChannelHandlerContext = null
     var pipeline                       = Queue.empty[Any]

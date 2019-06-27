@@ -132,7 +132,6 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
         10.seconds
       )
 
-
       val headers = answer.split("\n")
       headers should contain(s"Host: localhost:$servicePort")
 

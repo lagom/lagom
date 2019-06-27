@@ -4,7 +4,6 @@
 
 package com.lightbend.lagom.scaladsl.persistence.cassandra
 
-
 import scala.concurrent.Future
 import com.typesafe.config.ConfigFactory
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
