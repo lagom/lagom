@@ -167,8 +167,8 @@ def runtimeScalaSettings: Seq[Setting[_]] = Seq(
     "-unchecked",
     "-Xlog-reflective-calls",
     "-deprecation",
-  ) 
-) 
+  )
+)
 
 def scalafixSettings: Seq[Setting[_]] = {
   if (sys.env.getOrElse("ENABLE_SCALAFIX", "false").toBoolean) {
@@ -176,7 +176,7 @@ def scalafixSettings: Seq[Setting[_]] = {
       // compile options
       addCompilerPlugin(scalafixSemanticdb),
       scalacOptions in Compile ++= Seq(
-        "-Yrangepos", // required by SemanticDB compiler plugin
+        "-Yrangepos",   // required by SemanticDB compiler plugin
         "-Ywarn-unused" // required by `RemoveUnused` rule
       )
     )
