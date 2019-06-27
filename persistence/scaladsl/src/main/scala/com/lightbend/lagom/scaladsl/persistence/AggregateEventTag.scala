@@ -162,11 +162,10 @@ final class AggregateEventShards[Event <: AggregateEvent[Event]](
    */
   val allTags: Set[AggregateEventTag[Event]] = {
     (for (shardNo <- 0 until numShards)
-      yield
-        new AggregateEventTag(
-          eventType,
-          AggregateEventTag.shardTag(tag, shardNo)
-        )).toSet
+      yield new AggregateEventTag(
+        eventType,
+        AggregateEventTag.shardTag(tag, shardNo)
+      )).toSet
   }
 
   override def toString: String = s"AggregateEventShards($eventType, $tag)"
