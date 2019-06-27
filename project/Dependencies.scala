@@ -17,10 +17,10 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.0-M1"
-    val PlayJson         = "2.8.0-M1"
-    val PlayStandaloneWs = "2.1.0-M2"
-    val Twirl            = "1.4.1-M1"
+    val Play             = "2.8.0-M2"
+    val PlayJson         = "2.8.0-M3"
+    val PlayStandaloneWs = "2.1.0-M3"
+    val Twirl            = "1.5.0-M2"
     val PlayFileWatch    = "1.1.8"
 
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M3")
@@ -38,7 +38,7 @@ object Dependencies {
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
     val JacksonDatabind      = Jackson
-    val Guava                = "27.1-jre"
+    val Guava                = "28.0-jre"
     val Maven                = "3.6.0"
     val Netty                = "4.1.36.Final"
     val NettyReactiveStreams = "2.0.3"
@@ -202,14 +202,15 @@ object Dependencies {
       "com.github.jnr"           % "jnr-posix"               % "3.0.44",
       "com.github.jnr"           % "jnr-x86asm"              % "1.0.2",
       "com.google.code.findbugs" % "jsr305"                  % "3.0.2",
-      "com.google.errorprone"    % "error_prone_annotations" % "2.2.0",
+      "com.google.errorprone"    % "error_prone_annotations" % "2.3.2",
       guava,
-      "com.google.j2objc"            % "j2objc-annotations"   % "1.1",
+      "com.google.j2objc"            % "j2objc-annotations"   % "1.3",
       "com.google.inject"            % "guice"                % "4.2.2",
       "com.google.inject.extensions" % "guice-assistedinject" % "4.2.2",
       "com.googlecode.usc"           % "jdbcdslog"            % "1.0.6.2",
-      "org.checkerframework"         % "checker-qual"         % "2.5.2",
+      "org.checkerframework"         % "checker-qual"         % "2.8.1",
       "javax.xml.bind"               % "jaxb-api"             % "2.3.1",
+      "jakarta.xml.bind"             % "jakarta.xml.bind-api" % "2.3.2",
       h2,
       "com.jolbox"   % "bonecp"          % "0.8.0.RELEASE",
       "com.lmax"     % "disruptor"       % Versions.Disruptor,
@@ -232,7 +233,7 @@ object Dependencies {
       sprayJson,
       "com.typesafe.netty" % "netty-reactive-streams"      % Versions.NettyReactiveStreams,
       "com.typesafe.netty" % "netty-reactive-streams-http" % Versions.NettyReactiveStreams,
-      "com.typesafe.play"  %% "cachecontrol"               % "2.0.0-M1",
+      "com.typesafe.play"  %% "cachecontrol"               % "2.0.0-M2",
       playJson,
       playFunctional,
       "com.typesafe.play" %% "play-json"       % "2.7.2",
@@ -293,16 +294,17 @@ object Dependencies {
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.9.1",
       // Netty 3 uses a different package to Netty 4, and a different artifact ID, so can safely coexist
-      "io.netty"          % "netty"        % "3.10.6.Final",
-      "javax.cache"       % "cache-api"    % "1.1.1",
-      "javax.inject"      % "javax.inject" % "1",
-      "javax.transaction" % "jta"          % "1.1",
-      "joda-time"         % "joda-time"    % "2.10.2",
-      "junit"             % "junit"        % Versions.JUnit,
-      "net.jodah"         % "typetools"    % "0.5.0",
-      "org.lz4"           % "lz4-java"     % "1.5.0",
-      "com.github.luben"  % "zstd-jni"     % "1.3.7-1",
-      "org.agrona"        % "agrona"       % "1.0.1",
+      "io.netty"            % "netty"                   % "3.10.6.Final",
+      "javax.cache"         % "cache-api"               % "1.1.1",
+      "javax.inject"        % "javax.inject"            % "1",
+      "javax.transaction"   % "jta"                     % "1.1",
+      "jakarta.transaction" % "jakarta.transaction-api" % "1.3.2",
+      "joda-time"           % "joda-time"               % "2.10.2",
+      "junit"               % "junit"                   % Versions.JUnit,
+      "net.jodah"           % "typetools"               % "0.5.0",
+      "org.lz4"             % "lz4-java"                % "1.5.0",
+      "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
+      "org.agrona"          % "agrona"                  % "1.0.1",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.17",
@@ -329,7 +331,9 @@ object Dependencies {
       "org.scala-lang.modules"       %% "scala-collection-compat" % "0.1.1",
       "com.google.guava"             % "failureaccess"            % "1.0.1",
       "com.google.guava"             % "listenablefuture"         % "9999.0-empty-to-avoid-conflict-with-guava",
+      "javax.activation"             % "activation"               % "1.1",
       "javax.activation"             % "javax.activation-api"     % "1.2.0",
+      "jakarta.activation"           % "jakarta.activation-api"   % "1.2.1",
       "com.thoughtworks.paranamer"   % "paranamer"                % "2.8",
       "com.fasterxml.jackson.module" %% "jackson-module-scala"    % Versions.JacksonDatatype,
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
