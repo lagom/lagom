@@ -70,7 +70,14 @@ When marking a serializable class with `CompressedJsonable` compression will onl
 
 Lagom 1.6.0 builds on Akka 2.6.0 that uses a new Akka Remote implementation called Artery. Artery is enabled by default in Lagom and replaces the previous Akka Remote protocol (aka. Akka Remote Classic). If you are using Lagom in a clustered setup, you will need to shutdown all nodes before updating, unless you choose to disable Artery.
 
-To disable Artery set property `akka.remote.artery.enabled` to `false`. Further, any configuration under `akka.remote` that is specific to classic remoting needs to be moved to `akka.remote.classic`. To see which configuration options are specific to classic search for them in: [`akka-remote/reference.conf`](https://github.com/akka/akka/blob/master/akka-remote/src/main/resources/reference.conf)
+To use classic remoting instead of Artery, you need to:
+
+1. Set property `akka.remote.artery.enabled` to `false`. Further, any configuration under `akka.remote` that is specific to classic remoting needs to be moved to `akka.remote.classic`. To see which configuration options are specific to classic search for them in: [`akka-remote/reference.conf`](https://github.com/akka/akka/blob/master/akka-remote/src/main/resources/reference.conf)
+2. Add Netty dependency as explained in [Akka Remoting docs](https://doc.akka.io/docs/akka/2.6/remoting.html#dependency):
+
+```scala
+libraryDependencies += "io.netty" % "netty" % "3.10.6.Final"
+```
 
 ### Shard Coordination
 

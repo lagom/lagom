@@ -4,6 +4,7 @@ interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMo
 
 scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.8")
 
+val netty = "io.netty" % "netty" % "3.10.6.Final"
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 
 lagomCassandraEnabled in ThisBuild := false
@@ -18,7 +19,7 @@ lazy val `a-impl` = (project in file("a") / "impl")
   .enablePlugins(LagomScala)
   .settings(
     lagomServiceHttpPort := 10000,
-    libraryDependencies ++= Seq(lagomScaladslCluster, macwire)
+    libraryDependencies ++= Seq(lagomScaladslCluster, macwire, netty)
   )
   .dependsOn(`a-api`)
 
@@ -32,7 +33,7 @@ lazy val `b-impl` = (project in file("b") / "impl")
   .enablePlugins(LagomScala)
   .settings(
     lagomServiceHttpPort := 10001,
-    libraryDependencies ++= Seq(lagomScaladslCluster, macwire)
+    libraryDependencies ++= Seq(lagomScaladslCluster, macwire, netty)
   )
   .dependsOn(`b-api`)
 
