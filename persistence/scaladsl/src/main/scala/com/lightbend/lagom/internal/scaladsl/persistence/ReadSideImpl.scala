@@ -33,49 +33,46 @@ private[lagom] class ReadSideImpl(
       processorFactory: () => ReadSideProcessor[Event]
   ) = {
 
-    // Only run if we're configured to run on this role
-    if (config.role.forall(Cluster(system).selfRoles.contains)) {
-      // try to create one instance to fail fast
-      val proto               = processorFactory()
-      val readSideName        = name.fold("")(_ + "-") + proto.readSideName
-      val encodedReadSideName = URLEncoder.encode(readSideName, "utf-8")
-      val tags                = proto.aggregateTags
-      val entityIds           = tags.map(_.tag)
-      val eventClass = tags.headOption match {
-        case Some(tag) => tag.eventType
-        case None      => throw new IllegalArgumentException(s"ReadSideProcessor ${proto.getClass.getName} returned 0 tags")
-      }
-
-      val globalPrepareTask: ClusterStartupTask =
-        ClusterStartupTask(
-          system,
-          s"readSideGlobalPrepare-$encodedReadSideName",
-          () => processorFactory().buildHandler().globalPrepare(),
-          config.globalPrepareTimeout,
-          config.role,
-          config.minBackoff,
-          config.maxBackoff,
-          config.randomBackoffFactor
-        )
-
-      val readSideProps =
-        ReadSideActor.props(
-          config,
-          eventClass,
-          globalPrepareTask,
-          registry.eventStream[Event],
-          processorFactory
-        )
-
-      val shardingSettings = ClusterShardingSettings(system).withRole(config.role)
-
-      ClusterDistribution(system).start(
-        readSideName,
-        readSideProps,
-        entityIds,
-        ClusterDistributionSettings(system).copy(clusterShardingSettings = shardingSettings)
-      )
+    // try to create one instance to fail fast
+    val proto               = processorFactory()
+    val readSideName        = name.fold("")(_ + "-") + proto.readSideName
+    val encodedReadSideName = URLEncoder.encode(readSideName, "utf-8")
+    val tags                = proto.aggregateTags
+    val entityIds           = tags.map(_.tag)
+    val eventClass = tags.headOption match {
+      case Some(tag) => tag.eventType
+      case None      => throw new IllegalArgumentException(s"ReadSideProcessor ${proto.getClass.getName} returned 0 tags")
     }
+
+    val globalPrepareTask: ClusterStartupTask =
+      ClusterStartupTask(
+        system,
+        s"readSideGlobalPrepare-$encodedReadSideName",
+        () => processorFactory().buildHandler().globalPrepare(),
+        config.globalPrepareTimeout,
+        config.role,
+        config.minBackoff,
+        config.maxBackoff,
+        config.randomBackoffFactor
+      )
+
+    val readSideProps =
+      ReadSideActor.props(
+        config,
+        eventClass,
+        globalPrepareTask,
+        registry.eventStream[Event],
+        processorFactory
+      )
+
+    val shardingSettings = ClusterShardingSettings(system).withRole(config.role)
+
+    ClusterDistribution(system).start(
+      readSideName,
+      readSideProps,
+      entityIds,
+      ClusterDistributionSettings(system).copy(clusterShardingSettings = shardingSettings)
+    )
 
   }
 }
