@@ -111,19 +111,19 @@ class ClusterDistribution(system: ExtendedActorSystem) extends Extension {
 
     val sharding = ClusterSharding(system)
 
-    if (settings.clusterShardingSettings.role.forall(Cluster(system).getSelfRoles.contains)) {
-      val shardRegion =
-        sharding.start(typeName, entityProps, settings.clusterShardingSettings, extractEntityId, extractShardId)
+    // sharding.start will internally check the roles in _this_ node allow creating shards considering shards
+    // are only allowed in nodes that have `settings.clusterShardingSettings.role`. When role forbid shard creation
+    // the ShardRegion will start in proxy-only mode. In any case, this node should participate in the `EnsureActive`
+    // gossip.
+    val shardRegion =
+      sharding.start(typeName, entityProps, settings.clusterShardingSettings, extractEntityId, extractShardId)
 
-      system.systemActorOf(
-        EnsureActiveActor.props(entityIds, shardRegion, settings.ensureActiveInterval),
-        "cluster-distribution-" + URLEncoder.encode(typeName, "utf-8")
-      )
+    system.systemActorOf(
+      EnsureActiveActor.props(entityIds, shardRegion, settings.ensureActiveInterval),
+      "cluster-distribution-" + URLEncoder.encode(typeName, "utf-8")
+    )
 
-      shardRegion
-    } else {
-      sharding.startProxy(typeName, settings.clusterShardingSettings.role, extractEntityId, extractShardId)
-    }
+    shardRegion
   }
 
 }
