@@ -52,7 +52,7 @@ akka.serialization.jackson {
   # Configuration of the ObjectMapper for external service api
   jackson-json-serviceapi {
      # Serializes dates using Jackson custom formats
-     WRITE_DATES_AS_TIMESTAMPS = on 
+     WRITE_DATES_AS_TIMESTAMPS = on
   }
 }
 ```
@@ -66,6 +66,19 @@ akka.serialization.jackson {
 
 When marking a serializable class with `CompressedJsonable` compression will only kick in when the serialized representation goes past a threshold. The default value for `akka.serialization.jackson.jackson-json-gzip.compress-larger-than` is 32 Kilobytes. As mentioned above, this setting was previously configure by `lagom.serialization.json.compress-larger-than` and defaulted to 1024 bytes. (See [#1983](https://github.com/lagom/lagom/pull/1983))
 
+### Remoting Artery
+
+Lagom 1.6.0 builds on Akka 2.6.0 that uses a new Akka Remote implementation called Artery. Artery is enabled by default in Lagom and replaces the previous Akka Remote protocol (aka. Akka Remote Classic). If you are using Lagom in a clustered setup, you will need to shutdown all nodes before updating, unless you choose to disable Artery.
+
+To use classic remoting instead of Artery, you need to:
+
+1. Set property `akka.remote.artery.enabled` to `false`. Further, any configuration under `akka.remote` that is specific to classic remoting needs to be moved to `akka.remote.classic`. To see which configuration options are specific to classic search for them in: [`akka-remote/reference.conf`](https://github.com/akka/akka/blob/master/akka-remote/src/main/resources/reference.conf)
+2. Add Netty dependency as explained in [Akka Remoting docs](https://doc.akka.io/docs/akka/2.6/remoting.html#dependency):
+
+```scala
+libraryDependencies += "io.netty" % "netty" % "3.10.6.Final"
+```
+
 ### Shard Coordination
 
 In Lagom 1.4 and 1.5 users could use the `akka.cluster.sharding.store-state-mode` configuration key to switch from the default `persistence`-based shard coordination to the `ddata`-based coordination.  As of Lagom 1.6 `ddata` is the new default.
@@ -77,8 +90,13 @@ Switching from `persistence` to `ddata`, such as if your cluster relies of Lagom
 akka.cluster.sharding.state-store-mode = persistence
 ```
 
-## Cluster Shutdown changes
+## Upgrading a production system
+
+As usual, before upgrading to Lagom 1.6.0, makes sure you are using the latest version on the 1.5.x series.
+
+Lagom 1.6.0 has a few new default settings that will prevent you to run a rolling upgrade. In case you prefer to run a rolling upgrade, you will need to opt-out from each of these new defaults as explained below.
 
 This is a summary of changes in Lagom 1.6 that would require a full cluster shutdown rather than a rolling upgrade:
 
+* The change in [[Akka Remote|Migration16#Remoting-Artery] default implementation.
 * The change in default [[Shard Coordination|Migration16#Shard-Coordination] strategy.
