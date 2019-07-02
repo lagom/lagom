@@ -62,6 +62,8 @@ object Dependencies {
     val jetty = "9.4.16.v20190411"
 
     val Selenium = "3.141.59"
+
+    val Testcontainers = "1.11.2"
   }
 
   // Some setup before we start creating ModuleID vals
@@ -92,6 +94,7 @@ object Dependencies {
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
     ("com.datastax.cassandra" % "cassandra-driver-core" % "3.6.0").excludeAll(excludeSlf4j: _*)
+  private val testcontainersСassandra = "org.testcontainers" % "cassandra" % Versions.Testcontainers
 
   private val akkaActor            = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
   private val akkaRemote           = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
@@ -930,8 +933,6 @@ object Dependencies {
     playExceptions,
     playBuildLink,
     playFileWatch,
-    // This is used in the code to check if the embedded cassandra server is started
-    cassandraDriverCore,
     // explicitly depend on particular versions of guava
     guava,
     scalaTest % Test
@@ -1016,10 +1017,8 @@ object Dependencies {
   val `play-integration-javadsl` = libraryDependencies ++= Nil
 
   val `cassandra-server` = libraryDependencies ++= Seq(
-    akkaPersistenceCassandraLauncher,
-    akkaPersistenceCassandra,
-    // explicitly depend on particular versions of guava
-    guava
+    testcontainersСassandra,
+    "com.github.terma" % "javaniotcpproxy" % "1.5",
   )
 
   val `kafka-server` = libraryDependencies ++= Seq(
