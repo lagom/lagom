@@ -41,15 +41,15 @@ import java.net.URI
 import akka.kafka.ProducerMessage
 
 private[lagom] class TaggedOffsetProducerActor[Message](
-                                                  kafkaConfig: KafkaConfig,
-                                                  locateService: String => Future[Seq[URI]],
-                                                  topicId: String,
-                                                  eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
-                                                  partitionKeyStrategy: Option[Message => String],
-                                                  serializer: Serializer[Message],
-                                                  offsetStore: OffsetStore
-                                                )(implicit mat: Materializer, ec: ExecutionContext)
-  extends Actor
+    kafkaConfig: KafkaConfig,
+    locateService: String => Future[Seq[URI]],
+    topicId: String,
+    eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+    partitionKeyStrategy: Option[Message => String],
+    serializer: Serializer[Message],
+    offsetStore: OffsetStore
+)(implicit mat: Materializer, ec: ExecutionContext)
+    extends Actor
     with ActorLogging {
 
   /** Switch used to terminate the on-going Kafka publishing stream when this actor fails.*/
@@ -172,14 +172,14 @@ private[lagom] class TaggedOffsetProducerActor[Message](
 
 private[lagom] object TaggedOffsetProducerActor {
   def props[Message](
-                      kafkaConfig: KafkaConfig,
-                      locateService: String => Future[Seq[URI]],
-                      topicId: String,
-                      eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
-                      partitionKeyStrategy: Option[Message => String],
-                      serializer: Serializer[Message],
-                      offsetStore: OffsetStore
-                    )(implicit mat: Materializer, ec: ExecutionContext) =
+      kafkaConfig: KafkaConfig,
+      locateService: String => Future[Seq[URI]],
+      topicId: String,
+      eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+      partitionKeyStrategy: Option[Message => String],
+      serializer: Serializer[Message],
+      offsetStore: OffsetStore
+  )(implicit mat: Materializer, ec: ExecutionContext) =
     Props(
       new TaggedOffsetProducerActor[Message](
         kafkaConfig,
