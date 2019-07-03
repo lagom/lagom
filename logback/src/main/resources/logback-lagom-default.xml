@@ -23,7 +23,7 @@
   <!-- Set logging for all Lagom library classes to INFO -->
   <logger name="com.lightbend.lagom" level="INFO" />
 
-  <!-- Cassandra and the datasta driver are used by the Lagom event sourcing modules -->
+  <!-- Cassandra and the datastax driver are used by the Lagom event sourcing modules -->
   <logger name="org.apache.cassandra" level="ERROR" />
   <logger name="com.datastax.driver" level="ERROR" />
   <!-- Turn down Kafka noise -->
