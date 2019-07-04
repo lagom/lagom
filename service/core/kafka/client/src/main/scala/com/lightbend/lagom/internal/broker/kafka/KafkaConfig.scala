@@ -34,6 +34,7 @@ object KafkaConfig {
 }
 
 sealed trait ClientConfig {
+  def offsetTimeout: FiniteDuration
   def minBackoff: FiniteDuration
   def maxBackoff: FiniteDuration
   def randomBackoffFactor: Double
@@ -41,6 +42,7 @@ sealed trait ClientConfig {
 
 object ClientConfig {
   private[kafka] class ClientConfigImpl(conf: Config) extends ClientConfig {
+    val offsetTimeout       = conf.getDuration("offset-timeout", TimeUnit.MILLISECONDS).millis
     val minBackoff          = conf.getDuration("failure-exponential-backoff.min", TimeUnit.MILLISECONDS).millis
     val maxBackoff          = conf.getDuration("failure-exponential-backoff.max", TimeUnit.MILLISECONDS).millis
     val randomBackoffFactor = conf.getDouble("failure-exponential-backoff.random-factor")
