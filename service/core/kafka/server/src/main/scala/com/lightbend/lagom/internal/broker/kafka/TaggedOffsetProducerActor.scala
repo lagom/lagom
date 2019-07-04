@@ -40,6 +40,11 @@ import java.net.URI
 
 import akka.kafka.ProducerMessage
 
+/**
+ * The ProducerActor is activated remotely by a message with  a tagname. That tagname identifies a shard
+  * of a Persistent Entity which this actor will poll, then feed on a user Flow and finally publish into
+  * Kafka. See also ReadSideActor.
+ */
 private[lagom] class TaggedOffsetProducerActor[Message](
     kafkaConfig: KafkaConfig,
     locateService: String => Future[Seq[URI]],
