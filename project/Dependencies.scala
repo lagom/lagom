@@ -677,9 +677,10 @@ object Dependencies {
     akkaCluster,
     akkaManagementClusterBootstrap,
     akkaManagementClusterHttp,
-    akkaTestkit    % Test,
-    scalaTest      % Test,
-    junit          % Test,
+    akkaTestkit % Test,
+    akkaMultiNodeTestkit % Test,
+    scalaTest % Test,
+    junit % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     // Upgrades needed to match whitelist
     sslConfig,
