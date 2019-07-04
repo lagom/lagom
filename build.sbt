@@ -821,12 +821,15 @@ lazy val `persistence-core` = (project in file("persistence/core"))
   .dependsOn(`cluster-core`, logback % Test)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
+  .settings(multiJvmTestSettings)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-persistence-core",
     Dependencies.`persistence-core`
   )
+  .configs(MultiJvm)
+
 
 lazy val `persistence-testkit` = (project in file("persistence/testkit"))
   .settings(runtimeLibCommon: _*)
