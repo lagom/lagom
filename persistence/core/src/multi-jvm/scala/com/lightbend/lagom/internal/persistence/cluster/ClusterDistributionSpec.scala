@@ -6,13 +6,19 @@ package com.lightbend.lagom.internal.persistence.cluster
 
 import akka.actor.ActorSystem
 import akka.actor.BootstrapSetup
+import akka.actor.Props
 import akka.actor.setup.ActorSystemSetup
+import akka.cluster.sharding.ClusterShardingSettings
 import akka.remote.testkit.MultiNodeConfig
 import akka.remote.testkit.MultiNodeSpec
 import akka.testkit.ImplicitSender
+import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.scaladsl.persistence.multinode.STMultiNodeSpec
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
+import com.typesafe.config.ConfigFactory
+
+import scala.concurrent.duration.Duration
 
 object ClusterDistributionConfig extends MultiNodeConfig {
   val node1 = role("node1")
@@ -32,7 +38,8 @@ object ClusterDistributionSpec {
     reduced.head.replaceFirst(""".*\.""", "").replaceAll("[^a-zA-Z_0-9]", "_")
   }
   def createActorSystem(): (Config) => ActorSystem = { config =>
-    val setup = ActorSystemSetup(BootstrapSetup(ConfigFactory.load(config)))
+    val testConfig = ConfigFactory.parseString("akka.actor.provider = cluster").withFallback(config)
+    val setup      = ActorSystemSetup(BootstrapSetup(ConfigFactory.load(testConfig)))
     ActorSystem(getCallerName(classOf[MultiNodeSpec]), setup)
   }
 }
@@ -49,8 +56,36 @@ class ClusterDistributionSpec
   import ClusterDistributionConfig._
   override def initialParticipants: Int = roles.size
 
+  val distributionSettings =
+    ClusterDistributionSettings(system)
+      .copy(ensureActiveInterval = Duration(1, "second"))
+
   "A ClusterDistribution" must {
 
-    "distribute" in {}
+    "distribute" in {
+      val typeName     = "CDTest"
+      val props: Props = FakeActor.props
+      val tagNames     = (1 to 10).map(i => s"test$i").toSet
+      ClusterDistribution(system)
+        .start(
+          typeName,
+          props,
+          tagNames,
+          distributionSettings
+        )
+    }
+  }
+}
+
+import akka.actor.Actor
+import akka.actor.Props
+
+object FakeActor {
+  def props: Props = Props(new FakeActor)
+}
+
+class FakeActor extends Actor {
+  override def receive = {
+    case EnsureActive(tagName) => println(tagName)
   }
 }
