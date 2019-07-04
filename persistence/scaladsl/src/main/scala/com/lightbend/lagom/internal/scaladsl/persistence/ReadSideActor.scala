@@ -84,10 +84,10 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
           Start
         }
         .pipeTo(self)
-      context.become(start(tagName))
+      context.become(active(tagName))
   }
 
-  def start(tagName: EntityId): Receive = {
+  def active(tagName: EntityId): Receive = {
     case Start =>
       val tag = new AggregateEventTag(clazz, tagName)
       val backoffSource: Source[Done, NotUsed] =

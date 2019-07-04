@@ -98,10 +98,10 @@ private[lagom] class TopicProducerActor[Message](
   override def receive = {
     case EnsureActive(tagName) =>
       self ! Start
-      context.become(initializing(tagName))
+      context.become(active(tagName))
   }
 
-  private def initializing(tagName: String): Receive = {
+  private def active(tagName: String): Receive = {
     case Start => {
       val backoffSource: Source[Future[Done], NotUsed] = {
         RestartSource.withBackoff(
