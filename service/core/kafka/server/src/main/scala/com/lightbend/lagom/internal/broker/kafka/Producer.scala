@@ -39,9 +39,12 @@ private[lagom] object Producer {
       offsetStore: OffsetStore
   )(implicit mat: Materializer, ec: ExecutionContext): Unit = {
 
+    val projectionName = s"kafkaProducer-$topicId"
+
     val producerConfig = ProducerConfig(system.settings.config)
-    val topicProducerProps = TaggedOffsetProducerActor.props(
+    val topicProducerProps = TopicProducerActor.props(
       kafkaConfig,
+      producerConfig,
       locateService,
       topicId,
       eventStreamFactory,
@@ -50,23 +53,13 @@ private[lagom] object Producer {
       offsetStore
     )
 
-    val backoffPublisherProps = BackoffOpts
-      .onStop(
-        topicProducerProps,
-        s"producer",
-        producerConfig.minBackoff,
-        producerConfig.maxBackoff,
-        producerConfig.randomBackoffFactor
-      )
-      .withDefaultStoppingStrategy
+    val entityIds = tags.toSet
 
-    val projectionName          = s"kafkaProducer-$topicId"
-    val entityIds               = tags.toSet
     val clusterShardingSettings = ClusterShardingSettings(system).withRole(producerConfig.role)
 
     ClusterDistribution(system).start(
       projectionName,
-      BackoffSupervisor.props(backoffPublisherProps),
+      topicProducerProps,
       entityIds,
       ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
     )
