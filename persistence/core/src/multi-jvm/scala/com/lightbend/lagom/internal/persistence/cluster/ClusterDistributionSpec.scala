@@ -12,7 +12,6 @@ import akka.actor.Props
 import akka.actor.setup.ActorSystemSetup
 import akka.cluster.Cluster
 import akka.cluster.MemberStatus
-import akka.cluster.sharding.ClusterShardingSettings
 import akka.remote.testconductor.RoleName
 import akka.remote.testkit.MultiNodeConfig
 import akka.remote.testkit.MultiNodeSpec
@@ -22,7 +21,6 @@ import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.Ensu
 import com.lightbend.lagom.scaladsl.persistence.multinode.STMultiNodeSpec
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.duration._
 
@@ -30,6 +28,37 @@ object ClusterDistributionConfig extends MultiNodeConfig {
   val node1 = role("node1")
   val node2 = role("node2")
   val node3 = role("node3")
+
+  commonConfig(
+      ConfigFactory
+        .parseString(
+          """
+      terminate-system-after-member-removed = 60s
+
+      # increase default timeouts to leave wider margin for Travis.
+      # 30s to 60s
+      akka.testconductor.barrier-timeout=60s
+
+      akka.test.single-expect-default = 15s
+
+      # Don't terminate the actor system when doing a coordinated shutdown
+      akka.coordinated-shutdown.terminate-actor-system = off
+      akka.coordinated-shutdown.run-by-jvm-shutdown-hook = off
+      akka.cluster.run-coordinated-shutdown-when-down = off
+
+      # multi-jvm tests forms the cluster programmatically
+      # therefore we disable Akka Cluster Bootstrap
+      lagom.cluster.bootstrap.enabled = off
+
+      # no jvm exit on tests
+      lagom.cluster.exit-jvm-when-system-terminated = off
+
+      akka.cluster.sharding.waiting-for-state-timeout = 5s
+    """
+        )
+        .withFallback(ConfigFactory.parseResources("play/reference-overrides.conf"))
+    )
+
 }
 
 // heavily inspired by AbstractClusteredPersistentEntitySpec
@@ -44,8 +73,7 @@ object ClusterDistributionSpec {
     reduced.head.replaceFirst(""".*\.""", "").replaceAll("[^a-zA-Z_0-9]", "_")
   }
   def createActorSystem(): (Config) => ActorSystem = { config =>
-    val testConfig = ConfigFactory.parseString("akka.actor.provider = cluster").withFallback(config)
-    val setup      = ActorSystemSetup(BootstrapSetup(ConfigFactory.load(testConfig)))
+    val setup      = ActorSystemSetup(BootstrapSetup(ConfigFactory.load(config)))
     ActorSystem(getCallerName(classOf[MultiNodeSpec]), setup)
   }
 }
@@ -59,9 +87,8 @@ class ClusterDistributionSpec
     with STMultiNodeSpec
     with ImplicitSender {
 
-import ClusterDistributionConfig._
+  import ClusterDistributionConfig._
   override def initialParticipants: Int = roles.size
-
 
   def join(from: RoleName, to: RoleName): Unit = {
     runOn(from) {
@@ -86,6 +113,7 @@ import ClusterDistributionConfig._
     enterBarrier("startup")
   }
 
+  //  -------- Before this line all code is testing scaffolding or cluster formation  ------------------
 
   val distributionSettings =
     ClusterDistributionSettings(system)
@@ -93,36 +121,42 @@ import ClusterDistributionConfig._
 
   "A ClusterDistribution" must {
 
-    "distribute" in {
+    "distribute the entityIds across nodes (so all nodes get a response)" in {
 
       val probe = TestProbe()
 
       val typeName     = "CDTest"
+      // There'll be 3 nodes in this test and each node will host a TestProbe.
+      // Cluster Distribution on each node will create a `FakeActor.props` pointing
+      // back to its own TestProbe. We request the creation of 10 FakeActor to ClusterDistribution
+      // with the hope that there'll be at least one for each TestProbe. This is flaky but unlikely to fail.
+      // If it failed, just increase the number of entityIds.
       val props: Props = FakeActor.props(probe.ref)
-      val tagNames     = (1 to 10).map(i => s"test-tagName$i").toSet
+      val entityIds     = (1 to 10).map(i => s"test-entityId$i").toSet
       ClusterDistribution(system)
         .start(
           typeName,
           props,
-          tagNames,
+          entityIds,
           distributionSettings
         )
 
       val echoMessage = probe.receiveOne(10.second).asInstanceOf[String]
-      echoMessage should include ("test-tagName")
+      echoMessage should include("test-entityId")
 
     }
   }
 }
 
-import akka.actor.{ Actor, Props }
+import akka.actor.Actor
+import akka.actor.Props
 
 object FakeActor {
-  def props(ref:ActorRef): Props = Props(new FakeActor(ref))
+  def props(ref: ActorRef): Props = Props(new FakeActor(ref))
 }
 
-class FakeActor(ref:ActorRef) extends Actor {
+class FakeActor(ref: ActorRef) extends Actor {
   override def receive = {
-    case EnsureActive(tagName) => ref ! tagName
+    case EnsureActive(entityId) => ref ! entityId
   }
 }
