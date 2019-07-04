@@ -117,7 +117,7 @@ private[lagom] class TopicProducerActor[Message](
               case (endpoints, offset) =>
                 val serviceName = kafkaConfig.serviceName.map(name => s"[$name]").getOrElse("")
                 log.debug("Kafka service {} located at URIs [{}] for producer of [{}]", serviceName, endpoints, topicId)
-                val eventStreamSource: Source[(Message, Offset), _]          = eventStreamFactory(tagName, offset)
+                val eventStreamSource: Source[(Message, Offset), _]          = eventStreamFactory(tagName, offset.loadedOffset)
                 val userlandFlow: Flow[(Message, Offset), Future[Done], Any] = eventsPublisherFlow(endpoints, offset)
                 eventStreamSource.via(userlandFlow)
             }
