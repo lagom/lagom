@@ -33,17 +33,18 @@ private[lagom] class ReadSideImpl(
       processorFactory: () => ReadSideProcessor[Event]
   ) = {
 
+    val readSideProcessor = processorFactory()
+    val readSideName      = name.fold("")(_ + "-") + readSideProcessor.readSideName
+    val tags              = readSideProcessor.aggregateTags
+    val entityIds         = tags.map(_.tag)
     // try to create one instance to fail fast
-    val proto               = processorFactory()
-    val readSideName        = name.fold("")(_ + "-") + proto.readSideName
-    val encodedReadSideName = URLEncoder.encode(readSideName, "utf-8")
-    val tags                = proto.aggregateTags
-    val entityIds           = tags.map(_.tag)
     val eventClass = tags.headOption match {
       case Some(tag) => tag.eventType
-      case None      => throw new IllegalArgumentException(s"ReadSideProcessor ${proto.getClass.getName} returned 0 tags")
+      case None =>
+        throw new IllegalArgumentException(s"ReadSideProcessor ${readSideProcessor.getClass.getName} returned 0 tags")
     }
 
+    val encodedReadSideName = URLEncoder.encode(readSideName, "utf-8")
     val globalPrepareTask: ClusterStartupTask =
       ClusterStartupTask(
         system,
@@ -65,13 +66,13 @@ private[lagom] class ReadSideImpl(
         processorFactory
       )
 
-    val shardingSettings = ClusterShardingSettings(system).withRole(config.role)
+    val clusterShardingSettings = ClusterShardingSettings(system).withRole(config.role)
 
     ClusterDistribution(system).start(
       readSideName,
       readSideProps,
       entityIds,
-      ClusterDistributionSettings(system).copy(clusterShardingSettings = shardingSettings)
+      ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
     )
 
   }
