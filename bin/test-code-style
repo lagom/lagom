@@ -14,13 +14,14 @@ runSbt  +headerCheck \
         +test:headerCheck \
         multi-jvm:headerCheck
 
-# only run versionSyncCheck if NOT a scheduled build
+declare -a EXTRA_TASKS
 if [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
-    EXTRA_TASK="versionSyncCheck"
+    EXTRA_TASKS+=("versionSyncCheck")
+    # only safe when not cron, b/c snapshot akka versions can break validateDependencies
+    EXTRA_TASKS+=("validateDependencies")
 fi
 
-runSbt  $EXTRA_TASK \
-        validateDependencies \
+runSbt  ${EXTRA_TASK[@]} \
         mimaReportBinaryIssues
 
 printMessage "VALIDATE SCALA CODE FORMATTING"
