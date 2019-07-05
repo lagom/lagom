@@ -35,7 +35,7 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
   val node2 = role("node2")
   val node3 = role("node3")
 
-  val databasePort = System.getProperty("database.port").toInt
+  val databasePort = System.getProperty("javadsl.database.port").toInt
   val environment  = Environment.simple()
 
   commonConfig(

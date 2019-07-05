@@ -188,12 +188,18 @@ val defaultMultiJvmOptions: List[String] = {
   "-Xmx128m" :: properties
 }
 
-def databasePortSetting: String = {
-  val serverSocket = ServerSocketChannel.open().socket()
-  serverSocket.bind(new InetSocketAddress("127.0.0.1", 0))
-  val port = serverSocket.getLocalPort
-  serverSocket.close()
-  s"-Ddatabase.port=$port"
+def databasePortSetting: List[String] = {
+  def gimmePort = {
+    val serverSocket = ServerSocketChannel.open().socket()
+    try {
+      serverSocket.bind(new InetSocketAddress("127.0.0.1", 0))
+      serverSocket.getLocalPort
+    } finally serverSocket.close()
+  }
+  List(
+    s"-Djavadsl.database.port=$gimmePort",
+    s"-Dscaladsl.database.port=$gimmePort"
+  )
 }
 
 def multiJvmTestSettings: Seq[Setting[_]] = {
@@ -217,7 +223,7 @@ def multiJvmTestSettings: Seq[Setting[_]] = {
     AutomateHeaderPlugin.automateFor(MultiJvm) ++
     Seq(
       parallelExecution in Test := false,
-      MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting :: defaultMultiJvmOptions,
+      MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting ::: defaultMultiJvmOptions,
       // make sure that MultiJvm test are compiled by the default test compilation
       compile in MultiJvm := (compile in MultiJvm).triggeredBy(compile in Test).value,
       // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
