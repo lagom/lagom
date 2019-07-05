@@ -174,20 +174,19 @@ private[lagom] class TopicProducerActor[Message](
           Future.successful(strToOpt(kafkaConfig.brokers))
       }
 
-    val brokerList: Future[String] = serviceLookupFuture.flatMap {
-      case Some(brokers) => Future.successful(brokers)
+    val brokerList: Future[String] = serviceLookupFuture.map {
+      case Some(brokers) => brokers
       case None =>
         kafkaConfig.serviceName match {
           case Some(serviceName) =>
             val msg = s"Unable to locate Kafka service named [$serviceName]. Retrying..."
             log.error(msg)
-            Future.failed(new IllegalArgumentException(msg))
+            throw new IllegalArgumentException(msg)
           case None =>
             val msg = "Unable to locate Kafka brokers URIs. Retrying..."
             log.error(msg)
-            Future.failed(new RuntimeException(msg))
+            throw new RuntimeException(msg)
         }
-
     }
 
     brokerList.zip(daoFuture)
