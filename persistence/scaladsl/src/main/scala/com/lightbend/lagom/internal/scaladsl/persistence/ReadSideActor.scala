@@ -20,10 +20,13 @@ import akka.stream.Materializer
 import akka.util.Timeout
 import akka.Done
 import akka.NotUsed
+import akka.stream.scaladsl.Flow
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.scaladsl.persistence._
+
+import scala.concurrent.Future
 
 private[lagom] object ReadSideActor {
 
@@ -33,17 +36,16 @@ private[lagom] object ReadSideActor {
       globalPrepareTask: ClusterStartupTask,
       eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[EventStreamElement[Event], NotUsed],
       processor: () => ReadSideProcessor[Event]
-  )(implicit mat: Materializer) = {
+  )(implicit mat: Materializer) =
     Props(
-      classOf[ReadSideActor[Event]],
-      config,
-      clazz,
-      globalPrepareTask,
-      eventStreamFactory,
-      processor,
-      mat
+      new ReadSideActor[Event](
+        config,
+        clazz,
+        globalPrepareTask,
+        eventStreamFactory,
+        processor
+      )
     )
-  }
 
   case object Start
 
@@ -66,6 +68,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   import akka.pattern.pipe
   import context.dispatcher
 
+  /** Switch used to terminate the on-going stream when this actor is stopped.*/
   private var shutdown: Option[KillSwitch] = None
 
   override def postStop: Unit = {
@@ -81,26 +84,26 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
           Start
         }
         .pipeTo(self)
-      context.become(start(tagName))
+      context.become(active(tagName))
   }
 
-  def start(tagName: EntityId): Receive = {
+  def active(tagName: EntityId): Receive = {
     case Start =>
       val tag = new AggregateEventTag(clazz, tagName)
-      val backoffSource =
+      val backoffSource: Source[Done, NotUsed] =
         RestartSource.withBackoff(
           config.minBackoff,
           config.maxBackoff,
           config.randomBackoffFactor
         ) { () =>
-          val handler      = processor().buildHandler()
-          val futureOffset = handler.prepare(tag)
+          val handler                      = processor().buildHandler()
+          val futureOffset: Future[Offset] = handler.prepare(tag)
           Source
             .fromFuture(futureOffset)
             .initialTimeout(config.offsetTimeout)
             .flatMapConcat { offset =>
-              val eventStreamSource = eventStreamFactory(tag, offset)
-              val userlandFlow      = handler.handle()
+              val eventStreamSource                                            = eventStreamFactory(tag, offset)
+              val userlandFlow: Flow[EventStreamElement[Event], Done, NotUsed] = handler.handle()
               eventStreamSource.via(userlandFlow)
             }
         }
@@ -117,6 +120,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
     // Yes, we are active
 
     case Done =>
+      // This `Done` is materialization of the `Sink.ignore` above.
       throw new IllegalStateException("Stream terminated when it shouldn't")
 
     case Status.Failure(cause) =>
