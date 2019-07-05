@@ -151,8 +151,9 @@ private[lagom] class TopicProducerActor[Message](
    * is empty or unconfigured, etc... In either case, the stream can't be built
    */
   private def eventualBrokersAndOffset(tagName: String): Future[(String, OffsetDao)] = {
-    // TODO: review the OffsetStore API. `prepare()` does a lot more than we want here. Ideally, prepare would be
-    // used when this actor starts and here we would only query for the latest offset.
+    // TODO: review the OffsetStore API. I think `prepare()` does more than we need here. Ideally, prepare (create
+    // schema and prepared statements) would be used when this actor starts and here we would only query for
+    // the latest offset.
     val daoFuture: Future[OffsetDao] = offsetStore.prepare(s"topicProducer-$topicId", tagName)
 
     // null or empty strings become None, otherwise Some[String]
@@ -184,7 +185,7 @@ private[lagom] class TopicProducerActor[Message](
           case None =>
             val msg = "Unable to locate Kafka brokers URIs. Retrying..."
             log.error(msg)
-            Future.failed(throw new RuntimeException(msg))
+            Future.failed(new RuntimeException(msg))
         }
 
     }
