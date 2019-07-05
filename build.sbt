@@ -830,7 +830,6 @@ lazy val `persistence-core` = (project in file("persistence/core"))
   )
   .configs(MultiJvm)
 
-
 lazy val `persistence-testkit` = (project in file("persistence/testkit"))
   .settings(runtimeLibCommon: _*)
   .enablePlugins(RuntimeLibPlugins)
