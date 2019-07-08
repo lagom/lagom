@@ -8,7 +8,7 @@ import scala.language.higherKinds
 
 import java.util.UUID
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.compat._
 import scala.collection.immutable
 import scala.collection.immutable.Seq
 
@@ -120,7 +120,7 @@ trait LowPriorityPathParamSerializers {
    */
   implicit def traversablePathParamSerializer[CC[X] <: Traversable[X], Param: PathParamSerializer](
       implicit delegate: PathParamSerializer[Param],
-      bf: CanBuildFrom[CC[_], Param, CC[Param]]
+      bf: Factory[Param, CC[Param]]
   ): PathParamSerializer[CC[Param]] = {
 
     val name = delegate match {
@@ -131,10 +131,7 @@ trait LowPriorityPathParamSerializers {
     new NamedPathParamSerializer[CC[Param]](name) {
       override def serialize(parameter: CC[Param]): Seq[String] = parameter.flatMap(delegate.serialize).toIndexedSeq
       override def deserialize(parameters: Seq[String]): CC[Param] = {
-        val builder = bf()
-        builder.sizeHint(parameters)
-        builder ++= parameters.map(param => delegate.deserialize(Seq(param)))
-        builder.result()
+        bf.fromSpecific(parameters.iterator.map(param => delegate.deserialize(Seq(param))))
       }
     }
   }
