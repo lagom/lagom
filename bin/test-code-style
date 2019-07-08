@@ -8,7 +8,13 @@ runSbt checkHeaders \
        test:checkHeaders \
        multi-jvm:checkHeaders \
 
-runSbt validateDependencies \
+declare -a EXTRA_TASKS
+if [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
+    # only safe when not cron, b/c snapshot akka versions can break validateDependencies
+    EXTRA_TASKS+=("validateDependencies")
+fi
+
+runSbt  ${EXTRA_TASK[@]} \
        mimaCheckOneAtATime
 
 printMessage "VALIDATE SCALA CODE FORMATTING"
