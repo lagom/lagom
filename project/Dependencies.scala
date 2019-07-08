@@ -26,14 +26,14 @@ object Dependencies {
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M3")
     val AkkaHttp     = "10.1.8"
 
-    val AkkaPersistenceCassandra = "0.61"
-    val AkkaPersistenceJdbc      = "3.5.0"
-    val AkkaManagement           = "1.0.0"
+    val AkkaPersistenceCassandra = "0.62"
+    val AkkaPersistenceJdbc      = "3.5.2"
+    val AkkaManagement           = "1.0.1"
 
     val Disruptor = "3.3.11"
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
-    val ScalaTest            = "3.0.8-RC4"
+    val ScalaTest            = "3.0.8"
     val Jackson              = "2.9.9"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
@@ -43,7 +43,7 @@ object Dependencies {
     val Netty                = "4.1.36.Final"
     val NettyReactiveStreams = "2.0.3"
     val Kafka                = "2.1.1"
-    val AlpakkaKafka         = "1.0.3"
+    val AlpakkaKafka         = "1.0.4"
     val Curator              = "2.12.0"
     val Immutables           = "2.3.10"
     val HibernateCore        = "5.4.2.Final"
@@ -51,7 +51,7 @@ object Dependencies {
 
     val ScalaJava8Compat = "0.9.0"
     val ScalaXml         = "1.2.0"
-    val Slick            = "3.3.0"
+    val Slick            = "3.3.2"
     val JUnit            = "4.12"
     val JUnitInterface   = "0.11"
 
@@ -82,6 +82,7 @@ object Dependencies {
   private val scalaTest: ModuleID    = ("org.scalatest" %% "scalatest" % Versions.ScalaTest).excludeAll(excludeSlf4j: _*)
   private val guava                  = "com.google.guava" % "guava" % Versions.Guava
   private val scalaJava8Compat       = "org.scala-lang.modules" %% "scala-java8-compat" % Versions.ScalaJava8Compat
+  private val scalaCollectionCompat  = "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1"
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.9.10"
@@ -285,7 +286,6 @@ object Dependencies {
       "org.eclipse.jetty.websocket" % "websocket-common"   % Versions.jetty,
       "org.eclipse.jetty.websocket" % "websocket-api"      % Versions.jetty,
       jsr250,
-      "com.typesafe.play"  %% "twirl-api"      % "1.4.0",
       "com.typesafe.play"  %% "twirl-api"      % Versions.Twirl,
       "com.typesafe.slick" %% "slick"          % Versions.Slick,
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
@@ -328,14 +328,14 @@ object Dependencies {
       "org.xerial.snappy" % "snappy-java"    % "1.1.7.2",
       "tyrex"             % "tyrex"          % "1.0.1",
       javaxAnnotationApi,
-      "org.scala-lang.modules"       %% "scala-collection-compat" % "0.1.1",
-      "com.google.guava"             % "failureaccess"            % "1.0.1",
-      "com.google.guava"             % "listenablefuture"         % "9999.0-empty-to-avoid-conflict-with-guava",
-      "javax.activation"             % "activation"               % "1.1",
-      "javax.activation"             % "javax.activation-api"     % "1.2.0",
-      "jakarta.activation"           % "jakarta.activation-api"   % "1.2.1",
-      "com.thoughtworks.paranamer"   % "paranamer"                % "2.8",
-      "com.fasterxml.jackson.module" %% "jackson-module-scala"    % Versions.JacksonDatatype,
+      scalaCollectionCompat,
+      "com.google.guava"             % "failureaccess"          % "1.0.1",
+      "com.google.guava"             % "listenablefuture"       % "9999.0-empty-to-avoid-conflict-with-guava",
+      "javax.activation"             % "activation"             % "1.1",
+      "javax.activation"             % "javax.activation-api"   % "1.2.0",
+      "jakarta.activation"           % "jakarta.activation-api" % "1.2.1",
+      "com.thoughtworks.paranamer"   % "paranamer"              % "2.8",
+      "com.fasterxml.jackson.module" %% "jackson-module-scala"  % Versions.JacksonDatatype,
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
       "akka-actor",
       "akka-cluster",
@@ -480,6 +480,7 @@ object Dependencies {
   )
 
   val `api-scaladsl` = libraryDependencies ++= Seq(
+    scalaCollectionCompat,
     // Upgrades needed to match whitelist
     sslConfig,
     scalaTest % Test
@@ -817,6 +818,7 @@ object Dependencies {
     junit % Test,
     h2    % Test,
     // Upgrades needed to match whitelist versions
+    scalaCollectionCompat,
     scalaXml
   )
 
