@@ -148,10 +148,11 @@ class ClusterDistributionSpec
         distributionSettings
       )
 
-      // During 10secs, or when 10 responses are obtained, record responses.
+      // During 10secs, or when 50 responses are obtained, record responses. Note: 50 is a magic number that
+      // gives Travis enough time to fulfill the test expectations.
       // The reported messages are a Tuple2[sender.path, entityId] so the `sender.path` must be 3 different
       // values (representing each of the TestProbe's).
-      val reportedMessages: Seq[(String, String)] = probe.receiveN(20, 10.second).asInstanceOf[Seq[(String, String)]]
+      val reportedMessages: Seq[(String, String)] = probe.receiveN(50, 10.second).asInstanceOf[Seq[(String, String)]]
 
       // Any of the 10 FakeActor instances will receive `EnsureActive` messages from any of the nodes. So, the
       // reported message must have 3 distinct senders.
