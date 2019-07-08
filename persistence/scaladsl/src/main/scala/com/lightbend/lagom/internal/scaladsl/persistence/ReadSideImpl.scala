@@ -6,6 +6,7 @@ package com.lightbend.lagom.internal.scaladsl.persistence
 
 import java.net.URLEncoder
 
+import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterShardingSettings
@@ -14,6 +15,7 @@ import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistributionSettings
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistry
 import com.lightbend.lagom.scaladsl.persistence._
 
 import scala.concurrent.ExecutionContext
@@ -57,7 +59,8 @@ private[lagom] class ReadSideImpl(
         config.randomBackoffFactor
       )
 
-    val readSideProps =
+    val readSideProps = (projectorRegistryActorRef: ActorRef) =>
+    // TODO: use the actorRef on the ReadSideActor to register, ping-back info, etc...
       ReadSideActor.props(
         config,
         eventClass,
@@ -66,13 +69,13 @@ private[lagom] class ReadSideImpl(
         processorFactory
       )
 
-    val clusterShardingSettings = ClusterShardingSettings(system).withRole(config.role)
-
-    ClusterDistribution(system).start(
-      readSideName,
-      readSideProps,
+    // TODO: Inject the ProjectorRegistry using a DI managed instance
+    new ProjectorRegistry(system).register(
+      tags.head.eventType.getName, // TODO: use the name from the entity, not the tags
       entityIds,
-      ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
+      readSideName,
+      config.role,
+      readSideProps
     )
 
   }
