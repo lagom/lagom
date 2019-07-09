@@ -17,7 +17,6 @@ import akka.actor.ExtensionId
 import akka.actor.ExtensionIdProvider
 import akka.actor.Props
 import akka.actor.Terminated
-import akka.cluster.Cluster
 import akka.cluster.sharding.ShardRegion.EntityId
 import akka.cluster.sharding.ClusterSharding
 import akka.cluster.sharding.ClusterShardingSettings

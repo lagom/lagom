@@ -752,6 +752,21 @@ object Dependencies {
     akkaSlf4j
   )
 
+  val `cluster-extensions` = libraryDependencies ++= Seq(
+    akkaClusterSharding,
+    akkaSlf4j,
+    akkaTestkit          % Test,
+    akkaMultiNodeTestkit % Test,
+    akkaStreamTestkit    % Test,
+    scalaTest            % Test,
+    junit                % Test,
+    "com.novocode"       % "junit-interface" % "0.11" % Test
+    // Upgrades needed to match whitelist
+//    sslConfig,
+//    playJson,
+//    scalaXml
+  )  
+  
   val `persistence-core` = libraryDependencies ++= Seq(
     akkaPersistence,
     akkaPersistenceQuery,

@@ -823,18 +823,32 @@ lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
   )
   .configs(MultiJvm)
 
-lazy val `persistence-core` = (project in file("persistence/core"))
+lazy val `cluster-extensions` = (project in file("cluster/extensions"))
   .dependsOn(`cluster-core`, logback % Test)
   .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings(since = version150): _*)
+//  .settings(mimaSettings(since = version150): _*)
   .settings(multiJvmTestSettings)
+  .settings(Protobuf.settings)
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    name := "lagom-cluster-extensions",
+    Dependencies.`cluster-extensions`
+  )
+  .configs(MultiJvm)
+
+lazy val `persistence-core` = (project in file("persistence/core"))
+  .dependsOn(
+    `cluster-core`,
+    `cluster-extensions` % "compile;test->test",
+    logback % Test)
+  .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings(since = version150): _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-persistence-core",
     Dependencies.`persistence-core`
   )
-  .configs(MultiJvm)
 
 lazy val `persistence-testkit` = (project in file("persistence/testkit"))
   .settings(runtimeLibCommon: _*)
