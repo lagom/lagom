@@ -18,8 +18,7 @@ import akka.cluster.ddata.Replicator.ReadLocal
 import akka.cluster.ddata.Replicator.Subscribe
 import akka.cluster.ddata.Replicator.Update
 import akka.cluster.ddata.Replicator.WriteMajority
-import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistry.ProjectionMetadata
-import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistry.Running
+import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistry._
 
 import scala.concurrent.duration._
 

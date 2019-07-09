@@ -3,17 +3,17 @@
  */
 
 package com.lightbend.lagom.internal.persistence.projections
+
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.actor.Props
 import akka.pattern.ask
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.util.Timeout
+import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistry._
+import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistryActor._
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution
 import com.lightbend.lagom.internal.persistence.cluster.ClusterDistributionSettings
-import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistry.ProjectionMetadata
-import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistry.ProjectorStatus
-import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistryActor.GetStatus
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -36,8 +36,8 @@ class ProjectorRegistry(system: ActorSystem) {
   // A ProjectorRegistry is responsible for this node's ProjectorRegistryActor instance.
   // TODO: decide what to do if/when the ProjectorRegistryActor dies (note the loss of references to projectors).
   private val projectorRegistryRef: ActorRef = system.actorOf(ProjectorRegistryActor.props, "projector-registry")
-  private val clusterShardingSettings        = ClusterShardingSettings(system)
-  private val clusterDistribution            = ClusterDistribution(system)
+  private lazy val clusterShardingSettings        = ClusterShardingSettings(system)
+  private lazy val clusterDistribution            = ClusterDistribution(system)
 
   private[lagom] def register(
       // We could replace the `streamName` argument with the Persistent Entity type and extract the name from that
