@@ -13,7 +13,8 @@ object Dependencies {
 
     val Scala210 = "2.10.7"
     val Scala212 = "2.12.8"
-    val Scala    = Seq(Scala212)
+    val Scala213 = "2.13.0"
+    val Scala    = Seq(Scala212, Scala213)
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
@@ -678,10 +679,11 @@ object Dependencies {
     akkaCluster,
     akkaManagementClusterBootstrap,
     akkaManagementClusterHttp,
-    akkaTestkit    % Test,
-    scalaTest      % Test,
-    junit          % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test,
+    akkaTestkit          % Test,
+    akkaMultiNodeTestkit % Test,
+    scalaTest            % Test,
+    junit                % Test,
+    "com.novocode"       % "junit-interface" % "0.11" % Test,
     // Upgrades needed to match whitelist
     sslConfig,
     scalaJava8Compat,
