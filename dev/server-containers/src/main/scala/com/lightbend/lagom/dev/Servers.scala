@@ -15,7 +15,6 @@ import java.util.function.Consumer
 import java.util.{ Map => JMap }
 
 import com.datastax.driver.core.Cluster
-import play.dev.filewatch.LoggerProxy
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
@@ -28,11 +27,11 @@ private[lagom] object Servers {
 
   private val servers = Seq(ServiceLocator, CassandraServer, KafkaServer)
 
-  def tryStop(log: LoggerProxy): Unit = {
+  def tryStop(log: MiniLogger): Unit = {
     servers.foreach(_.tryStop(log))
   }
 
-  def asyncTryStop(log: LoggerProxy)(implicit ecn: ExecutionContext): Future[Unit] = {
+  def asyncTryStop(log: MiniLogger)(implicit ecn: ExecutionContext): Future[Unit] = {
     val f = Future.traverse(servers)(server => Future { server.tryStop(log) })
     f.andThen { case _ => log.info("All servers stopped") }.map(_ => ())
   }
@@ -87,12 +86,12 @@ private[lagom] object Servers {
 
     protected var server: Server = _
 
-    final def tryStop(log: LoggerProxy): Unit =
+    final def tryStop(log: MiniLogger): Unit =
       synchronized {
         if (server != null) stop(log)
       }
 
-    protected def stop(log: LoggerProxy): Unit
+    protected def stop(log: MiniLogger): Unit
   }
 
   object ServiceLocator extends ServerContainer {
@@ -110,7 +109,7 @@ private[lagom] object Servers {
     }
 
     def start(
-        log: LoggerProxy,
+        log: MiniLogger,
         parentClassLoader: ClassLoader,
         classpath: Array[URL],
         serviceLocatorAddress: String,
@@ -162,7 +161,7 @@ private[lagom] object Servers {
       } finally Thread.currentThread().setContextClassLoader(current)
     }
 
-    protected def stop(log: LoggerProxy): Unit =
+    protected def stop(log: MiniLogger): Unit =
       synchronized {
         if (server == null) {
           log.info("Service locator was already stopped")
@@ -189,7 +188,7 @@ private[lagom] object Servers {
     }
 
     def start(
-        log: LoggerProxy,
+        log: MiniLogger,
         parentClassLoader: ClassLoader,
         classpath: Seq[File],
         port: Int,
@@ -216,7 +215,7 @@ private[lagom] object Servers {
         }
       }
 
-    private def waitForRunningCassandra(log: LoggerProxy, server: Server, maxWaiting: FiniteDuration): Unit = {
+    private def waitForRunningCassandra(log: MiniLogger, server: Server, maxWaiting: FiniteDuration): Unit = {
       val contactPoint   = Seq(new java.net.InetSocketAddress(server.hostname, server.port)).asJava
       val clusterBuilder = Cluster.builder.addContactPointsWithPorts(contactPoint)
 
@@ -250,7 +249,7 @@ private[lagom] object Servers {
       tryConnect(maxWaiting.fromNow)
     }
 
-    protected def stop(log: LoggerProxy): Unit =
+    protected def stop(log: MiniLogger): Unit =
       synchronized {
         if (server == null) {
           log.info("Cassandra was already stopped")
@@ -278,7 +277,7 @@ private[lagom] object Servers {
     protected type Server = KafkaProcess
 
     def start(
-        log: LoggerProxy,
+        log: MiniLogger,
         cp: Seq[File],
         kafkaPort: Int,
         zooKeeperPort: Int,
@@ -318,7 +317,7 @@ private[lagom] object Servers {
       }
     }
 
-    protected def stop(log: LoggerProxy): Unit = {
+    protected def stop(log: MiniLogger): Unit = {
       if (server == null) {
         log.info("Kafka was already stopped")
       } else {
@@ -335,6 +334,7 @@ private[lagom] object Servers {
       }
     }
   }
+
 }
 
 private[lagom] object StaticServiceLocations {
