@@ -40,6 +40,11 @@ jobs:
       name: "Run tests for Scala 2.11"
     - script: SCALA_VERSION=2.12.8 bin/test-2.1x
       name: "Run tests for Scala 2.12"
+    - script: SCALA_VERSION=2.12.8 bin/test-2.1x
+      env: TRAVIS_JDK=adopt@1.11.0-2
+      name: "Run tests for Scala 2.12 and Java 11"
+    - script: SCALA_VERSION=2.13.0 bin/test-2.1x
+      name: "Run tests for Scala 2.13"
     - script: bin/test-documentation
       name: "Documentation validations and tests"
     - stage: test-build-tools

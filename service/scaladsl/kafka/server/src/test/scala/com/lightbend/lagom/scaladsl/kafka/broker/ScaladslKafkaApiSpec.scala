@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.scaladsl.kafka.broker
 
+import java.io.File
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -19,9 +20,7 @@ import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.SourceQueue
 import akka.Done
 import akka.NotUsed
-import com.lightbend.lagom.internal.kafka.KafkaLocalServer
 import com.lightbend.lagom.scaladsl.api.broker.Message
-import com.lightbend.lagom.scaladsl.api.broker.MetadataKey
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.scaladsl.api.broker.kafka.PartitionKeyStrategy
@@ -40,10 +39,12 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest._
 import play.api.libs.ws.ahc.AhcWSComponents
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.concurrent.Await
 import scala.concurrent.Promise
 import scala.concurrent.duration._
+import scala.util.control.NonFatal
 
 class ScaladslKafkaApiSpec
     extends WordSpecLike
@@ -71,7 +72,7 @@ class ScaladslKafkaApiSpec
             "akka.persistence.snapshot-store.plugin"        -> "akka.persistence.snapshot-store.local",
             "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
             "lagom.cluster.bootstrap.enabled"               -> "off",
-            "lagom.services.kafka_native"                   -> s"tcp://localhost:${KafkaLocalServer.DefaultPort}"
+            "lagom.services.kafka_native"                   -> s"tcp://localhost:9092"
           ).asJava
         )
       }
@@ -82,12 +83,27 @@ class ScaladslKafkaApiSpec
 
   import application.materializer
 
-  private val kafkaServer = KafkaLocalServer(cleanOnStart = true)
+  private val kafkaServerClasspath: Seq[File] = TestBuildInfo.fullClasspath.toIndexedSeq
+  private var kafkaServer: Option[Process]    = None
 
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    kafkaServer.start()
+    kafkaServer = {
+      val javaBin         = new File(new File(new File(sys.props("java.home")), "bin"), "java").getAbsolutePath
+      val classpathString = kafkaServerClasspath.map(_.getAbsolutePath).mkString(File.pathSeparator)
+      val main            = "com.lightbend.lagom.internal.kafka.KafkaLauncher"
+
+      val command = javaBin :: "-classpath" :: classpathString :: main :: Nil
+
+      val process = new ProcessBuilder()
+        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .command(command.asJava)
+        .start()
+
+      Some(process)
+    }
 
     Cluster(application.actorSystem).join(Cluster(application.actorSystem).selfAddress)
   }
@@ -99,7 +115,19 @@ class ScaladslKafkaApiSpec
 
   override def afterAll(): Unit = {
     application.application.stop().futureValue
-    kafkaServer.stop()
+
+    kafkaServer.foreach { process =>
+      try {
+        process.destroy()
+        if (!process.waitFor(10, TimeUnit.SECONDS)) {
+          process.destroyForcibly()
+          process.waitFor(10, TimeUnit.SECONDS)
+        }
+      } catch {
+        case NonFatal(_) => ()
+      }
+    }
+    kafkaServer = None
 
     super.afterAll()
   }
@@ -387,8 +415,8 @@ object ScaladslKafkaApiSpec {
   class EventJournal[Event] {
     private type Element = (Event, Sequence)
     private val offset       = new AtomicLong()
-    private val storedEvents = mutable.MutableList.empty[Element]
-    private val subscribers  = mutable.MutableList.empty[SourceQueue[Element]]
+    private val storedEvents = mutable.ListBuffer.empty[Element]
+    private val subscribers  = mutable.ListBuffer.empty[SourceQueue[Element]]
 
     def eventStream(fromOffset: Offset): Source[(Event, Offset), _] = {
       val minOffset: Long = fromOffset match {
