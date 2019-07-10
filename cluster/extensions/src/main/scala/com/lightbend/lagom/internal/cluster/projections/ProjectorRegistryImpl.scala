@@ -31,7 +31,6 @@ object ProjectorRegistryImpl {
 
 }
 
-// TODO: create and manage from DI.
 private[lagom] class ProjectorRegistryImpl(system: ActorSystem) {
 
   // A ProjectorRegistry is responsible for this node's ProjectorRegistryActor instance.

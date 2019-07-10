@@ -833,13 +833,10 @@ lazy val `cluster-extensions` = (project in file("cluster/extensions"))
   .configs(MultiJvm)
 
 lazy val `cluster-extensions-scaladsl` = (project in file("cluster/extensions-scaladsl"))
-  .dependsOn(
-    `cluster-extensions`,
-    `cluster-scaladsl`,
-      logback % Test)
+  .dependsOn(`cluster-extensions`, `cluster-scaladsl`, logback % Test)
   .settings(runtimeLibCommon: _*)
 //  .settings(mimaSettings(since = version150): _*)
-//  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-extensions 
+//  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-extensions
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-cluster-extensions",
@@ -847,10 +844,7 @@ lazy val `cluster-extensions-scaladsl` = (project in file("cluster/extensions-sc
   )
 
 lazy val `cluster-extensions-javadsl` = (project in file("cluster/extensions-javadsl"))
-  .dependsOn(
-    `cluster-extensions`,
-    `cluster-javadsl`,
-      logback % Test)
+  .dependsOn(`cluster-extensions`, `cluster-javadsl`, logback % Test)
   .settings(runtimeLibCommon: _*)
 //  .settings(mimaSettings(since = version150): _*)
 //  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-extensions
@@ -861,10 +855,7 @@ lazy val `cluster-extensions-javadsl` = (project in file("cluster/extensions-jav
   )
 
 lazy val `persistence-core` = (project in file("persistence/core"))
-  .dependsOn(
-    `cluster-core`,
-    `cluster-extensions` % "compile;test->test",
-    logback % Test)
+  .dependsOn(`cluster-core`, `cluster-extensions` % "compile;test->test", logback % Test)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
   .settings(Protobuf.settings)

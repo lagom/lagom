@@ -43,15 +43,15 @@ private[lagom] object Producer {
     val topicProducerProps = (projectorRegistryActorRef: ActorRef) =>
       // TODO: use the actorRef on the ReadSideActor to register, ping-back info, etc...
       TopicProducerActor.props(
-      kafkaConfig,
-      producerConfig,
-      locateService,
-      topicId,
-      eventStreamFactory,
-      partitionKeyStrategy,
-      serializer,
-      offsetStore
-    )
+        kafkaConfig,
+        producerConfig,
+        locateService,
+        topicId,
+        eventStreamFactory,
+        partitionKeyStrategy,
+        serializer,
+        offsetStore
+      )
 
     val entityIds = tags.toSet
     // TODO: use the name from the entity, not a hardcoded value

@@ -29,7 +29,15 @@ trait LagomKafkaComponents extends LagomKafkaClientComponents with ProjectorComp
   }
 
   // Eagerly start topic producers
-  new ScaladslRegisterTopicProducers(lagomServer, topicFactory, serviceInfo, actorSystem, offsetStore, serviceLocator, projectorRegistryImpl)(
+  new ScaladslRegisterTopicProducers(
+    lagomServer,
+    topicFactory,
+    serviceInfo,
+    actorSystem,
+    offsetStore,
+    serviceLocator,
+    projectorRegistryImpl
+  )(
     executionContext,
     materializer
   )

@@ -17,4 +17,15 @@ trait ProjectorComponents extends ClusterComponents {
   private[lagom] lazy val projectorRegistryImpl: ProjectorRegistryImpl = new ProjectorRegistryImpl(actorSystem)
   lazy val projectorRegistry: ProjectorRegistry = new ProjectorRegistry(projectorRegistryImpl)
 
+
+  // interface (java) ProjectorRegistry
+  // trait (scala) ProjectorRegistry
+  // impl (java) ProjectorRegistryImpl extends ProjectorRegistry
+  // impl (scala) ProjectorRegistry extends ProjectorRegistry
+
+  // internally reused (java) ProjectorRegistryCODEZ
+
+
+
+
 }
