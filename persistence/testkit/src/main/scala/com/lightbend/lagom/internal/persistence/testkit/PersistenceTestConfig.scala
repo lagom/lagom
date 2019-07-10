@@ -33,8 +33,19 @@ private[lagom] object PersistenceTestConfig {
 
   lazy val ClusterConfig: Config = ConfigFactory.parseMap(ClusterConfigMap.asJava)
 
+  /** Return the Cassandra config Map with the default Cluster settings */
   def cassandraConfigMap(keyspacePrefix: String, cassandraPort: Int): Map[String, AnyRef] =
-    ClusterConfigMap ++
+    ClusterConfigMap ++ cassandraConfigMapOnly(keyspacePrefix, cassandraPort)
+
+  /** Return the Cassandra config with the default Cluster settings */
+  def cassandraConfig(keyspacePrefix: String, cassandraPort: Int): Config =
+    ConfigFactory.parseMap(cassandraConfigMap(keyspacePrefix, cassandraPort).asJava)
+
+  /**
+   * Return the Cassandra config Map without the default Cluster settings
+   * Specially useful for multi-jvm tests that configures the cluster manually
+   */
+  def cassandraConfigMapOnly(keyspacePrefix: String, cassandraPort: Int): Map[String, AnyRef] =
       Map(
         "akka.persistence.journal.plugin"                        -> "cassandra-journal",
         "akka.persistence.snapshot-store.plugin"                 -> "cassandra-snapshot-store",
@@ -54,8 +65,12 @@ private[lagom] object PersistenceTestConfig {
         "lagom.persistence.read-side.cassandra.session-provider" -> "akka.persistence.cassandra.ConfigSessionProvider"
       )
 
-  def cassandraConfig(keyspacePrefix: String, cassandraPort: Int): Config =
-    ConfigFactory.parseMap(cassandraConfigMap(keyspacePrefix, cassandraPort).asJava)
+  /**
+   * Return the Cassandra config without the default Cluster settings
+   * Specially useful for multi-jvm tests that configures the cluster manually
+   */
+  def cassandraConfigOnly(keyspacePrefix: String, cassandraPort: Int): Config =
+    ConfigFactory.parseMap(cassandraConfigMapOnly(keyspacePrefix, cassandraPort).asJava)
 
   lazy val JdbcConfigMap: Map[String, AnyRef] =
     ClusterConfigMap ++
