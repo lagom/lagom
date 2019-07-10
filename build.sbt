@@ -779,25 +779,21 @@ lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
   .dependsOn(`akka-management-javadsl`, `cluster-core`, jackson)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
-  .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-javadsl-cluster",
     Dependencies.`cluster-javadsl`
   )
-  .configs(MultiJvm)
 
 lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
   .dependsOn(`akka-management-scaladsl`, `cluster-core`, `play-json`)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
-  .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-cluster",
     Dependencies.`cluster-scaladsl`
   )
-  .configs(MultiJvm)
 
 lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
   .dependsOn(`cluster-javadsl`)
@@ -836,6 +832,34 @@ lazy val `cluster-extensions` = (project in file("cluster/extensions"))
   )
   .configs(MultiJvm)
 
+lazy val `cluster-extensions-scaladsl` = (project in file("cluster/extensions-scaladsl"))
+  .dependsOn(
+    `cluster-extensions`,
+    `cluster-scaladsl`,
+      logback % Test)
+  .settings(runtimeLibCommon: _*)
+//  .settings(mimaSettings(since = version150): _*)
+//  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-extensions 
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    name := "lagom-scaladsl-cluster-extensions",
+    Dependencies.`cluster-extensions-scaladsl`
+  )
+
+lazy val `cluster-extensions-javadsl` = (project in file("cluster/extensions-javadsl"))
+  .dependsOn(
+    `cluster-extensions`,
+    `cluster-javadsl`,
+      logback % Test)
+  .settings(runtimeLibCommon: _*)
+//  .settings(mimaSettings(since = version150): _*)
+//  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-extensions
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    name := "lagom-scaladsl-cluster-extensions",
+    Dependencies.`cluster-extensions-javadsl`
+  )
+
 lazy val `persistence-core` = (project in file("persistence/core"))
   .dependsOn(
     `cluster-core`,
@@ -867,7 +891,8 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
     `persistence-core` % "compile;test->test",
     `persistence-testkit`,
     jackson,
-    `cluster-javadsl`
+    `cluster-javadsl`,
+    `cluster-extensions-javadsl`
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
@@ -883,7 +908,8 @@ lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
     `persistence-core` % "compile;test->test",
     `persistence-testkit`,
     `play-json`,
-    `cluster-scaladsl`
+    `cluster-scaladsl`,
+    `cluster-extensions-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)

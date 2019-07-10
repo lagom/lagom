@@ -21,7 +21,7 @@ import com.lightbend.lagom.spi.persistence.OffsetDao
 import akka.NotUsed
 import akka.actor.ActorLogging
 import akka.stream.scaladsl.Unzip
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import org.apache.kafka.clients.producer.ProducerRecord
 import akka.persistence.query.Offset
 import akka.stream.Materializer

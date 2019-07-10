@@ -21,7 +21,7 @@ import akka.NotUsed
 import com.lightbend.lagom.internal.javadsl.persistence.PersistentEntityActor
 import com.lightbend.lagom.internal.javadsl.persistence.ReadSideActor
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Mode

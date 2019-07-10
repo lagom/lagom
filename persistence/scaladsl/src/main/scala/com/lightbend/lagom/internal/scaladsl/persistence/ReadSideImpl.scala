@@ -8,14 +8,10 @@ import java.net.URLEncoder
 
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
-import akka.cluster.Cluster
-import akka.cluster.sharding.ClusterShardingSettings
 import akka.stream.Materializer
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistributionSettings
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
-import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistry
 import com.lightbend.lagom.scaladsl.persistence._
 
 import scala.concurrent.ExecutionContext
@@ -23,7 +19,8 @@ import scala.concurrent.ExecutionContext
 private[lagom] class ReadSideImpl(
     system: ActorSystem,
     config: ReadSideConfig,
-    registry: PersistentEntityRegistry,
+    persistentEntityRegistry: PersistentEntityRegistry,
+    projectorRegistryImpl: ProjectorRegistryImpl,
     name: Option[String]
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
@@ -65,12 +62,11 @@ private[lagom] class ReadSideImpl(
         config,
         eventClass,
         globalPrepareTask,
-        registry.eventStream[Event],
+        persistentEntityRegistry.eventStream[Event],
         processorFactory
       )
 
-    // TODO: Inject the ProjectorRegistry using a DI managed instance
-    new ProjectorRegistry(system).register(
+    projectorRegistryImpl.register(
       tags.head.eventType.getName, // TODO: use the name from the entity, not the tags
       entityIds,
       readSideName,

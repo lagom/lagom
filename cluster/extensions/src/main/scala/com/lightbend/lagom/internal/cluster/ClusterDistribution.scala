@@ -2,7 +2,7 @@
  * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.internal.persistence.cluster
+package com.lightbend.lagom.internal.cluster
 
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
@@ -61,6 +61,7 @@ object ClusterDistribution extends ExtensionId[ClusterDistribution] with Extensi
   /**
    * Sent to each entity in a cluster distribution to ensure it's active.
    */
+  // TODO: move EnsureActive serializers to lagom-cluster-extensions
   final case class EnsureActive(entityId: EntityId)
 
   /**
@@ -76,7 +77,7 @@ object ClusterDistribution extends ExtensionId[ClusterDistribution] with Extensi
  * active.
  *
  * Entities are cluster sharding entities, so they can discover their ID by inspecting their name. Additionally,
- * entities should handle the [[com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive]]
+ * entities should handle the [[com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive]]
  * message, typically they can do nothing in response to it.
  */
 class ClusterDistribution(system: ExtendedActorSystem) extends Extension {

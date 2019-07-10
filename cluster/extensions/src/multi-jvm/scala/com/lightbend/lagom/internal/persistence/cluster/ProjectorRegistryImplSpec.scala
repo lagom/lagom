@@ -7,11 +7,11 @@ import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.ActorRef
 import akka.actor.Props
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
-import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistry
-import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistry.ProjectionMetadata
-import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistry.Running
-import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistryActor
+import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl.ProjectionMetadata
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl.Running
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.PatienceConfiguration.Interval
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
@@ -19,11 +19,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.Seconds
 import org.scalatest.time.Span
 
-class ProjectorRegistrySpecMultiJvmNode1 extends ProjectorRegistrySpec
-class ProjectorRegistrySpecMultiJvmNode2 extends ProjectorRegistrySpec
-class ProjectorRegistrySpecMultiJvmNode3 extends ProjectorRegistrySpec
+class ProjectorRegistryImplSpecMultiJvmNode1 extends ProjectorRegistryImplSpec
+class ProjectorRegistryImplSpecMultiJvmNode2 extends ProjectorRegistryImplSpec
+class ProjectorRegistryImplSpecMultiJvmNode3 extends ProjectorRegistryImplSpec
 
-object ProjectorRegistrySpec {
+object ProjectorRegistryImplSpec {
   val streamName    = "test-streamName"
   val tagNamePrefix = "streamName"
   val tagName001    = s"${tagNamePrefix}001"
@@ -32,20 +32,20 @@ object ProjectorRegistrySpec {
   val metadata001 = ProjectionMetadata(streamName, projectorName)
 }
 
-class ProjectorRegistrySpec extends ClusteredMultiNodeUtils with Eventually with ScalaFutures {
-  import ProjectorRegistrySpec._
+class ProjectorRegistryImplSpec extends ClusteredMultiNodeUtils with Eventually with ScalaFutures {
+  import ProjectorRegistryImplSpec._
   implicit val exCtx = system.dispatcher
 
   "A ProjectorRegistry" must {
     "register a projector" in {
 
-      val projectorRegistry = new ProjectorRegistry(system)
+      val projectorRegistry = new ProjectorRegistryImpl(system)
 
       // This code will live in the driver (ReadSideImpl, Producer,...)
       val projectorProps = (projectorRegistryActorRef: ActorRef) =>
         FakeProjectorActor.props(
           projectorRegistryActorRef,
-          ProjectorRegistrySpec.metadata001
+          ProjectorRegistryImplSpec.metadata001
         )
 
       projectorRegistry.register(
@@ -65,9 +65,9 @@ class ProjectorRegistrySpec extends ClusteredMultiNodeUtils with Eventually with
 
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
         whenReady(projectorRegistry.getStatus()) {
-          statuses: Map[ProjectionMetadata, ProjectorRegistry.ProjectorStatus] =>
+          statuses: Map[ProjectionMetadata, ProjectorRegistryImpl.ProjectorStatus] =>
             // find a value in the map of statuses for the `tagName001` shard.
-            val tagName001Projector: Option[ProjectorRegistry.ProjectorStatus] =
+            val tagName001Projector: Option[ProjectorRegistryImpl.ProjectorStatus] =
               statuses.filter { case (k, _) => k.tagName.contains(tagName001) }.values.headOption
             // the desired status is accessible from all nodes so we run the assertion
             // everywhere even though the actor leaves in one node.

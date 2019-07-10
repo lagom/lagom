@@ -2,7 +2,7 @@
  * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.internal.persistence.projections
+package com.lightbend.lagom.internal.cluster.projections
 
 import akka.actor.ActorRef
 import akka.cluster.ddata.PNCounterMap
@@ -18,7 +18,7 @@ import akka.cluster.ddata.Replicator.ReadLocal
 import akka.cluster.ddata.Replicator.Subscribe
 import akka.cluster.ddata.Replicator.Update
 import akka.cluster.ddata.Replicator.WriteMajority
-import com.lightbend.lagom.internal.persistence.projections.ProjectorRegistry._
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl._
 
 import scala.concurrent.duration._
 
@@ -64,7 +64,7 @@ class ProjectorRegistryActor extends Actor with ActorLogging {
 
     case g @ GetSuccess(DataKey, req) =>
       val registry: PNCounterMap[ProjectionMetadata]                                = g.get(DataKey)
-      val desiredStatus: Map[ProjectionMetadata, ProjectorRegistry.ProjectorStatus] =
+      val desiredStatus: Map[ProjectionMetadata, ProjectorStatus] =
         // TODO: map the value of the counter (0 or 1) to stopping/running.
         registry.entries.keySet.map((_, Running)).toMap
       req.get.asInstanceOf[ActorRef] ! desiredStatus

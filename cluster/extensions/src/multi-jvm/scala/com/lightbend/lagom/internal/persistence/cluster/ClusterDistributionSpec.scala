@@ -7,7 +7,9 @@ package com.lightbend.lagom.internal.persistence.cluster
 import akka.actor.ActorRef
 import akka.actor.Props
 import akka.testkit.TestProbe
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.cluster.ClusterDistribution
+import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.cluster.ClusterDistributionSettings
 
 import scala.concurrent.duration._
 
