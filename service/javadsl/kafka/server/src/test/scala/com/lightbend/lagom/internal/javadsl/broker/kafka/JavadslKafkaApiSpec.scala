@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.internal.javadsl.broker.kafka
 
+import java.io.Closeable
 import java.io.File
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.CountDownLatch
@@ -22,6 +23,8 @@ import akka.stream.scaladsl.SourceQueue
 import akka.Done
 import akka.NotUsed
 import com.google.inject.AbstractModule
+import com.lightbend.lagom.dev.MiniLogger
+import com.lightbend.lagom.dev.Servers.KafkaServer
 import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec._
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter.dslOffsetToOffset
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter.offsetToDslOffset
@@ -46,10 +49,10 @@ import com.lightbend.lagom.spi.persistence.InMemoryOffsetStore
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
+import org.slf4j.LoggerFactory
 import play.api.inject._
 import play.api.inject.guice.GuiceApplicationBuilder
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.compat.java8.FunctionConverters._
 import scala.compat.java8.OptionConverters._
@@ -57,7 +60,6 @@ import scala.concurrent.duration._
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Promise
-import scala.util.control.NonFatal
 
 class JavadslKafkaApiSpec
     extends WordSpecLike
@@ -67,7 +69,16 @@ class JavadslKafkaApiSpec
     with ScalaFutures
     with OptionValues {
 
+  private val log = LoggerFactory.getLogger(getClass)
+  private val miniLogger = new MiniLogger {
+    def debug(message: => String): Unit = log.debug(message)
+    def info(message: => String): Unit  = log.info(message)
+  }
+
   private lazy val offsetStore = new InMemoryOffsetStore
+
+  private final val kafkaPort          = 9092
+  private final val kafkaZooKeeperPort = 2181
 
   private val application = {
     new GuiceApplicationBuilder()
@@ -85,32 +96,29 @@ class JavadslKafkaApiSpec
         "lagom.cluster.join-self"                       -> "on",
         "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
         "lagom.cluster.bootstrap.enabled"               -> "off",
-        "lagom.services.kafka_native"                   -> s"tcp://localhost:9092"
+        "lagom.services.kafka_native"                   -> s"tcp://localhost:$kafkaPort"
       )
       .build()
   }
 
   private val kafkaServerClasspath: Seq[File] = TestBuildInfo.fullClasspath.toIndexedSeq
-  private var kafkaServer: Option[Process]    = None
+  private var kafkaServer: Option[Closeable]  = None
 
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    kafkaServer = {
-      val javaBin         = new File(new File(new File(sys.props("java.home")), "bin"), "java").getAbsolutePath
-      val classpathString = kafkaServerClasspath.map(_.getAbsolutePath).mkString(File.pathSeparator)
-      val main            = "com.lightbend.lagom.internal.kafka.KafkaLauncher"
-
-      val command = javaBin :: "-classpath" :: classpathString :: main :: Nil
-
-      val process = new ProcessBuilder()
-        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
-        .command(command.asJava)
-        .start()
-
-      Some(process)
-    }
+    kafkaServer = Some(
+      KafkaServer.start(
+        log = miniLogger,
+        cp = kafkaServerClasspath,
+        kafkaPort = kafkaPort,
+        zooKeeperPort = kafkaZooKeeperPort,
+        kafkaPropertiesFile = None,
+        jvmOptions = Nil,
+        targetDir = TestBuildInfo.target,
+        cleanOnStart = true,
+      )
+    )
   }
 
   before {
@@ -121,17 +129,7 @@ class JavadslKafkaApiSpec
   override def afterAll(): Unit = {
     application.stop().futureValue
 
-    kafkaServer.foreach { process =>
-      try {
-        process.destroy()
-        if (!process.waitFor(10, TimeUnit.SECONDS)) {
-          process.destroyForcibly()
-          process.waitFor(10, TimeUnit.SECONDS)
-        }
-      } catch {
-        case NonFatal(_) => ()
-      }
-    }
+    kafkaServer.foreach(_.close())
     kafkaServer = None
 
     super.afterAll()
