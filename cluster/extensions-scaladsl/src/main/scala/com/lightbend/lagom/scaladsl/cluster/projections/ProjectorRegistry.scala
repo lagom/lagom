@@ -13,7 +13,7 @@ import scala.concurrent.Future
 /** TODO: docs
  *
  */
-class ProjectorRegistry(impl:ProjectorRegistryImpl) {
+class ProjectorRegistry(private val impl:ProjectorRegistryImpl) {
 
   def getStatus: Future[Map[ProjectionMetadata, ProjectorStatus]] =
     impl.getStatus()

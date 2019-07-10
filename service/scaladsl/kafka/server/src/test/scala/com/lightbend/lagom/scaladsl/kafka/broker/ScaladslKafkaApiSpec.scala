@@ -58,9 +58,9 @@ class ScaladslKafkaApiSpec
   private val application = {
     new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LagomKafkaComponents
     with ConfigurationServiceLocatorComponents {
-      override lazy val offsetStore = new InMemoryOffsetStore
+      override lazy val offsetStore            = new InMemoryOffsetStore
       override lazy val jsonSerializerRegistry = EmptyJsonSerializerRegistry
-      override lazy val lagomServer = serverFor[TestService](new TestServiceImpl)
+      override lazy val lagomServer            = serverFor[TestService](new TestServiceImpl)
 
       override def additionalConfiguration = {
         import scala.collection.JavaConverters._

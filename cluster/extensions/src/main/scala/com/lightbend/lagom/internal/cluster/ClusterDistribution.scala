@@ -145,7 +145,7 @@ private[cluster] class EnsureActiveActor(
   import ClusterDistribution._
   import context.dispatcher
 
-  val tick = context.system.scheduler.schedule(0.seconds, ensureActiveInterval, self, Tick)
+  val tick = context.system.scheduler.scheduleWithFixedDelay(0.seconds, ensureActiveInterval, self, Tick)
   context.watch(shardRegion)
 
   override def postStop(): Unit = {

@@ -57,7 +57,7 @@ private[lagom] class ReadSideImpl(
       )
 
     val readSideProps = (projectorRegistryActorRef: ActorRef) =>
-    // TODO: use the actorRef on the ReadSideActor to register, ping-back info, etc...
+      // TODO: use the actorRef on the ReadSideActor to register, ping-back info, etc...
       ReadSideActor.props(
         config,
         eventClass,
