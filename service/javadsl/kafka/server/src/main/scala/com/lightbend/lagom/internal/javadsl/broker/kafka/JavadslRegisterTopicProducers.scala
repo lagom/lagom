@@ -14,13 +14,13 @@ import com.lightbend.lagom.javadsl.api.ServiceInfo
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import akka.stream.Materializer
 import javax.inject.Inject
-
 import akka.actor.ActorSystem
 import akka.persistence.query.Offset
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.Producer
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl
 import com.lightbend.lagom.internal.javadsl.api.MethodTopicHolder
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
@@ -31,7 +31,6 @@ import com.lightbend.lagom.spi.persistence.OffsetStore
 
 import scala.collection.immutable
 import scala.compat.java8.FutureConverters._
-import scala.compat.java8.OptionConverters._
 
 class JavadslRegisterTopicProducers @Inject()(
     resolvedServices: ResolvedServices,
@@ -39,7 +38,8 @@ class JavadslRegisterTopicProducers @Inject()(
     info: ServiceInfo,
     actorSystem: ActorSystem,
     offsetStore: OffsetStore,
-    serviceLocator: ServiceLocator
+    serviceLocator: ServiceLocator,
+    projectorRegistryImpl: ProjectorRegistryImpl
 )(implicit ec: ExecutionContext, mat: Materializer) {
 
   private val log         = LoggerFactory.getLogger(classOf[JavadslRegisterTopicProducers])
@@ -95,7 +95,8 @@ class JavadslRegisterTopicProducers @Inject()(
                   eventStreamFactory,
                   partitionKeyStrategy,
                   new JavadslKafkaSerializer(topicCall.messageSerializer().serializerForRequest()),
-                  offsetStore
+                  offsetStore,
+                  projectorRegistryImpl
                 )
 
               case other =>

@@ -761,11 +761,13 @@ object Dependencies {
     scalaTest            % Test,
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test
-    // Upgrades needed to match whitelist
-//    sslConfig,
-//    playJson,
-//    scalaXml
-  )  
+  )
+  
+  val `cluster-extensions-scaladsl` = libraryDependencies ++= Seq(
+  )
+
+  val `cluster-extensions-javadsl` = libraryDependencies ++= Seq(
+  )
   
   val `persistence-core` = libraryDependencies ++= Seq(
     akkaPersistence,

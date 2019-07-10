@@ -9,6 +9,8 @@ import akka.stream.Materializer
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.scaladsl.persistence.ReadSideImpl
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
+import com.lightbend.lagom.scaladsl.cluster.projections.ProjectorComponents
+import com.lightbend.lagom.scaladsl.cluster.projections.ProjectorRegistry
 import play.api.Configuration
 
 import scala.concurrent.ExecutionContext
@@ -28,17 +30,18 @@ trait WriteSidePersistenceComponents extends ClusterComponents {
 /**
  * Read-side persistence components (for compile-time injection).
  */
-trait ReadSidePersistenceComponents extends WriteSidePersistenceComponents {
+trait ReadSidePersistenceComponents extends WriteSidePersistenceComponents with ProjectorComponents {
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext
   def materializer: Materializer
+  def projectorRegistry: ProjectorRegistry
 
   def configuration: Configuration
 
   lazy val readSideConfig: ReadSideConfig = ReadSideConfig(
     configuration.underlying.getConfig("lagom.persistence.read-side")
   )
-  lazy val readSide: ReadSide = new ReadSideImpl(actorSystem, readSideConfig, persistentEntityRegistry, None)(
+  lazy val readSide: ReadSide = new ReadSideImpl(actorSystem, readSideConfig, persistentEntityRegistry, projectorRegistryImpl, None)(
     executionContext,
     materializer
   )

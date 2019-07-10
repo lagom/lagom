@@ -11,6 +11,7 @@ import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.Producer
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
@@ -30,7 +31,8 @@ class ScaladslRegisterTopicProducers(
     info: ServiceInfo,
     actorSystem: ActorSystem,
     offsetStore: OffsetStore,
-    serviceLocator: ServiceLocator
+    serviceLocator: ServiceLocator,
+    projectorRegistryImpl: ProjectorRegistryImpl
 )(implicit ec: ExecutionContext, mat: Materializer) {
 
   private val log         = LoggerFactory.getLogger(classOf[ScaladslRegisterTopicProducers])
@@ -77,7 +79,8 @@ class ScaladslRegisterTopicProducers(
                   eventStreamFactory,
                   partitionKeyStrategy,
                   new ScaladslKafkaSerializer(topicCall.messageSerializer.serializerForRequest),
-                  offsetStore
+                  offsetStore,
+                  projectorRegistryImpl
                 )
 
               case other =>

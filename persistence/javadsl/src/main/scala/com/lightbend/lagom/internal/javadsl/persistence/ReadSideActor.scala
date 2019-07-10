@@ -21,7 +21,7 @@ import akka.util.Timeout
 import akka.Done
 import akka.NotUsed
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.javadsl.persistence._
 

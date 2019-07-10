@@ -10,7 +10,7 @@ import akka.serialization.BaseSerializer
 import akka.serialization.Serialization
 import akka.serialization.SerializationExtension
 import akka.serialization.SerializerWithStringManifest
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.javadsl.persistence.CommandEnvelope
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity._

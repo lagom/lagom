@@ -10,9 +10,8 @@ import akka.serialization.BaseSerializer
 import akka.serialization.Serialization
 import akka.serialization.SerializationExtension
 import akka.serialization.SerializerWithStringManifest
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.scaladsl.persistence.CommandEnvelope
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity._
 import com.lightbend.lagom.internal.scaladsl.persistence.protobuf.msg.{ PersistenceMessages => pm }
 
