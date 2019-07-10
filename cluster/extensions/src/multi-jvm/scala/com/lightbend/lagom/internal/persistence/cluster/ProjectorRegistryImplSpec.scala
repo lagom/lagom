@@ -9,6 +9,7 @@ import akka.actor.ActorRef
 import akka.actor.Props
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor.DesiredStatus
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl.ProjectionMetadata
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl.Running
@@ -48,7 +49,7 @@ class ProjectorRegistryImplSpec extends ClusteredMultiNodeUtils with Eventually 
           ProjectorRegistryImplSpec.metadata001
         )
 
-      projectorRegistry.register(
+      projectorRegistry.registerProjectorGroup(
         streamName,
         shardNames = Set(tagName001),
         projectorName = projectorName,
@@ -65,17 +66,15 @@ class ProjectorRegistryImplSpec extends ClusteredMultiNodeUtils with Eventually 
 
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
         whenReady(projectorRegistry.getStatus()) {
-          statuses: Map[ProjectionMetadata, ProjectorRegistryImpl.ProjectorStatus] =>
+          case DesiredStatus(statuses) =>
             // find a value in the map of statuses for the `tagName001` shard.
             val tagName001Projector: Option[ProjectorRegistryImpl.ProjectorStatus] =
               statuses.filter { case (k, _) => k.tagName.contains(tagName001) }.values.headOption
             // the desired status is accessible from all nodes so we run the assertion
             // everywhere even though the actor leaves in one node.
             tagName001Projector should be(Some(Running))
-
         }
       }
-
     }
   }
 }
@@ -98,7 +97,6 @@ class FakeProjectorActor(projectorRegistryActor: ActorRef, projectorMetadata: Pr
   override def receive = {
     case EnsureActive(tagName) =>
       projectorRegistryActor ! ProjectorRegistryActor.RegisterProjector(
-        self,
         projectorMetadata.copy(tagName = Some(tagName))
       )
     case Resume =>

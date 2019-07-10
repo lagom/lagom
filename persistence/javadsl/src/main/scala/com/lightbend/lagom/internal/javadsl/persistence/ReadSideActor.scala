@@ -20,8 +20,11 @@ import akka.stream.scaladsl
 import akka.util.Timeout
 import akka.Done
 import akka.NotUsed
+import akka.actor.ActorRef
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl.ProjectionMetadata
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.javadsl.persistence._
 
@@ -30,22 +33,27 @@ import scala.compat.java8.FutureConverters._
 private[lagom] object ReadSideActor {
 
   def props[Event <: AggregateEvent[Event]](
+      streamName: String,
+      projectorName: String,
       config: ReadSideConfig,
       clazz: Class[Event],
       globalPrepareTask: ClusterStartupTask,
       eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[akka.japi.Pair[Event, Offset], NotUsed],
-      processor: () => ReadSideProcessor[Event]
-  )(implicit mat: Materializer) = {
+      processor: () => ReadSideProcessor[Event],
+      projectorRegistryActorRef: ActorRef
+  )(implicit mat: Materializer) =
     Props(
-      classOf[ReadSideActor[Event]],
-      config,
-      clazz,
-      globalPrepareTask,
-      eventStreamFactory,
-      processor,
-      mat
+      new ReadSideActor[Event](
+        streamName,
+        projectorName,
+        config,
+        clazz,
+        globalPrepareTask,
+        eventStreamFactory,
+        processor,
+        projectorRegistryActorRef
+      )
     )
-  }
 
   case object Start
 
@@ -55,11 +63,14 @@ private[lagom] object ReadSideActor {
  * Read side actor
  */
 private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
+    streamName: String,
+    projectorName: String,
     config: ReadSideConfig,
     clazz: Class[Event],
     globalPrepareTask: ClusterStartupTask,
     eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[akka.japi.Pair[Event, Offset], NotUsed],
-    processorFactory: () => ReadSideProcessor[Event]
+    processorFactory: () => ReadSideProcessor[Event],
+    projectorRegistryActorRef: ActorRef
 )(implicit mat: Materializer)
     extends Actor
     with ActorLogging {
@@ -77,6 +88,9 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   def receive = {
     case EnsureActive(tagName) =>
       implicit val timeout = Timeout(config.globalPrepareTimeout)
+      projectorRegistryActorRef ! ProjectorRegistryActor.RegisterProjector(
+        ProjectionMetadata(streamName, projectorName, Some(tagName))
+      )
       globalPrepareTask
         .askExecute()
         .map { _ =>

@@ -39,7 +39,15 @@ private[lagom] class ProjectorRegistryImpl(system: ActorSystem) {
   private lazy val clusterShardingSettings        = ClusterShardingSettings(system)
   private lazy val clusterDistribution            = ClusterDistribution(system)
 
-  private[lagom] def register(
+  /**
+  *
+    * @param streamName name of the stream this projector group consumes
+    * @param shardNames collection of partition names in the consumed stream
+    * @param projectorName unique name identifying the projector group
+    * @param runInRole
+    * @param projectorPropsFactory
+    */
+  private[lagom] def registerProjectorGroup(
       // We could replace the `streamName` argument with the Persistent Entity type and extract the name from that
       // but that introduces some coupling we should avoid.
       streamName: String,
