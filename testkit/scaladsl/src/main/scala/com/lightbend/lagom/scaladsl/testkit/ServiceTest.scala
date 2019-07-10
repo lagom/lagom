@@ -228,7 +228,7 @@ object ServiceTest {
 
   /**
    * Start the test server with the given `setup` and run the `block` (lambda). When
-   * the `block returns or throws the test server will automatically be stopped.
+   * the `block` returns or throws the test server will automatically be stopped.
    *
    * This method should be used when the server can be started and stopped for each test
    * method. When your test have several test methods, and especially when using persistence, it is
