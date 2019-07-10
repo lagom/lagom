@@ -97,17 +97,23 @@ private[lagom] class ReadSideImpl @Inject()(
           config.randomBackoffFactor
         )
 
+      val streamName = tags.head.eventType.getName
+      val projectorName = readSideName
+
       val readSidePropsFactory = (projectorRegistryActorRef: ActorRef) =>
         // TODO: use the actorRef on the ReadSideActor to register, ping-back info, etc...
         ReadSideActor.props(
+          streamName,
+          projectorName,
           config,
           eventClass,
           globalPrepareTask,
           persistentEntityRegistry.eventStream[Event],
-          processorFactory
+          processorFactory,
+          projectorRegistryActorRef
         )
 
-      projectorRegistryImpl.register(
+      projectorRegistryImpl.registerProjectorGroup(
         tags.head.eventType.getName, // TODO: use the name from the entity, not the tags
         entityIds,
         readSideName,

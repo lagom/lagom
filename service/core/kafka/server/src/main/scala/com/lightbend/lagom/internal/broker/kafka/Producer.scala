@@ -37,12 +37,15 @@ private[lagom] object Producer {
       projectorRegistryImpl: ProjectorRegistryImpl
   )(implicit mat: Materializer, ec: ExecutionContext): Unit = {
 
+    val streamName = "entityName"
     val projectionName = s"kafkaProducer-$topicId"
 
     val producerConfig = ProducerConfig(system.settings.config)
     val topicProducerProps = (projectorRegistryActorRef: ActorRef) =>
       // TODO: use the actorRef on the ReadSideActor to register, ping-back info, etc...
       TopicProducerActor.props(
+        streamName,
+        projectionName,
         kafkaConfig,
         producerConfig,
         locateService,
@@ -50,14 +53,14 @@ private[lagom] object Producer {
         eventStreamFactory,
         partitionKeyStrategy,
         serializer,
-        offsetStore
+        offsetStore,
+        projectorRegistryActorRef
       )
 
     val entityIds = tags.toSet
     // TODO: use the name from the entity, not a hardcoded value
-    val streamName = "entityName"
 
-    projectorRegistryImpl.register(
+    projectorRegistryImpl.registerProjectorGroup(
       streamName,
       entityIds,
       projectionName,

@@ -38,12 +38,17 @@ import akka.actor.Actor
 import akka.stream.scaladsl.Zip
 import java.net.URI
 
+import akka.actor.ActorRef
 import akka.kafka.ProducerMessage
 import akka.stream.scaladsl.RestartSource
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl.ProjectionMetadata
 
 private[lagom] object TopicProducerActor {
   def props[Message](
+      streamName: String,
+      projectorName: String,
       kafkaConfig: KafkaConfig,
       producerConfig: ProducerConfig,
       locateService: String => Future[Seq[URI]],
@@ -51,10 +56,13 @@ private[lagom] object TopicProducerActor {
       eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
-      offsetStore: OffsetStore
+      offsetStore: OffsetStore,
+      projectorRegistryActorRef: ActorRef
   )(implicit mat: Materializer, ec: ExecutionContext) =
     Props(
       new TopicProducerActor[Message](
+        streamName,
+        projectorName,
         kafkaConfig,
         producerConfig,
         locateService,
@@ -62,7 +70,8 @@ private[lagom] object TopicProducerActor {
         eventStreamFactory,
         partitionKeyStrategy,
         serializer,
-        offsetStore
+        offsetStore,
+        projectorRegistryActorRef
       )
     )
 
@@ -76,6 +85,8 @@ private[lagom] object TopicProducerActor {
  * Kafka. See also ReadSideActor.
  */
 private[lagom] class TopicProducerActor[Message](
+    streamName: String,
+    projectorName: String,
     kafkaConfig: KafkaConfig,
     producerConfig: ProducerConfig,
     locateService: String => Future[Seq[URI]],
@@ -83,7 +94,8 @@ private[lagom] class TopicProducerActor[Message](
     eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
     partitionKeyStrategy: Option[Message => String],
     serializer: Serializer[Message],
-    offsetStore: OffsetStore
+    offsetStore: OffsetStore,
+    projectorRegistryActorRef: ActorRef
 )(implicit mat: Materializer, ec: ExecutionContext)
     extends Actor
     with ActorLogging {
@@ -97,6 +109,9 @@ private[lagom] class TopicProducerActor[Message](
 
   override def receive = {
     case EnsureActive(tagName) =>
+      projectorRegistryActorRef ! ProjectorRegistryActor.RegisterProjector(
+        ProjectionMetadata(streamName, projectorName, Some(tagName))
+      )
       self ! Start
       context.become(active(tagName))
   }
