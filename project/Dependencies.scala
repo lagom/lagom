@@ -18,7 +18,7 @@ object Dependencies {
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     val Play             = "2.8.0-M3"
-    val PlayJson         = "2.8.0-M3"
+    val PlayJson         = "2.8.0-M4"
     val PlayStandaloneWs = "2.1.0-M3"
     val Twirl            = "1.5.0-M2"
     val PlayFileWatch    = "1.1.8"
@@ -37,10 +37,10 @@ object Dependencies {
     val Jackson              = "2.9.9"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
-    val JacksonDatabind      = Jackson
+    val JacksonDatabind      = "2.9.9.1"
     val Guava                = "28.0-jre"
     val Maven                = "3.6.0"
-    val Netty                = "4.1.36.Final"
+    val Netty                = "4.1.37.Final"
     val NettyReactiveStreams = "2.0.3"
     val Kafka                = "2.1.1"
     val AlpakkaKafka         = "1.0.4"
@@ -299,7 +299,7 @@ object Dependencies {
       "javax.inject"        % "javax.inject"            % "1",
       "javax.transaction"   % "jta"                     % "1.1",
       "jakarta.transaction" % "jakarta.transaction-api" % "1.3.2",
-      "joda-time"           % "joda-time"               % "2.10.2",
+      "joda-time"           % "joda-time"               % "2.10.3",
       "junit"               % "junit"                   % Versions.JUnit,
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.5.0",
