@@ -293,9 +293,9 @@ object ServiceTest {
 
         val cassandraPort = CassandraTestServer.run(testName, lifecycle)
 
-        ClusterConfigMap ++ cassandraConfigMap(testName, cassandraPort)
+        cassandraConfigMap(testName, cassandraPort)
       } else if (setup.jdbc) {
-        ClusterConfigMap ++ JdbcConfigMap
+        JdbcConfigMap
       } else if (setup.cluster) {
         ClusterConfigMap
       } else {
