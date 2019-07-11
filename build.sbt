@@ -355,7 +355,7 @@ def scalaVersionSince = Map(
   "2.12" -> "1.4.0"
 )
 
-val javadslProjects = Seq[Project](
+val javadslProjects = Seq[ProjectReference](
   `api-javadsl`,
   `server-javadsl`,
   `client-javadsl`,
@@ -376,7 +376,7 @@ val javadslProjects = Seq[Project](
   `integration-client-javadsl`
 )
 
-val scaladslProjects = Seq[Project](
+val scaladslProjects = Seq[ProjectReference](
   `api-scaladsl`,
   `client-scaladsl`,
   `broker-scaladsl`,
@@ -395,7 +395,7 @@ val scaladslProjects = Seq[Project](
   `play-json`
 )
 
-val coreProjects = Seq[Project](
+val coreProjects = Seq[ProjectReference](
   `api-tools`,
   api,
   client,
@@ -415,13 +415,13 @@ val coreProjects = Seq[Project](
   log4j2
 )
 
-val otherProjects = devEnvironmentProjects ++ Seq[Project](
+val otherProjects = devEnvironmentProjects ++ Seq[ProjectReference](
   `integration-tests-javadsl`,
   `integration-tests-scaladsl`,
   `macro-testkit`
 )
 
-val sbtScriptedProjects = Seq[Project](
+val sbtScriptedProjects = Seq[ProjectReference](
   `sbt-scripted-tools`,
   `sbt-scripted-library`
 )
@@ -438,13 +438,8 @@ lazy val root = (project in file("."))
     publish := {}
   )
   .enablePlugins(lagom.UnidocRoot)
-  .settings(
-    UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*
-  )
-  .aggregate(
-    (javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects)
-      .map(Project.projectToRef): _*
-  )
+  .settings(UnidocRoot.settings(javadslProjects, scaladslProjects))
+  .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects): _*)
 
 def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) && Unidoc
 def SbtPluginPlugins  = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
@@ -1093,7 +1088,7 @@ lazy val log4j2 = (project in file("log4j2"))
   )
   .settings(overridesScalaParserCombinators: _*)
 
-lazy val devEnvironmentProjects = Seq[Project](
+lazy val devEnvironmentProjects = Seq[ProjectReference](
   `reloadable-server`,
   `build-tool-support`,
   `sbt-build-tool-support`,
@@ -1116,7 +1111,7 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
-  .aggregate(devEnvironmentProjects.map(Project.projectToRef): _*)
+  .aggregate(devEnvironmentProjects: _*)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}
