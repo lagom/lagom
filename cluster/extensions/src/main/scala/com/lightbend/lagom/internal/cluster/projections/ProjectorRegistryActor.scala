@@ -49,8 +49,6 @@ class ProjectorRegistryActor extends Actor with ActorLogging {
   var actorReverseIndex: Map[ActorRef, ProjectionMetadata] = Map.empty[ActorRef, ProjectionMetadata]
 
   override def receive: Receive = {
-    case DesiredStatus(stati) =>
-      log.warning(s"${stati.toSeq.mkString("---\nStatuses:\n", "\n", "-----")}")
     case RegisterProjector(metadata) =>
       // when registering a projector worker, we default to state==enabled
       val writeMajority = WriteMajority(timeout = 5.seconds)

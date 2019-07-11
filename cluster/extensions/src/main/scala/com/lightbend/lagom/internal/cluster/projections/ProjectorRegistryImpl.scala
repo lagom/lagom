@@ -13,6 +13,7 @@ import akka.util.Timeout
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl._
 import com.lightbend.lagom.internal.cluster.ClusterDistribution
 import com.lightbend.lagom.internal.cluster.ClusterDistributionSettings
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor.DesiredStatus
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor.GetStatus
 
 import scala.concurrent.ExecutionContext
@@ -68,9 +69,9 @@ private[lagom] class ProjectorRegistryImpl(system: ActorSystem) {
 
   }
 
-  private[lagom] def getStatus(): Future[Map[ProjectionMetadata, ProjectorStatus]] = {
+  private[lagom] def getStatus(): Future[DesiredStatus] = {
     implicit val exCtx: ExecutionContext = system.dispatcher
     implicit val timeout: Timeout        = Timeout(1.seconds)
-    (projectorRegistryRef ? GetStatus).mapTo[Map[ProjectionMetadata, ProjectorStatus]]
+    (projectorRegistryRef ? GetStatus).mapTo[DesiredStatus]
   }
 }
