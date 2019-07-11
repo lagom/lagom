@@ -14,7 +14,7 @@ import javax.inject.Singleton
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.javadsl.persistence._
@@ -41,7 +41,7 @@ private[lagom] class ReadSideImpl @Inject()(
     config: ReadSideConfig,
     injector: Injector,
     persistentEntityRegistry: PersistentEntityRegistry,
-    projectorRegistryImpl: ProjectorRegistryImpl
+    projectorRegistryImpl: ProjectorRegistry
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
 

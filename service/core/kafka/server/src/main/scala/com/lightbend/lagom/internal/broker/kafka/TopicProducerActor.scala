@@ -43,7 +43,7 @@ import akka.kafka.ProducerMessage
 import akka.stream.scaladsl.RestartSource
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl.ProjectionMetadata
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry.ProjectionMetadata
 
 private[lagom] object TopicProducerActor {
   def props[Message](

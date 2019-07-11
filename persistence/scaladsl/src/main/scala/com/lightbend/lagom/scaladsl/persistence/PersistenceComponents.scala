@@ -10,7 +10,7 @@ import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.scaladsl.persistence.ReadSideImpl
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.cluster.projections.ProjectorComponents
-import com.lightbend.lagom.scaladsl.cluster.projections.ProjectorRegistry
+import com.lightbend.lagom.scaladsl.cluster.projections.Projections
 import play.api.Configuration
 
 import scala.concurrent.ExecutionContext
@@ -34,7 +34,7 @@ trait ReadSidePersistenceComponents extends WriteSidePersistenceComponents with 
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext
   def materializer: Materializer
-  def projectorRegistry: ProjectorRegistry
+  def projectorRegistry: Projections
 
   def configuration: Configuration
 

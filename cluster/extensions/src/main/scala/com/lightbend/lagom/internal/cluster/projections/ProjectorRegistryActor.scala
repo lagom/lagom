@@ -11,6 +11,7 @@ import akka.cluster.ddata.DistributedData
 import akka.actor.Terminated
 import akka.actor.Actor
 import akka.actor.ActorLogging
+import akka.annotation.ApiMayChange
 import akka.cluster.ddata.PNCounterMapKey
 import akka.cluster.ddata.Replicator.Get
 import akka.cluster.ddata.Replicator.GetSuccess
@@ -19,19 +20,42 @@ import akka.cluster.ddata.Replicator.Subscribe
 import akka.cluster.ddata.Replicator.Update
 import akka.cluster.ddata.Replicator.WriteMajority
 import akka.cluster.ddata.SelfUniqueAddress
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl._
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry._
 
 import scala.concurrent.duration._
 
+@ApiMayChange
 object ProjectorRegistryActor {
-  def props: Props = Props(new ProjectorRegistryActor)
+  def props = Props(new ProjectorRegistryActor)
   case class RegisterProjector(metadata: ProjectionMetadata)
 
-  // Read-Only command. Returns `Status(Map[ProjectionMetadata, ProjectorStatus])` representing the desired
-  // status as currently seen in this node. That is not the actual status and may not be the latest
-  // desired status.
+  // Read-Only command. Returns `DesiredStatus` representing the desired status of
+  // the projector workers as currently seen in this node. That is not the actual
+  // status and may not be the latest desired status.
   case object GetStatus
-  case class DesiredStatus(desiredStatus: Map[ProjectionMetadata, ProjectorStatus])
+
+  /**
+  {
+  projections: [
+    {
+      name: "shopping-cart-view",
+      workers: [
+        { name: "shopping-cart-view-1" , state : "running" },
+        { name: "shopping-cart-view-2" , state : "running" },
+        { name: "shopping-cart-view-3" , state : "running" }
+      ]
+    },
+    {
+      name: "shopping-cart-kafka",
+      workers: [
+        { name: "shopping-cart-kafka-singleton" , state : "running" }
+      ]
+    }
+  ]
+}
+    */
+  @ApiMayChange
+  case class DesiredStatus(projectors: Seq[Projector])
 }
 
 class ProjectorRegistryActor extends Actor with ActorLogging {
