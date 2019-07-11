@@ -37,7 +37,7 @@ private[lagom] object Producer {
       projectorRegistryImpl: ProjectorRegistry
   )(implicit mat: Materializer, ec: ExecutionContext): Unit = {
 
-    val streamName = "entityName"
+    val streamName     = "entityName"
     val projectionName = s"kafkaProducer-$topicId"
 
     val producerConfig = ProducerConfig(system.settings.config)

@@ -17,11 +17,11 @@ import com.lightbend.lagom.scaladsl.persistence._
 import scala.concurrent.ExecutionContext
 
 private[lagom] class ReadSideImpl(
-                                   system: ActorSystem,
-                                   config: ReadSideConfig,
-                                   persistentEntityRegistry: PersistentEntityRegistry,
-                                   projectorRegistryImpl: ProjectorRegistry,
-                                   name: Option[String]
+    system: ActorSystem,
+    config: ReadSideConfig,
+    persistentEntityRegistry: PersistentEntityRegistry,
+    projectorRegistryImpl: ProjectorRegistry,
+    name: Option[String]
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
 
@@ -56,7 +56,7 @@ private[lagom] class ReadSideImpl(
         config.randomBackoffFactor
       )
 
-    val streamName = tags.head.eventType.getName
+    val streamName    = tags.head.eventType.getName
     val projectorName = readSideName
 
     val readSideProps = (projectorRegistryActorRef: ActorRef) =>

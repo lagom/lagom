@@ -117,7 +117,10 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
     case object GetStats
   }
 
-  private def createReadSideProcessor(projectorRegistryProbe: TestProbe = TestProbe(), inFailureMode: Boolean = false) = {
+  private def createReadSideProcessor(
+      projectorRegistryProbe: TestProbe = TestProbe(),
+      inFailureMode: Boolean = false
+  ) = {
     val mockRef = system.actorOf(Props(new Mock(inFailureMode)))
     val processorProps = ReadSideActor.props[TestEntity.Evt](
       "abstract-readside-spec-stream",

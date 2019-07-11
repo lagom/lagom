@@ -97,7 +97,7 @@ private[lagom] class ReadSideImpl @Inject()(
           config.randomBackoffFactor
         )
 
-      val streamName = tags.head.eventType.getName
+      val streamName    = tags.head.eventType.getName
       val projectorName = readSideName
 
       val readSidePropsFactory = (projectorRegistryActorRef: ActorRef) =>
