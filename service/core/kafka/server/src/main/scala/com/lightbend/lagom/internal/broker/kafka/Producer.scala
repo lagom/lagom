@@ -11,7 +11,7 @@ import akka.actor.ActorSystem
 import akka.persistence.query.Offset
 import akka.stream.Materializer
 import akka.stream.scaladsl._
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import org.apache.kafka.common.serialization.Serializer
 
@@ -34,7 +34,7 @@ private[lagom] object Producer {
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
       offsetStore: OffsetStore,
-      projectorRegistryImpl: ProjectorRegistryImpl
+      projectorRegistryImpl: ProjectorRegistry
   )(implicit mat: Materializer, ec: ExecutionContext): Unit = {
 
     val streamName = "entityName"

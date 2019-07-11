@@ -9,7 +9,7 @@ import java.net.URLEncoder
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.scaladsl.persistence._
@@ -17,11 +17,11 @@ import com.lightbend.lagom.scaladsl.persistence._
 import scala.concurrent.ExecutionContext
 
 private[lagom] class ReadSideImpl(
-    system: ActorSystem,
-    config: ReadSideConfig,
-    persistentEntityRegistry: PersistentEntityRegistry,
-    projectorRegistryImpl: ProjectorRegistryImpl,
-    name: Option[String]
+                                   system: ActorSystem,
+                                   config: ReadSideConfig,
+                                   persistentEntityRegistry: PersistentEntityRegistry,
+                                   projectorRegistryImpl: ProjectorRegistry,
+                                   name: Option[String]
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
 

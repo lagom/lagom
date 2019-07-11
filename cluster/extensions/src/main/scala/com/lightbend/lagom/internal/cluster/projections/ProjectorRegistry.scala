@@ -7,10 +7,11 @@ package com.lightbend.lagom.internal.cluster.projections
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.actor.Props
+import akka.annotation.ApiMayChange
 import akka.pattern.ask
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.util.Timeout
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryImpl._
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry._
 import com.lightbend.lagom.internal.cluster.ClusterDistribution
 import com.lightbend.lagom.internal.cluster.ClusterDistributionSettings
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor.DesiredStatus
@@ -20,7 +21,8 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-object ProjectorRegistryImpl {
+@ApiMayChange
+object ProjectorRegistry {
   sealed trait ProjectorStatus
   case object Stopped  extends ProjectorStatus
   case object Starting extends ProjectorStatus
@@ -28,26 +30,34 @@ object ProjectorRegistryImpl {
   case object Stopping extends ProjectorStatus
 
   // TODO: rewrite avoiding use of case class
+  @ApiMayChange
   case class ProjectionMetadata(streamName: String, projectorName: String, tagName: Option[String] = None)
+
+  @ApiMayChange
+  case class ProjectorWorker(name: String, status: ProjectorStatus)
+
+  @ApiMayChange
+  case class Projector(name: String, workers: Seq[ProjectorWorker])
 
 }
 
-private[lagom] class ProjectorRegistryImpl(system: ActorSystem) {
+@ApiMayChange
+private[lagom] class ProjectorRegistry(system: ActorSystem) {
 
   // A ProjectorRegistry is responsible for this node's ProjectorRegistryActor instance.
   // TODO: decide what to do if/when the ProjectorRegistryActor dies (note the loss of references to projectors).
   private val projectorRegistryRef: ActorRef = system.actorOf(ProjectorRegistryActor.props, "projector-registry")
-  private lazy val clusterShardingSettings        = ClusterShardingSettings(system)
-  private lazy val clusterDistribution            = ClusterDistribution(system)
+  private lazy val clusterShardingSettings   = ClusterShardingSettings(system)
+  private lazy val clusterDistribution       = ClusterDistribution(system)
 
   /**
-  *
-    * @param streamName name of the stream this projector group consumes
-    * @param shardNames collection of partition names in the consumed stream
-    * @param projectorName unique name identifying the projector group
-    * @param runInRole
-    * @param projectorPropsFactory
-    */
+   *
+   * @param streamName name of the stream this projector group consumes
+   * @param shardNames collection of partition names in the consumed stream
+   * @param projectorName unique name identifying the projector group
+   * @param runInRole
+   * @param projectorPropsFactory
+   */
   private[lagom] def registerProjectorGroup(
       // We could replace the `streamName` argument with the Persistent Entity type and extract the name from that
       // but that introduces some coupling we should avoid.
