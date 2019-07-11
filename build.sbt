@@ -1242,6 +1242,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
       val () = (publishLocal in `cluster-core`).value
       val () = (publishLocal in `cluster-javadsl`).value
       val () = (publishLocal in `cluster-scaladsl`).value
+      val () = (publishLocal in `cluster-extensions`).value
       val () = (publishLocal in `immutables`).value
       val () = (publishLocal in `jackson`).value
       val () = (publishLocal in `logback`).value
