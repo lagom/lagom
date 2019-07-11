@@ -4,14 +4,11 @@
 
 package com.lightbend.lagom.internal.javadsl.broker.kafka
 
+import java.io.File
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionStage
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-import akka.actor.ActorSystem
-import akka.cluster.Cluster
 import akka.japi.{ Pair => JPair }
 import akka.persistence.query.NoOffset
 import akka.persistence.query.Offset
@@ -28,7 +25,6 @@ import com.google.inject.AbstractModule
 import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec._
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter.dslOffsetToOffset
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter.offsetToDslOffset
-import com.lightbend.lagom.internal.kafka.KafkaLocalServer
 import com.lightbend.lagom.javadsl.api.ScalaService._
 import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.javadsl.api.broker.kafka.PartitionKeyStrategy
@@ -53,6 +49,7 @@ import org.scalatest.concurrent.ScalaFutures
 import play.api.inject._
 import play.api.inject.guice.GuiceApplicationBuilder
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.compat.java8.FunctionConverters._
 import scala.compat.java8.OptionConverters._
@@ -60,6 +57,7 @@ import scala.concurrent.duration._
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Promise
+import scala.util.control.NonFatal
 
 class JavadslKafkaApiSpec
     extends WordSpecLike
@@ -87,16 +85,32 @@ class JavadslKafkaApiSpec
         "lagom.cluster.join-self"                       -> "on",
         "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
         "lagom.cluster.bootstrap.enabled"               -> "off",
-        "lagom.services.kafka_native"                   -> s"tcp://localhost:${KafkaLocalServer.DefaultPort}"
+        "lagom.services.kafka_native"                   -> s"tcp://localhost:9092"
       )
       .build()
   }
 
-  private val kafkaServer = KafkaLocalServer(cleanOnStart = true)
+  private val kafkaServerClasspath: Seq[File] = TestBuildInfo.fullClasspath.toIndexedSeq
+  private var kafkaServer: Option[Process]    = None
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    kafkaServer.start()
+
+    kafkaServer = {
+      val javaBin         = new File(new File(new File(sys.props("java.home")), "bin"), "java").getAbsolutePath
+      val classpathString = kafkaServerClasspath.map(_.getAbsolutePath).mkString(File.pathSeparator)
+      val main            = "com.lightbend.lagom.internal.kafka.KafkaLauncher"
+
+      val command = javaBin :: "-classpath" :: classpathString :: main :: Nil
+
+      val process = new ProcessBuilder()
+        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .command(command.asJava)
+        .start()
+
+      Some(process)
+    }
   }
 
   before {
@@ -106,7 +120,19 @@ class JavadslKafkaApiSpec
 
   override def afterAll(): Unit = {
     application.stop().futureValue
-    kafkaServer.stop()
+
+    kafkaServer.foreach { process =>
+      try {
+        process.destroy()
+        if (!process.waitFor(10, TimeUnit.SECONDS)) {
+          process.destroyForcibly()
+          process.waitFor(10, TimeUnit.SECONDS)
+        }
+      } catch {
+        case NonFatal(_) => ()
+      }
+    }
+    kafkaServer = None
 
     super.afterAll()
   }
@@ -436,8 +462,8 @@ object JavadslKafkaApiSpec {
   class EventJournal[Event] {
     private type Element = (Event, Sequence)
     private val offset       = new AtomicLong()
-    private val storedEvents = mutable.MutableList.empty[Element]
-    private val subscribers  = mutable.MutableList.empty[SourceQueue[Element]]
+    private val storedEvents = mutable.ListBuffer.empty[Element]
+    private val subscribers  = mutable.ListBuffer.empty[SourceQueue[Element]]
 
     def eventStream(fromOffset: Offset): Source[(Event, Offset), _] = {
       val minOffset: Long = fromOffset match {
