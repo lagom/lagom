@@ -65,14 +65,16 @@ class ProjectorRegistryImplSpec extends ClusteredMultiNodeUtils with Eventually 
       val pc = PatienceConfig(timeout = Span(20, Seconds), interval = Span(2, Seconds))
 
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
-        whenReady(projectorRegistry.getStatus()) {
-          case DesiredStatus(statuses) =>
+        whenReady(projectorRegistry.getStatus()) { x =>
+          {
+            val statuses = x.desiredStatus
             // find a value in the map of statuses for the `tagName001` shard.
             val tagName001Projector: Option[ProjectorRegistryImpl.ProjectorStatus] =
               statuses.filter { case (k, _) => k.tagName.contains(tagName001) }.values.headOption
             // the desired status is accessible from all nodes so we run the assertion
             // everywhere even though the actor leaves in one node.
             tagName001Projector should be(Some(Running))
+          }
         }
       }
     }
