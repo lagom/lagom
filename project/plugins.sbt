@@ -1,5 +1,7 @@
 // Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
 
+addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.9.0")
+
 addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.4.2")
 
 // the plugins used during release can have an impact on default values

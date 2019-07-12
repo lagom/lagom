@@ -61,7 +61,7 @@ class JavadslRegisterTopicProducers @Inject()(
           case topicImpl: JavadslKafkaTopic[AnyRef] =>
             topicProducer match {
               case tagged: TaggedOffsetTopicProducer[AnyRef, _] =>
-                val tags = tagged.tags.asScala.to[immutable.Seq]
+                val tags = tagged.tags.asScala.toIndexedSeq
 
                 val eventStreamFactory: (String, Offset) => Source[(AnyRef, Offset), _] = { (tag, offset) =>
                   tags.find(_.tag == tag) match {
@@ -122,6 +122,6 @@ class JavadslRegisterTopicProducers @Inject()(
   }
 
   private def locateService(name: String): Future[Seq[URI]] =
-    serviceLocator.locateAll(name).toScala.map(_.asScala)
+    serviceLocator.locateAll(name).toScala.map(_.asScala.toIndexedSeq)
 
 }
