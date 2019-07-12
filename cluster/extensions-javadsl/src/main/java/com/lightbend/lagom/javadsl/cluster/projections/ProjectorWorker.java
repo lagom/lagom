@@ -4,11 +4,13 @@
 
 package com.lightbend.lagom.javadsl.cluster.projections;
 
+import akka.annotation.ApiMayChange;
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry;
 
 import java.util.Objects;
 
 // TODO: generate using Immutables or Lombok instead.
+@ApiMayChange
 public final class ProjectorWorker {
 
   private final String name;
@@ -19,8 +21,8 @@ public final class ProjectorWorker {
     this.status = status;
   }
 
-  static ProjectorWorker asJava(ProjectorRegistry.ProjectorWorker scala) {
-    return new ProjectorWorker(scala.name(), scala.status());
+  static ProjectorWorker asJava(ProjectorRegistry.ProjectorWorker worker) {
+    return new ProjectorWorker(worker.name(), worker.status());
   }
 
   public String getName() {

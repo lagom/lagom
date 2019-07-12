@@ -14,7 +14,7 @@ import akka.util.Timeout
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry._
 import com.lightbend.lagom.internal.cluster.ClusterDistribution
 import com.lightbend.lagom.internal.cluster.ClusterDistributionSettings
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor.DesiredStatus
+import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor.DesiredState
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor.GetStatus
 
 import scala.concurrent.ExecutionContext
@@ -55,8 +55,6 @@ private[lagom] class ProjectorRegistry(system: ActorSystem) {
    * @param projectorPropsFactory
    */
   private[lagom] def registerProjectorGroup(
-      // We could replace the `streamName` argument with the Persistent Entity type and extract the name from that
-      // but that introduces some coupling we should avoid.
       streamName: String,
       shardNames: Set[String],
       projectorName: String,
@@ -75,9 +73,9 @@ private[lagom] class ProjectorRegistry(system: ActorSystem) {
 
   }
 
-  private[lagom] def getStatus(): Future[DesiredStatus] = {
+  private[lagom] def getStatus(): Future[DesiredState] = {
     implicit val exCtx: ExecutionContext = system.dispatcher
     implicit val timeout: Timeout        = Timeout(1.seconds)
-    (projectorRegistryRef ? GetStatus).mapTo[DesiredStatus]
+    (projectorRegistryRef ? GetStatus).mapTo[DesiredState]
   }
 }

@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.javadsl.cluster.projections;
 
+import akka.annotation.ApiMayChange;
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry;
 import scala.collection.JavaConverters;
 
@@ -12,6 +13,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 // TODO: generate using Immutables or Lombok instead.
+@ApiMayChange
 public final class Projector {
 
   private final String name;
@@ -22,10 +24,10 @@ public final class Projector {
     this.workers = workers;
   }
 
-  static Projector asJava(ProjectorRegistry.Projector scala) {
+  static Projector asJava(ProjectorRegistry.Projector projector) {
     return new Projector(
-        scala.name(),
-        JavaConverters.seqAsJavaList(scala.workers()).stream()
+        projector.name(),
+        JavaConverters.seqAsJavaList(projector.workers()).stream()
             .map(ProjectorWorker::asJava)
             .collect(Collectors.toList()));
   }

@@ -14,17 +14,17 @@ import java.util.stream.Collectors;
 
 // TODO: generate using Immutables or Lombok instead.
 @ApiMayChange
-public final class DesiredStatus {
+public final class DesiredState {
 
   private List<Projector> projectors;
 
-  DesiredStatus(List<Projector> projectors) {
+  DesiredState(List<Projector> projectors) {
     this.projectors = projectors;
   }
 
-  public static DesiredStatus asJava(ProjectorRegistryActor.DesiredStatus scala) {
-    return new DesiredStatus(
-        JavaConverters.seqAsJavaList(scala.projectors()).stream()
+  public static DesiredState asJava(ProjectorRegistryActor.DesiredState desiredState) {
+    return new DesiredState(
+        JavaConverters.seqAsJavaList(desiredState.projectors()).stream()
             .map(Projector::asJava)
             .collect(Collectors.toList()));
   }
@@ -37,7 +37,7 @@ public final class DesiredStatus {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    DesiredStatus that = (DesiredStatus) o;
+    DesiredState that = (DesiredState) o;
     return Objects.equals(projectors, that.projectors);
   }
 
@@ -48,6 +48,6 @@ public final class DesiredStatus {
 
   @Override
   public String toString() {
-    return "DesiredStatus{" + "projectors=" + projectors + '}';
+    return "DesiredState{" + "projectors=" + projectors + '}';
   }
 }
