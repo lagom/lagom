@@ -101,7 +101,6 @@ private[lagom] class ReadSideImpl @Inject()(
       val projectionName = readSideName
 
       val readSidePropsFactory = (projectionRegistryActorRef: ActorRef) =>
-        // TODO: use the actorRef on the ReadSideActor to register, ping-back info, etc...
         ReadSideActor.props(
           streamName,
           projectionName,

@@ -10,6 +10,7 @@ import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry;
 import java.util.Objects;
 
 // TODO: generate using Immutables or Lombok instead.
+// https://github.com/lagom/lagom/issues/2053
 @ApiMayChange
 public final class ProjectionWorker {
 

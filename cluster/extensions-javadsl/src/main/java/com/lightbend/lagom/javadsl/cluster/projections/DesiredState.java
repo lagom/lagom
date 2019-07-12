@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 // TODO: generate using Immutables or Lombok instead.
+// https://github.com/lagom/lagom/issues/2053
 @ApiMayChange
 public final class DesiredState {
 

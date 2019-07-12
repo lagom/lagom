@@ -835,8 +835,9 @@ lazy val `cluster-extensions` = (project in file("cluster/extensions"))
 lazy val `cluster-extensions-scaladsl` = (project in file("cluster/extensions-scaladsl"))
   .dependsOn(`cluster-extensions`, `cluster-scaladsl`, logback % Test)
   .settings(runtimeLibCommon: _*)
-//  .settings(mimaSettings(since = version150): _*)
-//  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-extensions
+  //  .settings(mimaSettings(since = version150): _*)
+  // https://github.com/lagom/lagom/issues/2045
+  //  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-extensions
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-cluster-extensions",
@@ -846,8 +847,9 @@ lazy val `cluster-extensions-scaladsl` = (project in file("cluster/extensions-sc
 lazy val `cluster-extensions-javadsl` = (project in file("cluster/extensions-javadsl"))
   .dependsOn(`cluster-extensions`, `cluster-javadsl`, logback % Test)
   .settings(runtimeLibCommon: _*)
-//  .settings(mimaSettings(since = version150): _*)
-//  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-extensions
+  //  .settings(mimaSettings(since = version150): _*)
+  // https://github.com/lagom/lagom/issues/2045
+  //  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-extensions
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-cluster-extensions",
