@@ -14,7 +14,7 @@ import javax.inject.Singleton
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.javadsl.persistence._
@@ -41,7 +41,7 @@ private[lagom] class ReadSideImpl @Inject()(
     config: ReadSideConfig,
     injector: Injector,
     persistentEntityRegistry: PersistentEntityRegistry,
-    projectorRegistryImpl: ProjectorRegistry
+    projectionRegistryImpl: ProjectionRegistry
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
 
@@ -97,23 +97,23 @@ private[lagom] class ReadSideImpl @Inject()(
           config.randomBackoffFactor
         )
 
-      val streamName    = tags.head.eventType.getName
-      val projectorName = readSideName
+      val streamName     = tags.head.eventType.getName
+      val projectionName = readSideName
 
-      val readSidePropsFactory = (projectorRegistryActorRef: ActorRef) =>
+      val readSidePropsFactory = (projectionRegistryActorRef: ActorRef) =>
         // TODO: use the actorRef on the ReadSideActor to register, ping-back info, etc...
         ReadSideActor.props(
           streamName,
-          projectorName,
+          projectionName,
           config,
           eventClass,
           globalPrepareTask,
           persistentEntityRegistry.eventStream[Event],
           processorFactory,
-          projectorRegistryActorRef
+          projectionRegistryActorRef
         )
 
-      projectorRegistryImpl.registerProjectorGroup(
+      projectionRegistryImpl.registerProjectionGroup(
         tags.head.eventType.getName, // TODO: use the name from the entity, not the tags
         entityIds,
         readSideName,

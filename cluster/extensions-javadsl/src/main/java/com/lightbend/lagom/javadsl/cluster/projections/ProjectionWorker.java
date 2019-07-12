@@ -5,31 +5,31 @@
 package com.lightbend.lagom.javadsl.cluster.projections;
 
 import akka.annotation.ApiMayChange;
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry;
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry;
 
 import java.util.Objects;
 
 // TODO: generate using Immutables or Lombok instead.
 @ApiMayChange
-public final class ProjectorWorker {
+public final class ProjectionWorker {
 
   private final String name;
-  private final ProjectorRegistry.ProjectorStatus status;
+  private final ProjectionRegistry.WorkerStatus status;
 
-  ProjectorWorker(String name, ProjectorRegistry.ProjectorStatus status) {
+  ProjectionWorker(String name, ProjectionRegistry.WorkerStatus status) {
     this.name = name;
     this.status = status;
   }
 
-  static ProjectorWorker asJava(ProjectorRegistry.ProjectorWorker worker) {
-    return new ProjectorWorker(worker.name(), worker.status());
+  static ProjectionWorker asJava(ProjectionRegistry.ProjectionWorker worker) {
+    return new ProjectionWorker(worker.name(), worker.status());
   }
 
   public String getName() {
     return name;
   }
 
-  public ProjectorRegistry.ProjectorStatus getStatus() {
+  public ProjectionRegistry.WorkerStatus getStatus() {
     return status;
   }
 
@@ -37,7 +37,7 @@ public final class ProjectorWorker {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    ProjectorWorker that = (ProjectorWorker) o;
+    ProjectionWorker that = (ProjectionWorker) o;
     return Objects.equals(name, that.name) && Objects.equals(status, that.status);
   }
 
@@ -48,6 +48,6 @@ public final class ProjectorWorker {
 
   @Override
   public String toString() {
-    return "ProjectorWorker{" + "name='" + name + '\'' + ", status=" + status + '}';
+    return "ProjectionWorker{" + "name='" + name + '\'' + ", status=" + status + '}';
   }
 }

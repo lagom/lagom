@@ -6,7 +6,7 @@ package com.lightbend.lagom.scaladsl.broker.kafka
 
 import com.lightbend.lagom.internal.scaladsl.broker.kafka.ScaladslRegisterTopicProducers
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
-import com.lightbend.lagom.scaladsl.cluster.projections.ProjectorComponents
+import com.lightbend.lagom.scaladsl.cluster.projections.ProjectionComponents
 import com.lightbend.lagom.scaladsl.server.LagomServer
 import com.lightbend.lagom.spi.persistence.OffsetStore
 
@@ -15,7 +15,7 @@ import com.lightbend.lagom.spi.persistence.OffsetStore
  *
  * Extending this trait will automatically start all topic producers.
  */
-trait LagomKafkaComponents extends LagomKafkaClientComponents with ProjectorComponents {
+trait LagomKafkaComponents extends LagomKafkaClientComponents with ProjectionComponents {
   def lagomServer: LagomServer
   def offsetStore: OffsetStore
   def serviceLocator: ServiceLocator
@@ -36,7 +36,7 @@ trait LagomKafkaComponents extends LagomKafkaClientComponents with ProjectorComp
     actorSystem,
     offsetStore,
     serviceLocator,
-    projectorRegistry
+    projectionRegistry
   )(
     executionContext,
     materializer

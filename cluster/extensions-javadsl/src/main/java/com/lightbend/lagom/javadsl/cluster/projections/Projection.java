@@ -5,7 +5,7 @@
 package com.lightbend.lagom.javadsl.cluster.projections;
 
 import akka.annotation.ApiMayChange;
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry;
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry;
 import scala.collection.JavaConverters;
 
 import java.util.List;
@@ -14,21 +14,21 @@ import java.util.stream.Collectors;
 
 // TODO: generate using Immutables or Lombok instead.
 @ApiMayChange
-public final class Projector {
+public final class Projection {
 
   private final String name;
-  private final List<ProjectorWorker> workers;
+  private final List<ProjectionWorker> workers;
 
-  Projector(String name, List<ProjectorWorker> workers) {
+  Projection(String name, List<ProjectionWorker> workers) {
     this.name = name;
     this.workers = workers;
   }
 
-  static Projector asJava(ProjectorRegistry.Projector projector) {
-    return new Projector(
-        projector.name(),
-        JavaConverters.seqAsJavaList(projector.workers()).stream()
-            .map(ProjectorWorker::asJava)
+  static Projection asJava(ProjectionRegistry.Projection projection) {
+    return new Projection(
+        projection.name(),
+        JavaConverters.seqAsJavaList(projection.workers()).stream()
+            .map(ProjectionWorker::asJava)
             .collect(Collectors.toList()));
   }
 
@@ -36,7 +36,7 @@ public final class Projector {
     return name;
   }
 
-  public List<ProjectorWorker> getWorkers() {
+  public List<ProjectionWorker> getWorkers() {
     return workers;
   }
 
@@ -44,8 +44,8 @@ public final class Projector {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    Projector projector = (Projector) o;
-    return Objects.equals(name, projector.name) && Objects.equals(workers, projector.workers);
+    Projection projection = (Projection) o;
+    return Objects.equals(name, projection.name) && Objects.equals(workers, projection.workers);
   }
 
   @Override
@@ -55,6 +55,6 @@ public final class Projector {
 
   @Override
   public String toString() {
-    return "Projector{" + "name='" + name + '\'' + ", workers=" + workers + '}';
+    return "Projection{" + "name='" + name + '\'' + ", workers=" + workers + '}';
   }
 }

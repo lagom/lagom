@@ -20,24 +20,26 @@ import akka.cluster.ddata.Replicator.Subscribe
 import akka.cluster.ddata.Replicator.Update
 import akka.cluster.ddata.Replicator.WriteMajority
 import akka.cluster.ddata.SelfUniqueAddress
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry._
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry._
 
 import scala.concurrent.duration._
 
 @ApiMayChange
-object ProjectorRegistryActor {
-  def props = Props(new ProjectorRegistryActor)
-  case class RegisterProjector(
+object ProjectionRegistryActor {
+  def props = Props(new ProjectionRegistryActor)
+  case class RegisterProjection(
       streamName:String,
-      projectorName:String,
+      projectionName:String,
       workerName:String)
 
-  // Read-Only command. Returns `DesiredStatus` representing the desired status of
-  // the projector workers as currently seen in this node. That is not the actual
-  // status and may not be the latest desired status.
-  case object GetStatus
+  // Read-Only command. Returns `DesiredState` representing the desired state of
+  // the projection workers as currently seen in this node. That is not the actual
+  // status of the workers (a particular order to pause/resume may be in-flight)
+  // and this may may not be the latest desired state as it may have been changed
+  // in other nodes and the replication may be in-flight.
+  case object GetDesiredState
 
-  case class WorkerMetadata(streamName: String, projectorName: String, workerName: String)
+  case class WorkerMetadata(streamName: String, projectionName: String, workerName: String)
 
   /**
   {
@@ -60,17 +62,17 @@ object ProjectorRegistryActor {
 }
     */
   @ApiMayChange
-  case class DesiredState(projectors: Seq[Projector])
+  case class DesiredState(projections: Seq[Projection])
 }
 
-class ProjectorRegistryActor extends Actor with ActorLogging {
+class ProjectionRegistryActor extends Actor with ActorLogging {
 
-  import ProjectorRegistryActor._
+  import ProjectionRegistryActor._
   val replicator: ActorRef             = DistributedData(context.system).replicator
   implicit val node: SelfUniqueAddress = DistributedData(context.system).selfUniqueAddress
 
-  // TODO: simplify into a LWWMap[WorkerMetadata, ProjectorStatus] instead of PNCounterMap?
-  private val DataKey = PNCounterMapKey[WorkerMetadata]("projector-registry")
+  // TODO: simplify into a LWWMap[WorkerMetadata, ProjectionStatus] instead of PNCounterMap?
+  private val DataKey = PNCounterMapKey[WorkerMetadata]("projection-registry")
   replicator ! Subscribe(DataKey, self)
 
   var actorIndex: Map[WorkerMetadata, ActorRef] = Map.empty[WorkerMetadata, ActorRef]
@@ -78,9 +80,9 @@ class ProjectorRegistryActor extends Actor with ActorLogging {
   var actorReverseIndex: Map[ActorRef, WorkerMetadata] = Map.empty[ActorRef, WorkerMetadata]
 
   override def receive: Receive = {
-    case RegisterProjector(streamName, projectorName, workerName) =>
-      val metadata = WorkerMetadata(streamName, projectorName, workerName)
-      // when registering a projector worker, we default to state==enabled
+    case RegisterProjection(streamName, projectionName, workerName) =>
+      val metadata = WorkerMetadata(streamName, projectionName, workerName)
+      // when registering a projection worker, we default to state==enabled
       val writeMajority = WriteMajority(timeout = 5.seconds)
       replicator ! Update(DataKey, PNCounterMap.empty[WorkerMetadata], writeMajority)(
         //TODO: read the default state from a desired _initial state_
@@ -91,7 +93,7 @@ class ProjectorRegistryActor extends Actor with ActorLogging {
       actorReverseIndex = actorReverseIndex.updated(sender, metadata)
       context.watch(sender)
 
-    case GetStatus =>
+    case GetDesiredState =>
       replicator ! Get(DataKey, ReadLocal, Some(sender()))
 
     case g @ GetSuccess(DataKey, req) =>
@@ -110,19 +112,19 @@ class ProjectorRegistryActor extends Actor with ActorLogging {
 
   private def mapStatus(replicatedData: Map[WorkerMetadata, BigInt]): DesiredState = {
 
-    val groupedByProjectorName: Map[String, Seq[(String, (String, BigInt))]] =
-      replicatedData.toSeq.map { case (pm, bi) => (pm.projectorName, (pm.workerName, bi)) } .groupBy(_._1)
-    val projectors: Seq[Projector] =
-      groupedByProjectorName
+    val groupedByProjectionName: Map[String, Seq[(String, (String, BigInt))]] =
+      replicatedData.toSeq.map { case (pm, bi) => (pm.projectionName, (pm.workerName, bi)) } .groupBy(_._1)
+    val projections: Seq[Projection] =
+      groupedByProjectionName
         .mapValues { workers: Seq[(String, (String, BigInt))] =>
           val statusPerWorker: Seq[(String, BigInt)] = workers.toMap.values.toMap.toSeq
           statusPerWorker
-          // TODO: below should convert a BigInt into a valid ProjectorStatus (instead of hardcoding `Running`)
-            .map{case (name, bi) => ProjectorWorker(name, Running)}
+          // TODO: below should convert a BigInt into a valid ProjectionStatus (instead of hardcoding `Running`)
+            .map{case (name, bi) => ProjectionWorker(name, Started)}
         }
         .toSeq
-        .map{Projector.tupled}
+        .map{Projection.tupled}
 
-    DesiredState(projectors)
+    DesiredState(projections)
   }
 }

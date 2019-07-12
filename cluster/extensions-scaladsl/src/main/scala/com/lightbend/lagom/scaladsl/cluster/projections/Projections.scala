@@ -5,8 +5,8 @@
 package com.lightbend.lagom.scaladsl.cluster.projections
 
 import akka.annotation.ApiMayChange
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor.DesiredState
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistryActor.DesiredState
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry
 
 import scala.concurrent.Future
 
@@ -14,7 +14,7 @@ import scala.concurrent.Future
  *
  */
 @ApiMayChange
-class Projections(private val registry:ProjectorRegistry) {
+class Projections(private val registry:ProjectionRegistry) {
 
   def getStatus: Future[DesiredState] =
     registry.getStatus()
