@@ -56,7 +56,7 @@ class CassandraReadSideSpec
     super.beforeAll()
     // eagerly prepare database to reduce flakiness in travis.
     val timeout: FiniteDuration = 15.seconds
-    implicit val akkaTo = akka.util.Timeout.durationToTimeout(timeout)
+    implicit val akkaTo         = akka.util.Timeout.durationToTimeout(timeout)
     val f = for {
       _ <- offsetStore.startupTask.map(_.askExecute()).getOrElse(Future.successful(Done))
       _ <- processorFactory().buildHandler().globalPrepare().toScala
