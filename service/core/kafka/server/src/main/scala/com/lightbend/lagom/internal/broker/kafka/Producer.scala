@@ -42,7 +42,6 @@ private[lagom] object Producer {
 
     val producerConfig = ProducerConfig(system.settings.config)
     val topicProducerProps = (projectionRegistryActorRef: ActorRef) =>
-      // TODO: use the actorRef on the ReadSideActor to register, ping-back info, etc...
       TopicProducerActor.props(
         streamName,
         projectionName,

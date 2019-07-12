@@ -72,6 +72,7 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   implicit val node: SelfUniqueAddress = DistributedData(context.system).selfUniqueAddress
 
   // TODO: simplify into a LWWMap[WorkerMetadata, ProjectionStatus] instead of PNCounterMap?
+  // https://github.com/lagom/lagom/issues/1744
   private val DataKey = PNCounterMapKey[WorkerMetadata]("projection-registry")
   replicator ! Subscribe(DataKey, self)
 
@@ -86,6 +87,7 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
       val writeMajority = WriteMajority(timeout = 5.seconds)
       replicator ! Update(DataKey, PNCounterMap.empty[WorkerMetadata], writeMajority)(
         //TODO: read the default state from a desired _initial state_
+        // https://github.com/lagom/lagom/issues/1744
         _.increment(node, metadata, 1)
       )
       // keep track and watch
@@ -108,6 +110,7 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
       context.unwatch(deadActor)
 
     // TODO: accept state changes and propagate those state changes.
+    // https://github.com/lagom/lagom/issues/1744
   }
 
   private def mapStatus(replicatedData: Map[WorkerMetadata, BigInt]): DesiredState = {
@@ -119,7 +122,8 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
         .mapValues { workers: Seq[(String, (String, BigInt))] =>
           val statusPerWorker: Seq[(String, BigInt)] = workers.toMap.values.toMap.toSeq
           statusPerWorker
-          // TODO: below should convert a BigInt into a valid ProjectionStatus (instead of hardcoding `Running`)
+            // TODO: below should convert a BigInt into a valid ProjectionStatus (instead of hardcoding `Running`)
+            // https://github.com/lagom/lagom/issues/1744
             .map{case (name, bi) => ProjectionWorker(name, Started)}
         }
         .toSeq

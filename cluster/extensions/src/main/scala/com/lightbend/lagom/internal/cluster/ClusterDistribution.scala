@@ -61,7 +61,8 @@ object ClusterDistribution extends ExtensionId[ClusterDistribution] with Extensi
   /**
    * Sent to each entity in a cluster distribution to ensure it's active.
    */
-  // TODO: move EnsureActive serializers to lagom-cluster-extensions
+  // TODO: move EnsureActive serializers to lagom-cluster-*
+  // https://github.com/lagom/lagom/issues/2045
   final case class EnsureActive(entityId: EntityId)
 
   /**
