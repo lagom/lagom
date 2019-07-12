@@ -6,6 +6,7 @@ package com.lightbend.lagom.javadsl.persistence.cassandra
 
 import java.util.concurrent.CompletionStage
 
+import akka.Done
 import com.google.inject.Guice
 import com.lightbend.lagom.internal.javadsl.persistence.cassandra.CassandraPersistentEntityRegistry
 import com.lightbend.lagom.internal.javadsl.persistence.cassandra.CassandraReadSideImpl
@@ -17,6 +18,9 @@ import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.ConfigFactory
 import play.api.inject.guice.GuiceInjectorBuilder
 
+import scala.compat.java8.FutureConverters
+import scala.concurrent.Await
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 object CassandraReadSideSpec {
@@ -45,6 +49,20 @@ class CassandraReadSideSpec
   private lazy val readSide = new TestEntityReadSide(testSession)
 
   override def getAppendCount(id: String): CompletionStage[java.lang.Long] = readSide.getAppendCount(id)
+
+  import FutureConverters._
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    // eagerly prepare database to reduce flakiness in travis.
+    val timeout: FiniteDuration = 15.seconds
+    implicit val akkaTo = akka.util.Timeout.durationToTimeout(timeout)
+    val f = for {
+      _ <- offsetStore.startupTask.map(_.askExecute()).getOrElse(Future.successful(Done))
+      _ <- processorFactory().buildHandler().globalPrepare().toScala
+    } yield Done
+    Await.result(f, timeout)
+  }
 
   override def afterAll(): Unit = {
     super.afterAll()
