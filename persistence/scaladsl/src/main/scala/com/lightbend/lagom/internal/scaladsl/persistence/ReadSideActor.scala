@@ -25,7 +25,6 @@ import akka.stream.scaladsl.Flow
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry.ProjectionMetadata
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.scaladsl.persistence._
 
@@ -90,9 +89,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   def receive = {
     case EnsureActive(tagName) =>
       implicit val timeout = Timeout(config.globalPrepareTimeout)
-      projectorRegistryActorRef ! ProjectorRegistryActor.RegisterProjector(
-        ProjectionMetadata(streamName, projectorName, Some(tagName))
-      )
+      projectorRegistryActorRef ! ProjectorRegistryActor.RegisterProjector(streamName, projectorName, tagName)
       globalPrepareTask
         .askExecute()
         .map { _ =>

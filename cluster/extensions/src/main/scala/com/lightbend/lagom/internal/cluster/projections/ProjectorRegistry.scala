@@ -29,10 +29,6 @@ object ProjectorRegistry {
   case object Running  extends ProjectorStatus
   case object Stopping extends ProjectorStatus
 
-  // TODO: rewrite avoiding use of case class
-  @ApiMayChange
-  case class ProjectionMetadata(streamName: String, projectorName: String, tagName: Option[String] = None)
-
   @ApiMayChange
   case class ProjectorWorker(name: String, status: ProjectorStatus)
 

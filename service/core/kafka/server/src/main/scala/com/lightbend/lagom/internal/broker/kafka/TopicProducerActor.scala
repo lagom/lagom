@@ -43,7 +43,6 @@ import akka.kafka.ProducerMessage
 import akka.stream.scaladsl.RestartSource
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry.ProjectionMetadata
 
 private[lagom] object TopicProducerActor {
   def props[Message](
@@ -109,9 +108,7 @@ private[lagom] class TopicProducerActor[Message](
 
   override def receive = {
     case EnsureActive(tagName) =>
-      projectorRegistryActorRef ! ProjectorRegistryActor.RegisterProjector(
-        ProjectionMetadata(streamName, projectorName, Some(tagName))
-      )
+      projectorRegistryActorRef ! ProjectorRegistryActor.RegisterProjector(streamName, projectorName, tagName)
       self ! Start
       context.become(active(tagName))
   }
