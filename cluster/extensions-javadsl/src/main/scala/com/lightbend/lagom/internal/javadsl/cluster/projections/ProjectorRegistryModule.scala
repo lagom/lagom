@@ -24,11 +24,12 @@ import scala.concurrent.ExecutionContext
 class ProjectorRegistryModule extends Module {
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[ProjectorRegistry].toProvider[ProjectorRegistryProvider],          // for internal use
-    bind[Projections].to(classOf[ProjectionsImpl]) // for users
+    bind[ProjectorRegistry].toProvider[ProjectorRegistryProvider], // for internal use
+    bind[Projections].to(classOf[ProjectionsImpl])                 // for users
   )
 }
 
+// This provider is trivial but required to keep ProjectorRegistry in `-core` and free of any Guice dependency
 @Singleton
 class ProjectorRegistryProvider @Inject()(actorSystem: ActorSystem ) extends Provider[ProjectorRegistry]{
   private val instance = new ProjectorRegistry(actorSystem)
