@@ -5,7 +5,7 @@
 package com.lightbend.lagom.javadsl.cluster.projections;
 
 import akka.annotation.ApiMayChange;
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor;
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistryActor;
 import scala.collection.JavaConverters;
 
 import java.util.List;
@@ -16,21 +16,21 @@ import java.util.stream.Collectors;
 @ApiMayChange
 public final class DesiredState {
 
-  private List<Projector> projectors;
+  private List<Projection> projections;
 
-  DesiredState(List<Projector> projectors) {
-    this.projectors = projectors;
+  DesiredState(List<Projection> projections) {
+    this.projections = projections;
   }
 
-  public static DesiredState asJava(ProjectorRegistryActor.DesiredState desiredState) {
+  public static DesiredState asJava(ProjectionRegistryActor.DesiredState desiredState) {
     return new DesiredState(
-        JavaConverters.seqAsJavaList(desiredState.projectors()).stream()
-            .map(Projector::asJava)
+        JavaConverters.seqAsJavaList(desiredState.projections()).stream()
+            .map(Projection::asJava)
             .collect(Collectors.toList()));
   }
 
-  public List<Projector> getProjectors() {
-    return projectors;
+  public List<Projection> getProjections() {
+    return projections;
   }
 
   @Override
@@ -38,16 +38,16 @@ public final class DesiredState {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     DesiredState that = (DesiredState) o;
-    return Objects.equals(projectors, that.projectors);
+    return Objects.equals(projections, that.projections);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(projectors);
+    return Objects.hash(projections);
   }
 
   @Override
   public String toString() {
-    return "DesiredState{" + "projectors=" + projectors + '}';
+    return "DesiredState{" + "projections=" + projections + '}';
   }
 }

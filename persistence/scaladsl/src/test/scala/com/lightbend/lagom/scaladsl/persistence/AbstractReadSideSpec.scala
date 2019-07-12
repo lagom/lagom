@@ -29,7 +29,7 @@ import org.scalatest.concurrent.ScalaFutures
 import akka.pattern._
 import akka.testkit.TestProbe
 import akka.util.Timeout
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistryActor
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -118,19 +118,19 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   }
 
   private def createReadSideProcessor(
-      projectorRegistryProbe: TestProbe = TestProbe(),
+      projectionRegistryProbe: TestProbe = TestProbe(),
       inFailureMode: Boolean = false
   ) = {
     val mockRef = system.actorOf(Props(new Mock(inFailureMode)))
     val processorProps = ReadSideActor.props[TestEntity.Evt](
       "abstract-readside-spec-stream",
-      "abstract-readside-spec-projector",
+      "abstract-readside-spec-projection",
       ReadSideConfig(),
       classOf[TestEntity.Evt],
       new ClusterStartupTask(mockRef),
       eventStream,
       () => processorFactory(),
-      projectorRegistryProbe.ref
+      projectionRegistryProbe.ref
     )
 
     val readSide: ActorRef = system.actorOf(processorProps)
@@ -165,11 +165,11 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
   "ReadSide" must {
 
-    "register on the projector registry" in {
+    "register on the projection registry" in {
       val testProbe = TestProbe()
-      createReadSideProcessor(projectorRegistryProbe = testProbe)
+      createReadSideProcessor(projectionRegistryProbe = testProbe)
 
-      testProbe.expectMsgType[ProjectorRegistryActor.RegisterProjector]
+      testProbe.expectMsgType[ProjectionRegistryActor.RegisterProjection]
     }
 
     "process events and save query projection" in {

@@ -9,7 +9,7 @@ import java.net.URLEncoder
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.scaladsl.persistence._
@@ -20,7 +20,7 @@ private[lagom] class ReadSideImpl(
     system: ActorSystem,
     config: ReadSideConfig,
     persistentEntityRegistry: PersistentEntityRegistry,
-    projectorRegistryImpl: ProjectorRegistry,
+    projectionRegistryImpl: ProjectionRegistry,
     name: Option[String]
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
@@ -56,23 +56,23 @@ private[lagom] class ReadSideImpl(
         config.randomBackoffFactor
       )
 
-    val streamName    = tags.head.eventType.getName
-    val projectorName = readSideName
+    val streamName     = tags.head.eventType.getName
+    val projectionName = readSideName
 
-    val readSideProps = (projectorRegistryActorRef: ActorRef) =>
+    val readSideProps = (projectionRegistryActorRef: ActorRef) =>
       // TODO: use the actorRef on the ReadSideActor to register, ping-back info, etc...
       ReadSideActor.props(
         streamName,
-        projectorName,
+        projectionName,
         config,
         eventClass,
         globalPrepareTask,
         persistentEntityRegistry.eventStream[Event],
         processorFactory,
-        projectorRegistryActorRef
+        projectionRegistryActorRef
       )
 
-    projectorRegistryImpl.registerProjectorGroup(
+    projectionRegistryImpl.registerProjectionGroup(
       streamName, // TODO: use the name from the entity, not the tags
       entityIds,
       readSideName,

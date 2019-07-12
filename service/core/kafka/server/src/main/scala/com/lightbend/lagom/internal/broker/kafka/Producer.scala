@@ -11,7 +11,7 @@ import akka.actor.ActorSystem
 import akka.persistence.query.Offset
 import akka.stream.Materializer
 import akka.stream.scaladsl._
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import org.apache.kafka.common.serialization.Serializer
 
@@ -34,14 +34,14 @@ private[lagom] object Producer {
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
       offsetStore: OffsetStore,
-      projectorRegistryImpl: ProjectorRegistry
+      projectionRegistryImpl: ProjectionRegistry
   )(implicit mat: Materializer, ec: ExecutionContext): Unit = {
 
     val streamName     = "entityName"
     val projectionName = s"kafkaProducer-$topicId"
 
     val producerConfig = ProducerConfig(system.settings.config)
-    val topicProducerProps = (projectorRegistryActorRef: ActorRef) =>
+    val topicProducerProps = (projectionRegistryActorRef: ActorRef) =>
       // TODO: use the actorRef on the ReadSideActor to register, ping-back info, etc...
       TopicProducerActor.props(
         streamName,
@@ -54,13 +54,13 @@ private[lagom] object Producer {
         partitionKeyStrategy,
         serializer,
         offsetStore,
-        projectorRegistryActorRef
+        projectionRegistryActorRef
       )
 
     val entityIds = tags.toSet
     // TODO: use the name from the entity, not a hardcoded value
 
-    projectorRegistryImpl.registerProjectorGroup(
+    projectionRegistryImpl.registerProjectionGroup(
       streamName,
       entityIds,
       projectionName,
