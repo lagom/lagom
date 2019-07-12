@@ -33,7 +33,7 @@ object ProjectionRegistry {
   case object Start extends StateRequest
 
   @ApiMayChange
-  case class ProjectionWorker(name: String, status: WorkerzStatus)
+  case class ProjectionWorker(name: String, status: WorkerStatus)
 
   @ApiMayChange
   case class Projection(name: String, workers: Seq[ProjectionWorker])
