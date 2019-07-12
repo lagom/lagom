@@ -60,7 +60,7 @@ object ProjectorRegistryActor {
 }
     */
   @ApiMayChange
-  case class DesiredStatus(projectors: Seq[Projector])
+  case class DesiredState(projectors: Seq[Projector])
 }
 
 class ProjectorRegistryActor extends Actor with ActorLogging {
@@ -96,7 +96,7 @@ class ProjectorRegistryActor extends Actor with ActorLogging {
 
     case g @ GetSuccess(DataKey, req) =>
       val registry: PNCounterMap[WorkerMetadata] = g.get(DataKey)
-      val desiredStatus: DesiredStatus               = mapStatus(registry.entries)
+      val desiredStatus: DesiredState               = mapStatus(registry.entries)
       req.get.asInstanceOf[ActorRef] ! desiredStatus
 
     case Terminated(deadActor) =>
@@ -108,7 +108,7 @@ class ProjectorRegistryActor extends Actor with ActorLogging {
     // TODO: accept state changes and propagate those state changes.
   }
 
-  private def mapStatus(replicatedData: Map[WorkerMetadata, BigInt]): DesiredStatus = {
+  private def mapStatus(replicatedData: Map[WorkerMetadata, BigInt]): DesiredState = {
 
     val groupedByProjectorName: Map[String, Seq[(String, (String, BigInt))]] =
       replicatedData.toSeq.map { case (pm, bi) => (pm.projectorName, (pm.workerName, bi)) } .groupBy(_._1)
@@ -123,6 +123,6 @@ class ProjectorRegistryActor extends Actor with ActorLogging {
         .toSeq
         .map{Projector.tupled}
 
-    DesiredStatus(projectors)
+    DesiredState(projectors)
   }
 }

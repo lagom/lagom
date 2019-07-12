@@ -12,7 +12,7 @@ import java.util.concurrent.CompletionStage;
 @ApiMayChange
 public interface Projections {
 
-  CompletionStage<DesiredStatus> getStatus();
+  CompletionStage<DesiredState> getStatus();
 
   // TODO: implement stop
   // TODO: implement start
