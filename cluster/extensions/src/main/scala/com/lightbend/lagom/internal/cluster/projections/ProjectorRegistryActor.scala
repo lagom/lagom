@@ -27,12 +27,17 @@ import scala.concurrent.duration._
 @ApiMayChange
 object ProjectorRegistryActor {
   def props = Props(new ProjectorRegistryActor)
-  case class RegisterProjector(metadata: ProjectionMetadata)
+  case class RegisterProjector(
+      streamName:String,
+      projectorName:String,
+      workerName:String)
 
   // Read-Only command. Returns `DesiredStatus` representing the desired status of
   // the projector workers as currently seen in this node. That is not the actual
   // status and may not be the latest desired status.
   case object GetStatus
+
+  case class WorkerMetadata(streamName: String, projectorName: String, workerName: String)
 
   /**
   {
@@ -61,22 +66,23 @@ object ProjectorRegistryActor {
 class ProjectorRegistryActor extends Actor with ActorLogging {
 
   import ProjectorRegistryActor._
-  val replicator: ActorRef = DistributedData(context.system).replicator
+  val replicator: ActorRef             = DistributedData(context.system).replicator
   implicit val node: SelfUniqueAddress = DistributedData(context.system).selfUniqueAddress
 
-  // TODO: simplify into a LWWMap[ProjectionMetadata, ProjectorStatus] instead of PNCounterMap?
-  private val DataKey = PNCounterMapKey[ProjectionMetadata]("projector-registry")
+  // TODO: simplify into a LWWMap[WorkerMetadata, ProjectorStatus] instead of PNCounterMap?
+  private val DataKey = PNCounterMapKey[WorkerMetadata]("projector-registry")
   replicator ! Subscribe(DataKey, self)
 
-  var actorIndex: Map[ProjectionMetadata, ActorRef] = Map.empty[ProjectionMetadata, ActorRef]
+  var actorIndex: Map[WorkerMetadata, ActorRef] = Map.empty[WorkerMetadata, ActorRef]
   // required to handle Terminate(deadActor)
-  var actorReverseIndex: Map[ActorRef, ProjectionMetadata] = Map.empty[ActorRef, ProjectionMetadata]
+  var actorReverseIndex: Map[ActorRef, WorkerMetadata] = Map.empty[ActorRef, WorkerMetadata]
 
   override def receive: Receive = {
-    case RegisterProjector(metadata) =>
+    case RegisterProjector(streamName, projectorName, workerName) =>
+      val metadata = WorkerMetadata(streamName, projectorName, workerName)
       // when registering a projector worker, we default to state==enabled
       val writeMajority = WriteMajority(timeout = 5.seconds)
-      replicator ! Update(DataKey, PNCounterMap.empty[ProjectionMetadata], writeMajority)(
+      replicator ! Update(DataKey, PNCounterMap.empty[WorkerMetadata], writeMajority)(
         //TODO: read the default state from a desired _initial state_
         _.increment(node, metadata, 1)
       )
@@ -89,10 +95,8 @@ class ProjectorRegistryActor extends Actor with ActorLogging {
       replicator ! Get(DataKey, ReadLocal, Some(sender()))
 
     case g @ GetSuccess(DataKey, req) =>
-      val registry: PNCounterMap[ProjectionMetadata]              = g.get(DataKey)
-      val desiredStatus: Map[ProjectionMetadata, ProjectorStatus] =
-        // TODO: map the value of the counter (0 or 1) to stopping/running.
-        registry.entries.keySet.map((_, Running)).toMap
+      val registry: PNCounterMap[WorkerMetadata] = g.get(DataKey)
+      val desiredStatus: DesiredStatus               = mapStatus(registry.entries)
       req.get.asInstanceOf[ActorRef] ! desiredStatus
 
     case Terminated(deadActor) =>
@@ -102,6 +106,23 @@ class ProjectorRegistryActor extends Actor with ActorLogging {
       context.unwatch(deadActor)
 
     // TODO: accept state changes and propagate those state changes.
+  }
 
+  private def mapStatus(replicatedData: Map[WorkerMetadata, BigInt]): DesiredStatus = {
+
+    val groupedByProjectorName: Map[String, Seq[(String, (String, BigInt))]] =
+      replicatedData.toSeq.map { case (pm, bi) => (pm.projectorName, (pm.workerName, bi)) } .groupBy(_._1)
+    val projectors: Seq[Projector] =
+      groupedByProjectorName
+        .mapValues { workers: Seq[(String, (String, BigInt))] =>
+          val statusPerWorker: Seq[(String, BigInt)] = workers.toMap.values.toMap.toSeq
+          statusPerWorker
+          // TODO: below should convert a BigInt into a valid ProjectorStatus (instead of hardcoding `Running`)
+            .map{case (name, bi) => ProjectorWorker(name, Running)}
+        }
+        .toSeq
+        .map{Projector.tupled}
+
+    DesiredStatus(projectors)
   }
 }

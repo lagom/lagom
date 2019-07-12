@@ -9,9 +9,7 @@ import akka.actor.ActorRef
 import akka.actor.Props
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistryActor.DesiredStatus
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry
-import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry.ProjectionMetadata
 import com.lightbend.lagom.internal.cluster.projections.ProjectorRegistry.Running
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.PatienceConfiguration.Interval
@@ -29,8 +27,6 @@ object ProjectorRegistrySpec {
   val tagNamePrefix = "streamName"
   val tagName001    = s"${tagNamePrefix}001"
   val projectorName = "FakeProjector"
-
-  val metadata001 = ProjectionMetadata(streamName, projectorName)
 }
 
 class ProjectorRegistrySpec extends ClusteredMultiNodeUtils with Eventually with ScalaFutures {
@@ -45,8 +41,9 @@ class ProjectorRegistrySpec extends ClusteredMultiNodeUtils with Eventually with
       // This code will live in the driver (ReadSideImpl, Producer,...)
       val projectorProps = (projectorRegistryActorRef: ActorRef) =>
         FakeProjectorActor.props(
-          projectorRegistryActorRef,
-          ProjectorRegistrySpec.metadata001
+          streamName,
+          projectorName,
+          projectorRegistryActorRef
         )
 
       projectorRegistry.registerProjectorGroup(
@@ -66,15 +63,8 @@ class ProjectorRegistrySpec extends ClusteredMultiNodeUtils with Eventually with
 
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
         whenReady(projectorRegistry.getStatus()) { x =>
-          {
-            val statuses = x.desiredStatus
-            // find a value in the map of statuses for the `tagName001` shard.
-            val tagName001Projector: Option[ProjectorRegistry.ProjectorStatus] =
-              statuses.filter { case (k, _) => k.tagName.contains(tagName001) }.values.headOption
-            // the desired status is accessible from all nodes so we run the assertion
-            // everywhere even though the actor leaves in one node.
-            tagName001Projector should be(Some(Running))
-          }
+          val maybeWorker = x.projectors.flatMap(_.workers.find(_.name.contains(tagName001))).headOption
+          maybeWorker.map(_.status) should be(Some(Running))
         }
       }
     }
@@ -85,12 +75,16 @@ object FakeProjectorActor {
   case object Resume
   case object Pause
 
-  def props(projectorRegistryActor: ActorRef, projectionDetails: ProjectionMetadata): Props =
-    Props(new FakeProjectorActor(projectorRegistryActor, projectionDetails))
+  def props(
+      streamName: String,
+      projectorName: String,
+      projectorRegistryActorRef: ActorRef
+  ): Props =
+    Props(new FakeProjectorActor(streamName, projectorName, projectorRegistryActorRef))
 }
 
 // its state should be an actual copy of the desired state in the projector registry
-class FakeProjectorActor(projectorRegistryActor: ActorRef, projectorMetadata: ProjectionMetadata)
+class FakeProjectorActor(streamName: String, projectorName: String, projectorRegistryActorRef: ActorRef)
     extends Actor
     with ActorLogging {
 
@@ -98,9 +92,7 @@ class FakeProjectorActor(projectorRegistryActor: ActorRef, projectorMetadata: Pr
 
   override def receive = {
     case EnsureActive(tagName) =>
-      projectorRegistryActor ! ProjectorRegistryActor.RegisterProjector(
-        projectorMetadata.copy(tagName = Some(tagName))
-      )
+      projectorRegistryActorRef ! ProjectorRegistryActor.RegisterProjector(streamName, projectorName, tagName)
     case Resume =>
     case Pause  =>
   }
