@@ -355,7 +355,7 @@ def scalaVersionSince = Map(
   "2.12" -> "1.4.0"
 )
 
-val javadslProjects = Seq[Project](
+val javadslProjects = Seq[ProjectReference](
   `api-javadsl`,
   `server-javadsl`,
   `client-javadsl`,
@@ -376,7 +376,7 @@ val javadslProjects = Seq[Project](
   `integration-client-javadsl`
 )
 
-val scaladslProjects = Seq[Project](
+val scaladslProjects = Seq[ProjectReference](
   `api-scaladsl`,
   `client-scaladsl`,
   `broker-scaladsl`,
@@ -395,7 +395,7 @@ val scaladslProjects = Seq[Project](
   `play-json`
 )
 
-val coreProjects = Seq[Project](
+val coreProjects = Seq[ProjectReference](
   `api-tools`,
   api,
   client,
@@ -415,13 +415,13 @@ val coreProjects = Seq[Project](
   log4j2
 )
 
-val otherProjects = devEnvironmentProjects ++ Seq[Project](
+val otherProjects = devEnvironmentProjects ++ Seq[ProjectReference](
   `integration-tests-javadsl`,
   `integration-tests-scaladsl`,
   `macro-testkit`
 )
 
-val sbtScriptedProjects = Seq[Project](
+val sbtScriptedProjects = Seq[ProjectReference](
   `sbt-scripted-tools`,
   `sbt-scripted-library`
 )
@@ -438,13 +438,8 @@ lazy val root = (project in file("."))
     publish := {}
   )
   .enablePlugins(lagom.UnidocRoot)
-  .settings(
-    UnidocRoot.settings(javadslProjects.map(Project.projectToRef), scaladslProjects.map(Project.projectToRef)): _*
-  )
-  .aggregate(
-    (javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects)
-      .map(Project.projectToRef): _*
-  )
+  .settings(UnidocRoot.settings(javadslProjects, scaladslProjects))
+  .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects): _*)
 
 def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) && Unidoc
 def SbtPluginPlugins  = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
@@ -827,12 +822,14 @@ lazy val `persistence-core` = (project in file("persistence/core"))
   .dependsOn(`cluster-core`, logback % Test)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
+  .settings(multiJvmTestSettings)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-persistence-core",
     Dependencies.`persistence-core`
   )
+  .configs(MultiJvm)
 
 lazy val `persistence-testkit` = (project in file("persistence/testkit"))
   .settings(runtimeLibCommon: _*)
@@ -1040,19 +1037,18 @@ lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
   .settings(forkedTests: _*)
-  .settings(excludeLog4jFromKafkaServer: _*)
   .settings(
     name := "lagom-javadsl-kafka-broker",
     Dependencies.`kafka-broker-javadsl`,
-    Dependencies.dependencyWhitelist ++= Dependencies.KafkaTestWhitelist
+    Dependencies.dependencyWhitelist ++= Dependencies.KafkaTestWhitelist,
+    generateKafkaServerClasspathForTests("com.lightbend.lagom.internal.javadsl.broker.kafka"),
   )
   .dependsOn(
     `broker-javadsl`,
     `kafka-broker`,
     `kafka-client-javadsl`,
     `server-javadsl`,
-    `kafka-server` % Test,
-    logback        % Test
+    logback % Test,
   )
 
 lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/server"))
@@ -1060,19 +1056,18 @@ lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/serv
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
   .settings(forkedTests: _*)
-  .settings(excludeLog4jFromKafkaServer: _*)
   .settings(
     name := "lagom-scaladsl-kafka-broker",
     Dependencies.`kafka-broker-scaladsl`,
-    Dependencies.dependencyWhitelist ++= Dependencies.KafkaTestWhitelist
+    Dependencies.dependencyWhitelist ++= Dependencies.KafkaTestWhitelist,
+    generateKafkaServerClasspathForTests("com.lightbend.lagom.scaladsl.kafka.broker"),
   )
   .dependsOn(
     `broker-scaladsl`,
     `kafka-broker`,
     `kafka-client-scaladsl`,
     `server-scaladsl`,
-    `kafka-server` % Test,
-    logback        % Test
+    logback % Test,
   )
 
 lazy val logback = (project in file("logback"))
@@ -1093,7 +1088,7 @@ lazy val log4j2 = (project in file("log4j2"))
   )
   .settings(overridesScalaParserCombinators: _*)
 
-lazy val devEnvironmentProjects = Seq[Project](
+lazy val devEnvironmentProjects = Seq[ProjectReference](
   `reloadable-server`,
   `build-tool-support`,
   `sbt-build-tool-support`,
@@ -1116,7 +1111,7 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
   .enablePlugins(AutomateHeaderPlugin)
-  .aggregate(devEnvironmentProjects.map(Project.projectToRef): _*)
+  .aggregate(devEnvironmentProjects: _*)
   .settings(
     publish := {},
     PgpKeys.publishSigned := {}
@@ -1566,13 +1561,21 @@ lazy val `kafka-server` = (project in file("dev") / "kafka-server")
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-kafka-server",
+    crossScalaVersions -= Dependencies.Versions.Scala213, // No Kafka for Scala 2.13, use Kafka for Scala 2.12
     Dependencies.`kafka-server`
   )
 
-// kafka-server has a transitive dependency on slf4j-log4j12.
-// This is required for running Kafka in development mode, where it runs in its own process and uses log4j 1.2.
-// When running broker tests, Kafka is started in process, and its logs need to be routed to logback, which requires
-// excluding slf4j-log4j12.
+// kafka-server is used to run Kafka in dev mode and in the kafka broker tests, in its own process
+// build-tool-support handles this for dev mode
+// and there's a smaller version in the kafka broker specs
+def generateKafkaServerClasspathForTests(packageName: String): Seq[Setting[_]] = Def.settings(
+  BuildInfoPlugin.buildInfoDefaultSettings,
+  BuildInfoPlugin.buildInfoScopedSettings(Test),
+  Test / buildInfoPackage := packageName,
+  Test / buildInfoObject := "TestBuildInfo",
+  Test / buildInfoKeys := Seq[BuildInfoKey](fullClasspath in (`kafka-server`, Compile)),
+)
+
 def excludeLog4jFromKafkaServer: Seq[Setting[_]] = Seq(
   libraryDependencies += (projectID in (`kafka-server`, Test)).value.exclude("org.slf4j", "slf4j-log4j12")
 )

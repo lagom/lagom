@@ -549,7 +549,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val serviceLocatorPort     = lagomServiceLocatorPort.value
     val serviceGatewayAddress  = lagomServiceGatewayAddress.value
     val serviceGatewayHttpPort = lagomServiceGatewayPort.value
-    val serivceGatewayImpl     = lagomServiceGatewayImpl.value
+    val serviceGatewayImpl     = lagomServiceGatewayImpl.value
     val classpathUrls          = (managedClasspath in Compile).value.files.map(_.toURI.toURL).toArray
     val scalaInstance          = Keys.scalaInstance.value
     val log                    = new SbtLoggerProxy(state.value.log)
@@ -563,7 +563,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
       serviceGatewayAddress,
       serviceGatewayHttpPort,
       unmanagedServices,
-      serivceGatewayImpl
+      serviceGatewayImpl
     )
   }
 
