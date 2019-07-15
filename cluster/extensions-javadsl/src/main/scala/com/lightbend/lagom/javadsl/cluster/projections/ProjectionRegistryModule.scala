@@ -25,14 +25,15 @@ class ProjectionRegistryModule extends Module {
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
     bind[ProjectionRegistry].toProvider[ProjectionRegistryProvider], // for internal use
-    bind[Projections].to(classOf[ProjectionsImpl])                 // for users
+    bind[Projections].to(classOf[ProjectionsImpl])                   // for users
   )
 }
 
 // This provider is trivial but required to keep ProjectionRegistry in `-core` and free of any Guice dependency
 @Singleton
-private[lagom] class ProjectionRegistryProvider @Inject()(actorSystem: ActorSystem ) extends Provider[ProjectionRegistry]{
-  private val instance = new ProjectionRegistry(actorSystem)
+private[lagom] class ProjectionRegistryProvider @Inject()(actorSystem: ActorSystem)
+    extends Provider[ProjectionRegistry] {
+  private val instance                   = new ProjectionRegistry(actorSystem)
   override def get(): ProjectionRegistry = instance
 }
 

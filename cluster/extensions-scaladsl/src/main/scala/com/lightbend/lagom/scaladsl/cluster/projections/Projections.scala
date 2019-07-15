@@ -15,7 +15,7 @@ import scala.concurrent.Future
  *
  */
 @ApiMayChange
-class Projections(private val registry:ProjectionRegistry) {
+class Projections(private val registry: ProjectionRegistry) {
 
   def getStatus: Future[DesiredState] =
     registry.getStatus()

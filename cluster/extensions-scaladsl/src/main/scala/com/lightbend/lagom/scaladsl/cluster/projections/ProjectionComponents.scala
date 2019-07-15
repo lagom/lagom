@@ -17,6 +17,6 @@ trait ProjectionComponents extends ClusterComponents {
   def actorSystem: ActorSystem
 
   private[lagom] lazy val projectionRegistry: ProjectionRegistry = new ProjectionRegistry(actorSystem)
-  lazy val projections: Projections = new Projections(projectionRegistry)
+  lazy val projections: Projections                              = new Projections(projectionRegistry)
 
 }
