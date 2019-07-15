@@ -29,7 +29,7 @@ object ProjectionRegistry {
   case object Started extends WorkerStatus
 
   sealed trait StateRequest
-  case object Stop extends StateRequest
+  case object Stop  extends StateRequest
   case object Start extends StateRequest
 
   @ApiMayChange
@@ -46,8 +46,8 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
   // A ProjectionRegistry is responsible for this node's ProjectionRegistryActor instance.
   // TODO: decide what to do if/when the ProjectionRegistryActor dies (note the loss of references to projections).
   private val projectionRegistryRef: ActorRef = system.actorOf(ProjectionRegistryActor.props, "projection-registry")
-  private lazy val clusterShardingSettings   = ClusterShardingSettings(system)
-  private lazy val clusterDistribution       = ClusterDistribution(system)
+  private lazy val clusterShardingSettings    = ClusterShardingSettings(system)
+  private lazy val clusterDistribution        = ClusterDistribution(system)
 
   /**
    *

@@ -27,10 +27,7 @@ import scala.concurrent.duration._
 @ApiMayChange
 object ProjectionRegistryActor {
   def props = Props(new ProjectionRegistryActor)
-  case class RegisterProjection(
-      streamName:String,
-      projectionName:String,
-      workerName:String)
+  case class RegisterProjection(streamName: String, projectionName: String, workerName: String)
 
   // Read-Only command. Returns `DesiredState` representing the desired state of
   // the projection workers as currently seen in this node. That is not the actual
@@ -60,7 +57,7 @@ object ProjectionRegistryActor {
     }
   ]
 }
-    */
+   */
   @ApiMayChange
   case class DesiredState(projections: Seq[Projection])
 }
@@ -100,7 +97,7 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
     case g @ GetSuccess(DataKey, req) =>
       val registry: PNCounterMap[WorkerMetadata] = g.get(DataKey)
-      val desiredStatus: DesiredState               = mapStatus(registry.entries)
+      val desiredStatus: DesiredState            = mapStatus(registry.entries)
       req.get.asInstanceOf[ActorRef] ! desiredStatus
 
     case Terminated(deadActor) =>
@@ -116,18 +113,18 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   private def mapStatus(replicatedData: Map[WorkerMetadata, BigInt]): DesiredState = {
 
     val groupedByProjectionName: Map[String, Seq[(String, (String, BigInt))]] =
-      replicatedData.toSeq.map { case (pm, bi) => (pm.projectionName, (pm.workerName, bi)) } .groupBy(_._1)
+      replicatedData.toSeq.map { case (pm, bi) => (pm.projectionName, (pm.workerName, bi)) }.groupBy(_._1)
     val projections: Seq[Projection] =
       groupedByProjectionName
         .mapValues { workers: Seq[(String, (String, BigInt))] =>
           val statusPerWorker: Seq[(String, BigInt)] = workers.toMap.values.toMap.toSeq
           statusPerWorker
-            // TODO: below should convert a BigInt into a valid ProjectionStatus (instead of hardcoding `Running`)
-            // https://github.com/lagom/lagom/issues/1744
-            .map{case (name, bi) => ProjectionWorker(name, Started)}
+          // TODO: below should convert a BigInt into a valid ProjectionStatus (instead of hardcoding `Running`)
+          // https://github.com/lagom/lagom/issues/1744
+            .map { case (name, bi) => ProjectionWorker(name, Started) }
         }
         .toSeq
-        .map{Projection.tupled}
+        .map { Projection.tupled }
 
     DesiredState(projections)
   }
