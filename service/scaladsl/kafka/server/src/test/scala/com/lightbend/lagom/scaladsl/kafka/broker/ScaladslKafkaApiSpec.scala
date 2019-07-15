@@ -32,6 +32,7 @@ import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocatorComponents
 import com.lightbend.lagom.scaladsl.kafka.broker.ScaladslKafkaApiSpec._
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
+import com.lightbend.lagom.scaladsl.playjson.EmptyJsonSerializerRegistry
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.spi.persistence.InMemoryOffsetStore
 import com.typesafe.config.ConfigFactory
@@ -59,8 +60,9 @@ class ScaladslKafkaApiSpec
   private val application = {
     new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LagomKafkaComponents
     with ConfigurationServiceLocatorComponents {
-      override lazy val offsetStore = new InMemoryOffsetStore
-      override lazy val lagomServer = serverFor[TestService](new TestServiceImpl)
+      override lazy val offsetStore            = new InMemoryOffsetStore
+      override lazy val jsonSerializerRegistry = EmptyJsonSerializerRegistry
+      override lazy val lagomServer            = serverFor[TestService](new TestServiceImpl)
 
       override def additionalConfiguration = {
         import scala.collection.JavaConverters._

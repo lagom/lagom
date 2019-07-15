@@ -6,17 +6,16 @@ package com.lightbend.lagom.internal.javadsl.persistence
 
 import java.net.URLEncoder
 import java.util.Optional
+
+import akka.actor.ActorRef
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
-
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import akka.cluster.sharding.ClusterShardingSettings
 import akka.stream.Materializer
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistributionSettings
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.Config
@@ -41,7 +40,8 @@ private[lagom] class ReadSideImpl @Inject()(
     system: ActorSystem,
     config: ReadSideConfig,
     injector: Injector,
-    registry: PersistentEntityRegistry
+    persistentEntityRegistry: PersistentEntityRegistry,
+    projectionRegistryImpl: ProjectionRegistry
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
 
@@ -76,10 +76,10 @@ private[lagom] class ReadSideImpl @Inject()(
           )
       }
 
-      val readSideName        = name.asScala.fold("")(_ + "-") + dummyProcessor.readSideName()
-      val encodedReadSideName = URLEncoder.encode(readSideName, "utf-8")
-      val tags                = dummyProcessor.aggregateTags().asScala
-      val entityIds           = tags.map(_.tag)
+      val readSideName           = name.asScala.fold("")(_ + "-") + dummyProcessor.readSideName()
+      val encodedReadSideName    = URLEncoder.encode(readSideName, "utf-8")
+      val tags                   = dummyProcessor.aggregateTags().asScala
+      val entityIds: Set[String] = tags.map(_.tag).toSet
       val eventClass = tags.headOption match {
         case Some(tag) => tag.eventType
         case None      => throw new IllegalArgumentException(s"ReadSideProcessor ${clazz.getName} returned 0 tags")
@@ -97,23 +97,29 @@ private[lagom] class ReadSideImpl @Inject()(
           config.randomBackoffFactor
         )
 
-      val readSideProps =
+      val streamName     = tags.head.eventType.getName
+      val projectionName = readSideName
+
+      val readSidePropsFactory = (projectionRegistryActorRef: ActorRef) =>
         ReadSideActor.props(
+          streamName,
+          projectionName,
           config,
           eventClass,
           globalPrepareTask,
-          registry.eventStream[Event],
-          processorFactory
+          persistentEntityRegistry.eventStream[Event],
+          processorFactory,
+          projectionRegistryActorRef
         )
 
-      val shardingSettings = ClusterShardingSettings(system).withRole(config.role)
-
-      ClusterDistribution(system).start(
+      projectionRegistryImpl.registerProjectionGroup(
+        tags.head.eventType.getName, // TODO: use the name from the entity, not the tags
+        entityIds,
         readSideName,
-        readSideProps,
-        entityIds.toSet,
-        ClusterDistributionSettings(system).copy(clusterShardingSettings = shardingSettings)
+        config.role,
+        readSidePropsFactory
       )
+
     }
 
   }

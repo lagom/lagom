@@ -6,15 +6,12 @@ package com.lightbend.lagom.internal.broker.kafka
 
 import java.net.URI
 
+import akka.actor.ActorRef
 import akka.actor.ActorSystem
-import akka.cluster.sharding.ClusterShardingSettings
-import akka.pattern.BackoffOpts
-import akka.pattern.BackoffSupervisor
 import akka.persistence.query.Offset
 import akka.stream.Materializer
 import akka.stream.scaladsl._
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistributionSettings
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import org.apache.kafka.common.serialization.Serializer
 
@@ -36,33 +33,40 @@ private[lagom] object Producer {
       eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
-      offsetStore: OffsetStore
+      offsetStore: OffsetStore,
+      projectionRegistryImpl: ProjectionRegistry
   )(implicit mat: Materializer, ec: ExecutionContext): Unit = {
 
+    val streamName     = "entityName"
     val projectionName = s"kafkaProducer-$topicId"
 
     val producerConfig = ProducerConfig(system.settings.config)
-    val topicProducerProps = TopicProducerActor.props(
-      kafkaConfig,
-      producerConfig,
-      locateService,
-      topicId,
-      eventStreamFactory,
-      partitionKeyStrategy,
-      serializer,
-      offsetStore
-    )
+    val topicProducerProps = (projectionRegistryActorRef: ActorRef) =>
+      TopicProducerActor.props(
+        streamName,
+        projectionName,
+        kafkaConfig,
+        producerConfig,
+        locateService,
+        topicId,
+        eventStreamFactory,
+        partitionKeyStrategy,
+        serializer,
+        offsetStore,
+        projectionRegistryActorRef
+      )
 
     val entityIds = tags.toSet
+    // TODO: use the name from the entity, not a hardcoded value
 
-    val clusterShardingSettings = ClusterShardingSettings(system).withRole(producerConfig.role)
-
-    ClusterDistribution(system).start(
-      projectionName,
-      topicProducerProps,
+    projectionRegistryImpl.registerProjectionGroup(
+      streamName,
       entityIds,
-      ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
+      projectionName,
+      producerConfig.role,
+      topicProducerProps
     )
+
   }
 
 }

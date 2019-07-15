@@ -21,7 +21,7 @@ import akka.NotUsed
 import com.lightbend.lagom.internal.javadsl.persistence.PersistentEntityActor
 import com.lightbend.lagom.internal.javadsl.persistence.ReadSideActor
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Mode
@@ -30,6 +30,9 @@ import org.scalatest.BeforeAndAfter
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures
 import akka.pattern._
+import akka.testkit.TestProbe
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistryActor
+
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.duration._
 
@@ -115,14 +118,20 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
     case object GetStats
   }
 
-  private def createReadSideProcessor(inFailureMode: Boolean = false) = {
+  private def createReadSideProcessor(
+      projectionRegistryProbe: TestProbe = TestProbe(),
+      inFailureMode: Boolean = false
+  ) = {
     val mockRef = system.actorOf(Props(new Mock(inFailureMode)))
     val processorProps = ReadSideActor.props[TestEntity.Evt](
+      "abstract-readside-spec-stream",
+      "abstract-readside-spec-projection",
       ReadSideConfig(),
       classOf[TestEntity.Evt],
       new ClusterStartupTask(mockRef),
       eventStream,
-      () => processorFactory()
+      () => processorFactory(),
+      projectionRegistryProbe.ref
     )
 
     val readSide: ActorRef = system.actorOf(processorProps)
@@ -157,6 +166,13 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       .futureValue
 
   "ReadSide" must {
+
+    "register on the projection registry" in {
+      val testProbe = TestProbe()
+      createReadSideProcessor(projectionRegistryProbe = testProbe)
+
+      testProbe.expectMsgType[ProjectionRegistryActor.RegisterProjection]
+    }
 
     "process events and save query projection" in {
 
