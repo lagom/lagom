@@ -71,13 +71,7 @@ private[lagom] class ReadSideImpl(
         projectionRegistryActorRef
       )
 
-    projectionRegistryImpl.registerProjectionGroup(
-      streamName, // TODO: use the name from the entity, not the tags
-      entityIds,
-      readSideName,
-      config.role,
-      readSideProps
-    )
+    projectionRegistryImpl.registerProjectionGroup(streamName, readSideName, entityIds, config.role, readSideProps)
 
   }
 }

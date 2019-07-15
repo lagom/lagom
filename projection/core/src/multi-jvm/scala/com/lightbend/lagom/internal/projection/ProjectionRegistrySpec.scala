@@ -10,6 +10,7 @@ import akka.actor.Props
 import com.lightbend.lagom.internal.cluster.ClusteredMultiNodeUtils
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.projection.ProjectionRegistry.Started
+import com.lightbend.lagom.internal.projection.ProjectionRegistry.Stopped
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.PatienceConfiguration.Interval
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
@@ -21,52 +22,114 @@ class ProjectionRegistrySpecMultiJvmNode1 extends ProjectionRegistrySpec
 class ProjectionRegistrySpecMultiJvmNode2 extends ProjectionRegistrySpec
 class ProjectionRegistrySpecMultiJvmNode3 extends ProjectionRegistrySpec
 
-object ProjectionRegistrySpec {
-  val streamName    = "test-streamName"
-  val tagNamePrefix = "streamName"
-  val tagName001    = s"${tagNamePrefix}001"
-  val projectionName = "FakeProjection"
-}
-
 class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually with ScalaFutures {
-  import ProjectionRegistrySpec._
-  implicit val exCtx = system.dispatcher
+  implicit val exCtx             = system.dispatcher
+  private val pc                 = PatienceConfig(timeout = Span(20, Seconds), interval = Span(2, Seconds))
+  private val projectionRegistry = new ProjectionRegistry(system)
 
   "A ProjectionRegistry" must {
-    "register a projection" in {
 
-      val projectionRegistry = new ProjectionRegistry(system)
+    "register a projection with a single worker" in {
+      val tagNamePrefix = "streamName"
+      val tagName001    = s"${tagNamePrefix}001"
 
-      // This code will live in the driver (ReadSideImpl, Producer,...)
-      val projectionProps = (projectionRegistryActorRef: ActorRef) =>
-        FakeProjectionActor.props(
-          streamName,
-          projectionName,
-          projectionRegistryActorRef
-        )
-
-      projectionRegistry.registerProjectionGroup(
-        streamName,
-        shardNames = Set(tagName001),
-        projectionName = projectionName,
-        runInRole = None,
-        projectionProps
-      )
-
-      // stop the stream
-      // assert all instances stopped
-      // start the stream
-      // assert all instance started
-
-      val pc = PatienceConfig(timeout = Span(20, Seconds), interval = Span(2, Seconds))
+      registerProjection("some-stream", "test-canary", Set(tagName001))
 
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
         whenReady(projectionRegistry.getStatus()) { x =>
-          val maybeWorker = x.projections.flatMap(_.workers.find(_.name.contains(tagName001))).headOption
+          val maybeWorker = x.findWorker(tagName001)
           maybeWorker.map(_.status) should be(Some(Started))
         }
       }
     }
+    "register a projection with multiple workers" in {
+      val projectionName = "test-canary-many-workers"
+      val tagNamePrefix = projectionName
+      val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
+      val tagName001     = tagNames.head
+
+      registerProjection("some-stream", projectionName, tagNames.toSet)
+
+      eventually(Timeout(pc.timeout), Interval(pc.interval)) {
+        whenReady(projectionRegistry.getStatus()) { x =>
+          val maybeWorker = x.findWorker(tagName001)
+          maybeWorker.map(_.status) should be(Some(Started))
+        }
+      }
+    }
+
+    "pause a projection worker" in {
+      enterBarrier("pause-worker-test")
+      val projectionName = "test-pause-worker"
+      val tagNamePrefix  = projectionName
+      val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
+      val tagName001     = tagNames.head
+
+      registerProjection("some-stream", projectionName, tagNames.toSet)
+
+      // await until seen as ready
+      eventually(Timeout(pc.timeout), Interval(pc.interval)) {
+        whenReady(projectionRegistry.getStatus()) { x =>
+          val maybeWorker = x.findWorker(tagName001)
+          maybeWorker.map(_.status) should be(Some(Started))
+        }
+      }
+
+      enterBarrier("pause-worker-test-all-nodes-ready")
+      projectionRegistry.stopWorker(tagName001)
+      // await until seen as ready
+      eventually(Timeout(pc.timeout), Interval(pc.interval)) {
+        whenReady(projectionRegistry.getStatus()) { x =>
+          val maybeWorker = x.findWorker(tagName001)
+          maybeWorker.map(_.status) should be(Some(Stopped))
+        }
+      }
+    }
+
+    "pause a complete projection" in {
+      enterBarrier("pause-projection-test")
+      val projectionName = "test-pause-projection"
+      val tagNamePrefix  = projectionName
+      val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
+      val tagName001     = tagNames.head
+
+      registerProjection("some-stream", projectionName, tagNames.toSet)
+
+      // await until seen as ready
+      eventually(Timeout(pc.timeout), Interval(pc.interval)) {
+        whenReady(projectionRegistry.getStatus()) { x =>
+          val maybeWorker = x.findWorker(tagName001)
+          maybeWorker.map(_.status) should be(Some(Started))
+        }
+      }
+      enterBarrier("pause-projection-test-all-nodes-ready")
+      projectionRegistry.stopAllWorkers(projectionName)
+      // await until seen as ready
+      eventually(Timeout(pc.timeout), Interval(pc.interval)) {
+        whenReady(projectionRegistry.getStatus()) { x =>
+          val projection = x.findProjection(projectionName).get
+          projection.workers.forall(_.status == Stopped) should be(true)
+        }
+      }
+    }
+
+  }
+
+  private def registerProjection(streamName: String, projectionName: String, workerNames: Set[String]): Unit = {
+    val projectionProps = (projectionRegistryActorRef: ActorRef) =>
+      FakeProjectionActor.props(
+        streamName,
+        projectionName,
+        projectionRegistryActorRef
+      )
+
+    projectionRegistry.registerProjectionGroup(
+      streamName,
+      projectionName,
+      workerNames,
+      runInRole = None,
+      projectionProps
+    )
   }
 }
 
