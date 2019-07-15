@@ -365,6 +365,7 @@ val javadslProjects = Seq[Project](
   `akka-management-javadsl`,
   `akka-discovery-service-locator-javadsl`,
   `cluster-javadsl`,
+  `cluster-extensions-javadsl`,
   `persistence-javadsl`,
   `persistence-cassandra-javadsl`,
   `persistence-jdbc-javadsl`,
@@ -386,6 +387,7 @@ val scaladslProjects = Seq[Project](
   `akka-management-scaladsl`,
   `akka-discovery-service-locator-scaladsl`,
   `cluster-scaladsl`,
+  `cluster-extensions-scaladsl`,
   `persistence-scaladsl`,
   `persistence-cassandra-scaladsl`,
   `persistence-jdbc-scaladsl`,
@@ -404,6 +406,7 @@ val coreProjects = Seq[Project](
   `akka-management-core`,
   `akka-discovery-service-locator-core`,
   `cluster-core`,
+  `cluster-extensions`,
   `kafka-client`,
   `kafka-broker`,
   `persistence-core`,
@@ -852,7 +855,7 @@ lazy val `cluster-extensions-javadsl` = (project in file("cluster/extensions-jav
   //  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-extensions
   .enablePlugins(RuntimeLibPlugins)
   .settings(
-    name := "lagom-scaladsl-cluster-extensions",
+    name := "lagom-javadsl-cluster-extensions",
     Dependencies.`cluster-extensions-javadsl`
   )
 
