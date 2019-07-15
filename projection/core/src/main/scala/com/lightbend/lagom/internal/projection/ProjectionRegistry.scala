@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.internal.projection
 
+import akka.Done
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.actor.Props
@@ -20,6 +21,7 @@ import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.GetDesire
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.util.control.NoStackTrace
 
 @ApiMayChange
 object ProjectionRegistry {
@@ -29,8 +31,8 @@ object ProjectionRegistry {
   case object Started extends WorkerStatus
 
   sealed trait StateRequest
-  case object Stop  extends StateRequest
-  case object Start extends StateRequest
+  case class Stop(workerName: String)  extends StateRequest
+  case class Start(workerName: String) extends StateRequest
 
   @ApiMayChange
   case class ProjectionWorker(name: String, status: WorkerStatus)
@@ -38,13 +40,20 @@ object ProjectionRegistry {
   @ApiMayChange
   case class Projection(name: String, workers: Seq[ProjectionWorker])
 
+  @ApiMayChange
+  case class ProjectionNotFound(projectionName: String)
+      extends RuntimeException(s"Projection $projectionName is not registered")
+      with NoStackTrace
+  @ApiMayChange
+  case class ProjectionWorkerNotFound(workerName: String)
+      extends RuntimeException(s"Projection $workerName is not registered")
+      with NoStackTrace
+
 }
 
 @ApiMayChange
 private[lagom] class ProjectionRegistry(system: ActorSystem) {
 
-  // A ProjectionRegistry is responsible for this node's ProjectionRegistryActor instance.
-  // TODO: decide what to do if/when the ProjectionRegistryActor dies (note the loss of references to projections).
   private val projectionRegistryRef: ActorRef = system.actorOf(ProjectionRegistryActor.props, "projection-registry")
   private lazy val clusterShardingSettings    = ClusterShardingSettings(system)
   private lazy val clusterDistribution        = ClusterDistribution(system)
@@ -52,15 +61,15 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
   /**
    *
    * @param streamName name of the stream this projection group consumes
-   * @param shardNames collection of partition names in the consumed stream
    * @param projectionName unique name identifying the projection group
+   * @param shardNames collection of partition names in the consumed stream
    * @param runInRole
    * @param projectionPropsFactory
    */
   private[lagom] def registerProjectionGroup(
       streamName: String,
-      shardNames: Set[String],
       projectionName: String,
+      shardNames: Set[String],
       runInRole: Option[String],
       projectionPropsFactory: ActorRef => Props
   ): Unit = {
@@ -76,9 +85,27 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
 
   }
 
+  implicit val exCtx: ExecutionContext = system.dispatcher
+  implicit val timeout: Timeout        = Timeout(1.seconds)
+
   private[lagom] def getStatus(): Future[DesiredState] = {
-    implicit val exCtx: ExecutionContext = system.dispatcher
-    implicit val timeout: Timeout        = Timeout(1.seconds)
     (projectionRegistryRef ? GetDesiredState).mapTo[DesiredState]
   }
+
+  def stopWorker(projectionWorkerName: String): Future[Done] =
+    (projectionRegistryRef ? Stop(projectionWorkerName))
+      .mapTo[Done]
+
+  def stopAllWorkers(projectionName: String): Future[Done] =
+    (projectionRegistryRef ? GetDesiredState)
+      .mapTo[DesiredState]
+      .map { desiredState =>
+        desiredState.findProjection(projectionName) match {
+          case None             => throw new ProjectionNotFound(projectionName)
+          case Some(projection) => projection
+        }
+      }
+      .map(_.workers.map(worker => stopWorker(worker.name)))
+      .map(_ => Done)
+
 }

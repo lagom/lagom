@@ -20,8 +20,9 @@ class Projections(private val registry: ProjectionRegistry) {
   def getStatus: Future[DesiredState] =
     registry.getStatus()
 
-  // https://github.com/lagom/lagom/issues/1744
-  // TODO: impl stop
-  // TODO: impl start
+  def stopAllWorkers(projectionName: String) =
+    registry.stopAllWorkers(projectionName)
+  def stopWorker(projectionWorkerName: String) =
+    registry.stopWorker(projectionWorkerName)
 
 }

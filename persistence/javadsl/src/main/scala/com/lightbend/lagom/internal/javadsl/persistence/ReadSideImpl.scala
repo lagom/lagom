@@ -112,13 +112,7 @@ private[lagom] class ReadSideImpl @Inject()(
           projectionRegistryActorRef
         )
 
-      projectionRegistryImpl.registerProjectionGroup(
-        tags.head.eventType.getName, // TODO: use the name from the entity, not the tags
-        entityIds,
-        readSideName,
-        config.role,
-        readSidePropsFactory
-      )
+      projectionRegistryImpl.registerProjectionGroup(tags.head.eventType.getName, readSideName, entityIds, config.role, readSidePropsFactory)
 
     }
 
