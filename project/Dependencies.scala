@@ -763,9 +763,9 @@ object Dependencies {
     "com.novocode"       % "junit-interface" % "0.11" % Test
   )
 
-  val `cluster-extensions-scaladsl` = libraryDependencies ++= Seq.empty
+  val `cluster-extensions-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
 
-  val `cluster-extensions-javadsl` = libraryDependencies ++= Seq.empty
+  val `cluster-extensions-javadsl` = libraryDependencies ++= Seq.empty[ModuleID]
 
   val `persistence-core` = libraryDependencies ++= Seq(
     akkaPersistence,
