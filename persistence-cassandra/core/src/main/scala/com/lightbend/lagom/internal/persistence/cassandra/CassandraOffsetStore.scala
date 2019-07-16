@@ -42,7 +42,7 @@ private[lagom] abstract class CassandraOffsetStore(
     }
   }
 
-  val startupTask = if (cassandraReadSideSettings.autoCreateTables) {
+  val startupTask: Option[ClusterStartupTask] = if (cassandraReadSideSettings.autoCreateTables) {
     Some(
       ClusterStartupTask(
         system,

@@ -753,6 +753,21 @@ object Dependencies {
     akkaSlf4j
   )
 
+  val `cluster-extensions` = libraryDependencies ++= Seq(
+    akkaClusterSharding,
+    akkaSlf4j,
+    akkaTestkit          % Test,
+    akkaMultiNodeTestkit % Test,
+    akkaStreamTestkit    % Test,
+    scalaTest            % Test,
+    junit                % Test,
+    "com.novocode"       % "junit-interface" % "0.11" % Test
+  )
+
+  val `cluster-extensions-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
+
+  val `cluster-extensions-javadsl` = libraryDependencies ++= Seq.empty[ModuleID]
+
   val `persistence-core` = libraryDependencies ++= Seq(
     akkaPersistence,
     akkaPersistenceQuery,

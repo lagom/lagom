@@ -6,13 +6,11 @@ package com.lightbend.lagom.internal.scaladsl.persistence
 
 import java.net.URLEncoder
 
+import akka.actor.ActorRef
 import akka.actor.ActorSystem
-import akka.cluster.Cluster
-import akka.cluster.sharding.ClusterShardingSettings
 import akka.stream.Materializer
+import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistributionSettings
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.scaladsl.persistence._
 
@@ -21,7 +19,8 @@ import scala.concurrent.ExecutionContext
 private[lagom] class ReadSideImpl(
     system: ActorSystem,
     config: ReadSideConfig,
-    registry: PersistentEntityRegistry,
+    persistentEntityRegistry: PersistentEntityRegistry,
+    projectionRegistryImpl: ProjectionRegistry,
     name: Option[String]
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
@@ -57,22 +56,27 @@ private[lagom] class ReadSideImpl(
         config.randomBackoffFactor
       )
 
-    val readSideProps =
+    val streamName     = tags.head.eventType.getName
+    val projectionName = readSideName
+
+    val readSideProps = (projectionRegistryActorRef: ActorRef) =>
       ReadSideActor.props(
+        streamName,
+        projectionName,
         config,
         eventClass,
         globalPrepareTask,
-        registry.eventStream[Event],
-        processorFactory
+        persistentEntityRegistry.eventStream[Event],
+        processorFactory,
+        projectionRegistryActorRef
       )
 
-    val clusterShardingSettings = ClusterShardingSettings(system).withRole(config.role)
-
-    ClusterDistribution(system).start(
-      readSideName,
-      readSideProps,
+    projectionRegistryImpl.registerProjectionGroup(
+      streamName, // TODO: use the name from the entity, not the tags
       entityIds,
-      ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
+      readSideName,
+      config.role,
+      readSideProps
     )
 
   }
