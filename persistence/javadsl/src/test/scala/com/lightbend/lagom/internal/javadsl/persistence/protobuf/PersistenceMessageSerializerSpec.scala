@@ -9,7 +9,7 @@ import java.io.NotSerializableException
 import scala.concurrent.duration._
 import akka.actor.ExtendedActorSystem
 import akka.serialization.SerializationExtension
-import com.lightbend.lagom.internal.persistence.cluster.ClusterDistribution.EnsureActive
+import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.javadsl.persistence.CommandEnvelope
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity.InvalidCommandException
