@@ -24,7 +24,6 @@ class CassandraPersistenceSpec(system: ActorSystem) extends ActorSystemSpec(syst
         testName,
         config
           .withFallback(cassandraConfig(testName, CassandraLauncher.randomPort))
-          .withFallback(ClusterConfig)
       )
     )
 

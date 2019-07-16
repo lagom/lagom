@@ -49,7 +49,6 @@ public class PersistentEntityRefTest {
   public static void setup() {
     Config config =
         ConfigFactory.parseString("akka.loglevel = INFO")
-            .withFallback(ClusterConfig())
             .withFallback(
                 cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort()));
 

@@ -29,7 +29,6 @@ class CassandraPersistenceSpec private (system: ActorSystem) extends ActorSystem
           BootstrapSetup(
             config
               .withFallback(cassandraConfig(testName, CassandraLauncher.randomPort))
-              .withFallback(ClusterConfig)
           ),
           JsonSerializerRegistry.serializationSetupFor(jsonSerializerRegistry)
         )

@@ -9,7 +9,7 @@ import java.util.concurrent.CompletionStage
 
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
-import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfig
+import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfigOnly
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersistentEntityConfig
 import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersistentEntitySpec
@@ -19,7 +19,7 @@ import com.typesafe.config.Config
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
   override def additionalCommonConfig(databasePort: Int): Config =
-    cassandraConfig("ClusteredPersistentEntitySpec", databasePort)
+    cassandraConfigOnly("ClusteredPersistentEntitySpec", databasePort)
 }
 
 class CassandraClusteredPersistentEntitySpecMultiJvmNode1 extends CassandraClusteredPersistentEntitySpec
