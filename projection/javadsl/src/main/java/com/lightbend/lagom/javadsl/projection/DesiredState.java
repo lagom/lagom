@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 @ApiMayChange
 public final class DesiredState {
 
+  // TODO: use PSequence instead
   private List<Projection> projections;
 
   DesiredState(List<Projection> projections) {
