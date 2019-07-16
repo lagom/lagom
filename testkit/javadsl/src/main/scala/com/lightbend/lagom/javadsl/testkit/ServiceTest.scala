@@ -360,14 +360,12 @@ object ServiceTest {
 
         initialBuilder
           .configure(cassandraConfig(testName, cassandraPort))
-          .configure(ClusterConfig)
           .disableModules(JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
 
       } else if (setup.jdbc) {
 
         initialBuilder
           .configure(JdbcConfig)
-          .configure(ClusterConfig)
           .disableModules(CassandraPersistenceModule, KafkaClientModule, KafkaBrokerModule)
 
       } else if (setup.cluster) {
@@ -381,7 +379,6 @@ object ServiceTest {
       } else {
 
         initialBuilder
-          .configure("akka.actor.provider", "local")
           .configure(BasicConfig)
           .disable(classOf[PersistenceModule], classOf[PubSubModule], classOf[JoinClusterModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])

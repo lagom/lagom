@@ -56,7 +56,6 @@ class PersistentEntityRefSpec
   val config: Config =
     ConfigFactory
       .parseString("akka.loglevel = INFO")
-      .withFallback(ClusterConfig)
       .withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
 
   private val system: ActorSystem = ActorSystem(
