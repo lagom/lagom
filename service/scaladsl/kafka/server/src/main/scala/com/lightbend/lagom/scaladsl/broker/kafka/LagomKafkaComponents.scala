@@ -6,7 +6,7 @@ package com.lightbend.lagom.scaladsl.broker.kafka
 
 import com.lightbend.lagom.internal.scaladsl.broker.kafka.ScaladslRegisterTopicProducers
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
-import com.lightbend.lagom.scaladsl.cluster.projections.ProjectionComponents
+import com.lightbend.lagom.scaladsl.projection.ProjectionComponents
 import com.lightbend.lagom.scaladsl.server.LagomServer
 import com.lightbend.lagom.spi.persistence.OffsetStore
 

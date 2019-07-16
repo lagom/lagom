@@ -20,7 +20,7 @@ import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.Producer
-import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry
+import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.javadsl.api.MethodTopicHolder
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
