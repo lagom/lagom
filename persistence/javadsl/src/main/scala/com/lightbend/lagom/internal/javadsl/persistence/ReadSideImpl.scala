@@ -62,65 +62,64 @@ private[lagom] class ReadSideImpl @Inject()(
       clazz: Class[_]
   ) = {
 
-    // Only run if we're configured to run on this role
-    if (config.role.forall(Cluster(system).selfRoles.contains)) {
-      // try to create one instance to fail fast (e.g. wrong constructor)
-      val dummyProcessor = try {
-        processorFactory()
-      } catch {
-        case NonFatal(e) =>
-          throw new IllegalArgumentException(
-            "Cannot create instance of " +
-              s"[${clazz.getName}]",
-            e
-          )
-      }
-
-      val readSideName           = name.asScala.fold("")(_ + "-") + dummyProcessor.readSideName()
-      val encodedReadSideName    = URLEncoder.encode(readSideName, "utf-8")
-      val tags                   = dummyProcessor.aggregateTags().asScala
-      val entityIds: Set[String] = tags.map(_.tag).toSet
-      val eventClass = tags.headOption match {
-        case Some(tag) => tag.eventType
-        case None      => throw new IllegalArgumentException(s"ReadSideProcessor ${clazz.getName} returned 0 tags")
-      }
-
-      val globalPrepareTask: ClusterStartupTask =
-        ClusterStartupTask(
-          system,
-          s"readSideGlobalPrepare-$encodedReadSideName",
-          () => processorFactory().buildHandler().globalPrepare().toScala,
-          config.globalPrepareTimeout,
-          config.role,
-          config.minBackoff,
-          config.maxBackoff,
-          config.randomBackoffFactor
+    // Capture and improve failure messages. This improvement is only required due to using runtime DI
+    val readSideProcessor = try {
+      processorFactory()
+    } catch {
+      case NonFatal(e) =>
+        throw new IllegalArgumentException(
+          "Cannot create instance of " +
+            s"[${clazz.getName}]",
+          e
         )
-
-      val streamName     = tags.head.eventType.getName
-      val projectionName = readSideName
-
-      val readSidePropsFactory = (projectionRegistryActorRef: ActorRef) =>
-        ReadSideActor.props(
-          streamName,
-          projectionName,
-          config,
-          eventClass,
-          globalPrepareTask,
-          persistentEntityRegistry.eventStream[Event],
-          processorFactory,
-          projectionRegistryActorRef
-        )
-
-      projectionRegistryImpl.registerProjectionGroup(
-        tags.head.eventType.getName, // TODO: use the name from the entity, not the tags
-        entityIds,
-        readSideName,
-        config.role,
-        readSidePropsFactory
-      )
-
     }
 
+    val readSideName           = name.asScala.fold("")(_ + "-") + readSideProcessor.readSideName()
+    val tags                   = readSideProcessor.aggregateTags().asScala
+    val entityIds: Set[String] = tags.map(_.tag).toSet
+    val eventClass = tags.headOption match {
+      case Some(tag) => tag.eventType
+      case None =>
+        throw new IllegalArgumentException(s"ReadSideProcessor ${clazz.getName} returned 0 tags")
+    }
+
+    val encodedReadSideName = URLEncoder.encode(readSideName, "utf-8")
+    val globalPrepareTask: ClusterStartupTask =
+      ClusterStartupTask(
+        system,
+        s"readSideGlobalPrepare-$encodedReadSideName",
+        () => readSideProcessor.buildHandler().globalPrepare().toScala,
+        config.globalPrepareTimeout,
+        config.role,
+        config.minBackoff,
+        config.maxBackoff,
+        config.randomBackoffFactor
+      )
+
+    // TODO: use the name from the entity, not the tags
+    val streamName     = tags.head.eventType.getName
+    val projectionName = readSideName
+
+    val readSidePropsFactory = (projectionRegistryActorRef: ActorRef) =>
+      ReadSideActor.props(
+        streamName,
+        projectionName,
+        config,
+        eventClass,
+        globalPrepareTask,
+        persistentEntityRegistry.eventStream[Event],
+        processorFactory,
+        projectionRegistryActorRef
+      )
+
+    projectionRegistryImpl.registerProjectionGroup(
+      streamName,
+      entityIds,
+      readSideName,
+      config.role,
+      readSidePropsFactory
+    )
+
   }
+
 }
