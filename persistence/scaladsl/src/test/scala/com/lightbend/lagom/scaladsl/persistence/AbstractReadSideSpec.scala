@@ -29,7 +29,7 @@ import org.scalatest.concurrent.ScalaFutures
 import akka.pattern._
 import akka.testkit.TestProbe
 import akka.util.Timeout
-import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistryActor
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
 
 import scala.concurrent.Future
 import scala.concurrent.duration._

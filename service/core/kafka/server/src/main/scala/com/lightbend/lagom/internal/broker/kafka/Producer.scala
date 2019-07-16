@@ -11,7 +11,7 @@ import akka.actor.ActorSystem
 import akka.persistence.query.Offset
 import akka.stream.Materializer
 import akka.stream.scaladsl._
-import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry
+import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import org.apache.kafka.common.serialization.Serializer
 

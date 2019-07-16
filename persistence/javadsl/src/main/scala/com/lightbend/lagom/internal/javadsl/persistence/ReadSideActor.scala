@@ -23,7 +23,7 @@ import akka.NotUsed
 import akka.actor.ActorRef
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
-import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistryActor
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.javadsl.persistence._
 
