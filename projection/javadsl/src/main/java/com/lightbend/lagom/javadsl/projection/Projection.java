@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public final class Projection {
 
   private final String name;
+  // TODO: use PSequence instead
   private final List<ProjectionWorker> workers;
 
   Projection(String name, List<ProjectionWorker> workers) {
