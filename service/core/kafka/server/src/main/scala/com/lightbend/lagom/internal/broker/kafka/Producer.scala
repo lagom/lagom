@@ -34,7 +34,7 @@ private[lagom] object Producer {
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
       offsetStore: OffsetStore,
-      projectionRegistryImpl: ProjectionRegistry
+      projectionRegistry: ProjectionRegistry
   )(implicit mat: Materializer, ec: ExecutionContext): Unit = {
 
     val streamName     = "entityName"
@@ -59,7 +59,13 @@ private[lagom] object Producer {
     val entityIds = tags.toSet
     // TODO: use the name from the entity, not a hardcoded value
 
-    projectionRegistryImpl.registerProjectionGroup(streamName, projectionName, entityIds, producerConfig.role, topicProducerProps)
+    projectionRegistry.registerProjectionGroup(
+      streamName,
+      projectionName,
+      entityIds,
+      producerConfig.role,
+      topicProducerProps
+    )
 
   }
 

@@ -20,7 +20,7 @@ private[lagom] class ReadSideImpl(
     system: ActorSystem,
     config: ReadSideConfig,
     persistentEntityRegistry: PersistentEntityRegistry,
-    projectionRegistryImpl: ProjectionRegistry,
+    projectionRegistry: ProjectionRegistry,
     name: Option[String]
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
@@ -71,7 +71,7 @@ private[lagom] class ReadSideImpl(
         projectionRegistryActorRef
       )
 
-    projectionRegistryImpl.registerProjectionGroup(streamName, readSideName, entityIds, config.role, readSideProps)
+    projectionRegistry.registerProjectionGroup(streamName, readSideName, entityIds, config.role, readSideProps)
 
   }
 }
