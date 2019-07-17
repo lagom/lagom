@@ -7,6 +7,7 @@ import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.ActorRef
 import akka.actor.Props
+import com.lightbend.lagom.internal.cluster.ClusteredMultiNodeUtils
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.projection.ProjectionRegistry.Started
 import org.scalatest.concurrent.Eventually
