@@ -358,7 +358,6 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val lagomCassandraPort               = settingKey[Int]("Port used by the local cassandra server")
     val lagomCassandraEnabled            = settingKey[Boolean]("Enable/Disable the cassandra server")
     val lagomCassandraCleanOnStart       = settingKey[Boolean]("Wipe the cassandra database before starting")
-    val lagomCassandraJvmOptions         = settingKey[Seq[String]]("JVM options used by the forked cassandra process")
     val lagomCassandraYamlFile           = settingKey[Option[File]]("YAML file used by the local cassandra server")
     val lagomCassandraMaxBootWaitingTime = settingKey[FiniteDuration]("Max waiting time to start cassandra")
 
@@ -486,8 +485,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
       lagomCassandraEnabled := true,
       lagomCassandraPort := 4000, // If you change the default make sure to also update the play/reference-overrides.conf in the persistence project
       lagomCassandraCleanOnStart := false,
-      lagomCassandraJvmOptions := Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099"),
-      lagomCassandraMaxBootWaitingTime := 20.seconds,
+      lagomCassandraMaxBootWaitingTime := 60.seconds,
       lagomCassandraYamlFile := None,
       lagomKafkaEnabled := true,
       lagomKafkaPropertiesFile := None,
@@ -571,7 +569,6 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     val port          = lagomCassandraPort.value
     val cleanOnStart  = lagomCassandraCleanOnStart.value
     val classpath     = (managedClasspath in Compile).value.files
-    val jvmOptions    = lagomCassandraJvmOptions.value
     val maxWaiting    = lagomCassandraMaxBootWaitingTime.value
     val scalaInstance = Keys.scalaInstance.value
     // NOTE: lagomCassandraYamlFile will be None when not explicitly configured by user
@@ -586,7 +583,6 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
       classpath,
       port,
       cleanOnStart,
-      jvmOptions,
       yamlConfig,
       maxWaiting
     )

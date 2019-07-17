@@ -27,6 +27,10 @@
     <!-- Turn down Kafka noise -->
     <Logger name="org.apache.kafka" level="WARN"/>
 
+    <!-- Set logging for javaniotcpproxy -->
+    <logger name="unknown" level="ERROR" />
+    <logger name="com.github.terma.javaniotcpproxy" level="ERROR" />
+
     <AsyncRoot level="INFO">
       <AppenderRef ref="STDOUT"/>
     </AsyncRoot>

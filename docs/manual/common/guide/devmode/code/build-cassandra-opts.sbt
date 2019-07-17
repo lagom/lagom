@@ -6,11 +6,6 @@ lagomCassandraPort in ThisBuild := 9042
 lagomCassandraCleanOnStart in ThisBuild := true
 //#cassandra-clean-on-start
 
-//#cassandra-jvm-options
-lagomCassandraJvmOptions in ThisBuild :=
-  Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099") // these are actually the default jvm options
-//#cassandra-jvm-options
-
 //#cassandra-yaml-config
 lagomCassandraYamlFile in ThisBuild :=
   Some((baseDirectory in ThisBuild).value / "project" / "cassandra.yaml")

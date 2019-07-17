@@ -12,9 +12,8 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
-import java.util.{ Map => JMap }
+import java.util.{Optional, Map => JMap}
 
-import com.datastax.driver.core.Cluster
 import play.dev.filewatch.LoggerProxy
 
 import scala.collection.JavaConverters._
@@ -181,7 +180,14 @@ private[lagom] object Servers {
 
   private[lagom] object CassandraServer extends ServerContainer {
     protected type Server = {
-      def start(cassandraDirectory: File, yamlConfig: File, clean: Boolean, port: Int, jvmOptions: Array[String]): Unit
+      def start(
+         cassandraDirectory: File,
+         yamlConfig: File,
+         clean: Boolean,
+         port: Optional[Int],
+         loader: ClassLoader,
+         maxWaiting: java.time.Duration
+      ): Unit
       def stop(): Unit
       def address: String
       def hostname: String
@@ -194,7 +200,6 @@ private[lagom] object Servers {
         classpath: Seq[File],
         port: Int,
         cleanOnStart: Boolean,
-        jvmOptions: Seq[String],
         yamlConfig: File,
         maxWaiting: FiniteDuration
     ): Closeable =
@@ -207,35 +212,13 @@ private[lagom] object Servers {
           val serverClass = loader.loadClass("com.lightbend.lagom.internal.cassandra.CassandraLauncher")
           server = serverClass.getDeclaredConstructor().newInstance().asInstanceOf[Server]
 
-          server.start(directory, yamlConfig, cleanOnStart, port, jvmOptions.toArray)
-
-          waitForRunningCassandra(log, server, maxWaiting)
-        }
-        new Closeable {
-          override def close(): Unit = stop(log)
-        }
-      }
-
-    private def waitForRunningCassandra(log: LoggerProxy, server: Server, maxWaiting: FiniteDuration): Unit = {
-      val contactPoint   = Seq(new java.net.InetSocketAddress(server.hostname, server.port)).asJava
-      val clusterBuilder = Cluster.builder.addContactPointsWithPorts(contactPoint)
-
-      @annotation.tailrec
-      def tryConnect(deadline: Deadline): Unit = {
-        print(".") // each attempts prints a dot (informing the user of progress)
-        try {
-          val session = clusterBuilder.build().connect()
-          println() // we don't want to print the message on the same line of the dots...
-          log.info("Cassandra server running at " + server.address)
-          session.closeAsync()
-          session.getCluster.closeAsync()
-        } catch {
-          case _: Exception =>
-            if (deadline.hasTimeLeft()) {
-              // wait a bit before trying again
-              Thread.sleep(500)
-              tryConnect(deadline)
-            } else {
+          log.info("Starting Cassandra")
+          try {
+            server.start(
+              directory, yamlConfig, cleanOnStart, Optional.of(port), loader, java.time.Duration.ofNanos(maxWaiting.toNanos)
+            )
+          } catch {
+            case t: Throwable => {
               val msg = s"""Cassandra server is not yet started.\n
                            |The value assigned to
                            |`lagomCassandraMaxBootWaitingTime`
@@ -243,12 +226,16 @@ private[lagom] object Servers {
                            |process is already running on port ${server.port}""".stripMargin
               println() // we don't want to print the message on the same line of the dots...
               log.info(msg)
+              throw t
             }
+          }
+          println() // we don't want to print the message on the same line of the dots...
+          log.info(s"Cassandra is running at ${server.address}")
+        }
+        new Closeable {
+          override def close(): Unit = stop(log)
         }
       }
-      log.info("Starting Cassandra")
-      tryConnect(maxWaiting.fromNow)
-    }
 
     protected def stop(log: LoggerProxy): Unit =
       synchronized {
