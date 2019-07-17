@@ -204,8 +204,12 @@ def databasePortSetting: List[String] = {
   )
 }
 
-def multiJvmTestSettings: Seq[Setting[_]] = {
+def multiJvm(project: Project): Project = {
 
+  project
+    .enablePlugins(MultiJvmPlugin)
+    .configs(MultiJvm)
+    .settings {
   // change multi-jvm lib folder to reflect the scala version used during crossbuild
   // must be done using a dynamic setting because we must read crossTarget.value
   def crossbuildMultiJvm = Def.settingDyn {
@@ -217,10 +221,9 @@ def multiJvmTestSettings: Seq[Setting[_]] = {
     }
   }
 
-  SbtMultiJvm.multiJvmSettings ++
     forkedTests ++
-    enabling HeaderPlugin in MultiJvm requires two sets of settings.
-    see https://github.com/sbt/sbt-header/issues/37
+        // enabling HeaderPlugin in MultiJvm requires two sets of settings.
+        // see https://github.com/sbt/sbt-header/issues/37
     headerSettings(MultiJvm) ++
     automateHeaderSettings(MultiJvm) ++
     Seq(
@@ -255,6 +258,7 @@ def multiJvmTestSettings: Seq[Setting[_]] = {
       // change multi-jvm lib folder to reflect the scala version used during crossbuild
       multiRunCopiedClassLocation in MultiJvm := crossbuildMultiJvm.value
     )
+}
 }
 
 def macroCompileSettings: Seq[Setting[_]] = Seq(
@@ -767,13 +771,12 @@ lazy val `akka-management-scaladsl` = (project in file("akka-management/scaladsl
 lazy val `cluster-core` = (project in file("cluster/core"))
   .dependsOn(`akka-management-core`)
   .settings(runtimeLibCommon: _*)
-  .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-cluster-core",
     Dependencies.`cluster-core`
   )
-  .configs(MultiJvm)
+  .configure(multiJvm)
 
 lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
   .dependsOn(`akka-management-javadsl`, `cluster-core`, jackson)
@@ -799,25 +802,23 @@ lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
   .dependsOn(`cluster-javadsl`)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
-  .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-javadsl-pubsub",
     Dependencies.`pubsub-javadsl`
   )
-  .configs(MultiJvm)
+  .configure(multiJvm)
 
 lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
   .dependsOn(`cluster-scaladsl`)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
-  .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-pubsub",
     Dependencies.`pubsub-scaladsl`
   )
-  .configs(MultiJvm)
+  .configure(multiJvm)
 
 lazy val `projection-core` = (project in file("projection/core"))
   .dependsOn(
@@ -826,14 +827,13 @@ lazy val `projection-core` = (project in file("projection/core"))
   )
   .settings(runtimeLibCommon: _*)
 //  .settings(mimaSettings(since = version160): _*) TODO: enable when 1.6.0 is out
-  .settings(multiJvmTestSettings: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-projection-core",
     Dependencies.`projection-core`
   )
-  .configs(MultiJvm)
+  .configure(multiJvm)
 
 lazy val `projection-scaladsl` = (project in file("projection/scaladsl"))
   .dependsOn(`projection-core`, `cluster-scaladsl`, logback % Test)
@@ -934,10 +934,9 @@ lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassand
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
-  .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings()
-  .configs(MultiJvm)
+  .configure(multiJvm)
 
 lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassandra/scaladsl"))
   .settings(
@@ -952,10 +951,9 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
-  .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings()
-  .configs(MultiJvm)
+  .configure(multiJvm)
 
 lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
   .dependsOn(
@@ -981,10 +979,9 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
-  .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
-  .configs(MultiJvm)
+  .configure(multiJvm)
 
 lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scaladsl"))
   .settings(
@@ -998,10 +995,9 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
   )
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version150): _*)
-  .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
-  .configs(MultiJvm)
+  .configure(multiJvm)
 
 lazy val `persistence-jpa-javadsl` = (project in file("persistence-jpa/javadsl"))
   .dependsOn(`persistence-jdbc-javadsl` % "compile;test->test")
