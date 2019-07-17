@@ -1084,7 +1084,8 @@ lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server
     `kafka-broker`,
     `kafka-client-javadsl`,
     `server-javadsl`,
-    logback % Test,
+    logback             % Test,
+    `server-containers` % Test,
   )
 
 lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/server"))
@@ -1103,7 +1104,8 @@ lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/serv
     `kafka-broker`,
     `kafka-client-scaladsl`,
     `server-scaladsl`,
-    logback % Test,
+    logback             % Test,
+    `server-containers` % Test,
   )
 
 lazy val logback = (project in file("logback"))
@@ -1140,6 +1142,7 @@ lazy val devEnvironmentProjects = Seq[ProjectReference](
   `service-registry-client-javadsl`,
   `maven-java-archetype`,
   `maven-dependencies`,
+  `server-containers`,
   `kafka-server`
 )
 
@@ -1163,6 +1166,17 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   .settings(overridesScalaParserCombinators: _*)
   .dependsOn(`dev-mode-ssl-support`)
 
+lazy val `server-containers` = (project in file("dev") / "server-containers")
+  .enablePlugins(RuntimeLibPlugins)
+  .settings(
+    common,
+    runtimeScalaSettings,
+    name := "lagom-server-containers",
+    Dependencies.`server-containers`,
+    publishMavenStyle := true,
+    sonatypeSettings,
+  )
+
 lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
   .disablePlugins(BintrayPlugin)
   .enablePlugins(AutomateHeaderPlugin && Sonatype)
@@ -1179,6 +1193,7 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     }.taskValue,
     Dependencies.`build-tool-support`
   )
+  .dependsOn(`server-containers`)
 
 // This is almost the same as `build-tool-support`, but targeting sbt
 // while `build-tool-support` targets Maven and possibly other build
@@ -1202,6 +1217,7 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
     Dependencies.`build-tool-support`,
     target := target.value / "lagom-sbt-build-tool-support"
   )
+  .dependsOn(`server-containers`)
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(common: _*)
@@ -1270,6 +1286,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
       val () = (publishLocal in `dev-mode-ssl-support`).value
       val () = (publishLocal in `kafka-server`).value
       val () = (publishLocal in `reloadable-server`).value
+      val () = (publishLocal in `server-containers`).value
       val () = (publishLocal in `sbt-build-tool-support`).value
       val () = publishLocal.value
 
@@ -1612,7 +1629,7 @@ def generateKafkaServerClasspathForTests(packageName: String): Seq[Setting[_]] =
   BuildInfoPlugin.buildInfoScopedSettings(Test),
   Test / buildInfoPackage := packageName,
   Test / buildInfoObject := "TestBuildInfo",
-  Test / buildInfoKeys := Seq[BuildInfoKey](fullClasspath in (`kafka-server`, Compile)),
+  Test / buildInfoKeys := Seq[BuildInfoKey](fullClasspath in (`kafka-server`, Compile), target),
 )
 
 def excludeLog4jFromKafkaServer: Seq[Setting[_]] = Seq(
