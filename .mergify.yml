@@ -10,7 +10,6 @@ pull_request_rules:
     actions:
       merge:
         method: merge
-        strict: smart
 
   - name: backport patches to 1.5.x branch
     conditions:
