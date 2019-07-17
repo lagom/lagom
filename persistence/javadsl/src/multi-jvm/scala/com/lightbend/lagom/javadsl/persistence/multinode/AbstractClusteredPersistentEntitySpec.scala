@@ -2,29 +2,34 @@
  * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.scaladsl.persistence.multinode
+package com.lightbend.lagom.javadsl.persistence.multinode
 
-import akka.actor.setup.ActorSystemSetup
+import java.util.concurrent.CompletionStage
+
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.actor.Address
-import akka.actor.BootstrapSetup
 import akka.cluster.Cluster
 import akka.cluster.MemberStatus
-import akka.pattern.pipe
 import akka.remote.testconductor.RoleName
 import akka.remote.testkit.MultiNodeConfig
 import akka.remote.testkit.MultiNodeSpec
 import akka.testkit.ImplicitSender
-import com.lightbend.lagom.scaladsl.persistence._
-import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
+import com.lightbend.lagom.javadsl.persistence._
+import com.lightbend.lagom.javadsl.persistence.testkit.pipe
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.Application
+import play.api.Configuration
 import play.api.Environment
 
-import scala.concurrent.duration._
+import scala.collection.JavaConverters._
+import scala.compat.java8.FutureConverters._
 import scala.concurrent.Await
-import scala.concurrent.Future
+import scala.concurrent.duration._
+import com.lightbend.lagom.internal.cluster.STMultiNodeSpec
 
 abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
 
@@ -32,7 +37,7 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
   val node2 = role("node2")
   val node3 = role("node3")
 
-  val databasePort = System.getProperty("scaladsl.database.port").toInt
+  val databasePort = System.getProperty("javadsl.database.port").toInt
   val environment  = Environment.simple()
 
   commonConfig(
@@ -55,6 +60,7 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       ## also triggers timeouts in Travis it's possible there's something worth reviewing on this test.
       lagom.persistence.ask-timeout = 13s
       akka.test.single-expect-default = 15s
+
 
       # Don't terminate the actor system when doing a coordinated shutdown
       # See http://doc.akka.io/docs/akka/2.5.0/project/migration-guide-2.4.x-2.5.x.html#Coordinated_Shutdown
@@ -89,38 +95,14 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
   nodeConfig(node3) {
     ConfigFactory.parseString("""akka.cluster.roles = ["read-side"]""")
   }
-
-}
-
-object AbstractClusteredPersistentEntitySpec {
-  // Copied from MultiNodeSpec
-  private def getCallerName(clazz: Class[_]): String = {
-    val s = Thread.currentThread.getStackTrace.map(_.getClassName).drop(1).dropWhile(_.matches(".*MultiNodeSpec.?$"))
-    val reduced = s.lastIndexWhere(_ == clazz.getName) match {
-      case -1 => s
-      case z  => s.drop(z + 1)
-    }
-    reduced.head.replaceFirst(""".*\.""", "").replaceAll("[^a-zA-Z_0-9]", "_")
-  }
-
-  def createActorSystem(jsonSerializerRegistry: JsonSerializerRegistry): (Config) => ActorSystem = { config =>
-    val setup = ActorSystemSetup(
-      BootstrapSetup(ConfigFactory.load(config)),
-      JsonSerializerRegistry.serializationSetupFor(jsonSerializerRegistry)
-    )
-    ActorSystem(getCallerName(classOf[MultiNodeSpec]), setup)
-  }
-
 }
 
 abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPersistentEntityConfig)
-    extends MultiNodeSpec(config, AbstractClusteredPersistentEntitySpec.createActorSystem(TestEntitySerializerRegistry))
+    extends MultiNodeSpec(config)
     with STMultiNodeSpec
     with ImplicitSender {
 
   import config._
-  // implicit EC needed for pipeTo
-  import system.dispatcher
 
   override def initialParticipants = roles.size
 
@@ -136,9 +118,8 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     else ref.path.address
 
   protected override def atStartup() {
-    // Initialize components
-    registry.register(new TestEntity(system))
-    components.readSide.register(readSideProcessor())
+    // Initialize read side
+    readSide
 
     roles.foreach(n => join(n, node1))
     within(15.seconds) {
@@ -151,13 +132,35 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     enterBarrier("startup")
   }
 
-  def components: PersistenceComponents
+  protected override def afterTermination(): Unit = {
+    injector.instanceOf[Application].stop()
+  }
 
-  def registry: PersistentEntityRegistry = components.persistentEntityRegistry
+  lazy val injector = {
+    val configuration = Configuration(system.settings.config)
+    new GuiceApplicationBuilder()
+      .loadConfig(configuration)
+      .overrides(bind[ActorSystem].toInstance(system))
+      .build()
+      .injector
+  }
 
-  protected def readSideProcessor: () => ReadSideProcessor[TestEntity.Evt]
+  lazy val registry: PersistentEntityRegistry = {
+    val reg = injector.instanceOf[PersistentEntityRegistry]
+    reg.register(classOf[TestEntity])
+    reg
+  }
 
-  protected def getAppendCount(id: String): Future[Long]
+  protected def readSideProcessor: Class[_ <: ReadSideProcessor[TestEntity.Evt]]
+
+  // lazy because we don't want to create it until after database is started
+  lazy val readSide: ReadSide = {
+    val rs = injector.instanceOf[ReadSide]
+    rs.register(readSideProcessor)
+    rs
+  }
+
+  protected def getAppendCount(id: String): CompletionStage[java.lang.Long]
 
   /**
    * uses overridden {{getAppendCount}} to assert a given entity {{id}} emitted the {{expected}} number of events. The
@@ -167,7 +170,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     runOn(node1) {
       within(20.seconds) {
         awaitAssert {
-          val count = Await.result(getAppendCount(id), 5.seconds)
+          val count = Await.result(getAppendCount(id).toScala, 5.seconds)
           count should ===(expected)
         }
       }
@@ -181,35 +184,35 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       // beginning of the test to ensure it's run.
       enterBarrier("before-1")
 
-      val ref1 = registry.refFor[TestEntity]("1")
-      val ref2 = registry.refFor[TestEntity]("2")
+      val ref1 = registry.refFor(classOf[TestEntity], "1")
+      val ref2 = registry.refFor(classOf[TestEntity], "2")
 
       // STEP 1: send some commands from all nodes of the test to ref1 and ref2
       // note that this is done on node1, node2 and node 3 !!
-      val r1 = ref1.ask(TestEntity.Add("a"))
+      val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
       r1.pipeTo(testActor)
-      expectMsg(TestEntity.Appended("A"))
+      expectMsg(new TestEntity.Appended("1", "A"))
       enterBarrier("appended-A")
 
-      val r2 = ref2.ask(TestEntity.Add("b"))
+      val r2: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("b"))
       r2.pipeTo(testActor)
-      expectMsg(TestEntity.Appended("B"))
+      expectMsg(new TestEntity.Appended("2", "B"))
       enterBarrier("appended-B")
 
-      val r3: Future[TestEntity.Evt] = ref2.ask(TestEntity.Add("c"))
+      val r3: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("c"))
       r3.pipeTo(testActor)
-      expectMsg(TestEntity.Appended("C"))
+      expectMsg(new TestEntity.Appended("2", "C"))
       enterBarrier("appended-C")
 
       // STEP 2: assert both ref's stored all the commands in their respective state.
-      val r4: Future[TestEntity.State] = ref1.ask(TestEntity.Get)
+      val r4: CompletionStage[TestEntity.State] = ref1.ask(TestEntity.Get.instance)
       r4.pipeTo(testActor)
       // There are three events of each because the Commands above are executed on all 3 nodes of the multi-jvm test
-      expectMsgType[TestEntity.State].elements should ===(List("A", "A", "A"))
+      expectMsgType[TestEntity.State].getElements.asScala.toList should ===(List("A", "A", "A"))
 
-      val r5 = ref2.ask(TestEntity.Get)
+      val r5: CompletionStage[TestEntity.State] = ref2.ask(TestEntity.Get.instance)
       r5.pipeTo(testActor)
-      expectMsgType[TestEntity.State].elements should ===(List("B", "B", "B", "C", "C", "C"))
+      expectMsgType[TestEntity.State].getElements.asScala.toList should ===(List("B", "B", "B", "C", "C", "C"))
 
       // STEP 3: assert the number of events consumed in the read-side processors equals the number of expected events.
       // NOTE: in nodes node2 and node3 {{expectAppendCount}} is a noop
@@ -226,10 +229,9 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       // and lagom.persistence.run-entities-on-role = backend
       // i.e. no entities on node3
 
-      val entities = for (n <- 10 to 29) yield registry.refFor[TestEntity](n.toString)
+      val entities = for (n <- 10 to 29) yield registry.refFor(classOf[TestEntity], n.toString)
       val addresses = entities.map { ent =>
-        val r                 = ent.ask(TestEntity.GetAddress)
-        val h: Future[String] = r.map(_.hostPort) // compile check that the reply type is inferred correctly
+        val r: CompletionStage[Address] = ent.ask(TestEntity.GetAddress.instance)
         r.pipeTo(testActor)
         expectMsgType[Address]
       }.toSet
@@ -246,19 +248,19 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
       runOn(node1) {
         within(35.seconds) {
-          val ref1                       = registry.refFor[TestEntity]("1")
-          val r1: Future[TestEntity.Evt] = ref1.ask(TestEntity.Add("a"))
+          val ref1                                = registry.refFor(classOf[TestEntity], "1")
+          val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
           r1.pipeTo(testActor)
-          expectMsg(TestEntity.Appended("A"))
+          expectMsg(new TestEntity.Appended("1", "A"))
 
-          val ref2                       = registry.refFor[TestEntity]("2")
-          val r2: Future[TestEntity.Evt] = ref2.ask(TestEntity.Add("b"))
+          val ref2                                = registry.refFor(classOf[TestEntity], "2")
+          val r2: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("b"))
           r2.pipeTo(testActor)
-          expectMsg(TestEntity.Appended("B"))
+          expectMsg(new TestEntity.Appended("2", "B"))
 
-          val r3: Future[TestEntity.Evt] = ref2.ask(TestEntity.Add("c"))
+          val r3: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("c"))
           r3.pipeTo(testActor)
-          expectMsg(TestEntity.Appended("C"))
+          expectMsg(new TestEntity.Appended("2", "C"))
         }
       }
 
