@@ -41,7 +41,7 @@ private[lagom] class ReadSideImpl @Inject()(
     config: ReadSideConfig,
     injector: Injector,
     persistentEntityRegistry: PersistentEntityRegistry,
-    projectionRegistryImpl: ProjectionRegistry
+    projectionRegistry: ProjectionRegistry
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
 
@@ -112,7 +112,13 @@ private[lagom] class ReadSideImpl @Inject()(
           projectionRegistryActorRef
         )
 
-      projectionRegistryImpl.registerProjectionGroup(tags.head.eventType.getName, readSideName, entityIds, config.role, readSidePropsFactory)
+      projectionRegistry.registerProjectionGroup(
+        tags.head.eventType.getName,
+        readSideName,
+        entityIds,
+        config.role,
+        readSidePropsFactory
+      )
 
     }
 

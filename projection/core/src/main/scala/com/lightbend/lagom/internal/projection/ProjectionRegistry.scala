@@ -27,8 +27,10 @@ import scala.util.control.NoStackTrace
 object ProjectionRegistry {
 
   sealed trait WorkerStatus
-  case object Stopped extends WorkerStatus
-  case object Started extends WorkerStatus
+  sealed trait Stopped extends WorkerStatus
+  case object Stopped  extends Stopped
+  sealed trait Started extends WorkerStatus
+  case object Started  extends Started
 
   sealed trait StateRequest
   case class Stop(workerName: String)  extends StateRequest
