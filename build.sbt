@@ -257,7 +257,7 @@ def multiJvm(project: Project): Project = {
           },
           // change multi-jvm lib folder to reflect the scala version used during crossbuild
           multiRunCopiedClassLocation in MultiJvm := crossbuildMultiJvm.value
-      )
+        )
     }
 }
 
@@ -829,7 +829,7 @@ lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
 lazy val `projection-core` = (project in file("projection/core"))
   .dependsOn(
     `cluster-core` % "compile;multi-jvm->multi-jvm",
-    logback % Test
+    logback        % Test
   )
   .settings(runtimeLibCommon: _*)
 //  .settings(mimaSettings(since = version160): _*) TODO: enable when 1.6.0 is out
