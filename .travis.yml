@@ -2,7 +2,7 @@ language: scala
 
 # Only build non-pushes (so PRs, API requests & cron jobs) OR tags OR forks
 # https://docs.travis-ci.com/user/conditional-builds-stages-jobs/
-if: type != push OR tag IS present OR repo != lagom/lagom
+if: tag IS present OR type != push OR (branch IN (master, 1.5.x, 1.4.x) AND type = push)
 
 addons:
   apt:
