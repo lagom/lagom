@@ -943,12 +943,15 @@ object Dependencies {
     akkaProtobuf
   )
 
+  val `server-containers` = libraryDependencies ++= Seq(
+    // This is used in the code to check if the embedded cassandra server is started
+    cassandraDriverCore,
+  )
+
   val `build-tool-support` = libraryDependencies ++= Seq(
     playExceptions,
     playBuildLink,
     playFileWatch,
-    // This is used in the code to check if the embedded cassandra server is started
-    cassandraDriverCore,
     // explicitly depend on particular versions of guava
     guava,
     scalaTest % Test
