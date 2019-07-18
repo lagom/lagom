@@ -40,15 +40,16 @@ object Dependencies {
     val JacksonDatatype      = Jackson
     val JacksonDatabind      = "2.9.9.1"
     val Guava                = "28.0-jre"
-    val Maven                = "3.6.0"
+    val Maven                = "3.6.1"
     val Netty                = "4.1.38.Final"
     val NettyReactiveStreams = "2.0.3"
     val Kafka                = "2.1.1"
     val AlpakkaKafka         = "1.0.4"
-    val Curator              = "2.12.0"
+    val Curator              = "2.13.0"
     val Immutables           = "2.7.5"
-    val HibernateCore        = "5.4.2.Final"
+    val HibernateCore        = "5.4.3.Final"
     val PCollections         = "2.2.0"
+    val CassandraDriver      = "3.7.2"
 
     val ScalaJava8Compat = "0.9.0"
     val ScalaXml         = "1.2.0"
@@ -56,9 +57,9 @@ object Dependencies {
     val JUnit            = "4.12"
     val JUnitInterface   = "0.11"
 
-    val Slf4j   = "1.7.25"
+    val Slf4j   = "1.7.26"
     val Logback = "1.2.3"
-    val Log4j   = "2.11.2"
+    val Log4j   = "2.12.0"
 
     val jetty = "9.4.16.v20190411"
 
@@ -85,14 +86,14 @@ object Dependencies {
   private val scalaJava8Compat       = "org.scala-lang.modules" %% "scala-java8-compat" % Versions.ScalaJava8Compat
   private val scalaCollectionCompat  = "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1"
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
-  private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
+  private val javassist              = "org.javassist" % "javassist" % "3.25.0-GA"
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.9.15"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.3.4"
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.0"
-  private val h2                     = "com.h2database" % "h2" % "1.4.192"
+  private val h2                     = "com.h2database" % "h2" % "1.4.199"
   private val cassandraDriverCore =
-    ("com.datastax.cassandra" % "cassandra-driver-core" % "3.7.2").excludeAll(excludeSlf4j: _*)
+    ("com.datastax.cassandra" % "cassandra-driver-core" % Versions.CassandraDriver).excludeAll(excludeSlf4j: _*)
 
   private val akkaActor            = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
   private val akkaRemote           = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
@@ -859,6 +860,7 @@ object Dependencies {
   val `persistence-jpa-javadsl` = libraryDependencies ++= Seq(
     "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.2.Final" % Provided,
     "org.hibernate"                   % "hibernate-core" % Versions.HibernateCore % Test,
+    byteBuddy                         % Test,
     h2                                % Test,
     javassist                         % Test
   )
@@ -972,7 +974,7 @@ object Dependencies {
 
   val `sbt-plugin` = libraryDependencies ++= Seq(
     // And this is needed to silence the datastax driver logging
-    "org.slf4j" % "slf4j-nop" % "1.7.14",
+    "org.slf4j" % "slf4j-nop" % Versions.Slf4j,
     scalaTest   % Test
   )
 
