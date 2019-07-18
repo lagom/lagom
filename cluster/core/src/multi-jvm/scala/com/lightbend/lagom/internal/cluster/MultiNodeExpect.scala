@@ -16,6 +16,7 @@ import akka.cluster.ddata.Replicator.Get
 import akka.cluster.ddata.Replicator.GetSuccess
 import akka.cluster.ddata.Replicator.ReadLocal
 import akka.cluster.ddata.Replicator.Update
+import akka.cluster.ddata.Replicator.UpdateSuccess
 import akka.cluster.ddata.Replicator.WriteAll
 import akka.cluster.ddata.Replicator.WriteConsistency
 import akka.cluster.ddata.SelfUniqueAddress
@@ -47,7 +48,7 @@ class MultiNodeExpect(probe: TestProbe)(implicit system: ActorSystem) {
    */
   def expectMsg[T](t: T, expectationKey: String, max: FiniteDuration): Future[Done] = {
 
-    val eventualT= () => Future(probe.expectMsg(max, t))
+    val eventualT = () => Future(probe.expectMsg(max, t))
     doExpect(eventualT)(expectationKey, max)
 
   }
@@ -62,9 +63,9 @@ class MultiNodeExpect(probe: TestProbe)(implicit system: ActorSystem) {
   }
 
   private def doExpect[T](eventualT: () => Future[T])(expectationKey: String, max: FiniteDuration): Future[Done] = {
-    val DataKey: FlagKey          = FlagKey(expectationKey)
-    val wa: WriteConsistency      = WriteAll(max)
-    implicit val timeout: Timeout = Timeout(max)
+    val DataKey: FlagKey           = FlagKey(expectationKey)
+    val writeAll: WriteConsistency = WriteAll(max)
+    implicit val timeout: Timeout  = Timeout(max)
 
     val retryDelay = 3.second
 
@@ -73,9 +74,9 @@ class MultiNodeExpect(probe: TestProbe)(implicit system: ActorSystem) {
     // If the local expectation wins, it must notify others.
     val fLocalExpect: Future[Done] = eventualT()
       .map { _ =>
-        replicator ! Update(DataKey, Flag.empty, wa)(
+        (replicator ? Update(DataKey, Flag.empty, writeAll)(
           _.switchOn
-        )
+        )).mapTo[UpdateSuccess[Flag]]
       }
       .map(_ => Done)
 

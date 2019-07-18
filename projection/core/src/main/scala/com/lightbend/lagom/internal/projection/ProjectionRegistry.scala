@@ -12,45 +12,24 @@ import akka.annotation.ApiMayChange
 import akka.pattern.ask
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.util.Timeout
-import com.lightbend.lagom.internal.projection.ProjectionRegistry._
 import com.lightbend.lagom.internal.cluster.ClusterDistribution
 import com.lightbend.lagom.internal.cluster.ClusterDistributionSettings
-import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.DesiredState
-import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.GetDesiredState
+import com.lightbend.lagom.internal.projection.ProjectionRegistry.StateRequestCommand
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.GetState
+import com.lightbend.lagom.projection.ProjectionNotFound
+import com.lightbend.lagom.projection.Started
+import com.lightbend.lagom.projection.State
+import com.lightbend.lagom.projection.Status
+import com.lightbend.lagom.projection.Stopped
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.control.NoStackTrace
 
 @ApiMayChange
 object ProjectionRegistry {
 
-  sealed trait WorkerStatus
-  sealed trait Stopped extends WorkerStatus
-  case object Stopped  extends Stopped
-  sealed trait Started extends WorkerStatus
-  case object Started  extends Started
-
-  sealed trait StateRequest
-  case class Stop(workerName: String)  extends StateRequest
-  case class Start(workerName: String) extends StateRequest
-
-  @ApiMayChange
-  case class ProjectionWorker(name: String, status: WorkerStatus)
-
-  @ApiMayChange
-  case class Projection(name: String, workers: Seq[ProjectionWorker])
-
-  @ApiMayChange
-  case class ProjectionNotFound(projectionName: String)
-      extends RuntimeException(s"Projection $projectionName is not registered")
-      with NoStackTrace
-  @ApiMayChange
-  case class ProjectionWorkerNotFound(workerName: String)
-      extends RuntimeException(s"Projection $workerName is not registered")
-      with NoStackTrace
-
+  case class StateRequestCommand(workerName: String, requested: Status)
 }
 
 @ApiMayChange
@@ -90,30 +69,32 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
   implicit val exCtx: ExecutionContext = system.dispatcher
   implicit val timeout: Timeout        = Timeout(1.seconds)
 
-  private[lagom] def getStatus(): Future[DesiredState] = {
-    (projectionRegistryRef ? GetDesiredState).mapTo[DesiredState]
+  private[lagom] def getStatus(): Future[State] = {
+    (projectionRegistryRef ? GetState).mapTo[State]
   }
 
   def startWorker(projectionWorkerName: String): Future[Done] =
-    (projectionRegistryRef ? Start(projectionWorkerName))
+    (projectionRegistryRef ? StateRequestCommand(projectionWorkerName, Started))
       .mapTo[Done]
 
   def stopWorker(projectionWorkerName: String): Future[Done] =
-    (projectionRegistryRef ? Stop(projectionWorkerName))
+    (projectionRegistryRef ? StateRequestCommand(projectionWorkerName, Stopped))
       .mapTo[Done]
 
   // TODO: untested
+  // The way to test this is to write an expectation in MultinodeExpect which
+  // groups and shares observed messages accross the cluster
   def stopAllWorkers(projectionName: String): Future[Done] = bulk(projectionName, stopWorker)
 
   // TODO: untested
   def startAllWorkers(projectionName: String): Future[Done] = bulk(projectionName, startWorker)
 
   private def bulk(projectionName: String, op: String => Future[Done]): Future[Done] = {
-    (projectionRegistryRef ? GetDesiredState)
-      .mapTo[DesiredState]
-      .map { desiredState =>
-        desiredState.findProjection(projectionName) match {
-          case None             => throw new ProjectionNotFound(projectionName)
+    (projectionRegistryRef ? GetState)
+      .mapTo[State]
+      .map { state =>
+        state.findProjection(projectionName) match {
+          case None             => throw ProjectionNotFound(projectionName)
           case Some(projection) => projection
         }
       }

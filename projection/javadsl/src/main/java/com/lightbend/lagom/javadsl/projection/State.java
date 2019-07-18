@@ -5,7 +5,6 @@
 package com.lightbend.lagom.javadsl.projection;
 
 import akka.annotation.ApiMayChange;
-import com.lightbend.lagom.internal.projection.ProjectionRegistryActor;
 import scala.collection.JavaConverters;
 
 import java.util.List;
@@ -15,18 +14,18 @@ import java.util.stream.Collectors;
 // TODO: generate using Immutables or Lombok instead.
 // https://github.com/lagom/lagom/issues/2053
 @ApiMayChange
-public final class DesiredState {
+public final class State {
 
   // TODO: use PSequence instead
   private List<Projection> projections;
 
-  DesiredState(List<Projection> projections) {
+  State(List<Projection> projections) {
     this.projections = projections;
   }
 
-  public static DesiredState asJava(ProjectionRegistryActor.DesiredState desiredState) {
-    return new DesiredState(
-        JavaConverters.seqAsJavaList(desiredState.projections()).stream()
+  public static State asJava(com.lightbend.lagom.projection.State state) {
+    return new State(
+        JavaConverters.seqAsJavaList(state.projections()).stream()
             .map(Projection::asJava)
             .collect(Collectors.toList()));
   }
@@ -39,7 +38,7 @@ public final class DesiredState {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    DesiredState that = (DesiredState) o;
+    State that = (State) o;
     return Objects.equals(projections, that.projections);
   }
 

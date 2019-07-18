@@ -5,7 +5,6 @@
 package com.lightbend.lagom.javadsl.projection;
 
 import akka.annotation.ApiMayChange;
-import com.lightbend.lagom.internal.projection.ProjectionRegistry;
 import scala.collection.JavaConverters;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public final class Projection {
     this.workers = workers;
   }
 
-  static Projection asJava(ProjectionRegistry.Projection projection) {
+  static Projection asJava(com.lightbend.lagom.projection.Projection projection) {
     return new Projection(
         projection.name(),
         JavaConverters.seqAsJavaList(projection.workers()).stream()

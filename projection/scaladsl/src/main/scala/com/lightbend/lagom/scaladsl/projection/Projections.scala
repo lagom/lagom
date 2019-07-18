@@ -5,8 +5,8 @@
 package com.lightbend.lagom.scaladsl.projection
 
 import akka.annotation.ApiMayChange
-import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.DesiredState
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
+import com.lightbend.lagom.projection.State
 
 import scala.concurrent.Future
 
@@ -17,7 +17,7 @@ import scala.concurrent.Future
 @ApiMayChange
 class Projections(private val registry: ProjectionRegistry) {
 
-  def getStatus: Future[DesiredState] =
+  def getStatus: Future[State] =
     registry.getStatus()
 
   def stopAllWorkers(projectionName: String) =
