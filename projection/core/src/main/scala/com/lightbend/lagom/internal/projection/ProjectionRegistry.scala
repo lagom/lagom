@@ -94,10 +94,15 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
     (projectionRegistryRef ? GetDesiredState).mapTo[DesiredState]
   }
 
+  def startWorker(projectionWorkerName: String): Future[Done] =
+    (projectionRegistryRef ? Start(projectionWorkerName))
+      .mapTo[Done]
+
   def stopWorker(projectionWorkerName: String): Future[Done] =
     (projectionRegistryRef ? Stop(projectionWorkerName))
       .mapTo[Done]
 
+  // TODO: untested
   def stopAllWorkers(projectionName: String): Future[Done] =
     (projectionRegistryRef ? GetDesiredState)
       .mapTo[DesiredState]
