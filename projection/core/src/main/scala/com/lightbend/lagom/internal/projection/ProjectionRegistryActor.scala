@@ -22,12 +22,17 @@ import akka.cluster.ddata.Replicator.WriteConsistency
 import akka.cluster.ddata.Replicator.WriteMajority
 import akka.cluster.ddata.SelfUniqueAddress
 import com.lightbend.lagom.internal.projection.ProjectionRegistry._
+import com.lightbend.lagom.projection.Started
+import com.lightbend.lagom.projection.State
+import com.lightbend.lagom.projection.Status
+import com.lightbend.lagom.projection.Stopped
 
 import scala.concurrent.duration._
 
 @ApiMayChange
 object ProjectionRegistryActor {
   def props = Props(new ProjectionRegistryActor)
+
   case class RegisterProjection(streamName: String, projectionName: String, workerName: String)
 
   // TODO: rename to WorkerCoordinates
@@ -39,54 +44,8 @@ object ProjectionRegistryActor {
   // status of the workers (a particular order to pause/resume may be in-flight)
   // and this may may not be the latest desired state as it may have been changed
   // in other nodes and the replication may be in-flight.
-  case object GetDesiredState
+  case object GetState
 
-  /**
-   *{
-   *projections: [
-   *{
-   *name: "shopping-cart-view",
-   *workers: [
-   *{ name: "shopping-cart-view-1" , state : "running" },
-   *{ name: "shopping-cart-view-2" , state : "running" },
-   *{ name: "shopping-cart-view-3" , state : "running" }
-   *]
-   *},
-   *{
-   *name: "shopping-cart-kafka",
-   *workers: [
-   *{ name: "shopping-cart-kafka-singleton" , state : "running" }
-   *]
-   *}
-   *]
-   *}
-   */
-  @ApiMayChange
-  case class DesiredState(projections: Seq[Projection]) {
-    def findProjection(projectionName: String): Option[Projection] =
-      projections.find(_.name == projectionName)
-
-    def findWorker(workerName: String): Option[ProjectionWorker] =
-      projections.flatMap(_.workers).find(_.name == workerName)
-  }
-
-  object DesiredState {
-    private[lagom] def fromReplicatedData(replicatedData: Map[WorkerMetadata, WorkerStatus]): DesiredState = {
-
-      val groupedByProjectionName: Map[String, Seq[(String, (String, WorkerStatus))]] =
-        replicatedData.toSeq.map { case (pm, ws) => (pm.projectionName, (pm.workerName, ws)) }.groupBy(_._1)
-      val projections: Seq[Projection] =
-        groupedByProjectionName
-          .mapValues {
-            _.map(_._2).map { case (name, ws) => ProjectionWorker(name, ws) }
-          }
-          .toSeq
-          .map { Projection.tupled }
-
-      DesiredState(projections)
-    }
-
-  }
 }
 
 class ProjectionRegistryActor extends Actor with ActorLogging {
@@ -97,18 +56,26 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
   val replicator: ActorRef             = DistributedData(context.system).replicator
   implicit val node: SelfUniqueAddress = DistributedData(context.system).selfUniqueAddress
-
-  // (a) Replicator contains data of all workers
-  private val DataKey: LWWMapKey[WorkerMetadata, WorkerStatus] =
-    LWWMapKey[WorkerMetadata, WorkerStatus]("projection-registry")
-  // TODO: improvement, use a DataKey per projection so replicated datasets are smaller (https://doc.akka.io/docs/akka/current/distributed-data.html#maps)
-  replicator ! Subscribe(DataKey, self)
+  // TODO: make timeout configurable (5.second is too aggressive in big clusters)
   val writeMajority: WriteConsistency  = WriteMajority(timeout = 5.seconds)
   val readConsistency: ReadConsistency = ReadLocal
 
+  // (a) Replicator contains data of all workers
+  private val RequestedStatusDataKey: LWWMapKey[WorkerName, Status] =
+    LWWMapKey[WorkerName, Status]("projection-registry-desired-status")
+  private val ObservedStatusDataKey: LWWMapKey[WorkerName, Status] =
+    LWWMapKey[WorkerName, Status]("projection-registry-observed-status")
+  private val NameIndexDataKey: LWWMapKey[WorkerName, WorkerMetadata] =
+    LWWMapKey[WorkerName, WorkerMetadata]("projection-registry-name-index")
+  replicator ! Subscribe(RequestedStatusDataKey, self)
+  replicator ! Subscribe(ObservedStatusDataKey, self)
+  replicator ! Subscribe(NameIndexDataKey, self)
+
   // (b) Keep a local copy to simplify the implementation of some ops
-  var localCopy: Map[WorkerMetadata, WorkerStatus] = Map.empty[WorkerMetadata, WorkerStatus]
-  def nameIndex: Map[WorkerName, WorkerMetadata]   = localCopy.keySet.map(wm => wm.workerName -> wm).toMap
+  var requestedStatusLocalCopy: Map[WorkerName, Status] = Map.empty[WorkerName, Status]
+  var observedStatusLocalCopy: Map[WorkerName, Status]  = Map.empty[WorkerName, Status]
+
+  var nameIndexLocalCopy: Map[WorkerName, WorkerMetadata] = Map.empty[WorkerName, WorkerMetadata]
 
   // (c) Actor indices contain only data of workers running locally
   // TODO: trust WorkerName is unique and use WorkerName as key
@@ -120,61 +87,84 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
     case RegisterProjection(streamName, projectionName, workerName) =>
       val metadata = WorkerMetadata(streamName, projectionName, workerName)
-      // when registering a projection worker, we default to state==enabled
-      updateLWWMap(metadata, Started)
+      // when registering a projection worker, we default to state==started
+      updateLWWMapForRequests(workerName, Started)
+      updateLWWMapForObserved(workerName, Started)
+      updateLWWMapForNameIndex(workerName, metadata)
       // keep track
       actorIndex = actorIndex.updated(workerName, sender)
       reversedActorIndex = reversedActorIndex.updated(sender, workerName)
       // watch
       context.watch(sender)
 
-    case GetDesiredState =>
-      val state = DesiredState.fromReplicatedData(localCopy)
-      sender ! state
-    // improvement: use Replicator.FlushChanges before Get to get latest version
+    case GetState =>
+      sender ! State.fromReplicatedData(nameIndexLocalCopy, requestedStatusLocalCopy, observedStatusLocalCopy)
 
-    case Stop(workerName) =>
-      requestStop(workerName)
-    case Start(workerName) =>
-      requestStart(workerName)
+    case command: StateRequestCommand =>
+      // locate the target actor and send the request
+      request(command)
 
-    case changed @ Changed(DataKey) =>
-      val remotelyChanged                            = changed.get(DataKey).entries
-      val diffs: Set[(WorkerMetadata, WorkerStatus)] = remotelyChanged.toSet.diff(localCopy.toSet)
+    case observedStatus: Status =>
+      reversedActorIndex.get(sender()).foreach(workerName => updateLWWMapForObserved(workerName, observedStatus))
+
+    // TODO: handle UpdateSuccess/UpdateFailure !!
+    case changed @ Changed(RequestedStatusDataKey) => {
+
+      val remotelyChanged                  = changed.get(RequestedStatusDataKey).entries
+      val diffs: Set[(WorkerName, Status)] = remotelyChanged.toSet.diff(requestedStatusLocalCopy.toSet)
 
       diffs
         .foreach {
-          case (wm, requestedStatus) =>
-            actorIndex.get(wm.workerName).foreach { workerRef =>
+          case (workerName, requestedStatus) =>
+            actorIndex.get(workerName).foreach { workerRef =>
               workerRef ! requestedStatus
             }
         }
 
-      localCopy = remotelyChanged
+      requestedStatusLocalCopy = remotelyChanged
+    }
+
+    // TODO: handle UpdateSuccess/UpdateFailure !!
+    case changed @ Changed(ObservedStatusDataKey) =>
+      observedStatusLocalCopy = changed.get(ObservedStatusDataKey).entries
+
+    // TODO: handle UpdateSuccess/UpdateFailure !!
+    case changed @ Changed(NameIndexDataKey) =>
+      nameIndexLocalCopy = changed.get(NameIndexDataKey).entries
 
     case Terminated(deadActor) =>
-      // update indices and stop watching
+      // when a watched actor dies, we marked it as stopped...
+      reversedActorIndex.get(deadActor).foreach { name =>
+        updateLWWMapForObserved(name, Stopped)
+      }
+      // ... and then update indices and stop watching
       actorIndex = actorIndex - reversedActorIndex(deadActor)
       reversedActorIndex = reversedActorIndex - deadActor
       context.unwatch(deadActor)
 
   }
 
-  private def updateLWWMap(workerMetadata: WorkerMetadata, workerStatus: WorkerStatus) = {
-    replicator ! Update(DataKey, LWWMap.empty[WorkerMetadata, WorkerStatus], writeMajority)(
-      _.:+(workerMetadata -> workerStatus)
+  private def updateLWWMapForRequests(workerMetadata: WorkerName, requested: Status): Unit = {
+    replicator ! Update(RequestedStatusDataKey, LWWMap.empty[WorkerName, Status], writeMajority)(
+      _.:+(workerMetadata -> requested)
     )
   }
 
-  private def requestStop(workerName: WorkerName) = request(workerName, Stopped)
+  private def updateLWWMapForObserved(workerName: WorkerName, status: Status): Unit = {
+    replicator ! Update(ObservedStatusDataKey, LWWMap.empty[WorkerName, Status], writeMajority)(
+      _.:+(workerName -> status)
+    )
+  }
 
-  private def requestStart(workerName: WorkerName) = request(workerName, Started)
+  private def updateLWWMapForNameIndex(workerName: WorkerName, metadata: WorkerMetadata): Unit = {
+    replicator ! Update(NameIndexDataKey, LWWMap.empty[WorkerName, WorkerMetadata], writeMajority)(
+      _.:+(workerName -> metadata)
+    )
+  }
 
-  private def request(workerName: WorkerName,status:WorkerStatus ) = {
-    log.warning(s"$status requested for $workerName")
-    // updated desired state
-    val workerMetadata = nameIndex.getOrElse(workerName, throw ProjectionWorkerNotFound(workerName))
-    updateLWWMap(workerMetadata, status)
+  private def request(command: StateRequestCommand): Unit = {
+    log.warning(s"Sending request $command to worker")
+    updateLWWMapForRequests(command.workerName, command.requested)
   }
 
 }

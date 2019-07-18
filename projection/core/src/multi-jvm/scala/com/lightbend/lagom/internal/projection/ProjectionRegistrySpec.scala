@@ -16,8 +16,9 @@ import com.lightbend.lagom.internal.cluster.ClusteredMultiNodeUtils
 import com.lightbend.lagom.internal.cluster.MultiNodeExpect
 import com.lightbend.lagom.internal.projection.FakeProjectionActor.FakeStarting
 import com.lightbend.lagom.internal.projection.FakeProjectionActor.FakeStopping
-import com.lightbend.lagom.internal.projection.ProjectionRegistry.Started
-import com.lightbend.lagom.internal.projection.ProjectionRegistry.Stopped
+import com.lightbend.lagom.projection.Projection
+import com.lightbend.lagom.projection.Started
+import com.lightbend.lagom.projection.Stopped
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.PatienceConfiguration.Interval
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
@@ -52,7 +53,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
         whenReady(projectionRegistry.getStatus()) { x =>
           val maybeWorker = x.findWorker(tagName001)
-          maybeWorker.map(_.status) should be(Some(Started))
+          maybeWorker.map(_.observedStatus) should be(Some(Started))
         }
       }
     }
@@ -67,7 +68,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
         whenReady(projectionRegistry.getStatus()) { x =>
           val maybeWorker = x.findWorker(tagName001)
-          maybeWorker.map(_.status) should be(Some(Started))
+          maybeWorker.map(_.observedStatus) should be(Some(Started))
         }
       }
     }
@@ -85,7 +86,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
         whenReady(projectionRegistry.getStatus()) { x =>
           val maybeWorker = x.findWorker(tagName001)
-          maybeWorker.map(_.status) should be(Some(Started))
+          maybeWorker.map(_.observedStatus) should be(Some(Started))
         }
       }
 
@@ -94,8 +95,10 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
       // await until seen as ready
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
         whenReady(projectionRegistry.getStatus()) { x =>
-          val maybeWorker = x.findWorker(tagName001)
-          maybeWorker.map(_.status) should be(Some(Stopped))
+          val maybeRequested = x.findWorker(tagName001).map(_.requestedStatus)
+          val maybeObserved  = x.findWorker(tagName001).map(_.observedStatus)
+          maybeRequested shouldBe Some(Stopped)
+          maybeObserved shouldBe Some(Stopped)
         }
       }
     }
@@ -112,17 +115,18 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
       // await until seen as ready
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
         whenReady(projectionRegistry.getStatus()) { x =>
-          val maybeWorker = x.findWorker(tagName001)
-          maybeWorker.map(_.status) should be(Some(Started))
+          val projection = x.findProjection(projectionName).get
+          projection.workers.forall(_.requestedStatus.isInstanceOf[Started]) should be(true)
         }
       }
+      // Don't try to `stopWorkers` until we've seen `desired` propagate completely
       enterBarrier("request-pause-projection-test-all-nodes-ready")
       projectionRegistry.stopAllWorkers(projectionName)
       // await until seen as ready
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
         whenReady(projectionRegistry.getStatus()) { x =>
-          val projection = x.findProjection(projectionName).get
-          projection.workers.forall(_.status == Stopped) should be(true)
+          val projection: Projection = x.findProjection(projectionName).get
+          projection.workers.forall(_.requestedStatus.isInstanceOf[Stopped]) should be(true)
         }
       }
     }
@@ -136,16 +140,16 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
 
       // build a projection with a single worker bound to run on `node3`
       val testProbe = registerProjection("some-stream", projectionName, tagNames.toSet)
-      testProbe.ignoreMsg{
+      testProbe.ignoreMsg {
         case FakeStopping(_) => false
-        case _ => true
+        case _               => true
       }
 
       // await until seen as ready
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
         whenReady(projectionRegistry.getStatus()) { x =>
           val maybeWorker = x.findWorker(tagName001)
-          maybeWorker.map(_.status) should be(Some(Started))
+          maybeWorker.map(_.observedStatus) should be(Some(Started))
         }
       }
 
@@ -169,16 +173,16 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
 
       // build a projection with a single worker bound to run on `node3`
       val testProbe = registerProjection("some-stream", projectionName, tagNames.toSet)
-      testProbe.ignoreMsg{
+      testProbe.ignoreMsg {
         case FakeStopping(_) => false
-        case _ => true
+        case _               => true
       }
 
       // await until seen as ready
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
         whenReady(projectionRegistry.getStatus()) { x =>
           val maybeWorker = x.findWorker(tagName001)
-          maybeWorker.map(_.status) should be(Some(Started))
+          maybeWorker.map(_.observedStatus) should be(Some(Started))
         }
       }
 
@@ -266,15 +270,20 @@ class FakeProjectionActor(
     super.preStart()
   }
 
-  var tagName = ""
-
-  override def receive = {
+  override def receive: Receive = {
     case EnsureActive(tagName) =>
-      this.tagName = tagName
       projectionRegistryActorRef ! ProjectionRegistryActor.RegisterProjection(streamName, projectionName, tagName)
+      context.become(active(tagName))
+  }
+
+  private def active(tagName: String): Receive = {
+    case EnsureActive(_) =>
+    // yes, we're active
     case Stopped =>
       testProbe ! FakeStopping(tagName)
+      projectionRegistryActorRef ! Stopped
     case Started =>
       testProbe ! FakeStarting(tagName)
+      projectionRegistryActorRef ! Started
   }
 }

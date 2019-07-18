@@ -13,7 +13,7 @@ import java.util.concurrent.CompletionStage;
 @ApiMayChange
 public interface Projections {
 
-  CompletionStage<DesiredState> getStatus();
+  CompletionStage<State> getStatus();
 
   // https://github.com/lagom/lagom/issues/1744
   // TODO: implement stop

@@ -25,9 +25,9 @@ import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
-import com.lightbend.lagom.internal.projection.ProjectionRegistry.Started
-import com.lightbend.lagom.internal.projection.ProjectionRegistry.Stopped
 import com.lightbend.lagom.javadsl.persistence._
+import com.lightbend.lagom.projection.Started
+import com.lightbend.lagom.projection.Stopped
 
 import scala.compat.java8.FutureConverters._
 
