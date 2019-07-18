@@ -42,6 +42,8 @@ import akka.actor.ActorRef
 import akka.kafka.ProducerMessage
 import akka.stream.scaladsl.RestartSource
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
+import com.lightbend.lagom.internal.projection.ProjectionRegistry.Started
+import com.lightbend.lagom.internal.projection.ProjectionRegistry.Stopped
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
 
 private[lagom] object TopicProducerActor {
@@ -110,10 +112,18 @@ private[lagom] class TopicProducerActor[Message](
     case EnsureActive(tagName) =>
       projectionRegistryActorRef ! ProjectionRegistryActor.RegisterProjection(streamName, projectionName, tagName)
       self ! Start
-      context.become(active(tagName))
+      context.become(started(tagName))
   }
 
-  private def active(tagName: String): Receive = {
+  private def stopped(tagName: String): Receive = {
+    case EnsureActive(_) => // yes, we're active
+    case Stopped         => // yes, we're stopped
+    case Started =>
+      self ! Start
+      context.become(started(tagName))
+  }
+
+  private def started(tagName: String): Receive = {
     case Start => {
       val backoffSource: Source[Future[Done], NotUsed] = {
         RestartSource.withBackoff(
@@ -147,6 +157,14 @@ private[lagom] class TopicProducerActor[Message](
 
     case EnsureActive(_) =>
     // Yes, we are active
+
+    case Started =>
+    // Yes, we are Started
+
+    case Stopped =>
+      shutdown.foreach(_.shutdown())
+      shutdown = None
+      context.become(stopped(tagName))
 
     case Done =>
       // This `Done` is materialization of the `Sink.ignore` above.

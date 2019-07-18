@@ -26,6 +26,8 @@ import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.lightbend.lagom.internal.projection.ProjectionRegistry.Started
+import com.lightbend.lagom.internal.projection.ProjectionRegistry.Stopped
 import com.lightbend.lagom.scaladsl.persistence._
 
 import scala.concurrent.Future
@@ -96,10 +98,18 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
           Start
         }
         .pipeTo(self)
-      context.become(active(tagName))
+      context.become(started(tagName))
   }
 
-  def active(tagName: EntityId): Receive = {
+  def stopped(tagName: String): Receive = {
+    case EnsureActive(_) => // yes, we're active
+    case Stopped         => // yes, we're stopped
+    case Started =>
+      self ! Start
+      context.become(started(tagName))
+  }
+
+  private def started(tagName: EntityId): Receive = {
     case Start =>
       val tag = new AggregateEventTag(clazz, tagName)
       val backoffSource: Source[Done, NotUsed] =
@@ -130,6 +140,14 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
     case EnsureActive(_) =>
     // Yes, we are active
+
+    case Started =>
+    // Yes, we are Started
+
+    case Stopped =>
+      shutdown.foreach(_.shutdown())
+      shutdown = None
+      context.become(stopped(tagName))
 
     case Done =>
       // This `Done` is materialization of the `Sink.ignore` above.
