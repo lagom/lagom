@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
  */
@@ -15,7 +14,8 @@ import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.cluster.ClusteredMultiNodeUtils
 import com.lightbend.lagom.internal.cluster.MultiNodeExpect
-import com.lightbend.lagom.internal.projection.FakeProjectionActor.Stopping
+import com.lightbend.lagom.internal.projection.FakeProjectionActor.FakeStarting
+import com.lightbend.lagom.internal.projection.FakeProjectionActor.FakeStopping
 import com.lightbend.lagom.internal.projection.ProjectionRegistry.Started
 import com.lightbend.lagom.internal.projection.ProjectionRegistry.Stopped
 import org.scalatest.concurrent.Eventually
@@ -136,6 +136,10 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
 
       // build a projection with a single worker bound to run on `node3`
       val testProbe = registerProjection("some-stream", projectionName, tagNames.toSet)
+      testProbe.ignoreMsg{
+        case FakeStopping(_) => false
+        case _ => true
+      }
 
       // await until seen as ready
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
@@ -152,8 +156,59 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
 
       val multiNodeExpect = new MultiNodeExpect(testProbe)
       val multiExpectFuture =
-        multiNodeExpect.expectMsg(Stopping(tagName001), "do-pause-worker-test-expect-stopped", multiExpectTimeout)
+        multiNodeExpect.expectMsg(FakeStopping(tagName001), "do-pause-worker-test-expect-stopping", multiExpectTimeout)
       Await.result(multiExpectFuture, multiExpectTimeout) shouldBe Done
+    }
+
+    "tell a projection worker to stop and then start when requested" in {
+      enterBarrier("do-pause-and-resume-worker-test")
+      val projectionName = "do-pause-and-resume-worker"
+      val tagNamePrefix  = projectionName
+      val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
+      val tagName001     = tagNames.head
+
+      // build a projection with a single worker bound to run on `node3`
+      val testProbe = registerProjection("some-stream", projectionName, tagNames.toSet)
+      testProbe.ignoreMsg{
+        case FakeStopping(_) => false
+        case _ => true
+      }
+
+      // await until seen as ready
+      eventually(Timeout(pc.timeout), Interval(pc.interval)) {
+        whenReady(projectionRegistry.getStatus()) { x =>
+          val maybeWorker = x.findWorker(tagName001)
+          maybeWorker.map(_.status) should be(Some(Started))
+        }
+      }
+
+      enterBarrier("do-pause-and-resume-worker-test-all-nodes-ready-001")
+      runOn(RoleName("node2")) {
+        projectionRegistry.stopWorker(tagName001)
+      }
+
+      val multiNodeExpect = new MultiNodeExpect(testProbe)
+      val expectStopping =
+        multiNodeExpect.expectMsg(
+          FakeStopping(tagName001),
+          "do-pause-and-resume-worker-test-expect-stopping",
+          multiExpectTimeout
+        )
+      Await.result(expectStopping, multiExpectTimeout)
+      enterBarrier("do-pause-and-resume-worker-test-all-nodes-ready-002")
+
+      testProbe.ignoreNoMsg()
+      runOn(RoleName("node3")) {
+        projectionRegistry.startWorker(tagName001)
+      }
+
+      val expectStarting =
+        multiNodeExpect.expectMsg(
+          FakeStarting(tagName001),
+          "do-pause-and-resume-worker-test-expect-starting",
+          multiExpectTimeout
+        )
+      Await.result(expectStarting, multiExpectTimeout) shouldBe Done
     }
 
   }
@@ -186,7 +241,8 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
 
 object FakeProjectionActor {
 
-  case class Stopping(tagName: String)
+  case class FakeStopping(tagName: String)
+  case class FakeStarting(tagName: String)
 
   def props(
       streamName: String,
@@ -217,6 +273,8 @@ class FakeProjectionActor(
       this.tagName = tagName
       projectionRegistryActorRef ! ProjectionRegistryActor.RegisterProjection(streamName, projectionName, tagName)
     case Stopped =>
-      testProbe ! Stopping(tagName)
+      testProbe ! FakeStopping(tagName)
+    case Started =>
+      testProbe ! FakeStarting(tagName)
   }
 }

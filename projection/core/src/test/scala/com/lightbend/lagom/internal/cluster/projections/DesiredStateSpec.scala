@@ -4,11 +4,9 @@
 
 package com.lightbend.lagom.internal.cluster.projections
 
-import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry.Projection
-import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry.ProjectionWorker
-import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry.Started
-import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistryActor.DesiredState
-import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistryActor.WorkerMetadata
+import com.lightbend.lagom.internal.projection.ProjectionRegistry.Started
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.DesiredState
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerMetadata
 import org.scalatest.Matchers
 import org.scalatest.WordSpec
 

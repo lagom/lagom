@@ -135,6 +135,8 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
     case Stop(workerName) =>
       requestStop(workerName)
+    case Start(workerName) =>
+      requestStart(workerName)
 
     case changed @ Changed(DataKey) =>
       val remotelyChanged                            = changed.get(DataKey).entries
@@ -164,12 +166,15 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
     )
   }
 
-  private def requestStop(workerName: WorkerName) = {
-    log.warning(s"Stopped requested for $workerName")
+  private def requestStop(workerName: WorkerName) = request(workerName, Stopped)
+
+  private def requestStart(workerName: WorkerName) = request(workerName, Started)
+
+  private def request(workerName: WorkerName,status:WorkerStatus ) = {
+    log.warning(s"$status requested for $workerName")
     // updated desired state
     val workerMetadata = nameIndex.getOrElse(workerName, throw ProjectionWorkerNotFound(workerName))
-    updateLWWMap(workerMetadata, Stopped)
+    updateLWWMap(workerMetadata, status)
   }
 
-  private def requestStart(workerName: WorkerName) = {}
 }
