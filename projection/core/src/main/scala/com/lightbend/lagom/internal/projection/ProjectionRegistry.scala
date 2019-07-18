@@ -103,7 +103,12 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
       .mapTo[Done]
 
   // TODO: untested
-  def stopAllWorkers(projectionName: String): Future[Done] =
+  def stopAllWorkers(projectionName: String): Future[Done] = bulk(projectionName, stopWorker)
+
+  // TODO: untested
+  def startAllWorkers(projectionName: String): Future[Done] = bulk(projectionName, startWorker)
+
+  private def bulk(projectionName: String, op: String => Future[Done]): Future[Done] = {
     (projectionRegistryRef ? GetDesiredState)
       .mapTo[DesiredState]
       .map { desiredState =>
@@ -112,7 +117,8 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
           case Some(projection) => projection
         }
       }
-      .map(_.workers.map(worker => stopWorker(worker.name)))
+      .map(_.workers.map(worker => op(worker.name)))
       .map(_ => Done)
+  }
 
 }
