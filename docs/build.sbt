@@ -11,7 +11,7 @@ val PlayVersion           = "2.8.0-M3"
 val Log4jVersion          = "2.11.2"
 val MacWireVersion        = "2.3.2"
 val LombokVersion         = "1.18.8"
-val HibernateVersion      = "5.4.2.Final"
+val HibernateVersion      = "5.4.3.Final"
 val ValidationApiVersion  = "2.0.1.Final"
 
 val branch = {
