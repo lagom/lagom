@@ -43,7 +43,7 @@ object Dependencies {
     val Maven                = "3.6.0"
     val Netty                = "4.1.37.Final"
     val NettyReactiveStreams = "2.0.3"
-    val Kafka                = "2.1.1"
+    val Kafka                = "2.3.0"
     val AlpakkaKafka         = "1.0.4"
     val Curator              = "2.12.0"
     val Immutables           = "2.3.10"
