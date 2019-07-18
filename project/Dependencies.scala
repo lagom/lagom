@@ -56,7 +56,7 @@ object Dependencies {
     val JUnit            = "4.12"
     val JUnitInterface   = "0.11"
 
-    val Slf4j   = "1.7.25"
+    val Slf4j   = "1.7.26"
     val Logback = "1.2.3"
     val Log4j   = "2.11.2"
 
