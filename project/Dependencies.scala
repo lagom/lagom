@@ -85,7 +85,7 @@ object Dependencies {
   private val scalaJava8Compat       = "org.scala-lang.modules" %% "scala-java8-compat" % Versions.ScalaJava8Compat
   private val scalaCollectionCompat  = "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1"
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
-  private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
+  private val javassist              = "org.javassist" % "javassist" % "3.24.1-GA"
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.9.10"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.3.4"
