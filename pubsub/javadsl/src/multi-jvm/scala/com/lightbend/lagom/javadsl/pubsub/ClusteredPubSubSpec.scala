@@ -16,6 +16,7 @@ import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
 import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule
 import play.api.inject.guice.GuiceInjectorBuilder
+import com.lightbend.lagom.internal.cluster.STMultiNodeSpec
 
 object ClusteredPubSubConfig extends MultiNodeConfig {
   val node1 = role("node1")

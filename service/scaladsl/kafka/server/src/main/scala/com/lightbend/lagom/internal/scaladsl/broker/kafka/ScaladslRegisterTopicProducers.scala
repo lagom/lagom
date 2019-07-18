@@ -11,7 +11,7 @@ import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.Producer
-import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry
+import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.scaladsl.api.ServiceInfo

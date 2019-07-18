@@ -17,8 +17,8 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
-
 import scala.concurrent.Await
+import com.lightbend.lagom.internal.cluster.STMultiNodeSpec
 
 object ClusteredPubSubConfig extends MultiNodeConfig {
   val node1 = role("node1")

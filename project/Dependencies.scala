@@ -753,7 +753,7 @@ object Dependencies {
     akkaSlf4j
   )
 
-  val `cluster-extensions` = libraryDependencies ++= Seq(
+  val `projection-core` = libraryDependencies ++= Seq(
     akkaClusterSharding,
     akkaSlf4j,
     akkaTestkit          % Test,
@@ -764,9 +764,9 @@ object Dependencies {
     "com.novocode"       % "junit-interface" % "0.11" % Test
   )
 
-  val `cluster-extensions-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
+  val `projection-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
 
-  val `cluster-extensions-javadsl` = libraryDependencies ++= Seq.empty[ModuleID]
+  val `projection-javadsl` = libraryDependencies ++= Seq.empty[ModuleID]
 
   val `persistence-core` = libraryDependencies ++= Seq(
     akkaPersistence,
