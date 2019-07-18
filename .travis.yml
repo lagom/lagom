@@ -67,7 +67,9 @@ before_cache:
   - find $HOME/.sbt -name "*.lock" -delete
 
 notifications:
-  email: play-team@lightbend.com
+  email:
+    recipients:
+      secure: dg0b5oUBfma5RZtYoK/kG7x0TuQ2y95SpQqEG8w9cK7yyY1hDNvNKcdibrOupsttKWeng0gEgpzIAwBLypwQTdelembEZcJKuDRwl8fWISJqxuE90VVH+oiIyjG/MXvGNdkZVBni32Ye/xh5OR+YXSs5DzrwYVKBY/mEq+e3SgN7fqQ1Cxt7Kp0uufMgy6zfRu8qNh1IoRVTcxX1vL14G9FHrhyfSt5+scvIE4rQsXy4f783tnLqOKbqK4/incfnPf7Q2j0qnps9iA/xpzb9aCq4LgILAiJ/mxncZ5jmFfJ4NWibJzikXJlTAfVVaOlQt0O7BDoJY1AyV7nZw9mBf9RseXPkXZ8IqoM7MBMvaatjlh5d2RbHXRzMQaBLtKud38x83M/gjNObiGKBBGHy1FlYnhHOJGBHVjSZcDcToPE5Bb44T8bfraYVMsKgWgpdoFWTpAM5ctGqnQdmm/45yUaXcMnJbc5k3Xu5N/IpfPx2NXROHpmh7Su/KSIHf1yGAREInV6JIJIMyjZmXixqxWRGyKCAD2iLEhUTWRMMji8Dm2TLBJpDXEAgKjfmZYTHpBohUeVNOZZTRYAHsGw/MXJObqud9VO+MUxc7PtFijN7zJMzFL0tt3vSBIjKpwH4rfxxIlZGHcNhufPloNUzHOuB7AesExBum8XsRQ/sV6I=
   webhooks:
     urls:
       - https://webhooks.gitter.im/e/2aa0aeda88d31fe293d4
