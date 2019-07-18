@@ -9,7 +9,7 @@ import java.net.URLEncoder
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistry
+import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.scaladsl.persistence._

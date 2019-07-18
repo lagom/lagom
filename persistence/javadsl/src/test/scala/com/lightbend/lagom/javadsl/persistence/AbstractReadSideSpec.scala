@@ -31,7 +31,7 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures
 import akka.pattern._
 import akka.testkit.TestProbe
-import com.lightbend.lagom.internal.cluster.projections.ProjectionRegistryActor
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
 
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.duration._
