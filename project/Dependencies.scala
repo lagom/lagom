@@ -25,7 +25,7 @@ object Dependencies {
     val PlayFileWatch    = "1.1.8"
 
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M4")
-    val AkkaHttp     = "10.1.8"
+    val AkkaHttp     = "10.1.9"
 
     val AkkaPersistenceCassandra = "0.62"
     val AkkaPersistenceJdbc      = "3.5.2"
