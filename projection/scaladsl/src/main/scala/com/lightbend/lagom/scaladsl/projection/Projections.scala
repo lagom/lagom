@@ -18,7 +18,7 @@ import scala.concurrent.Future
 class Projections(private val registry: ProjectionRegistry) {
 
   def getStatus: Future[State] =
-    registry.getStatus()
+    registry.getState()
 
   def stopAllWorkers(projectionName: String) =
     registry.stopAllWorkers(projectionName)

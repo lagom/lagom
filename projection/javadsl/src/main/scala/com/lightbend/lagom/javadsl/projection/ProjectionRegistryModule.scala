@@ -43,7 +43,7 @@ private class ProjectionsImpl @Inject()(impl: ProjectionRegistry)(implicit execu
   import FutureConverters._
   override def getStatus(): CompletionStage[State] = {
     // TODO: implement POJOs for Observed state and map that here too.
-    impl.getStatus().map(state => State.asJava(state)).toJava
+    impl.getState().map(state => State.asJava(state)).toJava
   }
   // TODO: stop (when API is stable)
   // TODO: start (when API is stable)

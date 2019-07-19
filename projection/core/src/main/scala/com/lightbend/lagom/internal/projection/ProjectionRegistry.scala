@@ -16,11 +16,13 @@ import com.lightbend.lagom.internal.cluster.ClusterDistribution
 import com.lightbend.lagom.internal.cluster.ClusterDistributionSettings
 import com.lightbend.lagom.internal.projection.ProjectionRegistry.StateRequestCommand
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.GetState
+import com.lightbend.lagom.projection.Projection
 import com.lightbend.lagom.projection.ProjectionNotFound
 import com.lightbend.lagom.projection.Started
 import com.lightbend.lagom.projection.State
 import com.lightbend.lagom.projection.Status
 import com.lightbend.lagom.projection.Stopped
+import com.lightbend.lagom.projection.Worker
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -69,37 +71,34 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
   implicit val exCtx: ExecutionContext = system.dispatcher
   implicit val timeout: Timeout        = Timeout(1.seconds)
 
-  private[lagom] def getStatus(): Future[State] = {
+  private[lagom] def getState(): Future[State] = {
     (projectionRegistryRef ? GetState).mapTo[State]
   }
 
-  def startWorker(projectionWorkerName: String): Future[Done] =
-    (projectionRegistryRef ? StateRequestCommand(projectionWorkerName, Started))
-      .mapTo[Done]
+  def startWorker(projectionWorkerName: String): Unit =
+    projectionRegistryRef ! StateRequestCommand(projectionWorkerName, Started)
 
-  def stopWorker(projectionWorkerName: String): Future[Done] =
-    (projectionRegistryRef ? StateRequestCommand(projectionWorkerName, Stopped))
-      .mapTo[Done]
+  def stopWorker(projectionWorkerName: String): Unit =
+    projectionRegistryRef ? StateRequestCommand(projectionWorkerName, Stopped)
 
   // TODO: untested
   // The way to test this is to write an expectation in MultinodeExpect which
-  // groups and shares observed messages accross the cluster
-  def stopAllWorkers(projectionName: String): Future[Done] = bulk(projectionName, stopWorker)
+  // groups and shares observed messages across the cluster
+  def stopAllWorkers(projectionName: String): Unit = bulk(projectionName, stopWorker)
 
   // TODO: untested
-  def startAllWorkers(projectionName: String): Future[Done] = bulk(projectionName, startWorker)
+  def startAllWorkers(projectionName: String): Unit = bulk(projectionName, startWorker)
 
-  private def bulk(projectionName: String, op: String => Future[Done]): Future[Done] = {
-    (projectionRegistryRef ? GetState)
-      .mapTo[State]
+  private def bulk(projectionName: String, op: String => Unit): Unit = {
+    val eventualProjection: Future[Projection] = getState()
       .map { state =>
         state.findProjection(projectionName) match {
           case None             => throw ProjectionNotFound(projectionName)
           case Some(projection) => projection
         }
       }
-      .map(_.workers.map(worker => op(worker.name)))
-      .map(_ => Done)
+    eventualProjection.map(_.workers.map(_.name).foreach(op))
+
   }
 
 }
