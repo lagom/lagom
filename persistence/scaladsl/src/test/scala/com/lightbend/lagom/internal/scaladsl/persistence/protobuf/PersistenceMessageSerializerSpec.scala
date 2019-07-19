@@ -22,7 +22,8 @@ import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import akka.actor.setup.ActorSystemSetup
 import com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
 
-class PersistenceMessageSerializerSpec extends ActorSystemSpec(JsonSerializerRegistry.actorSystemSetupFor(TestEntitySerializerRegistry)) {
+class PersistenceMessageSerializerSpec
+    extends ActorSystemSpec(JsonSerializerRegistry.actorSystemSetupFor(TestEntitySerializerRegistry)) {
 
   val serializer = new PersistenceMessageSerializer(system.asInstanceOf[ExtendedActorSystem])
 

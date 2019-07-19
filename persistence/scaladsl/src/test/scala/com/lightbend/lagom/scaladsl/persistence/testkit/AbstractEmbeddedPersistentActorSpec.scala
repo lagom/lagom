@@ -51,7 +51,6 @@ object AbstractEmbeddedPersistentActorSpec {
     }
   }
 
-
   object EmbeddedPersistentActorSerializers extends JsonSerializerRegistry {
 
     override def serializers: immutable.Seq[JsonSerializer[_]] = {
