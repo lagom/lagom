@@ -20,7 +20,7 @@ import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.testkit.pipe
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import play.api.inject.bind
+import play.api.inject.{Injector, bind}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.Application
 import play.api.Configuration
@@ -108,7 +108,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
   import config._
 
-  override def initialParticipants = roles.size
+  override def initialParticipants: Int = roles.size
 
   def join(from: RoleName, to: RoleName): Unit = {
     runOn(from) {
@@ -121,7 +121,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     if (ref.path.address.hasLocalScope) Cluster(system).selfAddress
     else ref.path.address
 
-  protected override def atStartup() {
+  protected override def atStartup(): Unit = {
     // Initialize read side
     readSide
 
@@ -140,7 +140,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     injector.instanceOf[Application].stop()
   }
 
-  lazy val injector = {
+  lazy val injector: Injector = {
     val configuration = Configuration(system.settings.config)
     new GuiceApplicationBuilder()
       .loadConfig(configuration)
