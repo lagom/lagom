@@ -56,10 +56,11 @@ private[lagom] class ReadSideImpl(
         config.randomBackoffFactor
       )
 
+    // TODO: use the name from the entity, not the tags
     val streamName     = tags.head.eventType.getName
     val projectionName = readSideName
 
-    val readSideProps = (projectionRegistryActorRef: ActorRef) =>
+    val readSidePropsFactory = (projectionRegistryActorRef: ActorRef) =>
       ReadSideActor.props(
         streamName,
         projectionName,
@@ -72,11 +73,11 @@ private[lagom] class ReadSideImpl(
       )
 
     projectionRegistryImpl.registerProjectionGroup(
-      streamName, // TODO: use the name from the entity, not the tags
+      streamName,
       entityIds,
       readSideName,
       config.role,
-      readSideProps
+      readSidePropsFactory
     )
 
   }
