@@ -76,6 +76,9 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       lagom.cluster.exit-jvm-when-system-terminated = off
 
       akka.cluster.sharding.waiting-for-state-timeout = 5s
+
+      # make sure ensure active kicks in fast enough on tests
+      lagom.persistence.cluster.distribution.ensure-active-interval = 2s
     """
         )
         .withFallback(ConfigFactory.parseResources("play/reference-overrides.conf"))
