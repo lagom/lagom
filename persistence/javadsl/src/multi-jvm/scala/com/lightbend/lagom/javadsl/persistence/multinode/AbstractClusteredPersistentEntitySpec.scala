@@ -185,26 +185,26 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     "send commands to target entity" in within(75.seconds) {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrier("before-1")
+      enterBarrier("before 'send commands to target entity'")
 
-      val ref1 = registry.refFor(classOf[TestEntity], "1")
-      val ref2 = registry.refFor(classOf[TestEntity], "2")
+      val ref1 = registry.refFor(classOf[TestEntity], "entity-1")
+      val ref2 = registry.refFor(classOf[TestEntity], "entity-2")
 
       // STEP 1: send some commands from all nodes of the test to ref1 and ref2
       // note that this is done on node1, node2 and node 3 !!
       val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
       r1.pipeTo(testActor)
-      expectMsg(new TestEntity.Appended("1", "A"))
+      expectMsg(new TestEntity.Appended("entity-1", "A"))
       enterBarrier("appended-A")
 
       val r2: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("b"))
       r2.pipeTo(testActor)
-      expectMsg(new TestEntity.Appended("2", "B"))
+      expectMsg(new TestEntity.Appended("entity-2", "B"))
       enterBarrier("appended-B")
 
       val r3: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("c"))
       r3.pipeTo(testActor)
-      expectMsg(new TestEntity.Appended("2", "C"))
+      expectMsg(new TestEntity.Appended("entity-2", "C"))
       enterBarrier("appended-C")
 
       // STEP 2: assert both ref's stored all the commands in their respective state.
@@ -219,15 +219,15 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
       // STEP 3: assert the number of events consumed in the read-side processors equals the number of expected events.
       // NOTE: in nodes node2 and node3 {{expectAppendCount}} is a noop
-      expectAppendCount("1", 3)
-      expectAppendCount("2", 6)
+      expectAppendCount("entity-1", 3)
+      expectAppendCount("entity-2", 6)
 
     }
 
     "run entities on specific node roles" in {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrier("before-2")
+      enterBarrier("before 'run entities on specific node roles'")
       // node1 and node2 are configured with "backend" role
       // and lagom.persistence.run-entities-on-role = backend
       // i.e. no entities on node3
@@ -239,31 +239,31 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
         expectMsgType[Address]
       }.toSet
 
-      addresses should not contain (node(node3).address)
+      addresses should not contain node(node3).address
     }
 
     "have support for graceful leaving" in {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrier("before-3")
+      enterBarrier("before 'have support for graceful leaving'")
 
       enterBarrier("node2-left")
 
       runOn(node1) {
         within(35.seconds) {
-          val ref1                                = registry.refFor(classOf[TestEntity], "1")
+          val ref1                                = registry.refFor(classOf[TestEntity], "entity-1")
           val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
           r1.pipeTo(testActor)
-          expectMsg(new TestEntity.Appended("1", "A"))
+          expectMsg(new TestEntity.Appended("entity-1", "A"))
 
-          val ref2                                = registry.refFor(classOf[TestEntity], "2")
+          val ref2                                = registry.refFor(classOf[TestEntity], "entity-2")
           val r2: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("b"))
           r2.pipeTo(testActor)
-          expectMsg(new TestEntity.Appended("2", "B"))
+          expectMsg(new TestEntity.Appended("entity-2", "B"))
 
           val r3: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("c"))
           r3.pipeTo(testActor)
-          expectMsg(new TestEntity.Appended("2", "C"))
+          expectMsg(new TestEntity.Appended("entity-2", "C"))
         }
       }
 
