@@ -51,7 +51,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
       registerProjection("some-stream", "test-canary", Set(tagName001))
 
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
-        whenReady(projectionRegistry.getStatus()) { x =>
+        whenReady(projectionRegistry.getState()) { x =>
           val maybeWorker = x.findWorker(tagName001)
           maybeWorker.map(_.observedStatus) should be(Some(Started))
         }
@@ -66,7 +66,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
       registerProjection("some-stream", projectionName, tagNames.toSet)
 
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
-        whenReady(projectionRegistry.getStatus()) { x =>
+        whenReady(projectionRegistry.getState()) { x =>
           val maybeWorker = x.findWorker(tagName001)
           maybeWorker.map(_.observedStatus) should be(Some(Started))
         }
@@ -84,7 +84,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
 
       // await until seen as ready
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
-        whenReady(projectionRegistry.getStatus()) { x =>
+        whenReady(projectionRegistry.getState()) { x =>
           val maybeWorker = x.findWorker(tagName001)
           maybeWorker.map(_.observedStatus) should be(Some(Started))
         }
@@ -94,7 +94,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
       projectionRegistry.stopWorker(tagName001)
       // await until seen as ready
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
-        whenReady(projectionRegistry.getStatus()) { x =>
+        whenReady(projectionRegistry.getState()) { x =>
           val maybeRequested = x.findWorker(tagName001).map(_.requestedStatus)
           val maybeObserved  = x.findWorker(tagName001).map(_.observedStatus)
           maybeRequested shouldBe Some(Stopped)
@@ -114,7 +114,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
 
       // await until seen as ready
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
-        whenReady(projectionRegistry.getStatus()) { x =>
+        whenReady(projectionRegistry.getState()) { x =>
           val projection = x.findProjection(projectionName).get
           projection.workers.forall(_.requestedStatus.isInstanceOf[Started]) should be(true)
         }
@@ -124,7 +124,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
       projectionRegistry.stopAllWorkers(projectionName)
       // await until seen as ready
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
-        whenReady(projectionRegistry.getStatus()) { x =>
+        whenReady(projectionRegistry.getState()) { x =>
           val projection: Projection = x.findProjection(projectionName).get
           projection.workers.forall(_.requestedStatus.isInstanceOf[Stopped]) should be(true)
         }
@@ -147,7 +147,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
 
       // await until seen as ready
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
-        whenReady(projectionRegistry.getStatus()) { x =>
+        whenReady(projectionRegistry.getState()) { x =>
           val maybeWorker = x.findWorker(tagName001)
           maybeWorker.map(_.observedStatus) should be(Some(Started))
         }
@@ -180,7 +180,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
 
       // await until seen as ready
       eventually(Timeout(pc.timeout), Interval(pc.interval)) {
-        whenReady(projectionRegistry.getStatus()) { x =>
+        whenReady(projectionRegistry.getState()) { x =>
           val maybeWorker = x.findWorker(tagName001)
           maybeWorker.map(_.observedStatus) should be(Some(Started))
         }
