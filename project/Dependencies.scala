@@ -163,7 +163,7 @@ object Dependencies {
   private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
-  private val okio    = "com.squareup.okio"    % "okio"   % "1.17.4"
+  private val okio    = "com.squareup.okio"    % "okio"   % "2.2.2"
 
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", Versions.JacksonCore)(
