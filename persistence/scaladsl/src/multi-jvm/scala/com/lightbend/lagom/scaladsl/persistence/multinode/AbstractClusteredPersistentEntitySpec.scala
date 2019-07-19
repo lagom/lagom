@@ -16,6 +16,7 @@ import akka.remote.testconductor.RoleName
 import akka.remote.testkit.MultiNodeConfig
 import akka.remote.testkit.MultiNodeSpec
 import akka.testkit.ImplicitSender
+import akka.util.Timeout
 import com.lightbend.lagom.scaladsl.persistence._
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.Config
@@ -27,6 +28,8 @@ import scala.concurrent.Await
 import scala.concurrent.Future
 import com.lightbend.lagom.internal.cluster.STMultiNodeSpec
 
+import scala.collection.immutable
+
 abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
 
   val node1 = role("node1")
@@ -35,6 +38,7 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
 
   val databasePort = System.getProperty("scaladsl.database.port").toInt
   val environment  = Environment.simple()
+
 
   commonConfig(
     additionalCommonConfig(databasePort).withFallback(
@@ -47,8 +51,7 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       terminate-system-after-member-removed = 60s
 
       # increase default timeouts to leave wider margin for Travis.
-      # 30s to 60s
-      akka.testconductor.barrier-timeout=60s
+      akka.testconductor.barrier-timeout=90s
 
       ## use 13s and 15s for the timeouts below because they are coprime values and it'll be easier to spot interferences.
       ## Also, make Akka's `single-expect-default` timeout higher since this test often `expect`'s over an ask operation.
@@ -74,6 +77,7 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
 
       # make sure ensure active kicks in fast enough on tests
       lagom.persistence.cluster.distribution.ensure-active-interval = 2s
+
     """
         )
         .withFallback(ConfigFactory.parseResources("play/reference-overrides.conf"))
@@ -132,7 +136,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     runOn(from) {
       Cluster(system).join(node(to).address)
     }
-    enterBarrier(from.name + "-joined")
+    enterBarrierWithDilatedTimeout(from.name + "-joined")
   }
 
   def fullAddress(ref: ActorRef): Address =
@@ -152,7 +156,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       )
     }
 
-    enterBarrier("startup")
+    enterBarrierWithDilatedTimeout("startup")
   }
 
   def components: PersistenceComponents
@@ -178,12 +182,22 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     }
   }
 
+  def enterBarrierWithDilatedTimeout(name: String) = {
+    import akka.testkit._
+    testConductor.enter(
+      Timeout.durationToTimeout(remainingOr(testConductor.Settings.BarrierTimeout.duration.dilated)),
+      scala.collection.immutable.Seq(name)
+    )
+  }
+
   "A PersistentEntity in a Cluster" must {
 
     "send commands to target entity" in within(75.seconds) {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrier("before 'send commands to target entity'")
+
+
+      enterBarrierWithDilatedTimeout("before 'send commands to target entity'")
 
       val ref1 = registry.refFor[TestEntity]("entity-1")
       val ref2 = registry.refFor[TestEntity]("entity-2")
@@ -225,7 +239,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     "run entities on specific node roles" in {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrier("before 'run entities on specific node roles'")
+      enterBarrierWithDilatedTimeout("before 'run entities on specific node roles'")
       // node1 and node2 are configured with "backend" role
       // and lagom.persistence.run-entities-on-role = backend
       // i.e. no entities on node3
@@ -244,9 +258,9 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     "have support for graceful leaving" in {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrier("before 'have support for graceful leaving'")
+      enterBarrierWithDilatedTimeout("before 'have support for graceful leaving'")
 
-      enterBarrier("node2-left")
+      enterBarrierWithDilatedTimeout("node2-left")
 
       runOn(node1) {
         within(35.seconds) {
@@ -266,7 +280,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
         }
       }
 
-      enterBarrier("node1-working")
+      enterBarrierWithDilatedTimeout("node1-working")
     }
   }
 }

@@ -15,6 +15,7 @@ import akka.remote.testconductor.RoleName
 import akka.remote.testkit.MultiNodeConfig
 import akka.remote.testkit.MultiNodeSpec
 import akka.testkit.ImplicitSender
+import akka.util.Timeout
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.testkit.pipe
 import com.typesafe.config.Config
@@ -51,8 +52,7 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       terminate-system-after-member-removed = 60s
 
       # increase default timeouts to leave wider margin for Travis.
-      # 30s to 60s
-      akka.testconductor.barrier-timeout=60s
+      akka.testconductor.barrier-timeout=90s
 
       ## use 13s and 15s for the timeouts below because they are coprime values and it'll be easier to spot interferences.
       ## Also, make Akka's `single-expect-default` timeout higher since this test often `expect`'s over an ask operation.
@@ -79,6 +79,7 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
 
       # make sure ensure active kicks in fast enough on tests
       lagom.persistence.cluster.distribution.ensure-active-interval = 2s
+
     """
         )
         .withFallback(ConfigFactory.parseResources("play/reference-overrides.conf"))
@@ -169,7 +170,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
    * uses overridden {{getAppendCount}} to assert a given entity {{id}} emitted the {{expected}} number of events. The
    * implementation uses polling from only node1 so nodes 2 and 3 will skip this code.
    */
-  def expectAppendCount(id: String, expected: Long) = {
+  def expectAppendCount(id: String, expected: Long): Unit = {
     runOn(node1) {
       within(20.seconds) {
         awaitAssert {
@@ -180,12 +181,20 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     }
   }
 
+  def enterBarrierWithDilatedTimeout(name: String) = {
+    import akka.testkit._
+    testConductor.enter(
+      Timeout.durationToTimeout(remainingOr(testConductor.Settings.BarrierTimeout.duration.dilated)),
+      scala.collection.immutable.Seq(name)
+    )
+  }
+
   "A PersistentEntity in a Cluster" must {
 
     "send commands to target entity" in within(75.seconds) {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrier("before 'send commands to target entity'")
+      enterBarrierWithDilatedTimeout("before 'send commands to target entity'")
 
       val ref1 = registry.refFor(classOf[TestEntity], "entity-1")
       val ref2 = registry.refFor(classOf[TestEntity], "entity-2")
@@ -195,17 +204,17 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
       r1.pipeTo(testActor)
       expectMsg(new TestEntity.Appended("entity-1", "A"))
-      enterBarrier("appended-A")
+      enterBarrierWithDilatedTimeout("appended-A")
 
       val r2: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("b"))
       r2.pipeTo(testActor)
       expectMsg(new TestEntity.Appended("entity-2", "B"))
-      enterBarrier("appended-B")
+      enterBarrierWithDilatedTimeout("appended-B")
 
       val r3: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("c"))
       r3.pipeTo(testActor)
       expectMsg(new TestEntity.Appended("entity-2", "C"))
-      enterBarrier("appended-C")
+      enterBarrierWithDilatedTimeout("appended-C")
 
       // STEP 2: assert both ref's stored all the commands in their respective state.
       val r4: CompletionStage[TestEntity.State] = ref1.ask(TestEntity.Get.instance)
@@ -227,7 +236,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     "run entities on specific node roles" in {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrier("before 'run entities on specific node roles'")
+      enterBarrierWithDilatedTimeout("before 'run entities on specific node roles'")
       // node1 and node2 are configured with "backend" role
       // and lagom.persistence.run-entities-on-role = backend
       // i.e. no entities on node3
@@ -245,9 +254,9 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     "have support for graceful leaving" in {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrier("before 'have support for graceful leaving'")
+      enterBarrierWithDilatedTimeout("before 'have support for graceful leaving'")
 
-      enterBarrier("node2-left")
+      enterBarrierWithDilatedTimeout("node2-left")
 
       runOn(node1) {
         within(35.seconds) {
@@ -267,7 +276,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
         }
       }
 
-      enterBarrier("node1-working")
+      enterBarrierWithDilatedTimeout("node1-working")
     }
   }
 }
