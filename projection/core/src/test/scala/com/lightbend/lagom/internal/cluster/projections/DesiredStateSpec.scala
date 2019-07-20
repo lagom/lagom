@@ -26,10 +26,10 @@ class DesiredStateSpec extends WordSpec with Matchers {
       val p1w2      = "prj001-workers-2"
       val p1w3      = "prj001-workers-3"
       val p2w1      = "prj002-workers-1"
-      val meta001_1 = WorkerMetadata("stream", "prj001", p1w1)
-      val meta001_2 = WorkerMetadata("stream", "prj001", p1w2)
-      val meta001_3 = WorkerMetadata("stream", "prj001", p1w3)
-      val meta002_1 = WorkerMetadata("stream", "prj002", p2w1)
+      val meta001_1 = WorkerMetadata("prj001", p1w1)
+      val meta001_2 = WorkerMetadata("prj001", p1w2)
+      val meta001_3 = WorkerMetadata("prj001", p1w3)
+      val meta002_1 = WorkerMetadata("prj002", p2w1)
 
       val nameIndex: Map[WorkerName, WorkerMetadata] = Map(
         p1w1 -> meta001_1,

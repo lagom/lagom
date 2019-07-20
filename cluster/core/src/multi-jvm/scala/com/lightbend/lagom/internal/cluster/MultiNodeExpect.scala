@@ -20,6 +20,7 @@ import akka.cluster.ddata.Replicator.UpdateSuccess
 import akka.cluster.ddata.Replicator.WriteAll
 import akka.cluster.ddata.Replicator.WriteConsistency
 import akka.cluster.ddata.SelfUniqueAddress
+import akka.event.LoggingAdapter
 import akka.testkit.TestProbe
 
 import scala.concurrent.ExecutionContext
@@ -29,6 +30,8 @@ import scala.reflect.ClassTag
 import akka.pattern.after
 import akka.pattern.ask
 import akka.util.Timeout
+
+import scala.util.control.NonFatal
 
 /**
  *
@@ -47,8 +50,7 @@ class MultiNodeExpect(probe: TestProbe)(implicit system: ActorSystem) {
    * replicating under the provided `expectationKey` (which must not be reused).
    */
   def expectMsg[T](t: T, expectationKey: String, max: FiniteDuration): Future[Done] = {
-
-    val eventualT = () => Future(probe.expectMsg(max, t))
+    val eventualT = () => Future(errorAsRuntime(probe.expectMsg(max, t)))
     doExpect(eventualT)(expectationKey, max)
 
   }
@@ -58,8 +60,18 @@ class MultiNodeExpect(probe: TestProbe)(implicit system: ActorSystem) {
    * replicating under the provided `expectationKey` (which must not be reused).
    */
   def expectMsgType[T](expectationKey: String, max: FiniteDuration)(implicit t: ClassTag[T]): Future[Done] = {
-    val eventualT = () => Future(probe.expectMsgType[T](max))
+    val eventualT = () => Future(errorAsRuntime(probe.expectMsgType[T](max)))
     doExpect(eventualT)(expectationKey, max)
+  }
+
+  // prevents Errors from turning into BoxedError when using `Future(f)` (where f throws Error)
+  private def errorAsRuntime[T](f: => T): T = {
+    try {
+      f
+    } catch {
+      case NonFatal(t) => throw t
+      case x: Throwable => throw new RuntimeException(x)
+    }
   }
 
   private def doExpect[T](eventualT: () => Future[T])(expectationKey: String, max: FiniteDuration): Future[Done] = {

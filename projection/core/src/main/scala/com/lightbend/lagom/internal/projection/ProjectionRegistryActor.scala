@@ -18,11 +18,12 @@ import akka.cluster.ddata.Replicator.ReadConsistency
 import akka.cluster.ddata.Replicator.ReadLocal
 import akka.cluster.ddata.Replicator.Subscribe
 import akka.cluster.ddata.Replicator.Update
+import akka.cluster.ddata.Replicator.UpdateFailure
+import akka.cluster.ddata.Replicator.UpdateSuccess
 import akka.cluster.ddata.Replicator.WriteConsistency
 import akka.cluster.ddata.Replicator.WriteMajority
 import akka.cluster.ddata.SelfUniqueAddress
 import com.lightbend.lagom.internal.projection.ProjectionRegistry._
-import com.lightbend.lagom.projection.Started
 import com.lightbend.lagom.projection.State
 import com.lightbend.lagom.projection.Status
 import com.lightbend.lagom.projection.Stopped
@@ -33,17 +34,15 @@ import scala.concurrent.duration._
 object ProjectionRegistryActor {
   def props = Props(new ProjectionRegistryActor)
 
-  case class RegisterProjection(streamName: String, projectionName: String, workerName: String)
+  case class RegisterProjection(projectionName: String, workerName: String)
 
   // TODO: rename to WorkerCoordinates
-  // TODO: remove `streamName`
-  case class WorkerMetadata(streamName: String, projectionName: String, workerName: String)
+  case class WorkerMetadata(projectionName: String, workerName: String)
 
-  // Read-Only command. Returns `DesiredState` representing the desired state of
-  // the projection workers as currently seen in this node. That is not the actual
-  // status of the workers (a particular order to pause/resume may be in-flight)
-  // and this may may not be the latest desired state as it may have been changed
-  // in other nodes and the replication may be in-flight.
+  // Read-Only command. Returns `State` representing the state of
+  // the projection workers as currently seen in this node. It contains both the
+  // requested and the observed status for each worker (both are eventually consistent
+  // values since both may have been edited concurrently in other nodes).
   case object GetState
 
 }
@@ -85,38 +84,55 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
 
-    case RegisterProjection(streamName, projectionName, workerName) =>
-      val metadata = WorkerMetadata(streamName, projectionName, workerName)
-      // when registering a projection worker, we default to state==started
-      updateLWWMapForRequests(workerName, Started)
-      updateLWWMapForObserved(workerName, Started)
-      updateLWWMapForNameIndex(workerName, metadata)
+    case RegisterProjection(projectionName, workerName) =>
+      log.debug(s"Registering worker $workerName to [${sender().path.toString}]")
+      val metadata = WorkerMetadata(projectionName, workerName)
       // keep track
-      actorIndex = actorIndex.updated(workerName, sender)
+      updateLWWMapForNameIndex(workerName, metadata)
+      actorIndex = actorIndex.updated(workerName, sender())
       reversedActorIndex = reversedActorIndex.updated(sender, workerName)
+      // when worker registers, we must reply with the requested status (if it's been set already).
+      requestedStatusLocalCopy.get(workerName).foreach { requestedStatus =>
+        log.debug(s"Setting requested status [$requestedStatus] on worker $workerName [${sender().path.toString}]")
+        sender ! requestedStatus
+      }
       // watch
       context.watch(sender)
 
     case GetState =>
       sender ! State.fromReplicatedData(nameIndexLocalCopy, requestedStatusLocalCopy, observedStatusLocalCopy)
 
+    // StateRequestCommand come from `ProjectionRegistry` and contain a requested Status
     case command: StateRequestCommand =>
       // locate the target actor and send the request
-      request(command)
+      log.debug(s"Propagating request $command.")
+      updateLWWMapForRequests(command.workerName, command.requestedStatus)
 
+    // Bare Status come from worker and contain an observed Status
     case observedStatus: Status =>
-      reversedActorIndex.get(sender()).foreach(workerName => updateLWWMapForObserved(workerName, observedStatus))
+      log.debug(s"Observed [${sender().path.toString}] as $observedStatus.")
+      reversedActorIndex.get(sender()) match {
+        case Some(workerName) => updateLWWMapForObserved(workerName, observedStatus)
+        case None             => log.error(s"Unknown actor [${sender().path.toString}] reports status $observedStatus.")
+      }
 
     // TODO: handle UpdateSuccess/UpdateFailure !!
+    case UpdateSuccess(_, _) => //TODO
+    case _: UpdateFailure[_] => //TODO
     case changed @ Changed(RequestedStatusDataKey) => {
-
       val remotelyChanged                  = changed.get(RequestedStatusDataKey).entries
       val diffs: Set[(WorkerName, Status)] = remotelyChanged.toSet.diff(requestedStatusLocalCopy.toSet)
 
+      // when the requested status changes, we must forward the new value to the appropriate actor
+      // if it's a one of the workers in the local actorIndex
       diffs
         .foreach {
           case (workerName, requestedStatus) =>
+            log.debug(s"Remotely requested worker [$workerName] as [$requestedStatus].")
             actorIndex.get(workerName).foreach { workerRef =>
+              log.debug(
+                s"Setting requested status [$requestedStatus] on worker $workerName [${workerRef.path.toString}]"
+              )
               workerRef ! requestedStatus
             }
         }
@@ -133,7 +149,9 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
       nameIndexLocalCopy = changed.get(NameIndexDataKey).entries
 
     case Terminated(deadActor) =>
-      // when a watched actor dies, we marked it as stopped...
+      log.debug(s"Worker ${deadActor.path.name} died. Marking it as Stopped.")
+      // when a watched actor dies, we mark it as stopped. It will eventually
+      // respawn (thanks to EnsureActive) and come back to it's requested status.
       reversedActorIndex.get(deadActor).foreach { name =>
         updateLWWMapForObserved(name, Stopped)
       }
@@ -160,11 +178,6 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
     replicator ! Update(NameIndexDataKey, LWWMap.empty[WorkerName, WorkerMetadata], writeMajority)(
       _.:+(workerName -> metadata)
     )
-  }
-
-  private def request(command: StateRequestCommand): Unit = {
-    log.warning(s"Sending request $command to worker")
-    updateLWWMapForRequests(command.workerName, command.requested)
   }
 
 }

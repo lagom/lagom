@@ -32,6 +32,7 @@ import org.scalatest.concurrent.ScalaFutures
 import akka.pattern._
 import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
+import com.lightbend.lagom.internal.projection.WorkerHolderActor
 
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.duration._
@@ -122,19 +123,26 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       projectionRegistryProbe: TestProbe = TestProbe(),
       inFailureMode: Boolean = false
   ) = {
+    val projectionName = "abstract-readside-spec-projection"
+
     val mockRef = system.actorOf(Props(new Mock(inFailureMode)))
-    val processorProps = ReadSideActor.props[TestEntity.Evt](
-      "abstract-readside-spec-stream",
-      "abstract-readside-spec-projection",
-      ReadSideConfig(),
-      classOf[TestEntity.Evt],
-      new ClusterStartupTask(mockRef),
-      eventStream,
-      () => processorFactory(),
+    val processorProps = (tagName: String) =>
+      ReadSideActor.props[TestEntity.Evt](
+        tagName,
+        ReadSideConfig(),
+        classOf[TestEntity.Evt],
+        new ClusterStartupTask(mockRef),
+        eventStream,
+        () => processorFactory()
+      )
+
+    val workerHolderName = WorkerHolderActor.props(
+      projectionName,
+      processorProps,
       projectionRegistryProbe.ref
     )
 
-    val readSide: ActorRef = system.actorOf(processorProps)
+    val readSide: ActorRef = system.actorOf(workerHolderName)
 
     readSide ! EnsureActive(tag.tag)
 
