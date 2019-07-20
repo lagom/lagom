@@ -20,7 +20,11 @@ import java.util.function.Function;
  * locator will want to be aware of when a circuit breaker is open, and respond accordingly. For
  * example, it may decide to pull that node from its routing pool, or it may decide to notify some
  * up stream service registry that that node is no longer responding.
+ *
+ * @deprecated As of release 1.6.0. Use {@link com.typesafe.akka.discovery.Discovery(ActorSystem)} instead.
+ *
  */
+@Deprecated
 public interface ServiceLocator {
 
   /**

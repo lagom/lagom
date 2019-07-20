@@ -22,6 +22,7 @@ import scala.concurrent.Future
  * of when a circuit breaker is open, and respond accordingly.  For example, it may decide to pull that node from its
  * routing pool, or it may decide to notify some up stream service registry that that node is no longer responding.
  */
+@deprecated("Use Akka Discovery instead", "1.6.0")
 trait ServiceLocator {
 
   /**
