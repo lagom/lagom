@@ -7,7 +7,6 @@ package com.lightbend.lagom.internal.javadsl.persistence
 import java.net.URLEncoder
 import java.util.Optional
 
-import akka.actor.ActorRef
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
@@ -100,24 +99,21 @@ private[lagom] class ReadSideImpl @Inject()(
       val streamName     = tags.head.eventType.getName
       val projectionName = readSideName
 
-      val readSidePropsFactory = (projectionRegistryActorRef: ActorRef) =>
+      val readSidePropsFactory = (tagName: String) =>
         ReadSideActor.props(
-          streamName,
-          projectionName,
+          tagName,
           config,
           eventClass,
           globalPrepareTask,
           persistentEntityRegistry.eventStream[Event],
-          processorFactory,
-          projectionRegistryActorRef
+          processorFactory
         )
 
       projectionRegistry.registerProjectionGroup(
-        tags.head.eventType.getName,
-        readSideName,
+        projectionName,
         entityIds,
-        config.role,
-        readSidePropsFactory
+        readSidePropsFactory,
+        config.role
       )
 
     }

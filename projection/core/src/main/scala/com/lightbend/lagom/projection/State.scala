@@ -8,7 +8,9 @@ import akka.annotation.ApiMayChange
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerMetadata
 
 import scala.util.control.NoStackTrace
+
 @ApiMayChange
+// TODO: provide serialisers (all the ADT is on LWWMaps so must be serializable)
 sealed trait Status
 sealed trait Stopped extends Status
 case object Stopped  extends Stopped

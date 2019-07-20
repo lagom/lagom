@@ -8,7 +8,6 @@ import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.Props
 import akka.actor.Status
-import akka.cluster.sharding.ShardRegion.EntityId
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.RestartSource
@@ -20,39 +19,30 @@ import akka.stream.scaladsl
 import akka.util.Timeout
 import akka.Done
 import akka.NotUsed
-import akka.actor.ActorRef
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
-import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.javadsl.persistence._
-import com.lightbend.lagom.projection.Started
-import com.lightbend.lagom.projection.Stopped
 
 import scala.compat.java8.FutureConverters._
 
 private[lagom] object ReadSideActor {
 
   def props[Event <: AggregateEvent[Event]](
-      streamName: String,
-      projectionName: String,
+      tagName: String,
       config: ReadSideConfig,
       clazz: Class[Event],
       globalPrepareTask: ClusterStartupTask,
       eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[akka.japi.Pair[Event, Offset], NotUsed],
-      processor: () => ReadSideProcessor[Event],
-      projectionRegistryActorRef: ActorRef
+      processor: () => ReadSideProcessor[Event]
   )(implicit mat: Materializer) =
     Props(
       new ReadSideActor[Event](
-        streamName,
-        projectionName,
+        tagName,
         config,
         clazz,
         globalPrepareTask,
         eventStreamFactory,
-        processor,
-        projectionRegistryActorRef
+        processor
       )
     )
 
@@ -64,14 +54,12 @@ private[lagom] object ReadSideActor {
  * Read side actor
  */
 private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
-    streamName: String,
-    projectionName: String,
+    tagName: String,
     config: ReadSideConfig,
     clazz: Class[Event],
     globalPrepareTask: ClusterStartupTask,
     eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[akka.japi.Pair[Event, Offset], NotUsed],
-    processorFactory: () => ReadSideProcessor[Event],
-    projectionRegistryActorRef: ActorRef
+    processorFactory: () => ReadSideProcessor[Event]
 )(implicit mat: Materializer)
     extends Actor
     with ActorLogging {
@@ -86,28 +74,18 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
     shutdown.foreach(_.shutdown())
   }
 
-  def receive = {
-    case EnsureActive(tagName) =>
-      implicit val timeout = Timeout(config.globalPrepareTimeout)
-      projectionRegistryActorRef ! ProjectionRegistryActor.RegisterProjection(streamName, projectionName, tagName)
-      globalPrepareTask
-        .askExecute()
-        .map { _ =>
-          Start
-        }
-        .pipeTo(self)
-      context.become(started(tagName))
+  override def preStart(): Unit = {
+    super.preStart()
+    implicit val timeout: Timeout = Timeout(config.globalPrepareTimeout)
+    globalPrepareTask
+      .askExecute()
+      .map { _ =>
+        Start
+      }
+      .pipeTo(self)
   }
 
-  private def stopped(tagName: String): Receive = {
-    case EnsureActive(_) => // yes, we're active
-    case Stopped         => // yes, we're stopped
-    case Started =>
-      self ! Start
-      context.become(started(tagName))
-  }
-
-  private def started(tagName: EntityId): Receive = {
+  def receive: Receive = {
     case Start =>
       val tag = new AggregateEventTag(clazz, tagName)
       val backoffSource =
@@ -135,17 +113,6 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
       shutdown = Some(killSwitch)
       streamDone.pipeTo(self)
-
-    case EnsureActive(_) =>
-    // Yes, we are active
-
-    case Started =>
-    // Yes, we are Started
-
-    case Stopped =>
-      shutdown.foreach(_.shutdown())
-      shutdown = None
-      context.become(stopped(tagName))
 
     case Done =>
       throw new IllegalStateException("Stream terminated when it shouldn't")

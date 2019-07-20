@@ -31,7 +31,7 @@ import scala.concurrent.duration._
 @ApiMayChange
 object ProjectionRegistry {
 
-  case class StateRequestCommand(workerName: String, requested: Status)
+  case class StateRequestCommand(workerName: String, requestedStatus: Status)
 }
 
 @ApiMayChange
@@ -43,25 +43,26 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
 
   /**
    *
-   * @param streamName name of the stream this projection group consumes
    * @param projectionName unique name identifying the projection group
    * @param shardNames collection of partition names in the consumed stream
+   * @param projectionWorkerPropsFactory
    * @param runInRole
-   * @param projectionPropsFactory
    */
   private[lagom] def registerProjectionGroup(
-      streamName: String,
       projectionName: String,
       shardNames: Set[String],
-      runInRole: Option[String],
-      projectionPropsFactory: ActorRef => Props
+      projectionWorkerPropsFactory: String => Props,
+      runInRole: Option[String] = None
   ): Unit = {
+
+    val projectionProps = (projectionRegistryActorRef: ActorRef) =>
+      WorkerHolderActor.props(projectionName, projectionWorkerPropsFactory, projectionRegistryActorRef)
 
     clusterShardingSettings.withRole(runInRole)
 
     clusterDistribution.start(
       projectionName,
-      projectionPropsFactory(projectionRegistryRef),
+      projectionProps(projectionRegistryRef),
       shardNames,
       ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
     )
