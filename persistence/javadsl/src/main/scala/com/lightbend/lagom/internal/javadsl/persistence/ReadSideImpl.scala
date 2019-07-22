@@ -61,62 +61,59 @@ private[lagom] class ReadSideImpl @Inject()(
       clazz: Class[_]
   ) = {
 
-    // Only run if we're configured to run on this role
-    if (config.role.forall(Cluster(system).selfRoles.contains)) {
-      // try to create one instance to fail fast (e.g. wrong constructor)
-      val dummyProcessor = try {
-        processorFactory()
-      } catch {
-        case NonFatal(e) =>
-          throw new IllegalArgumentException(
-            "Cannot create instance of " +
-              s"[${clazz.getName}]",
-            e
-          )
-      }
-
-      val readSideName           = name.asScala.fold("")(_ + "-") + dummyProcessor.readSideName()
-      val encodedReadSideName    = URLEncoder.encode(readSideName, "utf-8")
-      val tags                   = dummyProcessor.aggregateTags().asScala
-      val entityIds: Set[String] = tags.map(_.tag).toSet
-      val eventClass = tags.headOption match {
-        case Some(tag) => tag.eventType
-        case None      => throw new IllegalArgumentException(s"ReadSideProcessor ${clazz.getName} returned 0 tags")
-      }
-
-      val globalPrepareTask: ClusterStartupTask =
-        ClusterStartupTask(
-          system,
-          s"readSideGlobalPrepare-$encodedReadSideName",
-          () => processorFactory().buildHandler().globalPrepare().toScala,
-          config.globalPrepareTimeout,
-          config.role,
-          config.minBackoff,
-          config.maxBackoff,
-          config.randomBackoffFactor
+    // Capture and improve failure messages. This improvement is only required due to using runtime DI
+    val readSideProcessor = try {
+      processorFactory()
+    } catch {
+      case NonFatal(e) =>
+        throw new IllegalArgumentException(
+          "Cannot create instance of " +
+            s"[${clazz.getName}]",
+          e
         )
-
-      val streamName     = tags.head.eventType.getName
-      val projectionName = readSideName
-
-      val readSidePropsFactory = (tagName: String) =>
-        ReadSideActor.props(
-          tagName,
-          config,
-          eventClass,
-          globalPrepareTask,
-          persistentEntityRegistry.eventStream[Event],
-          processorFactory
-        )
-
-      projectionRegistry.registerProjection(
-        projectionName,
-        entityIds,
-        readSidePropsFactory,
-        config.role
-      )
-
     }
 
+    val readSideName           = name.asScala.fold("")(_ + "-") + readSideProcessor.readSideName()
+    val tags                   = readSideProcessor.aggregateTags().asScala
+    val entityIds: Set[String] = tags.map(_.tag).toSet
+    val eventClass = tags.headOption match {
+      case Some(tag) => tag.eventType
+      case None =>
+        throw new IllegalArgumentException(s"ReadSideProcessor ${clazz.getName} returned 0 tags")
+    }
+
+    val encodedReadSideName = URLEncoder.encode(readSideName, "utf-8")
+    val globalPrepareTask: ClusterStartupTask =
+      ClusterStartupTask(
+        system,
+        s"readSideGlobalPrepare-$encodedReadSideName",
+        () => readSideProcessor.buildHandler().globalPrepare().toScala,
+        config.globalPrepareTimeout,
+        config.role,
+        config.minBackoff,
+        config.maxBackoff,
+        config.randomBackoffFactor
+      )
+
+    val projectionName = readSideName
+
+    val readSidePropsFactory = (tagName: String) =>
+      ReadSideActor.props(
+        tagName,
+        config,
+        eventClass,
+        globalPrepareTask,
+        persistentEntityRegistry.eventStream[Event],
+        processorFactory
+      )
+
+    projectionRegistry.registerProjection(
+      projectionName,
+      entityIds,
+      readSidePropsFactory,
+      config.role
+    )
+
   }
+
 }

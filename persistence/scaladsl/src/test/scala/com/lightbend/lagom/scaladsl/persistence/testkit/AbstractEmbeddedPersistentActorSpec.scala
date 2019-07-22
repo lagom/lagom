@@ -16,6 +16,9 @@ import com.lightbend.lagom.persistence.PersistenceSpec
 import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
 
+import scala.collection.immutable
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializer
 import scala.concurrent.duration._
 
 object AbstractEmbeddedPersistentActorSpec {
@@ -45,6 +48,21 @@ object AbstractEmbeddedPersistentActorSpec {
           state = state(evt)
         }
       case Get => sender() ! state
+    }
+  }
+
+  object EmbeddedPersistentActorSerializers extends JsonSerializerRegistry {
+
+    override def serializers: immutable.Seq[JsonSerializer[_]] = {
+      import play.api.libs.json._
+      import JsonSerializer.emptySingletonFormat
+
+      Vector(
+        JsonSerializer(Json.format[Cmd]),
+        JsonSerializer(Json.format[Evt]),
+        JsonSerializer(emptySingletonFormat(Get)),
+        JsonSerializer(Json.format[State])
+      )
     }
   }
 
