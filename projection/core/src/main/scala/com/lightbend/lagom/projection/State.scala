@@ -54,6 +54,7 @@ object State {
       .toMap
       .groupBy(_._2)
       .mapValues(_.keys.toSeq)
+      .toMap
 
     val projections = workers.map {
       case (projectionName, ws) => Projection(projectionName, ws)
