@@ -40,7 +40,8 @@ class ClusterDistributionSpec extends ClusteredMultiNodeUtils {
 
       // Load the extension and wait for other nodes to be ready before proceeding
       val cdExtension  = ClusterDistribution(system)
-      enterBarrier("extension-is-loaded")
+      enterBarrier("cluster-distritbution-extension-is-loaded")
+
       cdExtension.start(
         typeName,
         props,
