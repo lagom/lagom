@@ -1189,23 +1189,28 @@ lazy val `server-containers` = (project in file("dev") / "server-containers")
     sonatypeSettings,
   )
 
+def sharedBuildToolSupportSetup(p: Project): Project =
+  p.disablePlugins(BintrayPlugin)
+    .enablePlugins(AutomateHeaderPlugin && Sonatype)
+    .settings(sonatypeSettings: _*)
+    .settings(common: _*)
+    .settings(
+      name := s"lagom-${thisProject.value.id}",
+      sourceGenerators in Compile += Def.task {
+        Generators.version(version.value, (sourceManaged in Compile).value)
+      }.taskValue,
+      Dependencies.`build-tool-support`,
+    )
+    .dependsOn(`server-containers`)
+
 lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
-  .disablePlugins(BintrayPlugin)
-  .enablePlugins(AutomateHeaderPlugin && Sonatype)
-  .settings(sonatypeSettings: _*)
-  .settings(common: _*)
+  .configure(sharedBuildToolSupportSetup)
   .settings(
-    name := "lagom-build-tool-support",
     publishMavenStyle := true,
     crossScalaVersions := Seq(Dependencies.Versions.Scala.head),
     scalaVersion := Dependencies.Versions.Scala.head,
     crossPaths := false,
-    sourceGenerators in Compile += Def.task {
-      Generators.version(version.value, (sourceManaged in Compile).value)
-    }.taskValue,
-    Dependencies.`build-tool-support`
   )
-  .dependsOn(`server-containers`)
 
 // This is almost the same as `build-tool-support`, but targeting sbt
 // while `build-tool-support` targets Maven and possibly other build
@@ -1213,21 +1218,13 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
 //
 // https://github.com/playframework/playframework/blob/2.6.7/framework/build.sbt#L27-L40
 lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-support")
-  .disablePlugins(BintrayPlugin)
-  .enablePlugins(AutomateHeaderPlugin && Sonatype)
-  .settings(sonatypeSettings: _*)
-  .settings(common: _*)
+  .configure(sharedBuildToolSupportSetup)
   .settings(
-    name := "lagom-sbt-build-tool-support",
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     sbtPlugin := true,
-    sourceGenerators in Compile += Def.task {
-      Generators.version(version.value, (sourceManaged in Compile).value)
-    }.taskValue,
-    Dependencies.`build-tool-support`,
-    target := target.value / "lagom-sbt-build-tool-support"
+    target := target.value / "lagom-sbt-build-tool-support",
   )
   .dependsOn(`server-containers`)
 

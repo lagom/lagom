@@ -11,7 +11,6 @@ import java.net.URL
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 import java.util.{ Map => JMap }
 
 import com.datastax.driver.core.Cluster
@@ -49,9 +48,7 @@ private[lagom] object Servers {
     protected type Server
 
     protected class ServerProcess(process: Process) {
-      private val killOnExitCallback = new Thread(new Runnable() {
-        override def run(): Unit = kill()
-      })
+      private val killOnExitCallback = new Thread(() => kill())
 
       // Needed to make sure the spawned process is killed when the current process (i.e., the sbt console) is shut down
       private[Servers] def enableKillOnExit(): Unit  = Runtime.getRuntime.addShutdownHook(killOnExitCallback)
@@ -74,12 +71,10 @@ private[lagom] object Servers {
 
       // use CompletionStage / Runnable / Thread in case scala equivalent are not available on classloader.
       private val promise: CompletableFuture[Int] = new CompletableFuture[Int]()
-      new Thread(new Runnable {
-        override def run(): Unit = {
-          process.waitFor()
-          // if process completes via Kill, this promise.complete is ignored.
-          promise.complete(process.exitValue()) // TODO: replace int with proper typing
-        }
+      new Thread(() => {
+        process.waitFor()
+        // if process completes via Kill, this promise.complete is ignored.
+        promise.complete(process.exitValue()) // TODO: replace int with proper typing
       }).start()
       def completionHook: CompletionStage[Int] = promise
     }
@@ -148,9 +143,7 @@ private[lagom] object Servers {
           log.info("Service gateway is running at " + server.serviceGatewayAddress)
         }
 
-        new Closeable {
-          override def close(): Unit = stop(log)
-        }
+        () => stop(log)
       }
 
     private def withContextClassloader[T](loader: ClassLoader)(body: ClassLoader => T): T = {
@@ -210,9 +203,7 @@ private[lagom] object Servers {
 
           waitForRunningCassandra(log, server, maxWaiting)
         }
-        new Closeable {
-          override def close(): Unit = stop(log)
-        }
+        () => stop(log)
       }
 
     private def waitForRunningCassandra(log: MiniLogger, server: Server, maxWaiting: FiniteDuration): Unit = {
@@ -294,7 +285,7 @@ private[lagom] object Servers {
           cleanOnStart.toString ::
           kafkaPropertiesFile.toList.map(_.getAbsolutePath)
 
-      val log4jOutput   = targetDir.getAbsolutePath + java.io.File.separator + "log4j_output"
+      val log4jOutput   = targetDir.getAbsolutePath + File.separator + "log4j_output"
       val sysProperties = List(s"-Dkafka.logs.dir=$log4jOutput")
       val process = LagomProcess.runJava(
         jvmOptions.toList ::: sysProperties,
@@ -303,18 +294,14 @@ private[lagom] object Servers {
         args
       )
       server = new KafkaProcess(process)
-      server.completionHook.thenAccept(
-        new Consumer[Int] {
-          override def accept(exitCode: Int): Unit = if (exitCode != 0) println("Kafka Server closed unexpectedly.")
-        }
-      )
+      server.completionHook.thenAccept { exitCode =>
+        if (exitCode != 0) println("Kafka Server closed unexpectedly.")
+      }
       server.enableKillOnExit()
       log.info("Starting Kafka")
       log.debug(s"Kafka log output can be found under $log4jOutput.")
 
-      new Closeable {
-        override def close(): Unit = stop(log)
-      }
+      () => stop(log)
     }
 
     protected def stop(log: MiniLogger): Unit = {
@@ -335,13 +322,4 @@ private[lagom] object Servers {
     }
   }
 
-}
-
-private[lagom] object StaticServiceLocations {
-  def staticServiceLocations(lagomCassandraPort: Int, lagomKafkaAddress: String): Map[String, String] = {
-    Map(
-      "cas_native"   -> s"tcp://127.0.0.1:$lagomCassandraPort/cas_native",
-      "kafka_native" -> s"tcp://$lagomKafkaAddress/kafka_native"
-    )
-  }
 }
