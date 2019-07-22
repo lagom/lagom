@@ -199,8 +199,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
         testProbe
       )
 
-    projectionRegistry.registerProjectionGroup(
-      projectionName,
+    projectionRegistry.reregisterProjection      projectionName,
       workerNames,
       workerProps,
       runInRole

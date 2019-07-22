@@ -54,7 +54,7 @@ private[lagom] object Producer {
 
     val entityIds = tags.toSet
 
-    projectionRegistry.registerProjectionGroup(
+    projectionRegistry.registerProjection(
       projectionName,
       entityIds,
       topicProducerProps,

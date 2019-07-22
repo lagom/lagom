@@ -109,7 +109,7 @@ private[lagom] class ReadSideImpl @Inject()(
           processorFactory
         )
 
-      projectionRegistry.registerProjectionGroup(
+      projectionRegistry.registerProjection(
         projectionName,
         entityIds,
         readSidePropsFactory,
