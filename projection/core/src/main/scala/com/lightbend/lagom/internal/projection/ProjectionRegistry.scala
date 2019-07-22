@@ -41,6 +41,8 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
   private lazy val clusterShardingSettings    = ClusterShardingSettings(system)
   private lazy val clusterDistribution        = ClusterDistribution(system)
 
+
+
   /**
    *
    * @param projectionName unique name identifying the projection group
@@ -48,7 +50,7 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
    * @param projectionWorkerPropsFactory
    * @param runInRole
    */
-  private[lagom] def registerProjectionGroup(
+  private[lagom] def registerProjection(
       projectionName: String,
       shardNames: Set[String],
       projectionWorkerPropsFactory: String => Props,

@@ -67,7 +67,7 @@ private[lagom] class ReadSideImpl(
         processorFactory
       )
 
-    projectionRegistry.registerProjectionGroup(projectionName, entityIds, readSidePropsFactory, config.role)
+    projectionRegistry.registerProjection(projectionName, entityIds, readSidePropsFactory, config.role)
 
   }
 }
