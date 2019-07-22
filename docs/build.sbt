@@ -150,11 +150,17 @@ lazy val akkaDiscoveryScaladsl           = ProjectRef(parentDir, "akka-discovery
 // Needed to compile test classes using immutables annotation
 lazy val immutables = ProjectRef(parentDir, "immutables")
 
+// Pass through system properties starting with "akka"
+// Used to set -Dakka.test.timefactor in CI
+val defaultJavaOptions = Vector("-Xms256M", "-Xmx512M") ++ sys.props.collect {
+  case (key, value) if key.startsWith("akka") => s"-D$key=$value"
+}
+
 // for forked tests, necessary for Cassandra
 def forkedTests: Seq[Setting[_]] = Seq(
   fork in Test := true,
   concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
-  javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M"),
+  javaOptions in Test ++= defaultJavaOptions,
   testGrouping in Test := (definedTests in Test).map(singleTestsGrouping).value
 )
 
@@ -162,12 +168,11 @@ def forkedTests: Seq[Setting[_]] = Seq(
 def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // We could group non Cassandra tests into another group
   // to avoid new JVM for each test, see https://www.scala-sbt.org/release/docs/Testing.html
-  val javaOptions = Vector("-Xms256M", "-Xmx512M")
   tests.map { test =>
     Tests.Group(
       name = test.name,
       tests = Seq(test),
-      runPolicy = Tests.SubProcess(ForkOptions().withRunJVMOptions(javaOptions)),
+      runPolicy = Tests.SubProcess(ForkOptions().withRunJVMOptions(defaultJavaOptions)),
     )
   }
 }
