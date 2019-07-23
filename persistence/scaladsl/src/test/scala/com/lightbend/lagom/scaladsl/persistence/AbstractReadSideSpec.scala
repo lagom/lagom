@@ -33,7 +33,7 @@ import akka.testkit.TestActor.KeepRunning
 import akka.testkit.TestProbe
 import akka.util.Timeout
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
-import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.RegisterProjection
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.RegisterProjectionWorker
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.internal.projection.WorkerHolderActor
 import com.lightbend.lagom.projection.Started
@@ -153,7 +153,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       def run(sender: ActorRef, msg: Any): AutoPilot =
         msg match {
           // 3. reply the registration request with a `requestedStatus` (defaults to `Started`)
-          case RegisterProjection(_) =>
+          case RegisterProjectionWorker(_) =>
             sender ! Started
             KeepRunning
           case _ => KeepRunning
@@ -191,7 +191,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
     "register on the projection registry" in {
       createReadSideProcessor()
-      projectionRegistryProbe.get.expectMsgType[ProjectionRegistryActor.RegisterProjection]
+      projectionRegistryProbe.get.expectMsgType[ProjectionRegistryActor.RegisterProjectionWorker]
     }
 
     "process events and save query projection" in {

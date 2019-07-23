@@ -37,7 +37,7 @@ import scala.concurrent.duration._
 object ProjectionRegistryActor {
   def props = Props(new ProjectionRegistryActor)
 
-  case class RegisterProjection(coordinates: WorkerCoordinates)
+  case class RegisterProjectionWorker(coordinates: WorkerCoordinates)
 
   case class WorkerCoordinates(projectionName: String, tagName: String) {
     val asKey: String                = s"$projectionName-$tagName"
@@ -89,7 +89,7 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
 
-    case RegisterProjection(coordinates) =>
+    case RegisterProjectionWorker(coordinates) =>
       log.debug(s"Registering worker $coordinates to [${sender().path.toString}]")
       // keep track
       val workerKey: WorkerKey = coordinates.asKey
