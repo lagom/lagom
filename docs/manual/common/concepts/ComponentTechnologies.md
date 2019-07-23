@@ -6,9 +6,9 @@ As a complete microservices platform, Lagom assembles a collection of technologi
 
 * Akka --- Lagom [[Persistence|PersistentEntity]], [[Publish-Subscribe|PubSub]], and [[Cluster|Cluster]] are implemented on top of [Akka](https://akka.io/), Lightbend's toolkit for building concurrent, distributed, and resilient message-driven applications. (This is an implementation detail that does not directly concern you when developing simple microservices. However, you can call also [[Akka APIs|Akka]] directly.)
 
-    * To scale your microservices out across multiple servers, Lagom provides clustering via [Akka Cluster](https://doc.akka.io/docs/akka/2.5/cluster-usage.html).
+    * To scale your microservices out across multiple servers, Lagom provides clustering via [Akka Cluster](https://doc.akka.io/docs/akka/2.6/cluster-usage.html).
 
-    * As described in [[Implementing services|ServiceImplementation]], A Lagom service may be "simple" or "streamed".  Streaming, asynchronous Lagom services are built on top of [Akka Streams](https://doc.akka.io/docs/akka/2.5/stream/index.html).
+    * As described in [[Implementing services|ServiceImplementation]], A Lagom service may be "simple" or "streamed".  Streaming, asynchronous Lagom services are built on top of [Akka Streams](https://doc.akka.io/docs/akka/2.6/stream/index.html).
 
 * [Lightbend Platform](https://www.lightbend.com/lightbend-platform) subscribers can use additional components to operationalize and production-harden their systems.
 
