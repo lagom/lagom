@@ -2,7 +2,7 @@
 
 Instances of the same service may run on multiple nodes, for scalability and redundancy. Nodes may be physical or virtual machines, grouped in a cluster.
 
-The underlying clustering technology is [Akka Cluster](https://doc.akka.io/docs/akka/2.5/cluster-usage.html?language=java).
+The underlying clustering technology is [Akka Cluster](https://doc.akka.io/docs/akka/2.6/cluster-usage.html?language=java).
 
 If instances of a service need to know about each other, they must join the same cluster. Within a cluster, services may use the [[Persistence|PersistentEntity]] and [[Publish-Subscribe|PubSub]] modules of Lagom.
 
@@ -48,7 +48,7 @@ The sections below cover the two options for Cluster Joining during Production i
 
 Starting from version 1.5.0, Lagom offers support for [Akka Cluster Bootstrap](https://doc.akka.io/docs/akka-management/1.0/bootstrap/). Akka Cluster Bootstrap is enabled by default in production mode and disabled in development and test mode.
 
-Akka Cluster Bootstrap helps forming (or joining to) a cluster by using [Akka Discovery](https://doc.akka.io/docs/akka/2.5/discovery/index.html) to discover peer nodes. It is an alternative to configuring static seed-nodes in dynamic deployment environments such as on Kubernetes or AWS.
+Akka Cluster Bootstrap helps forming (or joining to) a cluster by using [Akka Discovery](https://doc.akka.io/docs/akka/2.6/discovery/index.html) to discover peer nodes. It is an alternative to configuring static seed-nodes in dynamic deployment environments such as on Kubernetes or AWS.
 
 It builds on the flexibility of Akka Discovery, leveraging a range of discovery mechanisms depending on the environment you want to run your cluster in.
 
@@ -128,7 +128,7 @@ The node that is configured first in the list of `seed-nodes` is special. Only t
 
 The reason for the special first seed node is to avoid forming separated islands when starting from an empty cluster. If the first seed node is restarted and there is an existing cluster it will try to join the other seed nodes, i.e. it will join the existing cluster.
 
-You can read more about cluster joining in the [Akka documentation](https://doc.akka.io/docs/akka/2.5/cluster-usage.html?language=java#joining-to-seed-nodes).
+You can read more about cluster joining in the [Akka documentation](https://doc.akka.io/docs/akka/2.6/cluster-usage.html?language=java#joining-to-seed-nodes).
 
 ## Downing
 

@@ -75,7 +75,7 @@ And, you will also need to add the following in your project's `application.conf
 akka.loglevel=DEBUG
 ```
 
-Furthermore, you may also wish to configure an appender for the Akka loggers that includes useful properties such as thread and actor address.  For more information about configuring Akka's logging, including details on Logback and Slf4j integration, see the [Akka documentation](https://doc.akka.io/docs/akka/2.5/logging.html).
+Furthermore, you may also wish to configure an appender for the Akka loggers that includes useful properties such as thread and actor address.  For more information about configuring Akka's logging, including details on Logback and Slf4j integration, see the [Akka documentation](https://doc.akka.io/docs/akka/2.6/logging.html).
 
 ### Play logging configuration
 

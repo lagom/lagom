@@ -217,7 +217,7 @@ The default configuration should be good starting point, and the following setti
 
 ## Underlying Implementation
 
-Each `PersistentEntity` instance is executed by a [PersistentActor](https://doc.akka.io/docs/akka/2.5/persistence.html?language=scala) that is managed by [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.5/cluster-sharding.html?language=scala).
+Each `PersistentEntity` instance is executed by a [PersistentActor](https://doc.akka.io/docs/akka/2.6/persistence.html?language=scala) that is managed by [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/cluster-sharding.html?language=scala).
 
 
 ## Execution details (advanced)
@@ -236,7 +236,7 @@ This needs a deeper explanation to understand the guarantees provided by Lagom. 
 6. if the snapshotting threshold is exceeded, a snapshot is generated and stored
 7. finally, the command processing completes and a new command may be processed.
 
-If you are familiar with [Akka Persistence](https://doc.akka.io/docs/akka/2.5/persistence.html) this process is slightly different in few places:
+If you are familiar with [Akka Persistence](https://doc.akka.io/docs/akka/2.6/persistence.html) this process is slightly different in few places:
 
 * new commands are not processed until events are stored, the `Effect` completed and the snapshot updated (if necessary). Akka provides the same behavior and also `async` alternatives that cause new commands to be processed even before all event handlers have completed.
 * saving snapshots is an operation run under the covers _at least_ every `lagom.persistence.snapshot-after` events (see [Configuration](#Configuration) above) but "storing events atomically" takes precedence. Imagine we want a snapshot every 100 events and we already have 99 events, if the next command emits 3 events the snapshot will only be stored after event number 102 because events `[100, 101, 102]` will be stored atomically and only after it'll be possible to create a snapshot.
