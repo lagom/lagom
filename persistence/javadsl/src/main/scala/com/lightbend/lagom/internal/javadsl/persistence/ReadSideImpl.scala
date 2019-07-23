@@ -16,6 +16,7 @@ import akka.stream.Materializer
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.Config
 import play.api.inject.Injector
@@ -97,9 +98,9 @@ private[lagom] class ReadSideImpl @Inject()(
 
     val projectionName = readSideName
 
-    val readSidePropsFactory = (tagName: String) =>
+    val readSidePropsFactory = (coordinates: WorkerCoordinates) =>
       ReadSideActor.props(
-        tagName,
+        coordinates.tagName,
         config,
         eventClass,
         globalPrepareTask,

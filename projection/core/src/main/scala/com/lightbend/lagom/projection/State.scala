@@ -5,7 +5,7 @@
 package com.lightbend.lagom.projection
 
 import akka.annotation.ApiMayChange
-import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerMetadata
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 
 import scala.util.control.NoStackTrace
 
@@ -18,7 +18,7 @@ sealed trait Started extends Status
 case object Started  extends Started
 
 @ApiMayChange
-case class Worker(name: String, requestedStatus: Status, observedStatus: Status)
+case class Worker(tagName: String, key: String, requestedStatus: Status, observedStatus: Status)
 
 @ApiMayChange
 case class Projection(name: String, workers: Seq[Worker])
@@ -28,28 +28,29 @@ case class State(projections: Seq[Projection]) {
   def findProjection(projectionName: String): Option[Projection] =
     projections.find(_.name == projectionName)
 
-  def findWorker(workerName: String): Option[Worker] =
-    projections.flatMap(_.workers).find(_.name == workerName)
+  def findWorker(workerKey: String): Option[Worker] =
+    projections.flatMap(_.workers).find(_.key == workerKey)
 }
 
 object State {
 
-  type WorkerName = String
+  type WorkerKey = String
   private[lagom] def fromReplicatedData(
-      nameIndex: Map[WorkerName, WorkerMetadata],
-      desiredStatusLocalCopy: Map[WorkerName, Status],
-      observedStatusLocalCopy: Map[WorkerName, Status]
+      nameIndex: Map[WorkerKey, WorkerCoordinates],
+      desiredStatusLocalCopy: Map[WorkerKey, Status],
+      observedStatusLocalCopy: Map[WorkerKey, Status]
   ): State = {
 
     val workers: Map[String, Seq[Worker]] = nameIndex
       .map {
-        case (workerName, metadata) =>
+        case (workerKey, coordinates) =>
           val w = Worker(
-            workerName,
-            desiredStatusLocalCopy.getOrElse(workerName, Stopped),
-            observedStatusLocalCopy.getOrElse(workerName, Stopped)
+            coordinates.tagName,
+            coordinates.asKey,
+            desiredStatusLocalCopy.getOrElse(workerKey, Stopped),
+            observedStatusLocalCopy.getOrElse(workerKey, Stopped)
           )
-          w -> metadata.projectionName
+          w -> coordinates.projectionName
       }
       .toMap
       .groupBy(_._2)
