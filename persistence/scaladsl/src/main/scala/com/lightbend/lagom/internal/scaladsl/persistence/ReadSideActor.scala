@@ -47,6 +47,7 @@ private[lagom] object ReadSideActor {
       )
     )
 
+  case object Prepare
   case object Start
 
 }
@@ -78,17 +79,23 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
   override def preStart(): Unit = {
     super.preStart()
-
-    implicit val timeout: Timeout = Timeout(config.globalPrepareTimeout)
-    globalPrepareTask
-      .askExecute()
-      .map { _ =>
-        Start
-      }
-      .pipeTo(self)
+    self ! Prepare
   }
 
   def receive: Receive = {
+    case Prepare => {
+      implicit val timeout: Timeout = Timeout(config.globalPrepareTimeout)
+      globalPrepareTask
+        .askExecute()
+        .map { _ =>
+          Start
+        }
+        .pipeTo(self)
+      context.become(prepared)
+    }
+  }
+
+  def prepared: Receive = {
     case Start =>
       val tag = new AggregateEventTag(clazz, tagName)
       val backoffSource: Source[Done, NotUsed] =
@@ -123,7 +130,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
     case Status.Failure(cause) =>
       // Crash if the globalPrepareTask or the event stream fail
-      // This actor will be restarted by ClusterDistribution
+      // This actor will be restarted by WorkerHolderActor
       throw cause
 
   }

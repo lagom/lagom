@@ -6,6 +6,7 @@ package com.lightbend.lagom.scaladsl.projection
 
 import akka.annotation.ApiMayChange
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.projection.State
 
 import scala.concurrent.Future
@@ -22,7 +23,7 @@ class Projections(private val registry: ProjectionRegistry) {
 
   def stopAllWorkers(projectionName: String) =
     registry.stopAllWorkers(projectionName)
-  def stopWorker(projectionWorkerName: String) =
-    registry.stopWorker(projectionWorkerName)
+  def stopWorker(projectionName: String, tagName: String) =
+    registry.stopWorker(WorkerCoordinates(projectionName, tagName))
 
 }

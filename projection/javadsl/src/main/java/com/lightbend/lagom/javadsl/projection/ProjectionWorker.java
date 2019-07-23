@@ -28,7 +28,7 @@ public final class ProjectionWorker {
   }
 
   static ProjectionWorker asJava(com.lightbend.lagom.projection.Worker worker) {
-    return new ProjectionWorker(worker.name(), worker.requestedStatus(), worker.observedStatus());
+    return new ProjectionWorker(worker.key(), worker.requestedStatus(), worker.observedStatus());
   }
 
   public String getName() {

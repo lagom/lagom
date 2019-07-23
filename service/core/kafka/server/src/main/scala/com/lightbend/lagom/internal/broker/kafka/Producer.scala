@@ -11,6 +11,7 @@ import akka.persistence.query.Offset
 import akka.stream.Materializer
 import akka.stream.scaladsl._
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import org.apache.kafka.common.serialization.Serializer
 
@@ -39,9 +40,9 @@ private[lagom] object Producer {
     val projectionName = s"kafkaProducer-$topicId"
 
     val producerConfig = ProducerConfig(system.settings.config)
-    val topicProducerProps = (tagName: String) =>
+    val topicProducerProps = (coordinates: WorkerCoordinates) =>
       TopicProducerActor.props(
-        tagName,
+        coordinates.tagName,
         kafkaConfig,
         producerConfig,
         locateService,

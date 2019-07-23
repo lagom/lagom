@@ -7,7 +7,6 @@ package com.lightbend.lagom.internal.projection
 import akka.Done
 import akka.actor.Actor
 import akka.actor.ActorLogging
-import akka.actor.ActorRef
 import akka.actor.Props
 import akka.actor.Terminated
 import akka.remote.testconductor.RoleName
@@ -15,6 +14,7 @@ import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.cluster.ClusteredMultiNodeUtils
 import com.lightbend.lagom.internal.cluster.MultiNodeExpect
 import com.lightbend.lagom.internal.projection.FakeProjectionActor.FakeStarting
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.projection.Projection
 import com.lightbend.lagom.projection.Started
 import com.lightbend.lagom.projection.Status
@@ -43,40 +43,43 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
 
   "A ProjectionRegistry" must {
 
-    "register a projection with a single worker" in { // already passing
-      val tagNamePrefix = "streamName"
-      val tagName001    = s"${tagNamePrefix}001"
+    "register a projection with a single worker" in {
+      val projectionName = "test-canary"
+      val tagNamePrefix  = "streamName"
+      val tagName001     = s"${tagNamePrefix}001"
 
-      registerProjection("test-canary", Set(tagName001))
-      expectWorkerStatus(tagName001, Started)
+      registerProjection(projectionName, Set(tagName001))
+
+      expectWorkerStatus(projectionName, tagName001, Started)
     }
 
-    "register a projection with multiple workers" in { // already passing
+    "register a projection with multiple workers" in {
       val projectionName = "test-canary-many-workers"
       val tagNamePrefix  = projectionName
       val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
 
       registerProjection(projectionName, tagNames.toSet)
-      expectProjectionStatus(projectionName, Started)
+      expectProjectionStatus(projectionName, 5, Started)
     }
 
-    "request the pause of a projection worker" in { // already passing
+    "request the pause of a projection worker" in {
       enterBarrier("request-pause-worker-test")
       val projectionName = "test-pause-worker"
       val tagNamePrefix  = projectionName
       val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
       val tagName001     = tagNames.head
+      val coordinates001 = WorkerCoordinates(projectionName, tagNames.head)
 
       registerProjection(projectionName, tagNames.toSet)
 
       // await until seen as ready
-      expectWorkerStatus(tagName001, Started)
+      expectWorkerStatus(projectionName, tagName001, Started)
 
       enterBarrier("request-pause-worker-test-all-nodes-ready")
       runOn(RoleName("node2")) {
-        projectionRegistry.stopWorker(tagName001)
+        projectionRegistry.stopWorker(coordinates001)
       }
-      expectWorkerStatus(tagName001, Stopped)
+      expectWorkerStatus(projectionName, tagName001, Stopped)
     }
 
     "request the pause of a complete projection" in {
@@ -88,22 +91,23 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
       registerProjection(projectionName, tagNames.toSet)
 
       // await until seen as ready
-      expectProjectionStatus(projectionName, Started)
+      expectProjectionStatus(projectionName, 5, Started)
 
       // Don't try to `stopWorkers` until we've seen `desired` propagate completely
       enterBarrier("request-pause-projection-test-all-nodes-ready")
       runOn(RoleName("node2")) {
         projectionRegistry.stopAllWorkers(projectionName)
       }
-      expectProjectionStatus(projectionName, Stopped)
+      expectProjectionStatus(projectionName, 5, Stopped)
     }
 
-    "tell a projection worker to stop when requested" in { // already passing
+    "tell a projection worker to stop when requested" in {
       enterBarrier("do-pause-worker-test")
       val projectionName = "do-pause-worker"
       val tagNamePrefix  = projectionName
       val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
       val tagName001     = tagNames.head
+      val coordinates001 = WorkerCoordinates(projectionName, tagNames.head)
 
       val testProbe = registerProjection(projectionName, tagNames.toSet)
       testProbe.ignoreMsg {
@@ -111,21 +115,22 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
         case _             => true
       }
 
-      expectWorkerStatus(tagName001, Started)
+      expectWorkerStatus(projectionName, tagName001, Started)
 
       enterBarrier("do-pause-worker-test-all-nodes-ready")
       runOn(RoleName("node2")) {
-        projectionRegistry.stopWorker(tagName001)
+        projectionRegistry.stopWorker(coordinates001)
       }
-      expectWorkerStatus(tagName001, Stopped)
+      expectWorkerStatus(projectionName, tagName001, Stopped)
     }
 
-    "tell a projection worker to stop and then start when requested" in { // already passing
+    "tell a projection worker to stop and then start when requested" in {
       enterBarrier("do-pause-and-resume-worker-test")
       val projectionName = "do-pause-and-resume-worker"
       val tagNamePrefix  = projectionName
       val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
       val tagName001     = tagNames.head
+      val coordinates001 = WorkerCoordinates(projectionName, tagNames.head)
 
       // build a projection with a single worker bound to run on `node3`
       val testProbe = registerProjection(projectionName, tagNames.toSet)
@@ -134,20 +139,20 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
       }
 
       // await until seen as ready
-      expectWorkerStatus(tagName001, Started)
+      expectWorkerStatus(projectionName, tagName001, Started)
 
       enterBarrier("do-pause-and-resume-worker-test-all-nodes-ready-001")
       runOn(RoleName("node2")) {
-        projectionRegistry.stopWorker(tagName001)
+        projectionRegistry.stopWorker(coordinates001)
       }
 
-      expectWorkerStatus(tagName001, Stopped)
+      expectWorkerStatus(projectionName, tagName001, Stopped)
       enterBarrier("do-pause-and-resume-worker-test-all-nodes-ready-002")
 
       // once the worker is stopped we no longer want to ignore messages in the probe.
       testProbe.ignoreNoMsg()
       runOn(RoleName("node3")) {
-        projectionRegistry.startWorker(tagName001)
+        projectionRegistry.startWorker(coordinates001)
       }
       expectMsgFromWorker(
         FakeStarting(tagName001),
@@ -165,20 +170,21 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
     Await.result(expectStarting, multiExpectTimeout) shouldBe Done
   }
 
-  private def expectWorkerStatus(workerName: String, expectedStatus: Status) = {
+  private def expectWorkerStatus(projectionName: String, tagName: String, expectedStatus: Status) = {
     eventually(Timeout(pc.timeout), Interval(pc.interval)) {
       whenReady(projectionRegistry.getState()) { x =>
-        val maybeWorker = x.findWorker(workerName)
+        val maybeWorker = x.findWorker(WorkerCoordinates(projectionName, tagName).asKey)
         maybeWorker.map(_.observedStatus) should be(Some(expectedStatus))
         maybeWorker.map(_.requestedStatus) should be(Some(expectedStatus))
       }
     }
   }
 
-  private def expectProjectionStatus(projectionName: String, expectedStatus: Status) = {
+  private def expectProjectionStatus(projectionName: String, expectedWorkerCount: Int, expectedStatus: Status) = {
     eventually(Timeout(pc.timeout), Interval(pc.interval)) {
       whenReady(projectionRegistry.getState()) { state =>
         val projection: Projection = state.findProjection(projectionName).get
+        projection.workers.size shouldBe expectedWorkerCount
         projection.workers.forall(_.requestedStatus == expectedStatus) should be(true)
         projection.workers.forall(_.observedStatus == expectedStatus) should be(true)
       }
@@ -188,24 +194,22 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually wit
 
   private def registerProjection(
       projectionName: String,
-      workerNames: Set[String],
+      tagNames: Set[String],
       runInRole: Option[String] = None
   ): TestProbe = {
     val testProbe = TestProbe()
 
-    val workerProps = (workerName: String) =>
+    val workerProps = (workerCoordinates: WorkerCoordinates) =>
       FakeProjectionActor.props(
-        workerName,
+        workerCoordinates.tagName,
         testProbe
       )
 
-    projectionRegistry.reregisterProjection      projectionName,
-      workerNames,
-      workerProps,
-      runInRole
-    )
+    projectionRegistry.registerProjection(projectionName, tagNames, workerProps, runInRole)
 
-    workerNames.foreach(projectionRegistry.startWorker)
+    tagNames.foreach { tagName =>
+      projectionRegistry.startWorker(WorkerCoordinates(projectionName, tagName))
+    }
 
     testProbe
   }
@@ -215,16 +219,16 @@ object FakeProjectionActor {
 
   case class FakeStarting(tagName: String)
 
-  def props(workerName: String, testProbe: TestProbe): Props =
-    Props(new FakeProjectionActor(workerName, testProbe))
+  def props(tagName: String, testProbe: TestProbe): Props =
+    Props(new FakeProjectionActor(tagName, testProbe))
 }
 
 // its state should be an actual copy of the desired state in the projection registry
-class FakeProjectionActor(workerName: String, testProbe: TestProbe) extends Actor with ActorLogging {
+class FakeProjectionActor(tagName: String, testProbe: TestProbe) extends Actor with ActorLogging {
 
   override def preStart(): Unit = {
     super.preStart()
-    testProbe.ref ! FakeStarting(workerName)
+    testProbe.ref ! FakeStarting(tagName)
   }
 
   override def receive: Receive = {
