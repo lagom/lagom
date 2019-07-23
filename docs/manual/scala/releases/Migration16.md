@@ -47,11 +47,11 @@ akka.cluster.sharding.state-store-mode = persistence
 ```
 ### Akka Persistence Cassandra Update
 
-The Akka Persistence Cassandra plugin is update to version 0.99. This version requires a schema migration before you upgrade to Lagom 1.6.0.
+The Akka Persistence Cassandra plugin is updated to version 0.99. This version requires a schema migration before you upgrade to Lagom 1.6.0.
 
 For more information on how to migrate, consult [Akka Persistence Cassandra migration document](https://doc.akka.io/docs/akka-persistence-cassandra/current/migrations.html#migrations-to-0-80-and-later).
 
-Note that although it's technically possible to run the migration while running your application we advice against it.
+Note that although it's technically possible to run the migration while running your application we advise against it.
 
 ## Upgrading a production system
 
@@ -63,7 +63,7 @@ This is a summary of changes in Lagom 1.6 that would require a full cluster shut
 
 * The change in [[Akka Remote|Migration16#Remoting-Artery] default implementation.
 * The change in default [[Shard Coordination|Migration16#Shard-Coordination] strategy.
-* The change in [[Cassandra plugin version|Migration16#Akka-Persistence-Cassandra-Update]. Only impact Lagom applications using Cassandra.
+* The change in [[Cassandra plugin version|Migration16#Akka-Persistence-Cassandra-Update]. Only impacts Lagom applications using Cassandra.
 
 ## Minor changes
 
