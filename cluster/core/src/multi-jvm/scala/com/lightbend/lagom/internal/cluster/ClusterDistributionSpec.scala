@@ -14,7 +14,6 @@ import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-// import FakeActor.ProbeResponse
 import akka.cluster.sharding.ShardRegion
 import akka.cluster.sharding.ShardRegion.{CurrentShardRegionState, GetShardRegionState}
 import akka.util.Timeout
