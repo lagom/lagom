@@ -31,7 +31,7 @@ object WorkerHolderActor {
       BackoffSupervisor.props(
         BackoffOpts.onFailure(
           workerProps(coordinates),
-          childName = s"${coordinates.workerActorName}",
+          childName = coordinates.workerActorName,
           minBackoff = 3.seconds,
           maxBackoff = 30.seconds,
           randomFactor = 0.2
@@ -41,8 +41,8 @@ object WorkerHolderActor {
     /*
      * <pre>
      * WorkerHolder uses names provided by Akka Cluster sharding (we don't control that name)
-     *   +-- BackOffActor (named `$workerKey` as set on `doStart` below)
-     *      +-- actual worker Actor (named `worker-$workerKey` as set on in lines above)
+     *   +-- BackOffActor (named `coordinates.backoffActorName` as set on `doStart` below)
+     *      +-- actual worker Actor (named `coordinates.workerActorName` as set on in lines above)
      * </pre>
      */
 
@@ -72,7 +72,7 @@ class WorkerHolderActor(
     case EnsureActive(tagName) =>
       val coordinates = WorkerCoordinates(projectionName, tagName)
       log.debug(s"Requesting registry of $coordinates [${self.path.toString}].")
-      projectionRegistryActorRef ! ProjectionRegistryActor.RegisterProjection(coordinates)
+      projectionRegistryActorRef ! ProjectionRegistryActor.RegisterProjectionWorker(coordinates)
       // default observed status is Stopped
       doStop(coordinates)
   }
@@ -89,7 +89,6 @@ class WorkerHolderActor(
   //    `EnsureActive` arrives. This will force a redelivery of the requested status and will
   //    decouple the implementation of ProjectionRegistryActor from this implementation.
 
-  // TODO: when child dies, restart it. Don't report it as stopped
   private def started(coordinates: WorkerCoordinates): Receive = {
     case EnsureActive(_) => // yes, we're active
     case Started         => // yes, we're started
