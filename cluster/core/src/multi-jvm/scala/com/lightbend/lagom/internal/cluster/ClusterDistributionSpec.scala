@@ -36,7 +36,7 @@ class ClusterDistributionSpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wi
 
   "A ClusterDistribution" must {
 
-    "distribute the entityIds across nodes (so all nodes get a response)" in  {
+    "distribute the entityIds across nodes (so all nodes get a response)" in {
 
       val numOfEntities = 20
       val minimalShardsPerNode = numOfEntities / numOfNodes
