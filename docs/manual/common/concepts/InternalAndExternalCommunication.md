@@ -17,7 +17,7 @@ While similar in principle, inter- and intra-service communication have very dif
 
 Nodes of a single service (collectively called a cluster) require less decoupling. They share the same code and are managed together, as a set, by a single team or individual. For this reason, intra-service communication can take advantage of mechanisms that have less overhead and better performance. For example:
 
-* Many Lagom components use [Akka remoting](https://doc.akka.io/docs/akka/2.5/general/remoting.html) internally, and you can use it directly in your services.
+* Many Lagom components use [Akka remoting](https://doc.akka.io/docs/akka/2.6/general/remoting.html) internally, and you can use it directly in your services.
 
 * [[Distributed publish-subscribe|PubSub]] can be used for low-latency, at-most-once messaging between nodes. Limitations include:
 <ul><ul>
