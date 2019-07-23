@@ -80,7 +80,7 @@ Starting with Lagom 1.5 your application will include [[Akka management HTTP|Clu
 
 Cluster formation now also supports [[Cluster Bootstrapping|Cluster#Joining-during-production-(Akka-Cluster-Bootstrap)]] as a new way to form a cluster.
 
-These new defaults may require at least two changes on your codebase. First, if you want to opt-in to cluster bootstrapping you must make sure you don't set `seed-nodes`. `seed-nodes` always takes precedence over any other cluster formation mechanism. Second, if you use Cluster Bootstrapping, you will have to setup a [discovery](https://doc.akka.io/docs/akka/2.5/discovery/index.html) mechanism (see the [[Lagom Cluster reference guide|Cluster#Akka-Discovery]] for more details).
+These new defaults may require at least two changes on your codebase. First, if you want to opt-in to cluster bootstrapping you must make sure you don't set `seed-nodes`. `seed-nodes` always takes precedence over any other cluster formation mechanism. Second, if you use Cluster Bootstrapping, you will have to setup a [discovery](https://doc.akka.io/docs/akka/2.6/discovery/index.html) mechanism (see the [[Lagom Cluster reference guide|Cluster#Akka-Discovery]] for more details).
 
 #### Service Location
 
