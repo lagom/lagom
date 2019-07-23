@@ -63,7 +63,7 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       lagom.persistence.read-side.offset-timeout = 17s
 
       # Don't terminate the actor system when doing a coordinated shutdown
-      # See http://doc.akka.io/docs/akka/2.5.0/project/migration-guide-2.4.x-2.5.x.html#Coordinated_Shutdown
+      # See http://doc.akka.io/docs/akka/2.6/project/migration-guide-2.4.x-2.5.x.html#Coordinated_Shutdown
       akka.coordinated-shutdown.terminate-actor-system = off
       akka.coordinated-shutdown.run-by-jvm-shutdown-hook = off
       akka.cluster.run-coordinated-shutdown-when-down = off

@@ -68,7 +68,7 @@ So far, all of the service call examples we've seen have used strict messages, f
 
 ### Streamed messages
 
-A streamed message is a message of type [`Source`](https://doc.akka.io/japi/akka/2.5/akka/stream/javadsl/Source.html).  `Source` is an [Akka streams](https://doc.akka.io/docs/akka/2.5/stream/?language=java) API that allows asynchronous streaming and handling of messages.  Here's an example streamed service call:
+A streamed message is a message of type [`Source`](https://doc.akka.io/japi/akka/2.6/akka/stream/javadsl/Source.html).  `Source` is an [Akka streams](https://doc.akka.io/docs/akka/2.6/stream/?language=java) API that allows asynchronous streaming and handling of messages.  Here's an example streamed service call:
 
 @[call-stream](code/docs/services/FirstDescriptor.java)
 
