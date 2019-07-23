@@ -43,7 +43,7 @@ class CassandraClusteredPersistentEntitySpec
 
   import CassandraClusteredPersistentEntityConfig._
 
-  protected override def atStartup() {
+  protected override def atStartup(): Unit = {
     runOn(node1) {
       val cassandraDirectory = new File("target/" + system.name)
       CassandraLauncher.start(
@@ -59,7 +59,7 @@ class CassandraClusteredPersistentEntitySpec
     super.atStartup()
   }
 
-  protected override def afterTermination() {
+  protected override def afterTermination(): Unit = {
     super.afterTermination()
 
     CassandraLauncher.stop()
