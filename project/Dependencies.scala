@@ -165,7 +165,7 @@ object Dependencies {
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
   private val okio    = "com.squareup.okio"    % "okio"   % "2.2.2"
 
-  private val jffi         = "com.github.jnr" % "jffi"          % "1.2.17"
+  private val jffi         = "com.github.jnr" % "jffi"          % "1.2.19"
   private val jnrConstants = "com.github.jnr" % "jnr-constants" % "0.9.9"
   private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.8"
   private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.45"
