@@ -15,13 +15,10 @@ import java.util.Objects;
 public final class ProjectionWorker {
 
   private final String name;
-  private final com.lightbend.lagom.projection.Status requested;
-  private final com.lightbend.lagom.projection.Status observed;
+  private final Status requested;
+  private final Status observed;
 
-  ProjectionWorker(
-      String name,
-      com.lightbend.lagom.projection.Status requested,
-      com.lightbend.lagom.projection.Status observed) {
+  ProjectionWorker(String name, Status requested, Status observed) {
     this.name = name;
     this.requested = requested;
     this.observed = observed;

@@ -73,9 +73,12 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
 
   def startWorker(coordinates: WorkerCoordinates): Unit =
     projectionRegistryRef ! StateRequestCommand(coordinates, Started)
+
   def stopWorker(coordinates: WorkerCoordinates): Unit =
-    projectionRegistryRef ? StateRequestCommand(coordinates, Stopped)
+    projectionRegistryRef ! StateRequestCommand(coordinates, Stopped)
+
   def stopAllWorkers(projectionName: String): Unit  = bulk(projectionName, stopWorker)
+
   def startAllWorkers(projectionName: String): Unit = bulk(projectionName, startWorker)
 
   private[lagom] def getState(): Future[State] = {
