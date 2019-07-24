@@ -17,7 +17,7 @@ import org.scalatest.WordSpec
 /**
  *
  */
-class DesiredStateSpec extends WordSpec with Matchers {
+class ProjectionStateSpec extends WordSpec with Matchers {
 
   private val prj001   = "prj001"
   val p1w1             = prj001 + "-workers-1"
@@ -49,7 +49,7 @@ class DesiredStateSpec extends WordSpec with Matchers {
     coordinates002_1.asKey -> Started
   )
 
-  "DesiredState" should {
+  "ProjectionStateSpec" should {
 
     "be build from a replicatedData" in {
       val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus)
