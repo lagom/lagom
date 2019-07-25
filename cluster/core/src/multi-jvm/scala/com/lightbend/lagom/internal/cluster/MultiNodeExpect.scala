@@ -33,9 +33,6 @@ import akka.util.Timeout
 
 import scala.util.control.NonFatal
 
-/**
- *
- */
 @ApiMayChange
 class MultiNodeExpect(probe: TestProbe)(implicit system: ActorSystem) {
 

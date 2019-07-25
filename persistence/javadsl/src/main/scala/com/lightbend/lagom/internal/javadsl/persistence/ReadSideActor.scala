@@ -95,7 +95,6 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
           config.maxBackoff,
           config.randomBackoffFactor
         ) { () =>
-
           val handler: ReadSideProcessor.ReadSideHandler[Event] = processorFactory().buildHandler()
           val futureOffset: Future[Offset]                      = handler.prepare(tag).toScala
 
@@ -104,7 +103,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
             .initialTimeout(config.offsetTimeout)
             .flatMapConcat { offset =>
               val eventStreamSource = eventStreamFactory(tag, offset).asScala
-              val usersFlow      = handler.handle()
+              val usersFlow         = handler.handle()
               eventStreamSource.via(usersFlow)
             }
 

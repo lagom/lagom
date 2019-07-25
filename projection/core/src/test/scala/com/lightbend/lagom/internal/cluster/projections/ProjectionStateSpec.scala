@@ -4,7 +4,6 @@
 
 package com.lightbend.lagom.internal.cluster.projections
 
-import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.projection.Started
 import com.lightbend.lagom.projection.State
@@ -76,14 +75,14 @@ class ProjectionStateSpec extends WordSpec with Matchers {
 
     "build from default values when workers in nameIndex don't have request or observed values" in {
       val newProjectionName = "new-projection"
-      val newWorkerName = "new-worker-001"
-      val newCoordinates = WorkerCoordinates(newProjectionName, newWorkerName)
+      val newWorkerName     = "new-worker-001"
+      val newCoordinates    = WorkerCoordinates(newProjectionName, newWorkerName)
       val richIndex = nameIndex ++ Map(
         newCoordinates.asKey -> newCoordinates
       )
 
       val defaultRequested = Stopped
-      val defaultObserved = Started
+      val defaultObserved  = Started
 
       val state       = State.fromReplicatedData(richIndex, desiredStatus, observedStatus)(defaultRequested, defaultObserved)
       val maybeWorker = state.findWorker(newCoordinates.asKey)

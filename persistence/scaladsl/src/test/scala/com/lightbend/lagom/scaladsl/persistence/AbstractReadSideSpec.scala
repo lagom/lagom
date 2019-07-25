@@ -96,7 +96,8 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
           sender() ! Status.Failure(new RuntimeException("Simulated global prepare failure") with NoStackTrace)
           stats = stats.recordFailure()
         } else {
-          processorFactory().buildHandler()
+          processorFactory()
+            .buildHandler()
             .globalPrepare()
             .map { _ =>
               prepared.set(true)
