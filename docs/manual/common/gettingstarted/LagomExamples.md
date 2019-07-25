@@ -3,8 +3,8 @@
 After getting started with Lagom's Hello World example, you can learn more about Lagom by downloading and
 running Lagom's "Shopping Cart" example (either [shopping-cart-scala][] or [shopping-cart-java][]).
 
-[shopping-cart-scala]: https://github.com/lagom/lagom-samples/tree/1.5.x/shopping-cart/shopping-cart-scala
-[shopping-cart-java]: https://github.com/lagom/lagom-samples/tree/1.5.x/shopping-cart/shopping-cart-java
+[shopping-cart-scala]: https://github.com/lagom/lagom-samples/tree/1.6.x/shopping-cart/shopping-cart-scala
+[shopping-cart-java]: https://github.com/lagom/lagom-samples/tree/1.6.x/shopping-cart/shopping-cart-java
 
 Some of the Lagom features you can observe include:
 
