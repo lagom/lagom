@@ -119,8 +119,8 @@ private[lagom] class TopicProducerActor[Message](
                 val serviceName = kafkaConfig.serviceName.map(name => s"[$name]").getOrElse("")
                 log.debug("Kafka service {} located at URIs [{}] for producer of [{}]", serviceName, endpoints, topicId)
                 val eventStreamSource: Source[(Message, Offset), _]          = eventStreamFactory(tagName, offset.loadedOffset)
-                val userlandFlow: Flow[(Message, Offset), Future[Done], Any] = eventsPublisherFlow(endpoints, offset)
-                eventStreamSource.via(userlandFlow)
+                val usersFlow: Flow[(Message, Offset), Future[Done], Any] = eventsPublisherFlow(endpoints, offset)
+                eventStreamSource.via(usersFlow)
             }
         }
       }
@@ -140,6 +140,8 @@ private[lagom] class TopicProducerActor[Message](
       context.stop(self)
 
     case Status.Failure(e) =>
+      // Crash if the globalPrepareTask or the event stream fail
+      // This actor will be restarted by WorkerHolderActor
       throw e
   }
 

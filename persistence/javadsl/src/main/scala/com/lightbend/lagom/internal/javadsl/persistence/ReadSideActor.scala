@@ -24,6 +24,7 @@ import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.javadsl.persistence._
 
 import scala.compat.java8.FutureConverters._
+import scala.concurrent.Future
 
 private[lagom] object ReadSideActor {
 
@@ -88,25 +89,28 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   def receive: Receive = {
     case Start =>
       val tag = new AggregateEventTag(clazz, tagName)
-      val backoffSource =
+      val backOffSource =
         RestartSource.withBackoff(
           config.minBackoff,
           config.maxBackoff,
           config.randomBackoffFactor
         ) { () =>
+
           val handler: ReadSideProcessor.ReadSideHandler[Event] = processorFactory().buildHandler()
-          val futureOffset                                      = handler.prepare(tag).toScala
+          val futureOffset: Future[Offset]                      = handler.prepare(tag).toScala
+
           scaladsl.Source
             .fromFuture(futureOffset)
             .initialTimeout(config.offsetTimeout)
             .flatMapConcat { offset =>
               val eventStreamSource = eventStreamFactory(tag, offset).asScala
-              val userlandFlow      = handler.handle()
-              eventStreamSource.via(userlandFlow)
+              val usersFlow      = handler.handle()
+              eventStreamSource.via(usersFlow)
             }
+
         }
 
-      val (killSwitch, streamDone) = backoffSource
+      val (killSwitch, streamDone) = backOffSource
         .viaMat(KillSwitches.single)(Keep.right)
         .toMat(Sink.ignore)(Keep.both)
         .run()
@@ -115,11 +119,12 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
       streamDone.pipeTo(self)
 
     case Done =>
+      // This `Done` is materialization of the `Sink.ignore` above.
       throw new IllegalStateException("Stream terminated when it shouldn't")
 
     case Status.Failure(cause) =>
       // Crash if the globalPrepareTask or the event stream fail
-      // This actor will be restarted by ClusterDistribution
+      // This actor will be restarted by WorkerHolderActor
       throw cause
 
   }
