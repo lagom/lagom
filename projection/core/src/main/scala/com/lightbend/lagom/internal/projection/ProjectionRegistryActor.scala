@@ -164,7 +164,6 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
       // ... and then update indices and stop watching
       actorIndex = actorIndex - reversedActorIndex(deadActor)
       reversedActorIndex = reversedActorIndex - deadActor
-      context.unwatch(deadActor)
 
   }
 

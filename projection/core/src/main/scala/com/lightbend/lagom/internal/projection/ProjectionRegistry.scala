@@ -77,7 +77,7 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
   def stopWorker(coordinates: WorkerCoordinates): Unit =
     projectionRegistryRef ! StateRequestCommand(coordinates, Stopped)
 
-  def stopAllWorkers(projectionName: String): Unit  = bulk(projectionName, stopWorker)
+  def stopAllWorkers(projectionName: String): Unit = bulk(projectionName, stopWorker)
 
   def startAllWorkers(projectionName: String): Unit = bulk(projectionName, startWorker)
 

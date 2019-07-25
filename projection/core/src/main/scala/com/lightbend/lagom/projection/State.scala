@@ -36,9 +36,9 @@ object State {
 
   type WorkerKey = String
   private[lagom] def fromReplicatedData(
-      nameIndex: Map[WorkerKey, WorkerCoordinates],
-      desiredStatusLocalCopy: Map[WorkerKey, Status],
-      observedStatusLocalCopy: Map[WorkerKey, Status]
+                                         nameIndex: Map[WorkerKey, WorkerCoordinates],
+                                         requestedStatusLocalCopy: Map[WorkerKey, Status],
+                                         observedStatusLocalCopy: Map[WorkerKey, Status]
   ): State = {
 
     val workers: Map[String, Seq[Worker]] = nameIndex
@@ -47,7 +47,7 @@ object State {
           val w = Worker(
             coordinates.tagName,
             coordinates.asKey,
-            desiredStatusLocalCopy.getOrElse(workerKey, Stopped),
+            requestedStatusLocalCopy.getOrElse(workerKey, Stopped),
             observedStatusLocalCopy.getOrElse(workerKey, Stopped)
           )
           w -> coordinates.projectionName

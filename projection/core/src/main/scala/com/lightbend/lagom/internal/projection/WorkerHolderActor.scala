@@ -73,8 +73,8 @@ class WorkerHolderActor(
       val coordinates = WorkerCoordinates(projectionName, tagName)
       log.debug(s"Requesting registry of $coordinates [${self.path.toString}].")
       projectionRegistryActorRef ! ProjectionRegistryActor.RegisterProjectionWorker(coordinates)
-      // default observed status is Stopped
-      doStop(coordinates)
+      // become stopped and await for instructions from the Registry
+      becomeStopped(coordinates)
   }
 
   // the response to a RegisterProjection in `projectionRegistryActorRef` should be the
@@ -106,14 +106,18 @@ class WorkerHolderActor(
     case Stopped         => lastStashed = None // we're already stopping
     case Started         => lastStashed = Some(Started)
     case Terminated(_) =>
-      projectionRegistryActorRef ! Stopped
-      context.become(stopped(coordinates))
+      becomeStopped(coordinates)
       // During the `stopping` we may get new requested status.
       // `lastStashed` is a poor man's stash
       lastStashed.foreach { st =>
         self ! st
       }
       lastStashed = None
+  }
+
+  private def becomeStopped(coordinates: WorkerCoordinates): Unit = {
+    projectionRegistryActorRef ! Stopped
+    context.become(stopped(coordinates))
   }
 
   private def doStop(coordinates: WorkerCoordinates): Unit = {
@@ -128,11 +132,22 @@ class WorkerHolderActor(
     }
   }
 
+  private def becomeStarted(coordinates: WorkerCoordinates): Unit = {
+    projectionRegistryActorRef ! Started
+    context.become(started(coordinates))
+  }
+
   private def doStart(coordinates: WorkerCoordinates): Unit = {
     log.debug("Setting self as Started.")
     context.actorOf(workerProps(coordinates), name = coordinates.supervisingActorName)
-    projectionRegistryActorRef ! Started
-    context.become(started(coordinates))
+    // TODO: don't report Started unless underlying is fully started.
+    // - When the underlying actor enters a StartupCrashLoop (e.g., the offsetStore is not ready,
+    // the backing DB causes an issue,...) we will be reporting the observed state as `Started`
+    // but that is not true. Instead, we may need a `starting` phase in this actor (WorkerHolder)
+    // and some form of signal from the underlying actor (the worker) to indicate the stream doing
+    // the processing is 100% operational. Then, the code below will not directly
+    // become(started) but become(starting)
+    becomeStarted(coordinates)
   }
 
 }

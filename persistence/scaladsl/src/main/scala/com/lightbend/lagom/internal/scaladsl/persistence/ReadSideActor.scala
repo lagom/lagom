@@ -79,9 +79,8 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
   override def preStart(): Unit = {
     super.preStart()
-    log.warning(
-      """
-        | - - - - - - - - - Preparing Globally
+    log.warning("""
+                  | - - - - - - - - - Preparing Globally
       """.stripMargin)
     self ! Prepare
   }
@@ -92,9 +91,8 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
       globalPrepareTask
         .askExecute()
         .map { _ =>
-          log.warning(
-            """
-              | - - - - - - - - - Completed the `Execute`
+          log.warning("""
+                        | - - - - - - - - - Completed the `Execute`
             """.stripMargin)
           Start
         }
@@ -105,9 +103,8 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
   def prepared: Receive = {
     case Start =>
-      log.warning(
-        """
-          | - - - - - - - - - STARTED!!!!
+      log.warning("""
+                    | - - - - - - - - - STARTED!!!!
         """.stripMargin)
       val tag = new AggregateEventTag(clazz, tagName)
       val backoffSource: Source[Done, NotUsed] =
@@ -116,16 +113,16 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
           config.maxBackoff,
           config.randomBackoffFactor
         ) { () =>
-          val handler                      = processor().buildHandler()
+          val handler = processor().buildHandler()
           val futureOffset: Future[Offset] =
-            handler.prepare(tag)
-                .map{ offset =>
-                  log.warning(
-                    s"""
-                      | - - - - - - - - - Handler preparation complete. $offset
+            handler
+              .prepare(tag)
+              .map { offset =>
+                log.warning(s"""
+                               | - - - - - - - - - Handler preparation complete. $offset
                     """.stripMargin)
-                  offset
-                }
+                offset
+              }
           Source
             .fromFuture(futureOffset)
             .initialTimeout(config.offsetTimeout)
