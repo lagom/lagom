@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.internal.cluster.projections
 
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.projection.Started
 import com.lightbend.lagom.projection.State
@@ -52,23 +53,42 @@ class ProjectionStateSpec extends WordSpec with Matchers {
   "ProjectionStateSpec" should {
 
     "be build from a replicatedData" in {
-      val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus)
+      val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus)(Started)
       state.projections.size should equal(2)
       state.projections.flatMap(_.workers).size should equal(4)
       state.projections.flatMap(_.workers).find(_.key == coordinates001_3.asKey) shouldBe Some(
         Worker(p1w3, coordinates001_3.asKey, Stopped, Started)
       )
     }
+
     "find projection by name" in {
-      val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus)
+      val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus)(Started)
       state.findProjection(prj001) should not be None
     }
 
     "find worker by key" in {
-      val state       = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus)
+      val state       = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus)(Started)
       val maybeWorker = state.findWorker("prj001-prj001-workers-3")
       maybeWorker shouldBe Some(
         Worker(p1w3, coordinates001_3.asKey, Stopped, Started)
+      )
+    }
+
+    "build from default values when workers in nameIndex don't have request or observed values" in {
+      val newProjectionName = "new-projection"
+      val newWorkerName = "new-worker-001"
+      val newCoordinates = WorkerCoordinates(newProjectionName, newWorkerName)
+      val richIndex = nameIndex ++ Map(
+        newCoordinates.asKey -> newCoordinates
+      )
+
+      val defaultRequested = Stopped
+      val defaultObserved = Started
+
+      val state       = State.fromReplicatedData(richIndex, desiredStatus, observedStatus)(defaultRequested, defaultObserved)
+      val maybeWorker = state.findWorker(newCoordinates.asKey)
+      maybeWorker shouldBe Some(
+        Worker(newWorkerName, newCoordinates.asKey, defaultRequested, defaultObserved)
       )
     }
 
