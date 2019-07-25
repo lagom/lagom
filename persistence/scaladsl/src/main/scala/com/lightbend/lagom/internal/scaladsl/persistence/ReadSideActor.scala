@@ -105,7 +105,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
             .initialTimeout(config.offsetTimeout)
             .flatMapConcat { offset =>
               val eventStreamSource = eventStreamFactory(tag, offset)
-              val usersFlow      = handler.handle()
+              val usersFlow         = handler.handle()
               eventStreamSource.via(usersFlow)
             }
 
