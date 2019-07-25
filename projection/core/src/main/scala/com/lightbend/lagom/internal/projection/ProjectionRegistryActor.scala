@@ -51,6 +51,8 @@ object ProjectionRegistryActor {
   // values since both may have been edited concurrently in other nodes).
   case object GetState
 
+  val DefaultInitialStatus: Status = Started
+
 }
 
 class ProjectionRegistryActor extends Actor with ActorLogging {
@@ -98,15 +100,22 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
       reversedActorIndex = reversedActorIndex.updated(sender, workerKey)
       // when worker registers, we must reply with the requested status (if it's been set already, or Started if not).
       // TODO: parameterize the default initial status
-      val requestedStatus = requestedStatusLocalCopy.getOrElse(workerKey, Started)
-      log.debug(s"Setting requested status [$requestedStatus] on worker $workerKey [${sender().path.toString}]")
-      sender ! requestedStatus
+      val initialStatus = requestedStatusLocalCopy.getOrElse(workerKey, DefaultInitialStatus)
+      log.debug(s"Setting initial status [$initialStatus] on worker $workerKey [${sender().path.toString}]")
+      sender ! initialStatus
 
       // watch
       context.watch(sender)
 
     case GetState =>
-      sender ! State.fromReplicatedData(nameIndexLocalCopy, requestedStatusLocalCopy, observedStatusLocalCopy)
+      sender ! State.fromReplicatedData(
+        nameIndexLocalCopy,
+        requestedStatusLocalCopy,
+        observedStatusLocalCopy
+      )(
+        DefaultInitialStatus,
+        Stopped
+      )
 
     // StateRequestCommand come from `ProjectionRegistry` and contain a requested Status
     case command: StateRequestCommand =>

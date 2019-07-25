@@ -39,6 +39,8 @@ object State {
                                          nameIndex: Map[WorkerKey, WorkerCoordinates],
                                          requestedStatusLocalCopy: Map[WorkerKey, Status],
                                          observedStatusLocalCopy: Map[WorkerKey, Status]
+                                       )(defaultRequested:Status,
+                                         defaultObserved:Status = Stopped
   ): State = {
 
     val workers: Map[String, Seq[Worker]] = nameIndex
@@ -47,8 +49,8 @@ object State {
           val w = Worker(
             coordinates.tagName,
             coordinates.asKey,
-            requestedStatusLocalCopy.getOrElse(workerKey, Stopped),
-            observedStatusLocalCopy.getOrElse(workerKey, Stopped)
+            requestedStatusLocalCopy.getOrElse(workerKey, defaultRequested),
+            observedStatusLocalCopy.getOrElse(workerKey, defaultObserved)
           )
           w -> coordinates.projectionName
       }
