@@ -162,6 +162,11 @@ def runtimeScalaSettings: Seq[Setting[_]] = Seq(
   )
 )
 
+def sbtScalaSettings: Seq[Setting[_]] = Seq(
+  crossScalaVersions := Dependencies.Versions.Scala,
+  scalaVersion := Dependencies.Versions.Scala.head,
+)
+
 def runtimeLibCommon: Seq[Setting[_]] = common ++ sonatypeSettings ++ runtimeScalaSettings ++ Seq(
   Dependencies.validateDependenciesSetting,
   Dependencies.pruneWhitelistSetting,
@@ -1161,6 +1166,7 @@ lazy val devEnvironmentProjects = Seq[ProjectReference](
 lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
+  .settings(sbtScalaSettings: _*)
   .enablePlugins(AutomateHeaderPlugin)
   .aggregate(devEnvironmentProjects: _*)
   .settings(
@@ -1348,6 +1354,7 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .dependsOn(`build-tool-support`)
 
 lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
+  .settings(sbtScalaSettings: _*)
   .settings(
     name := "lagom-maven-launcher",
     description := "Dummy project, exists only to resolve the maven launcher classpath",
@@ -1379,6 +1386,7 @@ def archetypeProject(archetypeName: String) =
     .enablePlugins(AutomateHeaderPlugin && Sonatype)
     .settings(sonatypeSettings: _*)
     .settings(common: _*)
+    .settings(sbtScalaSettings: _*)
     .settings(
       name := s"maven-archetype-lagom-$archetypeName",
       autoScalaLibrary := false,
@@ -1417,6 +1425,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
   .enablePlugins(AutomateHeaderPlugin && Sonatype)
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
+  .settings(sbtScalaSettings: _*)
   .settings(
     name := "lagom-maven-dependencies",
     crossPaths := false,
