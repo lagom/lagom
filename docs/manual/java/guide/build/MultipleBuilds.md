@@ -81,7 +81,7 @@ The first argument passed to `lagomExternalJavadslProject` is the name that will
 
 You can further configure the service (what ports it is available on, the address it is bound to, etc...) using [[the same settings as a managed Lagom Service|ConfiguringServicesInDevelopment]].
 
-## Usinng the External Service
+## Using the External Service
 
 After having added the external Lagom project to your build, we need to provide the binding as it's necessary to consume a service, so that Lagom can provide an implementation for your application to use.  This can be done using the `bindClient` method on [ServiceClientGuiceSupport](api/index.html?com/lightbend/lagom/javadsl/client/ServiceClientGuiceSupport.html) as explained in [[Binding a service client|ServiceClients#Binding-a-service-client]] .
 
