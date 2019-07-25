@@ -79,61 +79,39 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
   override def preStart(): Unit = {
     super.preStart()
-    log.warning("""
-                  | - - - - - - - - - Preparing Globally
-      """.stripMargin)
-    self ! Prepare
+    implicit val timeout: Timeout = Timeout(config.globalPrepareTimeout)
+    globalPrepareTask
+      .askExecute()
+      .map { _ =>
+        Start
+      }
+      .pipeTo(self)
   }
 
   def receive: Receive = {
-    case Prepare => {
-      implicit val timeout: Timeout = Timeout(config.globalPrepareTimeout)
-      globalPrepareTask
-        .askExecute()
-        .map { _ =>
-          log.warning("""
-                        | - - - - - - - - - Completed the `Execute`
-            """.stripMargin)
-          Start
-        }
-        .pipeTo(self)
-      context.become(prepared)
-    }
-  }
-
-  def prepared: Receive = {
     case Start =>
-      log.warning("""
-                    | - - - - - - - - - STARTED!!!!
-        """.stripMargin)
       val tag = new AggregateEventTag(clazz, tagName)
-      val backoffSource: Source[Done, NotUsed] =
+      val backOffSource: Source[Done, NotUsed] =
         RestartSource.withBackoff(
           config.minBackoff,
           config.maxBackoff,
           config.randomBackoffFactor
         ) { () =>
-          val handler = processor().buildHandler()
-          val futureOffset: Future[Offset] =
-            handler
-              .prepare(tag)
-              .map { offset =>
-                log.warning(s"""
-                               | - - - - - - - - - Handler preparation complete. $offset
-                    """.stripMargin)
-                offset
-              }
+          val handler: ReadSideProcessor.ReadSideHandler[Event] = processor().buildHandler()
+          val futureOffset: Future[Offset]                      = handler.prepare(tag)
+
           Source
             .fromFuture(futureOffset)
             .initialTimeout(config.offsetTimeout)
             .flatMapConcat { offset =>
-              val eventStreamSource                                            = eventStreamFactory(tag, offset)
-              val userlandFlow: Flow[EventStreamElement[Event], Done, NotUsed] = handler.handle()
-              eventStreamSource.via(userlandFlow)
+              val eventStreamSource = eventStreamFactory(tag, offset)
+              val usersFlow      = handler.handle()
+              eventStreamSource.via(usersFlow)
             }
+
         }
 
-      val (killSwitch, streamDone) = backoffSource
+      val (killSwitch, streamDone) = backOffSource
         .viaMat(KillSwitches.single)(Keep.right)
         .toMat(Sink.ignore)(Keep.both)
         .run()

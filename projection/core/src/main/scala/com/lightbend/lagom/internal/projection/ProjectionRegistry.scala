@@ -54,14 +54,11 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
       runInRole: Option[String] = None
   ): Unit = {
 
-    val projectionProps = (projectionRegistryActorRef: ActorRef) =>
-      WorkerHolderActor.props(projectionName, projectionWorkerPropsFactory, projectionRegistryActorRef)
-
     clusterShardingSettings.withRole(runInRole)
 
     clusterDistribution.start(
       projectionName,
-      projectionProps(projectionRegistryRef),
+      WorkerHolderActor.props(projectionName, projectionWorkerPropsFactory, projectionRegistryRef),
       shardNames,
       ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
     )
