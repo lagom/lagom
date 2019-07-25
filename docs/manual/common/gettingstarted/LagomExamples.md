@@ -11,20 +11,11 @@ Some of the Lagom features you can observe include:
 * How to use persistence
 * How to use the message broker API
 * How to communicate between services
-* How streaming service calls work
-* How to develop a Play app with Lagom
-* How to consume Lagom services from a front-end Play app
 
 For focused examples, check the [lagom-samples](https://github.com/lagom/lagom-samples) repository on GitHub. Each sample describes how to achieve a particular goal, such as:
 
-* How do I enable CORS? (using Lagom's javadsl or scaladsl)
-* How do I create a Subscriber only service? (also referred to as consumer service)
-* How do I use RDBMS read-sides with Cassandra write-sides? (mixed persistence in java or mixed persistence in scala)
-* How to create a stateless service in Lagom for Java that uses Play's Internationalization Support.
-* How do I manipulate Headers and Status Codes and test those cases?(HTTP header handling)
-* How do I handle multipart/form-data file uploads? (Scala example, Java example)
-* How do I use a custom message serializer and response header to implement file downloads? (Scala example)
-* How do I integrate Lightbend Telemetry (Cinnamon)? (Java/Maven example)
-* How do I configure the Circuit Breaker Panel for a Lagom Java application? (Java/Maven example)
-* How do I deploy a Lagom Maven application in Kubernetes? (Java/Maven example)
-* How do I use Lagom with Couchbase both write-side and read-side? Java Maven and Scala Sbt) (Couchbase Persistence is NOT production ready yet)
+* How to use Lagom with [Lightbend Telemetry](https://developer.lightbend.com/docs/telemetry/current/home.html)
+* How to use Lagom with Cassandra for write-side persistence and JDBC for a read-side view
+* How to use gRPC as the communication mechanism between two Lagom services
+* How to deploy a Lagom Maven application in [OpenShift](https://developer.lightbend.com/guides/openshift-deployment/lagom/index.html)?
+* How to use Lagom with [Akka Couchbase Persistence](https://doc.akka.io/docs/akka-persistence-couchbase/current/)
