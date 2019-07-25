@@ -8,14 +8,12 @@ running Lagom's "Shopping Cart" example (either [shopping-cart-scala][] or [shop
 
 Some of the Lagom features you can observe include:
 
-Feature |Chirper| Online Auction |
---------|:--------:|:-------------:|
-How to use persistence| Y | Y 
-How to use the message broker API| N | Y
-How to communicate between services| Y | Y
-How streaming service calls work | Y | N
-How to develop a Play app with Lagom | Y | Y
-How to consume Lagom services from a front-end Play app | N | Y
+* How to use persistence
+* How to use the message broker API
+* How to communicate between services
+* How streaming service calls work
+* How to develop a Play app with Lagom
+* How to consume Lagom services from a front-end Play app
 
 For focused examples, check the [lagom-samples](https://github.com/lagom/lagom-samples) repository on GitHub. Each sample describes how to achieve a particular goal, such as:
 
