@@ -20,7 +20,7 @@ import com.lightbend.lagom.internal.cluster.ClusterMultiNodeConfig.node1
 import com.typesafe.config.Config
 import scala.concurrent.duration._
 
-abstract class ClusteredMultiNodeUtils
+abstract class ClusteredMultiNodeUtils(val numOfNodes: Int)
     extends MultiNodeSpec(ClusterMultiNodeConfig, ClusterMultiNodeActorSystemFactory.createActorSystem())
     with STMultiNodeSpec
     with ImplicitSender {
@@ -41,7 +41,7 @@ abstract class ClusteredMultiNodeUtils
   protected override def atStartup() {
     roles.foreach(n => join(n, node1))
     within(15.seconds) {
-      awaitAssert(Cluster(system).state.members.size should be(3))
+      awaitAssert(Cluster(system).state.members.size should be(numOfNodes))
       awaitAssert(
         Cluster(system).state.members.toIndexedSeq.map(_.status).distinct should be(IndexedSeq(MemberStatus.Up))
       )

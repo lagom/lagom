@@ -34,7 +34,7 @@ class ProjectionRegistrySpecMultiJvmNode1 extends ProjectionRegistrySpec
 class ProjectionRegistrySpecMultiJvmNode2 extends ProjectionRegistrySpec
 class ProjectionRegistrySpecMultiJvmNode3 extends ProjectionRegistrySpec
 
-class ProjectionRegistrySpec extends ClusteredMultiNodeUtils with Eventually with ScalaFutures {
+class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) with Eventually with ScalaFutures {
   implicit val exCtx             = system.dispatcher
   private val pc                 = PatienceConfig(timeout = Span(20, Seconds), interval = Span(2, Seconds))
   private val projectionRegistry = new ProjectionRegistry(system)
