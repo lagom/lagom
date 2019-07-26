@@ -7,7 +7,6 @@ package com.lightbend.lagom.internal.javadsl.persistence
 import java.net.URLEncoder
 import java.util.Optional
 
-import akka.actor.ActorRef
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
@@ -17,6 +16,7 @@ import akka.stream.Materializer
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.Config
 import play.api.inject.Injector
@@ -41,7 +41,7 @@ private[lagom] class ReadSideImpl @Inject()(
     config: ReadSideConfig,
     injector: Injector,
     persistentEntityRegistry: PersistentEntityRegistry,
-    projectionRegistryImpl: ProjectionRegistry
+    projectionRegistry: ProjectionRegistry
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
 
@@ -96,28 +96,23 @@ private[lagom] class ReadSideImpl @Inject()(
         config.randomBackoffFactor
       )
 
-    // TODO: use the name from the entity, not the tags
-    val streamName     = tags.head.eventType.getName
     val projectionName = readSideName
 
-    val readSidePropsFactory = (projectionRegistryActorRef: ActorRef) =>
+    val readSidePropsFactory = (coordinates: WorkerCoordinates) =>
       ReadSideActor.props(
-        streamName,
-        projectionName,
+        coordinates.tagName,
         config,
         eventClass,
         globalPrepareTask,
         persistentEntityRegistry.eventStream[Event],
-        processorFactory,
-        projectionRegistryActorRef
+        processorFactory
       )
 
-    projectionRegistryImpl.registerProjectionGroup(
-      streamName,
+    projectionRegistry.registerProjection(
+      projectionName,
       entityIds,
-      readSideName,
-      config.role,
-      readSidePropsFactory
+      readSidePropsFactory,
+      config.role
     )
 
   }

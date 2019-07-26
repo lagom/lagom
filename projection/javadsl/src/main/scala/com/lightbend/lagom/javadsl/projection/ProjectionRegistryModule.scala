@@ -38,10 +38,14 @@ private[lagom] class ProjectionRegistryProvider @Inject()(actorSystem: ActorSyst
 }
 
 @Singleton
-private class ProjectionsImpl @Inject()(impl: ProjectionRegistry)(implicit executionContext: ExecutionContext)
-    extends Projections {
+private class ProjectionsImpl @Inject()(projectionRegistry: ProjectionRegistry)(
+    implicit executionContext: ExecutionContext
+) extends Projections {
   import FutureConverters._
-  override def getStatus(): CompletionStage[DesiredState] = {
-    impl.getStatus().map(DesiredState.asJava).toJava
+  override def getStatus(): CompletionStage[State] = {
+    // TODO: implement POJOs for Observed state and map that here too.
+    projectionRegistry.getState().map(state => State.asJava(state)).toJava
   }
+  // TODO: stop (when API is stable)
+  // TODO: start (when API is stable)
 }

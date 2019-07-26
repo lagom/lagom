@@ -6,12 +6,12 @@ package com.lightbend.lagom.internal.broker.kafka
 
 import java.net.URI
 
-import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.persistence.query.Offset
 import akka.stream.Materializer
 import akka.stream.scaladsl._
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import org.apache.kafka.common.serialization.Serializer
 
@@ -34,17 +34,15 @@ private[lagom] object Producer {
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
       offsetStore: OffsetStore,
-      projectionRegistryImpl: ProjectionRegistry
+      projectionRegistry: ProjectionRegistry
   )(implicit mat: Materializer, ec: ExecutionContext): Unit = {
 
-    val streamName     = "entityName"
     val projectionName = s"kafkaProducer-$topicId"
 
     val producerConfig = ProducerConfig(system.settings.config)
-    val topicProducerProps = (projectionRegistryActorRef: ActorRef) =>
+    val topicProducerProps = (coordinates: WorkerCoordinates) =>
       TopicProducerActor.props(
-        streamName,
-        projectionName,
+        coordinates.tagName,
         kafkaConfig,
         producerConfig,
         locateService,
@@ -52,19 +50,16 @@ private[lagom] object Producer {
         eventStreamFactory,
         partitionKeyStrategy,
         serializer,
-        offsetStore,
-        projectionRegistryActorRef
+        offsetStore
       )
 
     val entityIds = tags.toSet
-    // TODO: use the name from the entity, not a hardcoded value
 
-    projectionRegistryImpl.registerProjectionGroup(
-      streamName,
-      entityIds,
+    projectionRegistry.registerProjection(
       projectionName,
-      producerConfig.role,
-      topicProducerProps
+      entityIds,
+      topicProducerProps,
+      producerConfig.role
     )
 
   }
