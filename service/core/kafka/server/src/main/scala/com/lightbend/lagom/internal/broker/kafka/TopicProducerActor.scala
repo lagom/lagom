@@ -21,7 +21,6 @@ import com.lightbend.lagom.spi.persistence.OffsetDao
 import akka.NotUsed
 import akka.actor.ActorLogging
 import akka.stream.scaladsl.Unzip
-import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import org.apache.kafka.clients.producer.ProducerRecord
 import akka.persistence.query.Offset
 import akka.stream.Materializer
@@ -38,16 +37,13 @@ import akka.actor.Actor
 import akka.stream.scaladsl.Zip
 import java.net.URI
 
-import akka.actor.ActorRef
 import akka.kafka.ProducerMessage
 import akka.stream.scaladsl.RestartSource
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
-import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
 
 private[lagom] object TopicProducerActor {
   def props[Message](
-      streamName: String,
-      projectionName: String,
+      tagName: String,
       kafkaConfig: KafkaConfig,
       producerConfig: ProducerConfig,
       locateService: String => Future[Seq[URI]],
@@ -55,13 +51,11 @@ private[lagom] object TopicProducerActor {
       eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
-      offsetStore: OffsetStore,
-      projectionRegistryActorRef: ActorRef
+      offsetStore: OffsetStore
   )(implicit mat: Materializer, ec: ExecutionContext) =
     Props(
       new TopicProducerActor[Message](
-        streamName,
-        projectionName,
+        tagName,
         kafkaConfig,
         producerConfig,
         locateService,
@@ -69,8 +63,7 @@ private[lagom] object TopicProducerActor {
         eventStreamFactory,
         partitionKeyStrategy,
         serializer,
-        offsetStore,
-        projectionRegistryActorRef
+        offsetStore
       )
     )
 
@@ -84,8 +77,7 @@ private[lagom] object TopicProducerActor {
  * Kafka. See also ReadSideActor.
  */
 private[lagom] class TopicProducerActor[Message](
-    streamName: String,
-    projectionName: String,
+    tagName: String,
     kafkaConfig: KafkaConfig,
     producerConfig: ProducerConfig,
     locateService: String => Future[Seq[URI]],
@@ -93,8 +85,7 @@ private[lagom] class TopicProducerActor[Message](
     eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
     partitionKeyStrategy: Option[Message => String],
     serializer: Serializer[Message],
-    offsetStore: OffsetStore,
-    projectionRegistryActorRef: ActorRef
+    offsetStore: OffsetStore
 )(implicit mat: Materializer, ec: ExecutionContext)
     extends Actor
     with ActorLogging {
@@ -106,14 +97,12 @@ private[lagom] class TopicProducerActor[Message](
     shutdown.foreach(_.shutdown())
   }
 
-  override def receive = {
-    case EnsureActive(tagName) =>
-      projectionRegistryActorRef ! ProjectionRegistryActor.RegisterProjection(streamName, projectionName, tagName)
-      self ! Start
-      context.become(active(tagName))
+  override def preStart(): Unit = {
+    super.preStart()
+    self ! Start
   }
 
-  private def active(tagName: String): Receive = {
+  def receive: Receive = {
     case Start => {
       val backoffSource: Source[Future[Done], NotUsed] = {
         RestartSource.withBackoff(
@@ -129,9 +118,9 @@ private[lagom] class TopicProducerActor[Message](
               case (endpoints, offset) =>
                 val serviceName = kafkaConfig.serviceName.map(name => s"[$name]").getOrElse("")
                 log.debug("Kafka service {} located at URIs [{}] for producer of [{}]", serviceName, endpoints, topicId)
-                val eventStreamSource: Source[(Message, Offset), _]          = eventStreamFactory(tagName, offset.loadedOffset)
-                val userlandFlow: Flow[(Message, Offset), Future[Done], Any] = eventsPublisherFlow(endpoints, offset)
-                eventStreamSource.via(userlandFlow)
+                val eventStreamSource: Source[(Message, Offset), _]       = eventStreamFactory(tagName, offset.loadedOffset)
+                val usersFlow: Flow[(Message, Offset), Future[Done], Any] = eventsPublisherFlow(endpoints, offset)
+                eventStreamSource.via(usersFlow)
             }
         }
       }
@@ -145,15 +134,14 @@ private[lagom] class TopicProducerActor[Message](
       streamDone.pipeTo(self)
     }
 
-    case EnsureActive(_) =>
-    // Yes, we are active
-
     case Done =>
       // This `Done` is materialization of the `Sink.ignore` above.
       log.info("Kafka producer stream for topic {} was completed.", topicId)
       context.stop(self)
 
     case Status.Failure(e) =>
+      // Crash if the globalPrepareTask or the event stream fail
+      // This actor will be restarted by WorkerHolderActor
       throw e
   }
 

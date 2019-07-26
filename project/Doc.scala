@@ -155,6 +155,11 @@ object UnidocRoot extends AutoPlugin {
         "com.lightbend.lagom.javadsl.cluster"
       ),
       "-group",
+      "Projection",
+      packageList(
+        "com.lightbend.lagom.javadsl.projection"
+      ),
+      "-group",
       "Message Broker",
       packageList(
         "com.lightbend.lagom.javadsl.api.broker",
