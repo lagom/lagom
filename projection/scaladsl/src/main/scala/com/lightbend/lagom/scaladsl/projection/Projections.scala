@@ -21,9 +21,16 @@ class Projections(private val registry: ProjectionRegistry) {
   def getStatus: Future[State] =
     registry.getState()
 
-  def stopAllWorkers(projectionName: String) =
+  def stopAllWorkers(projectionName: String): Unit =
     registry.stopAllWorkers(projectionName)
-  def stopWorker(projectionName: String, tagName: String) =
+
+  def stopWorker(projectionName: String, tagName: String): Unit =
     registry.stopWorker(WorkerCoordinates(projectionName, tagName))
+
+  def startAllWorkers(projectionName: String): Unit =
+    registry.startAllWorkers(projectionName)
+
+  def startWorker(projectionName: String, tagName: String): Unit =
+    registry.startWorker(WorkerCoordinates(projectionName, tagName))
 
 }
