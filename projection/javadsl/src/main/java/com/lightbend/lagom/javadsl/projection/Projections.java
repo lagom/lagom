@@ -15,9 +15,11 @@ public interface Projections {
 
   CompletionStage<State> getStatus();
 
-  void stopAllWorkers(String projectionName) ;
-  void stopWorker(String projectionName, String tagName) ;
-  void startAllWorkers(String projectionName) ;
-  void startWorker(String projectionName, String tagName) ;
+  void stopAllWorkers(String projectionName);
 
+  void stopWorker(String projectionName, String tagName);
+
+  void startAllWorkers(String projectionName);
+
+  void startWorker(String projectionName, String tagName);
 }

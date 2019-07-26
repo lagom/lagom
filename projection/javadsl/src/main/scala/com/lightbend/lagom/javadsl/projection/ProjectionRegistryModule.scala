@@ -59,5 +59,4 @@ private class ProjectionsImpl @Inject()(registry: ProjectionRegistry)(
   override def startWorker(projectionName: String, tagName: String): Unit =
     registry.startWorker(WorkerCoordinates(projectionName, tagName))
 
-
 }
