@@ -256,12 +256,19 @@ def macroCompileSettings: Seq[Setting[_]] = Seq(
 val version140  = "1.4.0"
 val version1412 = "1.4.12"
 
-def mimaSettings(since: String): Seq[Setting[_]] = {
-  val versions = Seq(since)
+def noMima = mimaPreviousArtifacts := Set.empty
+def mimaSettings(since: String = version140): Seq[Setting[_]] = {
+  import ProblemFilters.exclude
+  val versions = if (since == "") Nil else Seq(since)
   Seq(
     mimaPreviousArtifacts := {
+      val sbtBV   = (sbtBinaryVersion in pluginCrossBuild).value
+      val scalaBV = (scalaBinaryVersion in pluginCrossBuild).value
       scalaVersionFilter(scalaBinaryVersion.value, versions).map { version =>
-        organization.value % s"${moduleName.value}_${scalaBinaryVersion.value}" % version
+        val suffix   = if (crossPaths.value && !sbtPlugin.value) s"_${scalaBinaryVersion.value}" else ""
+        val moduleID = organization.value % s"${moduleName.value}$suffix" % version
+        if (sbtPlugin.value) Defaults.sbtPluginExtra(moduleID, sbtBV, scalaBV)
+        else moduleID
       }.toSet
     },
     mimaBinaryIssueFilters ++= Seq(
@@ -357,6 +364,7 @@ val sbtScriptedProjects = Seq[Project](
 lazy val root = (project in file("."))
   .settings(name := "lagom")
   .settings(runtimeLibCommon: _*)
+  .settings(noMima)
   .enablePlugins(CrossPerProjectPlugin)
   .settings(
     crossScalaVersions := Dependencies.ScalaVersions,
@@ -418,6 +426,7 @@ lazy val immutables = (project in file("immutables"))
 lazy val spi = (project in file("spi"))
   .settings(name := "lagom-spi")
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
 
 lazy val jackson = (project in file("jackson"))
@@ -440,6 +449,7 @@ lazy val `play-json` = (project in file("play-json"))
 
 lazy val `api-tools` = (project in file("api-tools"))
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     Dependencies.`api-tools`
@@ -453,6 +463,7 @@ lazy val `api-tools` = (project in file("api-tools"))
 
 lazy val client = (project in file("service/core/client"))
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-client",
@@ -576,6 +587,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
   .settings(runtimeLibCommon: _*)
+  .settings(noMima)
   .enablePlugins(AutomateHeaderPlugin)
   .settings(forkedTests: _*)
   .settings(
@@ -595,6 +607,7 @@ lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integra
 
 lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integration-tests"))
   .settings(runtimeLibCommon: _*)
+  .settings(noMima)
   .enablePlugins(AutomateHeaderPlugin)
   .settings(forkedTests: _*)
   .settings(
@@ -656,6 +669,7 @@ lazy val `akka-discovery-service-locator-scaladsl` = (project in file("akka-serv
 
 lazy val `cluster-core` = (project in file("cluster/core"))
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-cluster-core",
@@ -761,6 +775,7 @@ lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
 lazy val `persistence-cassandra-core` = (project in file("persistence-cassandra/core"))
   .dependsOn(`persistence-core` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-persistence-cassandra-core",
@@ -808,6 +823,7 @@ lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
     `persistence-core` % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
@@ -852,6 +868,7 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
 lazy val `persistence-jpa-javadsl` = (project in file("persistence-jpa/javadsl"))
   .dependsOn(`persistence-jdbc-javadsl` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
@@ -883,6 +900,7 @@ lazy val `broker-scaladsl` = (project in file("service/scaladsl/broker"))
 lazy val `kafka-client` = (project in file("service/core/kafka/client"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-kafka-client",
@@ -912,6 +930,7 @@ lazy val `kafka-client-scaladsl` = (project in file("service/scaladsl/kafka/clie
 
 lazy val `kafka-broker` = (project in file("service/core/kafka/server"))
   .enablePlugins(RuntimeLibPlugins)
+  .settings(mimaSettings())
   .settings(
     name := "lagom-kafka-broker",
     Dependencies.`kafka-broker`
@@ -962,6 +981,7 @@ lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/serv
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .settings(overridesScalaParserCombinators)
   .settings(
     name := "lagom-logback",
@@ -971,6 +991,7 @@ lazy val logback = (project in file("logback"))
 lazy val log4j2 = (project in file("log4j2"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .settings(overridesScalaParserCombinators)
   .settings(
     name := "lagom-log4j2",
@@ -997,6 +1018,7 @@ lazy val devEnvironmentProjects = Seq[Project](
 lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
+  .settings(noMima)
   .enablePlugins(AutomateHeaderPlugin)
   .aggregate(devEnvironmentProjects.map(Project.projectToRef): _*)
   .settings(
@@ -1006,6 +1028,7 @@ lazy val `dev-environment` = (project in file("dev"))
 
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(overridesScalaParserCombinators)
   .settings(
@@ -1015,6 +1038,7 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
 
 lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
   .settings(common: _*)
+  .settings(mimaSettings())
   .settings(
     name := "lagom-build-tool-support",
     publishMavenStyle := true,
@@ -1024,7 +1048,11 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
     sourceGenerators in Compile += Def.task {
       Generators.version(version.value, (sourceManaged in Compile).value)
     }.taskValue,
-    Dependencies.`build-tool-support`
+    Dependencies.`build-tool-support`,
+    mimaBinaryIssueFilters ++= Seq(
+      // Project2PortMapBuilder is a private extension class to private[lagom] PortRange
+      ProblemFilters.exclude[DirectMissingMethodProblem]("*lagom.dev.PortAssigner#Project2PortMapBuilder*")
+    )
   )
 
 // This is almost the same as `build-tool-support`, but targeting sbt
@@ -1034,6 +1062,7 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
 // https://github.com/playframework/playframework/blob/2.6.7/framework/build.sbt#L27-L40
 lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-support")
   .settings(common: _*)
+  .settings(mimaSettings())
   .settings(
     name := "lagom-sbt-build-tool-support",
     crossScalaVersions := Dependencies.SbtScalaVersions,
@@ -1049,6 +1078,7 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(common: _*)
+  .settings(mimaSettings())
   .settings(scriptedSettings: _*)
   .enablePlugins(SbtPluginPlugins)
   .settings(
@@ -1087,6 +1117,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .enablePlugins(lagom.SbtMavenPlugin)
   .settings(common: _*)
+  .settings(mimaSettings())
   .settings(
     name := "Lagom Maven Plugin",
     description := "Provides Lagom development environment support to maven.",
@@ -1137,6 +1168,7 @@ val ArchetypeVariablePattern = "%([A-Z-]+)%".r
 def archetypeProject(archetypeName: String) =
   Project(s"maven-$archetypeName-archetype", file("dev") / "archetypes" / s"maven-$archetypeName")
     .settings(common: _*)
+    .settings(mimaSettings())
     .settings(
       name := s"maven-archetype-lagom-$archetypeName",
       autoScalaLibrary := false,
@@ -1172,6 +1204,7 @@ def archetypeProject(archetypeName: String) =
 lazy val `maven-java-archetype` = archetypeProject("java")
 lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
   .settings(common: _*)
+  .settings(noMima)
   .settings(
     name := "lagom-maven-dependencies",
     crossPaths := false,
@@ -1260,6 +1293,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
   .settings(name := "lagom-sbt-scripted-tools")
   .settings(common: _*)
+  .settings(mimaSettings())
   .settings(
     sbtPlugin := true,
     crossScalaVersions := Dependencies.SbtScalaVersions,
@@ -1272,6 +1306,7 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
 lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-library")
   .settings(name := "lagom-sbt-scripted-library")
   .settings(runtimeLibCommon: _*)
+  .settings(noMima)
   .settings(
     PgpKeys.publishSigned := {},
     publish := {}
@@ -1280,6 +1315,7 @@ lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-librar
 
 lazy val `service-locator` = (project in file("dev") / "service-registry" / "service-locator")
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-service-locator",
@@ -1307,6 +1343,7 @@ lazy val `service-registry-client-javadsl` = (project in file("dev") / "service-
     Dependencies.`service-registry-client-javadsl`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-javadsl`, immutables % "provided")
 
@@ -1316,6 +1353,7 @@ lazy val `service-registration-javadsl` = (project in file("dev") / "service-reg
     Dependencies.`service-registration-javadsl`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`server-javadsl`, `service-registry-client-javadsl`)
 
@@ -1335,11 +1373,13 @@ lazy val `play-integration-javadsl` = (project in file("dev") / "service-registr
     Dependencies.`play-integration-javadsl`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`service-registry-client-javadsl`)
 
 lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
   .settings(common: _*)
+  .settings(mimaSettings())
   .settings(runtimeScalaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -1349,6 +1389,7 @@ lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
 
 lazy val `kafka-server` = (project in file("dev") / "kafka-server")
   .settings(common: _*)
+  .settings(mimaSettings())
   .settings(runtimeScalaSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -1367,6 +1408,7 @@ def excludeLog4jFromKafkaServer: Seq[Setting[_]] = Seq(
 // Provides macros for testing macros. Is not published.
 lazy val `macro-testkit` = (project in file("macro-testkit"))
   .settings(runtimeLibCommon)
+  .settings(noMima)
   .settings(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value
