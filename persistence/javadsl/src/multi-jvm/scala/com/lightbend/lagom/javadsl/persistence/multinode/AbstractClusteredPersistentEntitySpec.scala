@@ -20,7 +20,8 @@ import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.testkit.pipe
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import play.api.inject.{Injector, bind}
+import play.api.inject.Injector
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.Application
 import play.api.Configuration
