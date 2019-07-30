@@ -4,7 +4,6 @@
 
 package com.lightbend.lagom.javadsl.testkit
 
-import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Optional
@@ -468,7 +467,7 @@ object ServiceTest {
         try {
           block(); false
         } catch {
-          case NonFatal(e) ⇒
+          case NonFatal(e) =>
             if ((now + t) >= stop) throw e
             true
         }
