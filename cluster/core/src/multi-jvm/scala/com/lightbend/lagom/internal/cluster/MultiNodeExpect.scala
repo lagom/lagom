@@ -66,7 +66,7 @@ class MultiNodeExpect(probe: TestProbe)(implicit system: ActorSystem) {
     try {
       f
     } catch {
-      case NonFatal(t) => throw t
+      case NonFatal(t)  => throw t
       case x: Throwable => throw new RuntimeException(x)
     }
   }
