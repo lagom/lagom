@@ -39,7 +39,6 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
   val databasePort = System.getProperty("scaladsl.database.port").toInt
   val environment  = Environment.simple()
 
-
   commonConfig(
     additionalCommonConfig(databasePort).withFallback(
       ConfigFactory
@@ -196,7 +195,6 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     "send commands to target entity" in within(75.seconds) {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-
 
       enterBarrierWithDilatedTimeout("before 'send commands to target entity'")
 
