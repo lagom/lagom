@@ -29,7 +29,7 @@ class CassandraClusteredPersistentEntitySpecMultiJvmNode2 extends CassandraClust
 class CassandraClusteredPersistentEntitySpecMultiJvmNode3 extends CassandraClusteredPersistentEntitySpec
 
 class CassandraClusteredPersistentEntitySpec
-  extends AbstractClusteredPersistentEntitySpec(CassandraClusteredPersistentEntityConfig) {
+    extends AbstractClusteredPersistentEntitySpec(CassandraClusteredPersistentEntityConfig) {
 
   import CassandraClusteredPersistentEntityConfig._
 

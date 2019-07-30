@@ -9,6 +9,8 @@ import com.typesafe.tools.mima.core._
 import lagom.Protobuf
 import lagom.build._
 
+import org.scalafmt.sbt.ScalafmtPlugin
+
 // Turn off "Resolving" log messages that clutter build logs
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
 
@@ -214,6 +216,7 @@ def multiJvm(project: Project): Project = {
   project
     .enablePlugins(MultiJvmPlugin)
     .configs(MultiJvm)
+    .settings(inConfig(MultiJvm)(ScalafmtPlugin.scalafmtConfigSettings))
     .settings {
       // change multi-jvm lib folder to reflect the scala version used during crossbuild
       // must be done using a dynamic setting because we must read crossTarget.value

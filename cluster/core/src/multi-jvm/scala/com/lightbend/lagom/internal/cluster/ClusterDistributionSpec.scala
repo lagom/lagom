@@ -4,21 +4,28 @@
 
 package com.lightbend.lagom.internal.cluster
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.Props
 import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import akka.pattern._
 import org.scalatest.AsyncFlatSpec
-import org.scalatest.concurrent.{Eventually, ScalaFutures}
-import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.concurrent.Eventually
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.Millis
+import org.scalatest.time.Seconds
+import org.scalatest.time.Span
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import akka.cluster.sharding.ShardRegion
-import akka.cluster.sharding.ShardRegion.{CurrentShardRegionState, GetShardRegionState}
+import akka.cluster.sharding.ShardRegion.CurrentShardRegionState
+import akka.cluster.sharding.ShardRegion.GetShardRegionState
 import akka.util.Timeout
 
-import scala.util.{Failure, Success}
+import scala.util.Failure
+import scala.util.Success
 
 class ClusterDistributionSpecMultiJvmNode1 extends ClusterDistributionSpec
 class ClusterDistributionSpecMultiJvmNode2 extends ClusterDistributionSpec
@@ -26,19 +33,16 @@ class ClusterDistributionSpecMultiJvmNode3 extends ClusterDistributionSpec
 
 class ClusterDistributionSpec extends ClusteredMultiNodeUtils(numOfNodes = 3) with ScalaFutures with Eventually {
 
-
-
   private val ensureActiveInterval: FiniteDuration = 1.second
   val distributionSettings: ClusterDistributionSettings =
     ClusterDistributionSettings(system)
       .copy(ensureActiveInterval = ensureActiveInterval)
 
-
   "A ClusterDistribution" must {
 
     "distribute the entityIds across nodes (so all nodes get a response)" in {
 
-      val numOfEntities = 20
+      val numOfEntities        = 20
       val minimalShardsPerNode = numOfEntities / numOfNodes
 
       val typeName = "CDTest"
@@ -50,11 +54,11 @@ class ClusterDistributionSpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wi
       val entityIds    = (1 to numOfEntities).map(i => s"test-entity-id-$i").toSet
 
       // Load the extension and wait for other nodes to be ready before proceeding
-      val cdExtension  = ClusterDistribution(system)
+      val cdExtension = ClusterDistribution(system)
       enterBarrier("cluster-distribution-extension-is-loaded")
 
       val shardRegion =
-          cdExtension.start(
+        cdExtension.start(
           typeName,
           props,
           entityIds,
@@ -66,7 +70,8 @@ class ClusterDistributionSpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wi
         val shardRegionState =
           shardRegion
             .ask(GetShardRegionState)(3.seconds)
-            .mapTo[CurrentShardRegionState].futureValue
+            .mapTo[CurrentShardRegionState]
+            .futureValue
 
         shardRegionState.shards.size should be >= minimalShardsPerNode
       }
