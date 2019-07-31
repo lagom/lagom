@@ -16,6 +16,3 @@ message Exception {
 message EnsureActive {
   required string entityId = 1;
 }
-
-
-
