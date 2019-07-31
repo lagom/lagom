@@ -810,6 +810,7 @@ lazy val `cluster-core` = (project in file("cluster/core"))
   .dependsOn(`akka-management-core`)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings())
+  .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-cluster-core",
@@ -884,8 +885,6 @@ lazy val `projection-scaladsl` = (project in file("projection/scaladsl"))
   .dependsOn(`projection-core`, `cluster-scaladsl`, logback % Test)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version160))
-  // https://github.com/lagom/lagom/issues/2045
-  //  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-core
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-projection",
@@ -896,8 +895,6 @@ lazy val `projection-javadsl` = (project in file("projection/javadsl"))
   .dependsOn(`projection-core`, `cluster-javadsl`, logback % Test)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version160))
-  // https://github.com/lagom/lagom/issues/2045
-  //  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-core
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-javadsl-projection",
