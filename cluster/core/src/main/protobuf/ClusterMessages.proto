@@ -1,0 +1,21 @@
+/**
+ * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ */
+
+syntax = "proto2";
+
+package com.lightbend.lagom.internal.cluster;
+
+option java_package = "com.lightbend.lagom.internal.cluster.protobuf.msg";
+option optimize_for = SPEED;
+
+message Exception {
+  optional string message = 1;
+}
+
+message EnsureActive {
+  required string entityId = 1;
+}
+
+
+
