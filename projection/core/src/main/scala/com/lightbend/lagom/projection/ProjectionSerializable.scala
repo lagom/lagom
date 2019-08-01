@@ -3,6 +3,6 @@
  */
 
 /** Marker trait for projection serializers */
- package com.lightbend.lagom.projection
+package com.lightbend.lagom.projection
 
 trait ProjectionSerializable

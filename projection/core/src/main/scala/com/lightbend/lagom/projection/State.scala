@@ -10,15 +10,15 @@ import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoo
 import scala.util.control.NoStackTrace
 
 @ApiMayChange
-// TODO: provide serialisers (all the ADT is on LWWMaps so must be serializable)
-sealed trait Status extends ProjectionSerializable
+sealed trait Status  extends ProjectionSerializable
 sealed trait Stopped extends Status
 case object Stopped  extends Stopped
 sealed trait Started extends Status
 case object Started  extends Started
 
 @ApiMayChange
-final case class Worker(tagName: String, key: String, requestedStatus: Status, observedStatus: Status) extends ProjectionSerializable
+final case class Worker(tagName: String, key: String, requestedStatus: Status, observedStatus: Status)
+    extends ProjectionSerializable
 
 @ApiMayChange
 final case class Projection(name: String, workers: Seq[Worker]) extends ProjectionSerializable
