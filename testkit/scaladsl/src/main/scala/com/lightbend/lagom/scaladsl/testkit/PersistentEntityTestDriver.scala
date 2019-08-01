@@ -130,9 +130,10 @@ class PersistentEntityTestDriver[C, E, S](
   }
 
   private val unhandledState: Catcher[Nothing] = {
-    case e: MatchError ⇒
+    case e: MatchError =>
       throw new IllegalStateException(
-        s"Undefined state [${state.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"
+        s"Undefined state [${state.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]",
+        e
       )
   }
 
