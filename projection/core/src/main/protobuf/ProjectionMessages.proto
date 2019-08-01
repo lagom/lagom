@@ -16,7 +16,6 @@ message Worker {
   required string observedStatus = 4;
 }
 
-
 message Projection {
   required string name = 1;
   repeated Worker workers = 2;
@@ -24,4 +23,9 @@ message Projection {
 
 message State {
   repeated Projection projections = 1;
+}
+
+message WorkerCoordinates {
+  required string projectionName = 1;
+  required string tagName = 2;
 }
