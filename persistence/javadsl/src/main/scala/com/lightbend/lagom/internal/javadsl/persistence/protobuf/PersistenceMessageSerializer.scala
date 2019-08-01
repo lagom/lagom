@@ -12,7 +12,6 @@ import akka.serialization.SerializationExtension
 import akka.serialization.SerializerWithStringManifest
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.javadsl.persistence.CommandEnvelope
-import com.lightbend.lagom.javadsl.persistence.PersistentEntity
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity._
 import com.lightbend.lagom.internal.javadsl.persistence.protobuf.msg.{ PersistenceMessages => pm }
 
@@ -39,7 +38,7 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
 
   private val emptyByteArray = Array.empty[Byte]
 
-  private val fromBinaryMap = collection.immutable.HashMap[String, Array[Byte] ⇒ AnyRef](
+  private val fromBinaryMap = collection.immutable.HashMap[String, Array[Byte] => AnyRef](
     CommandEnvelopeManifest           -> commandEnvelopeFromBinary,
     InvalidCommandExceptionManifest   -> invalidCommandExceptionFromBinary,
     UnhandledCommandExceptionManifest -> unhandledCommandExceptionFromBinary,
@@ -48,29 +47,29 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
   )
 
   override def manifest(obj: AnyRef): String = obj match {
-    case _: CommandEnvelope           ⇒ CommandEnvelopeManifest
+    case _: CommandEnvelope           => CommandEnvelopeManifest
     case _: InvalidCommandException   => InvalidCommandExceptionManifest
     case _: UnhandledCommandException => UnhandledCommandExceptionManifest
     case _: PersistException          => PersistExceptionManifest
     case _: EnsureActive              => EnsureActiveManifest
-    case _ ⇒
+    case _ =>
       throw new IllegalArgumentException(s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]")
   }
 
   def toBinary(obj: AnyRef): Array[Byte] = obj match {
-    case m: CommandEnvelope             ⇒ commandEnvelopeToProto(m).toByteArray
+    case m: CommandEnvelope             => commandEnvelopeToProto(m).toByteArray
     case InvalidCommandException(msg)   => exceptionToProto(msg).toByteArray
     case UnhandledCommandException(msg) => exceptionToProto(msg).toByteArray
     case PersistException(msg)          => exceptionToProto(msg).toByteArray
     case ea: EnsureActive               => ensureActiveToProto(ea).toByteArray
-    case _ ⇒
+    case _ =>
       throw new IllegalArgumentException(s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]")
   }
 
   override def fromBinary(bytes: Array[Byte], manifest: String): AnyRef =
     fromBinaryMap.get(manifest) match {
-      case Some(f) ⇒ f(bytes)
-      case None ⇒
+      case Some(f) => f(bytes)
+      case None =>
         throw new IllegalArgumentException(
           s"Unimplemented deserialization of message with manifest [$manifest] in [${getClass.getName}]"
         )
@@ -86,11 +85,11 @@ private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSyste
       .setSerializerId(msgSerializer.identifier)
 
     msgSerializer match {
-      case ser2: SerializerWithStringManifest ⇒
+      case ser2: SerializerWithStringManifest =>
         val manifest = ser2.manifest(payload)
         if (manifest != "")
           builder.setMessageManifest(ByteString.copyFromUtf8(manifest))
-      case _ ⇒
+      case _ =>
         if (msgSerializer.includeManifest)
           builder.setMessageManifest(ByteString.copyFromUtf8(payload.getClass.getName))
     }

@@ -130,7 +130,7 @@ private[lagom] class PersistentEntityActor(
   }
 
   private val unhandledState: Catcher[Nothing] = {
-    case e: MatchError ⇒
+    case e: MatchError =>
       throw new IllegalStateException(
         s"Undefined state [${state.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"
       )
@@ -236,13 +236,13 @@ private[lagom] class PersistentEntityActor(
   private def tag(event: Any): Any = {
     import scala.language.existentials
     event match {
-      case a: AggregateEvent[_] ⇒
+      case a: AggregateEvent[_] =>
         val tag = a.aggregateTag match {
           case tag: AggregateEventTag[_]       => tag
           case shards: AggregateEventShards[_] => shards.forEntityId(entityId)
         }
         Tagged(event, Set(tag.tag))
-      case _ ⇒ event
+      case _ => event
     }
   }
 
