@@ -11,20 +11,20 @@ import scala.util.control.NoStackTrace
 
 @ApiMayChange
 // TODO: provide serialisers (all the ADT is on LWWMaps so must be serializable)
-sealed trait Status
+sealed trait Status extends ProjectionSerializable
 sealed trait Stopped extends Status
 case object Stopped  extends Stopped
 sealed trait Started extends Status
 case object Started  extends Started
 
 @ApiMayChange
-case class Worker(tagName: String, key: String, requestedStatus: Status, observedStatus: Status)
+final case class Worker(tagName: String, key: String, requestedStatus: Status, observedStatus: Status) extends ProjectionSerializable
 
 @ApiMayChange
-case class Projection(name: String, workers: Seq[Worker])
+final case class Projection(name: String, workers: Seq[Worker]) extends ProjectionSerializable
 
 @ApiMayChange
-case class State(projections: Seq[Projection]) {
+final case class State(projections: Seq[Projection]) extends ProjectionSerializable {
   def findProjection(projectionName: String): Option[Projection] =
     projections.find(_.name == projectionName)
 
