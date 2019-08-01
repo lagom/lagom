@@ -1,0 +1,27 @@
+/**
+ * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ */
+
+syntax = "proto2";
+
+package com.lightbend.lagom.internal.projection;
+
+option java_package = "com.lightbend.lagom.internal.projection.protobuf.msg";
+option optimize_for = SPEED;
+
+message Worker {
+  required string tagName = 1;
+  required string key = 2;
+  required string requestedStatus = 3;
+  required string observedStatus = 4;
+}
+
+
+message Projection {
+  required string name = 1;
+  repeated Worker workers = 2;
+}
+
+message State {
+  repeated Projection projections = 1;
+}
