@@ -14,11 +14,15 @@ import com.typesafe.config.ConfigFactory
 import akka.remote.testconductor.RoleName
 import akka.cluster.Cluster
 import akka.actor.ActorSystem
+import akka.actor.BootstrapSetup
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
+
 import scala.concurrent.Await
 import com.lightbend.lagom.internal.cluster.STMultiNodeSpec
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
+import com.typesafe.config.Config
 
 object ClusteredPubSubConfig extends MultiNodeConfig {
   val node1 = role("node1")
@@ -34,7 +38,19 @@ object ClusteredPubSubConfig extends MultiNodeConfig {
 class ClusteredPubSubSpecMultiJvmNode1 extends ClusteredPubSubSpec
 class ClusteredPubSubSpecMultiJvmNode2 extends ClusteredPubSubSpec
 
-class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig) with STMultiNodeSpec with ImplicitSender {
+object ClusteredPubSubSpec {
+  def actorSystemCreator: Config => ActorSystem = { config =>
+    val bootstrapSetup     = BootstrapSetup(config)
+    val serializationSetup = JsonSerializerRegistry.serializationSetupFor(NotificationJsonSerializer)
+
+    ActorSystem(classOf[ClusteredPubSubSpec].getSimpleName, bootstrapSetup.and(serializationSetup))
+  }
+}
+
+class ClusteredPubSubSpec
+    extends MultiNodeSpec(ClusteredPubSubConfig, ClusteredPubSubSpec.actorSystemCreator)
+    with STMultiNodeSpec
+    with ImplicitSender {
 
   import ClusteredPubSubConfig._
 
