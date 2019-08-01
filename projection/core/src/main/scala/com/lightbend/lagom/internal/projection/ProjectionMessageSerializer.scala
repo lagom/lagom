@@ -123,7 +123,7 @@ private[lagom] class ProjectionMessageSerializer(val system: ExtendedActorSystem
     projectionFromProto(pm.Projection.parseFrom(bytes))
 
   private def projectionFromProto(projection: pm.Projection): Projection = {
-    val workers = projection.getWorkersList.asScala.map(workerFromProto)
+    val workers = projection.getWorkersList.asScala.map(workerFromProto).toSeq
     Projection(projection.getName, workers)
   }
 
@@ -131,7 +131,7 @@ private[lagom] class ProjectionMessageSerializer(val system: ExtendedActorSystem
     stateFromProto(pm.State.parseFrom(bytes))
 
   private def stateFromProto(state: pm.State): State = {
-    val projections = state.getProjectionsList.asScala.map(projectionFromProto)
+    val projections = state.getProjectionsList.asScala.map(projectionFromProto).toSeq
     State(projections)
   }
 
