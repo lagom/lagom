@@ -8,6 +8,7 @@ import akka.actor.ExtendedActorSystem
 import akka.serialization.SerializerWithStringManifest
 import akka.serialization.BaseSerializer
 import akka.util.ByteString
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.projection.Projection
 import com.lightbend.lagom.projection.State
 import com.lightbend.lagom.projection.Worker
@@ -18,36 +19,44 @@ import com.lightbend.lagom.projection.Stopped
 
 import scala.collection.JavaConverters._
 
+private[lagom] object ProjectionMessageSerializer {
+  val WorkerManifest            = "A"
+  val ProjectionManifest        = "B"
+  val StatusManifest            = "C"
+  val StateManifest             = "D"
+  val WorkerCoordinatesManifest = "F"
+}
+
 private[lagom] class ProjectionMessageSerializer(val system: ExtendedActorSystem)
     extends SerializerWithStringManifest
     with BaseSerializer {
 
-  val WorkerManifest     = "W"
-  val ProjectionManifest = "P"
-  val StatusManifest     = "S"
-  val StateManifest      = "ST"
+  import ProjectionMessageSerializer._
 
   private val fromBinaryMap = collection.immutable.HashMap[String, Array[Byte] => AnyRef](
-    WorkerManifest     -> workerFromBinary,
-    ProjectionManifest -> projectionFromBinary,
-    StatusManifest     -> statusFromBinary,
-    StateManifest      -> stateFromBinary
+    WorkerManifest            -> workerFromBinary,
+    ProjectionManifest        -> projectionFromBinary,
+    StatusManifest            -> statusFromBinary,
+    StateManifest             -> stateFromBinary,
+    WorkerCoordinatesManifest -> workerCoordinatesFromBinary
   )
 
   override def manifest(obj: AnyRef): String = obj match {
-    case _: Worker     => WorkerManifest
-    case _: Projection => ProjectionManifest
-    case _: Status     => StatusManifest
-    case _: State      => StateManifest
+    case _: Worker            => WorkerManifest
+    case _: Projection        => ProjectionManifest
+    case _: Status            => StatusManifest
+    case _: State             => StateManifest
+    case _: WorkerCoordinates => WorkerCoordinatesManifest
     case _ =>
       throw new IllegalArgumentException(s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]")
   }
 
   def toBinary(obj: AnyRef): Array[Byte] = obj match {
-    case w: Worker     => workerToProto(w).toByteArray
-    case p: Projection => projectionToProto(p).toByteArray
-    case s: Status     => statusToBinary(s)
-    case s: State      => stateToProto(s).toByteArray
+    case w: Worker            => workerToProto(w).toByteArray
+    case p: Projection        => projectionToProto(p).toByteArray
+    case s: Status            => statusToBinary(s)
+    case s: State             => stateToProto(s).toByteArray
+    case c: WorkerCoordinates => workerCoordinatesToProto(c).toByteArray
     case _ =>
       throw new IllegalArgumentException(s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]")
   }
@@ -88,6 +97,14 @@ private[lagom] class ProjectionMessageSerializer(val system: ExtendedActorSystem
     pm.State
       .newBuilder()
       .addAllProjections(projections)
+      .build()
+  }
+
+  private def workerCoordinatesToProto(coordinates: WorkerCoordinates): pm.WorkerCoordinates = {
+    pm.WorkerCoordinates
+      .newBuilder()
+      .setProjectionName(coordinates.projectionName)
+      .setTagName(coordinates.tagName)
       .build()
   }
 
@@ -133,6 +150,13 @@ private[lagom] class ProjectionMessageSerializer(val system: ExtendedActorSystem
   private def stateFromProto(state: pm.State): State = {
     val projections = state.getProjectionsList.asScala.map(projectionFromProto).toSeq
     State(projections)
+  }
+
+  private def workerCoordinatesFromBinary(bytes: Array[Byte]): WorkerCoordinates =
+    workerCoordinatesFromProto(pm.WorkerCoordinates.parseFrom(bytes))
+
+  private def workerCoordinatesFromProto(workerCoordinates: pm.WorkerCoordinates): WorkerCoordinates = {
+    WorkerCoordinates(workerCoordinates.getProjectionName, workerCoordinates.getTagName)
   }
 
 }
