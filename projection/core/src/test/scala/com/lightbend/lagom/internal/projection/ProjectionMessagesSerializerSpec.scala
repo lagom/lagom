@@ -5,7 +5,8 @@
 package com.lightbend.lagom.internal.projection
 
 import akka.actor.ActorSystem
-import akka.actor.ExtendedActorSystem
+import akka.serialization.Serialization
+import akka.serialization.SerializationExtension
 import akka.testkit.ImplicitSender
 import akka.testkit.TestKit
 import akka.util.ByteString
@@ -22,6 +23,9 @@ import com.lightbend.lagom.projection.Projection
 import com.lightbend.lagom.projection.State
 import com.lightbend.lagom.projection.Status
 import com.lightbend.lagom.projection.Stopped
+
+import scala.util.Failure
+import scala.util.Success
 
 object ProjectionMessagesSerializerSpec {
   def actorSystem(): ActorSystem = {
@@ -40,23 +44,31 @@ class ProjectionMessagesSerializerSpec
 
   import ProjectionMessageSerializer._
 
-  val projectionMessageSerializer = new ProjectionMessageSerializer(system.asInstanceOf[ExtendedActorSystem])
+  val serialization: Serialization = SerializationExtension(system)
+
+  def toBinary(obj: AnyRef): Array[Byte] = serialization.findSerializerFor(obj).toBinary(obj)
+
+  def fromBinary[T](bytes: Array[Byte], manifest: String): T =
+    serialization.deserialize(bytes, SerializerId, manifest) match {
+      case Failure(cause) => fail(cause)
+      case Success(value) => value.asInstanceOf[T]
+    }
 
   "ProjectionMessageSerializer" must {
 
     "serialize status Started" in {
-      val bytes = projectionMessageSerializer.toBinary(Started)
+      val bytes = toBinary(Started)
       ByteString(bytes).utf8String should be("Started")
     }
 
     "serialize status Stopped" in {
-      val bytes = projectionMessageSerializer.toBinary(Stopped)
+      val bytes = toBinary(Stopped)
       ByteString(bytes).utf8String should be("Stopped")
     }
 
     "serialize Worker" in {
       val worker = Worker("test-tag-name", "test-key-1", Started, Stopped)
-      val bytes  = projectionMessageSerializer.toBinary(worker)
+      val bytes  = toBinary(worker)
 
       val protoWorker = pm.Worker.parseFrom(bytes)
 
@@ -67,9 +79,9 @@ class ProjectionMessagesSerializerSpec
     }
 
     "serialize Projection" in {
-      val workers    = Range(0, 10).map(n => Worker(s"test-tag-name-${n}", s"test-key-$n", Started, Started))
+      val workers    = Range(0, 10).map(n => Worker(s"test-tag-name-$n", s"test-key-$n", Started, Started))
       val projection = Projection("projection-name", workers)
-      val bytes      = projectionMessageSerializer.toBinary(projection)
+      val bytes      = toBinary(projection)
 
       val protoProjection = pm.Projection.parseFrom(bytes)
 
@@ -79,10 +91,10 @@ class ProjectionMessagesSerializerSpec
     }
 
     "serialize State" in {
-      val workers     = Range(0, 10).map(n => Worker(s"test-tag-name-${n}", s"test-key-$n", Started, Started))
+      val workers     = Range(0, 10).map(n => Worker(s"test-tag-name-$n", s"test-key-$n", Started, Started))
       val projections = Seq(Projection("projection-name", workers))
       val state       = State(projections)
-      val bytes       = projectionMessageSerializer.toBinary(state)
+      val bytes       = toBinary(state)
 
       val protoState = pm.State.parseFrom(bytes)
 
@@ -94,7 +106,7 @@ class ProjectionMessagesSerializerSpec
 
     "serialize WorkerCoordinates" in {
       val workerCoordinates = WorkerCoordinates("projection-name", "test-tag-name")
-      val bytes             = projectionMessageSerializer.toBinary(workerCoordinates)
+      val bytes             = toBinary(workerCoordinates)
 
       val protoCoordinates = pm.WorkerCoordinates.parseFrom(bytes)
 
@@ -104,13 +116,13 @@ class ProjectionMessagesSerializerSpec
 
     "deserialize Status Started" in {
       val bytes  = ByteString("Started").toArray[Byte]
-      val status = projectionMessageSerializer.fromBinary(bytes, manifest = StatusManifest).asInstanceOf[Status]
+      val status = fromBinary[Status](bytes, manifest = StatusManifest)
       status should be(Started)
     }
 
     "deserialize Status Stopped" in {
       val bytes  = ByteString("Stopped").toArray[Byte]
-      val status = projectionMessageSerializer.fromBinary(bytes, manifest = StatusManifest).asInstanceOf[Status]
+      val status = fromBinary[Status](bytes, manifest = StatusManifest)
       status should be(Stopped)
     }
 
@@ -124,7 +136,8 @@ class ProjectionMessagesSerializerSpec
         .build()
         .toByteArray
 
-      val worker = projectionMessageSerializer.fromBinary(bytes, manifest = WorkerManifest).asInstanceOf[Worker]
+      val worker = fromBinary[Worker](bytes, manifest = WorkerManifest)
+
       worker.tagName should be("test-tag-name")
       worker.key should be("test-key")
       worker.requestedStatus should be(Stopped)
@@ -147,8 +160,7 @@ class ProjectionMessagesSerializerSpec
         .build()
         .toByteArray
 
-      val projection =
-        projectionMessageSerializer.fromBinary(bytes, manifest = ProjectionManifest).asInstanceOf[Projection]
+      val projection = fromBinary[Projection](bytes, manifest = ProjectionManifest)
 
       projection.name should be("projection-test")
       projection.workers.length should be(1)
@@ -176,7 +188,7 @@ class ProjectionMessagesSerializerSpec
         .build()
         .toByteArray
 
-      val state = projectionMessageSerializer.fromBinary(bytes, manifest = StateManifest).asInstanceOf[State]
+      val state = fromBinary[State](bytes, manifest = StateManifest)
 
       state.projections.length should be(1)
       state.projections.head.name should be("projection-test")
@@ -191,27 +203,10 @@ class ProjectionMessagesSerializerSpec
         .build()
         .toByteArray
 
-      val workerCoordinates = projectionMessageSerializer
-        .fromBinary(bytes, manifest = WorkerCoordinatesManifest)
-        .asInstanceOf[WorkerCoordinates]
+      val workerCoordinates = fromBinary[WorkerCoordinates](bytes, manifest = WorkerCoordinatesManifest)
 
       workerCoordinates.tagName should be("test-tag-name")
       workerCoordinates.projectionName should be("projection-name")
-    }
-
-    "fail to serialize an unknown type" in {
-      assertThrows[IllegalArgumentException] {
-        projectionMessageSerializer.toBinary("Strings are not supported")
-      }
-    }
-
-    "fail to deserialize with the wrong manifest" in {
-      assertThrows[IllegalArgumentException] {
-        // Valid data
-        val bytes = ByteString("Stopped").toArray[Byte]
-        // But invalid manifest
-        projectionMessageSerializer.fromBinary(bytes, manifest = "WRONG-MANIFEST").asInstanceOf[Status]
-      }
     }
   }
 }
