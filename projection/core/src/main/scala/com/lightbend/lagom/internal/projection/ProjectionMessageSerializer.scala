@@ -25,6 +25,8 @@ private[lagom] object ProjectionMessageSerializer {
   val StatusManifest            = "C"
   val StateManifest             = "D"
   val WorkerCoordinatesManifest = "E"
+
+  val SerializerId = 1000007
 }
 
 private[lagom] class ProjectionMessageSerializer(val system: ExtendedActorSystem)
