@@ -52,7 +52,6 @@ object ProjectionRegistryActor {
   // values since both may have been edited concurrently in other nodes).
   case object GetState
 
-  val DefaultInitialStatus: Status = Started
 
 }
 
@@ -71,10 +70,13 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   // (a) Replicator contains data of all workers
   private val RequestedStatusDataKey: LWWMapKey[WorkerKey, Status] =
     LWWMapKey[WorkerKey, Status]("projection-registry-desired-status")
+
   private val ObservedStatusDataKey: LWWMapKey[WorkerKey, Status] =
     LWWMapKey[WorkerKey, Status]("projection-registry-observed-status")
+
   private val NameIndexDataKey: LWWMapKey[WorkerKey, WorkerCoordinates] =
     LWWMapKey[WorkerKey, WorkerCoordinates]("projection-registry-name-index")
+
   replicator ! Subscribe(RequestedStatusDataKey, self)
   replicator ! Subscribe(ObservedStatusDataKey, self)
   replicator ! Subscribe(NameIndexDataKey, self)
@@ -90,6 +92,13 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   // required to handle Terminate(deadActor)
   var reversedActorIndex: Map[ActorRef, WorkerKey] = Map.empty[ActorRef, WorkerKey]
 
+
+  val DefaultInitialStatus: Status = {
+    val autoStartEnabled = context.system.settings.config.getBoolean("lagom.projection.auto-start.enabled")
+    if (autoStartEnabled) Started
+    else Stopped
+  }
+
   override def receive: Receive = {
 
     case RegisterProjectionWorker(coordinates) =>
@@ -99,8 +108,7 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
       updateLWWMapForNameIndex(workerKey, coordinates)
       actorIndex = actorIndex.updated(workerKey, sender())
       reversedActorIndex = reversedActorIndex.updated(sender, workerKey)
-      // when worker registers, we must reply with the requested status (if it's been set already, or Started if not).
-      // TODO: parameterize the default initial status
+      // when worker registers, we must reply with the requested status (if it's been set already, or DefaultInitialStatus if not).
       val initialStatus = requestedStatusLocalCopy.getOrElse(workerKey, DefaultInitialStatus)
       log.debug(s"Setting initial status [$initialStatus] on worker $workerKey [${sender().path.toString}]")
       sender ! initialStatus
@@ -112,10 +120,8 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
       sender ! State.fromReplicatedData(
         nameIndexLocalCopy,
         requestedStatusLocalCopy,
-        observedStatusLocalCopy
-      )(
-        DefaultInitialStatus,
-        Stopped
+        observedStatusLocalCopy,
+        DefaultInitialStatus
       )
 
     // StateRequestCommand come from `ProjectionRegistry` and contain a requested Status
