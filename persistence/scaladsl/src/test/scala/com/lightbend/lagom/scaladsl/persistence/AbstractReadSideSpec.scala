@@ -37,7 +37,7 @@ import akka.util.Timeout
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.RegisterProjectionWorker
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
-import com.lightbend.lagom.internal.projection.WorkerHolderActor
+import com.lightbend.lagom.internal.projection.WorkerCoordinator
 import com.lightbend.lagom.projection.Started
 
 import scala.concurrent.Future
@@ -137,7 +137,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
         () => processorFactory()
       )
 
-    val workerHolderName = WorkerHolderActor.props(
+    val workerHolderName = WorkerCoordinator.props(
       projectionName,
       processorProps,
       probe.ref
