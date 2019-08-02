@@ -32,6 +32,7 @@ import com.lightbend.lagom.projection.Status
 import com.lightbend.lagom.projection.Stopped
 
 import scala.concurrent.duration._
+import com.lightbend.lagom.projection.ProjectionSerializable
 
 @ApiMayChange
 object ProjectionRegistryActor {
@@ -39,7 +40,7 @@ object ProjectionRegistryActor {
 
   case class RegisterProjectionWorker(coordinates: WorkerCoordinates)
 
-  case class WorkerCoordinates(projectionName: String, tagName: String) {
+  case class WorkerCoordinates(projectionName: String, tagName: String) extends ProjectionSerializable {
     val asKey: String                = s"$projectionName-$tagName"
     val workerActorName: String      = URLEncoder.encode(asKey, "utf-8")
     val supervisingActorName: String = URLEncoder.encode(s"backoff-$asKey", "utf-8")
