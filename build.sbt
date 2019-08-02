@@ -283,11 +283,13 @@ def macroCompileSettings: Seq[Setting[_]] = Seq(
 
 val version150 = "1.5.0"
 val version151 = "1.5.1"
-val version160 = "" // TODO: Set to 1.6.0 when it's out
+val version160 = "" // TODO: Set to 1.6.0 when it's out, also remove the Scala 2.13 exclusion
 
 def noMima = mimaPreviousArtifacts := Set.empty
 def mimaSettings(since: String = version150): Seq[Setting[_]] = {
   import ProblemFilters.exclude
+  import sbt.librarymanagement.SemanticSelector
+  import sbt.librarymanagement.VersionNumber
   val versions = if (since == "") Nil else Seq(since)
   Seq(
     mimaPreviousArtifacts := {
@@ -299,6 +301,10 @@ def mimaSettings(since: String = version150): Seq[Setting[_]] = {
         if (sbtPlugin.value) Defaults.sbtPluginExtra(moduleID, sbtBV, scalaBV)
         else moduleID
       }.toSet
+    },
+    mimaPreviousArtifacts := {
+      if (VersionNumber(scalaVersion.value).matchesSemVer(SemanticSelector(">=2.13"))) Set.empty
+      else mimaPreviousArtifacts.value
     },
     mimaBinaryIssueFilters ++= Seq(
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
@@ -481,8 +487,8 @@ lazy val root = (project in file("."))
   .settings(UnidocRoot.settings(javadslProjects, scaladslProjects))
   .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects): _*)
 
-def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) && Unidoc
-def SbtPluginPlugins  = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
+def SonatypeOnly      = Sonatype && PluginsAccessor.exclude(BintrayPlugin)
+def RuntimeLibPlugins = SonatypeOnly && AutomateHeaderPlugin && Unidoc
 
 lazy val api = (project in file("service/core/api"))
   .settings(runtimeLibCommon: _*)
@@ -1226,7 +1232,7 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   .dependsOn(`dev-mode-ssl-support`)
 
 lazy val `server-containers` = (project in file("dev") / "server-containers")
-  .enablePlugins(RuntimeLibPlugins)
+  .enablePlugins(AutomateHeaderPlugin, SonatypeOnly)
   .settings(
     common,
     mimaSettings(since = version160),
@@ -1235,11 +1241,12 @@ lazy val `server-containers` = (project in file("dev") / "server-containers")
     Dependencies.`server-containers`,
     publishMavenStyle := true,
     sonatypeSettings,
+    // must support both 2.10 for sbt 0.13 and 2.13 for 2.13 tests
+    crossScalaVersions := (Dependencies.Versions.Scala ++ Dependencies.Versions.SbtScala).distinct,
   )
 
 def sharedBuildToolSupportSetup(p: Project): Project =
-  p.disablePlugins(BintrayPlugin)
-    .enablePlugins(AutomateHeaderPlugin && Sonatype)
+  p.enablePlugins(AutomateHeaderPlugin, SonatypeOnly)
     .settings(sonatypeSettings: _*)
     .settings(common: _*)
     .settings(mimaSettings())
@@ -1275,13 +1282,12 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
     sbtPlugin := true,
     target := target.value / "lagom-sbt-build-tool-support",
   )
-  .dependsOn(`server-containers`)
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(common: _*)
   .settings(mimaSettings())
   .settings(scriptedSettings: _*)
-  .enablePlugins(SbtPluginPlugins, SbtPlugin)
+  .enablePlugins(AutomateHeaderPlugin, BintrayPlugin && PluginsAccessor.exclude(Sonatype), SbtPlugin)
   .settings(
     name := "lagom-sbt-plugin",
     crossScalaVersions := Dependencies.Versions.SbtScala,
@@ -1365,8 +1371,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .dependsOn(`sbt-build-tool-support`)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
-  .disablePlugins(BintrayPlugin)
-  .enablePlugins(lagom.SbtMavenPlugin && AutomateHeaderPlugin && Sonatype && Unidoc)
+  .enablePlugins(lagom.SbtMavenPlugin, AutomateHeaderPlugin, SonatypeOnly, Unidoc)
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(mimaSettings())
@@ -1427,8 +1432,7 @@ val ArchetypeVariablePattern = "%([A-Z-]+)%".r
 
 def archetypeProject(archetypeName: String) =
   Project(s"maven-$archetypeName-archetype", file("dev") / "archetypes" / s"maven-$archetypeName")
-    .disablePlugins(BintrayPlugin)
-    .enablePlugins(AutomateHeaderPlugin && Sonatype)
+    .enablePlugins(AutomateHeaderPlugin, SonatypeOnly)
     .settings(sonatypeSettings: _*)
     .settings(common: _*)
     .settings(mimaSettings())
@@ -1467,8 +1471,7 @@ def archetypeProject(archetypeName: String) =
 
 lazy val `maven-java-archetype` = archetypeProject("java")
 lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
-  .disablePlugins(BintrayPlugin)
-  .enablePlugins(AutomateHeaderPlugin && Sonatype)
+  .enablePlugins(AutomateHeaderPlugin, SonatypeOnly)
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(noMima)
@@ -1555,8 +1558,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
-  .disablePlugins(BintrayPlugin)
-  .enablePlugins(AutomateHeaderPlugin && Sonatype)
+  .enablePlugins(AutomateHeaderPlugin, SonatypeOnly)
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(mimaSettings())

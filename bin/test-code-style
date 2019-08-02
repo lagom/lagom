@@ -22,7 +22,7 @@ if [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
 fi
 
 runSbt  ${EXTRA_TASK[@]} \
-        mimaReportBinaryIssues
+        +mimaReportBinaryIssues
 
 printMessage "VALIDATE SCALA CODE FORMATTING"
 runSbt scalafmtAll scalafmtSbt
