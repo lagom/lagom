@@ -24,7 +24,7 @@ object Dependencies {
     val Twirl            = "1.5.0-M2"
     val PlayFileWatch    = "1.1.8"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M4")
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M5")
     val AkkaHttp     = "10.1.9"
 
     val AkkaPersistenceCassandra = "0.99"
@@ -164,11 +164,18 @@ object Dependencies {
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
   private val okio    = "com.squareup.okio"    % "okio"   % "2.2.2"
+  private val kotlinDeps = Seq(
+    "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.2.60",
+    "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.2.60",
+    "org.jetbrains"        % "annotations"          % "13.0"
+  )
 
   private val jffi         = "com.github.jnr" % "jffi"          % "1.2.19"
-  private val jnrConstants = "com.github.jnr" % "jnr-constants" % "0.9.9"
+  private val jnrConstants = "com.github.jnr" % "jnr-constants" % "0.9.12"
   private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.10"
   private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.50"
+  private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
+  private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
 
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", Versions.JacksonCore)(
@@ -207,7 +214,8 @@ object Dependencies {
       jnrConstants,
       jnrFfi,
       jnrPosix,
-      "com.github.jnr"           % "jnr-x86asm"              % "1.0.2",
+      jnra64asm,
+      jnrx86asm,
       "com.google.code.findbugs" % "jsr305"                  % "3.0.2",
       "com.google.errorprone"    % "error_prone_annotations" % "2.3.2",
       guava,
@@ -392,7 +400,7 @@ object Dependencies {
       "log4j-api",
       "log4j-core",
       "log4j-slf4j-impl"
-    ) ++ libraryFamily("org.ow2.asm", "5.0.3")(
+    ) ++ libraryFamily("org.ow2.asm", "7.1")(
       "asm",
       "asm-analysis",
       "asm-commons",
@@ -408,7 +416,7 @@ object Dependencies {
       "slf4j-api",
       "slf4j-nop",
       "slf4j-log4j12"
-    )
+    ) ++ kotlinDeps.map(_ % Test)
   }
 
   // These dependencies are used by JPA to test, but we don't want to export them as part of our regular whitelist,
@@ -470,7 +478,7 @@ object Dependencies {
     akkaStream,
     play,
     guava,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     sslConfig,
     playJson
   )
@@ -479,7 +487,7 @@ object Dependencies {
     playJava,
     playGuice,
     pcollections,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     sslConfig,
     scalaTest                      % Test,
     "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % Versions.Jackson % Test
@@ -487,7 +495,7 @@ object Dependencies {
 
   val `api-scaladsl` = libraryDependencies ++= Seq(
     scalaCollectionCompat,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     sslConfig,
     scalaTest % Test
   )
@@ -502,7 +510,7 @@ object Dependencies {
     "com.fasterxml.jackson.datatype"   % "jackson-datatype-jsr310"        % Versions.JacksonDatatype,
     "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor"        % Versions.JacksonDatatype,
     "com.fasterxml.jackson.module"     %% "jackson-module-scala"          % Versions.JacksonDatatype,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     sslConfig,
     pcollections,
     akkaJackson,
@@ -517,7 +525,7 @@ object Dependencies {
     akkaActor,
     akkaTestkit % Test,
     scalaTest   % Test,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     scalaOrganization.value % "scala-reflect" % scalaVersion.value,
     scalaJava8Compat,
     pcollections,
@@ -532,7 +540,7 @@ object Dependencies {
   val `api-tools` = libraryDependencies ++= Seq(
     play,
     scalaTest % Test,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     reactiveStreams,
     sslConfig,
     playJson,
@@ -595,11 +603,13 @@ object Dependencies {
     akkaStream,
     play,
     akkaPersistenceCassandraLauncher,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     sslConfig,
     playJson,
     akkaSlf4j,
-    scalaXml
+    scalaXml,
+    jnrConstants,
+    jnrPosix
   )
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
@@ -629,7 +639,7 @@ object Dependencies {
     junit          % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     okio        % Test,
     byteBuddy   % Test,
     commonsLang % Test,
@@ -654,7 +664,7 @@ object Dependencies {
     akkaDiscovery,
     slf4jApi,
     scalaTest % Test,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     scalaJava8Compat,
     scalaXml
   )
@@ -666,7 +676,7 @@ object Dependencies {
   val `akka-management-core` = libraryDependencies ++= Seq(
     play,
     akkaManagement,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     akkaStream,
     akkaActor,
     akkaProtobuf,
@@ -691,7 +701,7 @@ object Dependencies {
     scalaTest            % Test,
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     sslConfig,
     scalaJava8Compat,
     scalaParserCombinators,
@@ -701,6 +711,7 @@ object Dependencies {
     sprayJson,
     jffi,
     jnrFfi,
+    jnrConstants,
     // transitive dependencies from Akka Management
     // may not match the Akka version in use so
     // must be explicitly bumped
@@ -725,7 +736,7 @@ object Dependencies {
     scalaTest            % Test,
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     sslConfig,
     scalaXml,
     akkaSlf4j
@@ -744,6 +755,8 @@ object Dependencies {
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
     slf4jApi             % Test,
+    // Upgrades needed to match whitelist versions
+    jnrConstants,
     // explicitly depend on particular versions of jackson
   ) ++ jacksonFamily ++ Seq(
     // explicitly depend on particular versions of guava
@@ -756,10 +769,11 @@ object Dependencies {
     akkaMultiNodeTestkit % Test,
     akkaStreamTestkit    % Test,
     scalaTest            % Test,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     sslConfig,
     scalaXml % Test,
-    akkaSlf4j
+    akkaSlf4j,
+    jnrConstants
   )
 
   val `projection-core` = libraryDependencies ++= Seq(
@@ -770,7 +784,9 @@ object Dependencies {
     akkaStreamTestkit    % Test,
     scalaTest            % Test,
     junit                % Test,
-    "com.novocode"       % "junit-interface" % "0.11" % Test
+    "com.novocode"       % "junit-interface" % "0.11" % Test,
+    // Upgrades needed to match whitelist versions
+    jnrConstants,
   )
 
   val `projection-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
@@ -789,7 +805,7 @@ object Dependencies {
     scalaTest            % Test,
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     sslConfig,
     playJson,
     scalaXml
@@ -817,23 +833,25 @@ object Dependencies {
     slf4jApi,
     akkaPersistenceCassandra,
     akkaPersistenceCassandraLauncher % Test,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     sslConfig,
     dropwizardMetricsCore,
     cassandraDriverCore,
     scalaXml,
+    jnrConstants,
+    jnrPosix,
     "io.netty" % "netty-handler" % Versions.Netty
   )
 
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
     junit % Test,
     jsr250,
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     cassandraDriverCore
   )
 
   val `persistence-cassandra-scaladsl` = libraryDependencies ++= Seq(
-    // Upgrades needed to match whitelist
+    // Upgrades needed to match whitelist versions
     cassandraDriverCore
   )
 
@@ -845,7 +863,8 @@ object Dependencies {
     h2    % Test,
     // Upgrades needed to match whitelist versions
     scalaCollectionCompat,
-    scalaXml
+    scalaXml,
+    jnrConstants
   )
 
   val `persistence-jdbc-javadsl` = libraryDependencies ++= Seq(
@@ -860,7 +879,10 @@ object Dependencies {
     "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.2.Final" % Provided,
     "org.hibernate"                   % "hibernate-core" % Versions.HibernateCore % Test,
     h2                                % Test,
-    javassist                         % Test
+    javassist                         % Test,
+    // Upgrades needed to match whitelist versions
+    byteBuddy,
+    jnrConstants
   )
 
   val `broker-javadsl` = libraryDependencies ++= Nil
@@ -871,26 +893,32 @@ object Dependencies {
     "org.slf4j" % "log4j-over-slf4j" % Versions.Slf4j,
     akkaStreamKafka.exclude("org.slf4j", "slf4j-log4j12"),
     scalaTest % Test,
-    // Upgrades needed to match whitelist$
+    // Upgrades needed to match whitelist versions
     sslConfig,
     kafkaClients
   )
 
   val `kafka-client-javadsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
-    // Upgrades needed to match whitelist$
+    // Upgrades needed to match whitelist versions
     sslConfig,
-    kafkaClients
+    kafkaClients,
+    jnrConstants
   )
 
   val `kafka-client-scaladsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
-    // Upgrades needed to match whitelist$
+    // Upgrades needed to match whitelist versions
     sslConfig,
-    kafkaClients
+    kafkaClients,
+    jnrConstants
   )
 
-  val `kafka-broker` = libraryDependencies ++= Seq(kafkaClients)
+  val `kafka-broker` = libraryDependencies ++= Seq(
+    kafkaClients,
+    // Upgrades needed to match whitelist versions
+    jnrConstants
+  )
 
   val `kafka-broker-javadsl` = libraryDependencies ++= Seq(
     slf4jApi,
