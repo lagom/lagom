@@ -38,8 +38,8 @@ object State {
   private[lagom] def fromReplicatedData(
       nameIndex: Map[WorkerKey, WorkerCoordinates],
       requestedStatusLocalCopy: Map[WorkerKey, Status],
-      observedStatusLocalCopy: Map[WorkerKey, Status]
-  )(defaultRequested: Status, defaultObserved: Status = Stopped): State = {
+      observedStatusLocalCopy: Map[WorkerKey, Status],
+      defaultRequested: Status): State = {
 
     val workers: Map[String, Seq[Worker]] = nameIndex
       .map {
