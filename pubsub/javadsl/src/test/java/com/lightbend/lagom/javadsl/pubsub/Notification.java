@@ -4,14 +4,16 @@
 
 package com.lightbend.lagom.javadsl.pubsub;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.lightbend.lagom.serialization.Jsonable;
 
-public class Notification implements Serializable {
+public class Notification implements Jsonable {
 
   private static final long serialVersionUID = 1L;
 
   private final String msg;
 
+  @JsonCreator
   public Notification(String msg) {
     this.msg = msg;
   }
