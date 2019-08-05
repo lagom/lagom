@@ -98,7 +98,7 @@ class InternalRegistry(var reg: Map[ServiceRegistryKey, ServiceToRegister]) {
   }
 
   /** Simple view of the registry that removes the portName info, grouping registries per ServiceName */
-  val serviceValues: Map[ServiceName, ServiceToRegister] = reg.map { case (k, v) => k.serviceName -> v }
+  def serviceValues: Map[ServiceName, ServiceToRegister] = reg.map { case (k, v) => k.serviceName -> v }
 
   def lookup(serviceName: String, portName: Option[String]): Option[URI] =
     reg.get(ServiceRegistryKey(ServiceName(serviceName), portName)).map(_.uri)
