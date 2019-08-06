@@ -30,12 +30,9 @@ import org.scalatest.BeforeAndAfter
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures
 import akka.pattern._
-import akka.testkit.TestActor.AutoPilot
-import akka.testkit.TestActor.KeepRunning
 import akka.testkit.TestProbe
 import akka.util.Timeout
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
-import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.RegisterProjectionWorker
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.internal.projection.WorkerCoordinator
 import com.lightbend.lagom.projection.Started
@@ -50,7 +47,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   import system.dispatcher
 
   // patience config for all async code
-  implicit override val patienceConfig = PatienceConfig(60.seconds, 150.millis)
+  implicit override val patienceConfig: PatienceConfig = PatienceConfig(60.seconds, 150.millis)
 
   implicit val mat = ActorMaterializer()
 
@@ -256,7 +253,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
       withReadSideProcessor(id, forcedFailures = 1) { mockRef =>
         // eventually the worker will fail, self-heal and then succeed reporting a failure and a success
-        implicit val askTimeout = Timeout(5.seconds)
+        implicit val askTimeout: Timeout = Timeout(5.seconds)
         eventually {
           val statsBefore = (mockRef ? Mock.GetStats).mapTo[Mock.MockStats].futureValue
           statsBefore shouldBe Mock.MockStats(successCount = 1, failureCount = 1)
