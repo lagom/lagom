@@ -52,7 +52,6 @@ object ProjectionRegistryActor {
   // values since both may have been edited concurrently in other nodes).
   case object GetState
 
-
 }
 
 class ProjectionRegistryActor extends Actor with ActorLogging {
@@ -92,7 +91,6 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   // required to handle Terminate(deadActor)
   var reversedActorIndex: Map[ActorRef, WorkerKey] = Map.empty[ActorRef, WorkerKey]
 
-
   val DefaultInitialStatus: Status = {
     val autoStartEnabled = context.system.settings.config.getBoolean("lagom.projection.auto-start.enabled")
     if (autoStartEnabled) Started
@@ -121,6 +119,7 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
         nameIndexLocalCopy,
         requestedStatusLocalCopy,
         observedStatusLocalCopy,
+        DefaultInitialStatus,
         DefaultInitialStatus
       )
 

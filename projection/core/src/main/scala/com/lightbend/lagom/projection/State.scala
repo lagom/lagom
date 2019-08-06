@@ -39,7 +39,9 @@ object State {
       nameIndex: Map[WorkerKey, WorkerCoordinates],
       requestedStatusLocalCopy: Map[WorkerKey, Status],
       observedStatusLocalCopy: Map[WorkerKey, Status],
-      defaultRequested: Status): State = {
+      defaultRequested: Status,
+      defaultObserved: Status
+  ): State = {
 
     val workers: Map[String, Seq[Worker]] = nameIndex
       .map {
