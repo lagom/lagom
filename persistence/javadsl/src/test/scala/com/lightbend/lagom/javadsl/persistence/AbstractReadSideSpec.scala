@@ -138,13 +138,13 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
         () => processorFactory()
       )
 
-    val workerHolderName = WorkerCoordinator.props(
+    val workerCoordinator = WorkerCoordinator.props(
       projectionName,
       processorProps,
       probe.ref
     )
 
-    val readSide: ActorRef = system.actorOf(workerHolderName)
+    val readSide: ActorRef = system.actorOf(workerCoordinator)
 
     // Running a readside is a two step process:
     // 1. sending an EnsureActive so it has the tagName
