@@ -39,6 +39,9 @@ object PathParamSerializer extends DefaultPathParamSerializers
 
 trait DefaultPathParamSerializers extends LowPriorityPathParamSerializers {
 
+  import com.lightbend.lagom.scaladsl.api.deser.macros.SerializerMacros
+  import scala.language.experimental.macros
+
   /**
    * Create a PathParamSerializer for required parameters.
    */
@@ -82,6 +85,12 @@ trait DefaultPathParamSerializers extends LowPriorityPathParamSerializers {
    * A UUID path parameter serializer
    */
   implicit val UuidPathParamSerializer: PathParamSerializer[UUID] = required("UUID")(UUID.fromString)(_.toString)
+
+  /**
+   * An AnyVal path parameter serializer
+   */
+  implicit def AnyValPathParamSerializer[T <: AnyVal]: PathParamSerializer[T] =
+    macro SerializerMacros.anyValSerializer[T]
 
   /**
    * An option path param serializer

@@ -23,6 +23,7 @@ import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer
 import com.lightbend.lagom.scaladsl.api.deser.StrictMessageSerializer
 import com.lightbend.lagom.scaladsl.api.transport._
 import com.lightbend.lagom.scaladsl.server.ServerServiceCall
+import play.api.libs.json.Format
 import play.api.libs.json.Json
 
 import scala.collection.immutable
@@ -61,12 +62,23 @@ object MockRequestEntity {
 
 case class MockResponseEntity(incomingId: Long, incomingRequest: MockRequestEntity)
 object MockResponseEntity {
-  implicit val format = Json.format[MockResponseEntity]
+  implicit val format: Format[MockResponseEntity] = Json.format
+}
+
+case class MockAnyVal(value: Long) extends AnyVal
+object MockAnyVal {
+  implicit val format: Format[MockAnyVal] = Json.valueFormat
+}
+
+case class MockAnyValResponseEntity(incomingId: MockAnyVal, incomingRequest: MockRequestEntity)
+object MockAnyValResponseEntity {
+  implicit val format: Format[MockAnyValResponseEntity] = Json.format
 }
 
 trait MockService extends Service {
 
   def mockCall(id: Long): ServiceCall[MockRequestEntity, MockResponseEntity]
+  def mockAnyValCall(id: MockAnyVal): ServiceCall[MockRequestEntity, MockAnyValResponseEntity]
   def doNothing: ServiceCall[NotUsed, NotUsed]
   def alwaysFail: ServiceCall[NotUsed, NotUsed]
   def doneCall(): ServiceCall[Done, Done]
@@ -88,6 +100,7 @@ trait MockService extends Service {
   override def descriptor = {
     named("mockservice").withCalls(
       restCall(Method.POST, "/mock/:id", mockCall _),
+      restCall(Method.POST, "/mock-any-val/:id", mockAnyValCall _),
       call(doNothing _),
       call(alwaysFail _).withCircuitBreaker(CircuitBreaker.identifiedBy("foo")),
       call(doneCall _),
@@ -124,6 +137,10 @@ class MockServiceImpl(implicit mat: Materializer, ec: ExecutionContext) extends 
 
   override def mockCall(id: Long) = ServiceCall { req =>
     Future.successful(MockResponseEntity(id, req))
+  }
+
+  override def mockAnyValCall(id: MockAnyVal) = ServiceCall { req =>
+    Future.successful(MockAnyValResponseEntity(id, req))
   }
 
   override def doNothing = ServiceCall { _ =>

@@ -313,6 +313,9 @@ def mimaSettings(since: String = version150): Seq[Setting[_]] = {
       // ServiceInfoImpl is a private class
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.scaladsl.api.ServiceInfo#ServiceInfoImpl*"),
       ProblemFilters
+        .exclude[DirectMissingMethodProblem]("*lagom.*dsl.api.ServiceSupport#ScalaMethodServiceCall.invoke"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("*lagom.*dsl.server.LagomServerBuilder.buildRouter"),
+      ProblemFilters
         .exclude[DirectMissingMethodProblem]("*lagom.*dsl.persistence.PersistentEntityRegistry.gracefulShutdown"),
       // Remove APIs deprecated in Lagom 1.3.x: https://github.com/lagom/lagom/pull/1967
       ProblemFilters

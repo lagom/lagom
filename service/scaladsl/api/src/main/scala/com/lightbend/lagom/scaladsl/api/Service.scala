@@ -17,6 +17,7 @@ import scala.collection.immutable
 import scala.reflect.macros.blackbox.Context
 import scala.language.experimental.macros
 import scala.language.implicitConversions
+import scala.reflect.ClassTag
 
 /**
  * A Lagom service descriptor.
@@ -253,7 +254,17 @@ object ServiceSupport {
       val method: Method,
       val pathParamSerializers: immutable.Seq[PathParamSerializer[_]]
   ) extends ServiceCallHolder {
-    def invoke(service: Any, args: immutable.Seq[AnyRef]) = method.invoke(service, args: _*)
+    def invoke[T <: Service: ClassTag](service: T, args: immutable.Seq[AnyRef]) = {
+      import scala.reflect.runtime.{ universe => ru }
+      val classTag       = implicitly[ClassTag[T]]
+      val runtimeClass   = classTag.runtimeClass
+      val runtimeMirror  = ru.runtimeMirror(runtimeClass.getClassLoader)
+      val typeSignature  = runtimeMirror.classSymbol(runtimeClass).typeSignature
+      val instanceMirror = runtimeMirror.reflect(service)
+      val methodSymbol   = typeSignature.member(ru.TermName(method.getName)).asMethod
+      val methodMirror   = instanceMirror.reflectMethod(methodSymbol)
+      methodMirror(args: _*)
+    }
   }
 
   /**
