@@ -381,10 +381,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
   import autoImport._
 
   private val serviceLocatorProject = Project("lagom-internal-meta-project-service-locator", file("."))
-    .configs(Configurations.default: _*)
-    .settings(CorePlugin.projectSettings: _*)
-    .settings(IvyPlugin.projectSettings: _*)
-    .settings(JvmPlugin.projectSettings: _*)
+    .configure(p => p.in(file("target") / "lagom-dynamic-projects" / p.id))
     .settings(
       scalaVersion := "2.12.9",
       libraryDependencies += LagomImport.component("lagom-service-locator"),
@@ -393,10 +390,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     )
 
   private val cassandraProject = Project("lagom-internal-meta-project-cassandra", file("."))
-    .configs(Configurations.default: _*)
-    .settings(CorePlugin.projectSettings: _*)
-    .settings(IvyPlugin.projectSettings: _*)
-    .settings(JvmPlugin.projectSettings: _*)
+    .configure(p => p.in(file("target") / "lagom-dynamic-projects" / p.id))
     .settings(
       scalaVersion := "2.12.9",
       libraryDependencies += LagomImport.component("lagom-cassandra-server"),
@@ -405,10 +399,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     )
 
   private val kafkaServerProject = Project("lagom-internal-meta-project-kafka", file("."))
-    .configs(Configurations.default: _*)
-    .settings(CorePlugin.projectSettings: _*)
-    .settings(IvyPlugin.projectSettings: _*)
-    .settings(JvmPlugin.projectSettings: _*)
+    .configure(p => p.in(file("target") / "lagom-dynamic-projects" / p.id))
     .settings(
       scalaVersion := "2.12.9",
       libraryDependencies += LagomImport.component("lagom-kafka-server"),
@@ -419,10 +410,11 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
   private val projectPortMap   = AttributeKey[Map[ProjectName, Port]]("lagomProjectPortMap")
   private val defaultPortRange = PortRange(0xc000, 0xffff)
 
+  override def extraProjects = Seq(serviceLocatorProject, cassandraProject, kafkaServerProject)
+
   override def globalSettings = Seq(
     onLoad := onLoad.value
       .andThen(assignProjectsPort)
-      .andThen(DynamicProjectAdder.addProjects(serviceLocatorProject, cassandraProject, kafkaServerProject))
   )
 
   private def assignProjectsPort(state: State): State = {
