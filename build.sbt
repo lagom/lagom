@@ -457,6 +457,8 @@ val coreProjects = Seq[ProjectReference](
   log4j2
 )
 
+val publishScriptedDependencies = taskKey[Unit]("Publish scripted dependencies")
+
 val otherProjects = devEnvironmentProjects ++ Seq[ProjectReference](
   `integration-tests-javadsl`,
   `integration-tests-scaladsl`,
@@ -1280,6 +1282,7 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
     scalaVersion := Dependencies.Versions.SbtScala.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     sbtPlugin := true,
+    scriptedDependencies := (()),
     target := target.value / "lagom-sbt-build-tool-support",
   )
 
@@ -1305,9 +1308,8 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     ),
     // This ensure that files in sbt-test are also included
     headerSources in Compile ++= (sbtTestDirectory.value ** ("*.scala" || "*.java")).get,
-    scriptedDependencies := {
-      val () = scriptedDependencies.value
-
+    scriptedDependencies := (()),
+    publishScriptedDependencies := {
       // core projects
       val () = (publishLocal in `akka-management-core`).value
       val () = (publishLocal in `akka-management-javadsl`).value
@@ -1560,6 +1562,7 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
   .settings(name := "lagom-sbt-scripted-tools")
   .settings(
     sbtPlugin := true,
+    scriptedDependencies := (()),
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value)
