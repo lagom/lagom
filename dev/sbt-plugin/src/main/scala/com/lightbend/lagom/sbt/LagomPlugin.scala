@@ -394,10 +394,6 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
   import autoImport._
 
   private val serviceLocatorProject = Project("lagom-internal-meta-project-service-locator", file("."))
-    .configs(Configurations.default: _*)
-    .settings(CorePlugin.projectSettings: _*)
-    .settings(IvyPlugin.projectSettings: _*)
-    .settings(JvmPlugin.projectSettings: _*)
     .settings(
       scalaVersion := "2.12.8",
       libraryDependencies += LagomImport.component("lagom-service-locator"),
@@ -406,10 +402,6 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     )
 
   private val cassandraProject = Project("lagom-internal-meta-project-cassandra", file("."))
-    .configs(Configurations.default: _*)
-    .settings(CorePlugin.projectSettings: _*)
-    .settings(IvyPlugin.projectSettings: _*)
-    .settings(JvmPlugin.projectSettings: _*)
     .settings(
       scalaVersion := "2.12.8",
       libraryDependencies += LagomImport.component("lagom-cassandra-server"),
@@ -418,10 +410,6 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
     )
 
   private val kafkaServerProject = Project("lagom-internal-meta-project-kafka", file("."))
-    .configs(Configurations.default: _*)
-    .settings(CorePlugin.projectSettings: _*)
-    .settings(IvyPlugin.projectSettings: _*)
-    .settings(JvmPlugin.projectSettings: _*)
     .settings(
       scalaVersion := "2.12.8",
       libraryDependencies += LagomImport.component("lagom-kafka-server"),
