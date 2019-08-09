@@ -1,0 +1,5 @@
+# Structure of this test:
+# =======================
+
+# Test that a Lagom project can be cross-built.
+> ++2.12.9 compile
