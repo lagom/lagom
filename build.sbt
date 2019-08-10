@@ -354,6 +354,15 @@ def mimaSettings(since: String = version150): Seq[Setting[_]] = {
         .exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint"),
       // Different type params for the CanBuildFrom it takes
       exclude[IncompatibleSignatureProblem]("*.lagom*PathParamSerializer*.traversablePathParamSerializer"),
+      // Signature problems from 2.12.9 (value classes in generics, missing signatures on constructors..)
+      exclude[IncompatibleSignatureProblem]("*lagom.*.this"),
+      exclude[IncompatibleSignatureProblem]("*lagom.registry.impl.*"),
+      exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.Descriptor#RestCallIdImpl*"),
+      exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.ServiceAcl#ServiceAclImpl*"),
+      exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.ServiceAcl.apply"),
+      exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.ServiceAcl.apply$default$1"),
+      exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.ServiceAcl.method"),
+      exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.transport.RequestHeader#RequestHeaderImpl*"),
       // LagomAbstractMojo dropped?
       exclude[MissingClassProblem]("*.lagom.maven.LagomAbstractMojo"),
       exclude[MissingTypesProblem]("*.lagom.maven.ConfigureMojo"),
