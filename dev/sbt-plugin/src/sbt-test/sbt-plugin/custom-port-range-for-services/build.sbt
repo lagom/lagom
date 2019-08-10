@@ -9,7 +9,7 @@ lazy val a = (project in file("a"))
   .settings(
     Seq(
       sourceDirectory := baseDirectory.value / "src-a",
-      scalaVersion := sys.props.get("scala.version").getOrElse("2.12.8")
+      scalaVersion := sys.props.get("scala.version").getOrElse("2.12.9")
     )
   )
 
@@ -18,7 +18,7 @@ lazy val b = (project in file("b"))
   .settings(
     Seq(
       sourceDirectory := baseDirectory.value / "src-b",
-      scalaVersion := sys.props.get("scala.version").getOrElse("2.12.8")
+      scalaVersion := sys.props.get("scala.version").getOrElse("2.12.9")
     )
   )
 
