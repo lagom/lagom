@@ -4,4 +4,4 @@
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-runSbtNoisy "++2.12.8 test"
+runSbtNoisy "++2.12.9 test"
