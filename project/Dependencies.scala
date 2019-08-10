@@ -58,7 +58,7 @@ object Dependencies {
 
     val Slf4j   = "1.7.25"
     val Logback = "1.2.3"
-    val Log4j   = "2.11.2"
+    val Log4j   = "2.12.1"
 
     val jetty = "9.4.16.v20190411"
 
