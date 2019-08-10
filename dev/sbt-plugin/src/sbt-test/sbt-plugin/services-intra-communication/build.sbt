@@ -3,7 +3,7 @@ import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 
 lazy val commonSettings = Seq(
-  scalaVersion := sys.props.get("scala.version").getOrElse("2.12.8")
+  scalaVersion := sys.props.get("scala.version").getOrElse("2.12.9")
 )
 
 lazy val fooApi = (project in file("foo/api"))

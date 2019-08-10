@@ -1,7 +1,7 @@
 import akka.JavaVersion
 import akka.CrossJava
 
-val ScalaVersion = "2.12.8"
+val ScalaVersion = "2.12.9"
 
 val AkkaVersion: String   = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M5")
 val JUnitVersion          = "4.12"

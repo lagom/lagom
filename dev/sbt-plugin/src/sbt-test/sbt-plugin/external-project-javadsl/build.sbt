@@ -1,6 +1,6 @@
 import play.sbt.PlayImport
 
-scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.8")
+scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.9")
 
 lagomCassandraEnabled in ThisBuild := false
 lagomKafkaEnabled in ThisBuild := false
