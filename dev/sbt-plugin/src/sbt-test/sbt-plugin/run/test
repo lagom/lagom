@@ -1,7 +1,7 @@
 # Structure of this test:
 # =======================
 
-# Here we test that the `lagomRunReloadAll` task does indeed reload on change - 
+# Here we test that the `runAll` task does indeed reload on change - 
 # for example, ensuring that it only reloads when the classpath changes, and testing 
 # failure conditions.
 
