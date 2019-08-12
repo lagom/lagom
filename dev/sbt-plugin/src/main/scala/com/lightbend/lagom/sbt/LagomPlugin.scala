@@ -503,6 +503,12 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
       ),
       runAll := runAllMicroservicesTask.value,
       Internal.Keys.interactionMode := PlayConsoleInteractionMode,
+      Internal.Keys.stop := {
+        Internal.Keys.interactionMode.value match {
+          case nonBlocking: PlayNonBlockingInteractionMode => nonBlocking.stop()
+          case _                                           => throw new RuntimeException("Play interaction mode must be non blocking to stop it")
+        }
+      },
       lagomDevSettings := Nil
     ) ++
       // This is important as we want to evaluate these tasks exactly once.
@@ -533,12 +539,6 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
       if (lagomServiceEnableSsl.value)
         LagomPlugin.assignedPortFor(ProjectName(n).withTls, s).value
       else Port.Unassigned.value
-    },
-    Internal.Keys.stop := {
-      Internal.Keys.interactionMode.value match {
-        case nonBlocking: PlayNonBlockingInteractionMode => nonBlocking.stop()
-        case _                                           => throw new RuntimeException("Play interaction mode must be non blocking to stop it")
-      }
     },
     ivyConfigurations ++= Seq(Internal.Configs.DevRuntime),
     PlaySettings.manageClasspath(Internal.Configs.DevRuntime),
