@@ -394,49 +394,35 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
   import autoImport._
 
   private val serviceLocatorProject = Project("lagom-internal-meta-project-service-locator", file("."))
-    .configs(Configurations.default: _*)
-    .settings(CorePlugin.projectSettings: _*)
-    .settings(IvyPlugin.projectSettings: _*)
-    .settings(JvmPlugin.projectSettings: _*)
+    .configure(p => p.in(file("target") / "lagom-dynamic-projects" / p.id))
     .settings(
       scalaVersion := "2.12.9",
-      libraryDependencies += LagomImport.component("lagom-service-locator"),
-      lagomServiceLocatorStart in ThisBuild := startServiceLocatorTask.value,
-      lagomServiceLocatorStop in ThisBuild := Servers.ServiceLocator.tryStop(new SbtLoggerProxy(state.value.log))
+      libraryDependencies += LagomImport.component("lagom-service-locator")
     )
 
   private val cassandraProject = Project("lagom-internal-meta-project-cassandra", file("."))
-    .configs(Configurations.default: _*)
-    .settings(CorePlugin.projectSettings: _*)
-    .settings(IvyPlugin.projectSettings: _*)
-    .settings(JvmPlugin.projectSettings: _*)
+    .configure(p => p.in(file("target") / "lagom-dynamic-projects" / p.id))
     .settings(
       scalaVersion := "2.12.9",
-      libraryDependencies += LagomImport.component("lagom-cassandra-server"),
-      lagomCassandraStart in ThisBuild := startCassandraServerTask.value,
-      lagomCassandraStop in ThisBuild := Servers.CassandraServer.tryStop(new SbtLoggerProxy(state.value.log))
+      libraryDependencies += LagomImport.component("lagom-cassandra-server")
     )
 
   private val kafkaServerProject = Project("lagom-internal-meta-project-kafka", file("."))
-    .configs(Configurations.default: _*)
-    .settings(CorePlugin.projectSettings: _*)
-    .settings(IvyPlugin.projectSettings: _*)
-    .settings(JvmPlugin.projectSettings: _*)
+    .configure(p => p.in(file("target") / "lagom-dynamic-projects" / p.id))
     .settings(
       scalaVersion := "2.12.9",
-      libraryDependencies += LagomImport.component("lagom-kafka-server"),
-      lagomKafkaStart in ThisBuild := startKafkaServerTask.value,
-      lagomKafkaStop in ThisBuild := Servers.KafkaServer.tryStop(new SbtLoggerProxy(state.value.log))
+      libraryDependencies += LagomImport.component("lagom-kafka-server")
     )
 
   private val projectPortMap   = AttributeKey[Map[ProjectName, Port]]("lagomProjectPortMap")
   private val defaultPortRange = PortRange(0xc000, 0xffff)
 
+  override def extraProjects = Seq(serviceLocatorProject, cassandraProject, kafkaServerProject)
+
   override def globalSettings = Seq(
     lagomServiceEnableSsl := false,
     onLoad := onLoad.value
       .andThen(assignProjectsPort)
-      .andThen(DynamicProjectAdder.addProjects(serviceLocatorProject, cassandraProject, kafkaServerProject))
   )
 
   private def assignProjectsPort(state: State): State = {
@@ -472,7 +458,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
   private def dontAggregate(keys: Scoped*): Seq[Setting[_]] = keys.map(aggregate in _ := false)
 
   override def buildSettings =
-    super.buildSettings ++ Seq(
+    super.buildSettings ++ Def.settings(
       lagomUnmanagedServices := Map.empty,
       lagomInfrastructureServices := lagomInfrastructureServicesTask.value,
       lagomServicesPortRange := defaultPortRange,
@@ -483,12 +469,24 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
       lagomServiceGatewayPort := 9000,
       lagomServiceGatewayImpl := "akka-http",
       lagomServiceLocatorUrl := s"http://${lagomServiceLocatorAddress.value}:${lagomServiceLocatorPort.value}",
+      inScope(ThisScope in serviceLocatorProject)(
+        Seq(
+          lagomServiceLocatorStart in ThisBuild := startServiceLocatorTask.value,
+          lagomServiceLocatorStop in ThisBuild := Servers.ServiceLocator.tryStop(new SbtLoggerProxy(state.value.log))
+        )
+      ),
       lagomCassandraEnabled := true,
       lagomCassandraPort := 4000, // If you change the default make sure to also update the play/reference-overrides.conf in the persistence project
       lagomCassandraCleanOnStart := false,
       lagomCassandraJvmOptions := Seq("-Xms256m", "-Xmx1024m", "-Dcassandra.jmx.local.port=4099"),
       lagomCassandraMaxBootWaitingTime := 20.seconds,
       lagomCassandraYamlFile := None,
+      inScope(ThisScope in cassandraProject)(
+        Seq(
+          lagomCassandraStart in ThisBuild := startCassandraServerTask.value,
+          lagomCassandraStop in ThisBuild := Servers.CassandraServer.tryStop(new SbtLoggerProxy(state.value.log))
+        )
+      ),
       lagomKafkaEnabled := true,
       lagomKafkaPropertiesFile := None,
       lagomKafkaZookeeperPort := 2181,
@@ -496,8 +494,20 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
       lagomKafkaCleanOnStart := false,
       lagomKafkaAddress := s"localhost:${lagomKafkaPort.value}",
       lagomKafkaJvmOptions := Seq("-Xms256m", "-Xmx1024m"),
+      inScope(ThisScope in kafkaServerProject)(
+        Seq(
+          lagomKafkaStart in ThisBuild := startKafkaServerTask.value,
+          lagomKafkaStop in ThisBuild := Servers.KafkaServer.tryStop(new SbtLoggerProxy(state.value.log))
+        )
+      ),
       runAll := runAllMicroservicesTask.value,
       Internal.Keys.interactionMode := PlayConsoleInteractionMode,
+      Internal.Keys.stop := {
+        Internal.Keys.interactionMode.value match {
+          case nonBlocking: PlayNonBlockingInteractionMode => nonBlocking.stop()
+          case _                                           => throw new RuntimeException("Play interaction mode must be non blocking to stop it")
+        }
+      },
       lagomDevSettings := Nil
     ) ++
       // This is important as we want to evaluate these tasks exactly once.
@@ -528,12 +538,6 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
       if (lagomServiceEnableSsl.value)
         LagomPlugin.assignedPortFor(ProjectName(n).withTls, s).value
       else Port.Unassigned.value
-    },
-    Internal.Keys.stop := {
-      Internal.Keys.interactionMode.value match {
-        case nonBlocking: PlayNonBlockingInteractionMode => nonBlocking.stop()
-        case _                                           => throw new RuntimeException("Play interaction mode must be non blocking to stop it")
-      }
     },
     ivyConfigurations ++= Seq(Internal.Configs.DevRuntime),
     PlaySettings.manageClasspath(Internal.Configs.DevRuntime),
