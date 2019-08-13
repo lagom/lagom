@@ -387,6 +387,8 @@ def mimaSettings(since: String = version150): Seq[Setting[_]] = {
       // moved to the server-containers project in 1.6.0
       exclude[MissingClassProblem]("*.lagom.dev.LagomProcess*"),
       exclude[MissingClassProblem]("*.lagom.dev.Servers*"),
+      // PubSub module extending SimpleModule instead of Module
+      ProblemFilters.exclude[DirectAbstractMethodProblem]("play.api.inject.Module.bindings"),
     )
   )
 }
