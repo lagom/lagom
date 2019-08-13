@@ -65,7 +65,6 @@ class ClusteredPubSubSpec
 
   protected override def atStartup() {
     roles.foreach(n => join(n, node1))
-
     enterBarrier("startup")
   }
 

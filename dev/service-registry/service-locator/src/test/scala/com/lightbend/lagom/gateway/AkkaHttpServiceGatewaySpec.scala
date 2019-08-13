@@ -48,7 +48,7 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
   var servicePort: Int                = _
 
   protected override def beforeAll(): Unit = {
-    var serviceBinding = Await.result(
+    val serviceBinding = Await.result(
       http.bindAndHandle(
         Flow[HttpRequest].map {
           case hello if hello.uri.path.toString() == "/hello" => HttpResponse(entity = HttpEntity("Hello!"))

@@ -24,8 +24,10 @@ import play.api.mvc
 import play.api.mvc.Handler
 import play.api.mvc.PlayBodyParsers
 
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 /**
  * This test relies on DefaultExceptionSerializer so in case of failure some information is lost on de/ser. Check the
@@ -38,7 +40,7 @@ class ScaladslStrictServiceRouterSpec extends AsyncFlatSpec with Matchers with B
   private implicit val mat: Materializer    = ActorMaterializer.create(system)
 
   protected override def afterAll(): Unit = {
-    system.terminate()
+    Await.ready(system.terminate(), 10.seconds)
     super.afterAll()
   }
 

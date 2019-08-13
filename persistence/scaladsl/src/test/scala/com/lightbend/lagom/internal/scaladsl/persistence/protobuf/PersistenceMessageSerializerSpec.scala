@@ -17,9 +17,7 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.PersistExceptio
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.UnhandledCommandException
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRef
 import com.lightbend.lagom.scaladsl.persistence.TestEntity
-import com.typesafe.config.ConfigFactory
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
-import akka.actor.setup.ActorSystemSetup
 import com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
 
 class PersistenceMessageSerializerSpec
