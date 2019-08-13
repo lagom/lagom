@@ -23,6 +23,7 @@ import play.api.db.HikariCPComponents
 import play.api.inject.ApplicationLifecycle
 import play.api.inject.DefaultApplicationLifecycle
 
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -56,7 +57,7 @@ class SlickClusteredPersistentEntitySpec
 
   protected override def afterTermination(): Unit = {
     super.afterTermination()
-    defaultApplicationLifecycle.stop()
+    Await.ready(defaultApplicationLifecycle.stop(), shutdownTimeout)
     Option(h2).foreach(_.stop())
   }
 

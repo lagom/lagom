@@ -32,13 +32,12 @@ class SlickOffsetStoreSpec extends ActorSystemSpec(Configuration.load(Environmen
 
   protected override def beforeAll(): Unit = {
     super.beforeAll()
-
     // Trigger database to be loaded and registered to JNDI
     SlickDbTestProvider.buildAndBindSlickDb(system.name, applicationLifecycle)
   }
 
   override def afterAll(): Unit = {
-    applicationLifecycle.stop()
+    Await.ready(applicationLifecycle.stop(), 20.seconds)
 
     super.afterAll()
   }
