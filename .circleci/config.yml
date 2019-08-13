@@ -1,0 +1,240 @@
+version: 2.1
+
+executors:
+  openjdk8:
+    docker:
+      - image: circleci/openjdk:8-jdk
+  openjdk11:
+    docker:
+      - image: circleci/openjdk:11-jdk
+
+defaults: &defaults
+  working_directory: ~/repo
+  environment:
+    TERM: dumb
+
+openjdk8-defaults: &openjdk8-defaults
+  <<: *defaults
+  executor: openjdk8
+
+openjdk11-defaults: &openjdk11-defaults
+  <<: *defaults
+  executor: openjdk11
+
+commands:
+  run-code-compilation:
+    description: "Restore cache, compile code and save the new cache"
+    parameters:
+      scalaVersion:
+        type: string
+        default: "2.12.8"
+    steps:
+      # Cache key should consider not only build.sbt but all
+      # project configurations. For example, if we update a
+      # dependency, or a sbt plugin, or sbt version, the cache
+      # needs to be updated.
+      # Circle does not have out-of-the-box a way to checksum
+      # a directory, so this command creates a file that can
+      # later be used to generate the cache key.
+      - run:
+          name: "Generate cache key"
+          command: |
+            find ./project -type f -exec md5sum {} \; > cache-key.txt
+            md5sum build.sbt >> cache-key.txt
+            cat cache-key.txt
+      - restore_cache:
+          keys:
+            - v1-cache-{{ checksum "cache-key.txt" }}
+      - run:
+          name: Compile code
+          command: sbt "++<< parameters.scalaVersion >> test:compile"
+      - save_cache:
+          key: v1-cache-{{ checksum "cache-key.txt" }}
+          paths:
+            - ~/.ivy2
+            - ~/.sbt
+            - ~/.m2
+
+  run-code-validations:
+    description: "Code validations (format, binary compatibility, whitesource, etc.)"
+    steps:
+      - run:
+          name: Check copyright headers
+          command: sbt +headerCheck +test:headerCheck multi-jvm:headerCheck
+      - run:
+          name: Check binary compatibility
+          command: sbt +mimaReportBinaryIssues
+      - run:
+          name: Check Scala code formatting
+          command: sbt scalafmtCheckAll scalafmtSbtCheck
+      - run:
+          name: Check Java code formatting
+          command: |
+            sbt javafmt test:javafmt multi-jvm:javafmt
+            git diff --exit-code || (
+              echo "[error] ERROR: javafmt check failed, see differences above."
+              echo "[error] To fix, before submitting a pull request, format your"
+              echo "[error] sources using sbt javafmt test:javafmt inside docs folder."
+              false
+            )
+
+  run-tests:
+    description: "Run the tests for scalaVersion and save test report artifacts"
+    parameters:
+      scalaVersion:
+        type: string
+        default: "2.12.8"
+    steps:
+      - run:
+          name: Run tests
+          command: sbt ";set concurrentRestrictions in Global += Tags.limitAll(1) ; ++<< parameters.scalaVersion >> test"
+      - run:
+          name: Save Test Results
+          command: |
+            mkdir -p ~/test-results/junit
+            find . -type f -regex ".*/target/.*/TEST.*xml" -exec cp -v {} ~/test-results/junit \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results
+
+  run-scripted-tests:
+    description: "Run sbt scripted tests for scalaVersion"
+    parameters:
+      scalaVersion:
+        type: string
+        default: "2.12.8"
+    steps:
+      - run:
+          name: Run scripted tests
+          command: sbt ";set publishArtifact in (Compile, packageDoc) in ThisBuild := false ; ++<< parameters.scalaVersion >> scripted"
+          no_output_timeout: 20m
+
+  run-docs-validation:
+    description: "Documentation validations"
+    steps:
+      - run: sbt unidoc
+      - run:
+          name: Validate Markdown file
+          command: cd docs && sbt markdownValidateDocs
+      - run:
+          name: Validate sbt files
+          command: cd docs && sbt markdownEvaluateSbtFiles
+      - run:
+          name: Check copyright headers
+          command: cd docs && sbt headerCheck test:headerCheck
+      - run:
+          name: Check code format for Scala samples
+          command: cd docs && sbt scalafmtCheckAll scalafmtSbtCheck
+      - run:
+          name: Check code format for Java samples
+          command: |
+            cd docs && sbt javafmt test:javafmt
+            git diff --exit-code || (
+              echo "[error] ERROR: javafmt check failed, see differences above."
+              echo "[error] To fix, before submitting a pull request, format your"
+              echo "[error] sources using sbt javafmt test:javafmt inside docs folder."
+              false
+            )
+
+  run-docs-tests:
+    description: "Run documentation tests"
+    steps:
+      - run:
+          name: Run documentation tests
+          command: cd docs && sbt ";set concurrentRestrictions in Global += Tags.limitAll(1) ; test"
+
+jobs:
+  code-validation:
+    <<: *openjdk8-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - run-code-validations
+  docs-validation:
+    <<: *openjdk8-defaults
+    steps:
+      - checkout
+      - run-docs-validation
+  docs-test:
+    <<: *openjdk8-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - run-docs-tests
+  docs-test-jdk11:
+    <<: *openjdk11-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - run-docs-tests
+  test-scala-212:
+    <<: *openjdk8-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - run-tests
+  test-scala-212-jdk11:
+    <<: *openjdk11-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - run-tests
+  test-scala-213:
+    <<: *openjdk8-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - run-tests:
+          scalaVersion: "2.13.0"
+  test-sbt-013:
+    <<: *openjdk8-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - run-scripted-tests:
+          scalaVersion: "2.10.7"
+  test-sbt-1:
+    <<: *openjdk8-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - run-scripted-tests
+  test-sbt-1-jdk11:
+    <<: *openjdk11-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - run-scripted-tests
+
+workflows:
+  build-and-tests:
+    jobs:
+      - code-validation
+      - docs-validation
+      - docs-test:
+          requires:
+            - docs-validation
+      - docs-test-jdk11:
+          requires:
+            - docs-test
+      - test-scala-212:
+          requires:
+            - code-validation
+      - test-scala-212-jdk11:
+          requires:
+            - test-scala-212
+      - test-scala-213:
+          requires:
+            - code-validation
+      - test-sbt-013:
+          requires:
+            - code-validation
+      - test-sbt-1:
+          requires:
+            - code-validation
+      - test-sbt-1-jdk11:
+          requires:
+            - test-sbt-013
+            - test-sbt-1
