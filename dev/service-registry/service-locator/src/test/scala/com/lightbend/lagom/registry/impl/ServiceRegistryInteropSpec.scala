@@ -9,6 +9,7 @@ import java.util.Collections
 import java.util.Optional
 
 import akka.actor.ActorSystem
+import akka.testkit.TestKit
 import akka.util.ByteString
 import com.lightbend.lagom.internal.javadsl.registry.{ RegisteredService => jRegisteredService }
 import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistryService => jServiceRegistryService }
@@ -20,16 +21,21 @@ import com.lightbend.lagom.javadsl.api.deser.StrictMessageSerializer
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol
 import com.lightbend.lagom.javadsl.api.transport.Method
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Futures
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import play.api.libs.json.Format
 import play.api.libs.json.Json
 
-class ServiceRegistryInteropSpec extends FlatSpec with Matchers with Futures {
+class ServiceRegistryInteropSpec extends FlatSpec with Matchers with Futures with BeforeAndAfterAll {
 
   val system                   = ActorSystem()
   val jacksonSerializerFactory = new JacksonSerializerFactory(system)
+
+  protected override def afterAll(): Unit = {
+    TestKit.shutdownActorSystem(actorSystem = system, verifySystemShutdown = true)
+  }
 
   behavior.of("ServiceRegistry serializers")
 

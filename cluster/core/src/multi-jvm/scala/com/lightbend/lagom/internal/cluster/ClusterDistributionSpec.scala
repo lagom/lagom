@@ -4,28 +4,15 @@
 
 package com.lightbend.lagom.internal.cluster
 
-import akka.actor.ActorRef
-import akka.actor.ActorSystem
 import akka.actor.Props
-import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import akka.pattern._
-import org.scalatest.AsyncFlatSpec
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.Millis
-import org.scalatest.time.Seconds
-import org.scalatest.time.Span
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
-import akka.cluster.sharding.ShardRegion
 import akka.cluster.sharding.ShardRegion.CurrentShardRegionState
 import akka.cluster.sharding.ShardRegion.GetShardRegionState
-import akka.util.Timeout
-
-import scala.util.Failure
-import scala.util.Success
 
 class ClusterDistributionSpecMultiJvmNode1 extends ClusterDistributionSpec
 class ClusterDistributionSpecMultiJvmNode2 extends ClusterDistributionSpec
@@ -34,7 +21,7 @@ class ClusterDistributionSpecMultiJvmNode3 extends ClusterDistributionSpec
 class ClusterDistributionSpec extends ClusteredMultiNodeUtils(numOfNodes = 3) with ScalaFutures with Eventually {
 
   private val ensureActiveInterval: FiniteDuration = 1.second
-  val distributionSettings: ClusterDistributionSettings =
+  private val distributionSettings: ClusterDistributionSettings =
     ClusterDistributionSettings(system)
       .copy(ensureActiveInterval = ensureActiveInterval)
 
