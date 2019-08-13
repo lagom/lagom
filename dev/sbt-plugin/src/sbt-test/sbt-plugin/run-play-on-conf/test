@@ -1,7 +1,7 @@
 # Structure of this test:
 # =======================
 
-# Here we test that the `lagomRunReloadAll` task on a play app that uses deprecated serviceInfo config.
+# Here we test that the `runAll` task on a play app that uses deprecated serviceInfo config.
 
 # `runAll` tests
 # --------------
