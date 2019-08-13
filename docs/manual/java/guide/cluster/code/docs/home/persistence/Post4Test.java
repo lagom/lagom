@@ -26,6 +26,10 @@ import org.junit.Test;
 import akka.Done;
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
+import akka.stream.ActorMaterializer;
+import akka.stream.Materializer;
+
+import scala.concurrent.ExecutionContext;
 
 import static play.inject.Bindings.bind;
 
@@ -49,8 +53,7 @@ public class Post4Test {
           .bindings(
               bind(ActorSystem.class).toInstance(system),
               bind(Materializer.class).toInstance(ActorMaterializer.create(system)),
-              bind(ExecutionContext.class).toInstance(system.dispatcher())
-          )
+              bind(ExecutionContext.class).toInstance(system.dispatcher()))
           .bindings(new PubSubModule())
           .build();
   private final PubSubRegistry pubSub = injector.instanceOf(PubSubRegistry.class);

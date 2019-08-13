@@ -76,8 +76,7 @@ public class PubSubTest {
           .bindings(
               bind(ActorSystem.class).toInstance(system),
               bind(Materializer.class).toInstance(ActorMaterializer.create(system)),
-              bind(ExecutionContext.class).toInstance(system.dispatcher())
-          )
+              bind(ExecutionContext.class).toInstance(system.dispatcher()))
           .bindings(new PubSubModule())
           .build();
 

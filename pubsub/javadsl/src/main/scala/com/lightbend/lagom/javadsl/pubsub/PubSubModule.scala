@@ -10,7 +10,8 @@ import play.api.inject._
 /**
  * Guice module for the PubSub API.
  */
-class PubSubModule extends SimpleModule(
-  // eagerSingleton because the distributed registry benefits from being alive as early as possible.
-  bind[PubSubRegistry].to[PubSubRegistryImpl].eagerly()
-)
+class PubSubModule
+    extends SimpleModule(
+      // eagerSingleton because the distributed registry benefits from being alive as early as possible.
+      bind[PubSubRegistry].to[PubSubRegistryImpl].eagerly()
+    )
