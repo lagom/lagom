@@ -30,7 +30,7 @@ Lagom is now cross compiled to Scala 2.11 and 2.12. It's recommended to upgrade 
 The Scala version can be updated by editing the `build.sbt` file, and updating the `scalaVersion` settings, for example:
 
 ```scala
-scalaVersion in ThisBuild := "2.12.8"
+scalaVersion in ThisBuild := "2.12.9"
 ```
 
 
