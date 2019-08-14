@@ -1,5 +1,5 @@
 # Build the distribution and ensure that the files we expect are indeed there
-> lagomProj/stage
+> stage
 $ exists lagomProj/target/universal/stage/README
 $ exists lagomProj/target/universal/stage/SomeFile.txt
 $ exists lagomProj/target/universal/stage/SomeFolder/SomeOtherFile.txt
@@ -12,7 +12,6 @@ $ exists lagomProj/target/universal/stage/lib/lagom-dist-proj.lagom-dist-proj-1.
 > checkDevRuntimeClasspath lagomProj reloadable-server
 > absence lagomProj/target/universal/stage/lib/*reloadable-server*.jar
 
-> playProj/stage
 $ exists playProj/target/universal/stage/README
 $ exists playProj/target/universal/stage/SomeFile.txt
 $ exists playProj/target/universal/stage/SomeFolder/SomeOtherFile.txt
