@@ -19,7 +19,7 @@ object Dependencies {
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     val Play             = "2.8.0-M3"
-    val PlayJson         = "2.8.0-M4"
+    val PlayJson         = "2.8.0-M5"
     val PlayStandaloneWs = "2.1.0-M3"
     val Twirl            = "1.5.0-M2"
     val PlayFileWatch    = "1.1.8"
