@@ -4,7 +4,7 @@
 
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-SCALA_VERSION="2.12.8"
+SCALA_VERSION="2.12.9"
 
 runSbt +publishLocal
 runSbtNoisy "++${SCALA_VERSION} scripted"
