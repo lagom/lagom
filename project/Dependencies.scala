@@ -1000,7 +1000,7 @@ object Dependencies {
 
   val `sbt-plugin` = libraryDependencies ++= Seq(
     // And this is needed to silence the datastax driver logging
-    "org.slf4j" % "slf4j-nop" % "1.7.14",
+    "org.slf4j" % "slf4j-nop" % "1.7.28",
     scalaTest   % Test
   )
 
