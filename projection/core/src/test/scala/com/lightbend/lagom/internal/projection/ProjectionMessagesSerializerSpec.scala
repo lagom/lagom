@@ -44,7 +44,7 @@ class ProjectionMessagesSerializerSpec
 
   import ProjectionMessageSerializer._
 
-  val serialization: Serialization = SerializationExtension(system)
+  private val serialization: Serialization = SerializationExtension(system)
 
   def toBinary(obj: AnyRef): Array[Byte] = serialization.findSerializerFor(obj).toBinary(obj)
 
@@ -53,6 +53,11 @@ class ProjectionMessagesSerializerSpec
       case Failure(cause) => fail(cause)
       case Success(value) => value.asInstanceOf[T]
     }
+
+  protected override def afterAll(): Unit = {
+    super.afterAll()
+    shutdown()
+  }
 
   "ProjectionMessageSerializer" must {
 

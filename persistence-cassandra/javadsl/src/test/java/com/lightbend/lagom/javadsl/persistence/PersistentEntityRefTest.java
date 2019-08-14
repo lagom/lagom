@@ -33,6 +33,7 @@ import org.junit.Test;
 import play.Application;
 import play.inject.Injector;
 import play.inject.guice.GuiceApplicationBuilder;
+import scala.concurrent.Await;
 import scala.concurrent.duration.FiniteDuration;
 
 import akka.actor.ActorSystem;
@@ -65,8 +66,8 @@ public class PersistentEntityRefTest {
   }
 
   @AfterClass
-  public static void teardown() {
-    application.asScala().stop();
+  public static void teardown() throws Exception {
+    Await.ready(application.asScala().stop(), FiniteDuration.create("10s"));
     CassandraLauncher.stop();
   }
 

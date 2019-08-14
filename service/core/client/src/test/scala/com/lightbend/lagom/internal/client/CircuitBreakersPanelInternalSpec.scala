@@ -13,17 +13,16 @@ import org.scalatest.AsyncFlatSpec
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
 
+import scala.concurrent.Await
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
-/**
- *
- */
 class CircuitBreakersPanelInternalSpec extends AsyncFlatSpec with Matchers with BeforeAndAfterAll with Futures {
 
   val actorSystem = ActorSystem("CircuitBreakersPanelInternalSpec")
 
   override def afterAll() = {
-    actorSystem.terminate()
+    Await.ready(actorSystem.terminate(), 10.seconds)
   }
 
   behavior.of("CircuitBreakersPanelInternal")

@@ -79,7 +79,7 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
   }
 
   override def afterAll(): Unit = {
-    applicationLifecycle.stop()
+    Await.ready(applicationLifecycle.stop(), 20.seconds)
     super.afterAll()
   }
 

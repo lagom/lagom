@@ -47,7 +47,7 @@ public class TestOverTlsTest {
           SSLContext sslContext = server.clientSslContext().get();
           // Builds an instance of a WSClient with the provided SSLContext so
           // the fake SSLContext prepared by Lagom's testkit is used.
-          WSClient wsClient = buildCustomWS(sslContext);
+          WSClient wsClient = buildCustomWS(sslContext, server.system());
           // use `localhost` as authority
           String url = "https://localhost:" + server.portSsl().get() + "/api/sample";
           String response =
@@ -63,10 +63,9 @@ public class TestOverTlsTest {
   }
   // #tls-test-service
 
-  private WSClient buildCustomWS(SSLContext sslContext) {
+  private WSClient buildCustomWS(SSLContext sslContext, ActorSystem system) {
     // Set up Akka
     String name = "test-client";
-    ActorSystem system = ActorSystem.create(name);
     ActorMaterializerSettings settings = ActorMaterializerSettings.create(system);
     ActorMaterializer materializer = ActorMaterializer.create(settings, system, name);
 
