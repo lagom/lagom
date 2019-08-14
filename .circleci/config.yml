@@ -78,16 +78,9 @@ commands:
               false
             )
 
-  run-tests:
-    description: "Run the tests for scalaVersion and save test report artifacts"
-    parameters:
-      scalaVersion:
-        type: string
-        default: "2.12.8"
+  store-test-reports:
+    description: "Store test report artifacts"
     steps:
-      - run:
-          name: Run tests
-          command: sbt ";set concurrentRestrictions in Global += Tags.limitAll(1) ; ++<< parameters.scalaVersion >> test"
       - run:
           name: Save Test Results
           command: |
@@ -98,6 +91,28 @@ commands:
           path: ~/test-results
       - store_artifacts:
           path: ~/test-results
+
+  run-tests:
+    description: "Run the tests for scalaVersion"
+    parameters:
+      scalaVersion:
+        type: string
+        default: "2.12.8"
+    steps:
+      - run:
+          name: Run tests
+          command: sbt ";set concurrentRestrictions in Global += Tags.limitAll(1) ; ++<< parameters.scalaVersion >> test"
+
+  multi-jvm-run-tests:
+    description: "Run the multi-jvm tests for scalaVersion"
+    parameters:
+      scalaVersion:
+        type: string
+        default: "2.12.8"
+    steps:
+      - run:
+          name: Run multi-jvm tests
+          command: sbt ";set concurrentRestrictions in Global += Tags.limitAll(1) ; ++<< parameters.scalaVersion >> multi-jvm:test"
 
   run-scripted-tests:
     description: "Run sbt scripted tests for scalaVersion"
@@ -163,31 +178,40 @@ jobs:
       - checkout
       - run-code-compilation
       - run-docs-tests
+      - store-test-reports
   docs-test-jdk11:
     <<: *openjdk11-defaults
     steps:
       - checkout
       - run-code-compilation
       - run-docs-tests
+      - store-test-reports
   test-scala-212:
     <<: *openjdk8-defaults
     steps:
       - checkout
       - run-code-compilation
+      - multi-jvm-run-tests
       - run-tests
+      - store-test-reports
   test-scala-212-jdk11:
     <<: *openjdk11-defaults
     steps:
       - checkout
       - run-code-compilation
+      - multi-jvm-run-tests
       - run-tests
+      - store-test-reports
   test-scala-213:
     <<: *openjdk8-defaults
     steps:
       - checkout
       - run-code-compilation
+      - multi-jvm-run-tests:
+          scalaVersion: "2.13.0"
       - run-tests:
           scalaVersion: "2.13.0"
+      - store-test-reports
   test-sbt-013:
     <<: *openjdk8-defaults
     steps:

@@ -212,7 +212,6 @@ def databasePortSetting: List[String] = {
 }
 
 def multiJvm(project: Project): Project = {
-
   project
     .enablePlugins(MultiJvmPlugin)
     .configs(MultiJvm)
@@ -220,7 +219,7 @@ def multiJvm(project: Project): Project = {
     .settings {
       // change multi-jvm lib folder to reflect the scala version used during crossbuild
       // must be done using a dynamic setting because we must read crossTarget.value
-      def crossbuildMultiJvm = Def.settingDyn {
+      def crossbuildMultiJvm: Def.Initialize[File] = Def.settingDyn {
         val path = crossTarget.value.getName
         Def.setting {
           target.apply { targetFile =>
