@@ -19,7 +19,7 @@ import com.lightbend.lagom.projection.Stopped
 
 import scala.concurrent.duration._
 
-object WorkerHolderActor {
+object WorkerCoordinator {
 
   def props(
       projectionName: String,
@@ -47,7 +47,7 @@ object WorkerHolderActor {
      */
 
     Props(
-      new WorkerHolderActor(
+      new WorkerCoordinator(
         projectionName,
         backOffChildProps,
         projectionRegistryActorRef
@@ -57,7 +57,7 @@ object WorkerHolderActor {
 
 }
 
-class WorkerHolderActor(
+class WorkerCoordinator(
     projectionName: String,
     workerProps: WorkerCoordinates => Props,
     projectionRegistryActorRef: ActorRef
