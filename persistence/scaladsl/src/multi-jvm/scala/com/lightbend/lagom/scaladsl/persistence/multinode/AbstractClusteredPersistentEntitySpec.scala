@@ -28,8 +28,6 @@ import scala.concurrent.Await
 import scala.concurrent.Future
 import com.lightbend.lagom.internal.cluster.STMultiNodeSpec
 
-import scala.collection.immutable
-
 abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
 
   val node1 = role("node1")

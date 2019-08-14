@@ -360,7 +360,7 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       system = ActorSystem(s"PlayJsonSerializerSpec-$counter", JsonSerializerRegistry.actorSystemSetupFor(registry))
       test(system)
     } finally {
-      if (system ne null) TestKit.shutdownActorSystem(system)
+      if (system ne null) TestKit.shutdownActorSystem(actorSystem = system, verifySystemShutdown = true)
     }
   }
 

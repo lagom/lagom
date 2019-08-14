@@ -6,7 +6,6 @@ package com.lightbend.lagom.javadsl.pubsub;
 
 import com.lightbend.lagom.internal.javadsl.pubsub.PubSubRegistryImpl;
 
-import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -17,6 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import play.inject.Injector;
 import play.inject.guice.GuiceInjectorBuilder;
+import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 
 import akka.actor.ActorSystem;
@@ -28,6 +28,8 @@ import akka.stream.javadsl.Source;
 import akka.stream.testkit.TestSubscriber;
 import akka.stream.testkit.javadsl.TestSink;
 import akka.testkit.javadsl.TestKit;
+
+import static play.inject.Bindings.bind;
 
 public class PubSubTest {
 
@@ -71,7 +73,11 @@ public class PubSubTest {
 
   private final Injector injector =
       new GuiceInjectorBuilder()
-          .bindings(new ActorSystemModule(system), new PubSubModule())
+          .bindings(
+              bind(ActorSystem.class).toInstance(system),
+              bind(Materializer.class).toInstance(ActorMaterializer.create(system)),
+              bind(ExecutionContext.class).toInstance(system.dispatcher()))
+          .bindings(new PubSubModule())
           .build();
 
   private PubSubRegistry registry() {
