@@ -1403,6 +1403,7 @@ def scriptedSettings: Seq[Setting[_]] =
   Seq(scriptedLaunchOpts += s"-Dproject.version=${version.value}") ++
     Seq(
       scripted := scripted.tag(Tags.Test).evaluated,
+      scriptedBufferLog := false,
       scriptedLaunchOpts ++= Seq(
         "-Xmx512m",
         "-XX:MaxMetaspaceSize=512m",
