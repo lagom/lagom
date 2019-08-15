@@ -271,6 +271,19 @@ jobs:
       - checkout
       - run-code-compilation
       - run-maven-tests
+  # CircleCI creates multiple statuses in a Github pull request and Mergify
+  # requires a status name when checking for success:
+  # https://doc.mergify.io/conditions.html#about-status-check-name
+  #
+  # In our workflows, we can add a last stage that depends on others and check
+  # against this single last stage. This job can be used to do that then.
+  good-build:
+    <<: *openjdk8-defaults
+    steps:
+      - run:
+          name: Good build
+          command: echo "Who is a good build?"
+
 
 workflows:
   build-and-tests:
@@ -324,3 +337,10 @@ workflows:
           requires:
             - sbt-1-test
             - maven-test
+      # Last stage
+      - good-build:
+          requires:
+            - scala-212-jdk11-test
+            - sbt-1-jdk11-test
+            - maven-jdk11-test
+            - docs-jdk11-test
