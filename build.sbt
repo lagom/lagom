@@ -236,33 +236,10 @@ def multiJvm(project: Project): Project = {
         automateHeaderSettings(MultiJvm) ++
         Seq(
           parallelExecution in Test := false,
+          parallelExecution in MultiJvm := false,
           MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting ::: defaultMultiJvmOptions,
-          // make sure that MultiJvm test are compiled by the default test compilation
-          compile in MultiJvm := (compile in MultiJvm).triggeredBy(compile in Test).value,
           // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
           executeTests in MultiJvm := (executeTests in MultiJvm).tag(Tags.Test).value,
-          // make sure that MultiJvm tests are executed by the default test target,
-          // and combine the results from ordinary test and multi-jvm tests
-          executeTests in Test := {
-            val testResults      = (executeTests in Test).value
-            val multiNodeResults = (executeTests in MultiJvm).value
-            import TestResult.Error
-            import TestResult.Failed
-            import TestResult.Passed
-            val overall = (testResults.overall, multiNodeResults.overall) match {
-              case (Passed, Passed)                    => Passed
-              case (Failed, Failed)                    => Failed
-              case (Error, Error)                      => Error
-              case (Passed, Failed) | (Failed, Passed) => Failed
-              case (Passed, Error) | (Error, Passed)   => Error
-              case (Failed, Error) | (Error, Failed)   => Error
-            }
-            Tests.Output(
-              overall,
-              testResults.events ++ multiNodeResults.events,
-              testResults.summaries ++ multiNodeResults.summaries
-            )
-          },
           // change multi-jvm lib folder to reflect the scala version used during crossbuild
           multiRunCopiedClassLocation in MultiJvm := crossbuildMultiJvm.value
         )
