@@ -114,6 +114,16 @@ commands:
           name: Run multi-jvm tests
           command: sbt ";set concurrentRestrictions in Global += Tags.limitAll(1) ; ++<< parameters.scalaVersion >> multi-jvm:test"
 
+  run-maven-tests:
+    description: "Run tests for Maven support"
+    steps:
+      - run:
+          name: Run publishM2
+          command: sbt publishM2
+      - run:
+          name: Run maven tests
+          command: sbt mavenTest
+
   run-scripted-tests:
     description: "Run sbt scripted tests for scalaVersion"
     parameters:
@@ -161,6 +171,7 @@ commands:
           command: cd docs && sbt ";set concurrentRestrictions in Global += Tags.limitAll(1) ; test"
 
 jobs:
+  # Validation Jobs
   code-validation:
     <<: *openjdk8-defaults
     steps:
@@ -172,6 +183,7 @@ jobs:
     steps:
       - checkout
       - run-docs-validation
+  # Test jobs
   docs-test:
     <<: *openjdk8-defaults
     steps:
@@ -179,30 +191,14 @@ jobs:
       - run-code-compilation
       - run-docs-tests
       - store-test-reports
-  docs-test-jdk11:
-    <<: *openjdk11-defaults
-    steps:
-      - checkout
-      - run-code-compilation
-      - run-docs-tests
-      - store-test-reports
-  test-scala-212:
+  scala-212-test:
     <<: *openjdk8-defaults
     steps:
       - checkout
       - run-code-compilation
-      - multi-jvm-run-tests
       - run-tests
       - store-test-reports
-  test-scala-212-jdk11:
-    <<: *openjdk11-defaults
-    steps:
-      - checkout
-      - run-code-compilation
-      - multi-jvm-run-tests
-      - run-tests
-      - store-test-reports
-  test-scala-213:
+  scala-213-test:
     <<: *openjdk8-defaults
     steps:
       - checkout
@@ -212,53 +208,119 @@ jobs:
       - run-tests:
           scalaVersion: "2.13.0"
       - store-test-reports
-  test-sbt-013:
+  scala-212-multi-jvm-test:
+    <<: *openjdk8-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - multi-jvm-run-tests
+      - store-test-reports
+  scala-213-multi-jvm-test:
+    <<: *openjdk8-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - multi-jvm-run-tests:
+          scalaVersion: "2.13.0"
+      - store-test-reports
+  # Build tools jobs
+  sbt-013-test:
     <<: *openjdk8-defaults
     steps:
       - checkout
       - run-code-compilation
       - run-scripted-tests:
           scalaVersion: "2.10.7"
-  test-sbt-1:
+  sbt-1-test:
     <<: *openjdk8-defaults
     steps:
       - checkout
       - run-code-compilation
       - run-scripted-tests
-  test-sbt-1-jdk11:
+  maven-test:
+    <<: *openjdk8-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - run-maven-tests
+  # Java 11 jobs
+  docs-jdk11-test:
+    <<: *openjdk11-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - run-docs-tests
+      - store-test-reports
+  scala-212-jdk11-test:
+    <<: *openjdk11-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - multi-jvm-run-tests
+      - run-tests
+      - store-test-reports
+  sbt-1-jdk11-test:
     <<: *openjdk11-defaults
     steps:
       - checkout
       - run-code-compilation
       - run-scripted-tests
+  maven-jdk11-test:
+    <<: *openjdk11-defaults
+    steps:
+      - checkout
+      - run-code-compilation
+      - run-maven-tests
 
 workflows:
   build-and-tests:
     jobs:
+      # First workflow stage to validate code and docs
       - code-validation
       - docs-validation
+      # Second workflow stage to run tests
       - docs-test:
           requires:
             - docs-validation
-      - docs-test-jdk11:
-          requires:
-            - docs-test
-      - test-scala-212:
+      - scala-212-test:
           requires:
             - code-validation
-      - test-scala-212-jdk11:
-          requires:
-            - test-scala-212
-      - test-scala-213:
+      - scala-213-test:
           requires:
             - code-validation
-      - test-sbt-013:
+      - scala-212-multi-jvm-test:
           requires:
             - code-validation
-      - test-sbt-1:
+      - scala-213-multi-jvm-test:
           requires:
             - code-validation
-      - test-sbt-1-jdk11:
+      # Third workflow stage to run build tools tests
+      - sbt-1-test:
           requires:
-            - test-sbt-013
-            - test-sbt-1
+            - scala-212-test
+            - scala-212-multi-jvm-test
+      - sbt-013-test:
+          requires:
+            - scala-212-test
+            - scala-212-multi-jvm-test
+      - maven-test:
+          requires:
+            - scala-212-test
+            - scala-212-multi-jvm-test
+      # Fourth stage to run jobs on Java 11
+      - docs-jdk11-test:
+          requires:
+            - sbt-1-test
+            - maven-test
+      - scala-212-jdk11-test:
+          requires:
+            - sbt-1-test
+            - maven-test
+      - sbt-1-jdk11-test:
+          requires:
+            - sbt-1-test
+            - maven-test
+      - maven-jdk11-test:
+          requires:
+            - sbt-1-test
+            - maven-test
