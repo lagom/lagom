@@ -91,7 +91,7 @@ commands:
 
 
   run-code-compilation:
-    description: "Restore cache, compile code and save the new cache"
+    description: "Compile code for the specified scalaVersion"
     parameters:
       scalaVersion:
         type: string
@@ -158,7 +158,7 @@ commands:
     steps:
       - run:
           name: Run multi-jvm tests
-          command: sbt ";set concurrentRestrictions in Global += Tags.limitAll(1) ; ++<< parameters.scalaVersion >> multi-jvm:test"
+          command: sbt -Dakka.test.timefactor=10 ";set concurrentRestrictions in Global += Tags.limitAll(1) ; ++<< parameters.scalaVersion >> multi-jvm:test"
 
   run-maven-tests:
     description: "Run tests for Maven support"
@@ -214,7 +214,7 @@ commands:
     steps:
       - run:
           name: Run documentation tests
-          command: cd docs && sbt ";set concurrentRestrictions in Global += Tags.limitAll(1) ; test"
+          command: cd docs && sbt -Dakka.test.timefactor=10 ";set concurrentRestrictions in Global += Tags.limitAll(1) ; test"
 
 jobs:
   # Validation Jobs
