@@ -18,9 +18,9 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.0-M3"
+    val Play             = "2.8.0-M4"
     val PlayJson         = "2.8.0-M5"
-    val PlayStandaloneWs = "2.1.0-M3"
+    val PlayStandaloneWs = "2.1.0-M4"
     val Twirl            = "1.5.0-M2"
     val PlayFileWatch    = "1.1.8"
 
@@ -97,6 +97,7 @@ object Dependencies {
   private val akkaActor            = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
   private val akkaRemote           = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
   private val akkaCluster          = "com.typesafe.akka" %% "akka-cluster" % Versions.Akka
+  private val akkaClusterTyped     = "com.typesafe.akka" %% "akka-cluster-typed" % Versions.Akka
   private val akkaClusterSharding  = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
   private val akkaClusterTools     = "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka
   private val akkaDistributedData  = "com.typesafe.akka" %% "akka-distributed-data" % Versions.Akka
@@ -168,6 +169,14 @@ object Dependencies {
     "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.2.60",
     "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.2.60",
     "org.jetbrains"        % "annotations"          % "13.0"
+  )
+
+  val ow2asmDeps = libraryFamily("org.ow2.asm", "7.1")(
+    "asm",
+    "asm-analysis",
+    "asm-commons",
+    "asm-tree",
+    "asm-util"
   )
 
   private val jffi         = "com.github.jnr" % "jffi"          % "1.2.19"
@@ -352,7 +361,9 @@ object Dependencies {
       "com.fasterxml.jackson.module" %% "jackson-module-scala"  % Versions.JacksonDatatype,
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
       "akka-actor",
+      "akka-actor-typed",
       "akka-cluster",
+      "akka-cluster-typed",
       "akka-cluster-sharding",
       "akka-cluster-tools",
       "akka-distributed-data",
@@ -400,12 +411,6 @@ object Dependencies {
       "log4j-api",
       "log4j-core",
       "log4j-slf4j-impl"
-    ) ++ libraryFamily("org.ow2.asm", "7.1")(
-      "asm",
-      "asm-analysis",
-      "asm-commons",
-      "asm-tree",
-      "asm-util"
     ) ++ libraryFamily("org.scala-lang", scalaVersion)(
       "scala-library",
       "scala-reflect"
@@ -416,7 +421,7 @@ object Dependencies {
       "slf4j-api",
       "slf4j-nop",
       "slf4j-log4j12"
-    ) ++ kotlinDeps.map(_ % Test)
+    ) ++ ow2asmDeps ++ kotlinDeps.map(_ % Test)
   }
 
   // These dependencies are used by JPA to test, but we don't want to export them as part of our regular whitelist,
@@ -480,8 +485,12 @@ object Dependencies {
     guava,
     // Upgrades needed to match whitelist versions
     sslConfig,
-    playJson
-  )
+    playJson,
+    jnrFfi,
+    jffi,
+    jnra64asm,
+    jnrConstants,
+  ) ++ ow2asmDeps // to match whitelist versions
 
   val `api-javadsl` = libraryDependencies ++= Seq(
     playJava,
@@ -551,7 +560,11 @@ object Dependencies {
     akkaSlf4j,
     akkaProtobuf,
     guava,
-  )
+    jnrFfi,
+    jffi,
+    jnra64asm,
+    jnrConstants,
+  ) ++ ow2asmDeps // to match whitelist versions
 
   val client = libraryDependencies ++= Seq(
     slf4jApi,
@@ -687,13 +700,18 @@ object Dependencies {
     akkaHttpSprayJson,
     akkaParsing,
     guava,
-  )
+    jnrFfi,
+    jffi,
+    jnra64asm,
+    jnrConstants,
+  ) ++ ow2asmDeps // to match whitelist versions
 
   val `akka-management-javadsl`  = libraryDependencies ++= Seq.empty[ModuleID]
   val `akka-management-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
 
   val `cluster-core` = libraryDependencies ++= Seq(
     akkaCluster,
+    akkaClusterTyped,
     akkaManagementClusterBootstrap,
     akkaManagementClusterHttp,
     akkaTestkit          % Test,
@@ -951,10 +969,15 @@ object Dependencies {
     akkaProtobuf,
     scalaXml,
     guava,
-  ) ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % Versions.Logback)
+    jnrFfi,
+    jffi,
+    jnra64asm,
+    jnrConstants,
+  ) ++ ow2asmDeps ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % Versions.Logback)
 
   val log4j2 = libraryDependencies ++= Seq(slf4jApi) ++
     log4jModules ++
+    ow2asmDeps ++ // to match whitelist versions
     Seq(
       "com.lmax" % "disruptor" % Versions.Disruptor,
       play,
@@ -969,6 +992,10 @@ object Dependencies {
       akkaSlf4j,
       akkaProtobuf,
       guava,
+      jnrFfi,
+      jffi,
+      jnra64asm,
+      jnrConstants,
     )
 
   val `reloadable-server` = libraryDependencies ++= Seq(
@@ -981,8 +1008,12 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProtobuf
-  )
+    akkaProtobuf,
+    jnrFfi,
+    jffi,
+    jnra64asm,
+    jnrConstants,
+  ) ++ ow2asmDeps // to match whitelist versions
 
   val `server-containers` = libraryDependencies ++= Seq(
     // This is used in the code to check if the embedded cassandra server is started
