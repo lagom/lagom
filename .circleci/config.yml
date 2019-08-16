@@ -24,7 +24,7 @@ commands:
           command: |
             find ./project -type f -exec md5sum {} \; > cache-key.txt
             md5sum build.sbt >> cache-key.txt
-            md5sum build.sbt >> .circleci/config.yml
+            md5sum .circleci/config.yml >> cache-key.txt
             cat cache-key.txt
 
   get-cache:
@@ -58,15 +58,21 @@ commands:
       - run:
           name: Install packages
           command: |
-            sudo apt-get update -q
-            sudo apt-get install xmlstarlet libxml2-utils wget -yq
+            # In case there is apt-get hanging. || true is a failsafe in case there
+            # aren't any procs. See:
+            # https://discuss.circleci.com/t/could-not-get-lock-var-lib-apt-lists-lock/28337/6?u=marcospereira
+            sudo killall -9 apt-get || true
+            sudo apt-get -qq update
+            sudo apt-get install -qq -y -f xmlstarlet libxml2-utils wget
       - run:
           name: Install sbt
           command: |
             echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
             sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
-            sudo apt-get update -q
-            sudo apt-get install sbt -yq
+
+            sudo killall -9 apt-get || true
+            sudo apt-get -qq update
+            sudo apt-get install -qq -y -f sbt
       - run:
           name: Install AdoptOpenJDK << parameters.jdkVersion >>
           command: |
@@ -355,46 +361,64 @@ workflows:
       - docs-test:
           requires:
             - docs-validation
+            - code-validation
       - scala-212-test:
           requires:
             - code-validation
+            - docs-validation
       - scala-213-test:
           requires:
             - code-validation
+            - docs-validation
       - scala-212-multi-jvm-test:
           requires:
             - code-validation
+            - docs-validation
       - scala-213-multi-jvm-test:
           requires:
             - code-validation
+            - docs-validation
       # Third workflow stage to run build tools tests
       - sbt-1-test:
           requires:
+            - docs-test
             - scala-212-test
+            - scala-213-test
             - scala-212-multi-jvm-test
+            - scala-213-multi-jvm-test
       - sbt-013-test:
           requires:
+            - docs-test
             - scala-212-test
+            - scala-213-test
             - scala-212-multi-jvm-test
+            - scala-213-multi-jvm-test
       - maven-test:
           requires:
+            - docs-test
             - scala-212-test
+            - scala-213-test
             - scala-212-multi-jvm-test
+            - scala-213-multi-jvm-test
       # Fourth stage to run jobs on Java 11
       - docs-jdk11-test:
           requires:
+            - sbt-013-test
             - sbt-1-test
             - maven-test
       - scala-212-jdk11-test:
           requires:
+            - sbt-013-test
             - sbt-1-test
             - maven-test
       - sbt-1-jdk11-test:
           requires:
+            - sbt-013-test
             - sbt-1-test
             - maven-test
       - maven-jdk11-test:
           requires:
+            - sbt-013-test
             - sbt-1-test
             - maven-test
       # Last stage
