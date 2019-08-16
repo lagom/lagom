@@ -1,33 +1,16 @@
 version: 2.1
 
-executors:
-  openjdk8:
-    docker:
-      - image: circleci/openjdk:8-jdk
-  openjdk11:
-    docker:
-      - image: circleci/openjdk:11-jdk
-
 defaults: &defaults
   working_directory: ~/repo
+  machine:
+    image: circleci/classic:latest
   environment:
     TERM: dumb
 
-openjdk8-defaults: &openjdk8-defaults
-  <<: *defaults
-  executor: openjdk8
-
-openjdk11-defaults: &openjdk11-defaults
-  <<: *defaults
-  executor: openjdk11
-
 commands:
-  run-code-compilation:
-    description: "Restore cache, compile code and save the new cache"
-    parameters:
-      scalaVersion:
-        type: string
-        default: "2.12.8"
+
+  generate-cache-key:
+    description: "Generate cache key from project files"
     steps:
       # Cache key should consider not only build.sbt but all
       # project configurations. For example, if we update a
@@ -41,19 +24,78 @@ commands:
           command: |
             find ./project -type f -exec md5sum {} \; > cache-key.txt
             md5sum build.sbt >> cache-key.txt
+            md5sum build.sbt >> .circleci/config.yml
             cat cache-key.txt
+
+  get-cache:
+    description: "Restore cache from a key"
+    steps:
       - restore_cache:
           keys:
             - v1-cache-{{ checksum "cache-key.txt" }}
-      - run:
-          name: Compile code
-          command: sbt "++<< parameters.scalaVersion >> test:compile"
+
+  save-cache:
+    description: "Save a new version of the cache"
+    steps:
       - save_cache:
           key: v1-cache-{{ checksum "cache-key.txt" }}
           paths:
             - ~/.ivy2
             - ~/.sbt
             - ~/.m2
+            - ~/.jabba/jdk
+
+  prepare:
+    description: "Install requirements"
+    parameters:
+      jdkVersion:
+        type: string
+        default: "8"
+    steps:
+      - checkout
+      - generate-cache-key
+      - get-cache
+      - run:
+          name: Install packages
+          command: |
+            sudo apt-get update -q
+            sudo apt-get install xmlstarlet libxml2-utils wget -yq
+      - run:
+          name: Install sbt
+          command: |
+            echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
+            sudo apt-get update -q
+            sudo apt-get install sbt -yq
+      - run:
+          name: Install AdoptOpenJDK << parameters.jdkVersion >>
+          command: |
+            curl -Ls https://git.io/jabba | bash && . ~/.jabba/jabba.sh
+            jabba install "adopt@~1.<< parameters.jdkVersion >>.0-0" && jabba use "$_" && java -Xmx32m -version
+
+            # Save the current version of jabba. This will be used below to reload
+            # this version for every step in the job.
+            jabba current > ~/.jabba/current
+
+            # Add jabba to the env so it will be loaded for every step and also
+            # use the specified jdk version each time it loads.
+            BASH_ENV=${BASH_ENV:-/tmp/bash.env}
+            echo '[ -s ~/.jabba/jabba.sh ] && . ~/.jabba/jabba.sh' >> "$BASH_ENV"
+            echo 'jabba use $(cat ~/.jabba/current)' >> "$BASH_ENV"
+
+
+  run-code-compilation:
+    description: "Restore cache, compile code and save the new cache"
+    parameters:
+      scalaVersion:
+        type: string
+        default: "2.12.8"
+    steps:
+      - run:
+          name: Compile code
+          command: |
+            java -version
+            sbt "++<< parameters.scalaVersion >> test:compile"
 
   run-code-validations:
     description: "Code validations (format, binary compatibility, whitesource, etc.)"
@@ -173,104 +215,122 @@ commands:
 jobs:
   # Validation Jobs
   code-validation:
-    <<: *openjdk8-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare
       - run-code-compilation
       - run-code-validations
+      - save-cache
   docs-validation:
-    <<: *openjdk8-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare
       - run-docs-validation
+      - save-cache
   # Test jobs
   docs-test:
-    <<: *openjdk8-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare
       - run-code-compilation
       - run-docs-tests
+      - save-cache
       - store-test-reports
   scala-212-test:
-    <<: *openjdk8-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare
       - run-code-compilation
       - run-tests
+      - save-cache
       - store-test-reports
   scala-213-test:
-    <<: *openjdk8-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare
       - run-code-compilation
       - multi-jvm-run-tests:
           scalaVersion: "2.13.0"
       - run-tests:
           scalaVersion: "2.13.0"
+      - save-cache
       - store-test-reports
   scala-212-multi-jvm-test:
-    <<: *openjdk8-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare
       - run-code-compilation
       - multi-jvm-run-tests
+      - save-cache
       - store-test-reports
   scala-213-multi-jvm-test:
-    <<: *openjdk8-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare
       - run-code-compilation
       - multi-jvm-run-tests:
           scalaVersion: "2.13.0"
+      - save-cache
       - store-test-reports
   # Build tools jobs
   sbt-013-test:
-    <<: *openjdk8-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare
       - run-code-compilation
       - run-scripted-tests:
           scalaVersion: "2.10.7"
+      - save-cache
   sbt-1-test:
-    <<: *openjdk8-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare
       - run-code-compilation
       - run-scripted-tests
+      - save-cache
   maven-test:
-    <<: *openjdk8-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare
       - run-code-compilation
       - run-maven-tests
+      - save-cache
   # Java 11 jobs
   docs-jdk11-test:
-    <<: *openjdk11-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare:
+          jdkVersion: "11"
       - run-code-compilation
       - run-docs-tests
+      - save-cache
       - store-test-reports
   scala-212-jdk11-test:
-    <<: *openjdk11-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare:
+          jdkVersion: "11"
       - run-code-compilation
       - multi-jvm-run-tests
       - run-tests
+      - save-cache
       - store-test-reports
   sbt-1-jdk11-test:
-    <<: *openjdk11-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare:
+          jdkVersion: "11"
       - run-code-compilation
       - run-scripted-tests
+      - save-cache
   maven-jdk11-test:
-    <<: *openjdk11-defaults
+    <<: *defaults
     steps:
-      - checkout
+      - prepare:
+          jdkVersion: "11"
       - run-code-compilation
       - run-maven-tests
+      - save-cache
   # CircleCI creates multiple statuses in a Github pull request and Mergify
   # requires a status name when checking for success:
   # https://doc.mergify.io/conditions.html#about-status-check-name
@@ -278,7 +338,7 @@ jobs:
   # In our workflows, we can add a last stage that depends on others and check
   # against this single last stage. This job can be used to do that then.
   good-build:
-    <<: *openjdk8-defaults
+    <<: *defaults
     steps:
       - run:
           name: Good build
