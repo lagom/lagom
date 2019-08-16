@@ -99,9 +99,7 @@ commands:
     steps:
       - run:
           name: Compile code
-          command: |
-            java -version
-            sbt "++<< parameters.scalaVersion >> test:compile"
+          command: sbt "++<< parameters.scalaVersion >> test:compile"
 
   run-code-validations:
     description: "Code validations (format, binary compatibility, whitesource, etc.)"
