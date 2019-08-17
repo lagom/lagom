@@ -53,7 +53,7 @@ jobs:
     - stage: test-build-tools
       script: SCALA_VERSION=2.10.7 bin/test-sbt
       name: "Scripted tests for sbt 0.13"
-    - script: bin/test-sbt-1.0
+    - script: SCALA_VERSION=2.12.9 bin/test-sbt
       name: "Scripted tests for sbt 1"
     - script: SCALA_VERSION=2.12.9 bin/test-sbt
       env: TRAVIS_JDK=adopt@1.11.0-2
