@@ -236,6 +236,9 @@ def multiJvm(project: Project): Project = {
         Seq(
           parallelExecution in Test := false,
           parallelExecution in MultiJvm := false,
+          // -o D(report the duration of the tests) F(show full stack traces)
+          // -u select the JUnit XML reporter
+          scalatestOptions in MultiJvm := Seq("-oDF", "-u", (target.value / "test-reports").getAbsolutePath),
           MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting ::: defaultMultiJvmOptions,
           // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
           executeTests in MultiJvm := (executeTests in MultiJvm).tag(Tags.Test).value,
