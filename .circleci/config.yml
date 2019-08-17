@@ -253,8 +253,6 @@ jobs:
     steps:
       - prepare
       - run-code-compilation
-      - multi-jvm-run-tests:
-          scalaVersion: "2.13.0"
       - run-tests:
           scalaVersion: "2.13.0"
       - save-cache
