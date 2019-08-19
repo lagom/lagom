@@ -99,10 +99,13 @@ def releaseSettings: Seq[Setting[_]] = Seq(
       commitReleaseVersion,
       tagRelease,
       releaseStepCommandAndRemaining("+publishSigned"),
-      releaseStepTask(bintrayRelease in thisProjectRef.value),
       releaseStepCommand("sonatypeRelease"),
+<<<<<<< HEAD
       setNextVersion,
       commitNextVersion,
+=======
+      releaseStepTask(bintrayRelease in thisProjectRef.value),
+>>>>>>> 408f6440b... Maven subprojects should not cross publish
       pushChanges
     )
   }
@@ -134,6 +137,13 @@ def releaseStepCommandAndRemaining(command: String): State => State = { original
 
   runCommand(command, originalState.copy(remainingCommands = Nil)).copy(remainingCommands = originalRemaining)
 }
+
+def publishMavenStyleSettings: Seq[Setting[_]] = Seq(
+  publishMavenStyle := true,
+  crossScalaVersions := Seq(Dependencies.Versions.Scala.head),
+  scalaVersion := Dependencies.Versions.Scala.head,
+  crossPaths := false,
+)
 
 def sonatypeSettings: Seq[Setting[_]] = Seq(
   publishTo := sonatypePublishTo.value
@@ -1247,14 +1257,11 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(mimaSettings())
+  .settings(publishMavenStyleSettings)
   .settings(
     name := "Lagom Maven Plugin",
     description := "Provides Lagom development environment support to maven.",
     Dependencies.`maven-plugin`,
-    publishMavenStyle := true,
-    crossScalaVersions := Seq(Dependencies.Versions.Scala.head),
-    scalaVersion := Dependencies.Versions.Scala.head,
-    crossPaths := false,
     mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
     mavenTestArgs := Seq(
       "-Xmx768m",
@@ -1306,11 +1313,14 @@ def archetypeProject(archetypeName: String) =
     .settings(sonatypeSettings: _*)
     .settings(common: _*)
     .settings(mimaSettings())
+<<<<<<< HEAD
+=======
+    .settings(sbtScalaSettings: _*)
+    .settings(publishMavenStyleSettings)
+>>>>>>> 408f6440b... Maven subprojects should not cross publish
     .settings(
       name := s"maven-archetype-lagom-$archetypeName",
       autoScalaLibrary := false,
-      publishMavenStyle := true,
-      crossPaths := false,
       copyResources in Compile := {
         val pomFile = (classDirectory in Compile).value / "archetype-resources" / "pom.xml"
         if (pomFile.exists()) {
@@ -1345,11 +1355,14 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(noMima)
+<<<<<<< HEAD
+=======
+  .settings(sbtScalaSettings: _*)
+  .settings(publishMavenStyleSettings)
+>>>>>>> 408f6440b... Maven subprojects should not cross publish
   .settings(
     name := "lagom-maven-dependencies",
-    crossPaths := false,
     autoScalaLibrary := false,
-    scalaVersion := Dependencies.Versions.Scala.head,
     pomExtra := pomExtra.value :+ {
 
       val lagomDeps = Def.settingDyn {
@@ -1422,7 +1435,6 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
     // This disables creating jar, source jar and javadocs, and will cause the packaging type to be "pom" when the
     // pom is created
     Classpaths.defaultPackageKeys.map(key => publishArtifact in key := false),
-    publishMavenStyle := true, // Disable publishing ("delivering") the ivy.xml file
   )
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
