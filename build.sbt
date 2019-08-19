@@ -111,8 +111,8 @@ def releaseSettings: Seq[Setting[_]] = Seq(
     Seq[ReleaseStep](
       checkSnapshotDependencies,
       releaseStepCommandAndRemaining("+publishSigned"),
-      releaseStepTask(bintrayRelease in thisProjectRef.value),
       releaseStepCommand("sonatypeRelease"),
+      releaseStepTask(bintrayRelease in thisProjectRef.value),
       pushChanges
     )
   }
@@ -144,6 +144,13 @@ def releaseStepCommandAndRemaining(command: String): State => State = { original
 
   runCommand(command, originalState.copy(remainingCommands = Nil)).copy(remainingCommands = originalRemaining)
 }
+
+def publishMavenStyleSettings: Seq[Setting[_]] = Seq(
+  publishMavenStyle := true,
+  crossScalaVersions := Seq(Dependencies.Versions.Scala.head),
+  scalaVersion := Dependencies.Versions.Scala.head,
+  crossPaths := false,
+)
 
 def sonatypeSettings: Seq[Setting[_]] = Seq(
   publishTo := sonatypePublishTo.value
@@ -1363,14 +1370,11 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(mimaSettings())
+  .settings(publishMavenStyleSettings)
   .settings(
     name := "Lagom Maven Plugin",
     description := "Provides Lagom development environment support to maven.",
     Dependencies.`maven-plugin`,
-    publishMavenStyle := true,
-    crossScalaVersions := Seq(Dependencies.Versions.Scala.head),
-    scalaVersion := Dependencies.Versions.Scala.head,
-    crossPaths := false,
     mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
     // This ensure that files in maven-test are also included
     headerSources in Compile ++= (sourceDirectory.value / "maven-test" ** ("*.scala" || "*.java")).get,
@@ -1425,11 +1429,10 @@ def archetypeProject(archetypeName: String) =
     .settings(common: _*)
     .settings(mimaSettings())
     .settings(sbtScalaSettings: _*)
+    .settings(publishMavenStyleSettings)
     .settings(
       name := s"maven-archetype-lagom-$archetypeName",
       autoScalaLibrary := false,
-      publishMavenStyle := true,
-      crossPaths := false,
       copyResources in Compile := {
         val pomFile = (classDirectory in Compile).value / "archetype-resources" / "pom.xml"
         if (pomFile.exists()) {
@@ -1464,11 +1467,10 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
   .settings(common: _*)
   .settings(noMima)
   .settings(sbtScalaSettings: _*)
+  .settings(publishMavenStyleSettings)
   .settings(
     name := "lagom-maven-dependencies",
-    crossPaths := false,
     autoScalaLibrary := false,
-    scalaVersion := Dependencies.Versions.Scala.head,
     pomExtra := pomExtra.value :+ {
 
       val lagomDeps = Def.settingDyn {
@@ -1541,7 +1543,6 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
     // This disables creating jar, source jar and javadocs, and will cause the packaging type to be "pom" when the
     // pom is created
     Classpaths.defaultPackageKeys.map(key => publishArtifact in key := false),
-    publishMavenStyle := true, // Disable publishing ("delivering") the ivy.xml file
   )
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
