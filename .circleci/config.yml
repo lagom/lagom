@@ -313,8 +313,16 @@ jobs:
       - prepare:
           jdkVersion: "11"
       - run-code-compilation
-      - multi-jvm-run-tests
       - run-tests
+      - save-cache
+      - store-test-reports
+  scala-212-multi-jvm-jdk11-test:
+    <<: *defaults
+    steps:
+      - prepare:
+         jdkVersion: "11"
+      - run-code-compilation
+      - multi-jvm-run-tests
       - save-cache
       - store-test-reports
   sbt-1-jdk11-test:
@@ -407,6 +415,11 @@ workflows:
             - sbt-013-test
             - sbt-1-test
             - maven-test
+      - scala-212-multi-jvm-jdk11-test:
+          requires:
+            - sbt-013-test
+            - sbt-1-test
+            - maven-test
       - sbt-1-jdk11-test:
           requires:
             - sbt-013-test
@@ -424,3 +437,4 @@ workflows:
             - sbt-1-jdk11-test
             - maven-jdk11-test
             - docs-jdk11-test
+            - scala-212-multi-jvm-jdk11-test
