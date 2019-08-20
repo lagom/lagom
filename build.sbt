@@ -1209,12 +1209,15 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
   .settings(noMima)
-  .settings(sbtScalaSettings: _*)
   .enablePlugins(AutomateHeaderPlugin)
   .aggregate(devEnvironmentProjects: _*)
   .settings(
-    publish := {},
-    PgpKeys.publishSigned := {}
+    crossScalaVersions := Nil,
+    scalaVersion := Dependencies.Versions.Scala.head,
+    PgpKeys.publishSigned := {},
+    publishLocal := {},
+    publishArtifact in Compile := false,
+    publish := {}
   )
 
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
