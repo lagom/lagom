@@ -201,7 +201,7 @@ val defaultMultiJvmOptions: List[String] = {
     case key if knownPrefix.exists(pre => key.startsWith(pre)) => "-D" + key + "=" + System.getProperty(key)
   }
 
-  "-Xmx128m" :: properties
+  "-Xmx256m" :: properties
 }
 
 def databasePortSetting: List[String] = {
@@ -219,7 +219,6 @@ def databasePortSetting: List[String] = {
 }
 
 def multiJvm(project: Project): Project = {
-
   project
     .enablePlugins(MultiJvmPlugin)
     .configs(MultiJvm)
@@ -227,7 +226,7 @@ def multiJvm(project: Project): Project = {
     .settings {
       // change multi-jvm lib folder to reflect the scala version used during crossbuild
       // must be done using a dynamic setting because we must read crossTarget.value
-      def crossbuildMultiJvm = Def.settingDyn {
+      def crossbuildMultiJvm: Def.Initialize[File] = Def.settingDyn {
         val path = crossTarget.value.getName
         Def.setting {
           target.apply { targetFile =>
@@ -244,6 +243,9 @@ def multiJvm(project: Project): Project = {
         Seq(
           parallelExecution in Test := false,
           parallelExecution in MultiJvm := false,
+          // -o D(report the duration of the tests) F(show full stack traces)
+          // -u select the JUnit XML reporter
+          scalatestOptions in MultiJvm := Seq("-oDF", "-u", (target.value / "test-reports").getAbsolutePath),
           MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting ::: defaultMultiJvmOptions,
           // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
           executeTests in MultiJvm := (executeTests in MultiJvm).tag(Tags.Test).value,
@@ -1407,6 +1409,7 @@ def scriptedSettings: Seq[Setting[_]] =
   Seq(scriptedLaunchOpts += s"-Dproject.version=${version.value}") ++
     Seq(
       scripted := scripted.tag(Tags.Test).evaluated,
+      scriptedBufferLog := false,
       scriptedLaunchOpts ++= Seq(
         "-Xmx512m",
         "-XX:MaxMetaspaceSize=512m",

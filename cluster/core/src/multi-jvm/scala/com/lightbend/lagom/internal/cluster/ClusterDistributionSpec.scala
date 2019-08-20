@@ -52,7 +52,7 @@ class ClusterDistributionSpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wi
           distributionSettings
         )
 
-      implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 10.seconds, interval = 200.millis)
+      implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 30.seconds, interval = 200.millis)
       eventually {
         val shardRegionState =
           shardRegion
