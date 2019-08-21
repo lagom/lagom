@@ -95,7 +95,7 @@ commands:
     parameters:
       scalaVersion:
         type: string
-        default: "2.12.8"
+        default: "2.12.9"
     steps:
       - run:
           name: Compile code
@@ -143,7 +143,7 @@ commands:
     parameters:
       scalaVersion:
         type: string
-        default: "2.12.8"
+        default: "2.12.9"
     steps:
       - run:
           name: Run tests
@@ -154,7 +154,7 @@ commands:
     parameters:
       scalaVersion:
         type: string
-        default: "2.12.8"
+        default: "2.12.9"
     steps:
       - run:
           name: Run multi-jvm tests
@@ -211,7 +211,7 @@ commands:
     parameters:
       scalaVersion:
         type: string
-        default: "2.12.8"
+        default: "2.12.9"
     steps:
       - run:
           name: Run scripted tests
