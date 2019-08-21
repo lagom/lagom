@@ -26,7 +26,7 @@ The version of Lagom can be updated by editing the `project/plugins.sbt` file, a
 addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.0")
 ```
 
-We also recommend upgrading to sbt 1.2.8 or later, by updating the `sbt.version` in `project/build.properties`.
+Lagom 1.6 requires sbt 1.2.8 or later, upgrade your version by updating the `sbt.version` in `project/build.properties`.
 
 ## Main changes
 
