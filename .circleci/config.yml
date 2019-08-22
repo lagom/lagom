@@ -102,14 +102,12 @@ commands:
           command: sbt "++<< parameters.scalaVersion >> test:compile"
 
   run-code-validations:
-    description: "Code validations (format, binary compatibility, whitesource, etc.)"
+    description: "Code validations (format, whitesource, etc.)"
     steps:
       - run:
           name: Check copyright headers
           command: sbt +headerCheck +test:headerCheck multi-jvm:headerCheck
-      - run:
-          name: Check binary compatibility
-          command: sbt +mimaReportBinaryIssues
+
       - run:
           name: Check Scala code formatting
           command: sbt scalafmtCheckAll scalafmtSbtCheck
@@ -123,6 +121,13 @@ commands:
               echo "[error] sources using sbt javafmt test:javafmt inside docs folder."
               false
             )
+
+  run-binary-compatibility-validation:
+    description: "Check binary compatibility"
+    steps:
+      - run:
+          name: Run mima binary issues reports
+          command: sbt +mimaReportBinaryIssues
 
   store-test-reports:
     description: "Store test report artifacts"
@@ -261,6 +266,12 @@ jobs:
       - run-code-compilation
       - run-code-validations
       - save-cache
+  binary-compatibility-validation:
+    <<: *defaults
+    steps:
+      - prepare
+      - run-code-compilation
+      - run-binary-compatibility-validation
   docs-validation:
     <<: *defaults
     steps:
@@ -397,28 +408,34 @@ workflows:
     jobs:
       # First workflow stage to validate code and docs
       - code-validation
+      - binary-compatibility-validation
       - docs-validation
       # Second workflow stage to run tests
       - docs-test:
           requires:
-            - docs-validation
             - code-validation
+            - docs-validation
+            - binary-compatibility-validation
       - scala-212-test:
           requires:
             - code-validation
             - docs-validation
+            - binary-compatibility-validation
       - scala-213-test:
           requires:
             - code-validation
             - docs-validation
+            - binary-compatibility-validation
       - scala-212-multi-jvm-test:
           requires:
             - code-validation
             - docs-validation
+            - binary-compatibility-validation
       - scala-213-multi-jvm-test:
           requires:
             - code-validation
             - docs-validation
+            - binary-compatibility-validation
       # Third workflow stage to run build tools tests
       - sbt-1-test:
           requires:
