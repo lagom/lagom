@@ -16,21 +16,21 @@ validate_pom_files() {
 
   for f in $(find . -name *.pom); do
     echo "Validating file $f"
-    xmllint --noout -schema maven-4.0.0.xsd ${f}
+    xmllint --noout -schema maven-4.0.0.xsd "${f}"
 
     # The xmllint comand above runs regular validation based on maven.xsd
     # file, which allows a pom file without `scm` and `developers` tags.
     # But when publishing to Sonatype, these tags are required. So we are
     # also testing them here.
-    scm_count=$(xmlstarlet sel -N mvn='http://maven.apache.org/POM/4.0.0' -t -c "count(/mvn:project/mvn:scm/mvn:url)" ${f})
-    dev_count=$(xmlstarlet sel -N mvn='http://maven.apache.org/POM/4.0.0' -t -c "count(/mvn:project/mvn:developers)" ${f})
+    scm_count=$(xmlstarlet sel -N mvn='http://maven.apache.org/POM/4.0.0' -t -c "count(/mvn:project/mvn:scm/mvn:url)" "${f}")
+    dev_count=$(xmlstarlet sel -N mvn='http://maven.apache.org/POM/4.0.0' -t -c "count(/mvn:project/mvn:developers)" "${f}")
 
     if [[ ${scm_count} == 0 ]]; then
       echo "File ${f} is lacking /project/scm/url tag"
       exit_code=1
     fi
 
-    if [[ ${scm_count} == 0 ]]; then
+    if [[ ${dev_count} == 0 ]]; then
       echo "File ${f} is lacking /project/developers tag"
       exit_code=1
     fi

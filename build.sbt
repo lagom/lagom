@@ -239,7 +239,6 @@ def multiJvm(project: Project): Project = {
         // enabling HeaderPlugin in MultiJvm requires two sets of settings.
         // see https://github.com/sbt/sbt-header/issues/37
         headerSettings(MultiJvm) ++
-        automateHeaderSettings(MultiJvm) ++
         Seq(
           parallelExecution in Test := false,
           parallelExecution in MultiJvm := false,
@@ -485,7 +484,7 @@ lazy val root = (project in file("."))
   .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects): _*)
 
 def SonatypeOnly      = Sonatype && PluginsAccessor.exclude(BintrayPlugin)
-def RuntimeLibPlugins = SonatypeOnly && AutomateHeaderPlugin && Unidoc
+def RuntimeLibPlugins = SonatypeOnly && HeaderPlugin && Unidoc
 
 lazy val api = (project in file("service/core/api"))
   .settings(runtimeLibCommon: _*)
@@ -699,7 +698,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
   .settings(runtimeLibCommon: _*)
   .settings(noMima)
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(HeaderPlugin)
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-javadsl-integration-tests",
@@ -719,7 +718,7 @@ lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integra
 lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integration-tests"))
   .settings(runtimeLibCommon: _*)
   .settings(noMima)
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(HeaderPlugin)
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-scaladsl-integration-tests",
@@ -1209,7 +1208,7 @@ lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
   .settings(noMima)
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(HeaderPlugin)
   .aggregate(devEnvironmentProjects: _*)
   .settings(
     crossScalaVersions := Nil,
@@ -1232,7 +1231,7 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   .dependsOn(`dev-mode-ssl-support`)
 
 lazy val `server-containers` = (project in file("dev") / "server-containers")
-  .enablePlugins(AutomateHeaderPlugin, SonatypeOnly)
+  .enablePlugins(HeaderPlugin, SonatypeOnly)
   .settings(
     common,
     mimaSettings(since = version160),
@@ -1246,7 +1245,7 @@ lazy val `server-containers` = (project in file("dev") / "server-containers")
   )
 
 def sharedBuildToolSupportSetup(p: Project): Project =
-  p.enablePlugins(AutomateHeaderPlugin, SonatypeOnly)
+  p.enablePlugins(HeaderPlugin, SonatypeOnly)
     .settings(sonatypeSettings: _*)
     .settings(common: _*)
     .settings(mimaSettings())
@@ -1287,7 +1286,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(common: _*)
   .settings(mimaSettings())
   .settings(scriptedSettings: _*)
-  .enablePlugins(AutomateHeaderPlugin, BintrayPlugin && PluginsAccessor.exclude(Sonatype), SbtPlugin)
+  .enablePlugins(HeaderPlugin, BintrayPlugin && PluginsAccessor.exclude(Sonatype), SbtPlugin)
   .settings(
     name := "lagom-sbt-plugin",
     crossScalaVersions := Dependencies.Versions.SbtScala,
@@ -1371,7 +1370,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .dependsOn(`sbt-build-tool-support`)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
-  .enablePlugins(lagom.SbtMavenPlugin, AutomateHeaderPlugin, SonatypeOnly, Unidoc)
+  .enablePlugins(lagom.SbtMavenPlugin, HeaderPlugin, SonatypeOnly, Unidoc)
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(mimaSettings())
@@ -1430,7 +1429,7 @@ val ArchetypeVariablePattern = "%([A-Z-]+)%".r
 
 def archetypeProject(archetypeName: String) =
   Project(s"maven-$archetypeName-archetype", file("dev") / "archetypes" / s"maven-$archetypeName")
-    .enablePlugins(AutomateHeaderPlugin, SonatypeOnly)
+    .enablePlugins(HeaderPlugin, SonatypeOnly)
     .settings(sonatypeSettings: _*)
     .settings(common: _*)
     .settings(mimaSettings())
@@ -1468,7 +1467,7 @@ def archetypeProject(archetypeName: String) =
 
 lazy val `maven-java-archetype` = archetypeProject("java")
 lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
-  .enablePlugins(AutomateHeaderPlugin, SonatypeOnly)
+  .enablePlugins(HeaderPlugin, SonatypeOnly)
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(noMima)
@@ -1553,7 +1552,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
-  .enablePlugins(AutomateHeaderPlugin, SonatypeOnly)
+  .enablePlugins(HeaderPlugin, SonatypeOnly)
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(mimaSettings())
