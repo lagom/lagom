@@ -8,4 +8,6 @@ import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceSpe
 import com.lightbend.lagom.javadsl.persistence.testkit.AbstractEmbeddedPersistentActorSpec
 import com.typesafe.config.ConfigFactory
 
-class EmbeddedCassandraPersistentActorSpec extends CassandraPersistenceSpec(ConfigFactory.parseString("akka.loglevel = INFO")) with AbstractEmbeddedPersistentActorSpec
+class EmbeddedCassandraPersistentActorSpec
+    extends CassandraPersistenceSpec(ConfigFactory.parseString("akka.loglevel = INFO"))
+    with AbstractEmbeddedPersistentActorSpec
