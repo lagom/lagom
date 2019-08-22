@@ -24,7 +24,7 @@ private[lagom] object AwaitPersistenceInit {
       probe.awaitAssert {
         n += 1
         system.actorOf(Props[AwaitPersistenceInit], "persistenceInit" + n).tell("hello", probe.ref)
-        probe.expectMsg(5.seconds, "hello")
+        probe.expectMsg(15.seconds, "hello")
         log.debug(
           "awaitPersistenceInit took {} ms {}",
           TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0),
