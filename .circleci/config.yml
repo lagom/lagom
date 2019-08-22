@@ -77,7 +77,9 @@ commands:
           name: Install AdoptOpenJDK << parameters.jdkVersion >>
           command: |
             curl -Ls https://git.io/jabba | bash && . ~/.jabba/jabba.sh
-            jabba install "adopt@~1.<< parameters.jdkVersion >>.0-0" && jabba use "$_" && java -Xmx32m -version
+            ## Because of https://github.com/shyiko/jabba/issues/481 we have to explicitly blacklist 1.11.28 (but only that)
+            export JABBA_VERSION=$(jabba ls-remote adopt@~1.<< parameters.jdkVersion >>.0-0 | grep -v 1.11.28 | head -1)
+            jabba install $JABBA_VERSION && jabba use $JABBA_VERSION && java -Xmx32m -version
 
             # Save the current version of jabba. This will be used below to reload
             # this version for every step in the job.
