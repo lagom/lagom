@@ -115,7 +115,7 @@ object Dependencies {
 
   private val akkaStreamTestkit = "com.typesafe.akka"   %% "akka-stream-testkit" % Versions.Akka
   private val akkaTestkit       = "com.typesafe.akka"   %% "akka-testkit"        % Versions.Akka
-  private val reactiveStreams   = "org.reactivestreams" % "reactive-streams"     % "1.0.2"
+  private val reactiveStreams   = "org.reactivestreams" % "reactive-streams"     % "1.0.3"
 
   private val akkaDiscovery = "com.typesafe.akka" %% "akka-discovery" % Versions.Akka
 
