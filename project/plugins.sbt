@@ -14,7 +14,7 @@ addSbtPlugin("com.jsuereth"      % "sbt-pgp"      % "1.1.2")
 addSbtPlugin("org.foundweekends" % "sbt-bintray"  % "0.5.5")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm"   % "0.4.0")
-addSbtPlugin("com.typesafe"     % "sbt-mima-plugin" % "0.5.0")
+addSbtPlugin("com.typesafe"     % "sbt-mima-plugin" % "0.6.0")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
 addSbtPlugin("com.lightbend"    % "sbt-whitesource"      % "0.1.16")
