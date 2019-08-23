@@ -316,19 +316,19 @@ def mimaSettings(since: String = version150): Seq[Setting[_]] = {
       ),
       // Remove APIs deprecated in Lagom 1.4.x: https://github.com/lagom/lagom/pull/1987
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.++"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.++"),
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.this"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.this"),
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocator.this"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocator.this"),
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakingServiceLocator.this"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakingServiceLocator.this"),
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.RoundRobinServiceLocator.this"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.RoundRobinServiceLocator.this"),
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.StaticServiceLocator.this"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.StaticServiceLocator.this"),
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator.this"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator.this"),
       ProblemFilters
         .exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraContactPoint"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraConfig"),
@@ -366,7 +366,7 @@ def mimaSettings(since: String = version150): Seq[Setting[_]] = {
       exclude[MissingTypesProblem]("*.lagom.maven.StopMojo"),
       exclude[MissingTypesProblem]("*.lagom.maven.StopServiceLocatorMojo"),
       // Now takes a HOCON Config instead of a Play Configuration
-      exclude[IncompatibleMethTypeProblem]("*.lagom.play.PlayRegisterWithServiceRegistry.this"),
+      exclude[DirectMissingMethodProblem]("*.lagom.play.PlayRegisterWithServiceRegistry.this"),
       // dropped
       exclude[DirectMissingMethodProblem]("*.lagom.sbt.LagomPlugin#autoImport.lagomKafkaZookeperPort"),
       // moved to the server-containers project in 1.6.0
