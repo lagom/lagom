@@ -28,8 +28,6 @@ import scala.concurrent.Await
 import scala.concurrent.Future
 import com.lightbend.lagom.internal.cluster.STMultiNodeSpec
 
-import scala.collection.immutable
-
 abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
 
   val node1 = role("node1")
@@ -143,7 +141,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     if (ref.path.address.hasLocalScope) Cluster(system).selfAddress
     else ref.path.address
 
-  protected override def atStartup() {
+  protected override def atStartup(): Unit = {
     // Initialize components
     registry.register(new TestEntity(system))
     components.readSide.register(readSideProcessor())

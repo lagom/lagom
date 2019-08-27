@@ -141,7 +141,7 @@ private[lagom] class TopicProducerActor[Message](
 
     case Status.Failure(e) =>
       // Crash if the globalPrepareTask or the event stream fail
-      // This actor will be restarted by WorkerHolderActor
+      // This actor will be restarted by WorkerCoordinator
       throw e
   }
 

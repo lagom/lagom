@@ -1,0 +1,496 @@
+version: 2.1
+
+defaults: &defaults
+  working_directory: ~/repo
+  machine:
+    image: circleci/classic:latest
+  environment:
+    TERM: dumb
+
+commands:
+
+  generate-cache-key:
+    description: "Generate cache key from project files"
+    steps:
+      # Cache key should consider not only build.sbt but all
+      # project configurations. For example, if we update a
+      # dependency, or a sbt plugin, or sbt version, the cache
+      # needs to be updated.
+      # Circle does not have out-of-the-box a way to checksum
+      # a directory, so this command creates a file that can
+      # later be used to generate the cache key.
+      - run:
+          name: "Generate cache key"
+          command: |
+            find ./project -type f -exec md5sum {} \; > cache-key.txt
+            md5sum build.sbt >> cache-key.txt
+            md5sum .circleci/config.yml >> cache-key.txt
+            cat cache-key.txt
+
+  get-cache:
+    description: "Restore cache from a key"
+    steps:
+      - restore_cache:
+          keys:
+            - v1-cache-{{ checksum "cache-key.txt" }}
+
+  save-cache:
+    description: "Save a new version of the cache"
+    steps:
+      - save_cache:
+          key: v1-cache-{{ checksum "cache-key.txt" }}
+          paths:
+            - ~/.ivy2
+            - ~/.sbt
+            - ~/.m2
+            - ~/.jabba/jdk
+
+  prepare:
+    description: "Install requirements"
+    parameters:
+      jdkVersion:
+        type: string
+        default: "8"
+    steps:
+      - checkout
+      - generate-cache-key
+      - get-cache
+      - run:
+          name: Install packages
+          command: |
+            # In case there is apt-get hanging. || true is a failsafe in case there
+            # aren't any procs. See:
+            # https://discuss.circleci.com/t/could-not-get-lock-var-lib-apt-lists-lock/28337/6?u=marcospereira
+            sudo killall -9 apt-get || true
+            sudo apt-get -qq update
+            sudo apt-get install -qq -y -f xmlstarlet libxml2-utils wget
+      - run:
+          name: Install sbt
+          command: |
+            echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
+
+            sudo killall -9 apt-get || true
+            sudo apt-get -qq update
+            sudo apt-get install -qq -y -f sbt
+      - run:
+          name: Install AdoptOpenJDK << parameters.jdkVersion >>
+          command: |
+            curl -Ls https://git.io/jabba | bash && . ~/.jabba/jabba.sh
+            ## Because of https://github.com/shyiko/jabba/issues/481 we have to explicitly blacklist 1.11.28 (but only that)
+            export JABBA_VERSION=$(jabba ls-remote adopt@~1.<< parameters.jdkVersion >>.0-0 | grep -v 1.11.28 | head -1)
+            jabba install $JABBA_VERSION && jabba use $JABBA_VERSION && java -Xmx32m -version
+
+            # Save the current version of jabba. This will be used below to reload
+            # this version for every step in the job.
+            jabba current > ~/.jabba/current
+
+            # Add jabba to the env so it will be loaded for every step and also
+            # use the specified jdk version each time it loads.
+            BASH_ENV=${BASH_ENV:-/tmp/bash.env}
+            echo '[ -s ~/.jabba/jabba.sh ] && . ~/.jabba/jabba.sh' >> "$BASH_ENV"
+            echo 'jabba use $(cat ~/.jabba/current)' >> "$BASH_ENV"
+
+
+  run-code-compilation:
+    description: "Compile code for the specified scalaVersion"
+    parameters:
+      scalaVersion:
+        type: string
+        default: "2.12.9"
+    steps:
+      - run:
+          name: Compile code
+          command: sbt "++<< parameters.scalaVersion >> test:compile"
+
+  run-code-validations:
+    description: "Code validations (format, whitesource, etc.)"
+    steps:
+      - run:
+          name: Check copyright headers
+          command: sbt +headerCheck +test:headerCheck multi-jvm:headerCheck
+
+      - run:
+          name: Check Scala code formatting
+          command: sbt scalafmtCheckAll scalafmtSbtCheck
+      - run:
+          name: Check Java code formatting
+          command: |
+            sbt javafmt test:javafmt multi-jvm:javafmt
+            git diff --exit-code || (
+              echo "[error] ERROR: javafmt check failed, see differences above."
+              echo "[error] To fix, before submitting a pull request, format your"
+              echo "[error] sources using sbt javafmt test:javafmt inside docs folder."
+              false
+            )
+
+  run-binary-compatibility-validation:
+    description: "Check binary compatibility"
+    steps:
+      - run:
+          name: Run mima binary issues reports
+          command: sbt +mimaReportBinaryIssues
+
+  store-test-reports:
+    description: "Store test report artifacts"
+    steps:
+      - run:
+          name: Save Test Results
+          command: |
+            mkdir -p ~/test-results/junit
+            find . -type f -regex ".*/target/.*/TEST.*xml" -exec cp -v {} ~/test-results/junit \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results
+
+  run-tests:
+    description: "Run the tests for scalaVersion"
+    parameters:
+      scalaVersion:
+        type: string
+        default: "2.12.9"
+    steps:
+      - run:
+          name: Run tests
+          command: sbt ";set concurrentRestrictions in Global += Tags.limitAll(1) ; ++<< parameters.scalaVersion >> test"
+
+  multi-jvm-run-tests:
+    description: "Run the multi-jvm tests for scalaVersion"
+    parameters:
+      scalaVersion:
+        type: string
+        default: "2.12.9"
+    steps:
+      - run:
+          name: Run multi-jvm tests
+          command: sbt -Dakka.test.timefactor=10 ";set concurrentRestrictions in Global += Tags.limitAll(1) ; ++<< parameters.scalaVersion >> multi-jvm:test"
+
+  run-maven-tests:
+    description: "Run tests for Maven support"
+    steps:
+      - run:
+          name: Run publishM2
+          command: sbt publishM2
+      - run:
+          name: Run maven tests
+          command: sbt mavenTest
+
+  run-mavem-pom-validation:
+    description: "Validate all pom files generated by publishM2"
+    steps:
+      - run:
+          name: "Validate POM files"
+          command: |
+            # Let's start with success
+            exit_code=true
+
+            # Downloads maven schema file which will be used to validate the generated pom file
+            wget -c http://maven.apache.org/xsd/maven-4.0.0.xsd
+
+            for f in $(find . -name *.pom); do
+              echo "Validating file $f"
+              xmllint --noout -schema maven-4.0.0.xsd "${f}"
+
+              # The xmllint comand above runs regular validation based on maven.xsd
+              # file, which allows a pom file without `scm` and `developers` tags.
+              # But when publishing to Sonatype, these tags are required. So we are
+              # also testing them here.
+              scm_count=$(xmlstarlet sel -N mvn='http://maven.apache.org/POM/4.0.0' -t -c "count(/mvn:project/mvn:scm/mvn:url)" "${f}")
+              dev_count=$(xmlstarlet sel -N mvn='http://maven.apache.org/POM/4.0.0' -t -c "count(/mvn:project/mvn:developers)" "${f}")
+
+              if [[ ${scm_count} == 0 ]]; then
+                echo "File ${f} is lacking /project/scm/url tag"
+                exit_code=false
+              fi
+
+              if [[ ${dev_count} == 0 ]]; then
+                echo "File ${f} is lacking /project/developers tag"
+                exit_code=false
+              fi
+            done
+
+            $exit_code
+
+  run-scripted-tests:
+    description: "Run sbt scripted tests for scalaVersion"
+    parameters:
+      scalaVersion:
+        type: string
+        default: "2.12.9"
+    steps:
+      - run:
+          name: Run scripted tests
+          command: sbt ";set publishArtifact in (Compile, packageDoc) in ThisBuild := false ; ++<< parameters.scalaVersion >> scripted"
+          no_output_timeout: 20m
+
+  run-docs-validation:
+    description: "Documentation validations"
+    steps:
+      - run: sbt unidoc
+      - run:
+          name: Validate Markdown file
+          command: cd docs && sbt markdownValidateDocs
+      - run:
+          name: Validate sbt files
+          command: cd docs && sbt markdownEvaluateSbtFiles
+      - run:
+          name: Check copyright headers
+          command: cd docs && sbt headerCheck test:headerCheck
+      - run:
+          name: Check code format for Scala samples
+          command: cd docs && sbt scalafmtCheckAll scalafmtSbtCheck
+      - run:
+          name: Check code format for Java samples
+          command: |
+            cd docs && sbt javafmt test:javafmt
+            git diff --exit-code || (
+              echo "[error] ERROR: javafmt check failed, see differences above."
+              echo "[error] To fix, before submitting a pull request, format your"
+              echo "[error] sources using sbt javafmt test:javafmt inside docs folder."
+              false
+            )
+
+  run-docs-tests:
+    description: "Run documentation tests"
+    steps:
+      - run:
+          name: Run documentation tests
+          command: cd docs && sbt -Dakka.test.timefactor=10 ";set concurrentRestrictions in Global += Tags.limitAll(1) ; test"
+
+jobs:
+  # Validation Jobs
+  code-validation:
+    <<: *defaults
+    steps:
+      - prepare
+      - run-code-compilation
+      - run-code-validations
+      - save-cache
+  binary-compatibility-validation:
+    <<: *defaults
+    steps:
+      - prepare
+      - run-code-compilation
+      - run-binary-compatibility-validation
+  docs-validation:
+    <<: *defaults
+    steps:
+      - prepare
+      - run-docs-validation
+      - save-cache
+  # Test jobs
+  docs-test:
+    <<: *defaults
+    steps:
+      - prepare
+      - run-code-compilation
+      - run-docs-tests
+      - save-cache
+      - store-test-reports
+  scala-212-test:
+    <<: *defaults
+    steps:
+      - prepare
+      - run-code-compilation
+      - run-tests
+      - save-cache
+      - store-test-reports
+  scala-213-test:
+    <<: *defaults
+    steps:
+      - prepare
+      - run-code-compilation
+      - run-tests:
+          scalaVersion: "2.13.0"
+      - save-cache
+      - store-test-reports
+  scala-212-multi-jvm-test:
+    <<: *defaults
+    steps:
+      - prepare
+      - run-code-compilation
+      - multi-jvm-run-tests
+      - save-cache
+      - store-test-reports
+  scala-213-multi-jvm-test:
+    <<: *defaults
+    steps:
+      - prepare
+      - run-code-compilation
+      - multi-jvm-run-tests:
+          scalaVersion: "2.13.0"
+      - save-cache
+      - store-test-reports
+  # Build tools jobs
+  sbt-013-test:
+    <<: *defaults
+    steps:
+      - prepare
+      - run-code-compilation
+      - run-scripted-tests:
+          scalaVersion: "2.10.7"
+      - save-cache
+  sbt-1-test:
+    <<: *defaults
+    steps:
+      - prepare
+      - run-code-compilation
+      - run-scripted-tests
+      - save-cache
+  maven-test:
+    <<: *defaults
+    steps:
+      - prepare
+      - run-code-compilation
+      - run-maven-tests
+      - run-mavem-pom-validation
+      - save-cache
+  # Java 11 jobs
+  docs-jdk11-test:
+    <<: *defaults
+    steps:
+      - prepare:
+          jdkVersion: "11"
+      - run-code-compilation
+      - run-docs-tests
+      - save-cache
+      - store-test-reports
+  scala-212-jdk11-test:
+    <<: *defaults
+    steps:
+      - prepare:
+          jdkVersion: "11"
+      - run-code-compilation
+      - run-tests
+      - save-cache
+      - store-test-reports
+  scala-212-multi-jvm-jdk11-test:
+    <<: *defaults
+    steps:
+      - prepare:
+         jdkVersion: "11"
+      - run-code-compilation
+      - multi-jvm-run-tests
+      - save-cache
+      - store-test-reports
+  sbt-1-jdk11-test:
+    <<: *defaults
+    steps:
+      - prepare:
+          jdkVersion: "11"
+      - run-code-compilation
+      - run-scripted-tests
+      - save-cache
+  maven-jdk11-test:
+    <<: *defaults
+    steps:
+      - prepare:
+          jdkVersion: "11"
+      - run-code-compilation
+      - run-maven-tests
+      - save-cache
+  # CircleCI creates multiple statuses in a Github pull request and Mergify
+  # requires a status name when checking for success:
+  # https://doc.mergify.io/conditions.html#about-status-check-name
+  #
+  # In our workflows, we can add a last stage that depends on others and check
+  # against this single last stage. This job can be used to do that then.
+  good-build:
+    <<: *defaults
+    steps:
+      - run:
+          name: Good build
+          command: echo "Who is a good build?"
+
+
+workflows:
+  build-and-tests:
+    jobs:
+      # First workflow stage to validate code and docs
+      - code-validation
+      - binary-compatibility-validation
+      - docs-validation
+      # Second workflow stage to run tests
+      - docs-test:
+          requires:
+            - code-validation
+            - docs-validation
+            - binary-compatibility-validation
+      - scala-212-test:
+          requires:
+            - code-validation
+            - docs-validation
+            - binary-compatibility-validation
+      - scala-213-test:
+          requires:
+            - code-validation
+            - docs-validation
+            - binary-compatibility-validation
+      - scala-212-multi-jvm-test:
+          requires:
+            - code-validation
+            - docs-validation
+            - binary-compatibility-validation
+      - scala-213-multi-jvm-test:
+          requires:
+            - code-validation
+            - docs-validation
+            - binary-compatibility-validation
+      # Third workflow stage to run build tools tests
+      - sbt-1-test:
+          requires:
+            - docs-test
+            - scala-212-test
+            - scala-213-test
+            - scala-212-multi-jvm-test
+            - scala-213-multi-jvm-test
+      - sbt-013-test:
+          requires:
+            - docs-test
+            - scala-212-test
+            - scala-213-test
+            - scala-212-multi-jvm-test
+            - scala-213-multi-jvm-test
+      - maven-test:
+          requires:
+            - docs-test
+            - scala-212-test
+            - scala-213-test
+            - scala-212-multi-jvm-test
+            - scala-213-multi-jvm-test
+      # Fourth stage to run jobs on Java 11
+      - docs-jdk11-test:
+          requires:
+            - sbt-013-test
+            - sbt-1-test
+            - maven-test
+      - scala-212-jdk11-test:
+          requires:
+            - sbt-013-test
+            - sbt-1-test
+            - maven-test
+      - scala-212-multi-jvm-jdk11-test:
+          requires:
+            - sbt-013-test
+            - sbt-1-test
+            - maven-test
+      - sbt-1-jdk11-test:
+          requires:
+            - sbt-013-test
+            - sbt-1-test
+            - maven-test
+      - maven-jdk11-test:
+          requires:
+            - sbt-013-test
+            - sbt-1-test
+            - maven-test
+      # Last stage
+      - good-build:
+          requires:
+            - scala-212-jdk11-test
+            - sbt-1-jdk11-test
+            - maven-jdk11-test
+            - docs-jdk11-test
+            - scala-212-multi-jvm-jdk11-test

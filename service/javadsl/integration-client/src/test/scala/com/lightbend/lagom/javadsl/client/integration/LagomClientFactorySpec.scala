@@ -13,7 +13,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import org.scalatest.WordSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.Await
