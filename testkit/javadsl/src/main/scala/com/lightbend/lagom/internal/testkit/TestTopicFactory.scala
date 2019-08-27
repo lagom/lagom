@@ -93,7 +93,7 @@ class TestTopicFactory @Inject()(resolvedServices: ResolvedServices, materialize
       }
 
       override def atLeastOnce(flow: Flow[SubscriberPayload, Done, _]): CompletionStage[Done] = {
-        atMostOnceSource().via(flow).runWith(Sink.ignore(), materializer)
+        atMostOnceSource().via(flow).runWith(Sink.ignore[Done], materializer)
       }
     }
   }
