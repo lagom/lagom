@@ -23,9 +23,7 @@ object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersist
 }
 
 class CassandraClusteredPersistentEntitySpecMultiJvmNode1 extends CassandraClusteredPersistentEntitySpec
-
 class CassandraClusteredPersistentEntitySpecMultiJvmNode2 extends CassandraClusteredPersistentEntitySpec
-
 class CassandraClusteredPersistentEntitySpecMultiJvmNode3 extends CassandraClusteredPersistentEntitySpec
 
 class CassandraClusteredPersistentEntitySpec
@@ -51,7 +49,6 @@ class CassandraClusteredPersistentEntitySpec
 
   protected override def afterTermination(): Unit = {
     super.afterTermination()
-
     CassandraLauncher.stop()
   }
 

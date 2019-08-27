@@ -59,7 +59,7 @@ and use it when declaring dependencies, for example:
 The Scala version can be updated by editing the `build.sbt` file, and updating the `scalaVersion` settings, for example:
 
 ```scala
-scalaVersion in ThisBuild := "2.12.8"
+scalaVersion in ThisBuild := "2.12.9"
 ```
 
 ## Akka HTTP as the default server engine

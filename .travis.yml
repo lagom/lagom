@@ -38,31 +38,38 @@ jobs:
     - stage: validations-and-test
       script: bin/test-code-style
       name: "Code validations (format, binary compatibilty, whitesource, etc.)"
-    - script: SCALA_VERSION=2.12.8 bin/test-2.1x
+    - script: SCALA_VERSION=2.12.9 bin/test-2.1x
       name: "Run tests for Scala 2.12"
-    - script: SCALA_VERSION=2.12.8 bin/test-2.1x
-      env: TRAVIS_JDK=adopt@1.11.0-2
+    - script: SCALA_VERSION=2.12.9 bin/test-2.1x
+      env: TRAVIS_JDK=adopt@1.11.0-4
       name: "Run tests for Scala 2.12 and Java 11"
     - script: SCALA_VERSION=2.13.0 bin/test-2.1x
       name: "Run tests for Scala 2.13"
+    - script: SCALA_VERSION=2.12.9 bin/test-multi-jvm-2.1x
+      name: "Run multi-jvm tests for Scala 2.12"
+    - script: SCALA_VERSION=2.12.9 bin/test-multi-jvm-2.1x
+      env: TRAVIS_JDK=adopt@1.11.0-4
+      name: "Run multi-jvm tests for Scala 2.12 and Java 11"
+    - script: SCALA_VERSION=2.13.0 bin/test-multi-jvm-2.1x
+      name: "Run multi-jvm tests for Scala 2.13"
     - script: bin/test-documentation
       name: "Documentation validations and tests"
     - script: bin/test-docs-code-only
-      env: TRAVIS_JDK=adopt@1.11.0-2
+      env: TRAVIS_JDK=adopt@1.11.0-4
       name: "Documentation tests (Java 11)"
     - stage: test-build-tools
-      script: bin/test-sbt-0.13
+      script: SCALA_VERSION=2.10.7 bin/test-sbt
       name: "Scripted tests for sbt 0.13"
-    - script: bin/test-sbt-1.0
+    - script: SCALA_VERSION=2.12.9 bin/test-sbt
       name: "Scripted tests for sbt 1"
-    - script: bin/test-sbt-1.0
-      env: TRAVIS_JDK=adopt@1.11.0-2
+    - script: SCALA_VERSION=2.12.9 bin/test-sbt
+      env: TRAVIS_JDK=adopt@1.11.0-4
       name: "Scripted tests for sbt 1 and Java 11"
     - script: bin/test-maven
       name: "PublishM2 and test Maven"
     - script: bin/test-maven
       name: "PublishM2 and test Maven using Java 11"
-      env: TRAVIS_JDK=adopt@1.11.0-2
+      env: TRAVIS_JDK=adopt@1.11.0-4
 
 cache:
   directories:

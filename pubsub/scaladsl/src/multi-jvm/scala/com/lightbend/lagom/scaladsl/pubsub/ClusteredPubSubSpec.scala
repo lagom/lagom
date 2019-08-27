@@ -54,7 +54,7 @@ class ClusteredPubSubSpec
 
   import ClusteredPubSubConfig._
 
-  override def initialParticipants = roles.size
+  override def initialParticipants: Int = roles.size
 
   def join(from: RoleName, to: RoleName): Unit = {
     runOn(from) {
@@ -63,9 +63,8 @@ class ClusteredPubSubSpec
     enterBarrier(from.name + "-joined")
   }
 
-  protected override def atStartup() {
+  protected override def atStartup(): Unit = {
     roles.foreach(n => join(n, node1))
-
     enterBarrier("startup")
   }
 
