@@ -52,8 +52,6 @@ object ProjectionRegistryActor {
   // values since both may have been edited concurrently in other nodes).
   case object GetState
 
-  val DefaultInitialStatus: Status = Started
-
 }
 
 class ProjectionRegistryActor extends Actor with ActorLogging {
@@ -71,10 +69,13 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   // (a) Replicator contains data of all workers
   private val RequestedStatusDataKey: LWWMapKey[WorkerKey, Status] =
     LWWMapKey[WorkerKey, Status]("projection-registry-desired-status")
+
   private val ObservedStatusDataKey: LWWMapKey[WorkerKey, Status] =
     LWWMapKey[WorkerKey, Status]("projection-registry-observed-status")
+
   private val NameIndexDataKey: LWWMapKey[WorkerKey, WorkerCoordinates] =
     LWWMapKey[WorkerKey, WorkerCoordinates]("projection-registry-name-index")
+
   replicator ! Subscribe(RequestedStatusDataKey, self)
   replicator ! Subscribe(ObservedStatusDataKey, self)
   replicator ! Subscribe(NameIndexDataKey, self)
@@ -90,17 +91,22 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   // required to handle Terminate(deadActor)
   var reversedActorIndex: Map[ActorRef, WorkerKey] = Map.empty[ActorRef, WorkerKey]
 
+  val DefaultInitialStatus: Status = {
+    val autoStartEnabled = context.system.settings.config.getBoolean("lagom.projection.auto-start.enabled")
+    if (autoStartEnabled) Started
+    else Stopped
+  }
+
   override def receive: Receive = {
 
     case RegisterProjectionWorker(coordinates) =>
       log.debug(s"Registering worker $coordinates to [${sender().path.toString}]")
       // keep track
       val workerKey: WorkerKey = coordinates.asKey
-      updateLWWMapForNameIndex(workerKey, coordinates)
+      updateNameIndex(workerKey, coordinates)
       actorIndex = actorIndex.updated(workerKey, sender())
       reversedActorIndex = reversedActorIndex.updated(sender, workerKey)
-      // when worker registers, we must reply with the requested status (if it's been set already, or Started if not).
-      // TODO: parameterize the default initial status
+      // when worker registers, we must reply with the requested status (if it's been set already, or DefaultInitialStatus if not).
       val initialStatus = requestedStatusLocalCopy.getOrElse(workerKey, DefaultInitialStatus)
       log.debug(s"Setting initial status [$initialStatus] on worker $workerKey [${sender().path.toString}]")
       sender ! initialStatus
@@ -112,23 +118,22 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
       sender ! State.fromReplicatedData(
         nameIndexLocalCopy,
         requestedStatusLocalCopy,
-        observedStatusLocalCopy
-      )(
+        observedStatusLocalCopy,
         DefaultInitialStatus,
-        Stopped
+        DefaultInitialStatus
       )
 
     // StateRequestCommand come from `ProjectionRegistry` and contain a requested Status
     case command: StateRequestCommand =>
       // locate the target actor and send the request
       log.debug(s"Propagating request $command.")
-      updateLWWMapForRequests(command.coordinates.asKey, command.requestedStatus)
+      updateStateChangeRequests(command.coordinates.asKey, command.requestedStatus)
 
     // Bare Status come from worker and contain an observed Status
     case observedStatus: Status =>
       log.debug(s"Observed [${sender().path.toString}] as $observedStatus.")
       reversedActorIndex.get(sender()) match {
-        case Some(workerName) => updateLWWMapForObserved(workerName, observedStatus)
+        case Some(workerName) => updateObservedStates(workerName, observedStatus)
         case None             => log.error(s"Unknown actor [${sender().path.toString}] reports status $observedStatus.")
       }
 
@@ -169,7 +174,7 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
       // when a watched actor dies, we mark it as stopped. It will eventually
       // respawn (thanks to EnsureActive) and come back to it's requested status.
       reversedActorIndex.get(deadActor).foreach { name =>
-        updateLWWMapForObserved(name, Stopped)
+        updateObservedStates(name, Stopped)
       }
       // ... and then update indices and stop watching
       actorIndex = actorIndex - reversedActorIndex(deadActor)
@@ -177,19 +182,19 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
   }
 
-  private def updateLWWMapForRequests(workerMetadata: WorkerKey, requested: Status): Unit = {
+  private def updateStateChangeRequests(workerMetadata: WorkerKey, requested: Status): Unit = {
     replicator ! Update(RequestedStatusDataKey, LWWMap.empty[WorkerKey, Status], writeMajority)(
       _.:+(workerMetadata -> requested)
     )
   }
 
-  private def updateLWWMapForObserved(workerName: WorkerKey, status: Status): Unit = {
+  private def updateObservedStates(workerName: WorkerKey, status: Status): Unit = {
     replicator ! Update(ObservedStatusDataKey, LWWMap.empty[WorkerKey, Status], writeMajority)(
       _.:+(workerName -> status)
     )
   }
 
-  private def updateLWWMapForNameIndex(workerName: WorkerKey, metadata: WorkerCoordinates): Unit = {
+  private def updateNameIndex(workerName: WorkerKey, metadata: WorkerCoordinates): Unit = {
     replicator ! Update(NameIndexDataKey, LWWMap.empty[WorkerKey, WorkerCoordinates], writeMajority)(
       _.:+(workerName -> metadata)
     )

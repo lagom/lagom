@@ -47,6 +47,7 @@ private[lagom] object PersistenceTestConfig {
    */
   def cassandraConfigMapOnly(keyspacePrefix: String, cassandraPort: Int): Map[String, AnyRef] =
     Map(
+      "akka.loglevel"                                          -> "INFO",
       "akka.persistence.journal.plugin"                        -> "cassandra-journal",
       "akka.persistence.snapshot-store.plugin"                 -> "cassandra-snapshot-store",
       "akka.test.single-expect-default"                        -> "5s",

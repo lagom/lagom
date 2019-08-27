@@ -44,7 +44,7 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
   val registry     = app.pubSubRegistry
 
   override def afterAll(): Unit = {
-    TestKit.shutdownActorSystem(system)
+    TestKit.shutdownActorSystem(actorSystem = system, verifySystemShutdown = true)
     super.afterAll()
   }
 

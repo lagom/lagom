@@ -11,6 +11,7 @@ import akka.actor.ActorSystem
 import akka.discovery.ServiceDiscovery.Resolved
 import akka.discovery.ServiceDiscovery.ResolvedTarget
 import akka.testkit.TestKit
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
@@ -22,7 +23,8 @@ import scala.concurrent.duration._
 class DevModeServiceDiscoverySpec
     extends TestKit(ActorSystem("DevModeSimpleServiceDiscoverySpec"))
     with WordSpecLike
-    with Matchers {
+    with Matchers
+    with BeforeAndAfterAll {
 
   private val client = new StaticServiceRegistryClient(
     Map(
@@ -30,6 +32,11 @@ class DevModeServiceDiscoverySpec
       "test-service-without-port" -> List(URI.create("http://localhost"))
     )
   )
+
+  protected override def afterAll(): Unit = {
+    shutdown(verifySystemShutdown = true)
+  }
+
   private val discovery = DevModeServiceDiscovery(system)
   discovery.setServiceRegistryClient(client)
 

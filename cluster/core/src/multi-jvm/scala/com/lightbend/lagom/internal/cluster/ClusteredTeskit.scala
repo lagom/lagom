@@ -34,6 +34,7 @@ object ClusterMultiNodeConfig extends MultiNodeConfig {
     ConfigFactory
       .parseString(
         """
+      akka.loglevel = INFO
       akka.actor.provider = cluster
       terminate-system-after-member-removed = 60s
 

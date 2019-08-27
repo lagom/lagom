@@ -1,7 +1,7 @@
 # Structure of this test:
 # =======================
 
-# Here we test that the `lagomRunReloadAll` task on a multi-projects build. Both project 
+# Here we test that the `runAll` task on a multi-projects build. Both project 
 # `a` and `b` have the LagomScala plugin enable, while project `c` doesn't. Therefore, we
 # expect that evaluating the `runReloadAll` task will load both project `a` and `b` 
 # applications, but not the one for project `c`. Then, any change that result in a classpath 

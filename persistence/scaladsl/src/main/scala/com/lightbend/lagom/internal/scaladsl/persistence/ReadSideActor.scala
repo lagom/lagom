@@ -125,7 +125,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
     case Status.Failure(cause) =>
       // Crash if the globalPrepareTask or the event stream fail
-      // This actor will be restarted by WorkerHolderActor
+      // This actor will be restarted by WorkerCoordinator
       throw cause
 
   }
