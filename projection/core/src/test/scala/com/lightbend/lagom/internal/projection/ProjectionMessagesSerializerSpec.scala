@@ -98,7 +98,7 @@ class ProjectionMessagesSerializerSpec
     "serialize State" in {
       val workers     = Range(0, 10).map(n => Worker(s"test-tag-name-$n", s"test-key-$n", Started, Started))
       val projections = Seq(Projection("projection-name", workers))
-      val state       = State(projections)
+      val state       = new State(projections)
       val bytes       = toBinary(state)
 
       val protoState = pm.State.parseFrom(bytes)
