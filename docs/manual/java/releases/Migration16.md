@@ -26,7 +26,7 @@ The version of Lagom can be updated by editing the `project/plugins.sbt` file, a
 addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.0")
 ```
 
-We also recommend upgrading to sbt 1.2.8 or later, by updating the `sbt.version` in `project/build.properties`.
+Lagom 1.6 requires sbt 1.2.8 or later, upgrade your version by updating the `sbt.version` in `project/build.properties`.
 
 ## Main changes
 
@@ -106,6 +106,6 @@ Lagom 1.6.0 has a few new default settings that will prevent you to run a rollin
 
 This is a summary of changes in Lagom 1.6 that would require a full cluster shutdown rather than a rolling upgrade:
 
-* The change in [[Akka Remote|Migration16#Remoting-Artery] default implementation.
-* The change in default [[Shard Coordination|Migration16#Shard-Coordination] strategy.
-* The change in [[Cassandra plugin version|Migration16#Akka-Persistence-Cassandra-Update]. Only impact Lagom applications using Cassandra.
+* The change in [[Akka Remote|Migration16#Remoting-Artery]] default implementation.
+* The change in default [[Shard Coordination|Migration16#Shard-Coordination]] strategy.
+* The change in [[Cassandra plugin version|Migration16#Akka-Persistence-Cassandra-Update]]. Only impact Lagom applications using Cassandra.

@@ -73,7 +73,8 @@ class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
       "complete a WS call over HTTPS" in {
         val setup = defaultSetup.withSsl()
         ServiceTest.withServer(setup)(new TestTlsApplication(_)) { server =>
-          implicit val ctx = server.application.executionContext
+          implicit val actorSystem = server.application.actorSystem
+          implicit val ctx         = server.application.executionContext
           // To explicitly use HTTPS on a test you must create a client of your
           // own and make sure it uses the provided SSLContext
           val wsClient = buildCustomWS(server.clientSslContext.get)
@@ -96,9 +97,8 @@ class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
     }
   }
 
-  private def buildCustomWS(sslContext: SSLContext) = {
-    implicit val system = ActorSystem("test-client")
-    implicit val mat    = ActorMaterializer()
+  private def buildCustomWS(sslContext: SSLContext)(implicit actorSystem: ActorSystem) = {
+    implicit val mat = ActorMaterializer()
     // This setting enables the use of `SSLContext.setDefault` on the following line.
     val sslConfig = ConfigFactory.parseString("play.ws.ssl.default = true").withFallback(ConfigFactory.load())
     SSLContext.setDefault(sslContext)

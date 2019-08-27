@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.inject.ApplicationLifecycle;
 import scala.compat.java8.FutureConverters;
-import scala.compat.java8.JFunction0;
+
 import scala.concurrent.duration.FiniteDuration;
 import slick.jdbc.JdbcBackend;
 
@@ -121,11 +121,11 @@ public class JpaSessionImpl implements JpaSession {
                 }));
   }
 
-  private <R> CompletionStage<R> executeInSlickContext(JFunction0<R> block) {
+  private <R> CompletionStage<R> executeInSlickContext(scala.Function0<R> block) {
     return FutureConverters.toJava(slickDb.io(wrapWithContextClassLoader(block)));
   }
 
-  private <R> JFunction0<R> wrapWithContextClassLoader(JFunction0<R> block) {
+  private <R> scala.Function0<R> wrapWithContextClassLoader(scala.Function0<R> block) {
     return () -> withContextClassLoader(classLoader, block);
   }
 

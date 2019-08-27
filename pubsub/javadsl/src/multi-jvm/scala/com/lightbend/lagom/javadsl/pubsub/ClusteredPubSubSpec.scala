@@ -4,6 +4,8 @@
 
 package com.lightbend.lagom.javadsl.pubsub
 
+import akka.actor.ActorSystem
+
 import scala.concurrent.duration._
 import akka.remote.testkit.MultiNodeConfig
 import akka.remote.testkit.MultiNodeSpec
@@ -12,11 +14,15 @@ import com.typesafe.config.ConfigFactory
 import akka.remote.testconductor.RoleName
 import akka.cluster.Cluster
 import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
-import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule
 import play.api.inject.guice.GuiceInjectorBuilder
 import com.lightbend.lagom.internal.cluster.STMultiNodeSpec
+import play.api.inject._
+
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
 
 object ClusteredPubSubConfig extends MultiNodeConfig {
   val node1 = role("node1")
@@ -47,15 +53,29 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig) with STMu
 
   protected override def atStartup() {
     roles.foreach(n => join(n, node1))
-
     enterBarrier("startup")
+  }
+
+  protected override def afterTermination(): Unit = {
+    Await.ready(applicationLifecycle.stop(), shutdownTimeout)
+    super.afterTermination()
   }
 
   implicit val mat = ActorMaterializer()
   val topic1       = TopicId(classOf[Notification], "1")
   val topic2       = TopicId(classOf[Notification], "2")
 
-  val injector = new GuiceInjectorBuilder().bindings(new ActorSystemModule(system), new PubSubModule).build()
+  val applicationLifecycle = new DefaultApplicationLifecycle
+
+  val injector = new GuiceInjectorBuilder()
+    .bindings(new PubSubModule)
+    .bindings(
+      bind[ApplicationLifecycle].toInstance(applicationLifecycle),
+      bind[ActorSystem].toInstance(system),
+      bind[Materializer].toInstance(mat),
+      bind[ExecutionContext].toInstance(system.dispatcher)
+    )
+    .build()
 
   val registry = injector.instanceOf(classOf[PubSubRegistry])
 

@@ -138,7 +138,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
   }
 
   protected override def afterTermination(): Unit = {
-    injector.instanceOf[Application].stop()
+    Await.ready(injector.instanceOf[Application].stop(), shutdownTimeout)
   }
 
   lazy val injector: Injector = {
