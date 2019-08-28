@@ -1,9 +1,13 @@
 import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 import com.lightbend.lagom.sbt.Internal
 
-scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.8")
+scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.9")
 
 interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMode
+
+// WORKAROUND https://github.com/sbt/sbt/issues/4947
+val distributionRoot = project in file(".")
+aggregateProjects(lagomProj, playProj)
 
 lazy val lagomProj = (project in file("lagomProj"))
   .enablePlugins(LagomJava)

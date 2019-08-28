@@ -26,6 +26,7 @@ import play.api.Configuration
 import play.api.Environment
 import play.api.Mode
 
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -43,7 +44,7 @@ class CassandraClusteredPersistentEntitySpec
 
   import CassandraClusteredPersistentEntityConfig._
 
-  protected override def atStartup() {
+  protected override def atStartup(): Unit = {
     runOn(node1) {
       val cassandraDirectory = new File("target/" + system.name)
       CassandraLauncher.start(
@@ -59,9 +60,9 @@ class CassandraClusteredPersistentEntitySpec
     super.atStartup()
   }
 
-  protected override def afterTermination() {
+  protected override def afterTermination(): Unit = {
     super.afterTermination()
-
+    Await.ready(defaultApplicationLifecycle.stop(), shutdownTimeout)
     CassandraLauncher.stop()
   }
 

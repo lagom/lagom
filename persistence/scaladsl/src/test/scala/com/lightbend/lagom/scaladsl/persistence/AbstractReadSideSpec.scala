@@ -4,6 +4,8 @@
 
 package com.lightbend.lagom.scaladsl.persistence
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Props
@@ -15,6 +17,7 @@ import akka.stream.scaladsl.Source
 import akka.testkit.ImplicitSender
 import akka.Done
 import akka.NotUsed
+import akka.actor.ActorLogging
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
@@ -30,9 +33,13 @@ import akka.pattern._
 import akka.testkit.TestProbe
 import akka.util.Timeout
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
+import com.lightbend.lagom.internal.projection.WorkerCoordinator
+import com.lightbend.lagom.projection.Started
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.util.control.NoStackTrace
 
 trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventually with BeforeAndAfter {
   spec: ActorSystemSpec =>
@@ -40,7 +47,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   import system.dispatcher
 
   // patience config for all async code
-  implicit override val patienceConfig = PatienceConfig(8.seconds, 150.millis)
+  implicit override val patienceConfig: PatienceConfig = PatienceConfig(60.seconds, 150.millis)
 
   implicit val mat = ActorMaterializer()
 
@@ -56,15 +63,15 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
   def getAppendCount(id: String): Future[Long]
 
-  private val tag = TestEntity.Evt.aggregateEventShards.forEntityId("1")
+  private def tag(id: String) = TestEntity.Evt.aggregateEventShards.forEntityId(id)
 
-  private var readSideActor: Option[ActorRef] = None
+  private var projectionRegistryProbe: Option[TestProbe] = None
 
-  private def createTestEntityRef() = {
+  private def createTestEntityRef(id: String) = {
     system.actorOf(
       PersistentEntityActor.props(
         "test",
-        Some("1"),
+        Some(id),
         () => new TestEntity(system),
         None,
         10.seconds,
@@ -74,36 +81,31 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
     )
   }
 
-  class Mock(inFailureMode: Boolean = false) extends Actor {
+  class Mock(numberOfFailures: Int = 0) extends Actor with ActorLogging {
 
     private var stats = Mock.MockStats(0, 0)
 
-    def receive = if (inFailureMode) failureMode else successMode
+    private val prepared = new AtomicBoolean(false)
 
-    def successMode: Receive = getStats.orElse {
+    def receive: Receive = {
       case Execute =>
-        processorFactory()
-          .buildHandler()
-          .globalPrepare()
-          .map { _ =>
-            Done
-          }
-          .pipeTo(sender())
-        stats = stats.recordSuccess()
+        if (numberOfFailures > stats.failureCount) {
+          sender() ! Status.Failure(new RuntimeException("Simulated global prepare failure") with NoStackTrace)
+          stats = stats.recordFailure()
+        } else {
+          processorFactory()
+            .buildHandler()
+            .globalPrepare()
+            .map { _ =>
+              prepared.set(true)
+              Done
+            }
+            .pipeTo(sender())
 
-      case Mock.BecomeSuccessful => context.become(failureMode)
-    }
-
-    def failureMode: Receive = getStats.orElse {
-      case Execute =>
-        sender() ! Status.Failure(new RuntimeException("Simulated global prepare failure"))
-        stats = stats.recordFailure()
-
-      case Mock.BecomeSuccessful => context.become(successMode)
-    }
-
-    def getStats: Receive = {
-      case Mock.GetStats => sender() ! stats
+          stats = stats.recordSuccess()
+        }
+      case Mock.GetStats   => sender() ! stats
+      case Mock.IsPrepared => sender() ! prepared.get()
     }
 
   }
@@ -113,39 +115,70 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       def recordFailure() = copy(failureCount = failureCount + 1)
       def recordSuccess() = copy(successCount = successCount + 1)
     }
-    case object BecomeSuccessful
     case object GetStats
+    case object IsPrepared
   }
 
-  private def createReadSideProcessor(
-      projectionRegistryProbe: TestProbe = TestProbe(),
-      inFailureMode: Boolean = false
-  ) = {
-    val mockRef = system.actorOf(Props(new Mock(inFailureMode)))
-    val processorProps = ReadSideActor.props[TestEntity.Evt](
-      "abstract-readside-spec-stream",
-      "abstract-readside-spec-projection",
-      ReadSideConfig(),
-      classOf[TestEntity.Evt],
-      new ClusterStartupTask(mockRef),
-      eventStream,
-      () => processorFactory(),
-      projectionRegistryProbe.ref
+  private def createReadSideProcessor(entityId: String, clusterStartup: ClusterStartupTask): ActorRef = {
+    val projectionName = "abstract-readside-spec-projection"
+    val probe          = TestProbe()
+    projectionRegistryProbe = Some(probe)
+
+    val processorProps = (coordinates: WorkerCoordinates) =>
+      ReadSideActor.props[TestEntity.Evt](
+        coordinates.tagName,
+        ReadSideConfig(),
+        classOf[TestEntity.Evt],
+        clusterStartup,
+        eventStream,
+        () => processorFactory()
+      )
+
+    val workerCoordinator = WorkerCoordinator.props(
+      projectionName,
+      processorProps,
+      probe.ref
     )
 
-    val readSide: ActorRef = system.actorOf(processorProps)
+    val readSide: ActorRef = system.actorOf(workerCoordinator)
 
-    readSide ! EnsureActive(tag.tag)
-
-    readSideActor = Some(readSide)
-    mockRef
+    // Running a readside is a two step process:
+    // 1. sending an EnsureActive so it has the tagName
+    // 2. sending the requested state (Started) so it actually starts
+    readSide ! EnsureActive(tag(entityId).tag)
+    readSide ! Started
+    readSide
   }
 
-  after {
-    readSideActor.foreach { readSide =>
+  private def withReadSideProcessor[T](entityId: String, forcedFailures: Int = 0)(block: ActorRef => T): T = {
+    var maybeReadSide: Option[ActorRef] = None
+    try {
+      val mockRef            = system.actorOf(Props(new Mock(forcedFailures)))
+      val readSide: ActorRef = createReadSideProcessor(entityId, new ClusterStartupTask(mockRef))
+      maybeReadSide = Some(readSide)
+
+      // block progress until the global prepare of the readside processor has completed
+      assertIsPrepared(mockRef)
+
+      block(mockRef)
+    } finally {
+      stopReadSideActor(maybeReadSide)
+    }
+  }
+
+  private def stopReadSideActor(actorRef: Option[ActorRef]): Unit = {
+    actorRef.foreach { readSide =>
       watch(readSide)
       system.stop(readSide)
       expectTerminated(readSide)
+    }
+  }
+
+  private def assertIsPrepared(mockRef: ActorRef) = {
+    implicit val timeout: akka.util.Timeout = 10.seconds
+    eventually {
+      val prepared = (mockRef ? Mock.IsPrepared).mapTo[Boolean].futureValue
+      prepared shouldBe true
     }
   }
 
@@ -156,25 +189,24 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
     }
   }
 
-  private def fetchLastOffset(): Offset =
+  private def fetchLastOffset(id: String): Offset =
     processorFactory()
       .buildHandler()
-      .prepare(tag)
+      .prepare(tag(id))
       .mapTo[Offset]
       .futureValue
 
   "ReadSide" must {
 
     "register on the projection registry" in {
-      val testProbe = TestProbe()
-      createReadSideProcessor(projectionRegistryProbe = testProbe)
-
-      testProbe.expectMsgType[ProjectionRegistryActor.RegisterProjection]
+      withReadSideProcessor("123") { _ =>
+        projectionRegistryProbe.get.expectMsgType[ProjectionRegistryActor.RegisterProjectionWorker]
+      }
     }
 
     "process events and save query projection" in {
-
-      val p = createTestEntityRef()
+      val id = "entityId-1"
+      val p  = createTestEntityRef(id)
       p ! TestEntity.Add("a")
       expectMsg(TestEntity.Appended("A"))
       p ! TestEntity.Add("b")
@@ -182,85 +214,84 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       p ! TestEntity.Add("c")
       expectMsg(TestEntity.Appended("C"))
 
-      createReadSideProcessor()
-
-      assertAppendCount("1", 3L)
-
-      p ! TestEntity.Add("d")
-      expectMsg(TestEntity.Appended("D"))
-
-      assertAppendCount("1", 4L)
-
+      withReadSideProcessor(id) { _ =>
+        assertAppendCount(id, 3L)
+        p ! TestEntity.Add("d")
+        expectMsg(TestEntity.Appended("D"))
+        assertAppendCount(id, 4L)
+      }
     }
 
     "resume from stored offset" in {
-      // count = 4 from previous test step
-      assertAppendCount("1", 4L)
+      val id = "entityId-2"
 
-      createReadSideProcessor()
+      val p = createTestEntityRef(id)
+      p ! TestEntity.Add("a")
+      expectMsg(TestEntity.Appended("A"))
+      p ! TestEntity.Add("b")
+      expectMsg(TestEntity.Appended("B"))
+      p ! TestEntity.Add("c")
+      expectMsg(TestEntity.Appended("C"))
+      p ! TestEntity.Add("d")
+      expectMsg(TestEntity.Appended("D"))
 
-      val p = createTestEntityRef()
+      withReadSideProcessor(id) { _ =>
+        // count = 4 from previous test step
+        assertAppendCount(id, 4L)
+      }
+
       p ! TestEntity.Add("e")
       expectMsg(TestEntity.Appended("E"))
 
-      assertAppendCount("1", 5L)
+      withReadSideProcessor(id) { _ =>
+        assertAppendCount(id, 5L)
+      }
     }
 
     "recover after failure in globalPrepare" in {
+      val id = "entityId-recover"
 
-      val mockRef = createReadSideProcessor(inFailureMode = true)
-
-      val p = createTestEntityRef()
-      p ! TestEntity.Add("e")
-      expectMsg(TestEntity.Appended("E"))
-
-      implicit val askTimeout = Timeout(5.seconds)
-      eventually {
-        val statsBefore = (mockRef ? Mock.GetStats).mapTo[Mock.MockStats].futureValue
-        statsBefore.failureCount shouldBe 1
-        statsBefore.successCount shouldBe 0
+      withReadSideProcessor(id, forcedFailures = 1) { mockRef =>
+        // eventually the worker will fail, self-heal and then succeed reporting a failure and a success
+        implicit val askTimeout: Timeout = Timeout(5.seconds)
+        eventually {
+          val statsBefore = (mockRef ? Mock.GetStats).mapTo[Mock.MockStats].futureValue
+          statsBefore shouldBe Mock.MockStats(successCount = 1, failureCount = 1)
+        }
       }
-
-      // count = 5 from previous test steps
-      assertAppendCount("1", 5L)
-
-      // switch mock to 'Success' mode
-      mockRef ! Mock.BecomeSuccessful
-      readSideActor.foreach(_ ! EnsureActive(tag.tag))
-
-      eventually {
-        val statsAfter = (mockRef ? Mock.GetStats).mapTo[Mock.MockStats].futureValue
-        statsAfter.successCount shouldBe 1
-      }
-
-      // offset must progress once read-side processor is recovered
-      assertAppendCount("1", 6L)
     }
 
     "persisted offsets for unhandled events" in {
 
-      createReadSideProcessor()
+      val id = "unhadled"
 
-      // count = 5 from previous test steps
-      assertAppendCount("1", 6L)
-      // this is the last known offset (after processing all 5 events)
-      val offsetBefore = fetchLastOffset()
+      withReadSideProcessor(id) { _ =>
+        val p = createTestEntityRef(id)
+        p ! TestEntity.Add("a")
+        expectMsg(TestEntity.Appended("A"))
+        p ! TestEntity.Add("b")
+        expectMsg(TestEntity.Appended("B"))
+        p ! TestEntity.Add("c")
+        expectMsg(TestEntity.Appended("C"))
+        assertAppendCount(id, 3L)
 
-      val p = createTestEntityRef()
+        val offsetBefore: Offset = fetchLastOffset(id)
 
-      p ! TestEntity.ChangeMode(Mode.Prepend)
-      expectMsg(TestEntity.InPrependMode)
-      p ! TestEntity.Add("f")
-      expectMsg(TestEntity.Prepended("f"))
+        p ! TestEntity.ChangeMode(Mode.Prepend)
+        expectMsg(TestEntity.InPrependMode)
+        p ! TestEntity.Add("g")
+        expectMsg(TestEntity.Prepended("g"))
 
-      // count doesn't change because ReadSide only handles Appended events
-      // InPrependMode and Prepended events are ignored
-      assertAppendCount("1", 6L)
+        // persisted offset gets updated
+        eventually {
+          val offsetAfter = fetchLastOffset(id)
+          offsetBefore should not be offsetAfter
+        }
 
-      // however, persisted offset gets updated
-      eventually {
-        val offsetAfter = fetchLastOffset()
-        offsetBefore should not be offsetAfter
+        // however count doesn't change because ReadSide only handles Appended events
+        // InPrependMode and Prepended events are ignored
+        assertAppendCount(id, 3L)
+
       }
     }
   }

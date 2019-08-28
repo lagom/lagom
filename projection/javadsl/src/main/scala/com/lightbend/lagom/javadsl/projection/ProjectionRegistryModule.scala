@@ -9,6 +9,7 @@ import java.util.concurrent.CompletionStage
 import akka.actor.ActorSystem
 import akka.annotation.ApiMayChange
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
@@ -38,10 +39,24 @@ private[lagom] class ProjectionRegistryProvider @Inject()(actorSystem: ActorSyst
 }
 
 @Singleton
-private class ProjectionsImpl @Inject()(impl: ProjectionRegistry)(implicit executionContext: ExecutionContext)
-    extends Projections {
+private class ProjectionsImpl @Inject()(registry: ProjectionRegistry)(
+    implicit executionContext: ExecutionContext
+) extends Projections {
   import FutureConverters._
-  override def getStatus(): CompletionStage[DesiredState] = {
-    impl.getStatus().map(DesiredState.asJava).toJava
+  override def getStatus(): CompletionStage[State] = {
+    registry.getState().map(state => State.asJava(state)).toJava
   }
+
+  override def stopAllWorkers(projectionName: String): Unit =
+    registry.stopAllWorkers(projectionName)
+
+  override def stopWorker(projectionName: String, tagName: String): Unit =
+    registry.stopWorker(WorkerCoordinates(projectionName, tagName))
+
+  override def startAllWorkers(projectionName: String): Unit =
+    registry.startAllWorkers(projectionName)
+
+  override def startWorker(projectionName: String, tagName: String): Unit =
+    registry.startWorker(WorkerCoordinates(projectionName, tagName))
+
 }

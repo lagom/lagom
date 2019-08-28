@@ -85,8 +85,22 @@ object Protobuf {
       p !! l
     })
     val version = res.split(" ").last.trim
-    if (version != protocVersion) {
-      sys.error("Wrong protoc version! Expected %s but got %s".format(protocVersion, version))
+
+    val installedVersion = CrossVersion.partialVersion(version)
+    val expectedVersion  = CrossVersion.partialVersion(protocVersion)
+
+    (installedVersion, expectedVersion) match {
+      case (Some(installed), Some(expected)) =>
+        // Compare minor version, for example 3.7, instead of full version 3.7.1
+        if (installed != expected) {
+          sys.error(
+            s"Wrong protoc version. Expected ${expected._1}.${expected._2} but got ${installed._1}.${installed._2}"
+          )
+        }
+      case _ =>
+        sys.error(
+          s"Unable to parse partial versions for installed protoc ($version) and required protoc version ($protocVersion)"
+        )
     }
   }
 

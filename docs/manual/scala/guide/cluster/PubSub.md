@@ -62,4 +62,4 @@ The published messages must be serializable since they will be sent across the n
 
 ## Underlying Implementation
 
-It is implemented with [Akka Distributed Publish Subscribe](https://doc.akka.io/docs/akka/2.5/distributed-pub-sub.html?language=scala).
+It is implemented with [Akka Distributed Publish Subscribe](https://doc.akka.io/docs/akka/2.6/distributed-pub-sub.html?language=scala).

@@ -14,11 +14,11 @@ addSbtPlugin("com.jsuereth"      % "sbt-pgp"      % "1.1.2")
 addSbtPlugin("org.foundweekends" % "sbt-bintray"  % "0.5.5")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm"   % "0.4.0")
-addSbtPlugin("com.typesafe"     % "sbt-mima-plugin" % "0.3.0")
+addSbtPlugin("com.typesafe"     % "sbt-mima-plugin" % "0.6.0")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
 addSbtPlugin("com.lightbend"    % "sbt-whitesource"      % "0.1.16")
 
 addSbtPlugin("com.lightbend.sbt" % "sbt-java-formatter" % "0.4.4")
-addSbtPlugin("org.scalameta"     % "sbt-scalafmt"       % "2.0.2")
+addSbtPlugin("org.scalameta"     % "sbt-scalafmt"       % "2.0.4")
 addSbtPlugin("com.dwijnand"      % "sbt-dynver"         % "4.0.0")

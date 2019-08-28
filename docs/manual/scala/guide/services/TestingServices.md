@@ -81,7 +81,7 @@ To open an SSL port on the `TestServer` used in your tests, you may enable SSL s
 Setup.defaultSetup.withSsl()
 ```
 
-Enabling SSL will automatically open a new random port and provide an `javax.net.ssl.SSLContext` on the TestServer. Lagom doesn't provide any client factory that allows sending requests to the HTTPS port at the moment. You should create an HTTP client using Play-WS, Akka-HTTP or Akka-gRPC. Then, use the `httpsPort` and the `sslContext` provided by the `testServer` instance to send the request. Note that the `SSLContext` provided is built by Lagom's testkit to trust the `testServer` certificates. Finally, because the server certificate is issued for `CN=localhost` you will have to make sure that's the `authority` on the requests you generate, otherwise the server may decline and fail the request. At the moment it is not possible to setup the test server with different SSL Certificates.  
+Enabling SSL will automatically open a new random port and provide an `javax.net.ssl.SSLContext` on the TestServer. Lagom doesn't provide any client factory that allows sending requests to the HTTPS port at the moment. You should create an HTTP client using Play-WS, Akka-HTTP or Akka-gRPC. Then, use the `httpsPort` and the `sslContext` provided by the `testServer` instance to send the request. Note that the `SSLContext` provided is built by Lagom's testkit to trust the `testServer` certificates. Finally, because the server certificate is issued for `CN=localhost` you will have to make sure that's the `authority` on the requests you generate, otherwise the server may decline and fail the request. At the moment it is not possible to setup the test server with different SSL Certificates.
 
 
 @[tls-test-service](../../../../../testkit/scaladsl/src/test/scala/com/lightbend/lagom/scaladsl/testkit/TestOverTlsSpec.scala)
@@ -99,11 +99,11 @@ Let's say we have a service that has streaming request and/or response parameter
 
 @[echo-service](code/TestingServices.scala)
 
-When writing tests for that the [Akka Streams TestKit](https://doc.akka.io/docs/akka/2.5/stream/stream-testkit.html?language=scala#streams-testkit) is very useful. We use the Streams TestKit together with the Lagom `ServiceTest` utilities:
+When writing tests for that the [Akka Streams TestKit](https://doc.akka.io/docs/akka/2.6/stream/stream-testkit.html?language=scala#streams-testkit) is very useful. We use the Streams TestKit together with the Lagom `ServiceTest` utilities:
 
 @[echo-service-spec](code/TestingServices.scala)
 
-Read more about it in the documentation of the [Akka Streams TestKit](https://doc.akka.io/docs/akka/2.5/stream/stream-testkit.html?language=scala#streams-testkit).
+Read more about it in the documentation of the [Akka Streams TestKit](https://doc.akka.io/docs/akka/2.6/stream/stream-testkit.html?language=scala#streams-testkit).
 
 ## How to test a persistent entity
 

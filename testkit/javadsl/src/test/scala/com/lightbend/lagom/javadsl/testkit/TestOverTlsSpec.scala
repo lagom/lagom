@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.japi.function.Procedure
 import akka.stream.ActorMaterializer
 import com.google.inject.AbstractModule
 import com.lightbend.lagom.javadsl.api.ServiceCall
@@ -77,7 +76,8 @@ class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
 
       "complete a WS call over HTTPS" in {
         withServer(defaultSetup.withSsl()) { server =>
-          implicit val ctx = server.app.asScala().actorSystem.dispatcher
+          implicit val actorSystem = server.app.asScala().actorSystem
+          implicit val ctx         = actorSystem.dispatcher
           // To explicitly use HTTPS on a test you must create a client of your own and make sure it uses
           // the provided SSLContext
           val wsClient = buildCustomWS(server.clientSslContext.get)
@@ -103,9 +103,8 @@ class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
   def registerService(builder: GuiceApplicationBuilder): GuiceApplicationBuilder =
     builder.bindings(new TestTlsServiceModule)
 
-  private def buildCustomWS(sslContext: SSLContext) = {
-    implicit val system = ActorSystem("test-client")
-    implicit val mat    = ActorMaterializer()
+  private def buildCustomWS(sslContext: SSLContext)(implicit actorSystem: ActorSystem) = {
+    implicit val mat = ActorMaterializer()
     // This setting enables the use of `SSLContext.setDefault` on the following line.
     val sslConfig = ConfigFactory.parseString("play.ws.ssl.default = true").withFallback(ConfigFactory.load())
     SSLContext.setDefault(sslContext)

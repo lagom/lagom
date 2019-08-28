@@ -1,17 +1,17 @@
 import akka.JavaVersion
 import akka.CrossJava
 
-val ScalaVersion = "2.12.8"
+val ScalaVersion = "2.12.9"
 
-val AkkaVersion: String   = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M3")
+val AkkaVersion: String   = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M5")
 val JUnitVersion          = "4.12"
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion      = "3.0.8"
-val PlayVersion           = "2.8.0-M3"
-val Log4jVersion          = "2.11.2"
+val PlayVersion           = "2.8.0-M4"
+val Log4jVersion          = "2.12.1"
 val MacWireVersion        = "2.3.2"
 val LombokVersion         = "1.18.8"
-val HibernateVersion      = "5.4.2.Final"
+val HibernateVersion      = "5.4.4.Final"
 val ValidationApiVersion  = "2.0.1.Final"
 
 val branch = {
@@ -150,11 +150,17 @@ lazy val akkaDiscoveryScaladsl           = ProjectRef(parentDir, "akka-discovery
 // Needed to compile test classes using immutables annotation
 lazy val immutables = ProjectRef(parentDir, "immutables")
 
+// Pass through system properties starting with "akka"
+// Used to set -Dakka.test.timefactor in CI
+val defaultJavaOptions = Vector("-Xms256M", "-Xmx512M") ++ sys.props.collect {
+  case (key, value) if key.startsWith("akka") => s"-D$key=$value"
+}
+
 // for forked tests, necessary for Cassandra
 def forkedTests: Seq[Setting[_]] = Seq(
   fork in Test := true,
   concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
-  javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M"),
+  javaOptions in Test ++= defaultJavaOptions,
   testGrouping in Test := (definedTests in Test).map(singleTestsGrouping).value
 )
 
@@ -162,12 +168,11 @@ def forkedTests: Seq[Setting[_]] = Seq(
 def singleTestsGrouping(tests: Seq[TestDefinition]) = {
   // We could group non Cassandra tests into another group
   // to avoid new JVM for each test, see https://www.scala-sbt.org/release/docs/Testing.html
-  val javaOptions = Vector("-Xms256M", "-Xmx512M")
   tests.map { test =>
     Tests.Group(
       name = test.name,
       tests = Seq(test),
-      runPolicy = Tests.SubProcess(ForkOptions().withRunJVMOptions(javaOptions)),
+      runPolicy = Tests.SubProcess(ForkOptions().withRunJVMOptions(defaultJavaOptions)),
     )
   }
 }
