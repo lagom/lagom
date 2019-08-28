@@ -16,8 +16,6 @@ import akka.annotation.ApiMayChange
 import akka.cluster.ddata.LWWMap
 import akka.cluster.ddata.LWWMapKey
 import akka.cluster.ddata.Replicator.Changed
-import akka.cluster.ddata.Replicator.ReadConsistency
-import akka.cluster.ddata.Replicator.ReadLocal
 import akka.cluster.ddata.Replicator.Subscribe
 import akka.cluster.ddata.Replicator.Update
 import akka.cluster.ddata.Replicator.UpdateFailure
@@ -62,17 +60,18 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
   val replicator: ActorRef             = DistributedData(context.system).replicator
   implicit val node: SelfUniqueAddress = DistributedData(context.system).selfUniqueAddress
-  // TODO: make timeout configurable (5.second is too aggressive in big clusters)
-  val writeMajority: WriteConsistency  = WriteMajority(timeout = 5.seconds)
-  val readConsistency: ReadConsistency = ReadLocal
 
-  // (a) Replicator contains data of all workers
+  // All usages os `data` in this actor are unnafected by `UpdateTimeout` (see
+  //   https://github.com/lagom/lagom/pull/2208). In general uses, using WriteMajority(5 sec) could be an issue
+  //   in big clusters.
+  // TODO (nice to have): make the 5 second timeout configurable.
+  val writeConsistency: WriteConsistency = WriteMajority(timeout = 5.seconds)
+
+  // (a) Replicator contains data of all workers (requested and observed status, plus a name index)
   private val RequestedStatusDataKey: LWWMapKey[WorkerKey, Status] =
-    LWWMapKey[WorkerKey, Status]("projection-registry-desired-status")
-
+    LWWMapKey[WorkerKey, Status]("projection-registry-requested-status")
   private val ObservedStatusDataKey: LWWMapKey[WorkerKey, Status] =
     LWWMapKey[WorkerKey, Status]("projection-registry-observed-status")
-
   private val NameIndexDataKey: LWWMapKey[WorkerKey, WorkerCoordinates] =
     LWWMapKey[WorkerKey, WorkerCoordinates]("projection-registry-name-index")
 
@@ -81,9 +80,8 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   replicator ! Subscribe(NameIndexDataKey, self)
 
   // (b) Keep a local copy to simplify the implementation of some ops
-  var requestedStatusLocalCopy: Map[WorkerKey, Status] = Map.empty[WorkerKey, Status]
-  var observedStatusLocalCopy: Map[WorkerKey, Status]  = Map.empty[WorkerKey, Status]
-
+  var requestedStatusLocalCopy: Map[WorkerKey, Status]      = Map.empty[WorkerKey, Status]
+  var observedStatusLocalCopy: Map[WorkerKey, Status]       = Map.empty[WorkerKey, Status]
   var nameIndexLocalCopy: Map[WorkerKey, WorkerCoordinates] = Map.empty[WorkerKey, WorkerCoordinates]
 
   // (c) Actor indices contain only data of workers running locally
@@ -137,12 +135,31 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
         case None             => log.error(s"Unknown actor [${sender().path.toString}] reports status $observedStatus.")
       }
 
-    // TODO: handle UpdateSuccess/UpdateFailure !!
-    case UpdateSuccess(_, _) => //TODO
-    case _: UpdateFailure[_] => //TODO
+    case UpdateSuccess(_, _) => //noop: the update op worked nicely, nothing to see here
+
+    // There's three types of UpdateFailure and 3 target CRDTs totalling 9 possible cases of
+    // which only UpdateTimeout(_,_) is relevant.
+    // case UpdateTimeout(ObservedStatusDataKey, _) =>
+    //    the observed status changes very rarely, but when it changes it may change multiple times in a short
+    //    period. The fast/often changes probably happen on a cluster rollup, up/down-scale, etc... In any case,
+    //    data eventually will become stable (unchanging)in which case data is eventually gossiped and last writer wins.
+    // case UpdateTimeout(RequestedStatusDataKey, _) =>
+    //    the request status changes very rarely. It is safe to ignore timeouts when using WriteMajority because
+    //    data is eventually gossiped.
+    // case UpdateTimeout(NameIndexDataKey, _) =>
+    //    the data in the nameIndex is only-grow until reaching a full hardcoded representation. It is safe to
+    //    ignore timeouts when using WriteMajority because data is eventually gossiped.
+    // In any other UpdateFailure cases, noop:
+    // - ModifyFailure: using LWWMap with `put` as the modify operation will never fail, latest wins.
+    // - StoreFailure: doesn't apply because we don't use durable CRDTs
+    case _: UpdateFailure[_] =>
+    // Changed is not sent for every single change but, instead, it is batched on the replicator. This means
+    //  multiple changes will be notified at once. This is especially relevant when joining a cluster where
+    //  instead of getting an avalanche of Changed messages with all the history of the CRDT only a single
+    //  message with the latest state is received.
     case changed @ Changed(RequestedStatusDataKey) => {
-      val remotelyChanged                 = changed.get(RequestedStatusDataKey).entries
-      val diffs: Set[(WorkerKey, Status)] = remotelyChanged.toSet.diff(requestedStatusLocalCopy.toSet)
+      val replicatedEntries               = changed.get(RequestedStatusDataKey).entries
+      val diffs: Set[(WorkerKey, Status)] = replicatedEntries.toSet.diff(requestedStatusLocalCopy.toSet)
 
       // when the requested status changes, we must forward the new value to the appropriate actor
       // if it's a one of the workers in the local actorIndex
@@ -158,14 +175,12 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
             }
         }
 
-      requestedStatusLocalCopy = remotelyChanged
+      requestedStatusLocalCopy = replicatedEntries
     }
 
-    // TODO: handle UpdateSuccess/UpdateFailure !!
     case changed @ Changed(ObservedStatusDataKey) =>
       observedStatusLocalCopy = changed.get(ObservedStatusDataKey).entries
 
-    // TODO: handle UpdateSuccess/UpdateFailure !!
     case changed @ Changed(NameIndexDataKey) =>
       nameIndexLocalCopy = changed.get(NameIndexDataKey).entries
 
@@ -183,19 +198,19 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   }
 
   private def updateStateChangeRequests(workerMetadata: WorkerKey, requested: Status): Unit = {
-    replicator ! Update(RequestedStatusDataKey, LWWMap.empty[WorkerKey, Status], writeMajority)(
+    replicator ! Update(RequestedStatusDataKey, LWWMap.empty[WorkerKey, Status], writeConsistency)(
       _.:+(workerMetadata -> requested)
     )
   }
 
   private def updateObservedStates(workerName: WorkerKey, status: Status): Unit = {
-    replicator ! Update(ObservedStatusDataKey, LWWMap.empty[WorkerKey, Status], writeMajority)(
+    replicator ! Update(ObservedStatusDataKey, LWWMap.empty[WorkerKey, Status], writeConsistency)(
       _.:+(workerName -> status)
     )
   }
 
   private def updateNameIndex(workerName: WorkerKey, metadata: WorkerCoordinates): Unit = {
-    replicator ! Update(NameIndexDataKey, LWWMap.empty[WorkerKey, WorkerCoordinates], writeMajority)(
+    replicator ! Update(NameIndexDataKey, LWWMap.empty[WorkerKey, WorkerCoordinates], writeConsistency)(
       _.:+(workerName -> metadata)
     )
   }
