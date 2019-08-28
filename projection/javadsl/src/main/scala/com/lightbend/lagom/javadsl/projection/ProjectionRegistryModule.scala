@@ -10,6 +10,7 @@ import akka.actor.ActorSystem
 import akka.annotation.ApiMayChange
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
+import com.lightbend.lagom.projection.State
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
@@ -42,10 +43,11 @@ private[lagom] class ProjectionRegistryProvider @Inject()(actorSystem: ActorSyst
 private class ProjectionsImpl @Inject()(registry: ProjectionRegistry)(
     implicit executionContext: ExecutionContext
 ) extends Projections {
+
   import FutureConverters._
-  override def getStatus(): CompletionStage[State] = {
-    registry.getState().map(state => State.asJava(state)).toJava
-  }
+
+  override def getStatus(): CompletionStage[State] =
+    registry.getState().toJava
 
   override def stopAllWorkers(projectionName: String): Unit =
     registry.stopAllWorkers(projectionName)
