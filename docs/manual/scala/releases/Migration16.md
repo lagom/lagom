@@ -18,7 +18,7 @@ The version of Lagom can be updated by editing the `project/plugins.sbt` file, a
 addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.0")
 ```
 
-We also recommend upgrading to sbt 1.2.8 or later, by updating the `sbt.version` in `project/build.properties`.
+Lagom 1.6 requires sbt 1.2.8 or later, upgrade your version by updating the `sbt.version` in `project/build.properties`.
 
 ## Main changes
 
@@ -45,6 +45,13 @@ Switching from `persistence` to `ddata`, such as if your cluster relies of Lagom
 # Opt-back to Lagom 1.5's 'persistence' instead of Lagom 1.6's default of 'ddata'.
 akka.cluster.sharding.state-store-mode = persistence
 ```
+### Akka Persistence Cassandra Update
+
+The Akka Persistence Cassandra plugin is updated to version 0.99. This version requires a schema migration before you upgrade to Lagom 1.6.0.
+
+For more information on how to migrate, consult [Akka Persistence Cassandra migration document](https://doc.akka.io/docs/akka-persistence-cassandra/current/migrations.html#migrations-to-0-80-and-later).
+
+Note that although it's technically possible to run the migration while running your application we advise against it.
 
 ## Upgrading a production system
 
@@ -54,8 +61,9 @@ Lagom 1.6.0 has a few new default settings that will prevent you to run a rollin
 
 This is a summary of changes in Lagom 1.6 that would require a full cluster shutdown rather than a rolling upgrade:
 
-* The change in [[Akka Remote|Migration16#Remoting-Artery] default implementation.
-* The change in default [[Shard Coordination|Migration16#Shard-Coordination] strategy.
+* The change in [[Akka Remote|Migration16#Remoting-Artery]] default implementation.
+* The change in default [[Shard Coordination|Migration16#Shard-Coordination]] strategy.
+* The change in [[Cassandra plugin version|Migration16#Akka-Persistence-Cassandra-Update]]. Only impacts Lagom applications using Cassandra.
 
 ## Minor changes
 

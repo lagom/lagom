@@ -38,31 +38,38 @@ jobs:
     - stage: validations-and-test
       script: bin/test-code-style
       name: "Code validations (format, binary compatibilty, whitesource, etc.)"
-    - script: SCALA_VERSION=2.12.8 bin/test-2.1x
+    - script: SCALA_VERSION=2.12.9 bin/test-2.1x
       name: "Run tests for Scala 2.12"
-    - script: SCALA_VERSION=2.12.8 bin/test-2.1x
-      env: TRAVIS_JDK=adopt@1.11.0-2
+    - script: SCALA_VERSION=2.12.9 bin/test-2.1x
+      env: TRAVIS_JDK=adopt@1.11.0-4
       name: "Run tests for Scala 2.12 and Java 11"
     - script: SCALA_VERSION=2.13.0 bin/test-2.1x
       name: "Run tests for Scala 2.13"
+    - script: SCALA_VERSION=2.12.9 bin/test-multi-jvm-2.1x
+      name: "Run multi-jvm tests for Scala 2.12"
+    - script: SCALA_VERSION=2.12.9 bin/test-multi-jvm-2.1x
+      env: TRAVIS_JDK=adopt@1.11.0-4
+      name: "Run multi-jvm tests for Scala 2.12 and Java 11"
+    - script: SCALA_VERSION=2.13.0 bin/test-multi-jvm-2.1x
+      name: "Run multi-jvm tests for Scala 2.13"
     - script: bin/test-documentation
       name: "Documentation validations and tests"
     - script: bin/test-docs-code-only
-      env: TRAVIS_JDK=adopt@1.11.0-2
+      env: TRAVIS_JDK=adopt@1.11.0-4
       name: "Documentation tests (Java 11)"
     - stage: test-build-tools
-      script: bin/test-sbt-0.13
+      script: SCALA_VERSION=2.10.7 bin/test-sbt
       name: "Scripted tests for sbt 0.13"
-    - script: bin/test-sbt-1.0
+    - script: SCALA_VERSION=2.12.9 bin/test-sbt
       name: "Scripted tests for sbt 1"
-    - script: bin/test-sbt-1.0
-      env: TRAVIS_JDK=adopt@1.11.0-2
+    - script: SCALA_VERSION=2.12.9 bin/test-sbt
+      env: TRAVIS_JDK=adopt@1.11.0-4
       name: "Scripted tests for sbt 1 and Java 11"
     - script: bin/test-maven
       name: "PublishM2 and test Maven"
     - script: bin/test-maven
       name: "PublishM2 and test Maven using Java 11"
-      env: TRAVIS_JDK=adopt@1.11.0-2
+      env: TRAVIS_JDK=adopt@1.11.0-4
 
 cache:
   directories:
@@ -83,7 +90,9 @@ before_cache:
   - find $HOME/.sbt -name "*.lock" -delete
 
 notifications:
-  email: play-team@lightbend.com
+  email:
+    recipients:
+      secure: dg0b5oUBfma5RZtYoK/kG7x0TuQ2y95SpQqEG8w9cK7yyY1hDNvNKcdibrOupsttKWeng0gEgpzIAwBLypwQTdelembEZcJKuDRwl8fWISJqxuE90VVH+oiIyjG/MXvGNdkZVBni32Ye/xh5OR+YXSs5DzrwYVKBY/mEq+e3SgN7fqQ1Cxt7Kp0uufMgy6zfRu8qNh1IoRVTcxX1vL14G9FHrhyfSt5+scvIE4rQsXy4f783tnLqOKbqK4/incfnPf7Q2j0qnps9iA/xpzb9aCq4LgILAiJ/mxncZ5jmFfJ4NWibJzikXJlTAfVVaOlQt0O7BDoJY1AyV7nZw9mBf9RseXPkXZ8IqoM7MBMvaatjlh5d2RbHXRzMQaBLtKud38x83M/gjNObiGKBBGHy1FlYnhHOJGBHVjSZcDcToPE5Bb44T8bfraYVMsKgWgpdoFWTpAM5ctGqnQdmm/45yUaXcMnJbc5k3Xu5N/IpfPx2NXROHpmh7Su/KSIHf1yGAREInV6JIJIMyjZmXixqxWRGyKCAD2iLEhUTWRMMji8Dm2TLBJpDXEAgKjfmZYTHpBohUeVNOZZTRYAHsGw/MXJObqud9VO+MUxc7PtFijN7zJMzFL0tt3vSBIjKpwH4rfxxIlZGHcNhufPloNUzHOuB7AesExBum8XsRQ/sV6I=
   webhooks:
     urls:
       - https://webhooks.gitter.im/e/2aa0aeda88d31fe293d4

@@ -5,25 +5,22 @@
 package com.lightbend.lagom.javadsl.persistence.testkit
 
 import akka.actor.ActorRef
-import akka.actor.ActorSystem
 import akka.actor.Props
 import akka.actor.actorRef2Scala
 import akka.persistence.PersistentActor
-import akka.testkit.ImplicitSender
-import akka.testkit.TestKitBase
 import com.lightbend.lagom.persistence.ActorSystemSpec
-import com.lightbend.lagom.persistence.PersistenceSpec
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
+import com.lightbend.lagom.serialization.Jsonable
 
 import scala.concurrent.duration._
 
 object AbstractEmbeddedPersistentActorSpec {
 
-  final case class Cmd(data: String)
-  final case class Evt(data: String)
-  case object Get
-  final case class State(data: Vector[String] = Vector.empty) {
+  // All commands and events extending Jsonable so that the
+  // tests will use Jackson serialization instead of Java's.
+  case object Get                    extends Jsonable
+  final case class Cmd(data: String) extends Jsonable
+  final case class Evt(data: String) extends Jsonable
+  final case class State(data: Vector[String] = Vector.empty) extends Jsonable {
     def apply(evt: Evt): State = {
       copy(data :+ evt.data)
     }
@@ -47,7 +44,6 @@ object AbstractEmbeddedPersistentActorSpec {
       case Get => sender() ! state
     }
   }
-
 }
 
 trait AbstractEmbeddedPersistentActorSpec { spec: ActorSystemSpec =>

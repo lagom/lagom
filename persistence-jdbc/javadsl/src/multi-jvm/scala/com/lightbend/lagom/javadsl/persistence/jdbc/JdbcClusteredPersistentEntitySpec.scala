@@ -47,7 +47,6 @@ class JdbcClusteredPersistentEntitySpec
 
   protected override def afterTermination() {
     super.afterTermination()
-
     Option(h2).foreach(_.stop())
   }
 

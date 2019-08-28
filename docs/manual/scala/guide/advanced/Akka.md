@@ -12,7 +12,7 @@ Let's look at an example of a `WorkerService` that accepts job requests and dele
 
 @[service-impl](code/Akka.scala)
 
-Notice how the `ActorSystem` is injected through the constructor. We create worker actors on each node that has the "worker-node" role. We create a consistent hashing group router that delegates jobs to the workers. Details on these features are in the [Akka documentation](https://doc.akka.io/docs/akka/2.5/?language=scala).
+Notice how the `ActorSystem` is injected through the constructor. We create worker actors on each node that has the "worker-node" role. We create a consistent hashing group router that delegates jobs to the workers. Details on these features are in the [Akka documentation](https://doc.akka.io/docs/akka/2.6/?language=scala).
 
 The worker actor looks like this:
 

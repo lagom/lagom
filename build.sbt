@@ -9,6 +9,8 @@ import com.typesafe.tools.mima.core._
 import lagom.Protobuf
 import lagom.build._
 
+import org.scalafmt.sbt.ScalafmtPlugin
+
 // Turn off "Resolving" log messages that clutter build logs
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
 
@@ -109,8 +111,8 @@ def releaseSettings: Seq[Setting[_]] = Seq(
     Seq[ReleaseStep](
       checkSnapshotDependencies,
       releaseStepCommandAndRemaining("+publishSigned"),
-      releaseStepTask(bintrayRelease in thisProjectRef.value),
       releaseStepCommand("sonatypeRelease"),
+      releaseStepTask(bintrayRelease in thisProjectRef.value),
       pushChanges
     )
   }
@@ -143,6 +145,13 @@ def releaseStepCommandAndRemaining(command: String): State => State = { original
   runCommand(command, originalState.copy(remainingCommands = Nil)).copy(remainingCommands = originalRemaining)
 }
 
+def publishMavenStyleSettings: Seq[Setting[_]] = Seq(
+  publishMavenStyle := true,
+  crossScalaVersions := Seq(Dependencies.Versions.Scala.head),
+  scalaVersion := Dependencies.Versions.Scala.head,
+  crossPaths := false,
+)
+
 def sonatypeSettings: Seq[Setting[_]] = Seq(
   publishTo := sonatypePublishTo.value
 )
@@ -160,6 +169,11 @@ def runtimeScalaSettings: Seq[Setting[_]] = Seq(
     "-Xlog-reflective-calls",
     "-deprecation"
   )
+)
+
+def sbtScalaSettings: Seq[Setting[_]] = Seq(
+  crossScalaVersions := Dependencies.Versions.Scala,
+  scalaVersion := Dependencies.Versions.Scala.head,
 )
 
 def runtimeLibCommon: Seq[Setting[_]] = common ++ sonatypeSettings ++ runtimeScalaSettings ++ Seq(
@@ -187,7 +201,7 @@ val defaultMultiJvmOptions: List[String] = {
     case key if knownPrefix.exists(pre => key.startsWith(pre)) => "-D" + key + "=" + System.getProperty(key)
   }
 
-  "-Xmx128m" :: properties
+  "-Xmx256m" :: properties
 }
 
 def databasePortSetting: List[String] = {
@@ -205,14 +219,14 @@ def databasePortSetting: List[String] = {
 }
 
 def multiJvm(project: Project): Project = {
-
   project
     .enablePlugins(MultiJvmPlugin)
     .configs(MultiJvm)
+    .settings(inConfig(MultiJvm)(ScalafmtPlugin.scalafmtConfigSettings))
     .settings {
       // change multi-jvm lib folder to reflect the scala version used during crossbuild
       // must be done using a dynamic setting because we must read crossTarget.value
-      def crossbuildMultiJvm = Def.settingDyn {
+      def crossbuildMultiJvm: Def.Initialize[File] = Def.settingDyn {
         val path = crossTarget.value.getName
         Def.setting {
           target.apply { targetFile =>
@@ -225,36 +239,15 @@ def multiJvm(project: Project): Project = {
         // enabling HeaderPlugin in MultiJvm requires two sets of settings.
         // see https://github.com/sbt/sbt-header/issues/37
         headerSettings(MultiJvm) ++
-        automateHeaderSettings(MultiJvm) ++
         Seq(
           parallelExecution in Test := false,
+          parallelExecution in MultiJvm := false,
+          // -o D(report the duration of the tests) F(show full stack traces)
+          // -u select the JUnit XML reporter
+          scalatestOptions in MultiJvm := Seq("-oDF", "-u", (target.value / "test-reports").getAbsolutePath),
           MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting ::: defaultMultiJvmOptions,
-          // make sure that MultiJvm test are compiled by the default test compilation
-          compile in MultiJvm := (compile in MultiJvm).triggeredBy(compile in Test).value,
           // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
           executeTests in MultiJvm := (executeTests in MultiJvm).tag(Tags.Test).value,
-          // make sure that MultiJvm tests are executed by the default test target,
-          // and combine the results from ordinary test and multi-jvm tests
-          executeTests in Test := {
-            val testResults      = (executeTests in Test).value
-            val multiNodeResults = (executeTests in MultiJvm).value
-            import TestResult.Error
-            import TestResult.Failed
-            import TestResult.Passed
-            val overall = (testResults.overall, multiNodeResults.overall) match {
-              case (Passed, Passed)                    => Passed
-              case (Failed, Failed)                    => Failed
-              case (Error, Error)                      => Error
-              case (Passed, Failed) | (Failed, Passed) => Failed
-              case (Passed, Error) | (Error, Passed)   => Error
-              case (Failed, Error) | (Error, Failed)   => Error
-            }
-            Tests.Output(
-              overall,
-              testResults.events ++ multiNodeResults.events,
-              testResults.summaries ++ multiNodeResults.summaries
-            )
-          },
           // change multi-jvm lib folder to reflect the scala version used during crossbuild
           multiRunCopiedClassLocation in MultiJvm := crossbuildMultiJvm.value
         )
@@ -275,39 +268,43 @@ def macroCompileSettings: Seq[Setting[_]] = Seq(
 
 val version150 = "1.5.0"
 val version151 = "1.5.1"
+val version160 = "" // TODO: Set to 1.6.0 when it's out, also remove the Scala 2.13 exclusion
 
-def mimaSettings(since: String): Seq[Setting[_]] = {
-  val versions = Seq(since)
+def noMima = mimaPreviousArtifacts := Set.empty
+def mimaSettings(since: String = version150): Seq[Setting[_]] = {
+  import ProblemFilters.exclude
+  import sbt.librarymanagement.SemanticSelector
+  import sbt.librarymanagement.VersionNumber
+  val versions = if (since == "") Nil else Seq(since)
   Seq(
     mimaPreviousArtifacts := {
+      val sbtBV   = (sbtBinaryVersion in pluginCrossBuild).value
+      val scalaBV = (scalaBinaryVersion in pluginCrossBuild).value
       scalaVersionFilter(scalaBinaryVersion.value, versions).map { version =>
-        organization.value % s"${moduleName.value}_${scalaBinaryVersion.value}" % version
+        val suffix   = if (crossPaths.value && !sbtPlugin.value) s"_${scalaBinaryVersion.value}" else ""
+        val moduleID = organization.value % s"${moduleName.value}$suffix" % version
+        if (sbtPlugin.value) Defaults.sbtPluginExtra(moduleID, sbtBV, scalaBV)
+        else moduleID
       }.toSet
+    },
+    mimaPreviousArtifacts := {
+      if (VersionNumber(scalaVersion.value).matchesSemVer(SemanticSelector(">=2.13"))) Set.empty
+      else mimaPreviousArtifacts.value
     },
     mimaBinaryIssueFilters ++= Seq(
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.*Components*"),
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.*Module*"),
+      // ServiceInfoImpl is a private class
+      ProblemFilters.exclude[Problem]("com.lightbend.lagom.scaladsl.api.ServiceInfo#ServiceInfoImpl*"),
       ProblemFilters
         .exclude[DirectMissingMethodProblem]("*lagom.*dsl.persistence.PersistentEntityRegistry.gracefulShutdown"),
       // Remove APIs deprecated in Lagom 1.3.x: https://github.com/lagom/lagom/pull/1967
       ProblemFilters
         .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.api.ServiceInfo.getLocatableServices"),
       ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.api.ServiceInfo.this"),
-      ProblemFilters.exclude[IncompatibleResultTypeProblem](
-        "com.lightbend.lagom.scaladsl.api.ServiceInfo#ServiceInfoImpl.copy$default$2"
-      ),
-      ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.ServiceInfo#ServiceInfoImpl.copy"),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.scaladsl.api.ServiceInfo#ServiceInfoImpl.locatableServices"
-      ),
-      ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.ServiceInfo#ServiceInfoImpl.this"),
       ProblemFilters
         .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.ServiceInfo.locatableServices"),
-      ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.ServiceInfo#ServiceInfoImpl.apply"),
       ProblemFilters.exclude[DirectMissingMethodProblem](
         "com.lightbend.lagom.scaladsl.server.LagomApplicationLoader.describeServices"
       ),
@@ -319,19 +316,19 @@ def mimaSettings(since: String): Seq[Setting[_]] = {
       ),
       // Remove APIs deprecated in Lagom 1.4.x: https://github.com/lagom/lagom/pull/1987
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.++"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.++"),
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.this"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.api.AdditionalConfiguration.this"),
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocator.this"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocator.this"),
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakingServiceLocator.this"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.CircuitBreakingServiceLocator.this"),
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.RoundRobinServiceLocator.this"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.RoundRobinServiceLocator.this"),
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.client.StaticServiceLocator.this"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.client.StaticServiceLocator.this"),
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator.this"),
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator.this"),
       ProblemFilters
         .exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraContactPoint"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraConfig"),
@@ -340,6 +337,43 @@ def mimaSettings(since: String): Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.CassandraConfig"),
       ProblemFilters
         .exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.CassandraContactPoint"),
+      // Different type params for the CanBuildFrom it takes
+      exclude[IncompatibleSignatureProblem]("*.lagom*PathParamSerializer*.traversablePathParamSerializer"),
+      // Signature problems from 2.12.9 (value classes in generics, missing signatures on constructors..)
+      exclude[IncompatibleSignatureProblem]("*lagom.*.this"),
+      exclude[IncompatibleSignatureProblem]("*lagom.registry.impl.*"),
+      exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.Descriptor#RestCallIdImpl*"),
+      exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.ServiceAcl#ServiceAclImpl*"),
+      exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.ServiceAcl.apply"),
+      exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.ServiceAcl.apply$default$1"),
+      exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.ServiceAcl.method"),
+      exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.transport.RequestHeader#RequestHeaderImpl*"),
+      // LagomAbstractMojo dropped?
+      exclude[MissingClassProblem]("*.lagom.maven.LagomAbstractMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.ConfigureMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.RunAllMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.RunMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.StartAllMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.StartCassandraMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.StartExternalProjects"),
+      exclude[MissingTypesProblem]("*.lagom.maven.StartKafkaMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.StartMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.StartServiceLocatorMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.StopAllMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.StopCassandraMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.StopExternalProjects"),
+      exclude[MissingTypesProblem]("*.lagom.maven.StopKafkaMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.StopMojo"),
+      exclude[MissingTypesProblem]("*.lagom.maven.StopServiceLocatorMojo"),
+      // Now takes a HOCON Config instead of a Play Configuration
+      exclude[DirectMissingMethodProblem]("*.lagom.play.PlayRegisterWithServiceRegistry.this"),
+      // dropped
+      exclude[DirectMissingMethodProblem]("*.lagom.sbt.LagomPlugin#autoImport.lagomKafkaZookeperPort"),
+      // moved to the server-containers project in 1.6.0
+      exclude[MissingClassProblem]("*.lagom.dev.LagomProcess*"),
+      exclude[MissingClassProblem]("*.lagom.dev.Servers*"),
+      // PubSub module extending SimpleModule instead of Module
+      ProblemFilters.exclude[DirectAbstractMethodProblem]("play.api.inject.Module.bindings"),
     )
   )
 }
@@ -422,6 +456,8 @@ val coreProjects = Seq[ProjectReference](
   log4j2
 )
 
+val publishScriptedDependencies = taskKey[Unit]("Publish scripted dependencies")
+
 val otherProjects = devEnvironmentProjects ++ Seq[ProjectReference](
   `integration-tests-javadsl`,
   `integration-tests-scaladsl`,
@@ -436,6 +472,7 @@ val sbtScriptedProjects = Seq[ProjectReference](
 lazy val root = (project in file("."))
   .settings(name := "lagom")
   .settings(runtimeLibCommon: _*)
+  .settings(noMima)
   .settings(
     crossScalaVersions := Nil,
     scalaVersion := Dependencies.Versions.Scala.head,
@@ -448,8 +485,8 @@ lazy val root = (project in file("."))
   .settings(UnidocRoot.settings(javadslProjects, scaladslProjects))
   .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects): _*)
 
-def RuntimeLibPlugins = AutomateHeaderPlugin && Sonatype && PluginsAccessor.exclude(BintrayPlugin) && Unidoc
-def SbtPluginPlugins  = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor.exclude(Sonatype)
+def SonatypeOnly      = Sonatype && PluginsAccessor.exclude(BintrayPlugin)
+def RuntimeLibPlugins = SonatypeOnly && HeaderPlugin && Unidoc
 
 lazy val api = (project in file("service/core/api"))
   .settings(runtimeLibCommon: _*)
@@ -492,6 +529,7 @@ lazy val immutables = (project in file("immutables"))
 lazy val spi = (project in file("spi"))
   .settings(name := "lagom-spi")
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
 
 lazy val jackson = (project in file("jackson"))
@@ -513,6 +551,7 @@ lazy val `play-json` = (project in file("play-json"))
 
 lazy val `api-tools` = (project in file("api-tools"))
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     Dependencies.`api-tools`
@@ -526,6 +565,7 @@ lazy val `api-tools` = (project in file("api-tools"))
 
 lazy val client = (project in file("service/core/client"))
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-client",
@@ -659,7 +699,8 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
   .settings(runtimeLibCommon: _*)
-  .enablePlugins(AutomateHeaderPlugin)
+  .settings(noMima)
+  .enablePlugins(HeaderPlugin)
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-javadsl-integration-tests",
@@ -678,7 +719,8 @@ lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integra
 
 lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integration-tests"))
   .settings(runtimeLibCommon: _*)
-  .enablePlugins(AutomateHeaderPlugin)
+  .settings(noMima)
+  .enablePlugins(HeaderPlugin)
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-scaladsl-integration-tests",
@@ -771,6 +813,8 @@ lazy val `akka-management-scaladsl` = (project in file("akka-management/scaladsl
 lazy val `cluster-core` = (project in file("cluster/core"))
   .dependsOn(`akka-management-core`)
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
+  .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-cluster-core",
@@ -832,7 +876,7 @@ lazy val `projection-core` = (project in file("projection/core"))
     logback        % Test
   )
   .settings(runtimeLibCommon: _*)
-//  .settings(mimaSettings(since = version160): _*) TODO: enable when 1.6.0 is out
+  .settings(mimaSettings(since = version160))
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -844,9 +888,7 @@ lazy val `projection-core` = (project in file("projection/core"))
 lazy val `projection-scaladsl` = (project in file("projection/scaladsl"))
   .dependsOn(`projection-core`, `cluster-scaladsl`, logback % Test)
   .settings(runtimeLibCommon: _*)
-  //  .settings(mimaSettings(since = version160): _*) TODO: enable when 1.6.0 is out
-  // https://github.com/lagom/lagom/issues/2045
-  //  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-core
+  .settings(mimaSettings(since = version160))
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-projection",
@@ -856,9 +898,7 @@ lazy val `projection-scaladsl` = (project in file("projection/scaladsl"))
 lazy val `projection-javadsl` = (project in file("projection/javadsl"))
   .dependsOn(`projection-core`, `cluster-javadsl`, logback % Test)
   .settings(runtimeLibCommon: _*)
-  //  .settings(mimaSettings(since = version160): _*) TODO: enable when 1.6.0 is out
-  // https://github.com/lagom/lagom/issues/2045
-  //  .settings(Protobuf.settings) // TODO: promote serialisers for EnsureActive to cluster-core
+  .settings(mimaSettings(since = version160))
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-javadsl-projection",
@@ -878,6 +918,7 @@ lazy val `persistence-core` = (project in file("persistence/core"))
 
 lazy val `persistence-testkit` = (project in file("persistence/testkit"))
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-persistence-testkit",
@@ -925,6 +966,7 @@ lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
 lazy val `persistence-cassandra-core` = (project in file("persistence-cassandra/core"))
   .dependsOn(`persistence-core` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-persistence-cassandra-core",
@@ -970,6 +1012,7 @@ lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
     `persistence-core` % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
@@ -1013,6 +1056,7 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
 lazy val `persistence-jpa-javadsl` = (project in file("persistence-jpa/javadsl"))
   .dependsOn(`persistence-jdbc-javadsl` % "compile;test->test")
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(forkedTests: _*)
   .settings(
@@ -1044,6 +1088,7 @@ lazy val `broker-scaladsl` = (project in file("service/scaladsl/broker"))
 lazy val `kafka-client` = (project in file("service/core/kafka/client"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .settings(forkedTests: _*)
   .settings(
     name := "lagom-kafka-client",
@@ -1073,6 +1118,7 @@ lazy val `kafka-client-scaladsl` = (project in file("service/scaladsl/kafka/clie
 
 lazy val `kafka-broker` = (project in file("service/core/kafka/server"))
   .enablePlugins(RuntimeLibPlugins)
+  .settings(mimaSettings())
   .settings(
     name := "lagom-kafka-broker",
     Dependencies.`kafka-broker`
@@ -1123,6 +1169,7 @@ lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/serv
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .settings(
     name := "lagom-logback",
     Dependencies.logback
@@ -1132,6 +1179,7 @@ lazy val logback = (project in file("logback"))
 lazy val log4j2 = (project in file("log4j2"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .settings(
     name := "lagom-log4j2",
     Dependencies.log4j2
@@ -1161,15 +1209,21 @@ lazy val devEnvironmentProjects = Seq[ProjectReference](
 lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
   .settings(common: _*)
-  .enablePlugins(AutomateHeaderPlugin)
+  .settings(noMima)
+  .enablePlugins(HeaderPlugin)
   .aggregate(devEnvironmentProjects: _*)
   .settings(
-    publish := {},
-    PgpKeys.publishSigned := {}
+    crossScalaVersions := Nil,
+    scalaVersion := Dependencies.Versions.Scala.head,
+    PgpKeys.publishSigned := {},
+    publishLocal := {},
+    publishArtifact in Compile := false,
+    publish := {}
   )
 
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-reloadable-server",
@@ -1179,33 +1233,41 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   .dependsOn(`dev-mode-ssl-support`)
 
 lazy val `server-containers` = (project in file("dev") / "server-containers")
-  .enablePlugins(RuntimeLibPlugins)
+  .enablePlugins(HeaderPlugin, SonatypeOnly)
   .settings(
     common,
+    mimaSettings(since = version160),
     runtimeScalaSettings,
     name := "lagom-server-containers",
     Dependencies.`server-containers`,
     publishMavenStyle := true,
     sonatypeSettings,
+    // must support both 2.10 for sbt 0.13 and 2.13 for 2.13 tests
+    crossScalaVersions := (Dependencies.Versions.Scala ++ Dependencies.Versions.SbtScala).distinct,
   )
 
+def sharedBuildToolSupportSetup(p: Project): Project =
+  p.enablePlugins(HeaderPlugin, SonatypeOnly)
+    .settings(sonatypeSettings: _*)
+    .settings(common: _*)
+    .settings(mimaSettings())
+    .settings(
+      name := s"lagom-${thisProject.value.id}",
+      sourceGenerators in Compile += Def.task {
+        Generators.version(version.value, (sourceManaged in Compile).value)
+      }.taskValue,
+      Dependencies.`build-tool-support`,
+    )
+    .dependsOn(`server-containers`)
+
 lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
-  .disablePlugins(BintrayPlugin)
-  .enablePlugins(AutomateHeaderPlugin && Sonatype)
-  .settings(sonatypeSettings: _*)
-  .settings(common: _*)
+  .configure(sharedBuildToolSupportSetup)
   .settings(
-    name := "lagom-build-tool-support",
     publishMavenStyle := true,
     crossScalaVersions := Seq(Dependencies.Versions.Scala.head),
     scalaVersion := Dependencies.Versions.Scala.head,
     crossPaths := false,
-    sourceGenerators in Compile += Def.task {
-      Generators.version(version.value, (sourceManaged in Compile).value)
-    }.taskValue,
-    Dependencies.`build-tool-support`
   )
-  .dependsOn(`server-containers`)
 
 // This is almost the same as `build-tool-support`, but targeting sbt
 // while `build-tool-support` targets Maven and possibly other build
@@ -1213,28 +1275,21 @@ lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
 //
 // https://github.com/playframework/playframework/blob/2.6.7/framework/build.sbt#L27-L40
 lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-support")
-  .disablePlugins(BintrayPlugin)
-  .enablePlugins(AutomateHeaderPlugin && Sonatype)
-  .settings(sonatypeSettings: _*)
-  .settings(common: _*)
+  .configure(sharedBuildToolSupportSetup)
   .settings(
-    name := "lagom-sbt-build-tool-support",
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
     sbtPlugin := true,
-    sourceGenerators in Compile += Def.task {
-      Generators.version(version.value, (sourceManaged in Compile).value)
-    }.taskValue,
-    Dependencies.`build-tool-support`,
-    target := target.value / "lagom-sbt-build-tool-support"
+    scriptedDependencies := (()),
+    target := target.value / "lagom-sbt-build-tool-support",
   )
-  .dependsOn(`server-containers`)
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .settings(common: _*)
+  .settings(mimaSettings())
   .settings(scriptedSettings: _*)
-  .enablePlugins(SbtPluginPlugins, SbtPlugin)
+  .enablePlugins(HeaderPlugin, BintrayPlugin && PluginsAccessor.exclude(Sonatype), SbtPlugin)
   .settings(
     name := "lagom-sbt-plugin",
     crossScalaVersions := Dependencies.Versions.SbtScala,
@@ -1252,9 +1307,8 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     ),
     // This ensure that files in sbt-test are also included
     headerSources in Compile ++= (sbtTestDirectory.value ** ("*.scala" || "*.java")).get,
-    scriptedDependencies := {
-      val () = scriptedDependencies.value
-
+    scriptedDependencies := (()),
+    publishScriptedDependencies := {
       // core projects
       val () = (publishLocal in `akka-management-core`).value
       val () = (publishLocal in `akka-management-javadsl`).value
@@ -1318,18 +1372,15 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
   .dependsOn(`sbt-build-tool-support`)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
-  .disablePlugins(BintrayPlugin)
-  .enablePlugins(lagom.SbtMavenPlugin && AutomateHeaderPlugin && Sonatype && Unidoc)
+  .enablePlugins(lagom.SbtMavenPlugin, HeaderPlugin, SonatypeOnly, Unidoc)
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
+  .settings(mimaSettings())
+  .settings(publishMavenStyleSettings)
   .settings(
     name := "Lagom Maven Plugin",
     description := "Provides Lagom development environment support to maven.",
     Dependencies.`maven-plugin`,
-    publishMavenStyle := true,
-    crossScalaVersions := Seq(Dependencies.Versions.Scala.head),
-    scalaVersion := Dependencies.Versions.Scala.head,
-    crossPaths := false,
     mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
     // This ensure that files in maven-test are also included
     headerSources in Compile ++= (sourceDirectory.value / "maven-test" ** ("*.scala" || "*.java")).get,
@@ -1351,6 +1402,7 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .dependsOn(`build-tool-support`)
 
 lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
+  .settings(sbtScalaSettings: _*)
   .settings(
     name := "lagom-maven-launcher",
     description := "Dummy project, exists only to resolve the maven launcher classpath",
@@ -1361,6 +1413,7 @@ def scriptedSettings: Seq[Setting[_]] =
   Seq(scriptedLaunchOpts += s"-Dproject.version=${version.value}") ++
     Seq(
       scripted := scripted.tag(Tags.Test).evaluated,
+      scriptedBufferLog := false,
       scriptedLaunchOpts ++= Seq(
         "-Xmx512m",
         "-XX:MaxMetaspaceSize=512m",
@@ -1378,15 +1431,15 @@ val ArchetypeVariablePattern = "%([A-Z-]+)%".r
 
 def archetypeProject(archetypeName: String) =
   Project(s"maven-$archetypeName-archetype", file("dev") / "archetypes" / s"maven-$archetypeName")
-    .disablePlugins(BintrayPlugin)
-    .enablePlugins(AutomateHeaderPlugin && Sonatype)
+    .enablePlugins(HeaderPlugin, SonatypeOnly)
     .settings(sonatypeSettings: _*)
     .settings(common: _*)
+    .settings(mimaSettings())
+    .settings(sbtScalaSettings: _*)
+    .settings(publishMavenStyleSettings)
     .settings(
       name := s"maven-archetype-lagom-$archetypeName",
       autoScalaLibrary := false,
-      publishMavenStyle := true,
-      crossPaths := false,
       copyResources in Compile := {
         val pomFile = (classDirectory in Compile).value / "archetype-resources" / "pom.xml"
         if (pomFile.exists()) {
@@ -1416,15 +1469,15 @@ def archetypeProject(archetypeName: String) =
 
 lazy val `maven-java-archetype` = archetypeProject("java")
 lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
-  .disablePlugins(BintrayPlugin)
-  .enablePlugins(AutomateHeaderPlugin && Sonatype)
+  .enablePlugins(HeaderPlugin, SonatypeOnly)
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
+  .settings(noMima)
+  .settings(sbtScalaSettings: _*)
+  .settings(publishMavenStyleSettings)
   .settings(
     name := "lagom-maven-dependencies",
-    crossPaths := false,
     autoScalaLibrary := false,
-    scalaVersion := Dependencies.Versions.Scala.head,
     pomExtra := pomExtra.value :+ {
 
       val lagomDeps = Def.settingDyn {
@@ -1497,18 +1550,18 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
     // This disables creating jar, source jar and javadocs, and will cause the packaging type to be "pom" when the
     // pom is created
     Classpaths.defaultPackageKeys.map(key => publishArtifact in key := false),
-    publishMavenStyle := true, // Disable publishing ("delivering") the ivy.xml file
   )
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
-  .disablePlugins(BintrayPlugin)
-  .enablePlugins(AutomateHeaderPlugin && Sonatype)
+  .enablePlugins(HeaderPlugin, SonatypeOnly)
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
+  .settings(mimaSettings())
   .settings(name := "lagom-sbt-scripted-tools")
   .settings(
     sbtPlugin := true,
+    scriptedDependencies := (()),
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
     sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value)
@@ -1519,6 +1572,7 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
 lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-library")
   .settings(name := "lagom-sbt-scripted-library")
   .settings(runtimeLibCommon: _*)
+  .settings(noMima)
   .settings(
     PgpKeys.publishSigned := {},
     publish := {}
@@ -1527,6 +1581,7 @@ lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-librar
 
 lazy val `service-locator` = (project in file("dev") / "service-registry" / "service-locator")
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-service-locator",
@@ -1562,6 +1617,7 @@ lazy val `dev-mode-ssl-support` = (project in file("dev") / "dev-mode-ssl-suppor
     Dependencies.`dev-mode-ssl-support`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .settings(overridesScalaParserCombinators: _*)
   .enablePlugins(RuntimeLibPlugins)
 
@@ -1571,6 +1627,7 @@ lazy val `service-registry-client-core` = (project in file("dev") / "service-reg
     Dependencies.`service-registry-client-core`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .settings(overridesScalaParserCombinators: _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(logback % Test)
@@ -1581,6 +1638,7 @@ lazy val `service-registry-client-javadsl` = (project in file("dev") / "service-
     Dependencies.`service-registry-client-javadsl`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-javadsl`, `service-registry-client-core`, immutables % "provided")
 
@@ -1590,6 +1648,7 @@ lazy val `service-registration-javadsl` = (project in file("dev") / "service-reg
     Dependencies.`service-registration-javadsl`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`server-javadsl`, `service-registry-client-javadsl`)
 
@@ -1609,11 +1668,13 @@ lazy val `play-integration-javadsl` = (project in file("dev") / "service-registr
     Dependencies.`play-integration-javadsl`
   )
   .settings(runtimeLibCommon: _*)
+  .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`service-registry-client-javadsl`)
 
 lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
   .settings(common: _*)
+  .settings(mimaSettings())
   .settings(runtimeScalaSettings: _*)
   .settings(sonatypeSettings)
   .enablePlugins(RuntimeLibPlugins)
@@ -1624,6 +1685,7 @@ lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
 
 lazy val `kafka-server` = (project in file("dev") / "kafka-server")
   .settings(common: _*)
+  .settings(mimaSettings())
   .settings(runtimeScalaSettings: _*)
   .settings(sonatypeSettings)
   .enablePlugins(RuntimeLibPlugins)
@@ -1651,6 +1713,7 @@ def excludeLog4jFromKafkaServer: Seq[Setting[_]] = Seq(
 // Provides macros for testing macros. Is not published.
 lazy val `macro-testkit` = (project in file("macro-testkit"))
   .settings(runtimeLibCommon)
+  .settings(noMima)
   .settings(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value

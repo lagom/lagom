@@ -5,7 +5,7 @@
 package com.lightbend.lagom.javadsl.projection;
 
 import akka.annotation.ApiMayChange;
-import com.lightbend.lagom.internal.projection.ProjectionRegistry;
+import com.lightbend.lagom.projection.Status;
 
 import java.util.Objects;
 
@@ -15,23 +15,29 @@ import java.util.Objects;
 public final class ProjectionWorker {
 
   private final String name;
-  private final ProjectionRegistry.WorkerStatus status;
+  private final Status requested;
+  private final Status observed;
 
-  ProjectionWorker(String name, ProjectionRegistry.WorkerStatus status) {
+  ProjectionWorker(String name, Status requested, Status observed) {
     this.name = name;
-    this.status = status;
+    this.requested = requested;
+    this.observed = observed;
   }
 
-  static ProjectionWorker asJava(ProjectionRegistry.ProjectionWorker worker) {
-    return new ProjectionWorker(worker.name(), worker.status());
+  static ProjectionWorker asJava(com.lightbend.lagom.projection.Worker worker) {
+    return new ProjectionWorker(worker.key(), worker.requestedStatus(), worker.observedStatus());
   }
 
   public String getName() {
     return name;
   }
 
-  public ProjectionRegistry.WorkerStatus getStatus() {
-    return status;
+  public Status getRequested() {
+    return requested;
+  }
+
+  public Status getObserved() {
+    return observed;
   }
 
   @Override
@@ -39,16 +45,26 @@ public final class ProjectionWorker {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ProjectionWorker that = (ProjectionWorker) o;
-    return Objects.equals(name, that.name) && Objects.equals(status, that.status);
+    return Objects.equals(name, that.name)
+        && Objects.equals(requested, that.requested)
+        && Objects.equals(observed, that.observed);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, status);
+    return Objects.hash(name, requested, observed);
   }
 
   @Override
   public String toString() {
-    return "ProjectionWorker{" + "name='" + name + '\'' + ", status=" + status + '}';
+    return "ProjectionWorker{"
+        + "name='"
+        + name
+        + '\''
+        + ", requested="
+        + requested
+        + ", observed="
+        + observed
+        + '}';
   }
 }

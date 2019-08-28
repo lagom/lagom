@@ -224,13 +224,13 @@ private[lagom] class PersistentEntityActor[C, E, S](
 
   private def tag(event: Any): Any = {
     event match {
-      case a: AggregateEvent[_] ⇒
+      case a: AggregateEvent[_] =>
         val tag = a.aggregateTag match {
           case tag: AggregateEventTag[_]       => tag
           case shards: AggregateEventShards[_] => shards.forEntityId(entityId)
         }
         Tagged(event, Set(tag.tag))
-      case _ ⇒ event
+      case _ => event
     }
   }
 

@@ -13,7 +13,6 @@ import static org.junit.Assert.assertEquals;
 import play.inject.guice.GuiceInjectorBuilder;
 import play.inject.Injector;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity.InvalidCommandException;
-import com.lightbend.lagom.javadsl.cluster.testkit.ActorSystemModule;
 import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver;
 import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver.Outcome;
 import com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil;
@@ -27,6 +26,12 @@ import org.junit.Test;
 import akka.Done;
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
+import akka.stream.ActorMaterializer;
+import akka.stream.Materializer;
+
+import scala.concurrent.ExecutionContext;
+
+import static play.inject.Bindings.bind;
 
 public class Post4Test {
 
@@ -45,7 +50,11 @@ public class Post4Test {
 
   private final Injector injector =
       new GuiceInjectorBuilder()
-          .bindings(new ActorSystemModule(system), new PubSubModule())
+          .bindings(
+              bind(ActorSystem.class).toInstance(system),
+              bind(Materializer.class).toInstance(ActorMaterializer.create(system)),
+              bind(ExecutionContext.class).toInstance(system.dispatcher()))
+          .bindings(new PubSubModule())
           .build();
   private final PubSubRegistry pubSub = injector.instanceOf(PubSubRegistry.class);
 

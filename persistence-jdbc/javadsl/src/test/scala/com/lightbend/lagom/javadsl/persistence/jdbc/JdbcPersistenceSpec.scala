@@ -22,10 +22,11 @@ import play.api.Environment
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec(_system) {
+abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorSystemSpec(_system) {
 
-  def this(testName: String, config: Config) =
+  def this(testName: String, config: Config) = {
     this(ActorSystem(testName, config.withFallback(Configuration.load(Environment.simple()).underlying)))
+  }
 
   def this(config: Config) = this(PersistenceSpec.getCallerName(getClass), config)
 
@@ -66,7 +67,7 @@ abstract class JdbcPersistenceSpec(_system: ActorSystem) extends ActorSystemSpec
   }
 
   override def afterAll(): Unit = {
-    applicationLifecycle.stop()
+    Await.ready(applicationLifecycle.stop(), 20.seconds)
     super.afterAll()
   }
 

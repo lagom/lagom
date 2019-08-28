@@ -5,12 +5,14 @@
 package com.lightbend.lagom.scaladsl.pubsub
 
 import akka.actor.ActorSystem
+import akka.actor.BootstrapSetup
 import akka.cluster.Cluster
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestKit
 import com.lightbend.lagom.internal.scaladsl.PubSubRegistryImpl
+import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.ConfigFactory
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
@@ -29,7 +31,11 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
       akka.remote.artery.canonical.hostname = "127.0.0.1"
       akka.loglevel = INFO
     """)
-      ActorSystem("PubSubTest", config)
+
+      val bootstrapSetup  = BootstrapSetup(config)
+      val serializerSetup = JsonSerializerRegistry.serializationSetupFor(NotificationJsonSerializer)
+
+      ActorSystem("PubSubTest", bootstrapSetup.and(serializerSetup))
     }
   }
   val system = app.actorSystem
@@ -38,7 +44,7 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
   val registry     = app.pubSubRegistry
 
   override def afterAll(): Unit = {
-    TestKit.shutdownActorSystem(system)
+    TestKit.shutdownActorSystem(actorSystem = system, verifySystemShutdown = true)
     super.afterAll()
   }
 
