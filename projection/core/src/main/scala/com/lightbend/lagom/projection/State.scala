@@ -9,32 +9,37 @@ import java.util.Objects
 import akka.annotation.ApiMayChange
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 
+import scala.beans.BeanProperty
+import scala.collection.JavaConverters._
 import scala.util.control.NoStackTrace
 
 @ApiMayChange
 sealed trait Status  extends ProjectionSerializable
 sealed trait Stopped extends Status
-case object Stopped  extends Stopped
 sealed trait Started extends Status
-case object Started  extends Started
+case object Started  extends Started { def getInstance: Started = this }
+case object Stopped  extends Stopped { def getInstance: Stopped = this }
 
 @ApiMayChange
 final class Worker private (
-    val tagName: String,
-    val key: String,
-    val requestedStatus: Status,
-    val observedStatus: Status,
+    @BeanProperty val tagName: String,
+    @BeanProperty val key: String,
+    @BeanProperty val requestedStatus: Status,
+    @BeanProperty val observedStatus: Status,
 ) extends ProjectionSerializable {
-  override def equals(other: Any): Boolean =
+  override def equals(other: Any) =
     this.eq(other.asInstanceOf[AnyRef]) || (other match {
       case that: Worker =>
-        tagName == that.tagName &&
-          key == that.key &&
-          requestedStatus == that.requestedStatus &&
-          observedStatus == that.observedStatus
+        Objects.equals(tagName, that.tagName) &&
+          Objects.equals(key, that.key) &&
+          Objects.equals(requestedStatus, that.requestedStatus) &&
+          Objects.equals(observedStatus, that.observedStatus)
       case _ => false
     })
-  override def hashCode(): Int = Objects.hash(tagName, key, requestedStatus, observedStatus)
+  override def hashCode = Objects.hash(tagName, key, requestedStatus, observedStatus)
+
+  override def toString =
+    s"Worker(tagName=$tagName, key=$key, requestedStatus=$requestedStatus, observedStatus=$observedStatus)"
 }
 
 object Worker {
@@ -56,6 +61,18 @@ final class State(val projections: Seq[Projection]) extends ProjectionSerializab
 
   def findWorker(workerKey: String): Option[Worker] =
     projections.flatMap(_.workers).find(_.key == workerKey)
+
+  def getProjections: java.util.List[Projection] = projections.asJava
+
+  override def equals(other: Any): Boolean =
+    this.eq(other.asInstanceOf[AnyRef]) || (other match {
+      case that: State => Objects.equals(projections, that.projections)
+      case _           => false
+    })
+
+  override def hashCode = Objects.hash(projections)
+
+  override def toString = s"State(projections=$projections)"
 }
 
 object State {
