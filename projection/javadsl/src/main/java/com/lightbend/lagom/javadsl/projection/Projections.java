@@ -4,9 +4,10 @@
 
 package com.lightbend.lagom.javadsl.projection;
 
-import akka.annotation.ApiMayChange;
-
 import java.util.concurrent.CompletionStage;
+
+import akka.annotation.ApiMayChange;
+import com.lightbend.lagom.projection.State;
 
 // https://github.com/lagom/lagom/issues/2048
 /** TODO: docs */
