@@ -151,7 +151,7 @@ private[lagom] class ProjectionMessageSerializer(val system: ExtendedActorSystem
 
   private def stateFromProto(state: pm.State): State = {
     val projections = state.getProjectionsList.asScala.map(projectionFromProto).toSeq
-    State(projections)
+    new State(projections)
   }
 
   private def workerCoordinatesFromBinary(bytes: Array[Byte]): WorkerCoordinates =

@@ -86,7 +86,7 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
     val eventualProjection: Future[Projection] = getState()
       .map { state =>
         state.findProjection(projectionName) match {
-          case None             => throw ProjectionNotFound(projectionName)
+          case None             => throw new ProjectionNotFound(projectionName)
           case Some(projection) => projection
         }
       }
