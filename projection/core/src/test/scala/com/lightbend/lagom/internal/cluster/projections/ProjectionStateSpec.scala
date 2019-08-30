@@ -52,7 +52,7 @@ class ProjectionStateSpec extends WordSpec with Matchers {
   "ProjectionStateSpec" should {
 
     "be build from a replicatedData" in {
-      val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus, Started, Started)
+      val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus, Started, Stopped)
       state.projections.size should equal(2)
       state.projections.flatMap(_.workers).size should equal(4)
       state.projections.flatMap(_.workers).find(_.key == coordinates001_3.asKey) shouldBe Some(
@@ -61,12 +61,12 @@ class ProjectionStateSpec extends WordSpec with Matchers {
     }
 
     "find projection by name" in {
-      val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus, Started, Started)
+      val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus, Started, Stopped)
       state.findProjection(prj001) should not be None
     }
 
     "find worker by key" in {
-      val state       = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus, Started, Started)
+      val state       = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus, Started, Stopped)
       val maybeWorker = state.findWorker("prj001-prj001-workers-3")
       maybeWorker shouldBe Some(
         Worker(p1w3, coordinates001_3.asKey, Stopped, Started)
