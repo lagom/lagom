@@ -91,7 +91,7 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   // required to handle Terminate(deadActor)
   var reversedActorIndex: Map[ActorRef, WorkerKey] = Map.empty[ActorRef, WorkerKey]
 
-  val DefaultInitialStatus: Status = {
+  val DefaultRequestedStatus: Status = {
     val autoStartEnabled = context.system.settings.config.getBoolean("lagom.projection.auto-start.enabled")
     if (autoStartEnabled) Started
     else Stopped
@@ -107,7 +107,7 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
       actorIndex = actorIndex.updated(workerKey, sender())
       reversedActorIndex = reversedActorIndex.updated(sender, workerKey)
       // when worker registers, we must reply with the requested status (if it's been set already, or DefaultInitialStatus if not).
-      val initialStatus = requestedStatusLocalCopy.getOrElse(workerKey, DefaultInitialStatus)
+      val initialStatus = requestedStatusLocalCopy.getOrElse(workerKey, DefaultRequestedStatus)
       log.debug(s"Setting initial status [$initialStatus] on worker $workerKey [${sender().path.toString}]")
       sender ! initialStatus
 
@@ -119,8 +119,8 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
         nameIndexLocalCopy,
         requestedStatusLocalCopy,
         observedStatusLocalCopy,
-        DefaultInitialStatus,
-        DefaultInitialStatus
+        DefaultRequestedStatus,
+        Stopped // unless observed somewhere (and replicated), we consider a worker stopped.
       )
 
     // StateRequestCommand come from `ProjectionRegistry` and contain a requested Status
