@@ -222,7 +222,7 @@ commands:
     steps:
       - run:
           name: Run scripted tests
-          command: sbt ";set publishArtifact in (Compile, packageDoc) in ThisBuild := false ; ++<< parameters.scalaVersion >> scripted"
+          command: sbt ";set publishArtifact in (Compile, packageDoc) in ThisBuild := false ;++<< parameters.scalaVersion >> publishScriptedDependencies;++<< parameters.scalaVersion >> scripted"
           no_output_timeout: 20m
 
   run-docs-validation:
