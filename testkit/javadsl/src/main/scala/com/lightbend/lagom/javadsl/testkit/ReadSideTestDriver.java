@@ -25,8 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 /**
  *
  */
@@ -36,7 +34,7 @@ public class ReadSideTestDriver implements ReadSide {
   private final Injector injector;
   private final Materializer materializer;
 
-  private ConcurrentMap<Class<?>, List<Pair<ReadSideHandler<?>, Offset>>> processors = new ConcurrentHashMap<>();
+  private ConcurrentMap<Class<?>, List<CompletionStage<Pair<ReadSideHandler<?>, Offset>>>> processors = new ConcurrentHashMap<>();
 
   @Inject
   public ReadSideTestDriver(Injector injector, Materializer materializer) {
@@ -47,43 +45,42 @@ public class ReadSideTestDriver implements ReadSide {
 
   @Override
   public <Event extends AggregateEvent<Event>> void register(Class<? extends ReadSideProcessor<Event>> processorClass) {
+
     ReadSideProcessor<Event> processor = injector.instanceOf(processorClass);
     PSequence<AggregateEventTag<Event>> eventTags = processor.aggregateTags();
+    AggregateEventTag<Event> tag = eventTags.get(0);
 
-    CompletionStage<Done> processorInit = processor.buildHandler().globalPrepare().thenCompose(x -> {
-      AggregateEventTag<Event> tag = eventTags.get(0);
-      ReadSideHandler<Event> handler = processor.buildHandler();
-      return handler.prepare(tag).thenApply(offset -> {
-        List<Pair<ReadSideHandler<?>, Offset>> currentHandlers =
-            processors.computeIfAbsent(tag.eventType(), (z) -> new ArrayList<>());
-        currentHandlers.add(Pair.create(handler, offset));
-        return Done.getInstance();
-      });
-    });
+    ReadSideHandler<Event> handler = processor.buildHandler();
 
-    try {
-      processorInit.toCompletableFuture().get(30, SECONDS);
-    } catch (Exception e) {
-      throw new RuntimeException("Couldn't register the processor on the testkit.", e);
-    }
 
+    CompletionStage<Pair<ReadSideHandler<?>, Offset>> handlerFuture =
+      handler.globalPrepare()
+        .thenCompose(x -> handler.prepare(tag))
+        .thenApply(offset -> Pair.create(handler, offset));
+
+      List<CompletionStage<Pair<ReadSideHandler<?>, Offset>>> currentHandlers =
+          processors.computeIfAbsent(tag.eventType(), (z) -> new ArrayList<>());
+
+      currentHandlers.add(handlerFuture);
   }
 
   public <Event extends AggregateEvent<Event>> CompletionStage<Done> feed(Event e, Offset offset) {
-    AggregateEventTagger<Event> tag = e.aggregateTag();
 
-    List<Pair<ReadSideHandler<?>, Offset>> list = processors.get(tag.eventType());
+    AggregateEventTagger<Event> tag = e.aggregateTag();
+    List<CompletionStage<Pair<ReadSideHandler<?>, Offset>>> list = processors.get(tag.eventType());
 
     if (list == null) {
       throw new RuntimeException("No processor registered for Event " + tag.eventType().getCanonicalName());
     }
 
-    List<CompletionStage<?>> stages = list.stream().map(pHandlerOffset -> {
-      @SuppressWarnings("unchecked") ReadSideHandler<Event> handler = (ReadSideHandler<Event>) pHandlerOffset.first();
-      Flow<Pair<Event, Offset>, Done, ?> flow = handler.handle();
-          return Source.single(Pair.create(e, offset)).via(flow).runWith(Sink.ignore(), materializer);
-        }
-    ).collect(Collectors.toList());
+    List<CompletionStage<Done>> stages = list.stream().map(handlerOffsetStage -> {
+      return handlerOffsetStage.thenCompose(handlerOffset -> {
+        @SuppressWarnings("unchecked") ReadSideHandler<Event> handler = (ReadSideHandler<Event>) handlerOffset.first();
+        Flow<Pair<Event, Offset>, Done, ?> flow = handler.handle();
+        return Source.single(Pair.create(e, offset)).via(flow).runWith(Sink.ignore(), materializer);
+      });
+    }).collect(Collectors.toList());
+
     return doAll(stages);
 
   }
@@ -95,7 +92,7 @@ public class ReadSideTestDriver implements ReadSide {
      * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletionStage.html">failure rules</a>
      * described in the <code>CompletionStage</code> docs.
      */
-  private CompletionStage<Done> doAll(List<CompletionStage<?>> stages) {
+  private CompletionStage<Done> doAll(List<CompletionStage<Done>> stages) {
       CompletionStage<Done> result = CompletableFuture.completedFuture(Done.getInstance());
       for (CompletionStage<?> stage : stages) {
           result = result.thenCombine(stage, (d1, d2) -> Done.getInstance());
