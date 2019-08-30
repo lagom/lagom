@@ -14,6 +14,8 @@ import scala.concurrent.duration._
 import akka.cluster.sharding.ShardRegion.CurrentShardRegionState
 import akka.cluster.sharding.ShardRegion.GetShardRegionState
 
+import scala.concurrent.Await
+
 class ClusterDistributionSpecMultiJvmNode1 extends ClusterDistributionSpec
 class ClusterDistributionSpecMultiJvmNode2 extends ClusterDistributionSpec
 class ClusterDistributionSpecMultiJvmNode3 extends ClusterDistributionSpec
@@ -52,16 +54,27 @@ class ClusterDistributionSpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wi
           distributionSettings
         )
 
-      implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 45.seconds, interval = 200.millis)
-      eventually {
-        val shardRegionState =
-          shardRegion
-            .ask(GetShardRegionState)(3.seconds)
-            .mapTo[CurrentShardRegionState]
-            .futureValue
+      // don't complete the test in a node, until other nodes had the change to complete their assertions too.
+      completionBarrier("assertion-completed") {
+        implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 45.seconds, interval = 200.millis)
+        eventually {
+          val shardRegionState =
+            shardRegion
+              .ask(GetShardRegionState)(3.seconds)
+              .mapTo[CurrentShardRegionState]
+              .futureValue
 
-        shardRegionState.shards.size should be >= minimalShardsPerNode
+          shardRegionState.shards.size should be >= minimalShardsPerNode
+        }
       }
+    }
+  }
+
+  private def completionBarrier[T](barrierName: String)(block: => T): T = {
+    try {
+      block
+    } finally {
+      enterBarrier(barrierName)
     }
   }
 }
