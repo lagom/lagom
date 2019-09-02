@@ -37,7 +37,7 @@ class ProjectionStateSpec extends WordSpec with Matchers {
     coordinates002_1.asKey -> coordinates002_1
   )
 
-  val desiredWorkerStatus: Map[WorkerKey, Status] = Map(
+  val requestedWorkerStatus: Map[WorkerKey, Status] = Map(
     coordinates001_1.asKey -> Stopped,
     coordinates001_2.asKey -> Started,
     coordinates001_3.asKey -> Stopped,
@@ -53,7 +53,7 @@ class ProjectionStateSpec extends WordSpec with Matchers {
   "ProjectionStateSpec" should {
 
     "be build from a replicatedData" in {
-      val state = State.fromReplicatedData(nameIndex, desiredWorkerStatus, Map.empty, observedStatus, Started, Stopped)
+      val state = State.fromReplicatedData(nameIndex, requestedWorkerStatus, Map.empty, observedStatus, Started, Stopped)
       state.projections.size should equal(2)
       state.projections.flatMap(_.workers).size should equal(4)
       state.projections.flatMap(_.workers).find(_.key == coordinates001_3.asKey) shouldBe Some(
@@ -62,12 +62,12 @@ class ProjectionStateSpec extends WordSpec with Matchers {
     }
 
     "find projection by name" in {
-      val state = State.fromReplicatedData(nameIndex, desiredWorkerStatus, Map.empty, observedStatus, Started, Stopped)
+      val state = State.fromReplicatedData(nameIndex, requestedWorkerStatus, Map.empty, observedStatus, Started, Stopped)
       state.findProjection(prj001) should not be None
     }
 
     "find worker by key" in {
-      val state       = State.fromReplicatedData(nameIndex, desiredWorkerStatus, Map.empty, observedStatus, Started, Stopped)
+      val state       = State.fromReplicatedData(nameIndex, requestedWorkerStatus, Map.empty, observedStatus, Started, Stopped)
       val maybeWorker = state.findWorker("prj001-prj001-workers-3")
       maybeWorker shouldBe Some(
         Worker(p1w3, coordinates001_3.asKey, Stopped, Started)
@@ -82,7 +82,7 @@ class ProjectionStateSpec extends WordSpec with Matchers {
         newCoordinates.asKey -> newCoordinates
       )
 
-      val desiredProjectionStatus: Map[ProjectionName, Status] = Map(
+      val requestedProjectionStatus: Map[ProjectionName, Status] = Map(
         newProjectionName -> Stopped
       )
 
@@ -91,8 +91,8 @@ class ProjectionStateSpec extends WordSpec with Matchers {
 
       val state = State.fromReplicatedData(
         richIndex,
-        desiredWorkerStatus,
-        desiredProjectionStatus,
+        requestedWorkerStatus,
+        requestedProjectionStatus,
         observedStatus,
         defaultRequested,
         defaultObserved
@@ -116,7 +116,7 @@ class ProjectionStateSpec extends WordSpec with Matchers {
 
       val state = State.fromReplicatedData(
         richIndex,
-        desiredWorkerStatus,
+        requestedWorkerStatus,
         Map.empty,
         observedStatus,
         defaultRequested,
