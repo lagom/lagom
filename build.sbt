@@ -714,6 +714,10 @@ lazy val `akka-discovery-service-locator-scaladsl` = (project in file("akka-serv
   .settings(
     name := "lagom-scaladsl-akka-discovery-service-locator"
   )
+<<<<<<< HEAD
+=======
+  .dependsOn(`testkit-scaladsl` % Test)
+>>>>>>> 1e6d3d7ea... Scope TestKit dependency to Test
 
 lazy val `akka-management-core` = (project in file("akka-management/core"))
   .settings(runtimeLibCommon: _*)
