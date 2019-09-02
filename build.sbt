@@ -781,7 +781,7 @@ lazy val `akka-discovery-service-locator-scaladsl` = (project in file("akka-serv
     name := "lagom-scaladsl-akka-discovery-service-locator",
     Dependencies.`lagom-akka-discovery-service-locator-scaladsl`
   )
-  .dependsOn(`testkit-scaladsl`)
+  .dependsOn(`testkit-scaladsl` % Test)
 
 lazy val `akka-management-core` = (project in file("akka-management/core"))
   .settings(runtimeLibCommon: _*)
