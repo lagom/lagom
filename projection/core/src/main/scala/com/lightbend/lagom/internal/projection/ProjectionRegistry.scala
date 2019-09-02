@@ -8,16 +8,16 @@ import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.actor.Props
 import akka.annotation.ApiMayChange
+import akka.annotation.InternalApi
 import akka.pattern.ask
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.util.Timeout
 import com.lightbend.lagom.internal.cluster.ClusterDistribution
 import com.lightbend.lagom.internal.cluster.ClusterDistributionSettings
-import com.lightbend.lagom.internal.projection.ProjectionRegistry.StateRequestCommand
+import com.lightbend.lagom.internal.projection.ProjectionRegistry.ProjectionRequestCommand
+import com.lightbend.lagom.internal.projection.ProjectionRegistry.WorkerRequestCommand
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.GetState
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
-import com.lightbend.lagom.projection.Projection
-import com.lightbend.lagom.projection.ProjectionNotFound
 import com.lightbend.lagom.projection.Started
 import com.lightbend.lagom.projection.State
 import com.lightbend.lagom.projection.Status
@@ -29,11 +29,12 @@ import scala.concurrent.duration._
 
 @ApiMayChange
 object ProjectionRegistry {
-
-  case class StateRequestCommand(coordinates: WorkerCoordinates, requestedStatus: Status)
+  case class WorkerRequestCommand(coordinates: WorkerCoordinates, requestedStatus: Status)
+  case class ProjectionRequestCommand(projectionName: String, requestedStatus: Status)
 }
 
 @ApiMayChange
+@InternalApi
 private[lagom] class ProjectionRegistry(system: ActorSystem) {
 
   private val projectionRegistryRef: ActorRef = system.actorOf(ProjectionRegistryActor.props, "projection-registry")
@@ -62,37 +63,25 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
       shardNames,
       ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
     )
-
   }
 
   implicit val exCtx: ExecutionContext = system.dispatcher
   implicit val timeout: Timeout        = Timeout(1.seconds)
 
-  def startWorker(coordinates: WorkerCoordinates): Unit =
-    projectionRegistryRef ! StateRequestCommand(coordinates, Started)
-
   def stopWorker(coordinates: WorkerCoordinates): Unit =
-    projectionRegistryRef ! StateRequestCommand(coordinates, Stopped)
+    projectionRegistryRef ! WorkerRequestCommand(coordinates, Stopped)
 
-  def stopAllWorkers(projectionName: String): Unit = bulk(projectionName, stopWorker)
+  def startWorker(coordinates: WorkerCoordinates): Unit =
+    projectionRegistryRef ! WorkerRequestCommand(coordinates, Started)
 
-  def startAllWorkers(projectionName: String): Unit = bulk(projectionName, startWorker)
+  def stopAllWorkers(projectionName: String): Unit =
+    projectionRegistryRef ! ProjectionRequestCommand(projectionName, Stopped)
+
+  def startAllWorkers(projectionName: String): Unit =
+    projectionRegistryRef ! ProjectionRequestCommand(projectionName, Started)
 
   private[lagom] def getState(): Future[State] = {
     (projectionRegistryRef ? GetState).mapTo[State]
-  }
-
-  private def bulk(projectionName: String, op: WorkerCoordinates => Unit): Unit = {
-    val eventualProjection: Future[Projection] = getState()
-      .map { state =>
-        state.findProjection(projectionName) match {
-          case None             => throw new ProjectionNotFound(projectionName)
-          case Some(projection) => projection
-        }
-      }
-    eventualProjection.map { projection =>
-      projection.workers.map(_.tagName).foreach(tagName => op(WorkerCoordinates(projectionName, tagName)))
-    }
   }
 
 }

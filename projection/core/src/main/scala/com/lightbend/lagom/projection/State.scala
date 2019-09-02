@@ -48,7 +48,10 @@ object Worker {
 }
 
 @ApiMayChange
-final class Projection private (val name: String, val workers: Seq[Worker]) extends ProjectionSerializable
+final class Projection private (val name: String, val workers: Seq[Worker]) extends ProjectionSerializable {
+  override def toString: String =
+    s"Projection(name=$name, workers=Seq(${workers.mkString(", ")}))"
+}
 
 object Projection {
   def apply(name: String, workers: Seq[Worker]) = new Projection(name, workers)
@@ -77,10 +80,12 @@ final class State(val projections: Seq[Projection]) extends ProjectionSerializab
 
 object State {
 
-  type WorkerKey = String
+  type WorkerKey      = String
+  type ProjectionName = String
   private[lagom] def fromReplicatedData(
       nameIndex: Map[WorkerKey, WorkerCoordinates],
-      requestedStatusLocalCopy: Map[WorkerKey, Status],
+      workerRequestedStatusLocalCopy: Map[WorkerKey, Status],
+      projectionRequestedStatusLocalCopy: Map[ProjectionName, Status],
       observedStatusLocalCopy: Map[WorkerKey, Status],
       defaultRequested: Status,
       defaultObserved: Status
@@ -92,7 +97,10 @@ object State {
           val w = Worker(
             coordinates.tagName,
             coordinates.asKey,
-            requestedStatusLocalCopy.getOrElse(workerKey, defaultRequested),
+            workerRequestedStatusLocalCopy.getOrElse(
+              workerKey,
+              projectionRequestedStatusLocalCopy.getOrElse(coordinates.projectionName, defaultRequested)
+            ),
             observedStatusLocalCopy.getOrElse(workerKey, defaultObserved)
           )
           w -> coordinates.projectionName
@@ -108,13 +116,3 @@ object State {
   }
 
 }
-
-@ApiMayChange
-final class ProjectionNotFound(val projectionName: String)
-    extends RuntimeException(s"Projection $projectionName is not registered")
-    with NoStackTrace
-
-@ApiMayChange
-final class ProjectionWorkerNotFound(val workerName: String)
-    extends RuntimeException(s"Projection $workerName is not registered")
-    with NoStackTrace

@@ -7,6 +7,7 @@ package com.lightbend.lagom.internal.cluster.projections
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.projection.Started
 import com.lightbend.lagom.projection.State
+import com.lightbend.lagom.projection.State.ProjectionName
 import com.lightbend.lagom.projection.State.WorkerKey
 import com.lightbend.lagom.projection.Status
 import com.lightbend.lagom.projection.Stopped
@@ -36,7 +37,7 @@ class ProjectionStateSpec extends WordSpec with Matchers {
     coordinates002_1.asKey -> coordinates002_1
   )
 
-  val desiredStatus: Map[WorkerKey, Status] = Map(
+  val desiredWorkerStatus: Map[WorkerKey, Status] = Map(
     coordinates001_1.asKey -> Stopped,
     coordinates001_2.asKey -> Started,
     coordinates001_3.asKey -> Stopped,
@@ -52,7 +53,7 @@ class ProjectionStateSpec extends WordSpec with Matchers {
   "ProjectionStateSpec" should {
 
     "be build from a replicatedData" in {
-      val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus, Started, Stopped)
+      val state = State.fromReplicatedData(nameIndex, desiredWorkerStatus, Map.empty, observedStatus, Started, Stopped)
       state.projections.size should equal(2)
       state.projections.flatMap(_.workers).size should equal(4)
       state.projections.flatMap(_.workers).find(_.key == coordinates001_3.asKey) shouldBe Some(
@@ -61,15 +62,44 @@ class ProjectionStateSpec extends WordSpec with Matchers {
     }
 
     "find projection by name" in {
-      val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus, Started, Stopped)
+      val state = State.fromReplicatedData(nameIndex, desiredWorkerStatus, Map.empty, observedStatus, Started, Stopped)
       state.findProjection(prj001) should not be None
     }
 
     "find worker by key" in {
-      val state       = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus, Started, Stopped)
+      val state       = State.fromReplicatedData(nameIndex, desiredWorkerStatus, Map.empty, observedStatus, Started, Stopped)
       val maybeWorker = state.findWorker("prj001-prj001-workers-3")
       maybeWorker shouldBe Some(
         Worker(p1w3, coordinates001_3.asKey, Stopped, Started)
+      )
+    }
+
+    "build from projection values when workers in nameIndex don't have request" in {
+      val newProjectionName = "new-projection"
+      val newWorkerName     = "new-worker-001"
+      val newCoordinates    = WorkerCoordinates(newProjectionName, newWorkerName)
+      val richIndex = nameIndex ++ Map(
+        newCoordinates.asKey -> newCoordinates
+      )
+
+      val desiredProjectionStatus: Map[ProjectionName, Status] = Map(
+        newProjectionName -> Stopped
+      )
+
+      val defaultRequested = Started
+      val defaultObserved  = Started
+
+      val state = State.fromReplicatedData(
+        richIndex,
+        desiredWorkerStatus,
+        desiredProjectionStatus,
+        observedStatus,
+        defaultRequested,
+        defaultObserved
+      )
+      val maybeWorker = state.findWorker(newCoordinates.asKey)
+      maybeWorker shouldBe Some(
+        Worker(newWorkerName, newCoordinates.asKey, Stopped, Started)
       )
     }
 
@@ -84,7 +114,14 @@ class ProjectionStateSpec extends WordSpec with Matchers {
       val defaultRequested = Stopped
       val defaultObserved  = Started
 
-      val state       = State.fromReplicatedData(richIndex, desiredStatus, observedStatus, defaultRequested, defaultObserved)
+      val state = State.fromReplicatedData(
+        richIndex,
+        desiredWorkerStatus,
+        Map.empty,
+        observedStatus,
+        defaultRequested,
+        defaultObserved
+      )
       val maybeWorker = state.findWorker(newCoordinates.asKey)
       maybeWorker shouldBe Some(
         Worker(newWorkerName, newCoordinates.asKey, defaultRequested, defaultObserved)

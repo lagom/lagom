@@ -82,6 +82,23 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wit
       expectWorkerStatus(projectionName, tagName001, Stopped)
     }
 
+    "request the pause of a projection worker (before projection is registered)" in {
+      enterBarrier("request-pause-worker-before-registering-test")
+      val projectionName = "test-pause-worker-before-registering"
+      val tagNamePrefix  = projectionName
+      val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
+      val tagName001     = tagNames.head
+      val coordinates001 = WorkerCoordinates(projectionName, tagNames.head)
+
+      runOn(RoleName("node2")) {
+        projectionRegistry.stopWorker(coordinates001)
+      }
+
+      registerProjection(projectionName, tagNames.toSet)
+
+      expectWorkerStatus(projectionName, tagName001, Stopped)
+    }
+
     "request the pause of a complete projection" in {
       enterBarrier("request-pause-projection-test")
       val projectionName = "test-pause-projection"
@@ -98,6 +115,22 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wit
       runOn(RoleName("node2")) {
         projectionRegistry.stopAllWorkers(projectionName)
       }
+      expectProjectionStatus(projectionName, 5, Stopped)
+    }
+
+    "request the pause of a complete projection (before projection is registered)" in {
+      enterBarrier("request-pause-projection-test-before-registering")
+      val projectionName = "test-pause-projection-before-registering"
+      val tagNamePrefix  = projectionName
+      val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
+
+      runOn(RoleName("node2")) {
+        projectionRegistry.stopAllWorkers(projectionName)
+      }
+
+      registerProjection(projectionName, tagNames.toSet)
+      enterBarrier("sync-request-pause-projection-test-before-registering")
+
       expectProjectionStatus(projectionName, 5, Stopped)
     }
 
@@ -206,10 +239,6 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wit
       )
 
     projectionRegistry.registerProjection(projectionName, tagNames, workerProps, runInRole)
-
-    tagNames.foreach { tagName =>
-      projectionRegistry.startWorker(WorkerCoordinates(projectionName, tagName))
-    }
 
     testProbe
   }
