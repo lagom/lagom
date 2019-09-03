@@ -161,6 +161,11 @@ def runtimeScalaSettings: Seq[Setting[_]] = Seq(
   )
 )
 
+def sbtScalaSettings: Seq[Setting[_]] = Seq(
+  crossScalaVersions := Dependencies.Versions.Scala,
+  scalaVersion := Dependencies.Versions.Scala.head,
+)
+
 def runtimeLibCommon: Seq[Setting[_]] = common ++ sonatypeSettings ++ runtimeScalaSettings ++ Seq(
   Dependencies.validateDependenciesSetting,
   Dependencies.pruneWhitelistSetting,
@@ -1278,6 +1283,7 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .dependsOn(`build-tool-support`)
 
 lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
+  .settings(sbtScalaSettings: _*)
   .settings(
     name := "lagom-maven-launcher",
     description := "Dummy project, exists only to resolve the maven launcher classpath",
