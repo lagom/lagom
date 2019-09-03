@@ -100,12 +100,9 @@ def releaseSettings: Seq[Setting[_]] = Seq(
       tagRelease,
       releaseStepCommandAndRemaining("+publishSigned"),
       releaseStepCommand("sonatypeRelease"),
-<<<<<<< HEAD
       setNextVersion,
       commitNextVersion,
-=======
       releaseStepTask(bintrayRelease in thisProjectRef.value),
->>>>>>> 408f6440b... Maven subprojects should not cross publish
       pushChanges
     )
   }
@@ -1313,11 +1310,8 @@ def archetypeProject(archetypeName: String) =
     .settings(sonatypeSettings: _*)
     .settings(common: _*)
     .settings(mimaSettings())
-<<<<<<< HEAD
-=======
     .settings(sbtScalaSettings: _*)
     .settings(publishMavenStyleSettings)
->>>>>>> 408f6440b... Maven subprojects should not cross publish
     .settings(
       name := s"maven-archetype-lagom-$archetypeName",
       autoScalaLibrary := false,
@@ -1355,11 +1349,8 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
   .settings(sonatypeSettings: _*)
   .settings(common: _*)
   .settings(noMima)
-<<<<<<< HEAD
-=======
   .settings(sbtScalaSettings: _*)
   .settings(publishMavenStyleSettings)
->>>>>>> 408f6440b... Maven subprojects should not cross publish
   .settings(
     name := "lagom-maven-dependencies",
     autoScalaLibrary := false,
