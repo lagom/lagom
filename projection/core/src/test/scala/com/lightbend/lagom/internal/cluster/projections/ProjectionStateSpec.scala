@@ -35,7 +35,7 @@ class ProjectionStateSpec extends WordSpec with Matchers {
     prj002 -> Set(coordinates002_1)
   )
 
-  val desiredStatus: Map[WorkerCoordinates, Status] = Map(
+  val requestedStatus: Map[WorkerCoordinates, Status] = Map(
     coordinates001_1 -> Stopped,
     coordinates001_2 -> Started,
     coordinates001_3 -> Stopped,
@@ -51,7 +51,7 @@ class ProjectionStateSpec extends WordSpec with Matchers {
   "ProjectionStateSpec" should {
 
     "be build from a replicatedData" in {
-      val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus, Started, Stopped)
+      val state = State.fromReplicatedData(nameIndex, requestedStatus, observedStatus, Started, Stopped)
       state.projections.size should equal(2)
       state.projections.flatMap(_.workers).size should equal(4)
       state.projections.flatMap(_.workers).find(_.key == coordinates001_3.asKey) shouldBe Some(
@@ -60,12 +60,12 @@ class ProjectionStateSpec extends WordSpec with Matchers {
     }
 
     "find projection by name" in {
-      val state = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus, Started, Stopped)
+      val state = State.fromReplicatedData(nameIndex, requestedStatus, observedStatus, Started, Stopped)
       state.findProjection(prj001) should not be None
     }
 
     "find worker by key" in {
-      val state       = State.fromReplicatedData(nameIndex, desiredStatus, observedStatus, Started, Stopped)
+      val state       = State.fromReplicatedData(nameIndex, requestedStatus, observedStatus, Started, Stopped)
       val maybeWorker = state.findWorker("prj001-prj001-workers-3")
       maybeWorker shouldBe Some(
         Worker(p1w3, coordinates001_3.asKey, Stopped, Started)
@@ -83,7 +83,7 @@ class ProjectionStateSpec extends WordSpec with Matchers {
       val defaultRequested = Stopped
       val defaultObserved  = Started
 
-      val state       = State.fromReplicatedData(richIndex, desiredStatus, observedStatus, defaultRequested, defaultObserved)
+      val state       = State.fromReplicatedData(richIndex, requestedStatus, observedStatus, defaultRequested, defaultObserved)
       val maybeWorker = state.findWorker(newCoordinates.asKey)
       maybeWorker shouldBe Some(
         Worker(newWorkerName, newCoordinates.asKey, defaultRequested, defaultObserved)
