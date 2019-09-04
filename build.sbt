@@ -1338,6 +1338,13 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
       val () = (publishLocal in `server-javadsl`).value
       val () = (publishLocal in `server-scaladsl`).value
       val () = (publishLocal in `spi`).value
+      val () = (publishLocal in `testkit-core`).value
+      val () = (publishLocal in `broker-javadsl`).value
+      val () = (publishLocal in `broker-scaladsl`).value
+      val () = (publishLocal in `pubsub-javadsl`).value
+      val () = (publishLocal in `pubsub-scaladsl`).value
+      val () = (publishLocal in `testkit-javadsl`).value
+      val () = (publishLocal in `testkit-scaladsl`).value
 
       // dev service registry
       val () = (publishLocal in `devmode-scaladsl`).value

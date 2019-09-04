@@ -11,7 +11,7 @@ lagomKafkaEnabled in ThisBuild := false
 lagomCassandraEnabled in ThisBuild := true
 
 
-lazy val root = (project in file(".")).aggregate(`hello-impl`)
+lazy val `projectinos-happpy-path` = (project in file(".")).aggregate(`hello-impl`)
 
 lazy val `hello-impl` = (project in file("hello"))
   .enablePlugins(LagomJava)
@@ -22,19 +22,17 @@ lazy val `hello-impl` = (project in file("hello"))
       lagomJavadslApi,
       lagomJavadslPersistenceCassandra,
       lagomLogback,
-      // lagomJavadslTestKit,
+      lagomJavadslTestKit,
       lombok
     )
   )
-
-
+  .settings(lagomForkedTestSettings)
 
 InputKey[Unit]("makeRequest") := {
   val args                      = Def.spaceDelimited("<url> <status> ...").parsed
   val path :: headers = args
   DevModeBuild.makeRequest(path)
 }
-
 
 InputKey[Unit]("assertRequest") := {
   val args   = Def.spaceDelimited().parsed
