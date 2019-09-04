@@ -61,11 +61,11 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   val replicator: ActorRef             = DistributedData(context.system).replicator
   implicit val node: SelfUniqueAddress = DistributedData(context.system).selfUniqueAddress
 
+  private val projectionConfig: ProjectionConfig = ProjectionConfig(context.system.settings.config)
   // All usages os `data` in this actor are unnafected by `UpdateTimeout` (see
   //   https://github.com/lagom/lagom/pull/2208). In general uses, using WriteMajority(5 sec) could be an issue
   //   in big clusters.
-  // TODO (nice to have): make the 5 second timeout configurable.
-  val writeConsistency: WriteConsistency = WriteMajority(timeout = 5.seconds)
+  val writeConsistency: WriteConsistency = WriteMajority(timeout = projectionConfig.writeMajorityTimeout)
 
   // (a) Replicator contains data of all workers (requested and observed status, plus a name index)
   private val RequestedStatusDataKey: LWWMapKey[WorkerKey, Status] =
@@ -89,11 +89,7 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   // required to handle Terminate(deadActor)
   var reversedActorIndex: Map[ActorRef, WorkerKey] = Map.empty[ActorRef, WorkerKey]
 
-  val DefaultRequestedStatus: Status = {
-    val autoStartEnabled = context.system.settings.config.getBoolean("lagom.projection.auto-start.enabled")
-    if (autoStartEnabled) Started
-    else Stopped
-  }
+  val DefaultRequestedStatus: Status = projectionConfig.defaultRequestedStatus
 
   override def receive: Receive = {
 
