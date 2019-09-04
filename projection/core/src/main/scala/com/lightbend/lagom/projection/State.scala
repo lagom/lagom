@@ -7,11 +7,11 @@ package com.lightbend.lagom.projection
 import java.util.Objects
 
 import akka.annotation.ApiMayChange
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.ProjectionName
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 
 import scala.beans.BeanProperty
 import scala.collection.JavaConverters._
-import scala.util.control.NoStackTrace
 
 @ApiMayChange
 sealed trait Status  extends ProjectionSerializable
@@ -48,7 +48,10 @@ object Worker {
 }
 
 @ApiMayChange
-final class Projection private (val name: String, val workers: Seq[Worker]) extends ProjectionSerializable
+final class Projection private (val name: String, val workers: Seq[Worker]) extends ProjectionSerializable {
+  override def toString: String =
+    s"Projection(name=$name, workers=Seq(${workers.mkString(", ")}))"
+}
 
 object Projection {
   def apply(name: String, workers: Seq[Worker]) = new Projection(name, workers)
@@ -77,44 +80,27 @@ final class State(val projections: Seq[Projection]) extends ProjectionSerializab
 
 object State {
 
-  type WorkerKey = String
   private[lagom] def fromReplicatedData(
-      nameIndex: Map[WorkerKey, WorkerCoordinates],
-      requestedStatusLocalCopy: Map[WorkerKey, Status],
-      observedStatusLocalCopy: Map[WorkerKey, Status],
+      nameIndex: Map[ProjectionName, Set[WorkerCoordinates]],
+      requestedStatusLocalCopy: Map[WorkerCoordinates, Status],
+      observedStatusLocalCopy: Map[WorkerCoordinates, Status],
       defaultRequested: Status,
       defaultObserved: Status
   ): State = {
 
-    val workers: Map[String, Seq[Worker]] = nameIndex
-      .map {
-        case (workerKey, coordinates) =>
-          val w = Worker(
+    val projections = nameIndex.map {
+      case (projectionName, coordinatesSet) =>
+        val workersSet = coordinatesSet.map { coordinates =>
+          Worker(
             coordinates.tagName,
             coordinates.asKey,
-            requestedStatusLocalCopy.getOrElse(workerKey, defaultRequested),
-            observedStatusLocalCopy.getOrElse(workerKey, defaultObserved)
+            requestedStatusLocalCopy.getOrElse(coordinates, defaultRequested),
+            observedStatusLocalCopy.getOrElse(coordinates, defaultObserved)
           )
-          w -> coordinates.projectionName
-      }
-      .groupBy(_._2)
-      .mapValues(_.keys.toSeq)
-      .toMap
-
-    val projections = workers.map {
-      case (projectionName, ws) => Projection(projectionName, ws)
+        }
+        Projection(projectionName, workersSet.toSeq)
     }.toSeq
     new State(projections)
   }
 
 }
-
-@ApiMayChange
-final class ProjectionNotFound(val projectionName: String)
-    extends RuntimeException(s"Projection $projectionName is not registered")
-    with NoStackTrace
-
-@ApiMayChange
-final class ProjectionWorkerNotFound(val workerName: String)
-    extends RuntimeException(s"Projection $workerName is not registered")
-    with NoStackTrace
