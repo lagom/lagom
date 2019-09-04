@@ -40,7 +40,7 @@ object Dependencies {
     val JacksonDatatype      = Jackson
     val JacksonDatabind      = "2.9.9.3"
     val Guava                = "28.1-jre"
-    val Maven                = "3.6.0"
+    val Maven                = "3.6.2"
     val Netty                = "4.1.39.Final"
     val NettyReactiveStreams = "2.0.3"
     val Kafka                = "2.1.1"
@@ -48,7 +48,7 @@ object Dependencies {
     val Curator              = "2.12.0"
     val Immutables           = "2.7.5"
     val HibernateCore        = "5.4.4.Final"
-    val PCollections         = "3.0.5"
+    val PCollections         = "3.1.0"
 
     val ScalaJava8Compat = "0.9.0"
     val ScalaXml         = "1.2.0"
