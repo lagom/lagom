@@ -76,5 +76,4 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
     (projectionRegistryRef ? GetState).mapTo[State]
   }
 
-
 }
