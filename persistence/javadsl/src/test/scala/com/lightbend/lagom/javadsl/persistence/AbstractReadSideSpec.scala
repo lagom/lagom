@@ -202,7 +202,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
     "register on the projection registry" in {
       withReadSideProcessor("123") { _ =>
-        projectionRegistryProbe.get.expectMsgType[ProjectionRegistryActor.RegisterProjectionWorker]
+        projectionRegistryProbe.get.expectMsgType[ProjectionRegistryActor.ReportForDuty]
       }
     }
 

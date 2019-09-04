@@ -73,7 +73,7 @@ class WorkerCoordinator(
     case EnsureActive(tagName) =>
       val coordinates = WorkerCoordinates(projectionName, tagName)
       log.debug(s"Requesting registry of $coordinates [${self.path.toString}].")
-      projectionRegistryActorRef ! ProjectionRegistryActor.RegisterProjectionWorker(coordinates)
+      projectionRegistryActorRef ! ProjectionRegistryActor.ReportForDuty(coordinates)
       // become stopped and await for instructions from the Registry
       becomeStopped(coordinates)
   }
