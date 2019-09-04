@@ -165,7 +165,6 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wit
       val tagName001     = tagNames.head
       val coordinates001 = WorkerCoordinates(projectionName, tagNames.head)
 
-      // build a projection with a single worker bound to run on `node3`
       val testProbe = registerProjection(projectionName, tagNames.toSet)
       testProbe.ignoreMsg {
         case _ => true
@@ -194,6 +193,71 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wit
         multiExpectTimeout
       )
     }
+
+    "overwrite worker-level requests when projection-level requests are commanded" in {
+      val projectionName = "projection-level-overwrite-worker-level"
+      enterBarrier(s"$projectionName-test")
+      val tagNamePrefix  = projectionName
+      val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
+      val tagName001     = tagNames.head
+      val tagName002     = tagNames.drop(1).head
+      val coordinates001 = WorkerCoordinates(projectionName, tagName001)
+
+      // build a projection with a single worker bound to run on `node3`
+      val testProbe = registerProjection(projectionName, tagNames.toSet)
+
+      // await until seen as ready
+      expectWorkerStatus(projectionName, tagName001, Started)
+
+      enterBarrier(s"$projectionName-stop-a-single-worker")
+      runOn(RoleName("node2")) {
+        projectionRegistry.stopWorker(coordinates001)
+      }
+
+      expectWorkerStatus(projectionName, tagName001, Stopped)
+      expectWorkerStatus(projectionName, tagName002, Started)
+      enterBarrier(s"$projectionName-start-all-workers")
+
+      runOn(RoleName("node1")) {
+        projectionRegistry.startAllWorkers(projectionName)
+      }
+
+      expectProjectionStatus(projectionName, 5, Started)
+
+    }
+
+    "respect worker-level requests that arrive after projection-level requests" in {
+      val projectionName = "worker-level-overwrite-projection-level"
+      enterBarrier(s"$projectionName-test")
+      val tagNamePrefix  = projectionName
+      val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
+      val tagName001     = tagNames.head
+      val tagName002     = tagNames.drop(1).head
+      val coordinates001 = WorkerCoordinates(projectionName, tagName001)
+
+      // build a projection with a single worker bound to run on `node3`
+      val testProbe = registerProjection(projectionName, tagNames.toSet)
+
+      // await until seen as ready
+      expectWorkerStatus(projectionName, tagName001, Started)
+
+      enterBarrier(s"$projectionName-start-all-workers")
+      runOn(RoleName("node2")) {
+        projectionRegistry.stopAllWorkers(projectionName)
+      }
+
+      expectProjectionStatus(projectionName, 5, Stopped)
+      enterBarrier(s"$projectionName-stop-a-single-worker")
+
+      runOn(RoleName("node1")) {
+        projectionRegistry.startWorker(coordinates001)
+      }
+      expectWorkerStatus(projectionName, tagName001, Started)
+      expectWorkerStatus(projectionName, tagName002, Stopped)
+
+
+    }
+
 
   }
 
