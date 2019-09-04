@@ -10,6 +10,12 @@
 # eventually, the status is propagated, the worker is started and the event is
 # processed causing the value to become "Hi".
 
+## First, let's assert everything works as expected in tests
+
+> test
+
+## Now, let's play with some dev mode...
+
 > runAll
 
 # The repository exists and responds.
