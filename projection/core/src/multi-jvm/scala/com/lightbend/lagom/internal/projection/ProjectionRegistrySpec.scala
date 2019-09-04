@@ -255,9 +255,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wit
       expectWorkerStatus(projectionName, tagName001, Started)
       expectWorkerStatus(projectionName, tagName002, Stopped)
 
-
     }
-
 
   }
 

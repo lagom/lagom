@@ -83,7 +83,8 @@ class ProjectionStateSpec extends WordSpec with Matchers {
       val defaultRequested = Stopped
       val defaultObserved  = Started
 
-      val state       = State.fromReplicatedData(richIndex, requestedStatus, observedStatus, defaultRequested, defaultObserved)
+      val state =
+        State.fromReplicatedData(richIndex, requestedStatus, observedStatus, defaultRequested, defaultObserved)
       val maybeWorker = state.findWorker(newCoordinates.asKey)
       maybeWorker shouldBe Some(
         Worker(newWorkerName, newCoordinates.asKey, defaultRequested, defaultObserved)
