@@ -100,9 +100,9 @@ def releaseSettings: Seq[Setting[_]] = Seq(
       tagRelease,
       releaseStepCommandAndRemaining("+publishSigned"),
       releaseStepCommand("sonatypeRelease"),
+      releaseStepTask(bintrayRelease in thisProjectRef.value),
       setNextVersion,
       commitNextVersion,
-      releaseStepTask(bintrayRelease in thisProjectRef.value),
       pushChanges
     )
   }
