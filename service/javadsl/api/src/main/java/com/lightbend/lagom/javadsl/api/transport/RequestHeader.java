@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.javadsl.api.transport;
 
+import com.lightbend.lagom.internal.api.HeaderUtils;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
 import org.pcollections.PSequence;
@@ -11,7 +12,6 @@ import org.pcollections.TreePVector;
 
 import java.net.URI;
 import java.security.Principal;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -185,7 +185,7 @@ public final class RequestHeader extends MessageHeader {
         acceptedResponseProtocols,
         principal,
         headers.plus(name, TreePVector.singleton(value)),
-        lowercaseHeaders.plus(name.toLowerCase(Locale.ENGLISH), TreePVector.singleton(value)));
+        lowercaseHeaders.plus(HeaderUtils.normalize(name), TreePVector.singleton(value)));
   }
 
   @Override

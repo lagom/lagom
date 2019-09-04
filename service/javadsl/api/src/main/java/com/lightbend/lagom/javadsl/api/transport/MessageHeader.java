@@ -4,10 +4,10 @@
 
 package com.lightbend.lagom.javadsl.api.transport;
 
+import com.lightbend.lagom.internal.api.HeaderUtils;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
 import org.pcollections.PSequence;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -32,7 +32,7 @@ public abstract class MessageHeader {
     PMap<String, PSequence<String>> lowercaseHeaders = HashTreePMap.empty();
     for (Map.Entry<String, PSequence<String>> header : headers.entrySet()) {
       lowercaseHeaders =
-          lowercaseHeaders.plus(header.getKey().toLowerCase(Locale.ENGLISH), header.getValue());
+          lowercaseHeaders.plus(HeaderUtils.normalize(header.getKey()), header.getValue());
     }
     this.lowercaseHeaders = lowercaseHeaders;
   }
@@ -67,7 +67,7 @@ public abstract class MessageHeader {
    * @return The header value.
    */
   public Optional<String> getHeader(String name) {
-    PSequence<String> values = lowercaseHeaders.get(name.toLowerCase(Locale.ENGLISH));
+    PSequence<String> values = lowercaseHeaders.get(HeaderUtils.normalize(name));
     if (values == null || values.isEmpty()) {
       return Optional.empty();
     } else {

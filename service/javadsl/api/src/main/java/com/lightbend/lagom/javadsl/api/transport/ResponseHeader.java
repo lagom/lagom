@@ -4,12 +4,11 @@
 
 package com.lightbend.lagom.javadsl.api.transport;
 
+import com.lightbend.lagom.internal.api.HeaderUtils;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
-
-import java.util.Locale;
 
 /**
  * This header may or may not be mapped down onto HTTP. In order to remain agnostic to the
@@ -74,7 +73,7 @@ public final class ResponseHeader extends MessageHeader {
         status,
         protocol,
         headers.plus(name, TreePVector.singleton(value)),
-        lowercaseHeaders.plus(name.toLowerCase(Locale.ENGLISH), TreePVector.singleton(value)));
+        lowercaseHeaders.plus(HeaderUtils.normalize(name), TreePVector.singleton(value)));
   }
 
   public static final ResponseHeader OK =
