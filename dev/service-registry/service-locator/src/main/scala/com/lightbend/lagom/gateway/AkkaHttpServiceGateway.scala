@@ -5,7 +5,6 @@
 package com.lightbend.lagom.gateway
 
 import java.net.InetSocketAddress
-import java.util.Locale
 
 import akka.Done
 import akka.actor.ActorRef
@@ -23,6 +22,7 @@ import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
+import com.lightbend.lagom.internal.api.HeaderUtils
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 import com.lightbend.lagom.registry.impl.ServiceRegistryActor.Found
 import com.lightbend.lagom.registry.impl.ServiceRegistryActor.NotFound
@@ -32,18 +32,18 @@ import javax.inject.Inject
 import javax.inject.Named
 import org.slf4j.LoggerFactory
 import play.api.libs.typedmap.TypedMap
+import play.api.mvc.Headers
+import play.api.mvc.RequestHeader
 import play.api.mvc.request.RemoteConnection
 import play.api.mvc.request.RequestAttrKey
 import play.api.mvc.request.RequestTarget
-import play.api.mvc.Headers
-import play.api.mvc.RequestHeader
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 
 import scala.collection.immutable
-import scala.concurrent.duration._
 import scala.concurrent.Await
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 class AkkaHttpServiceGatewayFactory @Inject()(coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig)(
     @Named("serviceRegistryActor") registry: ActorRef
@@ -189,7 +189,7 @@ class AkkaHttpServiceGateway(
     "Upgrade",
     "Connection",
     "Host"
-  ).map(_.toLowerCase(Locale.ENGLISH))
+  ).map(HeaderUtils.normalize)
 
   private def filterHeaders(headers: immutable.Seq[HttpHeader]) = {
     headers.filterNot(header => HeadersToFilter(header.lowercaseName()))

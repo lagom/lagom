@@ -6,20 +6,19 @@ package com.lightbend.lagom.internal.client
 
 import java.net.URI
 import java.net.URLEncoder
-import java.util.Locale
 
 import akka.NotUsed
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
+import com.lightbend.lagom.internal.api.HeaderUtils
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
 import play.api.http.HeaderNames
 import play.api.libs.streams.AkkaStreams
 import play.api.libs.ws.InMemoryBody
 import play.api.libs.ws.WSClient
 
-import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -274,7 +273,7 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       // Create the message header
       val protocol = messageProtocolFromContentTypeHeader(response.header(HeaderNames.CONTENT_TYPE))
       val headers = response.headers.map {
-        case (key, values) => key.toLowerCase(Locale.ENGLISH) -> values.map(key -> _).toIndexedSeq
+        case (key, values) => HeaderUtils.normalize(key) -> values.map(key -> _).toIndexedSeq
       }
       val transportResponseHeader = newResponseHeader(response.status, protocol, headers)
       val responseHeader          = headerFilterTransformClientResponse(headerFilter, transportResponseHeader, requestHeader)

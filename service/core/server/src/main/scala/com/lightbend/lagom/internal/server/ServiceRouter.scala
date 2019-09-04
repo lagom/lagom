@@ -6,7 +6,6 @@ package com.lightbend.lagom.internal.server
 
 import java.net.URI
 import java.util.Base64
-import java.util.Locale
 import java.util.concurrent.CompletionException
 
 import akka.NotUsed
@@ -20,16 +19,17 @@ import akka.stream.stage.GraphStageLogic
 import akka.stream.stage.InHandler
 import akka.stream.stage.OutHandler
 import akka.util.ByteString
+import com.lightbend.lagom.internal.api.HeaderUtils
 import com.lightbend.lagom.internal.api.Path
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
 import play.api.Logger
+import play.api.http.HeaderNames
+import play.api.http.HttpConfiguration
 import play.api.http.HttpEntity.Strict
 import play.api.http.websocket.BinaryMessage
 import play.api.http.websocket.CloseMessage
 import play.api.http.websocket.Message
 import play.api.http.websocket.TextMessage
-import play.api.http.HeaderNames
-import play.api.http.HttpConfiguration
 import play.api.libs.streams.Accumulator
 import play.api.libs.streams.AkkaStreams
 import play.api.mvc.BodyParser
@@ -298,7 +298,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
    */
   private def toLagomRequestHeader(rh: PlayRequestHeader): RequestHeader = {
     val stringToTuples: Map[String, immutable.Seq[(String, String)]] = rh.headers.toMap.map {
-      case (key, values) => key.toLowerCase(Locale.ENGLISH) -> values.map(key -> _).toIndexedSeq
+      case (key, values) => HeaderUtils.normalize(key) -> values.map(key -> _).toIndexedSeq
     }
     newRequestHeader(
       newMethod(rh.method),
