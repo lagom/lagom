@@ -19,8 +19,6 @@ sealed trait ProjectionConfig {
   def writeMajorityTimeout: FiniteDuration
   def defaultRequestedStatus: Status
 }
-
-
 @InternalApi
 object ProjectionConfig {
   def apply(config: Config): ProjectionConfig = {
@@ -29,7 +27,8 @@ object ProjectionConfig {
 
   private final class ProjectionConfigImpl(config: Config) extends ProjectionConfig {
 
-    val writeMajorityTimeout: FiniteDuration = config.getDuration("write.majority.timeout", TimeUnit.MILLISECONDS).millis
+    val writeMajorityTimeout: FiniteDuration =
+      config.getDuration("write.majority.timeout", TimeUnit.MILLISECONDS).millis
 
     val defaultRequestedStatus: Status = {
       val autoStartEnabled = config.getBoolean("auto-start.enabled")
