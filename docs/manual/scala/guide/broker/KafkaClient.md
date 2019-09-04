@@ -1,6 +1,7 @@
 # Lagom Kafka Client
 
-Lagom provides an implementation of the Message Broker API that uses Kafka. In the remainder you will learn how to add the dependency in your build, and how to configure and tune topic's publishers and subscribers.
+Lagom provides an implementation of the Message Broker API that uses Kafka. The following sections show how to add the dependency in your build, and how to configure and tune topic publishers and subscribers.
+For information on running Kafka in development, see the [[Kafka Server|KafkaServer]] page.
 
 ## Dependency
 
@@ -15,8 +16,7 @@ When importing the Lagom Kafka Broker module keep in mind that the Lagom Kafka B
 
 After adding the dependency you also need to mix-in the `LagomKafkaComponents` trait on your `Application` to ensure it is enabled and usable at runtime.
 
-The Lagom Kafka Client implementation is built using [Alpakka Kafka](https://github.com/akka/alpakka-kafka). The Alpakka Kafka library wraps the official [Apache Java Kafka client](https://kafka.apache.org/documentation.html) and exposes a (Akka) stream based API to publish/consume messages to/from Kafka. Therefore, we have effectively three libraries at play, with each of them exposing its own configuration. Let's explore  the configuration keys exposed by each layer, starting with the one sitting at the top, i.e., the Lagom Kafka Client.
-
+The Lagom Kafka Client implementation is built using [Alpakka Kafka](https://doc.akka.io/docs/alpakka-kafka/). The Alpakka Kafka library wraps the official [Apache Java Kafka client](https://kafka.apache.org/documentation.html) and exposes a (Akka) stream based API to publish/consume messages to/from Kafka. Therefore, we have effectively three libraries at play, with each of them exposing its own configuration. Let's explore  the configuration keys exposed by each layer, starting with the one sitting at the top, i.e., the Lagom Kafka Client.
 
 ### Lagom Kafka Client
 
@@ -30,7 +30,9 @@ Third, the consumer has a few more configuration keys allowing you to decide how
 
 ### Alpakka Kafka configuration
 
-See the [Alpakka Kafka reference.conf](https://github.com/akka/alpakka-kafka/blob/master/core/src/main/resources/reference.conf) to find out about the available configuration parameters.
+See the [Alpakka Kafka producer settings](https://doc.akka.io/docs/alpakka-kafka/1.0/producer.html#settings) and [Alpakka Kafka consumer settings](https://doc.akka.io/docs/alpakka-kafka/1.0/consumer.html#settings) to find out about the available configuration parameters.
+
+Please refer to [production considerations](https://doc.akka.io/docs/alpakka-kafka/1.0/production.html) for other things to keep in mind when using Alpakka Kafka.
 
 ### Apache Java Kafka Client
 
