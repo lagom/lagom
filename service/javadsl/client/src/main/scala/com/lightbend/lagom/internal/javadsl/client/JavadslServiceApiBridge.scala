@@ -6,28 +6,27 @@ package com.lightbend.lagom.internal.javadsl.client
 
 import java.net.URI
 import java.security.Principal
-import java.util.Locale
 import java.util.concurrent.CompletionStage
 
 import akka.stream.javadsl.{ Source => JSource }
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
+import com.lightbend.lagom.internal.api.HeaderUtils
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
-import com.lightbend.lagom.javadsl.api.deser
-import com.lightbend.lagom.javadsl.api.transport
 import com.lightbend.lagom.javadsl.api
 import com.lightbend.lagom.javadsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.javadsl.api.deser.ExceptionMessage
 import com.lightbend.lagom.javadsl.api.security.ServicePrincipal
-import com.lightbend.lagom.javadsl.api.transport.BadRequest
+import com.lightbend.lagom.javadsl.api.deser
+import com.lightbend.lagom.javadsl.api.transport
 import org.pcollections.HashTreePMap
 import org.pcollections.PSequence
 import org.pcollections.TreePVector
 
-import scala.compat.java8.OptionConverters._
-import scala.compat.java8.FutureConverters._
 import scala.collection.JavaConverters._
 import scala.collection.immutable
+import scala.compat.java8.FutureConverters._
+import scala.compat.java8.OptionConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -58,7 +57,7 @@ trait JavadslServiceApiBridge extends LagomServiceApiBridge {
       .flatMap {
         case (key, values) => values.asScala.map(key -> _)
       }
-      .groupBy(_._1.toLowerCase(Locale.ENGLISH))
+      .groupBy(header => HeaderUtils.normalize(header._1))
       .map {
         case (key, values) => key -> values.toIndexedSeq
       }
