@@ -25,6 +25,6 @@ object WorkerConfig {
   private final class WorkerConfigImpl(config: Config) extends WorkerConfig {
     val minBackoff: FiniteDuration = config.getDuration("backoff.supervisor.minBackoff", TimeUnit.MILLISECONDS).millis
     val maxBackoff: FiniteDuration = config.getDuration("backoff.supervisor.maxBackoff", TimeUnit.MILLISECONDS).millis
-    val randomFactor: Double  = config.getDouble("backoff.supervisor.randomFactor")
+    val randomFactor: Double       = config.getDouble("backoff.supervisor.randomFactor")
   }
 }
