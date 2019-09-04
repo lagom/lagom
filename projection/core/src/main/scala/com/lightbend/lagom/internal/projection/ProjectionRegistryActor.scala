@@ -23,7 +23,6 @@ import akka.cluster.ddata.Replicator.UpdateSuccess
 import akka.cluster.ddata.Replicator.WriteConsistency
 import akka.cluster.ddata.Replicator.WriteMajority
 import akka.cluster.ddata.SelfUniqueAddress
-import com.lightbend.lagom.internal.projection.ProjectionRegistry._
 import com.lightbend.lagom.projection.Started
 import com.lightbend.lagom.projection.State
 import com.lightbend.lagom.projection.Status
@@ -36,10 +35,17 @@ import com.lightbend.lagom.projection.ProjectionSerializable
 object ProjectionRegistryActor {
   def props = Props(new ProjectionRegistryActor)
 
-  case class RegisterProjectionWorker(coordinates: WorkerCoordinates)
+  type WorkerKey      = String // a WorkerKey is a unique String representing WorkerCoordinates
+  type ProjectionName = String
 
-  case class WorkerCoordinates(projectionName: String, tagName: String) extends ProjectionSerializable {
-    val asKey: String                = s"$projectionName-$tagName"
+  case class WorkerRequestCommand(coordinates: WorkerCoordinates, requestedStatus: Status)
+  case class ProjectionRequestCommand(projectionName: ProjectionName, requestedStatus: Status)
+
+  case class RegisterProjection(projectionName: ProjectionName, tagNames: Set[String])
+  case class ReportForDuty(coordinates: WorkerCoordinates)
+
+  case class WorkerCoordinates(projectionName: ProjectionName, tagName: String) extends ProjectionSerializable {
+    val asKey: WorkerKey             = s"$projectionName-$tagName"
     val workerActorName: String      = URLEncoder.encode(asKey, "utf-8")
     val supervisingActorName: String = URLEncoder.encode(s"backoff-$asKey", "utf-8")
   }
@@ -56,38 +62,42 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
   import ProjectionRegistryActor._
 
-  type WorkerKey = String // a WorkerKey is a unique String representing WorkerCoordinates
-
   val replicator: ActorRef             = DistributedData(context.system).replicator
   implicit val node: SelfUniqueAddress = DistributedData(context.system).selfUniqueAddress
 
-  // All usages os `data` in this actor are unnafected by `UpdateTimeout` (see
+  // All usages os `data` in this actor are unaffected by `UpdateTimeout` (see
   //   https://github.com/lagom/lagom/pull/2208). In general uses, using WriteMajority(5 sec) could be an issue
   //   in big clusters.
   // TODO (nice to have): make the 5 second timeout configurable.
   val writeConsistency: WriteConsistency = WriteMajority(timeout = 5.seconds)
 
   // (a) Replicator contains data of all workers (requested and observed status, plus a name index)
-  private val RequestedStatusDataKey: LWWMapKey[WorkerKey, Status] =
-    LWWMapKey[WorkerKey, Status]("projection-registry-requested-status")
-  private val ObservedStatusDataKey: LWWMapKey[WorkerKey, Status] =
-    LWWMapKey[WorkerKey, Status]("projection-registry-observed-status")
-  private val NameIndexDataKey: LWWMapKey[WorkerKey, WorkerCoordinates] =
-    LWWMapKey[WorkerKey, WorkerCoordinates]("projection-registry-name-index")
+  private val RequestedStatusDataKey: LWWMapKey[WorkerCoordinates, Status] =
+    LWWMapKey[WorkerCoordinates, Status]("projection-registry-requested-status")
+  private val ObservedStatusDataKey: LWWMapKey[WorkerCoordinates, Status] =
+    LWWMapKey[WorkerCoordinates, Status]("projection-registry-observed-status")
 
   replicator ! Subscribe(RequestedStatusDataKey, self)
   replicator ! Subscribe(ObservedStatusDataKey, self)
-  replicator ! Subscribe(NameIndexDataKey, self)
 
   // (b) Keep a local copy to simplify the implementation of some ops
-  var requestedStatusLocalCopy: Map[WorkerKey, Status]      = Map.empty[WorkerKey, Status]
-  var observedStatusLocalCopy: Map[WorkerKey, Status]       = Map.empty[WorkerKey, Status]
-  var nameIndexLocalCopy: Map[WorkerKey, WorkerCoordinates] = Map.empty[WorkerKey, WorkerCoordinates]
+  var requestedStatusLocalCopy: Map[WorkerCoordinates, Status] = Map.empty[WorkerCoordinates, Status]
+  var observedStatusLocalCopy: Map[WorkerCoordinates, Status]  = Map.empty[WorkerCoordinates, Status]
 
   // (c) Actor indices contain only data of workers running locally
-  var actorIndex: Map[WorkerKey, ActorRef] = Map.empty[WorkerKey, ActorRef]
+  var actorIndex: Map[WorkerCoordinates, ActorRef] = Map.empty[WorkerCoordinates, ActorRef]
   // required to handle Terminate(deadActor)
-  var reversedActorIndex: Map[ActorRef, WorkerKey] = Map.empty[ActorRef, WorkerKey]
+  var reversedActorIndex: Map[ActorRef, WorkerCoordinates] = Map.empty[ActorRef, WorkerCoordinates]
+
+  // (d) this index helps locate worker coordinates given a project name. It is not a CRDT assuming
+  // all nodes know all projections and use the same tag names. This is filled when projection
+  // drivers register the projection (which happens even before ClusterDistribution is started in
+  // the local node).
+  var nameIndex: Map[ProjectionName, Set[WorkerCoordinates]] = Map.empty[ProjectionName, Set[WorkerCoordinates]]
+
+  // (e) Users may request a status before the projection was registered, in that case, we stash
+  // the request in this map.
+  var unknownProjections: Map[ProjectionName, Status] = Map.empty[ProjectionName, Status]
 
   val DefaultRequestedStatus: Status = {
     val autoStartEnabled = context.system.settings.config.getBoolean("lagom.projection.auto-start.enabled")
@@ -97,16 +107,14 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
 
-    case RegisterProjectionWorker(coordinates) =>
+    case ReportForDuty(coordinates) =>
       log.debug(s"Registering worker $coordinates to [${sender().path.toString}]")
       // keep track
-      val workerKey: WorkerKey = coordinates.asKey
-      updateNameIndex(workerKey, coordinates)
-      actorIndex = actorIndex.updated(workerKey, sender())
-      reversedActorIndex = reversedActorIndex.updated(sender, workerKey)
+      actorIndex = actorIndex.updated(coordinates, sender())
+      reversedActorIndex = reversedActorIndex.updated(sender, coordinates)
       // when worker registers, we must reply with the requested status (if it's been set already, or DefaultInitialStatus if not).
-      val initialStatus = requestedStatusLocalCopy.getOrElse(workerKey, DefaultRequestedStatus)
-      log.debug(s"Setting initial status [$initialStatus] on worker $workerKey [${sender().path.toString}]")
+      val initialStatus = requestedStatusLocalCopy.getOrElse(coordinates, DefaultRequestedStatus)
+      log.debug(s"Setting initial status [$initialStatus] on worker $coordinates [${sender().path.toString}]")
       sender ! initialStatus
 
       // watch
@@ -114,18 +122,36 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
     case GetState =>
       sender ! State.fromReplicatedData(
-        nameIndexLocalCopy,
+        nameIndex,
         requestedStatusLocalCopy,
         observedStatusLocalCopy,
         DefaultRequestedStatus,
         Stopped // unless observed somewhere (and replicated), we consider a worker stopped.
       )
 
-    // StateRequestCommand come from `ProjectionRegistry` and contain a requested Status
-    case command: StateRequestCommand =>
-      // locate the target actor and send the request
+    case RegisterProjection(projectionName, tagNames) =>
+      log.debug(s"Registering projection $projectionName for tags $tagNames.")
+      nameIndex += (projectionName -> tagNames.map {
+        WorkerCoordinates(projectionName, _)
+      })
+      // If we have stashed requestsfor this projection name, unstash them:
+      unknownProjections.get(projectionName).foreach { requestedStatus =>
+        self ! ProjectionRequestCommand(projectionName, requestedStatus)
+        unknownProjections -= projectionName
+      }
+
+    // XyzRequestCommand's come from `ProjectionRegistry` and contain a requested Status
+    case command: WorkerRequestCommand =>
       log.debug(s"Propagating request $command.")
-      updateStateChangeRequests(command.coordinates.asKey, command.requestedStatus)
+      updateStateChangeRequests(command.coordinates, command.requestedStatus)
+    case command: ProjectionRequestCommand =>
+      log.debug(s"Propagating request $command.")
+      val projectionWorkers: Option[Set[WorkerCoordinates]] = nameIndex.get(command.projectionName)
+      projectionWorkers match {
+        case Some(workerSet) =>
+          workerSet.foreach(coordinates => updateStateChangeRequests(coordinates, command.requestedStatus))
+        case None => unknownProjections += (command.projectionName -> command.requestedStatus)
+      }
 
     // Bare Status come from worker and contain an observed Status
     case observedStatus: Status =>
@@ -158,8 +184,8 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
     //  instead of getting an avalanche of Changed messages with all the history of the CRDT only a single
     //  message with the latest state is received.
     case changed @ Changed(RequestedStatusDataKey) => {
-      val replicatedEntries               = changed.get(RequestedStatusDataKey).entries
-      val diffs: Set[(WorkerKey, Status)] = replicatedEntries.toSet.diff(requestedStatusLocalCopy.toSet)
+      val replicatedEntries                       = changed.get(RequestedStatusDataKey).entries
+      val diffs: Set[(WorkerCoordinates, Status)] = replicatedEntries.toSet.diff(requestedStatusLocalCopy.toSet)
 
       // when the requested status changes, we must forward the new value to the appropriate actor
       // if it's a one of the workers in the local actorIndex
@@ -181,15 +207,12 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
     case changed @ Changed(ObservedStatusDataKey) =>
       observedStatusLocalCopy = changed.get(ObservedStatusDataKey).entries
 
-    case changed @ Changed(NameIndexDataKey) =>
-      nameIndexLocalCopy = changed.get(NameIndexDataKey).entries
-
     case Terminated(deadActor) =>
       log.debug(s"Worker ${deadActor.path.name} died. Marking it as Stopped.")
       // when a watched actor dies, we mark it as stopped. It will eventually
       // respawn (thanks to EnsureActive) and come back to it's requested status.
-      reversedActorIndex.get(deadActor).foreach { name =>
-        updateObservedStates(name, Stopped)
+      reversedActorIndex.get(deadActor).foreach { coordinates =>
+        updateObservedStates(coordinates, Stopped)
       }
       // ... and then update indices and stop watching
       actorIndex = actorIndex - reversedActorIndex(deadActor)
@@ -197,21 +220,15 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
   }
 
-  private def updateStateChangeRequests(workerMetadata: WorkerKey, requested: Status): Unit = {
-    replicator ! Update(RequestedStatusDataKey, LWWMap.empty[WorkerKey, Status], writeConsistency)(
-      _.:+(workerMetadata -> requested)
+  private def updateStateChangeRequests(coordinates: WorkerCoordinates, requested: Status): Unit = {
+    replicator ! Update(RequestedStatusDataKey, LWWMap.empty[WorkerCoordinates, Status], writeConsistency)(
+      _.:+(coordinates -> requested)
     )
   }
 
-  private def updateObservedStates(workerName: WorkerKey, status: Status): Unit = {
-    replicator ! Update(ObservedStatusDataKey, LWWMap.empty[WorkerKey, Status], writeConsistency)(
-      _.:+(workerName -> status)
-    )
-  }
-
-  private def updateNameIndex(workerName: WorkerKey, metadata: WorkerCoordinates): Unit = {
-    replicator ! Update(NameIndexDataKey, LWWMap.empty[WorkerKey, WorkerCoordinates], writeConsistency)(
-      _.:+(workerName -> metadata)
+  private def updateObservedStates(coordinates: WorkerCoordinates, status: Status): Unit = {
+    replicator ! Update(ObservedStatusDataKey, LWWMap.empty[WorkerCoordinates, Status], writeConsistency)(
+      _.:+(coordinates -> status)
     )
   }
 
