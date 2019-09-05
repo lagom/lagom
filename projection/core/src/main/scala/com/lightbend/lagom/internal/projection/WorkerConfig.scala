@@ -20,7 +20,7 @@ sealed trait WorkerConfig {
 
 object WorkerConfig {
 
-  def apply(config: Config): WorkerConfig = new WorkerConfigImpl(config)
+  def apply(config: Config): WorkerConfig = new WorkerConfigImpl(config.getConfig("lagom.projection.worker"))
 
   private final class WorkerConfigImpl(config: Config) extends WorkerConfig {
     val minBackoff: FiniteDuration = config.getDuration("backoff.supervisor.minBackoff", TimeUnit.MILLISECONDS).millis

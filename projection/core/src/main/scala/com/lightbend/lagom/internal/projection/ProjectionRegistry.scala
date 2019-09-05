@@ -54,7 +54,7 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
       projectionName,
       WorkerCoordinator.props(
         projectionName,
-        WorkerConfig(system.settings.config.getConfig("lagom.projection.worker")),
+        WorkerConfig(system.settings.config),
         projectionWorkerPropsFactory,
         projectionRegistryRef
       ),
