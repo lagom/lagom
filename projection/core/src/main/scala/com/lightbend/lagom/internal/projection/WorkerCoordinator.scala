@@ -23,6 +23,7 @@ object WorkerCoordinator {
 
   def props(
       projectionName: String,
+      workerConfig: WorkerConfig,
       workerProps: WorkerCoordinates => Props,
       projectionRegistryActorRef: ActorRef
   ): Props = {
@@ -32,9 +33,9 @@ object WorkerCoordinator {
         BackoffOpts.onFailure(
           workerProps(coordinates),
           childName = coordinates.workerActorName,
-          minBackoff = 3.seconds,
-          maxBackoff = 30.seconds,
-          randomFactor = 0.2
+          minBackoff = workerConfig.minBackoff,
+          maxBackoff = workerConfig.maxBackoff,
+          randomFactor = workerConfig.randomFactor
         )
       )
 
