@@ -10,7 +10,7 @@
 # eventually, the status is propagated, the worker is started and the event is
 # processed causing the value to become "Hi".
 
-## First, let's assert everything works as expected in tests
+## First, let's assert everything works as expected in tests (both java and scala)
 
 > test
 
@@ -18,16 +18,36 @@
 
 > runAll
 
+##
+## Test the java impl in dev mode
+##
 # The repository exists and responds.
-> assertRequest 10001 /api/hello/Alice "Started reports: default-projected-message"
+> assertRequest 10001 /api-java/hello/Alice "Started reports: default-projected-message"
 
 # Send a command to change the welcome message
-> makeRequest http://localhost:10001/api/set/Alice/Hi
+> makeRequest http://localhost:10001/api-java/set/Alice/Hi
 
-# THe persistent entity changed the message
-> assertRequest 10001 /api/hello/Alice "Hi, Alice"
+# The persistent entity changed the message
+> assertRequest 10001 /api-java/hello/Alice "Hi, Alice"
 # (eventually) the Started processor will change the projected value
-> assertRequest 10001 /api/hello/Alice "Started reports: Hi"
-> assertRequest 10001 /api/hello/Alice "Stopped reports: default-projected-message"
+> assertRequest 10001 /api-java/hello/Alice "Started reports: Hi"
+> assertRequest 10001 /api-java/hello/Alice "Stopped reports: default-projected-message"
+
+##
+## Test the scala impl in dev mode
+##
+# The repository exists and responds.
+> assertRequest 10002 /api-scala/hello/Alice "Started reports: default-projected-message"
+
+# Send a command to change the welcome message
+> makeRequest http://localhost:10002/api-scala/set/Alice/Hi
+
+# The persistent entity changed the message
+> assertRequest 10002 /api-scala/hello/Alice "Hi, Alice"
+# (eventually) the Started processor will change the projected value
+> assertRequest 10002 /api-scala/hello/Alice "Started reports: Hi"
+> assertRequest 10002 /api-scala/hello/Alice "Stopped reports: default-projected-message"
+
+
 
 > stop
