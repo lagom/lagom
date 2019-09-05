@@ -22,7 +22,3 @@ public class StoppedProcessor extends AbstractReadSideProcessor {
     }
 
 }
-
-
-
-

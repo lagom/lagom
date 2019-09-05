@@ -26,14 +26,14 @@ public class HelloServiceTest {
             HelloService service = server.client(HelloService.class);
 
             String greetingMessage = "Hi";
-            service.useGreeting("Alice", greetingMessage).invoke().toCompletableFuture().get(5, SECONDS);
+            service.useGreeting("Alice", greetingMessage).invoke().toCompletableFuture().get(10, SECONDS);
             String msg2 = service.hello("Alice").invoke().toCompletableFuture().get(5, SECONDS);
             // Assert the event was recorded in the database
             assertTrue(msg2.contains("Hi, Alice!"));
             // Immediately after posting the greeting, the started report is still returning defautl values
             assertTrue(msg2.contains("Started reports: default-projected-message"));
 
-            eventually(new FiniteDuration(15, SECONDS),
+            eventually(new FiniteDuration(25, SECONDS),
                 () -> {
                     SECONDS.sleep(1);
 

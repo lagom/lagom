@@ -39,7 +39,9 @@ public class HelloServiceImpl implements HelloService {
         this.startedProcessor = startedProcessor;
         this.stoppedProcessor = stoppedProcessor;
 
-        // This sample is setup to not start the projections eagerly (see application.conf) but we do
+        // The following three lines are the key step on this scripted test:
+        // request the workers of a projection to be started before registering the processor.
+        // This service is setup to not start the projections eagerly (see application.conf) but we do
         // start one of the projections programmatically.
         projections.startAllWorkers(StartedProcessor.NAME);
 
