@@ -55,8 +55,7 @@ class HelloWorldServiceSpec
               |""".stripMargin)
       }
 
-
-      implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 15.seconds, interval = 300.millis)
+      implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 25.seconds, interval = 300.millis)
       eventually{
         val answer = Await.result(client.hello("Bob").invoke(), 5.seconds)
         answer should ===(
