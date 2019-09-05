@@ -7,4 +7,4 @@
 SCALA_VERSION="${SCALA_VERSION:-2.12.9}"
 
 # disable publishing javadoc for scripted
-runSbtNoisy ";set publishArtifact in (Compile, packageDoc) in ThisBuild := false ;++$SCALA_VERSION publishScriptedDependencies ;++${SCALA_VERSION} scripted"
+runSbtNoisy ";set publishArtifact in (Compile, packageDoc) in ThisBuild := false ;+ server-containers/publishLocal;++$SCALA_VERSION publishScriptedDependencies ;++${SCALA_VERSION} scripted"
