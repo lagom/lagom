@@ -41,6 +41,7 @@ import com.lightbend.lagom.projection.Started
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.duration._
 import scala.util.control.NoStackTrace
+import com.lightbend.lagom.internal.projection.WorkerConfig
 
 trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventually with BeforeAndAfter {
   spec: ActorSystemSpec =>
@@ -137,6 +138,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
     val workerCoordinator = WorkerCoordinator.props(
       projectionName,
+      WorkerConfig(system.settings.config),
       processorProps,
       probe.ref
     )
