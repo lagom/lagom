@@ -52,7 +52,12 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
 
     clusterDistribution.start(
       projectionName,
-      WorkerCoordinator.props(projectionName, projectionWorkerPropsFactory, projectionRegistryRef),
+      WorkerCoordinator.props(
+        projectionName,
+        WorkerConfig(system.settings.config),
+        projectionWorkerPropsFactory,
+        projectionRegistryRef
+      ),
       shardNames,
       ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
     )
