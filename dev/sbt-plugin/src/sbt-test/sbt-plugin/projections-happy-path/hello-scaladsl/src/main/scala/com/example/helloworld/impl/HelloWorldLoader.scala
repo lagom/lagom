@@ -43,7 +43,10 @@ abstract class HelloWorldApplication(context: LagomApplicationContext)
   private lazy val startedProcessor = wire[StartedReadSideProcessor]
   private lazy val stoppedProcessor = wire[StoppedReadSideProcessor]
 
-  // send a request before registering the processor (this is an edge case, not a requisite)
+  // The following three lines are the key step on this scripted test:
+  //  - request the workers of a projection to be started before registering the processor.
+  // This service is setup to not start the projections eagerly (see application.conf) but we do
+  // start one of the projections programmatically.
   projections.startAllWorkers(StartedReadSideProcessor.Name)
 
   readSide.register(startedProcessor)
