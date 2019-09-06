@@ -13,6 +13,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfigOnly
+import com.lightbend.lagom.persistence.TolerateFailuresWhenRunningContinuousIntegration
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
@@ -40,7 +41,8 @@ class CassandraClusteredPersistentEntitySpecMultiJvmNode2 extends CassandraClust
 class CassandraClusteredPersistentEntitySpecMultiJvmNode3 extends CassandraClusteredPersistentEntitySpec
 
 class CassandraClusteredPersistentEntitySpec
-    extends AbstractClusteredPersistentEntitySpec(CassandraClusteredPersistentEntityConfig) {
+    extends AbstractClusteredPersistentEntitySpec(CassandraClusteredPersistentEntityConfig)
+    with TolerateFailuresWhenRunningContinuousIntegration {
 
   import CassandraClusteredPersistentEntityConfig._
 
