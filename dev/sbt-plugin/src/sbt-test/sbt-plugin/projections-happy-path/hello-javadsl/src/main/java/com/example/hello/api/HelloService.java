@@ -14,12 +14,13 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface HelloService extends Service {
     /**
-     * Example: curl http://localhost:9000/api/hello/Alice
+     * Example: curl http://localhost:9000/api-java/hello/Alice
      */
     ServiceCall<NotUsed, String> hello(String id);
 
     /**
-     * Example: curl http://localhost:9000/api/set/Alice/Hi
+     * We're using GET ops to change the state since the code in the scripted test is a lot simpler.
+     * Example: curl http://localhost:9000/api-java/set/Alice/Hi
      */
     ServiceCall<NotUsed, Done> useGreeting(String id, String message);
 
@@ -27,8 +28,8 @@ public interface HelloService extends Service {
     default Descriptor descriptor() {
         return named("hello")
             .withCalls(
-                pathCall("/api/hello/:id", this::hello),
-                pathCall("/api/set/:id/:message", this::useGreeting)
+                pathCall("/api-java/hello/:id", this::hello),
+                pathCall("/api-java/set/:id/:message", this::useGreeting)
             ).withAutoAcl(true);
     }
 }
