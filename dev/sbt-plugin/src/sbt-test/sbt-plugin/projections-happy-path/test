@@ -1,0 +1,33 @@
+# Structure of this test:
+# =======================
+
+# This tests ensures some java code can manually start a single projection
+# programmatically overriding the `auto-start` flag (see application.conf).
+
+# There are two projections (read-side processor) over a single Persistent
+# entity. A single endpoint returns data produced by both projections. Originally
+# the value projected on `StartedProcessor` is "default-projected-message" but
+# eventually, the status is propagated, the worker is started and the event is
+# processed causing the value to become "Hi".
+
+## First, let's assert everything works as expected in tests
+
+> test
+
+## Now, let's play with some dev mode...
+
+> runAll
+
+# The repository exists and responds.
+> assertRequest 10001 /api/hello/Alice "Started reports: default-projected-message"
+
+# Send a command to change the welcome message
+> makeRequest http://localhost:10001/api/set/Alice/Hi
+
+# THe persistent entity changed the message
+> assertRequest 10001 /api/hello/Alice "Hi, Alice"
+# (eventually) the Started processor will change the projected value
+> assertRequest 10001 /api/hello/Alice "Started reports: Hi"
+> assertRequest 10001 /api/hello/Alice "Stopped reports: default-projected-message"
+
+> stop
