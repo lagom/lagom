@@ -112,11 +112,13 @@ trait LagomServiceApiBridge {
   def rawExceptionMessageMessageAsText(rem: RawExceptionMessage): String
   def rawExceptionMessageToResponseHeader(rem: RawExceptionMessage): ResponseHeader
   def newRawExceptionMessage(errorCode: ErrorCode, protocol: MessageProtocol, message: ByteString): RawExceptionMessage
+  def errorCodeFromHttpStatus(status: Int): ErrorCode
 
   type ErrorCode
 
   type ServiceCall[Request, Response]
   type Call[Request, Response]
+  def callForRequest(descriptor: Descriptor, requestHeader: RequestHeader): Call[_, _]
   def methodForCall(call: Call[_, _]): Method
   def callRequestSerializer[Request, W](call: Call[Request, _]): MessageSerializer[Request, W]
   def callResponseSerializer[Response, W](call: Call[_, Response]): MessageSerializer[Response, W]

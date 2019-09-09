@@ -26,6 +26,7 @@ import play.api.Logger
 import play.api.http.HeaderNames
 import play.api.http.HttpConfiguration
 import play.api.http.HttpEntity.Strict
+import play.api.http.HttpErrorHandler
 import play.api.http.websocket.BinaryMessage
 import play.api.http.websocket.CloseMessage
 import play.api.http.websocket.Message
@@ -39,16 +40,18 @@ import play.api.mvc.PlayBodyParsers
 import play.api.mvc.Result
 import play.api.mvc.Results
 import play.api.mvc.WebSocket
-import play.api.mvc.{ RequestHeader => PlayRequestHeader }
-import play.api.routing.Router.Routes
+import play.api.mvc.{RequestHeader => PlayRequestHeader}
 import play.api.routing.HandlerDef
 import play.api.routing.Router
+import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 
 import scala.collection.immutable
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
+import scala.concurrent.duration.Duration
 import scala.util.Try
 import scala.util.control.NonFatal
 
@@ -68,6 +71,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
 
   protected val descriptor: Descriptor
   protected val serviceRoutes: Seq[ServiceRoute]
+  protected val errorHandler = ServiceCallErrorHandler // todo: inject
 
   import ServiceRouter._
 
@@ -183,13 +187,15 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
       handleServiceCall(serviceCall, descriptor, requestSerializer, responseSerializer, filteredHeaders, request)
         .recover {
           case NonFatal(e) =>
-            logException(e, descriptor, call)
-            exceptionToResult(descriptor, filteredHeaders, e)
+//            logException(e, descriptor, call)
+            val result = processError(request, e)
+            Await.result(result, Duration.Inf)
         }
     } catch {
       case NonFatal(e) =>
-        logException(e, descriptor, call)
-        Accumulator.done(exceptionToResult(descriptor, filteredHeaders, e))
+//        logException(e, descriptor, call)
+        val result = processError(request, e)
+        Accumulator.done(Await.result(result, Duration.Inf))
     }
   }
 
@@ -261,7 +267,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
     def log = Logger(descriptorName(descriptor))
 
     val cause = exc match {
-      case c: CompletionException => c.getCause
+      case c: CompletionException => Option(c.getCause).getOrElse(c)
       case e                      => e
     }
     maybeLogException(cause, log, call)
@@ -554,4 +560,24 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
       request: Request
   ): Future[(ResponseHeader, Response)]
 
+  protected def processError(requestHeader: PlayRequestHeader, throwable: Throwable): Future[Result]
+
+  protected object ServiceCallErrorHandler extends HttpErrorHandler {
+    override def onClientError(request: PlayRequestHeader, statusCode: Int, message: String): Future[Result] = {
+      val unfilteredHeader = toLagomRequestHeader(request)
+      val filteredHeaders  = headerFilterTransformServerRequest(descriptorHeaderFilter(descriptor), unfilteredHeader)
+      val exception        = newTransportException(errorCodeFromHttpStatus(statusCode), message)
+      val result           = exceptionToResult(descriptor, filteredHeaders, exception)
+      logException(exception, descriptor, callForRequest(descriptor, toLagomRequestHeader(request)))
+      Future.successful(result)
+    }
+
+    override def onServerError(request: PlayRequestHeader, exception: Throwable): Future[Result] = {
+      val unfilteredHeader = toLagomRequestHeader(request)
+      val filteredHeaders  = headerFilterTransformServerRequest(descriptorHeaderFilter(descriptor), unfilteredHeader)
+      val result           = exceptionToResult(descriptor, filteredHeaders, exception)
+      logException(exception, descriptor, callForRequest(descriptor, toLagomRequestHeader(request)))
+      Future.successful(result)
+    }
+  }
 }

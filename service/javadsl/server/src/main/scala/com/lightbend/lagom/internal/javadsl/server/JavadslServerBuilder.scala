@@ -5,8 +5,8 @@
 package com.lightbend.lagom.internal.javadsl.server
 
 import java.util.function.BiFunction
-import java.util.function.{ Function => JFunction }
-import java.util.{ List => JList }
+import java.util.function.{Function => JFunction}
+import java.util.{List => JList}
 
 import akka.stream.Materializer
 import akka.util.ByteString
@@ -14,12 +14,12 @@ import com.lightbend.lagom.internal.api._
 import com.lightbend.lagom.internal.javadsl.api._
 import com.lightbend.lagom.internal.javadsl.client.JavadslServiceApiBridge
 import com.lightbend.lagom.internal.server.ServiceRouter
-import com.lightbend.lagom.javadsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.javadsl.api.Descriptor
+import com.lightbend.lagom.javadsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceInfo
 import com.lightbend.lagom.javadsl.api.deser.StreamedMessageSerializer
-import com.lightbend.lagom.javadsl.api.transport.{ RequestHeader => _, _ }
+import com.lightbend.lagom.javadsl.api.transport._
 import com.lightbend.lagom.javadsl.jackson.JacksonExceptionSerializer
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory
 import com.lightbend.lagom.javadsl.server.LagomServiceRouter
@@ -34,9 +34,11 @@ import play.api.Environment
 import play.api.Logger
 import play.api.http.HttpConfiguration
 import play.api.inject.Injector
-import play.api.mvc.{ RequestHeader => PlayRequestHeader, ResponseHeader => _, _ }
-import play.api.routing.Router.Routes
+import play.api.mvc
+import play.api.mvc.{RequestHeader => PlayRequestHeader}
+import play.api.mvc._
 import play.api.routing.Router
+import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 
 import scala.collection.JavaConverters._
@@ -101,8 +103,8 @@ class JavadslServerBuilder @Inject()(
         )
       }
 
-      import org.pcollections._
       import com.lightbend.lagom.javadsl.api._
+      import org.pcollections._
       val acls: PSequence[ServiceAcl] = descriptors
         .filter(_.locatableService())
         .map(_.acls())
@@ -265,4 +267,10 @@ class JavadslServiceRouter(
     }
   }
 
+  override protected def processError(requestHeader: mvc.RequestHeader, throwable: Throwable): Future[Result] = {
+    throwable match {
+      case p: PayloadTooLarge => errorHandler.onClientError(requestHeader, p.errorCode().http(), throwable.getMessage)
+      case _                  => errorHandler.onServerError(requestHeader, throwable)
+    }
+  }
 }

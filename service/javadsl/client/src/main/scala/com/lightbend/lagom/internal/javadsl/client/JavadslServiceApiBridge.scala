@@ -13,6 +13,7 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.lightbend.lagom.internal.api.HeaderUtils
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
+import com.lightbend.lagom.internal.javadsl.api.JavadslPath
 import com.lightbend.lagom.javadsl.api
 import com.lightbend.lagom.javadsl.api.Descriptor.RestCallId
 import com.lightbend.lagom.javadsl.api.deser.ExceptionMessage
@@ -168,11 +169,20 @@ trait JavadslServiceApiBridge extends LagomServiceApiBridge {
       message: ByteString
   ): RawExceptionMessage =
     new deser.RawExceptionMessage(errorCode, protocol, message)
-
+  override def errorCodeFromHttpStatus(status: Int): ErrorCode = transport.TransportErrorCode.fromHttp(status)
   override type ErrorCode = transport.TransportErrorCode
 
   override type ServiceCall[Request, Response] = api.ServiceCall[Request, Response]
   override type Call[Request, Response]        = api.Descriptor.Call[Request, Response]
+  override def callForRequest(descriptor: Descriptor, requestHeader: RequestHeader): Call[_, _] = {
+    descriptor
+      .calls()
+      .asScala
+      .groupBy(methodForCall)
+      .getOrElse(requestHeader.method, Vector.empty)
+      .find(call => JavadslPath.fromCallId(call.callId()).regex.findFirstIn(requestHeader.uri.getPath).nonEmpty)
+      .get
+  }
   override def methodForCall(call: Call[_, _]): Method =
     call.callId match {
       case rest: RestCallId => rest.method

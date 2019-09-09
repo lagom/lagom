@@ -10,11 +10,12 @@ import java.security.Principal
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.lightbend.lagom.internal.api.transport.LagomServiceApiBridge
-import com.lightbend.lagom.scaladsl.api.deser
-import com.lightbend.lagom.scaladsl.api.transport
+import com.lightbend.lagom.internal.scaladsl.api.ScaladslPath
 import com.lightbend.lagom.scaladsl.api
 import com.lightbend.lagom.scaladsl.api.Descriptor.RestCallId
+import com.lightbend.lagom.scaladsl.api.deser
 import com.lightbend.lagom.scaladsl.api.security.ServicePrincipal
+import com.lightbend.lagom.scaladsl.api.transport
 import com.lightbend.lagom.scaladsl.api.transport.ExceptionMessage
 
 import scala.collection.immutable
@@ -134,11 +135,18 @@ trait ScaladslServiceApiBridge extends LagomServiceApiBridge {
       message: ByteString
   ): RawExceptionMessage =
     deser.RawExceptionMessage(errorCode, protocol, message)
-
+  override def errorCodeFromHttpStatus(status: Int): ErrorCode = transport.TransportErrorCode.fromHttp(status)
   override type ErrorCode = transport.TransportErrorCode
 
   override type ServiceCall[Request, Response] = api.ServiceCall[Request, Response]
   override type Call[Request, Response]        = api.Descriptor.Call[Request, Response]
+  override def callForRequest(descriptor: Descriptor, requestHeader: RequestHeader): Call[_, _] = {
+    descriptor.calls
+      .groupBy(methodForCall)
+      .getOrElse(requestHeader.method, Vector.empty)
+      .find(call => ScaladslPath.fromCallId(call.callId).regex.findFirstIn(requestHeader.uri.getPath).nonEmpty)
+      .get
+  }
   override def methodForCall(call: Call[_, _]): Method =
     call.callId match {
       case rest: RestCallId => rest.method
