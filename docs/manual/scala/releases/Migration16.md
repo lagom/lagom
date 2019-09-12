@@ -57,6 +57,8 @@ Note that although it's technically possible to run the migration while running 
 
 As usual, before upgrading to Lagom 1.6.0, makes sure you are using the latest version on the 1.5.x series.
 
+During a rolling upgrade your [[Projections]] may experience a degraded behavior. The service will self-heal when the rolling upgrade completes.
+
 Lagom 1.6.0 has a few new default settings that will prevent you to run a rolling upgrade. In case you prefer to run a rolling upgrade, you will need to opt-out from each of these new defaults as explained below.
 
 This is a summary of changes in Lagom 1.6 that would require a full cluster shutdown rather than a rolling upgrade:
