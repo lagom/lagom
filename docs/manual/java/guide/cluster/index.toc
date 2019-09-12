@@ -7,5 +7,6 @@ ReadSideRDBMS:Relational Database Read-Side Support;next=ReadSideJDBC,ReadSideJP
 ReadSideJDBC:JDBC Read-Side Support
 ReadSideJPA:JPA Read-Side Support
 PubSub:Publish-Subscribe
-Serialization:Serialization
 Cluster:Cluster
+Serialization:Serialization
+Projections:Projections
