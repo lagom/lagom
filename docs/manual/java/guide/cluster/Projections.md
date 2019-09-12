@@ -35,3 +35,5 @@ When a new instance of a projection worker is created the rules to decide its st
 
 * if there's worker requested status, use it; if not
 * use the default value in `application.conf`
+
+Because the _requested status_ is a distributed, in-memory value, there is an edge case you will have to consider when you need a worker to be stopped. When starting a new node and having that node join a n existing cluster, it is possible that some workers are spawned in the node before the _requested status_ value is received from the peer nodes. In that case, the default `lagom.projection.auto-start.enabled` will be used to decide if the spanwed worker should be stopped or started. If your default is `enabled = true` but the in-memory, replicated value is `Stopped` then there's a race condition and you could observe your worker _start-and-then-stop_. To prevent the  _start-and-then-stop_ behavior, opt out of `lagom.projection.auto-start.enabled = true` and always handle worker startup using the methods `startAllWorkers`/`startWorker` on the `Projections`AP.
