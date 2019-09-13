@@ -1,6 +1,6 @@
 # Projections
 
-In Lagom, projections are a processes consuming from a Persistent Entity Journal and handling each event via a [[read side table|ReadSide]] or emiting it into a broker topic via a [[`TopicProducer`|MessageBrokerApi#Implementing-a-topic]]. Here, Projections only refer to `ReadSideProcessors` and `TopicProducer`'s' (not Broker subscribers).
+In Lagom, projections are processes consuming from a Persistent Entity Journal and handling each event via a [[read side table|ReadSide]] or emitting it into a broker topic via a [[`TopicProducer`|MessageBrokerApi#Implementing-a-topic]]. Here, Projections only refer to `ReadSideProcessors` and `TopicProducer`'s' (not Broker subscribers).
 
 Projections are a distributed process. Lagom takes care to handle as many instances of your projection as [[shards|ReadSide#Event-tags]] on your journal and then distribute those instances around the cluster so the load is balanced. By default the multiple instances of your projection will be started but you can opt out from that behavior using the setting:
 
