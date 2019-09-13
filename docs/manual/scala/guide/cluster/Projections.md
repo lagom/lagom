@@ -22,7 +22,7 @@ Stopping and starting all the workers or a single worker of a projection is an a
 
 To request and modify the status of your projections simply use the `projections` instance provided by any of the [[`Components`|ScalaComponents]] that create projections (any persistence implementation or broker API implementation).
 
-The _requested status_ is a volatile, in-memory value but it is replicated across your cluster. Only when the whole cluster is restarted you may have to request a particular status again. Also, because of the replicated nature, the _requested status_ may be overwriten by multiple nodes on your cluster at the same time. The implementation is such that [last writer wins](https://doc.akka.io/docs/akka/current/distributed-data.html#data-types).
+The _requested status_ is a volatile, in-memory value but it is replicated across your cluster. Only when the whole cluster is restarted you may have to request a particular status again. Also, because of its replicated nature, the _requested status_ may be overwritten by multiple nodes on your cluster at the same time. The implementation is such that the [last writer wins](https://doc.akka.io/docs/akka/current/distributed-data.html#data-types).
 
 When a new instance of a projection worker is created the rules to decide its status are:
 
