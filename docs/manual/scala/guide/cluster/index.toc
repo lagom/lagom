@@ -9,3 +9,4 @@ ReadSideSlick:Slick Read-Side Support
 PubSub:Publish-Subscribe
 Cluster:Cluster
 Serialization:Serialization
+Projections:Projections
