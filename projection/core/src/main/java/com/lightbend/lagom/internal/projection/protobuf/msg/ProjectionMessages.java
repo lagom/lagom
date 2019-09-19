@@ -10,80 +10,86 @@ package com.lightbend.lagom.internal.projection.protobuf.msg;
 public final class ProjectionMessages {
   private ProjectionMessages() {}
 
-  public static void registerAllExtensions(akka.protobuf.ExtensionRegistry registry) {}
+  public static void registerAllExtensions(
+      akka.protobufv3.internal.ExtensionRegistryLite registry) {}
+
+  public static void registerAllExtensions(akka.protobufv3.internal.ExtensionRegistry registry) {
+    registerAllExtensions((akka.protobufv3.internal.ExtensionRegistryLite) registry);
+  }
 
   public interface WorkerOrBuilder
       extends
       // @@protoc_insertion_point(interface_extends:com.lightbend.lagom.internal.projection.Worker)
-      akka.protobuf.MessageOrBuilder {
+      akka.protobufv3.internal.MessageOrBuilder {
 
     /** <code>required string tagName = 1;</code> */
     boolean hasTagName();
     /** <code>required string tagName = 1;</code> */
     java.lang.String getTagName();
     /** <code>required string tagName = 1;</code> */
-    akka.protobuf.ByteString getTagNameBytes();
+    akka.protobufv3.internal.ByteString getTagNameBytes();
 
     /** <code>required string key = 2;</code> */
     boolean hasKey();
     /** <code>required string key = 2;</code> */
     java.lang.String getKey();
     /** <code>required string key = 2;</code> */
-    akka.protobuf.ByteString getKeyBytes();
+    akka.protobufv3.internal.ByteString getKeyBytes();
 
     /** <code>required string requestedStatus = 3;</code> */
     boolean hasRequestedStatus();
     /** <code>required string requestedStatus = 3;</code> */
     java.lang.String getRequestedStatus();
     /** <code>required string requestedStatus = 3;</code> */
-    akka.protobuf.ByteString getRequestedStatusBytes();
+    akka.protobufv3.internal.ByteString getRequestedStatusBytes();
 
     /** <code>required string observedStatus = 4;</code> */
     boolean hasObservedStatus();
     /** <code>required string observedStatus = 4;</code> */
     java.lang.String getObservedStatus();
     /** <code>required string observedStatus = 4;</code> */
-    akka.protobuf.ByteString getObservedStatusBytes();
+    akka.protobufv3.internal.ByteString getObservedStatusBytes();
   }
   /** Protobuf type {@code com.lightbend.lagom.internal.projection.Worker} */
-  public static final class Worker extends akka.protobuf.GeneratedMessage
+  public static final class Worker extends akka.protobufv3.internal.GeneratedMessageV3
       implements
       // @@protoc_insertion_point(message_implements:com.lightbend.lagom.internal.projection.Worker)
       WorkerOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use Worker.newBuilder() to construct.
-    private Worker(akka.protobuf.GeneratedMessage.Builder<?> builder) {
+    private Worker(akka.protobufv3.internal.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
 
-    private Worker(boolean noInit) {
-      this.unknownFields = akka.protobuf.UnknownFieldSet.getDefaultInstance();
+    private Worker() {
+      tagName_ = "";
+      key_ = "";
+      requestedStatus_ = "";
+      observedStatus_ = "";
     }
-
-    private static final Worker defaultInstance;
-
-    public static Worker getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public Worker getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final akka.protobuf.UnknownFieldSet unknownFields;
 
     @java.lang.Override
-    public final akka.protobuf.UnknownFieldSet getUnknownFields() {
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
+      return new Worker();
+    }
+
+    @java.lang.Override
+    public final akka.protobufv3.internal.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
     }
 
     private Worker(
-        akka.protobuf.CodedInputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws akka.protobuf.InvalidProtocolBufferException {
-      initFields();
+        akka.protobufv3.internal.CodedInputStream input,
+        akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+        throws akka.protobufv3.internal.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
-      akka.protobuf.UnknownFieldSet.Builder unknownFields =
-          akka.protobuf.UnknownFieldSet.newBuilder();
+      akka.protobufv3.internal.UnknownFieldSet.Builder unknownFields =
+          akka.protobufv3.internal.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -92,49 +98,47 @@ public final class ProjectionMessages {
             case 0:
               done = true;
               break;
-            default:
-              {
-                if (!parseUnknownField(
-                    input, unknownFields,
-                    extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
             case 10:
               {
-                akka.protobuf.ByteString bs = input.readBytes();
+                akka.protobufv3.internal.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000001;
                 tagName_ = bs;
                 break;
               }
             case 18:
               {
-                akka.protobuf.ByteString bs = input.readBytes();
+                akka.protobufv3.internal.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000002;
                 key_ = bs;
                 break;
               }
             case 26:
               {
-                akka.protobuf.ByteString bs = input.readBytes();
+                akka.protobufv3.internal.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000004;
                 requestedStatus_ = bs;
                 break;
               }
             case 34:
               {
-                akka.protobuf.ByteString bs = input.readBytes();
+                akka.protobufv3.internal.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000008;
                 observedStatus_ = bs;
                 break;
               }
+            default:
+              {
+                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
           }
         }
-      } catch (akka.protobuf.InvalidProtocolBufferException e) {
+      } catch (akka.protobufv3.internal.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
-        throw new akka.protobuf.InvalidProtocolBufferException(e.getMessage())
+        throw new akka.protobufv3.internal.InvalidProtocolBufferException(e)
             .setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
@@ -142,12 +146,14 @@ public final class ProjectionMessages {
       }
     }
 
-    public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+    public static final akka.protobufv3.internal.Descriptors.Descriptor getDescriptor() {
       return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
           .internal_static_com_lightbend_lagom_internal_projection_Worker_descriptor;
     }
 
-    protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+    @java.lang.Override
+    protected akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
       return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
           .internal_static_com_lightbend_lagom_internal_projection_Worker_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -156,27 +162,12 @@ public final class ProjectionMessages {
                   .class);
     }
 
-    public static akka.protobuf.Parser<Worker> PARSER =
-        new akka.protobuf.AbstractParser<Worker>() {
-          public Worker parsePartialFrom(
-              akka.protobuf.CodedInputStream input,
-              akka.protobuf.ExtensionRegistryLite extensionRegistry)
-              throws akka.protobuf.InvalidProtocolBufferException {
-            return new Worker(input, extensionRegistry);
-          }
-        };
-
-    @java.lang.Override
-    public akka.protobuf.Parser<Worker> getParserForType() {
-      return PARSER;
-    }
-
     private int bitField0_;
     public static final int TAGNAME_FIELD_NUMBER = 1;
-    private java.lang.Object tagName_;
+    private volatile java.lang.Object tagName_;
     /** <code>required string tagName = 1;</code> */
     public boolean hasTagName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /** <code>required string tagName = 1;</code> */
     public java.lang.String getTagName() {
@@ -184,7 +175,7 @@ public final class ProjectionMessages {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+        akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           tagName_ = s;
@@ -193,22 +184,23 @@ public final class ProjectionMessages {
       }
     }
     /** <code>required string tagName = 1;</code> */
-    public akka.protobuf.ByteString getTagNameBytes() {
+    public akka.protobufv3.internal.ByteString getTagNameBytes() {
       java.lang.Object ref = tagName_;
       if (ref instanceof java.lang.String) {
-        akka.protobuf.ByteString b = akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        akka.protobufv3.internal.ByteString b =
+            akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
         tagName_ = b;
         return b;
       } else {
-        return (akka.protobuf.ByteString) ref;
+        return (akka.protobufv3.internal.ByteString) ref;
       }
     }
 
     public static final int KEY_FIELD_NUMBER = 2;
-    private java.lang.Object key_;
+    private volatile java.lang.Object key_;
     /** <code>required string key = 2;</code> */
     public boolean hasKey() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /** <code>required string key = 2;</code> */
     public java.lang.String getKey() {
@@ -216,7 +208,7 @@ public final class ProjectionMessages {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+        akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           key_ = s;
@@ -225,22 +217,23 @@ public final class ProjectionMessages {
       }
     }
     /** <code>required string key = 2;</code> */
-    public akka.protobuf.ByteString getKeyBytes() {
+    public akka.protobufv3.internal.ByteString getKeyBytes() {
       java.lang.Object ref = key_;
       if (ref instanceof java.lang.String) {
-        akka.protobuf.ByteString b = akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        akka.protobufv3.internal.ByteString b =
+            akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
         key_ = b;
         return b;
       } else {
-        return (akka.protobuf.ByteString) ref;
+        return (akka.protobufv3.internal.ByteString) ref;
       }
     }
 
     public static final int REQUESTEDSTATUS_FIELD_NUMBER = 3;
-    private java.lang.Object requestedStatus_;
+    private volatile java.lang.Object requestedStatus_;
     /** <code>required string requestedStatus = 3;</code> */
     public boolean hasRequestedStatus() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /** <code>required string requestedStatus = 3;</code> */
     public java.lang.String getRequestedStatus() {
@@ -248,7 +241,7 @@ public final class ProjectionMessages {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+        akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           requestedStatus_ = s;
@@ -257,22 +250,23 @@ public final class ProjectionMessages {
       }
     }
     /** <code>required string requestedStatus = 3;</code> */
-    public akka.protobuf.ByteString getRequestedStatusBytes() {
+    public akka.protobufv3.internal.ByteString getRequestedStatusBytes() {
       java.lang.Object ref = requestedStatus_;
       if (ref instanceof java.lang.String) {
-        akka.protobuf.ByteString b = akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        akka.protobufv3.internal.ByteString b =
+            akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
         requestedStatus_ = b;
         return b;
       } else {
-        return (akka.protobuf.ByteString) ref;
+        return (akka.protobufv3.internal.ByteString) ref;
       }
     }
 
     public static final int OBSERVEDSTATUS_FIELD_NUMBER = 4;
-    private java.lang.Object observedStatus_;
+    private volatile java.lang.Object observedStatus_;
     /** <code>required string observedStatus = 4;</code> */
     public boolean hasObservedStatus() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /** <code>required string observedStatus = 4;</code> */
     public java.lang.String getObservedStatus() {
@@ -280,7 +274,7 @@ public final class ProjectionMessages {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+        akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           observedStatus_ = s;
@@ -289,26 +283,21 @@ public final class ProjectionMessages {
       }
     }
     /** <code>required string observedStatus = 4;</code> */
-    public akka.protobuf.ByteString getObservedStatusBytes() {
+    public akka.protobufv3.internal.ByteString getObservedStatusBytes() {
       java.lang.Object ref = observedStatus_;
       if (ref instanceof java.lang.String) {
-        akka.protobuf.ByteString b = akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        akka.protobufv3.internal.ByteString b =
+            akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
         observedStatus_ = b;
         return b;
       } else {
-        return (akka.protobuf.ByteString) ref;
+        return (akka.protobufv3.internal.ByteString) ref;
       }
-    }
-
-    private void initFields() {
-      tagName_ = "";
-      key_ = "";
-      requestedStatus_ = "";
-      observedStatus_ = "";
     }
 
     private byte memoizedIsInitialized = -1;
 
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -334,147 +323,229 @@ public final class ProjectionMessages {
       return true;
     }
 
-    public void writeTo(akka.protobuf.CodedOutputStream output) throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getTagNameBytes());
+    @java.lang.Override
+    public void writeTo(akka.protobufv3.internal.CodedOutputStream output)
+        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        akka.protobufv3.internal.GeneratedMessageV3.writeString(output, 1, tagName_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getKeyBytes());
+      if (((bitField0_ & 0x00000002) != 0)) {
+        akka.protobufv3.internal.GeneratedMessageV3.writeString(output, 2, key_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBytes(3, getRequestedStatusBytes());
+      if (((bitField0_ & 0x00000004) != 0)) {
+        akka.protobufv3.internal.GeneratedMessageV3.writeString(output, 3, requestedStatus_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getObservedStatusBytes());
+      if (((bitField0_ & 0x00000008) != 0)) {
+        akka.protobufv3.internal.GeneratedMessageV3.writeString(output, 4, observedStatus_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
-
+    @java.lang.Override
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += akka.protobuf.CodedOutputStream.computeBytesSize(1, getTagNameBytes());
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += akka.protobufv3.internal.GeneratedMessageV3.computeStringSize(1, tagName_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += akka.protobuf.CodedOutputStream.computeBytesSize(2, getKeyBytes());
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += akka.protobufv3.internal.GeneratedMessageV3.computeStringSize(2, key_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += akka.protobuf.CodedOutputStream.computeBytesSize(3, getRequestedStatusBytes());
+      if (((bitField0_ & 0x00000004) != 0)) {
+        size += akka.protobufv3.internal.GeneratedMessageV3.computeStringSize(3, requestedStatus_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += akka.protobuf.CodedOutputStream.computeBytesSize(4, getObservedStatusBytes());
+      if (((bitField0_ & 0x00000008) != 0)) {
+        size += akka.protobufv3.internal.GeneratedMessageV3.computeStringSize(4, observedStatus_);
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+        return true;
+      }
+      if (!(obj
+          instanceof
+          com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker)) {
+        return super.equals(obj);
+      }
+      com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker other =
+          (com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker) obj;
+
+      if (hasTagName() != other.hasTagName()) return false;
+      if (hasTagName()) {
+        if (!getTagName().equals(other.getTagName())) return false;
+      }
+      if (hasKey() != other.hasKey()) return false;
+      if (hasKey()) {
+        if (!getKey().equals(other.getKey())) return false;
+      }
+      if (hasRequestedStatus() != other.hasRequestedStatus()) return false;
+      if (hasRequestedStatus()) {
+        if (!getRequestedStatus().equals(other.getRequestedStatus())) return false;
+      }
+      if (hasObservedStatus() != other.hasObservedStatus()) return false;
+      if (hasObservedStatus()) {
+        if (!getObservedStatus().equals(other.getObservedStatus())) return false;
+      }
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
 
     @java.lang.Override
-    protected java.lang.Object writeReplace() throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasTagName()) {
+        hash = (37 * hash) + TAGNAME_FIELD_NUMBER;
+        hash = (53 * hash) + getTagName().hashCode();
+      }
+      if (hasKey()) {
+        hash = (37 * hash) + KEY_FIELD_NUMBER;
+        hash = (53 * hash) + getKey().hashCode();
+      }
+      if (hasRequestedStatus()) {
+        hash = (37 * hash) + REQUESTEDSTATUS_FIELD_NUMBER;
+        hash = (53 * hash) + getRequestedStatus().hashCode();
+      }
+      if (hasObservedStatus()) {
+        hash = (37 * hash) + OBSERVEDSTATUS_FIELD_NUMBER;
+        hash = (53 * hash) + getObservedStatus().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
-        parseFrom(akka.protobuf.ByteString data)
-            throws akka.protobuf.InvalidProtocolBufferException {
+        parseFrom(java.nio.ByteBuffer data)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
         parseFrom(
-            akka.protobuf.ByteString data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws akka.protobuf.InvalidProtocolBufferException {
+            java.nio.ByteBuffer data,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
-        parseFrom(byte[] data) throws akka.protobuf.InvalidProtocolBufferException {
+        parseFrom(akka.protobufv3.internal.ByteString data)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
-        parseFrom(byte[] data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws akka.protobuf.InvalidProtocolBufferException {
+        parseFrom(
+            akka.protobufv3.internal.ByteString data,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
+        parseFrom(byte[] data) throws akka.protobufv3.internal.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
+        parseFrom(byte[] data, akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
         parseFrom(java.io.InputStream input) throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
-        parseFrom(java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
-        parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
-        parseDelimitedFrom(
-            java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
-        parseFrom(akka.protobuf.CodedInputStream input) throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
         parseFrom(
-            akka.protobuf.CodedInputStream input,
-            akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            java.io.InputStream input,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() {
-      return Builder.create();
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
+        parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input);
     }
 
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
+        parseDelimitedFrom(
+            java.io.InputStream input,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
+        parseFrom(akka.protobufv3.internal.CodedInputStream input) throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
+        parseFrom(
+            akka.protobufv3.internal.CodedInputStream input,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
     public Builder newBuilderForType() {
       return newBuilder();
     }
 
-    public static Builder newBuilder(
-        com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
 
-    public Builder toBuilder() {
-      return newBuilder(this);
+    public static Builder newBuilder(
+        com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
 
     @java.lang.Override
-    protected Builder newBuilderForType(akka.protobuf.GeneratedMessage.BuilderParent parent) {
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        akka.protobufv3.internal.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /** Protobuf type {@code com.lightbend.lagom.internal.projection.Worker} */
-    public static final class Builder extends akka.protobuf.GeneratedMessage.Builder<Builder>
+    public static final class Builder
+        extends akka.protobufv3.internal.GeneratedMessageV3.Builder<Builder>
         implements
         // @@protoc_insertion_point(builder_implements:com.lightbend.lagom.internal.projection.Worker)
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.WorkerOrBuilder {
-      public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+      public static final akka.protobufv3.internal.Descriptors.Descriptor getDescriptor() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .internal_static_com_lightbend_lagom_internal_projection_Worker_descriptor;
       }
 
-      protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+      @java.lang.Override
+      protected akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .internal_static_com_lightbend_lagom_internal_projection_Worker_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -490,19 +561,16 @@ public final class ProjectionMessages {
         maybeForceBuilderInitialization();
       }
 
-      private Builder(akka.protobuf.GeneratedMessage.BuilderParent parent) {
+      private Builder(akka.protobufv3.internal.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
 
       private void maybeForceBuilderInitialization() {
-        if (akka.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {}
+        if (akka.protobufv3.internal.GeneratedMessageV3.alwaysUseFieldBuilders) {}
       }
 
-      private static Builder create() {
-        return new Builder();
-      }
-
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         tagName_ = "";
@@ -516,21 +584,20 @@ public final class ProjectionMessages {
         return this;
       }
 
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public akka.protobuf.Descriptors.Descriptor getDescriptorForType() {
+      @java.lang.Override
+      public akka.protobufv3.internal.Descriptors.Descriptor getDescriptorForType() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .internal_static_com_lightbend_lagom_internal_projection_Worker_descriptor;
       }
 
+      @java.lang.Override
       public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
           getDefaultInstanceForType() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
             .getDefaultInstance();
       }
 
+      @java.lang.Override
       public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
           build() {
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker result =
@@ -541,6 +608,7 @@ public final class ProjectionMessages {
         return result;
       }
 
+      @java.lang.Override
       public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
           buildPartial() {
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker result =
@@ -548,19 +616,19 @@ public final class ProjectionMessages {
                 this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.tagName_ = tagName_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.key_ = key_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.requestedStatus_ = requestedStatus_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000008;
         }
         result.observedStatus_ = observedStatus_;
@@ -569,7 +637,43 @@ public final class ProjectionMessages {
         return result;
       }
 
-      public Builder mergeFrom(akka.protobuf.Message other) {
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+
+      @java.lang.Override
+      public Builder setField(
+          akka.protobufv3.internal.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.setField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder clearField(akka.protobufv3.internal.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+
+      @java.lang.Override
+      public Builder clearOneof(akka.protobufv3.internal.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+
+      @java.lang.Override
+      public Builder setRepeatedField(
+          akka.protobufv3.internal.Descriptors.FieldDescriptor field,
+          int index,
+          java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+
+      @java.lang.Override
+      public Builder addRepeatedField(
+          akka.protobufv3.internal.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(akka.protobufv3.internal.Message other) {
         if (other
             instanceof
             com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker) {
@@ -607,43 +711,42 @@ public final class ProjectionMessages {
           observedStatus_ = other.observedStatus_;
           onChanged();
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         if (!hasTagName()) {
-
           return false;
         }
         if (!hasKey()) {
-
           return false;
         }
         if (!hasRequestedStatus()) {
-
           return false;
         }
         if (!hasObservedStatus()) {
-
           return false;
         }
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
-          akka.protobuf.CodedInputStream input,
-          akka.protobuf.ExtensionRegistryLite extensionRegistry)
+          akka.protobufv3.internal.CodedInputStream input,
+          akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
             parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (akka.protobuf.InvalidProtocolBufferException e) {
+        } catch (akka.protobufv3.internal.InvalidProtocolBufferException e) {
           parsedMessage =
               (com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker)
                   e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -657,13 +760,13 @@ public final class ProjectionMessages {
       private java.lang.Object tagName_ = "";
       /** <code>required string tagName = 1;</code> */
       public boolean hasTagName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /** <code>required string tagName = 1;</code> */
       public java.lang.String getTagName() {
         java.lang.Object ref = tagName_;
         if (!(ref instanceof java.lang.String)) {
-          akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+          akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             tagName_ = s;
@@ -674,15 +777,15 @@ public final class ProjectionMessages {
         }
       }
       /** <code>required string tagName = 1;</code> */
-      public akka.protobuf.ByteString getTagNameBytes() {
+      public akka.protobufv3.internal.ByteString getTagNameBytes() {
         java.lang.Object ref = tagName_;
         if (ref instanceof String) {
-          akka.protobuf.ByteString b =
-              akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+          akka.protobufv3.internal.ByteString b =
+              akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
           tagName_ = b;
           return b;
         } else {
-          return (akka.protobuf.ByteString) ref;
+          return (akka.protobufv3.internal.ByteString) ref;
         }
       }
       /** <code>required string tagName = 1;</code> */
@@ -703,7 +806,7 @@ public final class ProjectionMessages {
         return this;
       }
       /** <code>required string tagName = 1;</code> */
-      public Builder setTagNameBytes(akka.protobuf.ByteString value) {
+      public Builder setTagNameBytes(akka.protobufv3.internal.ByteString value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -716,13 +819,13 @@ public final class ProjectionMessages {
       private java.lang.Object key_ = "";
       /** <code>required string key = 2;</code> */
       public boolean hasKey() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /** <code>required string key = 2;</code> */
       public java.lang.String getKey() {
         java.lang.Object ref = key_;
         if (!(ref instanceof java.lang.String)) {
-          akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+          akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             key_ = s;
@@ -733,15 +836,15 @@ public final class ProjectionMessages {
         }
       }
       /** <code>required string key = 2;</code> */
-      public akka.protobuf.ByteString getKeyBytes() {
+      public akka.protobufv3.internal.ByteString getKeyBytes() {
         java.lang.Object ref = key_;
         if (ref instanceof String) {
-          akka.protobuf.ByteString b =
-              akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+          akka.protobufv3.internal.ByteString b =
+              akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
           key_ = b;
           return b;
         } else {
-          return (akka.protobuf.ByteString) ref;
+          return (akka.protobufv3.internal.ByteString) ref;
         }
       }
       /** <code>required string key = 2;</code> */
@@ -762,7 +865,7 @@ public final class ProjectionMessages {
         return this;
       }
       /** <code>required string key = 2;</code> */
-      public Builder setKeyBytes(akka.protobuf.ByteString value) {
+      public Builder setKeyBytes(akka.protobufv3.internal.ByteString value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -775,13 +878,13 @@ public final class ProjectionMessages {
       private java.lang.Object requestedStatus_ = "";
       /** <code>required string requestedStatus = 3;</code> */
       public boolean hasRequestedStatus() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /** <code>required string requestedStatus = 3;</code> */
       public java.lang.String getRequestedStatus() {
         java.lang.Object ref = requestedStatus_;
         if (!(ref instanceof java.lang.String)) {
-          akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+          akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             requestedStatus_ = s;
@@ -792,15 +895,15 @@ public final class ProjectionMessages {
         }
       }
       /** <code>required string requestedStatus = 3;</code> */
-      public akka.protobuf.ByteString getRequestedStatusBytes() {
+      public akka.protobufv3.internal.ByteString getRequestedStatusBytes() {
         java.lang.Object ref = requestedStatus_;
         if (ref instanceof String) {
-          akka.protobuf.ByteString b =
-              akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+          akka.protobufv3.internal.ByteString b =
+              akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
           requestedStatus_ = b;
           return b;
         } else {
-          return (akka.protobuf.ByteString) ref;
+          return (akka.protobufv3.internal.ByteString) ref;
         }
       }
       /** <code>required string requestedStatus = 3;</code> */
@@ -821,7 +924,7 @@ public final class ProjectionMessages {
         return this;
       }
       /** <code>required string requestedStatus = 3;</code> */
-      public Builder setRequestedStatusBytes(akka.protobuf.ByteString value) {
+      public Builder setRequestedStatusBytes(akka.protobufv3.internal.ByteString value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -834,13 +937,13 @@ public final class ProjectionMessages {
       private java.lang.Object observedStatus_ = "";
       /** <code>required string observedStatus = 4;</code> */
       public boolean hasObservedStatus() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /** <code>required string observedStatus = 4;</code> */
       public java.lang.String getObservedStatus() {
         java.lang.Object ref = observedStatus_;
         if (!(ref instanceof java.lang.String)) {
-          akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+          akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             observedStatus_ = s;
@@ -851,15 +954,15 @@ public final class ProjectionMessages {
         }
       }
       /** <code>required string observedStatus = 4;</code> */
-      public akka.protobuf.ByteString getObservedStatusBytes() {
+      public akka.protobufv3.internal.ByteString getObservedStatusBytes() {
         java.lang.Object ref = observedStatus_;
         if (ref instanceof String) {
-          akka.protobuf.ByteString b =
-              akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+          akka.protobufv3.internal.ByteString b =
+              akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
           observedStatus_ = b;
           return b;
         } else {
-          return (akka.protobuf.ByteString) ref;
+          return (akka.protobufv3.internal.ByteString) ref;
         }
       }
       /** <code>required string observedStatus = 4;</code> */
@@ -880,7 +983,7 @@ public final class ProjectionMessages {
         return this;
       }
       /** <code>required string observedStatus = 4;</code> */
-      public Builder setObservedStatusBytes(akka.protobuf.ByteString value) {
+      public Builder setObservedStatusBytes(akka.protobufv3.internal.ByteString value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -890,28 +993,75 @@ public final class ProjectionMessages {
         return this;
       }
 
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final akka.protobufv3.internal.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final akka.protobufv3.internal.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
       // @@protoc_insertion_point(builder_scope:com.lightbend.lagom.internal.projection.Worker)
     }
 
+    // @@protoc_insertion_point(class_scope:com.lightbend.lagom.internal.projection.Worker)
+    private static final com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+            .Worker
+        DEFAULT_INSTANCE;
+
     static {
-      defaultInstance = new Worker(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE =
+          new com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker();
     }
 
-    // @@protoc_insertion_point(class_scope:com.lightbend.lagom.internal.projection.Worker)
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
+        getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated
+    public static final akka.protobufv3.internal.Parser<Worker> PARSER =
+        new akka.protobufv3.internal.AbstractParser<Worker>() {
+          @java.lang.Override
+          public Worker parsePartialFrom(
+              akka.protobufv3.internal.CodedInputStream input,
+              akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+              throws akka.protobufv3.internal.InvalidProtocolBufferException {
+            return new Worker(input, extensionRegistry);
+          }
+        };
+
+    public static akka.protobufv3.internal.Parser<Worker> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public akka.protobufv3.internal.Parser<Worker> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
+        getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
   }
 
   public interface ProjectionOrBuilder
       extends
       // @@protoc_insertion_point(interface_extends:com.lightbend.lagom.internal.projection.Projection)
-      akka.protobuf.MessageOrBuilder {
+      akka.protobufv3.internal.MessageOrBuilder {
 
     /** <code>required string name = 1;</code> */
     boolean hasName();
     /** <code>required string name = 1;</code> */
     java.lang.String getName();
     /** <code>required string name = 1;</code> */
-    akka.protobuf.ByteString getNameBytes();
+    akka.protobufv3.internal.ByteString getNameBytes();
 
     /** <code>repeated .com.lightbend.lagom.internal.projection.Worker workers = 2;</code> */
     java.util.List<com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker>
@@ -932,44 +1082,43 @@ public final class ProjectionMessages {
         getWorkersOrBuilder(int index);
   }
   /** Protobuf type {@code com.lightbend.lagom.internal.projection.Projection} */
-  public static final class Projection extends akka.protobuf.GeneratedMessage
+  public static final class Projection extends akka.protobufv3.internal.GeneratedMessageV3
       implements
       // @@protoc_insertion_point(message_implements:com.lightbend.lagom.internal.projection.Projection)
       ProjectionOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use Projection.newBuilder() to construct.
-    private Projection(akka.protobuf.GeneratedMessage.Builder<?> builder) {
+    private Projection(akka.protobufv3.internal.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
 
-    private Projection(boolean noInit) {
-      this.unknownFields = akka.protobuf.UnknownFieldSet.getDefaultInstance();
+    private Projection() {
+      name_ = "";
+      workers_ = java.util.Collections.emptyList();
     }
-
-    private static final Projection defaultInstance;
-
-    public static Projection getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public Projection getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final akka.protobuf.UnknownFieldSet unknownFields;
 
     @java.lang.Override
-    public final akka.protobuf.UnknownFieldSet getUnknownFields() {
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
+      return new Projection();
+    }
+
+    @java.lang.Override
+    public final akka.protobufv3.internal.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
     }
 
     private Projection(
-        akka.protobuf.CodedInputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws akka.protobuf.InvalidProtocolBufferException {
-      initFields();
+        akka.protobufv3.internal.CodedInputStream input,
+        akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+        throws akka.protobufv3.internal.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
-      akka.protobuf.UnknownFieldSet.Builder unknownFields =
-          akka.protobuf.UnknownFieldSet.newBuilder();
+      akka.protobufv3.internal.UnknownFieldSet.Builder unknownFields =
+          akka.protobufv3.internal.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -978,25 +1127,16 @@ public final class ProjectionMessages {
             case 0:
               done = true;
               break;
-            default:
-              {
-                if (!parseUnknownField(
-                    input, unknownFields,
-                    extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
             case 10:
               {
-                akka.protobuf.ByteString bs = input.readBytes();
+                akka.protobufv3.internal.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000001;
                 name_ = bs;
                 break;
               }
             case 18:
               {
-                if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                if (!((mutable_bitField0_ & 0x00000002) != 0)) {
                   workers_ =
                       new java.util.ArrayList<
                           com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
@@ -1010,15 +1150,22 @@ public final class ProjectionMessages {
                         extensionRegistry));
                 break;
               }
+            default:
+              {
+                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
           }
         }
-      } catch (akka.protobuf.InvalidProtocolBufferException e) {
+      } catch (akka.protobufv3.internal.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
-        throw new akka.protobuf.InvalidProtocolBufferException(e.getMessage())
+        throw new akka.protobufv3.internal.InvalidProtocolBufferException(e)
             .setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
           workers_ = java.util.Collections.unmodifiableList(workers_);
         }
         this.unknownFields = unknownFields.build();
@@ -1026,12 +1173,14 @@ public final class ProjectionMessages {
       }
     }
 
-    public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+    public static final akka.protobufv3.internal.Descriptors.Descriptor getDescriptor() {
       return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
           .internal_static_com_lightbend_lagom_internal_projection_Projection_descriptor;
     }
 
-    protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+    @java.lang.Override
+    protected akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
       return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
           .internal_static_com_lightbend_lagom_internal_projection_Projection_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1041,27 +1190,12 @@ public final class ProjectionMessages {
                   .Builder.class);
     }
 
-    public static akka.protobuf.Parser<Projection> PARSER =
-        new akka.protobuf.AbstractParser<Projection>() {
-          public Projection parsePartialFrom(
-              akka.protobuf.CodedInputStream input,
-              akka.protobuf.ExtensionRegistryLite extensionRegistry)
-              throws akka.protobuf.InvalidProtocolBufferException {
-            return new Projection(input, extensionRegistry);
-          }
-        };
-
-    @java.lang.Override
-    public akka.protobuf.Parser<Projection> getParserForType() {
-      return PARSER;
-    }
-
     private int bitField0_;
     public static final int NAME_FIELD_NUMBER = 1;
-    private java.lang.Object name_;
+    private volatile java.lang.Object name_;
     /** <code>required string name = 1;</code> */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /** <code>required string name = 1;</code> */
     public java.lang.String getName() {
@@ -1069,7 +1203,7 @@ public final class ProjectionMessages {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+        akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           name_ = s;
@@ -1078,14 +1212,15 @@ public final class ProjectionMessages {
       }
     }
     /** <code>required string name = 1;</code> */
-    public akka.protobuf.ByteString getNameBytes() {
+    public akka.protobufv3.internal.ByteString getNameBytes() {
       java.lang.Object ref = name_;
       if (ref instanceof java.lang.String) {
-        akka.protobuf.ByteString b = akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        akka.protobufv3.internal.ByteString b =
+            akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
         name_ = b;
         return b;
       } else {
-        return (akka.protobuf.ByteString) ref;
+        return (akka.protobufv3.internal.ByteString) ref;
       }
     }
 
@@ -1122,13 +1257,9 @@ public final class ProjectionMessages {
       return workers_.get(index);
     }
 
-    private void initFields() {
-      name_ = "";
-      workers_ = java.util.Collections.emptyList();
-    }
-
     private byte memoizedIsInitialized = -1;
 
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1148,137 +1279,200 @@ public final class ProjectionMessages {
       return true;
     }
 
-    public void writeTo(akka.protobuf.CodedOutputStream output) throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getNameBytes());
+    @java.lang.Override
+    public void writeTo(akka.protobufv3.internal.CodedOutputStream output)
+        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        akka.protobufv3.internal.GeneratedMessageV3.writeString(output, 1, name_);
       }
       for (int i = 0; i < workers_.size(); i++) {
         output.writeMessage(2, workers_.get(i));
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
-
+    @java.lang.Override
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += akka.protobuf.CodedOutputStream.computeBytesSize(1, getNameBytes());
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += akka.protobufv3.internal.GeneratedMessageV3.computeStringSize(1, name_);
       }
       for (int i = 0; i < workers_.size(); i++) {
-        size += akka.protobuf.CodedOutputStream.computeMessageSize(2, workers_.get(i));
+        size += akka.protobufv3.internal.CodedOutputStream.computeMessageSize(2, workers_.get(i));
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+        return true;
+      }
+      if (!(obj
+          instanceof
+          com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection)) {
+        return super.equals(obj);
+      }
+      com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection other =
+          (com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection) obj;
+
+      if (hasName() != other.hasName()) return false;
+      if (hasName()) {
+        if (!getName().equals(other.getName())) return false;
+      }
+      if (!getWorkersList().equals(other.getWorkersList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
 
     @java.lang.Override
-    protected java.lang.Object writeReplace() throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasName()) {
+        hash = (37 * hash) + NAME_FIELD_NUMBER;
+        hash = (53 * hash) + getName().hashCode();
+      }
+      if (getWorkersCount() > 0) {
+        hash = (37 * hash) + WORKERS_FIELD_NUMBER;
+        hash = (53 * hash) + getWorkersList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
-        parseFrom(akka.protobuf.ByteString data)
-            throws akka.protobuf.InvalidProtocolBufferException {
+        parseFrom(java.nio.ByteBuffer data)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
         parseFrom(
-            akka.protobuf.ByteString data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws akka.protobuf.InvalidProtocolBufferException {
+            java.nio.ByteBuffer data,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
-        parseFrom(byte[] data) throws akka.protobuf.InvalidProtocolBufferException {
+        parseFrom(akka.protobufv3.internal.ByteString data)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
-        parseFrom(byte[] data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws akka.protobuf.InvalidProtocolBufferException {
+        parseFrom(
+            akka.protobufv3.internal.ByteString data,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
+        parseFrom(byte[] data) throws akka.protobufv3.internal.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
+        parseFrom(byte[] data, akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
         parseFrom(java.io.InputStream input) throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
-        parseFrom(java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
-        parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
-        parseDelimitedFrom(
-            java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
-        parseFrom(akka.protobuf.CodedInputStream input) throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
         parseFrom(
-            akka.protobuf.CodedInputStream input,
-            akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            java.io.InputStream input,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
+        parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
+        parseDelimitedFrom(
+            java.io.InputStream input,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
+        parseFrom(akka.protobufv3.internal.CodedInputStream input) throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
+        parseFrom(
+            akka.protobufv3.internal.CodedInputStream input,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() {
+      return newBuilder();
     }
 
     public static Builder newBuilder() {
-      return Builder.create();
-    }
-
-    public Builder newBuilderForType() {
-      return newBuilder();
+      return DEFAULT_INSTANCE.toBuilder();
     }
 
     public static Builder newBuilder(
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
             prototype) {
-      return newBuilder().mergeFrom(prototype);
-    }
-
-    public Builder toBuilder() {
-      return newBuilder(this);
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
 
     @java.lang.Override
-    protected Builder newBuilderForType(akka.protobuf.GeneratedMessage.BuilderParent parent) {
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        akka.protobufv3.internal.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /** Protobuf type {@code com.lightbend.lagom.internal.projection.Projection} */
-    public static final class Builder extends akka.protobuf.GeneratedMessage.Builder<Builder>
+    public static final class Builder
+        extends akka.protobufv3.internal.GeneratedMessageV3.Builder<Builder>
         implements
         // @@protoc_insertion_point(builder_implements:com.lightbend.lagom.internal.projection.Projection)
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .ProjectionOrBuilder {
-      public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+      public static final akka.protobufv3.internal.Descriptors.Descriptor getDescriptor() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .internal_static_com_lightbend_lagom_internal_projection_Projection_descriptor;
       }
 
-      protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+      @java.lang.Override
+      protected akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .internal_static_com_lightbend_lagom_internal_projection_Projection_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1294,21 +1488,18 @@ public final class ProjectionMessages {
         maybeForceBuilderInitialization();
       }
 
-      private Builder(akka.protobuf.GeneratedMessage.BuilderParent parent) {
+      private Builder(akka.protobufv3.internal.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
 
       private void maybeForceBuilderInitialization() {
-        if (akka.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (akka.protobufv3.internal.GeneratedMessageV3.alwaysUseFieldBuilders) {
           getWorkersFieldBuilder();
         }
       }
 
-      private static Builder create() {
-        return new Builder();
-      }
-
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         name_ = "";
@@ -1322,21 +1513,20 @@ public final class ProjectionMessages {
         return this;
       }
 
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public akka.protobuf.Descriptors.Descriptor getDescriptorForType() {
+      @java.lang.Override
+      public akka.protobufv3.internal.Descriptors.Descriptor getDescriptorForType() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .internal_static_com_lightbend_lagom_internal_projection_Projection_descriptor;
       }
 
+      @java.lang.Override
       public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
           getDefaultInstanceForType() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
             .getDefaultInstance();
       }
 
+      @java.lang.Override
       public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
           build() {
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection result =
@@ -1347,6 +1537,7 @@ public final class ProjectionMessages {
         return result;
       }
 
+      @java.lang.Override
       public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
           buildPartial() {
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection result =
@@ -1354,12 +1545,12 @@ public final class ProjectionMessages {
                 this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
         if (workersBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000002) != 0)) {
             workers_ = java.util.Collections.unmodifiableList(workers_);
             bitField0_ = (bitField0_ & ~0x00000002);
           }
@@ -1372,7 +1563,43 @@ public final class ProjectionMessages {
         return result;
       }
 
-      public Builder mergeFrom(akka.protobuf.Message other) {
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+
+      @java.lang.Override
+      public Builder setField(
+          akka.protobufv3.internal.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.setField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder clearField(akka.protobufv3.internal.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+
+      @java.lang.Override
+      public Builder clearOneof(akka.protobufv3.internal.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+
+      @java.lang.Override
+      public Builder setRepeatedField(
+          akka.protobufv3.internal.Descriptors.FieldDescriptor field,
+          int index,
+          java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+
+      @java.lang.Override
+      public Builder addRepeatedField(
+          akka.protobufv3.internal.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(akka.protobufv3.internal.Message other) {
         if (other
             instanceof
             com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection) {
@@ -1415,7 +1642,7 @@ public final class ProjectionMessages {
               workers_ = other.workers_;
               bitField0_ = (bitField0_ & ~0x00000002);
               workersBuilder_ =
-                  akka.protobuf.GeneratedMessage.alwaysUseFieldBuilders
+                  akka.protobufv3.internal.GeneratedMessageV3.alwaysUseFieldBuilders
                       ? getWorkersFieldBuilder()
                       : null;
             } else {
@@ -1423,37 +1650,38 @@ public final class ProjectionMessages {
             }
           }
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         if (!hasName()) {
-
           return false;
         }
         for (int i = 0; i < getWorkersCount(); i++) {
           if (!getWorkers(i).isInitialized()) {
-
             return false;
           }
         }
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
-          akka.protobuf.CodedInputStream input,
-          akka.protobuf.ExtensionRegistryLite extensionRegistry)
+          akka.protobufv3.internal.CodedInputStream input,
+          akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
             parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (akka.protobuf.InvalidProtocolBufferException e) {
+        } catch (akka.protobufv3.internal.InvalidProtocolBufferException e) {
           parsedMessage =
               (com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection)
                   e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -1467,13 +1695,13 @@ public final class ProjectionMessages {
       private java.lang.Object name_ = "";
       /** <code>required string name = 1;</code> */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /** <code>required string name = 1;</code> */
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+          akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             name_ = s;
@@ -1484,15 +1712,15 @@ public final class ProjectionMessages {
         }
       }
       /** <code>required string name = 1;</code> */
-      public akka.protobuf.ByteString getNameBytes() {
+      public akka.protobufv3.internal.ByteString getNameBytes() {
         java.lang.Object ref = name_;
         if (ref instanceof String) {
-          akka.protobuf.ByteString b =
-              akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+          akka.protobufv3.internal.ByteString b =
+              akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
           name_ = b;
           return b;
         } else {
-          return (akka.protobuf.ByteString) ref;
+          return (akka.protobufv3.internal.ByteString) ref;
         }
       }
       /** <code>required string name = 1;</code> */
@@ -1513,7 +1741,7 @@ public final class ProjectionMessages {
         return this;
       }
       /** <code>required string name = 1;</code> */
-      public Builder setNameBytes(akka.protobuf.ByteString value) {
+      public Builder setNameBytes(akka.protobufv3.internal.ByteString value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -1528,7 +1756,7 @@ public final class ProjectionMessages {
           workers_ = java.util.Collections.emptyList();
 
       private void ensureWorkersIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000002) != 0)) {
           workers_ =
               new java.util.ArrayList<
                   com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker>(
@@ -1537,7 +1765,7 @@ public final class ProjectionMessages {
         }
       }
 
-      private akka.protobuf.RepeatedFieldBuilder<
+      private akka.protobufv3.internal.RepeatedFieldBuilderV3<
               com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker,
               com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
                   .Builder,
@@ -1669,7 +1897,7 @@ public final class ProjectionMessages {
               values) {
         if (workersBuilder_ == null) {
           ensureWorkersIsMutable();
-          akka.protobuf.AbstractMessageLite.Builder.addAll(values, workers_);
+          akka.protobufv3.internal.AbstractMessageLite.Builder.addAll(values, workers_);
           onChanged();
         } else {
           workersBuilder_.addAllMessages(values);
@@ -1749,7 +1977,7 @@ public final class ProjectionMessages {
         return getWorkersFieldBuilder().getBuilderList();
       }
 
-      private akka.protobuf.RepeatedFieldBuilder<
+      private akka.protobufv3.internal.RepeatedFieldBuilderV3<
               com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker,
               com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
                   .Builder,
@@ -1758,36 +1986,80 @@ public final class ProjectionMessages {
           getWorkersFieldBuilder() {
         if (workersBuilder_ == null) {
           workersBuilder_ =
-              new akka.protobuf.RepeatedFieldBuilder<
+              new akka.protobufv3.internal.RepeatedFieldBuilderV3<
                   com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker,
                   com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Worker
                       .Builder,
                   com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
                       .WorkerOrBuilder>(
-                  workers_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
-                  getParentForChildren(),
-                  isClean());
+                  workers_, ((bitField0_ & 0x00000002) != 0), getParentForChildren(), isClean());
           workers_ = null;
         }
         return workersBuilder_;
       }
 
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final akka.protobufv3.internal.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final akka.protobufv3.internal.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
       // @@protoc_insertion_point(builder_scope:com.lightbend.lagom.internal.projection.Projection)
     }
 
+    // @@protoc_insertion_point(class_scope:com.lightbend.lagom.internal.projection.Projection)
+    private static final com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+            .Projection
+        DEFAULT_INSTANCE;
+
     static {
-      defaultInstance = new Projection(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE =
+          new com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection();
     }
 
-    // @@protoc_insertion_point(class_scope:com.lightbend.lagom.internal.projection.Projection)
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
+        getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated
+    public static final akka.protobufv3.internal.Parser<Projection> PARSER =
+        new akka.protobufv3.internal.AbstractParser<Projection>() {
+          @java.lang.Override
+          public Projection parsePartialFrom(
+              akka.protobufv3.internal.CodedInputStream input,
+              akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+              throws akka.protobufv3.internal.InvalidProtocolBufferException {
+            return new Projection(input, extensionRegistry);
+          }
+        };
+
+    public static akka.protobufv3.internal.Parser<Projection> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public akka.protobufv3.internal.Parser<Projection> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
+        getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
   }
 
   public interface StateOrBuilder
       extends
       // @@protoc_insertion_point(interface_extends:com.lightbend.lagom.internal.projection.State)
-      akka.protobuf.MessageOrBuilder {
+      akka.protobufv3.internal.MessageOrBuilder {
 
     /**
      * <code>repeated .com.lightbend.lagom.internal.projection.Projection projections = 1;</code>
@@ -1819,44 +2091,42 @@ public final class ProjectionMessages {
         getProjectionsOrBuilder(int index);
   }
   /** Protobuf type {@code com.lightbend.lagom.internal.projection.State} */
-  public static final class State extends akka.protobuf.GeneratedMessage
+  public static final class State extends akka.protobufv3.internal.GeneratedMessageV3
       implements
       // @@protoc_insertion_point(message_implements:com.lightbend.lagom.internal.projection.State)
       StateOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use State.newBuilder() to construct.
-    private State(akka.protobuf.GeneratedMessage.Builder<?> builder) {
+    private State(akka.protobufv3.internal.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
 
-    private State(boolean noInit) {
-      this.unknownFields = akka.protobuf.UnknownFieldSet.getDefaultInstance();
+    private State() {
+      projections_ = java.util.Collections.emptyList();
     }
-
-    private static final State defaultInstance;
-
-    public static State getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public State getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final akka.protobuf.UnknownFieldSet unknownFields;
 
     @java.lang.Override
-    public final akka.protobuf.UnknownFieldSet getUnknownFields() {
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
+      return new State();
+    }
+
+    @java.lang.Override
+    public final akka.protobufv3.internal.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
     }
 
     private State(
-        akka.protobuf.CodedInputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws akka.protobuf.InvalidProtocolBufferException {
-      initFields();
+        akka.protobufv3.internal.CodedInputStream input,
+        akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+        throws akka.protobufv3.internal.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
-      akka.protobuf.UnknownFieldSet.Builder unknownFields =
-          akka.protobuf.UnknownFieldSet.newBuilder();
+      akka.protobufv3.internal.UnknownFieldSet.Builder unknownFields =
+          akka.protobufv3.internal.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -1865,18 +2135,9 @@ public final class ProjectionMessages {
             case 0:
               done = true;
               break;
-            default:
-              {
-                if (!parseUnknownField(
-                    input, unknownFields,
-                    extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
             case 10:
               {
-                if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                   projections_ =
                       new java.util.ArrayList<
                           com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
@@ -1890,15 +2151,22 @@ public final class ProjectionMessages {
                         extensionRegistry));
                 break;
               }
+            default:
+              {
+                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
           }
         }
-      } catch (akka.protobuf.InvalidProtocolBufferException e) {
+      } catch (akka.protobufv3.internal.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
-        throw new akka.protobuf.InvalidProtocolBufferException(e.getMessage())
+        throw new akka.protobufv3.internal.InvalidProtocolBufferException(e)
             .setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           projections_ = java.util.Collections.unmodifiableList(projections_);
         }
         this.unknownFields = unknownFields.build();
@@ -1906,33 +2174,20 @@ public final class ProjectionMessages {
       }
     }
 
-    public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+    public static final akka.protobufv3.internal.Descriptors.Descriptor getDescriptor() {
       return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
           .internal_static_com_lightbend_lagom_internal_projection_State_descriptor;
     }
 
-    protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+    @java.lang.Override
+    protected akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
       return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
           .internal_static_com_lightbend_lagom_internal_projection_State_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State.class,
               com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State.Builder
                   .class);
-    }
-
-    public static akka.protobuf.Parser<State> PARSER =
-        new akka.protobuf.AbstractParser<State>() {
-          public State parsePartialFrom(
-              akka.protobuf.CodedInputStream input,
-              akka.protobuf.ExtensionRegistryLite extensionRegistry)
-              throws akka.protobuf.InvalidProtocolBufferException {
-            return new State(input, extensionRegistry);
-          }
-        };
-
-    @java.lang.Override
-    public akka.protobuf.Parser<State> getParserForType() {
-      return PARSER;
     }
 
     public static final int PROJECTIONS_FIELD_NUMBER = 1;
@@ -1979,12 +2234,9 @@ public final class ProjectionMessages {
       return projections_.get(index);
     }
 
-    private void initFields() {
-      projections_ = java.util.Collections.emptyList();
-    }
-
     private byte memoizedIsInitialized = -1;
 
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -2000,129 +2252,185 @@ public final class ProjectionMessages {
       return true;
     }
 
-    public void writeTo(akka.protobuf.CodedOutputStream output) throws java.io.IOException {
-      getSerializedSize();
+    @java.lang.Override
+    public void writeTo(akka.protobufv3.internal.CodedOutputStream output)
+        throws java.io.IOException {
       for (int i = 0; i < projections_.size(); i++) {
         output.writeMessage(1, projections_.get(i));
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
-
+    @java.lang.Override
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
       for (int i = 0; i < projections_.size(); i++) {
-        size += akka.protobuf.CodedOutputStream.computeMessageSize(1, projections_.get(i));
+        size +=
+            akka.protobufv3.internal.CodedOutputStream.computeMessageSize(1, projections_.get(i));
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+        return true;
+      }
+      if (!(obj
+          instanceof
+          com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State)) {
+        return super.equals(obj);
+      }
+      com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State other =
+          (com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State) obj;
+
+      if (!getProjectionsList().equals(other.getProjectionsList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
 
     @java.lang.Override
-    protected java.lang.Object writeReplace() throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (getProjectionsCount() > 0) {
+        hash = (37 * hash) + PROJECTIONS_FIELD_NUMBER;
+        hash = (53 * hash) + getProjectionsList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
-        parseFrom(akka.protobuf.ByteString data)
-            throws akka.protobuf.InvalidProtocolBufferException {
+        parseFrom(java.nio.ByteBuffer data)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
         parseFrom(
-            akka.protobuf.ByteString data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws akka.protobuf.InvalidProtocolBufferException {
+            java.nio.ByteBuffer data,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
-        parseFrom(byte[] data) throws akka.protobuf.InvalidProtocolBufferException {
+        parseFrom(akka.protobufv3.internal.ByteString data)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
-        parseFrom(byte[] data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws akka.protobuf.InvalidProtocolBufferException {
+        parseFrom(
+            akka.protobufv3.internal.ByteString data,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
+        parseFrom(byte[] data) throws akka.protobufv3.internal.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
+        parseFrom(byte[] data, akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
         parseFrom(java.io.InputStream input) throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
-        parseFrom(java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
-        parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
-        parseDelimitedFrom(
-            java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
-        parseFrom(akka.protobuf.CodedInputStream input) throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
         parseFrom(
-            akka.protobuf.CodedInputStream input,
-            akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            java.io.InputStream input,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() {
-      return Builder.create();
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
+        parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input);
     }
 
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
+        parseDelimitedFrom(
+            java.io.InputStream input,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
+        parseFrom(akka.protobufv3.internal.CodedInputStream input) throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
+        parseFrom(
+            akka.protobufv3.internal.CodedInputStream input,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
     public Builder newBuilderForType() {
       return newBuilder();
     }
 
-    public static Builder newBuilder(
-        com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
 
-    public Builder toBuilder() {
-      return newBuilder(this);
+    public static Builder newBuilder(
+        com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
 
     @java.lang.Override
-    protected Builder newBuilderForType(akka.protobuf.GeneratedMessage.BuilderParent parent) {
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        akka.protobufv3.internal.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /** Protobuf type {@code com.lightbend.lagom.internal.projection.State} */
-    public static final class Builder extends akka.protobuf.GeneratedMessage.Builder<Builder>
+    public static final class Builder
+        extends akka.protobufv3.internal.GeneratedMessageV3.Builder<Builder>
         implements
         // @@protoc_insertion_point(builder_implements:com.lightbend.lagom.internal.projection.State)
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.StateOrBuilder {
-      public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+      public static final akka.protobufv3.internal.Descriptors.Descriptor getDescriptor() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .internal_static_com_lightbend_lagom_internal_projection_State_descriptor;
       }
 
-      protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+      @java.lang.Override
+      protected akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .internal_static_com_lightbend_lagom_internal_projection_State_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -2137,21 +2445,18 @@ public final class ProjectionMessages {
         maybeForceBuilderInitialization();
       }
 
-      private Builder(akka.protobuf.GeneratedMessage.BuilderParent parent) {
+      private Builder(akka.protobufv3.internal.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
 
       private void maybeForceBuilderInitialization() {
-        if (akka.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (akka.protobufv3.internal.GeneratedMessageV3.alwaysUseFieldBuilders) {
           getProjectionsFieldBuilder();
         }
       }
 
-      private static Builder create() {
-        return new Builder();
-      }
-
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         if (projectionsBuilder_ == null) {
@@ -2163,21 +2468,20 @@ public final class ProjectionMessages {
         return this;
       }
 
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public akka.protobuf.Descriptors.Descriptor getDescriptorForType() {
+      @java.lang.Override
+      public akka.protobufv3.internal.Descriptors.Descriptor getDescriptorForType() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .internal_static_com_lightbend_lagom_internal_projection_State_descriptor;
       }
 
+      @java.lang.Override
       public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
           getDefaultInstanceForType() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
             .getDefaultInstance();
       }
 
+      @java.lang.Override
       public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State build() {
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State result =
             buildPartial();
@@ -2187,13 +2491,14 @@ public final class ProjectionMessages {
         return result;
       }
 
+      @java.lang.Override
       public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
           buildPartial() {
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State result =
             new com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State(this);
         int from_bitField0_ = bitField0_;
         if (projectionsBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             projections_ = java.util.Collections.unmodifiableList(projections_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -2205,7 +2510,43 @@ public final class ProjectionMessages {
         return result;
       }
 
-      public Builder mergeFrom(akka.protobuf.Message other) {
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+
+      @java.lang.Override
+      public Builder setField(
+          akka.protobufv3.internal.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.setField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder clearField(akka.protobufv3.internal.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+
+      @java.lang.Override
+      public Builder clearOneof(akka.protobufv3.internal.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+
+      @java.lang.Override
+      public Builder setRepeatedField(
+          akka.protobufv3.internal.Descriptors.FieldDescriptor field,
+          int index,
+          java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+
+      @java.lang.Override
+      public Builder addRepeatedField(
+          akka.protobufv3.internal.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(akka.protobufv3.internal.Message other) {
         if (other
             instanceof
             com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State) {
@@ -2242,7 +2583,7 @@ public final class ProjectionMessages {
               projections_ = other.projections_;
               bitField0_ = (bitField0_ & ~0x00000001);
               projectionsBuilder_ =
-                  akka.protobuf.GeneratedMessage.alwaysUseFieldBuilders
+                  akka.protobufv3.internal.GeneratedMessageV3.alwaysUseFieldBuilders
                       ? getProjectionsFieldBuilder()
                       : null;
             } else {
@@ -2250,33 +2591,35 @@ public final class ProjectionMessages {
             }
           }
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         for (int i = 0; i < getProjectionsCount(); i++) {
           if (!getProjections(i).isInitialized()) {
-
             return false;
           }
         }
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
-          akka.protobuf.CodedInputStream input,
-          akka.protobuf.ExtensionRegistryLite extensionRegistry)
+          akka.protobufv3.internal.CodedInputStream input,
+          akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
             parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (akka.protobuf.InvalidProtocolBufferException e) {
+        } catch (akka.protobufv3.internal.InvalidProtocolBufferException e) {
           parsedMessage =
               (com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State)
                   e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -2292,7 +2635,7 @@ public final class ProjectionMessages {
           projections_ = java.util.Collections.emptyList();
 
       private void ensureProjectionsIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           projections_ =
               new java.util.ArrayList<
                   com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
@@ -2301,7 +2644,7 @@ public final class ProjectionMessages {
         }
       }
 
-      private akka.protobuf.RepeatedFieldBuilder<
+      private akka.protobufv3.internal.RepeatedFieldBuilderV3<
               com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection,
               com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
                   .Builder,
@@ -2456,7 +2799,7 @@ public final class ProjectionMessages {
               values) {
         if (projectionsBuilder_ == null) {
           ensureProjectionsIsMutable();
-          akka.protobuf.AbstractMessageLite.Builder.addAll(values, projections_);
+          akka.protobufv3.internal.AbstractMessageLite.Builder.addAll(values, projections_);
           onChanged();
         } else {
           projectionsBuilder_.addAllMessages(values);
@@ -2556,7 +2899,7 @@ public final class ProjectionMessages {
         return getProjectionsFieldBuilder().getBuilderList();
       }
 
-      private akka.protobuf.RepeatedFieldBuilder<
+      private akka.protobufv3.internal.RepeatedFieldBuilderV3<
               com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection,
               com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
                   .Builder,
@@ -2565,7 +2908,7 @@ public final class ProjectionMessages {
           getProjectionsFieldBuilder() {
         if (projectionsBuilder_ == null) {
           projectionsBuilder_ =
-              new akka.protobuf.RepeatedFieldBuilder<
+              new akka.protobufv3.internal.RepeatedFieldBuilderV3<
                   com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
                       .Projection,
                   com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.Projection
@@ -2573,7 +2916,7 @@ public final class ProjectionMessages {
                   com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
                       .ProjectionOrBuilder>(
                   projections_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           projections_ = null;
@@ -2581,75 +2924,121 @@ public final class ProjectionMessages {
         return projectionsBuilder_;
       }
 
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final akka.protobufv3.internal.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final akka.protobufv3.internal.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
       // @@protoc_insertion_point(builder_scope:com.lightbend.lagom.internal.projection.State)
     }
 
+    // @@protoc_insertion_point(class_scope:com.lightbend.lagom.internal.projection.State)
+    private static final com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+            .State
+        DEFAULT_INSTANCE;
+
     static {
-      defaultInstance = new State(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE =
+          new com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State();
     }
 
-    // @@protoc_insertion_point(class_scope:com.lightbend.lagom.internal.projection.State)
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
+        getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated
+    public static final akka.protobufv3.internal.Parser<State> PARSER =
+        new akka.protobufv3.internal.AbstractParser<State>() {
+          @java.lang.Override
+          public State parsePartialFrom(
+              akka.protobufv3.internal.CodedInputStream input,
+              akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+              throws akka.protobufv3.internal.InvalidProtocolBufferException {
+            return new State(input, extensionRegistry);
+          }
+        };
+
+    public static akka.protobufv3.internal.Parser<State> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public akka.protobufv3.internal.Parser<State> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.State
+        getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
   }
 
   public interface WorkerCoordinatesOrBuilder
       extends
       // @@protoc_insertion_point(interface_extends:com.lightbend.lagom.internal.projection.WorkerCoordinates)
-      akka.protobuf.MessageOrBuilder {
+      akka.protobufv3.internal.MessageOrBuilder {
 
     /** <code>required string projectionName = 1;</code> */
     boolean hasProjectionName();
     /** <code>required string projectionName = 1;</code> */
     java.lang.String getProjectionName();
     /** <code>required string projectionName = 1;</code> */
-    akka.protobuf.ByteString getProjectionNameBytes();
+    akka.protobufv3.internal.ByteString getProjectionNameBytes();
 
     /** <code>required string tagName = 2;</code> */
     boolean hasTagName();
     /** <code>required string tagName = 2;</code> */
     java.lang.String getTagName();
     /** <code>required string tagName = 2;</code> */
-    akka.protobuf.ByteString getTagNameBytes();
+    akka.protobufv3.internal.ByteString getTagNameBytes();
   }
   /** Protobuf type {@code com.lightbend.lagom.internal.projection.WorkerCoordinates} */
-  public static final class WorkerCoordinates extends akka.protobuf.GeneratedMessage
+  public static final class WorkerCoordinates extends akka.protobufv3.internal.GeneratedMessageV3
       implements
       // @@protoc_insertion_point(message_implements:com.lightbend.lagom.internal.projection.WorkerCoordinates)
       WorkerCoordinatesOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use WorkerCoordinates.newBuilder() to construct.
-    private WorkerCoordinates(akka.protobuf.GeneratedMessage.Builder<?> builder) {
+    private WorkerCoordinates(akka.protobufv3.internal.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
 
-    private WorkerCoordinates(boolean noInit) {
-      this.unknownFields = akka.protobuf.UnknownFieldSet.getDefaultInstance();
+    private WorkerCoordinates() {
+      projectionName_ = "";
+      tagName_ = "";
     }
-
-    private static final WorkerCoordinates defaultInstance;
-
-    public static WorkerCoordinates getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public WorkerCoordinates getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final akka.protobuf.UnknownFieldSet unknownFields;
 
     @java.lang.Override
-    public final akka.protobuf.UnknownFieldSet getUnknownFields() {
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
+      return new WorkerCoordinates();
+    }
+
+    @java.lang.Override
+    public final akka.protobufv3.internal.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
     }
 
     private WorkerCoordinates(
-        akka.protobuf.CodedInputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws akka.protobuf.InvalidProtocolBufferException {
-      initFields();
+        akka.protobufv3.internal.CodedInputStream input,
+        akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+        throws akka.protobufv3.internal.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
-      akka.protobuf.UnknownFieldSet.Builder unknownFields =
-          akka.protobuf.UnknownFieldSet.newBuilder();
+      akka.protobufv3.internal.UnknownFieldSet.Builder unknownFields =
+          akka.protobufv3.internal.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -2658,35 +3047,33 @@ public final class ProjectionMessages {
             case 0:
               done = true;
               break;
-            default:
-              {
-                if (!parseUnknownField(
-                    input, unknownFields,
-                    extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
             case 10:
               {
-                akka.protobuf.ByteString bs = input.readBytes();
+                akka.protobufv3.internal.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000001;
                 projectionName_ = bs;
                 break;
               }
             case 18:
               {
-                akka.protobuf.ByteString bs = input.readBytes();
+                akka.protobufv3.internal.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000002;
                 tagName_ = bs;
                 break;
               }
+            default:
+              {
+                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
           }
         }
-      } catch (akka.protobuf.InvalidProtocolBufferException e) {
+      } catch (akka.protobufv3.internal.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
-        throw new akka.protobuf.InvalidProtocolBufferException(e.getMessage())
+        throw new akka.protobufv3.internal.InvalidProtocolBufferException(e)
             .setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
@@ -2694,12 +3081,14 @@ public final class ProjectionMessages {
       }
     }
 
-    public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+    public static final akka.protobufv3.internal.Descriptors.Descriptor getDescriptor() {
       return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
           .internal_static_com_lightbend_lagom_internal_projection_WorkerCoordinates_descriptor;
     }
 
-    protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+    @java.lang.Override
+    protected akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
       return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
           .internal_static_com_lightbend_lagom_internal_projection_WorkerCoordinates_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -2709,27 +3098,12 @@ public final class ProjectionMessages {
                   .WorkerCoordinates.Builder.class);
     }
 
-    public static akka.protobuf.Parser<WorkerCoordinates> PARSER =
-        new akka.protobuf.AbstractParser<WorkerCoordinates>() {
-          public WorkerCoordinates parsePartialFrom(
-              akka.protobuf.CodedInputStream input,
-              akka.protobuf.ExtensionRegistryLite extensionRegistry)
-              throws akka.protobuf.InvalidProtocolBufferException {
-            return new WorkerCoordinates(input, extensionRegistry);
-          }
-        };
-
-    @java.lang.Override
-    public akka.protobuf.Parser<WorkerCoordinates> getParserForType() {
-      return PARSER;
-    }
-
     private int bitField0_;
     public static final int PROJECTIONNAME_FIELD_NUMBER = 1;
-    private java.lang.Object projectionName_;
+    private volatile java.lang.Object projectionName_;
     /** <code>required string projectionName = 1;</code> */
     public boolean hasProjectionName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /** <code>required string projectionName = 1;</code> */
     public java.lang.String getProjectionName() {
@@ -2737,7 +3111,7 @@ public final class ProjectionMessages {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+        akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           projectionName_ = s;
@@ -2746,22 +3120,23 @@ public final class ProjectionMessages {
       }
     }
     /** <code>required string projectionName = 1;</code> */
-    public akka.protobuf.ByteString getProjectionNameBytes() {
+    public akka.protobufv3.internal.ByteString getProjectionNameBytes() {
       java.lang.Object ref = projectionName_;
       if (ref instanceof java.lang.String) {
-        akka.protobuf.ByteString b = akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        akka.protobufv3.internal.ByteString b =
+            akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
         projectionName_ = b;
         return b;
       } else {
-        return (akka.protobuf.ByteString) ref;
+        return (akka.protobufv3.internal.ByteString) ref;
       }
     }
 
     public static final int TAGNAME_FIELD_NUMBER = 2;
-    private java.lang.Object tagName_;
+    private volatile java.lang.Object tagName_;
     /** <code>required string tagName = 2;</code> */
     public boolean hasTagName() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /** <code>required string tagName = 2;</code> */
     public java.lang.String getTagName() {
@@ -2769,7 +3144,7 @@ public final class ProjectionMessages {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+        akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           tagName_ = s;
@@ -2778,24 +3153,21 @@ public final class ProjectionMessages {
       }
     }
     /** <code>required string tagName = 2;</code> */
-    public akka.protobuf.ByteString getTagNameBytes() {
+    public akka.protobufv3.internal.ByteString getTagNameBytes() {
       java.lang.Object ref = tagName_;
       if (ref instanceof java.lang.String) {
-        akka.protobuf.ByteString b = akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        akka.protobufv3.internal.ByteString b =
+            akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
         tagName_ = b;
         return b;
       } else {
-        return (akka.protobuf.ByteString) ref;
+        return (akka.protobufv3.internal.ByteString) ref;
       }
-    }
-
-    private void initFields() {
-      projectionName_ = "";
-      tagName_ = "";
     }
 
     private byte memoizedIsInitialized = -1;
 
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -2813,147 +3185,219 @@ public final class ProjectionMessages {
       return true;
     }
 
-    public void writeTo(akka.protobuf.CodedOutputStream output) throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getProjectionNameBytes());
+    @java.lang.Override
+    public void writeTo(akka.protobufv3.internal.CodedOutputStream output)
+        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        akka.protobufv3.internal.GeneratedMessageV3.writeString(output, 1, projectionName_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getTagNameBytes());
+      if (((bitField0_ & 0x00000002) != 0)) {
+        akka.protobufv3.internal.GeneratedMessageV3.writeString(output, 2, tagName_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
-
+    @java.lang.Override
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += akka.protobuf.CodedOutputStream.computeBytesSize(1, getProjectionNameBytes());
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += akka.protobufv3.internal.GeneratedMessageV3.computeStringSize(1, projectionName_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += akka.protobuf.CodedOutputStream.computeBytesSize(2, getTagNameBytes());
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += akka.protobufv3.internal.GeneratedMessageV3.computeStringSize(2, tagName_);
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+        return true;
+      }
+      if (!(obj
+          instanceof
+          com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+              .WorkerCoordinates)) {
+        return super.equals(obj);
+      }
+      com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.WorkerCoordinates
+          other =
+              (com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+                      .WorkerCoordinates)
+                  obj;
+
+      if (hasProjectionName() != other.hasProjectionName()) return false;
+      if (hasProjectionName()) {
+        if (!getProjectionName().equals(other.getProjectionName())) return false;
+      }
+      if (hasTagName() != other.hasTagName()) return false;
+      if (hasTagName()) {
+        if (!getTagName().equals(other.getTagName())) return false;
+      }
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
 
     @java.lang.Override
-    protected java.lang.Object writeReplace() throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasProjectionName()) {
+        hash = (37 * hash) + PROJECTIONNAME_FIELD_NUMBER;
+        hash = (53 * hash) + getProjectionName().hashCode();
+      }
+      if (hasTagName()) {
+        hash = (37 * hash) + TAGNAME_FIELD_NUMBER;
+        hash = (53 * hash) + getTagName().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .WorkerCoordinates
-        parseFrom(akka.protobuf.ByteString data)
-            throws akka.protobuf.InvalidProtocolBufferException {
+        parseFrom(java.nio.ByteBuffer data)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .WorkerCoordinates
         parseFrom(
-            akka.protobuf.ByteString data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws akka.protobuf.InvalidProtocolBufferException {
+            java.nio.ByteBuffer data,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .WorkerCoordinates
-        parseFrom(byte[] data) throws akka.protobuf.InvalidProtocolBufferException {
+        parseFrom(akka.protobufv3.internal.ByteString data)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .WorkerCoordinates
-        parseFrom(byte[] data, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws akka.protobuf.InvalidProtocolBufferException {
+        parseFrom(
+            akka.protobufv3.internal.ByteString data,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+            .WorkerCoordinates
+        parseFrom(byte[] data) throws akka.protobufv3.internal.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+            .WorkerCoordinates
+        parseFrom(byte[] data, akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws akka.protobufv3.internal.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .WorkerCoordinates
         parseFrom(java.io.InputStream input) throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
-            .WorkerCoordinates
-        parseFrom(java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
-            .WorkerCoordinates
-        parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
-            .WorkerCoordinates
-        parseDelimitedFrom(
-            java.io.InputStream input, akka.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-
-    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
-            .WorkerCoordinates
-        parseFrom(akka.protobuf.CodedInputStream input) throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
     public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .WorkerCoordinates
         parseFrom(
-            akka.protobuf.CodedInputStream input,
-            akka.protobuf.ExtensionRegistryLite extensionRegistry)
+            java.io.InputStream input,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+            .WorkerCoordinates
+        parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+            .WorkerCoordinates
+        parseDelimitedFrom(
+            java.io.InputStream input,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+            .WorkerCoordinates
+        parseFrom(akka.protobufv3.internal.CodedInputStream input) throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    }
+
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+            .WorkerCoordinates
+        parseFrom(
+            akka.protobufv3.internal.CodedInputStream input,
+            akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+      return akka.protobufv3.internal.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() {
+      return newBuilder();
     }
 
     public static Builder newBuilder() {
-      return Builder.create();
-    }
-
-    public Builder newBuilderForType() {
-      return newBuilder();
+      return DEFAULT_INSTANCE.toBuilder();
     }
 
     public static Builder newBuilder(
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.WorkerCoordinates
             prototype) {
-      return newBuilder().mergeFrom(prototype);
-    }
-
-    public Builder toBuilder() {
-      return newBuilder(this);
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
 
     @java.lang.Override
-    protected Builder newBuilderForType(akka.protobuf.GeneratedMessage.BuilderParent parent) {
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        akka.protobufv3.internal.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /** Protobuf type {@code com.lightbend.lagom.internal.projection.WorkerCoordinates} */
-    public static final class Builder extends akka.protobuf.GeneratedMessage.Builder<Builder>
+    public static final class Builder
+        extends akka.protobufv3.internal.GeneratedMessageV3.Builder<Builder>
         implements
         // @@protoc_insertion_point(builder_implements:com.lightbend.lagom.internal.projection.WorkerCoordinates)
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .WorkerCoordinatesOrBuilder {
-      public static final akka.protobuf.Descriptors.Descriptor getDescriptor() {
+      public static final akka.protobufv3.internal.Descriptors.Descriptor getDescriptor() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .internal_static_com_lightbend_lagom_internal_projection_WorkerCoordinates_descriptor;
       }
 
-      protected akka.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
+      @java.lang.Override
+      protected akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .internal_static_com_lightbend_lagom_internal_projection_WorkerCoordinates_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -2969,19 +3413,16 @@ public final class ProjectionMessages {
         maybeForceBuilderInitialization();
       }
 
-      private Builder(akka.protobuf.GeneratedMessage.BuilderParent parent) {
+      private Builder(akka.protobufv3.internal.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
 
       private void maybeForceBuilderInitialization() {
-        if (akka.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {}
+        if (akka.protobufv3.internal.GeneratedMessageV3.alwaysUseFieldBuilders) {}
       }
 
-      private static Builder create() {
-        return new Builder();
-      }
-
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         projectionName_ = "";
@@ -2991,15 +3432,13 @@ public final class ProjectionMessages {
         return this;
       }
 
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public akka.protobuf.Descriptors.Descriptor getDescriptorForType() {
+      @java.lang.Override
+      public akka.protobufv3.internal.Descriptors.Descriptor getDescriptorForType() {
         return com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
             .internal_static_com_lightbend_lagom_internal_projection_WorkerCoordinates_descriptor;
       }
 
+      @java.lang.Override
       public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
               .WorkerCoordinates
           getDefaultInstanceForType() {
@@ -3007,6 +3446,7 @@ public final class ProjectionMessages {
             .WorkerCoordinates.getDefaultInstance();
       }
 
+      @java.lang.Override
       public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
               .WorkerCoordinates
           build() {
@@ -3018,6 +3458,7 @@ public final class ProjectionMessages {
         return result;
       }
 
+      @java.lang.Override
       public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
               .WorkerCoordinates
           buildPartial() {
@@ -3027,11 +3468,11 @@ public final class ProjectionMessages {
                     .WorkerCoordinates(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.projectionName_ = projectionName_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.tagName_ = tagName_;
@@ -3040,7 +3481,43 @@ public final class ProjectionMessages {
         return result;
       }
 
-      public Builder mergeFrom(akka.protobuf.Message other) {
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+
+      @java.lang.Override
+      public Builder setField(
+          akka.protobufv3.internal.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.setField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder clearField(akka.protobufv3.internal.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+
+      @java.lang.Override
+      public Builder clearOneof(akka.protobufv3.internal.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+
+      @java.lang.Override
+      public Builder setRepeatedField(
+          akka.protobufv3.internal.Descriptors.FieldDescriptor field,
+          int index,
+          java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+
+      @java.lang.Override
+      public Builder addRepeatedField(
+          akka.protobufv3.internal.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(akka.protobufv3.internal.Message other) {
         if (other
             instanceof
             com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
@@ -3071,36 +3548,37 @@ public final class ProjectionMessages {
           tagName_ = other.tagName_;
           onChanged();
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         if (!hasProjectionName()) {
-
           return false;
         }
         if (!hasTagName()) {
-
           return false;
         }
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
-          akka.protobuf.CodedInputStream input,
-          akka.protobuf.ExtensionRegistryLite extensionRegistry)
+          akka.protobufv3.internal.CodedInputStream input,
+          akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.WorkerCoordinates
             parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (akka.protobuf.InvalidProtocolBufferException e) {
+        } catch (akka.protobufv3.internal.InvalidProtocolBufferException e) {
           parsedMessage =
               (com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
                       .WorkerCoordinates)
                   e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -3114,13 +3592,13 @@ public final class ProjectionMessages {
       private java.lang.Object projectionName_ = "";
       /** <code>required string projectionName = 1;</code> */
       public boolean hasProjectionName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /** <code>required string projectionName = 1;</code> */
       public java.lang.String getProjectionName() {
         java.lang.Object ref = projectionName_;
         if (!(ref instanceof java.lang.String)) {
-          akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+          akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             projectionName_ = s;
@@ -3131,15 +3609,15 @@ public final class ProjectionMessages {
         }
       }
       /** <code>required string projectionName = 1;</code> */
-      public akka.protobuf.ByteString getProjectionNameBytes() {
+      public akka.protobufv3.internal.ByteString getProjectionNameBytes() {
         java.lang.Object ref = projectionName_;
         if (ref instanceof String) {
-          akka.protobuf.ByteString b =
-              akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+          akka.protobufv3.internal.ByteString b =
+              akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
           projectionName_ = b;
           return b;
         } else {
-          return (akka.protobuf.ByteString) ref;
+          return (akka.protobufv3.internal.ByteString) ref;
         }
       }
       /** <code>required string projectionName = 1;</code> */
@@ -3160,7 +3638,7 @@ public final class ProjectionMessages {
         return this;
       }
       /** <code>required string projectionName = 1;</code> */
-      public Builder setProjectionNameBytes(akka.protobuf.ByteString value) {
+      public Builder setProjectionNameBytes(akka.protobufv3.internal.ByteString value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -3173,13 +3651,13 @@ public final class ProjectionMessages {
       private java.lang.Object tagName_ = "";
       /** <code>required string tagName = 2;</code> */
       public boolean hasTagName() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /** <code>required string tagName = 2;</code> */
       public java.lang.String getTagName() {
         java.lang.Object ref = tagName_;
         if (!(ref instanceof java.lang.String)) {
-          akka.protobuf.ByteString bs = (akka.protobuf.ByteString) ref;
+          akka.protobufv3.internal.ByteString bs = (akka.protobufv3.internal.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             tagName_ = s;
@@ -3190,15 +3668,15 @@ public final class ProjectionMessages {
         }
       }
       /** <code>required string tagName = 2;</code> */
-      public akka.protobuf.ByteString getTagNameBytes() {
+      public akka.protobufv3.internal.ByteString getTagNameBytes() {
         java.lang.Object ref = tagName_;
         if (ref instanceof String) {
-          akka.protobuf.ByteString b =
-              akka.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+          akka.protobufv3.internal.ByteString b =
+              akka.protobufv3.internal.ByteString.copyFromUtf8((java.lang.String) ref);
           tagName_ = b;
           return b;
         } else {
-          return (akka.protobuf.ByteString) ref;
+          return (akka.protobufv3.internal.ByteString) ref;
         }
       }
       /** <code>required string tagName = 2;</code> */
@@ -3219,7 +3697,7 @@ public final class ProjectionMessages {
         return this;
       }
       /** <code>required string tagName = 2;</code> */
-      public Builder setTagNameBytes(akka.protobuf.ByteString value) {
+      public Builder setTagNameBytes(akka.protobufv3.internal.ByteString value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -3229,39 +3707,88 @@ public final class ProjectionMessages {
         return this;
       }
 
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final akka.protobufv3.internal.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final akka.protobufv3.internal.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
       // @@protoc_insertion_point(builder_scope:com.lightbend.lagom.internal.projection.WorkerCoordinates)
     }
 
+    // @@protoc_insertion_point(class_scope:com.lightbend.lagom.internal.projection.WorkerCoordinates)
+    private static final com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+            .WorkerCoordinates
+        DEFAULT_INSTANCE;
+
     static {
-      defaultInstance = new WorkerCoordinates(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE =
+          new com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+              .WorkerCoordinates();
     }
 
-    // @@protoc_insertion_point(class_scope:com.lightbend.lagom.internal.projection.WorkerCoordinates)
+    public static com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages
+            .WorkerCoordinates
+        getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated
+    public static final akka.protobufv3.internal.Parser<WorkerCoordinates> PARSER =
+        new akka.protobufv3.internal.AbstractParser<WorkerCoordinates>() {
+          @java.lang.Override
+          public WorkerCoordinates parsePartialFrom(
+              akka.protobufv3.internal.CodedInputStream input,
+              akka.protobufv3.internal.ExtensionRegistryLite extensionRegistry)
+              throws akka.protobufv3.internal.InvalidProtocolBufferException {
+            return new WorkerCoordinates(input, extensionRegistry);
+          }
+        };
+
+    public static akka.protobufv3.internal.Parser<WorkerCoordinates> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public akka.protobufv3.internal.Parser<WorkerCoordinates> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.lightbend.lagom.internal.projection.protobuf.msg.ProjectionMessages.WorkerCoordinates
+        getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
   }
 
-  private static final akka.protobuf.Descriptors.Descriptor
+  private static final akka.protobufv3.internal.Descriptors.Descriptor
       internal_static_com_lightbend_lagom_internal_projection_Worker_descriptor;
-  private static akka.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_lightbend_lagom_internal_projection_Worker_fieldAccessorTable;
-  private static final akka.protobuf.Descriptors.Descriptor
+  private static final akka.protobufv3.internal.Descriptors.Descriptor
       internal_static_com_lightbend_lagom_internal_projection_Projection_descriptor;
-  private static akka.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_lightbend_lagom_internal_projection_Projection_fieldAccessorTable;
-  private static final akka.protobuf.Descriptors.Descriptor
+  private static final akka.protobufv3.internal.Descriptors.Descriptor
       internal_static_com_lightbend_lagom_internal_projection_State_descriptor;
-  private static akka.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_lightbend_lagom_internal_projection_State_fieldAccessorTable;
-  private static final akka.protobuf.Descriptors.Descriptor
+  private static final akka.protobufv3.internal.Descriptors.Descriptor
       internal_static_com_lightbend_lagom_internal_projection_WorkerCoordinates_descriptor;
-  private static akka.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_lightbend_lagom_internal_projection_WorkerCoordinates_fieldAccessorTable;
 
-  public static akka.protobuf.Descriptors.FileDescriptor getDescriptor() {
+  public static akka.protobufv3.internal.Descriptors.FileDescriptor getDescriptor() {
     return descriptor;
   }
 
-  private static akka.protobuf.Descriptors.FileDescriptor descriptor;
+  private static akka.protobufv3.internal.Descriptors.FileDescriptor descriptor;
 
   static {
     java.lang.String[] descriptorData = {
@@ -3274,23 +3801,17 @@ public final class ProjectionMessages {
           + "ion.Worker\"Q\n\005State\022H\n\013projections\030\001 \003(\013"
           + "23.com.lightbend.lagom.internal.projecti"
           + "on.Projection\"<\n\021WorkerCoordinates\022\026\n\016pr"
-          + "ojectionName\030\001 \002(\t\022\017\n\007tagName\030\002 \002(\tB8\n4c",
-      "om.lightbend.lagom.internal.projection.p" + "rotobuf.msgH\001"
+          + "ojectionName\030\001 \002(\t\022\017\n\007tagName\030\002 \002(\tB8\n4c"
+          + "om.lightbend.lagom.internal.projection.p"
+          + "rotobuf.msgH\001"
     };
-    akka.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-        new akka.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
-          public akka.protobuf.ExtensionRegistry assignDescriptors(
-              akka.protobuf.Descriptors.FileDescriptor root) {
-            descriptor = root;
-            return null;
-          }
-        };
-    akka.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
-        descriptorData, new akka.protobuf.Descriptors.FileDescriptor[] {}, assigner);
+    descriptor =
+        akka.protobufv3.internal.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
+            descriptorData, new akka.protobufv3.internal.Descriptors.FileDescriptor[] {});
     internal_static_com_lightbend_lagom_internal_projection_Worker_descriptor =
         getDescriptor().getMessageTypes().get(0);
     internal_static_com_lightbend_lagom_internal_projection_Worker_fieldAccessorTable =
-        new akka.protobuf.GeneratedMessage.FieldAccessorTable(
+        new akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable(
             internal_static_com_lightbend_lagom_internal_projection_Worker_descriptor,
             new java.lang.String[] {
               "TagName", "Key", "RequestedStatus", "ObservedStatus",
@@ -3298,7 +3819,7 @@ public final class ProjectionMessages {
     internal_static_com_lightbend_lagom_internal_projection_Projection_descriptor =
         getDescriptor().getMessageTypes().get(1);
     internal_static_com_lightbend_lagom_internal_projection_Projection_fieldAccessorTable =
-        new akka.protobuf.GeneratedMessage.FieldAccessorTable(
+        new akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable(
             internal_static_com_lightbend_lagom_internal_projection_Projection_descriptor,
             new java.lang.String[] {
               "Name", "Workers",
@@ -3306,7 +3827,7 @@ public final class ProjectionMessages {
     internal_static_com_lightbend_lagom_internal_projection_State_descriptor =
         getDescriptor().getMessageTypes().get(2);
     internal_static_com_lightbend_lagom_internal_projection_State_fieldAccessorTable =
-        new akka.protobuf.GeneratedMessage.FieldAccessorTable(
+        new akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable(
             internal_static_com_lightbend_lagom_internal_projection_State_descriptor,
             new java.lang.String[] {
               "Projections",
@@ -3314,7 +3835,7 @@ public final class ProjectionMessages {
     internal_static_com_lightbend_lagom_internal_projection_WorkerCoordinates_descriptor =
         getDescriptor().getMessageTypes().get(3);
     internal_static_com_lightbend_lagom_internal_projection_WorkerCoordinates_fieldAccessorTable =
-        new akka.protobuf.GeneratedMessage.FieldAccessorTable(
+        new akka.protobufv3.internal.GeneratedMessageV3.FieldAccessorTable(
             internal_static_com_lightbend_lagom_internal_projection_WorkerCoordinates_descriptor,
             new java.lang.String[] {
               "ProjectionName", "TagName",
