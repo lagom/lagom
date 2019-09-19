@@ -24,6 +24,15 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
+/**
+ * Entry point for projection driver classes to create a group of workers and get them distributed
+ * across the cluster. When a Driver (e.g. {{{ReadSideImpl}}}) is registering the projection it'll use
+ * this class to provide a {{{Props}}} factory, set the tags to track, etc...
+ *
+ * Internally the {{{ProjectionRegistry}}} uses {{{ClusterDistribution}}} and the {{{ProjectionRegistryActor}}}.
+ *
+ * @param system
+ */
 @ApiMayChange
 @InternalApi
 private[lagom] class ProjectionRegistry(system: ActorSystem) {
@@ -67,16 +76,23 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
   implicit val exCtx: ExecutionContext = system.dispatcher
   implicit val timeout: Timeout        = Timeout(1.seconds)
 
-  def stopWorker(coordinates: WorkerCoordinates): Unit =
+  /** See {{{Projections}}} */
+  private[lagom] def stopWorker(coordinates: WorkerCoordinates): Unit =
     projectionRegistryRef ! ProjectionRegistryActor.WorkerRequestCommand(coordinates, Stopped)
-  def startWorker(coordinates: WorkerCoordinates): Unit =
+
+  /** See {{{Projections}}} */
+  private[lagom] def startWorker(coordinates: WorkerCoordinates): Unit =
     projectionRegistryRef ! ProjectionRegistryActor.WorkerRequestCommand(coordinates, Started)
 
-  def stopAllWorkers(projectionName: String): Unit =
+  /** See {{{Projections}}} */
+  private[lagom] def stopAllWorkers(projectionName: String): Unit =
     projectionRegistryRef ! ProjectionRegistryActor.ProjectionRequestCommand(projectionName, Stopped)
-  def startAllWorkers(projectionName: String): Unit =
+
+  /** See {{{Projections}}} */
+  private[lagom] def startAllWorkers(projectionName: String): Unit =
     projectionRegistryRef ! ProjectionRegistryActor.ProjectionRequestCommand(projectionName, Started)
 
+  /** See {{{Projections}}} */
   private[lagom] def getState(): Future[State] = {
     (projectionRegistryRef ? GetState).mapTo[State]
   }

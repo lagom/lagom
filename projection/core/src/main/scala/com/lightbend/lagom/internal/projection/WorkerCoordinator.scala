@@ -58,6 +58,34 @@ object WorkerCoordinator {
 
 }
 
+/**
+ * Projections where traditionally implemented as a whole single class encapsulating the handling of
+ * EnsureActive (part of the ClusterDistribution extension) and their own messages and lifecycle management.
+ *
+ * A WorkerCoordinator actor has been introduced and it holds all the interaction with ClusterDistribution
+ * and also the ProjectionRegistry. This refactor removes triplication code from multiple ReadSideActor
+ * and TopicProducer implementations but introducing some complexity in the lagom/lagom codebase.
+ *
+ * The WorkerCoordinator actor spawns as soon as it receives EnsureActive(tagName) messages from the
+ * cluster and remains alive forever. When getting the first of those messages, it pings back to the
+ * ProjectionRegistry to indicate “I’m here, I represent a worker for this WorkerCoordinates”. Even when
+ * the requested status for given WorkerCorrdinates dictate the status to be Stopped the WorkerCoordinator
+ * will exist. That is, when the cluster starts up there are are many instances of WorkerHolderActor as
+ * projections x tags. The same is not true for the actual worker actors holding the queryByTag
+ * streams. The actual projection workers are only started when requested and are stopped when requested.
+ *
+ * An advantage of this pattern is that, because a WorkerCoordinator actor will know the projectionName
+ * and the tagName before the actual worker actor is created we can now make up a unique repeatable name
+ * for the worker actor. This unique String is called the workerKey and it helps detect duplicate actors
+ * in a given node (not across the cluster, though). It also helps in monitoring since the actor name now
+ * indicates exactly what projection and tag it is working on.
+ *
+ * See https://github.com/playframework/play-meta/blob/master/docs/design/projections-design.md#workercoordinator-actor
+ *
+ * @param projectionName
+ * @param workerProps
+ * @param projectionRegistryActorRef
+ */
 class WorkerCoordinator(
     projectionName: String,
     workerProps: WorkerCoordinates => Props,
@@ -141,6 +169,7 @@ class WorkerCoordinator(
   private def doStart(coordinates: WorkerCoordinates): Unit = {
     log.debug("Setting self as Started.")
     context.actorOf(workerProps(coordinates), name = coordinates.supervisingActorName)
+    // https://github.com/lagom/lagom/issues/2131
     // TODO: don't report Started unless underlying is fully started.
     // - When the underlying actor enters a StartupCrashLoop (e.g., the offsetStore is not ready,
     // the backing DB causes an issue,...) we will be reporting the observed state as `Started`
