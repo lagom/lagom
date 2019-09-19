@@ -48,7 +48,7 @@ object Dependencies {
     val AlpakkaKafka  = "1.0.5"
     val Curator       = "2.12.0"
     val Immutables    = "2.7.5"
-    val HibernateCore = "5.4.4.Final"
+    val HibernateCore = "5.4.5.Final"
     val PCollections  = "3.0.5"
 
     val ScalaJava8Compat = "0.9.0"
