@@ -21,10 +21,12 @@ import scala.collection.JavaConverters._
 sealed trait Status  extends ProjectionSerializable
 sealed trait Stopped extends Status
 sealed trait Started extends Status
+
 /** See {{{Status}}} */
-case object Started  extends Started { def getInstance: Started = this }
+case object Started extends Started { def getInstance: Started = this }
+
 /** See {{{Status}}} */
-case object Stopped  extends Stopped { def getInstance: Stopped = this }
+case object Stopped extends Stopped { def getInstance: Stopped = this }
 
 /**
  * Metadata of a Worker. The existence of this data doesn't mean the actual worker
