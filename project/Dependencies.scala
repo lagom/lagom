@@ -724,6 +724,7 @@ object Dependencies {
     akkaClusterTyped,
     akkaManagementClusterBootstrap,
     akkaManagementClusterHttp,
+    akkaProtobuf_v3,
     akkaTestkit          % Test,
     akkaMultiNodeTestkit % Test,
     scalaTest            % Test,
