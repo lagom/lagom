@@ -66,7 +66,11 @@ object UnidocRoot extends AutoPlugin {
    *                      API in both javadsl and scaladsl such as `projectins-core`
    * @return
    */
-  def settings(javadslProjects: Seq[ProjectReference], scaladslProjects: Seq[ProjectReference], otherProjects: ProjectReference*) = {
+  def settings(
+      javadslProjects: Seq[ProjectReference],
+      scaladslProjects: Seq[ProjectReference],
+      otherProjects: ProjectReference*
+  ) = {
     inTask(unidoc)(
       Seq(
         unidocProjectFilter in ScalaUnidoc := projectsAndDependencies(scaladslProjects ++ otherProjects),
