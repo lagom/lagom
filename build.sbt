@@ -78,7 +78,8 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
     "-Xlint:unchecked",
     "-Xlint:deprecation"
   ),
-  LagomPublish.validatePublishSettingsSetting
+  LagomPublish.validatePublishSettingsSetting,
+  resolvers += Resolver.bintrayRepo("akka", "snapshots"),
 )
 
 def bintraySettings: Seq[Setting[_]] = Seq(
