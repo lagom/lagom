@@ -482,7 +482,7 @@ lazy val root = (project in file("."))
     publish := {}
   )
   .enablePlugins(lagom.UnidocRoot)
-  .settings(UnidocRoot.settings(javadslProjects, scaladslProjects))
+  .settings(UnidocRoot.settings(javadslProjects, scaladslProjects, `projection-core`))
   .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects): _*)
 
 def SonatypeOnly      = Sonatype && PluginsAccessor.exclude(BintrayPlugin)
