@@ -4,8 +4,10 @@
 
 package com.lightbend.lagom.projection
 
-import akka.annotation.ApiMayChange;
+import akka.annotation.ApiMayChange
+import akka.annotation.InternalApi;
 
-/** Marker trait for projection serializers */
+/** Marker trait for projection serializers (for internal use, do not mark user code with this trait) */
 @ApiMayChange
+@InternalApi
 trait ProjectionSerializable
