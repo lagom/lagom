@@ -59,7 +59,7 @@ object WorkerCoordinator {
 }
 
 /**
- * Projections where traditionally implemented as a whole single class encapsulating the handling of
+ * Projections were traditionally implemented as a whole single class encapsulating the handling of
  * EnsureActive (part of the ClusterDistribution extension) and their own messages and lifecycle management.
  *
  * A WorkerCoordinator actor has been introduced and it holds all the interaction with ClusterDistribution
