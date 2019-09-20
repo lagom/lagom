@@ -5,7 +5,6 @@
 package docs.scaladsl.advanced
 
 import _root_.akka.actor.ActorSystem
-import _root_.akka.stream.ActorMaterializer
 import _root_.akka.stream.Materializer
 
 package staticservicelocator {
@@ -49,7 +48,7 @@ package staticservicelocator {
     }
 
     val actorSystem   = ActorSystem("my-app")
-    val materializer  = ActorMaterializer()(actorSystem)
+    val materializer  = Materializer.matFromSystem(actorSystem)
     val clientFactory = new MyLagomClientFactory(actorSystem, materializer)
     //#static-service-locator
 
@@ -83,7 +82,8 @@ package devmode {
     //#dev-mode-url
     new StandaloneLagomClientFactory("my-client") with AhcWSComponents with LagomDevModeServiceLocatorComponents {
 
-      override lazy val devModeServiceLocatorUrl = URI.create("http://localhost:8001")
+      override lazy val devModeServiceLocatorUrl =
+        URI.create("http://localhost:8001")
     }
 
     //#dev-mode-url
