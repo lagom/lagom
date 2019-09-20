@@ -6,6 +6,7 @@ package com.lightbend.lagom.internal.cluster.projections
 
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.ProjectionName
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
+import com.lightbend.lagom.projection.Projection
 import com.lightbend.lagom.projection.Started
 import com.lightbend.lagom.projection.State
 import com.lightbend.lagom.projection.Status
@@ -48,6 +49,12 @@ class ProjectionStateSpec extends WordSpec with Matchers {
     coordinates002_1 -> Started
   )
 
+  def findProjection(state: State)(projectionName: String): Option[Projection] =
+    state.projections.find(_.name == projectionName)
+
+  def findWorker(state: State)(workerKey: String): Option[Worker] =
+    state.projections.flatMap(_.workers).find(_.key == workerKey)
+
   "ProjectionStateSpec" should {
 
     "be build from a replicatedData" in {
@@ -61,12 +68,12 @@ class ProjectionStateSpec extends WordSpec with Matchers {
 
     "find projection by name" in {
       val state = State.fromReplicatedData(nameIndex, requestedStatus, observedStatus, Started, Stopped)
-      state.findProjection(prj001) should not be None
+      findProjection(state)(prj001) should not be None
     }
 
     "find worker by key" in {
       val state       = State.fromReplicatedData(nameIndex, requestedStatus, observedStatus, Started, Stopped)
-      val maybeWorker = state.findWorker("prj001-prj001-workers-3")
+      val maybeWorker = findWorker(state)("prj001-prj001-workers-3")
       maybeWorker shouldBe Some(
         Worker(p1w3, coordinates001_3.asKey, Stopped, Started)
       )
@@ -85,7 +92,7 @@ class ProjectionStateSpec extends WordSpec with Matchers {
 
       val state =
         State.fromReplicatedData(richIndex, requestedStatus, observedStatus, defaultRequested, defaultObserved)
-      val maybeWorker = state.findWorker(newCoordinates.asKey)
+      val maybeWorker = findWorker(state)(newCoordinates.asKey)
       maybeWorker shouldBe Some(
         Worker(newWorkerName, newCoordinates.asKey, defaultRequested, defaultObserved)
       )

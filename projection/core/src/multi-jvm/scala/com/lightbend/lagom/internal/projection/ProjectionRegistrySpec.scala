@@ -17,8 +17,10 @@ import com.lightbend.lagom.internal.projection.FakeProjectionActor.FakeStarting
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.projection.Projection
 import com.lightbend.lagom.projection.Started
+import com.lightbend.lagom.projection.State
 import com.lightbend.lagom.projection.Status
 import com.lightbend.lagom.projection.Stopped
+import com.lightbend.lagom.projection.Worker
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.PatienceConfiguration.Interval
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
@@ -268,7 +270,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wit
   private def expectWorkerStatus(projectionName: String, tagName: String, expectedStatus: Status) = {
     eventually(Timeout(pc.timeout), Interval(pc.interval)) {
       whenReady(projectionRegistry.getState()) { state =>
-        val maybeWorker = state.findWorker(WorkerCoordinates(projectionName, tagName).asKey)
+        val maybeWorker = findWorker(state, WorkerCoordinates(projectionName, tagName))
         maybeWorker.map(_.observedStatus) should be(Some(expectedStatus))
         maybeWorker.map(_.requestedStatus) should be(Some(expectedStatus))
       }
@@ -278,13 +280,19 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wit
   private def expectProjectionStatus(projectionName: String, expectedWorkerCount: Int, expectedStatus: Status) = {
     eventually(Timeout(pc.timeout), Interval(pc.interval)) {
       whenReady(projectionRegistry.getState()) { state =>
-        val projection: Projection = state.findProjection(projectionName).get
+        val projection: Projection = findProjection(state, projectionName).get
         projection.workers.size shouldBe expectedWorkerCount
         projection.workers.forall(_.requestedStatus == expectedStatus) should be(true)
         projection.workers.forall(_.observedStatus == expectedStatus) should be(true)
       }
     }
   }
+
+  private def findProjection(state: State, projectionName: String): Option[Projection] =
+    state.projections.find(_.name == projectionName)
+
+  private def findWorker(state: State, coordinates: WorkerCoordinates): Option[Worker] =
+    findProjection(state, coordinates.projectionName).flatMap(_.workers.find(_.tagName == coordinates.tagName))
 
   private def registerProjection(
       projectionName: String,
