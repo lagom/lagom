@@ -12,7 +12,7 @@ import com.lightbend.lagom.projection.State;
 /**
  * Public interface to query the internal projection registry that keeps track of the {@link State}
  * of each projection. A projections is a process consuming an Akka Persistence Journal handling
- * each event into a read table of a broker topic. In Lagom the erm projection only refers to <code>
+ * each event into a read table or a broker topic. In Lagom the term projection only refers to <code>
  * ReadSideProcessor</code>'s and <code>TopicProducers</code>'s (not Broker subscribers). This is
  * different than the meaning of projection in akka/akka-projection.
  *
@@ -25,7 +25,7 @@ public interface Projections {
    * Read an eventually consistent copy of the projections and workers running on the service.
    * Invocations to this method return a local copy of the `State` so multiple invocations in
    * different nodes of the cluster may return different versions of `State` when it is evolving
-   * (e.g. during a rolling upgrade, while attending a user request to sto/start,...)
+   * (e.g. during a rolling upgrade, while attending a user request to stop/start,...)
    *
    * @return an eventually consistent list of projections' metadata
    */

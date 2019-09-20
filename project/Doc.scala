@@ -63,8 +63,9 @@ object UnidocRoot extends AutoPlugin {
    * @param scaladslProjects scaladsl Projects (ill only appear in javadocs)
    * @param otherProjects a random list of other projects (mostly ***-core) added in both scaladocs
    *                      and javadocs. This is meant for projects which implement code that's public
-   *                      API in both javadsl and scaladsl such as `projectins-core`
-   * @return
+   *                      API in both javadsl and scaladsl such as `projections-core`
+   * @return The unidoc-specific setting enabling scaladoc or javadoc generation for each of the provided
+   *         ProjectReference in the arguments.
    */
   def settings(
       javadslProjects: Seq[ProjectReference],

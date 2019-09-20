@@ -48,7 +48,7 @@ object ProjectionRegistryActor {
   /**
    * Uniquely identify a worker.
    * @param projectionName the projection this worker is a part of
-   * @param tagName the nam of the tag this worker is rsponsible for consuming
+   * @param tagName the name of the tag this worker is responsible for consuming
    */
   case class WorkerCoordinates(projectionName: ProjectionName, tagName: String) extends ProjectionSerializable {
     val asKey: WorkerKey             = s"$projectionName-$tagName"
@@ -85,7 +85,7 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
   // All usages of `ddata` in this actor are unaffected by `UpdateTimeout` (see
   //   https://github.com/lagom/lagom/pull/2208). In general uses, using WriteMajority(5 sec) could be an issue
-  //   in big clusters but given the nature and how often the dta stored here is modified, WriteMajority
+  //   in big clusters but given the nature and how often the data stored here is modified, WriteMajority
   //   with a 5sec timeout should be fine even in big clusters.
   val writeConsistency: WriteConsistency = WriteMajority(timeout = projectionConfig.writeMajorityTimeout)
 

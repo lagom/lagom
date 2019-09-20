@@ -37,7 +37,7 @@ case object Stopped extends Stopped { def getInstance: Stopped = this }
  * is being replicated across the cluster and may have been edited in other nodes when
  * being read in the local node.
  *
- * @param tagName a tag in the event journal this worker is tasked to read. This value is
+ * @param tagName the tag in the event journal this worker will read. This value is
  *                part of the `WorkerCoordinates`.
  * @param key a unique identifier for this worker. Note the `key` is produced from
  *            the `WorkerCoordinates`
@@ -97,7 +97,7 @@ object Projection {
 /**
  * The state of a projections registry is a collection of projections with extra data indicating the
  * name of the projection, and details about its workers. Note that many projections may operate over
- * the same journal. Each worker includes information about the particular tagname it is trackign. Note
+ * the same journal. Each worker includes information about the particular tagName it is tracking. Note
  * that multiple workers may track the same tagName because each worker is part of a different projection.
  * Each worker also has a key which is unique across the whole cluster. Finally, the data related to a
  * worker that's part of the State includes a requested status and an observed status for the worker.
