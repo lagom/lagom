@@ -106,11 +106,6 @@ object Projection {
  */
 @ApiMayChange
 final class State(val projections: Seq[Projection]) extends ProjectionSerializable {
-  def findProjection(projectionName: String): Option[Projection] =
-    projections.find(_.name == projectionName)
-
-  def findWorker(workerKey: String): Option[Worker] =
-    projections.flatMap(_.workers).find(_.key == workerKey)
 
   /** Java API  */
   def getProjections: java.util.List[Projection] = projections.asJava
