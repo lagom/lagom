@@ -59,20 +59,13 @@ object WorkerCoordinator {
 }
 
 /**
- * Projections were traditionally implemented as a whole single class encapsulating the handling of
- * EnsureActive (part of the ClusterDistribution extension) and their own messages and lifecycle management.
- *
- * A WorkerCoordinator actor has been introduced and it holds all the interaction with ClusterDistribution
- * and also the ProjectionRegistry. This refactor removes triplication code from multiple ReadSideActor
- * and TopicProducer implementations but introducing some complexity in the lagom/lagom codebase.
- *
- * The WorkerCoordinator actor spawns as soon as it receives EnsureActive(tagName) messages from the
- * cluster and remains alive forever. When getting the first of those messages, it pings back to the
- * ProjectionRegistry to indicate “I’m here, I represent a worker for this WorkerCoordinates”. Even when
- * the requested status for given WorkerCorrdinates dictate the status to be Stopped the WorkerCoordinator
- * will exist. That is, when the cluster starts up there are are many instances of WorkerHolderActor as
- * projections x tags. The same is not true for the actual worker actors holding the queryByTag
- * streams. The actual projection workers are only started when requested and are stopped when requested.
+ * The WorkerCoordinator actor spawns as soon as it receives {{{EnsureActive(tagName)}}} messages from the
+ * cluster and remains alive forever. Even when the requested status for given {{{WorkerCoordinates}}} dictate
+ * the status to be {{{Stopped}}} the {{{WorkerCoordinator}}} will exist. When getting the first EnsureActive
+ * message, the WorkerCoordinator pings back to the {{{ProjectionRegistryActor}}} to indicate “I’m here, I represent a
+ * worker for this WorkerCoordinates”. That is, when the cluster starts up there are as many instances of
+ * {{{WorkerCoordinator}}} as (numProjections x numTags). The same is not true for the actual worker actors running
+ * the queryByTag streams. The actual worker actors are only started when requested and are stopped when requested.
  *
  * An advantage of this pattern is that, because a WorkerCoordinator actor will know the projectionName
  * and the tagName before the actual worker actor is created we can now make up a unique repeatable name
