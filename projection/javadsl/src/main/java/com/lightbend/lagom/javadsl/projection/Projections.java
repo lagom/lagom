@@ -12,9 +12,9 @@ import com.lightbend.lagom.projection.State;
 /**
  * Public interface to query the internal projection registry that keeps track of the {@link State}
  * of each projection. A projections is a process consuming an Akka Persistence Journal handling
- * each event into a read table or a broker topic. In Lagom the term projection only refers to <code>
- * ReadSideProcessor</code>'s and <code>TopicProducers</code>'s (not Broker subscribers). This is
- * different than the meaning of projection in akka/akka-projection.
+ * each event into a read table or a broker topic. In Lagom the term projection only refers to
+ * <code>ReadSideProcessor</code>'s and <code>TopicProducers</code>'s (not Broker subscribers). This
+ * is different than the meaning of projection in akka/akka-projection.
  *
  * <p>See also https://www.lagomframework.com/documentation/latest/java/Projections.html
  */
