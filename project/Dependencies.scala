@@ -18,14 +18,14 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.0-M4"
-    val PlayJson         = "2.8.0-M5"
-    val PlayStandaloneWs = "2.1.0-M4"
-    val Twirl            = "1.5.0-M2"
+    val Play             = "2.8.0-M5"
+    val PlayJson         = "2.8.0-M6"
+    val PlayStandaloneWs = "2.1.0-M5"
+    val Twirl            = "1.5.0-M4"
     val PlayFileWatch    = "1.1.8"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M5")
-    val AkkaHttp     = "10.1.9"
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M7")
+    val AkkaHttp     = "10.1.10"
 
     val AkkaPersistenceCassandra = "0.99"
     val AkkaPersistenceJdbc      = "3.5.2"
@@ -47,7 +47,7 @@ object Dependencies {
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
     val AlpakkaKafka  = "1.0.5"
     val Curator       = "2.12.0"
-    val Immutables    = "2.7.5"
+    val Immutables    = "2.8.0"
     val HibernateCore = "5.4.5.Final"
     val PCollections  = "3.0.5"
 
@@ -61,7 +61,7 @@ object Dependencies {
     val Logback = "1.2.3"
     val Log4j   = "2.12.1"
 
-    val jetty = "9.4.16.v20190411"
+    val jetty = "9.4.20.v20190813"
 
     val Selenium = "3.141.59"
   }
@@ -89,7 +89,7 @@ object Dependencies {
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.1"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
-  private val typesafeConfig         = "com.typesafe" % "config" % "1.3.4"
+  private val typesafeConfig         = "com.typesafe" % "config" % "1.3.5-RC1"
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.0"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
@@ -108,7 +108,7 @@ object Dependencies {
   private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
   private val akkaSlf4j            = ("com.typesafe.akka" %% "akka-slf4j" % Versions.Akka).excludeAll(excludeSlf4j: _*)
   private val akkaStream           = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
-  private val akkaProtobuf         = "com.typesafe.akka" %% "akka-protobuf" % Versions.Akka
+  private val akkaProtobuf_v3      = "com.typesafe.akka" %% "akka-protobuf-v3" % Versions.Akka
 
   private val akkaManagement                 = "com.lightbend.akka.management" %% "akka-management"                   % Versions.AkkaManagement
   private val akkaManagementClusterHttp      = "com.lightbend.akka.management" %% "akka-management-cluster-http"      % Versions.AkkaManagement
@@ -167,8 +167,8 @@ object Dependencies {
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
   private val okio    = "com.squareup.okio"    % "okio"   % "2.4.0"
   private val kotlinDeps = Seq(
-    "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.2.60",
-    "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.2.60",
+    "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.3.50",
+    "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.3.50",
     "org.jetbrains"        % "annotations"          % "13.0"
   )
 
@@ -286,19 +286,20 @@ object Dependencies {
       okhttp3,
       okio,
       "org.atteo.classindex"        % "classindex"         % "3.4",
-      "org.seleniumhq.selenium"     % "htmlunit-driver"    % "2.35.1",
+      "org.seleniumhq.selenium"     % "htmlunit-driver"    % "2.36.0",
       "xalan"                       % "xalan"              % "2.7.2",
       "xalan"                       % "serializer"         % "2.7.2",
-      "org.apache.commons"          % "commons-text"       % "1.6",
-      "org.apache.httpcomponents"   % "httpmime"           % "4.5.8",
-      "org.apache.httpcomponents"   % "httpclient"         % "4.5.8",
+      "org.apache.commons"          % "commons-text"       % "1.7",
+      "org.apache.httpcomponents"   % "httpmime"           % "4.5.9",
+      "org.apache.httpcomponents"   % "httpclient"         % "4.5.9",
       "org.apache.httpcomponents"   % "httpcore"           % "4.4.11",
-      "net.sourceforge.htmlunit"    % "htmlunit"           % "2.35.0",
-      "net.sourceforge.htmlunit"    % "htmlunit-core-js"   % "2.35.0",
-      "net.sourceforge.htmlunit"    % "neko-htmlunit"      % "2.35.0",
+      "net.sourceforge.htmlunit"    % "htmlunit"           % "2.36.0",
+      "net.sourceforge.htmlunit"    % "htmlunit-core-js"   % "2.36.0",
+      "net.sourceforge.htmlunit"    % "neko-htmlunit"      % "2.36.0",
+      "org.brotli"                  % "dec"                % "0.1.2",
       "xerces"                      % "xercesImpl"         % "2.12.0",
       "xml-apis"                    % "xml-apis"           % "1.4.01",
-      "net.sourceforge.htmlunit"    % "htmlunit-cssparser" % "1.4.0",
+      "net.sourceforge.htmlunit"    % "htmlunit-cssparser" % "1.5.0",
       "commons-io"                  % "commons-io"         % "2.6",
       "commons-net"                 % "commons-net"        % "3.6",
       "org.eclipse.jetty.websocket" % "websocket-client"   % Versions.jetty,
@@ -322,7 +323,7 @@ object Dependencies {
       "javax.cache"         % "cache-api"               % "1.1.1",
       "javax.inject"        % "javax.inject"            % "1",
       "javax.transaction"   % "jta"                     % "1.1",
-      "jakarta.transaction" % "jakarta.transaction-api" % "1.3.2",
+      "jakarta.transaction" % "jakarta.transaction-api" % "1.3.3",
       "joda-time"           % "joda-time"               % "2.10.3",
       "junit"               % "junit"                   % Versions.JUnit,
       "net.jodah"           % "typetools"               % "0.5.0",
@@ -331,7 +332,7 @@ object Dependencies {
       "org.agrona"          % "agrona"                  % "1.0.1",
       commonsLang,
       kafkaClients,
-      "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.17",
+      "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
       "org.hibernate"                   % "hibernate-validator"        % "5.2.4.Final",
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api"      % "1.0.2.Final",
       "org.immutables"                  % "value"                      % Versions.Immutables,
@@ -355,6 +356,7 @@ object Dependencies {
       scalaCollectionCompat,
       "com.google.guava"             % "failureaccess"          % "1.0.1",
       "com.google.guava"             % "listenablefuture"       % "9999.0-empty-to-avoid-conflict-with-guava",
+      "com.google.protobuf"          % "protobuf-java"          % "3.9.0",
       "javax.activation"             % "activation"             % "1.1",
       "javax.activation"             % "javax.activation-api"   % "1.2.0",
       "jakarta.activation"           % "jakarta.activation-api" % "1.2.1",
@@ -372,6 +374,7 @@ object Dependencies {
       "akka-persistence",
       "akka-persistence-query",
       "akka-protobuf",
+      "akka-protobuf-v3",
       "akka-remote",
       "akka-slf4j",
       "akka-stream",
@@ -527,7 +530,8 @@ object Dependencies {
     akkaTestkit    % Test,
     scalaTest      % Test,
     junit          % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test
+    slf4jApi       % Test,
+    "com.novocode" % "junit-interface" % "0.11" % Test,
   )
 
   val `play-json` = libraryDependencies ++= Seq(
@@ -559,7 +563,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProtobuf,
+    akkaProtobuf_v3,
     guava,
     jnrFfi,
     jffi,
@@ -651,6 +655,7 @@ object Dependencies {
     playAkkaHttpServer,
     playTest       % Test,
     junit          % Test,
+    slf4jApi       % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest,
     // Upgrades needed to match whitelist versions
@@ -665,6 +670,7 @@ object Dependencies {
     playAkkaHttpServer,
     playTest       % Test,
     junit          % Test,
+    slf4jApi       % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test,
     scalaTest,
     okio        % Test,
@@ -693,7 +699,7 @@ object Dependencies {
     // Upgrades needed to match whitelist versions
     akkaStream,
     akkaActor,
-    akkaProtobuf,
+    akkaProtobuf_v3,
     akkaSlf4j,
     scalaXml,
     akkaHttpCore,
@@ -715,10 +721,12 @@ object Dependencies {
     akkaClusterTyped,
     akkaManagementClusterBootstrap,
     akkaManagementClusterHttp,
+    akkaProtobuf_v3,
     akkaTestkit          % Test,
     akkaMultiNodeTestkit % Test,
     scalaTest            % Test,
     junit                % Test,
+    slf4jApi             % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
     // Upgrades needed to match whitelist versions
     sslConfig,
@@ -772,6 +780,7 @@ object Dependencies {
     akkaStreamTestkit    % Test,
     scalaTest            % Test,
     junit                % Test,
+    slf4jApi             % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
     slf4jApi             % Test,
     // Upgrades needed to match whitelist versions
@@ -788,6 +797,7 @@ object Dependencies {
     akkaMultiNodeTestkit % Test,
     akkaStreamTestkit    % Test,
     scalaTest            % Test,
+    slf4jApi             % Test,
     // Upgrades needed to match whitelist versions
     sslConfig,
     scalaXml % Test,
@@ -967,7 +977,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProtobuf,
+    akkaProtobuf_v3,
     scalaXml,
     guava,
     jnrFfi,
@@ -991,7 +1001,7 @@ object Dependencies {
       akkaStream,
       akkaActor,
       akkaSlf4j,
-      akkaProtobuf,
+      akkaProtobuf_v3,
       guava,
       jnrFfi,
       jffi,
@@ -1009,7 +1019,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProtobuf,
+    akkaProtobuf_v3,
     jnrFfi,
     jffi,
     jnra64asm,
@@ -1072,7 +1082,7 @@ object Dependencies {
     // updates to match whitelist
     akkaActor,
     akkaStream,
-    akkaProtobuf,
+    akkaProtobuf_v3,
     akkaSlf4j,
     typesafeConfig,
     sslConfig,
