@@ -5,7 +5,7 @@
 package com.lightbend.lagom.internal.scaladsl.persistence.protobuf
 
 import akka.actor.ExtendedActorSystem
-import akka.protobuf.ByteString
+import akka.protobufv3.internal.ByteString
 import akka.serialization.BaseSerializer
 import akka.serialization.Serialization
 import akka.serialization.SerializationExtension
