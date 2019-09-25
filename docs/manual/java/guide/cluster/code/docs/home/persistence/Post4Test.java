@@ -26,7 +26,6 @@ import org.junit.Test;
 import akka.Done;
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
-import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 
 import scala.concurrent.ExecutionContext;
@@ -52,7 +51,7 @@ public class Post4Test {
       new GuiceInjectorBuilder()
           .bindings(
               bind(ActorSystem.class).toInstance(system),
-              bind(Materializer.class).toInstance(ActorMaterializer.create(system)),
+              bind(Materializer.class).toInstance(Materializer.matFromSystem(system)),
               bind(ExecutionContext.class).toInstance(system.dispatcher()))
           .bindings(new PubSubModule())
           .build();
