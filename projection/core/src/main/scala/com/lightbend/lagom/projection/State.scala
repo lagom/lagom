@@ -15,7 +15,7 @@ import scala.beans.BeanProperty
 import scala.collection.JavaConverters._
 
 /**
- * Super type for a worker ADT. Possible values are {{{Stopped}}} and {{{Started}}}
+ * Super type for a worker status ADT. Possible values are {{{Stopped}}} and {{{Started}}}
  */
 @ApiMayChange
 sealed trait Status  extends ProjectionSerializable
