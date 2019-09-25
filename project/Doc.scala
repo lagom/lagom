@@ -59,7 +59,7 @@ object UnidocRoot extends AutoPlugin {
   }
 
   /**
-   * @param javadslProjects javadsl Projects (will only appear on the scaladocs)
+   * @param javadslProjects javadsl Projects (will only appear on the javadocs)
    * @param scaladslProjects scaladsl Projects (will only appear in scaladocs)
    * @param otherProjects a random list of other projects (mostly ***-core) added in both scaladocs
    *                      and javadocs. This is meant for projects which implement code that's public
