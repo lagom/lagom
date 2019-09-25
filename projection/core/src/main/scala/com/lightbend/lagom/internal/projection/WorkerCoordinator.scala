@@ -69,9 +69,10 @@ object WorkerCoordinator {
  *
  * An advantage of this pattern is that, because a WorkerCoordinator actor will know the projectionName
  * and the tagName before the actual worker actor is created we can now make up a unique repeatable name
- * for the worker actor. This unique String is called the workerKey and it helps detect duplicate actors
- * in a given node (not across the cluster, though). It also helps in monitoring since the actor name now
- * indicates exactly what projection and tag it is working on.
+ * for the worker actor. This unique String is called the workerKey. The workerKey is used in the worker actor name.
+ * This is useful in monitoring since the information regarding projection and tagName is easily accessible, but also
+ * because the ActorSystem can't run two actors with the same name. Trying to spawn the same worker in a single node
+ * will cause a failure.
  *
  * See https://github.com/playframework/play-meta/blob/master/docs/design/projections-design.md#workercoordinator-actor
  *
