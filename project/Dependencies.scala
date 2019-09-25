@@ -108,7 +108,6 @@ object Dependencies {
   private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
   private val akkaSlf4j            = ("com.typesafe.akka" %% "akka-slf4j" % Versions.Akka).excludeAll(excludeSlf4j: _*)
   private val akkaStream           = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
-  private val akkaProtobuf         = "com.typesafe.akka" %% "akka-protobuf" % Versions.Akka
   private val akkaProtobuf_v3      = "com.typesafe.akka" %% "akka-protobuf-v3" % Versions.Akka
 
   private val akkaManagement                 = "com.lightbend.akka.management" %% "akka-management"                   % Versions.AkkaManagement
@@ -564,7 +563,6 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProtobuf,
     akkaProtobuf_v3,
     guava,
     jnrFfi,
@@ -701,7 +699,6 @@ object Dependencies {
     // Upgrades needed to match whitelist versions
     akkaStream,
     akkaActor,
-    akkaProtobuf,
     akkaProtobuf_v3,
     akkaSlf4j,
     scalaXml,
@@ -980,7 +977,6 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProtobuf,
     akkaProtobuf_v3,
     scalaXml,
     guava,
@@ -1005,7 +1001,6 @@ object Dependencies {
       akkaStream,
       akkaActor,
       akkaSlf4j,
-      akkaProtobuf,
       akkaProtobuf_v3,
       guava,
       jnrFfi,
@@ -1024,7 +1019,6 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaSlf4j,
-    akkaProtobuf,
     akkaProtobuf_v3,
     jnrFfi,
     jffi,
@@ -1088,7 +1082,6 @@ object Dependencies {
     // updates to match whitelist
     akkaActor,
     akkaStream,
-    akkaProtobuf,
     akkaProtobuf_v3,
     akkaSlf4j,
     typesafeConfig,
