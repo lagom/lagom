@@ -58,6 +58,28 @@ object WorkerCoordinator {
 
 }
 
+/**
+ * The WorkerCoordinator actor spawns as soon as it receives {{{EnsureActive(tagName)}}} messages from the
+ * cluster and remains alive forever. Even when the requested status for given {{{WorkerCoordinates}}} dictate
+ * the status to be {{{Stopped}}} the {{{WorkerCoordinator}}} will exist. When getting the first EnsureActive
+ * message, the WorkerCoordinator pings back to the {{{ProjectionRegistryActor}}} to indicate “I’m here, I represent a
+ * worker for this WorkerCoordinates”. That is, when the cluster starts up there are as many instances of
+ * {{{WorkerCoordinator}}} as (numProjections x numTags). The same is not true for the actual worker actors running
+ * the queryByTag streams. The actual worker actors are only started when requested and are stopped when requested.
+ *
+ * An advantage of this pattern is that, because a WorkerCoordinator actor will know the projectionName
+ * and the tagName before the actual worker actor is created we can now make up a unique repeatable name
+ * for the worker actor. This unique String is called the workerKey. The workerKey is used in the worker actor name.
+ * This is useful in monitoring since the information regarding projection and tagName is easily accessible, but also
+ * because the ActorSystem can't run two actors with the same name. Trying to spawn the same worker in a single node
+ * will cause a failure.
+ *
+ * See https://github.com/playframework/play-meta/blob/master/docs/design/projections-design.md#workercoordinator-actor
+ *
+ * @param projectionName
+ * @param workerProps
+ * @param projectionRegistryActorRef
+ */
 class WorkerCoordinator(
     projectionName: String,
     workerProps: WorkerCoordinates => Props,
@@ -141,6 +163,7 @@ class WorkerCoordinator(
   private def doStart(coordinates: WorkerCoordinates): Unit = {
     log.debug("Setting self as Started.")
     context.actorOf(workerProps(coordinates), name = coordinates.supervisingActorName)
+    // https://github.com/lagom/lagom/issues/2131
     // TODO: don't report Started unless underlying is fully started.
     // - When the underlying actor enters a StartupCrashLoop (e.g., the offsetStore is not ready,
     // the backing DB causes an issue,...) we will be reporting the observed state as `Started`

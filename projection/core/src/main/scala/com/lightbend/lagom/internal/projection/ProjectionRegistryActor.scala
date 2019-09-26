@@ -35,7 +35,8 @@ import com.lightbend.lagom.projection.ProjectionSerializable
 object ProjectionRegistryActor {
   def props = Props(new ProjectionRegistryActor)
 
-  type WorkerKey      = String // a WorkerKey is a unique String representing WorkerCoordinates
+  /** a WorkerKey is a unique String representing WorkerCoordinates */
+  type WorkerKey      = String
   type ProjectionName = String
 
   case class WorkerRequestCommand(coordinates: WorkerCoordinates, requestedStatus: Status)
@@ -44,20 +45,35 @@ object ProjectionRegistryActor {
   case class RegisterProjection(projectionName: ProjectionName, tagNames: Set[String])
   case class ReportForDuty(coordinates: WorkerCoordinates)
 
+  /**
+   * Uniquely identify a worker.
+   * @param projectionName the projection this worker is a part of
+   * @param tagName the name of the tag this worker is responsible for consuming
+   */
   case class WorkerCoordinates(projectionName: ProjectionName, tagName: String) extends ProjectionSerializable {
     val asKey: WorkerKey             = s"$projectionName-$tagName"
     val workerActorName: String      = URLEncoder.encode(asKey, "utf-8")
     val supervisingActorName: String = URLEncoder.encode(s"backoff-$asKey", "utf-8")
   }
 
-  // Read-Only command. Returns `State` representing the state of
-  // the projection workers as currently seen in this node. It contains both the
-  // requested and the observed status for each worker (both are eventually consistent
-  // values since both may have been edited concurrently in other nodes).
+  /**
+   * Read-Only command. Returns `State` representing the state of the projection workers as
+   * currently seen in this node. It contains both the requested and the observed status for
+   * each worker (both are eventually consistent values since both may have been edited
+   * concurrently in other nodes).
+   */
   case object GetState
 
 }
 
+/**
+ * Build an in-memory, CRDT-backed representation of the status of each projection worker. Each
+ * instance of this actor communicates with the {{{WorkerCoordinator}}} running locally to propagate
+ * requests and retrieve status of the actual worker actor. The retrieved data for requested and
+ * observed status is propagated to other peers.
+ *
+ * See also https://github.com/playframework/play-meta/blob/master/docs/design/projections-design.md
+ */
 class ProjectionRegistryActor extends Actor with ActorLogging {
 
   import ProjectionRegistryActor._
@@ -67,9 +83,10 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
 
   private val projectionConfig: ProjectionConfig = ProjectionConfig(context.system.settings.config)
 
-  // All usages os `data` in this actor are unaffected by `UpdateTimeout` (see
+  // All usages of `ddata` in this actor are unaffected by `UpdateTimeout` (see
   //   https://github.com/lagom/lagom/pull/2208). In general uses, using WriteMajority(5 sec) could be an issue
-  //   in big clusters.
+  //   in big clusters but given the nature and how often the data stored here is modified, WriteMajority
+  //   with a 5sec timeout should be fine even in big clusters.
   val writeConsistency: WriteConsistency = WriteMajority(timeout = projectionConfig.writeMajorityTimeout)
 
   // (a) Replicator contains data of all workers (requested and observed status, plus a name index)
