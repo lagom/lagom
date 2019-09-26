@@ -58,11 +58,24 @@ object UnidocRoot extends AutoPlugin {
     projects.map(p => inProjects(p)).reduce(_ || _)
   }
 
-  def settings(javadslProjects: Seq[ProjectReference], scaladslProjects: Seq[ProjectReference]) = {
+  /**
+   * @param javadslProjects javadsl Projects (will only appear on the javadocs)
+   * @param scaladslProjects scaladsl Projects (will only appear in scaladocs)
+   * @param otherProjects a random list of other projects (mostly ***-core) added in both scaladocs
+   *                      and javadocs. This is meant for projects which implement code that's public
+   *                      API in both javadsl and scaladsl such as `projections-core`
+   * @return The unidoc-specific setting enabling scaladoc or javadoc generation for each of the provided
+   *         ProjectReference in the arguments.
+   */
+  def settings(
+      javadslProjects: Seq[ProjectReference],
+      scaladslProjects: Seq[ProjectReference],
+      otherProjects: ProjectReference*
+  ) = {
     inTask(unidoc)(
       Seq(
-        unidocProjectFilter in ScalaUnidoc := projectsAndDependencies(scaladslProjects),
-        unidocProjectFilter in JavaUnidoc := projectsAndDependencies(javadslProjects),
+        unidocProjectFilter in ScalaUnidoc := projectsAndDependencies(scaladslProjects ++ otherProjects),
+        unidocProjectFilter in JavaUnidoc := projectsAndDependencies(javadslProjects ++ otherProjects),
         autoAPIMappings in ScalaUnidoc := true
       )
     )
@@ -157,7 +170,8 @@ object UnidocRoot extends AutoPlugin {
       "-group",
       "Projection",
       packageList(
-        "com.lightbend.lagom.javadsl.projection"
+        "com.lightbend.lagom.javadsl.projection",
+        "com.lightbend.lagom.projection"
       ),
       "-group",
       "Message Broker",

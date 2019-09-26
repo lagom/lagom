@@ -10,7 +10,7 @@ import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 
 /**
- *
+ * Provides an instance of {{{Projections}}} to interact with the (internal) {{{ProjectionRegistry}}}.
  */
 @ApiMayChange
 trait ProjectionComponents extends ClusterComponents {
