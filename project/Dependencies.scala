@@ -41,7 +41,7 @@ object Dependencies {
     val JacksonDatabind      = "2.9.10"
     val Guava                = "28.1-jre"
     val Maven                = "3.6.2"
-    val Netty                = "4.1.41.Final"
+    val Netty                = "4.1.42.Final"
     val NettyReactiveStreams = "2.0.3"
     val Kafka                = "2.1.1"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
