@@ -21,7 +21,7 @@ if [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
     EXTRA_TASKS+=("validateDependencies")
 fi
 
-runSbt  ${EXTRA_TASK[@]} \
+runSbt  ${EXTRA_TASKS[@]} \
         +mimaReportBinaryIssues
 
 printMessage "VALIDATE SCALA CODE FORMATTING"
