@@ -10,6 +10,10 @@ scalaVersion := sys.props.get("scala.version").getOrElse("2.12.9")
 
 interactionMode := com.lightbend.lagom.sbt.NonBlockingInteractionMode
 
+lagomCassandraEnabled in ThisBuild := true
+// no need for Kafka on this test
+lagomKafkaEnabled in ThisBuild := false
+
 val CassandraJournalKeyspace       = "cassandra-journal.keyspace"
 val CassandraJournalPort           = "cassandra-journal.port"
 val CassandraSnapshotStoreKeyspace = "cassandra-snapshot-store.keyspace"
