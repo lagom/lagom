@@ -153,7 +153,7 @@ def publishMavenStyleSettings: Seq[Setting[_]] = Seq(
 )
 
 def sonatypeSettings: Seq[Setting[_]] = Seq(
-  publishTo := sonatypePublishTo.value
+  publishTo := sonatypePublishToBundle.value,
 )
 
 def runtimeScalaSettings: Seq[Setting[_]] = Seq(
