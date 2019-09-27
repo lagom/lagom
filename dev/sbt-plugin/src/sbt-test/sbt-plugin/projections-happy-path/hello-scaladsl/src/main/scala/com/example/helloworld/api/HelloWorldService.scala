@@ -26,7 +26,7 @@ trait HelloWorldService extends Service {
 
   override final def descriptor: Descriptor = {
     // @formatter:off
-    named("hello-world")
+    named("hello-scala")
       .withCalls(
         pathCall("/api-scala/hello/:id", hello _),
         pathCall("/api-scala/set/:id/:message", useGreeting _)
