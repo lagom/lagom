@@ -7,6 +7,7 @@ scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.9")
 val netty = "io.netty" % "netty" % "3.10.6.Final"
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 
+// no need for Cassandra and Kafka on this test
 lagomCassandraEnabled in ThisBuild := false
 lagomKafkaEnabled in ThisBuild := false
 

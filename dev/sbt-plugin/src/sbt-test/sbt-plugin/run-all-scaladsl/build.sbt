@@ -6,6 +6,10 @@ scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.9")
 
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 
+// no need for Cassandra and Kafka on this test
+lagomCassandraEnabled in ThisBuild := false
+lagomKafkaEnabled in ThisBuild := false
+
 lazy val `a-api` = (project in file("a") / "api")
   .settings(
     libraryDependencies += lagomScaladslApi

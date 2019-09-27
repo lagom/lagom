@@ -8,6 +8,10 @@ interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMo
 
 lagomServiceEnableSsl in ThisBuild := true
 
+// no need for Cassandra and Kafka on this test
+lagomCassandraEnabled in ThisBuild := false
+lagomKafkaEnabled in ThisBuild := false
+
 InputKey[Unit]("makeRequest") := {
   val args                      = Def.spaceDelimited("<url> <status> ...").parsed
   val path :: status :: headers = args
