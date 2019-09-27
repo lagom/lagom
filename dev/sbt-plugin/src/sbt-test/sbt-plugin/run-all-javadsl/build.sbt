@@ -4,6 +4,10 @@ interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMo
 
 scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.9")
 
+// no need for Cassandra and Kafka on this test
+lagomCassandraEnabled in ThisBuild := false
+lagomKafkaEnabled in ThisBuild := false
+
 lazy val `a-api` = (project in file("a") / "api")
   .settings(
     libraryDependencies += lagomJavadslApi
