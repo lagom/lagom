@@ -201,7 +201,10 @@ object Dependencies {
     ) ++ libraryFamily("com.fasterxml.jackson.module", Versions.JacksonDatatype)(
       "jackson-module-parameter-names",
       "jackson-module-paranamer"
-    ) ++ libraryFamily("com.fasterxml.jackson.dataformat", Versions.JacksonDatatype)(
+    ) ++ Seq("com.fasterxml.jackson.module" %% "jackson-module-scala" % Versions.JacksonDatatype) ++ libraryFamily(
+      "com.fasterxml.jackson.dataformat",
+      Versions.JacksonDatatype
+    )(
       "jackson-dataformat-cbor",
     )
 
@@ -489,12 +492,13 @@ object Dependencies {
     guava,
     // Upgrades needed to match whitelist versions
     sslConfig,
+    pcollections,
     playJson,
     jnrFfi,
     jffi,
     jnra64asm,
     jnrConstants,
-  ) ++ ow2asmDeps // to match whitelist versions
+  ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
 
   val `api-javadsl` = libraryDependencies ++= Seq(
     playJava,
@@ -569,7 +573,8 @@ object Dependencies {
     jffi,
     jnra64asm,
     jnrConstants,
-  ) ++ ow2asmDeps // to match whitelist versions
+    pcollections,
+  ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
 
   val client = libraryDependencies ++= Seq(
     slf4jApi,
@@ -598,7 +603,9 @@ object Dependencies {
     // we need to explicitly add akka-remote in test scope
     // because the test for LagomClientFactory needs it
     akkaRemote % Test,
-    scalaTest  % Test
+    scalaTest  % Test,
+    // Upgrades needed to match whitelist versions
+    scalaCollectionCompat,
   )
 
   val server = libraryDependencies ++= Nil
@@ -626,6 +633,7 @@ object Dependencies {
     playJson,
     akkaSlf4j,
     scalaXml,
+    jffi,
     jnrConstants,
     jnrPosix
   )
@@ -711,7 +719,8 @@ object Dependencies {
     jffi,
     jnra64asm,
     jnrConstants,
-  ) ++ ow2asmDeps // to match whitelist versions
+    pcollections,
+  ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
 
   val `akka-management-javadsl`  = libraryDependencies ++= Seq.empty[ModuleID]
   val `akka-management-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
@@ -754,7 +763,9 @@ object Dependencies {
     akkaMultiNodeTestkit % Test,
     scalaTest            % Test,
     junit                % Test,
-    "com.novocode"       % "junit-interface" % "0.11" % Test
+    "com.novocode"       % "junit-interface" % "0.11" % Test,
+    // Upgrades needed to match whitelist versions
+    slf4jApi,
   )
 
   val `cluster-scaladsl` = libraryDependencies ++= Seq(
@@ -770,7 +781,9 @@ object Dependencies {
     // explicitly depend on particular versions of jackson
   ) ++ jacksonFamily ++ Seq(
     // explicitly depend on particular versions of guava
-    guava
+    guava,
+    // Upgrades needed to match whitelist versions
+    slf4jApi,
   )
 
   val `pubsub-javadsl` = libraryDependencies ++= Seq(
@@ -893,7 +906,8 @@ object Dependencies {
     // Upgrades needed to match whitelist versions
     scalaCollectionCompat,
     scalaXml,
-    jnrConstants
+    jnrConstants,
+    pcollections,
   )
 
   val `persistence-jdbc-javadsl` = libraryDependencies ++= Seq(
@@ -924,7 +938,8 @@ object Dependencies {
     scalaTest % Test,
     // Upgrades needed to match whitelist versions
     sslConfig,
-    kafkaClients
+    kafkaClients,
+    scalaCollectionCompat,
   )
 
   val `kafka-client-javadsl` = libraryDependencies ++= Seq(
@@ -946,7 +961,9 @@ object Dependencies {
   val `kafka-broker` = libraryDependencies ++= Seq(
     kafkaClients,
     // Upgrades needed to match whitelist versions
-    jnrConstants
+    jnrConstants,
+    pcollections,
+    scalaCollectionCompat,
   )
 
   val `kafka-broker-javadsl` = libraryDependencies ++= Seq(
@@ -984,11 +1001,15 @@ object Dependencies {
     jffi,
     jnra64asm,
     jnrConstants,
-  ) ++ ow2asmDeps ++ Seq("logback-core", "logback-classic").map("ch.qos.logback" % _ % Versions.Logback)
+    pcollections,
+  ) ++ jacksonFamily ++ ow2asmDeps ++ Seq("logback-core", "logback-classic").map(
+    "ch.qos.logback" % _ % Versions.Logback
+  )
 
   val log4j2 = libraryDependencies ++= Seq(slf4jApi) ++
     log4jModules ++
     ow2asmDeps ++ // to match whitelist versions
+    jacksonFamily ++
     Seq(
       "com.lmax" % "disruptor" % Versions.Disruptor,
       play,
@@ -1007,6 +1028,7 @@ object Dependencies {
       jffi,
       jnra64asm,
       jnrConstants,
+      pcollections,
     )
 
   val `reloadable-server` = libraryDependencies ++= Seq(
@@ -1084,11 +1106,12 @@ object Dependencies {
     akkaStream,
     akkaProtobuf_v3,
     akkaSlf4j,
+    pcollections,
     typesafeConfig,
     sslConfig,
     scalaXml,
     playJson,
-  )
+  ) ++ jacksonFamily
 
   val `service-registry-client-core` =
     libraryDependencies ++= Seq(
