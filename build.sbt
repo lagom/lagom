@@ -1432,7 +1432,8 @@ def scriptedSettings: Seq[Setting[_]] =
         "-XX:MaxMetaspaceSize=512m",
         "-Dscala.version=" + sys.props
           .get("scripted.scala.version")
-          .getOrElse((scalaVersion in `reloadable-server`).value)
+          .getOrElse((scalaVersion in `reloadable-server`).value),
+        s"-Dsbt.boot.directory=${file(sys.props("user.home")) / ".sbt" / "boot"}",
       )
     )
 
