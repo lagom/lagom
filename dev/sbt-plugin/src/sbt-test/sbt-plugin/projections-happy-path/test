@@ -18,6 +18,14 @@
 
 > runAll
 
+# Locator and gateway should be up
+> validateRequest retry-until-success http://localhost:9008
+> validateRequest retry-until-success http://localhost:9000
+
+# Ensure the foo service is reachable
+> validateRequest retry-until-success http://localhost:9008/services/hello-scala status 200
+> validateRequest retry-until-success http://localhost:9000/api-java/hello/Alice status 200
+
 ##
 ## Test the java impl in dev mode
 ##
