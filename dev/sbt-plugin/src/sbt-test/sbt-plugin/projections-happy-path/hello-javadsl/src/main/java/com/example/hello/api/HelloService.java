@@ -26,7 +26,7 @@ public interface HelloService extends Service {
 
     @Override
     default Descriptor descriptor() {
-        return named("hello")
+        return named("hello-java")
             .withCalls(
                 pathCall("/api-java/hello/:id", this::hello),
                 pathCall("/api-java/set/:id/:message", this::useGreeting)
