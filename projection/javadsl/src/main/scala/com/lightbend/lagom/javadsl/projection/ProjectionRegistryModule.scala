@@ -30,27 +30,17 @@ import scala.concurrent.ExecutionContext
 class ProjectionRegistryModule extends Module {
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[ProjectionRegistry].toProvider[ProjectionRegistryProvider], // for internal use
     bind[Projections].to(classOf[ProjectionsImpl])                   // for end users
   )
 }
 
 @Singleton
 @InternalApi
-// This provider is trivial but required to keep ProjectionRegistry in `-core` and free of any Guice dependency
 /** INTERNAL API */
-private[lagom] class ProjectionRegistryProvider @Inject()(actorSystem: ActorSystem)
-    extends Provider[ProjectionRegistry] {
-  override def get(): ProjectionRegistry = instance
-  private val instance                   = new ProjectionRegistry(actorSystem)
-}
-
-@Singleton
-@InternalApi
-/** INTERNAL API */
-private class ProjectionsImpl @Inject()(registry: ProjectionRegistry)(
-    implicit executionContext: ExecutionContext
+private class ProjectionsImpl @Inject()(actorSystem: ActorSystem)(
+implicit executionContext: ExecutionContext
 ) extends Projections {
+  private val registry:  ProjectionRegistry = new ProjectionRegistry(actorSystem)
 
   import FutureConverters._
 
