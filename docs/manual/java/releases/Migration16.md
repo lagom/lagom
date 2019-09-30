@@ -140,4 +140,4 @@ The setup above makes all traffic and durable data produced by Lagom 1.6 code to
 
 #### Step 2: new binary, default serializers
 
-Once all your productio nodes are running a binary of you service based on Lagom 1.6 you can remove the settings for the old serializers from `application.conf` and use the defaults.
+Once all your production nodes are running a binary of your service based on Lagom 1.6 you can remove the settings for the old serializers from `application.conf` and use the defaults.
