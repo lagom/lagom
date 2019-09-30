@@ -13,7 +13,7 @@ import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 /**
  * Akka Cluster Sharding Typed components (for compile-time injection).
  */
-trait ClusterShardingTypedComponents  {
+trait ClusterShardingTypedComponents {
   def actorSystem: ActorSystemClassic
 
   lazy val clusterShardingTyped: ClusterSharding = {

@@ -20,7 +20,7 @@ class ClusterShardingTypedModule extends Module {
 }
 
 private[lagom] class ClusterShardingTypedProvider @Inject()(system: ActorSystem) extends Provider[ClusterSharding] {
-  private val instance : ClusterSharding= {
+  private val instance: ClusterSharding = {
     import akka.actor.typed.scaladsl.adapter._
     val actorSystemTyped = system.toTyped
     ClusterSharding.get(actorSystemTyped)
