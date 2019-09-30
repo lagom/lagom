@@ -100,6 +100,7 @@ object Dependencies {
   private val akkaCluster          = "com.typesafe.akka" %% "akka-cluster" % Versions.Akka
   private val akkaClusterTyped     = "com.typesafe.akka" %% "akka-cluster-typed" % Versions.Akka
   private val akkaClusterSharding  = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
+  private val akkaClusterShardingTyped  = "com.typesafe.akka" %% "akka-cluster-sharding-typed" % Versions.Akka
   private val akkaClusterTools     = "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka
   private val akkaDistributedData  = "com.typesafe.akka" %% "akka-distributed-data" % Versions.Akka
   private val akkaJackson          = "com.typesafe.akka" %% "akka-serialization-jackson" % Versions.Akka
@@ -753,6 +754,7 @@ object Dependencies {
     // must be explicitly bumped
     akkaDiscovery,
     akkaClusterSharding,
+    akkaClusterShardingTyped,
     akkaDistributedData,
     akkaPersistence,
     akkaClusterTools
