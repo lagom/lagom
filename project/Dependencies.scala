@@ -98,8 +98,8 @@ object Dependencies {
   private val akkaActor                = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
   private val akkaRemote               = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
   private val akkaCluster              = "com.typesafe.akka" %% "akka-cluster" % Versions.Akka
-  private val akkaClusterTyped         = "com.typesafe.akka" %% "akka-cluster-typed" % Versions.Akka
   private val akkaClusterSharding      = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
+  private val akkaClusterTyped         = "com.typesafe.akka" %% "akka-cluster-typed" % Versions.Akka
   private val akkaClusterShardingTyped = "com.typesafe.akka" %% "akka-cluster-sharding-typed" % Versions.Akka
   private val akkaClusterTools         = "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka
   private val akkaDistributedData      = "com.typesafe.akka" %% "akka-distributed-data" % Versions.Akka
@@ -372,10 +372,13 @@ object Dependencies {
       "akka-cluster",
       "akka-cluster-typed",
       "akka-cluster-sharding",
+      "akka-cluster-sharding-typed",
       "akka-cluster-tools",
       "akka-distributed-data",
       "akka-multi-node-testkit",
       "akka-persistence",
+      "akka-persistence-typed",
+      "akka-actor-testkit-typed", // remove this when https://github.com/akka/akka/pull/27830 is fixed
       "akka-persistence-query",
       "akka-protobuf",
       "akka-protobuf-v3",
