@@ -95,20 +95,21 @@ object Dependencies {
   private val cassandraDriverCore =
     ("com.datastax.cassandra" % "cassandra-driver-core" % "3.7.2").excludeAll(excludeSlf4j: _*)
 
-  private val akkaActor            = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
-  private val akkaRemote           = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
-  private val akkaCluster          = "com.typesafe.akka" %% "akka-cluster" % Versions.Akka
-  private val akkaClusterTyped     = "com.typesafe.akka" %% "akka-cluster-typed" % Versions.Akka
-  private val akkaClusterSharding  = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
-  private val akkaClusterTools     = "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka
-  private val akkaDistributedData  = "com.typesafe.akka" %% "akka-distributed-data" % Versions.Akka
-  private val akkaJackson          = "com.typesafe.akka" %% "akka-serialization-jackson" % Versions.Akka
-  private val akkaMultiNodeTestkit = "com.typesafe.akka" %% "akka-multi-node-testkit" % Versions.Akka
-  private val akkaPersistence      = "com.typesafe.akka" %% "akka-persistence" % Versions.Akka
-  private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
-  private val akkaSlf4j            = ("com.typesafe.akka" %% "akka-slf4j" % Versions.Akka).excludeAll(excludeSlf4j: _*)
-  private val akkaStream           = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
-  private val akkaProtobuf_v3      = "com.typesafe.akka" %% "akka-protobuf-v3" % Versions.Akka
+  private val akkaActor                = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
+  private val akkaRemote               = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
+  private val akkaCluster              = "com.typesafe.akka" %% "akka-cluster" % Versions.Akka
+  private val akkaClusterSharding      = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
+  private val akkaClusterTyped         = "com.typesafe.akka" %% "akka-cluster-typed" % Versions.Akka
+  private val akkaClusterShardingTyped = "com.typesafe.akka" %% "akka-cluster-sharding-typed" % Versions.Akka
+  private val akkaClusterTools         = "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka
+  private val akkaDistributedData      = "com.typesafe.akka" %% "akka-distributed-data" % Versions.Akka
+  private val akkaJackson              = "com.typesafe.akka" %% "akka-serialization-jackson" % Versions.Akka
+  private val akkaMultiNodeTestkit     = "com.typesafe.akka" %% "akka-multi-node-testkit" % Versions.Akka
+  private val akkaPersistence          = "com.typesafe.akka" %% "akka-persistence" % Versions.Akka
+  private val akkaPersistenceQuery     = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
+  private val akkaSlf4j                = ("com.typesafe.akka" %% "akka-slf4j" % Versions.Akka).excludeAll(excludeSlf4j: _*)
+  private val akkaStream               = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
+  private val akkaProtobuf_v3          = "com.typesafe.akka" %% "akka-protobuf-v3" % Versions.Akka
 
   private val akkaManagement                 = "com.lightbend.akka.management" %% "akka-management"                   % Versions.AkkaManagement
   private val akkaManagementClusterHttp      = "com.lightbend.akka.management" %% "akka-management-cluster-http"      % Versions.AkkaManagement
@@ -371,10 +372,13 @@ object Dependencies {
       "akka-cluster",
       "akka-cluster-typed",
       "akka-cluster-sharding",
+      "akka-cluster-sharding-typed",
       "akka-cluster-tools",
       "akka-distributed-data",
       "akka-multi-node-testkit",
       "akka-persistence",
+      "akka-persistence-typed",
+      "akka-actor-testkit-typed", // remove this when https://github.com/akka/akka/pull/27830 is fixed
       "akka-persistence-query",
       "akka-protobuf",
       "akka-protobuf-v3",
@@ -753,6 +757,7 @@ object Dependencies {
     // must be explicitly bumped
     akkaDiscovery,
     akkaClusterSharding,
+    akkaClusterShardingTyped,
     akkaDistributedData,
     akkaPersistence,
     akkaClusterTools
