@@ -2,6 +2,7 @@
 
 # Copyright (C) 2009-2019 Lightbend Inc. <https://www.lightbend.com>
 
+# shellcheck source=bin/scriptLib
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
 runSbt publishM2
@@ -14,7 +15,8 @@ validate_pom_files() {
   # Downloads maven schema file which will be used to validate the generated pom file
   wget -c http://maven.apache.org/xsd/maven-4.0.0.xsd
 
-  for f in $(find . -name *.pom); do
+  shopt -s globstar nullglob
+  for f in **/*.pom; do
     echo "Validating file $f"
     xmllint --noout -schema maven-4.0.0.xsd "${f}"
 

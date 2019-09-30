@@ -2,8 +2,8 @@
 
 # Copyright (C) 2009-2019 Lightbend Inc. <https://www.lightbend.com>
 
+# shellcheck source=bin/scriptLib
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
-
 
 ## The following are three separate `sbt` invocations because in some versions of sbt (0.13)
 ## trying to run all tasks in a single session caused "GC overhead limit exceeded" (both in
@@ -21,7 +21,7 @@ if [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
     EXTRA_TASKS+=("validateDependencies")
 fi
 
-runSbt  ${EXTRA_TASK[@]} \
+runSbt  "${EXTRA_TASKS[@]}" \
         +mimaReportBinaryIssues
 
 printMessage "VALIDATE SCALA CODE FORMATTING"
