@@ -69,8 +69,10 @@ class ScaladslKafkaApiSpec
   private final val kafkaZooKeeperPort = 2181
 
   private val application = {
-    new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LagomKafkaComponents
-    with ConfigurationServiceLocatorComponents {
+    new LagomApplication(LagomApplicationContext.Test)
+      with AhcWSComponents
+      with LagomKafkaComponents
+      with ConfigurationServiceLocatorComponents {
       override lazy val offsetStore            = new InMemoryOffsetStore
       override lazy val jsonSerializerRegistry = EmptyJsonSerializerRegistry
       override lazy val lagomServer            = serverFor[TestService](new TestServiceImpl)
