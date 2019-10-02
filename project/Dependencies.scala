@@ -640,7 +640,7 @@ object Dependencies {
     jffi,
     jnrConstants,
     jnrPosix
-  )
+  ) ++ ow2asmDeps // to match whitelist versions
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
     playAkkaHttpServer,
