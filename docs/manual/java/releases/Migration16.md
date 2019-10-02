@@ -96,7 +96,7 @@ The Akka Persistence Cassandra plugin is updated to version 0.99. This version r
 
 For more information on how to migrate, consult [Akka Persistence Cassandra migration document](https://doc.akka.io/docs/akka-persistence-cassandra/current/migrations.html#migrations-to-0-80-and-later).
 
-Note that although it's technically possible to run the migration while running your application we advis/e against it.
+Note that although it's technically possible to run the migration while running your application we advise against it.
 
 ## Upgrading a production system
 
