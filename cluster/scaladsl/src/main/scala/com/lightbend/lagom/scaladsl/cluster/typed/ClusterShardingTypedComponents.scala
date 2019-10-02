@@ -16,7 +16,7 @@ import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 trait ClusterShardingTypedComponents {
   def actorSystem: ActorSystemClassic
 
-  lazy val clusterShardingTyped: ClusterSharding = {
+  lazy val clusterSharding: ClusterSharding = {
     val actorSystemTyped: ActorSystem[_] = {
       import akka.actor.typed.scaladsl.adapter._
       actorSystem.toTyped
