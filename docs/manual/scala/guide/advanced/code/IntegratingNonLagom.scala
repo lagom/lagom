@@ -19,7 +19,8 @@ package staticservicelocator {
 
     val clientFactory =
       new StandaloneLagomClientFactory("my-client", classOf[StandaloneLagomClientFactory].getClassLoader)
-      with StaticServiceLocatorComponents with AhcWSComponents {
+        with StaticServiceLocatorComponents
+        with AhcWSComponents {
 
         override def staticServiceUri = URI.create("http://localhost:8080")
       }
