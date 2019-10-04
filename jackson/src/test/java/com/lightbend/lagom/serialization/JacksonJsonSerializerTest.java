@@ -47,9 +47,12 @@ public class JacksonJsonSerializerTest {
             "akka.serialization.jackson.migrations {\n"
                 + "  \"com.lightbend.lagom.serialization.Event1\" = \"com.lightbend.lagom.serialization.TestEventMigration\" \n"
                 + "  \"com.lightbend.lagom.serialization.Event2\" = \"com.lightbend.lagom.serialization.TestEventMigration\" \n"
-                + "}\n");
+                + "}\n"
+                // the following is defined in play/reference-overrides.conf, but this test is not
+                // running with Play/Lagom config loading
+                + "akka.serialization.jackson.jackson-json.compression.algorithm = off \n");
     // @formatter:on
-    system = ActorSystem.create("HelloWorldTest", conf);
+    system = ActorSystem.create("JacksonJsonSerializerTest", conf);
   }
 
   @AfterClass
