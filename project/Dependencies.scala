@@ -860,7 +860,7 @@ object Dependencies {
     akkaClusterSharding,
     akkaPersistenceTyped,
     akkaClusterShardingTyped,
-    akkaJacksonSerializationTyped,
+    akkaJackson,
     akkaSlf4j,
     play,
     akkaTestkit          % Test,
