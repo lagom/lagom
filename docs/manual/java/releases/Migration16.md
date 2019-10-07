@@ -34,6 +34,8 @@ Lagom 1.6 requires sbt 1.2.8 or later, upgrade your version by updating the `sbt
 
 Lagom is now using the Jackson serializer from Akka, which is an improved version of the serializer in Lagom 1.5. You can find more information about the Akka Jackson serializer in the [Akka documentation](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html). It is compatible with Lagom 1.5 in both directions.
 
+The serializer provided by Akka creates new [Akka serialization bindings](https://doc.akka.io/docs/akka/current/serialization.html) so if you want to do a rolling upgrade from Lagom 1.5.x to Lagom 1.6.x you need to do a [[multi-step upgrade|Migration16]]. 
+
 #### JacksonJsonMigration
 
 If you have used `JacksonJsonMigration` classes they must be changed to extend `akka.serialization.jackson.JacksonMigration` instead. It has the same method signatures as the deprecated `JacksonJsonMigration`.
@@ -111,3 +113,31 @@ This is a summary of changes in Lagom 1.6 that would require a full cluster shut
 * The change in [[Akka Remote|Migration16#Remoting-Artery]] default implementation.
 * The change in default [[Shard Coordination|Migration16#Shard-Coordination]] strategy.
 * The change in [[Cassandra plugin version|Migration16#Akka-Persistence-Cassandra-Update]]. Only impact Lagom applications using Cassandra.
+
+### Multi-step upgrade: serialization
+
+Changes in default serializers require rolling upgrades to happen in two steps.
+
+#### Step 1: new binary, old serializers
+
+First, you will have to deploy a version of your binary that's already a Lagom 1.6.x application but you must set it up to use the serializers that are compatible with Lagom 1.5.x so your old nodes can continue to operate. On your `application.conf` use:
+
+```
+## Lagom 1.6 no longer enables Java serialization by default but some 
+## code in Lagom 1.5 (or your own code) still used it so we enable it back.
+akka.actor.allow-java-serialization = on
+
+## Configures Akka to only produce messages using the `old-lagom-json` serializer
+akka.actor {
+  serialization-bindings {
+    "com.lightbend.lagom.serialization.Jsonable" = old-lagom-json
+    "com.lightbend.lagom.serialization.CompressedJsonable" = old-lagom-json
+  }
+}
+```
+
+The setup above makes all traffic and durable data produced by Lagom 1.6 code to be readable by a Lagom 1.5 binary.
+
+#### Step 2: new binary, default serializers
+
+Once all your production nodes are running a binary of your service based on Lagom 1.6 you can remove the settings for the old serializers from `application.conf` and use the defaults.
