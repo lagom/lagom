@@ -26,7 +26,7 @@ The version of Lagom can be updated by editing the `project/plugins.sbt` file, a
 addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.0")
 ```
 
-Lagom 1.6 requires sbt 1.2.8 or later, upgrade your version by updating the `sbt.version` in `project/build.properties`.
+Lagom 1.6 requires sbt 1.3.2 or later, upgrade your version by updating the `sbt.version` in `project/build.properties`.
 
 ## Main changes
 
@@ -34,7 +34,7 @@ Lagom 1.6 requires sbt 1.2.8 or later, upgrade your version by updating the `sbt
 
 Lagom is now using the Jackson serializer from Akka, which is an improved version of the serializer in Lagom 1.5. You can find more information about the Akka Jackson serializer in the [Akka documentation](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html). It is compatible with Lagom 1.5 in both directions.
 
-The serializer provided by Akka creates new [Akka serialization bindings](https://doc.akka.io/docs/akka/current/serialization.html) so if you want to do a rolling upgrade from Lagom 1.5.x to Lagom 1.6.x you need to do a [[multi-step upgrade|Migration16]]. 
+The serializer provided by Akka creates new [Akka serialization bindings](https://doc.akka.io/docs/akka/current/serialization.html) so if you want to do a rolling upgrade from Lagom 1.5.x to Lagom 1.6.x you need to do a [[multi-step upgrade|Migration16]].
 
 #### JacksonJsonMigration
 
@@ -123,7 +123,7 @@ Changes in default serializers require rolling upgrades to happen in two steps.
 First, you will have to deploy a version of your binary that's already a Lagom 1.6.x application but you must set it up to use the serializers that are compatible with Lagom 1.5.x so your old nodes can continue to operate. On your `application.conf` use:
 
 ```
-## Lagom 1.6 no longer enables Java serialization by default but some 
+## Lagom 1.6 no longer enables Java serialization by default but some
 ## code in Lagom 1.5 (or your own code) still used it so we enable it back.
 akka.actor.allow-java-serialization = on
 
