@@ -12,7 +12,7 @@ object Dependencies {
     // Version numbers
 
     val Scala210 = "2.10.7"
-    val Scala212 = "2.12.9"
+    val Scala212 = "2.12.10"
     val Scala213 = "2.13.0"
     val Scala    = Seq(Scala212, Scala213)
     val SbtScala = Seq(Scala212, Scala210)
@@ -41,6 +41,8 @@ object Dependencies {
     val JacksonDatabind      = "2.9.10"
     val Guava                = "28.1-jre"
     val Maven                = "3.6.2"
+    val MavenWagon           = "3.3.3"
+    val MavenResolver        = "1.4.1"
     val Netty                = "4.1.42.Final"
     val NettyReactiveStreams = "2.0.3"
     val Kafka                = "2.1.1"
@@ -1084,17 +1086,22 @@ object Dependencies {
   val `maven-launcher` = libraryDependencies := Seq(
     // These dependencies come from https://github.com/apache/maven/blob/master/apache-maven/pom.xml, they are
     // what maven bundles into its own distribution.
-    "org.apache.maven" % "maven-embedder" % Versions.Maven,
-    ("org.apache.maven.wagon" % "wagon-http" % "2.10")
+    "org.apache.maven" % "maven-core"              % Versions.Maven,
+    "org.apache.maven" % "maven-embedder"          % Versions.Maven,
+    "org.apache.maven" % "maven-compat"            % Versions.Maven,
+    "org.eclipse.sisu" % "org.eclipse.sisu.plexus" % "0.3.3",
+    "commons-cli"      % "commons-cli"             % "1.4",
+    ("org.apache.maven.wagon" % "wagon-http" % Versions.MavenWagon)
       .classifier("shaded")
-      .exclude("org.apache.maven.wagon", "wagon-http-shared4")
+      .exclude("org.apache.maven.wagon", "wagon-http-shared")
       .exclude("org.apache.httpcomponents", "httpclient")
       .exclude("org.apache.httpcomponents", "httpcore"),
-    "org.apache.maven"       % "maven-compat"           % Versions.Maven,
-    "org.apache.maven.wagon" % "wagon-file"             % "2.10",
-    "org.eclipse.aether"     % "aether-connector-basic" % "1.0.2.v20150114",
-    "org.eclipse.aether"     % "aether-transport-wagon" % "1.0.2.v20150114",
-    "org.slf4j"              % "slf4j-simple"           % "1.7.21"
+    "org.slf4j"                 % "jcl-over-slf4j"                 % Versions.Slf4j,
+    "org.apache.maven.wagon"    % "wagon-file"                     % Versions.MavenWagon,
+    "org.apache.maven.resolver" % "maven-resolver-connector-basic" % Versions.MavenResolver,
+    "org.apache.maven.resolver" % "maven-resolver-transport-wagon" % Versions.MavenResolver,
+    "org.apache.maven"          % "maven-slf4j-provider"           % Versions.Maven,
+    "org.fusesource.jansi"      % "jansi"                          % "1.17.1"
   )
 
   val `service-locator` = libraryDependencies ++= Seq(

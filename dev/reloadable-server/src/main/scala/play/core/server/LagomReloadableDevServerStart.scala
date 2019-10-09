@@ -10,7 +10,7 @@ import java.net.InetAddress
 import akka.Done
 import akka.actor.ActorSystem
 import akka.actor.CoordinatedShutdown
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLHolder
 import com.typesafe.sslconfig.ssl.FakeKeyStore
 import play.api.ApplicationLoader.DevContext
@@ -300,7 +300,7 @@ object LagomReloadableDevServerStart {
           serverConfig,
           appProvider,
           actorSystem,
-          ActorMaterializer()(actorSystem),
+          Materializer.matFromSystem(actorSystem),
           () => Future.successful(())
         )
         val serverProvider = ServerProvider.fromConfiguration(classLoader, serverConfig.configuration)

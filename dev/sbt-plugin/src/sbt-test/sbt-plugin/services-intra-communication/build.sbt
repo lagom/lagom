@@ -7,7 +7,7 @@ lagomCassandraEnabled in ThisBuild := false
 lagomKafkaEnabled in ThisBuild := false
 
 lazy val commonSettings = Seq(
-  scalaVersion := sys.props.get("scala.version").getOrElse("2.12.9")
+  scalaVersion := sys.props.get("scala.version").getOrElse("2.12.10")
 )
 
 lazy val fooApi = (project in file("foo/api"))
