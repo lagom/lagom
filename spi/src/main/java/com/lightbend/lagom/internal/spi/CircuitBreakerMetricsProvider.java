@@ -16,6 +16,9 @@ public interface CircuitBreakerMetricsProvider {
    * removed, e.g. expired due to inactivity.
    *
    * <p>`stop` and `start` are also also invoked if the circuit breaker is re-configured.
+   *
+   * @param breakerId the identifider for the circuit breaker.
+   * @return the metrics for the circuit breaker with the given identifier
    */
   CircuitBreakerMetrics start(String breakerId);
 }

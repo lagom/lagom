@@ -64,7 +64,7 @@ trait ServiceLocator {
   /**
    * Do the given action with the given service.
    *
-   * This should be used in preference to [[#locate]] when possible as it will allow the
+   * This should be used in preference to [[#locate(String, Descriptor.Call)]] when possible as it will allow the
    * service locator to add in things like circuit breakers.
    *
    * It is required that the service locator will, based on the service call circuit breaker configuration, wrap the
