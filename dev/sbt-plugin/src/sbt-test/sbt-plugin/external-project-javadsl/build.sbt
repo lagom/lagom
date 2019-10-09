@@ -1,6 +1,6 @@
 import play.sbt.PlayImport
 
-scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.9")
+scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.10")
 
 // no need for Cassandra and Kafka on this test
 lagomCassandraEnabled in ThisBuild := false
