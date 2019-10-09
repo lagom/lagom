@@ -128,8 +128,10 @@ object SbtMavenPlugin extends AutoPlugin {
           s"-Dmaven.multiModuleProjectDirectory=${testDir.getAbsolutePath}"
         ) ++
           mavenTestArgs ++
+          // For Maven CLI options see https://maven.apache.org/ref/3.6.2/maven-embedder/cli.html
           Seq(
-            "org.apache.maven.cli.MavenCli"
+            "org.apache.maven.cli.MavenCli",
+            "--no-transfer-progress", // Do not show Maven download progress
           )
         log.info(s"Running maven test ${test.getName} with arguments ${args.mkString(" ")}")
 
