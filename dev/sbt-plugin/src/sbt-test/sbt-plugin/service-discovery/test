@@ -7,6 +7,6 @@
 # If Akka Service Discovery is wrongly configured this call will throw an exception.
 
 > runAll
-> assertRequest 10000 /foo foo-service
+> validateRequest retry-until-success http://localhost:10000/foo body-contains foo-service
 
 > stop

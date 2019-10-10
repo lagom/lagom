@@ -125,7 +125,7 @@ object ScriptedTools extends AutoPlugin {
     scalaVersion := sys.props.get("scala.version").getOrElse("2.12.10")
   )
 
-  private def repeatUntilSuccessful[T](log: Logger, operation: => T, times: Int = 10): T = {
+  private def repeatUntilSuccessful[T](log: Logger, operation: => T, times: Int = 30): T = {
     try {
       operation
     } catch {
@@ -134,7 +134,7 @@ object ScriptedTools extends AutoPlugin {
           throw t
         } else {
           log.warn(s"Operation failed, $times attempts left")
-          Thread.sleep(500)
+          Thread.sleep(1000)
           repeatUntilSuccessful(log, operation, times - 1)
         }
     }
