@@ -110,10 +110,18 @@ object ScriptedTools extends AutoPlugin {
       file
     },
     aggregate in validateFile := false,
-    Internal.Keys.interactionMode := NonBlockingInteractionMode
-  )
-
-  override def projectSettings: Seq[Setting[_]] = Seq(
+    Internal.Keys.interactionMode := NonBlockingInteractionMode,
+    // This is copy & pasted from project/AkkaSnapshotRepositories so that scripted tests
+    // can use Akka snapshot repositories as well. If you change it here, remember to keep
+    // project/AkkaSnapshotRepositories in sync.
+    resolvers ++= (sys.env.get("TRAVIS_EVENT_TYPE").filter(_.equalsIgnoreCase("cron")) match {
+      case Some(_) =>
+        Seq(
+          "akka-snapshot-repository".at("https://repo.akka.io/snapshots"),
+          "akka-http-snapshot-repository".at("https://dl.bintray.com/akka/snapshots/")
+        )
+      case None => Seq.empty
+    }),
     scalaVersion := sys.props.get("scala.version").getOrElse("2.12.10")
   )
 
