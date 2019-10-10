@@ -1071,7 +1071,7 @@ object Dependencies {
 
   val `sbt-plugin` = libraryDependencies ++= Seq(
     // And this is needed to silence the datastax driver logging
-    "org.slf4j" % "slf4j-nop" % "1.7.28",
+    "org.slf4j" % "slf4j-nop" % Versions.Slf4j,
     scalaTest   % Test
   )
 
@@ -1084,24 +1084,7 @@ object Dependencies {
   )
 
   val `maven-launcher` = libraryDependencies := Seq(
-    // These dependencies come from https://github.com/apache/maven/blob/master/apache-maven/pom.xml, they are
-    // what maven bundles into its own distribution.
-    "org.apache.maven" % "maven-core"              % Versions.Maven,
-    "org.apache.maven" % "maven-embedder"          % Versions.Maven,
-    "org.apache.maven" % "maven-compat"            % Versions.Maven,
-    "org.eclipse.sisu" % "org.eclipse.sisu.plexus" % "0.3.3",
-    "commons-cli"      % "commons-cli"             % "1.4",
-    ("org.apache.maven.wagon" % "wagon-http" % Versions.MavenWagon)
-      .classifier("shaded")
-      .exclude("org.apache.maven.wagon", "wagon-http-shared")
-      .exclude("org.apache.httpcomponents", "httpclient")
-      .exclude("org.apache.httpcomponents", "httpcore"),
-    "org.slf4j"                 % "jcl-over-slf4j"                 % Versions.Slf4j,
-    "org.apache.maven.wagon"    % "wagon-file"                     % Versions.MavenWagon,
-    "org.apache.maven.resolver" % "maven-resolver-connector-basic" % Versions.MavenResolver,
-    "org.apache.maven.resolver" % "maven-resolver-transport-wagon" % Versions.MavenResolver,
-    "org.apache.maven"          % "maven-slf4j-provider"           % Versions.Maven,
-    "org.fusesource.jansi"      % "jansi"                          % "1.17.1"
+    "org.apache.maven" % "apache-maven" % Versions.Maven
   )
 
   val `service-locator` = libraryDependencies ++= Seq(
