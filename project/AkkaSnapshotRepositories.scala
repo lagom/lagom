@@ -11,6 +11,9 @@ object AkkaSnapshotRepositories extends AutoPlugin {
 
   override def trigger: PluginTrigger = allRequirements
 
+  // This is copy & pasted to ScriptedTools so that scripted tests
+  // can use Akka snapshot repositories as well. If you change it here, remember to keep
+  // ScriptedTools in sync.
   override def projectSettings: Seq[Def.Setting[_]] = {
     // If this is a cron job in Travis:
     // https://docs.travis-ci.com/user/cron-jobs/#detecting-builds-triggered-by-cron
