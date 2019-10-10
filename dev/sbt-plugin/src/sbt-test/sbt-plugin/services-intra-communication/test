@@ -13,7 +13,8 @@ $ sleep 7000
 > verifyReloadsBar 1
 
 # SUT
-> callFoo
+# We can use service port here since it is stable
+> validateRequest retry-until-success http://localhost:53018/foo body-contains "Greetings from bar service"
 
 # Clean up
 > stop

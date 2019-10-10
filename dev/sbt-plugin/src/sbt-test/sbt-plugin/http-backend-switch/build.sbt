@@ -1,9 +1,6 @@
 organization in ThisBuild := "com.example"
 version in ThisBuild := "1.0-SNAPSHOT"
 
-// the Scala version that will be used for cross-compiled libraries
-scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.10")
-
 // no need for Cassandra and Kafka on this test
 lagomCassandraEnabled in ThisBuild := false
 lagomKafkaEnabled in ThisBuild := false

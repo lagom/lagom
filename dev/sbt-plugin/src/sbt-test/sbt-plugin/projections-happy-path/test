@@ -30,31 +30,31 @@
 ## Test the java impl in dev mode
 ##
 # The repository exists and responds.
-> assertRequest 10001 /api-java/hello/Alice "Started reports: default-projected-message"
+> validateRequest retry-until-success http://localhost:10001/api-java/hello/Alice status 200 body-contains "Started reports: default-projected-message"
 
 # Send a command to change the welcome message
-> makeRequest http://localhost:10001/api-java/set/Alice/Hi
+> validateRequest http://localhost:10001/api-java/set/Alice/Hi status 200
 
 # The persistent entity changed the message
-> assertRequest 10001 /api-java/hello/Alice "Hi, Alice"
+> validateRequest retry-until-success http://localhost:10001/api-java/hello/Alice status 200 body-contains "Hi, Alice"
 # (eventually) the Started processor will change the projected value
-> assertRequest 10001 /api-java/hello/Alice "Started reports: Hi"
-> assertRequest 10001 /api-java/hello/Alice "Stopped reports: default-projected-message"
+> validateRequest retry-until-success http://localhost:10001/api-java/hello/Alice status 200 body-contains "Started reports: Hi"
+> validateRequest retry-until-success http://localhost:10001/api-java/hello/Alice status 200 body-contains "Stopped reports: default-projected-message"
 
 ##
 ## Test the scala impl in dev mode
 ##
 # The repository exists and responds.
-> assertRequest 10002 /api-scala/hello/Alice "Started reports: default-projected-message"
+> validateRequest retry-until-success http://localhost:10002/api-scala/hello/Alice status 200 body-contains "Started reports: default-projected-message"
 
 # Send a command to change the welcome message
-> makeRequest http://localhost:10002/api-scala/set/Alice/Hi
+> validateRequest retry-until-success http://localhost:10002/api-scala/set/Alice/Hi status 200
 
 # The persistent entity changed the message
-> assertRequest 10002 /api-scala/hello/Alice "Hi, Alice"
+> validateRequest retry-until-success http://localhost:10002/api-scala/hello/Alice status 200 body-contains "Hi, Alice"
 # (eventually) the Started processor will change the projected value
-> assertRequest 10002 /api-scala/hello/Alice "Started reports: Hi"
-> assertRequest 10002 /api-scala/hello/Alice "Stopped reports: default-projected-message"
+> validateRequest retry-until-success http://localhost:10002/api-scala/hello/Alice status 200 body-contains "Started reports: Hi"
+> validateRequest retry-until-success http://localhost:10002/api-scala/hello/Alice status 200 body-contains "Stopped reports: default-projected-message"
 
 
 

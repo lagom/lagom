@@ -1,11 +1,5 @@
-import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
-
-interactionMode in ThisBuild := com.lightbend.lagom.sbt.NonBlockingInteractionMode
-
-scalaVersion in ThisBuild := sys.props.get("scala.version").getOrElse("2.12.10")
-
 val netty = "io.netty" % "netty" % "3.10.6.Final"
-val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
+val macwire = "com.softwaremill.macwire" %% "macros" % "2.3.3" % "provided"
 
 // no need for Cassandra and Kafka on this test
 lagomCassandraEnabled in ThisBuild := false
@@ -37,13 +31,3 @@ lazy val `b-impl` = (project in file("b") / "impl")
     libraryDependencies ++= Seq(lagomScaladslCluster, macwire, netty)
   )
   .dependsOn(`b-api`)
-
-
-InputKey[Unit]("assertRequest") := {
-  val args   = Def.spaceDelimited().parsed
-  val port   = args(0)
-  val path   = args(1)
-  val expect = args.drop(2).mkString(" ")
-
-  DevModeBuild.waitForRequestToContain(s"http://localhost:${port}${path}", expect)
-}
