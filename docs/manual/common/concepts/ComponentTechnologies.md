@@ -22,7 +22,7 @@ As a complete microservices platform, Lagom assembles a collection of technologi
 
 * Guice --- Like Play, Lagom uses [Guice](https://github.com/google/guice) for dependency injection.
 
-* SLF4J & Logback --- Lagom uses [SLF4J](https://www.slf4j.org/) for logging, backed by [Logback](https://logback.qos.ch/) as its default logging engine. See [[Logging]] for more information.
+* SLF4J & Logback --- Lagom uses [SLF4J](http://www.slf4j.org/) for logging, backed by [Logback](http://logback.qos.ch/) as its default logging engine. See [[Logging]] for more information.
 
 * Typesafe Config Library --- Lagom and many of its component technologies are configured using the [Typesafe Config](https://github.com/typesafehub/config) library.  The configuration file format is [HOCON](https://github.com/typesafehub/config/blob/master/HOCON.md), a powerful and expressive superset of JSON.
 
