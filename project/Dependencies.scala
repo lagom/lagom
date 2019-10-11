@@ -3,6 +3,7 @@
  */
 package lagom.build
 
+import lagom.build.Dependencies.akkaActorTyped
 import sbt.Keys._
 import sbt._
 
@@ -98,6 +99,7 @@ object Dependencies {
     ("com.datastax.cassandra" % "cassandra-driver-core" % "3.7.2").excludeAll(excludeSlf4j: _*)
 
   private val akkaActor                = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
+  private val akkaActorTyped           = "com.typesafe.akka" %% "akka-actor-typed" % Versions.Akka
   private val akkaRemote               = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
   private val akkaCluster              = "com.typesafe.akka" %% "akka-cluster" % Versions.Akka
   private val akkaClusterSharding      = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
@@ -538,6 +540,7 @@ object Dependencies {
     pcollections,
     akkaJackson,
     akkaTestkit    % Test,
+    akkaActorTyped % Test,
     scalaTest      % Test,
     junit          % Test,
     slf4jApi       % Test,
@@ -592,7 +595,9 @@ object Dependencies {
     scalaTest            % Test,
     // Upgrades needed to match whitelist versions
     sslConfig,
-    "io.netty" % "netty-handler" % Versions.Netty
+    "io.netty" % "netty-handler" % Versions.Netty,
+    // update to enforce using snapshots in nightly jobs
+    akkaActorTyped % Test,
   )
 
   val `client-javadsl` = libraryDependencies ++= Seq(
@@ -626,7 +631,9 @@ object Dependencies {
   val `server-scaladsl` = libraryDependencies ++= Seq(
     akkaManagement,
     slf4jApi,
-    scalaTest % Test
+    scalaTest % Test,
+    // update to enforce using snapshots in nightly jobs
+    akkaActorTyped % Test,
   )
 
   val `testkit-core` = libraryDependencies ++= Seq(
@@ -677,7 +684,9 @@ object Dependencies {
     byteBuddy   % Test,
     commonsLang % Test,
     "io.netty"  % "netty-transport-native-epoll" % Versions.Netty,
-    "io.netty"  % "netty-transport-native-unix-common" % Versions.Netty
+    "io.netty"  % "netty-transport-native-unix-common" % Versions.Netty,
+    // update to enforce using snapshots in nightly jobs
+    akkaActorTyped % Test,
   )
 
   val `integration-tests-scaladsl` = libraryDependencies ++= Seq(
@@ -1107,7 +1116,9 @@ object Dependencies {
   val `service-locator` = libraryDependencies ++= Seq(
     playAkkaHttpServer,
     akkaHttpCore,
-    scalaTest % Test
+    scalaTest % Test,
+    // update to enforce using snapshots in nightly jobs
+    akkaActorTyped % Test,
   )
 
   val `dev-mode-ssl-support` = libraryDependencies ++= Seq(
@@ -1133,7 +1144,9 @@ object Dependencies {
       scalaTest   % Test,
       // updates to match whitelist
       akkaActor,
-      scalaJava8Compat
+      scalaJava8Compat,
+      // update to enforce using snapshots in nightly jobs
+      akkaActorTyped % Test,
     )
 
   val `service-registry-client-javadsl` =
@@ -1141,7 +1154,9 @@ object Dependencies {
       akkaDiscovery,
       akkaTestkit    % Test,
       junit          % Test,
-      "com.novocode" % "junit-interface" % "0.11" % Test
+      "com.novocode" % "junit-interface" % "0.11" % Test,
+      // update to enforce using snapshots in nightly jobs
+      akkaActorTyped % Test,
     )
 
   val `service-registration-javadsl` = libraryDependencies ++= Nil
