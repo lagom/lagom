@@ -56,19 +56,35 @@ Akka Cluster Bootstrap, in Lagom, can be disabled through the property `lagom.cl
 
 #### Akka Discovery
 
-In order to find the peer nodes and form a cluster, Akka Cluster Bootstrap need to be configured to use one of the existing Akka Discovery implementations.
+In order to find the peer nodes and form a cluster, Akka Cluster Bootstrap needs to be configured to use one of the existing Akka Discovery methods:
 
-The snippet below exemplifies how to configure the Akka Cluster Boostrap to use the Akka Discovery Kubernetes API.
+ 1. Start by choosing one of the methods from [Akka Discovery](https://doc.akka.io/docs/akka/2.6/discovery/) or [Akka Management](https://doc.akka.io/docs/akka-management/1.0/discovery/) as appropriate for your deployment environment. For example, if you are deploying to Kubernetes, the `kubernetes-api` method is recommended. Note that the Akka Discovery method used for Akka Cluster Bootstrap is different than the method used for [[service discovery between services|AkkaDiscoveryIntegration]].
 
-```
-akka.management.cluster.bootstrap {
-  # example using kubernetes-api
-  contact-point-discovery {
-    discovery-method = kubernetes-api
-    service-name = "hello-lagom"
-  }
-}
-```
+ 2. If you are using one of the Akka Discovery methods provided by Akka Management, you will need to add the library dependency to your project build. Using `kubernetes-api` as an example, in Maven:
+    ```xml
+    <dependency>
+        <groupId>com.lightbend.akka.discovery</groupId>
+        <artifactId>akka-discovery-kubernetes-api_${scala.binary.version}</artifactId>
+        <version>1.0.3</version>
+    </dependency>
+    ```
+    in sbt:
+    ```scala
+    libraryDependencies += "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % "1.0.3"
+    ```
+
+ 3. Configure your service to select the chosen Akka Discovery method by setting the `akka.management.cluster.bootstrap.contact-point-discovery.discovery-method` property in `application.conf`. Note that these settings are only used in production, and ignored in development. If you use a different configuration file for production configuration, you should add these settings to that file.
+
+    ```
+    akka.management.cluster.bootstrap {
+      # example using kubernetes-api
+      contact-point-discovery {
+        discovery-method = kubernetes-api
+        service-name = "hello-lagom"
+      }
+    }
+    ```
+
 [Other existing implementations](https://doc.akka.io/docs/akka-management/1.0/discovery/index.html) are DNS, AWS, Consul, Marathon API, and Static Configuration. It's also possible to provide your own Akka Discovery implementation if needed.
 
 For more detailed and advanced configurations options, please consult the [Akka Cluster Bootstrap](https://doc.akka.io/docs/akka-management/1.0/bootstrap/) documentation and its [reference.conf](https://github.com/akka/akka-management/blob/v1.0.0-RC2/cluster-bootstrap/src/main/resources/reference.conf) file.
@@ -99,7 +115,8 @@ akka.management.health-checks {
   liveness-path = "health/alive"
 }
 ```
-For further information on Akka Cluster Bootstrap and Health Checks, consult Akka Managment documentation:
+For further information on Akka Cluster Bootstrap and Health Checks, consult Akka Management documentation:
+
  * [Akka Cluster Bootstrap](https://doc.akka.io/docs/akka-management/1.0/bootstrap/)
  * [Http Cluster Management](https://doc.akka.io/docs/akka-management/1.0/cluster-http-management.html)
  * [Health Checks](https://doc.akka.io/docs/akka-management/1.0/healthchecks.html)
