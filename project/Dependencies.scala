@@ -92,7 +92,7 @@ object Dependencies {
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.1"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
-  private val typesafeConfig         = "com.typesafe" % "config" % "1.3.5-RC1"
+  private val typesafeConfig         = "com.typesafe" % "config" % "1.4.0"
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.0"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
