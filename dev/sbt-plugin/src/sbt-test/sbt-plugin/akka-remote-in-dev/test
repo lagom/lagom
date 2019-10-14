@@ -6,14 +6,13 @@
 # We also test that the behavior is the same when using Artery or Classical remote.
 
 
-
 # First we start the services using Artery (default in 1.6.x) and
 # we call endpoints in both services to prove they are up and running.
 # `runAll` tests
 # --------------
 > runAll
-> assertRequest 10000 /foo ack foo
-> assertRequest 10001 /bar ack bar
+> validateRequest retry-until-success http://localhost:10000/foo status 200 body-contains "ack foo"
+> validateRequest retry-until-success http://localhost:10001/bar status 200 body-contains "ack bar"
 > stop
 
 
@@ -25,6 +24,6 @@ $ copy-file changes/b-application.conf b/impl/src/main/resources/application.con
 
 # re-run the same test using akka remote classical
 > runAll
-> assertRequest 10000 /foo ack foo
-> assertRequest 10001 /bar ack bar
+> validateRequest retry-until-success http://localhost:10000/foo status 200 body-contains "ack foo"
+> validateRequest retry-until-success http://localhost:10001/bar status 200 body-contains "ack bar"
 > stop
