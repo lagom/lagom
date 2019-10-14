@@ -60,15 +60,7 @@ In order to find the peer nodes and form a cluster, Akka Cluster Bootstrap needs
 
  1. Start by choosing one of the methods from [Akka Discovery](https://doc.akka.io/docs/akka/2.6/discovery/) or [Akka Management](https://doc.akka.io/docs/akka-management/1.0/discovery/) as appropriate for your deployment environment. For example, if you are deploying to Kubernetes, the `kubernetes-api` method is recommended. Note that the Akka Discovery method used for Akka Cluster Bootstrap is different than the method used for [[service discovery between services|AkkaDiscoveryIntegration]].
 
- 2. If you are using one of the Akka Discovery methods provided by Akka Management, you will need to add the library dependency to your project build. Using `kubernetes-api` as an example, in Maven:
-    ```xml
-    <dependency>
-        <groupId>com.lightbend.akka.discovery</groupId>
-        <artifactId>akka-discovery-kubernetes-api_${scala.binary.version}</artifactId>
-        <version>1.0.3</version>
-    </dependency>
-    ```
-    in sbt:
+ 2. If you are using one of the Akka Discovery methods provided by Akka Management, you will need to add the library dependency to your project build. Using `kubernetes-api` as an example, in sbt:
     ```scala
     libraryDependencies += "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % "1.0.3"
     ```
