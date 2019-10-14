@@ -98,22 +98,25 @@ object Dependencies {
   private val cassandraDriverCore =
     ("com.datastax.cassandra" % "cassandra-driver-core" % "3.7.2").excludeAll(excludeSlf4j: _*)
 
-  private val akkaActor                = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
-  private val akkaActorTyped           = "com.typesafe.akka" %% "akka-actor-typed" % Versions.Akka
-  private val akkaRemote               = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
-  private val akkaCluster              = "com.typesafe.akka" %% "akka-cluster" % Versions.Akka
-  private val akkaClusterSharding      = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
-  private val akkaClusterTyped         = "com.typesafe.akka" %% "akka-cluster-typed" % Versions.Akka
+  private val akkaActor            = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
+  private val akkaRemote           = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
+  private val akkaCluster          = "com.typesafe.akka" %% "akka-cluster" % Versions.Akka
+  private val akkaClusterSharding  = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
+  private val akkaClusterTools     = "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka
+  private val akkaDistributedData  = "com.typesafe.akka" %% "akka-distributed-data" % Versions.Akka
+  private val akkaJackson          = "com.typesafe.akka" %% "akka-serialization-jackson" % Versions.Akka
+  private val akkaMultiNodeTestkit = "com.typesafe.akka" %% "akka-multi-node-testkit" % Versions.Akka
+  private val akkaPersistence      = "com.typesafe.akka" %% "akka-persistence" % Versions.Akka
+  private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
+  private val akkaSlf4j            = ("com.typesafe.akka" %% "akka-slf4j" % Versions.Akka).excludeAll(excludeSlf4j: _*)
+  private val akkaStream           = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
+  private val akkaProtobuf_v3      = "com.typesafe.akka" %% "akka-protobuf-v3" % Versions.Akka
+
+  // akka typed dependencies
+  private val akkaActorTyped           = "com.typesafe.akka" %% "akka-actor-typed"            % Versions.Akka
+  private val akkaClusterTyped         = "com.typesafe.akka" %% "akka-cluster-typed"          % Versions.Akka
+  private val akkaPersistenceTyped     = "com.typesafe.akka" %% "akka-persistence-typed"      % Versions.Akka
   private val akkaClusterShardingTyped = "com.typesafe.akka" %% "akka-cluster-sharding-typed" % Versions.Akka
-  private val akkaClusterTools         = "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka
-  private val akkaDistributedData      = "com.typesafe.akka" %% "akka-distributed-data" % Versions.Akka
-  private val akkaJackson              = "com.typesafe.akka" %% "akka-serialization-jackson" % Versions.Akka
-  private val akkaMultiNodeTestkit     = "com.typesafe.akka" %% "akka-multi-node-testkit" % Versions.Akka
-  private val akkaPersistence          = "com.typesafe.akka" %% "akka-persistence" % Versions.Akka
-  private val akkaPersistenceQuery     = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
-  private val akkaSlf4j                = ("com.typesafe.akka" %% "akka-slf4j" % Versions.Akka).excludeAll(excludeSlf4j: _*)
-  private val akkaStream               = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
-  private val akkaProtobuf_v3          = "com.typesafe.akka" %% "akka-protobuf-v3" % Versions.Akka
 
   private val akkaManagement                 = "com.lightbend.akka.management" %% "akka-management"                   % Versions.AkkaManagement
   private val akkaManagementClusterHttp      = "com.lightbend.akka.management" %% "akka-management-cluster-http"      % Versions.AkkaManagement
@@ -855,6 +858,9 @@ object Dependencies {
     akkaPersistence,
     akkaPersistenceQuery,
     akkaClusterSharding,
+    akkaPersistenceTyped,
+    akkaClusterShardingTyped,
+    akkaJackson,
     akkaSlf4j,
     play,
     akkaTestkit          % Test,
@@ -867,7 +873,7 @@ object Dependencies {
     sslConfig,
     playJson,
     scalaXml
-  )
+  ) ++ jacksonFamily // akka typed brings in jackson deps, but we Lagom has a more recent one
 
   val `persistence-testkit` = libraryDependencies ++= Seq(
     akkaPersistence,
