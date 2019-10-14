@@ -19,7 +19,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 @Singleton
-private[lagom] class JavaServiceRegistryClient @Inject()(
+private[lagom] class JavaServiceRegistryClient @Inject() (
     registry: ServiceRegistry,
     implicit val ec: ExecutionContext
 ) extends AbstractLoggingServiceRegistryClient {

@@ -29,7 +29,7 @@ private[lagom] class AkkaManagementModule extends Module {
 }
 
 @Singleton
-private[lagom] class AkkaManagementProvider @Inject()(
+private[lagom] class AkkaManagementProvider @Inject() (
     config: Config,
     actorSystem: ActorSystem,
     coordinatedShutdown: CoordinatedShutdown,
@@ -38,7 +38,7 @@ private[lagom] class AkkaManagementProvider @Inject()(
 ) extends Provider[AkkaManagementTrigger] {
 
   override def get(): AkkaManagementTrigger = {
-    val instance = new AkkaManagementTrigger(config, actorSystem, coordinatedShutdown)(executionContext)
+    val instance = new AkkaManagementTrigger(config, actorSystem, coordinatedShutdown) (executionContext)
     if (environment.mode == Mode.Prod) {
       instance.start()
     }

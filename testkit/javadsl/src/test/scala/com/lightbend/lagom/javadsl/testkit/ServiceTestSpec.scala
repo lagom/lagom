@@ -86,7 +86,7 @@ trait TestService extends Service {
 
 }
 
-class TestServiceImpl @Inject()(persistentEntityRegistry: PersistentEntityRegistry) extends TestService
+class TestServiceImpl @Inject() (persistentEntityRegistry: PersistentEntityRegistry) extends TestService
 
 class TestServiceModule extends AbstractModule with ServiceGuiceSupport {
   override def configure(): Unit = bindService(classOf[TestService], classOf[TestServiceImpl])

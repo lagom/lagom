@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 import scala.collection.JavaConverters._
 
-case class UnmanagedServices @Inject()(services: Map[String, ServiceRegistryService])
+case class UnmanagedServices @Inject() (services: Map[String, ServiceRegistryService])
 
 object UnmanagedServices {
   def apply(services: JMap[String, String]): UnmanagedServices = {

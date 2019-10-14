@@ -39,7 +39,7 @@ import scala.collection.JavaConverters._
  * All the hairy stuff goes here.
  */
 @Singleton
-class MavenFacade @Inject()(
+class MavenFacade @Inject() (
     repoSystem: RepositorySystem,
     session: MavenSession,
     buildPluginManager: BuildPluginManager,

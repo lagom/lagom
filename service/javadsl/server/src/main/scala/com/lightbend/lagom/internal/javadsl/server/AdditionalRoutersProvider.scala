@@ -20,7 +20,7 @@ import play.api.routing.Router
  * @param additionalRouters
  */
 @InternalApi
-private[lagom] class AdditionalRoutersProvider @Inject()(
+private[lagom] class AdditionalRoutersProvider @Inject() (
     injector: Injector,
     additionalRouters: util.List[AdditionalRouter]
 ) extends Provider[util.List[Router]] {

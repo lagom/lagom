@@ -25,7 +25,7 @@ import org.apache.maven.execution.MavenSession
 import org.apache.maven.plugin.AbstractMojo
 import org.eclipse.aether.graph.Dependency
 
-class StartCassandraMojo @Inject()(
+class StartCassandraMojo @Inject() (
     facade: MavenFacade,
     logger: MavenLoggerProxy,
     mavenLoggerManager: LoggerManager,
@@ -70,7 +70,7 @@ class StartCassandraMojo @Inject()(
   }
 }
 
-class StopCassandraMojo @Inject()(logger: MavenLoggerProxy) extends AbstractMojo {
+class StopCassandraMojo @Inject() (logger: MavenLoggerProxy) extends AbstractMojo {
   @BeanProperty
   var cassandraEnabled: Boolean = _
 
@@ -81,7 +81,7 @@ class StopCassandraMojo @Inject()(logger: MavenLoggerProxy) extends AbstractMojo
   }
 }
 
-class StartKafkaMojo @Inject()(
+class StartKafkaMojo @Inject() (
     facade: MavenFacade,
     logger: MavenLoggerProxy,
     mavenLoggerManager: LoggerManager,
@@ -149,7 +149,7 @@ class StartKafkaMojo @Inject()(
   }
 }
 
-class StopKafkaMojo @Inject()(logger: MavenLoggerProxy) extends AbstractMojo {
+class StopKafkaMojo @Inject() (logger: MavenLoggerProxy) extends AbstractMojo {
   @BeanProperty
   var kafkaEnabled: Boolean = _
 
@@ -160,7 +160,7 @@ class StopKafkaMojo @Inject()(logger: MavenLoggerProxy) extends AbstractMojo {
   }
 }
 
-class StartServiceLocatorMojo @Inject()(
+class StartServiceLocatorMojo @Inject() (
     logger: MavenLoggerProxy,
     facade: MavenFacade,
     scalaClassLoaderManager: ScalaClassLoaderManager
@@ -221,7 +221,7 @@ class StartServiceLocatorMojo @Inject()(
   }
 }
 
-class StopServiceLocatorMojo @Inject()(logger: MavenLoggerProxy) extends AbstractMojo {
+class StopServiceLocatorMojo @Inject() (logger: MavenLoggerProxy) extends AbstractMojo {
 
   @BeanProperty
   var serviceLocatorEnabled: Boolean = _

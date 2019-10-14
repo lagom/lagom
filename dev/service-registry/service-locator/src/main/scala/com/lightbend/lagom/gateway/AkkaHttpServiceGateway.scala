@@ -45,7 +45,7 @@ import scala.concurrent.Await
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class AkkaHttpServiceGatewayFactory @Inject()(coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig)(
+class AkkaHttpServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig)(
     @Named("serviceRegistryActor") registry: ActorRef
 )(implicit actorSystem: ActorSystem, mat: Materializer) {
 

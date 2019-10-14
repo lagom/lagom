@@ -42,7 +42,7 @@ import play.api.libs.ws.WSClient
  * Implements a service client.
  */
 @Singleton
-class JavadslServiceClientImplementor @Inject()(
+class JavadslServiceClientImplementor @Inject() (
     ws: WSClient,
     webSocketClient: JavadslWebSocketClient,
     serviceInfo: ServiceInfo,

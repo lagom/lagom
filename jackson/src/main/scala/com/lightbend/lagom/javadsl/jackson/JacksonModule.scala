@@ -23,7 +23,7 @@ class JacksonModule extends Module {
   )
 }
 
-private[lagom] class JacksonMigrationCheck @Inject()(system: ActorSystem) {
+private[lagom] class JacksonMigrationCheck @Inject() (system: ActorSystem) {
   if (system.settings.config.hasPath("lagom.serialization.json.migrations")) {
     throw new IllegalStateException(
       "JacksonJsonSerializer migrations defined in " +
