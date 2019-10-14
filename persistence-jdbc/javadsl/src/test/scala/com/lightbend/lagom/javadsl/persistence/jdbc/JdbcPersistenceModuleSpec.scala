@@ -64,4 +64,4 @@ class JdbcPersistenceModuleSpec extends AsyncWordSpec with Matchers with BeforeA
 }
 
 // So that we can confirm DBApi was created
-class DbWrapper @Inject()(val dbApi: DBApi)
+class DbWrapper @Inject() (val dbApi: DBApi)

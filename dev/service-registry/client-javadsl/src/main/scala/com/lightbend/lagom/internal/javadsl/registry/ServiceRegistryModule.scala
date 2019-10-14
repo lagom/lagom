@@ -99,7 +99,7 @@ class ServiceRegistryProvider extends Provider[ServiceRegistry] {
       serviceLocator,
       environment,
       NoTopicFactoryProvider
-    )(ec, mat)
+    ) (ec, mat)
     val loader = new ServiceClientLoader(jacksonSerializerFactory, jacksonExceptionSerializer, environment, implementor)
     loader.loadServiceClient(classOf[ServiceRegistry])
   }
@@ -141,7 +141,7 @@ abstract class BaseServiceLocator extends ServiceLocator {
 }
 
 @Singleton
-private final class DevModeSimpleServiceDiscoveryProvider @Inject()(
+private final class DevModeSimpleServiceDiscoveryProvider @Inject() (
     actorSystem: ActorSystem,
     serviceRegistryClient: ServiceRegistryClient
 ) extends Provider[DevModeServiceDiscovery] {

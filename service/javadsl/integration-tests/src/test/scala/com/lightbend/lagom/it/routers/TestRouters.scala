@@ -34,7 +34,7 @@ object PongRouter {
 /**
  * A Router to be wired by Guice that always respond with 'hello'
  */
-class HelloRouter @Inject()(echo: Greeter) extends Router {
+class HelloRouter @Inject() (echo: Greeter) extends Router {
 
   val underlying: play.api.routing.Router = FixedResponseRouter(echo.say())
 
@@ -48,7 +48,7 @@ class HelloRouter @Inject()(echo: Greeter) extends Router {
 /**
  * A Router to be wired by Guice that always respond with '[prefixed] hello' and already prefixed with '/hello-prefixed'
  */
-class PrefixedHelloRouter @Inject()(echo: Greeter) extends HelloRouter(echo) {
+class PrefixedHelloRouter @Inject() (echo: Greeter) extends HelloRouter(echo) {
   override val underlying = FixedResponseRouter(s"[prefixed] ${echo.say()}").withPrefix("/hello-prefixed")
 }
 

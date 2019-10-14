@@ -19,7 +19,7 @@ class JoinClusterModule extends Module {
   )
 }
 
-private[lagom] class JoinCluster @Inject()(
+private[lagom] class JoinCluster @Inject() (
     system: ActorSystem,
     environment: Environment,
     akkaManagementTrigger: AkkaManagementTrigger

@@ -20,7 +20,7 @@ import scala.concurrent.duration.FiniteDuration
  * INTERNAL API
  */
 @Singleton
-private[lagom] class OffsetTableConfiguration @Inject()(config: Config, readSideConfig: ReadSideConfig)
+private[lagom] class OffsetTableConfiguration @Inject() (config: Config, readSideConfig: ReadSideConfig)
     extends AbstractSlickOffsetStoreConfiguration(config) {
   override def minBackoff: FiniteDuration           = readSideConfig.minBackoff
   override def maxBackoff: FiniteDuration           = readSideConfig.maxBackoff
@@ -31,7 +31,7 @@ private[lagom] class OffsetTableConfiguration @Inject()(config: Config, readSide
 }
 
 @Singleton
-private[lagom] class JavadslJdbcOffsetStore @Inject()(
+private[lagom] class JavadslJdbcOffsetStore @Inject() (
     slick: SlickProvider,
     system: ActorSystem,
     tableConfig: OffsetTableConfiguration,

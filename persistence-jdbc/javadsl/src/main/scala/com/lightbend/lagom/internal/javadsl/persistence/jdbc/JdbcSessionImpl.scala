@@ -17,7 +17,7 @@ import scala.compat.java8.FutureConverters._
  * INTERNAL API
  */
 @Singleton
-final class JdbcSessionImpl @Inject()(slick: SlickProvider) extends JdbcSession {
+final class JdbcSessionImpl @Inject() (slick: SlickProvider) extends JdbcSession {
 
   import slick.profile.api._
 

@@ -24,7 +24,7 @@ import scala.collection.JavaConverters._
 /**
  * Start a service.
  */
-class StartMojo @Inject()(serviceManager: ServiceManager, session: MavenSession) extends AbstractMojo {
+class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession) extends AbstractMojo {
 
   @BeanProperty
   var lagomService: Boolean = _
@@ -153,7 +153,7 @@ class StartMojo @Inject()(serviceManager: ServiceManager, session: MavenSession)
 /**
  * Stop a service.
  */
-class StopMojo @Inject()(serviceManager: ServiceManager, session: MavenSession) extends AbstractMojo {
+class StopMojo @Inject() (serviceManager: ServiceManager, session: MavenSession) extends AbstractMojo {
 
   @BeanProperty
   var lagomService: Boolean = _
@@ -172,7 +172,7 @@ class StopMojo @Inject()(serviceManager: ServiceManager, session: MavenSession) 
   }
 }
 
-class StartExternalProjects @Inject()(serviceManager: ServiceManager, session: MavenSession) extends AbstractMojo {
+class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: MavenSession) extends AbstractMojo {
 
   @BeanProperty
   var externalProjects: JList[ExternalProject] = Collections.emptyList()
@@ -266,7 +266,7 @@ class StartExternalProjects @Inject()(serviceManager: ServiceManager, session: M
 
 }
 
-class StopExternalProjects @Inject()(serviceManager: ServiceManager, session: MavenSession) extends AbstractMojo {
+class StopExternalProjects @Inject() (serviceManager: ServiceManager, session: MavenSession) extends AbstractMojo {
 
   @BeanProperty
   var externalProjects: JList[ExternalProject] = Collections.emptyList()
@@ -304,7 +304,7 @@ class ExternalProject {
 /**
  * Starts all services.
  */
-class StartAllMojo @Inject()(facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession)
+class StartAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession)
     extends AbstractMojo {
 
   private val consoleHelper: ConsoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
@@ -331,7 +331,7 @@ class StartAllMojo @Inject()(facade: MavenFacade, logger: MavenLoggerProxy, sess
 /**
  * Stops all services.
  */
-class StopAllMojo @Inject()(facade: MavenFacade, session: MavenSession) extends AbstractMojo {
+class StopAllMojo @Inject() (facade: MavenFacade, session: MavenSession) extends AbstractMojo {
 
   @BeanProperty
   var externalProjects: JList[Dependency] = Collections.emptyList()
@@ -357,7 +357,7 @@ class StopAllMojo @Inject()(facade: MavenFacade, session: MavenSession) extends 
 /**
  * Run a service, blocking until the user hits enter before stopping it again.
  */
-class RunMojo @Inject()(mavenFacade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession)
+class RunMojo @Inject() (mavenFacade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession)
     extends AbstractMojo {
   // This Mojo shares a lot of code (duplicate) with RunAllMojo
   private val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
@@ -385,7 +385,7 @@ class RunMojo @Inject()(mavenFacade: MavenFacade, logger: MavenLoggerProxy, sess
 /**
  * Run a service, blocking until the user hits enter before stopping it again.
  */
-class RunAllMojo @Inject()(facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends AbstractMojo {
+class RunAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends AbstractMojo {
 
   // This Mojo shares a lot of code (duplicate) with RunMojo
   val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))

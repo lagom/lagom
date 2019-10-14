@@ -82,7 +82,7 @@ class LagomPlayModule extends Module {
   }
 }
 
-class PlayRegisterWithServiceRegistry @Inject()(
+class PlayRegisterWithServiceRegistry @Inject() (
     config: Config,
     serviceInfo: ServiceInfo,
     serviceRegistry: ServiceRegistry,

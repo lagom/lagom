@@ -40,7 +40,7 @@ trait TestTopicComponents extends TopicFactoryProvider {
     case None => Some("test")
   }
 
-  lazy val topicFactory: TopicFactory = new TestTopicFactory(lagomServer)(materializer)
+  lazy val topicFactory: TopicFactory = new TestTopicFactory(lagomServer) (materializer)
 
 }
 
@@ -61,7 +61,7 @@ private[lagom] class TestTopicFactory(lagomServer: LagomServer)(implicit materia
           case method: ScalaMethodTopic[Message] =>
             method.method.invoke(service) match {
               case topicProducer: TaggedOffsetTopicProducer[Message, _] =>
-                new TestTopic(topicCall, topicProducer)(materializer)
+                new TestTopic(topicCall, topicProducer) (materializer)
               case _ =>
                 throw new IllegalArgumentException(
                   s"Testkit does not know how to handle the topic type for ${topicCall.topicId}"

@@ -29,7 +29,7 @@ import scala.collection.JavaConverters._
 /**
  * Topic factory that connects consumers directly to the implementing producers.
  */
-class TestTopicFactory @Inject()(resolvedServices: ResolvedServices, materializer: Materializer) extends TopicFactory {
+class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializer: Materializer) extends TopicFactory {
 
   private val topics: Map[TopicId, Any] = resolvedServices.services.flatMap { service =>
     service.descriptor.topicCalls().asScala.map { topicCall =>

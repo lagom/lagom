@@ -19,7 +19,7 @@ import play.api.inject.Injector
  * Internal API
  */
 @Singleton
-private[lagom] final class CassandraPersistentEntityRegistry @Inject()(system: ActorSystem, injector: Injector)
+private[lagom] final class CassandraPersistentEntityRegistry @Inject() (system: ActorSystem, injector: Injector)
     extends AbstractPersistentEntityRegistry(system, injector) {
 
   private val log = Logging.getLogger(system, getClass)

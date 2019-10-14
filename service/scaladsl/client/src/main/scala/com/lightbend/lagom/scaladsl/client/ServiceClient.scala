@@ -157,7 +157,7 @@ trait LagomServiceClientComponents extends TopicFactoryProvider { self: LagomCon
       environment,
       WebSocketClientConfig(config),
       applicationLifecycle
-    )(executionContext)
+    ) (executionContext)
 
   lazy val serviceClient: ServiceClient = new ScaladslServiceClient(
     wsClient,
@@ -166,7 +166,7 @@ trait LagomServiceClientComponents extends TopicFactoryProvider { self: LagomCon
     serviceLocator,
     serviceResolver,
     optionalTopicFactory
-  )(executionContext, materializer)
+  ) (executionContext, materializer)
 }
 
 /**

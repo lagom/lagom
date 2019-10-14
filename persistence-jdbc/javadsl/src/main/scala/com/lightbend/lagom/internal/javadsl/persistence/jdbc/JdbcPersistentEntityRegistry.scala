@@ -18,7 +18,7 @@ import play.api.inject.Injector
  * INTERNAL API
  */
 @Singleton
-private[lagom] final class JdbcPersistentEntityRegistry @Inject()(
+private[lagom] final class JdbcPersistentEntityRegistry @Inject() (
     system: ActorSystem,
     injector: Injector,
     slickProvider: SlickProvider

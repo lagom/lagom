@@ -47,7 +47,7 @@ import scala.concurrent.Future
 /**
  * Turns a service implementation and descriptor into a Play router
  */
-class JavadslServerBuilder @Inject()(
+class JavadslServerBuilder @Inject() (
     environment: Environment,
     httpConfiguration: HttpConfiguration,
     jacksonSerializerFactory: JacksonSerializerFactory,
@@ -142,7 +142,7 @@ class ResolvedServicesProvider(bindings: Seq[ServiceGuiceSupport.ServiceBinding[
 }
 
 @Singleton
-class JavadslServicesRouter @Inject()(
+class JavadslServicesRouter @Inject() (
     resolvedServices: ResolvedServices,
     httpConfiguration: HttpConfiguration,
     parsers: PlayBodyParsers,
