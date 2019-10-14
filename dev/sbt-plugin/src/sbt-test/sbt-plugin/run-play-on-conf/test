@@ -6,11 +6,11 @@
 # `runAll` tests
 # --------------
 > runAll
-> assertRequest 9001 /p Hello Play!
-> assertRequest 9001 /p/assets/foo.js var foo
+> validateRequest http://localhost:9001/p status 200 body-contains "Hello Play"
+> validateRequest http://localhost:9001/p/assets/foo.js status 200 body-contains "var foo"
 
 # Change an asset
 $ copy-file changes/p/foo.js.1 p/app/assets/foo.js
-> assertRequest 9001 /p/assets/foo.js var bar
+> validateRequest http://localhost:9001/p/assets/foo.js status 200 body-contains "var bar"
 
 > stop
