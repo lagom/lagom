@@ -1,0 +1,54 @@
+# Structure of this test:
+# =======================
+
+# This tests ensures that an existing Lagom application using Lagom's Persistence API can migrate to Akka Persistence Typed.
+# This is a stripped down version of shopping-cart with a simplified ServiceDescriptor to make it easier to test with sbt-scripted
+
+# The tests consist of a Lagom project with two services that are nearly the same except that one is using Lagom's Persistence and the other is using Akka Persistence Typed. The goal is to simulate the scenario where a user has existing Lagom app and migrated to Akka Persistence Typed. The read-side processors is duplicated in each app, the only shared part is the ServiceDescriptor definition.
+
+# We will first start the legacy app and create a shopping cart with one product. This will create events in the journal.
+# We then stop the legacy app and start the migrated app. We should then be able to use the same entity and replay the existing journal using Akka Persistence Typed.
+
+# start legacy app
+> lagomServiceLocatorStart
+> shopping-cart-lagom-persistence/run
+
+# let it start
+$ sleep 5000
+
+# add product to shopping-cart 'abc'
+> validateRequest retry-until-success http://localhost:9000/shoppingcart/abc/foo/10 status 200
+
+# verify that entity exists and has items
+> validateRequest retry-until-success http://localhost:9000/shoppingcart/abc status 200 body-contains abc:foo=10:open
+
+# verify that events are propagated to read-side, ie: shopping-cart report
+> validateRequest retry-until-success http://localhost:9000/shoppingcart/abc/report status 200 body-contains open
+
+# stop legacy app
+> stop
+
+
+# start migrated app
+> lagomServiceLocatorStart
+> shopping-cart-akka-persistence-typed/run
+
+# let it start
+$ sleep 5000
+
+# get shopping-cart state
+# because shopping-cart 'abc' isn't empty - it was filled by legacy app
+# we can prove that we can replay the journal on the write side
+> validateRequest retry-until-success http://localhost:9000/shoppingcart/abc status 200 body-contains abc:foo=10:open
+
+# checkout shopping-cart 'abc'
+> validateRequest retry-until-success http://localhost:9000/shoppingcart/abc/checkout status 200
+
+# verify that entity exists, is checked out and has items
+> validateRequest retry-until-success http://localhost:9000/shoppingcart/abc status 200 body-contains abc:foo=10:checkedout
+
+# verify that events are propagated to read-side, ie: shopping-cart report
+> validateRequest retry-until-success http://localhost:9000/shoppingcart/abc/report status 200 body-contains checkedout
+
+# shutdown app
+> stop
