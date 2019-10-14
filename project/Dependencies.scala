@@ -44,11 +44,12 @@ object Dependencies {
     val Netty                = "4.1.34.Final"
     val NettyReactiveStreams = "2.0.3"
     val Kafka                = "2.1.1"
-    val AlpakkaKafka         = "1.0.1"
-    val Curator              = "2.12.0"
-    val Immutables           = "2.3.10"
-    val HibernateCore        = "5.3.7.Final"
-    val PCollections         = "2.2.0"
+    // adapt links in (java/scala)/KafkaClient.md for minor version changes
+    val AlpakkaKafka  = "1.0.1"
+    val Curator       = "2.12.0"
+    val Immutables    = "2.3.10"
+    val HibernateCore = "5.3.7.Final"
+    val PCollections  = "2.2.0"
 
     val ScalaJava8Compat = "0.9.0"
     val ScalaXml         = "1.1.1"

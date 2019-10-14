@@ -25,7 +25,7 @@ When importing the Lagom Kafka Broker module keep in mind that the Lagom Kafka B
 
 ## Configuration
 
-The Lagom Kafka Client implementation is built using [Alpakka Kafka](https://github.com/akka/alpakka-kafka). The Alpakka Kafka library wraps the official [Apache Java Kafka client](https://kafka.apache.org/documentation.html) and exposes a (Akka) stream based API to publish/consume messages to/from Kafka. Therefore, we have effectively three libraries at play, with each of them exposing its own configuration. Let's explore the configuration keys exposed by each layer, starting with the one sitting at the top, i.e., the Lagom Kafka Client.
+The Lagom Kafka Client implementation is built using [Alpakka Kafka](https://doc.akka.io/docs/alpakka-kafka/). The Alpakka Kafka library wraps the official [Apache Java Kafka client](https://kafka.apache.org/documentation.html) and exposes a (Akka) stream based API to publish/consume messages to/from Kafka. Therefore, we have effectively three libraries at play, with each of them exposing its own configuration. Let's explore the configuration keys exposed by each layer, starting with the one sitting at the top, i.e., the Lagom Kafka Client.
 
 ### Lagom Kafka Client
 
@@ -39,7 +39,9 @@ Third, the consumer has a few more configuration keys allowing you to decide how
 
 ### Alpakka Kafka configuration
 
-See the [Alpakka Kafka reference.conf](https://github.com/akka/alpakka-kafka/blob/master/core/src/main/resources/reference.conf) to find out about the available configuration parameters.
+See the [Alpakka Kafka producer settings](https://doc.akka.io/docs/alpakka-kafka/1.0/producer.html#settings) and [Alpakka Kafka consumer settings](https://doc.akka.io/docs/alpakka-kafka/1.0/consumer.html#settings) to find out about the available configuration parameters.
+
+Please refer to [production considerations](https://doc.akka.io/docs/alpakka-kafka/1.0/production.html) for other things to keep in mind when using Alpakka Kafka.
 
 ### Apache Java Kafka Client
 
@@ -74,3 +76,5 @@ If/when your subscriber-only service evolves to include features that publish da
 ### Consuming Topics from 3rd parties
 
 You may want your Lagom service to consume data produced on services not implemented in Lagom. In that case, as described in the [[Service Clients|ServiceClients]] section, you can create a `third-party-service-api` module in your Lagom project. That module will contain a Service Descriptor [[declaring the topic|MessageBrokerApi#Declaring-a-topic]] you will consume from. Once you have your `ThirdPartyService` interface and related classes implemented, you should add `third-party-service-api` as a dependency on your `fancy-service-impl`. Finally, you can consume from the topic described in `ThirdPartyService` as documented in the [[Subscribe to a topic|MessageBrokerApi#Subscribe-to-a-topic]] section.
+
+For an example, see the [consumer service recipe](https://github.com/lagom/lagom-recipes/blob/master/consumer-service/consumer-service-java-sbt/README.md).
