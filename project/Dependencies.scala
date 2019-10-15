@@ -25,7 +25,7 @@ object Dependencies {
     val Twirl            = "1.5.0-M4"
     val PlayFileWatch    = "1.1.8"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M7")
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M8")
     val AkkaHttp     = "10.1.10"
 
     val AkkaPersistenceCassandra = "0.99"
@@ -216,6 +216,33 @@ object Dependencies {
       "jackson-dataformat-cbor",
     )
 
+  private val akkaFamily =
+    crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
+      "akka-actor",
+      "akka-actor-typed",
+      "akka-cluster",
+      "akka-cluster-typed",
+      "akka-cluster-sharding",
+      "akka-cluster-sharding-typed",
+      "akka-cluster-tools",
+      "akka-distributed-data",
+      "akka-multi-node-testkit",
+      "akka-persistence",
+      "akka-persistence-typed",
+      "akka-actor-testkit-typed", // remove this when https://github.com/akka/akka/pull/27830 is fixed
+      "akka-persistence-query",
+      "akka-protobuf",
+      "akka-protobuf-v3",
+      "akka-remote",
+      "akka-slf4j",
+      "akka-stream",
+      "akka-stream-testkit",
+      "akka-testkit",
+      "akka-coordination",
+      "akka-discovery",
+      "akka-serialization-jackson"
+      )
+
   val scalaParserCombinatorOverrides = Seq(scalaParserCombinators)
 
   // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
@@ -340,7 +367,7 @@ object Dependencies {
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.5.0",
       "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
-      "org.agrona"          % "agrona"                  % "1.0.1",
+      "org.agrona"          % "agrona"                  % "1.0.7",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
@@ -350,7 +377,7 @@ object Dependencies {
       javassist,
       "org.joda"     % "joda-convert"  % "1.9.2",
       "org.hamcrest" % "hamcrest-core" % "1.3",
-      "org.lmdbjava" % "lmdbjava"      % "0.6.1",
+      "org.lmdbjava" % "lmdbjava"      % "0.7.0",
       pcollections,
       reactiveStreams,
       "org.scalactic" %% "scalactic" % Versions.ScalaTest,
@@ -367,36 +394,13 @@ object Dependencies {
       scalaCollectionCompat,
       "com.google.guava"             % "failureaccess"          % "1.0.1",
       "com.google.guava"             % "listenablefuture"       % "9999.0-empty-to-avoid-conflict-with-guava",
-      "com.google.protobuf"          % "protobuf-java"          % "3.9.0",
+      "com.google.protobuf"          % "protobuf-java"          % "3.9.2",
       "javax.activation"             % "activation"             % "1.1",
       "javax.activation"             % "javax.activation-api"   % "1.2.0",
       "jakarta.activation"           % "jakarta.activation-api" % "1.2.1",
       "com.thoughtworks.paranamer"   % "paranamer"              % "2.8",
       "com.fasterxml.jackson.module" %% "jackson-module-scala"  % Versions.JacksonDatatype,
-    ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
-      "akka-actor",
-      "akka-actor-typed",
-      "akka-cluster",
-      "akka-cluster-typed",
-      "akka-cluster-sharding",
-      "akka-cluster-sharding-typed",
-      "akka-cluster-tools",
-      "akka-distributed-data",
-      "akka-multi-node-testkit",
-      "akka-persistence",
-      "akka-persistence-typed",
-      "akka-actor-testkit-typed", // remove this when https://github.com/akka/akka/pull/27830 is fixed
-      "akka-persistence-query",
-      "akka-protobuf",
-      "akka-protobuf-v3",
-      "akka-remote",
-      "akka-slf4j",
-      "akka-stream",
-      "akka-stream-testkit",
-      "akka-testkit",
-      "akka-coordination",
-      "akka-discovery"
-    ) ++ libraryFamily("com.typesafe.play", Versions.Play)(
+    ) ++ jacksonFamily ++ akkaFamily ++ libraryFamily("com.typesafe.play", Versions.Play)(
       "build-link",
       "play-exceptions",
       "play-netty-utils"
@@ -509,7 +513,7 @@ object Dependencies {
     jffi,
     jnra64asm,
     jnrConstants,
-  ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
+  ) ++ jacksonFamily ++ ow2asmDeps ++ akkaFamily // to match whitelist versions
 
   val `api-javadsl` = libraryDependencies ++= Seq(
     playJava,
@@ -519,14 +523,14 @@ object Dependencies {
     sslConfig,
     scalaTest                      % Test,
     "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % Versions.Jackson % Test
-  )
+  ) ++ akkaFamily
 
   val `api-scaladsl` = libraryDependencies ++= Seq(
     scalaCollectionCompat,
     // Upgrades needed to match whitelist versions
     sslConfig,
     scalaTest % Test
-  )
+  ) ++ akkaFamily
 
   val immutables = libraryDependencies += "org.immutables" % "value" % Versions.Immutables
 
@@ -586,7 +590,7 @@ object Dependencies {
     jnra64asm,
     jnrConstants,
     pcollections,
-  ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
+  ) ++ jacksonFamily ++ ow2asmDeps ++ akkaFamily // to match whitelist versions
 
   val client = libraryDependencies ++= Seq(
     slf4jApi,
@@ -609,7 +613,7 @@ object Dependencies {
 
   val `client-scaladsl` = libraryDependencies ++= Seq(
     scalaTest % Test
-  )
+  ) ++ akkaFamily
 
   val `integration-client-javadsl` = libraryDependencies ++= Seq(
     playWs,
@@ -620,7 +624,7 @@ object Dependencies {
     scalaTest  % Test,
     // Upgrades needed to match whitelist versions
     scalaCollectionCompat,
-  )
+  ) ++ akkaFamily
 
   val server = libraryDependencies ++= Nil
 
@@ -629,7 +633,7 @@ object Dependencies {
     slf4jApi,
     commonsLang,
     javaxAnnotationApi
-  )
+  ) ++ akkaFamily
 
   val `server-scaladsl` = libraryDependencies ++= Seq(
     akkaManagement,
@@ -738,7 +742,7 @@ object Dependencies {
     jnra64asm,
     jnrConstants,
     pcollections,
-  ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
+  ) ++ jacksonFamily ++ ow2asmDeps ++ akkaFamily // to match whitelist versions
 
   val `akka-management-javadsl`  = libraryDependencies ++= Seq.empty[ModuleID]
   val `akka-management-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
@@ -775,7 +779,7 @@ object Dependencies {
     akkaDistributedData,
     akkaPersistence,
     akkaClusterTools
-  )
+  ) ++ akkaFamily
 
   val `cluster-javadsl` = libraryDependencies ++= Seq(
     akkaTestkit          % Test,
@@ -803,7 +807,7 @@ object Dependencies {
     guava,
     // Upgrades needed to match whitelist versions
     slf4jApi,
-  )
+  ) ++ akkaFamily
 
   val `pubsub-javadsl` = libraryDependencies ++= Seq(
     akkaClusterTools,
@@ -835,7 +839,7 @@ object Dependencies {
     scalaXml % Test,
     akkaSlf4j,
     jnrConstants
-  )
+  ) ++ akkaFamily
 
   val `projection-core` = libraryDependencies ++= Seq(
     akkaClusterSharding,
@@ -848,7 +852,7 @@ object Dependencies {
     "com.novocode"       % "junit-interface" % "0.11" % Test,
     // Upgrades needed to match whitelist versions
     jnrConstants,
-  )
+  ) ++ akkaFamily
 
   val `projection-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
 
@@ -1026,7 +1030,7 @@ object Dependencies {
     pcollections,
   ) ++ jacksonFamily ++ ow2asmDeps ++ Seq("logback-core", "logback-classic").map(
     "ch.qos.logback" % _ % Versions.Logback
-  )
+  ) ++ akkaFamily
 
   val log4j2 = libraryDependencies ++= Seq(slf4jApi) ++
     log4jModules ++
@@ -1051,7 +1055,7 @@ object Dependencies {
       jnra64asm,
       jnrConstants,
       pcollections,
-    )
+    ) ++ akkaFamily
 
   val `reloadable-server` = libraryDependencies ++= Seq(
     playServer,
@@ -1068,7 +1072,7 @@ object Dependencies {
     jffi,
     jnra64asm,
     jnrConstants,
-  ) ++ ow2asmDeps // to match whitelist versions
+  ) ++ ow2asmDeps ++ akkaFamily // to match whitelist versions
 
   val `server-containers` = libraryDependencies ++= Seq(
     // This is used in the code to check if the embedded cassandra server is started
@@ -1123,7 +1127,7 @@ object Dependencies {
     sslConfig,
     scalaXml,
     playJson,
-  ) ++ jacksonFamily
+  ) ++ jacksonFamily ++ Seq(akkaActorTyped, akkaJackson)
 
   val `service-registry-client-core` =
     libraryDependencies ++= Seq(
@@ -1136,7 +1140,7 @@ object Dependencies {
       scalaJava8Compat,
       // update to enforce using snapshots in nightly jobs
       akkaActorTyped % Test,
-    )
+    ) ++ akkaFamily
 
   val `service-registry-client-javadsl` =
     libraryDependencies ++= Seq(
@@ -1162,7 +1166,7 @@ object Dependencies {
     akkaPersistenceCassandra,
     // explicitly depend on particular versions of guava
     guava
-  )
+  ) ++ akkaFamily
 
   val `kafka-server` = libraryDependencies ++= Seq(
     "org.apache.kafka" %% "kafka" % Versions.Kafka,
