@@ -10,7 +10,6 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.Behavior
 import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.journal.Tagged
-import akka.persistence.typed.ExpectingReply
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.Effect
 import akka.persistence.typed.scaladsl.EventSourcedBehavior
@@ -30,7 +29,7 @@ import scala.collection.immutable.Seq
  */
 case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
 
-  def applyCommand(cmd: ShoppingCartCommand[_]): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
+  def applyCommand(cmd: ShoppingCartCommand): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
     cmd match {
       case x: UpdateItem => onUpdateItem(x)
       case x: Checkout   => onCheckout(x)
@@ -39,16 +38,16 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
 
   def onUpdateItem(cmd: UpdateItem): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
     cmd match {
-      case UpdateItem(_, qty, _) if qty < 0 =>
-        Effect.reply(cmd)(Rejected("Quantity must be greater than zero"))
+      case UpdateItem(_, quantity, replyTo) if quantity < 0 =>
+        Effect.reply(replyTo)(Rejected("Quantity must be greater than zero"))
 
-      case UpdateItem(productId, 0, _) if !items.contains(productId) =>
-        Effect.reply(cmd)(Rejected("Cannot delete item that is not already in cart"))
+      case UpdateItem(productId, 0, replyTo) if !items.contains(productId) =>
+        Effect.reply(replyTo)(Rejected("Cannot delete item that is not already in cart"))
 
-      case UpdateItem(productId, quantity, _) =>
+      case UpdateItem(productId, quantity, replyTo) =>
         Effect
           .persist(ItemUpdated(productId, quantity))
-          .thenReply(cmd) { _ =>
+          .thenReply(replyTo) { _ =>
             Accepted
           }
     }
@@ -56,16 +55,16 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
 
   def onCheckout(cmd: Checkout): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
     if (items.isEmpty)
-      Effect.reply(cmd)(Rejected("Cannot checkout empty cart"))
+      Effect.reply(cmd.replyTo)(Rejected("Cannot checkout empty cart"))
     else
       Effect
         .persist(CheckedOut)
-        .thenReply(cmd) { _ =>
+        .thenReply(cmd.replyTo) { _ =>
           Accepted
         }
 
   def onReadState(cmd: Get): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
-    Effect.reply(cmd)(CurrentState(this))
+    Effect.reply(cmd.replyTo)(CurrentState(this))
 
   def applyEvent(evt: ShoppingCartEvent): ShoppingCartState = {
     evt match {
@@ -88,15 +87,13 @@ object ShoppingCartState {
 
   def empty: ShoppingCartState = ShoppingCartState(Map.empty, checkedOut = false)
 
-  val typeKey = EntityTypeKey[ShoppingCartCommand[_]]("ShoppingCartEntity")
+  val typeKey = EntityTypeKey[ShoppingCartCommand]("ShoppingCartEntity")
 
-  def behavior(entityContext: EntityContext): Behavior[ShoppingCartCommand[_]] = {
-
-    val persistenceId = typeKey.persistenceIdFrom(entityContext.entityId)
+  def behavior(entityContext: EntityContext[ShoppingCartCommand]): Behavior[ShoppingCartCommand] = {
 
     EventSourcedBehavior
-      .withEnforcedReplies[ShoppingCartCommand[_], ShoppingCartEvent, ShoppingCartState](
-        persistenceId = persistenceId,
+      .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCartState](
+        persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
         emptyState = ShoppingCartState.empty,
         commandHandler = (cart, cmd) => cart.applyCommand(cmd),
         eventHandler = (cart, evt) => cart.applyEvent(evt)
@@ -199,13 +196,13 @@ object CurrentState {
  */
 trait ShoppingCartCommandSerializable
 
-sealed trait ShoppingCartCommand[R <: ShoppingCartReply] extends ExpectingReply[R] with ShoppingCartCommandSerializable
+sealed trait ShoppingCartCommand extends ShoppingCartCommandSerializable
 case class UpdateItem(productId: String, quantity: Int, replyTo: ActorRef[Confirmation])
-    extends ShoppingCartCommand[Confirmation]
+    extends ShoppingCartCommand
 
-case class Get(replyTo: ActorRef[CurrentState]) extends ShoppingCartCommand[CurrentState]
+case class Get(replyTo: ActorRef[CurrentState]) extends ShoppingCartCommand
 
-case class Checkout(replyTo: ActorRef[Confirmation]) extends ShoppingCartCommand[Confirmation]
+case class Checkout(replyTo: ActorRef[Confirmation]) extends ShoppingCartCommand
 
 object ShoppingCartSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(

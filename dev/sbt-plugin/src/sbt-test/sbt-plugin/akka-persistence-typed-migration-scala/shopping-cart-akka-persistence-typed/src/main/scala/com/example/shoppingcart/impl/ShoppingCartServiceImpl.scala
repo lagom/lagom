@@ -36,7 +36,7 @@ class ShoppingCartServiceImpl(
   /**
    * Looks up the shopping cart entity for the given ID.
    */
-  private def entityRef(id: String): EntityRef[ShoppingCartCommand[_]] =
+  private def entityRef(id: String): EntityRef[ShoppingCartCommand] =
     clusterSharding.entityRefFor(ShoppingCartState.typeKey, id)
 
   implicit val timeout = Timeout(5.seconds)

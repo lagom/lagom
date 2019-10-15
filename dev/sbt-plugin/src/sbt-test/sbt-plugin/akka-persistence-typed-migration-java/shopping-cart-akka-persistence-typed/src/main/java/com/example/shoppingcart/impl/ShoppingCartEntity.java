@@ -6,6 +6,7 @@ package com.example.shoppingcart.impl;
 
 import akka.cluster.sharding.typed.javadsl.EntityContext;
 import akka.cluster.sharding.typed.javadsl.EntityTypeKey;
+import akka.persistence.typed.PersistenceId;
 import akka.persistence.typed.javadsl.*;
 import com.example.shoppingcart.impl.ShoppingCartCommand.Checkout;
 import com.example.shoppingcart.impl.ShoppingCartCommand.Get;
@@ -20,8 +21,7 @@ public class ShoppingCartEntity extends EventSourcedBehaviorWithEnforcedReplies<
 
     public static EntityTypeKey<ShoppingCartCommand> ENTITY_TYPE_KEY =
         EntityTypeKey
-            .create(ShoppingCartCommand.class, "ShoppingCartEntity")
-            .withEntityIdSeparator("");
+            .create(ShoppingCartCommand.class, "ShoppingCartEntity");
 
 
     final private EntityContext<ShoppingCartCommand> entityContext;
@@ -32,7 +32,13 @@ public class ShoppingCartEntity extends EventSourcedBehaviorWithEnforcedReplies<
     }
 
     ShoppingCartEntity(EntityContext<ShoppingCartCommand> entityContext) {
-        super(ENTITY_TYPE_KEY.persistenceIdFrom(entityContext.getEntityId()));
+        super(
+            PersistenceId.of(
+                entityContext.getEntityTypeKey().name(),
+                entityContext.getEntityId(),
+                "" // separator must be an empty String - Lagom Java doesn't have a separator
+            )
+        );
         this.entityContext = entityContext;
         this.entityId = entityContext.getEntityId();
     }
@@ -51,21 +57,21 @@ public class ShoppingCartEntity extends EventSourcedBehaviorWithEnforcedReplies<
         builder.forState(ShoppingCartState::open)
             .onCommand(UpdateItem.class, (state, cmd) -> {
                 if (cmd.quantity < 0) {
-                    return Effect().reply(cmd, new ShoppingCartCommand.Rejected("Quantity must be greater than zero"));
+                    return Effect().reply(cmd.replyTo, new ShoppingCartCommand.Rejected("Quantity must be greater than zero"));
                 } else if (cmd.quantity == 0 && !state.items.containsKey(cmd.productId)) {
-                    return Effect().reply(cmd, new ShoppingCartCommand.Rejected("Cannot delete item that is not already in cart"));
+                    return Effect().reply(cmd.replyTo, new ShoppingCartCommand.Rejected("Cannot delete item that is not already in cart"));
                 } else {
                     return Effect()
                         .persist(new ItemUpdated(entityId, cmd.productId, cmd.quantity))
-                        .thenReply(cmd, __ -> new ShoppingCartCommand.Accepted());
+                        .thenReply(cmd.replyTo, __ -> new ShoppingCartCommand.Accepted());
                 }
 
             })
             .onCommand(Checkout.class, (state, cmd) -> {
                 if (state.items.isEmpty()) {
-                    return Effect().reply(cmd, new ShoppingCartCommand.Rejected("Cannot checkout empty cart"));
+                    return Effect().reply(cmd.replyTo, new ShoppingCartCommand.Rejected("Cannot checkout empty cart"));
                 } else {
-                    return Effect().persist(new CheckedOut(entityId)).thenReply(cmd, __ -> new ShoppingCartCommand.Accepted());
+                    return Effect().persist(new CheckedOut(entityId)).thenReply(cmd.replyTo, __ -> new ShoppingCartCommand.Accepted());
                 }
             });
 
@@ -73,15 +79,15 @@ public class ShoppingCartEntity extends EventSourcedBehaviorWithEnforcedReplies<
         builder.forState(ShoppingCartState::isCheckedOut)
             .onCommand(
                 UpdateItem.class,
-                cmd -> Effect().reply(cmd, new ShoppingCartCommand.Rejected("Can't update item on already checked out shopping cart")))
+                cmd -> Effect().reply(cmd.replyTo, new ShoppingCartCommand.Rejected("Can't update item on already checked out shopping cart")))
             .onCommand(
                 Checkout.class,
-                cmd -> Effect().reply(cmd, new ShoppingCartCommand.Rejected("Can't checkout on already checked out shopping cart")));
+                cmd -> Effect().reply(cmd.replyTo, new ShoppingCartCommand.Rejected("Can't checkout on already checked out shopping cart")));
 
         builder.forAnyState()
             .onCommand(
                 Get.class,
-                (state, cmd) -> Effect().reply(cmd, state));
+                (state, cmd) -> Effect().reply(cmd.replyTo, state));
 
         return builder.build();
     }
