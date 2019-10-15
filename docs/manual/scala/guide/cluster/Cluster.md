@@ -8,7 +8,7 @@ If instances of a service need to know about each other, they must join the same
 
 ## Dependency
 
-The clustering feature is already included if you are using the either of the [[persistence|PersistentEntity]] or [[pubsub|PubSub#Dependency]] modules.
+The clustering feature is already included if you are using either of the [[persistence|PersistentEntity]] or [[pubsub|PubSub#Dependency]] modules.
 
 If you want to enable it without those modules, add the following dependency your project's build.
 
@@ -38,7 +38,7 @@ A service instance joins a cluster when the service starts up.
 
 1. **Joining during development**:  In development you are typically only running the service on one cluster node. No explicit joining is necessary; the [[Lagom Development Environment|DevEnvironment]] handles it automatically and creates a single-node cluster.
 
-1. **Joining during production**: There are several mechanisms available to create a cluster in production. This documentation covers the two recommended approaches:
+1. **Joining during production**: There are several mechanisms available to create a cluster in production. This documentation covers two approaches supported out-of-the-box:
     1. Akka Cluster Bootstrap (recommended)
     2. Manual Cluster Formation (a.k.a. a static list of `seed-nodes`)
 
@@ -56,21 +56,31 @@ Akka Cluster Bootstrap, in Lagom, can be disabled through the property `lagom.cl
 
 #### Akka Discovery
 
-In order to find the peer nodes and form a cluster, Akka Cluster Bootstrap need to be configured to use one of the existing Akka Discovery implementations.
+In order to find the peer nodes and form a cluster, Akka Cluster Bootstrap needs to be configured to use one of the existing Akka Discovery methods:
 
-The snippet below exemplifies how to configure the Akka Cluster Boostrap to use the Akka Discovery Kubernetes API.
+ 1. Start by choosing one of the methods from [Akka Discovery](https://doc.akka.io/docs/akka/2.6/discovery/) or [Akka Management](https://doc.akka.io/docs/akka-management/1.0/discovery/) as appropriate for your deployment environment. For example, if you are deploying to Kubernetes, the `kubernetes-api` method is recommended. Note that the Akka Discovery method used for Akka Cluster Bootstrap is different than the method used for [[service discovery between services|AkkaDiscoveryIntegration]].
 
-```
-akka.management.cluster.bootstrap {
-  # example using kubernetes-api
-  contact-point-discovery {
-    discovery-method = kubernetes-api
-    service-name = "hello-lagom"
-  }
-}
-```
-[Other existing implementations](https://doc.akka.io/docs/akka-management/1.0/discovery/index.html) are: DNS, AWS, Consul, Marathon API and static Configuration. It's also possible to implement your own Akka Discovery implementation if needed.
+ 2. If you are using one of the Akka Discovery methods provided by Akka Management, you will need to add the library dependency to your project build. Using `kubernetes-api` as an example, in sbt:
+    ```scala
+    libraryDependencies += "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % "1.0.3"
+    ```
+
+ 3. Configure your service to select the chosen Akka Discovery method by setting the `akka.management.cluster.bootstrap.contact-point-discovery.discovery-method` property in `application.conf`. Note that these settings are only used in production, and ignored in development. If you use a different configuration file for production configuration, you should add these settings to that file.
+
+    ```
+    akka.management.cluster.bootstrap {
+      # example using kubernetes-api
+      contact-point-discovery {
+        discovery-method = kubernetes-api
+        service-name = "hello-lagom"
+      }
+    }
+    ```
+
+[Other existing implementations](https://doc.akka.io/docs/akka-management/1.0/discovery/index.html) are DNS, AWS, Consul, Marathon API, and Static Configuration. It's also possible to provide your own Akka Discovery implementation if needed.
+
 For more detailed and advanced configurations options, please consult the [Akka Cluster Bootstrap](https://doc.akka.io/docs/akka-management/1.0/bootstrap/) documentation and its [reference.conf](https://github.com/akka/akka-management/blob/v1.0.0-RC2/cluster-bootstrap/src/main/resources/reference.conf) file.
+
 
 #### Akka Management
 
@@ -97,7 +107,8 @@ akka.management.health-checks {
   liveness-path = "health/alive"
 }
 ```
-For further information on Akka Cluster Bootstrap and Health Checks, consult Akka Managment documentation:
+For further information on Akka Cluster Bootstrap and Health Checks, consult Akka Management documentation:
+
  * [Akka Cluster Bootstrap](https://doc.akka.io/docs/akka-management/1.0/bootstrap/)
  * [Http Cluster Management](https://doc.akka.io/docs/akka-management/1.0/cluster-http-management.html)
  * [Health Checks](https://doc.akka.io/docs/akka-management/1.0/healthchecks.html)
