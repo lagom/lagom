@@ -42,10 +42,9 @@ abstract class ShoppingCartApplication(context: LagomApplicationContext)
 
   // this is the equivalent in Akka Typed of Lagom's PersistentEntityRegistry.register
   clusterSharding.init(
-    Entity(
-      ShoppingCartState.typeKey,
-      entityContext => ShoppingCartState.behavior(entityContext)
-    )
+    Entity(ShoppingCartState.typeKey) {
+      ctx => ShoppingCartState.behavior(ctx)
+    }
   )
 
 }

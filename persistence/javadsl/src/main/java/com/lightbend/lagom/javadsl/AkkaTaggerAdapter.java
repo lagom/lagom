@@ -16,8 +16,9 @@ public class AkkaTaggerAdapter {
    * Set<String>>} as expected by Akka Persistence Typed {@code EventSourcedBehavior.withTagger}
    * API.
    */
-  public static <Event extends AggregateEvent<Event>> Function<Event, Set<String>> fromLagom(
-      EntityContext<?> entityContext, AggregateEventTagger<Event> lagomTagger) {
+  public static <Command, Event extends AggregateEvent<Event>>
+      Function<Event, Set<String>> fromLagom(
+          EntityContext<Command> entityContext, AggregateEventTagger<Event> lagomTagger) {
     return evt -> {
       Set<String> tags = new HashSet<>();
       if (lagomTagger instanceof AggregateEventTag) {
