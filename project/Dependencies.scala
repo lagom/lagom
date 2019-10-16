@@ -19,13 +19,13 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.0-M5"
+    val Play             = "2.8.0-M6" // sync with docs/build.sbt
     val PlayJson         = "2.8.0-M6"
     val PlayStandaloneWs = "2.1.0-M5"
-    val Twirl            = "1.5.0-M4"
+    val Twirl            = "1.5.0-M4" // sync with docs/project/plugins.sbt
     val PlayFileWatch    = "1.1.8"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M7")
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M8") // sync with docs/build.sbt
     val AkkaHttp     = "10.1.10"
 
     val AkkaPersistenceCassandra = "0.99"
@@ -325,7 +325,7 @@ object Dependencies {
       "com.typesafe.play"  %% "twirl-api"      % Versions.Twirl,
       "com.typesafe.slick" %% "slick"          % Versions.Slick,
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
-      "com.zaxxer"         % "HikariCP"        % "3.3.1",
+      "com.zaxxer"         % "HikariCP"        % "3.4.1",
       "commons-codec"      % "commons-codec"   % "1.11",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.9.1",
@@ -340,7 +340,7 @@ object Dependencies {
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.5.0",
       "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
-      "org.agrona"          % "agrona"                  % "1.0.1",
+      "org.agrona"          % "agrona"                  % "1.0.7",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
@@ -350,7 +350,7 @@ object Dependencies {
       javassist,
       "org.joda"     % "joda-convert"  % "1.9.2",
       "org.hamcrest" % "hamcrest-core" % "1.3",
-      "org.lmdbjava" % "lmdbjava"      % "0.6.1",
+      "org.lmdbjava" % "lmdbjava"      % "0.7.0",
       pcollections,
       reactiveStreams,
       "org.scalactic" %% "scalactic" % Versions.ScalaTest,
@@ -367,7 +367,7 @@ object Dependencies {
       scalaCollectionCompat,
       "com.google.guava"             % "failureaccess"          % "1.0.1",
       "com.google.guava"             % "listenablefuture"       % "9999.0-empty-to-avoid-conflict-with-guava",
-      "com.google.protobuf"          % "protobuf-java"          % "3.9.0",
+      "com.google.protobuf"          % "protobuf-java"          % "3.9.2",
       "javax.activation"             % "activation"             % "1.1",
       "javax.activation"             % "javax.activation-api"   % "1.2.0",
       "jakarta.activation"           % "jakarta.activation-api" % "1.2.1",
