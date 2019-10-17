@@ -24,7 +24,7 @@ import play.api.Environment
 import play.api.Logger
 
 @Singleton
-class CircuitBreakerMetricsProviderProvider @Inject()(system: ActorSystem, injector: Injector)
+class CircuitBreakerMetricsProviderProvider @Inject() (system: ActorSystem, injector: Injector)
     extends Provider[CircuitBreakerMetricsProvider] {
   lazy val get = {
     val implClass = system.settings.config.getString("lagom.spi.circuit-breaker-metrics-class") match {
@@ -38,7 +38,7 @@ class CircuitBreakerMetricsProviderProvider @Inject()(system: ActorSystem, injec
 }
 
 @Singleton
-class CircuitBreakerMetricsProviderImpl @Inject()(val system: ActorSystem) extends CircuitBreakerMetricsProvider {
+class CircuitBreakerMetricsProviderImpl @Inject() (val system: ActorSystem) extends CircuitBreakerMetricsProvider {
   private[lagom] val registry = new MetricRegistry
   private val metrics         = new CopyOnWriteArrayList[CircuitBreakerMetricsImpl]
 

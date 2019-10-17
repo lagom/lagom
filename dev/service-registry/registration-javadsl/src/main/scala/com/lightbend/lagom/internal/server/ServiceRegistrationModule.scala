@@ -39,7 +39,7 @@ class ServiceRegistrationModule extends Module {
 
 object ServiceRegistrationModule {
 
-  class ServiceConfigProvider @Inject()(config: Config) extends Provider[ServiceConfig] {
+  class ServiceConfigProvider @Inject() (config: Config) extends Provider[ServiceConfig] {
     override lazy val get = ServiceConfig(serviceDnsRecords(config))
   }
 
@@ -49,7 +49,7 @@ object ServiceRegistrationModule {
    * Automatically registers the service on start, and also unregister it on stop.
    */
   @Singleton
-  private class RegisterWithServiceRegistry @Inject()(
+  private class RegisterWithServiceRegistry @Inject() (
       coordinatedShutdown: CoordinatedShutdown,
       resolvedServices: ResolvedServices,
       config: ServiceConfig,

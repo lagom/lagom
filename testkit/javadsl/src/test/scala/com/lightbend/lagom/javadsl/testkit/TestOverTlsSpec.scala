@@ -118,7 +118,7 @@ class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
 // Thhe actual TestTlsService for javadsl tests is written in java. See TestTlsService.java
 //trait TestTlsService extends Service
 
-class TestTlsServiceImpl @Inject()() extends TestTlsService {
+class TestTlsServiceImpl @Inject() () extends TestTlsService {
   override def sampleCall(): ServiceCall[NotUsed, String] = {
     new ServiceCall[NotUsed, String]() {
       override def invoke(request: NotUsed): CompletionStage[String] =

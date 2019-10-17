@@ -22,7 +22,7 @@ import scala.compat.java8.OptionConverters._
 import scala.concurrent.ExecutionContext
 
 @Singleton
-private[lagom] class ServiceRegistryServiceLocator @Inject()(
+private[lagom] class ServiceRegistryServiceLocator @Inject() (
     circuitBreakers: CircuitBreakersPanel,
     client: ServiceRegistryClient,
     implicit val ec: ExecutionContext

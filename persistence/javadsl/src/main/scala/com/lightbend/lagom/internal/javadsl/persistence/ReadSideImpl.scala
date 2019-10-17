@@ -28,7 +28,7 @@ import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
 
 @Singleton
-class ReadSideConfigProvider @Inject()(configuration: Config) extends Provider[ReadSideConfig] {
+class ReadSideConfigProvider @Inject() (configuration: Config) extends Provider[ReadSideConfig] {
 
   lazy val get = {
     ReadSideConfig(configuration.getConfig("lagom.persistence.read-side"))
@@ -36,7 +36,7 @@ class ReadSideConfigProvider @Inject()(configuration: Config) extends Provider[R
 }
 
 @Singleton
-private[lagom] class ReadSideImpl @Inject()(
+private[lagom] class ReadSideImpl @Inject() (
     system: ActorSystem,
     config: ReadSideConfig,
     injector: Injector,

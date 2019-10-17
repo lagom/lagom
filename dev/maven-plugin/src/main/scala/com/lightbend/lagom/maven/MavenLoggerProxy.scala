@@ -15,7 +15,7 @@ import play.dev.filewatch.LoggerProxy
  * Logger
  */
 @Singleton
-class MavenLoggerProxy @Inject()(logger: Logger) extends LoggerProxy with MiniLogger {
+class MavenLoggerProxy @Inject() (logger: Logger) extends LoggerProxy with MiniLogger {
   override def debug(message: => String): Unit = {
     if (logger.isDebugEnabled) {
       logger.debug(message)

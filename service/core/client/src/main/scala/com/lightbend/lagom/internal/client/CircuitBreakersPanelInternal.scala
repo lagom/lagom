@@ -97,7 +97,7 @@ private[lagom] class CircuitBreakersPanelInternal(
           if (exceptionWhitelist.isEmpty) allExceptionAsFailure else failureDefinition(exceptionWhitelist)
 
         val breaker =
-          new AkkaCircuitBreaker(system.scheduler, maxFailures, callTimeout, resetTimeout)(system.dispatcher)
+          new AkkaCircuitBreaker(system.scheduler, maxFailures, callTimeout, resetTimeout) (system.dispatcher)
         val metrics = metricsProvider.start(id)
 
         breaker.onClose(metrics.onClose())
@@ -115,7 +115,7 @@ private[lagom] class CircuitBreakersPanelInternal(
 }
 
 @Singleton
-class CircuitBreakerConfig @Inject()(val configuration: Config) {
+class CircuitBreakerConfig @Inject() (val configuration: Config) {
   val config: Config  = configuration.getConfig("lagom.circuit-breaker")
   val default: Config = config.getConfig("default")
 }

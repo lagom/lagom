@@ -39,7 +39,7 @@ class ProjectionRegistryModule extends Module {
 @InternalApi
 // This provider is trivial but required to keep ProjectionRegistry in `-core` and free of any Guice dependency
 /** INTERNAL API */
-private[lagom] class ProjectionRegistryProvider @Inject()(actorSystem: ActorSystem)
+private[lagom] class ProjectionRegistryProvider @Inject() (actorSystem: ActorSystem)
     extends Provider[ProjectionRegistry] {
   override def get(): ProjectionRegistry = instance
   private val instance                   = new ProjectionRegistry(actorSystem)
@@ -48,7 +48,7 @@ private[lagom] class ProjectionRegistryProvider @Inject()(actorSystem: ActorSyst
 @Singleton
 @InternalApi
 /** INTERNAL API */
-private class ProjectionsImpl @Inject()(registry: ProjectionRegistry)(
+private class ProjectionsImpl @Inject() (registry: ProjectionRegistry)(
     implicit executionContext: ExecutionContext
 ) extends Projections {
 

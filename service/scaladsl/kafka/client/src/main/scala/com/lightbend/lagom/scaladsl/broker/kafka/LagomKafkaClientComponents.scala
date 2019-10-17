@@ -24,6 +24,6 @@ trait LagomKafkaClientComponents extends TopicFactoryProvider {
   def config: Config
 
   lazy val topicFactory: TopicFactory =
-    new KafkaTopicFactory(serviceInfo, actorSystem, serviceLocator, config)(materializer, executionContext)
+    new KafkaTopicFactory(serviceInfo, actorSystem, serviceLocator, config) (materializer, executionContext)
   override def optionalTopicFactory: Option[TopicFactory] = Some(topicFactory)
 }
