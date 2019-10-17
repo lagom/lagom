@@ -1,5 +1,7 @@
 # Persistent Entity
 
+> If you are developping a new Lagom application, we recommend you to follow the guide [[Domain Modelling|DomainModelling]]. If you already have an application using Lagom's `PersistenceEntity`, we recommend the guide [[Migrating to Akka Persistence Typed|MigratingToAkkaPersistenceTyped]] instead.
+
 We recommend reading [[Event Sourcing and CQRS|ES_CQRS]] as a prerequisite to this section.
 
 A `PersistentEntity` has a stable entity identifier, with which it can be accessed from the service implementation or other places. The state of an entity is persistent (durable) using [Event Sourcing](https://msdn.microsoft.com/en-us/library/jj591559.aspx). We represent all state changes as events and those immutable facts are appended to an event log. To recreate the current state of an entity when it is started we replay these events.
@@ -240,4 +242,3 @@ If you are familiar with [Akka Persistence](https://doc.akka.io/docs/akka/2.6/pe
 
 * new commands are not processed until events are stored, the `Effect` completed and the snapshot updated (if necessary). Akka provides the same behavior and also `async` alternatives that cause new commands to be processed even before all event handlers have completed.
 * saving snapshots is an operation run under the covers _at least_ every `lagom.persistence.snapshot-after` events (see [Configuration](#Configuration) above) but "storing events atomically" takes precedence. Imagine we want a snapshot every 100 events and we already have 99 events, if the next command emits 3 events the snapshot will only be stored after event number 102 because events `[100, 101, 102]` will be stored atomically and only after it'll be possible to create a snapshot.
-
