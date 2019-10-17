@@ -37,7 +37,7 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
       case x: Get        => onReadState(x)
     }
 
-  def onUpdateItem(cmd: UpdateItem): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
+  private def onUpdateItem(cmd: UpdateItem): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
     cmd match {
       case UpdateItem(_, qty, _) if qty < 0 =>
         Effect.reply(cmd)(Rejected("Quantity must be greater than zero"))
@@ -54,7 +54,7 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
     }
 
 
-  def onCheckout(cmd: Checkout): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
+  private def onCheckout(cmd: Checkout): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
     if (items.isEmpty)
       Effect.reply(cmd)(Rejected("Cannot checkout empty cart"))
     else
@@ -64,7 +64,7 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
           Accepted
         }
 
-  def onReadState(cmd: Get): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
+  private def onReadState(cmd: Get): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
     Effect.reply(cmd)(CurrentState(this))
 
   def applyEvent(evt: ShoppingCartEvent): ShoppingCartState = {
