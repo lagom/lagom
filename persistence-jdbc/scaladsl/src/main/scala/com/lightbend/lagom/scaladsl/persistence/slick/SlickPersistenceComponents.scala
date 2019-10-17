@@ -29,7 +29,7 @@ trait WriteSideSlickPersistenceComponents extends WriteSideJdbcPersistenceCompon
  */
 trait ReadSideSlickPersistenceComponents extends ReadSideJdbcPersistenceComponents {
 
-  lazy val slickReadSide: SlickReadSide = new SlickReadSideImpl(slickProvider, slickOffsetStore)(executionContext)
+  lazy val slickReadSide: SlickReadSide = new SlickReadSideImpl(slickProvider, slickOffsetStore) (executionContext)
   lazy val db: Database                 = slickProvider.db
   lazy val profile: JdbcProfile         = slickProvider.profile
 }

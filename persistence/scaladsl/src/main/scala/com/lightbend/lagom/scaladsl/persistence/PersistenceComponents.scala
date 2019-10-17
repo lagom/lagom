@@ -40,7 +40,7 @@ trait ReadSidePersistenceComponents extends WriteSidePersistenceComponents with 
     configuration.underlying.getConfig("lagom.persistence.read-side")
   )
   lazy val readSide: ReadSide =
-    new ReadSideImpl(actorSystem, readSideConfig, persistentEntityRegistry, projectionRegistry, None)(
+    new ReadSideImpl(actorSystem, readSideConfig, persistentEntityRegistry, projectionRegistry, None) (
       executionContext,
       materializer
     )

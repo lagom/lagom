@@ -19,7 +19,7 @@ import scala.concurrent.ExecutionContext
  * Internal API
  */
 @Singleton
-private[lagom] final class JavadslCassandraOffsetStore @Inject()(
+private[lagom] final class JavadslCassandraOffsetStore @Inject() (
     system: ActorSystem,
     session: CassandraSession,
     cassandraReadSideSettings: CassandraReadSideSettings,

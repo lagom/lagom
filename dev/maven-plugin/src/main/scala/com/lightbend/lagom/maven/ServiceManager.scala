@@ -36,7 +36,7 @@ import scala.util.control.NonFatal
  * Manages services
  */
 @Singleton
-class ServiceManager @Inject()(
+class ServiceManager @Inject() (
     logger: MavenLoggerProxy,
     session: MavenSession,
     facade: MavenFacade,

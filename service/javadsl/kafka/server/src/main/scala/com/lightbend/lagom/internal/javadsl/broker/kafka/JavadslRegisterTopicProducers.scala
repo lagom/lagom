@@ -32,7 +32,7 @@ import com.lightbend.lagom.spi.persistence.OffsetStore
 import scala.collection.immutable
 import scala.compat.java8.FutureConverters._
 
-class JavadslRegisterTopicProducers @Inject()(
+class JavadslRegisterTopicProducers @Inject() (
     resolvedServices: ResolvedServices,
     topicFactory: TopicFactory,
     info: ServiceInfo,

@@ -14,7 +14,7 @@ import org.eclipse.aether.artifact.Artifact
  * Implements sharing of Scala classloaders, to save on memory
  */
 @Singleton
-class ScalaClassLoaderManager @Inject()(logger: MavenLoggerProxy) {
+class ScalaClassLoaderManager @Inject() (logger: MavenLoggerProxy) {
 
   /**
    * The list of Scala libraries. None of these libraries may have a dependency outside of this list, otherwise there

@@ -32,7 +32,7 @@ import scala.concurrent.Future
  * INTERNAL API
  */
 @Singleton
-private[lagom] class JdbcReadSideImpl @Inject()(slick: SlickProvider, offsetStore: JavadslJdbcOffsetStore)(
+private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetStore: JavadslJdbcOffsetStore)(
     implicit val ec: ExecutionContext
 ) extends JdbcReadSide {
 

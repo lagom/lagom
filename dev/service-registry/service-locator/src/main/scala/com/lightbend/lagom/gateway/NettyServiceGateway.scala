@@ -70,7 +70,7 @@ case class ServiceGatewayConfig(
 )
 
 @Singleton
-class NettyServiceGatewayFactory @Inject()(
+class NettyServiceGatewayFactory @Inject() (
     coordinatedShutdown: CoordinatedShutdown,
     config: ServiceGatewayConfig,
     @Named("serviceRegistryActor") registry: ActorRef

@@ -49,7 +49,7 @@ final class ProducerStub[T] private[lagom] (topicName: String, actorSystem: Acto
     actorSystem.actorOf(bufferProps)
   }
 
-  val topic: Topic[T] = new TopicStub[T](TopicId(topicName), bufferActor)(materializer)
+  val topic: Topic[T] = new TopicStub[T](TopicId(topicName), bufferActor) (materializer)
 
   /**
    * Send a message payload to the topic.

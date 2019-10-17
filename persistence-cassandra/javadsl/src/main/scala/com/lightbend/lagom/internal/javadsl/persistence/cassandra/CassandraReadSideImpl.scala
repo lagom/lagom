@@ -33,7 +33,7 @@ import play.api.inject.Injector
  * Internal API
  */
 @Singleton
-private[lagom] final class CassandraReadSideImpl @Inject()(
+private[lagom] final class CassandraReadSideImpl @Inject() (
     system: ActorSystem,
     session: CassandraSession,
     offsetStore: CassandraOffsetStore,

@@ -35,7 +35,7 @@ class JdbcPersistenceModule extends Module {
 }
 
 @Singleton
-class GuiceSlickProvider @Inject()(dbApi: DBApi, actorSystem: ActorSystem, applicationLifecycle: ApplicationLifecycle)(
+class GuiceSlickProvider @Inject() (dbApi: DBApi, actorSystem: ActorSystem, applicationLifecycle: ApplicationLifecycle)(
     implicit ec: ExecutionContext
 ) extends Provider[SlickProvider] {
 

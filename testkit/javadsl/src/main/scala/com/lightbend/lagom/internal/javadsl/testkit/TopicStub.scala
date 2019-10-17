@@ -31,7 +31,7 @@ private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: Actor
       topicBuffer: ActorRef,
       transform: Message[T] => SubscriberPayload
   )(implicit materializer: Materializer)
-      extends InternalSubscriberStub[T, Message](groupId, topicBuffer)(materializer)
+      extends InternalSubscriberStub[T, Message](groupId, topicBuffer) (materializer)
       with Subscriber[SubscriberPayload] {
 
     override def withGroupId(groupId: String): Subscriber[SubscriberPayload] =

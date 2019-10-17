@@ -19,7 +19,7 @@ import com.lightbend.lagom.javadsl.client.CircuitBreakersPanel
 import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator
 
 @Singleton
-private[lagom] class TestServiceLocator @Inject()(
+private[lagom] class TestServiceLocator @Inject() (
     circuitBreakers: CircuitBreakersPanel,
     port: TestServiceLocatorPort,
     implicit val ec: ExecutionContext

@@ -16,7 +16,7 @@ import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory
 import play.api.Environment
 
 @Singleton
-class ServiceClientLoader @Inject()(
+class ServiceClientLoader @Inject() (
     jacksonSerializerFactory: JacksonSerializerFactory,
     jacksonExceptionSerializer: JacksonExceptionSerializer,
     environment: Environment,

@@ -23,7 +23,7 @@ import com.lightbend.lagom.javadsl.api.broker.Topic
  * on the stubbed Services when writing tests.
  */
 @Singleton
-final class ProducerStubFactory @Inject()(actorSystem: ActorSystem, materializer: Materializer) {
+final class ProducerStubFactory @Inject() (actorSystem: ActorSystem, materializer: Materializer) {
 
   private val topics = new ConcurrentHashMap[String, ProducerStub[_]]
 
@@ -48,7 +48,7 @@ final class ProducerStub[T] private[lagom] (topicName: String, actorSystem: Acto
   /**
    * Returns the [[com.lightbend.lagom.javadsl.api.broker.Topic]] where this [[com.lightbend.lagom.javadsl.testkit.ProducerStub]] is connected to.
    */
-  val topic: Topic[T] = new TopicStub[T](Topic.TopicId.of(topicName), bufferActor)(materializer)
+  val topic: Topic[T] = new TopicStub[T](Topic.TopicId.of(topicName), bufferActor) (materializer)
 
   /**
    * Sends the message via the [[com.lightbend.lagom.javadsl.api.broker.Topic]] where this [[com.lightbend.lagom.javadsl.testkit.ProducerStub]] is connected to.
