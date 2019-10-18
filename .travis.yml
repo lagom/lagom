@@ -38,11 +38,8 @@ jobs:
       name: "Code validations (format, binary compatibilty, whitesource, etc.)"
     - script: bin/test-2.11
       name: "Run tests for Scala 2.11"
-    - script: SCALA_VERSION=2.12.8 bin/test-2.1x
+    - script: SCALA_VERSION=2.12.9 bin/test-2.1x
       name: "Run tests for Scala 2.12"
-    - script: SCALA_VERSION=2.12.8 bin/test-2.1x
-      env: TRAVIS_JDK=adopt@1.11.0-2
-      name: "Run tests for Scala 2.12 and Java 11"
     - script: SCALA_VERSION=2.13.0 bin/test-2.1x
       name: "Run tests for Scala 2.13"
     - script: bin/test-documentation
@@ -55,7 +52,7 @@ jobs:
     - script: bin/test-maven
       name: "PublishM2 and test Maven"
     - stage: java-11
-      script: bin/test-2.12
+      script: SCALA_VERSION=2.12.9 bin/test-2.1x
       env: TRAVIS_JDK=11
       name: "Run tests for Scala 2.12 and Java 11"
     - script: bin/test-sbt-1.0

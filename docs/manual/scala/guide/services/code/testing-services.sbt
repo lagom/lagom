@@ -1,12 +1,12 @@
 //#test-dependencies
 libraryDependencies ++= Seq(
   lagomScaladslTestKit,
-  "org.scalatest" %% "scalatest" % "3.0.1" % Test
+  "org.scalatest" %% "scalatest" % "3.0.8" % Test
 )
 //#test-dependencies
 
 //#scala-test-val
-val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+val scalaTest = "org.scalatest" %% "scalatest" % "3.0.8" % "test"
 //#scala-test-val
 
 //#test-dependencies-val

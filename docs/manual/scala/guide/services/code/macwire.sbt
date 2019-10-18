@@ -1,3 +1,3 @@
 //#macwire
-libraryDependencies += "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
+libraryDependencies += "com.softwaremill.macwire" %% "macros" % "2.3.2" % "provided"
 //#macwire

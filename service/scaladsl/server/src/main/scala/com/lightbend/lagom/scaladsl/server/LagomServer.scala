@@ -105,7 +105,7 @@ object LagomServer {
   )
   def forServices(bindings: LagomServiceBinding[_]*): LagomServer = {
     new LagomServer {
-      override val serviceBindings: immutable.Seq[LagomServiceBinding[_]] = bindings.to[immutable.Seq]
+      override val serviceBindings: immutable.Seq[LagomServiceBinding[_]] = bindings.toIndexedSeq
       override val name: String = serviceBindings.headOption match {
         case Some(binding) => binding.descriptor.name
         case None          => throw new IllegalArgumentException

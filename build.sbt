@@ -305,6 +305,13 @@ def mimaSettings(since: String = version150): Seq[Setting[_]] = {
       exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.ServiceAcl.apply$default$1"),
       exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.ServiceAcl.method"),
       exclude[IncompatibleSignatureProblem]("*lagom.scaladsl.api.transport.RequestHeader#RequestHeaderImpl*"),
+      // Signature problems from 2.13.0 (Factory as an alias for CanBuildFrom..)
+      exclude[IncompatibleSignatureProblem](
+        "*lagom.scaladsl.api.deser.PathParamSerializer.traversablePathParamSerializer"
+      ),
+      exclude[IncompatibleSignatureProblem](
+        "*lagom.scaladsl.api.deser.LowPriorityPathParamSerializers.traversablePathParamSerializer"
+      ),
       // #1923 LagomAbstractMojo dropped
       exclude[MissingClassProblem]("*.lagom.maven.LagomAbstractMojo"),
       exclude[MissingTypesProblem]("*.lagom.maven.ConfigureMojo"),
@@ -577,7 +584,16 @@ lazy val `server-javadsl` = (project in file("service/javadsl/server"))
 lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
   .settings(
     name := "lagom-scaladsl-server",
-    Dependencies.`server-scaladsl`
+    Dependencies.`server-scaladsl`,
+    // workaround for
+    // https://github.com/sbt/sbt/issues/4609
+    // https://github.com/scala/scala-parser-combinators/issues/197
+    fork in Test := {
+      scalaBinaryVersion.value match {
+        case "2.11" => true
+        case _      => false
+      }
+    }
   )
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)

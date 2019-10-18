@@ -19,8 +19,8 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.7.2"
-    val PlayJson         = "2.7.3"
+    val Play             = "2.7.3"
+    val PlayJson         = "2.7.4"
     val PlayStandaloneWs = "2.0.3"
     val Twirl            = "1.4.1"
     val PlayFileWatch    = "1.1.8"
