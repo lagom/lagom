@@ -19,12 +19,6 @@ Stating the `MAVEN_OPTS` on every invocation is error prone and exporting it glo
 
 ## sbt
 
-You can start sbt with extra memory using `SBT_OPTS` environment variable.
-
-```bash
-$ SBT_OPTS="-Xms512M -Xmx1024M -Xss2M -XX:MaxMetaspaceSize=1024M" sbt
-```
-
 sbt lets you list the JVM options you need to run your project on a file named `.jvmopts` in the root of your project.
 
 ```
