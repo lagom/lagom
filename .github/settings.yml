@@ -28,6 +28,9 @@ branches:
       required_status_checks:
         # The list of status checks to require in order to merge into this branch
         contexts: ["Travis CI - Pull Request", "typesafe-cla-validator"]
+      # all settins in branches.protection must be set, if not used we must set to null  
+      restrictions: null
+      enforce_admins: null  
 
 labels:
   - color: f9d0c4
