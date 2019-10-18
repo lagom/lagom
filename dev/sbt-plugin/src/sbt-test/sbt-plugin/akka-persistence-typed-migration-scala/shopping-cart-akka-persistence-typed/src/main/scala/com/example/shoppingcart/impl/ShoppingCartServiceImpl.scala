@@ -15,7 +15,6 @@ import com.lightbend.lagom.scaladsl.api.transport.BadRequest
 import com.lightbend.lagom.scaladsl.api.transport.NotFound
 import com.lightbend.lagom.scaladsl.api.transport.TransportException
 import com.lightbend.lagom.scaladsl.persistence.EventStreamElement
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 
 import scala.concurrent.ExecutionContext
 import akka.cluster.sharding.typed.scaladsl.ClusterSharding
@@ -28,7 +27,6 @@ import akka.cluster.sharding.typed.scaladsl.EntityRef
  */
 class ShoppingCartServiceImpl(
     clusterSharding: ClusterSharding,
-    persistentEntityRegistry: PersistentEntityRegistry,
     reportRepository: ShoppingCartReportRepository
 )(implicit ec: ExecutionContext)
     extends ShoppingCartService {
