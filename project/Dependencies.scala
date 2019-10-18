@@ -122,9 +122,10 @@ object Dependencies {
   private val akkaManagementClusterHttp      = "com.lightbend.akka.management" %% "akka-management-cluster-http"      % Versions.AkkaManagement
   private val akkaManagementClusterBootstrap = "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % Versions.AkkaManagement
 
-  private val akkaStreamTestkit = "com.typesafe.akka"   %% "akka-stream-testkit" % Versions.Akka
-  private val akkaTestkit       = "com.typesafe.akka"   %% "akka-testkit"        % Versions.Akka
-  private val reactiveStreams   = "org.reactivestreams" % "reactive-streams"     % "1.0.3"
+  private val akkaTestkit       = "com.typesafe.akka"   %% "akka-testkit"             % Versions.Akka
+  private val akkaStreamTestkit = "com.typesafe.akka"   %% "akka-stream-testkit"      % Versions.Akka
+  private val akkaTestkitTyped  = "com.typesafe.akka"   %% "akka-actor-testkit-typed" % Versions.Akka
+  private val reactiveStreams   = "org.reactivestreams" % "reactive-streams"          % "1.0.3"
 
   private val akkaDiscovery = "com.typesafe.akka" %% "akka-discovery" % Versions.Akka
 
@@ -878,8 +879,9 @@ object Dependencies {
   val `persistence-testkit` = libraryDependencies ++= Seq(
     akkaPersistence,
     akkaTestkit,
+    akkaTestkitTyped,
     slf4jApi,
-    scalaJava8Compat
+    scalaJava8Compat,
   )
 
   val `persistence-javadsl` = libraryDependencies ++= Seq(
