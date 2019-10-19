@@ -5,7 +5,6 @@
 package com.example.shoppingcart.impl;
 
 import akka.actor.typed.ActorRef;
-import akka.persistence.typed.ExpectingReply;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
@@ -26,10 +25,10 @@ public interface ShoppingCartCommand extends Jsonable {
 
     @SuppressWarnings("serial")
     @JsonDeserialize
-    final class UpdateItem implements ShoppingCartCommand, CompressedJsonable, ExpectingReply<Confirmation> {
+    final class UpdateItem implements ShoppingCartCommand, CompressedJsonable {
         public final String productId;
         public final int quantity;
-        private final ActorRef<Confirmation> replyTo;
+        public final ActorRef<Confirmation> replyTo;
 
         @JsonCreator
         UpdateItem(String productId, int quantity, ActorRef<Confirmation> replyTo) {
@@ -37,40 +36,25 @@ public interface ShoppingCartCommand extends Jsonable {
             this.quantity = quantity;
             this.replyTo = replyTo;
         }
-
-        @Override
-        public ActorRef<Confirmation> replyTo() {
-            return replyTo;
-        }
     }
 
     @JsonDeserialize
-    final class Get implements ShoppingCartCommand, ExpectingReply<ShoppingCartState> {
+    final class Get implements ShoppingCartCommand {
 
-        private final ActorRef<ShoppingCartState> replyTo;
+        public final ActorRef<ShoppingCartState> replyTo;
 
         public Get(ActorRef<ShoppingCartState> replyTo) {
             this.replyTo = replyTo;
         }
-
-        @Override
-        public ActorRef<ShoppingCartState> replyTo() {
-            return replyTo;
-        }
     }
 
     @JsonDeserialize
-    final class Checkout implements ShoppingCartCommand, ExpectingReply<Confirmation> {
+    final class Checkout implements ShoppingCartCommand {
 
-        private final ActorRef<Confirmation> replyTo;
+        public final ActorRef<Confirmation> replyTo;
 
         public Checkout(ActorRef<Confirmation> replyTo) {
             this.replyTo = replyTo;
-        }
-
-        @Override
-        public ActorRef<Confirmation> replyTo() {
-            return replyTo;
         }
     }
 }

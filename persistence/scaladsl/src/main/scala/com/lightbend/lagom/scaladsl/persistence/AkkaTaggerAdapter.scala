@@ -12,8 +12,8 @@ object AkkaTaggerAdapter {
    * Adapts an existing Lagom [[AggregateEventTagger]] to a
    * function {{{Event => Set[String]}}} as expected by Akka Persistence Typed {{{EventSourcedBehavior.withTagger}}} API.
    */
-  def fromLagom[Event <: AggregateEvent[Event]](
-      entityCtx: EntityContext,
+  def fromLagom[Command, Event <: AggregateEvent[Event]](
+      entityCtx: EntityContext[Command],
       lagomTagger: AggregateEventTagger[Event]
   ): Event => Set[String] = { evt =>
     val tag =
