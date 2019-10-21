@@ -92,7 +92,9 @@ object ScalaServiceSupport {
     new ScalaMethodCall[T](clazz.getMethods.find(_.getName == name).getOrElse(throw new NoSuchMethodException(name)))
   }
 
-  def methodForImpl[T](c: blackbox.Context)(f: c.Expr[Any])(implicit tType: c.WeakTypeTag[T]): c.Expr[ScalaMethodCall[T]] = {
+  def methodForImpl[T](
+      c: blackbox.Context
+  )(f: c.Expr[Any])(implicit tType: c.WeakTypeTag[T]): c.Expr[ScalaMethodCall[T]] = {
     import c.universe._
 
     val (thisType, methodName) = f match {

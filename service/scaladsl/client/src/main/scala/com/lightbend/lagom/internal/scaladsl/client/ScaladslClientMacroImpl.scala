@@ -48,13 +48,20 @@ private[lagom] class ScaladslClientMacroImpl(val c: blackbox.Context) {
     // by method name, and could be removed in the future.
     val duplicates = serviceMethods.groupBy(_.name.decodedName.toString).mapValues(_.toSeq).filter(_._2.size > 1)
     if (duplicates.nonEmpty) {
-      abort("Overloaded service methods are not allowed on a Lagom client, overloaded methods are: " + duplicates.keys.mkString(", "))
+      abort(
+        "Overloaded service methods are not allowed on a Lagom client, overloaded methods are: " + duplicates.keys
+          .mkString(", ")
+      )
     }
 
     // Validate that all the abstract methods are service call methods or topic methods
     val nonServiceCallOrTopicMethods = serviceMethods.toSet -- serviceCallMethods -- topicMethods
     if (nonServiceCallOrTopicMethods.nonEmpty) {
-      abort(s"Can't generate a Lagom client for ${serviceType.tpe} since the following abstract methods don't return service calls or topics:${nonServiceCallOrTopicMethods.map(_.name).mkString("\n", "\n", "")}")
+      abort(
+        s"Can't generate a Lagom client for ${serviceType.tpe} since the following abstract methods don't return service calls or topics:${nonServiceCallOrTopicMethods
+          .map(_.name)
+          .mkString("\n", "\n", "")}"
+      )
     }
 
     // Validate that all topics have zero parameters
@@ -73,7 +80,7 @@ private[lagom] class ScaladslClientMacroImpl(val c: blackbox.Context) {
     // Extract the target that "implement" was invoked on, so we can invoke "doImplement" on it instead
     val serviceClient = c.macroApplication match {
       case TypeApply(Select(clientTarget, TermName("implement")), _) => clientTarget
-      case _ => abort("Don't know how to find the service client from tree: " + c.macroApplication)
+      case _                                                         => abort("Don't know how to find the service client from tree: " + c.macroApplication)
     }
 
     val implementationContext = TermName(c.freshName("implementationContext"))
