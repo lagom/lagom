@@ -2,20 +2,20 @@
 
 We recommend reading [[Event Sourcing and CQRS|ES_CQRS]] as a prerequisite to this section.
 
-In this section we will guide you through all the necessary steps to model an [Aggregate](https://martinfowler.com/bliki/DDD_Aggregate.html), as defined in Domain-Driven Design, using Akka Persistence Typed and following the CQRS principles.
+This section presents all the steps to model an [Aggregate](https://martinfowler.com/bliki/DDD_Aggregate.html), as defined in Domain-Driven Design, using [Akka Persistence Typed](https://doc.akka.io/docs/akka/current/typed/persistence.html) and following the [[CQRS|ES_CQRS]] principles embraced by Lagom. While Akka Persistence Typed provides an API for building event-sourced actors, the same does not necessarily apply for CQRS Aggregates. To build CQRS applications, we need to use a few rules in our design.
 
 Lagom embraces Event Sourcing and CQRS by promoting the usage of Akka Persistence Typed in combination the CQRS principle. Akka Persistence Typed provides an API for building event sourced actors, but not necessarily for CQRS Aggregates. To build CQRS applications we need to apply a few rules to our design.
 
-We will explain the API and concepts while building a simplified shopping cart model. A full-fledge shopping cart sample can be found on our [samples repository](https://github.com/lagom/lagom-samples/tree/1.6.x/shopping-cart/shopping-cart-scala).
+This section explains the API and concepts while building a simplified shopping cart model. You can find a full-fledge shopping cart sample on our [samples repository](https://github.com/lagom/lagom-samples/tree/1.6.x/shopping-cart/shopping-cart-scala).
 
 You will learn, how to:
 
 * model a CQRS Aggregate using Akka Persistence Typed
 * prepare its event journal to be queryable using event tags
 * register the model on Akka's Cluster Sharding
-* look up instances on the cluster and iteract with them
+* look up instances on the cluster and interact with them
 * define serializers for your commands, events and model state
-* understand the main configuation settings and their raison-être
+* understand the main configuration settings and their raison-être
 
 ## Encoding the model
 
@@ -32,7 +32,7 @@ You will learn, how to:
 
 We will start by define our model in terms of Commands, Events and State.
 
-The state of our shopping cart will be define as following:
+The state of the shopping cart will be defined as following:
 
 ```scala
 /** Common Shopping Cart trait */
