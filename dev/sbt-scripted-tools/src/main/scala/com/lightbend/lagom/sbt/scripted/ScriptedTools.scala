@@ -16,6 +16,7 @@ import sbt.Keys._
 import sbt._
 import sbt.complete.Parser
 
+import scala.concurrent.duration._
 import scala.util.Try
 import scala.util.control.NonFatal
 
@@ -37,78 +38,9 @@ object ScriptedTools extends AutoPlugin {
   import autoImport._
 
   override def buildSettings: Seq[Setting[_]] = Seq(
-    validateRequest := {
-      val log             = streams.value.log
-      val validateRequest = validateRequestParser.parsed
-
-      def attempt(): Response = {
-        log.info("Making request on " + validateRequest.uri.get)
-        val conn = validateRequest.uri.get.toURL.openConnection().asInstanceOf[HttpURLConnection]
-        try {
-          conn.setConnectTimeout(ConnectTimeout)
-          conn.setReadTimeout(ReadTimeout)
-          val status = conn.getResponseCode
-
-          if (validateRequest.shouldBeDown) {
-            throw ShouldBeDownException(status)
-          }
-
-          validateRequest.statusAssertion(status)
-
-          // HttpURLConnection throws FileNotFoundException on getInputStream when the status is 404
-          // HttpURLConnection throws IOException on getInputStream when the status is 500
-          val body =
-            Try {
-              val br = new BufferedReader(new InputStreamReader(conn.getInputStream))
-              Stream.continually(br.readLine()).takeWhile(_ != null).mkString("\n")
-            }.recover {
-              case _ => ""
-            }.get
-
-          validateRequest.bodyAssertion(body)
-
-          Response(status, body)
-        } catch {
-          case NonFatal(ShouldBeDownException(status)) =>
-            val msg = s"Expected server to be down but request completed with status $status."
-            log.error(msg)
-            sys.error(msg)
-          case NonFatal(t) if validateRequest.shouldBeDown =>
-            Response(0, "")
-          case NonFatal(t) =>
-            val msg = t.getStackTrace.map(_.toString).mkString("\n  ")
-            log.error(msg)
-            sys.error(msg)
-        } finally {
-          conn.disconnect()
-        }
-      }
-
-      if (validateRequest.retry) {
-        repeatUntilSuccessful(log, attempt())
-      } else {
-        attempt()
-      }
-    },
+    validateRequest := validateRequestImpl.evaluated,
     aggregate in validateRequest := false,
-    validateFile := {
-      val validateFile = validateFileParser.parsed
-      val file         = baseDirectory.value / validateFile.file.get
-      val log          = streams.value.log
-
-      def attempt() = {
-        log.info("Validating file " + file)
-        val contents = IO.read(file)
-        validateFile.assertions(contents)
-      }
-
-      if (validateFile.retry) {
-        repeatUntilSuccessful(log, attempt())
-      } else {
-        attempt()
-      }
-      file
-    },
+    validateFile := validateFileImpl.evaluated,
     aggregate in validateFile := false,
     Internal.Keys.interactionMode := NonBlockingInteractionMode,
     // This is copy & pasted from project/AkkaSnapshotRepositories so that scripted tests
@@ -125,16 +57,94 @@ object ScriptedTools extends AutoPlugin {
     scalaVersion := sys.props.get("scala.version").getOrElse("2.12.10")
   )
 
+  private def validateRequestImpl = Def.inputTask {
+    val log             = streams.value.log
+    val validateRequest = validateRequestParser.parsed
+    val uri             = validateRequest.uri.get
+    val seenStackTraces = scala.collection.mutable.Set.empty[Int]
+
+    def attempt(): Response = {
+      log.info(s"Making request on $uri")
+      val conn = uri.toURL.openConnection().asInstanceOf[HttpURLConnection]
+      try {
+        conn.setConnectTimeout(ConnectTimeout)
+        conn.setReadTimeout(ReadTimeout)
+        val status = conn.getResponseCode
+
+        if (validateRequest.shouldBeDown) {
+          throw ShouldBeDownException(status)
+        }
+
+        validateRequest.statusAssertion(status)
+
+        // HttpURLConnection throws FileNotFoundException on getInputStream when the status is 404
+        // HttpURLConnection throws IOException on getInputStream when the status is 500
+        val body =
+          Try {
+            val br = new BufferedReader(new InputStreamReader(conn.getInputStream))
+            Stream.continually(br.readLine()).takeWhile(_ != null).mkString("\n")
+          }.recover {
+            case _ => ""
+          }.get
+
+        validateRequest.bodyAssertion(body)
+
+        Response(status, body)
+      } catch {
+        case NonFatal(ShouldBeDownException(status)) =>
+          val msg = s"Expected server to be down but request completed with status $status."
+          log.error(msg)
+          sys.error(msg)
+        case NonFatal(_) if validateRequest.shouldBeDown =>
+          Response(0, "")
+        case NonFatal(t) =>
+          val msg = s"Failed to make a request on $uri; cause: ${t.getMessage} (${t.getClass})"
+          if (seenStackTraces.add(t.##)) {
+            log.error(t.getStackTrace.map(_.toString).mkString(s"$msg; stack:\n  ", "\n  ", ""))
+          } else {
+            log.error(msg)
+          }
+          sys.error(msg)
+      } finally {
+        conn.disconnect()
+      }
+    }
+
+    if (validateRequest.retry) {
+      repeatUntilSuccessful(log, attempt())
+    } else {
+      attempt()
+    }
+  }
+
+  private def validateFileImpl = Def.inputTask {
+    val validateFile = validateFileParser.parsed
+    val file         = baseDirectory.value / validateFile.file.get
+    val log          = streams.value.log
+
+    def attempt() = {
+      log.info(s"Validating file $file")
+      val contents = IO.read(file)
+      validateFile.assertions(contents)
+    }
+
+    if (validateFile.retry) {
+      repeatUntilSuccessful(log, attempt())
+    } else {
+      attempt()
+    }
+    file
+  }
+
   private def repeatUntilSuccessful[T](log: Logger, operation: => T, times: Int = 30): T = {
-    try {
-      operation
-    } catch {
+    try operation
+    catch {
       case NonFatal(t) =>
         if (times <= 1) {
           throw t
         } else {
-          log.warn(s"Operation failed, $times attempts left")
-          Thread.sleep(1000)
+          log.warn(s"Operation failed, ${times - 1} attempts left")
+          SECONDS.sleep(1)
           repeatUntilSuccessful(log, operation, times - 1)
         }
     }
