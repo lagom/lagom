@@ -99,7 +99,7 @@ class ServiceRegistryProvider extends Provider[ServiceRegistry] {
       serviceLocator,
       environment,
       NoTopicFactoryProvider
-    ) (ec, mat)
+    )(ec, mat)
     val loader = new ServiceClientLoader(jacksonSerializerFactory, jacksonExceptionSerializer, environment, implementor)
     loader.loadServiceClient(classOf[ServiceRegistry])
   }

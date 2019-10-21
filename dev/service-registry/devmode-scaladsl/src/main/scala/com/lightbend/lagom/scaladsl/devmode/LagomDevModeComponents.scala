@@ -46,7 +46,7 @@ trait LagomDevModeComponents extends LagomDevModeServiceLocatorComponents {
   def coordinatedShutdown: CoordinatedShutdown
 
   // Eagerly register services
-  new ServiceRegistration(serviceInfo, coordinatedShutdown, config, serviceRegistry) (executionContext)
+  new ServiceRegistration(serviceInfo, coordinatedShutdown, config, serviceRegistry)(executionContext)
 }
 
 /**
@@ -104,13 +104,13 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
       staticServiceLocator,
       new ScaladslServiceResolver(new DefaultExceptionSerializer(environment)),
       None
-    ) (executionContext, materializer)
+    )(executionContext, materializer)
 
     serviceClient.implement[ServiceRegistry]
   }
 
   private lazy val serviceRegistryClient: ServiceRegistryClient =
-    new ScalaServiceRegistryClient(serviceRegistry) (executionContext)
+    new ScalaServiceRegistryClient(serviceRegistry)(executionContext)
 
   private lazy val devModeSimpleServiceDiscovery: DevModeServiceDiscovery =
     DevModeServiceDiscovery(actorSystem)

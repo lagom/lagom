@@ -58,7 +58,7 @@ trait ReadSideCassandraPersistenceComponents extends ReadSidePersistenceComponen
   lazy val testCasReadSideSettings: CassandraReadSideSettings = new CassandraReadSideSettings(actorSystem)
 
   private[lagom] lazy val cassandraOffsetStore: CassandraOffsetStore =
-    new ScaladslCassandraOffsetStore(actorSystem, cassandraSession, testCasReadSideSettings, readSideConfig) (
+    new ScaladslCassandraOffsetStore(actorSystem, cassandraSession, testCasReadSideSettings, readSideConfig)(
       executionContext
     )
   lazy val offsetStore: OffsetStore = cassandraOffsetStore

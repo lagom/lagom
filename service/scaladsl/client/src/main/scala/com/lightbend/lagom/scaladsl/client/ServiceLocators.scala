@@ -100,7 +100,7 @@ trait CircuitBreakerComponents extends LagomConfigComponent {
  */
 trait ConfigurationServiceLocatorComponents extends CircuitBreakerComponents {
   lazy val serviceLocator: ServiceLocator =
-    new ConfigurationServiceLocator(config, circuitBreakersPanel) (executionContext)
+    new ConfigurationServiceLocator(config, circuitBreakersPanel)(executionContext)
 }
 
 /**
@@ -158,7 +158,7 @@ trait StaticServiceLocatorComponents extends CircuitBreakerComponents {
   def staticServiceUri: URI
 
   lazy val serviceLocator: ServiceLocator =
-    new StaticServiceLocator(staticServiceUri, circuitBreakersPanel) (executionContext)
+    new StaticServiceLocator(staticServiceUri, circuitBreakersPanel)(executionContext)
 }
 
 /**
@@ -177,7 +177,7 @@ trait RoundRobinServiceLocatorComponents extends CircuitBreakerComponents {
   def roundRobinServiceUris: immutable.Seq[URI]
 
   lazy val serviceLocator: ServiceLocator =
-    new RoundRobinServiceLocator(roundRobinServiceUris, circuitBreakersPanel) (executionContext)
+    new RoundRobinServiceLocator(roundRobinServiceUris, circuitBreakersPanel)(executionContext)
 }
 
 /**

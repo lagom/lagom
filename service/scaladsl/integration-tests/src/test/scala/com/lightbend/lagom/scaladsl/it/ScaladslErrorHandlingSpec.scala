@@ -263,7 +263,7 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
         override lazy val lagomServerBuilder =
           new LagomServerBuilder(httpConfiguration, playBodyParsers, new ServiceResolver {
             override def resolve(descriptor: Descriptor): Descriptor = changeServer(serviceResolver.resolve(descriptor))
-          }) (materializer, executionContext)
+          })(materializer, executionContext)
 
         // Custom service client to inject our changeClient callback
         override lazy val serviceClient = new ScaladslServiceClient(
@@ -275,7 +275,7 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
             override def resolve(descriptor: Descriptor): Descriptor = changeClient(serviceResolver.resolve(descriptor))
           },
           None
-        ) (executionContext, materializer)
+        )(executionContext, materializer)
       }
     } { server =>
       val client = server.serviceClient.implement[MockService]

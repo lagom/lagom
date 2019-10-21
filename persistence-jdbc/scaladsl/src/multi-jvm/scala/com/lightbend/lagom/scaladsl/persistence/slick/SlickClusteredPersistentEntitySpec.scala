@@ -80,7 +80,7 @@ class SlickClusteredPersistentEntitySpec
     new SlickTestEntityReadSide(
       components.db,
       components.profile
-    ) (components.executionContext)
+    )(components.executionContext)
 
   protected override def getAppendCount(id: String): Future[Long] =
     jdbcTestEntityReadSide.getAppendCount(id)
@@ -90,6 +90,6 @@ class SlickClusteredPersistentEntitySpec
       components.slickReadSide,
       components.db,
       components.profile
-    ) (components.executionContext)
+    )(components.executionContext)
   }
 }

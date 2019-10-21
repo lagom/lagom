@@ -16,7 +16,7 @@ class ScaladslKafkaSubscriberSpec extends FlatSpec with Matchers {
 
   it should "create a new subscriber with updated groupId" in {
     val subscriber =
-      new ScaladslKafkaSubscriber(null, null, ScaladslKafkaSubscriber.GroupId("old"), null, null, null, null) (
+      new ScaladslKafkaSubscriber(null, null, ScaladslKafkaSubscriber.GroupId("old"), null, null, null, null)(
         null,
         null
       )

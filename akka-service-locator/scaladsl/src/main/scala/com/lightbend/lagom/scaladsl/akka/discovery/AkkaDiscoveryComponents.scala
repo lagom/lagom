@@ -13,5 +13,5 @@ import com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents
  */
 trait AkkaDiscoveryComponents extends CircuitBreakerComponents {
   lazy val serviceLocator: ServiceLocator =
-    new AkkaDiscoveryServiceLocator(circuitBreakersPanel, actorSystem) (executionContext)
+    new AkkaDiscoveryServiceLocator(circuitBreakersPanel, actorSystem)(executionContext)
 }
