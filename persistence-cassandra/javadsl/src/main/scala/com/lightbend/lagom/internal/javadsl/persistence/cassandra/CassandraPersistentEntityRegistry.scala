@@ -4,8 +4,6 @@
 
 package com.lightbend.lagom.internal.javadsl.persistence.cassandra
 
-import java.util.Optional
-
 import javax.inject.Inject
 import javax.inject.Singleton
 import akka.actor.ActorSystem
@@ -20,13 +18,11 @@ import play.api.inject.Injector
  */
 @Singleton
 private[lagom] final class CassandraPersistentEntityRegistry @Inject() (system: ActorSystem, injector: Injector)
-    extends AbstractPersistentEntityRegistry(system, injector) {
+    extends AbstractPersistentEntityRegistry(system, injector, CassandraReadJournal.Identifier) {
 
   private val log = Logging.getLogger(system, getClass)
 
   CassandraKeyspaceConfig.validateKeyspace("cassandra-journal", system.settings.config, log)
   CassandraKeyspaceConfig.validateKeyspace("cassandra-snapshot-store", system.settings.config, log)
-
-  protected override val queryPluginId = Optional.of(CassandraReadJournal.Identifier)
 
 }
