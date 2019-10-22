@@ -4,8 +4,6 @@
 
 package com.lightbend.lagom.internal.javadsl.persistence.jdbc
 
-import java.util.Optional
-
 import javax.inject.Inject
 import javax.inject.Singleton
 import akka.actor.ActorSystem
@@ -22,7 +20,7 @@ private[lagom] final class JdbcPersistentEntityRegistry @Inject() (
     system: ActorSystem,
     injector: Injector,
     slickProvider: SlickProvider
-) extends AbstractPersistentEntityRegistry(system, injector) {
+) extends AbstractPersistentEntityRegistry(system, injector, JdbcReadJournal.Identifier) {
 
   private lazy val ensureTablesCreated = slickProvider.ensureTablesCreated()
 
@@ -30,7 +28,5 @@ private[lagom] final class JdbcPersistentEntityRegistry @Inject() (
     ensureTablesCreated
     super.register(entityClass)
   }
-
-  protected override val queryPluginId = Optional.of(JdbcReadJournal.Identifier)
 
 }
