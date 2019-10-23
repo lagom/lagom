@@ -4,8 +4,10 @@
 
 package com.lightbend.lagom.scaladsl.persistence
 
+import akka.annotation.ApiMayChange
 import akka.cluster.sharding.typed.scaladsl.EntityContext
 
+@ApiMayChange
 object AkkaTaggerAdapter {
 
   /**

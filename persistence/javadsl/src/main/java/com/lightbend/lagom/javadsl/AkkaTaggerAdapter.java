@@ -4,11 +4,13 @@
 
 package com.lightbend.lagom.javadsl.persistence;
 
+import akka.annotation.ApiMayChange;
 import akka.cluster.sharding.typed.javadsl.EntityContext;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
+@ApiMayChange
 public class AkkaTaggerAdapter {
 
   /**
