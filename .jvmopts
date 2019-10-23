@@ -1,4 +1,5 @@
 -Xms2G
 -Xmx2G
 -Xss2M
+-XX:MaxInlineLevel=18
 -XX:MaxMetaspaceSize=1G
