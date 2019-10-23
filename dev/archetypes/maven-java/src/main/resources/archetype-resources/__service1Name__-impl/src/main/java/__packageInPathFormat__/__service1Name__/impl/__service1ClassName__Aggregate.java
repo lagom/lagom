@@ -71,8 +71,8 @@ public class ${service1ClassName}Aggregate extends EventSourcedBehaviorWithEnfor
     CommandHandlerWithReplyBuilder<${service1ClassName}Command, ${service1ClassName}Event, ${service1ClassName}State> builder = newCommandHandlerWithReplyBuilder();
 
     /*
-    * Command handler for the UseGreetingMessage command.
-    */
+     * Command handler for the UseGreetingMessage command.
+     */
     builder.forAnyState()
       .onCommand(UseGreetingMessage.class, (state, cmd) ->
         Effect()
@@ -84,8 +84,8 @@ public class ${service1ClassName}Aggregate extends EventSourcedBehaviorWithEnfor
       );
 
     /*
-    * Command handler for the Hello command.
-    */
+     * Command handler for the Hello command.
+     */
     builder.forAnyState()
       .onCommand(Hello.class, (state, cmd) ->
         Effect().none()
@@ -94,7 +94,7 @@ public class ${service1ClassName}Aggregate extends EventSourcedBehaviorWithEnfor
           .thenReply(cmd.replyTo, __ -> new ${service1ClassName}Command.Greeting(state.message + ", " + cmd.name + "!"))
       );
 
-  return builder.build();
+    return builder.build();
 
   }
 
@@ -104,8 +104,8 @@ public class ${service1ClassName}Aggregate extends EventSourcedBehaviorWithEnfor
     EventHandlerBuilder<${service1ClassName}State, ${service1ClassName}Event> builder = newEventHandlerBuilder();
 
     /*
-      * Event handler for the GreetingMessageChanged event.
-      */
+     * Event handler for the GreetingMessageChanged event.
+     */
     builder.forAnyState()
       .onEvent(GreetingMessageChanged.class, (state, evt) ->
         // We simply update the current state to use the greeting message from
