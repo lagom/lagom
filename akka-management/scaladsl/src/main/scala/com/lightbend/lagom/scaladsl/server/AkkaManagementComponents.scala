@@ -24,7 +24,7 @@ trait AkkaManagementComponents {
   // eager initialization
   private[lagom] val akkaManagementTrigger: AkkaManagementTrigger = {
     val instance =
-      new AkkaManagementTrigger(configuration.underlying, actorSystem, coordinatedShutdown) (executionContext)
+      new AkkaManagementTrigger(configuration.underlying, actorSystem, coordinatedShutdown)(executionContext)
     if (environment.mode == Mode.Prod) {
       instance.start()
     }

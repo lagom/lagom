@@ -13,4 +13,4 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class SlickProvider @Inject() (system: ActorSystem)(implicit ec: ExecutionContext)
-    extends com.lightbend.lagom.internal.persistence.jdbc.SlickProvider(system) (ec)
+    extends com.lightbend.lagom.internal.persistence.jdbc.SlickProvider(system)(ec)

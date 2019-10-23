@@ -37,7 +37,7 @@ private[lagom] trait SlickProviderComponents extends DBComponents {
   lazy val slickProvider: SlickProvider = {
     // Ensures JNDI bindings are made before we build the SlickProvider
     SlickDbProvider.buildAndBindSlickDatabases(dbApi, actorSystem.settings.config, applicationLifecycle)
-    new SlickProvider(actorSystem) (executionContext)
+    new SlickProvider(actorSystem)(executionContext)
   }
 }
 
@@ -68,7 +68,7 @@ trait ReadSideJdbcPersistenceComponents extends ReadSidePersistenceComponents wi
 
   lazy val offsetStore: OffsetStore = slickOffsetStore
 
-  lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(slickProvider, slickOffsetStore) (executionContext)
+  lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(slickProvider, slickOffsetStore)(executionContext)
 
   lazy val jdbcSession: JdbcSession = new JdbcSessionImpl(slickProvider)
 

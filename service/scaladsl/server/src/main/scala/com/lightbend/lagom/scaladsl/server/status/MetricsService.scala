@@ -73,7 +73,7 @@ trait MetricsServiceComponents {
         override def currentCircuitBreakers: ServiceCall[NotUsed, Seq[CircuitBreakerStatus]] =
           throw new NotImplementedError("Service methods and topics must not be invoked from service trait")
       }.descriptor
-    ).to(new MetricsServiceImpl(circuitBreakerMetricsProvider) (executionContext))
+    ).to(new MetricsServiceImpl(circuitBreakerMetricsProvider)(executionContext))
   }
 }
 
