@@ -14,6 +14,25 @@ Before making a contribution, it is important to make sure that the change you w
 - Use sbt launcher 1.2.x or later, which will automatically read JVM options from `.jvmopts`.
 - If using IntelliJ IDEA, import `lagom/docs/build.sbt` rather than `lagom/build.sbt`. This ensures that the source code and build dependencies in the docs project are also imported.
 
+### Testing maven archetype locally
+
+If you need to change Lagom Maven Archetype and want to test it locally, you can do that by publishing it locally before trying to use it. To do that, run the following commands:
+
+```bash
+sbt publishLocal publishM2 maven-java-archetype/publishM2
+```
+
+After that, you can create a new project by running:
+
+```bash
+mvn archetype:generate \
+  -DarchetypeGroupId=com.lightbend.lagom \
+  -DarchetypeArtifactId=maven-archetype-lagom-java \
+  -DarchetypeVersion=<<VERSION>
+```
+
+Where `<<VERSION>` is the local version published.
+
 ## Pull request procedure
 
 1. Make sure you have signed the [Lightbend CLA](https://www.lightbend.com/contribute/cla); if not, sign it online.
