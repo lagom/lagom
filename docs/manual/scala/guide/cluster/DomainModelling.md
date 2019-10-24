@@ -37,7 +37,7 @@ sealed trait Confirmation
 sealed trait Accepted extends Confirmation
 case object Accepted extends Accepted
 final case class Rejected(reason: String) extends Confirmation
-final case class CartState(items: Map[String, Int], status: String)
+final case class ShoppingCartSummary(items: Map[String, Int], checkedout: Boolean)
 
 // Commands
 sealed trait ShoppingCartCommand
@@ -49,10 +49,10 @@ final case class UpdateItem(productId: String,
 final case class Checkout(replyTo: ActorRef[Confirmation])
   extends ShoppingCartCommand
 
-final case class Get(replyTo: ActorRef[CartState])
+final case class Get(replyTo: ActorRef[ShoppingCartSummary])
 ```
 
-Note that we have different kinds of replies: `Confirmation` used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. And `CartState` used when we want to read the state of the shopping cart. Keep in mind that `ShoppingCartSummary` is not the shopping cart itself, but the representation we want to expose to the external world.
+Note that we have different kinds of replies: `Confirmation` used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. And `ShoppingCartSummary` used when we want to read the state of the shopping cart. Keep in mind that `ShoppingCartSummary` is not the shopping cart itself, but the representation we want to expose to the external world. It's a good practice to keep the internal state of the aggregate private because it allows the internal state, and the exposed API to evolve independently.
 
 ### Modelling Events
 
