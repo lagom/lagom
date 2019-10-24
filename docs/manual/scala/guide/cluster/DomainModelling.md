@@ -36,7 +36,7 @@ In Akka Typed, it's not possible to return an exception to the caller. All commu
 sealed trait Confirmation
 case object Accepted extends Confirmation
 final case class Rejected(reason: String) extends Confirmation
-final case class ShoppingCartSummary(items: Map[String, Int], checkedout: Boolean)
+final case class ShoppingCartSummary(items: Map[String, Int], checkedOut: Boolean)
 
 // Commands
 sealed trait ShoppingCartCommand
@@ -128,8 +128,8 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
       // check it out
       case Checkout(replyTo) =>
         Effect
-          .persist(CheckedOut)
-          .thenReply(replyTo){ updatedCart => // updated cart is state updated after applying CheckedOut
+          .persist(CartCheckedOut)
+          .thenReply(replyTo){ updatedCart => // updated cart is state updated after applying CartCheckedOut
             Accepted
           }
 
@@ -183,7 +183,7 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
       case ItemAdded(itemId, quantity) => addOrUpdateItem(itemId, quantity)
       case ItemRemoved(itemId) => removeItem(itemId)
       case ItemQuantityAdjusted(itemId, quantity) => addOrUpdateItem(itemId, quantity)
-      case CheckedOut => CheckedOutShoppingCart(items)
+      case CartCheckedOut => CheckedOutShoppingCart(items)
     }
 
     private def removeItem(itemId: String) = copy(items = items - itemId)
