@@ -28,10 +28,10 @@ After that, you can create a new project by running:
 mvn archetype:generate \
   -DarchetypeGroupId=com.lightbend.lagom \
   -DarchetypeArtifactId=maven-archetype-lagom-java \
-  -DarchetypeVersion=<<VERSION>
+  -DarchetypeVersion=<VERSION>
 ```
 
-Where `<<VERSION>` is the local version published.
+Where `<VERSION>` is the local version published.
 
 ## Pull request procedure
 

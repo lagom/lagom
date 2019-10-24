@@ -104,6 +104,8 @@ Verify that the services are indeed up and running by invoking the `hello` servi
 curl -i http://localhost:9000/api/hello/World
 ```
 
+> NOTE: if you use a name for `service1` different from `hello` the URL will differ. Use `curl -i http://localhost:9000/api/<service1Name>/World`
+
 The request returns the message `Hello, World!`.
 
 Congratulations! You've created and run your first Lagom system.
