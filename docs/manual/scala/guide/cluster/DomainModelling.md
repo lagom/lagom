@@ -133,7 +133,7 @@ Command handlers are the meat of the model. They encode the business rules of yo
 
 Because an Aggregate is intended to model a consistency boundary, it's not recommended to validate commands using data that's not available in scope. Any decision should be solely based on the data passed in the commands and the state of the aggregate. Any external call should be considered a smell because it means that the aggregate is not in full control of the invariants it's supposed to be protecting.
 
-There two ways of sending back a reply: using `Effect.reply` and `Effect.persist(...).thenReply`. The first one is available directly on `Effect` and should be used when you reply without persisting any event. In this case, you can use the available state in scope because it's guaranteed to not have changed. The second variant should be used when you have persisted one or more events. The updated state is then made available to you on the function used to define the reply.
+There are two ways of sending back a reply: using `Effect.reply` and `Effect.persist(...).thenReply`. The first one is available directly on `Effect` and should be used when you reply without persisting any event. In this case, you can use the available state in scope because it's guaranteed to not have changed. The second variant should be used when you have persisted one or more events. The updated state is then made available to you on the function used to define the reply.
 
 You may run side-effects inside the command handler. Please refer to [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#effects-and-side-effects) for detailed information.
 
