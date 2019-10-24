@@ -33,6 +33,9 @@ public class ${service1ClassName}AggregateTest {
       ActorRef<${service1ClassName}Command> ref =
         testKit.spawn(
           ${service1ClassName}Aggregate.create(
+            // Unit testing the Aggregate requires an EntityContext but starting
+            // a complete Akka Cluster or sharding the actors is not requried.
+            // The actorRef to the shard can be null as it won't be used.
             new EntityContext(${service1ClassName}Aggregate.ENTITY_TYPE_KEY, id,  null)
           )
         );
@@ -49,9 +52,12 @@ public class ${service1ClassName}AggregateTest {
       ActorRef<${service1ClassName}Command> ref =
         testKit.spawn(
           ${service1ClassName}Aggregate.create(
+            // Unit testing the Aggregate requires an EntityContext but starting
+            // a complete Akka Cluster or sharding the actors is not requried.
+            // The actorRef to the shard can be null as it won't be used.
            new EntityContext(${service1ClassName}Aggregate.ENTITY_TYPE_KEY, id,  null)
           )
-          );
+        );
 
       TestProbe<${service1ClassName}Command.Confirmation> probe1 =
         testKit.createTestProbe(${service1ClassName}Command.Confirmation.class);

@@ -44,11 +44,7 @@ public class ${service1ClassName}Aggregate extends EventSourcedBehaviorWithEnfor
     super(
       PersistenceId.of(
           entityContext.getEntityTypeKey().name(),
-          entityContext.getEntityId(),
-          // The separator is an optional field. If you want to produce
-          // events compatible with Lagom read-side processors, then the
-          // separator must be an empty String.
-          ""
+          entityContext.getEntityId()
         )
       );
     this.entityContext = entityContext;
