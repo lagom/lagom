@@ -52,7 +52,7 @@ final case class Checkout(replyTo: ActorRef[Confirmation])
 final case class Get(replyTo: ActorRef[CartState])
 ```
 
-Note that we have different kinds of replies: `Confirmation` used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. And `CartState` used when we want to read the state of the shopping cart. Keep in mind that `CartState` is not the shopping cart itself, but the representation we want to expose to the external world.
+Note that we have different kinds of replies: `Confirmation` used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. And `CartState` used when we want to read the state of the shopping cart. Keep in mind that `ShoppingCartSummary` is not the shopping cart itself, but the representation we want to expose to the external world.
 
 ### Modelling Events
 
@@ -77,7 +77,7 @@ You can encode it in different ways. The [recommended style](https://doc.akka.io
 
 ```scala
 sealed trait ShoppingCart  {
-  def applyCommand(cmd: ShoppingCartCommnad): ReplyEffect[ShoppingCartEvent, ShoppingCartState]
+  def applyCommand(cmd: ShoppingCartCommnad): ReplyEffect[ShoppingCartEvent, ShoppingCart]
 }
 
 case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
@@ -106,7 +106,7 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
           }
 
       case Get(replyTo) =>
-        Effect.reply(replyTo)(CartState(items, status = "open"))
+        Effect.reply(replyTo)(ShoppingCartSummary(items, status = "open"))
   }
 }
 
@@ -123,7 +123,7 @@ case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart 
       // it is allowed to read it's state though
       case Get(replyTo) =>
         Effect
-        .reply(replyTo)(CartState(items, status = "checked-out"))
+        .reply(replyTo)(ShoppingCartSummary(items, status = "checked-out"))
     }
 
 }
@@ -143,12 +143,12 @@ The event handlers are used to mutate the state of the aggregate by applying the
 
 ```scala
 sealed trait ShoppingCart  {
-  def applyEvent(evt: ShoppingCartEvent): ShoppingCartState
+  def applyEvent(evt: ShoppingCartEvent): ShoppingCart
 }
 
 case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
 
-  def applyEvent(evt: ShoppingCartEvent): ShoppingCartState =
+  def applyEvent(evt: ShoppingCartEvent): ShoppingCart =
     evt match {
       case ItemUpdated(productId, quantity) => updateItem(productId, quantity)
       case CheckedOut => CheckedOutShoppingCart(items)
@@ -164,7 +164,7 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
 
 // CheckedOut is a final state, there can't be any event after its checked out
 case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart {
-  def applyEvent(evt: ShoppingCartEvent): ShoppingCartState = this
+  def applyEvent(evt: ShoppingCartEvent): ShoppingCart = this
 }
 ```
 
