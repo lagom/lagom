@@ -1,5 +1,8 @@
 # Creating and running Hello World with Maven
-The easiest way to get started with Lagom and Maven is to use the Maven archetype plugin and a Lagom archetype to create a new project.  A Maven project includes sub-projects organized in sub-directories. The top-level and sub-project directories each include a [Project Object Model (POM)](https://maven.apache.org/pom.html) that contains build configuration. When you run the `generate` command, Maven prompts you for POM element values. The Lagom archetype creates a project that includes two Lagom services, `hello` and `stream`.   
+
+> **Note**: Lagom requires Maven 3.6.2 or later.
+
+The easiest way to get started with Lagom and Maven is to use the Maven archetype plugin and a Lagom archetype to create a new project.  A Maven project includes sub-projects organized in sub-directories. The top-level and sub-project directories each include a [Project Object Model (POM)](https://maven.apache.org/pom.html) that contains build configuration. When you run the `generate` command, Maven prompts you for POM element values. The Lagom archetype creates a project that includes two Lagom services, `hello` and `stream`.
 
 Follow these instructions to create and run your first project:
 
@@ -33,22 +36,20 @@ To create your project, follow these steps:
     * `groupId`  - Usually a reversed domain name, such as `com.example.hello`.
     * `artifactId` - Maven also uses this value as the name for the top-level project folder. You might want to use a value such as `my-first-system`
     * `version` - Press `Enter` to accept the default or enter a version number for your project.
-    * `package` - Press `Enter` to accept the default, which is the same as the `groupId`.  
-    Maven prompts you to confirm POM values.    
+    * `package` - Press `Enter` to accept the default, which is the same as the `groupId`.
+    Maven prompts you to confirm POM values.
 1. Enter `Y` to accept the values.
    When finished, Maven creates the project, and completes with a message similar to the following:
 
 ```
-   [INFO] ------------------------------------------------------------------------
-   [INFO] BUILD SUCCESS
-   [INFO] ------------------------------------------------------------------------
-   [INFO] Total time: 10:42 min
-   [INFO] Finished at: 2017-02-24T11:58:08-06:00
-   [INFO] Final Memory: 17M/252M
-   [INFO] ------------------------------------------------------------------------
-
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 10:42 min
+[INFO] Finished at: 2017-02-24T11:58:08-06:00
+[INFO] Final Memory: 17M/252M
+[INFO] ------------------------------------------------------------------------
 ```
-
 
 ## Browse the project structure
 
@@ -56,12 +57,12 @@ The structure for a project created with the Maven archetype generate command wi
 
 ```
 my-first-system
- └ hello-api/             → hello world api project dir
- └ hello-impl/            → hello world implementation dir
- └ integration-tests/
- └ stream-api/            → stream api project dir
- └ stream-impl/           → stream implementation project dir
- └ pom.xml                → Project group build file
+├── hello-api             → hello world api project dir
+├── hello-impl            → hello world implementation dir
+├── integration-tests     → project integration tests
+├── stream-api            → stream api project dir
+├── stream-impl           → stream implementation project dir
+└── pom.xml               → Project group build file
 ```
 
 Note that the `hello` and `stream` services each have:
@@ -79,6 +80,7 @@ For example:
 cd my-first-system
 mvn lagom:runAll
 ```
+
 It will take a bit of time for the services to start. The `Services started` message indicates the system is running:
 
 ```
@@ -96,11 +98,14 @@ It will take a bit of time for the services to start. The `Services started` mes
 [INFO] (Services started, press enter to stop and go back to the console...)
 ```
 
-Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser:
+Verify that the services are indeed up and running by invoking the `hello` service endpoint from any HTTP client, such as a browser: <http://localhost:9000/api/hello/World>. Or using `curl`:
 
+```bash
+curl -i http://localhost:9000/api/hello/World
 ```
-http://localhost:9000/api/hello/World
-```
+
+> NOTE: if you use a name for `service1` different from `hello` the URL will differ. Use `curl -i http://localhost:9000/api/<service1Name>/World`
+
 The request returns the message `Hello, World!`.
 
 Congratulations! You've created and run your first Lagom system.
