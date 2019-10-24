@@ -71,9 +71,9 @@ final case object CheckedOut extends ShoppingCartEvent
 
 ### Defining Commands Handlers
 
-Once you define your protocol in terms of Commands, Replies, Events and State, you need to specify the business rules of your model. The command handlers define how to handle each incoming command, which validations must be applied, and finally, which events will be persisted if any.
+Once you define your protocol in terms of Commands, Replies, Events and State, you need to specify the business rules of your model. The command handlers define how to handle each incoming command, which validations must be applied, and finally, which events will be persisted, if any.
 
-You can encoding it in different ways. The [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html#command-handlers-in-the-state) is to add the command handlers in your state classes. Since `ShoppingCart` have two state classes extensions, it makes sense to add the repective business rules validation on each state class. Each possible state will define how each command should be handled.
+You can encode it in different ways. The [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html#command-handlers-in-the-state) is to add the command handlers in your state classes. Since `ShoppingCart` has two state class extensions, it makes sense to add the respective business rule validations on each state class. Each possible state will define how each command should be handled.
 
 ```scala
 sealed trait ShoppingCart  {
@@ -86,14 +86,14 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
       case UpdateItem(_, qty, replyTo) if qty < 0 =>
         Effect.reply(replyTo)(Rejected("Quantity must be greater than zero"))
 
-      // an item is delete by setting it's quantity to 00
+      // an item is deleted by setting it's quantity to 0
       case UpdateItem(productId, 0, replyTo) if !items.contains(productId) =>
         Effect.reply(replyTo)(Rejected("Cannot delete item that is not already in cart"))
 
       case UpdateItem(productId, quantity, replyTo) =>
         Effect
           .persist(ItemUpdated(productId, quantity))
-          .thenReply(replyTo) { updatedCart => // updated cart is state updated after applying ItemUpdated
+          .thenReply(replyTo) { updatedCart => // updatedCart is the state updated after applying ItemUpdated
             Accepted
           }
 
@@ -113,10 +113,10 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
 case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart {
   def applyCommand(cmd: ShoppingCartCommnad) =
     cmd match {
-      // CheckedOut is a final state, not mutations allowed
+      // CheckedOut is a final state, no mutations allowed
       case UpdateItem(_, _, replyTo) =>
         Effect.reply(replyTo)(Rejected("Cannot update a checked-out cart"))
-      // CheckedOut is a final state, not mutations allowed
+      // CheckedOut is a final state, no mutations allowed
       case Checkout(replyTo) =>
         Effect.reply(replyTo)(Rejected("Cannot checkout a checked-out cart"))
 
@@ -129,13 +129,13 @@ case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart 
 }
 ```
 
-Command handlers are the meat of the model. They encode the business rules of your model and act as a guardian of the model consistency. Any mutation must be validated by it. However, they don't apply the mutations. Instead, they express the mutations in the form of persisted events.
+Command handlers are the meat of the model. They encode the business rules of your model and act as a guardian of the model consistency. The command handler must first validate that the incoming command can be applied to the current model state. In case of successful validation, one or more event expressing the mutations are persisted. Once the events are persisted, they are applied to the state producing a new valid state.
 
 Because an Aggregate is intended to model a consistency boundary, it's not recommended to validate commands using data that's not available in scope. Any decision should be solely based on the data passed in the commands and the state of the aggregate. Any external call should be considered a smell because it means that the aggregate is not in full control of the invariants it's supposed to be protecting.
 
-You may have notice that there two ways of sending back a reply. Using `Effect.reply` and `Effect.persist(...).thenReply`. The first one is available directly on `Effect` and should be used when you reply without persisting any event. In this case, you can use the available state in scope because it's guaranteed to not have changed. The second variant should be used when you have persisted one or more events. The updated state is then made available to you on the function used to define the reply.
+There two ways of sending back a reply: using `Effect.reply` and `Effect.persist(...).thenReply`. The first one is available directly on `Effect` and should be used when you reply without persisting any event. In this case, you can use the available state in scope because it's guaranteed to not have changed. The second variant should be used when you have persisted one or more events. The updated state is then made available to you on the function used to define the reply.
 
-You may run side-effects inside the command handler. Akka Persistence Typed offers an API for it. Please refer to [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#effects-and-side-effects) for detailed information.
+You may run side-effects inside the command handler. Please refer to [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#effects-and-side-effects) for detailed information.
 
 ### Defining the Event Handlers
 
@@ -162,7 +162,7 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
 
 }
 
-// CheckedOut is a final state, there can be any event after its checked out
+// CheckedOut is a final state, there can't be any event after its checked out
 case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart {
   def applyEvent(evt: ShoppingCartEvent): ShoppingCartState = this
 }
