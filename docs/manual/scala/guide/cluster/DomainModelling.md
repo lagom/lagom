@@ -257,11 +257,11 @@ EventSourcedBehavior
 
 >  `entityContext` will be introduced on the next section.
 
-### Configuring snaptshots
+### Configuring snapshots
 
 Snapshotting is a common optimization to avoid replaying all the events since the beginning.
 
-You can define snapshots rules in two ways: by predicate and by counter. Both can be combined. The example below uses a counter to illustrate the APIs. Once again, you can find more details on the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence-snapshot.html).
+You can define snapshot rules in two ways: by predicate and by counter. Both can be combined. The example below uses a counter to illustrate the APIs. You can find more details on the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence-snapshot.html).
 
 ```scala
 EventSourcedBehavior
@@ -275,18 +275,81 @@ EventSourcedBehavior
   .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2)
 ```
 
-## ClusterSharding
+## Akka Cluster Sharding
 
-### Initialize the Entity - register Behavior on ClusterSharding
+Lagom leverages [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html) to distribute the Aggregates across all the nodes and guarantee that at any single time there is only one instance of a given Aggregate loaded in memory over the whole cluster.
 
-### How to use an Entity
+### Initializing the Aggregate Entity
 
-#### looking up an instance in ClusterSharding
+In order to use the Aggregate, first it needs to be initialized on the `ClusterSharding`. That process won't initialize any specific Aggregate instance, it will only create the Shard Regions and prepare it to be used.
+
+In the companion object of `ShoppingCart`, define an `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
+
+The `EntityTypeKey` receives has as name to uniquely identity this model in the cluster. It's also typed on `ShoppingCartCommand` which is basically the type of the messages that the Aggregate can receive.
+
+To initialize the Aggregate, there must exist a function of `EntityContext[Command] => Behavior[Command]`. This can also be defined as a method in the companion object.
+
+```scala
+
+object ShoppingCart {
+
+  val typeKey = EntityTypeKey[ShoppingCartCommand]("ShoppingCart")
+
+  def behavior(entityContext: EntityContext[ShoppingCartCommand]): Behavior[ShoppingCartCommand] = {
+    EventSourcedBehavior
+      .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
+        persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
+        emptyState = OpenShoppingCart(Map.empty),
+        commandHandler = (cart, cmd) => cart.applyCommand(cmd),
+        eventHandler = (cart, evt) => cart.applyEvent(evt)
+      )
+      .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
+      .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2)
+  }
+}
+```
+
+Next, it must be initialized on the `ClusterSharding`. Lagom provides an instance through dependency injection. This should be done only once and is tipically done in the `LagomApplication`.
+
+```scala
+abstract class ShoppingCartApplication(context: LagomApplicationContext)
+    extends LagomApplication(context)
+    with SlickPersistenceComponents
+    with HikariCPComponents
+    with AhcWSComponents {
+
+  override lazy val lagomServer = serverFor[ShoppingCartService](wire[ShoppingCartServiceImpl])
+  override lazy val jsonSerializerRegistry = ShoppingCartSerializerRegistry
+
+  clusterSharding.init(
+    Entity(ShoppingCartState.typeKey) {
+      ctx => ShoppingCartState.behavior(ctx)
+    }
+  )
+}
+```
+
+> Any Actor Behavior can be sharded. When added to Akka Cluste Sharding, an Actor becomes an `Entity`.
+
+### Getting instances of the Aggregate Entity
+
+To instantiate instances of the Aggregate, you should inject the `ClusterSharding` on your service can instantiate a `EntityRef` using the method `entityRefFor`.
+
+```scala
+val shoppingCartRef: EntityRef[ShoppingCartCommand] =
+    clusterSharding.entityRefFor(ShoppingCart.typeKey, "abc-123")
+```
 
 #### considerations on using ask pattern
+
+// TODO: need to explain the timeout (scheduler is not needed)
+// also need some words about how the ActorRef[Reply] gets created and it's relation to the returned `Future[Reply]`
 
 ### configuring number of shards
 
 ### configuring Entity passivation
 
 ## Data Serialization
+
+// TODO: this is mainly about play-json and Lagom's PlayJsonSerializer
+// then also about why commands can't use play-json and need to use Akka Jackson
