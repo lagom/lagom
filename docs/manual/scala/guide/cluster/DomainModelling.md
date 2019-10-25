@@ -100,14 +100,16 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
     cmd match {
 
       case AddItem(itemId, quantity, replyTo) =>
-        if (quantity > 0)
+        if (items.contains(itemId))
+          Effect.reply(replyTo)(Rejected(s"Item '$itemId' is already added to this shopping cart"))
+        else if (quantity <= 0)
+          Effect.reply(replyTo)(Rejected("Quantity must be greater than zero"))
+        else
           Effect
             .persist(ItemAdded(itemId, quantity))
             .thenReply(replyTo) { updatedCart => // updatedCart is the state updated after applying ItemUpdated
               Accepted
             }
-        else
-          Effect.reply(replyTo)(Rejected("Quantity must be greater than zero"))
 
       case RemoveItem(itemId, replyTo) =>
         if (items.contains(itemId))
