@@ -20,9 +20,6 @@ Note that:
 
 ## Service implementation
 
-The related `impl` directory contains the implementation of the service interface's abstract methods. For instance, `HelloServiceImpl.java` in the `hello-impl` directory implements the `hello` service `HelloService.hello` method. It includes the  [`PersistentEntityRegistry`](api/index.html?com/lightbend/lagom/javadsl/persistence/PersistentEntityRegistry.html), which allows you to persist data in the database using [[Event Sourcing and CQRS|ES_CQRS]]. 
+The related `impl` directory contains the implementation of the service interface's abstract methods. For instance, `HelloServiceImpl.java` in the `hello-impl` directory implements the `hello` service `HelloService.hello` method. The service implementation uses a (sharded)[https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#introduction], (persistent)[https://doc.akka.io/docs/akka/2.6/typed/persistence.html#introduction], typed actor providing data persistence using [[Event Sourcing and CQRS|ES_CQRS]].
 
 @[helloservice-impl](code/docs/javadsl/gettingstarted/helloservice/HelloServiceImpl.java)
-
-
-

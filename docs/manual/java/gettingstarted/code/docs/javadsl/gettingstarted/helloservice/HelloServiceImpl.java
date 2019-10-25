@@ -4,34 +4,56 @@
 
 package docs.javadsl.gettingstarted.helloservice;
 
+import akka.Done;
 import akka.NotUsed;
+import akka.cluster.sharding.typed.javadsl.ClusterSharding;
+import akka.cluster.sharding.typed.javadsl.Entity;
+import akka.cluster.sharding.typed.javadsl.EntityRef;
+import akka.japi.Pair;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
-import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
-import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
-import docs.javadsl.gettingstarted.helloservice.HelloCommand.Hello;
-
-import java.util.Optional;
+import com.lightbend.lagom.javadsl.api.transport.BadRequest;
+import docs.javadsl.gettingstarted.helloservice.GreetingMessage;
+import docs.javadsl.gettingstarted.helloservice.HelloCommand.*;
 
 import javax.inject.Inject;
+import java.time.Duration;
 
 // #helloservice-impl
 public class HelloServiceImpl implements HelloService {
 
-  private final PersistentEntityRegistry persistentEntityRegistry;
+  private final Duration askTimeout = Duration.ofSeconds(5);
+  private ClusterSharding clusterSharding;
 
   @Inject
-  public HelloServiceImpl(PersistentEntityRegistry persistentEntityRegistry) {
-    this.persistentEntityRegistry = persistentEntityRegistry;
-    persistentEntityRegistry.register(HelloWorld.class);
+  public HelloServiceImpl(ClusterSharding clusterSharding) {
+    this.clusterSharding = clusterSharding;
   }
 
   @Override
   public ServiceCall<NotUsed, String> hello(String id) {
     return request -> {
-      // Look up the hello world entity for the given ID.
-      PersistentEntityRef<HelloCommand> ref = persistentEntityRegistry.refFor(HelloWorld.class, id);
-      // Ask the entity the Hello command.
-      return ref.ask(new Hello(id, Optional.empty()));
+      EntityRef<HelloCommand> ref =
+          clusterSharding.entityRefFor(HelloAggregate.ENTITY_TYPE_KEY, id);
+      return ref.<HelloCommand.Greeting>ask(replyTo -> new Hello(id, replyTo), askTimeout)
+          .thenApply(greeting -> greeting.message);
+    };
+  }
+
+  @Override
+  public ServiceCall<GreetingMessage, Done> useGreeting(String id) {
+    return request -> {
+      EntityRef<HelloCommand> ref =
+          clusterSharding.entityRefFor(HelloAggregate.ENTITY_TYPE_KEY, id);
+      return ref.<HelloCommand.Confirmation>ask(
+              replyTo -> new UseGreetingMessage(request.message, replyTo), askTimeout)
+          .thenApply(
+              confirmation -> {
+                if (confirmation instanceof HelloCommand.Accepted) {
+                  return Done.getInstance();
+                } else {
+                  throw new BadRequest(((HelloCommand.Rejected) confirmation).reason);
+                }
+              });
     };
   }
 }
