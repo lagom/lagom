@@ -58,7 +58,7 @@ final case class AdjustItemQuantity(itemId: String,
 final case class Checkout(replyTo: ActorRef[Confirmation])
   extends ShoppingCartCommand
 
-final case class Get(replyTo: ActorRef[ShoppingCartSummary])
+final case class Get(replyTo: ActorRef[ShoppingCartSummary]) extends ShoppingCartCommand
 ```
 
 Note that we have different kinds of replies: `Confirmation` used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. And `ShoppingCartSummary` used when we want to read the state of the shopping cart. Keep in mind that `ShoppingCartSummary` is not the shopping cart itself, but the representation we want to expose to the external world. It's a good practice to keep the internal state of the aggregate private because it allows the internal state, and the exposed API to evolve independently.
@@ -120,7 +120,7 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
       case AdjustItemQuantity(itemId, quantity, replyTo) =>
         if(items.contains(itemId))
           Effect
-            .persist(ItemQuantityAdjusted(itemId))
+            .persist(ItemQuantityAdjusted(itemId, quantity))
             .thenReply(replyTo)(_ => Accepted)
         else
           Effect.reply(replyTo)(Rejected(s"Cannot adjust quantity for item '$itemId'. Item not present on cart"))
