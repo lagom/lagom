@@ -34,25 +34,34 @@ In Akka Typed, it's not possible to return an exception to the caller. All commu
 ```scala
 // Replies
 sealed trait Confirmation
-sealed trait Accepted extends Confirmation
-case object Accepted extends Accepted
+case object Accepted extends Confirmation
 final case class Rejected(reason: String) extends Confirmation
-final case class CartState(items: Map[String, Int], status: String)
+final case class ShoppingCartSummary(items: Map[String, Int], checkedOut: Boolean)
 
 // Commands
 sealed trait ShoppingCartCommand
-final case class UpdateItem(productId: String,
-                            quantity: Int,
+
+final case class AddItem(itemId: String,
+                         quantity: Int,
+                         replyTo: ActorRef[Confirmation])
+  extends ShoppingCartCommand
+
+final case class RemoveItem(itemId: String,
                             replyTo: ActorRef[Confirmation])
+  extends ShoppingCartCommand
+
+final case class AdjustItemQuantity(itemId: String,
+                                    quantity: Int,
+                                    replyTo: ActorRef[Confirmation])
   extends ShoppingCartCommand
 
 final case class Checkout(replyTo: ActorRef[Confirmation])
   extends ShoppingCartCommand
 
-final case class Get(replyTo: ActorRef[CartState])
+final case class Get(replyTo: ActorRef[ShoppingCartSummary]) extends ShoppingCartCommand
 ```
 
-Note that we have different kinds of replies: `Confirmation` used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. And `CartState` used when we want to read the state of the shopping cart. Keep in mind that `ShoppingCartSummary` is not the shopping cart itself, but the representation we want to expose to the external world.
+Note that we have different kinds of replies: `Confirmation` used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. And `ShoppingCartSummary` used when we want to read the state of the shopping cart. Keep in mind that `ShoppingCartSummary` is not the shopping cart itself, but the representation we want to expose to the external world. It's a good practice to keep the internal state of the aggregate private because it allows the internal state, and the exposed API to evolve independently.
 
 ### Modelling Events
 
@@ -63,10 +72,16 @@ sealed trait ShoppingCartEvent extends AggregateEvent[ShoppingCartEvent] {
   def aggregateTag = ShoppingCartEvent.Tag
 }
 
-final case class ItemUpdated(productId: String, quantity: Int)
+final case class ItemAdded(itemId: String, quantity: Int)
   extends ShoppingCartEvent
 
-final case object CheckedOut extends ShoppingCartEvent
+final case class ItemRemoved(itemId: String)
+  extends ShoppingCartEvent
+
+final case class ItemQuantityAdjusted(itemId: String, newQuantity: Int)
+  extends ShoppingCartEvent
+
+final case object CartCheckedOut extends ShoppingCartEvent
 ```
 
 ### Defining Commands Handlers
@@ -83,30 +98,45 @@ sealed trait ShoppingCart  {
 case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
   def applyCommand(cmd: ShoppingCartCommnad) =
     cmd match {
-      case UpdateItem(_, qty, replyTo) if qty < 0 =>
-        Effect.reply(replyTo)(Rejected("Quantity must be greater than zero"))
 
-      // an item is deleted by setting it's quantity to 0
-      case UpdateItem(productId, 0, replyTo) if !items.contains(productId) =>
-        Effect.reply(replyTo)(Rejected("Cannot delete item that is not already in cart"))
+      case AddItem(itemId, quantity, replyTo) =>
+        if (items.contains(itemId))
+          Effect.reply(replyTo)(Rejected(s"Item '$itemId' was already added to this shopping cart"))
+        else if (quantity <= 0)
+          Effect.reply(replyTo)(Rejected("Quantity must be greater than zero"))
+        else
+          Effect
+            .persist(ItemAdded(itemId, quantity))
+            .thenReply(replyTo) { updatedCart => // updatedCart is the state updated after applying ItemUpdated
+              Accepted
+            }
 
-      case UpdateItem(productId, quantity, replyTo) =>
-        Effect
-          .persist(ItemUpdated(productId, quantity))
-          .thenReply(replyTo) { updatedCart => // updatedCart is the state updated after applying ItemUpdated
-            Accepted
-          }
+      case RemoveItem(itemId, replyTo) =>
+        if (items.contains(itemId))
+          Effect
+            .persist(ItemRemoved(itemId))
+            .thenReply(replyTo)(_ => Accepted)
+        else
+          Effect.reply(replyTo)(Accepted) // removing an item is idempotent
+
+      case AdjustItemQuantity(itemId, quantity, replyTo) =>
+        if(items.contains(itemId))
+          Effect
+            .persist(ItemQuantityAdjusted(itemId, quantity))
+            .thenReply(replyTo)(_ => Accepted)
+        else
+          Effect.reply(replyTo)(Rejected(s"Cannot adjust quantity for item '$itemId'. Item not present on cart"))
 
       // check it out
       case Checkout(replyTo) =>
         Effect
-          .persist(CheckedOut)
-          .thenReply(replyTo){ updatedCart => // updated cart is state updated after applying CheckedOut
+          .persist(CartCheckedOut)
+          .thenReply(replyTo){ updatedCart => // updated cart is state updated after applying CartCheckedOut
             Accepted
           }
 
       case Get(replyTo) =>
-        Effect.reply(replyTo)(ShoppingCartSummary(items, status = "open"))
+        Effect.reply(replyTo)(ShoppingCartSummary(items, checkedOut = true))
   }
 }
 
@@ -114,16 +144,18 @@ case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart 
   def applyCommand(cmd: ShoppingCartCommnad) =
     cmd match {
       // CheckedOut is a final state, no mutations allowed
-      case UpdateItem(_, _, replyTo) =>
-        Effect.reply(replyTo)(Rejected("Cannot update a checked-out cart"))
-      // CheckedOut is a final state, no mutations allowed
+      case AddItem(_, _, replyTo) =>
+        Effect.reply(replyTo)(Rejected("Cannot add an item to a checked-out cart"))
+      case RemoveItem(_, replyTo) =>
+        Effect.reply(replyTo)(Rejected("Cannot remove an item from a checked-out cart"))
+      case AdjustItemQuantity(_, _, replyTo) =>
+        Effect.reply(replyTo)(Rejected("Cannot adjust an item quantity on a checked-out cart"))
       case Checkout(replyTo) =>
         Effect.reply(replyTo)(Rejected("Cannot checkout a checked-out cart"))
 
       // it is allowed to read it's state though
       case Get(replyTo) =>
-        Effect
-        .reply(replyTo)(ShoppingCartSummary(items, status = "checked-out"))
+        Effect.reply(replyTo)(ShoppingCartSummary(items, checkedOut = false))
     }
 
 }
@@ -150,15 +182,15 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
 
   def applyEvent(evt: ShoppingCartEvent): ShoppingCart =
     evt match {
-      case ItemUpdated(productId, quantity) => updateItem(productId, quantity)
-      case CheckedOut => CheckedOutShoppingCart(items)
+      case ItemAdded(itemId, quantity) => addOrUpdateItem(itemId, quantity)
+      case ItemRemoved(itemId) => removeItem(itemId)
+      case ItemQuantityAdjusted(itemId, quantity) => addOrUpdateItem(itemId, quantity)
+      case CartCheckedOut => CheckedOutShoppingCart(items)
     }
 
-  private def updateItem(productId: String, quantity: Int) =
-    quantity match {
-      case 0 => copy(items = items - productId)
-      case _ => copy(items = items + (productId -> quantity))
-    }
+    private def removeItem(itemId: String) = copy(items = items - itemId)
+    private def addOrUpdateItem(itemId: String, quantity: Int) =
+      copy(items = items + (itemId -> quantity))
 
 }
 
