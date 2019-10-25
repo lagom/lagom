@@ -1,6 +1,6 @@
 # Domain Modelling
 
-This section presents all the steps to model an [Aggregate](https://martinfowler.com/bliki/DDD_Aggregate.html), as defined in Domain-Driven Design, using [Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence.html) and following the [[CQRS|ES_CQRS]] principles embraced by Lagom. While Akka Persistence Typed provides an API for building event-sourced actors, the same does not necessarily apply for CQRS Aggregates. To build CQRS applications, we need to applying a few rules to our design.
+This section [Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence.html) and following the [[CQRS|ES_CQRS]] principles embraced by Lagom. While Akka Persistence Typed provides an API for building event-sourced actors, the same does not necessarily apply for CQRS Aggregates. To build CQRS applications, we need to applying a few rules to our design.
 
 A simplified shopping cart example is used to guide you through the process. You can find a full-fledge shopping cart sample on our [samples repository](https://github.com/lagom/lagom-samples/tree/1.6.x/shopping-cart/shopping-cart-scala).
 
@@ -194,7 +194,7 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
 
 }
 
-// CheckedOut is a final state, there can't be any event after its checked out
+// CheckedOut is a final state, there can't be any event after it's checked out
 case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart {
   def applyEvent(evt: ShoppingCartEvent): ShoppingCart = this
 }
@@ -202,20 +202,84 @@ case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart 
 
 ### EventSourcingBehaviour - glueing the bits together
 
-TODO: explain `withExpectingReplies`
+With all the model encoded, the next step is to glue all the pieces together so we can let it run as an Actor. You do that by defining a `EventSourcedBehavior`. It's recommend to define a `EventSourcedBehavior` using `withEnforcedReplies` when modelling a CQRS Aggregate. [Enforced replies](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#replies) requires commands handlers returning `ReplyEffect` forcing the developers to be explicit about replies.
+
+```scala
+EventSourcedBehavior
+  .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
+    persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
+    emptyState = OpenShoppingCart(Map.empty),
+    commandHandler = (cart, cmd) => cart.applyCommand(cmd),
+    eventHandler = (cart, evt) => cart.applyEvent(evt)
+  )
+```
+
+The `EventSourcedBehavior` has four fields to be defined: `persistenceId`, `emptyState`, `commandHandler` and `eventHandler`.
+
+The `persistenceId` defines the id that will be used in the event journal. The id is composed of a name (eg: `entityContext.entityTypeKey.name`) and a business id (eg: `entityContext.entityId`). These two values will be concatenated using a "|" by default, eg: s"ShoppingCart|businessId". See [Akka's documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#persistenceid) for more details.
+
+> The `entityContext` that appears in scope here will be introduced when covering `ClusterSharding` later in this guide.
+
+The `emptyState` is the state that will be used to when the journal is empty. It's the initial state.
+
+The `commandHandler` is a function `(State, Command) => ReplyEffect[ShoppingCartEvent, ShoppingCart]`. In this example it's being defined using the `applyCommand` on the passed state. Equally, the `eventHandler` is a function `(State, Event) => Event` and also defined in the passed state.
 
 ### Changing behavior - Finite State Machines
 
+If you are familiar with general Akka Actors, you are probably aware that after processing a message you should return the next behavior to be used. With Akka Persistence Typed this happens in a different fashion. Command handlers and event handlers are all dependent on the current state, therefore can you change behavior by returning a new state in the event handler. Consult the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#changing-behavior) for more insight on this topic.
+
 ### Tagging the events - Akka Persistence Query considerations
 
-// TODO explain tagging
+Events are persisted in the event journal and are primarily used to replay the state of the aggregate each time it needs to be instantiated. However, in CQRS, we also want to consume those same events and generate read-side views or publish them in a message broker (eg: Kafka) for external consumption.
+
+To be able to consume the events on the read-side, the events must be tagged. Moreover, Lagom supports distributed journal consumption for Read-Side Processors and Topic Producers (aka: Projections) if you chose to use sharded tags.
+
+First we need to define how the events will be tagged. This is done using the `AggregateEventTag` utility. It's recommended to shard the tags so they can be consumed in a distributed fashion. You can also decided to not shard them as explained [here](https://www.lagomframework.com/documentation/current/scala/ReadSide.html#Event-tags).
+
+This example uses a shard of 10 and defines the event tagger in the companion object of `ShoppingCartEvent`. Note that tags must be stable as well as the number of shards. This can't be changed later without migrating the journal.
+
 ```scala
 object ShoppingCartEvent {
   val Tag = AggregateEventTag.sharded[ShoppingCartEvent](numShards = 10)
 }
 ```
 
+The `AggregateEventTag` is a Lagom class used by Lagom's [Read-Side Processor](https://www.lagomframework.com/documentation/current/scala/ReadSide.html) and [Topic Producers](https://www.lagomframework.com/documentation/current/scala/MessageBrokerApi.html#Implementing-a-topic), however Akka Persistence Typed expects a function `Event => Set[String]`. Therefore, we need to use an adapter to transform Lagom's `AggregateEventTag` to the required Akka tagger function.
+
+```scala
+EventSourcedBehavior
+  .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
+    persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
+    emptyState = OpenShoppingCart(Map.empty),
+    commandHandler = (cart, cmd) => cart.applyCommand(cmd),
+    eventHandler = (cart, evt) => cart.applyEvent(evt)
+  ).withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
+```
+
+> Here again, we need the `entityContext`. This will be introduced on the next section.
+
 ### Configuring snaptshots
+
+Snapshotting is a common optimization to avoid replaying all the events since the beginning.
+
+You can define snapshots rules in two ways: by predicate and by counter. Both can be combined. The example bellow uses both methods to illustrate the APIs. Once again, you can find more details on the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence-snapshot.html).
+
+```scala
+EventSourcedBehavior
+  .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
+    persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
+    emptyState = OpenShoppingCart(Map.empty),
+    commandHandler = (cart, cmd) => cart.applyCommand(cmd),
+    eventHandler = (cart, evt) => cart.applyEvent(evt)
+  )
+  .snapshotWhen {
+    // snapshot when cart size is a multile of 10
+    case  (updatedCart, evt, seqNr) if updatedCart.items.size % 10 == 0 => true
+    case _ =>  false
+  }
+  // snapshot every 100 events and keep at most 2 snapshots on db
+  .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2)
+```
 
 ## ClusterSharding
 
