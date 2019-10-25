@@ -232,9 +232,8 @@ If you are familiar with general Akka Actors, you are probably aware that after 
 
 Events are persisted in the event journal and are primarily used to replay the state of the aggregate each time it needs to be instantiated. However, in CQRS, we also want to consume those same events and generate read-side views or publish them in a message broker (eg: Kafka) for external consumption.
 
-To be able to consume the events on the read-side, the events must be tagged. Moreover, Lagom supports distributed journal consumption for Read-Side Processors and Topic Producers (aka: Projections) if you chose to use sharded tags.
-
-First we need to define how the events will be tagged. This is done using the `AggregateEventTag` utility. It's recommended to shard the tags so they can be consumed in a distributed fashion. You can also decided to not shard them as explained [here](https://www.lagomframework.com/documentation/current/scala/ReadSide.html#Event-tags).
+To be able to consume the events on the read-side, the events must be tagged. This is done using the `AggregateEventTag` utility. It's recommended to shard the tags so they can be consumed in a distributed fashion by Lagom's [Read-Side Processor](https://www.lagomframework.com/documentation/current/scala/ReadSide.html) and [Topic Producers](https://www.lagomframework.com/documentation/current/scala/MessageBrokerApi.html#Implementing-a-topic).
+Although not recommended, it's also possible to not shard the events as explained [here](https://www.lagomframework.com/documentation/current/scala/ReadSide.html#Event-tags).
 
 This example splits the tags into 10 shards and defines the event tagger in the companion object of `ShoppingCartEvent`. Note that the tag name must be stable as well as the number of shards. These two values can't be changed later without migrating the journal.
 
