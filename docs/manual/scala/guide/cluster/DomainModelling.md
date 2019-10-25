@@ -262,7 +262,7 @@ EventSourcedBehavior
 
 Snapshotting is a common optimization to avoid replaying all the events since the beginning.
 
-You can define snapshots rules in two ways: by predicate and by counter. Both can be combined. The example below uses both methods to illustrate the APIs. Once again, you can find more details on the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence-snapshot.html).
+You can define snapshots rules in two ways: by predicate and by counter. Both can be combined. The example below uses a counter to illustrate the APIs. Once again, you can find more details on the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence-snapshot.html).
 
 ```scala
 EventSourcedBehavior
@@ -272,11 +272,6 @@ EventSourcedBehavior
     commandHandler = (cart, cmd) => cart.applyCommand(cmd),
     eventHandler = (cart, evt) => cart.applyEvent(evt)
   )
-  .snapshotWhen {
-    // snapshot when cart size is a multiple of 10
-    case  (updatedCart, evt, seqNr) if updatedCart.items.size % 10 == 0 => true
-    case _ =>  false
-  }
   // snapshot every 100 events and keep at most 2 snapshots on db
   .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2)
 ```
