@@ -37,37 +37,63 @@ package helloservice {
   //#helloservice
 
   //#helloserviceimpl
+  import akka.actor.typed.ActorRef
+  import akka.actor.typed.Behavior
   import com.lightbend.lagom.scaladsl.api.ServiceCall
-  import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
+  import akka.cluster.sharding.typed.scaladsl.ClusterSharding
+  import akka.cluster.sharding.typed.scaladsl.EntityRef
 
-  class HelloServiceImpl(persistentEntityRegistry: PersistentEntityRegistry) extends HelloService {
+  import scala.concurrent.ExecutionContext
+  import scala.concurrent.duration._
+  import akka.util.Timeout
+  import com.lightbend.lagom.scaladsl.api.transport.BadRequest
 
-    override def hello(id: String) = ServiceCall { _ =>
-      val ref = persistentEntityRegistry.refFor[HelloEntity](id)
-      ref.ask(Hello(id, None))
+  class HelloServiceImpl(clusterSharding: ClusterSharding)(implicit ec: ExecutionContext) extends HelloService {
+
+    implicit val timeout = Timeout(5.seconds)
+
+    override def hello(id: String): ServiceCall[NotUsed, String] = ServiceCall { _ =>
+      entityRef(id)
+        .ask[Greeting](replyTo => Hello(id, replyTo))
+        .map(greeting => greeting.message)
     }
 
     override def useGreeting(id: String) = ServiceCall { request =>
-      val ref = persistentEntityRegistry.refFor[HelloEntity](id)
-      ref.ask(UseGreetingMessage(request.message))
+      entityRef(id)
+        .ask[Confirmation](
+          replyTo => UseGreetingMessage(request.message, replyTo)
+        )
+        .map {
+          case Accepted => Done
+          case _        => throw BadRequest("Can't upgrade the greeting message.")
+        }
     }
+
+    private def entityRef(id: String): EntityRef[HelloWorldCommand] =
+      clusterSharding.entityRefFor(HelloWorldState.typeKey, id)
+
   }
   //#helloserviceimpl
 
   import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
   import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 
-  sealed trait HelloCommand
-  case class Hello(id: String, timestamp: Option[String]) extends ReplyType[String] with HelloCommand
-  case class UseGreetingMessage(msg: String)              extends ReplyType[Done] with HelloCommand
-  sealed trait HelloEvent
-  case class HelloState()
-  class HelloEntity extends PersistentEntity {
-    override type Command = HelloCommand
-    override type Event   = HelloEvent
-    override type State   = HelloState
-    override def initialState = HelloState()
-    override def behavior     = PartialFunction.empty
+  sealed trait HelloWorldCommand
+  case class UseGreetingMessage(message: String, replyTo: ActorRef[Confirmation]) extends HelloWorldCommand
+  case class Hello(name: String, replyTo: ActorRef[Greeting])                     extends HelloWorldCommand
+
+  final case class Greeting(message: String)
+  sealed trait Confirmation
+  sealed trait Accepted               extends Confirmation
+  case object Accepted                extends Accepted
+  case class Rejected(reason: String) extends Confirmation
+
+  sealed trait HelloWorldEvent
+  case class GreetingMessageChanged(message: String) extends HelloWorldEvent
+
+  object HelloWorldState {
+    import akka.cluster.sharding.typed.scaladsl.EntityTypeKey
+    val typeKey = EntityTypeKey[HelloWorldCommand]("HelloWorldAggregate")
   }
 
 }
