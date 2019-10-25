@@ -101,7 +101,7 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
 
       case AddItem(itemId, quantity, replyTo) =>
         if (items.contains(itemId))
-          Effect.reply(replyTo)(Rejected(s"Item '$itemId' is already added to this shopping cart"))
+          Effect.reply(replyTo)(Rejected(s"Item '$itemId' was already added to this shopping cart"))
         else if (quantity <= 0)
           Effect.reply(replyTo)(Rejected("Quantity must be greater than zero"))
         else
