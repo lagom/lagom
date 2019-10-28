@@ -194,7 +194,7 @@ case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
 
 }
 
-// CheckedOut is a final state, there can't be any event after its checked out
+// CheckedOut is a final state, there can't be any event after it's checked out
 case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart {
   def applyEvent(evt: ShoppingCartEvent): ShoppingCart = this
 }
@@ -202,20 +202,78 @@ case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart 
 
 ### EventSourcingBehaviour - glueing the bits together
 
-TODO: explain `withExpectingReplies`
+With all the model encoded, the next step is to glue all the pieces together so we can let it run as an Actor. To do that define an `EventSourcedBehavior`. It's recommend to define an `EventSourcedBehavior` using `withEnforcedReplies` when modelling a CQRS Aggregate. Using [enforced replies](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#replies) requires command handlers to return a `ReplyEffect` forcing the developers to be explicit about replies.
+
+```scala
+EventSourcedBehavior
+  .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
+    persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
+    emptyState = OpenShoppingCart(Map.empty),
+    commandHandler = (cart, cmd) => cart.applyCommand(cmd),
+    eventHandler = (cart, evt) => cart.applyEvent(evt)
+  )
+```
+
+The `EventSourcedBehavior` has four fields to be defined: `persistenceId`, `emptyState`, `commandHandler` and `eventHandler`.
+
+The `persistenceId` defines the id that will be used in the event journal. The id is composed of a name (eg: `entityContext.entityTypeKey.name`) and a business id (eg: `entityContext.entityId`). These two values will be concatenated using a `"|"` by default, eg: `"ShoppingCart|123456"`. See [Akka's documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#persistenceid) for more details.
+
+> The `entityContext` that appears in scope here will be introduced when covering `ClusterSharding` later in this guide.
+
+The `emptyState` is the state that will be used to when the journal is empty. It's the initial state.
+
+The `commandHandler` is a function `(State, Command) => ReplyEffect[Event, State]`. In this example it's being defined using the `applyCommand` on the passed state. Equally, the `eventHandler` is a function `(State, Event) => Event` and also defined in the passed state.
 
 ### Changing behavior - Finite State Machines
 
+If you are familiar with general Akka Actors, you are probably aware that after processing a message you should return the next behavior to be used. With Akka Persistence Typed this happens in a different fashion. Command handlers and event handlers are all dependent on the current state, therefore can you change behavior by returning a new state in the event handler. Consult the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#changing-behavior) for more insight on this topic.
+
 ### Tagging the events - Akka Persistence Query considerations
 
-// TODO explain tagging
+Events are persisted in the event journal and are primarily used to replay the state of the aggregate each time it needs to be instantiated. However, in CQRS, we also want to consume those same events and generate read-side views or publish them in a message broker (eg: Kafka) for external consumption.
+
+To be able to consume the events on the read-side, the events must be tagged. This is done using the `AggregateEventTag` utility. It's recommended to shard the tags so they can be consumed in a distributed fashion by Lagom's [Read-Side Processor](https://www.lagomframework.com/documentation/current/scala/ReadSide.html) and [Topic Producers](https://www.lagomframework.com/documentation/current/scala/MessageBrokerApi.html#Implementing-a-topic).
+Although not recommended, it's also possible to not shard the events as explained [here](https://www.lagomframework.com/documentation/current/scala/ReadSide.html#Event-tags).
+
+This example splits the tags into 10 shards and defines the event tagger in the companion object of `ShoppingCartEvent`. Note that the tag name must be stable as well as the number of shards. These two values can't be changed later without migrating the journal.
+
 ```scala
 object ShoppingCartEvent {
   val Tag = AggregateEventTag.sharded[ShoppingCartEvent](numShards = 10)
 }
 ```
 
+The `AggregateEventTag` is a Lagom class used by Lagom's [Read-Side Processor](https://www.lagomframework.com/documentation/current/scala/ReadSide.html) and [Topic Producers](https://www.lagomframework.com/documentation/current/scala/MessageBrokerApi.html#Implementing-a-topic), however Akka Persistence Typed expects a function `Event => Set[String]`. Therefore, we need to use an adapter to transform Lagom's `AggregateEventTag` to the required Akka tagger function.
+
+```scala
+EventSourcedBehavior
+  .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
+    persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
+    emptyState = OpenShoppingCart(Map.empty),
+    commandHandler = (cart, cmd) => cart.applyCommand(cmd),
+    eventHandler = (cart, evt) => cart.applyEvent(evt)
+  ).withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
+```
+
+>  `entityContext` will be introduced on the next section.
+
 ### Configuring snaptshots
+
+Snapshotting is a common optimization to avoid replaying all the events since the beginning.
+
+You can define snapshots rules in two ways: by predicate and by counter. Both can be combined. The example below uses a counter to illustrate the APIs. Once again, you can find more details on the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence-snapshot.html).
+
+```scala
+EventSourcedBehavior
+  .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
+    persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
+    emptyState = OpenShoppingCart(Map.empty),
+    commandHandler = (cart, cmd) => cart.applyCommand(cmd),
+    eventHandler = (cart, evt) => cart.applyEvent(evt)
+  )
+  // snapshot every 100 events and keep at most 2 snapshots on db
+  .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2)
+```
 
 ## ClusterSharding
 
