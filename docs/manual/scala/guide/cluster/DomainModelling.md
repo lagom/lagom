@@ -277,20 +277,19 @@ EventSourcedBehavior
 
 ## Akka Cluster Sharding
 
-Lagom leverages [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html) to distribute the Aggregates across all the nodes and guarantee that at any single time there is only one instance of a given Aggregate loaded in memory over the whole cluster.
+Lagom uses [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html) to distribute the Aggregates across all the nodes and guarantee that, at any single time, there is only one instance of a given Aggregate loaded in memory over the whole cluster.
 
-### Initializing the Aggregate Entity
+### Creating the Aggregate instance
 
-In order to use the Aggregate, first it needs to be initialized on the `ClusterSharding`. That process won't initialize any specific Aggregate instance, it will only create the Shard Regions and prepare it to be used.
+In order to use the Aggregate, first it needs to be initialized on the `ClusterSharding`. That process won't create any specific Aggregate instance, it will only create the Shard Regions and prepare it to be used (read more about Shard Regions in the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html) docs).
 
-In the companion object of `ShoppingCart`, define an `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
+>  Note: In Akka Cluster, the term to refer to a sharded actor is _entity_ so an Aggregate that's sharded is can also be referred to as an Aggregate Entity.
 
-The `EntityTypeKey` receives has as name to uniquely identity this model in the cluster. It's also typed on `ShoppingCartCommand` which is basically the type of the messages that the Aggregate can receive.
+In the companion object of `ShoppingCart`, define an `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate. The `EntityTypeKey`  has as name to uniquely identify this model in the cluster. It's also typed on `ShoppingCartCommand` which is the type of the messages that the Aggregate can receive.
 
-To initialize the Aggregate, there must exist a function of `EntityContext[Command] => Behavior[Command]`. This can also be defined as a method in the companion object.
+Then, you must also define a function of `EntityContext[Command] => Behavior[Command]`. This can also be defined as a method in the companion object.
 
 ```scala
-
 object ShoppingCart {
 
   val typeKey = EntityTypeKey[ShoppingCartCommand]("ShoppingCart")
@@ -309,7 +308,7 @@ object ShoppingCart {
 }
 ```
 
-Next, it must be initialized on the `ClusterSharding`. Lagom provides an instance through dependency injection. This should be done only once and is tipically done in the `LagomApplication`.
+Finally, initialize the Aggregate on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for you convenience. Initializing an entity should be done only once and, in the case of Lagom Aggregates it is tipically done in the `LagomApplication`:
 
 ```scala
 abstract class ShoppingCartApplication(context: LagomApplicationContext)
@@ -329,21 +328,37 @@ abstract class ShoppingCartApplication(context: LagomApplicationContext)
 }
 ```
 
-> Any Actor Behavior can be sharded. When added to Akka Cluste Sharding, an Actor becomes an `Entity`.
-
 ### Getting instances of the Aggregate Entity
 
-To instantiate instances of the Aggregate, you should inject the `ClusterSharding` on your service can instantiate a `EntityRef` using the method `entityRefFor`.
+To access instances of the Aggregate (which may be running locally or remotely on the cluster), you should inject the `ClusterSharding` on your service can instantiate an `EntityRef` using the method `entityRefFor`. 
 
 ```scala
 val shoppingCartRef: EntityRef[ShoppingCartCommand] =
     clusterSharding.entityRefFor(ShoppingCart.typeKey, "abc-123")
 ```
 
-#### considerations on using ask pattern
+To locate the correct actor across the cluster you need to specify the `entityTypeKey` we used to initialize the entity and the `id` for the instance we need. Akka Cluster will create the required actor in one node on the cluster or reuse the existing instance if the actor has already been created and is still alive.
 
-// TODO: need to explain the timeout (scheduler is not needed)
-// also need some words about how the ActorRef[Reply] gets created and it's relation to the returned `Future[Reply]`
+The `entityRef` is similar to an `actorRef` but denotes the actor is sharded. Interacting with an `entityRef` implies the messages exchanged with the actor may need to travel over the wire to a separate node. In our case, the `EntityRef` is typed to only accept `ShoppingCartCommand`s.
+
+#### Considerations on using ask pattern
+
+Since we want to send commands to the Aggregate and these commands declare a replay we will need to use the `ask` pattern.
+
+The code we introduced above creates an `EntityRef` from the `ShoppingCartServiceImpl`. This means it is code outside an actor (the `ServiceImpl`) trying to interact with an actor (the `EntityRef`). `EntityRef` provides an `ask()` overload out of the box meant to be used from outside actors which is the situation we're in.
+
+```scala
+implicit val askTimeout = Timeout(5.seconds)
+
+val futureSummary: Future[ShoppingCartSummary] =
+   shoppingCartRef
+      .ask(replyTo => Get(replyTo))
+futureSummary.map(cartSummary => convertToApi(id, cartSummary))
+```
+
+So we declare an implicit `timeout` and then invoke `ask(f)` (which uses the timeout implicitly). The `f` argument in the `ask()` method is a function in which we create the command using the `replyTo` provided. Internally, Akka Typed will use that `replyTo` as a receiver of the response message and then extract that message and provide it as as `Future[Reply]` (in this case `Future[ShoppingCartSummary]`).
+
+Finally, we operate over the `futureSummary`normallly (in this case, we map it to a different type).
 
 ### configuring number of shards
 
