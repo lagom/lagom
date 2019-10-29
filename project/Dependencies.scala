@@ -19,13 +19,13 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.0-M6" // sync with docs/build.sbt
-    val PlayJson         = "2.8.0-M6"
-    val PlayStandaloneWs = "2.1.0-M5"
-    val Twirl            = "1.5.0-M4" // sync with docs/project/plugins.sbt
+    val Play             = "2.8.0-RC1" // sync with docs/build.sbt
+    val PlayJson         = "2.8.0-M7"
+    val PlayStandaloneWs = "2.1.0-RC2"
+    val Twirl            = "1.5.0-M5" // sync with docs/project/plugins.sbt
     val PlayFileWatch    = "1.1.8"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-M8") // sync with docs/build.sbt
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-RC2") // sync with docs/build.sbt
     val AkkaHttp     = "10.1.10"
 
     val AkkaPersistenceCassandra = "0.100"
@@ -36,15 +36,15 @@ object Dependencies {
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest            = "3.0.8"
-    val Jackson              = "2.9.10"
+    val Jackson              = "2.10.0"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
-    val JacksonDatabind      = "2.9.10.1"
+    val JacksonDatabind      = "2.10.0"
     val Guava                = "28.1-jre"
     val Maven                = "3.6.2"
     val MavenWagon           = "3.3.3"
     val MavenResolver        = "1.4.1"
-    val Netty                = "4.1.42.Final"
+    val Netty                = "4.1.43.Final"
     val NettyReactiveStreams = "2.0.3"
     val Kafka                = "2.1.1"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
@@ -92,7 +92,7 @@ object Dependencies {
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.2"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
-  private val typesafeConfig         = "com.typesafe" % "config" % "1.3.5-RC1"
+  private val typesafeConfig         = "com.typesafe" % "config" % "1.4.0"
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.0"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
@@ -333,12 +333,12 @@ object Dependencies {
       "javax.inject"        % "javax.inject"            % "1",
       "javax.transaction"   % "jta"                     % "1.1",
       "jakarta.transaction" % "jakarta.transaction-api" % "1.3.3",
-      "joda-time"           % "joda-time"               % "2.10.3",
+      "joda-time"           % "joda-time"               % "2.10.4",
       "junit"               % "junit"                   % Versions.JUnit,
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.5.0",
       "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
-      "org.agrona"          % "agrona"                  % "1.0.7",
+      "org.agrona"          % "agrona"                  % "1.0.8",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
@@ -364,7 +364,7 @@ object Dependencies {
       scalaCollectionCompat,
       "com.google.guava"           % "failureaccess"          % "1.0.1",
       "com.google.guava"           % "listenablefuture"       % "9999.0-empty-to-avoid-conflict-with-guava",
-      "com.google.protobuf"        % "protobuf-java"          % "3.9.2",
+      "com.google.protobuf"        % "protobuf-java"          % "3.10.0",
       "javax.activation"           % "activation"             % "1.1",
       "javax.activation"           % "javax.activation-api"   % "1.2.0",
       "jakarta.activation"         % "jakarta.activation-api" % "1.2.1",
