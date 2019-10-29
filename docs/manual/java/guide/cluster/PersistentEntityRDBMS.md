@@ -1,6 +1,6 @@
-# Storing Persistent Entities in a Relational Database
+# Storing Persistent Events in a Relational Database
 
-This page describes how to configure a relational database for use with Lagom's [[Persistent Entity|PersistentEntity]] API.
+This page describes how to configure a relational database for use with [[Persistent Entity|PersistentEntity]] API or Akka Typed Persistence in a Lagom service .
 
 ## Project dependencies
 
@@ -24,12 +24,13 @@ You will also need to add the jar for your JDBC database driver.
 
 ## Configuration
 
-Lagom uses the [`akka-persistence-jdbc`](https://github.com/dnvriend/akka-persistence-jdbc) plugin to persist entities to the database.  This supports four different relational databases:
+Lagom uses the [`akka-persistence-jdbc`](https://github.com/dnvriend/akka-persistence-jdbc) plugin.  This supports four different relational databases:
 
 * [PostgreSQL](https://www.postgresql.org/)
 * [MySQL](https://www.mysql.com/)
 * [Oracle](https://www.oracle.com/database/index.html)
-* [H2](https://www.h2database.com/)
+* [H2](https://www.h2database.com/)](https://www.h2database.com/)
+* [SQL Server](https://www.microsoft.com/en-us/sql-server)
 
 We advise against using H2 in production, however, it is suitable for use in development and testing.
 
