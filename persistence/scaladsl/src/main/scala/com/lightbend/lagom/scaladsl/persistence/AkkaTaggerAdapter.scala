@@ -17,14 +17,24 @@ object AkkaTaggerAdapter {
   def fromLagom[Command, Event <: AggregateEvent[Event]](
       entityCtx: EntityContext[Command],
       lagomTagger: AggregateEventTagger[Event]
+  ): Event => Set[String] = fromLagom(entityCtx.entityId, lagomTagger)
+
+  /**
+   * Adapts an existing Lagom [[AggregateEventTagger]] to a
+   * function {{{Event => Set[String]}}} as expected by Akka Persistence Typed {{{EventSourcedBehavior.withTagger}}} API.
+   */
+  def fromLagom[Command, Event <: AggregateEvent[Event]](
+      entityId: String,
+      lagomTagger: AggregateEventTagger[Event]
   ): Event => Set[String] = { evt =>
     val tag =
       lagomTagger match {
         case tagger: AggregateEventTag[_] =>
           tagger.tag
         case shardedTagger: AggregateEventShards[_] =>
-          shardedTagger.forEntityId(entityCtx.entityId).tag
+          shardedTagger.forEntityId(entityId).tag
       }
     Set(tag)
   }
+
 }
