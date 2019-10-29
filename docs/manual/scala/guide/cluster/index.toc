@@ -1,5 +1,6 @@
 DomainModelling:Domain Modelling with Akka Persistence Typed
 MigratingToAkkaPersistenceTyped: Migrating to Akka Persistence Typed
+ChoosingADatabase:Choosing A Database
 PersistentEntity:Persistent Entity (classic)
 PersistentEntityCassandra:Cassandra Persistent Entities
 PersistentEntityRDBMS:Relational Database Persistent Entities
