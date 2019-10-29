@@ -360,9 +360,19 @@ So we declare an implicit `timeout` and then invoke `ask(f)` (which uses the tim
 
 Finally, we operate over the `futureSummary`normallly (in this case, we map it to a different type).
 
-### configuring number of shards
+### Configuring number of shards
 
-### configuring Entity passivation
+As detailed in the [Akka Cluster Sharding docs](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#shard-allocation):
+
+> As a rule of thumb, the number of shards should be a factor ten greater  than the planned maximum number of cluster nodes. It doesn’t have to be  exact. Fewer shards than number of nodes will result in that some nodes  will not host any shards. Too many shards will result in less efficient  management of the shards
+
+See the Akka docs for details on how to configure the number of shards.
+
+### Configuring Entity passivation
+
+Keeping all the Aggregates in memory all the time is inefficient. Instead, use the Entity passivation feature so sharded entities (the Aggregates) are removed from the cluster when they've been unused for some time.
+
+Akka supports both programmatic passivation and [automatic passivation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#automatic-passivation). The default values for automatic passivation are generally good enough.
 
 ## Data Serialization
 
