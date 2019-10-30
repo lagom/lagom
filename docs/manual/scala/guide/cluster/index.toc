@@ -10,6 +10,7 @@ ReadSideJDBC:JDBC Read-Side Support
 ReadSideSlick:Slick Read-Side Support
 PubSub:Publish-Subscribe
 Cluster:Cluster
-Serialization:Serialization
+Serialization:Serialization;next=SerializationPlayJson,SerializationAkkaJackson
 SerializationPlayJson:Serialization using Play JSON
+SerializationAkkaJackson:Serialization using Akka Jackson
 Projections:Projections
