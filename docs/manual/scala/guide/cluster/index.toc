@@ -11,4 +11,5 @@ ReadSideSlick:Slick Read-Side Support
 PubSub:Publish-Subscribe
 Cluster:Cluster
 Serialization:Serialization
+SerializationPlayJson:Serialization using Play JSON
 Projections:Projections
