@@ -160,8 +160,6 @@ object LagomReloadableDevServerStart {
 
           var lastState: Try[Application] = Failure(new PlayException("Not initialized", "?"))
 
-          override def current: Option[Application] = lastState.toOption
-
           def get: Try[Application] = {
 
             synchronized {

@@ -1134,7 +1134,6 @@ lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server
   .settings(
     name := "lagom-javadsl-kafka-broker",
     Dependencies.`kafka-broker-javadsl`,
-    Dependencies.dependencyWhitelist ++= Dependencies.KafkaTestWhitelist,
     generateKafkaServerClasspathForTests("com.lightbend.lagom.internal.javadsl.broker.kafka"),
   )
   .dependsOn(
@@ -1154,7 +1153,6 @@ lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/serv
   .settings(
     name := "lagom-scaladsl-kafka-broker",
     Dependencies.`kafka-broker-scaladsl`,
-    Dependencies.dependencyWhitelist ++= Dependencies.KafkaTestWhitelist,
     generateKafkaServerClasspathForTests("com.lightbend.lagom.scaladsl.kafka.broker"),
   )
   .dependsOn(
