@@ -18,8 +18,10 @@ import com.lightbend.lagom.scaladsl.server.LagomServiceRouter
 import com.lightbend.lagom.scaladsl.server.PlayServiceCall
 import play.api.Logger
 import play.api.http.HttpConfiguration
+import play.api.mvc
 import play.api.mvc.EssentialAction
 import play.api.mvc.PlayBodyParsers
+import play.api.mvc.Result
 
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
@@ -118,4 +120,10 @@ class ScaladslServiceRouter(
     }
   }
 
+  override protected def processError(requestHeader: mvc.RequestHeader, throwable: Throwable): Future[Result] = {
+    throwable match {
+      case p: PayloadTooLarge => errorHandler.onClientError(requestHeader, p.errorCode.http, throwable.getMessage)
+      case _                  => errorHandler.onServerError(requestHeader, throwable)
+    }
+  }
 }
