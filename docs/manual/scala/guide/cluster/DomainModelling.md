@@ -257,11 +257,11 @@ EventSourcedBehavior
 
 >  `entityContext` will be introduced on the next section.
 
-### Configuring snaptshots
+### Configuring snapshots
 
 Snapshotting is a common optimization to avoid replaying all the events since the beginning.
 
-You can define snapshots rules in two ways: by predicate and by counter. Both can be combined. The example below uses a counter to illustrate the APIs. Once again, you can find more details on the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence-snapshot.html).
+You can define snapshot rules in two ways: by predicate and by counter. Both can be combined. The example below uses a counter to illustrate the APIs. You can find more details on the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence-snapshot.html).
 
 ```scala
 EventSourcedBehavior
@@ -275,18 +275,106 @@ EventSourcedBehavior
   .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2)
 ```
 
-## ClusterSharding
+## Akka Cluster Sharding
 
-### Initialize the Entity - register Behavior on ClusterSharding
+Lagom uses [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html) to distribute the Aggregates across all the nodes and guarantee that, at any single time, there is only one instance of a given Aggregate loaded in memory over the whole cluster.
 
-### How to use an Entity
+### Creating the Aggregate instance
 
-#### looking up an instance in ClusterSharding
+In order to use the Aggregate, first it needs to be initialized on the `ClusterSharding`. That process won't create any specific Aggregate instance, it will only create the Shard Regions and prepare it to be used (read more about Shard Regions in the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html) docs).
 
-#### considerations on using ask pattern
+>  Note: In Akka Cluster, the term to refer to a sharded actor is _entity_ so an Aggregate that's sharded is can also be referred to as an Aggregate Entity.
 
-### configuring number of shards
+In the companion object of `ShoppingCart`, define an `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate. The `EntityTypeKey`  has as name to uniquely identify this model in the cluster. It's also typed on `ShoppingCartCommand` which is the type of the messages that the Aggregate can receive.
 
-### configuring Entity passivation
+Then, you must also define a function of `EntityContext[Command] => Behavior[Command]`. This can also be defined as a method in the companion object.
+
+```scala
+object ShoppingCart {
+
+  val typeKey = EntityTypeKey[ShoppingCartCommand]("ShoppingCart")
+
+  def behavior(entityContext: EntityContext[ShoppingCartCommand]): Behavior[ShoppingCartCommand] = {
+    EventSourcedBehavior
+      .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
+        persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
+        emptyState = OpenShoppingCart(Map.empty),
+        commandHandler = (cart, cmd) => cart.applyCommand(cmd),
+        eventHandler = (cart, evt) => cart.applyEvent(evt)
+      )
+      .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
+      .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2)
+  }
+}
+```
+
+Finally, initialize the Aggregate on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for you convenience. Initializing an entity should be done only once and, in the case of Lagom Aggregates it is tipically done in the `LagomApplication`:
+
+```scala
+abstract class ShoppingCartApplication(context: LagomApplicationContext)
+    extends LagomApplication(context)
+    with SlickPersistenceComponents
+    with HikariCPComponents
+    with AhcWSComponents {
+
+  override lazy val lagomServer = serverFor[ShoppingCartService](wire[ShoppingCartServiceImpl])
+  override lazy val jsonSerializerRegistry = ShoppingCartSerializerRegistry
+
+  clusterSharding.init(
+    Entity(ShoppingCartState.typeKey) {
+      ctx => ShoppingCartState.behavior(ctx)
+    }
+  )
+}
+```
+
+### Getting instances of the Aggregate Entity
+
+To access instances of the Aggregate (which may be running locally or remotely on the cluster), you should inject the `ClusterSharding` on your service can instantiate an `EntityRef` using the method `entityRefFor`. 
+
+```scala
+val shoppingCartRef: EntityRef[ShoppingCartCommand] =
+    clusterSharding.entityRefFor(ShoppingCart.typeKey, "abc-123")
+```
+
+To locate the correct actor across the cluster you need to specify the `entityTypeKey` we used to initialize the entity and the `id` for the instance we need. Akka Cluster will create the required actor in one node on the cluster or reuse the existing instance if the actor has already been created and is still alive.
+
+The `entityRef` is similar to an `actorRef` but denotes the actor is sharded. Interacting with an `entityRef` implies the messages exchanged with the actor may need to travel over the wire to a separate node. In our case, the `EntityRef` is typed to only accept `ShoppingCartCommand`s.
+
+#### Considerations on using ask pattern
+
+Since we want to send commands to the Aggregate and these commands declare a replay we will need to use the `ask` pattern.
+
+The code we introduced above creates an `EntityRef` from the `ShoppingCartServiceImpl`. This means it is code outside an actor (the `ServiceImpl`) trying to interact with an actor (the `EntityRef`). `EntityRef` provides an `ask()` overload out of the box meant to be used from outside actors which is the situation we're in.
+
+```scala
+implicit val askTimeout = Timeout(5.seconds)
+
+val futureSummary: Future[ShoppingCartSummary] =
+   shoppingCartRef
+      .ask(replyTo => Get(replyTo))
+futureSummary.map(cartSummary => convertToApi(id, cartSummary))
+```
+
+So we declare an implicit `timeout` and then invoke `ask(f)` (which uses the timeout implicitly). The `f` argument in the `ask()` method is a function in which we create the command using the `replyTo` provided. Internally, Akka Typed will use that `replyTo` as a receiver of the response message and then extract that message and provide it as as `Future[Reply]` (in this case `Future[ShoppingCartSummary]`).
+
+Finally, we operate over the `futureSummary`normallly (in this case, we map it to a different type).
+
+### Configuring number of shards
+
+As detailed in the [Akka Cluster Sharding docs](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#shard-allocation):
+
+> As a rule of thumb, the number of shards should be a factor ten greater  than the planned maximum number of cluster nodes. It doesn’t have to be  exact. Fewer shards than number of nodes will result in that some nodes  will not host any shards. Too many shards will result in less efficient  management of the shards
+
+See the Akka docs for details on how to configure the number of shards.
+
+### Configuring Entity passivation
+
+Keeping all the Aggregates in memory all the time is inefficient. Instead, use the Entity passivation feature so sharded entities (the Aggregates) are removed from the cluster when they've been unused for some time.
+
+Akka supports both programmatic passivation and [automatic passivation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#automatic-passivation). The default values for automatic passivation are generally good enough.
 
 ## Data Serialization
+
+// TODO: this is mainly about play-json and Lagom's PlayJsonSerializer
+// then also about why commands can't use play-json and need to use Akka Jackson
