@@ -13,14 +13,8 @@ addSbtPlugin("com.github.gseitz" % "sbt-release"  % "1.0.12")
 addSbtPlugin("com.jsuereth"      % "sbt-pgp"      % "2.0.0")
 addSbtPlugin("org.foundweekends" % "sbt-bintray"  % "0.5.5")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm" % "0.4.0")
-
-// remove this resolved when https://github.com/lightbend/mima/issues/422 is solved
-resolvers += Resolver.url(
-  "typesafe sbt-plugins",
-  url("https://dl.bintray.com/typesafe/sbt-plugins")
-)(Resolver.ivyStylePatterns)
-addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "0.6.1")
+addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm"   % "0.4.0")
+addSbtPlugin("com.typesafe"     % "sbt-mima-plugin" % "0.6.1")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
 addSbtPlugin("com.lightbend"    % "sbt-whitesource"      % "0.1.18")
