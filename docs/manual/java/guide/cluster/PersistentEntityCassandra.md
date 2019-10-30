@@ -1,6 +1,6 @@
-# Storing Persistent Entities in Cassandra
+# Storing Persistent Events in Cassandra
 
-This page describes how to configure Cassandra for use with Lagom's [[Persistent Entity|PersistentEntity]] API.
+This page describes how to configure Cassandra for use with [[Persistent Entity|PersistentEntity]] API or Akka Typed Persistence in a Lagom service .
 
 ## Project dependencies
 
