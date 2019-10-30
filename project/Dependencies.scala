@@ -254,7 +254,6 @@ object Dependencies {
       "com.novocode" % "junit-interface" % Versions.JUnitInterface,
       typesafeConfig,
       sslConfig,
-      "com.typesafe" %% "ssl-config-core" % "0.3.7",
       akkaDiscovery,
       akkaHttpCore,
       akkaHttpRouteDsl,
@@ -273,8 +272,6 @@ object Dependencies {
       "com.typesafe.play"  %% "cachecontrol"               % "2.0.0-M2",
       playJson,
       playFunctional,
-      "com.typesafe.play" %% "play-json"       % "2.7.2",
-      "com.typesafe.play" %% "play-functional" % "2.7.2",
       // play client libs
       playWs,
       playAhcWs,
@@ -358,7 +355,6 @@ object Dependencies {
       scalaTest,
       "org.scala-lang.modules" %% "scala-java8-compat" % Versions.ScalaJava8Compat,
       scalaParserCombinators,
-      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
       scalaXml,
       "org.scala-sbt"     % "test-interface" % "1.0",
       "org.typelevel"     %% "macro-compat"  % "1.1.1",
@@ -366,14 +362,13 @@ object Dependencies {
       "tyrex"             % "tyrex"          % "1.0.1",
       javaxAnnotationApi,
       scalaCollectionCompat,
-      "com.google.guava"             % "failureaccess"          % "1.0.1",
-      "com.google.guava"             % "listenablefuture"       % "9999.0-empty-to-avoid-conflict-with-guava",
-      "com.google.protobuf"          % "protobuf-java"          % "3.9.2",
-      "javax.activation"             % "activation"             % "1.1",
-      "javax.activation"             % "javax.activation-api"   % "1.2.0",
-      "jakarta.activation"           % "jakarta.activation-api" % "1.2.1",
-      "com.thoughtworks.paranamer"   % "paranamer"              % "2.8",
-      "com.fasterxml.jackson.module" %% "jackson-module-scala"  % Versions.JacksonDatatype,
+      "com.google.guava"           % "failureaccess"          % "1.0.1",
+      "com.google.guava"           % "listenablefuture"       % "9999.0-empty-to-avoid-conflict-with-guava",
+      "com.google.protobuf"        % "protobuf-java"          % "3.9.2",
+      "javax.activation"           % "activation"             % "1.1",
+      "javax.activation"           % "javax.activation-api"   % "1.2.0",
+      "jakarta.activation"         % "jakarta.activation-api" % "1.2.1",
+      "com.thoughtworks.paranamer" % "paranamer"              % "2.8",
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
       "akka-actor",
       "akka-actor-typed",
@@ -396,7 +391,6 @@ object Dependencies {
       "akka-stream-testkit",
       "akka-testkit",
       "akka-coordination",
-      "akka-discovery"
     ) ++ libraryFamily("com.typesafe.play", Versions.Play)(
       "build-link",
       "play-exceptions",
@@ -411,8 +405,6 @@ object Dependencies {
       "play-akka-http-server",
       "play-server",
       "play-streams",
-      "play-ws",
-      "play-ahc-ws"
     ) ++ libraryFamily("ch.qos.logback", Versions.Logback)(
       "logback-classic",
       "logback-core"
@@ -446,10 +438,9 @@ object Dependencies {
   // These dependencies are used by JPA to test, but we don't want to export them as part of our regular whitelist,
   // so we maintain it separately.
   val JpaTestWhitelist = Seq(
-    "antlr"         % "antlr"     % "2.7.7",
-    "com.fasterxml" % "classmate" % "1.3.4",
-    "org.dom4j"     % "dom4j"     % "2.1.1",
-    jsr250,
+    "antlr"                            % "antlr"                           % "2.7.7",
+    "com.fasterxml"                    % "classmate"                       % "1.3.4",
+    "org.dom4j"                        % "dom4j"                           % "2.1.1",
     "javax.el"                         % "el-api"                          % "2.2",
     "javax.enterprise"                 % "cdi-api"                         % "1.1",
     "org.apache.geronimo.specs"        % "geronimo-jta_1.1_spec"           % "1.1.1",
@@ -531,14 +522,7 @@ object Dependencies {
 
   val immutables = libraryDependencies += "org.immutables" % "value" % Versions.Immutables
 
-  val jackson = libraryDependencies ++= Seq(
-    "com.fasterxml.jackson.module"     % "jackson-module-parameter-names" % Versions.Jackson,
-    "com.fasterxml.jackson.datatype"   % "jackson-datatype-pcollections"  % Versions.JacksonDatatype,
-    "com.fasterxml.jackson.datatype"   % "jackson-datatype-guava"         % Versions.JacksonDatatype,
-    "com.fasterxml.jackson.datatype"   % "jackson-datatype-jdk8"          % Versions.JacksonDatatype,
-    "com.fasterxml.jackson.datatype"   % "jackson-datatype-jsr310"        % Versions.JacksonDatatype,
-    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor"        % Versions.JacksonDatatype,
-    "com.fasterxml.jackson.module"     %% "jackson-module-scala"          % Versions.JacksonDatatype,
+  val jackson = libraryDependencies ++= jacksonFamily ++ Seq(
     // Upgrades needed to match whitelist versions
     sslConfig,
     pcollections,
@@ -1201,6 +1185,16 @@ object Dependencies {
       .iterator
       .map { case (key, crossModuleIds) => key -> crossModuleIds.map(_.revision) }
       .toMap
+
+    val dupes = whitelist.collect { case (key, versions) if versions.size > 1 => (key, versions) }
+    if (dupes.nonEmpty) {
+      dupes.foreach {
+        case ((org, id), revs) =>
+          val revsS = revs.mkString("[", ", ", "]")
+          log.error(s"[${name.value}] dependency $org:$id in whitelist with multiple versions: $revsS")
+      }
+      throw new DependencyWhitelistValidationFailed
+    }
 
     def collectProblems(scope: String, classpath: Classpath) = {
       classpath.collect(Function.unlift { dep =>
