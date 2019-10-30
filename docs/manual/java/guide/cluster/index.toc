@@ -1,8 +1,8 @@
-PersistentEntity:Persistent Entity
+PersistentEntity:Persistent Entity;next=ChoosingADatabase,PersistentEntityCassandra,PersistentEntityRDBMS
 ChoosingADatabase:Choosing A Database
-PersistentEntityCassandra:Cassandra Persistent Entities
-PersistentEntityRDBMS:Relational Database Persistent Entities
-ReadSide:Persistent Read-Side
+PersistentEntityCassandra:Cassandra Setup
+PersistentEntityRDBMS:Relational Database Setup
+ReadSide:Persistent Read-Side;next=ReadSideCassandra,ReadSideRDBMS
 ReadSideCassandra:Cassandra Read-Side Support
 ReadSideRDBMS:Relational Database Read-Side Support;next=ReadSideJDBC,ReadSideJPA
 ReadSideJDBC:JDBC Read-Side Support

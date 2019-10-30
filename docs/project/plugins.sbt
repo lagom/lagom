@@ -3,7 +3,7 @@ lazy val plugins = (project in file(".")).dependsOn(dev)
 lazy val dev = ProjectRef(Path.fileProperty("user.dir").getParentFile, "sbt-plugin")
 
 resolvers += Resolver.typesafeIvyRepo("releases") // sbt 1.3 regression
-addSbtPlugin("com.lightbend.markdown" %% "sbt-lightbend-markdown" % "1.7.0")
+addSbtPlugin("com.lightbend.markdown" %% "sbt-lightbend-markdown" % "1.7.1-SNAPSHOT")
 
 addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.5")
 
