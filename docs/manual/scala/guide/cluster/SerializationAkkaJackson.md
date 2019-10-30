@@ -33,6 +33,7 @@ akka.actor {
   }
 } 
 ```
+
 ## Schema Evolution
 
 When you persist durable events on an Akka Persistence Journal, events created in early iterations of your software will still have to be readable in future versions of your application. As you evolve your schema you will have to create and register data migration code so that old events are upgraded in-flight when read from the Journal in the database. Read the Akka docs on [Schema Evolution](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html#schema-evolution) for details.
