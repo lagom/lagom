@@ -12,6 +12,6 @@ The Play JSON abstraction for serializing and deserializing a class into JSON is
 
 ## Serialization limitations in Akka Typed
 
-In Akka Typed, messages often include a `replyTo: ActorRef[T]` field so the actor handling the message can send a message back. Serializing an `ActorRef[T]` requires using the Akka Jackson serializer. If you use Akka Typed Persistence in Lagom, you will have to use Akka JAckson to serialize your commands because command messages sent to an Aggregate include a `replyTo: ActorRef[MyReply]` field. 
+In Akka Typed, messages often include a `replyTo: ActorRef[T]` field so the actor handling the message can send a message back. Serializing an `ActorRef[T]` requires using the Akka Jackson serializer. If you use Akka Typed Persistence in Lagom, you will have to use Akka Jackson to serialize your commands because command messages sent to an Aggregate include a `replyTo: ActorRef[MyReply]` field. 
 
 The limitation to use Akka Jackson for Command messages doesn't apply to other messages like events, or even replies. Each type Akka needs to serialize may use a different serializer.
