@@ -24,7 +24,7 @@ You will also need to add the jar for your JDBC database driver.
 
 ## Configuration
 
-Lagom uses the [`akka-persistence-jdbc`](https://github.com/dnvriend/akka-persistence-jdbc) plugin.  This supports four different relational databases:
+Lagom uses the [`akka-persistence-jdbc`](https://github.com/dnvriend/akka-persistence-jdbc) plugin.  This supports the following relational databases:
 
 * [PostgreSQL](https://www.postgresql.org/)
 * [MySQL](https://www.mysql.com/)

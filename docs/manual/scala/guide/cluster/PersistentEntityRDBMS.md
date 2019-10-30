@@ -27,7 +27,7 @@ To enable the RDBMS Persistence on your Application you will have to mix in | [J
 
 ## Configuration
 
-Lagom uses the [`akka-persistence-jdbc`](https://github.com/dnvriend/akka-persistence-jdbc) plugin.  This supports four different relational databases:
+Lagom uses the [`akka-persistence-jdbc`](https://github.com/dnvriend/akka-persistence-jdbc) plugin.  This supports the following relational databases:
 
 * [PostgreSQL](https://www.postgresql.org/)
 * [MySQL](https://www.mysql.com/)
