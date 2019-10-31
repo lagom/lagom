@@ -8,10 +8,10 @@ The Akka documentation for [Serialization with Jackson](https://doc.akka.io/docs
 
 The Play JSON abstraction for serializing and deserializing a class into JSON is the [Format](https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.libs.json.Format) which in turn is a combination of [Reads](https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.libs.json.Reads) and [Writes](https://www.playframework.com/documentation/2.6.x/api/scala/index.html#play.api.libs.json.Writes). The library parses JSON into a JSON tree model, which is what the `Format`s work with.
 
-> You can opt out of Lagom JSON and Akka Jackson serializers and bind your classes to other serializers (e.g. protobuf). This documentation doesn't cover the necessary steps to opt-out. See [Serialization](https://doc.akka.io/docs/akka/2.6/serialization.html) on the Akka docs for details.
+> You can opt out of Lagom JSON and Akka Jackson serializers and bind your classes to other serializers (e.g. protobuf). This documentation doesn't cover the necessary steps to opt-out. See [Serialization on the Akka docs](https://doc.akka.io/docs/akka/2.6/serialization.html) for details.
 
 ## Serialization limitations in Akka Typed
 
-In Akka Typed, messages often include a `replyTo: ActorRef[T]` field so the actor handling the message can send a message back. Serializing an `ActorRef[T]` requires using the Akka Jackson serializer. If you use Akka Typed Persistence in Lagom, you will have to use Akka Jackson to serialize your commands because command messages sent to an Aggregate include a `replyTo: ActorRef[MyReply]` field. 
+In Akka Typed, messages often include a `replyTo: ActorRef[T]` field so the actor handling the message can send a message back. Serializing an `ActorRef[T]` requires using the Akka Jackson serializer. If you use Akka Typed Persistence in Lagom, you will have to use Akka Jackson to serialize your commands because command messages sent to an Aggregate include a `replyTo: ActorRef[MyReply]` field.
 
 The limitation to use Akka Jackson for Command messages doesn't apply to other messages like events, or even replies. Each type Akka needs to serialize may use a different serializer.
