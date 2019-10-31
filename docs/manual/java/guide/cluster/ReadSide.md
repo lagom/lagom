@@ -25,8 +25,8 @@ That said, if you use Lagom's built in Cassandra or relational database read-sid
 
 How you query the read-side database depends on your database, but there are two things to be aware of:
 
-* Ensure that any connection pools are started once, and then shut down when Lagom shuts down. Lagom is built on Play, and uses Play's lifecycle support to register callbacks to execute on shutdown. For information on how to hook into this, see the [Play documentation](https://playframework.com/documentation/2.6.x/JavaDependencyInjection#Stopping/cleaning-up).
-* Ensure that any blocking actions are done in an appropriate execution context. Lagom assumes that all actions are asynchronous, and has thread pools tuned for asynchronous tasks. The use of unmanaged blocking can cause your application to stop responding at very low loads. For details on how to correctly manage thread pools for blocking database calls, see Play's documentation on [thread pools](https://www.playframework.com/documentation/2.6.x/ThreadPools).
+* Ensure that any connection pools are started once, and then shut down when Lagom shuts down. Lagom is built on Play, and uses Play's lifecycle support to register callbacks to execute on shutdown. For information on how to hook into this, see the [Play documentation](https://playframework.com/documentation/2.7.x/JavaDependencyInjection#Stopping/cleaning-up).
+* Ensure that any blocking actions are done in an appropriate execution context. Lagom assumes that all actions are asynchronous, and has thread pools tuned for asynchronous tasks. The use of unmanaged blocking can cause your application to stop responding at very low loads. For details on how to correctly manage thread pools for blocking database calls, see Play's documentation on [thread pools](https://www.playframework.com/documentation/2.7.x/ThreadPools).
 
 ## Update the Read-Side
 

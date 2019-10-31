@@ -43,7 +43,7 @@ To specify a configuration file to be loaded from the file system use the system
 
 ## Play Lagom applications
 
-When integrating a Play application in Lagom via the `LagomPlay` sbt plugin, the default Play logging module is used. The main difference, with respect to the Lagom logging module, is that the Play logging module provides different default logback configurations. Read the Play framework [Configuring Logging](https://www.playframework.com/documentation/2.6.x/SettingsLogger) documentation for details.
+When integrating a Play application in Lagom via the `LagomPlay` sbt plugin, the default Play logging module is used. The main difference, with respect to the Lagom logging module, is that the Play logging module provides different default logback configurations. Read the Play framework [Configuring Logging](https://www.playframework.com/documentation/2.7.x/SettingsLogger) documentation for details.
 
 ## Internal framework logging
 
