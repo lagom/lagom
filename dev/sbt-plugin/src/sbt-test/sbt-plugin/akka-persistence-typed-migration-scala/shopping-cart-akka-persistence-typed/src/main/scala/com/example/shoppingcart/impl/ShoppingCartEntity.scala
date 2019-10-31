@@ -29,6 +29,7 @@ import scala.collection.immutable.Seq
  */
 case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
 
+  //#akka-persistence-command-handler
   def applyCommand(cmd: ShoppingCartCommand): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
     cmd match {
       case x: UpdateItem => onUpdateItem(x)
@@ -51,8 +52,9 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
             Accepted
           }
     }
+  //#akka-persistence-command-handler
 
-
+  //#akka-persistence-typed-example-command-handler
   private def onCheckout(cmd: Checkout): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
     if (items.isEmpty)
       Effect.reply(cmd.replyTo)(Rejected("Cannot checkout empty cart"))
@@ -62,6 +64,7 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
         .thenReply(cmd.replyTo) { _ =>
           Accepted
         }
+  //#akka-persistence-typed-example-command-handler
 
   private def onReadState(cmd: Get): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
     Effect.reply(cmd.replyTo)(CurrentState(this))
@@ -85,12 +88,15 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
 
 object ShoppingCartState {
 
+  //#akka-persistence-declare-entity-type-key
+  val typeKey = EntityTypeKey[ShoppingCartCommand]("ShoppingCartEntity")
+  //#akka-persistence-declare-entity-type-key
+
   def empty: ShoppingCartState = ShoppingCartState(Map.empty, checkedOut = false)
 
-  val typeKey = EntityTypeKey[ShoppingCartCommand]("ShoppingCartEntity")
-
+  //#akka-persistence-typed-lagom-tagger-adapter
   def behavior(entityContext: EntityContext[ShoppingCartCommand]): Behavior[ShoppingCartCommand] = {
-
+    //#akka-persistence-behavior-definition
     EventSourcedBehavior
       .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCartState](
         persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
@@ -98,9 +104,10 @@ object ShoppingCartState {
         commandHandler = (cart, cmd) => cart.applyCommand(cmd),
         eventHandler = (cart, evt) => cart.applyEvent(evt)
       )
+    //#akka-persistence-behavior-definition
       .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
-
   }
+  //#akka-persistence-typed-lagom-tagger-adapter
 
   implicit val format: Format[ShoppingCartState] = Json.format
 }
@@ -148,6 +155,7 @@ object ShoppingCartReply {
     }
 }
 
+//#akka-persistence-typed-replies
 sealed trait Confirmation extends ShoppingCartReply
 
 case object Confirmation {
@@ -182,6 +190,7 @@ case class Rejected(reason: String) extends Confirmation
 object Rejected {
   implicit val format: Format[Rejected] = Json.format
 }
+//#akka-persistence-typed-replies
 
 final case class CurrentState(state: ShoppingCartState) extends ShoppingCartReply
 
@@ -189,22 +198,27 @@ object CurrentState {
   implicit val format: Format[CurrentState] = Json.format
 }
 
+//#akka-jackson-serialization-marker-trait
 /**
  * This is a marker trait for shopping cart commands.
- * We will serialize them using Akka's Jackson support that is able to deal with the replyTo field.
- * (see application.conf)
+ * We will serialize them using the Akka Jackson serializer that is able to
+ * deal with the replyTo field. See application.conf
  */
 trait ShoppingCartCommandSerializable
+//#akka-jackson-serialization-marker-trait
 
+//#akka-jackson-serialization-command-after
 sealed trait ShoppingCartCommand extends ShoppingCartCommandSerializable
 case class UpdateItem(productId: String, quantity: Int, replyTo: ActorRef[Confirmation])
     extends ShoppingCartCommand
+//#akka-jackson-serialization-command-after
 
 case class Get(replyTo: ActorRef[CurrentState]) extends ShoppingCartCommand
 
 case class Checkout(replyTo: ActorRef[Confirmation]) extends ShoppingCartCommand
 
 object ShoppingCartSerializerRegistry extends JsonSerializerRegistry {
+  //#akka-jackson-serialization-registry-after
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     // state and events can use play-json, but commands should use jackson because of ActorRef[T] (see application.conf)
     JsonSerializer[ShoppingCartState],
@@ -217,4 +231,5 @@ object ShoppingCartSerializerRegistry extends JsonSerializerRegistry {
     JsonSerializer[Accepted],
     JsonSerializer[Rejected]
   )
+  //#akka-jackson-serialization-registry-after
 }

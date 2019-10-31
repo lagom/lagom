@@ -40,11 +40,13 @@ abstract class ShoppingCartApplication(context: LagomApplicationContext)
   lazy val reportRepository = wire[ShoppingCartReportRepository]
   readSide.register(wire[ShoppingCartReportProcessor])
 
+  //#akka-persistence-init-sharded-behavior
   // this is the equivalent in Akka Typed of Lagom's PersistentEntityRegistry.register
   clusterSharding.init(
     Entity(ShoppingCartState.typeKey) {
       ctx => ShoppingCartState.behavior(ctx)
     }
   )
+  //#akka-persistence-init-sharded-behavior
 
 }
