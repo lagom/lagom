@@ -52,7 +52,7 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
           }
     }
 
-
+  //#akka-persistence-typed-example-command-handler
   private def onCheckout(cmd: Checkout): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
     if (items.isEmpty)
       Effect.reply(cmd.replyTo)(Rejected("Cannot checkout empty cart"))
@@ -62,6 +62,7 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
         .thenReply(cmd.replyTo) { _ =>
           Accepted
         }
+  //#akka-persistence-typed-example-command-handler
 
   private def onReadState(cmd: Get): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
     Effect.reply(cmd.replyTo)(CurrentState(this))
@@ -148,6 +149,7 @@ object ShoppingCartReply {
     }
 }
 
+//#akka-persistence-typed-replies
 sealed trait Confirmation extends ShoppingCartReply
 
 case object Confirmation {
@@ -182,6 +184,7 @@ case class Rejected(reason: String) extends Confirmation
 object Rejected {
   implicit val format: Format[Rejected] = Json.format
 }
+//#akka-persistence-typed-replies
 
 final case class CurrentState(state: ShoppingCartState) extends ShoppingCartReply
 
