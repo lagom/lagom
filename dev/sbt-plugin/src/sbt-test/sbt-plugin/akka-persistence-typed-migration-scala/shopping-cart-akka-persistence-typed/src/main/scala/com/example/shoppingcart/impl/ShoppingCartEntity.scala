@@ -86,12 +86,14 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
 
 object ShoppingCartState {
 
+  //#akka-persistence-declare-entity-type-key
+  val typeKey = EntityTypeKey[ShoppingCartCommand]("ShoppingCartEntity")
+  //#akka-persistence-declare-entity-type-key
+
   def empty: ShoppingCartState = ShoppingCartState(Map.empty, checkedOut = false)
 
-  val typeKey = EntityTypeKey[ShoppingCartCommand]("ShoppingCartEntity")
-
+  //#akka-persistence-typed-lagom-tagger-adapter
   def behavior(entityContext: EntityContext[ShoppingCartCommand]): Behavior[ShoppingCartCommand] = {
-
     EventSourcedBehavior
       .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCartState](
         persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
@@ -100,8 +102,8 @@ object ShoppingCartState {
         eventHandler = (cart, evt) => cart.applyEvent(evt)
       )
       .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
-
   }
+  //#akka-persistence-typed-lagom-tagger-adapter
 
   implicit val format: Format[ShoppingCartState] = Json.format
 }

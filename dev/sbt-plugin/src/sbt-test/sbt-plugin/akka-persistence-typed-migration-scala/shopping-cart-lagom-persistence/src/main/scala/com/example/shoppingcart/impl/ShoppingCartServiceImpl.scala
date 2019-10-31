@@ -19,6 +19,7 @@ import scala.concurrent.ExecutionContext
   */
 class ShoppingCartServiceImpl(persistentEntityRegistry: PersistentEntityRegistry, reportRepository: ShoppingCartReportRepository)(implicit ec: ExecutionContext) extends ShoppingCartService {
 
+  //#akka-persistence-reffor-before
   /**
     * Looks up the shopping cart entity for the given ID.
     */
@@ -30,6 +31,7 @@ class ShoppingCartServiceImpl(persistentEntityRegistry: PersistentEntityRegistry
       .ask(Get)
       .map(cart => convertShoppingCart(id, cart))
   }
+  //#akka-persistence-reffor-before
 
   override def updateItem(id: String, productId: String, qty: Int): ServiceCall[NotUsed, Done] = ServiceCall { update =>
     entityRef(id)
