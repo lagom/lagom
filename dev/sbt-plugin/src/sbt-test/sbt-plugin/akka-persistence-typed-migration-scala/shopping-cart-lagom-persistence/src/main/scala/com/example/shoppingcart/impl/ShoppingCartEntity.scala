@@ -151,6 +151,7 @@ final case object CheckedOut extends ShoppingCartEvent {
   )
 }
 
+//#akka-jackson-serialization-command-before
 sealed trait ShoppingCartCommand[R] extends ReplyType[R]
 
 case class UpdateItem(productId: String, quantity: Int) extends ShoppingCartCommand[Done]
@@ -158,6 +159,7 @@ case class UpdateItem(productId: String, quantity: Int) extends ShoppingCartComm
 object UpdateItem {
   implicit val format: Format[UpdateItem] = Json.format
 }
+//#akka-jackson-serialization-command-before
 
 case object Get extends ShoppingCartCommand[ShoppingCartState] {
   implicit val format: Format[Get.type] = Format(
@@ -181,6 +183,7 @@ object ShoppingCartException {
 }
 
 object ShoppingCartSerializerRegistry extends JsonSerializerRegistry {
+  //#akka-jackson-serialization-registry-before
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     JsonSerializer[ItemUpdated],
     JsonSerializer[CheckedOut.type],
@@ -190,4 +193,5 @@ object ShoppingCartSerializerRegistry extends JsonSerializerRegistry {
     JsonSerializer[ShoppingCartState],
     JsonSerializer[ShoppingCartException]
   )
+  //#akka-jackson-serialization-registry-before
 }

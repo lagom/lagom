@@ -31,6 +31,7 @@ class ShoppingCartServiceImpl(
 )(implicit ec: ExecutionContext)
     extends ShoppingCartService {
 
+  //#akka-persistence-reffor-after
   /**
    * Looks up the shopping cart entity for the given ID.
    */
@@ -44,6 +45,7 @@ class ShoppingCartServiceImpl(
       .ask(reply => Get(reply))
       .map(cart => convertShoppingCart(id, cart))
   }
+  //#akka-persistence-reffor-after
 
   override def updateItem(id: String, productId: String, qty: Int): ServiceCall[NotUsed, Done] = ServiceCall { update =>
     entityRef(id)
