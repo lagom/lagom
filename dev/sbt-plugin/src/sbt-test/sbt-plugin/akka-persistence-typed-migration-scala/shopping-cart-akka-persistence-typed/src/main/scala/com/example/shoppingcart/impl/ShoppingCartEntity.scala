@@ -29,6 +29,7 @@ import scala.collection.immutable.Seq
  */
 case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
 
+  //#akka-persistence-command-handler
   def applyCommand(cmd: ShoppingCartCommand): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
     cmd match {
       case x: UpdateItem => onUpdateItem(x)
@@ -51,6 +52,7 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
             Accepted
           }
     }
+  //#akka-persistence-command-handler
 
   //#akka-persistence-typed-example-command-handler
   private def onCheckout(cmd: Checkout): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
@@ -94,6 +96,7 @@ object ShoppingCartState {
 
   //#akka-persistence-typed-lagom-tagger-adapter
   def behavior(entityContext: EntityContext[ShoppingCartCommand]): Behavior[ShoppingCartCommand] = {
+    //#akka-persistence-behavior-definition
     EventSourcedBehavior
       .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCartState](
         persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
@@ -101,6 +104,7 @@ object ShoppingCartState {
         commandHandler = (cart, cmd) => cart.applyCommand(cmd),
         eventHandler = (cart, evt) => cart.applyEvent(evt)
       )
+    //#akka-persistence-behavior-definition
       .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
   }
   //#akka-persistence-typed-lagom-tagger-adapter
