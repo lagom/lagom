@@ -189,22 +189,27 @@ object CurrentState {
   implicit val format: Format[CurrentState] = Json.format
 }
 
+//#akka-jackson-serialization-marker-trait
 /**
  * This is a marker trait for shopping cart commands.
- * We will serialize them using Akka's Jackson support that is able to deal with the replyTo field.
- * (see application.conf)
+ * We will serialize them using the Akka Jackson serializer that is able to
+ * deal with the replyTo field. See application.conf
  */
 trait ShoppingCartCommandSerializable
+//#akka-jackson-serialization-marker-trait
 
+//#akka-jackson-serialization-command-after
 sealed trait ShoppingCartCommand extends ShoppingCartCommandSerializable
 case class UpdateItem(productId: String, quantity: Int, replyTo: ActorRef[Confirmation])
     extends ShoppingCartCommand
+//#akka-jackson-serialization-command-after
 
 case class Get(replyTo: ActorRef[CurrentState]) extends ShoppingCartCommand
 
 case class Checkout(replyTo: ActorRef[Confirmation]) extends ShoppingCartCommand
 
 object ShoppingCartSerializerRegistry extends JsonSerializerRegistry {
+  //#akka-jackson-serialization-registry-after
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     // state and events can use play-json, but commands should use jackson because of ActorRef[T] (see application.conf)
     JsonSerializer[ShoppingCartState],
@@ -217,4 +222,5 @@ object ShoppingCartSerializerRegistry extends JsonSerializerRegistry {
     JsonSerializer[Accepted],
     JsonSerializer[Rejected]
   )
+  //#akka-jackson-serialization-registry-after
 }
