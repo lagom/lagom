@@ -6,11 +6,24 @@ With the support for Akka Persistence Typed in Lagom it is possible to migrate e
 
 ## Migrating the model
 
-???
+Similarly to Lagom's Persistent Entity, to create an Akka Persistence Typed `EventSourcedBehavior` you need:
+
+ * a `persistenceId: PersistenceId`
+ * an `emptyState` which represents the `State` before any event was ever persisted
+ * a function `(State, Command) => ReplyEffect` to handle the commands, persist events and return a reply
+ * a function `(State, Event) => State` to handle events and mutate the `State`
+
+@[akka-persistence-behavior-definition](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-scala/shopping-cart-akka-persistence-typed/src/main/scala/com/example/shoppingcart/impl/ShoppingCartEntity.scala)
+
+So, instead of using a build and adding multiple command and event handlers, a single method for each is provided and inside it, a pattern matching is used.
+
+@[akka-persistence-command-handler](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-scala/shopping-cart-akka-persistence-typed/src/main/scala/com/example/shoppingcart/impl/ShoppingCartEntity.scala)
+
+This migration guide will not go into more details related to writing command and event handlers. Refer to the [Akka Persistence Typed docs](https://doc.akka.io/docs/akka/2.6/typed/index-persistence.html) or the section on [[domain modelling|DomainModelling]] for more information.
 
 ### Commands
 
-After `State`, `Command` classes are the other set of classes most impacted by the migration. First, a `Command` will no longer need to extend the `ReplyType[R]` of the Lagom API. That type was used to specify a type `R` for the reply produced by the `Command`. To specify the type `R` of the reply add a `replyTo: ActorRef[R]` field in the command.
+`Command` classes are the other set of classes most impacted by the migration. First, a `Command` will no longer need to extend the `ReplyType[R]` of the Lagom API. That type was used to specify a type `R` for the reply produced by the `Command`. To specify the type `R` of the reply add a `replyTo: ActorRef[R]` field in the command.
 
 _Before_:
 
