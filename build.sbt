@@ -1237,6 +1237,7 @@ lazy val `server-containers` = (project in file("dev") / "server-containers")
     mimaSettings(since = version160),
     runtimeScalaSettings,
     name := "lagom-server-containers",
+    resolvers += Resolver.sbtPluginRepo("releases"), // weird sbt-pgp/lagom docs/vegemite issue
     Dependencies.`server-containers`,
     publishMavenStyle := true,
     sonatypeSettings,
