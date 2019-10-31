@@ -9,7 +9,6 @@ With the support for Akka Persistence Typed in Lagom it is possible to migrate e
 
 After `State`, `Command` classes are the other set of classes most impacted by the migration. First, a `Command` will no longer need to extend the `ReplyType[R]` of the Lagom API. That type was used to specify a type `R` for the reply produced by the `Command`. To specify the type `R` of the reply add a `replyTo: ActorRef[R]` field in the command.
 
-
 _Before_:
 
 @[akka-jackson-serialization-command-before](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-scala/shopping-cart-lagom-persistence/src/main/scala/com/example/shoppingcart/impl/ShoppingCartEntity.scala)
@@ -20,11 +19,20 @@ _After_:
 
 The `replyTo: ActorRef[R]` is necessary to know where to send the response to. It must be added to all command classes and adding it has implication on the serialization of those classes. Make sure to review the [[Serialization|MigratingToAkkaPersistenceTyped#Serialization]] section below and the [[Serialization]] pages later in this reference documentation.
 
+Because the `EventSourcedBehavior` we're implementing uses `withEnforcedReplies` we no longer can fail a command throwing an exception and, instead, we must model failures with a `Reply`.
 
 ### Replies
-  * introduce `Confirmation` 
-### State
-  * ??? 
+
+Because we require enforced replies on the `EventSourcedBehavior` (see `.withEnforcedReplies` in the snippet above) we no longer can fail a command throwing an exception and, instead, we must model failures with a `Reply`.
+
+See for example the `Confirmation` ADT below:
+
+@[akka-persistence-typed-replies](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-scala/shopping-cart-akka-persistence-typed/src/main/scala/com/example/shoppingcart/impl/ShoppingCartEntity.scala)
+
+Then, all the command handlers must produce a `ReplyEffect`. For failed operations use `Effect.reply` directly and for operations that produce events that need persisting use `Effect.persist` to create the `ReplyEffect` instance:
+
+@[akka-persistence-typed-example-command-handler](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-scala/shopping-cart-akka-persistence-typed/src/main/scala/com/example/shoppingcart/impl/ShoppingCartEntity.scala)
+
 
 ## Registration
   * There's no longer a Persistent Entity to register but the Registry is still necessary!
