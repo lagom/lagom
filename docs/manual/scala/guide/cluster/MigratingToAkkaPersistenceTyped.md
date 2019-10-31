@@ -69,9 +69,11 @@ That is, instead of injecting a `persistentEntityRegistry`, use a `clusterShardi
 
 ### Registration: caveats
 
-Even though there is no longer a `PersistentEntity` instance to register, the `persistentEntityRegistry` is still necessary to build `TopicProducer`'s. When writing a `Service` implementation that includes a [[Topic Implementation|MessageBrokerApi#Implementing-a-topic]] the `TopicProducer` API requires an `eventStream` that is provided by the `persistentEntityRegistry`. Therefore, even if you don't register a `PersistentEntity`, the events produced by Akka Persistence Typed are still compatible with `PersistentEntityRegistry.eventStream` as long as they are properly [[tagged|ReadSide#Event-tags]] so the projections ([[Read Sides|ReadSide]] and [[Topic Producers|MessageBrokerApi]]) don't change.
+Even though there is no longer a `PersistentEntity` instance to register, the `persistentEntityRegistry` is still necessary to build `TopicProducer`'s. When writing a `Service` implementation that includes a [[Topic Implementation|MessageBrokerApi#Implementing-a-topic]] the `TopicProducer` API requires an `eventStream` that is provided by the `persistentEntityRegistry`. This means in some cases you can't get rid of the `persistentEntityRegistry` wyou were injecting in your `Service` implementation even if you use the `clusterSharding` to obtaing a reference to your persistent behavior.
 
-## Maintaining compatiblity
+That is, even if you don't register a `PersistentEntity`, the events produced by Akka Persistence Typed are still compatible with `PersistentEntityRegistry.eventStream` as long as they are properly [[tagged|ReadSide#Event-tags]] so the projections ([[Read Sides|ReadSide]] and [[Topic Producers|MessageBrokerApi]]) don't change.
+
+## Maintaining compatibility
 
 Migrating to Akka Persistence Typed requires maintaining compatibility with data perviously produced and persisted in the database journal. This requires focusing on two areas: [[De/Serialization|MigratingToAkkaPersistenceTyped#Serialization]] of events (detailed later) and tagging.
 
