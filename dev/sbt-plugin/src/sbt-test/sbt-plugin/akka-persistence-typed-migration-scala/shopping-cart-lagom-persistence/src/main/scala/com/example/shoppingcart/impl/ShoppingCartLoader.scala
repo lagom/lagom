@@ -38,6 +38,9 @@ abstract class ShoppingCartApplication(context: LagomApplicationContext)
   lazy val reportRepository = wire[ShoppingCartReportRepository]
   readSide.register(wire[ShoppingCartReportProcessor])
 
+  //#akka-persistence-register-classic
   // Register the ShoppingCart persistent entity
   persistentEntityRegistry.register(wire[ShoppingCartEntity])
+  //#akka-persistence-register-classic
+
 }
