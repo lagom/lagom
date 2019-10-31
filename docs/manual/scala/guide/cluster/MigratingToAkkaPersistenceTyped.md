@@ -90,9 +90,21 @@ That is, even if you don't register a `PersistentEntity`, the events produced by
 
 ## Maintaining compatibility
 
-Migrating to Akka Persistence Typed requires maintaining compatibility with data perviously produced and persisted in the database journal. This requires focusing on two areas: [[De/Serialization|MigratingToAkkaPersistenceTyped#Serialization]] of events (detailed later) and tagging.
+Migrating to Akka Persistence Typed requires maintaining compatibility with data previously produced and persisted in the database journal. This requires focusing on three areas: [[De/Serialization|MigratingToAkkaPersistenceTyped#Serialization]] of events (detailed later), `PersistenceId` and tagging.
 
-Only tagged events are readable by Lagom projections (either [[Read Sides|ReadSide]] and [[Topic Producers|MessageBrokerApi]]), and Lagom projections expect event tags to honour certain semantics. Finally, for events to be consumed in the correct order, events produced by a certain instance must all be tagged identically. All these restrictions introduce limitations when using Akka Persistence Typed with a Journal containing data produced by Lagom Persistence classic.
+In order to be able to read existing events from Akka Persistence Typed you must use a `PersistenceId` that produces an identical `id: String` than what Lagom used internally.
+
+@[akka-persistence-behavior-definition](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-scala/shopping-cart-akka-persistence-typed/src/main/scala/com/example/shoppingcart/impl/ShoppingCartEntity.scala)
+
+The code above uses `PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId)`. There are three imoprtant pieces on that statement that we must review: 
+
+1. the first argument of `PersistenceId.apply()` must be the same value you used in Lagom Persistence (classic). This first argument is known as the `typeHint` and is used by the journal as a mechanism to avoid ID collision between different types. In Lagom Persistence (classic) the type hint defaults to the classname of your `PersistentEntity` but it can be [[overwriten|PersistentEntity#Refactoring-Consideration]] (review your code or the persisted data on your database). In our case, we are using `entityContext.entityTypeKey.name` because we defined `EntityTypeKey[ShoppingCartCommand]("ShoppingCartEntity")` were `"ShoppingCartEntity"` is the classname of the code we had in the implementation based on Lagom Persistence Classic.
+2. the second argument must be the business id of your Aggregate. In this case, we can use `entityContext.entityId` because we're using that same business id for the sharded actor.
+3. an (optional) third argument specifying a `separator`. Lagom uses the `"|"` as a separator and, since `PersistenceId` also uses `"|"` as a default we're not specifying a separator.
+
+Even if you use the appropriate `PersistenceId`, you need to use a compatible serializer for your events. Read more about [[De/Serialization|MigratingToAkkaPersistenceTyped#Serialization]] in the section below.
+
+Finally, only tagged events are readable by Lagom projections (either [[Read Sides|ReadSide]] and [[Topic Producers|MessageBrokerApi]]), and Lagom projections expect event tags to honour certain semantics. Finally, for events to be consumed in the correct order, events produced by a certain instance must all be tagged identically. All these restrictions introduce limitations when using Akka Persistence Typed with a Journal containing data produced by Lagom Persistence classic.
 
 Lagom provides appropriate tagging functions in the `AkkaTaggerAdapter` utility class. They must be explicitly registered but provide tagging functions that are compliant with Akka Persistence Typed while keeping backwards compatibility with Lagom Persistence classic. When implementing the factory method `EntityContext[T] => Behavior[T]` specify a tagger using `withTagger` with the `AkkaTaggerAdapter.fromLagom`:
 
